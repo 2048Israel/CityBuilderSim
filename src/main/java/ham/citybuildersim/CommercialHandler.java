@@ -1,0 +1,539 @@
+
+package ham.citybuildersim;
+
+import java.text.NumberFormat;
+import java.util.Locale;
+
+/**
+ *
+ * @author Jerus
+ */
+public class CommercialHandler {
+
+    private double[] fillRate = new double[11];
+    private double[] storeWages = new double[11];
+
+    private int population;
+    private int household;
+
+    //energy stuff
+    private double energyRatio = 1;
+    private double pricePerWatt;
+    private double electricity;
+
+    //store variables
+    private double averageStoreFill;
+    private int storeCoverage;
+    private int storeCapacity;
+    private int storeInventory;
+    private int neededInventory;
+    private int productsSold;
+    private double storeInventoryCost;
+    private double commercialCash;
+    private double realEstateCash;
+
+
+
+    //industrial variables
+    private int foodAvailableForSale; //food available for sale from industry
+    private double foodPrice;
+
+    //printing variables
+    private int pLocalImport;
+    private int pGlobalImport;
+    private double pTaxRate;
+    private double rNetIncome;
+    private double rGrossRevenue;
+    private double rImportTax;
+
+    /* -----------------------------------------------------------------------
+       MONTHLY REPORT RESULTS
+       -----------------------------------------------------------------------
+       NOTE: all of the values below used to be computed as local variables
+       inside printCommercialInfo(), which also mutated commercialCash,
+       realEstateCash, productsSold, rGrossRevenue and rNetIncome as a side
+       effect. That made the printer load-bearing for the economy in two bad
+       ways:
+
+         1. Opening the report re-ran the math and banked another month of net
+            income - harmless in the terminal build (called once per month),
+            but the JavaFX sector screen can be opened any number of times.
+         2. printStartOfMonth() only calls it `if(reports)`, so switching
+            reports OFF (which handleMultipleMonths() does automatically)
+            silently zeroed commercial sales tax and commercial GDP.
+
+       calculateCommercialResults() now owns the math and runs exactly once per
+       month regardless of the reports setting. printCommercialInfo() and the
+       JavaFX screen are both pure readers of these fields.
+       ----------------------------------------------------------------------- */
+    private int rDemand;
+    private int rProductsSold;
+    private double rPayroll;
+    private double rInventoryCost;
+    private double rElectricityCost;
+    private double rRetailOperatingCost;
+    private double rRetailNetIncome;
+
+    private int rOccupiedUnits;
+    private int rVacantUnits;
+    private double rRentIncome;
+    private double rPropertyMaintenance;
+    private double rPropertyTaxExpense;
+    private double rRealEstateExpenses;
+    private double rRealEstateNetIncome;
+
+    private double rTotalNetIncome;
+    private double rTotalTax;
+
+    //temporary variables
+    private double storeSellPrice = .3;
+    private double rentPrice = .35;
+
+    public CommercialHandler(){
+
+    }
+
+    public void updateCommercialHandler(){
+        sellInventory(productsSold);
+        storeInventoryCost = buyInventory();
+
+
+    }
+    //updaters
+    public void updateJobFillRate(double[]fillRate){
+
+        System.arraycopy(fillRate, 0, this.fillRate, 0, fillRate.length);
+    }
+
+    public void updateStoreWages(double[] wages, int[] jobs) {
+
+        if (wages == null || jobs == null ) {
+            System.out.println("null stores");
+            System.out.println(wages + " " + jobs + " " + storeWages);
+            return; // nothing to update print error
+
+        }
+
+        int length = Math.min(Math.min(wages.length, jobs.length), storeWages.length);
+
+
+        for (int i = 0; i < length; i++) {
+            storeWages[i] = wages[i] * jobs[i];
+
+        }
+        double totalFilled = 0;
+        int totalJobsStore = 0;
+
+
+
+        for (int i = 0; i < jobs.length; i++) {
+            totalFilled += fillRate[i] * jobs[i];// filled positions
+            totalJobsStore += jobs[i];
+        }
+
+        if (totalJobsStore == 0) {
+            averageStoreFill = 1;  // no jobs means fully filled by default
+        }
+
+        if(totalJobsStore!=0){
+        averageStoreFill = totalFilled / totalJobsStore;
+
+        }
+
+    }
+
+    //getters
+    public double getBusinessTaxIncome(double taxRate){
+        double businessTaxIncome = 0;
+        pTaxRate = taxRate;
+        businessTaxIncome += Math.max(getStoreIncome()*taxRate, 0);
+        businessTaxIncome += Math.max(getRentIncome()*taxRate, 0);
+
+        return businessTaxIncome;
+    }
+    public double getBusinessIncome(){
+        double totalIncome = getStoreIncome() + getRentIncome();
+        return totalIncome;
+    }
+    public double getStoreIncome() {
+        double storeRev = 0;
+        double storeWage = 0;
+        double storeExp = 0;
+
+
+        productsSold = Math.min(storeCoverage, population);
+
+
+        storeRev =  productsSold* storeSellPrice;
+
+
+        if (storeWages != null) {
+            for (int i = 0; i < storeWages.length; i++) {
+                storeWage += storeWages[i];
+
+            }
+        }
+        storeWage *= averageStoreFill;
+
+
+
+        storeExp = storeWage + storeInventoryCost;
+        storeExp += getElectricityCost();
+        storeRev *= averageStoreFill;
+        storeRev *= energyRatio;
+
+        double netIncome = storeRev - storeExp;
+
+
+        return netIncome;
+    }
+
+    public double getRentIncome(){
+        return Math.min(household, population)*rentPrice;
+    }
+
+    //getters
+    public int getNeededInventory(){
+        return neededInventory;
+    }
+    public int getStoreInventory(){
+        return storeInventory;
+    }
+    public double getNetIncome(){
+        return rNetIncome;
+    }
+    public double getGrossRevenue(){
+        return rGrossRevenue;
+    }
+    public double getImportTax(){
+        return rImportTax;
+    }
+    public double getCommercialCash(){
+        return commercialCash;
+    }
+    public double getRealEstateCash(){
+        return realEstateCash;
+    }
+
+    /* -----------------------------------------------------------------------
+       REPORT GETTERS - read-only snapshot of the last calculated month.
+       Used by the console printer and by the JavaFX sector screen.
+       ----------------------------------------------------------------------- */
+    public int getPopulation()            { return population; }
+    public int getHousehold()             { return household; }
+    public int getStoreCoverage()         { return storeCoverage; }
+    public int getStoreCapacity()         { return storeCapacity; }
+    public double getAverageStoreFill()   { return averageStoreFill; }
+    public double getEnergyRatio()        { return energyRatio; }
+    public double getStoreSellPrice()     { return storeSellPrice; }
+
+    public int getReportDemand()          { return rDemand; }
+    public int getReportProductsSold()    { return rProductsSold; }
+    public double getReportPayroll()      { return rPayroll; }
+    public double getReportInventoryCost(){ return rInventoryCost; }
+    public double getReportElectricityCost(){ return rElectricityCost; }
+    public double getReportRetailOperatingCost() { return rRetailOperatingCost; }
+    public double getReportRetailNetIncome()     { return rRetailNetIncome; }
+    public int getReportLocalImports()    { return pLocalImport; }
+    public int getReportGlobalImports()   { return pGlobalImport; }
+
+    public int getReportOccupiedUnits()   { return rOccupiedUnits; }
+    public int getReportVacantUnits()     { return rVacantUnits; }
+    public double getReportRentIncome()   { return rRentIncome; }
+    public double getReportPropertyMaintenance() { return rPropertyMaintenance; }
+    public double getReportPropertyTaxExpense()  { return rPropertyTaxExpense; }
+    public double getReportRealEstateExpenses()  { return rRealEstateExpenses; }
+    public double getReportRealEstateNetIncome() { return rRealEstateNetIncome; }
+
+    public double getReportTotalNetIncome() { return rTotalNetIncome; }
+    public double getReportTotalTax()       { return rTotalTax; }
+    public double getReportTaxRate()        { return pTaxRate; }
+
+    //setters
+    public void setStoreCoverage(int cap){
+        storeCoverage = cap;
+    }
+    public void setStoreCapacity(int cap){
+        storeCapacity = cap;
+    }
+    public void setPopulation(int pop){
+        population = pop;
+    }
+    public void setHousehold(int household){
+        this.household = household;
+    }
+    public void setFoodAvailableForSale(int foodInventory){
+        foodAvailableForSale = foodInventory;
+    }
+    public void setFoodPrice(double foodPrice){
+        this.foodPrice = foodPrice;
+    }
+    public void setStoreInventory(int storeInventory){
+        this.storeInventory = storeInventory;
+    }
+    public void setEnergyRatio(double ratio){
+        this.energyRatio = ratio;
+    }
+    public void setPricePerWatt(double price){
+        this.pricePerWatt = price;
+    }
+    public void setElectricityConsumption(int consumption){
+        this.electricity = consumption;
+    }
+    public void setCommercialCash(double cash){
+        this.commercialCash = cash;
+    }
+
+    public void setRealEstateCash(double realEstateCash) {
+        this.realEstateCash = realEstateCash;
+    }
+
+
+
+    //store methods
+    public int neededInventory(){
+        int needed = 0;
+        if(storeInventory < storeCapacity){
+            needed = storeCapacity - storeInventory;
+        }
+
+
+        return needed;
+
+    }
+
+    public double buyInventory(){
+        double cost = 0;
+        int localImport;
+        int globalImport;
+        int needed = neededInventory();
+
+        localImport = Math.min(foodAvailableForSale, needed);
+        int remaining = needed - localImport;
+        globalImport = remaining;
+
+        storeInventory += localImport + globalImport;
+
+        needed -= localImport;
+        globalImport = needed;
+        cost = localImport*foodPrice*(1+pTaxRate) + globalImport*foodPrice*1.3*(1+pTaxRate);
+        rImportTax = globalImport*foodPrice*1.3*pTaxRate;
+
+        if(globalImport != 0)System.out.println("Stores bought: " + formatter.format(globalImport) + " food globally.");
+
+        pLocalImport = localImport;
+        pGlobalImport = globalImport;
+
+        return cost;
+    }
+
+    public void sellInventory(int quantity){
+        storeInventory -= quantity;
+        neededInventory = quantity;
+    }
+
+    public double getElectricityCost(){
+        double cost = 0;
+        cost = electricity*pricePerWatt;
+        return cost;
+
+    }
+
+    /**
+     * Runs the commercial sector's monthly income statement and stores the
+     * result. This is the ONLY place that mutates commercialCash /
+     * realEstateCash / rNetIncome / rGrossRevenue, and it must be called
+     * exactly once per month, before anything reads those values
+     * (calculateSalesTax() and getMonthGdp() both do).
+     *
+     * The math here is unchanged from the old printCommercialInfo() body - only
+     * its location moved, so a reports-ON game simulates identically. A
+     * reports-OFF game now gets correct sales tax and GDP instead of zeroes.
+     */
+    public void calculateCommercialResults() {
+        computeMonthlyReport();
+
+        // The only accumulating state in the sector. Kept out of
+        // computeMonthlyReport() so the report can be recalculated for display
+        // (e.g. after a load) without banking a phantom month of income.
+        commercialCash += rRetailNetIncome;
+        realEstateCash += rRealEstateNetIncome;
+    }
+
+    /**
+     * Recomputes every report figure from the current inputs. Pure with respect
+     * to the cash reserves - safe to call whenever the derived state needs
+     * rebuilding, such as after loading a save.
+     */
+    public void computeMonthlyReport() {
+
+        /* -------------------- RETAIL / COMMERCIAL COMPANY -------------------- */
+        rDemand = Math.min(storeCoverage, population);
+        productsSold = Math.min(rDemand, storeInventory);
+        rProductsSold = productsSold;
+
+        rGrossRevenue = (productsSold * storeSellPrice) * energyRatio * averageStoreFill;
+
+        double payroll = 0;
+        if (storeWages != null) {
+            for (double wage : storeWages) {
+                payroll += wage;
+            }
+        }
+        payroll *= averageStoreFill;
+        rPayroll = payroll;
+
+        // NOTE: buyInventory() prices global imports at 1.3x but this report has
+        // always used 1.5x. Left as-is deliberately so this refactor stays
+        // behaviour-preserving - logged in the bug backlog to reconcile later.
+        rInventoryCost = (pLocalImport * foodPrice) + (pGlobalImport * foodPrice * 1.5);
+        rElectricityCost = electricity * pricePerWatt;
+
+        rRetailOperatingCost = rPayroll + rInventoryCost + rElectricityCost;
+        rRetailNetIncome = rGrossRevenue - rRetailOperatingCost;
+
+        /* -------------------- REAL ESTATE COMPANY -------------------- */
+        rOccupiedUnits = Math.min(household, population);
+        rVacantUnits = Math.max(household - population, 0);
+
+        rRentIncome = getRentIncome();
+
+        rPropertyMaintenance = 0;
+        rPropertyTaxExpense = 0;
+        rRealEstateExpenses = rPropertyMaintenance + rPropertyTaxExpense;
+        rRealEstateNetIncome = rRentIncome - rRealEstateExpenses;
+
+        /* -------------------- CONSOLIDATED -------------------- */
+        rTotalNetIncome = rRetailNetIncome + rRealEstateNetIncome;
+        rTotalTax = rTotalNetIncome * pTaxRate;
+
+        rNetIncome = rTotalNetIncome;
+    }
+
+    /**
+     * Pure display. Reads the values calculated by calculateCommercialResults()
+     * and mutates nothing, so it is safe to call zero, one, or many times per
+     * month.
+     */
+    public void printCommercialInfo() {
+
+        System.out.println("\n====================== COMMERCIAL SECTOR REPORT ======================");
+
+        /* -------------------------------------------------------------------
+       COMPANY A: RETAIL / COMMERCIAL OPERATIONS
+       ------------------------------------------------------------------- */
+        System.out.println("\n------------------ RETAIL OPERATIONS (COMMERCIAL COMPANY) ------------------");
+
+        /* 1. Capacity & Market Data */
+        System.out.println("\nMARKET OVERVIEW");
+        System.out.printf("City Population:        %,d people%n", population);
+        System.out.printf("Store Market Coverage:  %,d customers%n", storeCoverage);
+        System.out.printf("Store Capacity:         %,d units%n", storeCapacity);
+        System.out.printf("Current Inventory:      %,d units%n", storeInventory);
+
+        /* 2. Resource Efficiency */
+        System.out.println("\nRESOURCE UTILIZATION");
+        System.out.printf("Labor Fill Rate:        %.1f%%%n", averageStoreFill * 100);
+        System.out.printf("Energy Efficiency:      %.1f%%%n", energyRatio * 100);
+
+        /* 3. Retail Sales Performance */
+        System.out.println("\nSALES PERFORMANCE");
+        System.out.printf("Market Demand:          %,d units%n", rDemand);
+        System.out.printf("Units Sold:             %,d units%n", rProductsSold);
+        System.out.printf("Average Sell Price:     $%s per unit%n", formatter.format(storeSellPrice));
+        System.out.printf("Gross Revenue:          $%s%n", formatter.format(rGrossRevenue));
+
+        /* 4. Income Statement (Retail Company) */
+        System.out.println("\nINCOME STATEMENT (RETAIL COMPANY)");
+
+        System.out.printf("Revenue:%n");
+        System.out.printf("  Retail Sales Revenue:                $%s%n", formatter.format(rGrossRevenue));
+
+        System.out.printf("%nOperating Expenses:%n");
+        System.out.printf("  Payroll Expense:                     -$%s%n", formatter.format(rPayroll));
+        System.out.printf("  Inventory Procurement:               -$%s%n", formatter.format(rInventoryCost));
+        System.out.printf("      Local Imports:                   %,d units%n", pLocalImport);
+        System.out.printf("      Global Imports:                  %,d units%n", pGlobalImport);
+        System.out.printf("  Electricity Expense:                 -$%s%n", formatter.format(rElectricityCost));
+
+        System.out.println("-----------------------------------------------------------------------");
+        System.out.printf("Total Operating Expenses:              -$%s%n", formatter.format(rRetailOperatingCost));
+        System.out.printf("NET INCOME (RETAIL COMPANY):           $%s%n", formatter.format(rRetailNetIncome));
+
+        /* -------------------------------------------------------------------
+       COMPANY B: REAL ESTATE OPERATIONS
+       ------------------------------------------------------------------- */
+        System.out.println("\n------------------ REAL ESTATE OPERATIONS COMPANY ------------------");
+
+        System.out.println("\nPROPERTY OVERVIEW");
+        System.out.printf("Total Housing Units:       %,d units%n", household);
+        System.out.printf("Occupied Units:            %,d units%n", rOccupiedUnits);
+        System.out.printf("Vacant Units:              %,d units%n", rVacantUnits);
+
+        System.out.println("\nRENTAL PERFORMANCE");
+        System.out.printf("Monthly Rent Revenue:      $%s%n", formatter.format(rRentIncome));
+
+        System.out.println("\nINCOME STATEMENT (REAL ESTATE COMPANY)");
+
+        System.out.printf("Revenue:%n");
+        System.out.printf("  Rental Income:                        $%s%n", formatter.format(rRentIncome));
+
+        System.out.printf("%nOperating Expenses:%n");
+        System.out.printf("  Property Maintenance:                 -$%s%n", formatter.format(rPropertyMaintenance));
+        System.out.printf("  Property Tax Expense:                 -$%s%n", formatter.format(rPropertyTaxExpense));
+
+        System.out.println("-----------------------------------------------------------------------");
+        System.out.printf("Total Operating Expenses:               -$%s%n", formatter.format(rRealEstateExpenses));
+        System.out.printf("NET INCOME (REAL ESTATE COMPANY):       $%s%n", formatter.format(rRealEstateNetIncome));
+
+
+        /* -------------------------------------------------------------------
+       CONSOLIDATED SUMMARY
+       ------------------------------------------------------------------- */
+        System.out.println("\n====================== CONSOLIDATED SUMMARY ======================");
+        System.out.printf("Retail Net Income:           $%s%n", formatter.format(rRetailNetIncome));
+        System.out.printf("Real Estate Net Income:      $%s%n", formatter.format(rRealEstateNetIncome));
+        System.out.println("-------------------------------------------------------------------");
+        System.out.printf("TOTAL NET INCOME:            $%s%n", formatter.format(rTotalNetIncome));
+        System.out.printf("TOTAL TAX REVENUE:           $%s%n", formatter.format(rTotalTax));
+        System.out.printf("%nRetail Cash:                 $%s%n", formatter.format(commercialCash));
+        System.out.printf("Real Estate Cash:            $%s%n", formatter.format(realEstateCash));
+        System.out.println("===================================================================\n");
+    }
+    //random
+
+    public void resetCommercialHandler(){
+        averageStoreFill = 0;
+        population = 0;
+        storeCoverage = 0;
+        household = 0;
+
+        // report snapshot
+        rDemand = 0;
+        rProductsSold = 0;
+        rGrossRevenue = 0;
+        rPayroll = 0;
+        rInventoryCost = 0;
+        rElectricityCost = 0;
+        rRetailOperatingCost = 0;
+        rRetailNetIncome = 0;
+        rOccupiedUnits = 0;
+        rVacantUnits = 0;
+        rRentIncome = 0;
+        rPropertyMaintenance = 0;
+        rPropertyTaxExpense = 0;
+        rRealEstateExpenses = 0;
+        rRealEstateNetIncome = 0;
+        rTotalNetIncome = 0;
+        rTotalTax = 0;
+        rNetIncome = 0;
+    }
+    private static final NumberFormat formatter = NumberFormat.getNumberInstance(Locale.CANADA);
+
+    static {
+        formatter.setMaximumFractionDigits(2);
+        formatter.setMinimumFractionDigits(0);
+    }
+
+
+}
