@@ -681,7 +681,10 @@ public class UserInterface extends Application {
 
     private VBox reportSection(String heading, String... rows) {
         VBox box = new VBox(3);
-        box.setAlignment(Pos.CENTER);
+        // CENTER_LEFT, not CENTER: each row used to be centred individually, which
+        // threw away the %-24s padding and left the value column ragged. Left-
+        // aligning inside a centred fixed-width column makes the padding line up.
+        box.setAlignment(Pos.CENTER_LEFT);
         box.setStyle("-fx-padding: 14 0 0 0;");
 
         Label headingLabel = new Label(heading);
@@ -718,14 +721,14 @@ public class UserInterface extends Application {
         /* ---------------- RETAIL / COMMERCIAL COMPANY ---------------- */
 
         VBox market = reportSection("RETAIL OPERATIONS - MARKET OVERVIEW",
-                String.format("City Population:        %,d people", ch.getPopulation()),
-                String.format("Store Market Coverage:  %,d customers", ch.getStoreCoverage()),
-                String.format("Store Capacity:         %,d units", ch.getStoreCapacity()),
-                String.format("Current Inventory:      %,d units", ch.getStoreInventory()));
+                String.format("City Population:        %,d people", ch.getReportPopulation()),
+                String.format("Store Market Coverage:  %,d customers", ch.getReportStoreCoverage()),
+                String.format("Store Capacity:         %,d units", ch.getReportStoreCapacity()),
+                String.format("Current Inventory:      %,d units", ch.getReportStoreInventory()));
 
         VBox utilization = reportSection("RESOURCE UTILIZATION",
-                String.format("Labor Fill Rate:        %.1f%%", ch.getAverageStoreFill() * 100),
-                String.format("Energy Efficiency:      %.1f%%", ch.getEnergyRatio() * 100));
+                String.format("Labor Fill Rate:        %.1f%%", ch.getReportAverageStoreFill() * 100),
+                String.format("Energy Efficiency:      %.1f%%", ch.getReportEnergyRatio() * 100));
 
         VBox sales = reportSection("SALES PERFORMANCE",
                 String.format("Market Demand:          %,d units", ch.getReportDemand()),
@@ -753,7 +756,7 @@ public class UserInterface extends Application {
         /* ---------------- REAL ESTATE COMPANY ---------------- */
 
         VBox property = reportSection("REAL ESTATE OPERATIONS - PROPERTY OVERVIEW",
-                String.format("Total Housing Units:    %,d units", ch.getHousehold()),
+                String.format("Total Housing Units:    %,d units", ch.getReportHousehold()),
                 String.format("Occupied Units:         %,d units", ch.getReportOccupiedUnits()),
                 String.format("Vacant Units:           %,d units", ch.getReportVacantUnits()));
 
@@ -774,8 +777,8 @@ public class UserInterface extends Application {
         /* ---------------- CONSOLIDATED ---------------- */
 
         VBox consolidated = new VBox(4);
-        consolidated.setAlignment(Pos.CENTER);
-        consolidated.setStyle("-fx-padding: 15; -fx-border-color: black; -fx-border-width: 1 0 0 0;");
+        consolidated.setAlignment(Pos.CENTER_LEFT);
+        consolidated.setStyle("-fx-padding: 15 0 0 0; -fx-border-color: black; -fx-border-width: 1 0 0 0;");
 
         Label consolidatedHeading = new Label("CONSOLIDATED SUMMARY");
         consolidatedHeading.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;");
@@ -799,9 +802,13 @@ public class UserInterface extends Application {
 
         /* ---------------- ASSEMBLE ---------------- */
 
-        VBox content = new VBox(0);
-        content.setAlignment(Pos.CENTER);
-        content.getChildren().addAll(
+        // One left-aligned column, centred as a unit. Every section stretches to the
+        // column's width (VBox fills its children by default), so all rows share a
+        // single left edge and the monospace padding actually aligns the columns.
+        VBox column = new VBox(0);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        column.getChildren().addAll(
                 market,
                 utilization,
                 sales,
@@ -809,6 +816,10 @@ public class UserInterface extends Application {
                 property,
                 realEstateStatement,
                 consolidated);
+
+        VBox content = new VBox(0);
+        content.setAlignment(Pos.CENTER);
+        content.getChildren().add(column);
 
         javafx.scene.control.ScrollPane scrollPane = new javafx.scene.control.ScrollPane(content);
         scrollPane.setFitToWidth(true);

@@ -92,6 +92,27 @@ public class PopulationManager {
     public void setPopulation(int population){
         this.population = population;
     }
+
+    /**
+     * Recomputes workforce from the current population, without touching
+     * population itself.
+     *
+     * NOTE: workforce was previously assigned in exactly one place - updatePop()
+     * - which only the normal monthly path reaches. Game.rebuildSimulationState()
+     * never called it, so after loading a save workforce stayed 0, getJobVacancy()
+     * marked every position vacant, and getJobFillRate() returned 0 for every job
+     * tier. That zeroed retail revenue and payroll, industrial output, utility and
+     * construction expense, wage tax, and the construction-speed discount - which
+     * is why a loaded game took two or three months to settle back to its real
+     * numbers.
+     *
+     * updatePop() can't just be called here instead: it also recomputes population
+     * from totalJobs, which hasn't been rebuilt yet at that point in
+     * rebuildSimulationState(), and would clamp the restored city to 0.
+     */
+    public void recomputeWorkforce(){
+        workforce = (int)(population * adultPercent);
+    }
     
     public void UpdateTotalWagePerType(){
         for(int i = 0; i < totalWagePerType.length; i++){

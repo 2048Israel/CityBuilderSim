@@ -1161,7 +1161,11 @@ public class Game {
     }
 
     // population sync
-    populationManager.setPopulation(populationManager.getPopulation());
+    // NOTE: this line used to be setPopulation(getPopulation()) - a no-op that
+    // assigned the field to itself. It looked like it was restoring population
+    // state but did nothing, and left workforce at 0 for the whole load path.
+    // Must run before the getJobFillRate() reads below, which depend on workforce.
+    populationManager.recomputeWorkforce();
     populationManager.updateJobs(jobs);
     populationManager.UpdateTotalWagePerType();
 
@@ -1187,21 +1191,29 @@ public class Game {
 
     economyManager.updateEcon();
 
-    // Recompute the commercial report from the restored state so a freshly
-    // loaded save shows real numbers on the sector screen (and feeds correct
-    // sales tax / GDP) before the first month is simulated. computeMonthlyReport()
-    // deliberately does NOT accumulate commercialCash/realEstateCash - those were
-    // already restored from the save file, and banking another month would drift them.
-    economyManager.refreshCommercialReport();
-
     servicesManager.updateServices();
 
     economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
-    
-    debtManager.setGDP(economyManager.getMonthGdp());
-    debtManager.updateInterest();
 
     economyManager.finalEconUpdate();
+
+    // Recompute the commercial report from the restored state so a freshly loaded
+    // save shows real numbers on the sector screen before the first month is
+    // simulated. computeMonthlyReport() deliberately does NOT accumulate
+    // commercialCash/realEstateCash - those were already restored from the save,
+    // and banking another month here would drift them.
+    //
+    // NOTE: this must run LAST. It was originally placed right after updateEcon(),
+    // where averageStoreFill is still 0 - and since both gross revenue and payroll
+    // are multiplied by it, a freshly loaded game reported $0 revenue on a city
+    // that was plainly selling 169 units. finalEconUpdate() is also what populates
+    // the import counts and electricity draw that the expense lines need.
+    economyManager.refreshCommercialReport();
+
+    // GDP reads commercialHandler.getNetIncome(), so it has to come after the
+    // refresh above to see this month's figure rather than a stale one.
+    debtManager.setGDP(economyManager.getMonthGdp());
+    debtManager.updateInterest();
 }
    
    

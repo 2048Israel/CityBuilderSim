@@ -66,6 +66,19 @@ public class CommercialHandler {
        month regardless of the reports setting. printCommercialInfo() and the
        JavaFX screen are both pure readers of these fields.
        ----------------------------------------------------------------------- */
+    // Inputs snapshotted at calculation time. The screen used to read these
+    // live off the handler while reading revenue/expenses from the snapshot,
+    // so if an input changed in between, the report contradicted itself -
+    // e.g. showing "Labor Fill Rate: 100%" next to a gross revenue that had
+    // been computed with a fill rate of 0.
+    private int rPopulation;
+    private int rHousehold;
+    private int rStoreCoverage;
+    private int rStoreCapacity;
+    private int rStoreInventory;
+    private double rAverageStoreFill;
+    private double rEnergyRatio;
+
     private int rDemand;
     private int rProductsSold;
     private double rPayroll;
@@ -227,6 +240,14 @@ public class CommercialHandler {
     public double getEnergyRatio()        { return energyRatio; }
     public double getStoreSellPrice()     { return storeSellPrice; }
 
+    public int getReportPopulation()      { return rPopulation; }
+    public int getReportHousehold()       { return rHousehold; }
+    public int getReportStoreCoverage()   { return rStoreCoverage; }
+    public int getReportStoreCapacity()   { return rStoreCapacity; }
+    public int getReportStoreInventory()  { return rStoreInventory; }
+    public double getReportAverageStoreFill() { return rAverageStoreFill; }
+    public double getReportEnergyRatio()  { return rEnergyRatio; }
+
     public int getReportDemand()          { return rDemand; }
     public int getReportProductsSold()    { return rProductsSold; }
     public double getReportPayroll()      { return rPayroll; }
@@ -367,6 +388,16 @@ public class CommercialHandler {
      */
     public void computeMonthlyReport() {
 
+        // snapshot the inputs first, so every figure on the report - inputs and
+        // results alike - describes the same moment
+        rPopulation = population;
+        rHousehold = household;
+        rStoreCoverage = storeCoverage;
+        rStoreCapacity = storeCapacity;
+        rStoreInventory = storeInventory;
+        rAverageStoreFill = averageStoreFill;
+        rEnergyRatio = energyRatio;
+
         /* -------------------- RETAIL / COMMERCIAL COMPANY -------------------- */
         rDemand = Math.min(storeCoverage, population);
         productsSold = Math.min(rDemand, storeInventory);
@@ -426,15 +457,15 @@ public class CommercialHandler {
 
         /* 1. Capacity & Market Data */
         System.out.println("\nMARKET OVERVIEW");
-        System.out.printf("City Population:        %,d people%n", population);
-        System.out.printf("Store Market Coverage:  %,d customers%n", storeCoverage);
-        System.out.printf("Store Capacity:         %,d units%n", storeCapacity);
-        System.out.printf("Current Inventory:      %,d units%n", storeInventory);
+        System.out.printf("City Population:        %,d people%n", rPopulation);
+        System.out.printf("Store Market Coverage:  %,d customers%n", rStoreCoverage);
+        System.out.printf("Store Capacity:         %,d units%n", rStoreCapacity);
+        System.out.printf("Current Inventory:      %,d units%n", rStoreInventory);
 
         /* 2. Resource Efficiency */
         System.out.println("\nRESOURCE UTILIZATION");
-        System.out.printf("Labor Fill Rate:        %.1f%%%n", averageStoreFill * 100);
-        System.out.printf("Energy Efficiency:      %.1f%%%n", energyRatio * 100);
+        System.out.printf("Labor Fill Rate:        %.1f%%%n", rAverageStoreFill * 100);
+        System.out.printf("Energy Efficiency:      %.1f%%%n", rEnergyRatio * 100);
 
         /* 3. Retail Sales Performance */
         System.out.println("\nSALES PERFORMANCE");
@@ -466,7 +497,7 @@ public class CommercialHandler {
         System.out.println("\n------------------ REAL ESTATE OPERATIONS COMPANY ------------------");
 
         System.out.println("\nPROPERTY OVERVIEW");
-        System.out.printf("Total Housing Units:       %,d units%n", household);
+        System.out.printf("Total Housing Units:       %,d units%n", rHousehold);
         System.out.printf("Occupied Units:            %,d units%n", rOccupiedUnits);
         System.out.printf("Vacant Units:              %,d units%n", rVacantUnits);
 
@@ -509,6 +540,13 @@ public class CommercialHandler {
         household = 0;
 
         // report snapshot
+        rPopulation = 0;
+        rHousehold = 0;
+        rStoreCoverage = 0;
+        rStoreCapacity = 0;
+        rStoreInventory = 0;
+        rAverageStoreFill = 0;
+        rEnergyRatio = 0;
         rDemand = 0;
         rProductsSold = 0;
         rGrossRevenue = 0;
