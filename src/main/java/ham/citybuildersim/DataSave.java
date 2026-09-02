@@ -28,6 +28,14 @@ public class DataSave {
     private int[] buildings;
     private int month = 1;
     private JsonArray debts;
+
+    /**
+     * Private-sector loans. Kept in its own array rather than mixed into debts,
+     * because the two hierarchies are separate and the load switch would
+     * otherwise have to disambiguate government bonds from business loans by
+     * type string alone.
+     */
+    private JsonArray businessDebts;
     private double[] progress;
     private int[] underConstruction;
     private int constructionMaterials;
@@ -158,6 +166,15 @@ public class DataSave {
     
     public JsonArray getDebt(){
         return debts;
+    }
+
+    public void setBusinessDebt(List<BusinessDebt> loans) {
+        Gson gson = new Gson();
+        this.businessDebts = gson.toJsonTree(loans).getAsJsonArray();
+    }
+
+    public JsonArray getBusinessDebt(){
+        return businessDebts;
     }
 
     public int getProgressLength(){

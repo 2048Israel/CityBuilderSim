@@ -478,6 +478,24 @@ public class BuildingManager {
         return total;
     }
 
+    /**
+     * Gross book value of everything standing in a category: cash paid plus the
+     * materials it consumed, valued at market.
+     *
+     * cashCost alone is NOT the cost of a building - it is only the part paid in
+     * cash, with materials bought separately and construction labour billed to
+     * the construction sector. Using cashCost as book value would have put the
+     * Water Treatment Plant on the books at $45M when it cost about $95M.
+     *
+     * Construction labour is still excluded, so this understates true cost. There
+     * is no depreciation either, so it is gross rather than net book value.
+     */
+    public double getBookValueByCategory(BuildingType category) {
+        return getTotalByCategoryDouble(
+                category,
+                t -> t.getCashCost() + t.getConstructionMaterials() * materialsCost);
+    }
+
     public int[] getJobArrayPerCategory(BuildingType category) {
         int[] jobs = new int[JobType.values().length];
 

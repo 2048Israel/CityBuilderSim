@@ -93,7 +93,22 @@ public class CommercialHandler {
     private double rElectricityCost;
     private double rWaterCost;
     private double rWaterRatio;
+
+    /* Business credit. Two separate books, two separate loans, two rates. */
+    private double retailInterestExpense;
+    private double realEstateInterestExpense;
+    private double rRetailInterest;
+    private double rRealEstateInterest;
+
+    /* Balance sheet inputs, same shape as IndustrialHandler's. */
+    private double retailLandValue;
+    private double retailBuildingsValue;
+    private double retailBondsPayable;
+    private double realEstateLandValue;
+    private double realEstateBuildingsValue;
+    private double realEstateBondsPayable;
     private double rRetailOperatingCost;
+    private double rRetailOperatingIncome;
     private double rRetailNetIncome;
 
     private int rOccupiedUnits;
@@ -175,7 +190,11 @@ public class CommercialHandler {
         double businessTaxIncome = 0;
         pTaxRate = taxRate;
         businessTaxIncome += Math.max(getStoreIncome()*taxRate, 0);
-        businessTaxIncome += Math.max(getRentIncome()*taxRate, 0);
+
+        // Rent less interest, not gross rent - real estate's borrowing is
+        // deductible like anyone else's, and taxing gross would disagree with
+        // the income statement below it.
+        businessTaxIncome += Math.max((getRentIncome() - realEstateInterestExpense)*taxRate, 0);
 
         return businessTaxIncome;
     }
@@ -208,6 +227,7 @@ public class CommercialHandler {
         storeExp = storeWage + storeInventoryCost;
         storeExp += getElectricityCost();
         storeExp += getWaterCost();
+        storeExp += retailInterestExpense;
         storeRev *= averageStoreFill;
         storeRev *= energyRatio;
         storeRev *= waterRatio;
@@ -273,7 +293,34 @@ public class CommercialHandler {
     public double getReportInventoryCost(){ return rInventoryCost; }
     public double getReportElectricityCost(){ return rElectricityCost; }
     public double getReportWaterCost()    { return rWaterCost; }
+    public double getReportRetailInterest()     { return rRetailInterest; }
+    public double getReportRealEstateInterest() { return rRealEstateInterest; }
+
+    /**
+     * Retail's books. Inventory is valued at the food market price, the same
+     * basis industry uses, so a unit is worth the same on both balance sheets
+     * and the two are directly comparable.
+     */
+    public BalanceSheet getRetailBalanceSheet() {
+        return new BalanceSheet("Retail")
+                .setCash(commercialCash)
+                .setInventory(storeInventory, foodPrice)
+                .setLand(retailLandValue)
+                .setBuildings(retailBuildingsValue)
+                .setBondsPayable(retailBondsPayable);
+    }
+
+    /** Real estate holds housing, not stock, so there is no inventory line. */
+    public BalanceSheet getRealEstateBalanceSheet() {
+        return new BalanceSheet("Real Estate")
+                .setCash(realEstateCash)
+                .setInventory(0, 0)
+                .setLand(realEstateLandValue)
+                .setBuildings(realEstateBuildingsValue)
+                .setBondsPayable(realEstateBondsPayable);
+    }
     public double getReportRetailOperatingCost() { return rRetailOperatingCost; }
+    public double getReportRetailOperatingIncome() { return rRetailOperatingIncome; }
     public double getReportRetailNetIncome()     { return rRetailNetIncome; }
     public int getReportLocalImports()    { return pLocalImport; }
     public int getReportGlobalImports()   { return pGlobalImport; }
@@ -339,6 +386,22 @@ public class CommercialHandler {
     }
     public void setElectricityConsumption(int consumption){
         this.electricity = consumption;
+    }
+    public void setRetailInterestExpense(double value){
+        this.retailInterestExpense = value;
+    }
+    public void setRealEstateInterestExpense(double value){
+        this.realEstateInterestExpense = value;
+    }
+    public void setRetailBalanceSheetInputs(double land, double buildings, double bonds){
+        this.retailLandValue = land;
+        this.retailBuildingsValue = buildings;
+        this.retailBondsPayable = bonds;
+    }
+    public void setRealEstateBalanceSheetInputs(double land, double buildings, double bonds){
+        this.realEstateLandValue = land;
+        this.realEstateBuildingsValue = buildings;
+        this.realEstateBondsPayable = bonds;
     }
     public void setCommercialCash(double cash){
         this.commercialCash = cash;
@@ -514,7 +577,12 @@ public class CommercialHandler {
         rWaterCost = water * waterRatio * pricePerWaterUnit;
 
         rRetailOperatingCost = rPayroll + rInventoryCost + rElectricityCost + rWaterCost;
-        rRetailNetIncome = rGrossRevenue - rRetailOperatingCost;
+        rRetailInterest = retailInterestExpense;
+
+        // rRetailNetIncome is what gets banked to commercialCash, so interest has
+        // to come out here for the sector to actually bear it.
+        rRetailOperatingIncome = rGrossRevenue - rRetailOperatingCost;
+        rRetailNetIncome = rRetailOperatingIncome - rRetailInterest;
 
         /* -------------------- REAL ESTATE COMPANY -------------------- */
         rOccupiedUnits = Math.min(household, population);
@@ -524,7 +592,11 @@ public class CommercialHandler {
 
         rPropertyMaintenance = 0;
         rPropertyTaxExpense = 0;
-        rRealEstateExpenses = rPropertyMaintenance + rPropertyTaxExpense;
+        rRealEstateInterest = realEstateInterestExpense;
+
+        // Interest is the first real expense line real estate has ever had -
+        // maintenance and property tax are still hardcoded to zero (backlog).
+        rRealEstateExpenses = rPropertyMaintenance + rPropertyTaxExpense + rRealEstateInterest;
         rRealEstateNetIncome = rRentIncome - rRealEstateExpenses;
 
         /* -------------------- CONSOLIDATED -------------------- */
@@ -581,6 +653,7 @@ public class CommercialHandler {
         System.out.printf("      Global Imports:                  %,d units%n", pGlobalImport);
         System.out.printf("  Electricity Expense:                 -$%s%n", formatter.format(rElectricityCost));
         System.out.printf("  Water Expense:                       -$%s%n", formatter.format(rWaterCost));
+        System.out.printf("  Interest Expense:                    -$%s%n", formatter.format(rRetailInterest));
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.printf("Total Operating Expenses:              -$%s%n", formatter.format(rRetailOperatingCost));
@@ -607,6 +680,7 @@ public class CommercialHandler {
         System.out.printf("%nOperating Expenses:%n");
         System.out.printf("  Property Maintenance:                 -$%s%n", formatter.format(rPropertyMaintenance));
         System.out.printf("  Property Tax Expense:                 -$%s%n", formatter.format(rPropertyTaxExpense));
+        System.out.printf("  Interest Expense:                     -$%s%n", formatter.format(rRealEstateInterest));
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.printf("Total Operating Expenses:               -$%s%n", formatter.format(rRealEstateExpenses));
@@ -650,6 +724,9 @@ public class CommercialHandler {
         rInventoryCost = 0;
         rElectricityCost = 0;
         rWaterCost = 0;
+        rRetailInterest = 0;
+        rRealEstateInterest = 0;
+        rRetailOperatingIncome = 0;
         rRetailOperatingCost = 0;
         rRetailNetIncome = 0;
         rOccupiedUnits = 0;

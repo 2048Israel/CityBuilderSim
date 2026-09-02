@@ -39,6 +39,24 @@ public class IndustrialHandler {
        both pure readers.
        ----------------------------------------------------------------------- */
     private double pTaxRate; // p is to print
+
+    /* -----------------------------------------------------------------------
+       BALANCE SHEET INPUTS
+
+       Fed from BuildingManager via EconomyManager, because the handler has no
+       view of what is standing. Land stays 0 until the game models land.
+       ----------------------------------------------------------------------- */
+    private double landValue;
+    private double buildingsValue;
+    private double bondsPayable;
+
+    /**
+     * This month's interest on business loans, set by EconomyManager before the
+     * income statement runs. It is a genuine cost of doing business, so it comes
+     * out of the figure banked to cash - not just a display line.
+     */
+    private double interestExpense;
+    private double rInterestExpense;
     private double rNetIncome; // r is to retrieve
     private double rGrossRevenue;
 
@@ -56,6 +74,7 @@ public class IndustrialHandler {
     private double rWaterCost;
     private double rWaterRatio;
     private double rOperatingCost;
+    private double rOperatingIncome;
     private double rTaxIncome;
     
     //energy stuff
@@ -107,6 +126,8 @@ public class IndustrialHandler {
         rAverageFill = 0;
         rEnergyRatio = 0;
         rWaterRatio = 0;
+        rInterestExpense = 0;
+        rOperatingIncome = 0;
         rBaseProduction = 0;
         rActualProduction = 0;
         rDemand = 0;
@@ -220,6 +241,22 @@ public class IndustrialHandler {
     public void setIndustrialCash(double cash){
         this.cash = cash;
     }
+
+    public void setLandValue(double value){
+        this.landValue = value;
+    }
+
+    public void setBuildingsValue(double value){
+        this.buildingsValue = value;
+    }
+
+    public void setBondsPayable(double value){
+        this.bondsPayable = value;
+    }
+
+    public void setInterestExpense(double value){
+        this.interestExpense = value;
+    }
     //random
     public void updateJobFillRate(double[]fillRate){
         
@@ -320,7 +357,7 @@ public class IndustrialHandler {
         industrialWage *= averageIndustrialFill;
 
         // 6. Expenses
-        industrialExp = industrialWage + getElectricityCost() + getWaterCost();
+        industrialExp = industrialWage + getElectricityCost() + getWaterCost() + interestExpense;
 
         // 7. Net income
         double netIncome = industrialRev - industrialExp;
@@ -373,9 +410,46 @@ public class IndustrialHandler {
     public double getReportPayroll()        { return rPayroll; }
     public double getReportElectricityCost(){ return rElectricityCost; }
     public double getReportWaterCost()      { return rWaterCost; }
+    public double getReportOperatingIncome() { return rOperatingIncome; }
     public double getReportOperatingCost()  { return rOperatingCost; }
     public double getReportTaxIncome()      { return rTaxIncome; }
     public double getReportTaxRate()        { return pTaxRate; }
+    public double getReportInterestExpense() { return rInterestExpense; }
+    public double getLandValue()            { return landValue; }
+    public double getBuildingsValue()       { return buildingsValue; }
+
+    /**
+     * Net income after the business tax the city charges on it.
+     *
+     * NOTE: this is NOT what gets banked. calculateIndustrialResults() does
+     * `cash += rNetIncome`, i.e. the PRE-tax figure, while EconomyManager
+     * separately collects rNetIncome * taxRate as government revenue. The same
+     * money is therefore counted twice - the business keeps all of its profit
+     * and the city taxes it anyway. Surfacing that is half the point of putting
+     * a real income statement on the screen; it is shown but deliberately not
+     * fixed here, because deducting it changes sector balance.
+     */
+    public double getReportNetIncomeAfterTax() {
+        return rNetIncome - rTaxIncome;
+    }
+
+    /**
+     * Position as of right now - not a snapshot of the month just closed.
+     *
+     * That is the correct pairing: an income statement covers a PERIOD (the
+     * month that just closed, from the r-fields) while a balance sheet is an
+     * INSTANT. Snapshotting cash into an r-field would have captured the opening
+     * balance, since cash is banked after computeMonthlyReport() runs, and the
+     * sheet would have been a month stale.
+     */
+    public BalanceSheet getBalanceSheet() {
+        return new BalanceSheet("Food Industry")
+                .setCash(cash)
+                .setInventory(foodInventory, foodPrice)
+                .setLand(landValue)
+                .setBuildings(buildingsValue)
+                .setBondsPayable(bondsPayable);
+    }
     public double getFoodPriceBase()        { return foodPrice; }
 
     /**
@@ -429,8 +503,86 @@ public class IndustrialHandler {
         rPayroll = industrialWage * averageIndustrialFill;
 
         rOperatingCost = rPayroll + rElectricityCost + rWaterCost;
-        rNetIncome = rGrossRevenue - rOperatingCost;
-        rTaxIncome = rNetIncome * pTaxRate;
+        rInterestExpense = interestExpense;
+
+        // rNetIncome is the figure calculateIndustrialResults() banks to cash, so
+        // subtracting interest here is what actually makes the sector pay for its
+        // borrowing. Deliberately NOT also charged against cash by the debt
+        // manager - that would take the money twice.
+        rOperatingIncome = rGrossRevenue - rOperatingCost;
+        rNetIncome = rOperatingIncome - rInterestExpense;
+        // Math.max, to match getIndustrialTaxIncome() - the city never hands out a
+        // refund on a loss-making month, it just collects nothing. Without the
+        // clamp this reported a negative "Government Tax Revenue" on the tax
+        // summary and a phantom tax credit on the income statement, neither of
+        // which any money actually moved for.
+        rTaxIncome = Math.max(rNetIncome * pTaxRate, 0);
+    }
+
+    /**
+     * The financial statements, as opposed to printIndustrialInfo()'s
+     * operational view. Pure reader - banks nothing.
+     */
+    public void printFinancialStatements() {
+
+        BalanceSheet bs = getBalanceSheet();
+
+        System.out.println("\n=================== FOOD INDUSTRY - FINANCIAL STATEMENTS ===================");
+
+        System.out.println("\nINCOME STATEMENT (month just closed)");
+        System.out.printf("Revenue:%n");
+        System.out.printf("  Goods Sales:                    $%s%n", formatter.format(rGrossRevenue));
+        System.out.printf("%nOperating Expenses:%n");
+        System.out.printf("  Payroll:                       -$%s%n", formatter.format(rPayroll));
+        System.out.printf("  Electricity:                   -$%s%n", formatter.format(rElectricityCost));
+        System.out.printf("  Water:                         -$%s%n", formatter.format(rWaterCost));
+        System.out.println("  --------------------------------------------");
+        System.out.printf("  Total Operating Expenses:      -$%s%n", formatter.format(rOperatingCost));
+        System.out.printf("%nOPERATING INCOME:                 $%s%n", formatter.format(rOperatingIncome));
+        System.out.printf("  Interest Expense:              -$%s%n", formatter.format(rInterestExpense));
+        System.out.printf("PRE-TAX INCOME:                   $%s%n", formatter.format(rNetIncome));
+        System.out.printf("  Business Tax @ %.0f%%:             -$%s%n",
+                pTaxRate * 100, formatter.format(rTaxIncome));
+        System.out.printf("NET INCOME (AFTER TAX):           $%s%n",
+                formatter.format(getReportNetIncomeAfterTax()));
+        System.out.println("(Cash is credited with the PRE-tax figure - see getReportNetIncomeAfterTax.)");
+
+        System.out.println("\nBALANCE SHEET (as of now)");
+        System.out.println("\nCurrent Assets:");
+        System.out.printf("  Cash:                           $%s%n", formatter.format(bs.getCash()));
+        System.out.printf("  Inventory (%,d @ $%s):%s$%s%n",
+                bs.getInventoryUnits(), formatter.format(bs.getInventoryUnitPrice()),
+                "          ", formatter.format(bs.getInventory()));
+        System.out.printf("  Total Current Assets:           $%s%n", formatter.format(bs.getCurrentAssets()));
+
+        System.out.println("\nNon-Current Assets:");
+        System.out.printf("  Land:                           $%s   (not modelled yet)%n", formatter.format(bs.getLand()));
+        System.out.printf("  Buildings, at cost:             $%s%n", formatter.format(bs.getBuildings()));
+        System.out.printf("  Total Non-Current Assets:       $%s%n", formatter.format(bs.getNonCurrentAssets()));
+
+        System.out.println("  --------------------------------------------");
+        System.out.printf("TOTAL ASSETS:                     $%s%n", formatter.format(bs.getTotalAssets()));
+
+        System.out.println("\nLiabilities:");
+        System.out.printf("  Bonds Payable:                  $%s   (not modelled yet)%n", formatter.format(bs.getBondsPayable()));
+        System.out.printf("  Total Liabilities:              $%s%n", formatter.format(bs.getTotalLiabilities()));
+
+        System.out.println("\nEquity:");
+        System.out.printf("  Owner's Equity:                 $%s   (balancing figure)%n", formatter.format(bs.getEquity()));
+
+        System.out.println("  --------------------------------------------");
+        System.out.printf("TOTAL LIABILITIES + EQUITY:       $%s%n", formatter.format(bs.getTotalLiabilitiesAndEquity()));
+
+        System.out.println("\nKEY RATIOS");
+        System.out.printf("Net Margin:                       %.1f%%%n",
+                (rGrossRevenue > 0 ? getReportNetIncomeAfterTax() / rGrossRevenue : 0) * 100);
+        System.out.printf("Return on Assets (monthly):       %.2f%%%n",
+                bs.getReturnOnAssets(getReportNetIncomeAfterTax()) * 100);
+        System.out.printf("Inventory as %% of Assets:         %.1f%%%n",
+                bs.getInventoryShareOfAssets() * 100);
+        System.out.printf("Debt to Assets:                   %.1f%%%n", bs.getDebtToAssets() * 100);
+
+        System.out.println("===========================================================================\n");
     }
 
     public void printIndustrialInfo() {
@@ -474,6 +626,7 @@ public class IndustrialHandler {
         System.out.printf("  Payroll Expense:                   -$%s%n", formatter.format(rPayroll));
         System.out.printf("  Electricity Expense:               -$%s%n", formatter.format(rElectricityCost));
         System.out.printf("  Water Expense:                     -$%s%n", formatter.format(rWaterCost));
+        System.out.printf("  Interest Expense:                  -$%s%n", formatter.format(rInterestExpense));
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.printf("Total Operating Expenses:            -$%s%n", formatter.format(rOperatingCost));

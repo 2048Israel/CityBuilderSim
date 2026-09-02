@@ -809,6 +809,7 @@ public class UserInterface extends Application {
                         formatter.format(ch.getImportPrice()), ch.getReportGlobalImports()),
                 String.format("Electricity Expense:            -$%s", formatter.format(ch.getReportElectricityCost())),
                 String.format("Water Expense:                  -$%s", formatter.format(ch.getReportWaterCost())),
+                String.format("Interest Expense:               -$%s", formatter.format(ch.getReportRetailInterest())),
                 "---------------------------------------------------",
                 String.format("Total Operating Expenses:       -$%s", formatter.format(ch.getReportRetailOperatingCost())));
 
@@ -830,6 +831,7 @@ public class UserInterface extends Application {
                 "",
                 String.format("Property Maintenance:           -$%s", formatter.format(ch.getReportPropertyMaintenance())),
                 String.format("Property Tax Expense:           -$%s", formatter.format(ch.getReportPropertyTaxExpense())),
+                String.format("Interest Expense:               -$%s", formatter.format(ch.getReportRealEstateInterest())),
                 "---------------------------------------------------",
                 String.format("Total Operating Expenses:       -$%s", formatter.format(ch.getReportRealEstateExpenses())));
 
@@ -891,10 +893,122 @@ public class UserInterface extends Application {
         scrollPane.setPrefHeight(500);
         scrollPane.setStyle("-fx-background-color:transparent;");
 
+        Button financials = new Button("Financial Statements");
+        financials.setOnAction(e -> showCommercialFinancialsMenu());
+
         Button back = new Button("Back");
         back.setOnAction(e -> showPrivateSectorMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, scrollPane, back);
+        rootMenu.getChildren().addAll(title, gameInfo, scrollPane, financials, back);
+    }
+
+    /**
+     * Retail and real estate side by side: balance sheet and credit position for
+     * each. They share a screen because they share the commercial report, and
+     * because the contrast is the point - real estate owns the housing stock and
+     * is the richest business in the city, retail runs on inventory and a thin
+     * margin.
+     */
+    private void showCommercialFinancialsMenu() {
+        clearMenu();
+
+        CommercialHandler ch = game.getEconomyManager().getCommercialHandler();
+        BusinessDebtManager credit = game.getEconomyManager().getBusinessDebtManager();
+
+        VBox column = new VBox(0);
+
+        column.getChildren().add(sectionHeading("=== RETAIL ==="));
+        addBalanceSheet(column, ch.getRetailBalanceSheet());
+        addCreditBlock(column, credit, BusinessDebtManager.RETAIL,
+                ch.getReportRetailInterest(), ch.getReportRetailNetIncome());
+
+        column.getChildren().add(sectionHeading("=== REAL ESTATE ==="));
+        addBalanceSheet(column, ch.getRealEstateBalanceSheet());
+        addCreditBlock(column, credit, BusinessDebtManager.REAL_ESTATE,
+                ch.getReportRealEstateInterest(), ch.getReportRealEstateNetIncome());
+
+        showSectorReport("COMMERCIAL - FINANCIAL STATEMENTS", column, this::showCommercialInfoMenu);
+    }
+
+    /**
+     * One balance sheet, laid out the same way wherever it appears. Extracted so
+     * the three sectors cannot drift apart in presentation.
+     */
+    private void addBalanceSheet(VBox column, BalanceSheet bs) {
+
+        column.getChildren().add(reportSection("CURRENT ASSETS",
+                String.format("Cash:                            $%s", formatter.format(bs.getCash())),
+                String.format("Inventory:                       $%s", formatter.format(bs.getInventory())),
+                bs.getInventoryUnits() > 0
+                        ? String.format("  %,d units @ $%s (market)", bs.getInventoryUnits(),
+                                formatter.format(bs.getInventoryUnitPrice()))
+                        : "",
+                "---------------------------------------------------",
+                String.format("Total Current Assets:            $%s", formatter.format(bs.getCurrentAssets()))));
+
+        column.getChildren().add(reportSection("NON-CURRENT ASSETS",
+                String.format("Land:                            $%s", formatter.format(bs.getLand())),
+                String.format("Buildings, at cost:              $%s", formatter.format(bs.getBuildings())),
+                "---------------------------------------------------",
+                String.format("Total Non-Current Assets:        $%s", formatter.format(bs.getNonCurrentAssets()))));
+
+        VBox assets = reportSection("");
+        Label totalAssets = monoLabel(String.format("%-32s $%s", "TOTAL ASSETS:",
+                formatter.format(bs.getTotalAssets())));
+        totalAssets.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        assets.getChildren().add(totalAssets);
+        column.getChildren().add(assets);
+
+        column.getChildren().add(reportSection("LIABILITIES & EQUITY",
+                String.format("Loans Payable:                   $%s", formatter.format(bs.getBondsPayable())),
+                String.format("Total Liabilities:               $%s", formatter.format(bs.getTotalLiabilities())),
+                "",
+                String.format("Owner's Equity:                  $%s", formatter.format(bs.getEquity())),
+                "  (balancing figure: assets less liabilities)",
+                "---------------------------------------------------",
+                String.format("TOTAL LIABILITIES + EQUITY:      $%s",
+                        formatter.format(bs.getTotalLiabilitiesAndEquity()))));
+    }
+
+    /**
+     * A sector's credit standing: what it owes, what it is paying, and what the
+     * next loan would cost it.
+     *
+     * The rate is broken into government + spread on purpose. The government
+     * rate is the risk-free floor everyone borrows above, and the spread is the
+     * part this sector earned for itself - so a rate that jumps because city
+     * debt rose reads differently from one that jumps because the business
+     * levered up, and the screen should say which.
+     */
+    private void addCreditBlock(VBox column, BusinessDebtManager credit, String sector,
+                                double interestExpense, double netIncome) {
+
+        double principal = credit.getPrincipal(sector);
+
+        VBox box = reportSection("CREDIT",
+                String.format("Outstanding Principal:  $%s", formatter.format(principal)),
+                String.format("Loans Outstanding:      %,d", credit.getLoanCount(sector)),
+                String.format("Interest This Month:    $%s", formatter.format(interestExpense)),
+                "",
+                String.format("Government Rate:        %.2f%%", credit.getRiskFreeRate() * 100),
+                String.format("Credit Spread:          %.2f%%", credit.getSpread(sector) * 100),
+                String.format("New Borrowing Rate:     %.2f%%", credit.getRate(sector) * 100),
+                String.format("Rate on Existing Debt:  %.2f%%", credit.getEffectiveRate(sector) * 100),
+                String.format("Leverage (debt/assets): %.2f", credit.getLeverage(sector)));
+
+        if (credit.getSpread(sector) >= .0799) {
+            Label maxed = monoLabel("Credit spread is at its ceiling.");
+            maxed.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #c62828;");
+            box.getChildren().add(maxed);
+        }
+
+        if (principal > 0 && netIncome < 0) {
+            Label spiral = monoLabel("Losing money while servicing debt - borrowing again next month.");
+            spiral.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #c62828;");
+            box.getChildren().add(spiral);
+        }
+
+        column.getChildren().add(box);
     }
 
     /* =====================================================================
@@ -990,6 +1104,16 @@ public class UserInterface extends Application {
 
     /** Shared scaffolding for the sector report screens. */
     private void showSectorReport(String title, VBox column, Runnable back) {
+        showSectorReport(title, column, back, null);
+    }
+
+    /**
+     * @param extra an optional button shown above Back, for screens that lead
+     *              somewhere else - e.g. the industrial report linking to its
+     *              financial statements. rootMenu is a VBox, so the buttons
+     *              stack, which matches every other menu in the game.
+     */
+    private void showSectorReport(String title, VBox column, Runnable back, Button extra) {
         Label heading = new Label(title);
         heading.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
 
@@ -1011,7 +1135,11 @@ public class UserInterface extends Application {
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> back.run());
 
-        rootMenu.getChildren().addAll(heading, gameInfo, scrollPane, backButton);
+        rootMenu.getChildren().addAll(heading, gameInfo, scrollPane);
+        if (extra != null) {
+            rootMenu.getChildren().add(extra);
+        }
+        rootMenu.getChildren().add(backButton);
     }
 
     /** Colours a net-income line red or green and appends it to a section. */
@@ -1063,6 +1191,7 @@ public class UserInterface extends Application {
                 String.format("Payroll Expense:                -$%s", formatter.format(ih.getReportPayroll())),
                 String.format("Electricity Expense:            -$%s", formatter.format(ih.getReportElectricityCost())),
                 String.format("Water Expense:                  -$%s", formatter.format(ih.getReportWaterCost())),
+                String.format("Interest Expense:               -$%s", formatter.format(ih.getReportInterestExpense())),
                 "---------------------------------------------------",
                 String.format("Total Operating Expenses:       -$%s", formatter.format(ih.getReportOperatingCost())));
         addNetIncomeLine(statement, "NET INCOME (INDUSTRIAL):", ih.getNetIncome());
@@ -1101,7 +1230,132 @@ public class UserInterface extends Application {
             column.getChildren().add(warning);
         }
 
-        showSectorReport("INDUSTRIAL SECTOR REPORT", column, this::showPrivateSectorMenu);
+        Button financials = new Button("Financial Statements");
+        financials.setOnAction(e -> showIndustrialFinancialsMenu());
+
+        showSectorReport("INDUSTRIAL SECTOR REPORT", column, this::showPrivateSectorMenu, financials);
+    }
+
+    /**
+     * The food industry's books: income statement for the month just closed,
+     * balance sheet as of now.
+     *
+     * Kept separate from showIndustrialInfoMenu() on purpose. That screen answers
+     * "how is the factory running" - fill rates, output, market price. This one
+     * answers "what is this business worth and did it make money", which is a
+     * different question asked at a different moment.
+     *
+     * Pure reader. Every figure comes from r-fields already computed once per
+     * month by calculateIndustrialResults(), or from live balance-sheet state.
+     */
+    private void showIndustrialFinancialsMenu() {
+        clearMenu();
+
+        IndustrialHandler ih = game.getEconomyManager().getIndustrialHandler();
+        BalanceSheet bs = ih.getBalanceSheet();
+
+        BusinessDebtManager credit = game.getEconomyManager().getBusinessDebtManager();
+
+        double revenue = ih.getGrossRevenue();
+        double operatingIncome = ih.getReportOperatingIncome();
+        double interest = ih.getReportInterestExpense();
+        double preTax = ih.getNetIncome();
+        double tax = ih.getReportTaxIncome();
+        double netAfterTax = ih.getReportNetIncomeAfterTax();
+
+        VBox column = new VBox(0);
+
+        /* ------------------------- INCOME STATEMENT ------------------------- */
+        column.getChildren().add(sectionHeading("=== INCOME STATEMENT (month just closed) ==="));
+
+        column.getChildren().add(reportSection("REVENUE",
+                String.format("Goods Sales:                     $%s", formatter.format(revenue))));
+
+        column.getChildren().add(reportSection("OPERATING EXPENSES",
+                String.format("Payroll:                        -$%s", formatter.format(ih.getReportPayroll())),
+                String.format("Electricity:                    -$%s", formatter.format(ih.getReportElectricityCost())),
+                String.format("Water:                          -$%s", formatter.format(ih.getReportWaterCost())),
+                "---------------------------------------------------",
+                String.format("Total Operating Expenses:       -$%s", formatter.format(ih.getReportOperatingCost()))));
+
+        VBox bottomLine = reportSection("RESULT");
+        addNetIncomeLine(bottomLine, "OPERATING INCOME:", operatingIncome);
+        bottomLine.getChildren().add(monoLabel(
+                String.format("%-32s-$%s", "Interest Expense:", formatter.format(interest))));
+        addNetIncomeLine(bottomLine, "PRE-TAX INCOME:", preTax);
+        bottomLine.getChildren().add(monoLabel(
+                String.format("%-32s-$%s", String.format("Business Tax @ %.0f%%:", ih.getReportTaxRate() * 100),
+                        formatter.format(tax))));
+        addNetIncomeLine(bottomLine, "NET INCOME (AFTER TAX):", netAfterTax);
+
+        // Worth surfacing rather than quietly presenting a tidy statement: the
+        // cash reserve is credited with the PRE-tax figure while the city also
+        // collects the tax, so the same money is counted twice.
+        Label taxNote = monoLabel("Note: cash is credited with the pre-tax figure.");
+        taxNote.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #c62828;");
+        bottomLine.getChildren().add(taxNote);
+        column.getChildren().add(bottomLine);
+
+        /* -------------------------- BALANCE SHEET --------------------------- */
+        column.getChildren().add(sectionHeading("=== BALANCE SHEET (as of now) ==="));
+
+        column.getChildren().add(reportSection("CURRENT ASSETS",
+                String.format("Cash:                            $%s", formatter.format(bs.getCash())),
+                String.format("Inventory:                       $%s", formatter.format(bs.getInventory())),
+                String.format("  %,d units @ $%s (market)", bs.getInventoryUnits(),
+                        formatter.format(bs.getInventoryUnitPrice())),
+                "---------------------------------------------------",
+                String.format("Total Current Assets:            $%s", formatter.format(bs.getCurrentAssets()))));
+
+        column.getChildren().add(reportSection("NON-CURRENT ASSETS",
+                String.format("Land:                            $%s", formatter.format(bs.getLand())),
+                "  (land ownership not modelled yet)",
+                String.format("Buildings, at cost:              $%s", formatter.format(bs.getBuildings())),
+                "  (cash + materials; excludes construction labour)",
+                "---------------------------------------------------",
+                String.format("Total Non-Current Assets:        $%s", formatter.format(bs.getNonCurrentAssets()))));
+
+        VBox assets = reportSection("");
+        Label totalAssets = monoLabel(String.format("%-32s $%s", "TOTAL ASSETS:",
+                formatter.format(bs.getTotalAssets())));
+        totalAssets.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        assets.getChildren().add(totalAssets);
+        column.getChildren().add(assets);
+
+        column.getChildren().add(reportSection("LIABILITIES",
+                String.format("Loans Payable:                   $%s", formatter.format(bs.getBondsPayable())),
+                "---------------------------------------------------",
+                String.format("Total Liabilities:               $%s", formatter.format(bs.getTotalLiabilities()))));
+
+        column.getChildren().add(reportSection("EQUITY",
+                String.format("Owner's Equity:                  $%s", formatter.format(bs.getEquity())),
+                "  (balancing figure: assets less liabilities)"));
+
+        VBox tie = reportSection("");
+        Label totalLE = monoLabel(String.format("%-32s $%s", "TOTAL LIABILITIES + EQUITY:",
+                formatter.format(bs.getTotalLiabilitiesAndEquity())));
+        totalLE.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        tie.getChildren().add(totalLE);
+        column.getChildren().add(tie);
+
+        /* ----------------------------- CREDIT ------------------------------ */
+        addCreditBlock(column, credit, BusinessDebtManager.INDUSTRY, interest, preTax);
+
+        /* ----------------------------- RATIOS ------------------------------ */
+        column.getChildren().add(reportSection("KEY RATIOS",
+                String.format("Net Margin:             %.1f%%",
+                        (revenue > 0 ? netAfterTax / revenue : 0) * 100),
+                String.format("Return on Assets:       %.2f%% /month",
+                        bs.getReturnOnAssets(netAfterTax) * 100),
+                String.format("Inventory / Assets:     %.1f%%",
+                        bs.getInventoryShareOfAssets() * 100),
+                String.format("Debt / Assets:          %.1f%%", bs.getDebtToAssets() * 100),
+                String.format("Interest Coverage:      %s",
+                        interest > 0
+                                ? String.format("%.2fx", operatingIncome / interest)
+                                : "n/a (no debt)")));
+
+        showSectorReport("FOOD INDUSTRY - FINANCIAL STATEMENTS", column, this::showIndustrialInfoMenu);
     }
 
     /** JavaFX port of UtilitiesHandler.printUtilitiesInfo(). That printer is already pure. */
@@ -1500,6 +1754,8 @@ public class UserInterface extends Application {
 
         body.getChildren().addAll(
                 statLine("Debt", money(debt)),
+                statLine("Biz debt", money(
+                        game.getEconomyManager().getBusinessDebtManager().getTotalPrincipal())),
                 statLine("Interest", formatter.format(game.getInterestRate() * 100) + "%"));
 
         if (annualGdp != 0) {

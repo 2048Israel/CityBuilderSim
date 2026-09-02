@@ -883,8 +883,16 @@ public class Game {
         // The calculation now runs here, unconditionally, before anything reads
         // it (calculateSalesTax() and getMonthGdp() both do). printCommercialInfo()
         // is a pure printer now, so the reports flag only controls output.
+        // Price this month's business credit and hand the sectors their interest
+        // bill BEFORE the statements run, so the figures they bank are net of it.
+        economyManager.updateBusinessCredit(debtManager.getRate());
+
         economyManager.updateCommercialReport();
         economyManager.updateIndustrialReport();
+
+        // Then advance the loans, take back matured principal, and lend to
+        // whichever sector the month left short.
+        economyManager.settleBusinessCredit(month);
 
         printStartOfMonth();
         updateConstruction();
@@ -1099,6 +1107,7 @@ public class Game {
         dataSave.setCash(cash);
         dataSave.setMonth(month);
         dataSave.setDebt(debtManager.getDebt());
+        dataSave.setBusinessDebt(economyManager.getBusinessDebtManager().getLoans());
         dataSave.setProgress(buildingManager.getConstructionProgress());
         dataSave.setUnderConstruction(buildingManager.getUnderConstructionArray());
         dataSave.setConstructionMaterials(buildingManager.getConstructionMaterials());
@@ -1311,6 +1320,10 @@ public class Game {
 
     economyManager.finalEconUpdate();
 
+    // Price business credit off the restored balance sheets so a freshly loaded
+    // save shows real rates and interest rather than zeroes.
+    economyManager.updateBusinessCredit(debtManager.getRate());
+
     // Recompute the commercial report from the restored state so a freshly loaded
     // save shows real numbers on the sector screen before the first month is
     // simulated. computeMonthlyReport() deliberately does NOT accumulate
@@ -1465,6 +1478,32 @@ public class Game {
             }
 
             debtManager.setDebt(loadedDebts);
+
+            // Load business loans. Same shape as the government debts above, in
+            // its own array so the two hierarchies never have to be told apart
+            // by type string alone.
+            JsonArray businessArray = loaded.getBusinessDebt();
+            List<BusinessDebt> loadedLoans = new ArrayList<>();
+
+            if (businessArray != null) {
+                for (JsonElement element : businessArray) {
+
+                    JsonObject obj = element.getAsJsonObject();
+                    String type = obj.get("type").getAsString();
+
+                    switch (type) {
+
+                        case "BUSINESS-LOAN":
+                            loadedLoans.add(gson.fromJson(obj, BusinessLoan.class));
+                            break;
+                    }
+
+                    // future business instrument types go here
+                }
+            }
+
+            economyManager.getBusinessDebtManager().setLoans(loadedLoans);
+
             loadHistory();
 
             System.out.println("Game loaded successfully.");

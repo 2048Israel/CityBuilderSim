@@ -43,6 +43,7 @@ public class EconomyManager {
     private IndustrialHandler industrialHandler;
     private CommercialHandler commercialHandler;
     private FoodMarket foodMarket;
+    private BusinessDebtManager businessDebtManager;
 
     //Send variables to other classes
         //all
@@ -60,6 +61,7 @@ public class EconomyManager {
         industrialHandler = new IndustrialHandler();
         commercialHandler = new CommercialHandler();
         foodMarket = new FoodMarket();
+        businessDebtManager = new BusinessDebtManager();
     }
 
 
@@ -130,9 +132,116 @@ public class EconomyManager {
         return foodMarket;
     }
 
+    public BusinessDebtManager getBusinessDebtManager(){
+        return businessDebtManager;
+    }
+
+    /* =======================================================================
+       PRIVATE SECTOR CREDIT
+
+       Two halves, either side of the monthly income statements.
+
+       updateBusinessCredit() runs FIRST: it reprices each sector off its current
+       leverage and hands the handlers this month's interest bill, so the
+       statements include it and the cash they bank is already net of it.
+
+       settleBusinessCredit() runs AFTER: it advances the loans, takes principal
+       back on the ones that matured, and writes a new loan for any sector left
+       short. Running it before the statements would have charged interest on
+       money the sector had not borrowed yet.
+       ======================================================================= */
+
+    public void updateBusinessCredit(double governmentRate){
+
+        businessDebtManager.setRiskFreeRate(governmentRate);
+
+        // Leverage is measured against the balance sheets, so they have to be
+        // told what the sector owes before they are used to price what it owes.
+        businessDebtManager.setAssets(BusinessDebtManager.RETAIL,
+                commercialHandler.getRetailBalanceSheet().getTotalAssets());
+        businessDebtManager.setAssets(BusinessDebtManager.REAL_ESTATE,
+                commercialHandler.getRealEstateBalanceSheet().getTotalAssets());
+        businessDebtManager.setAssets(BusinessDebtManager.INDUSTRY,
+                industrialHandler.getBalanceSheet().getTotalAssets());
+
+        businessDebtManager.updateRates();
+
+        commercialHandler.setRetailInterestExpense(
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.RETAIL));
+        commercialHandler.setRealEstateInterestExpense(
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.REAL_ESTATE));
+        industrialHandler.setInterestExpense(
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.INDUSTRY));
+
+        pushBalanceSheetInputs();
+    }
+
+    /** Book values and outstanding debt, refreshed onto each set of books. */
+    public void pushBalanceSheetInputs(){
+
+        commercialHandler.setRetailBalanceSheetInputs(
+                0,
+                buildingManager.getBookValueByCategory(BuildingType.COMMERCIAL),
+                businessDebtManager.getPrincipal(BusinessDebtManager.RETAIL));
+
+        // Real estate owns the housing stock - it is what collects the rent.
+        commercialHandler.setRealEstateBalanceSheetInputs(
+                0,
+                buildingManager.getBookValueByCategory(BuildingType.RESIDENTIAL),
+                businessDebtManager.getPrincipal(BusinessDebtManager.REAL_ESTATE));
+
+        industrialHandler.setLandValue(0);
+        industrialHandler.setBuildingsValue(
+                buildingManager.getBookValueByCategory(BuildingType.INDUSTRIAL));
+        industrialHandler.setBondsPayable(
+                businessDebtManager.getPrincipal(BusinessDebtManager.INDUSTRY));
+    }
+
+    public void settleBusinessCredit(int month){
+
+        businessDebtManager.processMonth();
+
+        settleSector(BusinessDebtManager.RETAIL, month,
+                commercialHandler.getCommercialCash(),
+                commercialHandler.getReportRetailNetIncome(),
+                commercialHandler::setCommercialCash);
+
+        settleSector(BusinessDebtManager.REAL_ESTATE, month,
+                commercialHandler.getRealEstateCash(),
+                commercialHandler.getReportRealEstateNetIncome(),
+                commercialHandler::setRealEstateCash);
+
+        settleSector(BusinessDebtManager.INDUSTRY, month,
+                industrialHandler.getIndustrialCash(),
+                industrialHandler.getNetIncome(),
+                industrialHandler::setIndustrialCash);
+
+        pushBalanceSheetInputs();
+    }
+
+    /**
+     * Repay what matured, then borrow if that left the sector short.
+     *
+     * A maturing loan is usually rolled: the balloon takes cash negative and the
+     * shortfall check immediately writes a replacement. That is deliberate - it
+     * is what a business with no spare cash actually does - and it reprices the
+     * debt at whatever the sector's credit is worth by then.
+     */
+    private void settleSector(String sector, int month, double cash, double netIncome,
+                              java.util.function.DoubleConsumer setCash){
+
+        cash -= businessDebtManager.takeMaturedPrincipal(sector);
+
+        double loss = Math.max(-netIncome, 0);
+        cash += businessDebtManager.coverShortfall(sector, cash, loss, month);
+
+        setCash.accept(cash);
+    }
+
     public void updateIndustrial(){
         updateFoodProduction();
         industrialHandler.setFoodCapacity(buildingManager.getFoodCapacity());
+
         industrialHandler.updateJobFillRate(fillRate);
         industrialHandler.updateIndustrialWages(industrialWages, industrialJobs);
         industrialHandler.updateIndustrialHandler();
