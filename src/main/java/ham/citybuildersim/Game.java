@@ -74,6 +74,12 @@ public class Game {
         historyGrapher = new HistoryGrapher();
         menuManager = new MenuManager();
         debtManager = new DebtManager();
+        businessInvestment = new BusinessInvestment(buildingManager, economyManager);
+
+        // The economy needs to reach construction's books: it is a business with
+        // cash, credit and an income statement now, but it lives under
+        // ServicesManager with the other municipal services.
+        economyManager.setConstructionHandler(servicesManager.getConstructionHandler());
         
         simulationEngine = new SimulationEngine(
                 economyManager,
@@ -229,6 +235,133 @@ public class Game {
 
     public double getWaterRatio(){
         return servicesManager.getWaterRatio();
+    }
+
+    public BusinessInvestment getBusinessInvestment(){
+        return businessInvestment;
+    }
+
+    public String getLastInvestment(String sector){
+        return lastInvestment.getOrDefault(sector, "");
+    }
+
+    /* =======================================================================
+       PRIVATE INVESTMENT
+
+       Once a month, each business decides whether to expand. The order matters:
+       this runs AFTER settleBusinessCredit(), so a sector's cash is settled and
+       its credit repriced before it commits to anything.
+
+       Nothing here can build utilities or water. Those are municipal, they have
+       no cash of their own, and they are the player's job.
+       ======================================================================= */
+    private void runPrivateInvestment(){
+
+        businessInvestment.recordMonth(populationManager.getPopulation());
+
+        double constructionOutput = getConstructionOutput();
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        CommercialHandler ch = economyManager.getCommercialHandler();
+        IndustrialHandler ih = economyManager.getIndustrialHandler();
+
+        consider(businessInvestment.planRealEstate(
+                populationManager.getTotalJobs(),
+                getHouseholdCapacity(),
+                ch.getRentPrice(),
+                constructionOutput,
+                buildingManager.getUnderConstructionByCategory(BuildingType.RESIDENTIAL)),
+                sectorInvestor(BusinessDebtManager.REAL_ESTATE));
+
+        consider(businessInvestment.planRetail(
+                populationManager.getPopulation(),
+                buildingManager.getTotalStoreCoverage(),
+                constructionOutput,
+                buildingManager.getUnderConstructionByCategory(BuildingType.COMMERCIAL)),
+                sectorInvestor(BusinessDebtManager.RETAIL));
+
+        consider(businessInvestment.planIndustry(
+                populationManager.getPopulation(),
+                buildingManager.getTotalStoreCoverage(),
+                ih.getMonthlyOutput(),
+                constructionOutput,
+                buildingManager.getUnderConstructionByCategory(BuildingType.INDUSTRIAL)),
+                sectorInvestor(BusinessDebtManager.INDUSTRY));
+
+        // Construction last: it reads the queue everyone else just added to.
+        consider(businessInvestment.planConstruction(
+                buildingManager.getRemainingConstructionPoints(),
+                constructionOutput,
+                buildingManager.getUnderConstructionByCategory(BuildingType.CONSTRUCTION)),
+                sectorInvestor(BusinessDebtManager.CONSTRUCTION));
+    }
+
+    /**
+     * Applies the brake, then builds.
+     *
+     * The plan says demand justifies the capacity. This asks the separate
+     * question of whether the business can carry what it would have to borrow -
+     * a lender here will fund anything, so the discipline has to come from the
+     * borrower.
+     */
+    private void consider(BusinessInvestment.Decision decision, Investor payer){
+
+        if (decision == null || !decision.build) {
+            lastInvestment.put(decision == null ? "?" : decision.sector,
+                    decision == null ? "" : "Holding: " + decision.reason);
+            return;
+        }
+
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+
+        double cost = businessInvestment.getCostOf(decision.template, decision.quantity);
+        double borrowed = Math.max(cost - payer.getCash(), 0);
+        double profit = businessInvestment.estimatedMonthlyProfit(
+                decision.sector, decision.template);
+
+        if (!businessInvestment.servicesItsOwnDebt(
+                profit, borrowed, credit.getRate(decision.sector))) {
+            lastInvestment.put(decision.sector,
+                    String.format("Declined %s - would not cover its interest",
+                            decision.template.getName()));
+            return;
+        }
+
+        if (buildFor(payer, decision.template, decision.quantity)) {
+            lastInvestment.put(decision.sector,
+                    String.format("Built %,d %s - %s",
+                            decision.quantity, decision.template.getName(), decision.reason));
+        }
+    }
+
+    /** Wraps one sector's cash and credit line as a payer. */
+    private Investor sectorInvestor(final String sector){
+
+        final BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+
+        return new Investor() {
+
+            @Override public String getName() { return sector; }
+
+            @Override public double getCash() {
+                return economyManager.getSectorCash(sector);
+            }
+
+            @Override public void spend(double amount) {
+                economyManager.setSectorCash(sector,
+                        economyManager.getSectorCash(sector) - amount);
+            }
+
+            // Businesses borrow freely here - the rate rises with leverage and
+            // stops at its cap. What stops a spiral is the project having to
+            // service its own debt, checked in consider() above.
+            @Override public boolean canBorrow(double amount) { return amount > 0; }
+
+            @Override public void borrow(double amount, int month) {
+                credit.issueLoan(sector, amount, month);
+                economyManager.setSectorCash(sector,
+                        economyManager.getSectorCash(sector) + amount);
+            }
+        };
     }
 
     /** Read-only access for the utilities and construction screens. */
@@ -466,6 +599,12 @@ public class Game {
             // 4. Subtract everything at once
             cash -= totalCost;
 
+            // ...and it lands somewhere now. The construction sector did the
+            // work; this is what it gets paid for doing it - recognised as the
+            // work is actually delivered, not all on the order month.
+            servicesManager.getConstructionHandler().bill(totalCost,
+                    selected.getConstructionPoints() * (double) quantity);
+
             System.out.println(quantity + " " + selected.getName()
                     + " construction started. $" + totalCost + " cash used");
         } else {
@@ -479,6 +618,57 @@ public class Game {
     
     
     public enum BuildResult {SUCCESS, NEEDS_FUNDING, FAILED}
+
+    /**
+     * A build order paid for by someone other than the city.
+     *
+     * Everything except the payment is identical to a government build - same
+     * cost, same materials, same construction queue - because none of that ever
+     * cared who was buying. The order goes into the same queue and competes for
+     * the same construction capacity, which is the point: a city whose builders
+     * are busy on private work builds its own power station more slowly.
+     */
+    public boolean buildFor(Investor payer, BuildingsTemplate template, int quantity) {
+
+        double materialsPrice = buildingManager.getConstructionMaterialPrice();
+        double currentMaterials = buildingManager.getConstructionMaterials();
+        double totalMaterialsRequired = template.getConstructionMaterials() * quantity;
+
+        double neededMaterials = Math.max(totalMaterialsRequired - currentMaterials, 0);
+
+        double totalCost = template.getCashCost() * quantity
+                + neededMaterials * materialsPrice;
+
+        double shortfall = totalCost - payer.getCash();
+
+        if (shortfall > 0) {
+            if (!payer.canBorrow(shortfall)) {
+                return false;
+            }
+            payer.borrow(shortfall, month);
+        }
+
+        payer.spend(totalCost);
+
+        buildingManager.addStack(template, quantity, false);
+        materialsConsumed += totalMaterialsRequired;
+
+        servicesManager.getConstructionHandler().bill(totalCost,
+                template.getConstructionPoints() * (double) quantity);
+
+        return true;
+    }
+
+    /** The city itself, as a payer. Keeps its existing behaviour exactly. */
+    private final Investor government = new Investor() {
+        @Override public String getName()  { return "City"; }
+        @Override public double getCash()  { return cash; }
+        @Override public void spend(double amount) { cash -= amount; }
+        @Override public boolean canBorrow(double amount) { return false; }
+        @Override public void borrow(double amount, int month) { }
+    };
+
+    public Investor getGovernmentInvestor() { return government; }
     
     public BuildResult buildStack(BuildingsTemplate template, int quantity,boolean noConstuction){
         double totalCost = calculateTotalCost(template,quantity);
@@ -887,12 +1077,21 @@ public class Game {
         // bill BEFORE the statements run, so the figures they bank are net of it.
         economyManager.updateBusinessCredit(debtManager.getRate());
 
+        // Recognise the month's construction work before construction's income
+        // statement runs, so the revenue and the payroll describe the same month.
+        servicesManager.getConstructionHandler().recogniseWork(getConstructionOutput());
+
         economyManager.updateCommercialReport();
         economyManager.updateIndustrialReport();
+        economyManager.updateConstructionReport();
 
         // Then advance the loans, take back matured principal, and lend to
         // whichever sector the month left short.
         economyManager.settleBusinessCredit(month);
+
+        // Businesses get their turn: look at demand, forecast it forward, and
+        // expand if the new capacity would carry its own debt.
+        runPrivateInvestment();
 
         printStartOfMonth();
         updateConstruction();
@@ -1073,6 +1272,9 @@ public class Game {
     // Needed by the JavaFX sector screens. Safe to expose now that the report
     // getters on CommercialHandler are all pure reads - the UI cannot mutate
     // economy state through this.
+    private BusinessInvestment businessInvestment;
+    private final java.util.Map<String, String> lastInvestment = new java.util.LinkedHashMap<>();
+
     public EconomyManager getEconomyManager() {
         return economyManager;
     }

@@ -38,6 +38,53 @@ public class ConstructionHandler {
     private double expenses;
     private double wageExp;
     private double materialsExp;
+
+    /* -----------------------------------------------------------------------
+       CONSTRUCTION AS A BUSINESS
+
+       Construction used to have expenses and no revenue: it did the work, paid
+       the wages, and billed nobody. The city absorbed the cost through
+       ServicesManager.getServiceNetIncome(), while the money the builder paid
+       for the building went nowhere at all - `cash -= totalCost` with no
+       recipient. The city was paying twice.
+
+       Now every build order is billed here. Revenue is the work done this
+       month; the wages and materials it already tracked are its cost of doing
+       that work.
+       ----------------------------------------------------------------------- */
+    private double cash;
+    private double revenue;
+    private double netIncome;
+
+    /**
+     * Billed but not yet earned, and the work it is owed against.
+     *
+     * A build order pays the whole price up front, but the work happens over
+     * months. Booking it all as revenue on the order month made construction
+     * look enormously profitable during a building boom and catastrophically
+     * unprofitable for the year afterwards, when it was doing the work it had
+     * already been paid for. Revenue follows the points delivered instead.
+     */
+    private double unearnedRevenue;
+    private double backlogPoints;
+
+    /**
+     * The smallest share of payroll construction pays when it has no work.
+     *
+     * Not zero: a firm keeps a core crew and its yard. But paying four depots'
+     * worth of full wages with nothing on site is what turned an idle
+     * construction sector into a $500,000 debt spiral - it borrowed to make
+     * payroll every month for two hundred months and paid interest on all of it.
+     */
+    private static final double IDLE_PAYROLL_FLOOR = .25;
+
+    /** How much of the crew had something to do this month. */
+    private double utilisation = 1;
+
+    /** Book value of construction premises, for the balance sheet. */
+    private double buildingsValue;
+    private double bondsPayable;
+    private double interestExpense;
     
     
     //cycle updaters
@@ -46,6 +93,53 @@ public class ConstructionHandler {
         calculateExpenses();
         materialsConsumed=0;
     }
+
+    /**
+     * Banks the month. Called once per month, after the build orders for the
+     * month have been billed - revenue is cleared here so next month starts
+     * from nothing.
+     */
+    public void calculateConstructionResults(){
+        calculateExpenses();
+        netIncome = revenue - expenses - interestExpense;
+        cash += netIncome;
+        revenue = 0;
+        materialsConsumed = 0;
+    }
+
+    /**
+     * Take a build order onto the books: cash received now, revenue recognised
+     * as the work gets done.
+     *
+     * @param points construction points the job represents - the work owed
+     */
+    public void bill(double amount, double points){
+        unearnedRevenue += amount;
+        backlogPoints += points;
+    }
+
+    /**
+     * Recognise the month's work.
+     *
+     * @param pointsDelivered construction points actually completed this month
+     */
+    public void recogniseWork(double pointsDelivered){
+
+        if (backlogPoints <= 0 || pointsDelivered <= 0) {
+            utilisation = 0;
+            return;
+        }
+
+        double done = Math.min(pointsDelivered, backlogPoints);
+
+        double earned = unearnedRevenue * (done / backlogPoints);
+        revenue += earned;
+        unearnedRevenue -= earned;
+        backlogPoints -= done;
+
+        // Full crews only when there was a full month's work to do.
+        utilisation = Math.min(1, done / pointsDelivered);
+    }
     
     
     
@@ -53,6 +147,32 @@ public class ConstructionHandler {
     //getters
     public double getExpenses(){
         return expenses;
+    }
+    public double getCash()             { return cash; }
+    public double getUnearnedRevenue()  { return unearnedRevenue; }
+    public double getBacklogPoints()    { return backlogPoints; }
+    public double getUtilisation()      { return utilisation; }
+    public double getRevenue()          { return revenue; }
+    public double getNetIncome()        { return netIncome; }
+    public double getInterestExpense()  { return interestExpense; }
+
+    public void setCash(double cash)                  { this.cash = cash; }
+    public void setBuildingsValue(double value)       { this.buildingsValue = value; }
+    public void setBondsPayable(double value)         { this.bondsPayable = value; }
+    public void setInterestExpense(double value)      { this.interestExpense = value; }
+
+    /**
+     * Construction's books. It holds no stock of its own - the materials
+     * inventory belongs to the city's construction-materials pool, not to this
+     * company - so there is no inventory line.
+     */
+    public BalanceSheet getBalanceSheet() {
+        return new BalanceSheet("Construction")
+                .setCash(cash)
+                .setInventory(0, 0)
+                .setLand(0)
+                .setBuildings(buildingsValue)
+                .setBondsPayable(bondsPayable);
     }
     public double getAverageFill(){
         return averageFill;
@@ -134,6 +254,10 @@ public class ConstructionHandler {
         // full payroll even when understaffed. averageFill is computed in
         // updateWages() above but was never actually used until now.
         wageExp *= averageFill;
+
+        // ...and by how much work there was. averageFill is about whether the
+        // jobs are staffed; this is about whether the staff have anything to do.
+        wageExp *= Math.max(IDLE_PAYROLL_FLOOR, utilisation);
 
         if (materialsInventory < materialsConsumed) {
             materialsExp = (materialsConsumed - materialsInventory) * materialsPrice;

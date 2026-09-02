@@ -277,6 +277,8 @@ public class CommercialHandler {
     public double getEnergyRatio()        { return energyRatio; }
     public double getWaterRatio()         { return waterRatio; }
     public double getStoreSellPrice()     { return storeSellPrice; }
+    public double getRentPrice()          { return rentPrice; }
+    public double getFoodPrice()          { return foodPrice; }
 
     public int getReportPopulation()      { return rPopulation; }
     public int getReportHousehold()       { return rHousehold; }

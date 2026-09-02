@@ -53,9 +53,10 @@ public class BusinessDebtManager {
     public static final String RETAIL = "Retail";
     public static final String REAL_ESTATE = "Real Estate";
     public static final String INDUSTRY = "Industry";
+    public static final String CONSTRUCTION = "Construction";
 
     /** Every set of books that can borrow. Add a sector here and it just works. */
-    public static final String[] SECTORS = { RETAIL, REAL_ESTATE, INDUSTRY };
+    public static final String[] SECTORS = { RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION };
 
     /** Floor over the government rate. Nobody borrows at sovereign. */
     private static final double MIN_SPREAD = .01;

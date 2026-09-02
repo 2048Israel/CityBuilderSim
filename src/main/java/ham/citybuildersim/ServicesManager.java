@@ -161,9 +161,17 @@ public class ServicesManager {
         return utilitiesHandler.getWaterRatio();
     }
 
+    /**
+     * What the CITY earns from the services it owns - now utilities only.
+     *
+     * Construction used to be subtracted here, so the city paid the
+     * construction sector's wages every month on top of paying for the
+     * buildings themselves. Construction bills its customers now and settles
+     * its own payroll out of that revenue, so taking it off the city's books
+     * here would be charging the same wages twice.
+     */
     public double getServiceNetIncome() {
-        double income = -constructionHandler.getExpenses()+utilitiesHandler.getUtilityIncome();
-        return income;
+        return utilitiesHandler.getUtilityIncome();
     }
 
     public double getPricePerWatt() {

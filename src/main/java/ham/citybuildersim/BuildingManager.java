@@ -343,6 +343,44 @@ public class BuildingManager {
         return result;
     }
 
+    /**
+     * Stacks of one category with work still on site.
+     *
+     * Used to stop a sector queueing a second building while the first is still
+     * going up - without it a business would re-read the same unmet demand every
+     * month and order against it again, because the capacity it already paid for
+     * does not show up until it opens.
+     */
+    /**
+     * Construction points still owed on everything on site.
+     *
+     * Divided by the city's monthly output this is the queue length in months,
+     * which is what tells the construction sector whether it is the bottleneck.
+     */
+    public double getRemainingConstructionPoints() {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            int building = stack.getUnderConstruction();
+            if (building <= 0) continue;
+
+            double perUnit = stack.getBuilding().getConstructionPoints();
+            // progress is against the current unit only; the rest are untouched.
+            total += perUnit * building - stack.getConstructionProgress();
+        }
+        return Math.max(total, 0);
+    }
+
+    public int getUnderConstructionByCategory(BuildingType category) {
+        int count = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getCategory() == category
+                    && stack.getUnderConstruction() > 0) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public int getUnderConstruction() {
         int sum = 0;
         for (BuildingsStacks stack : stacks) {

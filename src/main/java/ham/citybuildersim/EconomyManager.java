@@ -45,6 +45,13 @@ public class EconomyManager {
     private FoodMarket foodMarket;
     private BusinessDebtManager businessDebtManager;
 
+    /**
+     * Construction lives under ServicesManager but banks like a business, so
+     * the economy needs a handle on it. Injected rather than owned, because
+     * ServicesManager is still what drives its production and labour.
+     */
+    private ConstructionHandler constructionHandler;
+
     //Send variables to other classes
         //all
     private int pTotalIncome;
@@ -136,6 +143,45 @@ public class EconomyManager {
         return businessDebtManager;
     }
 
+    public void setConstructionHandler(ConstructionHandler handler){
+        this.constructionHandler = handler;
+    }
+
+    /** Construction's monthly income statement, banked to its own cash. */
+    public void updateConstructionReport(){
+        if (constructionHandler != null) {
+            constructionHandler.calculateConstructionResults();
+        }
+    }
+
+    /* -----------------------------------------------------------------------
+       Sector cash by name, so an Investor can be written once against a sector
+       string rather than three times against three different handlers.
+       ----------------------------------------------------------------------- */
+
+    public double getSectorCash(String sector){
+        if (BusinessDebtManager.RETAIL.equals(sector))      return commercialHandler.getCommercialCash();
+        if (BusinessDebtManager.REAL_ESTATE.equals(sector)) return commercialHandler.getRealEstateCash();
+        if (BusinessDebtManager.INDUSTRY.equals(sector))    return industrialHandler.getIndustrialCash();
+        if (BusinessDebtManager.CONSTRUCTION.equals(sector) && constructionHandler != null) {
+            return constructionHandler.getCash();
+        }
+        return 0;
+    }
+
+    public ConstructionHandler getConstructionHandler(){
+        return constructionHandler;
+    }
+
+    public void setSectorCash(String sector, double cash){
+        if (BusinessDebtManager.RETAIL.equals(sector))      commercialHandler.setCommercialCash(cash);
+        else if (BusinessDebtManager.REAL_ESTATE.equals(sector)) commercialHandler.setRealEstateCash(cash);
+        else if (BusinessDebtManager.INDUSTRY.equals(sector))    industrialHandler.setIndustrialCash(cash);
+        else if (BusinessDebtManager.CONSTRUCTION.equals(sector) && constructionHandler != null) {
+            constructionHandler.setCash(cash);
+        }
+    }
+
     /* =======================================================================
        PRIVATE SECTOR CREDIT
 
@@ -164,6 +210,11 @@ public class EconomyManager {
         businessDebtManager.setAssets(BusinessDebtManager.INDUSTRY,
                 industrialHandler.getBalanceSheet().getTotalAssets());
 
+        if (constructionHandler != null) {
+            businessDebtManager.setAssets(BusinessDebtManager.CONSTRUCTION,
+                    constructionHandler.getBalanceSheet().getTotalAssets());
+        }
+
         businessDebtManager.updateRates();
 
         commercialHandler.setRetailInterestExpense(
@@ -172,6 +223,11 @@ public class EconomyManager {
                 businessDebtManager.getMonthlyInterest(BusinessDebtManager.REAL_ESTATE));
         industrialHandler.setInterestExpense(
                 businessDebtManager.getMonthlyInterest(BusinessDebtManager.INDUSTRY));
+
+        if (constructionHandler != null) {
+            constructionHandler.setInterestExpense(
+                    businessDebtManager.getMonthlyInterest(BusinessDebtManager.CONSTRUCTION));
+        }
 
         pushBalanceSheetInputs();
     }
@@ -195,6 +251,13 @@ public class EconomyManager {
                 buildingManager.getBookValueByCategory(BuildingType.INDUSTRIAL));
         industrialHandler.setBondsPayable(
                 businessDebtManager.getPrincipal(BusinessDebtManager.INDUSTRY));
+
+        if (constructionHandler != null) {
+            constructionHandler.setBuildingsValue(
+                    buildingManager.getBookValueByCategory(BuildingType.CONSTRUCTION));
+            constructionHandler.setBondsPayable(
+                    businessDebtManager.getPrincipal(BusinessDebtManager.CONSTRUCTION));
+        }
     }
 
     public void settleBusinessCredit(int month){
@@ -215,6 +278,13 @@ public class EconomyManager {
                 industrialHandler.getIndustrialCash(),
                 industrialHandler.getNetIncome(),
                 industrialHandler::setIndustrialCash);
+
+        if (constructionHandler != null) {
+            settleSector(BusinessDebtManager.CONSTRUCTION, month,
+                    constructionHandler.getCash(),
+                    constructionHandler.getNetIncome(),
+                    constructionHandler::setCash);
+        }
 
         pushBalanceSheetInputs();
     }
