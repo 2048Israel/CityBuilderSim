@@ -788,7 +788,8 @@ public class UserInterface extends Application {
 
         VBox utilization = reportSection("RESOURCE UTILIZATION",
                 String.format("Labor Fill Rate:        %.1f%%", ch.getReportAverageStoreFill() * 100),
-                String.format("Energy Efficiency:      %.1f%%", ch.getReportEnergyRatio() * 100));
+                String.format("Energy Efficiency:      %.1f%%", ch.getReportEnergyRatio() * 100),
+                String.format("Water Efficiency:       %.1f%%", ch.getReportWaterRatio() * 100));
 
         VBox sales = reportSection("SALES PERFORMANCE",
                 String.format("Market Demand:          %,d units", ch.getReportDemand()),
@@ -807,6 +808,7 @@ public class UserInterface extends Application {
                 String.format("    Imported @ $%s:           %,d units",
                         formatter.format(ch.getImportPrice()), ch.getReportGlobalImports()),
                 String.format("Electricity Expense:            -$%s", formatter.format(ch.getReportElectricityCost())),
+                String.format("Water Expense:                  -$%s", formatter.format(ch.getReportWaterCost())),
                 "---------------------------------------------------",
                 String.format("Total Operating Expenses:       -$%s", formatter.format(ch.getReportRetailOperatingCost())));
 
@@ -1042,7 +1044,8 @@ public class UserInterface extends Application {
 
                 reportSection("RESOURCE UTILIZATION",
                         String.format("Labor Fill Rate:        %.1f%%", ih.getReportAverageFill() * 100),
-                        String.format("Energy Efficiency:      %.1f%%", ih.getReportEnergyRatio() * 100)),
+                        String.format("Energy Efficiency:      %.1f%%", ih.getReportEnergyRatio() * 100),
+                        String.format("Water Efficiency:       %.1f%%", ih.getReportWaterRatio() * 100)),
 
                 reportSection("PRODUCTION ANALYSIS",
                         String.format("Base Potential:         %,d units", ih.getReportBaseProduction()),
@@ -1059,6 +1062,7 @@ public class UserInterface extends Application {
                 "",
                 String.format("Payroll Expense:                -$%s", formatter.format(ih.getReportPayroll())),
                 String.format("Electricity Expense:            -$%s", formatter.format(ih.getReportElectricityCost())),
+                String.format("Water Expense:                  -$%s", formatter.format(ih.getReportWaterCost())),
                 "---------------------------------------------------",
                 String.format("Total Operating Expenses:       -$%s", formatter.format(ih.getReportOperatingCost())));
         addNetIncomeLine(statement, "NET INCOME (INDUSTRIAL):", ih.getNetIncome());
@@ -1101,64 +1105,129 @@ public class UserInterface extends Application {
     }
 
     /** JavaFX port of UtilitiesHandler.printUtilitiesInfo(). That printer is already pure. */
+    /**
+     * Two utilities, one report. Electricity and water each get their own status,
+     * load analysis and income statement, and then they total - they share a
+     * workforce and a balance sheet, but a player deciding whether to build a
+     * water plant needs to see water's own numbers, not a blended figure.
+     */
     private void showUtilityInfoMenu() {
         clearMenu();
 
         UtilitiesHandler uh = game.getServicesManager().getUtilitiesHandler();
 
         double energyRatio = uh.getEnergyRatio();
-        double revenue = uh.getUtilityRevenue();
-        double payroll = uh.getUtilityPayroll();
-        double netIncome = revenue - payroll;
+        double waterRatio = uh.getWaterRatio();
 
-        Label stability = monoLabel(String.format("%-24s%s", "System Stability:",
-                energyRatio >= 1.0 ? "STABLE" : "BROWNOUT"));
-        stability.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (energyRatio >= 1.0 ? "#2e7d32" : "#c62828") + ";");
+        double elecRevenue = uh.getElectricityRevenue();
+        double elecPayroll = uh.getElectricityPayroll();
+        double waterRevenue = uh.getWaterRevenue();
+        double waterPayroll = uh.getWaterPayroll();
+
+        VBox column = new VBox(0);
+
+        /* ------------------------------ ELECTRICITY ------------------------------ */
+        column.getChildren().add(sectionHeading("=== ELECTRIC POWER ==="));
 
         VBox grid = reportSection("GRID STATUS",
                 String.format("Grid Satisfaction:      %.1f%%", energyRatio * 100));
-        grid.getChildren().add(stability);
+        grid.getChildren().add(statusLabel("System Stability:", energyRatio >= 1.0, "STABLE", "BROWNOUT"));
+        column.getChildren().add(grid);
 
-        VBox column = new VBox(0);
-        column.getChildren().addAll(
-                grid,
-                reportSection("ENERGY LOAD ANALYSIS",
-                        String.format("Total Consumption:      %s W", formatter.format(uh.getConsumption())),
-                        String.format("Maximum Generation:     %s W", formatter.format(uh.getBaseProduction())),
-                        String.format("Current Output:         %s W", formatter.format(uh.getProduction())),
-                        String.format("Price per Watt:         $%s", formatter.format(uh.getPricerPerWatt()))),
-                reportSection("WATER SUPPLY",
-                        String.format("Maximum Capacity:       %s units", formatter.format(uh.getBaseWaterProduction())),
-                        String.format("Current Output:         %s units", formatter.format(uh.getWaterProduction())),
-                        String.format("Total Draw:             %s units", formatter.format(uh.getWaterConsumption())),
-                        String.format("Supply Satisfaction:    %.1f%%", uh.getWaterRatio() * 100),
-                        uh.getWaterConsumption() <= 0
-                                ? "No consumers connected yet."
-                                : ""),
-                reportSection("RESOURCE UTILIZATION",
-                        String.format("Labor Fill Rate:        %.1f%%", uh.getAverageUtilityFill() * 100)));
+        column.getChildren().add(reportSection("ENERGY LOAD ANALYSIS",
+                String.format("Total Consumption:      %s W", formatter.format(uh.getConsumption())),
+                String.format("Maximum Generation:     %s W", formatter.format(uh.getBaseProduction())),
+                String.format("Current Output:         %s W", formatter.format(uh.getProduction())),
+                String.format("Price per Watt:         $%s", formatter.format(uh.getPricerPerWatt()))));
 
-        VBox statement = reportSection("INCOME STATEMENT (UTILITY COMPANY)",
-                String.format("Electricity Sales:               $%s", formatter.format(revenue)),
-                "",
-                String.format("Payroll Expense:                -$%s", formatter.format(payroll)),
-                "---------------------------------------------------",
-                String.format("Total Operating Expenses:       -$%s", formatter.format(payroll)));
-        addNetIncomeLine(statement, "NET INCOME (UTILITY):", netIncome);
-        column.getChildren().add(statement);
+        VBox elecStatement = reportSection("INCOME STATEMENT (ELECTRIC POWER)",
+                String.format("Electricity Sales:               $%s", formatter.format(elecRevenue)),
+                String.format("Payroll Expense:                -$%s", formatter.format(elecPayroll)),
+                "---------------------------------------------------");
+        addNetIncomeLine(elecStatement, "NET INCOME (ELECTRIC):", elecRevenue - elecPayroll);
+        column.getChildren().add(elecStatement);
 
         if (energyRatio < 1.0) {
-            VBox shortage = reportSection("[CRITICAL] GRID SHORTAGE",
+            column.getChildren().add(criticalSection("[CRITICAL] GRID SHORTAGE",
                     String.format("Additional capacity needed: %s W",
                             formatter.format(uh.getConsumption() - uh.getProduction())),
-                    "Industrial and commercial output is reduced.");
-            shortage.getChildren().get(0).setStyle(
-                    "-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #c62828;");
-            column.getChildren().add(shortage);
+                    "Industrial and commercial output is reduced."));
         }
 
+        /* --------------------------------- WATER --------------------------------- */
+        column.getChildren().add(sectionHeading("=== WATER SUPPLY ==="));
+
+        VBox supply = reportSection("SUPPLY STATUS",
+                String.format("Supply Satisfaction:    %.1f%%", waterRatio * 100));
+        supply.getChildren().add(statusLabel("System Status:", waterRatio >= 1.0, "ADEQUATE", "RATIONING"));
+        column.getChildren().add(supply);
+
+        // Splitting resident from building draw is the useful part: it is the
+        // difference between "stop building housing" and "stop building food plants".
+        column.getChildren().add(reportSection("WATER LOAD ANALYSIS",
+                String.format("Resident Draw:          %s units", formatter.format(uh.getResidentWaterDraw())),
+                String.format("Building Draw:          %s units", formatter.format(uh.getBuildingWaterDraw())),
+                String.format("Total Draw:             %s units", formatter.format(uh.getWaterConsumption())),
+                String.format("  billed:               %s units", formatter.format(uh.getBilledWaterDraw())),
+                String.format("  unbilled:             %s units", formatter.format(uh.getUnbilledWaterDraw())),
+                String.format("Maximum Capacity:       %s units", formatter.format(uh.getBaseWaterProduction())),
+                String.format("Current Output:         %s units", formatter.format(uh.getWaterProduction())),
+                String.format("Price per Unit:         $%s", formatter.format(uh.getPricePerWaterUnit()))));
+
+        VBox waterStatement = reportSection("INCOME STATEMENT (WATER)",
+                "Only commercial and industrial draw is invoiced;",
+                "households have no cash, so resident water is unbilled.",
+                "",
+                String.format("Water Sales:                     $%s", formatter.format(waterRevenue)),
+                String.format("Payroll Expense:                -$%s", formatter.format(waterPayroll)),
+                "---------------------------------------------------");
+        addNetIncomeLine(waterStatement, "NET INCOME (WATER):", waterRevenue - waterPayroll);
+        column.getChildren().add(waterStatement);
+
+        if (waterRatio < 1.0) {
+            column.getChildren().add(criticalSection("[CRITICAL] WATER SHORTAGE",
+                    String.format("Additional capacity needed: %s units",
+                            formatter.format(uh.getWaterConsumption() - uh.getWaterProduction())),
+                    "Industrial and commercial output is reduced."));
+        }
+
+        /* ------------------------------ CONSOLIDATED ----------------------------- */
+        column.getChildren().add(sectionHeading("=== CONSOLIDATED ==="));
+
+        column.getChildren().add(reportSection("RESOURCE UTILIZATION",
+                String.format("Labor Fill Rate:        %.1f%%", uh.getAverageUtilityFill() * 100),
+                "One workforce runs both utilities."));
+
+        double totalRevenue = elecRevenue + waterRevenue;
+        double totalPayroll = elecPayroll + waterPayroll;
+
+        VBox consolidated = reportSection("INCOME STATEMENT (ALL UTILITIES)",
+                String.format("Electricity Sales:               $%s", formatter.format(elecRevenue)),
+                String.format("Water Sales:                     $%s", formatter.format(waterRevenue)),
+                String.format("Total Revenue:                   $%s", formatter.format(totalRevenue)),
+                "",
+                String.format("Total Payroll Expense:          -$%s", formatter.format(totalPayroll)),
+                "---------------------------------------------------");
+        addNetIncomeLine(consolidated, "NET INCOME (UTILITIES):", totalRevenue - totalPayroll);
+        column.getChildren().add(consolidated);
+
         showSectorReport("MUNICIPAL UTILITIES REPORT", column, this::showPrivateSectorMenu);
+    }
+
+    /** A bold green/red status row, e.g. "System Stability:  STABLE". */
+    private Label statusLabel(String label, boolean good, String goodText, String badText) {
+        Label line = monoLabel(String.format("%-24s%s", label, good ? goodText : badText));
+        line.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (good ? "#2e7d32" : "#c62828") + ";");
+        return line;
+    }
+
+    /** A report section whose heading is styled as a red warning. */
+    private VBox criticalSection(String heading, String... rows) {
+        VBox box = reportSection(heading, rows);
+        box.getChildren().get(0).setStyle(
+                "-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #c62828;");
+        return box;
     }
 
     /**
@@ -1488,7 +1557,8 @@ public class UserInterface extends Application {
                 statLine("Materials", String.format("%,d", game.getConstructionMaterials())),
                 statLine("Store stock", String.format("%,d", economyManager.getStoreInventory())),
                 statLine("Food stock", String.format("%,d", economyManager.getIndustryFoodInventory())),
-                statLine("Energy", formatter.format(game.getEnergyRatio() * 100) + "%"));
+                statLine("Energy", formatter.format(game.getEnergyRatio() * 100) + "%"),
+                statLine("Water", formatter.format(game.getWaterRatio() * 100) + "%"));
 
         /* ---------------- SECTOR CASH ---------------- */
         body.getChildren().addAll(

@@ -53,6 +53,8 @@ public class IndustrialHandler {
     private double rAverageSellPrice;
     private double rPayroll;
     private double rElectricityCost;
+    private double rWaterCost;
+    private double rWaterRatio;
     private double rOperatingCost;
     private double rTaxIncome;
     
@@ -60,6 +62,13 @@ public class IndustrialHandler {
     private double energyRatio = 1;
     private double pricePerWatt;
     private double electricity;
+
+    // Water gates production the same way power does. Food processing and
+    // textiles are the two most water-hungry things the city can build, so this
+    // is the ratio that will actually hurt.
+    private double waterRatio = 1;
+    private double pricePerWaterUnit;
+    private double water;
     
     //temporary variables
     private int productsSoldCopy;
@@ -97,6 +106,7 @@ public class IndustrialHandler {
         rFoodInventory = 0;
         rAverageFill = 0;
         rEnergyRatio = 0;
+        rWaterRatio = 0;
         rBaseProduction = 0;
         rActualProduction = 0;
         rDemand = 0;
@@ -105,6 +115,7 @@ public class IndustrialHandler {
         rGrossRevenue = 0;
         rPayroll = 0;
         rElectricityCost = 0;
+        rWaterCost = 0;
         rOperatingCost = 0;
         rNetIncome = 0;
         rTaxIncome = 0;
@@ -119,7 +130,7 @@ public class IndustrialHandler {
 
     /** This month's expected output: base capacity scaled by labour and power. */
     public double getMonthlyOutput() {
-        return foodProduction * averageIndustrialFill * energyRatio;
+        return foodProduction * averageIndustrialFill * energyRatio * waterRatio;
     }
 
     public double getReportCostPerUnit() { return rCostPerUnit; }
@@ -132,7 +143,7 @@ public class IndustrialHandler {
      */
     public double getCostPerUnit() {
 
-        double output = foodProduction * averageIndustrialFill * energyRatio;
+        double output = foodProduction * averageIndustrialFill * energyRatio * waterRatio;
         if (output <= 0) {
             return Double.MAX_VALUE;      // producing nothing - any sale is a loss
         }
@@ -145,7 +156,7 @@ public class IndustrialHandler {
         }
         payroll *= averageIndustrialFill;
 
-        return (payroll + getElectricityCost()) / output;
+        return (payroll + getElectricityCost() + getWaterCost()) / output;
     }
 
     /**
@@ -188,6 +199,15 @@ public class IndustrialHandler {
     public void setFoodPrice(double foodPrice){
         this.foodPrice = foodPrice;
     }
+    public void setWaterRatio(double ratio){
+        this.waterRatio = ratio;
+    }
+    public void setPricePerWaterUnit(double price){
+        this.pricePerWaterUnit = price;
+    }
+    public void setWaterConsumption(double consumption){
+        this.water = consumption;
+    }
     public void setEnergyRatio(double ratio){
         this.energyRatio = ratio;
     }
@@ -212,6 +232,7 @@ public class IndustrialHandler {
     public void produceFood(){
         foodProduction *= averageIndustrialFill;
         foodProduction *= energyRatio;
+        foodProduction *= waterRatio;
         
         foodInventory += foodProduction;
         foodInventory = Math.min(foodInventory,foodCapacity);
@@ -299,7 +320,7 @@ public class IndustrialHandler {
         industrialWage *= averageIndustrialFill;
 
         // 6. Expenses
-        industrialExp = industrialWage + getElectricityCost();
+        industrialExp = industrialWage + getElectricityCost() + getWaterCost();
 
         // 7. Net income
         double netIncome = industrialRev - industrialExp;
@@ -320,6 +341,11 @@ public class IndustrialHandler {
         return cost;
 
     }
+
+    /** Scaled by waterRatio - see CommercialHandler.getWaterCost(). */
+    public double getWaterCost() {
+        return water * waterRatio * pricePerWaterUnit;
+    }
     
     public double getNetIncome(){
         return rNetIncome;
@@ -338,6 +364,7 @@ public class IndustrialHandler {
     public int getReportFoodInventory()     { return rFoodInventory; }
     public double getReportAverageFill()    { return rAverageFill; }
     public double getReportEnergyRatio()    { return rEnergyRatio; }
+    public double getReportWaterRatio()     { return rWaterRatio; }
     public int getReportBaseProduction()    { return rBaseProduction; }
     public double getReportActualProduction(){ return rActualProduction; }
     public double getReportDemand()         { return rDemand; }
@@ -345,6 +372,7 @@ public class IndustrialHandler {
     public double getReportSellPrice()      { return rAverageSellPrice; }
     public double getReportPayroll()        { return rPayroll; }
     public double getReportElectricityCost(){ return rElectricityCost; }
+    public double getReportWaterCost()      { return rWaterCost; }
     public double getReportOperatingCost()  { return rOperatingCost; }
     public double getReportTaxIncome()      { return rTaxIncome; }
     public double getReportTaxRate()        { return pTaxRate; }
@@ -370,8 +398,9 @@ public class IndustrialHandler {
         rFoodInventory = foodInventory;
         rAverageFill = averageIndustrialFill;
         rEnergyRatio = energyRatio;
+        rWaterRatio = waterRatio;
         rBaseProduction = foodProduction;
-        rActualProduction = foodProduction * averageIndustrialFill * energyRatio;
+        rActualProduction = foodProduction * averageIndustrialFill * energyRatio * waterRatio;
         rDemand = foodDemand;
 
         int productsSold = (int) Math.min(foodInventory, foodDemand);
@@ -389,6 +418,7 @@ public class IndustrialHandler {
         rGrossRevenue = productsSold * averageSellPrice;
 
         rElectricityCost = electricity * pricePerWatt;
+        rWaterCost = water * waterRatio * pricePerWaterUnit;
 
         double industrialWage = 0;
         if (industrialWages != null) {
@@ -398,7 +428,7 @@ public class IndustrialHandler {
         }
         rPayroll = industrialWage * averageIndustrialFill;
 
-        rOperatingCost = rPayroll + rElectricityCost;
+        rOperatingCost = rPayroll + rElectricityCost + rWaterCost;
         rNetIncome = rGrossRevenue - rOperatingCost;
         rTaxIncome = rNetIncome * pTaxRate;
     }
@@ -420,6 +450,7 @@ public class IndustrialHandler {
         System.out.println("\nRESOURCE UTILIZATION");
         System.out.printf("Labor Fill Rate:         %.1f%%%n", rAverageFill * 100);
         System.out.printf("Energy Efficiency:       %.1f%%%n", rEnergyRatio * 100);
+        System.out.printf("Water Efficiency:        %.1f%%%n", rWaterRatio * 100);
 
         /* 2. Production Analysis */
         System.out.println("\nPRODUCTION ANALYSIS");
@@ -442,6 +473,7 @@ public class IndustrialHandler {
         System.out.printf("%nOperating Expenses:%n");
         System.out.printf("  Payroll Expense:                   -$%s%n", formatter.format(rPayroll));
         System.out.printf("  Electricity Expense:               -$%s%n", formatter.format(rElectricityCost));
+        System.out.printf("  Water Expense:                     -$%s%n", formatter.format(rWaterCost));
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.printf("Total Operating Expenses:            -$%s%n", formatter.format(rOperatingCost));

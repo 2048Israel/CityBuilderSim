@@ -1,6 +1,5 @@
 package ham.citybuildersim;
 
-import java.util.EnumSet;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.ToDoubleFunction;
@@ -15,9 +14,11 @@ public class ServicesManager {
     // universal
     private final double[] fillRate = new double[11];
 
-    // utilities labor
+    // utilities labor - kept split so the utilities report can attribute
+    // payroll to electricity or water rather than showing one lump
     private final double[] utilityWages = new double[11];
-    private final int[] utilityJobs = new int[11];
+    private final int[] electricityJobs = new int[11];
+    private final int[] waterJobs = new int[11];
 
     // construction labor
     private final double[] constructionWages = new double[11];
@@ -58,15 +59,24 @@ public class ServicesManager {
                 BuildingsTemplate::getElectricityConsumption);
 
         // water
-        //
-        // Production only. There is deliberately no setWaterConsumption() call
-        // here yet - no building or resident draws water, so demand is zero and
-        // the ratio stays at 1. When consumption lands it hooks in right here,
-        // as the mirror of the electricity draw above.
         updateByCategoryHandlerDouble(
                 BuildingType.WATER,
                 utilitiesHandler::setWaterProduction,
                 BuildingsTemplate::getProduction1);
+
+        // every building standing draws water, whatever its category - the
+        // mirror of the electricity draw above
+        updateHandlerDouble(
+                utilitiesHandler::setBuildingWaterDraw,
+                BuildingsTemplate::getWaterConsumption);
+
+        // ...but only commercial and industrial are invoiced for it. Residents
+        // and the city's own buildings draw water nobody is billed for.
+        utilitiesHandler.setBilledWaterDraw(
+                buildingManager.getTotalByCategoryDouble(
+                        BuildingType.COMMERCIAL, BuildingsTemplate::getWaterConsumption)
+                + buildingManager.getTotalByCategoryDouble(
+                        BuildingType.INDUSTRIAL, BuildingsTemplate::getWaterConsumption));
 
         // construction
         updateByCategoryHandlerDouble(
@@ -85,7 +95,7 @@ public class ServicesManager {
         utilitiesHandler.updateJobFillRate(fillRate);
         constructionHandler.updateJobFillRate(fillRate);
 
-        utilitiesHandler.updateUtilitiyWages(utilityWages, utilityJobs);
+        utilitiesHandler.updateUtilitiyWages(utilityWages, electricityJobs, waterJobs);
         constructionHandler.updateWages(constructionWages, constructionJobs);
     }
 
@@ -108,15 +118,17 @@ public class ServicesManager {
         copyArray(wages, utilityWages);
         copyArray(wages, constructionWages);
 
-        // ELECTRICITY *and* WATER: the water plant is staffed out of the same
-        // utility payroll and shares averageUtilityFill with the power plant.
-        // Leaving WATER out here would have hired nobody for it - its jobs
-        // would never be posted, and the plant would run on a fill rate
-        // computed purely from the grid's crew.
+        // ELECTRICITY and WATER are staffed out of the same utility payroll and
+        // share averageUtilityFill, but are tracked separately so the report can
+        // show them as two businesses. UtilitiesHandler sums them for the fill.
         copyArray(
-                buildingManager.getJobArrayPerCategories(
-                        EnumSet.of(BuildingType.ELECTRICITY, BuildingType.WATER)),
-                utilityJobs
+                buildingManager.getJobArrayPerCategory(BuildingType.ELECTRICITY),
+                electricityJobs
+        );
+
+        copyArray(
+                buildingManager.getJobArrayPerCategory(BuildingType.WATER),
+                waterJobs
         );
 
         copyArray(
@@ -156,6 +168,15 @@ public class ServicesManager {
 
     public double getPricePerWatt() {
         return utilitiesHandler.getPricerPerWatt();
+    }
+
+    public double getPricePerWaterUnit() {
+        return utilitiesHandler.getPricePerWaterUnit();
+    }
+
+    /** The people's water draw. Buildings are picked up from the templates. */
+    public void setPopulation(int population) {
+        utilitiesHandler.setPopulation(population);
     }
     
 

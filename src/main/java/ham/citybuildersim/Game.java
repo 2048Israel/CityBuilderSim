@@ -227,6 +227,10 @@ public class Game {
         return servicesManager.getEnergyRatio();
     }
 
+    public double getWaterRatio(){
+        return servicesManager.getWaterRatio();
+    }
+
     /** Read-only access for the utilities and construction screens. */
     public ServicesManager getServicesManager(){
         return servicesManager;
@@ -981,6 +985,7 @@ public class Game {
         economyManager.finalEconUpdate();
         servicesManager.updateServices();
         economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
+        economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
         
         if (Double.isFinite(tempCash)) {
             cash = tempCash;
@@ -1276,6 +1281,9 @@ public class Game {
     // services sync
     servicesManager.updateServiceWages(populationManager.getWagesPerType());
     servicesManager.updateJobFillRate(populationManager.getJobFillRate());
+    // must precede updateServices(): the residents' water draw is part of the
+    // demand the ratio is computed against
+    servicesManager.setPopulation(populationManager.getPopulation());
     servicesManager.updateServices();
 
     // economy sync
@@ -1284,6 +1292,7 @@ public class Game {
     economyManager.setTotalJobs(populationManager.getTotalJobs());
     economyManager.setTotalWage(populationManager.getTotalWage());
     economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
+    economyManager.setWaterRatio(servicesManager.getWaterRatio());
 
     economyManager.updateIndustrialWages(populationManager.getWagesPerType());
     economyManager.updateStoreWages(
@@ -1298,6 +1307,7 @@ public class Game {
     servicesManager.updateServices();
 
     economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
+    economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
 
     economyManager.finalEconUpdate();
 

@@ -282,10 +282,20 @@ public class EconomyManager {
     public void setIndustryFoodInventory(int foodInventory){
         industrialHandler.setFoodInventory(foodInventory);
     }
+    public void setWaterRatio(double ratio){
+        commercialHandler.setWaterRatio(ratio);
+        industrialHandler.setWaterRatio(ratio);
+    }
+
     public void setEnergyRatio(double ratio){
         commercialHandler.setEnergyRatio(ratio);
         industrialHandler.setEnergyRatio(ratio);
     }
+    public void setPricePerWaterUnit(double price){
+        commercialHandler.setPricePerWaterUnit(price);
+        industrialHandler.setPricePerWaterUnit(price);
+    }
+
     public void setPricePerWatt(double price){
         commercialHandler.setPricePerWatt(price);
         industrialHandler.setPricePerWatt(price);
@@ -293,6 +303,12 @@ public class EconomyManager {
     public void setElectricityConsumption(){
         commercialHandler.setElectricityConsumption(buildingManager.getTotalByCategoryInteger(BuildingType.COMMERCIAL, BuildingsTemplate::getElectricityConsumption));
         industrialHandler.setElectricityConsumption(buildingManager.getTotalByCategoryInteger(BuildingType.INDUSTRIAL, BuildingsTemplate::getElectricityConsumption));
+
+        // Water is billed to the sectors that draw it, exactly as power is.
+        // Without this the utility would collect water revenue that nobody paid,
+        // which is money created out of nothing.
+        commercialHandler.setWaterConsumption(buildingManager.getTotalByCategoryDouble(BuildingType.COMMERCIAL, BuildingsTemplate::getWaterConsumption));
+        industrialHandler.setWaterConsumption(buildingManager.getTotalByCategoryDouble(BuildingType.INDUSTRIAL, BuildingsTemplate::getWaterConsumption));
     }
     public void setUtilityIncome(double income){
         this.utilityIncome = income;

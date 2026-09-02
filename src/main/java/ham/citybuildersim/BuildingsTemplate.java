@@ -13,6 +13,9 @@ public class BuildingsTemplate {
     double upkeep;
     int constructionMaterials;
     int electricityConsumption;
+    // double, not int: a single House draws a fraction of a unit. Rounding that
+    // to an int would either zero out residential water or overstate it 3x.
+    double waterConsumption;
     int coverage;
     double production1;
     double production2;
@@ -111,6 +114,11 @@ public class BuildingsTemplate {
         return this;
     }
 
+    public BuildingsTemplate setWaterConsumption(double waterConsumption) {
+        this.waterConsumption = waterConsumption;
+        return this;
+    }
+
     public BuildingsTemplate setCoverage(int coverage) {
         this.coverage = coverage;
         return this;
@@ -169,6 +177,10 @@ public class BuildingsTemplate {
 
     public int getElectricityConsumption() {
         return electricityConsumption;
+    }
+
+    public double getWaterConsumption() {
+        return waterConsumption;
     }
 
     public int getCoverage() {

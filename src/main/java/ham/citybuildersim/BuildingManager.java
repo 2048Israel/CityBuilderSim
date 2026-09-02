@@ -29,6 +29,21 @@ public class BuildingManager {
         instances = new ArrayList<>();
     }
 
+    /* -------------------------------------------------------------------------
+       WATER DRAW, per building, in units of 10,000 gallons/month.
+
+       This is the building's OWN use - landscaping, cooling, cleaning, process
+       water - on top of the per-resident draw the population contributes
+       separately (see UtilitiesHandler.WATER_PER_PERSON). Residential numbers
+       are therefore small and fall per capita as density rises: a House with a
+       yard is .05/person, an apartment block .024/person.
+
+       Industry is where water actually bites, and that is true to life:
+       textile dyeing and food processing are two of the most water-intensive
+       industries there are, and thermoelectric cooling is the single largest
+       category of freshwater withdrawal in the US - hence the coal plant's 400.
+       ------------------------------------------------------------------------- */
+
     //Initialize all templates
     public void initializeTemplates() {
         
@@ -39,6 +54,7 @@ public class BuildingManager {
         house.setConstructionPoints(30);
         house.setConstructionMaterials(30);
         house.setElectricityConsumption(1);
+        house.setWaterConsumption(.2);
         house.setId(0);
         templates.add(house);
 
@@ -48,6 +64,7 @@ public class BuildingManager {
         studioApartments.setConstructionPoints(2000);
         studioApartments.setConstructionMaterials(2000);
         studioApartments.setElectricityConsumption(8);
+        studioApartments.setWaterConsumption(2);
         studioApartments.setId(1);
         templates.add(studioApartments);
 
@@ -57,6 +74,7 @@ public class BuildingManager {
         lowRiseApartments.setConstructionPoints(7000);
         lowRiseApartments.setConstructionMaterials(6000);
         lowRiseApartments.setElectricityConsumption(25);
+        lowRiseApartments.setWaterConsumption(6);
         lowRiseApartments.setId(6);
         templates.add(lowRiseApartments);
 
@@ -68,6 +86,7 @@ public class BuildingManager {
         convienceStore.setConstructionPoints(120);
         convienceStore.setConstructionMaterials(80);
         convienceStore.setElectricityConsumption(6);
+        convienceStore.setWaterConsumption(1);
         convienceStore.setJobs(JobType.NO_DIPLOMA, 2);
         convienceStore.setJobs(JobType.DIPLOMA, 3);
         convienceStore.setId(2);
@@ -80,6 +99,7 @@ public class BuildingManager {
         smallGroceryStore.setConstructionPoints(800);
         smallGroceryStore.setConstructionMaterials(700);
         smallGroceryStore.setElectricityConsumption(35);
+        smallGroceryStore.setWaterConsumption(6);
         smallGroceryStore.setJobs(JobType.NO_DIPLOMA, 15);
         smallGroceryStore.setJobs(JobType.DIPLOMA, 10);
         smallGroceryStore.setJobs(JobType.COLLEGE_BUSINESS, 2);
@@ -94,6 +114,7 @@ public class BuildingManager {
         texttileMill.setConstructionMaterials(1600);
         texttileMill.setProduction1(1100);
         texttileMill.setElectricityConsumption(40);
+        texttileMill.setWaterConsumption(60);
         texttileMill.setJobs(JobType.NO_DIPLOMA, 45);
         texttileMill.setJobs(JobType.DIPLOMA, 20);
         texttileMill.setId(3);
@@ -106,6 +127,7 @@ public class BuildingManager {
         foodProcessingPlant.setConstructionMaterials(3000);
         foodProcessingPlant.setProduction1(6000);
         foodProcessingPlant.setElectricityConsumption(120);
+        foodProcessingPlant.setWaterConsumption(150);
         foodProcessingPlant.setJobs(JobType.NO_DIPLOMA, 140);
         foodProcessingPlant.setJobs(JobType.DIPLOMA, 120);
         foodProcessingPlant.setJobs(JobType.COLLEGE_ENGINEERING, 10);
@@ -119,6 +141,7 @@ public class BuildingManager {
         constructionMaterialsPlant.setConstructionMaterials(7000);
         constructionMaterialsPlant.setProduction2(400);
         constructionMaterialsPlant.setElectricityConsumption(200);
+        constructionMaterialsPlant.setWaterConsumption(80);
         constructionMaterialsPlant.setJobs(JobType.NO_DIPLOMA, 160);
         constructionMaterialsPlant.setJobs(JobType.DIPLOMA, 80);
         constructionMaterialsPlant.setJobs(JobType.COLLEGE_ENGINEERING, 10);
@@ -132,6 +155,7 @@ public class BuildingManager {
         constructionDepot.setConstructionMaterials(1000);
         constructionDepot.setProduction1(400);
         constructionDepot.setElectricityConsumption(25);
+        constructionDepot.setWaterConsumption(3);
         constructionDepot.setJobs(JobType.NO_DIPLOMA, 35);
         constructionDepot.setJobs(JobType.DIPLOMA, 15);
         constructionDepot.setId(4);
@@ -144,6 +168,7 @@ public class BuildingManager {
                 .setConstructionMaterials(40000)
                 .setProduction1(280000) // electricity output
                 .setElectricityConsumption(15)
+                .setWaterConsumption(400) // cooling - the biggest single draw in the game
                 .setJobs(JobType.NO_DIPLOMA, 40)
                 .setJobs(JobType.DIPLOMA, 20)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 6)
@@ -172,6 +197,7 @@ public class BuildingManager {
                 // Water and wastewater are typically 2-4% of a city's electrical
                 // load. 900 against ~25,000 houses' worth of draw sits in that band.
                 .setElectricityConsumption(900)
+                .setWaterConsumption(20) // filter backwash and process losses
                 .setJobs(JobType.NO_DIPLOMA, 8)
                 .setJobs(JobType.DIPLOMA, 14)          // certified operators, the bulk of the crew
                 .setJobs(JobType.COLLEGE_ENGINEERING, 4)
@@ -450,31 +476,6 @@ public class BuildingManager {
         }
 
         return total;
-    }
-
-    /**
-     * Same as getJobArrayPerCategory but across several categories at once.
-     *
-     * Utilities is no longer a single BuildingType: the water plant is staffed
-     * out of the same utility payroll as the power plant, so ServicesManager
-     * needs ELECTRICITY and WATER summed into one job array. Calling the
-     * single-category version twice and adding the results would work, but the
-     * caller would then have to hand-roll the array addition each time.
-     */
-    public int[] getJobArrayPerCategories(EnumSet<BuildingType> categories) {
-        int[] jobs = new int[JobType.values().length];
-
-        for (BuildingsStacks stack : stacks) {
-
-            if (categories.contains(stack.getBuilding().getCategory())) {
-
-                for (int j = 0; j < jobs.length; j++) {
-                    jobs[j] += stack.getTotalJobs(jobNoUse[j]);
-                }
-            }
-        }
-
-        return jobs;
     }
 
     public int[] getJobArrayPerCategory(BuildingType category) {

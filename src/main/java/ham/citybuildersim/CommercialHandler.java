@@ -21,6 +21,13 @@ public class CommercialHandler {
     private double pricePerWatt;
     private double electricity;
 
+    // Water throttles output the same way power does: a store with no water
+    // cannot trade. Defaults to 1 so a handler that is never told otherwise
+    // behaves exactly as it did before water existed.
+    private double waterRatio = 1;
+    private double pricePerWaterUnit;
+    private double water;
+
     //store variables
     private double averageStoreFill;
     private int storeCoverage;
@@ -84,6 +91,8 @@ public class CommercialHandler {
     private double rPayroll;
     private double rInventoryCost;
     private double rElectricityCost;
+    private double rWaterCost;
+    private double rWaterRatio;
     private double rRetailOperatingCost;
     private double rRetailNetIncome;
 
@@ -198,8 +207,10 @@ public class CommercialHandler {
 
         storeExp = storeWage + storeInventoryCost;
         storeExp += getElectricityCost();
+        storeExp += getWaterCost();
         storeRev *= averageStoreFill;
         storeRev *= energyRatio;
+        storeRev *= waterRatio;
 
         double netIncome = storeRev - storeExp;
 
@@ -244,6 +255,7 @@ public class CommercialHandler {
     public int getStoreCapacity()         { return storeCapacity; }
     public double getAverageStoreFill()   { return averageStoreFill; }
     public double getEnergyRatio()        { return energyRatio; }
+    public double getWaterRatio()         { return waterRatio; }
     public double getStoreSellPrice()     { return storeSellPrice; }
 
     public int getReportPopulation()      { return rPopulation; }
@@ -253,12 +265,14 @@ public class CommercialHandler {
     public int getReportStoreInventory()  { return rStoreInventory; }
     public double getReportAverageStoreFill() { return rAverageStoreFill; }
     public double getReportEnergyRatio()  { return rEnergyRatio; }
+    public double getReportWaterRatio()   { return rWaterRatio; }
 
     public int getReportDemand()          { return rDemand; }
     public int getReportProductsSold()    { return rProductsSold; }
     public double getReportPayroll()      { return rPayroll; }
     public double getReportInventoryCost(){ return rInventoryCost; }
     public double getReportElectricityCost(){ return rElectricityCost; }
+    public double getReportWaterCost()    { return rWaterCost; }
     public double getReportRetailOperatingCost() { return rRetailOperatingCost; }
     public double getReportRetailNetIncome()     { return rRetailNetIncome; }
     public int getReportLocalImports()    { return pLocalImport; }
@@ -307,6 +321,15 @@ public class CommercialHandler {
     }
     public void setStoreInventory(int storeInventory){
         this.storeInventory = storeInventory;
+    }
+    public void setWaterRatio(double ratio){
+        this.waterRatio = ratio;
+    }
+    public void setPricePerWaterUnit(double price){
+        this.pricePerWaterUnit = price;
+    }
+    public void setWaterConsumption(double consumption){
+        this.water = consumption;
     }
     public void setEnergyRatio(double ratio){
         this.energyRatio = ratio;
@@ -417,6 +440,16 @@ public class CommercialHandler {
     }
 
     /**
+     * Scaled by waterRatio: during rationing you receive less water and are
+     * charged for less. This is what makes the utility's water revenue and the
+     * sectors' water expense the same number instead of two figures that drift
+     * apart whenever supply is short.
+     */
+    public double getWaterCost(){
+        return water * waterRatio * pricePerWaterUnit;
+    }
+
+    /**
      * Runs the commercial sector's monthly income statement and stores the
      * result. This is the ONLY place that mutates commercialCash /
      * realEstateCash / rNetIncome / rGrossRevenue, and it must be called
@@ -453,13 +486,14 @@ public class CommercialHandler {
         rStoreInventory = storeInventory;
         rAverageStoreFill = averageStoreFill;
         rEnergyRatio = energyRatio;
+        rWaterRatio = waterRatio;
 
         /* -------------------- RETAIL / COMMERCIAL COMPANY -------------------- */
         rDemand = Math.min(storeCoverage, population);
         productsSold = Math.min(rDemand, storeInventory);
         rProductsSold = productsSold;
 
-        rGrossRevenue = (productsSold * storeSellPrice) * energyRatio * averageStoreFill;
+        rGrossRevenue = (productsSold * storeSellPrice) * energyRatio * waterRatio * averageStoreFill;
 
         double payroll = 0;
         if (storeWages != null) {
@@ -477,8 +511,9 @@ public class CommercialHandler {
         rInventoryCost = (pLocalImport * foodPrice + pGlobalImport * importPrice)
                 * (1 + pTaxRate);
         rElectricityCost = electricity * pricePerWatt;
+        rWaterCost = water * waterRatio * pricePerWaterUnit;
 
-        rRetailOperatingCost = rPayroll + rInventoryCost + rElectricityCost;
+        rRetailOperatingCost = rPayroll + rInventoryCost + rElectricityCost + rWaterCost;
         rRetailNetIncome = rGrossRevenue - rRetailOperatingCost;
 
         /* -------------------- REAL ESTATE COMPANY -------------------- */
@@ -524,6 +559,7 @@ public class CommercialHandler {
         System.out.println("\nRESOURCE UTILIZATION");
         System.out.printf("Labor Fill Rate:        %.1f%%%n", rAverageStoreFill * 100);
         System.out.printf("Energy Efficiency:      %.1f%%%n", rEnergyRatio * 100);
+        System.out.printf("Water Efficiency:       %.1f%%%n", rWaterRatio * 100);
 
         /* 3. Retail Sales Performance */
         System.out.println("\nSALES PERFORMANCE");
@@ -544,6 +580,7 @@ public class CommercialHandler {
         System.out.printf("      Local Imports:                   %,d units%n", pLocalImport);
         System.out.printf("      Global Imports:                  %,d units%n", pGlobalImport);
         System.out.printf("  Electricity Expense:                 -$%s%n", formatter.format(rElectricityCost));
+        System.out.printf("  Water Expense:                       -$%s%n", formatter.format(rWaterCost));
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.printf("Total Operating Expenses:              -$%s%n", formatter.format(rRetailOperatingCost));
@@ -605,12 +642,14 @@ public class CommercialHandler {
         rStoreInventory = 0;
         rAverageStoreFill = 0;
         rEnergyRatio = 0;
+        rWaterRatio = 0;
         rDemand = 0;
         rProductsSold = 0;
         rGrossRevenue = 0;
         rPayroll = 0;
         rInventoryCost = 0;
         rElectricityCost = 0;
+        rWaterCost = 0;
         rRetailOperatingCost = 0;
         rRetailNetIncome = 0;
         rOccupiedUnits = 0;

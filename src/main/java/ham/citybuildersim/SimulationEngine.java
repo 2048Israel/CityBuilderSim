@@ -66,6 +66,7 @@ public class SimulationEngine {
         economyManager.updateJobFillRate(populationManager.getJobFillRate());
         economyManager.setTotalWage(populationManager.getTotalWage());
         economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
+        economyManager.setWaterRatio(servicesManager.getWaterRatio());
         economyManager.updateEcon();
         
          
@@ -74,6 +75,9 @@ public class SimulationEngine {
     public void updateServices(Game game){
         servicesManager.updateServiceWages(populationManager.getWagesPerType());
         servicesManager.updateJobFillRate(populationManager.getJobFillRate());
+        // must precede updateServices(): the residents' draw is part of the
+        // water demand the ratio is computed against
+        servicesManager.setPopulation(populationManager.getPopulation());
         servicesManager.updateServices();
         servicesManager.updateFromGame(servicesManager.getConstructionHandler()::setMaterialsInventory, buildingManager.getConstructionMaterials());//must finish
         servicesManager.updateFromGame(servicesManager.getConstructionHandler()::setMaterialsPrice, buildingManager.getConstructionMaterialPrice());
