@@ -44,6 +44,7 @@ public class EconomyManager {
     private CommercialHandler commercialHandler;
     private FoodMarket foodMarket;
     private BusinessDebtManager businessDebtManager;
+    private final NationalAccounts nationalAccounts = new NationalAccounts();
 
     /**
      * Construction lives under ServicesManager but banks like a business, so
@@ -389,9 +390,64 @@ public class EconomyManager {
     public int getIndustryFoodInventory(){
         return industrialHandler.getFoodInventory();
     }
+    public NationalAccounts getNationalAccounts(){
+        return nationalAccounts;
+    }
+
+    /**
+     * Measures the month's output and the government's books.
+     *
+     * Called once a month after the sector income statements have run, because
+     * every figure it needs is one of their results.
+     *
+     * @param constructionWorkDone value of construction put in place this month
+     * @param governmentServices   cost of running the services the city owns
+     * @param materialImports      construction materials bought in from outside
+     * @param interest             interest paid on city debt
+     * @param capitalSpending      what the city itself spent on buildings
+     */
+    public void updateNationalAccounts(double constructionWorkDone,
+                                       double governmentServices,
+                                       double materialImports,
+                                       double interest,
+                                       double capitalSpending){
+
+        // Only FINAL sales count. The food a store buys from a mill is
+        // intermediate and stays out; the food it sells to households is C.
+        double retailSales = commercialHandler.getGrossRevenue();
+        double rentPaid = commercialHandler.getReportRentIncome();
+
+        // Stock on both sides of the food chain, at the market price - what a
+        // warehouse is worth is what it would fetch today.
+        double price = foodMarket.getLocalPrice();
+        double inventoryValue =
+                (industrialHandler.getFoodInventory() + commercialHandler.getStoreInventory()) * price;
+
+        double foodImports = commercialHandler.getReportGlobalImports()
+                * commercialHandler.getImportPrice();
+
+        nationalAccounts.update(retailSales, rentPaid,
+                constructionWorkDone, inventoryValue,
+                governmentServices,
+                foodImports, materialImports);
+
+        nationalAccounts.updateGovernment(
+                totalBusinessTax, totalIndustrialTax, salesTax, totalWageTax,
+                utilityIncome, interest, capitalSpending);
+
+        GDP = nationalAccounts.getGdp();
+    }
+
+    /**
+     * NOTE: this used to compute one thing and return another - it assigned
+     * `GDP = totalWage + two net incomes` and then returned `yearGDP / 12`, a
+     * different figure from a different month. It also measured GDP as wages
+     * plus profit, so once businesses started paying interest their losses
+     * swamped the wage bill and the city's output read as negative while its
+     * shops were full. Both are fixed; see NationalAccounts.
+     */
     public double getMonthGdp(){
-        GDP = totalWage + industrialHandler.getNetIncome() + commercialHandler.getNetIncome();
-        return Math.round((yearGDP/12)*100)/100;
+        return nationalAccounts.getGdp();
     }
 
     public double getYearGdp(){
@@ -504,9 +560,17 @@ public class EconomyManager {
         int start = Math.max(0, gdp.size() - 11);
         List<Double> last11 = gdp.subList(start, gdp.size());
 
-        yearGDP = GDP;
-        for (int i = 0; i < last11.size(); i++) {
-            yearGDP += last11.get(i);
+        yearGDP = nationalAccounts.getAnnualGdp();
+
+        // NOTE: the old version summed the last 11 history entries plus the
+        // current GDP field. NationalAccounts keeps its own history and sums the
+        // last twelve of it, so the annual figure can no longer drift from the
+        // monthly one that feeds it.
+        if (yearGDP == 0) {
+            yearGDP = GDP;
+            for (int i = 0; i < last11.size(); i++) {
+                yearGDP += last11.get(i);
+            }
         }
 
     }

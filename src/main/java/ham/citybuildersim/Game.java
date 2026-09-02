@@ -598,6 +598,8 @@ public class Game {
 
             // 4. Subtract everything at once
             cash -= totalCost;
+            cityCapitalSpending += totalCost;
+            monthlyMaterialImports += neededMaterials;
 
             // ...and it lands somewhere now. The construction sector did the
             // work; this is what it gets paid for doing it - recognised as the
@@ -652,6 +654,7 @@ public class Game {
 
         buildingManager.addStack(template, quantity, false);
         materialsConsumed += totalMaterialsRequired;
+        monthlyMaterialImports += neededMaterials;
 
         servicesManager.getConstructionHandler().bill(totalCost,
                 template.getConstructionPoints() * (double) quantity);
@@ -1079,11 +1082,27 @@ public class Game {
 
         // Recognise the month's construction work before construction's income
         // statement runs, so the revenue and the payroll describe the same month.
-        servicesManager.getConstructionHandler().recogniseWork(getConstructionOutput());
+        ConstructionHandler construction = servicesManager.getConstructionHandler();
+        construction.recogniseWork(getConstructionOutput());
+
+        // Grab the recognised figure before updateConstructionReport() banks the
+        // month and clears it - that value IS this month's investment.
+        double constructionWorkDone = construction.getRevenue();
 
         economyManager.updateCommercialReport();
         economyManager.updateIndustrialReport();
         economyManager.updateConstructionReport();
+
+        economyManager.updateNationalAccounts(
+                constructionWorkDone,
+                servicesManager.getUtilitiesHandler().getUtilityPayroll(),
+                monthlyMaterialImports * buildingManager.getConstructionMaterialPrice(),
+                cityInterestPaid,
+                cityCapitalSpending);
+
+        cityCapitalSpending = 0;
+        cityInterestPaid = 0;
+        monthlyMaterialImports = 0;
 
         // Then advance the loans, take back matured principal, and lend to
         // whichever sector the month left short.
@@ -1273,6 +1292,24 @@ public class Game {
     // getters on CommercialHandler are all pure reads - the UI cannot mutate
     // economy state through this.
     private BusinessInvestment businessInvestment;
+
+    /** What the CITY spent on buildings this month - its own capital budget. */
+    private double cityCapitalSpending;
+
+    /**
+     * Construction materials bought in from outside this month, in units.
+     *
+     * NOT totalMaterialsImported, which is a receipt field for the build screen:
+     * it is assigned on a build order and never cleared, so it holds the last
+     * order's figure forever. Subtracting that as imports charged the city
+     * $1,240 of imports every month of a two-hundred-month stretch in which
+     * nothing was built at all, and dragged GDP to -$468 on a city whose shops
+     * were turning over $773.
+     */
+    private double monthlyMaterialImports;
+
+    /** Interest the city paid this month, accumulated by InterestExpense(). */
+    private double cityInterestPaid;
     private final java.util.Map<String, String> lastInvestment = new java.util.LinkedHashMap<>();
 
     public EconomyManager getEconomyManager() {
@@ -1400,6 +1437,7 @@ public class Game {
     }
     public void InterestExpense(double amount){
         economyManager.updateInterestExpense(amount);
+        cityInterestPaid += amount;
     }
     
     public DebtManager getDebtManager(){

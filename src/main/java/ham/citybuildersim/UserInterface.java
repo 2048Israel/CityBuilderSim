@@ -280,6 +280,7 @@ public class UserInterface extends Application {
         Button b2 = new Button("Restructure");
         Button b3 = new Button("Debt Info");
         Button b4 = new Button("Sector Info");
+        Button b5 = new Button("Government & National Accounts");
         
         Button b0 = new Button("Back");
         
@@ -289,6 +290,7 @@ public class UserInterface extends Application {
         });
         b3.setOnAction(e -> showDebtInfoMenu());
         b4.setOnAction(e -> showSectorMenu());
+        b5.setOnAction(e -> showGovernmentMenu());
 
         // NOTE: "Restructure" (b2) was never implemented even in the old terminal
         // menu (its case was an empty stub) - leaving disabled. "Sector Info" (b4)
@@ -303,7 +305,7 @@ public class UserInterface extends Application {
 
         
 
-        rootMenu.getChildren().addAll(marketStatus,gameInfo,b1,b2,b3,b4, b0);
+        rootMenu.getChildren().addAll(marketStatus,gameInfo,b1,b2,b3,b4,b5, b0);
 
         
     }
@@ -1520,6 +1522,132 @@ public class UserInterface extends Application {
         showSectorReport("MUNICIPAL CONSTRUCTION AUTHORITY", column, this::showSectorMenu);
     }
 
+    /**
+     * The city's own view of the economy: what was produced, how fast that is
+     * changing, and what the government took and spent.
+     *
+     * GDP is broken into C / I / G / NX rather than shown as one number, because
+     * one number cannot tell you whether a city is growing because people are
+     * buying more or because it is building more - and those call for completely
+     * different responses from the player.
+     */
+    private void showGovernmentMenu() {
+        clearMenu();
+
+        EconomyManager em = game.getEconomyManager();
+        NationalAccounts na = em.getNationalAccounts();
+
+        int population = game.getPopulationManager().getPopulation();
+        double debt = game.getDebtManager().getAllPrincipal();
+        double rate = game.getDebtManager().getRate();
+
+        VBox column = new VBox(0);
+
+        /* ------------------------- OUTPUT ------------------------- */
+        column.getChildren().add(sectionHeading("=== GROSS DOMESTIC PRODUCT ==="));
+
+        VBox headline = reportSection("THIS MONTH",
+                String.format("GDP:                    $%s", formatter.format(na.getGdp())),
+                String.format("Trend (12-mo average):  $%s", formatter.format(na.getTrendGdp())),
+                String.format("Annual (last 12 mo):    $%s", formatter.format(na.getAnnualGdp())),
+                String.format("Per Capita (annual):    $%s thousand",
+                        formatter.format(na.getGdpPerCapita(population))));
+        column.getChildren().add(headline);
+
+        // C + I + G + NX, each with its parts, so the total is checkable by eye.
+        column.getChildren().add(reportSection("CONSUMPTION (C)",
+                String.format("Goods bought in shops:  $%s", formatter.format(na.getConsumptionGoods())),
+                String.format("Housing (rent paid):    $%s", formatter.format(na.getConsumptionHousing())),
+                "---------------------------------------------------",
+                String.format("Total Consumption:      $%s", formatter.format(na.getConsumption()))));
+
+        column.getChildren().add(reportSection("INVESTMENT (I)",
+                String.format("Construction put up:    $%s", formatter.format(na.getInvestmentConstruction())),
+                String.format("Change in stock:        $%s", formatter.format(na.getInvestmentInventories())),
+                "  (stock built up is output not yet sold)",
+                "---------------------------------------------------",
+                String.format("Total Investment:       $%s", formatter.format(na.getInvestment()))));
+
+        column.getChildren().add(reportSection("GOVERNMENT (G)",
+                String.format("Services provided:      $%s", formatter.format(na.getGovernment())),
+                "  (cost of running the city's own utilities)"));
+
+        column.getChildren().add(reportSection("NET EXPORTS (NX)",
+                String.format("Food imported:         -$%s", formatter.format(na.getImportsFood())),
+                String.format("Materials imported:    -$%s", formatter.format(na.getImportsMaterials())),
+                "---------------------------------------------------",
+                String.format("Net Exports:            $%s", formatter.format(na.getNetExports())),
+                "  (nothing is exported yet, so this only subtracts)"));
+
+        VBox total = reportSection("");
+        Label gdpTotal = monoLabel(String.format("%-32s $%s", "GDP = C + I + G + NX:",
+                formatter.format(na.getGdp())));
+        gdpTotal.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        total.getChildren().add(gdpTotal);
+        column.getChildren().add(total);
+
+        /* ------------------------- GROWTH ------------------------- */
+        column.getChildren().add(sectionHeading("=== GROWTH ==="));
+
+        VBox growth = reportSection("RATES");
+        addGrowthLine(growth, "Month on month (annualised):", na.getMonthlyGrowthAnnualised());
+
+        if (na.getMonthsRecorded() >= 13) {
+            addGrowthLine(growth, "Year on year:", na.getYearOnYearGrowth());
+        } else {
+            growth.getChildren().add(monoLabel(String.format("%-32s%s", "Year on year:",
+                    "needs " + (13 - na.getMonthsRecorded()) + " more months")));
+        }
+        growth.getChildren().add(monoLabel(String.format("%-32s%,d months", "History recorded:",
+                na.getMonthsRecorded())));
+        column.getChildren().add(growth);
+
+        /* ---------------------- GOVERNMENT BOOKS ---------------------- */
+        column.getChildren().add(sectionHeading("=== GOVERNMENT ACCOUNTS ==="));
+
+        column.getChildren().add(reportSection(
+                String.format("REVENUE  (tax rate %.1f%%)", em.getTaxRate() * 100),
+                String.format("Business Tax:           $%s", formatter.format(na.getTaxBusiness())),
+                String.format("Industrial Tax:         $%s", formatter.format(na.getTaxIndustrial())),
+                String.format("Sales Tax:              $%s", formatter.format(na.getTaxSales())),
+                String.format("Wage Tax:               $%s", formatter.format(na.getTaxWage())),
+                String.format("Utility Net Income:     $%s", formatter.format(na.getUtilityIncome())),
+                "---------------------------------------------------",
+                String.format("Total Revenue:          $%s", formatter.format(na.getTotalRevenue()))));
+
+        column.getChildren().add(reportSection("EXPENDITURE",
+                String.format("Debt Interest:         -$%s", formatter.format(na.getInterestExpense())),
+                String.format("Buildings (capital):   -$%s", formatter.format(na.getCapitalSpending())),
+                "---------------------------------------------------",
+                String.format("Total Expenditure:     -$%s", formatter.format(na.getTotalExpenses()))));
+
+        VBox balance = reportSection("BALANCE");
+        addNetIncomeLine(balance, na.getBalance() < 0 ? "DEFICIT:" : "SURPLUS:", na.getBalance());
+        balance.getChildren().add(monoLabel(String.format("%-32s $%s", "Cash Reserves:",
+                formatter.format(game.getCash()))));
+        column.getChildren().add(balance);
+
+        /* ------------------------- DEBT ------------------------- */
+        column.getChildren().add(reportSection("PUBLIC DEBT",
+                String.format("Outstanding:            $%s", formatter.format(debt)),
+                String.format("Borrowing Rate:         %.2f%%", rate * 100),
+                String.format("Debt to Annual GDP:     %.1f%%", na.getDebtToGdp(debt) * 100),
+                String.format("Revenue to GDP:         %.1f%%", na.getRevenueToGdp() * 100),
+                "",
+                String.format("Private Sector Debt:    $%s",
+                        formatter.format(em.getBusinessDebtManager().getTotalPrincipal()))));
+
+        showSectorReport("GOVERNMENT & NATIONAL ACCOUNTS", column, this::showEconomyMenu);
+    }
+
+    /** A growth rate, green when positive and red when the city is shrinking. */
+    private void addGrowthLine(VBox section, String label, double rate) {
+        Label line = monoLabel(String.format("%-32s%+.2f%%", label, rate * 100));
+        line.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (rate < 0 ? "#c62828" : "#2e7d32") + ";");
+        section.getChildren().add(line);
+    }
+
     private void showDebtInfoMenu() {
         clearMenu();
 
@@ -1743,7 +1871,11 @@ public class UserInterface extends Application {
                 sectionHeading("ECONOMY"),
                 statLine("Cash", money(game.getCash())),
                 statLine("Net income", money(game.getIncome())),
-                statLine("Monthly GDP", money(economyManager.getGDP() / 12)),
+                // NOTE: this was getGDP() / 12. The GDP field used to hold an
+                // annual-ish figure, so the divide made sense then; it now holds
+                // the month, and dividing it again showed $64 on a city whose
+                // monthly output was $772.
+                statLine("Monthly GDP", money(economyManager.getMonthGdp())),
                 statLine("Annual GDP", money(annualGdp)));
 
         int population = populationManager.getPopulation();
