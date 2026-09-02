@@ -42,6 +42,7 @@ public class EconomyManager {
     private BuildingManager buildingManager;
     private IndustrialHandler industrialHandler;
     private CommercialHandler commercialHandler;
+    private FoodMarket foodMarket;
 
     //Send variables to other classes
         //all
@@ -58,13 +59,17 @@ public class EconomyManager {
         this.buildingManager = buildingManager;
         industrialHandler = new IndustrialHandler();
         commercialHandler = new CommercialHandler();
+        foodMarket = new FoodMarket();
     }
 
 
     //reset for next month
     public void startOfMontEconUpdate(){
 
-        industrialHandler.setFoodDemand(commercialHandler.getNeededInventory());
+        // NOTE: industry's demand used to be the stores' *sales* figure. It is now
+        // what the stores actually bought from industry last month, so the two
+        // sides trade with each other rather than each guessing at the other.
+        industrialHandler.setFoodDemand(commercialHandler.getReportLocalImports());
     }
     public void updateEcon(){
         getMonthGdp();
@@ -121,6 +126,10 @@ public class EconomyManager {
         return industrialHandler;
     }
 
+    public FoodMarket getFoodMarket(){
+        return foodMarket;
+    }
+
     public void updateIndustrial(){
         updateFoodProduction();
         industrialHandler.setFoodCapacity(buildingManager.getFoodCapacity());
@@ -129,9 +138,29 @@ public class EconomyManager {
         industrialHandler.updateIndustrialHandler();
 
     }
+    /**
+     * Clears the food market for the month, then lets industry produce.
+     *
+     * Order matters and is unchanged from before: the stores see the inventory
+     * industry was holding at the start of the month, not this month's output.
+     */
     public void procedureUpdate(){
-        commercialHandler.setFoodAvailableForSale(industrialHandler.getFoodInventory());
-        commercialHandler.setFoodPrice(industrialHandler.getFoodPrice());
+
+        // 1. price the month from production flow, the stockpile and the stores'
+        //    intended purchase
+        foodMarket.updatePrice(industrialHandler.getMonthlyOutput(),
+                industrialHandler.getFoodInventory(),
+                commercialHandler.getExpectedPurchase());
+
+        // 2. industry decides how much it will release at that price - below its
+        //    own cost per unit it withholds and lets inventory build
+        double offered = industrialHandler.offerToMarket(foodMarket);
+
+        // 3. both sides trade on the same price
+        industrialHandler.setFoodPrice(foodMarket.getLocalPrice());
+        commercialHandler.setFoodPrice(foodMarket.getLocalPrice());
+        commercialHandler.setImportPrice(foodMarket.getImportPrice());
+        commercialHandler.setFoodAvailableForSale((int) offered);
 
         industrialHandler.produceFood();
     }
@@ -429,6 +458,7 @@ public class EconomyManager {
 
         commercialHandler.resetCommercialHandler();
         industrialHandler.resetIndustrialHandler();
+        foodMarket.resetFoodMarket();
     }
 
     private static final NumberFormat formatter = NumberFormat.getNumberInstance(Locale.CANADA);

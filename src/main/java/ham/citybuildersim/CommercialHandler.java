@@ -98,6 +98,12 @@ public class CommercialHandler {
     private double rTotalNetIncome;
     private double rTotalTax;
 
+    /** Months of recent sales a store tries to keep on the shelf. */
+    private static final double STORE_COVER_MONTHS = 2.5;
+
+    /** World price, supplied by FoodMarket. Imports cover whatever local supply can't. */
+    private double importPrice = .20;
+
     //temporary variables
     private double storeSellPrice = .3;
     private double rentPrice = .35;
@@ -289,6 +295,16 @@ public class CommercialHandler {
     public void setFoodPrice(double foodPrice){
         this.foodPrice = foodPrice;
     }
+    public void setImportPrice(double importPrice){
+        this.importPrice = importPrice;
+    }
+    /** Units sold last month - the demand signal the restock target is built on. */
+    public int getLastMonthSales(){
+        return neededInventory;
+    }
+    public double getImportPrice(){
+        return importPrice;
+    }
     public void setStoreInventory(int storeInventory){
         this.storeInventory = storeInventory;
     }
@@ -312,35 +328,75 @@ public class CommercialHandler {
 
 
     //store methods
+    /**
+     * Units the stores want to buy this month.
+     *
+     * NOTE: this used to be `storeCapacity - storeInventory` - stores restocked to
+     * full capacity every month regardless of how many customers they had. Ten
+     * grocery stores serving 900 people held 35,000 units and paid to procure all
+     * of it, which is most of why retail could never turn a profit. They now aim
+     * for a few months of cover based on actual demand, so capacity is a ceiling
+     * rather than a target, and a well-stocked store simply buys nothing.
+     */
     public int neededInventory(){
-        int needed = 0;
-        if(storeInventory < storeCapacity){
-            needed = storeCapacity - storeInventory;
-        }
-
-
-        return needed;
-
+        return Math.max(restockTarget() - storeInventory, 0);
     }
 
+    /** Shelf stock the stores are aiming for: a few months of recent sales. */
+    private int restockTarget() {
+
+        // Month one has no sales history, so fall back to the demand the stores
+        // could serve if they were stocked.
+        int recentDemand = Math.max(getLastMonthSales(), Math.min(storeCoverage, population));
+
+        int target = (int) Math.ceil(recentDemand * STORE_COVER_MONTHS);
+        return Math.min(target, storeCapacity);
+    }
+
+    /**
+     * The demand signal handed to FoodMarket.
+     *
+     * NOTE: must anticipate this month's sales. The market is priced in
+     * procedureUpdate(), which runs BEFORE updateCommercialHandler() takes the
+     * month's sales off the shelf - so neededInventory() still sees full shelves
+     * and reports roughly zero demand. Pricing off that made every scenario look
+     * like a glut, including one mill supplying ten stores.
+     */
+    public int getExpectedPurchase() {
+        int afterSales = Math.max(storeInventory - productsSold, 0);
+        return Math.max(restockTarget() - afterSales, 0);
+    }
+
+    /**
+     * Buys the month's restock.
+     *
+     * FoodMarket caps the local price at the import price, so local is never the
+     * more expensive option - the store takes whatever industry has released and
+     * imports only the shortfall. If it already holds enough cover it buys nothing
+     * and runs the shelves down.
+     *
+     * NOTE: imports used to be priced at `foodPrice * 1.3` - a fixed markup on the
+     * local price rather than an independent world price - so there was never an
+     * actual choice between the two.
+     */
     public double buyInventory(){
-        double cost = 0;
-        int localImport;
-        int globalImport;
+
         int needed = neededInventory();
 
-        localImport = Math.min(foodAvailableForSale, needed);
-        int remaining = needed - localImport;
-        globalImport = remaining;
+        int localImport = Math.min(foodAvailableForSale, needed);
+        int globalImport = needed - localImport;
 
         storeInventory += localImport + globalImport;
 
-        needed -= localImport;
-        globalImport = needed;
-        cost = localImport*foodPrice*(1+pTaxRate) + globalImport*foodPrice*1.3*(1+pTaxRate);
-        rImportTax = globalImport*foodPrice*1.3*pTaxRate;
+        double cost = localImport * foodPrice * (1 + pTaxRate)
+                + globalImport * importPrice * (1 + pTaxRate);
 
-        if(globalImport != 0)System.out.println("Stores bought: " + formatter.format(globalImport) + " food globally.");
+        rImportTax = globalImport * importPrice * pTaxRate;
+
+        if (globalImport != 0) {
+            System.out.println("Stores imported: " + formatter.format(globalImport)
+                    + " food at $" + formatter.format(importPrice) + "/unit.");
+        }
 
         pLocalImport = localImport;
         pGlobalImport = globalImport;
@@ -414,10 +470,12 @@ public class CommercialHandler {
         payroll *= averageStoreFill;
         rPayroll = payroll;
 
-        // NOTE: buyInventory() prices global imports at 1.3x but this report has
-        // always used 1.5x. Left as-is deliberately so this refactor stays
-        // behaviour-preserving - logged in the bug backlog to reconcile later.
-        rInventoryCost = (pLocalImport * foodPrice) + (pGlobalImport * foodPrice * 1.5);
+        // Matches what buyInventory() actually charged, tax included. This line
+        // used to price globals at 1.5x the local price while buyInventory() used
+        // 1.3x, so the income statement never agreed with the money that left the
+        // account (backlog item 6).
+        rInventoryCost = (pLocalImport * foodPrice + pGlobalImport * importPrice)
+                * (1 + pTaxRate);
         rElectricityCost = electricity * pricePerWatt;
 
         rRetailOperatingCost = rPayroll + rInventoryCost + rElectricityCost;

@@ -65,6 +65,13 @@ public class IndustrialHandler {
     private int productsSoldCopy;
     private int productsImportedCopy = 0;
     private double importCost = .9;
+
+    /** Above this share of warehouse capacity industry clears stock even at a loss. */
+    private static final double DUMP_THRESHOLD = .8;
+
+    private double rCostPerUnit;
+    private double rOffered;
+    private double rWithheld;
     
     public IndustrialHandler(){
         
@@ -109,6 +116,61 @@ public class IndustrialHandler {
     public double getFoodPrice(){
         return foodPrice;
     }
+
+    /** This month's expected output: base capacity scaled by labour and power. */
+    public double getMonthlyOutput() {
+        return foodProduction * averageIndustrialFill * energyRatio;
+    }
+
+    public double getReportCostPerUnit() { return rCostPerUnit; }
+    public double getReportOffered()     { return rOffered; }
+    public double getReportWithheld()    { return rWithheld; }
+
+    /**
+     * Break-even price per unit this month: payroll plus power divided by actual
+     * output. Used as a reservation price - industry will not sell below cost.
+     */
+    public double getCostPerUnit() {
+
+        double output = foodProduction * averageIndustrialFill * energyRatio;
+        if (output <= 0) {
+            return Double.MAX_VALUE;      // producing nothing - any sale is a loss
+        }
+
+        double payroll = 0;
+        if (industrialWages != null) {
+            for (double wage : industrialWages) {
+                payroll += wage;
+            }
+        }
+        payroll *= averageIndustrialFill;
+
+        return (payroll + getElectricityCost()) / output;
+    }
+
+    /**
+     * How many units industry is willing to release at the market's local price.
+     *
+     * At or above cost it offers everything it holds. Below cost it withholds and
+     * lets inventory build - except that once the warehouse is over
+     * DUMP_THRESHOLD full it clears the excess anyway, because stock above that
+     * line would otherwise be lost to the capacity cap in produceFood().
+     */
+    public double offerToMarket(FoodMarket market) {
+
+        rCostPerUnit = getCostPerUnit();
+
+        if (market.getLocalPrice() >= rCostPerUnit) {
+            rOffered = foodInventory;
+            rWithheld = 0;
+        } else {
+            double threshold = foodCapacity * DUMP_THRESHOLD;
+            rOffered = Math.max(foodInventory - threshold, 0);
+            rWithheld = foodInventory - rOffered;
+        }
+
+        return rOffered;
+    }
     //setters
     public void setBaseFoodProduction(int quantity){
         foodProduction = quantity;
@@ -121,6 +183,10 @@ public class IndustrialHandler {
     }
     public void setFoodInventory(int foodInventory){
         this.foodInventory = foodInventory;
+    }
+    /** Set by FoodMarket each month - industry no longer sells at a fixed price. */
+    public void setFoodPrice(double foodPrice){
+        this.foodPrice = foodPrice;
     }
     public void setEnergyRatio(double ratio){
         this.energyRatio = ratio;

@@ -801,8 +801,11 @@ public class UserInterface extends Application {
                 "",
                 String.format("Payroll Expense:                -$%s", formatter.format(ch.getReportPayroll())),
                 String.format("Inventory Procurement:          -$%s", formatter.format(ch.getReportInventoryCost())),
-                String.format("    Local Imports:               %,d units", ch.getReportLocalImports()),
-                String.format("    Global Imports:              %,d units", ch.getReportGlobalImports()),
+                String.format("    Local @ $%s:              %,d units",
+                        formatter.format(game.getEconomyManager().getFoodMarket().getLocalPrice()),
+                        ch.getReportLocalImports()),
+                String.format("    Imported @ $%s:           %,d units",
+                        formatter.format(ch.getImportPrice()), ch.getReportGlobalImports()),
                 String.format("Electricity Expense:            -$%s", formatter.format(ch.getReportElectricityCost())),
                 "---------------------------------------------------",
                 String.format("Total Operating Expenses:       -$%s", formatter.format(ch.getReportRetailOperatingCost())));
@@ -1060,6 +1063,25 @@ public class UserInterface extends Application {
                 String.format("Total Operating Expenses:       -$%s", formatter.format(ih.getReportOperatingCost())));
         addNetIncomeLine(statement, "NET INCOME (INDUSTRIAL):", ih.getNetIncome());
         column.getChildren().add(statement);
+
+        FoodMarket market = game.getEconomyManager().getFoodMarket();
+        VBox marketSection = reportSection("FOOD MARKET",
+                String.format("Local Price:            $%s /unit", formatter.format(market.getLocalPrice())),
+                String.format("Import Price (ceiling): $%s /unit", formatter.format(market.getImportPrice())),
+                String.format("Break-even Cost:        $%s /unit", formatter.format(ih.getReportCostPerUnit())),
+                String.format("Offered to Market:      %,.0f units", ih.getReportOffered()),
+                String.format("Withheld:               %,.0f units", ih.getReportWithheld()));
+
+        if (ih.getReportWithheld() > 0) {
+            Label held = monoLabel("Price is below cost - holding stock back.");
+            held.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #c62828;");
+            marketSection.getChildren().add(held);
+        } else if (market.isShortage()) {
+            Label tight = monoLabel("Local supply short - buyers are importing.");
+            tight.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #2e7d32;");
+            marketSection.getChildren().add(tight);
+        }
+        column.getChildren().add(marketSection);
 
         column.getChildren().add(reportSection("TAX SUMMARY",
                 String.format("Tax Rate:               %.1f%%", ih.getReportTaxRate() * 100),
