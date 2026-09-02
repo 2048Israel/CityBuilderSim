@@ -47,6 +47,30 @@ public class UtilitiesHandler {
         return pricePerWatt;
     }
 
+    /* -----------------------------------------------------------------------
+       READ-ONLY ACCESSORS for the utilities screen. printUtilitiesInfo() is
+       already a pure printer - it only reads these same fields - so the screen
+       reads them live too and the two always agree.
+       ----------------------------------------------------------------------- */
+    public double getProduction()          { return production; }
+    public double getBaseProduction()      { return baseProduction; }
+    public double getConsumption()         { return consumption; }
+    public double getAverageUtilityFill()  { return averageUtilityFill; }
+
+    public double getUtilityPayroll() {
+        double total = 0;
+        if (utilityWages != null) {
+            for (double wage : utilityWages) {
+                total += wage;
+            }
+        }
+        return total * averageUtilityFill;
+    }
+
+    public double getUtilityRevenue() {
+        return Math.min(consumption * pricePerWatt, production * pricePerWatt);
+    }
+
     //setters
     public void setWattsProduction(double watts) {
         this.baseProduction = watts + 10000;

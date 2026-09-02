@@ -107,6 +107,20 @@ public class EconomyManager {
         commercialHandler.computeMonthlyReport();
     }
 
+    /** Once-per-month industrial income statement. Same contract as the commercial one. */
+    public void updateIndustrialReport(){
+        industrialHandler.calculateIndustrialResults();
+    }
+
+    /** Pure recompute for the load path - does not bank cash. */
+    public void refreshIndustrialReport(){
+        industrialHandler.computeMonthlyReport();
+    }
+
+    public IndustrialHandler getIndustrialHandler(){
+        return industrialHandler;
+    }
+
     public void updateIndustrial(){
         updateFoodProduction();
         industrialHandler.setFoodCapacity(buildingManager.getFoodCapacity());

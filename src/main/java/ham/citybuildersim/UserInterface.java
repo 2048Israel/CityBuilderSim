@@ -586,18 +586,22 @@ public class UserInterface extends Application {
         // Utility Services is (and always was) reachable through the Private
         // Enterprise Sector submenu instead, so this button is disabled rather
         // than left silently doing nothing.
-        Button utilities = new Button("Municipal Utility Services");
+        // NOTE: this slot used to read "Municipal Utility Services" and was dead -
+        // utilities are reachable through the Private Enterprise submenu. Reused
+        // for the construction authority, which had a full report in the terminal
+        // build (ConstructionHandler.printConstructionInfo) but no menu entry at all.
+        Button construction = new Button("Municipal Construction Authority");
         Button systemOps = new Button("[System Operations]");
         Button back = new Button("Back");
 
-        utilities.setDisable(true);
         systemOps.setDisable(true);
 
         population.setOnAction(e -> showPopulationInfoMenu());
         privateSector.setOnAction(e -> showPrivateSectorMenu());
+        construction.setOnAction(e -> showConstructionInfoMenu());
         back.setOnAction(e -> showEconomyMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, population, privateSector, utilities, systemOps, back);
+        rootMenu.getChildren().addAll(title, gameInfo, population, privateSector, construction, systemOps, back);
     }
 
     private void showPrivateSectorMenu() {
@@ -619,11 +623,9 @@ public class UserInterface extends Application {
 
         futureExpansion.setDisable(true);
 
-        // NOTE: Industrial/Utility screens aren't built yet.
-        industrial.setDisable(true);
-        utility.setDisable(true);
-
         commercial.setOnAction(e -> showCommercialInfoMenu());
+        industrial.setOnAction(e -> showIndustrialInfoMenu());
+        utility.setOnAction(e -> showUtilityInfoMenu());
 
         back.setOnAction(e -> showSectorMenu());
 
@@ -979,6 +981,190 @@ public class UserInterface extends Application {
         done.setOnAction(e -> showStartMenu());
 
         rootMenu.getChildren().addAll(again, done);
+    }
+
+    /** Shared scaffolding for the sector report screens. */
+    private void showSectorReport(String title, VBox column, Runnable back) {
+        Label heading = new Label(title);
+        heading.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Label gameInfo = new Label("Month: " + game.getMonth()
+                + " | Cash: $" + formatter.format(game.getCash()));
+
+        column.setAlignment(Pos.TOP_LEFT);
+        column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+
+        VBox content = new VBox(0);
+        content.setAlignment(Pos.CENTER);
+        content.getChildren().add(column);
+
+        javafx.scene.control.ScrollPane scrollPane = new javafx.scene.control.ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefHeight(500);
+        scrollPane.setStyle("-fx-background-color:transparent;");
+
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> back.run());
+
+        rootMenu.getChildren().addAll(heading, gameInfo, scrollPane, backButton);
+    }
+
+    /** Colours a net-income line red or green and appends it to a section. */
+    private void addNetIncomeLine(VBox section, String label, double value) {
+        Label line = monoLabel(String.format("%-32s $%s", label, formatter.format(value)));
+        line.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (value < 0 ? "#c62828" : "#2e7d32") + ";");
+        section.getChildren().add(line);
+    }
+
+    /**
+     * JavaFX port of IndustrialHandler.printIndustrialInfo().
+     *
+     * Pure reader - the monthly figures are calculated once per month by
+     * IndustrialHandler.calculateIndustrialResults(), driven from
+     * Game.startOfMonthUpdate(). The old printer banked cash as a side effect,
+     * so wiring this button straight to it would have paid the industrial sector
+     * again on every click.
+     */
+    private void showIndustrialInfoMenu() {
+        clearMenu();
+
+        IndustrialHandler ih = game.getEconomyManager().getIndustrialHandler();
+
+        VBox column = new VBox(0);
+        column.getChildren().addAll(
+                reportSection("FACILITY OVERVIEW",
+                        String.format("Storage Capacity:       %,d units", ih.getReportFoodCapacity()),
+                        String.format("Current Inventory:      %,d units", ih.getReportFoodInventory())),
+
+                reportSection("RESOURCE UTILIZATION",
+                        String.format("Labor Fill Rate:        %.1f%%", ih.getReportAverageFill() * 100),
+                        String.format("Energy Efficiency:      %.1f%%", ih.getReportEnergyRatio() * 100)),
+
+                reportSection("PRODUCTION ANALYSIS",
+                        String.format("Base Potential:         %,d units", ih.getReportBaseProduction()),
+                        String.format("Actual Output:          %,.0f units", ih.getReportActualProduction())),
+
+                reportSection("MARKET PERFORMANCE",
+                        String.format("Market Demand:          %,.0f units", ih.getReportDemand()),
+                        String.format("Units Sold:             %,d units", ih.getReportUnitsSold()),
+                        String.format("Average Market Price:   $%s per unit", formatter.format(ih.getReportSellPrice())),
+                        String.format("Gross Revenue:          $%s", formatter.format(ih.getGrossRevenue()))));
+
+        VBox statement = reportSection("INCOME STATEMENT (INDUSTRIAL COMPANY)",
+                String.format("Industrial Goods Sales:          $%s", formatter.format(ih.getGrossRevenue())),
+                "",
+                String.format("Payroll Expense:                -$%s", formatter.format(ih.getReportPayroll())),
+                String.format("Electricity Expense:            -$%s", formatter.format(ih.getReportElectricityCost())),
+                "---------------------------------------------------",
+                String.format("Total Operating Expenses:       -$%s", formatter.format(ih.getReportOperatingCost())));
+        addNetIncomeLine(statement, "NET INCOME (INDUSTRIAL):", ih.getNetIncome());
+        column.getChildren().add(statement);
+
+        column.getChildren().add(reportSection("TAX SUMMARY",
+                String.format("Tax Rate:               %.1f%%", ih.getReportTaxRate() * 100),
+                String.format("Government Tax Revenue: $%s", formatter.format(ih.getReportTaxIncome())),
+                String.format("Business Cash Reserves: $%s", formatter.format(ih.getIndustrialCash()))));
+
+        if (ih.getReportFoodCapacity() > 0
+                && ih.getReportFoodInventory() >= ih.getReportFoodCapacity() * 0.9) {
+            VBox warning = reportSection("[WARNING] WAREHOUSE ABOVE 90%",
+                    "Production may stall due to limited storage.");
+            warning.getChildren().get(0).setStyle(
+                    "-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #c62828;");
+            column.getChildren().add(warning);
+        }
+
+        showSectorReport("INDUSTRIAL SECTOR REPORT", column, this::showPrivateSectorMenu);
+    }
+
+    /** JavaFX port of UtilitiesHandler.printUtilitiesInfo(). That printer is already pure. */
+    private void showUtilityInfoMenu() {
+        clearMenu();
+
+        UtilitiesHandler uh = game.getServicesManager().getUtilitiesHandler();
+
+        double energyRatio = uh.getEnergyRatio();
+        double revenue = uh.getUtilityRevenue();
+        double payroll = uh.getUtilityPayroll();
+        double netIncome = revenue - payroll;
+
+        Label stability = monoLabel(String.format("%-24s%s", "System Stability:",
+                energyRatio >= 1.0 ? "STABLE" : "BROWNOUT"));
+        stability.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (energyRatio >= 1.0 ? "#2e7d32" : "#c62828") + ";");
+
+        VBox grid = reportSection("GRID STATUS",
+                String.format("Grid Satisfaction:      %.1f%%", energyRatio * 100));
+        grid.getChildren().add(stability);
+
+        VBox column = new VBox(0);
+        column.getChildren().addAll(
+                grid,
+                reportSection("ENERGY LOAD ANALYSIS",
+                        String.format("Total Consumption:      %s W", formatter.format(uh.getConsumption())),
+                        String.format("Maximum Generation:     %s W", formatter.format(uh.getBaseProduction())),
+                        String.format("Current Output:         %s W", formatter.format(uh.getProduction())),
+                        String.format("Price per Watt:         $%s", formatter.format(uh.getPricerPerWatt()))),
+                reportSection("RESOURCE UTILIZATION",
+                        String.format("Labor Fill Rate:        %.1f%%", uh.getAverageUtilityFill() * 100)));
+
+        VBox statement = reportSection("INCOME STATEMENT (UTILITY COMPANY)",
+                String.format("Electricity Sales:               $%s", formatter.format(revenue)),
+                "",
+                String.format("Payroll Expense:                -$%s", formatter.format(payroll)),
+                "---------------------------------------------------",
+                String.format("Total Operating Expenses:       -$%s", formatter.format(payroll)));
+        addNetIncomeLine(statement, "NET INCOME (UTILITY):", netIncome);
+        column.getChildren().add(statement);
+
+        if (energyRatio < 1.0) {
+            VBox shortage = reportSection("[CRITICAL] GRID SHORTAGE",
+                    String.format("Additional capacity needed: %s W",
+                            formatter.format(uh.getConsumption() - uh.getProduction())),
+                    "Industrial and commercial output is reduced.");
+            shortage.getChildren().get(0).setStyle(
+                    "-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #c62828;");
+            column.getChildren().add(shortage);
+        }
+
+        showSectorReport("MUNICIPAL UTILITIES REPORT", column, this::showPrivateSectorMenu);
+    }
+
+    /**
+     * JavaFX port of ConstructionHandler.printConstructionInfo(). That report had
+     * no menu entry at all in the terminal build - it was only ever printed as
+     * part of the monthly report block.
+     */
+    private void showConstructionInfoMenu() {
+        clearMenu();
+
+        ConstructionHandler ch = game.getServicesManager().getConstructionHandler();
+
+        VBox column = new VBox(0);
+        column.getChildren().addAll(
+                reportSection("CONSTRUCTION CAPACITY",
+                        String.format("Effective Output:       %s pts/mo", formatter.format(game.getConstructionOutput())),
+                        String.format("Sector Production:      %s pts", formatter.format(ch.getConstructionOutput())),
+                        String.format("Sites in Progress:      %,d", game.getBuildingManager().getUnderConstruction())),
+
+                reportSection("MATERIALS",
+                        String.format("Production:             %s /mo", formatter.format(ch.getMaterialsProduction())),
+                        String.format("Inventory:              %s", formatter.format(ch.getMaterialsInventory())),
+                        String.format("Consumed:               %,d", ch.getMaterialsConsumed()),
+                        String.format("Market Price:           $%s", formatter.format(ch.getMaterialsPrice()))),
+
+                reportSection("LABOR UTILIZATION",
+                        String.format("Workforce Fill:         %.1f%%", ch.getAverageFill() * 100)));
+
+        VBox statement = reportSection("OPERATING COSTS",
+                String.format("Wage Expense:                   -$%s", formatter.format(ch.getWageExpense())),
+                String.format("Materials Expense:              -$%s", formatter.format(ch.getMaterialsExpense())),
+                "---------------------------------------------------");
+        addNetIncomeLine(statement, "TOTAL OPERATING COSTS:", -ch.getExpenses());
+        column.getChildren().add(statement);
+
+        showSectorReport("MUNICIPAL CONSTRUCTION AUTHORITY", column, this::showSectorMenu);
     }
 
     private void showDebtInfoMenu() {

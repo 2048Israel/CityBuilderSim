@@ -24,10 +24,37 @@ public class IndustrialHandler {
     private double foodPrice = .12;
     private double cash;
     
-    //printing variables
+    /* -----------------------------------------------------------------------
+       MONTHLY REPORT RESULTS
+
+       NOTE: these used to be locals inside printIndustrialInfo(), which also
+       assigned rGrossRevenue (read by EconomyManager.calculateSalesTax),
+       rNetIncome (read by getMonthGdp) and did `cash += rNetIncome` as side
+       effects. Exactly the same problem printCommercialInfo() had: the printer
+       was load-bearing, it only ran `if(reports)`, and opening the screen twice
+       would bank the month's income twice.
+
+       calculateIndustrialResults() owns the maths now and runs once per month
+       regardless of the reports setting. The printer and the JavaFX screen are
+       both pure readers.
+       ----------------------------------------------------------------------- */
     private double pTaxRate; // p is to print
     private double rNetIncome; // r is to retrieve
-    private double rGrossRevenue; 
+    private double rGrossRevenue;
+
+    private int rFoodCapacity;
+    private int rFoodInventory;
+    private double rAverageFill;
+    private double rEnergyRatio;
+    private int rBaseProduction;
+    private double rActualProduction;
+    private double rDemand;
+    private int rUnitsSold;
+    private double rAverageSellPrice;
+    private double rPayroll;
+    private double rElectricityCost;
+    private double rOperatingCost;
+    private double rTaxIncome;
     
     //energy stuff
     private double energyRatio = 1;
@@ -57,6 +84,23 @@ public class IndustrialHandler {
         foodCapacity =0;
         foodInventory = 0;
         foodDemand = 0;
+
+        // report snapshot
+        rFoodCapacity = 0;
+        rFoodInventory = 0;
+        rAverageFill = 0;
+        rEnergyRatio = 0;
+        rBaseProduction = 0;
+        rActualProduction = 0;
+        rDemand = 0;
+        rUnitsSold = 0;
+        rAverageSellPrice = 0;
+        rGrossRevenue = 0;
+        rPayroll = 0;
+        rElectricityCost = 0;
+        rOperatingCost = 0;
+        rNetIncome = 0;
+        rTaxIncome = 0;
     }
     //getters
     public int getFoodInventory(){
@@ -221,6 +265,78 @@ public class IndustrialHandler {
         return cash;
     }
 
+    /* -----------------------------------------------------------------------
+       REPORT GETTERS - read-only snapshot of the last calculated month.
+       ----------------------------------------------------------------------- */
+    public int getReportFoodCapacity()      { return rFoodCapacity; }
+    public int getReportFoodInventory()     { return rFoodInventory; }
+    public double getReportAverageFill()    { return rAverageFill; }
+    public double getReportEnergyRatio()    { return rEnergyRatio; }
+    public int getReportBaseProduction()    { return rBaseProduction; }
+    public double getReportActualProduction(){ return rActualProduction; }
+    public double getReportDemand()         { return rDemand; }
+    public int getReportUnitsSold()         { return rUnitsSold; }
+    public double getReportSellPrice()      { return rAverageSellPrice; }
+    public double getReportPayroll()        { return rPayroll; }
+    public double getReportElectricityCost(){ return rElectricityCost; }
+    public double getReportOperatingCost()  { return rOperatingCost; }
+    public double getReportTaxIncome()      { return rTaxIncome; }
+    public double getReportTaxRate()        { return pTaxRate; }
+    public double getFoodPriceBase()        { return foodPrice; }
+
+    /**
+     * Runs the industrial sector's monthly income statement and banks the result.
+     * Must run once per month, before calculateSalesTax() or getMonthGdp() read
+     * rGrossRevenue / rNetIncome.
+     */
+    public void calculateIndustrialResults() {
+        computeMonthlyReport();
+        cash += rNetIncome;
+    }
+
+    /**
+     * Recomputes every report figure from current inputs. Pure with respect to
+     * the cash reserve - safe to call when rebuilding derived state after a load.
+     */
+    public void computeMonthlyReport() {
+
+        rFoodCapacity = foodCapacity;
+        rFoodInventory = foodInventory;
+        rAverageFill = averageIndustrialFill;
+        rEnergyRatio = energyRatio;
+        rBaseProduction = foodProduction;
+        rActualProduction = foodProduction * averageIndustrialFill * energyRatio;
+        rDemand = foodDemand;
+
+        int productsSold = (int) Math.min(foodInventory, foodDemand);
+
+        double averageSellPrice = productsSold * foodPrice
+                + productsImportedCopy * foodPrice * importCost;
+        productsSold += productsImportedCopy;
+
+        if (productsSold != 0) {
+            averageSellPrice /= productsSold;
+        }
+
+        rUnitsSold = productsSold;
+        rAverageSellPrice = averageSellPrice;
+        rGrossRevenue = productsSold * averageSellPrice;
+
+        rElectricityCost = electricity * pricePerWatt;
+
+        double industrialWage = 0;
+        if (industrialWages != null) {
+            for (double wage : industrialWages) {
+                industrialWage += wage;
+            }
+        }
+        rPayroll = industrialWage * averageIndustrialFill;
+
+        rOperatingCost = rPayroll + rElectricityCost;
+        rNetIncome = rGrossRevenue - rOperatingCost;
+        rTaxIncome = rNetIncome * pTaxRate;
+    }
+
     public void printIndustrialInfo() {
 
         System.out.println("\n====================== INDUSTRIAL SECTOR REPORT ======================");
@@ -232,78 +348,47 @@ public class IndustrialHandler {
 
         /* 1. Capacity & Resource Overview */
         System.out.println("\nFACILITY OVERVIEW");
-        System.out.printf("Storage Capacity:        %,d units%n", foodCapacity);
-        System.out.printf("Current Inventory:       %,d units%n", foodInventory);
+        System.out.printf("Storage Capacity:        %,d units%n", rFoodCapacity);
+        System.out.printf("Current Inventory:       %,d units%n", rFoodInventory);
 
         System.out.println("\nRESOURCE UTILIZATION");
-        System.out.printf("Labor Fill Rate:         %.1f%%%n", averageIndustrialFill * 100);
-        System.out.printf("Energy Efficiency:       %.1f%%%n", energyRatio * 100);
+        System.out.printf("Labor Fill Rate:         %.1f%%%n", rAverageFill * 100);
+        System.out.printf("Energy Efficiency:       %.1f%%%n", rEnergyRatio * 100);
 
         /* 2. Production Analysis */
-        double actualProduction = foodProduction * averageIndustrialFill * energyRatio;
-
         System.out.println("\nPRODUCTION ANALYSIS");
-        System.out.printf("Base Production Potential:   %,d units%n", foodProduction);
-        System.out.printf("Actual Production Output:    %,.0f units%n", actualProduction);
+        System.out.printf("Base Production Potential:   %,d units%n", rBaseProduction);
+        System.out.printf("Actual Production Output:    %,.0f units%n", rActualProduction);
 
         /* 3. Sales & Market Performance */
-        int productsSold = (int) Math.min(foodInventory, foodDemand);
-        
-        double averageSellPrice = productsSold*foodPrice + productsImportedCopy*foodPrice*importCost;
-        productsSold += productsImportedCopy;
-        
-        if(productsSold!=0)averageSellPrice /= productsSold;
-        
-        double grossRevenue = productsSold * averageSellPrice;
-        rGrossRevenue = grossRevenue;
-
         System.out.println("\nMARKET PERFORMANCE");
-        System.out.printf("Market Demand:           %,.0f units%n", foodDemand);
-        System.out.printf("Units Sold:              %,d units%n", productsSold);
-        System.out.printf("Average Market Price:    $%s per unit%n", formatter.format(averageSellPrice));
-        System.out.printf("Gross Revenue:           $%s%n", formatter.format(grossRevenue));
+        System.out.printf("Market Demand:           %,.0f units%n", rDemand);
+        System.out.printf("Units Sold:              %,d units%n", rUnitsSold);
+        System.out.printf("Average Market Price:    $%s per unit%n", formatter.format(rAverageSellPrice));
+        System.out.printf("Gross Revenue:           $%s%n", formatter.format(rGrossRevenue));
 
-        /* 4. Expense Calculations */
-        double electricityCost = electricity * pricePerWatt;
-
-        double industrialWage = 0;
-        if (industrialWages != null) {
-            for (double wage : industrialWages) {
-                industrialWage += wage;
-            }
-        }
-        industrialWage *= averageIndustrialFill;
-
-        /* 5. Income Statement */
+        /* 4. Income Statement */
         System.out.println("\nINCOME STATEMENT (INDUSTRIAL COMPANY)");
 
         System.out.printf("Revenue:%n");
-        System.out.printf("  Industrial Goods Sales:            $%s%n", formatter.format(grossRevenue));
+        System.out.printf("  Industrial Goods Sales:            $%s%n", formatter.format(rGrossRevenue));
 
         System.out.printf("%nOperating Expenses:%n");
-        System.out.printf("  Payroll Expense:                   -$%s%n", formatter.format(industrialWage));
-        System.out.printf("  Electricity Expense:               -$%s%n", formatter.format(electricityCost));
-
-        double totalOperatingCost = industrialWage + electricityCost;
-        double operatingIncome = grossRevenue - totalOperatingCost;
+        System.out.printf("  Payroll Expense:                   -$%s%n", formatter.format(rPayroll));
+        System.out.printf("  Electricity Expense:               -$%s%n", formatter.format(rElectricityCost));
 
         System.out.println("-----------------------------------------------------------------------");
-        System.out.printf("Total Operating Expenses:            -$%s%n", formatter.format(totalOperatingCost));
-        System.out.printf("NET INCOME (INDUSTRIAL COMPANY):     $%s%n", formatter.format(operatingIncome));
+        System.out.printf("Total Operating Expenses:            -$%s%n", formatter.format(rOperatingCost));
+        System.out.printf("NET INCOME (INDUSTRIAL COMPANY):     $%s%n", formatter.format(rNetIncome));
 
-        /* 6. Tax Summary */
-        rNetIncome = operatingIncome;
-        cash+= rNetIncome;
-
-        double taxIncome = operatingIncome * pTaxRate;
-
+        /* 5. Tax Summary */
         System.out.println("\n----------------------------- TAX SUMMARY -----------------------------");
-        System.out.printf("Industrial Net Income:               $%s%n", formatter.format(operatingIncome));
-        System.out.printf("Government Tax Revenue:              $%s%n", formatter.format(taxIncome));
+        System.out.printf("Industrial Net Income:               $%s%n", formatter.format(rNetIncome));
+        System.out.printf("Government Tax Revenue:              $%s%n", formatter.format(rTaxIncome));
         System.out.printf("Business Cash:                       $%s%n", formatter.format(cash));
 
         /* 7. Operational Warnings */
-        if (foodInventory >= foodCapacity * 0.9 && foodCapacity > 0) {
+        if (rFoodInventory >= rFoodCapacity * 0.9 && rFoodCapacity > 0) {
             System.out.println("\n[WARNING] Warehouse capacity above 90%!");
             System.out.println("Production may stall due to limited storage space.");
         }

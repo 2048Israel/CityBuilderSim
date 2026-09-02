@@ -57,6 +57,18 @@ public class ConstructionHandler {
     public double getAverageFill(){
         return averageFill;
     }
+
+    /* -----------------------------------------------------------------------
+       READ-ONLY ACCESSORS for the construction screen. printConstructionInfo()
+       is already pure, so screen and console read the same fields.
+       ----------------------------------------------------------------------- */
+    public double getConstructionOutput()   { return construction; }
+    public double getMaterialsProduction()  { return materials; }
+    public double getMaterialsInventory()   { return materialsInventory; }
+    public double getMaterialsPrice()       { return materialsPrice; }
+    public int getMaterialsConsumed()       { return materialsConsumed; }
+    public double getWageExpense()          { return wageExp; }
+    public double getMaterialsExpense()     { return materialsExp; }
     //setters
     public void setConstructionMaterialsProduction(double materials){
         this.materials = materials;

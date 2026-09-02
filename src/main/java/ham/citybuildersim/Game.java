@@ -227,6 +227,11 @@ public class Game {
         return servicesManager.getEnergyRatio();
     }
 
+    /** Read-only access for the utilities and construction screens. */
+    public ServicesManager getServicesManager(){
+        return servicesManager;
+    }
+
     public int getConstructionOutput(){
         double constructionFillRate = servicesManager.getConstructionHandler().getAverageFill();
         return (int) Math.round(buildingManager.getTotalConstructionCapacity() * constructionFillRate);
@@ -875,6 +880,7 @@ public class Game {
         // it (calculateSalesTax() and getMonthGdp() both do). printCommercialInfo()
         // is a pure printer now, so the reports flag only controls output.
         economyManager.updateCommercialReport();
+        economyManager.updateIndustrialReport();
 
         printStartOfMonth();
         updateConstruction();
@@ -1307,6 +1313,7 @@ public class Game {
     // that was plainly selling 169 units. finalEconUpdate() is also what populates
     // the import counts and electricity draw that the expense lines need.
     economyManager.refreshCommercialReport();
+    economyManager.refreshIndustrialReport();
 
     // GDP reads commercialHandler.getNetIncome(), so it has to come after the
     // refresh above to see this month's figure rather than a stale one.
