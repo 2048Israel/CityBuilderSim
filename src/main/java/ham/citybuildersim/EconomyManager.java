@@ -193,6 +193,23 @@ public class EconomyManager {
         return commercialHandler;
     }
 
+    /* -----------------------------------------------------------------------
+       READ-ONLY ACCESSORS for the city overview panel.
+
+       All of these return already-computed fields and mutate nothing. Note in
+       particular that the panel must NOT call getMonthGdp() - that method
+       recalculates and reassigns the GDP field as a side effect, which is
+       exactly the pattern that made printCommercialInfo() unsafe to call from a
+       screen. getGDP() below is the pure read.
+       ----------------------------------------------------------------------- */
+    public double getGDP(){ return GDP; }
+    public double getTaxRate(){ return taxRate; }
+    public double getBusinessTax(){ return totalBusinessTax; }
+    public double getIndustrialTax(){ return totalIndustrialTax; }
+    public double getSalesTax(){ return salesTax; }
+    public double getWageTax(){ return totalWageTax; }
+    public double getUtilityIncome(){ return utilityIncome; }
+
 
 
     //setters

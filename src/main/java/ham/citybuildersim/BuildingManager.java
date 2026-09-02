@@ -273,6 +273,22 @@ public class BuildingManager {
         return total;
     }
 
+    /**
+     * The stacks that currently have at least one building in progress, for the
+     * construction panel in the UI. Returns a copy of the list, so callers can't
+     * mutate the manager's stacks; the BuildingsStacks objects themselves are
+     * live and read-only via their getters.
+     */
+    public List<BuildingsStacks> getStacksUnderConstruction() {
+        List<BuildingsStacks> result = new ArrayList<>();
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getUnderConstruction() > 0) {
+                result.add(stack);
+            }
+        }
+        return result;
+    }
+
     public int getUnderConstruction() {
         int sum = 0;
         for (BuildingsStacks stack : stacks) {

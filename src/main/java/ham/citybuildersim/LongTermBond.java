@@ -18,6 +18,17 @@ public class LongTermBond extends Debt {
         this.type = "LONG-BOND";
     }
 
+    /**
+     * Long bonds are deliberately a combination instrument: a LOW monthly coupon
+     * plus a redemption premium (face value exceeds the cash received). The
+     * player trades a higher all-in cost for much smaller monthly payments.
+     *
+     * The premium is sized in Game.handleLongBondLogic(). Previously the face was
+     * grossed up by (1+yield)^duration - full compound interest priced into the
+     * discount - AND this coupon was charged on top, so the instrument billed the
+     * same interest twice and was strictly worse than a medium bond at every
+     * duration.
+     */
     @Override
     public void processMonth(Game game) {
         double interest = (faceValue*monthlyCouponRate);

@@ -50,6 +50,13 @@ public class Game {
     private boolean hasNewReceipt = false;
     String lastBuildingName;
     
+    /**
+     * How much more a long-term bond costs in total than an equivalent
+     * medium-term bond. The player buys lower monthly payments with a higher
+     * all-in cost; this is the size of that trade.
+     */
+    private static final double LONG_BOND_COST_MULTIPLIER = 1.15;
+
     //settings
     boolean reports = true;
     boolean graphs = true;
@@ -208,6 +215,23 @@ public class Game {
         double income = economyManager.getTotalIncome()+servicesManager.getServiceNetIncome();
         return income;
     }
+    /**
+     * This month's effective construction output, matching exactly what
+     * SimulationEngine.simulateMonth() feeds to advanceConstruction() - base
+     * capacity scaled by the construction sector's labour fill rate. Exposed so
+     * the UI can show the player what their real build rate is, and how it gets
+     * divided between concurrent sites.
+     */
+    /** Read-only passthrough for the city overview panel. */
+    public double getEnergyRatio(){
+        return servicesManager.getEnergyRatio();
+    }
+
+    public int getConstructionOutput(){
+        double constructionFillRate = servicesManager.getConstructionHandler().getAverageFill();
+        return (int) Math.round(buildingManager.getTotalConstructionCapacity() * constructionFillRate);
+    }
+
     public int getConstructionMaterials(){
         int constructionMaterials = buildingManager.getConstructionMaterials();
         return constructionMaterials;
@@ -224,6 +248,48 @@ public class Game {
     }
     
     
+    /**
+     * Runs up to {@code months} monthly cycles, stopping early if the treasury is
+     * empty. Returns how many months actually ran.
+     *
+     * NOTE: replaces the terminal-era handleMultipleMonths(), which read its month
+     * count from the stubbed getInput() (always 0, so the loop never executed) and
+     * then set graphs/reports back to true unconditionally - silently overwriting
+     * whatever the player had chosen in Settings. This restores the previous
+     * values in a finally block instead, so the setting survives even if a month
+     * throws.
+     *
+     * Console output stays off for the duration: several hundred months of
+     * reports and ASCII graphs is slow and unreadable.
+     */
+    public int simulateMonths(int months) {
+
+        boolean previousGraphs = graphs;
+        boolean previousReports = reports;
+
+        graphs = false;
+        reports = false;
+
+        int completed = 0;
+
+        try {
+            for (int i = 0; i < months; i++) {
+                if (cash <= 0) {
+                    System.out.println("Treasury empty - simulated " + completed
+                            + " of " + months + " months.");
+                    break;
+                }
+                nextMonth();
+                completed++;
+            }
+        } finally {
+            graphs = previousGraphs;
+            reports = previousReports;
+        }
+
+        return completed;
+    }
+
     private void handleMultipleMonths() {
         System.out.println("How many months? ");
         int number = getInput();
@@ -618,22 +684,54 @@ public class Game {
                 formatter.format(faceValue), formatter.format(monthlyInterest), duration);
     }
 
+    /**
+     * Long bonds pair a LOW monthly coupon with a redemption premium: you repay
+     * more than you borrowed, but your monthly payment is well below a medium
+     * bond's. The premium is what that cash-flow relief costs.
+     *
+     * The premium is solved so the all-in cost lands LONG_BOND_COST_MULTIPLIER
+     * above an equivalent medium-term bond:
+     *
+     *     premium + (1 + premium) * couponYield * duration
+     *         = LONG_BOND_COST_MULTIPLIER * marketRate * duration
+     *
+     * NOTE: the previous version grossed the face up by (1 + yield)^duration -
+     * that discount already priced the full compounded interest - and then
+     * LongTermBond.processMonth() charged a coupon on the grossed-up face on top.
+     * The same interest was billed twice: a 30-year bond paid out $573,464 and
+     * repaid $840,036, a 46% cost on a "0.67%" instrument, making long bonds
+     * strictly worse than medium at every duration.
+     */
     public String handleLongBondLogic(double amount, int duration, double rounding) {
+
+        double marketRate = debtManager.getRate();
+
+        // Yield curve: long money carries a lower coupon than the medium-term
+        // market rate. Small monthly payments are the point of the instrument.
         double curveSlope = .00667;
         double smoothing = 30;
-        double yield = (debtManager.getRate() / 3) + (curveSlope * duration) / (duration + smoothing);
-        double multiplier = Math.pow(yield + 1, duration);
+        double couponYield = (marketRate / 3) + (curveSlope * duration) / (duration + smoothing);
 
-        // Using your specific Yield Curve math
-        amount = Math.ceil((amount * multiplier) / rounding) * rounding;
-        double received = Math.round((amount / multiplier) * 100) / 100.0;
+        double premium = (duration * (LONG_BOND_COST_MULTIPLIER * marketRate - couponYield))
+                / (1 + couponYield * duration);
+        premium = Math.max(premium, 0);
 
-        debtManager.addLongTermBond(amount, duration * 12, month, yield);
+        double faceValue = Math.ceil((amount * (1 + premium)) / rounding) * rounding;
+        double received = Math.round((faceValue / (1 + premium)) * 100) / 100.0;
+        double monthlyInterest = (faceValue * couponYield) / 12;
+        double totalCost = (faceValue - received) + (monthlyInterest * duration * 12);
+
+        debtManager.addLongTermBond(faceValue, duration * 12, month, couponYield);
         this.cash += received;
 
         debtManager.updateInterest();
-        return String.format("Long Bond Issued!\nFace Value: $%s\nCash Received: $%s\nYield: %.2f%%",
-                formatter.format(amount), formatter.format(received), yield * 100);
+
+        return String.format(
+                "Long Bond Issued!%nCash Received: $%s%nRepay at Maturity: $%s%n"
+                + "Monthly Interest: $%s%nTotal Cost of Credit: $%s%nTerm: %d years @ %.2f%%",
+                formatter.format(received), formatter.format(faceValue),
+                formatter.format(monthlyInterest), formatter.format(totalCost),
+                duration, couponYield * 100);
     }
     
     /*

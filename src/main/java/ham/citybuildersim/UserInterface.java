@@ -16,6 +16,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -29,6 +31,8 @@ public class UserInterface extends Application {
     private Game game;
     private Stage stage;
     private VBox rootMenu;
+    private VBox constructionPanel;
+    private VBox cityPanel;
     private Scene scene;
 
     @Override
@@ -39,7 +43,29 @@ public class UserInterface extends Application {
         //Initialize the core UI once
         this.rootMenu = new VBox(10);
         this.rootMenu.setAlignment(Pos.CENTER);
-        this.scene = new Scene(rootMenu);
+
+        // Persistent construction panel down the right-hand side. The menu system
+        // swaps the contents of rootMenu constantly, so the panel lives outside it
+        // in a BorderPane and survives every screen change.
+        this.constructionPanel = new VBox(8);
+        this.constructionPanel.setPrefWidth(280);
+        this.constructionPanel.setStyle(
+                "-fx-padding: 16; -fx-background-color: #f4f4f4;"
+                + " -fx-border-color: #cccccc; -fx-border-width: 0 0 0 1;");
+
+        // City overview down the left. Same reasoning as the construction panel:
+        // it lives outside rootMenu so the menu system can't clear it away.
+        this.cityPanel = new VBox(8);
+        this.cityPanel.setPrefWidth(250);
+        this.cityPanel.setStyle(
+                "-fx-padding: 16; -fx-background-color: #f4f4f4;"
+                + " -fx-border-color: #cccccc; -fx-border-width: 0 1 0 0;");
+
+        BorderPane root = new BorderPane();
+        root.setCenter(rootMenu);
+        root.setLeft(cityPanel);
+        root.setRight(constructionPanel);
+        this.scene = new Scene(root);
 
 
         
@@ -55,8 +81,19 @@ public class UserInterface extends Application {
         
     }
     
-    private void showMainMenu() {
+    /**
+     * Clears the menu area and refreshes the construction panel. Every screen
+     * calls this instead of rootMenu.getChildren().clear() directly, so the panel
+     * is always showing current data no matter which screen you're on.
+     */
+    private void clearMenu() {
         rootMenu.getChildren().clear();
+        refreshCityPanel();
+        refreshConstructionPanel();
+    }
+
+    private void showMainMenu() {
+        clearMenu();
         
         
 
@@ -103,7 +140,7 @@ public class UserInterface extends Application {
     }
     
     private void showSavingMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
         Button b1 = new Button("Confirm");
         Button b0 = new Button("Cancel");
         
@@ -114,7 +151,7 @@ public class UserInterface extends Application {
     }
 
     private void showSettingsMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
 
         Button graphs = new Button("Graphs: " + (game.isGraphsEnabled() ? "ON" : "OFF"));
         Button reports = new Button("Reports: " + (game.isReportsEnabled() ? "ON" : "OFF"));
@@ -145,7 +182,7 @@ public class UserInterface extends Application {
     
     private void showStartMenu() {
     // clear old buttons/labels
-    rootMenu.getChildren().clear();
+    clearMenu();
     
     int month = game.getMonth();
     double cash = game.getCash();
@@ -168,14 +205,12 @@ public class UserInterface extends Application {
     });
     back.setOnAction(e -> showMainMenu()); // go back to previous menu
 
-    // NOTE: these two had no setOnAction at all - silent dead buttons.
-    // Population had terminal logic (Game.printPopulationInfo) but no JavaFX
-    // screen yet; Simulate Multiple Months (Game.handleMultipleMonths) still
-    // relies on the stubbed-out getInput() for its month count, so it can't
-    // be wired safely until that's replaced with a JavaFX input control.
-    // Disabling both until they're ported rather than leaving them as dead clicks.
+    // NOTE: Population still has no JavaFX screen of its own - the demographics
+    // report is reachable through Economy > Sector Info instead - so it stays
+    // disabled. Simulate Multiple Months is now wired to Game.simulateMonths().
     population.setDisable(true);
-    simulateMultipleMonths.setDisable(true);
+
+    simulateMultipleMonths.setOnAction(e -> showSimulateMonthsMenu());
 
     rootMenu.getChildren().addAll(gameInfo, buildings, economy, population, nextMonth, simulateMultipleMonths, back);
 
@@ -183,7 +218,7 @@ public class UserInterface extends Application {
 }
     
     private void showBuildingsMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
         
         int constructionMaterials = game.getConstructionMaterials();
         double cash = game.getCash();
@@ -225,7 +260,7 @@ public class UserInterface extends Application {
     }
     
     private void showEconomyMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
         
         int month = game.getMonth();
         double cash = game.getCash();
@@ -274,7 +309,7 @@ public class UserInterface extends Application {
     }
     
     private void showFinanceMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
         
         int month = game.getMonth();
         double cash = game.getCash();
@@ -307,7 +342,7 @@ public class UserInterface extends Application {
     }
     
     private void handleAllBuildingMenus(String menuTitle, EnumSet<BuildingType> categories) {
-        rootMenu.getChildren().clear();
+        clearMenu();
         BuildingManager buildingManager = game.getBuildingManager();
 
         // 1. General Info Label
@@ -353,7 +388,7 @@ public class UserInterface extends Application {
     }
 
     public void handleBuildingTextBox(BuildingsTemplate template, String menuTitle, EnumSet<BuildingType> categories, Consumer<Integer> onConfirm) {
-        rootMenu.getChildren().clear();
+        clearMenu();
 
         // 1. Local state for this menu session
         // We use a 1-element array because local variables used in lambdas must be final
@@ -413,7 +448,7 @@ public class UserInterface extends Application {
     }
     
     private void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats) {
-    rootMenu.getChildren().clear();
+    clearMenu();
 
     double totalCost = game.calculateTotalCost(selected, quantity); // You'll need a getter for this
     double gap = totalCost - game.getCash();
@@ -444,7 +479,7 @@ public class UserInterface extends Application {
 }
     
     private void showDebtIssuanceMenu(String type, int minDur, int maxDur, double roundingFactor) {
-    rootMenu.getChildren().clear();
+    clearMenu();
     
     String timeUnit = type.equals("T-Bill") ? "months" : "years";
     Label title = new Label("Issue " + type + "\nSelect Duration (" + timeUnit + "):");
@@ -470,7 +505,7 @@ public class UserInterface extends Application {
 }
     
     private void showDebtAmountMenu(String type, int duration, double rounding) {
-    rootMenu.getChildren().clear();
+    clearMenu();
     
     final double[] requestedAmount = {0};
     Label amountLabel = new Label("Amount Requested: $0");
@@ -495,8 +530,11 @@ public class UserInterface extends Application {
     confirm.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
     confirm.setOnAction(e -> {
         if (requestedAmount[0] > 0) {
-            executeDebtLogic(type, requestedAmount[0], duration, rounding);
-            showFinanceMenu(); // Return after issuing
+            // NOTE: the handle*Logic methods already returned a summary of the
+            // terms; the UI was discarding it, so the player never saw what they
+            // had actually agreed to.
+            String summary = executeDebtLogic(type, requestedAmount[0], duration, rounding);
+            showDebtResultMenu(summary);
         }
     });
 
@@ -505,16 +543,36 @@ public class UserInterface extends Application {
 
     rootMenu.getChildren().addAll(new Label("Issuing " + type + " (" + duration + " units)"), amountLabel, amountGrid, confirm, cancel);
 }
-    private void executeDebtLogic(String type, double amount, int duration, double rounding) {
-    // These calls now go to your Game instance
-    switch (type) {
-        case "T-Bill" -> game.handleTBillLogic(amount, duration, rounding);
-        case "Medium-Term" -> game.handleMediumBondLogic(amount, duration, rounding);
-        case "Long-Term" -> game.handleLongBondLogic(amount, duration, rounding);
+    private String executeDebtLogic(String type, double amount, int duration, double rounding) {
+        return switch (type) {
+            case "T-Bill" -> game.handleTBillLogic(amount, duration, rounding);
+            case "Medium-Term" -> game.handleMediumBondLogic(amount, duration, rounding);
+            case "Long-Term" -> game.handleLongBondLogic(amount, duration, rounding);
+            default -> "Unknown instrument.";
+        };
     }
-}
+
+    /** Shows the terms the player just agreed to. */
+    private void showDebtResultMenu(String summary) {
+        clearMenu();
+
+        Label title = new Label("ISSUANCE CONFIRMED");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Label terms = new Label(summary);
+        terms.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
+
+        Label rate = new Label(String.format("New market rate: %.2f%%",
+                game.getInterestRate() * 100));
+        rate.setStyle("-fx-text-fill: #555555; -fx-padding: 10 0 0 0;");
+
+        Button back = new Button("Back to Finance");
+        back.setOnAction(e -> showFinanceMenu());
+
+        rootMenu.getChildren().addAll(title, terms, rate, back);
+    }
     private void showSectorMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
 
         Label title = new Label("SECTOR OVERVIEW");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
@@ -543,7 +601,7 @@ public class UserInterface extends Application {
     }
 
     private void showPrivateSectorMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
 
         Label title = new Label("PRIVATE ENTERPRISE SECTOR");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
@@ -573,7 +631,7 @@ public class UserInterface extends Application {
     }
 
     private void showPopulationInfoMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
 
         Label title = new Label("DEMOGRAPHIC & LABOR REPORT");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
@@ -708,7 +766,7 @@ public class UserInterface extends Application {
      * old printer would have banked another month of net income on every click.
      */
     private void showCommercialInfoMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
 
         CommercialHandler ch = game.getEconomyManager().getCommercialHandler();
 
@@ -832,8 +890,99 @@ public class UserInterface extends Application {
         rootMenu.getChildren().addAll(title, gameInfo, scrollPane, back);
     }
 
+    /* =====================================================================
+       SIMULATE MULTIPLE MONTHS
+
+       The terminal version asked "How many months?" and read the answer from
+       getInput(), which is stubbed to return 0 - so the loop never ran. This is
+       the same increment-button pattern the build and debt screens use.
+       ===================================================================== */
+
+    private void showSimulateMonthsMenu() {
+        clearMenu();
+
+        final int[] months = {0};
+
+        Label title = new Label("SIMULATE MULTIPLE MONTHS");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Label info = new Label("Month " + game.getMonth()
+                + " | Cash: $" + formatter.format(game.getCash()));
+
+        Label totalLabel = new Label("Months to simulate: 0");
+        totalLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Label note = new Label("Reports and graphs are muted while fast-forwarding.");
+        note.setStyle("-fx-font-size: 11px; -fx-text-fill: #666666;");
+
+        javafx.scene.layout.FlowPane grid = new javafx.scene.layout.FlowPane(10, 10);
+        grid.setAlignment(Pos.CENTER);
+        grid.setPrefWrapLength(320);
+
+        int[] increments = {1, 5, 10, 25, 50, 100};
+        for (int amount : increments) {
+            final int step = amount;
+            Button button = new Button("+" + amount);
+            button.setPrefWidth(60);
+            button.setOnAction(e -> {
+                months[0] += step;
+                totalLabel.setText("Months to simulate: " + months[0]);
+            });
+            grid.getChildren().add(button);
+        }
+
+        Button reset = new Button("Reset");
+        reset.setOnAction(e -> {
+            months[0] = 0;
+            totalLabel.setText("Months to simulate: 0");
+        });
+
+        Button run = new Button("Run");
+        run.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        run.setOnAction(e -> {
+            if (months[0] > 0) {
+                int completed = game.simulateMonths(months[0]);
+                showSimulateResultMenu(months[0], completed);
+            }
+        });
+
+        Button back = new Button("Cancel");
+        back.setOnAction(e -> showStartMenu());
+
+        rootMenu.getChildren().addAll(title, info, totalLabel, grid, note, reset, run, back);
+    }
+
+    private void showSimulateResultMenu(int requested, int completed) {
+        clearMenu();
+
+        Label title = new Label("SIMULATION COMPLETE");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Label result = new Label(completed + " of " + requested + " months simulated.");
+        result.setStyle("-fx-font-size: 14px;");
+
+        Label info = new Label("Now month " + game.getMonth()
+                + " | Cash: $" + formatter.format(game.getCash()));
+
+        rootMenu.getChildren().addAll(title, result, info);
+
+        if (completed < requested) {
+            Label warning = new Label("Stopped early - the treasury was empty.");
+            warning.setStyle("-fx-text-fill: #c62828; -fx-font-weight: bold;");
+            rootMenu.getChildren().add(warning);
+        }
+
+        Button again = new Button("Simulate more");
+        again.setOnAction(e -> showSimulateMonthsMenu());
+
+        Button done = new Button("Done");
+        done.setOnAction(e -> showStartMenu());
+
+        rootMenu.getChildren().addAll(again, done);
+    }
+
     private void showDebtInfoMenu() {
-        rootMenu.getChildren().clear();
+        clearMenu();
 
         Label title = new Label("DEBT PORTFOLIO");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
@@ -910,6 +1059,266 @@ public class UserInterface extends Application {
     
     
     
+    /* =====================================================================
+       CONSTRUCTION PANEL
+
+       Ports the terminal build's per-stack construction readout - the
+       "0/1 Coal Power Plant(s) finished construction. 177 month(s)." line - into
+       a panel that's visible from every screen.
+
+       It also surfaces something that was previously invisible: construction
+       capacity is divided evenly between *sites* (stacks), not weighted by work
+       remaining, so every extra building type you queue slows down everything
+       already in progress. The "N sites, X pts each" line makes that legible.
+       ===================================================================== */
+
+    private void refreshConstructionPanel() {
+        constructionPanel.getChildren().clear();
+
+        Label header = new Label("UNDER CONSTRUCTION");
+        header.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+        constructionPanel.getChildren().add(header);
+
+        BuildingManager buildingManager = game.getBuildingManager();
+        List<BuildingsStacks> sites = buildingManager.getStacksUnderConstruction();
+
+        int output = game.getConstructionOutput();
+        int siteCount = buildingManager.getUnderConstruction();
+        double perSite = (siteCount > 0) ? (double) output / siteCount : output;
+
+        Label capacity = monoLabel("Output: " + formatter.format(output) + " pts/mo");
+        capacity.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #555555;");
+        constructionPanel.getChildren().add(capacity);
+
+        if (sites.isEmpty()) {
+            Label idle = new Label("Nothing being built.");
+            idle.setStyle("-fx-text-fill: #888888; -fx-padding: 8 0 0 0;");
+            constructionPanel.getChildren().add(idle);
+            return;
+        }
+
+        Label split = monoLabel(siteCount + " site(s), " + formatter.format(perSite) + " each");
+        split.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #555555;");
+        constructionPanel.getChildren().add(split);
+
+        VBox list = new VBox(12);
+        list.setStyle("-fx-padding: 10 0 0 0;");
+
+        for (BuildingsStacks site : sites) {
+
+            int remaining = site.getUnderConstruction();
+            int built = site.getQuantity();
+            int pointsEach = site.getBuilding().getConstructionPoints();
+            double progress = site.getConstructionProgress();
+
+            // fraction of the NEXT building that's complete
+            double fraction = (pointsEach > 0)
+                    ? Math.max(0, Math.min(progress / pointsEach, 1.0))
+                    : 0;
+
+            Label name = new Label(site.getName());
+            // explicit fill: without it the default Label colour renders almost
+            // invisibly against the panel's light background
+            name.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #1a237e;");
+
+            ProgressBar bar = new ProgressBar(fraction);
+            bar.setPrefWidth(240);
+
+            // Same months-remaining calculation the console prints, guarded for the
+            // zero-output case (fully unstaffed construction) that would otherwise
+            // divide by zero and render as 2147483647.
+            String eta;
+            if (perSite <= 0) {
+                eta = "stalled - no workers";
+            } else {
+                double monthsLeft = Math.ceil((remaining * (double) pointsEach - progress) / perSite);
+                eta = "~" + (int) monthsLeft + " mo";
+            }
+
+            Label detail = monoLabel(remaining + " left / " + built + " built - " + eta);
+            detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #555555;");
+
+            VBox row = new VBox(3);
+            row.getChildren().addAll(name, bar, detail);
+            list.getChildren().add(row);
+        }
+
+        javafx.scene.control.ScrollPane scroller = new javafx.scene.control.ScrollPane(list);
+        scroller.setFitToWidth(true);
+        scroller.setPrefHeight(560);
+        scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
+        constructionPanel.getChildren().add(scroller);
+    }
+
+    /* =====================================================================
+       CITY OVERVIEW PANEL
+
+       Everything the player should be able to see without navigating: the
+       economy, the labour market, what they own, and what's in the warehouses.
+
+       Every value here is a pure read of an already-computed field. Nothing on
+       this path recalculates anything - in particular it deliberately avoids
+       EconomyManager.getMonthGdp(), which reassigns the GDP field as a side
+       effect and would make simply looking at a screen change the simulation.
+       ===================================================================== */
+
+    private String money(double value) {
+        return (value < 0)
+                ? "-$" + formatter.format(-value)
+                : "$" + formatter.format(value);
+    }
+
+    private Label statLine(String label, String value) {
+        Label row = new Label(String.format("%-13s%12s", label, value));
+        row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #333333;");
+        return row;
+    }
+
+    private Label sectionHeading(String text) {
+        Label heading = new Label(text);
+        heading.setStyle("-fx-font-weight: bold; -fx-font-size: 10px;"
+                + " -fx-text-fill: #1a237e; -fx-padding: 10 0 2 0;");
+        return heading;
+    }
+
+    private void refreshCityPanel() {
+        cityPanel.getChildren().clear();
+
+        Label title = new Label("CITY OVERVIEW");
+        title.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+
+        Label subtitle = new Label("Month " + game.getMonth());
+        subtitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #555555;");
+
+        VBox body = new VBox(1);
+
+        EconomyManager economyManager = game.getEconomyManager();
+        PopulationManager populationManager = game.getPopulationManager();
+        BuildingManager buildingManager = game.getBuildingManager();
+
+        /* ---------------- ECONOMY ---------------- */
+        double debt = game.getDebtManager().getAllPrincipal();
+        double annualGdp = economyManager.getYearGdp();
+
+        body.getChildren().addAll(
+                sectionHeading("ECONOMY"),
+                statLine("Cash", money(game.getCash())),
+                statLine("Net income", money(game.getIncome())),
+                statLine("Monthly GDP", money(economyManager.getGDP() / 12)),
+                statLine("Annual GDP", money(annualGdp)));
+
+        int population = populationManager.getPopulation();
+        if (population > 0 && annualGdp != 0) {
+            body.getChildren().add(
+                    statLine("GDP/capita", money((annualGdp / population) * 1000)));
+        }
+
+        body.getChildren().addAll(
+                statLine("Debt", money(debt)),
+                statLine("Interest", formatter.format(game.getInterestRate() * 100) + "%"));
+
+        if (annualGdp != 0) {
+            body.getChildren().add(
+                    statLine("Debt/GDP", formatter.format((debt / annualGdp) * 100) + "%"));
+        }
+
+        /* ---------------- TAX ---------------- */
+        double businessTax = economyManager.getBusinessTax();
+        double industrialTax = economyManager.getIndustrialTax();
+        double salesTax = economyManager.getSalesTax();
+        double wageTax = economyManager.getWageTax();
+
+        body.getChildren().addAll(
+                sectionHeading("TAX REVENUE @ " + formatter.format(economyManager.getTaxRate() * 100) + "%"),
+                statLine("Business", money(businessTax)),
+                statLine("Industrial", money(industrialTax)),
+                statLine("Sales", money(salesTax)),
+                statLine("Wage", money(wageTax)),
+                statLine("Total", money(businessTax + industrialTax + salesTax + wageTax)));
+
+        /* ---------------- POPULATION & LABOUR ---------------- */
+        int workforce = populationManager.getWorkforce();
+        int totalJobs = populationManager.getTotalJobs();
+        int[] vacancies = populationManager.getJobVacancy();
+        int totalVacancies = 0;
+        for (int v : vacancies) {
+            totalVacancies += v;
+        }
+        int housing = game.getHouseholdCapacity();
+
+        body.getChildren().addAll(
+                sectionHeading("POPULATION & LABOUR"),
+                statLine("Population", String.format("%,d", population)),
+                statLine("Workforce", String.format("%,d", workforce)),
+                statLine("Jobs", String.format("%,d", totalJobs)),
+                statLine("Vacancies", String.format("%,d", totalVacancies)));
+
+        if (totalJobs > 0) {
+            double fill = (double) (totalJobs - totalVacancies) / totalJobs;
+            Label fillRow = statLine("Fill rate", String.format("%.1f%%", fill * 100));
+            if (fill < 0.75) {
+                fillRow.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                        + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
+            }
+            body.getChildren().add(fillRow);
+        }
+
+        body.getChildren().add(
+                statLine("Housing", String.format("%,d/%,d", population, housing)));
+
+        /* ---------------- RESOURCES ---------------- */
+        body.getChildren().addAll(
+                sectionHeading("RESOURCES"),
+                statLine("Materials", String.format("%,d", game.getConstructionMaterials())),
+                statLine("Store stock", String.format("%,d", economyManager.getStoreInventory())),
+                statLine("Food stock", String.format("%,d", economyManager.getIndustryFoodInventory())),
+                statLine("Energy", formatter.format(game.getEnergyRatio() * 100) + "%"));
+
+        /* ---------------- SECTOR CASH ---------------- */
+        body.getChildren().addAll(
+                sectionHeading("SECTOR CASH"),
+                statLine("Retail", money(economyManager.getCommercialCash())),
+                statLine("Real estate", money(economyManager.getRealEstateCash())),
+                statLine("Industry", money(economyManager.getIndustrialCash())),
+                statLine("Utilities", money(economyManager.getUtilityIncome())));
+
+        /* ---------------- BUILDINGS ---------------- */
+        // Fills the gap left by the still-disabled "Other" buildings screen.
+        VBox owned = new VBox(1);
+        for (int i = 0; i < buildingManager.getTemplateCount(); i++) {
+            BuildingsTemplate template = buildingManager.getTemplate(i);
+            if (template == null) {
+                continue;
+            }
+            int quantity = buildingManager.getQuantity(i);
+            if (quantity > 0) {
+                owned.getChildren().add(
+                        statLine(shorten(template.getName()), String.format("%,d", quantity)));
+            }
+        }
+
+        body.getChildren().add(sectionHeading("BUILDINGS"));
+        if (owned.getChildren().isEmpty()) {
+            Label none = new Label("None built yet.");
+            none.setStyle("-fx-font-size: 10px; -fx-text-fill: #888888;");
+            body.getChildren().add(none);
+        } else {
+            body.getChildren().add(owned);
+        }
+
+        javafx.scene.control.ScrollPane scroller = new javafx.scene.control.ScrollPane(body);
+        scroller.setFitToWidth(true);
+        scroller.setPrefHeight(700);
+        scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
+
+        cityPanel.getChildren().addAll(title, subtitle, scroller);
+    }
+
+    /** Keeps building names inside the panel's fixed-width column. */
+    private String shorten(String name) {
+        return (name.length() <= 13) ? name : name.substring(0, 12) + ".";
+    }
+
     private static final NumberFormat formatter = NumberFormat.getNumberInstance(Locale.CANADA);
 
     static {

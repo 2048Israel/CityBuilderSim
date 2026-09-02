@@ -15,8 +15,13 @@ public class DebtManager {
 
     private double baseRate = .03;
     private double currentRate = baseRate - .02;
-    private double allPrincipal = 0;
     private double GDP;
+
+    /** Extra annual interest charged per 1.0 of debt-to-GDP. */
+    private static final double RISK_SPREAD_PER_DEBT_TO_GDP = 0.01;
+
+    /** Debt-to-GDP assumed when the city has no measurable output to price against. */
+    private static final double UNPRICEABLE_DEBT_TO_GDP = 100;
     private List<Debt> debts;
 
     public DebtManager() {
@@ -71,9 +76,9 @@ public class DebtManager {
                     status);
         }
 
-        if (totalPrincipal >= 0) {
-            allPrincipal = totalPrincipal;
-        }
+        // NOTE: this used to assign the manager's allPrincipal field here, which
+        // made the entire debt->interest feedback loop a side effect of printing.
+        // getAllPrincipal() computes it on demand now; this printer is pure.
         System.out.println("------------------------------------------------------------");
         System.out.println("TOTAL OUTSTANDING PRINCIPAL: " + formatter.format(totalPrincipal));
         System.out.println("TOTAL MONTHLY INTEREST COST: " + formatter.format(totalMonthlyInterest));
@@ -84,8 +89,28 @@ public class DebtManager {
     public double getRate() {
         return currentRate;
     }
+    /**
+     * Total outstanding principal across every live debt.
+     *
+     * NOTE: this used to return a cached field assigned in exactly one place -
+     * inside printDebtInfo(). printStartOfMonth() only calls that printer
+     * `if(reports)`, so the debt->interest feedback loop silently stopped working
+     * whenever reports were off (which simulateMonths does by design). Observed:
+     * a $700,000 bond sat outstanding for 100 months with the rate pinned at the
+     * 1% floor, then jumped straight to the 20% ceiling the first time a report
+     * printed. It went stale the other way too - a matured, removed bond kept
+     * being priced in until the next printed report.
+     *
+     * The new JavaFX debt screen sums the list itself and never touched that
+     * cache, so the side effect was disappearing entirely as the console reports
+     * get retired. Computed on demand now; the list is small.
+     */
     public double getAllPrincipal(){
-        return allPrincipal;
+        double total = 0;
+        for (Debt debt : debts) {
+            total += debt.getOustandingPrincipal();
+        }
+        return total;
     }
 
     //setters
@@ -114,26 +139,33 @@ public class DebtManager {
         updateInterest();
     }
 
+    /**
+     * Prices new borrowing off the city's debt-to-GDP ratio.
+     *
+     * The spread is unchanged in magnitude from the original formula - that
+     * worked out to (baseRate - 0.02) + debtToGdp * 0.01, i.e. one extra point of
+     * interest per unit of debt-to-GDP - just written so the units are visible.
+     *
+     * NOTE: the old version did `if (GDP == 0) GDP = allPrincipal;`, permanently
+     * overwriting the GDP field with a debt figure. That corruption then fed
+     * every later rate calculation. Uses a local fallback instead.
+     */
     public void updateInterest() {
-        double rate;
 
-        if (allPrincipal != 0) {
-            if (GDP == 0) {
-                GDP = allPrincipal;
-            }
+        double principal = getAllPrincipal();
 
-            rate = ((allPrincipal / (GDP * 12)) / 100) - 0.02;
-
-           
-            
-
-            currentRate = baseRate + rate;
-
-        } else {
+        if (principal <= 0) {
             currentRate = baseRate - 0.02;
+        } else {
+            double annualGdp = GDP * 12;
+            double debtToGdp = (annualGdp > 0)
+                    ? (principal / annualGdp)
+                    : UNPRICEABLE_DEBT_TO_GDP;
+
+            currentRate = (baseRate - 0.02)
+                    + (RISK_SPREAD_PER_DEBT_TO_GDP * debtToGdp);
         }
 
-        // Final clamp on the total rate
         currentRate = Math.max(0.005, Math.min(currentRate, 0.20));
     }
 
