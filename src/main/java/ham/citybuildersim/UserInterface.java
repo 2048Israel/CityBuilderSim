@@ -238,7 +238,7 @@ public class UserInterface extends Application {
             handleAllBuildingMenus("Commercial Buildings",EnumSet.of(BuildingType.COMMERCIAL));
         });
         b3.setOnAction(e-> {
-            handleAllBuildingMenus("Industrial Buildings",EnumSet.of(BuildingType.INDUSTRIAL,BuildingType.CONSTRUCTION,BuildingType.ELECTRICITY));
+            handleAllBuildingMenus("Industrial Buildings",EnumSet.of(BuildingType.INDUSTRIAL,BuildingType.CONSTRUCTION,BuildingType.ELECTRICITY,BuildingType.WATER));
         });
 
         // NOTE: "Other" has no JavaFX screen yet (was buildingManager.displayAllBuildings()
@@ -1128,6 +1128,14 @@ public class UserInterface extends Application {
                         String.format("Maximum Generation:     %s W", formatter.format(uh.getBaseProduction())),
                         String.format("Current Output:         %s W", formatter.format(uh.getProduction())),
                         String.format("Price per Watt:         $%s", formatter.format(uh.getPricerPerWatt()))),
+                reportSection("WATER SUPPLY",
+                        String.format("Maximum Capacity:       %s units", formatter.format(uh.getBaseWaterProduction())),
+                        String.format("Current Output:         %s units", formatter.format(uh.getWaterProduction())),
+                        String.format("Total Draw:             %s units", formatter.format(uh.getWaterConsumption())),
+                        String.format("Supply Satisfaction:    %.1f%%", uh.getWaterRatio() * 100),
+                        uh.getWaterConsumption() <= 0
+                                ? "No consumers connected yet."
+                                : ""),
                 reportSection("RESOURCE UTILIZATION",
                         String.format("Labor Fill Rate:        %.1f%%", uh.getAverageUtilityFill() * 100)));
 

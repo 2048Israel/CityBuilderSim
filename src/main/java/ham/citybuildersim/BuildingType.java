@@ -13,7 +13,8 @@ public enum BuildingType {
     COMMERCIAL,
     INDUSTRIAL,
     CONSTRUCTION,
-    ELECTRICITY
+    ELECTRICITY,
+    WATER
     
     
     

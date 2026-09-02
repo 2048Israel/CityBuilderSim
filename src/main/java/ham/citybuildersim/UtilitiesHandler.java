@@ -19,6 +19,30 @@ public class UtilitiesHandler {
     public double consumption;
     public double energyRatio;
 
+    /* =====================================================================
+       WATER SUPPLY
+
+       Deliberately production-side only for now. Nothing draws water yet, so
+       waterRatio sits at 1 and throttles nothing - consumption is the next
+       piece of work, and sewage after that.
+
+       Structured to mirror electricity exactly (base + labour fill -> output
+       -> ratio against demand) so that wiring consumption in later is a
+       matter of feeding setWaterConsumption(), not reworking this.
+       ===================================================================== */
+
+    /**
+     * What the city can draw before it builds anything: the legacy wells and
+     * the old municipal intake. Same role as the 10,000 W the grid starts
+     * with - enough to get going, nowhere near enough to grow into.
+     */
+    private static final double BASE_WATER_SUPPLY = 8000;
+
+    public double waterProduction;
+    public double baseWaterProduction;
+    public double waterConsumption;
+    public double waterRatio = 1;
+
     //jobs
     private double[] utilityWages = new double[11];
     private int[] utilityJobs = new int[11];
@@ -36,6 +60,7 @@ public class UtilitiesHandler {
     //updaters
     public void updateUtilitiesHandler() {
         updateEnergyRatio();
+        updateWaterRatio();
     }
 
     //getters
@@ -56,6 +81,11 @@ public class UtilitiesHandler {
     public double getBaseProduction()      { return baseProduction; }
     public double getConsumption()         { return consumption; }
     public double getAverageUtilityFill()  { return averageUtilityFill; }
+
+    public double getWaterProduction()     { return waterProduction; }
+    public double getBaseWaterProduction() { return baseWaterProduction; }
+    public double getWaterConsumption()    { return waterConsumption; }
+    public double getWaterRatio()          { return waterRatio; }
 
     public double getUtilityPayroll() {
         double total = 0;
@@ -81,6 +111,14 @@ public class UtilitiesHandler {
 
     }
 
+    public void setWaterProduction(double water) {
+        this.baseWaterProduction = water + BASE_WATER_SUPPLY;
+    }
+
+    public void setWaterConsumption(double water) {
+        this.waterConsumption = water;
+    }
+
     //passers
     //calculators
     public void updateEnergyRatio() {
@@ -88,6 +126,21 @@ public class UtilitiesHandler {
         if(averageUtilityFill == 0) production = 10000;
         energyRatio = Math.min(production / consumption, 1);
         
+    }
+
+    public void updateWaterRatio() {
+
+        waterProduction = baseWaterProduction * averageUtilityFill;
+
+        // The legacy wells keep running with nobody on shift, same as the base grid.
+        if (averageUtilityFill == 0) waterProduction = BASE_WATER_SUPPLY;
+
+        // Nothing consumes water yet, so this would be 0/0 -> NaN, and a NaN
+        // ratio silently poisons everything downstream that multiplies by it
+        // the moment consumption is wired up. Guard on demand instead.
+        waterRatio = (waterConsumption > 0)
+                ? Math.min(waterProduction / waterConsumption, 1)
+                : 1;
     }
 
     public double getUtilityIncome() {
@@ -176,6 +229,24 @@ public class UtilitiesHandler {
         /* 3. Operational Efficiency */
         System.out.println("\nRESOURCE UTILIZATION");
         System.out.printf("Labor Fill Rate:          %.1f%%%n", averageUtilityFill * 100);
+
+        /* -------------------------------------------------------------------
+       MUNICIPAL WATER AUTHORITY
+       ------------------------------------------------------------------- */
+        System.out.println("\n----------------------- MUNICIPAL WATER AUTHORITY -----------------------");
+
+        System.out.println("\nWATER SUPPLY");
+        System.out.printf("Maximum Capacity:         %s units%n", formatter.format(baseWaterProduction));
+        System.out.printf("Current Output:           %s units%n", formatter.format(waterProduction));
+        System.out.printf("Total Draw:               %s units%n", formatter.format(waterConsumption));
+        System.out.printf("Supply Satisfaction:      %.1f%%%n", waterRatio * 100);
+
+        if (waterConsumption <= 0) {
+            System.out.println("(No consumers connected yet - water demand is not modelled.)");
+        } else if (waterRatio < 1.0) {
+            System.out.printf("[CRITICAL] Additional capacity needed: %s units%n",
+                    formatter.format(waterConsumption - waterProduction));
+        }
 
         /* 4. Revenue Calculation */
         double utilityRev = Math.min(consumption * pricePerWatt, production * pricePerWatt);

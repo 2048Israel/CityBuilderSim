@@ -152,7 +152,35 @@ public class BuildingManager {
 
         templates.add(coalPowerplant);
 
-        //add more buildings; next Building ID is 10
+        // WATER buildings
+        //
+        // Costed off a real ~20 MGD conventional treatment plant serving about
+        // 100,000 people, which runs ~$95M all-in. As with House, cashCost is
+        // only part of that: the materials are bought at market price
+        // (22,000 x $2k = $44M) and the labour is paid by the construction
+        // sector, so cash covers the equipment, land and engineering.
+        //
+        // constructionPoints is also the build-time knob. At 44,000 it is
+        // roughly a third of the coal plant's 120,000 - a long project, but
+        // the city hits the water wall well before it can afford a power
+        // plant, so it needs to be reachable sooner.
+        BuildingsTemplate waterTreatmentPlant = new BuildingsTemplate("Water Treatment Plant", BuildingType.WATER)
+                .setCashCost(45000)
+                .setConstructionPoints(44000)
+                .setConstructionMaterials(22000)
+                .setProduction1(60000) // water output
+                // Water and wastewater are typically 2-4% of a city's electrical
+                // load. 900 against ~25,000 houses' worth of draw sits in that band.
+                .setElectricityConsumption(900)
+                .setJobs(JobType.NO_DIPLOMA, 8)
+                .setJobs(JobType.DIPLOMA, 14)          // certified operators, the bulk of the crew
+                .setJobs(JobType.COLLEGE_ENGINEERING, 4)
+                .setJobs(JobType.UNIV_SCIENCE, 3)      // water quality lab
+                .setId(10);
+
+        templates.add(waterTreatmentPlant);
+
+        //add more buildings; next Building ID is 11
     }
 
     public void finalUpdateBuildings() {
@@ -422,6 +450,31 @@ public class BuildingManager {
         }
 
         return total;
+    }
+
+    /**
+     * Same as getJobArrayPerCategory but across several categories at once.
+     *
+     * Utilities is no longer a single BuildingType: the water plant is staffed
+     * out of the same utility payroll as the power plant, so ServicesManager
+     * needs ELECTRICITY and WATER summed into one job array. Calling the
+     * single-category version twice and adding the results would work, but the
+     * caller would then have to hand-roll the array addition each time.
+     */
+    public int[] getJobArrayPerCategories(EnumSet<BuildingType> categories) {
+        int[] jobs = new int[JobType.values().length];
+
+        for (BuildingsStacks stack : stacks) {
+
+            if (categories.contains(stack.getBuilding().getCategory())) {
+
+                for (int j = 0; j < jobs.length; j++) {
+                    jobs[j] += stack.getTotalJobs(jobNoUse[j]);
+                }
+            }
+        }
+
+        return jobs;
     }
 
     public int[] getJobArrayPerCategory(BuildingType category) {

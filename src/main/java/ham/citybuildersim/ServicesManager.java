@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import java.util.EnumSet;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.ToDoubleFunction;
@@ -56,6 +57,17 @@ public class ServicesManager {
                 utilitiesHandler::setWattsConsumption,
                 BuildingsTemplate::getElectricityConsumption);
 
+        // water
+        //
+        // Production only. There is deliberately no setWaterConsumption() call
+        // here yet - no building or resident draws water, so demand is zero and
+        // the ratio stays at 1. When consumption lands it hooks in right here,
+        // as the mirror of the electricity draw above.
+        updateByCategoryHandlerDouble(
+                BuildingType.WATER,
+                utilitiesHandler::setWaterProduction,
+                BuildingsTemplate::getProduction1);
+
         // construction
         updateByCategoryHandlerDouble(
                 BuildingType.CONSTRUCTION,
@@ -96,8 +108,14 @@ public class ServicesManager {
         copyArray(wages, utilityWages);
         copyArray(wages, constructionWages);
 
+        // ELECTRICITY *and* WATER: the water plant is staffed out of the same
+        // utility payroll and shares averageUtilityFill with the power plant.
+        // Leaving WATER out here would have hired nobody for it - its jobs
+        // would never be posted, and the plant would run on a fill rate
+        // computed purely from the grid's crew.
         copyArray(
-                buildingManager.getJobArrayPerCategory(BuildingType.ELECTRICITY),
+                buildingManager.getJobArrayPerCategories(
+                        EnumSet.of(BuildingType.ELECTRICITY, BuildingType.WATER)),
                 utilityJobs
         );
 
@@ -125,6 +143,10 @@ public class ServicesManager {
 
     public double getEnergyRatio() {
         return utilitiesHandler.getEnergyRatio();
+    }
+
+    public double getWaterRatio() {
+        return utilitiesHandler.getWaterRatio();
     }
 
     public double getServiceNetIncome() {
