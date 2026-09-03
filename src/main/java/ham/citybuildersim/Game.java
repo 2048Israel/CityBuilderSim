@@ -86,6 +86,31 @@ public class Game {
      */
     public Game(GameFiles gameFiles) {
         this.gameFiles = gameFiles;
+        buildWorld();
+    }
+
+    /**
+     * Builds the entire simulation from nothing.
+     *
+     * Called by the constructor AND by newGame(), which is the whole point.
+     *
+     * "Start New Game" used to call a resetGame() that cleared the fields
+     * somebody had remembered to add to it, and the list had fallen a long way
+     * behind: a new city inherited $81,777k of construction cash, $15,402k of
+     * business debt, 1,868 units of the previous city's food sitting in shops
+     * that no longer existed, 122 months of someone else's graph history, and a
+     * GDP of $590/month with nothing built. Twenty-three fields in all.
+     *
+     * That is not a bug you fix by extending the list, because the list is the
+     * bug - every field added anywhere in the game is a new chance to forget.
+     * Rebuilding the object graph means a new game is identical to a freshly
+     * started one BY CONSTRUCTION, and no field added in future can leak.
+     *
+     * Safe because the UI holds a reference to Game and nothing below it - every
+     * screen reads through getters when it draws.
+     */
+    private void buildWorld() {
+
         buildingManager = new BuildingManager();
         economyManager = new EconomyManager(buildingManager);
         populationManager = new PopulationManager();
@@ -109,12 +134,31 @@ public class Game {
                 buildingManager,
                 debtManager);
         
+        landManager = new LandManager();
+        demolitionLog = new DemolitionLog();
+        skipReport = new TimeSkipReport();
+        households = new HouseholdAccounts();
+        lastInvestment = new java.util.LinkedHashMap<>();
+
         this.isRunning = true;
-        //this.scanner = new Scanner(System.in);
         this.month = 1;
         this.cash = 300000;
-        
+        this.population = 0;
+        this.jobs = new int[JobType.values().length];
 
+        this.materialsConsumed = 0;
+        this.totalMaterialsImported = 0;
+        this.totalBuildingCost = 0;
+        this.hasNewReceipt = false;
+        this.lastBuildingName = null;
+        this.cityInterestPaid = 0;
+        this.monthsSinceAutosave = 0;
+
+        this.lastSaveResult = null;
+        this.loadFailure = null;
+
+        this.reports = true;
+        this.graphs = true;
     }
     
     public void run() {
@@ -164,9 +208,17 @@ public class Game {
 
     //buttons
     public void newGame(){
+
+        // Rebuild rather than reset. See buildWorld() for the twenty-three
+        // fields the old reset was missing and why the list itself was the bug.
+        buildWorld();
+
+        // buildWorld() made a new BuildingManager, so the templates have to be
+        // loaded into it. initialize() is guarded, so the flag has to drop first
+        // or it would quietly do nothing and leave a city with no buildings in
+        // its catalogue.
+        initialized = false;
         initialize();
-        resetGame();
-        
     }
     public void resumeGame(){
         // Just make sure templates/state are initialized; the JavaFX screen
@@ -1723,20 +1775,25 @@ public class Game {
     // getters on CommercialHandler are all pure reads - the UI cannot mutate
     // economy state through this.
     private BusinessInvestment businessInvestment;
-    private final LandManager landManager = new LandManager();
+    private LandManager landManager = new LandManager();
 
     /** What businesses have scrapped, so the panel can say what went and when. */
-    private final DemolitionLog demolitionLog = new DemolitionLog();
+    private DemolitionLog demolitionLog = new DemolitionLog();
 
     /** What happened during the last fast-forward. See TimeSkipReport. */
-    private final TimeSkipReport skipReport = new TimeSkipReport();
+    private TimeSkipReport skipReport = new TimeSkipReport();
 
     public TimeSkipReport getSkipReport(){
         return skipReport;
     }
 
     /** The residents' own books. See HouseholdAccounts. */
-    private final HouseholdAccounts households = new HouseholdAccounts();
+    private HouseholdAccounts households = new HouseholdAccounts();
+
+    /** For tests and for the graph screen. */
+    public HistorySave getHistorySave(){
+        return historySave;
+    }
 
     public DemolitionLog getDemolitionLog(){
         return demolitionLog;
@@ -1763,7 +1820,7 @@ public class Game {
 
     /** Interest the city paid this month, accumulated by InterestExpense(). */
     private double cityInterestPaid;
-    private final java.util.Map<String, String> lastInvestment = new java.util.LinkedHashMap<>();
+    private java.util.Map<String, String> lastInvestment = new java.util.LinkedHashMap<>();
 
     public EconomyManager getEconomyManager() {
         return economyManager;
@@ -1951,37 +2008,16 @@ public class Game {
         }
     }
 
-    public void resetBuildingManager() {
-        buildingManager.resetBuildingManager();
-        
-    }
-    
-    public void resetEconomyManager(){
-        economyManager.resetEconomyManager();
-    }
-    
-    public void resetPopulationManager(){
-        populationManager.resetPopulationManager();
-    }
-    
-    public void unloadDebt(){
-        debtManager.clearDebts();
-    }
-    
-    public void resetGame(){
-        cash = 300000;
-        month = 1;
-        population = 0;
-        resetBuildingManager();
-        resetEconomyManager();
-        resetPopulationManager();
-        unloadDebt();
-        landManager.reset();
-        economyManager.getTaxPolicy().reset();
-        demolitionLog.clear();
-        households.reset();
-        
-    }
+    /*
+     * resetGame() used to live here, along with thin wrappers around each
+     * manager's own reset. It is gone rather than fixed: newGame() rebuilds the
+     * object graph now (see buildWorld()), so nothing calls it - and leaving a
+     * public method NAMED resetGame that resets about two thirds of the game is
+     * a trap for whoever reaches for it next.
+     *
+     * The managers keep their own reset methods. They are unused today; the
+     * point is that none of them is on the path a new game takes.
+     */
     
     //calculations
     
