@@ -6,10 +6,6 @@ package ham.citybuildersim;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +15,9 @@ import java.util.List;
  */
 public class HistorySave {
     
-transient String userHome = System.getProperty("user.home");
-    transient Path path = Path.of(userHome, "YourGame", "history.json");
+    /* Path lives in GameFiles now, alongside the save's. */
 
-    
-    
+
     private List<Double> cash = new ArrayList<>();
     private List<Double> gdp = new ArrayList<>();
     private List<Integer> month = new ArrayList<>();
@@ -56,20 +50,14 @@ transient String userHome = System.getProperty("user.home");
 
     
 
-    public void saveHistory() {
-        try {
-            Files.createDirectories(path.getParent());
-
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String json = gson.toJson(this);
-
-            Files.writeString(path, json);
-
-            System.out.println(path.toAbsolutePath());
-
-        } catch (IOException e) {
-            System.out.println("Error saving.");
-        }
+    /**
+     * The graph history. Written the same guarded way as the save itself: this
+     * file is every month the city has ever lived, so losing it to a half-write
+     * costs more than the save does.
+     */
+    public GameFiles.Result saveHistory(GameFiles files) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return files.write(files.historyFile(), gson.toJson(this));
     }
     
     //getters

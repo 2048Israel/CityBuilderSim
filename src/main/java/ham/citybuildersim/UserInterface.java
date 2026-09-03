@@ -139,15 +139,67 @@ public class UserInterface extends Application {
         
     }
     
+    /**
+     * The save screen.
+     *
+     * Confirm used to call game.saveGame() and leave the player looking at the
+     * same two buttons, with the only evidence of what happened printed to a
+     * console that does not exist in a packaged build. Now it says where the
+     * file is going beforehand and what became of it afterwards - including
+     * when it failed, which was previously indistinguishable from success.
+     */
     private void showSavingMenu() {
         clearMenu();
-        Button b1 = new Button("Confirm");
-        Button b0 = new Button("Cancel");
-        
-        b1.setOnAction(e -> game.saveGame());
-        b0.setOnAction(e -> showMainMenu());
-        
-        rootMenu.getChildren().addAll(b1,b0);
+
+        Label heading = new Label("SAVE GAME");
+        heading.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+
+        Label where = new Label(game.getGameFiles().getDirectory().toString());
+        where.setStyle("-fx-font-size: 10px; -fx-text-fill: #555555;");
+        where.setWrapText(true);
+        where.setMaxWidth(320);
+
+        Button confirm = new Button("Confirm");
+        Button cancel = new Button("Cancel");
+
+        confirm.setOnAction(e -> showSaveResult(game.saveGame()));
+        cancel.setOnAction(e -> showMainMenu());
+
+        rootMenu.getChildren().addAll(heading, where, confirm, cancel);
+    }
+
+    private void showSaveResult(GameFiles.Result result) {
+        clearMenu();
+
+        Label outcome = new Label(result.ok ? "Saved." : "Save failed.");
+        outcome.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: "
+                + (result.ok ? "#2e7d32" : "#c62828") + ";");
+
+        Label detail = new Label(result.ok
+                ? result.file.toString()
+                : result.error);
+        detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
+                + (result.ok ? "#555555" : "#c62828") + ";");
+        detail.setWrapText(true);
+        detail.setMaxWidth(320);
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showMainMenu());
+
+        rootMenu.getChildren().addAll(outcome, detail, back);
+
+        if (!result.ok) {
+            // Worth saying out loud: the usual causes are a full disk or a
+            // folder the player has no permission to write to, and neither is
+            // something the game can fix for them.
+            Label advice = new Label(
+                    "The city is still running - nothing has been lost yet. "
+                    + "Check there is free disk space, then try again.");
+            advice.setStyle("-fx-font-size: 10px; -fx-text-fill: #555555;");
+            advice.setWrapText(true);
+            advice.setMaxWidth(320);
+            rootMenu.getChildren().add(2, advice);
+        }
     }
 
     private void showSettingsMenu() {
@@ -1708,25 +1760,149 @@ public class UserInterface extends Application {
         rootMenu.getChildren().addAll(title, info, totalLabel, grid, note, reset, run, back);
     }
 
+    /**
+     * What happened while the player was not watching.
+     *
+     * Fast-forwarding is how this game is actually played, and this screen used
+     * to say "100 of 100 months simulated" and nothing else. Anything that
+     * reports itself and then expires - the demolition log keeps entries for
+     * two years - could happen and vanish entirely inside one skip, which is
+     * exactly how a demolition went unnoticed through several test runs.
+     *
+     * Ordered worst-first: what went wrong, then what changed, then the detail.
+     */
     private void showSimulateResultMenu(int requested, int completed) {
         clearMenu();
+
+        TimeSkipReport skip = game.getSkipReport();
 
         Label title = new Label("SIMULATION COMPLETE");
         title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;");
 
-        Label result = new Label(completed + " of " + requested + " months simulated.");
+        Label result = new Label(String.format("Month %,d to %,d  -  %d month%s",
+                skip.getStartMonth(), game.getMonth(),
+                completed, completed == 1 ? "" : "s"));
         result.setStyle("-fx-font-size: 14px;");
 
-        Label info = new Label("Now month " + game.getMonth()
-                + " | Cash: $" + formatter.format(game.getCash()));
+        VBox column = new VBox(0);
 
-        rootMenu.getChildren().addAll(title, result, info);
+        /* ---------------------------- headlines ---------------------------- */
+        VBox headlines = reportSection("WHAT HAPPENED");
 
-        if (completed < requested) {
-            Label warning = new Label("Stopped early - the treasury was empty.");
-            warning.setStyle("-fx-text-fill: #c62828; -fx-font-weight: bold;");
-            rootMenu.getChildren().add(warning);
+        for (String line : skip.getHeadlines()) {
+
+            // The only cheerful headline is the "nothing went wrong" one, which
+            // is the single line the list contains when it contains nothing else.
+            boolean good = line.startsWith("Nothing went wrong");
+
+            Label item = monoLabel("  " + line);
+            item.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
+                    + (good ? "#2e7d32" : "#c62828") + ";");
+            headlines.getChildren().add(item);
         }
+        column.getChildren().add(headlines);
+
+        /* ------------------------------ deltas ------------------------------ */
+        VBox changes = reportSection("THE CITY");
+        addSkipLine(changes, "Population", skip.getStartPopulation(), skip.getEndPopulation(),
+                skip.getPopulationChange(), false);
+        addSkipLine(changes, "Cash", skip.getStartCash(), skip.getEndCash(),
+                skip.getCashChange(), true);
+        changes.getChildren().add(monoLabel(String.format("%-20s%+,.1f a month",
+                "", skip.getCashPerMonth())));
+
+        // Only when there was something to grow FROM. A city that went 0 -> 192
+        // has no meaningful rate, and printing "+0.0% a year" beside "+192"
+        // reads like a contradiction rather than a division guard.
+        if (skip.getStartPopulation() > 0 && skip.getPopulationChange() != 0) {
+            changes.getChildren().add(monoLabel(String.format("%-20s%+.1f%% a year",
+                    "Growth", skip.getPopulationGrowthRate() * 100)));
+        }
+        column.getChildren().add(changes);
+
+        VBox econ = reportSection("ECONOMY");
+        addChangeLine(econ, "Monthly GDP", skip.getMonthlyGdpChange(), true, true);
+        addChangeLine(econ, "Jobs", skip.getJobsChange(), false, true);
+        addChangeLine(econ, "Housing", skip.getHousingChange(), false, true);
+
+        // Debt is the one place where up is bad. Negating the VALUE to get the
+        // colour right would print "-$48,074" on a city whose debt rose by
+        // exactly that much, so the sign stays honest and only the colour flips.
+        addChangeLine(econ, "City debt", skip.getCityDebtChange(), true, false);
+        addChangeLine(econ, "Business debt", skip.getBusinessDebtChange(), true, false);
+
+        if (skip.getWriteOffsDuringSkip() > 0) {
+            Label wo = monoLabel(String.format("%-20s%s written off by lenders",
+                    "Restructuring", money(skip.getWriteOffsDuringSkip())));
+            wo.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ef6c00;");
+            econ.getChildren().add(wo);
+        }
+        column.getChildren().add(econ);
+
+        /* ------------------------------- land ------------------------------- */
+        VBox land = reportSection("LAND",
+                String.format("%-20s%+.0f blocks", "Bought", skip.getLandBlocksBought()),
+                String.format("%-20s%.1f%% used at the end",
+                        "Utilisation", skip.getEndLandUtilisation() * 100));
+        column.getChildren().add(land);
+
+        /* ----------------------------- buildings ----------------------------- */
+        java.util.List<TimeSkipReport.BuildingChange> built = skip.getBuildingChanges();
+
+        VBox buildings = reportSection("BUILDINGS");
+        if (built.isEmpty()) {
+            buildings.getChildren().add(monoLabel("  nothing was built or lost"));
+        } else {
+            for (TimeSkipReport.BuildingChange change : built) {
+                Label line = monoLabel(String.format("  %+d  %s", change.change, change.name));
+                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
+                        + (change.isGain() ? "#2e7d32" : "#c62828") + ";");
+                buildings.getChildren().add(line);
+            }
+        }
+        column.getChildren().add(buildings);
+
+        /* ---------------------------- demolitions ---------------------------- */
+        // Pulled from the log rather than the snapshots, because only the log
+        // knows WHEN each one happened - and a hundred-month skip is long enough
+        // that they would otherwise have aged off the side panel unseen.
+        java.util.List<DemolitionLog.Entry> lost = new java.util.ArrayList<>();
+        for (DemolitionLog.Entry entry : game.getDemolitionLog().all()) {
+            if (entry.month > skip.getStartMonth()) {
+                lost.add(entry);
+            }
+        }
+
+        if (!lost.isEmpty()) {
+            VBox demolished = reportSection("DEMOLISHED DURING THE SKIP");
+            for (DemolitionLog.Entry entry : lost) {
+                Label line = monoLabel(String.format("  month %,d: %,d x %s (%s)",
+                        entry.month, entry.quantity, entry.building, entry.sector));
+                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+                demolished.getChildren().add(line);
+            }
+            demolished.getChildren().add(monoLabel(
+                    "  their owners could not afford to keep them"));
+            column.getChildren().add(demolished);
+        }
+
+        /* ---------------------------- households ---------------------------- */
+        column.getChildren().add(reportSection("HOUSEHOLDS",
+                String.format("%-20s%.1f%% of take-home", "Rent",
+                        skip.getEndRentBurden() * 100),
+                String.format("%-20s%.1f%%  (was %.1f%%)", "Saving rate",
+                        skip.getEndSavingRate() * 100, skip.getStartSavingRate() * 100)));
+
+        VBox content = new VBox(0);
+        content.setAlignment(Pos.CENTER);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        content.getChildren().add(column);
+
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(content);
+        scroll.setFitToWidth(true);
+        scroll.setPrefHeight(520);
+        scroll.setStyle("-fx-background-color:transparent;");
 
         Button again = new Button("Simulate more");
         again.setOnAction(e -> showSimulateMonthsMenu());
@@ -1734,7 +1910,50 @@ public class UserInterface extends Application {
         Button done = new Button("Done");
         done.setOnAction(e -> showStartMenu());
 
-        rootMenu.getChildren().addAll(again, done);
+        rootMenu.getChildren().addAll(title, result, scroll, again, done);
+    }
+
+    /** "Population  192 -> 664  (+472)", coloured by direction. */
+    private void addSkipLine(VBox section, String label,
+                             double start, double end, double change, boolean isMoney) {
+
+        String text = isMoney
+                ? String.format("%-20s%s -> %s", label, money(start), money(end))
+                : String.format("%-20s%,.0f -> %,.0f", label, start, end);
+
+        section.getChildren().add(monoLabel(text));
+        addChangeLine(section, "", change, isMoney, true);
+    }
+
+    /**
+     * A signed change, coloured by whether it is good news.
+     *
+     * The sign always tells the truth about the direction; `higherIsBetter`
+     * only decides the colour. Debt is the case that forces the distinction -
+     * more of it is worse, but a line reading "-$48,074" on a city whose debt
+     * went UP by that much is simply a lie in service of a colour.
+     */
+    private void addChangeLine(VBox section, String label, double change,
+                               boolean isMoney, boolean higherIsBetter) {
+
+        // Anything that rounds away to nothing IS nothing. Without this a change
+        // of -0.004 prints as a red "-$0", which reads like a problem rather
+        // than the rounding artefact it is.
+        if (Math.abs(change) < .005) {
+            change = 0;
+        }
+
+        String value = isMoney
+                ? (change >= 0 ? "+" : "-") + "$" + formatter.format(Math.abs(change))
+                : String.format("%+,.0f", change);
+
+        boolean good = higherIsBetter ? change > 0 : change < 0;
+        boolean bad = higherIsBetter ? change < 0 : change > 0;
+
+        Label line = monoLabel(String.format("%-20s%s", label, value));
+        line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
+                + (bad ? "#c62828" : good ? "#2e7d32" : "#666666") + ";");
+        section.getChildren().add(line);
     }
 
     /** Shared scaffolding for the sector report screens. */

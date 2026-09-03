@@ -36,6 +36,14 @@ public class Game {
     private ServicesManager servicesManager;
     private DataSave dataSave;
     private HistorySave historySave;
+
+    /**
+     * Where saves live and how they are written. One instance for the whole
+     * game: the path used to be spelled out separately in DataSave, HistorySave
+     * and twice more down in the load methods, which is four places to get it
+     * wrong and no way to notice when one of them drifts.
+     */
+    private final GameFiles gameFiles = new GameFiles();
     private HistoryGrapher historyGrapher;
     private MenuManager menuManager;
     private DebtManager debtManager;
@@ -108,6 +116,16 @@ public class Game {
         dataSave.setBuildingNum(buildingManager.getTemplateCount());
         populationManager.setWagesPerType();
         buildingManager.setConstructionMaterials(80);
+
+        // Has to happen before anything loads or saves, and this is the one
+        // place guaranteed to run first: both resumeGame() and loadGameSave()
+        // call initialize(), and it is guarded so it only ever runs once.
+        // Copies, never moves - the old folder is left where it is.
+        for (String file : gameFiles.migrateLegacy()) {
+            System.out.println("Brought " + file
+                    + " over from the old save folder into " + gameFiles.getDirectory());
+        }
+
         initialized = true;
         }
  
@@ -153,9 +171,20 @@ public class Game {
         // NOTE: previously also called handleStartGame() here, which caused
         // the same infinite-loop freeze described above.
     }
-    public void saveGame(){
+    /**
+     * Returns what actually happened rather than announcing success regardless.
+     *
+     * The old version called save() and then printed "Game successfuly saved."
+     * unconditionally - including on the path where DataSave had caught an
+     * IOException and given up. A player told their city is safe stops making
+     * their own copies, so a save that lies is worse than one that plainly
+     * fails.
+     */
+    public GameFiles.Result saveGame(){
         save();
-        System.out.println("Game successfuly saved.");
+        GameFiles.Result result = getLastSaveResult();
+        System.out.println(result.message());
+        return result;
     }
     
     public void toggleQuit(){
@@ -626,6 +655,11 @@ public class Game {
 
         int completed = 0;
 
+        // Snapshot before anything moves. Everything the summary shows is a diff
+        // against this or a count taken month by month below - see TimeSkipReport.
+        skipReport.beginSkip(months);
+        captureSkipSnapshot(true);
+
         try {
             for (int i = 0; i < months; i++) {
                 if (cash <= 0) {
@@ -635,13 +669,59 @@ public class Game {
                 }
                 nextMonth();
                 completed++;
+
+                // Sampled here rather than inferred from the endpoints, because
+                // a city that starved for forty months and recovered looks
+                // identical at both ends to one that never had a problem.
+                skipReport.sampleMonth(
+                        servicesManager.getEnergyRatio(),
+                        servicesManager.getWaterRatio(),
+                        landManager.getAvailableSqFt(),
+                        households.isLivingBeyondIncome(),
+                        !buildingManager.getStacksUnderConstruction().isEmpty(),
+                        populationManager.getPopulation());
             }
         } finally {
             graphs = previousGraphs;
             reports = previousReports;
+
+            // In the finally block so a skip that stops early - or throws - still
+            // produces a readable summary rather than a half-filled one.
+            captureSkipSnapshot(false);
         }
 
         return completed;
+    }
+
+    /** One end of the fast-forward diff. Reads finished figures; moves nothing. */
+    private void captureSkipSnapshot(boolean atStart){
+
+        java.util.Map<String, Integer> owned = new java.util.LinkedHashMap<>();
+
+        for (BuildingsTemplate template : buildingManager.getTemplates()) {
+            if (template == null) {
+                continue;
+            }
+            int quantity = buildingManager.getQuantity(template.getId());
+            if (quantity > 0) {
+                owned.put(template.getName(), quantity);
+            }
+        }
+
+        skipReport.snapshot(atStart, month, cash,
+                populationManager.getPopulation(),
+                getHouseholdCapacity(),
+                populationManager.getTotalJobs(),
+                economyManager.getNationalAccounts().getGdp(),
+                economyManager.getNationalAccounts().getAnnualGdp(),
+                debtManager.getAllPrincipal(),
+                economyManager.getBusinessDebtManager().getTotalPrincipal(),
+                landManager.getOwnedSqFt() / LandManager.BLOCK_SQ_FT,
+                landManager.getUtilisation(),
+                households.getSavingRate(),
+                households.getRentBurden(),
+                economyManager.getBusinessDebtManager().getTotalWrittenOff(),
+                owned);
     }
 
     private void handleMultipleMonths() {
@@ -1575,6 +1655,13 @@ public class Game {
     /** What businesses have scrapped, so the panel can say what went and when. */
     private final DemolitionLog demolitionLog = new DemolitionLog();
 
+    /** What happened during the last fast-forward. See TimeSkipReport. */
+    private final TimeSkipReport skipReport = new TimeSkipReport();
+
+    public TimeSkipReport getSkipReport(){
+        return skipReport;
+    }
+
     /** The residents' own books. See HouseholdAccounts. */
     private final HouseholdAccounts households = new HouseholdAccounts();
 
@@ -1661,9 +1748,24 @@ public class Game {
         dataSave.setPropertyTaxRate(economyManager.getTaxPolicy().getPropertyTaxRate());
         dataSave.setReports(reports);
         dataSave.setGraphs(graphs);
-        dataSave.saveGame();
-        historySave.saveHistory();
+        lastSaveResult = dataSave.saveGame(gameFiles);
+
+        // The history is written even when the save failed, on purpose: the two
+        // files are independent, and one of them landing is strictly better
+        // than neither. The reported outcome is the save's, because that is the
+        // file the player would actually mourn.
+        GameFiles.Result history = historySave.saveHistory(gameFiles);
+        if (!history.ok) {
+            System.out.println(history.message());
+        }
     }
+
+    /** What the last write attempt did. Null until something has been saved. */
+    private GameFiles.Result lastSaveResult;
+
+    public GameFiles.Result getLastSaveResult() { return lastSaveResult; }
+
+    public GameFiles getGameFiles() { return gameFiles; }
     
     public void sendBuildingSave() {
 
@@ -1935,11 +2037,10 @@ public class Game {
     public void loadGame() {
 
         try {
-            String userHome = System.getProperty("user.home");
-            Path path = Path.of(userHome, "YourGame", "save.json");
+            Path path = gameFiles.saveFile();
 
             if (!Files.exists(path)) {
-                System.out.println("Not found");
+                System.out.println("No save found in " + gameFiles.getDirectory());
                 return;
             }
 
@@ -2133,11 +2234,10 @@ public class Game {
     public void loadHistory() {
 
         try {
-            String userHome = System.getProperty("user.home");
-            Path path = Path.of(userHome, "YourGame", "history.json");
+            Path path = gameFiles.historyFile();
 
             if (!Files.exists(path)) {
-                System.out.println("Not found");
+                System.out.println("No history found in " + gameFiles.getDirectory());
                 return;
             }
 

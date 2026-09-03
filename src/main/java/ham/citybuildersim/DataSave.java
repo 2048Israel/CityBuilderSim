@@ -1,17 +1,8 @@
 package ham.citybuildersim;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.io.IOException;
-import java.util.Scanner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,8 +11,11 @@ import java.util.List;
  */
 public class DataSave {
 
-    transient String userHome = System.getProperty("user.home");
-    transient Path path = Path.of(userHome, "YourGame", "save.json");
+    /*
+     * The save path used to live here as a literal, and in three other places
+     * besides. It is GameFiles' job now - see the note at the top of that class
+     * for why one copy of the fact beats four.
+     */
 
     //save variables
     private double cash;
@@ -176,20 +170,19 @@ public class DataSave {
     }
     
 
-    public void saveGame() {
-        try {
-            Files.createDirectories(path.getParent());
-
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String json = gson.toJson(this);
-
-            Files.writeString(path, json);
-
-            System.out.println(path.toAbsolutePath());
-
-        } catch (IOException e) {
-            System.out.println("Error saving.");
-        }
+    /**
+     * Writes the city out.
+     *
+     * Returns the outcome instead of swallowing it. The previous version caught
+     * IOException, printed "Error saving." to a console no player will ever see,
+     * and returned normally - so Game.saveGame() went on to announce "Game
+     * successfuly saved." on top of a save that had not happened. Telling
+     * someone their city is safe when it is not is worse than not saving at all,
+     * because it is the point at which they stop worrying about it.
+     */
+    public GameFiles.Result saveGame(GameFiles files) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return files.write(files.saveFile(), gson.toJson(this));
     }
 
 
