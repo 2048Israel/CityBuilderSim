@@ -44,8 +44,35 @@ public class BuildingManager {
        category of freshwater withdrawal in the US - hence the coal plant's 400.
        ------------------------------------------------------------------------- */
 
-    //Initialize all templates
+    /**
+     * Loads every building the game knows about.
+     *
+     * Tries buildings.json first - the editable data file, so a balance pass is
+     * an edit and a restart rather than an edit and a rebuild. Falls back to the
+     * definitions written out below if the file is missing or unusable, which
+     * means a typo in the data file costs you the data file and not the game.
+     *
+     * The built-ins are also the reference: BuildingDataCheck asserts the JSON
+     * produces templates identical to them, so the two cannot silently drift.
+     */
     public void initializeTemplates() {
+
+        List<BuildingsTemplate> loaded = new BuildingCatalog().load();
+
+        if (loaded != null && !loaded.isEmpty()) {
+            templates.addAll(loaded);
+            return;
+        }
+
+        System.out.println("Using built-in building definitions.");
+        initializeBuiltInTemplates();
+    }
+
+    /**
+     * The definitions as code. Kept as the fallback rather than deleted, so
+     * there is always a working set of buildings even with no data file at all.
+     */
+    public void initializeBuiltInTemplates() {
         
         //Residential Buildings
         BuildingsTemplate house = new BuildingsTemplate("House", BuildingType.RESIDENTIAL);
@@ -55,6 +82,7 @@ public class BuildingManager {
         house.setConstructionMaterials(30);
         house.setElectricityConsumption(1);
         house.setWaterConsumption(.2);
+        house.setLandSqFt(8000);
         house.setId(0);
         templates.add(house);
 
@@ -65,6 +93,7 @@ public class BuildingManager {
         studioApartments.setConstructionMaterials(2000);
         studioApartments.setElectricityConsumption(8);
         studioApartments.setWaterConsumption(2);
+        studioApartments.setLandSqFt(25000);
         studioApartments.setId(1);
         templates.add(studioApartments);
 
@@ -75,6 +104,7 @@ public class BuildingManager {
         lowRiseApartments.setConstructionMaterials(6000);
         lowRiseApartments.setElectricityConsumption(25);
         lowRiseApartments.setWaterConsumption(6);
+        lowRiseApartments.setLandSqFt(60000);
         lowRiseApartments.setId(6);
         templates.add(lowRiseApartments);
 
@@ -87,6 +117,7 @@ public class BuildingManager {
         convienceStore.setConstructionMaterials(80);
         convienceStore.setElectricityConsumption(6);
         convienceStore.setWaterConsumption(1);
+        convienceStore.setLandSqFt(5000);
         convienceStore.setJobs(JobType.NO_DIPLOMA, 2);
         convienceStore.setJobs(JobType.DIPLOMA, 3);
         convienceStore.setId(2);
@@ -100,6 +131,7 @@ public class BuildingManager {
         smallGroceryStore.setConstructionMaterials(700);
         smallGroceryStore.setElectricityConsumption(35);
         smallGroceryStore.setWaterConsumption(6);
+        smallGroceryStore.setLandSqFt(40000);
         smallGroceryStore.setJobs(JobType.NO_DIPLOMA, 15);
         smallGroceryStore.setJobs(JobType.DIPLOMA, 10);
         smallGroceryStore.setJobs(JobType.COLLEGE_BUSINESS, 2);
@@ -115,6 +147,7 @@ public class BuildingManager {
         texttileMill.setProduction1(1100);
         texttileMill.setElectricityConsumption(40);
         texttileMill.setWaterConsumption(60);
+        texttileMill.setLandSqFt(80000);
         texttileMill.setJobs(JobType.NO_DIPLOMA, 45);
         texttileMill.setJobs(JobType.DIPLOMA, 20);
         texttileMill.setId(3);
@@ -128,6 +161,7 @@ public class BuildingManager {
         foodProcessingPlant.setProduction1(6000);
         foodProcessingPlant.setElectricityConsumption(120);
         foodProcessingPlant.setWaterConsumption(150);
+        foodProcessingPlant.setLandSqFt(200000);
         foodProcessingPlant.setJobs(JobType.NO_DIPLOMA, 140);
         foodProcessingPlant.setJobs(JobType.DIPLOMA, 120);
         foodProcessingPlant.setJobs(JobType.COLLEGE_ENGINEERING, 10);
@@ -142,6 +176,7 @@ public class BuildingManager {
         constructionMaterialsPlant.setProduction2(400);
         constructionMaterialsPlant.setElectricityConsumption(200);
         constructionMaterialsPlant.setWaterConsumption(80);
+        constructionMaterialsPlant.setLandSqFt(300000);
         constructionMaterialsPlant.setJobs(JobType.NO_DIPLOMA, 160);
         constructionMaterialsPlant.setJobs(JobType.DIPLOMA, 80);
         constructionMaterialsPlant.setJobs(JobType.COLLEGE_ENGINEERING, 10);
@@ -156,6 +191,7 @@ public class BuildingManager {
         constructionDepot.setProduction1(400);
         constructionDepot.setElectricityConsumption(25);
         constructionDepot.setWaterConsumption(3);
+        constructionDepot.setLandSqFt(60000);
         constructionDepot.setJobs(JobType.NO_DIPLOMA, 35);
         constructionDepot.setJobs(JobType.DIPLOMA, 15);
         constructionDepot.setId(4);
@@ -169,6 +205,7 @@ public class BuildingManager {
                 .setProduction1(280000) // electricity output
                 .setElectricityConsumption(15)
                 .setWaterConsumption(400) // cooling - the biggest single draw in the game
+                .setLandSqFt(2000000)
                 .setJobs(JobType.NO_DIPLOMA, 40)
                 .setJobs(JobType.DIPLOMA, 20)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 6)
@@ -198,6 +235,7 @@ public class BuildingManager {
                 // load. 900 against ~25,000 houses' worth of draw sits in that band.
                 .setElectricityConsumption(900)
                 .setWaterConsumption(20) // filter backwash and process losses
+                .setLandSqFt(800000)
                 .setJobs(JobType.NO_DIPLOMA, 8)
                 .setJobs(JobType.DIPLOMA, 14)          // certified operators, the bulk of the crew
                 .setJobs(JobType.COLLEGE_ENGINEERING, 4)
@@ -206,7 +244,59 @@ public class BuildingManager {
 
         templates.add(waterTreatmentPlant);
 
-        //add more buildings; next Building ID is 11
+        /* ------------------------------ STEEL ------------------------------
+           Real electric-arc ratios, on a deliberately small plant: 1.1 tonnes
+           of scrap per tonne of steel, about 450 kWh a tonne, a couple of cubic
+           metres of make-up water a tonne.
+
+           Scrap in at $400 a tonne, steel out at $500. That $100 conversion
+           margin is roughly half what a real mill clears, because a small
+           distant producer is a price taker at both ends - and out of it come
+           the wages, the power and the water. What is left is a few percent.
+
+           They are here to employ people. The city's return is the payroll,
+           the wage tax on it, and everything those wages buy.
+           ------------------------------------------------------------------ */
+        BuildingsTemplate steelFoundry = new BuildingsTemplate("Steel Foundry", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(1400)
+                .setConstructionPoints(1400)
+                .setConstructionMaterials(1100)
+                .setProduction1(1200)               // tonnes of steel a month
+                .setProduction2(1320)               // tonnes of scrap that takes
+                .setProductionModifier1(.5)         // export price per tonne
+                .setProductionModifier2(.4)         // scrap price per tonne
+                .setElectricityConsumption(750)
+                .setWaterConsumption(65)
+                .setLandSqFt(90000)
+                .setJobs(JobType.NO_DIPLOMA, 22)
+                .setJobs(JobType.DIPLOMA, 12)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 4)
+                .setId(11);
+
+        templates.add(steelFoundry);
+
+        BuildingsTemplate steelMiniMill = new BuildingsTemplate("Steel Mini-Mill", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(9000)
+                .setConstructionPoints(9000)
+                .setConstructionMaterials(7000)
+                .setProduction1(6000)
+                .setProduction2(6600)
+                .setProductionModifier1(.5)
+                .setProductionModifier2(.4)
+                // An arc furnace is the largest single electrical load a city
+                // this size can build. That is the point of it as a mechanic.
+                .setElectricityConsumption(3700)
+                .setWaterConsumption(320)
+                .setLandSqFt(400000)
+                .setJobs(JobType.NO_DIPLOMA, 70)
+                .setJobs(JobType.DIPLOMA, 45)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 12)
+                .setJobs(JobType.UNIV_SCIENCE, 3)
+                .setId(12);
+
+        templates.add(steelMiniMill);
+
+        //add more buildings; next Building ID is 13
     }
 
     public void finalUpdateBuildings() {
@@ -263,6 +353,11 @@ public class BuildingManager {
         } else {
             newStack.startConstruction(quantity);
         }
+    }
+
+    /** Every template, in load order. */
+    public List<BuildingsTemplate> getTemplates() {
+        return templates;
     }
 
     public List<BuildingsTemplate> getTemplatesByCategory(EnumSet<BuildingType> categories) {
@@ -528,6 +623,24 @@ public class BuildingManager {
      * Construction labour is still excluded, so this understates true cost. There
      * is no depreciation either, so it is gross rather than net book value.
      */
+    /**
+     * Square feet of lot held by one category, standing and under construction.
+     *
+     * Under-construction land counts because the plot was bought and allocated
+     * the day the order was placed - a half-built plant is occupying and owing
+     * tax on its site exactly like a finished one.
+     */
+    public double getLandSqFtByCategory(BuildingType category) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getCategory() == category) {
+                total += stack.getBuilding().getLandSqFt()
+                        * (stack.getQuantity() + stack.getUnderConstruction());
+            }
+        }
+        return total;
+    }
+
     public double getBookValueByCategory(BuildingType category) {
         return getTotalByCategoryDouble(
                 category,
@@ -594,6 +707,63 @@ public class BuildingManager {
         }
 
         return progress;
+    }
+
+    /**
+     * Every square foot the city has committed to buildings - standing and on
+     * site both, since a half-built plant is occupying its plot.
+     *
+     * This is what a load recomputes the land ledger from, rather than trusting
+     * a saved figure: the buildings ARE the allocation, so deriving it means a
+     * save written before land existed still loads a correct city, and any
+     * drift between the two heals itself the next time the game is loaded.
+     */
+    public double getTotalLandFootprint() {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            total += stack.getBuilding().getLandSqFt()
+                    * (stack.getQuantity() + stack.getUnderConstruction());
+        }
+        return total;
+    }
+
+    /**
+     * Scraps finished buildings. The counterpart to addStack(), and the first
+     * thing in the game that makes the city smaller.
+     *
+     * Only COMPLETED buildings go: a half-built one has a construction contract
+     * behind it that has been partly billed and partly delivered, and unwinding
+     * that is a different problem from a firm deciding it owns too much.
+     *
+     * The stack is left in place even when it empties, because the save format
+     * indexes construction arrays by stack position and removing one would
+     * shift every index after it. That is backlog item 5 biting from a new
+     * direction; an empty stack is harmless.
+     *
+     * @return how many were actually scrapped, which may be fewer than asked
+     */
+    public int retire(BuildingsTemplate template, int quantity) {
+
+        if (template == null || quantity <= 0) {
+            return 0;
+        }
+
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getId() == template.getId()) {
+
+                int scrapped = Math.min(quantity, stack.getQuantity());
+                if (scrapped > 0) {
+                    stack.removeQuantity(scrapped);
+                }
+                return scrapped;
+            }
+        }
+        return 0;
+    }
+
+    /** How many stacks exist, for callers checking a save's arrays line up. */
+    public int getStackCount() {
+        return stacks.size();
     }
 
     public int[] getUnderConstructionArray() {

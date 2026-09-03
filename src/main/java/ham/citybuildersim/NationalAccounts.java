@@ -57,6 +57,19 @@ public class NationalAccounts {
     private double importsFood;
     private double importsMaterials;
 
+    /**
+     * Raw material heavy industry buys abroad, and what it ships back out.
+     *
+     * The city's first exports. Until now getNetExports() could only ever be
+     * negative and the government screen said as much - a city that imported
+     * food and building materials and sold nothing. A steel mill is the first
+     * thing that earns foreign money, and it does so by importing scrap: only
+     * the DIFFERENCE between the two is output the city actually produced,
+     * which is exactly what net exports is for.
+     */
+    private double importsRawMaterial;
+    private double exports;
+
     private double gdp;
 
     /** Monthly GDP, oldest first. */
@@ -69,9 +82,19 @@ public class NationalAccounts {
     private double taxSales;
     private double taxWage;
     private double utilityIncome;
+    private double landSales;
+
+    /**
+     * Property tax. Its own line rather than folded into taxBusiness, because
+     * it is a different kind of levy - charged on what is owned rather than on
+     * what was earned - and the whole point of having both is being able to see
+     * which one the city is living on.
+     */
+    private double propertyTax;
 
     private double interestExpense;
     private double capitalSpending;
+    private double landPurchases;
 
     /** Value of all stock held, so next month can measure the change. */
     private double lastInventoryValue;
@@ -86,7 +109,8 @@ public class NationalAccounts {
     public void update(double retailSales, double rentPaid,
                        double constructionWorkDone, double inventoryValue,
                        double governmentServices,
-                       double foodImports, double materialImports) {
+                       double foodImports, double materialImports,
+                       double rawMaterialImports, double exportRevenue) {
 
         consumptionGoods = retailSales;
         consumptionHousing = rentPaid;
@@ -103,6 +127,8 @@ public class NationalAccounts {
 
         importsFood = foodImports;
         importsMaterials = materialImports;
+        importsRawMaterial = rawMaterialImports;
+        exports = exportRevenue;
 
         gdp = getConsumption() + getInvestment() + government + getNetExports();
 
@@ -113,23 +139,39 @@ public class NationalAccounts {
     }
 
     /** The government's own income statement for the month. */
+    /**
+     * The city's own budget for the month.
+     *
+     * Land deliberately appears HERE and nowhere in GDP. Selling a field to a
+     * developer moves an asset that already existed from one owner to another;
+     * nothing was produced, so counting it as output would let a city
+     * manufacture growth by trading land with itself. It moves the treasury,
+     * which is what these lines are for, and the building that goes up on it is
+     * what shows up as investment.
+     */
     public void updateGovernment(double business, double industrial, double sales,
-                                 double wage, double utilities,
-                                 double interest, double capital) {
+                                 double wage, double utilities, double land,
+                                 double property,
+                                 double interest, double capital, double landBought) {
         taxBusiness = business;
         taxIndustrial = industrial;
         taxSales = sales;
         taxWage = wage;
         utilityIncome = utilities;
+        landSales = land;
+        propertyTax = property;
         interestExpense = interest;
         capitalSpending = capital;
+        landPurchases = landBought;
     }
 
     /* ------------------------------- GDP ------------------------------------ */
 
     public double getConsumption()  { return consumptionGoods + consumptionHousing; }
     public double getInvestment()   { return investmentConstruction + investmentInventories; }
-    public double getNetExports()   { return -(importsFood + importsMaterials); }
+    public double getNetExports() {
+        return exports - (importsFood + importsMaterials + importsRawMaterial);
+    }
 
     public double getConsumptionGoods()       { return consumptionGoods; }
     public double getConsumptionHousing()     { return consumptionHousing; }
@@ -138,6 +180,11 @@ public class NationalAccounts {
     public double getGovernment()             { return government; }
     public double getImportsFood()            { return importsFood; }
     public double getImportsMaterials()       { return importsMaterials; }
+    public double getImportsRawMaterial()     { return importsRawMaterial; }
+    public double getExports()                { return exports; }
+    public double getTotalImports() {
+        return importsFood + importsMaterials + importsRawMaterial;
+    }
 
     public double getGdp() { return gdp; }
 
@@ -201,16 +248,20 @@ public class NationalAccounts {
     public double getTaxSales()      { return taxSales; }
     public double getTaxWage()       { return taxWage; }
     public double getUtilityIncome() { return utilityIncome; }
+    public double getLandSales()     { return landSales; }
+    public double getPropertyTax()   { return propertyTax; }
 
     public double getTotalRevenue() {
-        return taxBusiness + taxIndustrial + taxSales + taxWage + utilityIncome;
+        return taxBusiness + taxIndustrial + taxSales + taxWage
+                + utilityIncome + landSales + propertyTax;
     }
 
     public double getInterestExpense() { return interestExpense; }
     public double getCapitalSpending() { return capitalSpending; }
+    public double getLandPurchases()   { return landPurchases; }
 
     public double getTotalExpenses() {
-        return interestExpense + capitalSpending;
+        return interestExpense + capitalSpending + landPurchases;
     }
 
     /** Surplus or deficit - what actually moves the city's cash this month. */

@@ -70,6 +70,11 @@ public class BuildingsStacks {
         return quantity;
     }
 
+    /** Scraps finished buildings. Floors at zero rather than going negative. */
+    public void removeQuantity(int amount) {
+        quantity = Math.max(quantity - amount, 0);
+    }
+
     public int getUnderConstruction() {
         return underConstruction;
     }

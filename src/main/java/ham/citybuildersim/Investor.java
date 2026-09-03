@@ -29,4 +29,15 @@ public interface Investor {
 
     /** Raise `amount` on credit. Called only when canBorrow() said yes. */
     void borrow(double amount, int month);
+
+    /**
+     * Money coming the other way - selling a plot back to the city when the
+     * business scraps a building it can no longer afford to hold.
+     *
+     * Spending a negative amount, spelled out, because `spend(-proceeds)` at
+     * the call site reads like a bug every time someone finds it.
+     */
+    default void receive(double amount) {
+        spend(-amount);
+    }
 }

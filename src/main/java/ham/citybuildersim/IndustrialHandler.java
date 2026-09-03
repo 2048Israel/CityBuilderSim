@@ -57,6 +57,10 @@ public class IndustrialHandler {
      */
     private double interestExpense;
     private double rInterestExpense;
+
+    /** Property tax on the plants and their sites. Owed whether they run or not. */
+    private double propertyTaxExpense;
+    private double rPropertyTaxExpense;
     private double rNetIncome; // r is to retrieve
     private double rGrossRevenue;
 
@@ -127,6 +131,7 @@ public class IndustrialHandler {
         rEnergyRatio = 0;
         rWaterRatio = 0;
         rInterestExpense = 0;
+        rPropertyTaxExpense = 0;
         rOperatingIncome = 0;
         rBaseProduction = 0;
         rActualProduction = 0;
@@ -257,6 +262,14 @@ public class IndustrialHandler {
     public void setInterestExpense(double value){
         this.interestExpense = value;
     }
+
+    public void setPropertyTaxExpense(double value){
+        this.propertyTaxExpense = value;
+    }
+
+    public double getPropertyTaxExpense(){
+        return propertyTaxExpense;
+    }
     //random
     public void updateJobFillRate(double[]fillRate){
         
@@ -357,7 +370,8 @@ public class IndustrialHandler {
         industrialWage *= averageIndustrialFill;
 
         // 6. Expenses
-        industrialExp = industrialWage + getElectricityCost() + getWaterCost() + interestExpense;
+        industrialExp = industrialWage + getElectricityCost() + getWaterCost()
+                + interestExpense + propertyTaxExpense;
 
         // 7. Net income
         double netIncome = industrialRev - industrialExp;
@@ -415,6 +429,7 @@ public class IndustrialHandler {
     public double getReportTaxIncome()      { return rTaxIncome; }
     public double getReportTaxRate()        { return pTaxRate; }
     public double getReportInterestExpense() { return rInterestExpense; }
+    public double getReportPropertyTaxExpense() { return rPropertyTaxExpense; }
     public double getLandValue()            { return landValue; }
     public double getBuildingsValue()       { return buildingsValue; }
 
@@ -504,13 +519,14 @@ public class IndustrialHandler {
 
         rOperatingCost = rPayroll + rElectricityCost + rWaterCost;
         rInterestExpense = interestExpense;
+        rPropertyTaxExpense = propertyTaxExpense;
 
         // rNetIncome is the figure calculateIndustrialResults() banks to cash, so
         // subtracting interest here is what actually makes the sector pay for its
         // borrowing. Deliberately NOT also charged against cash by the debt
         // manager - that would take the money twice.
         rOperatingIncome = rGrossRevenue - rOperatingCost;
-        rNetIncome = rOperatingIncome - rInterestExpense;
+        rNetIncome = rOperatingIncome - rInterestExpense - rPropertyTaxExpense;
         // Math.max, to match getIndustrialTaxIncome() - the city never hands out a
         // refund on a loss-making month, it just collects nothing. Without the
         // clamp this reported a negative "Government Tax Revenue" on the tax
@@ -540,6 +556,7 @@ public class IndustrialHandler {
         System.out.printf("  Total Operating Expenses:      -$%s%n", formatter.format(rOperatingCost));
         System.out.printf("%nOPERATING INCOME:                 $%s%n", formatter.format(rOperatingIncome));
         System.out.printf("  Interest Expense:              -$%s%n", formatter.format(rInterestExpense));
+        System.out.printf("  Property Tax:                  -$%s%n", formatter.format(rPropertyTaxExpense));
         System.out.printf("PRE-TAX INCOME:                   $%s%n", formatter.format(rNetIncome));
         System.out.printf("  Business Tax @ %.0f%%:             -$%s%n",
                 pTaxRate * 100, formatter.format(rTaxIncome));
@@ -627,6 +644,7 @@ public class IndustrialHandler {
         System.out.printf("  Electricity Expense:               -$%s%n", formatter.format(rElectricityCost));
         System.out.printf("  Water Expense:                     -$%s%n", formatter.format(rWaterCost));
         System.out.printf("  Interest Expense:                  -$%s%n", formatter.format(rInterestExpense));
+        System.out.printf("  Property Tax:                      -$%s%n", formatter.format(rPropertyTaxExpense));
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.printf("Total Operating Expenses:            -$%s%n", formatter.format(rOperatingCost));

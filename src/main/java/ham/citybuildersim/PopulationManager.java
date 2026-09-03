@@ -61,6 +61,22 @@ public class PopulationManager {
         return totalWagePerType;
     }
     
+    /**
+     * Positions actually staffed, across every tier.
+     *
+     * getTotalJobs() counts posts that exist; this counts the ones with someone
+     * in them, which is what the wage bill is actually paid on and therefore
+     * the right denominator for an average wage.
+     */
+    public int getJobsFilled(){
+        double[] fillRate = getJobFillRate();
+        double filled = 0;
+        for(int i = 0; i < jobs.length; i++) {
+            filled += jobs[i] * fillRate[i];
+        }
+        return (int) Math.round(filled);
+    }
+
     public double getTotalWage(){
         double totalWage = 0;
         double[] fillRate = getJobFillRate().clone();

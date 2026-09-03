@@ -78,6 +78,18 @@ public class BusinessInvestment {
 
     private final List<Integer> populationHistory = new ArrayList<>();
 
+    /** Consecutive months each sector has lost money. Resets on a profitable one. */
+    private final java.util.Map<String, Integer> lossMonths = new java.util.HashMap<>();
+
+    /* What the city has left to sell, and what it is charging for it. */
+    private double landAvailable;
+    private double landPricePerSqFt;
+
+    public void setLandAvailable(double sqFt, double pricePerSqFt) {
+        this.landAvailable = sqFt;
+        this.landPricePerSqFt = pricePerSqFt;
+    }
+
     /** What the engine decided, and why - surfaced on the sector screens. */
     public static class Decision {
 
@@ -141,20 +153,25 @@ public class BusinessInvestment {
 
     /**
      * How many of a building to order: enough to close the gap, but no more
-     * than the city's builders could deliver in MAX_ORDER_MONTHS.
+     * than the city's builders could deliver in MAX_ORDER_MONTHS, and never
+     * more plots than the city has land to sell.
      *
-     * Always at least one - a sector that has decided it is short should place
-     * an order even when construction is slow, because otherwise the shortage
-     * simply persists and it re-decides the same thing next month.
+     * Slow construction never cancels an order - it is floored at one, because
+     * a sector that has decided it is short should place an order even when the
+     * builders are backed up, or the shortage simply persists and it re-decides
+     * the same thing every month forever.
+     *
+     * Land is the exception, and the only thing here that can return zero. A
+     * business with nowhere to build is not building, however badly it wants
+     * to, and the callers turn that zero into a visible refusal naming land as
+     * the reason rather than a silent nothing.
      */
     private int orderSize(double shortfall, double capacityPerUnit,
                           BuildingsTemplate template, double cityConstructionOutput) {
 
-        if (capacityPerUnit <= 0) {
-            return 1;
-        }
-
-        int needed = (int) Math.ceil(shortfall / capacityPerUnit);
+        int needed = (capacityPerUnit > 0)
+                ? (int) Math.ceil(shortfall / capacityPerUnit)
+                : 1;
 
         double points = template.getConstructionPoints();
         int deliverable = Integer.MAX_VALUE;
@@ -164,7 +181,157 @@ public class BusinessInvestment {
                     (cityConstructionOutput * MAX_ORDER_MONTHS) / points);
         }
 
-        return Math.max(1, Math.min(needed, deliverable));
+        int size = Math.max(1, Math.min(needed, deliverable));
+
+        return Math.min(size, plotsAvailableFor(template));
+    }
+
+    /** How many of these the city currently has room for. */
+    private int plotsAvailableFor(BuildingsTemplate template) {
+        double land = template.getLandSqFt();
+        if (land <= 0) {
+            return Integer.MAX_VALUE;   // takes no space, needs no plot
+        }
+        return (int) Math.floor(landAvailable / land);
+    }
+
+    /**
+     * Why a sector could not build, when land is what stopped it.
+     *
+     * Worth spelling the numbers out: a land shortage is something the player
+     * caused by not annexing, and can fix by annexing, so the sector screen
+     * should say exactly how short the city is rather than "not building".
+     */
+    private String landReason(BuildingsTemplate template) {
+        return String.format("no land - needs %,.0f sq ft, %,.0f free",
+                template.getLandSqFt(), landAvailable);
+    }
+
+    /* =====================================================================
+       RETIREMENT
+
+       The mirror of the three planners below, and the mechanic the game was
+       missing. Everything here could grow and nothing could shrink, so a sector
+       that had built capacity it no longer needed carried it - and its payroll,
+       and now its property tax - forever, borrowing to pay for it. Construction
+       was the case that made it obvious: $91,753 of debt became $506,045 across
+       two hundred months in which it built nothing at all.
+
+       A firm in that position sells what it is not using. So:
+
+         1. It must be LOSING MONEY, and have been for a while. One bad month is
+            weather; RETIREMENT_LOSS_MONTHS in a row is a business decision.
+         2. It must have capacity it is genuinely not using, by a wide margin -
+            RETIREMENT_SLACK, deliberately far looser than the 5% headroom that
+            triggers building, so a firm never scraps and rebuilds the same
+            capacity in alternate months.
+         3. It must not be building something. Nobody demolishes and expands at
+            the same time.
+
+       And the hard limit: it can never scrap capacity that is IN USE. Empty
+       housing can go; housing with people in it cannot, whatever the books say.
+       ===================================================================== */
+
+    /** Consecutive loss-making months before a sector starts selling capacity. */
+    private static final int RETIREMENT_LOSS_MONTHS = 6;
+
+    /** Capacity has to exceed demand by this much before any of it is spare. */
+    private static final double RETIREMENT_SLACK = .25;
+
+    /** Most of its excess a sector will scrap in one month. Shrinking is gradual. */
+    private static final double MAX_RETIREMENT_FRACTION = .25;
+
+    /** Call once a month with each sector's net income. */
+    public void recordSectorResult(String sector, double netIncome) {
+        if (netIncome < 0) {
+            lossMonths.put(sector, lossMonths.getOrDefault(sector, 0) + 1);
+        } else {
+            lossMonths.put(sector, 0);
+        }
+    }
+
+    public int getLossMonths(String sector) {
+        return lossMonths.getOrDefault(sector, 0);
+    }
+
+    /**
+     * Whether a sector should sell capacity, and how much.
+     *
+     * @param demand      what is actually being used - customers served, people
+     *                    housed, units sold, construction points wanted
+     * @param capacity    what the sector could serve if everything ran
+     * @param unitsOf     capacity one building of the chosen type provides
+     * @return a Decision whose quantity is buildings to scrap; build is false
+     *         and reason says why not when nothing should go
+     */
+    public Decision planRetirement(String sector, BuildingType category,
+                                   double demand, double capacity,
+                                   int ordersInFlight) {
+
+        if (ordersInFlight > 0) {
+            return Decision.no(sector, "building, not shrinking");
+        }
+
+        int losses = getLossMonths(sector);
+        if (losses < RETIREMENT_LOSS_MONTHS) {
+            return Decision.no(sector,
+                    losses == 0 ? "profitable" : losses + " months of losses");
+        }
+
+        if (capacity <= demand * (1 + RETIREMENT_SLACK)) {
+            return Decision.no(sector, "losing money, but nothing spare to sell");
+        }
+
+        // Find the biggest holding in the category - the thing there is most of
+        // is the thing to thin out, and it keeps the choice predictable.
+        BuildingsTemplate worst = null;
+        int mostHeld = 0;
+
+        for (BuildingsTemplate template : buildingManager.getTemplatesByCategory(
+                java.util.EnumSet.of(category))) {
+
+            int held = buildingManager.getQuantity(template.getId());
+            if (held > mostHeld) {
+                mostHeld = held;
+                worst = template;
+            }
+        }
+
+        if (worst == null) {
+            return Decision.no(sector, "nothing left to sell");
+        }
+
+        double unitsEach = capacityOf(worst, category);
+        if (unitsEach <= 0) {
+            return Decision.no(sector, "nothing measurable to sell");
+        }
+
+        // Never cut into what is being used. The target is demand plus the
+        // normal headroom, and the floor is whatever demand needs right now.
+        double keepAtLeast = Math.max(demand * (1 + TARGET_HEADROOM), demand);
+        double sheddable = capacity - keepAtLeast;
+
+        int wanted = (int) Math.floor(sheddable / unitsEach);
+        int gradual = (int) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION);
+        int quantity = Math.max(0, Math.min(wanted, Math.min(gradual, mostHeld)));
+
+        if (quantity <= 0) {
+            return Decision.no(sector, "losing money, but nothing spare to sell");
+        }
+
+        return new Decision(sector, worst, quantity,
+                String.format("%d months of losses, %,.0f capacity against %,.0f used",
+                        losses, capacity, demand),
+                true);
+    }
+
+    /** What one of these contributes to the measure its sector is judged on. */
+    private double capacityOf(BuildingsTemplate template, BuildingType category) {
+        switch (category) {
+            case RESIDENTIAL: return template.getCapacity();
+            case COMMERCIAL:  return template.getCoverage();
+            default:          return template.getProduction1();
+        }
     }
 
     /* =====================================================================
@@ -217,6 +384,10 @@ public class BusinessInvestment {
 
         int quantity = orderSize(latentDemand - housingCapacity,
                 best.getCapacity(), best, cityConstructionOutput);
+
+        if (quantity <= 0) {
+            return Decision.no(sector, landReason(best));
+        }
 
         return new Decision(sector, best, quantity,
                 String.format("%,.0f unhoused demand against %,d units",
@@ -273,6 +444,10 @@ public class BusinessInvestment {
 
         int quantity = orderSize(demandAtOpening - storeCoverage,
                 best.getCoverage(), best, cityConstructionOutput);
+
+        if (quantity <= 0) {
+            return Decision.no(sector, landReason(best));
+        }
 
         return new Decision(sector, best, quantity,
                 String.format("%,.0f customers forecast against %,d covered",
@@ -343,6 +518,10 @@ public class BusinessInvestment {
         int quantity = orderSize(demandAtOpening - currentOutput,
                 best.getProduction1(), best, cityConstructionOutput);
 
+        if (quantity <= 0) {
+            return Decision.no(sector, landReason(best));
+        }
+
         return new Decision(sector, best, quantity,
                 String.format("%,.0f units/mo forecast against %,.0f made",
                         demandAtOpening, currentOutput),
@@ -399,6 +578,14 @@ public class BusinessInvestment {
 
         if (best == null) {
             return Decision.no(sector, "nothing that adds capacity");
+        }
+
+        // Construction is not exempt from land. A city that has run out cannot
+        // expand its builders either, which is the trap worth having: the way
+        // out of a construction bottleneck runs through the land the player
+        // has not bought.
+        if (plotsAvailableFor(best) < 1) {
+            return Decision.no(sector, landReason(best));
         }
 
         return new Decision(sector, best, 1,
@@ -490,8 +677,12 @@ public class BusinessInvestment {
         double required = t.getConstructionMaterials() * (double) quantity;
         double shortfall = Math.max(required - stock, 0);
 
+        // Land is part of what a project costs now, so it feeds the payback
+        // score and the debt-service test like any other outlay. A city that
+        // prices its land high genuinely makes expansion less worthwhile.
         return t.getCashCost() * quantity
-                + shortfall * buildingManager.getConstructionMaterialPrice();
+                + shortfall * buildingManager.getConstructionMaterialPrice()
+                + t.getLandSqFt() * quantity * landPricePerSqFt;
     }
 
     public double getCostOf(BuildingsTemplate t, int quantity) {

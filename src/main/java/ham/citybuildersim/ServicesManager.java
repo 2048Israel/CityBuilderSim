@@ -70,13 +70,21 @@ public class ServicesManager {
                 utilitiesHandler::setBuildingWaterDraw,
                 BuildingsTemplate::getWaterConsumption);
 
-        // ...but only commercial and industrial are invoiced for it. Residents
-        // and the city's own buildings draw water nobody is billed for.
+        // ...but only businesses are invoiced for it. Residents and the city's
+        // own buildings draw water nobody is billed for.
+        //
+        // Heavy industry belongs here because HeavyIndustryHandler charges
+        // itself for water on its own income statement. Leaving it out would
+        // mean a mill paying a water bill the utility never books - money
+        // leaving the economy with no one receiving it, which is the exact
+        // shape of bug this file has already been fixed for once.
         utilitiesHandler.setBilledWaterDraw(
                 buildingManager.getTotalByCategoryDouble(
                         BuildingType.COMMERCIAL, BuildingsTemplate::getWaterConsumption)
                 + buildingManager.getTotalByCategoryDouble(
-                        BuildingType.INDUSTRIAL, BuildingsTemplate::getWaterConsumption));
+                        BuildingType.INDUSTRIAL, BuildingsTemplate::getWaterConsumption)
+                + buildingManager.getTotalByCategoryDouble(
+                        BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getWaterConsumption));
 
         // construction
         updateByCategoryHandlerDouble(

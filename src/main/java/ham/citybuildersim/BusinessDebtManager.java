@@ -54,15 +54,50 @@ public class BusinessDebtManager {
     public static final String REAL_ESTATE = "Real Estate";
     public static final String INDUSTRY = "Industry";
     public static final String CONSTRUCTION = "Construction";
+    public static final String HEAVY_INDUSTRY = "Heavy Industry";
 
     /** Every set of books that can borrow. Add a sector here and it just works. */
-    public static final String[] SECTORS = { RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION };
+    public static final String[] SECTORS =
+            { RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY };
 
     /** Floor over the government rate. Nobody borrows at sovereign. */
     private static final double MIN_SPREAD = .01;
 
     /** Ceiling over the government rate - the "even worst case, not too bad" cap. */
     private static final double MAX_SPREAD = .08;
+
+    /* =======================================================================
+       INSOLVENCY
+
+       Before this existed a sector could borrow without limit forever. That is
+       not generosity, it is a missing mechanic: construction at equilibrium had
+       no orders, no revenue, a standing payroll and interest on its debt, so it
+       borrowed to pay the interest, which raised the interest. Its debt went
+       from $91,753 to $506,045 across two hundred months in which nothing was
+       built. Nothing in the model could ever stop it, because a business here
+       could not shrink, default, or be refused.
+
+       A lender in that position stops lending and takes a haircut, so that is
+       what happens now.
+       ======================================================================= */
+
+    /** Debt above this multiple of assets is not getting repaid, and both sides know it. */
+    private static final double INSOLVENCY_TRIGGER = 1.5;
+
+    /** What a restructured borrower is left owing, as a multiple of its assets. */
+    private static final double RESTRUCTURE_TARGET = .6;
+
+    /**
+     * Months a sector cannot borrow after being restructured.
+     *
+     * Without this the write-down is a gift: the sector is handed a clean
+     * balance sheet and immediately re-levers to pay the same bills it could not
+     * pay before, and the spiral restarts one month later with the lender
+     * funding it. Being cut off is what forces the real adjustment - selling
+     * capacity it is not using - and a firm in default genuinely cannot raise
+     * money.
+     */
+    private static final int BORROWING_BLOCKED_MONTHS = 12;
 
     /** Extra annual interest per 1.0 of debt-to-assets. */
     private static final double SPREAD_PER_DEBT_TO_ASSETS = .06;
@@ -82,6 +117,14 @@ public class BusinessDebtManager {
     private List<BusinessDebt> loans = new ArrayList<>();
 
     private double riskFreeRate;
+
+    /** Written off this month, and over the whole game, per sector. */
+    private final Map<String, Double> writtenOffThisMonth = new LinkedHashMap<>();
+    private final Map<String, Double> writtenOffTotal = new LinkedHashMap<>();
+    private final Map<String, Integer> restructures = new LinkedHashMap<>();
+
+    /** Months of borrowing ban remaining, per sector. */
+    private final Map<String, Integer> blockedMonths = new LinkedHashMap<>();
 
     private final Map<String, Double> assets = new LinkedHashMap<>();
     private final Map<String, Double> rates = new LinkedHashMap<>();
@@ -293,6 +336,12 @@ public class BusinessDebtManager {
             return 0;
         }
 
+        // A sector in default cannot raise money. Its cash stays negative, which
+        // is the honest picture and the pressure that makes it shed capacity.
+        if (isBorrowingBlocked(sector)) {
+            return 0;
+        }
+
         double buffer = Math.max(monthlyLoss, 0) * BUFFER_MONTHS;
         double amount = -cash + buffer;
 
@@ -314,6 +363,113 @@ public class BusinessDebtManager {
         return loan;
     }
 
+    /* ----------------------------- insolvency ----------------------------- */
+
+    public boolean isBorrowingBlocked(String sector) {
+        return blockedMonths.getOrDefault(sector, 0) > 0;
+    }
+
+    public int getBlockedMonths(String sector) {
+        return blockedMonths.getOrDefault(sector, 0);
+    }
+
+    public double getWrittenOffThisMonth(String sector) {
+        return writtenOffThisMonth.getOrDefault(sector, 0.0);
+    }
+
+    public double getWrittenOffTotal(String sector) {
+        return writtenOffTotal.getOrDefault(sector, 0.0);
+    }
+
+    public int getRestructureCount(String sector) {
+        return restructures.getOrDefault(sector, 0);
+    }
+
+    public double getTotalWrittenOff() {
+        double total = 0;
+        for (String sector : SECTORS) {
+            total += getWrittenOffTotal(sector);
+        }
+        return total;
+    }
+
+    /** Is this sector's debt beyond what its assets could ever cover? */
+    public boolean isInsolvent(String sector) {
+        double principal = getPrincipal(sector);
+        if (principal <= 0) {
+            return false;
+        }
+        double totalAssets = getAssets(sector);
+        return totalAssets <= 0 || principal > totalAssets * INSOLVENCY_TRIGGER;
+    }
+
+    /**
+     * Writes a sector's debt down to what its assets can support.
+     *
+     * Call once a month, AFTER the balance sheets have been refreshed - the
+     * whole judgement is principal against assets, so acting on last month's
+     * assets would restructure the wrong sector.
+     *
+     * @return the amount written off, or 0 if the sector was solvent enough
+     */
+    public double restructure(String sector) {
+
+        if (!isInsolvent(sector)) {
+            return 0;
+        }
+
+        double principal = getPrincipal(sector);
+        double target = Math.max(getAssets(sector) * RESTRUCTURE_TARGET, 0);
+        double writeOff = principal - target;
+
+        if (writeOff <= 0) {
+            return 0;
+        }
+
+        double scale = (principal > 0) ? target / principal : 0;
+
+        for (BusinessDebt loan : loans) {
+            if (loan.getSector().equals(sector)) {
+                loan.writeDown(scale);
+            }
+        }
+
+        writtenOffThisMonth.put(sector, getWrittenOffThisMonth(sector) + writeOff);
+        writtenOffTotal.put(sector, getWrittenOffTotal(sector) + writeOff);
+        restructures.put(sector, getRestructureCount(sector) + 1);
+        blockedMonths.put(sector, BORROWING_BLOCKED_MONTHS);
+
+        // Less debt against the same assets is genuinely better credit, even
+        // though the improvement was taken out of the lender's hide.
+        rates.put(sector, priceSector(sector));
+
+        return writeOff;
+    }
+
+    /** Restructures whoever needs it. @return total written off this month. */
+    public double restructureInsolventSectors() {
+
+        double total = 0;
+        for (String sector : SECTORS) {
+            writtenOffThisMonth.put(sector, 0.0);
+        }
+
+        for (String sector : SECTORS) {
+            total += restructure(sector);
+        }
+        return total;
+    }
+
+    /** Counts down the borrowing bans. Call once a month. */
+    public void advanceBlocks() {
+        for (String sector : SECTORS) {
+            int left = blockedMonths.getOrDefault(sector, 0);
+            if (left > 0) {
+                blockedMonths.put(sector, left - 1);
+            }
+        }
+    }
+
     //save / load
     public void setLoans(List<BusinessDebt> loans) {
         this.loans = loans;
@@ -323,6 +479,10 @@ public class BusinessDebtManager {
         loans.clear();
         for (String sector : SECTORS) {
             maturedPrincipal.put(sector, 0.0);
+            writtenOffThisMonth.put(sector, 0.0);
+            writtenOffTotal.put(sector, 0.0);
+            restructures.put(sector, 0);
+            blockedMonths.put(sector, 0);
         }
     }
 

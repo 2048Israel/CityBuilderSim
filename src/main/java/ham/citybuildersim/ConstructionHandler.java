@@ -85,6 +85,17 @@ public class ConstructionHandler {
     private double buildingsValue;
     private double bondsPayable;
     private double interestExpense;
+
+    /**
+     * Property tax on the depots and materials plants.
+     *
+     * The line that matters most in this sector's books, because construction
+     * owns far more capital than it holds cash, and this is charged whether or
+     * not anything is being built. An idle builder now visibly bleeds.
+     */
+    private double propertyTaxExpense;
+
+    private double landValue;
     
     
     //cycle updaters
@@ -101,7 +112,7 @@ public class ConstructionHandler {
      */
     public void calculateConstructionResults(){
         calculateExpenses();
-        netIncome = revenue - expenses - interestExpense;
+        netIncome = revenue - expenses - interestExpense - propertyTaxExpense;
         cash += netIncome;
         revenue = 0;
         materialsConsumed = 0;
@@ -155,11 +166,15 @@ public class ConstructionHandler {
     public double getRevenue()          { return revenue; }
     public double getNetIncome()        { return netIncome; }
     public double getInterestExpense()  { return interestExpense; }
+    public double getPropertyTaxExpense(){ return propertyTaxExpense; }
+    public double getLandValue()        { return landValue; }
 
     public void setCash(double cash)                  { this.cash = cash; }
     public void setBuildingsValue(double value)       { this.buildingsValue = value; }
+    public void setLandValue(double value)            { this.landValue = value; }
     public void setBondsPayable(double value)         { this.bondsPayable = value; }
     public void setInterestExpense(double value)      { this.interestExpense = value; }
+    public void setPropertyTaxExpense(double value)   { this.propertyTaxExpense = value; }
 
     /**
      * Construction's books. It holds no stock of its own - the materials
@@ -170,7 +185,7 @@ public class ConstructionHandler {
         return new BalanceSheet("Construction")
                 .setCash(cash)
                 .setInventory(0, 0)
-                .setLand(0)
+                .setLand(landValue)
                 .setBuildings(buildingsValue)
                 .setBondsPayable(bondsPayable);
     }

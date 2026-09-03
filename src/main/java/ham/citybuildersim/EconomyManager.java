@@ -15,7 +15,28 @@ public class EconomyManager {
     private double upkeep;
     private int totalJobs;
     private int population;
-    private double taxRate = .15; //temporary
+    /**
+     * Both tax rates, and the annual-to-monthly conversion for the property
+     * one. Was a bare `taxRate = .15` field; see TaxPolicy for why they moved.
+     */
+    private final TaxPolicy taxPolicy = new TaxPolicy();
+
+    /**
+     * What the city currently charges for a square foot, so assessed values
+     * track the price the player sets rather than what anyone historically
+     * paid. Pushed in from Game each month, because LandManager lives there.
+     *
+     * That is a real reassessment, and it has teeth in both directions: raising
+     * the land price raises what every landowner in the city owes, not just
+     * what the next buyer pays.
+     */
+    private double landPricePerSqFt;
+
+    /** This month's property tax, by sector. Charged to them, banked by the city. */
+    private double totalPropertyTax;
+
+    /** Income tax on the mills. Folded into the business-tax line on the reports. */
+    private double totalHeavyIndustryTax;
     private double totalBusinessTax;
     private double totalWageTax;
     private int households;
@@ -85,6 +106,7 @@ public class EconomyManager {
         getMonthGdp();
         updateCommercial();
         updateIndustrial();
+        updateHeavyIndustry();
     }
     public void updateCommercial(){
         commercialHandler.updateJobFillRate(fillRate);
@@ -120,6 +142,59 @@ public class EconomyManager {
      */
     public void refreshCommercialReport(){
         commercialHandler.computeMonthlyReport();
+    }
+
+    /* -----------------------------------------------------------------------
+       HEAVY INDUSTRY
+
+       Its own handler rather than a second producer inside IndustrialHandler,
+       because that class divides its whole cost base by its food output to find
+       food's break-even price. See HeavyIndustryHandler.
+       ----------------------------------------------------------------------- */
+    private final HeavyIndustryHandler heavyIndustryHandler = new HeavyIndustryHandler();
+
+    public HeavyIndustryHandler getHeavyIndustryHandler(){
+        return heavyIndustryHandler;
+    }
+
+    /** Once-per-month heavy industry income statement. */
+    public void updateHeavyIndustryReport(){
+        heavyIndustryHandler.calculateResults();
+    }
+
+    /** Pure recompute for the load path - does not bank cash. */
+    public void refreshHeavyIndustryReport(){
+        heavyIndustryHandler.computeMonthlyReport();
+    }
+
+    /**
+     * Reads the mills' capacity off whatever is built.
+     *
+     * Revenue and input cost are summed as VALUE across the buildings rather
+     * than as tonnes times an average price, so two mills selling at different
+     * prices need no reconciling.
+     */
+    public void updateHeavyIndustry(){
+
+        heavyIndustryHandler.setOutputCapacity(buildingManager.getTotalByCategoryDouble(
+                BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getProduction1));
+
+        heavyIndustryHandler.setInputTonnes(buildingManager.getTotalByCategoryDouble(
+                BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getProduction2));
+
+        heavyIndustryHandler.setRevenueAtCapacity(buildingManager.getTotalByCategoryDouble(
+                BuildingType.HEAVY_INDUSTRY,
+                b -> b.getProduction1() * b.getProductionModifier1()));
+
+        heavyIndustryHandler.setInputCostAtCapacity(buildingManager.getTotalByCategoryDouble(
+                BuildingType.HEAVY_INDUSTRY,
+                b -> b.getProduction2() * b.getProductionModifier2()));
+    }
+
+    public void updateHeavyIndustryWages(double[] wages){
+        heavyIndustryHandler.updateJobFillRate(fillRate);
+        heavyIndustryHandler.updateWages(wages,
+                buildingManager.getJobArrayPerCategory(BuildingType.HEAVY_INDUSTRY));
     }
 
     /** Once-per-month industrial income statement. Same contract as the commercial one. */
@@ -167,6 +242,9 @@ public class EconomyManager {
         if (BusinessDebtManager.CONSTRUCTION.equals(sector) && constructionHandler != null) {
             return constructionHandler.getCash();
         }
+        if (BusinessDebtManager.HEAVY_INDUSTRY.equals(sector)) {
+            return heavyIndustryHandler.getCash();
+        }
         return 0;
     }
 
@@ -180,6 +258,9 @@ public class EconomyManager {
         else if (BusinessDebtManager.INDUSTRY.equals(sector))    industrialHandler.setIndustrialCash(cash);
         else if (BusinessDebtManager.CONSTRUCTION.equals(sector) && constructionHandler != null) {
             constructionHandler.setCash(cash);
+        }
+        else if (BusinessDebtManager.HEAVY_INDUSTRY.equals(sector)) {
+            heavyIndustryHandler.setCash(cash);
         }
     }
 
@@ -204,17 +285,7 @@ public class EconomyManager {
 
         // Leverage is measured against the balance sheets, so they have to be
         // told what the sector owes before they are used to price what it owes.
-        businessDebtManager.setAssets(BusinessDebtManager.RETAIL,
-                commercialHandler.getRetailBalanceSheet().getTotalAssets());
-        businessDebtManager.setAssets(BusinessDebtManager.REAL_ESTATE,
-                commercialHandler.getRealEstateBalanceSheet().getTotalAssets());
-        businessDebtManager.setAssets(BusinessDebtManager.INDUSTRY,
-                industrialHandler.getBalanceSheet().getTotalAssets());
-
-        if (constructionHandler != null) {
-            businessDebtManager.setAssets(BusinessDebtManager.CONSTRUCTION,
-                    constructionHandler.getBalanceSheet().getTotalAssets());
-        }
+        refreshCreditAssets();
 
         businessDebtManager.updateRates();
 
@@ -230,35 +301,93 @@ public class EconomyManager {
                     businessDebtManager.getMonthlyInterest(BusinessDebtManager.CONSTRUCTION));
         }
 
+        heavyIndustryHandler.setInterestExpense(
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.HEAVY_INDUSTRY));
+
         pushBalanceSheetInputs();
+    }
+
+    /**
+     * Tells the credit manager what each sector is worth right now.
+     *
+     * Its own method because two things need it at different points in the
+     * month: pricing credit at the start, and judging solvency at the end.
+     * Restructuring a sector on assets measured before its results were known
+     * would be writing off the wrong month's debt.
+     */
+    public void refreshCreditAssets(){
+
+        businessDebtManager.setAssets(BusinessDebtManager.RETAIL,
+                commercialHandler.getRetailBalanceSheet().getTotalAssets());
+        businessDebtManager.setAssets(BusinessDebtManager.REAL_ESTATE,
+                commercialHandler.getRealEstateBalanceSheet().getTotalAssets());
+        businessDebtManager.setAssets(BusinessDebtManager.INDUSTRY,
+                industrialHandler.getBalanceSheet().getTotalAssets());
+
+        if (constructionHandler != null) {
+            businessDebtManager.setAssets(BusinessDebtManager.CONSTRUCTION,
+                    constructionHandler.getBalanceSheet().getTotalAssets());
+        }
+
+        businessDebtManager.setAssets(BusinessDebtManager.HEAVY_INDUSTRY,
+                heavyIndustryHandler.getBalanceSheet().getTotalAssets());
+    }
+
+    /**
+     * End of the month: work out who is beyond saving and write their debt down
+     * to what their assets support.
+     *
+     * @return total written off this month
+     */
+    public double settleInsolvency(){
+        pushBalanceSheetInputs();
+        refreshCreditAssets();
+        businessDebtManager.advanceBlocks();
+        return businessDebtManager.restructureInsolventSectors();
     }
 
     /** Book values and outstanding debt, refreshed onto each set of books. */
     public void pushBalanceSheetInputs(){
 
+        // Land is a real figure now rather than the placeholder zero it was
+        // when these books went in: square feet held, at the city's current
+        // price. The same number the property tax is assessed on, deliberately -
+        // a business should be taxed on the value its own balance sheet claims.
         commercialHandler.setRetailBalanceSheetInputs(
-                0,
+                landValueOf(BuildingType.COMMERCIAL),
                 buildingManager.getBookValueByCategory(BuildingType.COMMERCIAL),
                 businessDebtManager.getPrincipal(BusinessDebtManager.RETAIL));
 
         // Real estate owns the housing stock - it is what collects the rent.
         commercialHandler.setRealEstateBalanceSheetInputs(
-                0,
+                landValueOf(BuildingType.RESIDENTIAL),
                 buildingManager.getBookValueByCategory(BuildingType.RESIDENTIAL),
                 businessDebtManager.getPrincipal(BusinessDebtManager.REAL_ESTATE));
 
-        industrialHandler.setLandValue(0);
+        industrialHandler.setLandValue(landValueOf(BuildingType.INDUSTRIAL));
         industrialHandler.setBuildingsValue(
                 buildingManager.getBookValueByCategory(BuildingType.INDUSTRIAL));
         industrialHandler.setBondsPayable(
                 businessDebtManager.getPrincipal(BusinessDebtManager.INDUSTRY));
 
         if (constructionHandler != null) {
+            constructionHandler.setLandValue(landValueOf(BuildingType.CONSTRUCTION));
             constructionHandler.setBuildingsValue(
                     buildingManager.getBookValueByCategory(BuildingType.CONSTRUCTION));
             constructionHandler.setBondsPayable(
                     businessDebtManager.getPrincipal(BusinessDebtManager.CONSTRUCTION));
         }
+
+        heavyIndustryHandler.setLandValue(landValueOf(BuildingType.HEAVY_INDUSTRY));
+        heavyIndustryHandler.setBuildingsValue(
+                buildingManager.getBookValueByCategory(BuildingType.HEAVY_INDUSTRY));
+        heavyIndustryHandler.setBondsPayable(
+                businessDebtManager.getPrincipal(BusinessDebtManager.HEAVY_INDUSTRY));
+    }
+
+    /** What a category's land is worth at the city's current price. */
+    public double landValueOf(BuildingType category){
+        return buildingManager.getLandSqFtByCategory(category) * landPricePerSqFt;
     }
 
     public void settleBusinessCredit(int month){
@@ -286,6 +415,11 @@ public class EconomyManager {
                     constructionHandler.getNetIncome(),
                     constructionHandler::setCash);
         }
+
+        settleSector(BusinessDebtManager.HEAVY_INDUSTRY, month,
+                heavyIndustryHandler.getCash(),
+                heavyIndustryHandler.getNetIncome(),
+                heavyIndustryHandler::setCash);
 
         pushBalanceSheetInputs();
     }
@@ -355,9 +489,9 @@ public class EconomyManager {
 
     public double calculateSalesTax(){
         salesTax = 0;
-        salesTax += industrialHandler.getGrossRevenue()*taxRate;
-        salesTax += commercialHandler.getGrossRevenue()*taxRate;
-        salesTax += commercialHandler.getImportTax()*taxRate;
+        salesTax += industrialHandler.getGrossRevenue()*getTaxRate();
+        salesTax += commercialHandler.getGrossRevenue()*getTaxRate();
+        salesTax += commercialHandler.getImportTax()*getTaxRate();
 
         return salesTax;
 
@@ -366,11 +500,19 @@ public class EconomyManager {
 
     public double getTaxIncome(){
         double tax = 0;
-        totalBusinessTax = commercialHandler.getBusinessTaxIncome(taxRate);
-        totalIndustrialTax = industrialHandler.getIndustrialTaxIncome(taxRate);
-        totalWageTax = Math.max(totalWage*taxRate,0);
+        totalBusinessTax = commercialHandler.getBusinessTaxIncome(getTaxRate());
+        totalIndustrialTax = industrialHandler.getIndustrialTaxIncome(getTaxRate());
+        totalWageTax = Math.max(totalWage*getTaxRate(),0);
+        totalHeavyIndustryTax = heavyIndustryHandler.getTaxIncome(getTaxRate());
         calculateSalesTax();
-        tax = totalBusinessTax+ totalIndustrialTax + totalWageTax+salesTax;
+        // Property tax is assigned by chargePropertyTax() earlier in the month,
+        // not recomputed here: the sectors have already been billed it and have
+        // already borne it in their income statements. Recomputing would risk
+        // the city collecting a different figure from the one the businesses
+        // paid, which is exactly the kind of money-from-nowhere this codebase
+        // keeps producing.
+        tax = totalBusinessTax + totalIndustrialTax + totalWageTax + salesTax
+                + totalHeavyIndustryTax + totalPropertyTax;
         return tax;
     }
 
@@ -410,7 +552,10 @@ public class EconomyManager {
                                        double governmentServices,
                                        double materialImports,
                                        double interest,
-                                       double capitalSpending){
+                                       double capitalSpending,
+                                       double landSales,
+                                       double landPurchases,
+                                       double propertyTax){
 
         // Only FINAL sales count. The food a store buys from a mill is
         // intermediate and stays out; the food it sells to households is C.
@@ -426,14 +571,24 @@ public class EconomyManager {
         double foodImports = commercialHandler.getReportGlobalImports()
                 * commercialHandler.getImportPrice();
 
+        // The city's first exports. Heavy industry ships everything it makes
+        // abroad and buys its raw material from abroad, so it shows up on both
+        // sides of net exports - and only the difference is output the city
+        // actually produced.
+        double exports = heavyIndustryHandler.getReportRevenue();
+        double rawImports = heavyIndustryHandler.getReportInputCost();
+
         nationalAccounts.update(retailSales, rentPaid,
                 constructionWorkDone, inventoryValue,
                 governmentServices,
-                foodImports, materialImports);
+                foodImports, materialImports,
+                rawImports, exports);
 
         nationalAccounts.updateGovernment(
-                totalBusinessTax, totalIndustrialTax, salesTax, totalWageTax,
-                utilityIncome, interest, capitalSpending);
+                totalBusinessTax + totalHeavyIndustryTax,
+                totalIndustrialTax, salesTax, totalWageTax,
+                utilityIncome, landSales, propertyTax,
+                interest, capitalSpending, landPurchases);
 
         GDP = nationalAccounts.getGdp();
     }
@@ -481,7 +636,70 @@ public class EconomyManager {
        screen. getGDP() below is the pure read.
        ----------------------------------------------------------------------- */
     public double getGDP(){ return GDP; }
-    public double getTaxRate(){ return taxRate; }
+    public double getTaxRate(){ return taxPolicy.getIncomeTaxRate(); }
+
+    public TaxPolicy getTaxPolicy(){ return taxPolicy; }
+
+    public void setLandPricePerSqFt(double price){ this.landPricePerSqFt = price; }
+
+    public double getTotalPropertyTax(){ return totalPropertyTax; }
+
+    /* =======================================================================
+       PROPERTY TAX
+
+       Charged on what a sector OWNS, not on what it earned - which is the whole
+       point of having it alongside an income tax, and the reason it is the one
+       levy that can push a business under while it is doing nothing wrong.
+
+       Assessed value is land at today's sale price plus buildings at
+       replacement cost. Both are current-value rather than historical, matching
+       getBookValueByCategory(), which already marks buildings to the current
+       materials price. Nothing stores what a plot originally cost, and a real
+       assessor would not care if it did.
+
+       Municipal buildings - the power station, the water plant - are exempt.
+       They are the city's own, and taxing them would move money from one pocket
+       to the other while making the utility's books look worse for no reason.
+       ======================================================================= */
+
+    /** Land plus buildings, at current value, for one building category. */
+    public double getAssessedValue(BuildingType category){
+        return buildingManager.getLandSqFtByCategory(category) * landPricePerSqFt
+                + buildingManager.getBookValueByCategory(category);
+    }
+
+    /** One month's property tax on a category. */
+    public double getPropertyTaxFor(BuildingType category){
+        return taxPolicy.propertyTaxOn(getAssessedValue(category));
+    }
+
+    /**
+     * Hands each sector its property tax bill for the month.
+     *
+     * Runs with the interest bill, before the income statements, for the same
+     * reason: what a sector banks has to already be net of what it owes.
+     */
+    public void chargePropertyTax(){
+
+        double commercial   = getPropertyTaxFor(BuildingType.COMMERCIAL);
+        double residential  = getPropertyTaxFor(BuildingType.RESIDENTIAL);
+        double industrial   = getPropertyTaxFor(BuildingType.INDUSTRIAL);
+        double construction = getPropertyTaxFor(BuildingType.CONSTRUCTION);
+        double heavy        = getPropertyTaxFor(BuildingType.HEAVY_INDUSTRY);
+
+        commercialHandler.setRetailPropertyTax(commercial);
+        commercialHandler.setRealEstatePropertyTax(residential);
+        industrialHandler.setPropertyTaxExpense(industrial);
+
+        if (constructionHandler != null) {
+            constructionHandler.setPropertyTaxExpense(construction);
+        }
+
+        heavyIndustryHandler.setPropertyTaxExpense(heavy);
+
+        totalPropertyTax = commercial + residential + industrial + heavy
+                + (constructionHandler != null ? construction : 0);
+    }
     public double getBusinessTax(){ return totalBusinessTax; }
     public double getIndustrialTax(){ return totalIndustrialTax; }
     public double getSalesTax(){ return salesTax; }
@@ -525,15 +743,18 @@ public class EconomyManager {
     public void setEnergyRatio(double ratio){
         commercialHandler.setEnergyRatio(ratio);
         industrialHandler.setEnergyRatio(ratio);
+        heavyIndustryHandler.setEnergyRatio(ratio);
     }
     public void setPricePerWaterUnit(double price){
         commercialHandler.setPricePerWaterUnit(price);
         industrialHandler.setPricePerWaterUnit(price);
+        heavyIndustryHandler.setPricePerWaterUnit(price);
     }
 
     public void setPricePerWatt(double price){
         commercialHandler.setPricePerWatt(price);
         industrialHandler.setPricePerWatt(price);
+        heavyIndustryHandler.setPricePerWatt(price);
     }
     public void setElectricityConsumption(){
         commercialHandler.setElectricityConsumption(buildingManager.getTotalByCategoryInteger(BuildingType.COMMERCIAL, BuildingsTemplate::getElectricityConsumption));
@@ -544,6 +765,11 @@ public class EconomyManager {
         // which is money created out of nothing.
         commercialHandler.setWaterConsumption(buildingManager.getTotalByCategoryDouble(BuildingType.COMMERCIAL, BuildingsTemplate::getWaterConsumption));
         industrialHandler.setWaterConsumption(buildingManager.getTotalByCategoryDouble(BuildingType.INDUSTRIAL, BuildingsTemplate::getWaterConsumption));
+
+        heavyIndustryHandler.setElectricityConsumption(buildingManager.getTotalByCategoryDouble(
+                BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getElectricityConsumption));
+        heavyIndustryHandler.setWaterConsumption(buildingManager.getTotalByCategoryDouble(
+                BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getWaterConsumption));
     }
     public void setUtilityIncome(double income){
         this.utilityIncome = income;
@@ -715,8 +941,12 @@ public class EconomyManager {
         //tax reset
         totalIndustrialTax = 0;
 
+        totalHeavyIndustryTax = 0;
+        totalPropertyTax = 0;
+
         commercialHandler.resetCommercialHandler();
         industrialHandler.resetIndustrialHandler();
+        heavyIndustryHandler.reset();
         foodMarket.resetFoodMarket();
     }
 

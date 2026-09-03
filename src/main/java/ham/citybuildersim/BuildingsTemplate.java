@@ -16,6 +16,12 @@ public class BuildingsTemplate {
     // double, not int: a single House draws a fraction of a unit. Rounding that
     // to an int would either zero out residential water or overstate it 3x.
     double waterConsumption;
+
+    /**
+     * Lot footprint in square feet. The city has to own this much unallocated
+     * land before the building can go up, whoever is paying for it.
+     */
+    double landSqFt;
     int coverage;
     double production1;
     double production2;
@@ -119,6 +125,11 @@ public class BuildingsTemplate {
         return this;
     }
 
+    public BuildingsTemplate setLandSqFt(double landSqFt) {
+        this.landSqFt = landSqFt;
+        return this;
+    }
+
     public BuildingsTemplate setCoverage(int coverage) {
         this.coverage = coverage;
         return this;
@@ -181,6 +192,10 @@ public class BuildingsTemplate {
 
     public double getWaterConsumption() {
         return waterConsumption;
+    }
+
+    public double getLandSqFt() {
+        return landSqFt;
     }
 
     public int getCoverage() {

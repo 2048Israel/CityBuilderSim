@@ -64,6 +64,9 @@ public class SimulationEngine {
         economyManager.updateStoreWages(populationManager.getWagesPerType(),buildingManager.getJobArrayPerCategory(BuildingType.COMMERCIAL));
         economyManager.updateIndustrialWages(populationManager.getWagesPerType());
         economyManager.updateJobFillRate(populationManager.getJobFillRate());
+        // After updateJobFillRate: the mills' payroll is discounted by the fill,
+        // so the fill has to be current before their wages are set.
+        economyManager.updateHeavyIndustryWages(populationManager.getWagesPerType());
         economyManager.setTotalWage(populationManager.getTotalWage());
         economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
         economyManager.setWaterRatio(servicesManager.getWaterRatio());

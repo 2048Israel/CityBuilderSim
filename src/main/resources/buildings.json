@@ -1,0 +1,251 @@
+{
+  "_readme": [
+    "Every building in the game. Edit the numbers here, save, restart - no rebuild.",
+    "",
+    "ID IS PERMANENT. Save files store what you own as an array keyed by these ids,",
+    "so changing an id or reusing a retired one silently loads the wrong buildings",
+    "into the wrong slots on every existing save. Reordering entries in this file is",
+    "safe; renumbering them is not. New buildings take the next unused id.",
+    "",
+    "Money is in thousands: cashCost 30 is $30,000.",
+    "Water is in units of 10,000 gallons/month.",
+    "land is the lot footprint in square feet; a city block is 100,000.",
+    "production1 / production2 mean different things per category - food or goods for",
+    "INDUSTRIAL, construction points for CONSTRUCTION (production2 is materials),",
+    "watts for ELECTRICITY, water units for WATER.",
+    "For HEAVY_INDUSTRY: production1 is tonnes of product made a month, production2",
+    "is tonnes of raw material that takes, productionModifier1 is the export price",
+    "per tonne and productionModifier2 the import price. Everything is bought and",
+    "sold abroad, so those two prices are the whole business - the gap between",
+    "them has to cover wages, power and water, and it deliberately barely does.",
+    "",
+    "Any field you leave out defaults to 0, so a House needs no 'coverage' line.",
+    "jobs keys are JobType names: NO_DIPLOMA, DIPLOMA, COLLEGE_HEALTH,",
+    "COLLEGE_BUSINESS, COLLEGE_ENGINEERING, UNIV_DOCTOR, UNIV_LAW, UNIV_FINANCE,",
+    "UNIV_SCIENCE, UNIV_HIGHTECH_ENG, UNIV_POLICY.",
+    "",
+    "If this file is missing or malformed the game falls back to its built-in",
+    "buildings and prints why, so a typo here can never stop it starting."
+  ],
+  "nextId": 13,
+  "buildings": [
+    {
+      "id": 0,
+      "name": "House",
+      "category": "RESIDENTIAL",
+      "capacity": 4,
+      "cashCost": 30,
+      "constructionPoints": 30,
+      "constructionMaterials": 30,
+      "electricity": 1,
+      "water": 0.2,
+      "land": 8000
+    },
+    {
+      "id": 1,
+      "name": "Studio Apartments",
+      "category": "RESIDENTIAL",
+      "capacity": 80,
+      "cashCost": 2000,
+      "constructionPoints": 2000,
+      "constructionMaterials": 2000,
+      "electricity": 8,
+      "water": 2,
+      "land": 25000
+    },
+    {
+      "id": 6,
+      "name": "Low-Rise Apartments",
+      "category": "RESIDENTIAL",
+      "capacity": 250,
+      "cashCost": 7000,
+      "constructionPoints": 7000,
+      "constructionMaterials": 6000,
+      "electricity": 25,
+      "water": 6,
+      "land": 60000
+    },
+    {
+      "id": 2,
+      "name": "Convience Store",
+      "category": "COMMERCIAL",
+      "coverage": 120,
+      "capacity": 350,
+      "cashCost": 120,
+      "constructionPoints": 120,
+      "constructionMaterials": 80,
+      "electricity": 6,
+      "water": 1,
+      "jobs": {
+        "NO_DIPLOMA": 2,
+        "DIPLOMA": 3
+      },
+      "land": 5000
+    },
+    {
+      "id": 5,
+      "name": "Small Grocery Store",
+      "category": "COMMERCIAL",
+      "coverage": 800,
+      "capacity": 3500,
+      "cashCost": 900,
+      "constructionPoints": 800,
+      "constructionMaterials": 700,
+      "electricity": 35,
+      "water": 6,
+      "jobs": {
+        "NO_DIPLOMA": 15,
+        "DIPLOMA": 10,
+        "COLLEGE_BUSINESS": 2
+      },
+      "land": 40000
+    },
+    {
+      "id": 3,
+      "name": "Texttile Mill",
+      "category": "INDUSTRIAL",
+      "capacity": 3000,
+      "cashCost": 1200,
+      "constructionPoints": 1800,
+      "constructionMaterials": 1600,
+      "production1": 1100,
+      "electricity": 40,
+      "water": 60,
+      "jobs": {
+        "NO_DIPLOMA": 45,
+        "DIPLOMA": 20
+      },
+      "land": 80000
+    },
+    {
+      "id": 7,
+      "name": "Food Processing Plant",
+      "category": "INDUSTRIAL",
+      "capacity": 18000,
+      "cashCost": 3500,
+      "constructionPoints": 3500,
+      "constructionMaterials": 3000,
+      "production1": 6000,
+      "electricity": 120,
+      "water": 150,
+      "jobs": {
+        "NO_DIPLOMA": 140,
+        "DIPLOMA": 120,
+        "COLLEGE_ENGINEERING": 10
+      },
+      "land": 200000
+    },
+    {
+      "id": 8,
+      "name": "Construction Materials Plant",
+      "category": "CONSTRUCTION",
+      "capacity": 5,
+      "cashCost": 20000,
+      "constructionPoints": 9000,
+      "constructionMaterials": 7000,
+      "production2": 400,
+      "electricity": 200,
+      "water": 80,
+      "jobs": {
+        "NO_DIPLOMA": 160,
+        "DIPLOMA": 80,
+        "COLLEGE_ENGINEERING": 10
+      },
+      "land": 300000
+    },
+    {
+      "id": 4,
+      "name": "Construction Depot",
+      "category": "CONSTRUCTION",
+      "capacity": 5,
+      "cashCost": 9000,
+      "constructionPoints": 400,
+      "constructionMaterials": 1000,
+      "production1": 400,
+      "electricity": 25,
+      "water": 3,
+      "jobs": {
+        "NO_DIPLOMA": 35,
+        "DIPLOMA": 15
+      },
+      "land": 60000
+    },
+    {
+      "id": 9,
+      "name": "Coal Power Plant",
+      "category": "ELECTRICITY",
+      "cashCost": 125000,
+      "constructionPoints": 120000,
+      "constructionMaterials": 40000,
+      "production1": 280000,
+      "electricity": 15,
+      "water": 400,
+      "jobs": {
+        "NO_DIPLOMA": 40,
+        "DIPLOMA": 20,
+        "COLLEGE_ENGINEERING": 6,
+        "UNIV_SCIENCE": 2
+      },
+      "land": 2000000
+    },
+    {
+      "id": 11,
+      "name": "Steel Foundry",
+      "category": "HEAVY_INDUSTRY",
+      "cashCost": 1400,
+      "constructionPoints": 1400,
+      "constructionMaterials": 1100,
+      "production1": 1200,
+      "production2": 1320,
+      "productionModifier1": 0.5,
+      "productionModifier2": 0.4,
+      "electricity": 750,
+      "water": 65,
+      "jobs": {
+        "NO_DIPLOMA": 22,
+        "DIPLOMA": 12,
+        "COLLEGE_ENGINEERING": 4
+      },
+      "land": 90000
+    },
+    {
+      "id": 12,
+      "name": "Steel Mini-Mill",
+      "category": "HEAVY_INDUSTRY",
+      "cashCost": 9000,
+      "constructionPoints": 9000,
+      "constructionMaterials": 7000,
+      "production1": 6000,
+      "production2": 6600,
+      "productionModifier1": 0.5,
+      "productionModifier2": 0.4,
+      "electricity": 3700,
+      "water": 320,
+      "jobs": {
+        "NO_DIPLOMA": 70,
+        "DIPLOMA": 45,
+        "COLLEGE_ENGINEERING": 12,
+        "UNIV_SCIENCE": 3
+      },
+      "land": 400000
+    },
+    {
+      "id": 10,
+      "name": "Water Treatment Plant",
+      "category": "WATER",
+      "cashCost": 45000,
+      "constructionPoints": 44000,
+      "constructionMaterials": 22000,
+      "production1": 60000,
+      "electricity": 900,
+      "water": 20,
+      "jobs": {
+        "NO_DIPLOMA": 8,
+        "DIPLOMA": 14,
+        "COLLEGE_ENGINEERING": 4,
+        "UNIV_SCIENCE": 3
+      },
+      "land": 800000
+    }
+  ]
+}

@@ -229,6 +229,7 @@ public class UserInterface extends Application {
         Button b2 = new Button("Commercial");
         Button b3 = new Button("Industrial");
         Button b4 = new Button("Other");
+        Button b5 = new Button("Land");
         Button b0 = new Button("Return to menu");
         
         b1.setOnAction(e-> {
@@ -238,13 +239,15 @@ public class UserInterface extends Application {
             handleAllBuildingMenus("Commercial Buildings",EnumSet.of(BuildingType.COMMERCIAL));
         });
         b3.setOnAction(e-> {
-            handleAllBuildingMenus("Industrial Buildings",EnumSet.of(BuildingType.INDUSTRIAL,BuildingType.CONSTRUCTION,BuildingType.ELECTRICITY,BuildingType.WATER));
+            handleAllBuildingMenus("Industrial Buildings",EnumSet.of(BuildingType.INDUSTRIAL,BuildingType.HEAVY_INDUSTRY,BuildingType.CONSTRUCTION,BuildingType.ELECTRICITY,BuildingType.WATER));
         });
 
         // NOTE: "Other" has no JavaFX screen yet (was buildingManager.displayAllBuildings()
         // printed to console in the old terminal build). Disabled rather than left as a
         // dead click until that screen is ported.
         b4.setDisable(true);
+
+        b5.setOnAction(e -> showLandMenu());
 
         b0.setOnAction(e -> {
             // go back to main menu
@@ -254,11 +257,194 @@ public class UserInterface extends Application {
 
         
 
-        rootMenu.getChildren().addAll(gameInfo,b1,b2,b3,b4,b0);
+        rootMenu.getChildren().addAll(gameInfo,b1,b2,b3,b4,b5,b0);
 
         
     }
     
+    /**
+     * The land office: what the city owns, what it is buying, what it charges.
+     *
+     * Prices are held internally per square foot in thousands, because every
+     * figure in the game is - but $0.009 is unreadable as a price, so this
+     * screen works in whole dollars per square foot and converts on the way in
+     * and out. The player thinks "nine dollars a foot"; the model stores .009.
+     */
+    private void showLandMenu() {
+        clearMenu();
+
+        LandManager land = game.getLandManager();
+
+        Label title = new Label("LAND OFFICE");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Label gameInfo = new Label("Month: " + game.getMonth()
+                + " | Cash: $" + formatter.format(game.getCash()));
+
+        VBox column = new VBox(0);
+
+        /* -------------------------- what we hold -------------------------- */
+        VBox holding = reportSection("CITY LAND",
+                String.format("Owned:                  %s sq ft (%.1f blocks)",
+                        formatter.format(land.getOwnedSqFt()),
+                        land.getOwnedSqFt() / LandManager.BLOCK_SQ_FT),
+                String.format("Built on:               %s sq ft",
+                        formatter.format(land.getAllocatedSqFt())),
+                String.format("Available:              %s sq ft (%.1f blocks)",
+                        formatter.format(land.getAvailableSqFt()),
+                        land.getAvailableBlocks()));
+
+        // The number that decides whether anything can be built. Coloured,
+        // because running out is silent otherwise - buildings simply stop
+        // appearing and nothing on screen says why.
+        double used = land.getUtilisation();
+        Label utilisation = monoLabel(String.format("%-24s%.1f%%", "Utilisation:", used * 100));
+        utilisation.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (used >= .90 ? "#c62828" : used >= .75 ? "#ef6c00" : "#2e7d32") + ";");
+        holding.getChildren().add(utilisation);
+
+        if (used >= .90) {
+            Label warning = monoLabel("  the city is nearly full - businesses will stop building");
+            warning.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+            holding.getChildren().add(warning);
+        }
+        column.getChildren().add(holding);
+
+        /* --------------------------- annexing --------------------------- */
+        double blockCost = land.getNextBlockCost();
+
+        column.getChildren().add(reportSection("BUYING",
+                String.format("Block size:             %s sq ft",
+                        formatter.format(LandManager.BLOCK_SQ_FT)),
+                String.format("Next block costs:       $%s", formatter.format(blockCost)),
+                String.format("...which is:            $%.2f /sq ft",
+                        land.getAcquisitionCostPerSqFt() * 1000),
+                String.format("Blocks bought so far:   %,d", land.getBlocksPurchased()),
+                "  (each block makes the next 2% dearer - annexing outward)"));
+
+        javafx.scene.layout.FlowPane buying = new javafx.scene.layout.FlowPane(8, 8);
+        buying.setAlignment(Pos.CENTER);
+        buying.setPrefWrapLength(340);
+
+        int[] blockCounts = {1, 5, 10};
+        for (int count : blockCounts) {
+            final int howMany = count;
+            Button buy = new Button("Buy " + count + (count == 1 ? " block" : " blocks"));
+            buy.setDisable(game.getCash() < blockCost);
+            buy.setOnAction(e -> {
+                // One at a time, because the price rises with each - and it
+                // stops when the treasury runs out rather than overdrawing.
+                for (int i = 0; i < howMany && game.buyLandBlock(); i++) { }
+                showLandMenu();
+            });
+            buying.getChildren().add(buy);
+        }
+
+        /* --------------------------- selling --------------------------- */
+        double price = land.getPricePerSqFt();
+        double margin = land.getMarginPerSqFt();
+
+        VBox selling = reportSection("SELLING TO BUSINESSES",
+                String.format("Your price:             $%.2f /sq ft", price * 1000),
+                String.format("Costs you:              $%.2f /sq ft",
+                        land.getAcquisitionCostPerSqFt() * 1000));
+
+        Label marginLine = monoLabel(String.format("%-24s$%.2f /sq ft", "Margin:", margin * 1000));
+        marginLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (margin < 0 ? "#c62828" : "#2e7d32") + ";");
+        selling.getChildren().add(marginLine);
+
+        // What the price actually means to a buyer, since "per square foot" is
+        // not a number anyone can price a decision from.
+        BuildingsTemplate house = game.getBuildingManager().getTemplateByName("House");
+        BuildingsTemplate plant = game.getBuildingManager().getTemplateByName("Food Processing Plant");
+
+        if (house != null) {
+            selling.getChildren().add(monoLabel(String.format("%-24s$%s on top of $%s to build",
+                    "A house plot:", formatter.format(land.priceFor(house.getLandSqFt())),
+                    formatter.format(house.getCashCost()))));
+        }
+        if (plant != null) {
+            selling.getChildren().add(monoLabel(String.format("%-24s$%s on top of $%s to build",
+                    "A food plant plot:", formatter.format(land.priceFor(plant.getLandSqFt())),
+                    formatter.format(plant.getCashCost()))));
+        }
+
+        selling.getChildren().add(monoLabel(String.format("%-24s%s sq ft for $%s",
+                "Sold this month:", formatter.format(land.getSqFtSoldThisMonth()),
+                formatter.format(land.getLandSalesThisMonth()))));
+        column.getChildren().add(selling);
+
+        javafx.scene.layout.FlowPane pricing = new javafx.scene.layout.FlowPane(8, 8);
+        pricing.setAlignment(Pos.CENTER);
+        pricing.setPrefWrapLength(340);
+
+        // Dollars per square foot, converted to the internal thousands scale.
+        double[] steps = {-1, -.10, .10, 1};
+        for (double step : steps) {
+            final double delta = step / 1000;
+            Button button = new Button((step > 0 ? "+$" : "-$")
+                    + String.format("%.2f", Math.abs(step)));
+            button.setPrefWidth(72);
+            button.setOnAction(e -> {
+                land.setPricePerSqFt(land.getPricePerSqFt() + delta);
+                showLandMenu();
+            });
+            pricing.getChildren().add(button);
+        }
+
+        Button atCost = new Button("Match cost");
+        atCost.setOnAction(e -> {
+            land.setPricePerSqFt(land.getAcquisitionCostPerSqFt());
+            showLandMenu();
+        });
+        pricing.getChildren().add(atCost);
+
+        /* ------------------- who is waiting on land ------------------- */
+        // Last month's decisions, not this instant's: the sectors only decide
+        // once a month, so buying land now shows up in these lines next month.
+        VBox waiting = reportSection("WHO IS WAITING (as of last month)");
+        boolean anyone = false;
+
+        String[] sectors = {BusinessDebtManager.REAL_ESTATE, BusinessDebtManager.RETAIL,
+                BusinessDebtManager.INDUSTRY, BusinessDebtManager.CONSTRUCTION};
+
+        for (String sector : sectors) {
+            String last = game.getLastInvestment(sector);
+            if (last != null && last.contains("no land")) {
+                Label line = monoLabel("  " + sector + ": " + last.replace("Holding: ", ""));
+                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+                waiting.getChildren().add(line);
+                anyone = true;
+            }
+        }
+
+        if (!anyone) {
+            waiting.getChildren().add(monoLabel("  nobody - every sector has room to build"));
+        }
+        column.getChildren().add(waiting);
+
+        VBox content = new VBox(0);
+        content.setAlignment(Pos.CENTER);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        content.getChildren().add(column);
+
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(content);
+        scroll.setFitToWidth(true);
+        scroll.setPrefHeight(420);
+        scroll.setStyle("-fx-background-color:transparent;");
+
+        Label buyLabel = new Label("Annex more land");
+        Label priceLabel = new Label("Set your price per square foot");
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showBuildingsMenu());
+
+        rootMenu.getChildren().addAll(title, gameInfo, scroll,
+                buyLabel, buying, priceLabel, pricing, back);
+    }
+
     private void showEconomyMenu() {
         clearMenu();
         
@@ -281,6 +467,7 @@ public class UserInterface extends Application {
         Button b3 = new Button("Debt Info");
         Button b4 = new Button("Sector Info");
         Button b5 = new Button("Government & National Accounts");
+        Button b6 = new Button("Tax Policy");
         
         Button b0 = new Button("Back");
         
@@ -291,6 +478,7 @@ public class UserInterface extends Application {
         b3.setOnAction(e -> showDebtInfoMenu());
         b4.setOnAction(e -> showSectorMenu());
         b5.setOnAction(e -> showGovernmentMenu());
+        b6.setOnAction(e -> showTaxPolicyMenu());
 
         // NOTE: "Restructure" (b2) was never implemented even in the old terminal
         // menu (its case was an empty stub) - leaving disabled. "Sector Info" (b4)
@@ -305,11 +493,168 @@ public class UserInterface extends Application {
 
         
 
-        rootMenu.getChildren().addAll(marketStatus,gameInfo,b1,b2,b3,b4,b5, b0);
+        rootMenu.getChildren().addAll(marketStatus,gameInfo,b1,b2,b3,b4,b5,b6, b0);
 
         
     }
     
+    /**
+     * The two rates, together, because they are only interesting against each
+     * other: income tax takes a share of what a business earned, property tax
+     * takes a share of what it owns whether it earned anything or not.
+     *
+     * The screen shows what each is currently raising and what every sector
+     * owes, so the choice between them is made against real numbers rather than
+     * in the abstract.
+     */
+    private void showTaxPolicyMenu() {
+        clearMenu();
+
+        EconomyManager em = game.getEconomyManager();
+        TaxPolicy policy = em.getTaxPolicy();
+        NationalAccounts na = em.getNationalAccounts();
+
+        Label title = new Label("TAX POLICY");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Label gameInfo = new Label("Month: " + game.getMonth()
+                + " | Cash: $" + formatter.format(game.getCash()));
+
+        VBox column = new VBox(0);
+
+        /* --------------------------- income tax --------------------------- */
+        column.getChildren().add(reportSection(
+                String.format("INCOME TAX  -  %.0f%% of what a business earns",
+                        policy.getIncomeTaxRate() * 100),
+                String.format("Business Tax:           $%s", formatter.format(na.getTaxBusiness())),
+                String.format("Industrial Tax:         $%s", formatter.format(na.getTaxIndustrial())),
+                String.format("Sales Tax:              $%s", formatter.format(na.getTaxSales())),
+                String.format("Wage Tax:               $%s", formatter.format(na.getTaxWage())),
+                "---------------------------------------------------",
+                String.format("Raised last month:      $%s", formatter.format(
+                        na.getTaxBusiness() + na.getTaxIndustrial()
+                                + na.getTaxSales() + na.getTaxWage())),
+                "  a sector that loses money pays none of this"));
+
+        /* -------------------------- property tax -------------------------- */
+        VBox property = reportSection(
+                String.format("PROPERTY TAX  -  %.2f%% a year on land and buildings",
+                        policy.getPropertyTaxRate() * 100),
+                String.format("Charged monthly at:     %.4f%% of assessed value",
+                        policy.getMonthlyPropertyTaxRate() * 100),
+                String.format("Raised last month:      $%s", formatter.format(na.getPropertyTax())),
+                "");
+
+        // What each sector is assessed on and owes. This is where the interaction
+        // with the land price becomes visible: raising what land sells for
+        // raises what every existing owner is assessed at.
+        BuildingType[] taxed = {
+                BuildingType.RESIDENTIAL, BuildingType.COMMERCIAL,
+                BuildingType.INDUSTRIAL, BuildingType.CONSTRUCTION,
+                BuildingType.HEAVY_INDUSTRY };
+        String[] names = { "Real Estate", "Retail", "Industry", "Construction",
+                "Heavy Industry" };
+
+        property.getChildren().add(monoLabel(
+                String.format("%-16s%14s%14s", "", "ASSESSED", "PER MONTH")));
+
+        for (int i = 0; i < taxed.length; i++) {
+            property.getChildren().add(monoLabel(String.format("%-16s%14s%14s",
+                    names[i],
+                    formatter.format(em.getAssessedValue(taxed[i])),
+                    formatter.format(em.getPropertyTaxFor(taxed[i])))));
+        }
+
+        property.getChildren().add(monoLabel(
+                "  the power and water plants are the city's own and exempt"));
+        property.getChildren().add(monoLabel(
+                "  charged whether or not the business earned anything"));
+        column.getChildren().add(property);
+
+        /* ------------------------- who is in trouble ------------------------- */
+        BusinessDebtManager credit = em.getBusinessDebtManager();
+
+        VBox distress = reportSection("SOLVENCY");
+        boolean anyTrouble = false;
+
+        for (String sector : BusinessDebtManager.SECTORS) {
+
+            if (credit.isBorrowingBlocked(sector) || credit.getWrittenOffTotal(sector) > 0) {
+                Label line = monoLabel(String.format("  %-14s %s",
+                        sector,
+                        credit.isBorrowingBlocked(sector)
+                                ? "in default - cannot borrow for "
+                                        + credit.getBlockedMonths(sector) + " more months"
+                                : String.format("restructured %d time(s), $%s written off",
+                                        credit.getRestructureCount(sector),
+                                        formatter.format(credit.getWrittenOffTotal(sector)))));
+                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
+                        + (credit.isBorrowingBlocked(sector) ? "#c62828" : "#ef6c00") + ";");
+                distress.getChildren().add(line);
+                anyTrouble = true;
+            }
+        }
+
+        if (!anyTrouble) {
+            distress.getChildren().add(monoLabel("  every sector is servicing its debt"));
+        }
+        column.getChildren().add(distress);
+
+        VBox content = new VBox(0);
+        content.setAlignment(Pos.CENTER);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        content.getChildren().add(column);
+
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(content);
+        scroll.setFitToWidth(true);
+        scroll.setPrefHeight(380);
+        scroll.setStyle("-fx-background-color:transparent;");
+
+        /* ----------------------------- the dials ----------------------------- */
+        Label incomeLabel = new Label("Income tax");
+        javafx.scene.layout.FlowPane incomeDial = new javafx.scene.layout.FlowPane(8, 8);
+        incomeDial.setAlignment(Pos.CENTER);
+
+        double[] incomeSteps = { -5, -1, 1, 5 };
+        for (double step : incomeSteps) {
+            final double delta = step / 100;
+            Button button = new Button((step > 0 ? "+" : "") + String.format("%.0f%%", step));
+            button.setPrefWidth(66);
+            button.setOnAction(e -> {
+                policy.setIncomeTaxRate(policy.getIncomeTaxRate() + delta);
+                showTaxPolicyMenu();
+            });
+            incomeDial.getChildren().add(button);
+        }
+
+        Label propertyLabel = new Label("Property tax (per year)");
+        javafx.scene.layout.FlowPane propertyDial = new javafx.scene.layout.FlowPane(8, 8);
+        propertyDial.setAlignment(Pos.CENTER);
+
+        // Quarter-point steps, because the whole range that matters is 0-4%.
+        double[] propertySteps = { -1, -.25, .25, 1 };
+        for (double step : propertySteps) {
+            final double delta = step / 100;
+            Button button = new Button((step > 0 ? "+" : "") + String.format("%.2f%%", step));
+            button.setPrefWidth(72);
+            button.setOnAction(e -> {
+                policy.setPropertyTaxRate(policy.getPropertyTaxRate() + delta);
+                showTaxPolicyMenu();
+            });
+            propertyDial.getChildren().add(button);
+        }
+
+        Button toLand = new Button("Land Office");
+        toLand.setOnAction(e -> showLandMenu());
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showEconomyMenu());
+
+        rootMenu.getChildren().addAll(title, gameInfo, scroll,
+                incomeLabel, incomeDial, propertyLabel, propertyDial, toLand, back);
+    }
+
     private void showFinanceMenu() {
         clearMenu();
         
@@ -438,6 +783,8 @@ public class UserInterface extends Application {
                     handleAllBuildingMenus(menuTitle, categories);
                 } else if (result == Game.BuildResult.NEEDS_FUNDING) {
                     showQuickDebtMenu(template, runningTotal[0], menuTitle, categories);
+                } else if (result == Game.BuildResult.NO_LAND) {
+                    showNoLandMenu(template, runningTotal[0], menuTitle, categories);
                 }
             }
         });
@@ -449,6 +796,50 @@ public class UserInterface extends Application {
         rootMenu.getChildren().addAll(totalLabel, buttonGrid, reset, confirm, back);
     }
     
+    /**
+     * The city has the money and nowhere to put the building.
+     *
+     * Its own separate screen rather than a line on the funding screen, because
+     * the two refusals have opposite answers: no cash is solved by borrowing,
+     * no land only by annexing, and offering a T-Bill for a land shortage would
+     * sell debt that cannot fix the problem.
+     */
+    private void showNoLandMenu(BuildingsTemplate selected, int quantity,
+                                String prevTitle, EnumSet<BuildingType> prevCats) {
+        clearMenu();
+
+        LandManager land = game.getLandManager();
+        double needed = game.landNeededFor(selected, quantity);
+        double have = land.getAvailableSqFt();
+        double short_ = Math.max(needed - have, 0);
+        double blocks = Math.ceil(short_ / LandManager.BLOCK_SQ_FT);
+
+        Label warning = new Label("NOT ENOUGH LAND");
+        warning.setStyle("-fx-text-fill: #c62828; -fx-font-weight: bold; -fx-font-size: 14px;");
+
+        Label details = new Label(String.format(
+                "%,d x %s needs %s sq ft%n"
+                        + "The city has %s sq ft free%n"
+                        + "Short by %s sq ft - about %.0f block%s",
+                quantity, selected.getName(), formatter.format(needed),
+                formatter.format(have), formatter.format(short_),
+                blocks, blocks == 1 ? "" : "s"));
+
+        Label cost = new Label(String.format(
+                "Buying %.0f block%s costs roughly $%s",
+                blocks, blocks == 1 ? "" : "s",
+                formatter.format(land.getNextBlockCost() * blocks)));
+        cost.setStyle("-fx-text-fill: #555555;");
+
+        Button toLand = new Button("Go to the Land Office");
+        toLand.setOnAction(e -> showLandMenu());
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
+
+        rootMenu.getChildren().addAll(warning, details, cost, toLand, back);
+    }
+
     private void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats) {
     clearMenu();
 
@@ -620,18 +1011,165 @@ public class UserInterface extends Application {
         // Expansion]", but its handler actually called printUtilityInfo() - the
         // label was just stale. Relabeled to match what it actually shows.
         Button utility = new Button("Utility Services");
-        Button futureExpansion = new Button("[Future Expansion]");
+        Button heavy = new Button("Heavy Industry (Steel)");
         Button back = new Button("Back");
-
-        futureExpansion.setDisable(true);
 
         commercial.setOnAction(e -> showCommercialInfoMenu());
         industrial.setOnAction(e -> showIndustrialInfoMenu());
         utility.setOnAction(e -> showUtilityInfoMenu());
+        heavy.setOnAction(e -> showHeavyIndustryMenu());
 
         back.setOnAction(e -> showSectorMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, commercial, industrial, utility, futureExpansion, back);
+        rootMenu.getChildren().addAll(title, gameInfo, commercial, industrial, utility, heavy, back);
+    }
+
+    /**
+     * The steel books.
+     *
+     * Laid out so the conversion margin is the first thing visible, because it
+     * is the whole business: everything below it - wages, power, water, interest,
+     * tax - has to fit inside the gap between what scrap costs and what steel
+     * fetches, and it deliberately only just does.
+     */
+    private void showHeavyIndustryMenu() {
+        clearMenu();
+
+        HeavyIndustryHandler hi = game.getEconomyManager().getHeavyIndustryHandler();
+        BalanceSheet bs = hi.getBalanceSheet();
+        BusinessDebtManager credit = game.getEconomyManager().getBusinessDebtManager();
+
+        VBox column = new VBox(0);
+
+        if (hi.getOutputCapacity() <= 0) {
+            column.getChildren().add(reportSection("NO MILLS BUILT",
+                    "A steel mill buys scrap abroad and ships steel abroad. It",
+                    "will never make much money - the margin is a few percent in",
+                    "a good month and negative in a bad one.",
+                    "",
+                    "Build one anyway. A mini-mill employs 130 people, those",
+                    "wages are spent in the city's shops and taxed, and the",
+                    "people who earn them need housing. That is the return."));
+            showSectorReport("HEAVY INDUSTRY", column, this::showPrivateSectorMenu);
+            return;
+        }
+
+        /* --------------------------- the plant --------------------------- */
+        VBox plant = reportSection("THE MILLS",
+                String.format("Capacity:               %s tonnes/month",
+                        formatter.format(hi.getOutputCapacity())),
+                String.format("Produced:               %s tonnes",
+                        formatter.format(hi.getReportOutput())),
+                String.format("Jobs:                   %,d", hi.getTotalJobs()));
+
+        double rate = hi.getReportOperatingRate();
+        Label running = monoLabel(String.format("%-24s%.1f%%", "Running at:", rate * 100));
+        running.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (rate < .9 ? "#c62828" : "#2e7d32") + ";");
+        plant.getChildren().add(running);
+
+        if (rate < .9) {
+            plant.getChildren().add(monoLabel(
+                    "  short of staff or power - the bills do not fall with output"));
+        }
+        column.getChildren().add(plant);
+
+        /* --------------------------- the margin --------------------------- */
+        VBox margin = reportSection("THE WORLD MARKET",
+                String.format("Steel sells for:        $%s /tonne",
+                        formatter.format(hi.getExportPrice())),
+                String.format("Scrap costs:            $%s /tonne",
+                        formatter.format(hi.getImportPrice())),
+                String.format("Scrap per tonne:        %.2f tonnes",
+                        hi.getOutputCapacity() > 0
+                                ? hi.getInputTonnes() / hi.getOutputCapacity() : 0));
+
+        double conversion = hi.getConversionMargin();
+        Label marginLine = monoLabel(String.format("%-24s$%s /tonne",
+                "Conversion margin:", formatter.format(conversion)));
+        marginLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (conversion <= 0 ? "#c62828" : "#2e7d32") + ";");
+        margin.getChildren().add(marginLine);
+        margin.getChildren().add(monoLabel(
+                "  wages, power and water all come out of this"));
+        column.getChildren().add(margin);
+
+        /* ----------------------- income statement ----------------------- */
+        column.getChildren().add(sectionHeading("=== INCOME STATEMENT (month just closed) ==="));
+
+        column.getChildren().add(reportSection("EXPORT REVENUE",
+                String.format("Steel shipped:          $%s",
+                        formatter.format(hi.getReportRevenue()))));
+
+        column.getChildren().add(reportSection("COSTS",
+                String.format("Scrap imported:        -$%s", formatter.format(hi.getReportInputCost())),
+                String.format("Payroll:               -$%s", formatter.format(hi.getReportPayroll())),
+                String.format("Electricity:           -$%s", formatter.format(hi.getReportElectricityCost())),
+                String.format("Water:                 -$%s", formatter.format(hi.getReportWaterCost())),
+                "---------------------------------------------------",
+                String.format("Total Costs:           -$%s", formatter.format(hi.getReportOperatingCost()))));
+
+        VBox result = reportSection("RESULT");
+        addNetIncomeLine(result, "OPERATING INCOME:", hi.getReportOperatingIncome());
+        result.getChildren().add(monoLabel(String.format("%-32s-$%s",
+                "Interest:", formatter.format(hi.getReportInterestExpense()))));
+        result.getChildren().add(monoLabel(String.format("%-32s-$%s",
+                "Property Tax:", formatter.format(hi.getReportPropertyTaxExpense()))));
+        addNetIncomeLine(result, "NET INCOME:", hi.getReportNetIncome());
+        column.getChildren().add(result);
+
+        /* ------------------- what it is actually worth ------------------- */
+        VBox worth = reportSection("WHAT THE CITY GETS");
+
+        // The honest accounting: the mill's own profit is nearly nothing, and
+        // the payroll it pays out is the actual point of the building.
+        double wageTax = hi.getReportPayroll() * game.getEconomyManager().getTaxRate();
+
+        worth.getChildren().add(monoLabel(String.format("%-32s$%s",
+                "Wages paid into the city:", formatter.format(hi.getReportPayroll()))));
+        worth.getChildren().add(monoLabel(String.format("%-32s$%s",
+                String.format("Wage tax on them @ %.0f%%:",
+                        game.getEconomyManager().getTaxRate() * 100),
+                formatter.format(wageTax))));
+        worth.getChildren().add(monoLabel(String.format("%-32s%,d",
+                "Residents supported:", (int) (hi.getTotalJobs() * 2.25))));
+        worth.getChildren().add(monoLabel(
+                "  those wages are spent in the shops and taxed again"));
+        column.getChildren().add(worth);
+
+        /* --------------------------- balance sheet --------------------------- */
+        column.getChildren().add(sectionHeading("=== BALANCE SHEET ==="));
+
+        column.getChildren().add(reportSection("ASSETS",
+                String.format("Cash:                   $%s", formatter.format(bs.getCash())),
+                String.format("Land:                   $%s", formatter.format(bs.getLand())),
+                String.format("Plant:                  $%s", formatter.format(bs.getBuildings())),
+                "---------------------------------------------------",
+                String.format("Total Assets:           $%s", formatter.format(bs.getTotalAssets()))));
+
+        column.getChildren().add(reportSection("LIABILITIES & EQUITY",
+                String.format("Loans Outstanding:      $%s", formatter.format(bs.getBondsPayable())),
+                String.format("Equity:                 $%s", formatter.format(bs.getEquity())),
+                "---------------------------------------------------",
+                String.format("Total:                  $%s",
+                        formatter.format(bs.getTotalLiabilitiesAndEquity())),
+                "",
+                String.format("Borrowing Rate:         %.2f%%",
+                        credit.getRate(BusinessDebtManager.HEAVY_INDUSTRY) * 100),
+                String.format("Leverage:               %.2f",
+                        credit.getLeverage(BusinessDebtManager.HEAVY_INDUSTRY))));
+
+        if (credit.isBorrowingBlocked(BusinessDebtManager.HEAVY_INDUSTRY)) {
+            VBox distress = reportSection("IN DEFAULT");
+            Label line = monoLabel("  cannot borrow for "
+                    + credit.getBlockedMonths(BusinessDebtManager.HEAVY_INDUSTRY)
+                    + " more months");
+            line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+            distress.getChildren().add(line);
+            column.getChildren().add(distress);
+        }
+
+        showSectorReport("HEAVY INDUSTRY", column, this::showPrivateSectorMenu);
     }
 
     private void showPopulationInfoMenu() {
@@ -719,6 +1257,9 @@ public class UserInterface extends Application {
         VBox content = new VBox(0);
         content.getChildren().addAll(overview, laborSummary, jobTable, status);
 
+        Button cashflow = new Button("Household Cash Flow");
+        cashflow.setOnAction(e -> showHouseholdMenu());
+
         Button back = new Button("Back");
         back.setOnAction(e -> showSectorMenu());
 
@@ -727,7 +1268,99 @@ public class UserInterface extends Application {
         scrollPane.setPrefHeight(400);
         scrollPane.setStyle("-fx-background-color:transparent;");
 
-        rootMenu.getChildren().addAll(title, scrollPane, back);
+        rootMenu.getChildren().addAll(title, scrollPane, cashflow, back);
+    }
+
+    /**
+     * The residents' own books - the last participant in this economy that did
+     * not have any.
+     *
+     * The line that matters is the bottom one. Retail spending is currently
+     * driven by how many people there are rather than by what they earn, so
+     * nothing in the model stops households being made to spend more than they
+     * take home. If that happens it is money arriving from nowhere, and this is
+     * the screen where it becomes visible instead of invisible.
+     */
+    private void showHouseholdMenu() {
+        clearMenu();
+
+        HouseholdAccounts hh = game.getHouseholds();
+
+        // No title/header built here: showSectorReport() at the bottom supplies
+        // both, the same as every other sector screen.
+        VBox column = new VBox(0);
+
+        column.getChildren().add(reportSection("INCOME",
+                String.format("Wages earned:           $%s", formatter.format(hh.getWages())),
+                String.format("Wage tax @ %.0f%%:        -$%s",
+                        hh.getEffectiveTaxRate() * 100, formatter.format(hh.getWageTax())),
+                "---------------------------------------------------",
+                String.format("Take-home pay:          $%s",
+                        formatter.format(hh.getDisposableIncome()))));
+
+        column.getChildren().add(reportSection("OUTGOINGS",
+                String.format("Rent to landlords:     -$%s", formatter.format(hh.getRent())),
+                String.format("Spent in the shops:    -$%s", formatter.format(hh.getShopping())),
+                "---------------------------------------------------",
+                String.format("Total spending:        -$%s", formatter.format(hh.getSpending()))));
+
+        VBox result = reportSection("WHAT IS LEFT");
+        addNetIncomeLine(result, hh.isLivingBeyondIncome() ? "SHORTFALL:" : "SAVED THIS MONTH:",
+                hh.getNetSaving());
+
+        Label rate = monoLabel(String.format("%-32s%.1f%%", "Saving rate:",
+                hh.getSavingRate() * 100));
+        rate.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (hh.getSavingRate() < 0 ? "#c62828"
+                        : hh.getSavingRate() < .03 ? "#ef6c00" : "#2e7d32") + ";");
+        result.getChildren().add(rate);
+
+        if (hh.isLivingBeyondIncome()) {
+            Label warn = monoLabel("  the people are spending more than they earn");
+            warn.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+            result.getChildren().add(warn);
+            result.getChildren().add(monoLabel(
+                    "  nothing in the model funds this - it is money from nowhere"));
+        }
+
+        result.getChildren().add(monoLabel(String.format("%-32s$%s",
+                "Saved since founding:", formatter.format(hh.getCumulativeSaving()))));
+        result.getChildren().add(monoLabel(
+                "  a record, not a pot - nobody can spend it"));
+        column.getChildren().add(result);
+
+        /* ---------------------------- affordability ---------------------------- */
+        VBox afford = reportSection("AFFORDABILITY");
+
+        double burden = hh.getRentBurden();
+        Label rentLine = monoLabel(String.format("%-32s%.1f%% of take-home",
+                "Rent:", burden * 100));
+        rentLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
+                + (burden > .35 ? "#c62828" : burden > .25 ? "#ef6c00" : "#2e7d32") + ";");
+        afford.getChildren().add(rentLine);
+
+        if (burden > .35) {
+            afford.getChildren().add(monoLabel("  over a third of income - rent-burdened"));
+        }
+
+        afford.getChildren().add(monoLabel(String.format("%-32s$%s",
+                "Income per resident:", formatter.format(hh.getIncomePerResident()))));
+        afford.getChildren().add(monoLabel(String.format("%-32s$%s",
+                "Spending per resident:", formatter.format(hh.getSpendingPerResident()))));
+        afford.getChildren().add(monoLabel(String.format("%-32s$%s",
+                "Average filled job pays:", formatter.format(hh.getAverageWage()))));
+        column.getChildren().add(afford);
+
+        /* ------------------------------- who works ------------------------------- */
+        column.getChildren().add(reportSection("WHO IS EARNING IT",
+                String.format("Population:             %,d", hh.getPopulation()),
+                String.format("Workforce:              %,d", hh.getWorkforce()),
+                String.format("Jobs actually filled:   %,d", hh.getJobsFilled()),
+                String.format("People per worker:      %.2f", hh.getDependencyRatio()),
+                "",
+                "one household for now; income groups come much later"));
+
+        showSectorReport("HOUSEHOLD CASH FLOW", column, this::showPopulationInfoMenu);
     }
 
     /* ---------------------------------------------------------------------
@@ -1194,6 +1827,7 @@ public class UserInterface extends Application {
                 String.format("Electricity Expense:            -$%s", formatter.format(ih.getReportElectricityCost())),
                 String.format("Water Expense:                  -$%s", formatter.format(ih.getReportWaterCost())),
                 String.format("Interest Expense:               -$%s", formatter.format(ih.getReportInterestExpense())),
+                String.format("Property Tax:                   -$%s", formatter.format(ih.getReportPropertyTaxExpense())),
                 "---------------------------------------------------",
                 String.format("Total Operating Expenses:       -$%s", formatter.format(ih.getReportOperatingCost())));
         addNetIncomeLine(statement, "NET INCOME (INDUSTRIAL):", ih.getNetIncome());
@@ -1277,6 +1911,7 @@ public class UserInterface extends Application {
                 String.format("Payroll:                        -$%s", formatter.format(ih.getReportPayroll())),
                 String.format("Electricity:                    -$%s", formatter.format(ih.getReportElectricityCost())),
                 String.format("Water:                          -$%s", formatter.format(ih.getReportWaterCost())),
+                String.format("Property Tax:                   -$%s", formatter.format(ih.getReportPropertyTaxExpense())),
                 "---------------------------------------------------",
                 String.format("Total Operating Expenses:       -$%s", formatter.format(ih.getReportOperatingCost()))));
 
@@ -1570,14 +2205,18 @@ public class UserInterface extends Application {
 
         column.getChildren().add(reportSection("GOVERNMENT (G)",
                 String.format("Services provided:      $%s", formatter.format(na.getGovernment())),
-                "  (cost of running the city's own utilities)"));
+                "  (cost of running the city's own utilities)",
+                "  land trading is not output, so it is not counted here"));
 
         column.getChildren().add(reportSection("NET EXPORTS (NX)",
+                String.format("Steel exported:         $%s", formatter.format(na.getExports())),
                 String.format("Food imported:         -$%s", formatter.format(na.getImportsFood())),
                 String.format("Materials imported:    -$%s", formatter.format(na.getImportsMaterials())),
+                String.format("Scrap imported:        -$%s", formatter.format(na.getImportsRawMaterial())),
                 "---------------------------------------------------",
                 String.format("Net Exports:            $%s", formatter.format(na.getNetExports())),
-                "  (nothing is exported yet, so this only subtracts)"));
+                "  a mill that ships out more than the scrap it buys in",
+                "  is the only thing here that adds to output"));
 
         VBox total = reportSection("");
         Label gdpTotal = monoLabel(String.format("%-32s $%s", "GDP = C + I + G + NX:",
@@ -1612,12 +2251,15 @@ public class UserInterface extends Application {
                 String.format("Sales Tax:              $%s", formatter.format(na.getTaxSales())),
                 String.format("Wage Tax:               $%s", formatter.format(na.getTaxWage())),
                 String.format("Utility Net Income:     $%s", formatter.format(na.getUtilityIncome())),
+                String.format("Property Tax:           $%s", formatter.format(na.getPropertyTax())),
+                String.format("Land Sold:              $%s", formatter.format(na.getLandSales())),
                 "---------------------------------------------------",
                 String.format("Total Revenue:          $%s", formatter.format(na.getTotalRevenue()))));
 
         column.getChildren().add(reportSection("EXPENDITURE",
                 String.format("Debt Interest:         -$%s", formatter.format(na.getInterestExpense())),
                 String.format("Buildings (capital):   -$%s", formatter.format(na.getCapitalSpending())),
+                String.format("Land Bought:           -$%s", formatter.format(na.getLandPurchases())),
                 "---------------------------------------------------",
                 String.format("Total Expenditure:     -$%s", formatter.format(na.getTotalExpenses()))));
 
@@ -1761,6 +2403,7 @@ public class UserInterface extends Application {
             Label idle = new Label("Nothing being built.");
             idle.setStyle("-fx-text-fill: #888888; -fx-padding: 8 0 0 0;");
             constructionPanel.getChildren().add(idle);
+            addDemolitionLog();
             return;
         }
 
@@ -1813,6 +2456,66 @@ public class UserInterface extends Application {
         javafx.scene.control.ScrollPane scroller = new javafx.scene.control.ScrollPane(list);
         scroller.setFitToWidth(true);
         scroller.setPrefHeight(560);
+        scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
+        constructionPanel.getChildren().add(scroller);
+
+        addDemolitionLog();
+    }
+
+    /**
+     * What the city has lost lately, under what it is building.
+     *
+     * Deliberately in the same panel as construction rather than on a screen of
+     * its own: these are the two halves of the same thing, and a player watching
+     * their city go up should see it come down in the same place. Entries stay
+     * for two years of turns because someone fast-forwarding fifty months
+     * otherwise has to reconstruct what happened from a building count that went
+     * down while they were not looking.
+     */
+    private void addDemolitionLog() {
+
+        java.util.List<DemolitionLog.Entry> lost =
+                game.getDemolitionLog().recent(game.getMonth());
+
+        if (lost.isEmpty()) {
+            return;
+        }
+
+        Label header = new Label("RECENTLY DEMOLISHED");
+        header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
+                + " -fx-text-fill: #c62828; -fx-padding: 14 0 2 0;");
+        constructionPanel.getChildren().add(header);
+
+        VBox list = new VBox(6);
+
+        for (DemolitionLog.Entry entry : lost) {
+
+            Label what = new Label(String.format("%,d x %s", entry.quantity, entry.building));
+            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #7f1d1d;");
+
+            // Fading with age, so the eye goes to what just happened without the
+            // older entries disappearing entirely.
+            int ago = entry.monthsAgo(game.getMonth());
+            String shade = (ago <= 1) ? "#c62828" : (ago <= 6) ? "#8d6e63" : "#9e9e9e";
+
+            Label when = monoLabel("  " + entry.sector + ", " + entry.when(game.getMonth()));
+            when.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: " + shade + ";");
+
+            Label how = monoLabel(entry.wasPaidFor()
+                    ? String.format("  plot sold back for $%s", formatter.format(entry.proceeds))
+                    : "  plot abandoned");
+            how.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #9e9e9e;");
+
+            VBox row = new VBox(1);
+            row.getChildren().addAll(what, when, how);
+            list.getChildren().add(row);
+        }
+
+        javafx.scene.control.ScrollPane scroller = new javafx.scene.control.ScrollPane(list);
+        scroller.setFitToWidth(true);
+        scroller.setPrefHeight(Math.min(190, 62 * lost.size() + 8));
         scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
         constructionPanel.getChildren().add(scroller);
     }
@@ -1947,6 +2650,26 @@ public class UserInterface extends Application {
                 statLine("Food stock", String.format("%,d", economyManager.getIndustryFoodInventory())),
                 statLine("Energy", formatter.format(game.getEnergyRatio() * 100) + "%"),
                 statLine("Water", formatter.format(game.getWaterRatio() * 100) + "%"));
+
+        /* ---------------- LAND ---------------- */
+        LandManager land = game.getLandManager();
+        double landUsed = land.getUtilisation();
+
+        body.getChildren().addAll(
+                sectionHeading("LAND"),
+                statLine("Owned", String.format("%.0f blocks",
+                        land.getOwnedSqFt() / LandManager.BLOCK_SQ_FT)),
+                statLine("Free", String.format("%.1f blocks", land.getAvailableBlocks())));
+
+        Label usedRow = statLine("Used", String.format("%.1f%%", landUsed * 100));
+        if (landUsed >= .90) {
+            usedRow.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
+        }
+        body.getChildren().add(usedRow);
+
+        body.getChildren().add(statLine("Price/sq ft",
+                String.format("$%.2f", land.getPricePerSqFt() * 1000)));
 
         /* ---------------- SECTOR CASH ---------------- */
         body.getChildren().addAll(

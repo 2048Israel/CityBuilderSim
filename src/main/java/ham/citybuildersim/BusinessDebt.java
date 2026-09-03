@@ -36,6 +36,22 @@ public abstract class BusinessDebt {
     /** Advances the clock by one month. Must not move any cash. */
     public abstract void processMonth();
 
+    /**
+     * Cuts this loan down in a restructuring - the lender takes the loss.
+     *
+     * Scales face value as well as outstanding principal, because interest here
+     * is charged on FACE value. Writing down only the principal would leave a
+     * restructured borrower paying the old interest bill on debt it no longer
+     * owes, which is the opposite of relief.
+     *
+     * @param scale what fraction of the debt survives; 0 wipes it out
+     */
+    public void writeDown(double scale) {
+        double keep = Math.max(0, Math.min(scale, 1));
+        faceValue *= keep;
+        outstandingPrincipal *= keep;
+    }
+
     public abstract double getMonthlyInterestExpense();
 
     public abstract double getOutstandingPrincipal();

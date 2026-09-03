@@ -97,6 +97,17 @@ public class CommercialHandler {
     /* Business credit. Two separate books, two separate loans, two rates. */
     private double retailInterestExpense;
     private double realEstateInterestExpense;
+
+    /**
+     * Property tax, charged monthly on land plus buildings.
+     *
+     * Real estate is the sector this lands on hardest, and correctly so: it
+     * owns the entire housing stock and every lot under it, and its only
+     * revenue is rent. It is also the first real cost real estate has ever had
+     * besides interest - maintenance is still hardcoded to zero.
+     */
+    private double retailPropertyTax;
+    private double realEstatePropertyTax;
     private double rRetailInterest;
     private double rRealEstateInterest;
 
@@ -107,6 +118,7 @@ public class CommercialHandler {
     private double realEstateLandValue;
     private double realEstateBuildingsValue;
     private double realEstateBondsPayable;
+    private double rRetailPropertyTax;
     private double rRetailOperatingCost;
     private double rRetailOperatingIncome;
     private double rRetailNetIncome;
@@ -194,7 +206,12 @@ public class CommercialHandler {
         // Rent less interest, not gross rent - real estate's borrowing is
         // deductible like anyone else's, and taxing gross would disagree with
         // the income statement below it.
-        businessTaxIncome += Math.max((getRentIncome() - realEstateInterestExpense)*taxRate, 0);
+        // Property tax is deductible like any other operating cost, and has to
+        // be here or the income statement below and the tax collected above
+        // would disagree about what real estate earned.
+        businessTaxIncome += Math.max(
+                (getRentIncome() - realEstateInterestExpense - realEstatePropertyTax)
+                        * taxRate, 0);
 
         return businessTaxIncome;
     }
@@ -228,6 +245,7 @@ public class CommercialHandler {
         storeExp += getElectricityCost();
         storeExp += getWaterCost();
         storeExp += retailInterestExpense;
+        storeExp += retailPropertyTax;
         storeRev *= averageStoreFill;
         storeRev *= energyRatio;
         storeRev *= waterRatio;
@@ -321,6 +339,7 @@ public class CommercialHandler {
                 .setBuildings(realEstateBuildingsValue)
                 .setBondsPayable(realEstateBondsPayable);
     }
+    public double getReportRetailPropertyTax()   { return rRetailPropertyTax; }
     public double getReportRetailOperatingCost() { return rRetailOperatingCost; }
     public double getReportRetailOperatingIncome() { return rRetailOperatingIncome; }
     public double getReportRetailNetIncome()     { return rRetailNetIncome; }
@@ -389,6 +408,17 @@ public class CommercialHandler {
     public void setElectricityConsumption(int consumption){
         this.electricity = consumption;
     }
+    public void setRetailPropertyTax(double value){
+        this.retailPropertyTax = value;
+    }
+
+    public void setRealEstatePropertyTax(double value){
+        this.realEstatePropertyTax = value;
+    }
+
+    public double getRetailPropertyTax()     { return retailPropertyTax; }
+    public double getRealEstatePropertyTax() { return realEstatePropertyTax; }
+
     public void setRetailInterestExpense(double value){
         this.retailInterestExpense = value;
     }
@@ -578,7 +608,9 @@ public class CommercialHandler {
         rElectricityCost = electricity * pricePerWatt;
         rWaterCost = water * waterRatio * pricePerWaterUnit;
 
-        rRetailOperatingCost = rPayroll + rInventoryCost + rElectricityCost + rWaterCost;
+        rRetailPropertyTax = retailPropertyTax;
+        rRetailOperatingCost = rPayroll + rInventoryCost + rElectricityCost + rWaterCost
+                + rRetailPropertyTax;
         rRetailInterest = retailInterestExpense;
 
         // rRetailNetIncome is what gets banked to commercialCash, so interest has
@@ -593,11 +625,10 @@ public class CommercialHandler {
         rRentIncome = getRentIncome();
 
         rPropertyMaintenance = 0;
-        rPropertyTaxExpense = 0;
+        rPropertyTaxExpense = realEstatePropertyTax;
         rRealEstateInterest = realEstateInterestExpense;
 
-        // Interest is the first real expense line real estate has ever had -
-        // maintenance and property tax are still hardcoded to zero (backlog).
+        // Maintenance is still hardcoded to zero; property tax no longer is.
         rRealEstateExpenses = rPropertyMaintenance + rPropertyTaxExpense + rRealEstateInterest;
         rRealEstateNetIncome = rRentIncome - rRealEstateExpenses;
 
@@ -730,6 +761,7 @@ public class CommercialHandler {
         rRealEstateInterest = 0;
         rRetailOperatingIncome = 0;
         rRetailOperatingCost = 0;
+        rRetailPropertyTax = 0;
         rRetailNetIncome = 0;
         rOccupiedUnits = 0;
         rVacantUnits = 0;

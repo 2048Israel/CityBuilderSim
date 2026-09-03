@@ -53,9 +53,62 @@ public class DataSave {
     private double industrialCash;
     private double commercialCash;
     private double realEstateCash;
+    private double heavyIndustryCash;
+
+    /**
+     * What the residents have not spent, since the city was founded.
+     *
+     * Saved because it is history rather than a monthly figure: losing it on
+     * load would silently reset a record of whether the city's wages have kept
+     * up with its prices, which is the one thing the household account exists
+     * to show over time.
+     */
+    private double householdSavings;
+
+    /*
+     * Land.
+     *
+     * What the city OWNS is saved; what is built on is not, because the
+     * buildings already say that and two records of the same fact can disagree.
+     * A save written before land existed reads landOwned as 0, which the load
+     * path treats as "no land data" and falls back to the starting allocation.
+     */
+    private double landOwned;
+    private int landBlocksPurchased;
+    private double landPricePerSqFt;
+
+    /*
+     * Tax rates. Zero means "written before these were saved" rather than "a
+     * city that charges nothing" - a genuine zero rate is indistinguishable
+     * from a missing field in JSON, and defaulting an old save to no taxes at
+     * all would be a far stranger surprise than defaulting it to the standard
+     * ones. A player who really wants zero can set it again in two clicks.
+     */
+    private double incomeTaxRate;
+    private double propertyTaxRate;
             
 
  
+
+    public void setHeavyIndustryCash(double cash) { this.heavyIndustryCash = cash; }
+    public double getHeavyIndustryCash()          { return heavyIndustryCash; }
+
+    public void setHouseholdSavings(double value)  { this.householdSavings = value; }
+    public double getHouseholdSavings()            { return householdSavings; }
+
+    public void setLandOwned(double sqFt)          { this.landOwned = sqFt; }
+    public void setLandBlocksPurchased(int blocks) { this.landBlocksPurchased = blocks; }
+    public void setLandPricePerSqFt(double price)  { this.landPricePerSqFt = price; }
+
+    public double getLandOwned()          { return landOwned; }
+    public int    getLandBlocksPurchased(){ return landBlocksPurchased; }
+    public double getLandPricePerSqFt()   { return landPricePerSqFt; }
+
+    public void setIncomeTaxRate(double rate)   { this.incomeTaxRate = rate; }
+    public void setPropertyTaxRate(double rate) { this.propertyTaxRate = rate; }
+
+    public double getIncomeTaxRate()   { return incomeTaxRate; }
+    public double getPropertyTaxRate() { return propertyTaxRate; }
 
     public void setUnderConstruction(int[] underConstruction) {
         this.underConstruction = underConstruction;
