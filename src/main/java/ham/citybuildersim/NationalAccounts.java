@@ -106,6 +106,46 @@ public class NationalAccounts {
      * estimated. Called once a month, after the sector income statements have
      * run and before anything reads the result.
      */
+    /**
+     * Puts back the month a save was taken in.
+     *
+     * lastInventoryValue matters more than the GDP figure does. Investment in
+     * inventories is a CHANGE - stock now less stock last month - so a loaded
+     * city that thinks last month's stock was zero counts its entire warehouse
+     * as this month's production. On a city holding 15,800 units of food that
+     * more than doubled the next month's GDP, which then fed the interest rate.
+     *
+     * The rolling history is deliberately not restored: it is not saved at all
+     * yet, and inventing entries for it would be worse than a short one.
+     */
+    public void restore(double gdp, double lastInventoryValue,
+                        double consumptionGoods, double consumptionHousing,
+                        double investmentConstruction, double investmentInventories,
+                        double government, double importsFood, double importsMaterials,
+                        double importsRawMaterial, double exports) {
+
+        this.gdp = gdp;
+        this.lastInventoryValue = lastInventoryValue;
+
+        // The components too, not just the total. They are what the national
+        // accounts screen shows and what the GDP figure is made of; restoring
+        // the sum alone gives a city whose GDP is right and whose C, I, G and
+        // NX are all zero, which is a worse kind of wrong than either.
+        this.consumptionGoods = consumptionGoods;
+        this.consumptionHousing = consumptionHousing;
+        this.investmentConstruction = investmentConstruction;
+        this.investmentInventories = investmentInventories;
+        this.government = government;
+        this.importsFood = importsFood;
+        this.importsMaterials = importsMaterials;
+        this.importsRawMaterial = importsRawMaterial;
+        this.exports = exports;
+    }
+
+    public double getLastInventoryValue() {
+        return lastInventoryValue;
+    }
+
     public void update(double retailSales, double rentPaid,
                        double constructionWorkDone, double inventoryValue,
                        double governmentServices,

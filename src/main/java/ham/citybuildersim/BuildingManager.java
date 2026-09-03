@@ -776,6 +776,79 @@ public class BuildingManager {
         return progress;
     }
 
+    /* ----------------------------------------------------------------------
+     * Construction state for the save, keyed by template id.
+     *
+     * The pair below this (getConstructionProgress / getUnderConstructionArray)
+     * returns one entry per STACK, in whatever order the player happened to
+     * build things. The load path recreates stacks in template-id order and
+     * only for templates with a completed quantity - so a building that was
+     * purely under construction left no stack at all, every later position
+     * shifted, and the arrays were refused wholesale. That is why in-progress
+     * construction never survived a save.
+     *
+     * Keyed by id, the way buildings[] already is, position stops mattering.
+     * The old methods are kept because saves written before this change are
+     * still in the old shape and the load path still has to read them.
+     * -------------------------------------------------------------------- */
+
+    /**
+     * The highest id in the catalogue, not the number of templates.
+     *
+     * These are not the same thing and assuming they are is a live hazard: ids
+     * come from buildings.json, so deleting one building leaves twelve
+     * templates whose ids still run to 12, and an array sized by the count is
+     * one short of the id it has to hold.
+     */
+    public int getMaxTemplateId() {
+        int max = -1;
+        for (BuildingsTemplate template : templates) {
+            max = Math.max(max, template.getId());
+        }
+        return max;
+    }
+
+    public double[] getConstructionProgressById() {
+        double[] out = new double[getMaxTemplateId() + 1];
+        for (BuildingsStacks stack : stacks) {
+            int id = stack.getBuilding().getId();
+            if (id >= 0 && id < out.length) {
+                out[id] = stack.getConstructionProgress();
+            }
+        }
+        return out;
+    }
+
+    public int[] getUnderConstructionById() {
+        int[] out = new int[getMaxTemplateId() + 1];
+        for (BuildingsStacks stack : stacks) {
+            int id = stack.getBuilding().getId();
+            if (id >= 0 && id < out.length) {
+                out[id] = stack.getUnderConstruction();
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Puts a template's in-progress work back onto its stack.
+     *
+     * Deliberately does not create the stack: the load path decides what exists,
+     * and a restore that quietly conjures a stack for an id the save no longer
+     * recognises would hide a real problem. Returns false in that case instead.
+     */
+    public boolean restoreConstruction(int templateId, int underConstruction,
+                                       double progress) {
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getId() == templateId) {
+                stack.setUnderConstruction(underConstruction);
+                stack.setConstructionProgress(progress);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void setConstructionProgress(double[] progress) {
         if (progress.length != stacks.size()) {
             throw new IllegalArgumentException("Array length must match number of stacks.");

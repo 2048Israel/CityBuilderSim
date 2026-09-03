@@ -416,6 +416,46 @@ public class CommercialHandler {
         this.realEstatePropertyTax = value;
     }
 
+    public double getStoreInventoryCost()    { return storeInventoryCost; }
+    public double getRetailInterestExpense()     { return retailInterestExpense; }
+    public double getRealEstateInterestExpense() { return realEstateInterestExpense; }
+
+    /**
+     * The month's cost of goods, put back on load.
+     *
+     * buyInventory() sets this during the month and nothing recomputes it
+     * afterwards, so a loaded city priced its retail income statement with no
+     * cost of goods at all - the shops looked more profitable than they were,
+     * and the city's business tax went up with them.
+     */
+    public void setStoreInventoryCost(double cost) { this.storeInventoryCost = cost; }
+
+    /**
+     * What the shops actually bought last month, local and global.
+     *
+     * The local figure is the one that matters beyond the report:
+     * EconomyManager.startOfMontEconUpdate() feeds it to the mills as NEXT
+     * month's demand, so the two sides trade with each other rather than each
+     * guessing. A loaded city had it at zero, which told industry nobody wanted
+     * anything - the mills stopped selling, their stock built up, the food
+     * market repriced, and the shops started importing globally at import
+     * prices. One unrestored number, and the city's whole food economy changed
+     * shape two months later.
+     */
+    /**
+     * Rebuilds the month's statement from the basis it was written against, and
+     * puts back the import tax, which only buyInventory() ever sets.
+     */
+    public void restoreMonthReport(double storeFillBasis, double importTax) {
+        computeMonthlyReport(storeFillBasis);
+        rImportTax = importTax;
+    }
+
+    public void setReportImports(int local, int global) {
+        this.pLocalImport = local;
+        this.pGlobalImport = global;
+    }
+
     public double getRetailPropertyTax()     { return retailPropertyTax; }
     public double getRealEstatePropertyTax() { return realEstatePropertyTax; }
 
@@ -571,6 +611,20 @@ public class CommercialHandler {
      * rebuilding, such as after loading a save.
      */
     public void computeMonthlyReport() {
+        computeMonthlyReport(averageStoreFill);
+    }
+
+    /**
+     * @param storeFillBasis the staffing level the month was actually TRADED at.
+     *
+     * Not always the current one. A month's report is written before the job
+     * fill rate is updated, so when new shops finish and dilute the labour pool
+     * the report describes a month staffed at the old rate - and rebuilding it
+     * later from the new rate reports revenue the shops never earned. On a city
+     * that had just opened four stores that was 1.0 against 0.9508, and $3.16 of
+     * revenue that appeared out of a reload.
+     */
+    public void computeMonthlyReport(double storeFillBasis) {
 
         // snapshot the inputs first, so every figure on the report - inputs and
         // results alike - describes the same moment
@@ -579,7 +633,7 @@ public class CommercialHandler {
         rStoreCoverage = storeCoverage;
         rStoreCapacity = storeCapacity;
         rStoreInventory = storeInventory;
-        rAverageStoreFill = averageStoreFill;
+        rAverageStoreFill = storeFillBasis;
         rEnergyRatio = energyRatio;
         rWaterRatio = waterRatio;
 
@@ -588,7 +642,7 @@ public class CommercialHandler {
         productsSold = Math.min(rDemand, storeInventory);
         rProductsSold = productsSold;
 
-        rGrossRevenue = (productsSold * storeSellPrice) * energyRatio * waterRatio * averageStoreFill;
+        rGrossRevenue = (productsSold * storeSellPrice) * energyRatio * waterRatio * storeFillBasis;
 
         double payroll = 0;
         if (storeWages != null) {
@@ -596,7 +650,7 @@ public class CommercialHandler {
                 payroll += wage;
             }
         }
-        payroll *= averageStoreFill;
+        payroll *= storeFillBasis;
         rPayroll = payroll;
 
         // Matches what buyInventory() actually charged, tax included. This line

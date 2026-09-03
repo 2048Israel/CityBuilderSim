@@ -56,6 +56,22 @@ public final class GameFiles {
     public static final String SAVE_FILE = "save.json";
     public static final String HISTORY_FILE = "history.json";
 
+    /* --------------------------------- slots ---------------------------------
+     *
+     * Ten numbered slots and one autosave, each with its own save and its own
+     * history. The history has to be per slot: it is every month that city ever
+     * lived, so a single shared history file would draw slot 3's graph using
+     * slot 7's past.
+     *
+     * The autosave is slot 0 and is not writable from the save menu, which is
+     * the whole point of it - a player cannot accidentally spend their autosave
+     * on the city they were about to abandon.
+     * ------------------------------------------------------------------------ */
+
+    public static final int SLOT_COUNT = 10;
+    public static final int AUTOSAVE_SLOT = 0;
+    public static final String SAVES_FOLDER = "saves";
+
     /** The folder the game used before this class existed. */
     static final String LEGACY_FOLDER = "YourGame";
 
@@ -75,8 +91,32 @@ public final class GameFiles {
     /* ------------------------------ locations ------------------------------ */
 
     public Path getDirectory()  { return directory; }
-    public Path saveFile()      { return directory.resolve(SAVE_FILE); }
-    public Path historyFile()   { return directory.resolve(HISTORY_FILE); }
+
+    /** The pre-slot single save. Still read on migration; never written now. */
+    public Path legacyFlatSave()    { return directory.resolve(SAVE_FILE); }
+    public Path legacyFlatHistory() { return directory.resolve(HISTORY_FILE); }
+
+    public Path savesDirectory() { return directory.resolve(SAVES_FOLDER); }
+
+    public Path saveFile(int slot)    { return savesDirectory().resolve(stem(slot) + ".json"); }
+    public Path historyFile(int slot) { return savesDirectory().resolve(stem(slot) + "-history.json"); }
+
+    /**
+     * Zero-padded, so the folder sorts the way a person reads it and slot 10
+     * does not land between 1 and 2.
+     */
+    private static String stem(int slot) {
+        return (slot == AUTOSAVE_SLOT) ? "autosave" : String.format("slot-%02d", slot);
+    }
+
+    public static boolean isValidSlot(int slot) {
+        return slot >= AUTOSAVE_SLOT && slot <= SLOT_COUNT;
+    }
+
+    /** "Autosave", "Slot 1"... - the label, before anything is known about the city. */
+    public static String slotLabel(int slot) {
+        return (slot == AUTOSAVE_SLOT) ? "Autosave" : "Slot " + slot;
+    }
 
     public static Path defaultDirectory() {
         return resolveDirectory(
@@ -141,31 +181,75 @@ public final class GameFiles {
 
         List<String> copied = new ArrayList<>();
 
-        if (legacyDirectory == null
-                || !Files.isDirectory(legacyDirectory)
-                || legacyDirectory.equals(directory)) {
-            return copied;
+        /*
+         * Two hops, oldest first, and both land in slot 1 because that is the
+         * only place a single save can sensibly go.
+         *
+         * Every step copies and refuses to overwrite. A player who has already
+         * used slot 1 keeps what is in it; the old file stays where it is and
+         * can be recovered by hand if it ever mattered.
+         */
+
+        // 1. user.home/YourGame -> the app folder's flat save (the pre-slot shape)
+        if (legacyDirectory != null
+                && Files.isDirectory(legacyDirectory)
+                && !legacyDirectory.equals(directory)) {
+
+            copyIfAbsent(legacyDirectory.resolve(SAVE_FILE), legacyFlatSave(),
+                    SAVE_FILE + " (old folder)", copied);
+            copyIfAbsent(legacyDirectory.resolve(HISTORY_FILE), legacyFlatHistory(),
+                    HISTORY_FILE + " (old folder)", copied);
         }
 
-        for (String name : new String[] { SAVE_FILE, HISTORY_FILE }) {
-            Path from = legacyDirectory.resolve(name);
-            Path to = directory.resolve(name);
-            try {
-                if (Files.isRegularFile(from) && !Files.exists(to)) {
-                    Files.createDirectories(directory);
-                    Files.copy(from, to);
-                    copied.add(name);
-                }
-            } catch (IOException e) {
-                // Not fatal. A failed migration means the player starts fresh in
-                // the new folder with the old one still intact behind them,
-                // which is recoverable; stopping the game over it is not.
-                System.out.println("Could not bring " + name
-                        + " over from the old save folder: " + e.getMessage());
-            }
-        }
+        // 2. the flat save -> slot 1
+        copyIfAbsent(legacyFlatSave(), saveFile(1), "save into Slot 1", copied);
+        copyIfAbsent(legacyFlatHistory(), historyFile(1), "history into Slot 1", copied);
 
         return copied;
+    }
+
+    private void copyIfAbsent(Path from, Path to, String description,
+                              List<String> copied) {
+        try {
+            if (Files.isRegularFile(from) && !Files.exists(to)) {
+                Files.createDirectories(to.getParent());
+                Files.copy(from, to);
+                copied.add(description);
+            }
+        } catch (IOException e) {
+            // Not fatal. A failed migration means the player starts fresh with
+            // the old file still intact behind them, which is recoverable;
+            // stopping the game over it is not.
+            System.out.println("Could not bring " + description
+                    + " over: " + e.getMessage());
+        }
+    }
+
+    /* ------------------------------- reading ------------------------------- */
+
+    /**
+     * Reads just enough of a slot to label it, or null if the slot is empty.
+     *
+     * Never throws. A corrupt or half-written file in one slot must not stop the
+     * menu drawing the other ten - it reads as empty, which is what the player
+     * can act on anyway.
+     */
+    public SaveHeader readHeader(int slot) {
+
+        Path file = saveFile(slot);
+        if (!Files.isRegularFile(file)) return null;
+
+        try {
+            return new com.google.gson.Gson()
+                    .fromJson(Files.readString(file), SaveHeader.class);
+        } catch (IOException | RuntimeException e) {
+            System.out.println("Could not read " + slotLabel(slot) + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    public boolean slotIsEmpty(int slot) {
+        return !Files.isRegularFile(saveFile(slot));
     }
 
     /* ------------------------------- writing ------------------------------- */

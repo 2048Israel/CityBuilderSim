@@ -17,6 +17,17 @@ public class DataSave {
      * for why one copy of the fact beats four.
      */
 
+    /*
+     * The slot header. These field names are duplicated in SaveHeader, on
+     * purpose - the same JSON deserialises into either class, so the label on
+     * the save menu can never describe a different city from the file it came
+     * from. See SaveHeader.
+     */
+    private String slotName;
+    private String gameVersion;
+    private int saveFormat;
+    private long savedAt;
+
     //save variables
     private double cash;
     private int[] buildings;
@@ -30,8 +41,103 @@ public class DataSave {
      * type string alone.
      */
     private JsonArray businessDebts;
+
+    /*
+     * LEGACY construction state: one entry per stack, in build order. Read on
+     * load so old saves are not worse off than they were, never written any
+     * more. See constructionProgressById below for why.
+     */
     private double[] progress;
     private int[] underConstruction;
+
+    /*
+     * Construction, keyed by template id - the same key buildings[] uses.
+     *
+     * The positional arrays above could not survive a load: stacks come back in
+     * id order and only for templates with a completed quantity, so a building
+     * that was purely under construction left no stack, everything after it
+     * shifted, and the whole array was refused. A player who saved with four
+     * depots part-built reloaded to find the work gone.
+     */
+    private double[] constructionProgressById;
+    private int[] underConstructionById;
+
+    /*
+     * The property tax the city CHARGED this month, rather than a figure
+     * derived from its state.
+     *
+     * getTaxIncome() reads this back instead of recomputing it, deliberately:
+     * the sectors have already borne this exact number in their income
+     * statements, and recomputing risks the city collecting a different figure
+     * from the one the businesses paid. That makes it state, and state has to
+     * be saved - without it a freshly loaded city showed a next-month income
+     * missing its whole property-tax line, which then silently corrected itself
+     * the first time a month was simulated.
+     *
+     * Debt interest is NOT saved alongside it, even though it looks like the
+     * same kind of figure. finalEconUpdate() zeroes the interest field at the
+     * end of every month, so by the time any save can be taken it is already 0
+     * and restoring it would only ever write a zero back. (That zeroing is its
+     * own bug - the displayed income never subtracts city debt interest - but
+     * it is identical before and after a load, so it is not this one.)
+     */
+    private double propertyTaxCharged;
+
+    /*
+     * And the same figure split by sector, indexed by BuildingType ordinal.
+     *
+     * Saved rather than recomputed on load, which is not obvious: property tax
+     * is charged early in the month and buildings finish construction after
+     * that, so by the time a save is taken the assessed value has moved on.
+     * Recomputing from the saved building stock billed retail 4.35 against the
+     * 2.95 it actually paid. The charge is a fact about a month, not a function
+     * of the state that month ended in.
+     */
+    private double[] propertyTaxCharges;
+
+    /*
+     * The month's trading. Flows, not balances - and nothing can rederive a flow
+     * from the balance a month ended on, which is the whole reason these exist.
+     *
+     * retailCostOfGoods is set by buyInventory() and never recomputed, so
+     * without it a loaded city priced its shops with no cost of goods at all.
+     * The two industry counts reconstruct the stock the mills traded FROM:
+     * updateFinalIndustrialHandler() subtracts both from foodInventory after the
+     * statement is written, so the saved inventory is the closing balance and
+     * the statement was against the opening one.
+     */
+    /*
+     * What each sector's borrowing cost it, by BuildingType ordinal. Priced off
+     * the balance sheet as it stood when the month ran; re-pricing it from the
+     * sheet the month ended on gives a different number.
+     */
+    private double[] interestCharges;
+
+    private double retailCostOfGoods;
+    private int retailLocalImports;
+    private int retailGlobalImports;
+    private double retailFillBasis;
+    private double retailImportTax;
+    private double industryDemand;
+    private int industryUnitsSold;
+    private int industryUnitsImported;
+    private boolean hasMonthFlows;
+
+    /*
+     * The month's GDP, and the inventory level it was measured against.
+     * Investment in inventories is a change, so a loaded city that believes
+     * last month's stock was zero books its entire warehouse as new production.
+     */
+    private double[] nationalAccounts;
+
+    /*
+     * Construction's books: cash, and the order book that percentage-of-
+     * completion revenue is recognised against. Without the backlog a loaded
+     * city books zero construction output until the queue would have emptied.
+     */
+    private double constructionCash;
+    private double constructionUnearnedRevenue;
+    private double constructionBacklogPoints;
     private int constructionMaterials;
     private int storeInventory;
     private int industryFoodInventory;
@@ -83,6 +189,22 @@ public class DataSave {
             
 
  
+
+    /* ------------------------------- the header ------------------------------- */
+
+    public void setSlotName(String name)      { this.slotName = name; }
+    public String getSlotName()               { return slotName; }
+
+    /** Stamped at save time so a save always says which build wrote it. */
+    public void stamp(String gameVersion, int saveFormat, long savedAt) {
+        this.gameVersion = gameVersion;
+        this.saveFormat = saveFormat;
+        this.savedAt = savedAt;
+    }
+
+    public String getGameVersion() { return gameVersion; }
+    public int getSaveFormat()     { return saveFormat; }
+    public long getSavedAt()       { return savedAt; }
 
     public void setHeavyIndustryCash(double cash) { this.heavyIndustryCash = cash; }
     public double getHeavyIndustryCash()          { return heavyIndustryCash; }
@@ -180,16 +302,101 @@ public class DataSave {
      * someone their city is safe when it is not is worse than not saving at all,
      * because it is the point at which they stop worrying about it.
      */
-    public GameFiles.Result saveGame(GameFiles files) {
+    public GameFiles.Result saveGame(GameFiles files, int slot) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return files.write(files.saveFile(), gson.toJson(this));
+        return files.write(files.saveFile(slot), gson.toJson(this));
     }
 
 
   
+    /* ------------------------- construction, by id ------------------------- */
+
+    public void setConstructionById(int[] underConstruction, double[] progress) {
+        this.underConstructionById = underConstruction;
+        this.constructionProgressById = progress;
+    }
+
+    /** False for a save written before the format changed. */
+    public boolean hasConstructionById() {
+        return underConstructionById != null && constructionProgressById != null;
+    }
+
+    public int getConstructionByIdLength() {
+        return (underConstructionById == null) ? 0 : underConstructionById.length;
+    }
+
+    public int getUnderConstructionById(int templateId) {
+        return (underConstructionById == null
+                || templateId < 0
+                || templateId >= underConstructionById.length)
+                ? 0 : underConstructionById[templateId];
+    }
+
+    public double getConstructionProgressById(int templateId) {
+        return (constructionProgressById == null
+                || templateId < 0
+                || templateId >= constructionProgressById.length)
+                ? 0 : constructionProgressById[templateId];
+    }
+
+    /* ------------------------ charged, not derived ------------------------ */
+
+    public void setPropertyTaxCharged(double value) { this.propertyTaxCharged = value; }
+    public double getPropertyTaxCharged()           { return propertyTaxCharged; }
+
+    public void setPropertyTaxCharges(double[] charges) { this.propertyTaxCharges = charges; }
+    public double[] getPropertyTaxCharges()             { return propertyTaxCharges; }
+
+    public void setInterestCharges(double[] charges) { this.interestCharges = charges; }
+    public double[] getInterestCharges()             { return interestCharges; }
+
+    public void setMonthFlows(double retailCostOfGoods, int retailLocal, int retailGlobal,
+                              double retailFillBasis, double retailImportTax,
+                              double demand, int sold, int imported) {
+        this.retailCostOfGoods = retailCostOfGoods;
+        this.retailLocalImports = retailLocal;
+        this.retailGlobalImports = retailGlobal;
+        this.retailFillBasis = retailFillBasis;
+        this.retailImportTax = retailImportTax;
+        this.industryDemand = demand;
+        this.industryUnitsSold = sold;
+        this.industryUnitsImported = imported;
+        this.hasMonthFlows = true;
+    }
+
+    /** False for a save written before flows were carried. */
+    public boolean hasMonthFlows()          { return hasMonthFlows; }
+    public double getRetailCostOfGoods()    { return retailCostOfGoods; }
+    public int getRetailLocalImports()      { return retailLocalImports; }
+    public int getRetailGlobalImports()     { return retailGlobalImports; }
+    public double getRetailFillBasis()      { return retailFillBasis; }
+    public double getRetailImportTax()      { return retailImportTax; }
+    public double getIndustryDemand()       { return industryDemand; }
+    public int getIndustryUnitsSold()       { return industryUnitsSold; }
+    public int getIndustryUnitsImported()   { return industryUnitsImported; }
+
+    public void setNationalAccounts(double[] state) { this.nationalAccounts = state; }
+    public double[] getNationalAccounts()           { return nationalAccounts; }
+
+    public void setConstructionBooks(double cash, double unearned, double backlog) {
+        this.constructionCash = cash;
+        this.constructionUnearnedRevenue = unearned;
+        this.constructionBacklogPoints = backlog;
+    }
+    public double getConstructionCash()            { return constructionCash; }
+    public double getConstructionUnearnedRevenue() { return constructionUnearnedRevenue; }
+    public double getConstructionBacklogPoints()   { return constructionBacklogPoints; }
+
     //getters
+    /*
+     * Null-safe, because new saves no longer write the legacy arrays at all.
+     * Before this these threw NullPointerException on a save that omitted them,
+     * and the NPE would have escaped the IOException catch in loadGame() exactly
+     * the way the old IllegalArgumentException did - abandoning the rest of the
+     * load without saying so.
+     */
     public int getUnderConstructionLength(){
-        return underConstruction.length;
+        return (underConstruction == null) ? 0 : underConstruction.length;
     }
        public int getUnderConstruction(int index) {
         return underConstruction[index];
@@ -224,7 +431,7 @@ public class DataSave {
     }
 
     public int getProgressLength(){
-        return progress.length;
+        return (progress == null) ? 0 : progress.length;
     }
     
     public double getProgress(int index){

@@ -113,6 +113,31 @@ public class IndustrialHandler {
         
     }
     
+    public double getFoodDemand()        { return foodDemand; }
+    public int getProductsSoldCopy()     { return productsSoldCopy; }
+    public int getProductsImportedCopy() { return productsImportedCopy; }
+
+    /**
+     * Puts a saved month's trading back and rebuilds its statement.
+     *
+     * The opening stock is reconstructed rather than saved separately: what the
+     * month began with is what it ended with plus everything that left, and both
+     * of those numbers are already here.
+     */
+    public void restoreMonthReport(double demand, int sold, int imported) {
+        /*
+         * Demand is a flow too, and a second-hand one: it is set from what the
+         * shops actually bought from the mills last month
+         * (EconomyManager.startOfMontEconUpdate), so a loaded city that has not
+         * yet run a month has no idea what its own customers wanted. Without it
+         * the mills reported selling only what they imported.
+         */
+        this.foodDemand = demand;
+        this.productsSoldCopy = sold;
+        this.productsImportedCopy = imported;
+        computeMonthlyReport(foodInventory + sold + imported);
+    }
+
     public void updateFinalIndustrialHandler(){
         foodInventory -= productsSoldCopy;
         foodInventory -= productsImportedCopy;
@@ -482,9 +507,28 @@ public class IndustrialHandler {
      * the cash reserve - safe to call when rebuilding derived state after a load.
      */
     public void computeMonthlyReport() {
+        computeMonthlyReport(foodInventory);
+    }
+
+    /**
+     * Rebuilds the month's statement from the stock it actually traded from.
+     *
+     * The two are not the same number. computeMonthlyReport() runs during the
+     * month, and only afterwards does updateFinalIndustrialHandler() deduct what
+     * was sold and imported - so the inventory a save records is the CLOSING
+     * balance, while the statement was written against the opening one. Recompute
+     * from the closing figure and the mill reports less revenue than it earned;
+     * in a mature city that was $109 of gross revenue and $16 of sales tax
+     * vanishing every time the game was loaded.
+     *
+     * An income statement covers a period and cannot be reconstructed from the
+     * instant that period ended. This parameter is how the load path hands back
+     * the instant it began.
+     */
+    public void computeMonthlyReport(int inventoryBasis) {
 
         rFoodCapacity = foodCapacity;
-        rFoodInventory = foodInventory;
+        rFoodInventory = inventoryBasis;
         rAverageFill = averageIndustrialFill;
         rEnergyRatio = energyRatio;
         rWaterRatio = waterRatio;
@@ -492,7 +536,7 @@ public class IndustrialHandler {
         rActualProduction = foodProduction * averageIndustrialFill * energyRatio * waterRatio;
         rDemand = foodDemand;
 
-        int productsSold = (int) Math.min(foodInventory, foodDemand);
+        int productsSold = (int) Math.min(inventoryBasis, foodDemand);
 
         double averageSellPrice = productsSold * foodPrice
                 + productsImportedCopy * foodPrice * importCost;

@@ -44,11 +44,15 @@ public class SimulationEngine {
         );
         buildingManager.advanceConstruction(discountedCapacity);
 
+        // updatePopulation(), NOT refreshPopulationInputs() - a month is exactly
+        // when the city's population is supposed to move. Routing this through
+        // refreshDerivedState() once seemed tidy and quietly froze every city at
+        // zero residents, which is the difference between the two calls.
         updatePopulation(game);
         updateEconomy(game);
         updateServices(game);
     }
-    
+
     public void updatePopulation(Game game) {
         game.updatePopulation();
         populationManager.updateJobs(game.getJobs());

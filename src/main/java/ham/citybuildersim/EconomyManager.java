@@ -35,6 +35,12 @@ public class EconomyManager {
     /** This month's property tax, by sector. Charged to them, banked by the city. */
     private double totalPropertyTax;
 
+    /** This month's property tax by category ordinal. See getPropertyTaxCharges(). */
+    private double[] propertyTaxCharges;
+
+    /** This month's business-debt interest by category ordinal. See getInterestCharges(). */
+    private double[] interestCharges;
+
     /** Income tax on the mills. Folded into the business-tax line on the reports. */
     private double totalHeavyIndustryTax;
     private double totalBusinessTax;
@@ -304,7 +310,51 @@ public class EconomyManager {
         heavyIndustryHandler.setInterestExpense(
                 businessDebtManager.getMonthlyInterest(BusinessDebtManager.HEAVY_INDUSTRY));
 
+        interestCharges = new double[BuildingType.values().length];
+        interestCharges[BuildingType.COMMERCIAL.ordinal()] =
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.RETAIL);
+        interestCharges[BuildingType.RESIDENTIAL.ordinal()] =
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.REAL_ESTATE);
+        interestCharges[BuildingType.INDUSTRIAL.ordinal()] =
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.INDUSTRY);
+        interestCharges[BuildingType.CONSTRUCTION.ordinal()] =
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.CONSTRUCTION);
+        interestCharges[BuildingType.HEAVY_INDUSTRY.ordinal()] =
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.HEAVY_INDUSTRY);
+
         pushBalanceSheetInputs();
+    }
+
+    /**
+     * What each sector's borrowing actually cost it this month.
+     *
+     * Saved for the same reason the property-tax charges are: it is priced off
+     * the balance sheet as it stood WHEN the month ran, and re-pricing it later
+     * from the sheet the month ended on gives a different answer - $7.30 against
+     * $4.87 on a city that had just ordered two depots. Re-derivation is not
+     * restoration when the thing being derived is a flow.
+     */
+    public double[] getInterestCharges() {
+        return (interestCharges == null)
+                ? new double[BuildingType.values().length]
+                : interestCharges.clone();
+    }
+
+    /** Assigns expense figures only. No money moves; see restorePropertyTaxCharges. */
+    public void restoreInterestCharges(double[] charges) {
+
+        if (charges == null || charges.length < BuildingType.values().length) return;
+
+        commercialHandler.setRetailInterestExpense(charges[BuildingType.COMMERCIAL.ordinal()]);
+        commercialHandler.setRealEstateInterestExpense(charges[BuildingType.RESIDENTIAL.ordinal()]);
+        industrialHandler.setInterestExpense(charges[BuildingType.INDUSTRIAL.ordinal()]);
+        heavyIndustryHandler.setInterestExpense(charges[BuildingType.HEAVY_INDUSTRY.ordinal()]);
+
+        if (constructionHandler != null) {
+            constructionHandler.setInterestExpense(charges[BuildingType.CONSTRUCTION.ordinal()]);
+        }
+
+        interestCharges = charges.clone();
     }
 
     /**
@@ -459,6 +509,17 @@ public class EconomyManager {
      * industry was holding at the start of the month, not this month's output.
      */
     public void procedureUpdate(){
+        priceFoodMarket();
+        industrialHandler.produceFood();
+    }
+
+    /**
+     * Clears the food market and tells both sides the price. Produces nothing.
+     *
+     * Split out from procedureUpdate() so the load path can have the prices
+     * without the production - see refreshEconPrices().
+     */
+    private void priceFoodMarket(){
 
         // 1. price the month from production flow, the stockpile and the stores'
         //    intended purchase
@@ -475,8 +536,30 @@ public class EconomyManager {
         commercialHandler.setFoodPrice(foodMarket.getLocalPrice());
         commercialHandler.setImportPrice(foodMarket.getImportPrice());
         commercialHandler.setFoodAvailableForSale((int) offered);
+    }
 
-        industrialHandler.produceFood();
+    /**
+     * What the load path needs from finalEconUpdate(), and nothing else.
+     *
+     * finalEconUpdate() is not a refresh. It runs a month: procedureUpdate()
+     * ends by PRODUCING food, updateFinalIndustrialHandler() then subtracts what
+     * was sold and imported, and updateCommercialHandler() has the shops sell
+     * their stock and buy more. The load path was calling it, so opening a save
+     * ran a month of production and trading with the calendar standing still -
+     * the mills made 2,185 units of food out of nothing every time.
+     *
+     * That was also why a reloaded city slowly drifted away from the one it was
+     * saved from rather than converging back to it: the extra production moved
+     * the food market, so the shops started importing globally at import prices
+     * instead of buying from local industry, and every month after compounded
+     * the difference.
+     *
+     * This does the pricing and the electricity draw the expense lines need, and
+     * changes nothing anyone owns.
+     */
+    public void refreshEconPrices(){
+        priceFoodMarket();
+        setElectricityConsumption();
     }
     public void finalEconUpdate(){
 
@@ -601,6 +684,30 @@ public class EconomyManager {
      * swamped the wage bill and the city's output read as negative while its
      * shops were full. Both are fixed; see NationalAccounts.
      */
+    public double getLastInventoryValue(){ return nationalAccounts.getLastInventoryValue(); }
+
+    public void restoreNationalAccounts(double[] a){
+        if (a == null || a.length < 11) return;
+        nationalAccounts.restore(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10]);
+    }
+
+    /** The month's accounts, flattened for the save. Order matches restore(). */
+    public double[] getNationalAccountsState(){
+        return new double[] {
+            nationalAccounts.getGdp(),
+            nationalAccounts.getLastInventoryValue(),
+            nationalAccounts.getConsumptionGoods(),
+            nationalAccounts.getConsumptionHousing(),
+            nationalAccounts.getInvestmentConstruction(),
+            nationalAccounts.getInvestmentInventories(),
+            nationalAccounts.getGovernment(),
+            nationalAccounts.getImportsFood(),
+            nationalAccounts.getImportsMaterials(),
+            nationalAccounts.getImportsRawMaterial(),
+            nationalAccounts.getExports()
+        };
+    }
+
     public double getMonthGdp(){
         return nationalAccounts.getGdp();
     }
@@ -643,6 +750,21 @@ public class EconomyManager {
     public void setLandPricePerSqFt(double price){ this.landPricePerSqFt = price; }
 
     public double getTotalPropertyTax(){ return totalPropertyTax; }
+
+    /*
+     * Both of these are CHARGED during a month rather than derived from the
+     * city's state, which is why getTaxIncome() and getExpenses() read them back
+     * instead of recomputing them - the sectors have already borne these exact
+     * figures in their income statements, and recomputing risks the city
+     * collecting a different number from the one the businesses paid.
+     *
+     * That makes them state, and state has to survive a save. Without these
+     * setters a freshly loaded city showed its next-month income short by the
+     * whole property-tax line and long by the whole interest bill, then silently
+     * corrected itself the first time a month was simulated.
+     */
+    public void setTotalPropertyTax(double value){ this.totalPropertyTax = value; }
+    public void setInterest(double value){ this.interest = value; }
 
     /* =======================================================================
        PROPERTY TAX
@@ -697,6 +819,84 @@ public class EconomyManager {
 
         heavyIndustryHandler.setPropertyTaxExpense(heavy);
 
+        totalPropertyTax = commercial + residential + industrial + heavy
+                + (constructionHandler != null ? construction : 0);
+
+        propertyTaxCharges = new double[BuildingType.values().length];
+        propertyTaxCharges[BuildingType.COMMERCIAL.ordinal()]     = commercial;
+        propertyTaxCharges[BuildingType.RESIDENTIAL.ordinal()]    = residential;
+        propertyTaxCharges[BuildingType.INDUSTRIAL.ordinal()]     = industrial;
+        propertyTaxCharges[BuildingType.HEAVY_INDUSTRY.ordinal()] = heavy;
+        propertyTaxCharges[BuildingType.CONSTRUCTION.ordinal()]   =
+                (constructionHandler != null) ? construction : 0;
+    }
+
+    /**
+     * What each sector was actually charged this month, by category ordinal.
+     *
+     * Kept because it CANNOT be recomputed later, which is not obvious and cost
+     * a wrong fix before a test caught it: property tax is charged early in the
+     * month, and buildings finish construction after that. By the time a save is
+     * taken, the assessed value has moved on - recomputing from the saved
+     * building stock produced a retail charge of 4.35 against the 2.95 that was
+     * actually billed. The charge is a historical fact about a month, not a
+     * function of the state the month ended in.
+     */
+    /* ------------- the month's trading, for the save -------------
+     *
+     * These are flows, not balances. Nothing can rederive them from the state a
+     * month ended in, which is exactly why they have to be carried.
+     */
+    public double getRetailCostOfGoods()  { return commercialHandler.getStoreInventoryCost(); }
+    public double getRetailFillBasis()    { return commercialHandler.getReportAverageStoreFill(); }
+    public double getRetailImportTax()    { return commercialHandler.getImportTax(); }
+    public int getRetailLocalImports()    { return commercialHandler.getReportLocalImports(); }
+    public int getRetailGlobalImports()   { return commercialHandler.getReportGlobalImports(); }
+    public double getIndustryDemand()     { return industrialHandler.getFoodDemand(); }
+    public int getIndustryUnitsSold()     { return industrialHandler.getProductsSoldCopy(); }
+    public int getIndustryUnitsImported() { return industrialHandler.getProductsImportedCopy(); }
+
+    public void restoreMonthFlows(double retailCostOfGoods, int retailLocal, int retailGlobal,
+                                  double retailFillBasis, double retailImportTax,
+                                  double industryDemand,
+                                  int industrySold, int industryImported) {
+        commercialHandler.setStoreInventoryCost(retailCostOfGoods);
+        commercialHandler.setReportImports(retailLocal, retailGlobal);
+        commercialHandler.restoreMonthReport(retailFillBasis, retailImportTax);
+        industrialHandler.restoreMonthReport(industryDemand, industrySold, industryImported);
+    }
+
+    public double[] getPropertyTaxCharges() {
+        return (propertyTaxCharges == null)
+                ? new double[BuildingType.values().length]
+                : propertyTaxCharges.clone();
+    }
+
+    /**
+     * Puts the month's charges back on load. Assigns expense figures only - no
+     * money moves, because the sectors bore this when their statements ran and
+     * their restored cash balances are already net of it.
+     */
+    public void restorePropertyTaxCharges(double[] charges) {
+
+        if (charges == null || charges.length < BuildingType.values().length) return;
+
+        double commercial   = charges[BuildingType.COMMERCIAL.ordinal()];
+        double residential  = charges[BuildingType.RESIDENTIAL.ordinal()];
+        double industrial   = charges[BuildingType.INDUSTRIAL.ordinal()];
+        double heavy        = charges[BuildingType.HEAVY_INDUSTRY.ordinal()];
+        double construction = charges[BuildingType.CONSTRUCTION.ordinal()];
+
+        commercialHandler.setRetailPropertyTax(commercial);
+        commercialHandler.setRealEstatePropertyTax(residential);
+        industrialHandler.setPropertyTaxExpense(industrial);
+        heavyIndustryHandler.setPropertyTaxExpense(heavy);
+
+        if (constructionHandler != null) {
+            constructionHandler.setPropertyTaxExpense(construction);
+        }
+
+        propertyTaxCharges = charges.clone();
         totalPropertyTax = commercial + residential + industrial + heavy
                 + (constructionHandler != null ? construction : 0);
     }

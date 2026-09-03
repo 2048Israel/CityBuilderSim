@@ -43,7 +43,7 @@ public class Game {
      * and twice more down in the load methods, which is four places to get it
      * wrong and no way to notice when one of them drifts.
      */
-    private final GameFiles gameFiles = new GameFiles();
+    private final GameFiles gameFiles;
     private HistoryGrapher historyGrapher;
     private MenuManager menuManager;
     private DebtManager debtManager;
@@ -73,6 +73,19 @@ public class Game {
     boolean initialized = false;
     
     public Game() {
+        this(new GameFiles());
+    }
+
+    /**
+     * Lets a test point the game at a temporary folder.
+     *
+     * Not a nicety: without it, any check that exercises save and load would
+     * write over the player's real city, which means the save path - the one
+     * place where a bug is unrecoverable - would be the one place nothing dared
+     * test end to end.
+     */
+    public Game(GameFiles gameFiles) {
+        this.gameFiles = gameFiles;
         buildingManager = new BuildingManager();
         economyManager = new EconomyManager(buildingManager);
         populationManager = new PopulationManager();
@@ -113,7 +126,13 @@ public class Game {
         //initialize
         if(!initialized){
         buildingManager.initializeTemplates();
-        dataSave.setBuildingNum(buildingManager.getTemplateCount());
+
+        // Sized by the highest id, not by how many templates there are. The two
+        // are equal today only because buildings.json happens to number 0..12
+        // with none missing; delete one building from that file and the count
+        // drops while the ids do not, and setBuildingQuantity() starts throwing
+        // on the highest id mid-save.
+        dataSave.setBuildingNum(buildingManager.getMaxTemplateId() + 1);
         populationManager.setWagesPerType();
         buildingManager.setConstructionMaterials(80);
 
@@ -157,7 +176,7 @@ public class Game {
         // the JavaFX Application Thread forever the moment this button was clicked.
         initialize();
     }
-    public void loadGameSave(){
+    public void loadGameSave(int slot){
         // NOTE: my earlier fix to resumeGame() (above) added initialize() so
         // buildingManager's templates exist before use, but I missed doing the
         // same here. If "Load Game" is the very first thing clicked in a session
@@ -166,8 +185,19 @@ public class Game {
         // empty list. initialize() is idempotent (guarded by `initialized`), so
         // this is safe even if a game was already started.
         initialize();
-        loadGame();
-        simulationEngine.simulateMonth(this);
+
+        /*
+         * loadGame() is the whole load, rebuild included. There used to be a
+         * second pass here - originally simulateMonth(), which also advanced
+         * construction and so handed every building site a month of free work
+         * every time a save was opened; then a construction-free version of the
+         * same thing, which still re-derived everything loadGame() had just
+         * finished restoring and quietly overwrote the month's flows with
+         * figures recomputed from the closing balances.
+         *
+         * Two rebuild passes were always one too many. There is one now.
+         */
+        loadGame(slot);
         // NOTE: previously also called handleStartGame() here, which caused
         // the same infinite-loop freeze described above.
     }
@@ -180,16 +210,30 @@ public class Game {
      * their own copies, so a save that lies is worse than one that plainly
      * fails.
      */
-    public GameFiles.Result saveGame(){
-        save();
+    public GameFiles.Result saveGame(int slot, String slotName){
+        save(slot, slotName);
         GameFiles.Result result = getLastSaveResult();
-        System.out.println(result.message());
+        System.out.println(GameFiles.slotLabel(slot) + ": " + result.message());
         return result;
+    }
+
+    /** Saves to a slot, keeping whatever name that slot already carried. */
+    public GameFiles.Result saveGame(int slot){
+        SaveHeader existing = gameFiles.readHeader(slot);
+        return saveGame(slot, (existing == null) ? null : existing.getSlotName());
     }
     
     public void toggleQuit(){
+        // Before the window goes, not after. This is the accident that actually
+        // costs people cities.
+        autosave("on quit");
         System.exit(0);
     }
+
+    /** Why the last load did not happen, or null. Read by the UI. */
+    private String loadFailure;
+
+    public String getLoadFailure() { return loadFailure; }
     
     public void toggleGraphs(){
         // NOTE: previously called handleGraphSettings(), a terminal menu loop
@@ -646,6 +690,19 @@ public class Game {
      * reports and ASCII graphs is slow and unreadable.
      */
     public int simulateMonths(int months) {
+
+        /*
+         * A skip is one click that can undo a hundred months of decisions, and
+         * unlike a crash it is a mistake the player makes deliberately and then
+         * regrets. The autosave written here is the point they come back to.
+         *
+         * Only for real skips: autosaving before every single month would write
+         * the file twelve times as often as asked and make the interval
+         * meaningless.
+         */
+        if (months > 1) {
+            autosave("before skipping " + months + " months");
+        }
 
         boolean previousGraphs = graphs;
         boolean previousReports = reports;
@@ -1390,6 +1447,11 @@ public class Game {
             System.out.println("Emergency Funding: Issued $" + faceValue + " T-Bill to cover deficit.");
         }
         month++;
+        monthsSinceAutosave++;
+
+        if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {
+            autosave("month " + month);
+        }
         startOfMonthUpdate();
         simulationEngine.simulateMonth(this);
         finalUpdateEconomy();
@@ -1593,11 +1655,22 @@ public class Game {
         // Removed; SimulationEngine.simulateMonth() is now the single source of
         // truth for advancing construction each month.
     }
-    void updatePopulation() {
-        //TBE
+    /**
+     * Recounts the jobs the city's buildings offer. Does not touch population.
+     *
+     * Split out because the load path needs the jobs refreshed but must NOT
+     * recompute how many people live here - that is saved state, and
+     * recomputing it discarded the saved figure. See updatePopulation().
+     */
+    void refreshJobs() {
         for (JobType job : JobType.values()) {
             jobs[job.ordinal()] = buildingManager.getTotalJobs(job);
         }
+    }
+
+    void updatePopulation() {
+        //TBE
+        refreshJobs();
         population = populationManager.updatePop(getHouseholdCapacity());
         
     }
@@ -1714,7 +1787,46 @@ public class Game {
             populationManager.getPopulation() // int, no rounding
     );
 }
-    public void save(){
+    /* ============================ the save system ============================
+     *
+     * Ten numbered slots plus an autosave. The slot is chosen by the caller;
+     * nothing in here assumes there is only one city.
+     * ======================================================================== */
+
+    /** How many months between autosaves. */
+    public static final int AUTOSAVE_MONTHS = 12;
+
+    private int monthsSinceAutosave;
+
+    public int getMonthsUntilAutosave() {
+        return Math.max(0, AUTOSAVE_MONTHS - monthsSinceAutosave);
+    }
+
+    /**
+     * Writes the autosave slot, if there is a city to write.
+     *
+     * Called on three occasions, and each covers a different way of losing a
+     * city: every twelve months for the ordinary case, before a multi-month skip
+     * because that is a single click that can undo a hundred months of decisions,
+     * and on quit because the window closing is the most common accident of all.
+     *
+     * Failures are reported and swallowed. An autosave that cannot write must
+     * not stop a month advancing or a player quitting - it is a safety net, and
+     * a safety net that throws is worse than none.
+     */
+    public void autosave(String reason) {
+
+        if (!initialized) return;
+
+        GameFiles.Result result = saveGame(GameFiles.AUTOSAVE_SLOT, "Autosave - " + reason);
+        monthsSinceAutosave = 0;
+
+        if (!result.ok) {
+            System.out.println("Autosave failed: " + result.error);
+        }
+    }
+
+    public void save(int slot, String slotName){
         
         sendBuildingSave();
         // NOTE: cash wasn't explicitly set here - it only ended up correct because
@@ -1727,8 +1839,38 @@ public class Game {
         dataSave.setMonth(month);
         dataSave.setDebt(debtManager.getDebt());
         dataSave.setBusinessDebt(economyManager.getBusinessDebtManager().getLoans());
-        dataSave.setProgress(buildingManager.getConstructionProgress());
-        dataSave.setUnderConstruction(buildingManager.getUnderConstructionArray());
+        // Keyed by template id, not by stack position - see the note on
+        // BuildingManager.getConstructionProgressById(). The old positional
+        // arrays are no longer written; loadGame() still reads them so saves
+        // made before this change are no worse off than they were.
+        dataSave.setConstructionById(
+                buildingManager.getUnderConstructionById(),
+                buildingManager.getConstructionProgressById());
+
+        // Charged during the month rather than derived from state, so nothing
+        // can recompute it on load. Without this the freshly loaded city showed
+        // a next-month income missing its whole property-tax line.
+        dataSave.setPropertyTaxCharged(economyManager.getTotalPropertyTax());
+        dataSave.setPropertyTaxCharges(economyManager.getPropertyTaxCharges());
+        dataSave.setInterestCharges(economyManager.getInterestCharges());
+
+        // The month's flows. Balances alone cannot reconstruct a month's
+        // income statement - see DataSave for which ones and why.
+        dataSave.setMonthFlows(
+                economyManager.getRetailCostOfGoods(),
+                economyManager.getRetailLocalImports(),
+                economyManager.getRetailGlobalImports(),
+                economyManager.getRetailFillBasis(),
+                economyManager.getRetailImportTax(),
+                economyManager.getIndustryDemand(),
+                economyManager.getIndustryUnitsSold(),
+                economyManager.getIndustryUnitsImported());
+
+        dataSave.setNationalAccounts(economyManager.getNationalAccountsState());
+
+        ConstructionHandler builders = servicesManager.getConstructionHandler();
+        dataSave.setConstructionBooks(builders.getCash(),
+                builders.getUnearnedRevenue(), builders.getBacklogPoints());
         dataSave.setConstructionMaterials(buildingManager.getConstructionMaterials());
         dataSave.setStoreInventory(economyManager.getStoreInventory());
         dataSave.setIndustryFoodInventory(economyManager.getIndustryFoodInventory());
@@ -1748,13 +1890,17 @@ public class Game {
         dataSave.setPropertyTaxRate(economyManager.getTaxPolicy().getPropertyTaxRate());
         dataSave.setReports(reports);
         dataSave.setGraphs(graphs);
-        lastSaveResult = dataSave.saveGame(gameFiles);
+        dataSave.setSlotName(slotName);
+        dataSave.stamp(GameVersion.VERSION, GameVersion.SAVE_FORMAT,
+                System.currentTimeMillis());
+
+        lastSaveResult = dataSave.saveGame(gameFiles, slot);
 
         // The history is written even when the save failed, on purpose: the two
         // files are independent, and one of them landing is strictly better
         // than neither. The reported outcome is the save's, because that is the
         // file the player would actually mourn.
-        GameFiles.Result history = historySave.saveHistory(gameFiles);
+        GameFiles.Result history = historySave.saveHistory(gameFiles, slot);
         if (!history.ok) {
             System.out.println(history.message());
         }
@@ -1966,7 +2112,10 @@ public class Game {
     economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
     economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
 
-    economyManager.finalEconUpdate();
+    // refreshEconPrices(), NOT finalEconUpdate() - the latter PRODUCES food,
+    // moves inventory and has the shops trade. Calling it here ran a month of
+    // the economy with the calendar standing still. See its note in EconomyManager.
+    economyManager.refreshEconPrices();
 
     // Price business credit off the restored balance sheets so a freshly loaded
     // save shows real rates and interest rather than zeroes.
@@ -1991,6 +2140,15 @@ public class Game {
     // refresh above to see this month's figure rather than a stale one.
     debtManager.setGDP(economyManager.getMonthGdp());
     debtManager.updateInterest();
+
+    // Was only done by the second rebuild pass in loadGameSave(). It has to
+    // happen somewhere, and this is the one rebuild there is now.
+    ConstructionHandler construction = servicesManager.getConstructionHandler();
+    servicesManager.updateFromGame(construction::setMaterialsInventory,
+            buildingManager.getConstructionMaterials());
+    servicesManager.updateFromGame(construction::setMaterialsPrice,
+            buildingManager.getConstructionMaterialPrice());
+    servicesManager.updateFromGameInt(construction::setMaterialsConsumed, materialsConsumed);
 }
    
    
@@ -2034,13 +2192,24 @@ public class Game {
     
     
     // Load game
-    public void loadGame() {
+    public void loadGame(int slot) {
+
+        /*
+         * Applied after rebuildSimulationState() rather than inside the try,
+         * because that rebuild runs finalEconUpdate() and the month's charged
+         * figures are exactly the kind of thing it resets. Restoring it here
+         * and then rebuilding would put the bug straight back.
+         */
+        double restoredPropertyTax = 0;
+        double[] restoredPropertyTaxCharges = null;
+        DataSave restoredFlows = null;
+        double[] restoredInterestCharges = null;
 
         try {
-            Path path = gameFiles.saveFile();
+            Path path = gameFiles.saveFile(slot);
 
             if (!Files.exists(path)) {
-                System.out.println("No save found in " + gameFiles.getDirectory());
+                System.out.println(GameFiles.slotLabel(slot) + " is empty.");
                 return;
             }
 
@@ -2049,6 +2218,23 @@ public class Game {
 
             // Deserialize normally
             DataSave loaded = gson.fromJson(json, DataSave.class);
+
+            /*
+             * Stop here rather than half-reading it. An older build silently
+             * ignores fields it does not recognise, so a save from a newer one
+             * loads looking fine and is missing whatever that build added -
+             * and the player finds out later, having played on top of it.
+             */
+            if (GameVersion.isFromNewerBuild(loaded.getSaveFormat())) {
+                System.out.println(GameFiles.slotLabel(slot)
+                        + " was written by a newer version of the game ("
+                        + loaded.getGameVersion() + ", save format "
+                        + loaded.getSaveFormat() + "; this build reads up to "
+                        + GameVersion.SAVE_FORMAT + "). Not loaded.");
+                loadFailure = "This save is from a newer version of the game.";
+                return;
+            }
+            loadFailure = null;
 
             /* Reset current state
             buildingManager.clearStacks();
@@ -2061,6 +2247,7 @@ public class Game {
             economyManager.setStoreInventory(loaded.getStoreInventory());
             economyManager.setIndustryFoodInventory(loaded.getIndustryFoodInventory());
             populationManager.setPopulation(loaded.getPopulation());
+            this.population = loaded.getPopulation();
             economyManager.setCommercialCash(loaded.getCommercialCash());
             economyManager.setRealEstateCash(loaded.getRealEstateCash());
             economyManager.setIndustrialCash(loaded.getIndustrialCash());
@@ -2070,17 +2257,50 @@ public class Game {
             this.reports = loaded.getReports();
             this.graphs = loaded.getGraphs();
 
-            // Load buildings
-            for (int i = 0; i < loaded.getBuildingsLength(); i++) {
+            /*
+             * Buildings, and the work still on their sites.
+             *
+             * A stack is now created when a template has EITHER completed
+             * buildings or work in progress. It used to be completed-only,
+             * which is half of why in-progress construction never came back:
+             * a player whose first two depots were still being built had no
+             * stack to restore them onto, so they simply ceased to exist.
+             *
+             * Both loops are indexed by template id - getTemplate() and
+             * getQuantity() both look up by id, and buildings[] is written by
+             * id, so this is one key throughout.
+             */
+            int highestId = Math.max(loaded.getBuildingsLength(),
+                    loaded.getConstructionByIdLength());
 
-                int quantity = loaded.getBuildingQuantity(i);
+            for (int id = 0; id < highestId; id++) {
 
-                if (quantity > 0) {
-                    BuildingsTemplate template = buildingManager.getTemplate(i);
-                    buildingManager.addStack(template, quantity, true);
+                int quantity = (id < loaded.getBuildingsLength())
+                        ? loaded.getBuildingQuantity(id) : 0;
+                int building = loaded.hasConstructionById()
+                        ? loaded.getUnderConstructionById(id) : 0;
+
+                if (quantity <= 0 && building <= 0) continue;
+
+                BuildingsTemplate template = buildingManager.getTemplate(id);
+                if (template == null) {
+                    // The save names a building this catalogue no longer has -
+                    // buildings.json was edited between saving and loading.
+                    // Skipping it loses those buildings, which is bad, but
+                    // guessing which template was meant would be worse.
+                    System.out.println("Save contains building id " + id
+                            + ", which is not in buildings.json - skipped.");
+                    continue;
+                }
+
+                buildingManager.addStack(template, quantity, true);
+
+                if (building > 0 || loaded.getConstructionProgressById(id) > 0) {
+                    buildingManager.restoreConstruction(id, building,
+                            loaded.getConstructionProgressById(id));
                 }
             }
-            
+
             //Load construction progress
             double[] progress = new double[loaded.getProgressLength()];
             for (int i = 0; i < loaded.getProgressLength(); i++) {
@@ -2119,14 +2339,16 @@ public class Game {
             boolean stacksLineUp = progress.length == buildingManager.getStackCount()
                     && quantity.length == buildingManager.getStackCount();
 
-            if (stacksLineUp) {
+            if (loaded.hasConstructionById()) {
+                // Already restored above, by id. Nothing to do here.
+            } else if (stacksLineUp) {
                 buildingManager.setConstructionProgress(progress);
                 buildingManager.setUnderConstructionArray(quantity);
-            } else {
+            } else if (progress.length > 0) {
                 System.out.println("Save has " + progress.length
                         + " construction records against " + buildingManager.getStackCount()
                         + " stacks - in-progress construction not restored."
-                        + " (Known save-format bug; the rest of the save loaded.)");
+                        + " (Save written in the old positional format.)");
             }
 
             /*
@@ -2163,6 +2385,11 @@ public class Game {
             if (loaded.getPropertyTaxRate() > 0) {
                 policy.setPropertyTaxRate(loaded.getPropertyTaxRate());
             }
+
+            restoredPropertyTax = loaded.getPropertyTaxCharged();
+            restoredPropertyTaxCharges = loaded.getPropertyTaxCharges();
+            restoredFlows = loaded.hasMonthFlows() ? loaded : null;
+            restoredInterestCharges = loaded.getInterestCharges();
             
 
             // Load debts manually
@@ -2219,25 +2446,98 @@ public class Game {
 
             economyManager.getBusinessDebtManager().setLoans(loadedLoans);
 
-            loadHistory();
+            loadHistory(slot);
 
             System.out.println("Game loaded successfully.");
 
         } catch (IOException e) {
             System.out.println("Failed to load save file.");
         }
-        
+
+        /*
+         * Re-charge property tax before the rebuild, not after.
+         *
+         * Saving the aggregate figure was only half of it. chargePropertyTax()
+         * is also the only thing that tells each sector what IT owes -
+         * retailPropertyTax, realEstatePropertyTax, industrial and heavy and
+         * construction - and none of those were restored either. So a loaded
+         * city had every sector's income statement missing its property-tax
+         * expense line, which made retail and real estate look more profitable
+         * than they were and pushed the business tax up with them.
+         *
+         * Recomputed rather than saved per sector, because it is a pure
+         * function of restored state: the building stock, the land price and
+         * the tax rate all came back from the save, so this produces the same
+         * figures that were charged. That also means saves written before any
+         * of this existed are repaired on load rather than left at zero.
+         *
+         * No money moves here. chargePropertyTax() only assigns expense
+         * figures; the cash was borne when the sectors' statements ran, and
+         * those balances came back from the save already net of it.
+         *
+         * Before the rebuild because the rebuild recomputes every sector
+         * report, and those reports have to see the expense.
+         */
+        economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
+
+        if (restoredPropertyTaxCharges != null) {
+            economyManager.restorePropertyTaxCharges(restoredPropertyTaxCharges);
+        } else {
+            /*
+             * A save from before the charges were recorded. Recomputing is a
+             * month stale - property tax is charged early in the month and
+             * buildings finish after it, so the assessed value has moved on -
+             * but a stale figure beats every sector reporting no property-tax
+             * expense at all, which is what these saves did before.
+             */
+            economyManager.chargePropertyTax();
+            if (restoredPropertyTax > 0) {
+                economyManager.setTotalPropertyTax(restoredPropertyTax);
+            }
+        }
+
         rebuildSimulationState();
+
+        /*
+         * After the rebuild, because the rebuild recomputes every sector report
+         * from current state - which is precisely the thing that cannot see last
+         * month's trading. Restoring first would just be overwritten.
+         */
+        // Same reason as the flows below: rebuildSimulationState() re-prices
+        // business credit off the restored balance sheets, so this has to land
+        // after it or it is simply overwritten.
+        if (restoredInterestCharges != null) {
+            economyManager.restoreInterestCharges(restoredInterestCharges);
+        }
+
+        if (restoredFlows != null) {
+            economyManager.restoreMonthFlows(
+                    restoredFlows.getRetailCostOfGoods(),
+                    restoredFlows.getRetailLocalImports(),
+                    restoredFlows.getRetailGlobalImports(),
+                    restoredFlows.getRetailFillBasis(),
+                    restoredFlows.getRetailImportTax(),
+                    restoredFlows.getIndustryDemand(),
+                    restoredFlows.getIndustryUnitsSold(),
+                    restoredFlows.getIndustryUnitsImported());
+
+            economyManager.restoreNationalAccounts(restoredFlows.getNationalAccounts());
+
+            servicesManager.getConstructionHandler().restoreOrderBook(
+                    restoredFlows.getConstructionCash(),
+                    restoredFlows.getConstructionUnearnedRevenue(),
+                    restoredFlows.getConstructionBacklogPoints());
+        }
     }
 
 
-    public void loadHistory() {
+    public void loadHistory(int slot) {
 
         try {
-            Path path = gameFiles.historyFile();
+            Path path = gameFiles.historyFile(slot);
 
             if (!Files.exists(path)) {
-                System.out.println("No history found in " + gameFiles.getDirectory());
+                System.out.println("No history for " + GameFiles.slotLabel(slot) + ".");
                 return;
             }
 

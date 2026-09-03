@@ -69,7 +69,9 @@ public class UserInterface extends Application {
 
 
         
-        stage.setTitle("City Simulator");
+        // The window title is the cheapest possible bug report: whatever a
+        // player screenshots now says which build produced it.
+        stage.setTitle(GameVersion.title());
         stage.setMaximized(true);
         
         stage.setScene(scene);
@@ -115,10 +117,7 @@ public class UserInterface extends Application {
             game.resumeGame();
             showStartMenu();
         });
-        loadGameSave.setOnAction(e -> {
-            game.loadGameSave();
-            showStartMenu();
-        });
+        loadGameSave.setOnAction(e -> showLoadMenu());
         saveGame.setOnAction(e -> showSavingMenu());
         quit.setOnAction(e -> game.toggleQuit());
 
@@ -127,45 +126,200 @@ public class UserInterface extends Application {
 
         
 
+        // Small, grey, always there. The window title carries it too, but a
+        // screenshot of the menu is what people actually send you.
+        Label version = new Label(GameVersion.title());
+        version.setStyle("-fx-font-size: 9px; -fx-text-fill: #9e9e9e; -fx-padding: 12 0 0 0;");
+
         rootMenu.getChildren().addAll(
                 startNewGame,
                 resumeGame,
                 loadGameSave,
                 saveGame,
                 settings,
-                quit
+                quit,
+                version
         );
 
         
     }
     
-    /**
-     * The save screen.
-     *
-     * Confirm used to call game.saveGame() and leave the player looking at the
-     * same two buttons, with the only evidence of what happened printed to a
-     * console that does not exist in a packaged build. Now it says where the
-     * file is going beforehand and what became of it afterwards - including
-     * when it failed, which was previously indistinguishable from success.
-     */
+    /* =========================================================================
+       THE SAVE SYSTEM
+
+       Ten numbered slots and an autosave. Every slot is labelled from the city
+       inside it - month, people, money, when it was written - because that is
+       what a player actually recognises a save by. A name is optional on top,
+       for the ones worth remembering ("before the steel mill").
+
+       The autosave appears on the load list and not the save list. That is the
+       point of it: it cannot be spent on the city you were about to abandon.
+       ========================================================================= */
+
+    private static final java.time.format.DateTimeFormatter SAVED_AT =
+            java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm");
+
+    /** One line describing what is in a slot, or that it is empty. */
+    private String slotSummary(int slot) {
+
+        SaveHeader header = game.getGameFiles().readHeader(slot);
+        if (header == null) return "Empty";
+
+        if (header.isFromNewerBuild()) {
+            return "From a newer version (" + header.getGameVersion() + ")";
+        }
+
+        String when = java.time.Instant.ofEpochMilli(header.getSavedAt())
+                .atZone(java.time.ZoneId.systemDefault())
+                .format(SAVED_AT);
+
+        return String.format("Month %d  -  %s people  -  %s  -  %s",
+                header.getMonth(),
+                formatter.format(header.getPopulation()),
+                money(header.getCash()),
+                when);
+    }
+
+    private String slotTitle(int slot) {
+        SaveHeader header = game.getGameFiles().readHeader(slot);
+        String base = GameFiles.slotLabel(slot);
+        return (header != null && header.hasName())
+                ? base + " - " + header.getSlotName()
+                : base;
+    }
+
+    /** A slot row: the label on the button, the city underneath it. */
+    private VBox slotRow(int slot, java.util.function.IntConsumer onPick, boolean disableEmpty) {
+
+        VBox row = new VBox(1);
+        row.setAlignment(Pos.CENTER);
+
+        boolean empty = game.getGameFiles().slotIsEmpty(slot);
+
+        Button pick = new Button(slotTitle(slot));
+        pick.setMaxWidth(300);
+        pick.setDisable(disableEmpty && empty);
+        pick.setOnAction(e -> onPick.accept(slot));
+
+        Label detail = new Label(slotSummary(slot));
+        detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
+                + (empty ? "#9e9e9e" : "#555555") + ";");
+
+        row.getChildren().addAll(pick, detail);
+        return row;
+    }
+
     private void showSavingMenu() {
         clearMenu();
 
         Label heading = new Label("SAVE GAME");
         heading.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
-        Label where = new Label(game.getGameFiles().getDirectory().toString());
-        where.setStyle("-fx-font-size: 10px; -fx-text-fill: #555555;");
-        where.setWrapText(true);
-        where.setMaxWidth(320);
+        Label hint = new Label("Choose a slot. The autosave is not in this list "
+                + "on purpose - it is written for you.");
+        hint.setStyle("-fx-font-size: 10px; -fx-text-fill: #555555;");
+        hint.setWrapText(true);
+        hint.setMaxWidth(320);
 
-        Button confirm = new Button("Confirm");
+        rootMenu.getChildren().addAll(heading, hint);
+
+        for (int slot = 1; slot <= GameFiles.SLOT_COUNT; slot++) {
+            rootMenu.getChildren().add(slotRow(slot, this::showSaveSlotConfirm, false));
+        }
+
         Button cancel = new Button("Cancel");
-
-        confirm.setOnAction(e -> showSaveResult(game.saveGame()));
         cancel.setOnAction(e -> showMainMenu());
+        rootMenu.getChildren().add(cancel);
+    }
 
-        rootMenu.getChildren().addAll(heading, where, confirm, cancel);
+    /**
+     * Confirms one slot, and takes the optional name.
+     *
+     * The name field is prefilled with whatever the slot already carried, so
+     * overwriting a save keeps its name unless the player chooses otherwise.
+     */
+    private void showSaveSlotConfirm(int slot) {
+        clearMenu();
+
+        boolean occupied = !game.getGameFiles().slotIsEmpty(slot);
+        SaveHeader header = game.getGameFiles().readHeader(slot);
+
+        Label heading = new Label("SAVE TO " + GameFiles.slotLabel(slot).toUpperCase());
+        heading.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+
+        Label current = new Label(slotSummary(slot));
+        current.setStyle("-fx-font-size: 10px; -fx-text-fill: #555555;");
+
+        TextField name = new TextField(
+                (header != null && header.hasName()) ? header.getSlotName() : "");
+        name.setPromptText("Name this save (optional)");
+        name.setMaxWidth(300);
+
+        rootMenu.getChildren().addAll(heading, current, name);
+
+        if (occupied) {
+            Label warn = new Label("This slot already has a city in it. Saving replaces it.");
+            warn.setStyle("-fx-font-size: 10px; -fx-text-fill: #ef6c00;");
+            warn.setWrapText(true);
+            warn.setMaxWidth(320);
+            rootMenu.getChildren().add(warn);
+        }
+
+        Button confirm = new Button(occupied ? "Overwrite" : "Save");
+        Button cancel = new Button("Back");
+
+        confirm.setOnAction(e -> {
+            String typed = name.getText();
+            showSaveResult(game.saveGame(slot,
+                    (typed == null || typed.isBlank()) ? null : typed.trim()));
+        });
+        cancel.setOnAction(e -> showSavingMenu());
+
+        rootMenu.getChildren().addAll(confirm, cancel);
+    }
+
+    private void showLoadMenu() {
+        clearMenu();
+
+        Label heading = new Label("LOAD GAME");
+        heading.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+        rootMenu.getChildren().add(heading);
+
+        // Autosave first: it is the most recent thing the game wrote, so it is
+        // what someone recovering from a crash is looking for.
+        rootMenu.getChildren().add(
+                slotRow(GameFiles.AUTOSAVE_SLOT, this::loadSlot, true));
+
+        for (int slot = 1; slot <= GameFiles.SLOT_COUNT; slot++) {
+            rootMenu.getChildren().add(slotRow(slot, this::loadSlot, true));
+        }
+
+        Button cancel = new Button("Cancel");
+        cancel.setOnAction(e -> showMainMenu());
+        rootMenu.getChildren().add(cancel);
+    }
+
+    private void loadSlot(int slot) {
+
+        game.loadGameSave(slot);
+
+        String failure = game.getLoadFailure();
+        if (failure != null) {
+            clearMenu();
+            Label outcome = new Label("Could not load.");
+            outcome.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;"
+                    + " -fx-text-fill: #c62828;");
+            Label why = new Label(failure);
+            why.setStyle("-fx-font-size: 10px; -fx-text-fill: #c62828;");
+            why.setWrapText(true);
+            why.setMaxWidth(320);
+            Button back = new Button("Back");
+            back.setOnAction(e -> showLoadMenu());
+            rootMenu.getChildren().addAll(outcome, why, back);
+            return;
+        }
+
+        showStartMenu();
     }
 
     private void showSaveResult(GameFiles.Result result) {

@@ -55,9 +55,9 @@ public class HistorySave {
      * file is every month the city has ever lived, so losing it to a half-write
      * costs more than the save does.
      */
-    public GameFiles.Result saveHistory(GameFiles files) {
+    public GameFiles.Result saveHistory(GameFiles files, int slot) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return files.write(files.historyFile(), gson.toJson(this));
+        return files.write(files.historyFile(slot), gson.toJson(this));
     }
     
     //getters

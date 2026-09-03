@@ -160,6 +160,26 @@ public class ConstructionHandler {
         return expenses;
     }
     public double getCash()             { return cash; }
+    /**
+     * The order book, put back on load.
+     *
+     * backlogPoints and unearnedRevenue ARE the sector's work in hand: revenue
+     * is recognised as a share of the backlog delivered, so a loaded city whose
+     * backlog reads zero has recogniseWork() return immediately and books no
+     * construction output at all - for as many months as the real backlog would
+     * have lasted. That is a hole straight through the investment line of GDP,
+     * and it closed itself once the queue would have emptied, which is exactly
+     * the kind of self-healing bug nobody reports.
+     *
+     * Cash comes with them because a business that forgets its bank balance on
+     * load is a business whose solvency test is meaningless.
+     */
+    public void restoreOrderBook(double cash, double unearnedRevenue, double backlogPoints) {
+        this.cash = cash;
+        this.unearnedRevenue = unearnedRevenue;
+        this.backlogPoints = backlogPoints;
+    }
+
     public double getUnearnedRevenue()  { return unearnedRevenue; }
     public double getBacklogPoints()    { return backlogPoints; }
     public double getUtilisation()      { return utilisation; }
