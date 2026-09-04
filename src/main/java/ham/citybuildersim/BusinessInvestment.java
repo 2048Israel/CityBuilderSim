@@ -315,6 +315,53 @@ public class BusinessInvestment {
         }
     }
 
+    /* =====================================================================
+       THE TWO HISTORIES, CARRIED
+
+       Both of these are things that HAPPENED, not things that are - and neither
+       can be read off the balances a month ended in. That is the standing rule
+       in this codebase and these two were simply missed.
+
+       lossMonths is the sharper of the pair. planRetirement() will not scrap
+       capacity until a sector has lost money six months running, so a save that
+       forgot the streak meant reloading RESET THE CLOCK - and a player who
+       reloads every few months would never have a single building retired. A
+       save-scumming exploit hiding inside a forgotten field.
+
+       populationHistory is milder: a city growing forty a month came back
+       forecasting flat, so retail and food under-ordered until the twelve-month
+       window refilled.
+
+       Saved as a map and a list rather than flattened into arrays, because Gson
+       carries both natively and the map's keys are sector NAMES - flattening
+       would pin them to an ordinal and quietly re-key every streak the day
+       somebody reorders PolicySector.
+       ===================================================================== */
+
+    public java.util.Map<String, Integer> getLossMonthsState() {
+        return new java.util.HashMap<>(lossMonths);
+    }
+
+    public void restoreLossMonths(java.util.Map<String, Integer> saved) {
+        lossMonths.clear();
+        if (saved != null) lossMonths.putAll(saved);
+    }
+
+    public java.util.List<Integer> getPopulationHistory() {
+        return new ArrayList<>(populationHistory);
+    }
+
+    public void restorePopulationHistory(java.util.List<Integer> saved) {
+        populationHistory.clear();
+        if (saved == null) return;
+        for (Integer p : saved) {
+            if (p != null) populationHistory.add(p);
+        }
+        while (populationHistory.size() > TREND_WINDOW) {
+            populationHistory.remove(0);
+        }
+    }
+
     public int getLossMonths(String sector) {
         return lossMonths.getOrDefault(sector, 0);
     }

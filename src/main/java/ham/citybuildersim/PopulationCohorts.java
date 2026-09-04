@@ -289,10 +289,11 @@ public class PopulationCohorts {
     /* ----------------------------- saving ----------------------------- */
 
     public double[] toSaveArray() {
-        double[] out = new double[band.length + 2];
+        double[] out = new double[band.length + 3];
         System.arraycopy(band, 0, out, 0, band.length);
         out[band.length]     = lastBirths;
         out[band.length + 1] = lastDeaths;
+        out[band.length + 2] = lastMigration;
         return out;
     }
 
@@ -304,12 +305,29 @@ public class PopulationCohorts {
      * offsets is worse than no pyramid, because it looks like data.
      */
     public void restore(double[] saved) {
-        if (saved == null || saved.length != band.length + 2) {
-            return;
+        if (saved == null) return;
+
+        /*
+         * TWO LENGTHS ACCEPTED, and only these two.
+         *
+         * lastMigration was appended after the fact - the array carried births
+         * and deaths but not the third flow beside them, so a reloaded People
+         * screen showed the saved month's births and deaths next to a migration
+         * of zero.
+         *
+         * Refusing an older save outright, which the strict length check would
+         * have done, is far worse here than the missing figure: this array IS
+         * the population since the switch, so a refusal would hand back a city
+         * with nobody in it. Downward compatibility is not a nicety in this one.
+         */
+        boolean withMigration = saved.length == band.length + 3;
+        if (!withMigration && saved.length != band.length + 2) {
+            return;   // any other shape is refused whole, per the standing rule
         }
         System.arraycopy(saved, 0, band, 0, band.length);
         lastBirths = saved[band.length];
         lastDeaths = saved[band.length + 1];
+        lastMigration = withMigration ? saved[band.length + 2] : 0;
     }
 
     public void reset() {

@@ -92,6 +92,35 @@ public class HouseholdAccounts {
                        double contributions, double pensions,
                        int population, int workforce, int jobsFilled) {
 
+        assign(wages, wageTax, rent, shopping, contributions, pensions,
+                population, workforce, jobsFilled);
+        cumulativeSaving += getNetSaving();
+    }
+
+    /**
+     * The same figures, WITHOUT adding a month to the running total.
+     *
+     * For the load path. rebuildSimulationState() has to repopulate this
+     * statement or every row on the People screen reads $0 after a reload - but
+     * cumulativeSaving is history, it was restored from the save, and calling
+     * update() would book the same month onto it a second time.
+     *
+     * Splitting the two is the honest fix. A month's statement is derived state
+     * and can be rebuilt; a running total is a fact about every month that came
+     * before and cannot.
+     */
+    public void refresh(double wages, double wageTax, double rent, double shopping,
+                        double contributions, double pensions,
+                        int population, int workforce, int jobsFilled) {
+
+        assign(wages, wageTax, rent, shopping, contributions, pensions,
+                population, workforce, jobsFilled);
+    }
+
+    private void assign(double wages, double wageTax, double rent, double shopping,
+                        double contributions, double pensions,
+                        int population, int workforce, int jobsFilled) {
+
         this.wages = wages;
         this.wageTax = wageTax;
         this.rent = rent;
@@ -102,8 +131,6 @@ public class HouseholdAccounts {
         this.population = population;
         this.workforce = workforce;
         this.jobsFilled = jobsFilled;
-
-        cumulativeSaving += getNetSaving();
     }
 
     /* ----------------------------- the statement ----------------------------- */

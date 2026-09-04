@@ -77,8 +77,22 @@ public final class GameVersion {
      *     clean slate - meaning it cannot shed anybody for a year even if a tier
      *     was already dying when it was saved. That is a real difference and
      *     this number is what records it, rather than it being discovered.
+     * 12 - the history a reload could not rebuild, found in a deliberate audit:
+     *     each sector's consecutive-loss streak (retirement needs six in a row,
+     *     so forgetting it across a load reset the clock and made scrapping
+     *     capacity save-scummable), the twelve-month population trend the
+     *     private planners forecast from, and the three accumulators that fill
+     *     up during the PLAYER'S TURN - capital spending, material imports and
+     *     materials consumed - which next month's national accounts read. Also
+     *     appends lastMigration to the pyramid array.
+     *
+     *     Downward is fine and matters more than usual here. A format-11 save
+     *     restores with empty streaks and an empty trend, which is what those
+     *     saves already behaved as; and PopulationCohorts.restore() accepts BOTH
+     *     the old and new array lengths rather than refusing, because that array
+     *     is the population now and refusing it would hand back an empty city.
      */
-    public static final int SAVE_FORMAT = 11;
+    public static final int SAVE_FORMAT = 12;
 
     public static final String NAME = "CityBuilderSim";
 

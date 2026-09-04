@@ -1503,6 +1503,31 @@ public class EconomyManager {
         miningHandler.setWaterConsumption(buildingManager.getTotalByCategoryDouble(
                 BuildingType.MINING, BuildingsTemplate::getWaterConsumption));
     }
+    /**
+     * Repopulates the government's revenue and expenditure block after a load.
+     *
+     * updateGovernment() is called from exactly one place - inside
+     * updateNationalAccounts(), on the monthly path - so a reloaded city showed
+     * the entire City Finances screen as zeros: every tax line, the pension
+     * lines, both pie charts, and a SURPLUS/DEFICIT of nothing.
+     *
+     * Deliberately NOT the whole of updateNationalAccounts(). That measures GDP,
+     * moves the inventory baseline and books a month of output; running it on
+     * the load path would be running a month of the economy with the calendar
+     * standing still, which is the exact trap refreshEconPrices() exists to
+     * avoid. This touches the government block and nothing else.
+     */
+    public void refreshGovernmentAccounts(double landSales, double capitalSpending,
+                                          double landPurchases) {
+        getTaxIncome();   // assigns the tax fields and the contributions
+        nationalAccounts.updateGovernment(
+                totalBusinessTax + totalHeavyIndustryTax,
+                totalIndustrialTax, salesTax, totalWageTax,
+                utilityIncome, landSales, getTotalPropertyTax(),
+                interest, capitalSpending, landPurchases,
+                totalContributions, getPensionsPaid());
+    }
+
     public void setUtilityIncome(double income){
         this.utilityIncome = income;
     }

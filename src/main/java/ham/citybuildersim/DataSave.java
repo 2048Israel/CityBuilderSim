@@ -663,6 +663,36 @@ public class DataSave {
     public void setMigration(double[] a){ this.migration = a; }
     public double[] getMigration()      { return migration; }
 
+    /*
+     * The private sector's memory, and the player's own turn.
+     *
+     * `sectorLossMonths` is how long each sector has been losing money -
+     * retirement needs six in a row, so forgetting it across a load reset the
+     * clock and made scrapping capacity save-scummable. `populationTrend` is the
+     * twelve-month window the retail and industry planners forecast from.
+     *
+     * The last three accumulate DURING the player's turn and are read by next
+     * month's national accounts. Save mid-turn without them and a building the
+     * player just paid for vanishes from GDP - which also moves the city's
+     * borrowing rate, since the debt market prices off GDP.
+     */
+    private java.util.Map<String, Integer> sectorLossMonths;
+    private java.util.List<Integer> populationTrend;
+    private double cityCapitalSpending;
+    private double monthlyMaterialImports;
+    private int materialsConsumed;
+
+    public void setSectorLossMonths(java.util.Map<String, Integer> m){ this.sectorLossMonths = m; }
+    public java.util.Map<String, Integer> getSectorLossMonths(){ return sectorLossMonths; }
+    public void setPopulationTrend(java.util.List<Integer> l){ this.populationTrend = l; }
+    public java.util.List<Integer> getPopulationTrend(){ return populationTrend; }
+    public void setCityCapitalSpending(double v){ this.cityCapitalSpending = v; }
+    public double getCityCapitalSpending(){ return cityCapitalSpending; }
+    public void setMonthlyMaterialImports(double v){ this.monthlyMaterialImports = v; }
+    public double getMonthlyMaterialImports(){ return monthlyMaterialImports; }
+    public void setMaterialsConsumed(int v){ this.materialsConsumed = v; }
+    public int getMaterialsConsumed(){ return materialsConsumed; }
+
     public void setBuilds(java.util.List<BuildLog.Entry> entries) {
         this.builds = entries;
     }

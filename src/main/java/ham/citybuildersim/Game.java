@@ -788,6 +788,23 @@ public class Game {
      * month's wages with last month's tax.
      */
     private void updateHouseholdAccounts(){
+        syncHouseholdAccounts(true);
+    }
+
+    /**
+     * The same figures, for the load path, without booking a month twice.
+     *
+     * rebuildSimulationState() has to repopulate the residents' statement or
+     * every row on the People screen reads $0 after a reload - but
+     * cumulativeSaving was restored from the save, and update() would add this
+     * month to it a second time. One definition of the month, two callers, one
+     * of which accrues.
+     */
+    void refreshHouseholdAccounts(){
+        syncHouseholdAccounts(false);
+    }
+
+    private void syncHouseholdAccounts(boolean accrue){
 
         NationalAccounts na = economyManager.getNationalAccounts();
 
@@ -824,16 +841,23 @@ public class Game {
         double contributions = economyManager.getContributions();
         double pensions = economyManager.getPensionsPaid();
 
-        households.update(
-                wages,
-                wageTax,
-                na.getConsumptionHousing(),
-                na.getConsumptionGoods(),
-                contributions,
-                pensions,
-                populationManager.getPopulation(),
-                populationManager.getWorkforce(),
-                populationManager.getJobsFilled());
+        if (accrue) {
+            households.update(
+                    wages, wageTax,
+                    na.getConsumptionHousing(), na.getConsumptionGoods(),
+                    contributions, pensions,
+                    populationManager.getPopulation(),
+                    populationManager.getWorkforce(),
+                    populationManager.getJobsFilled());
+        } else {
+            households.refresh(
+                    wages, wageTax,
+                    na.getConsumptionHousing(), na.getConsumptionGoods(),
+                    contributions, pensions,
+                    populationManager.getPopulation(),
+                    populationManager.getWorkforce(),
+                    populationManager.getJobsFilled());
+        }
 
         /* ---- and the same month, split seven ways ---- */
         int rows = HouseholdAccounts.RETIRED + 1;
@@ -3164,6 +3188,17 @@ public class Game {
         dataSave.setCohorts(cohorts.toSaveArray());
         dataSave.setFamilies(families.toSaveArray());
         dataSave.setMigration(migration.toSaveArray());
+
+        /*
+         * The private sector's memory and the player's own turn. Both are
+         * HISTORY - what has happened - and neither can be read off the balances
+         * a month ended in. See the note in DataSave.
+         */
+        dataSave.setSectorLossMonths(businessInvestment.getLossMonthsState());
+        dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
+        dataSave.setCityCapitalSpending(cityCapitalSpending);
+        dataSave.setMonthlyMaterialImports(monthlyMaterialImports);
+        dataSave.setMaterialsConsumed(materialsConsumed);
         dataSave.setWriteOffTotals(
                 economyManager.getBusinessDebtManager().getWriteOffTotals());
 
@@ -3512,6 +3547,22 @@ public class Game {
     economyManager.updateJobFillRate(populationManager.getJobFillRate());
     economyManager.updateHeavyIndustryWages(populationManager.getWagesPerType());
 
+    /*
+     * MINING'S WAGES, which this path had never set.
+     *
+     * Its only call site was SimulationEngine.updateEconomy, so after a load the
+     * mine's wage array was all zeros - and startOfMonthUpdate() runs
+     * updateMiningReport() BEFORE simulateMonth() gets a chance to fill it in.
+     * So the first month after any reload the mine booked its full revenue
+     * against a payroll of zero, banked the inflated net income to its own cash,
+     * and the city collected profit tax on money nobody earned.
+     *
+     * The three sibling sectors were all here already; mining was simply
+     * forgotten. That is the shape of this whole class of bug - not a wrong
+     * calculation, a missing call on one of two paths that have to agree.
+     */
+    economyManager.updateMiningWages(populationManager.getWagesPerType());
+
     economyManager.updateEcon();
 
     servicesManager.updateServices();
@@ -3557,6 +3608,32 @@ public class Game {
     servicesManager.updateFromGame(construction::setMaterialsPrice,
             buildingManager.getConstructionMaterialPrice());
     servicesManager.updateFromGameInt(construction::setMaterialsConsumed, materialsConsumed);
+
+    /* ---------------- the three the monthly path sets and this did not ----------------
+     *
+     * All found in one sweep, all the same shape: a setter with exactly one call
+     * site, on the month loop, so a reloaded city carried a zero where the live
+     * one carried a figure. None of them is a wrong calculation.
+     */
+
+    // Utilities read $0 on the finances screen after every load.
+    economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
+
+    // The residents' statement, without booking the month onto the running
+    // total a second time - see refreshHouseholdAccounts().
+    refreshHouseholdAccounts();
+
+    /*
+     * And the government's own books. updateGovernment() is called from inside
+     * updateNationalAccounts() and nowhere else, so a reloaded city showed every
+     * tax line, both pension lines, both pie charts and the SURPLUS/DEFICIT as
+     * zero. The land and capital figures are the ones carried in the save; before
+     * they were carried this could only ever have restored zeros anyway.
+     */
+    economyManager.refreshGovernmentAccounts(
+            landManager.getLandSalesThisMonth(),
+            cityCapitalSpending,
+            landManager.getLandPurchasesThisMonth());
 }
    
    
@@ -4058,6 +4135,14 @@ public class Game {
             cohorts.restore(restoredFlows.getCohorts());
             families.restore(restoredFlows.getFamilies());
             migration.restore(restoredFlows.getMigration());
+
+            // Hoisted here with the rest: rebuildSimulationState() reads
+            // cityCapitalSpending when it refreshes the government's books.
+            businessInvestment.restoreLossMonths(restoredFlows.getSectorLossMonths());
+            businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
+            cityCapitalSpending = restoredFlows.getCityCapitalSpending();
+            monthlyMaterialImports = restoredFlows.getMonthlyMaterialImports();
+            materialsConsumed = restoredFlows.getMaterialsConsumed();
         }
 
         rebuildSimulationState();

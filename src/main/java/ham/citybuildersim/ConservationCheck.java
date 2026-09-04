@@ -266,6 +266,75 @@ public class ConservationCheck {
         }
         check("...and it is back at month one", reused.getMonth(), 1, 0);
 
+        /* ============ 5. WHAT A RELOAD MUST NOT FORGET ============ */
+        System.out.println("\n--- history a reload cannot rebuild ---");
+
+        /*
+         * Four setters and five fields were found in the same audit, all the
+         * same shape: something the monthly path maintains that the load path
+         * never touched. None is a wrong calculation; each is a missing call or
+         * a missing field, and every one of them is invisible until you compare
+         * a played city against a reloaded one.
+         *
+         * The sharpest was MINING'S PAYROLL. updateMiningWages() had exactly one
+         * call site, on the month loop, and startOfMonthUpdate() writes the
+         * mine's statement BEFORE simulateMonth() would have filled the wage
+         * array in - so the first month after any reload the mine booked full
+         * revenue against a payroll of zero and the city taxed the profit.
+         */
+        Game mined = city(root, "mined", 40);
+        System.setOut(quiet);
+        try {
+            BuildingManager b = mined.getBuildingManager();
+            b.addStack(b.getTemplateByName("Iron Mine"), 3, true);
+            mined.simulateMonths(30);
+            mined.saveGame(1, "mined");
+        } finally { System.setOut(out); }
+
+        GameFiles minedFiles = new GameFiles(root.resolve("mined"), root.resolve("no-legacy"));
+        Game minedBack = new Game(minedFiles);
+        System.setOut(quiet);
+        try { minedBack.loadGameSave(1); } finally { System.setOut(out); }
+
+        double livePayroll = mined.getEconomyManager().getMiningHandler().getPayroll();
+        double backPayroll = minedBack.getEconomyManager().getMiningHandler().getPayroll();
+        System.out.printf("   mining payroll: live $%.4f, reloaded $%.4f%n",
+                livePayroll, backPayroll);
+        assertTrue("the mine has a payroll at all after a load", backPayroll > 0);
+        check("...and it is the payroll it was working", backPayroll, livePayroll, .0001);
+
+        // The utility's net income, the residents' statement and the whole
+        // government block were all set on the monthly path only.
+        assertTrue("utility income survives a load",
+                minedBack.getEconomyManager().getUtilityIncome() != 0);
+        assertTrue("the residents' statement is not blank after a load",
+                minedBack.getHouseholds().getWages() > 0);
+        assertTrue("...and the government's revenue block is not either",
+                minedBack.getEconomyManager().getNationalAccounts().getTotalRevenue() > 0);
+
+        /*
+         * And the running total the residents' books carry must NOT gain a month
+         * from being rebuilt - the reason the load path calls refresh() rather
+         * than update().
+         */
+        check("...and rebuilding it does not book the month twice",
+                minedBack.getHouseholds().getCumulativeSaving(),
+                mined.getHouseholds().getCumulativeSaving(), .01);
+
+        /* ---- the private sector's memory ---- */
+        BusinessInvestment liveBi = mined.getBusinessInvestment();
+        BusinessInvestment backBi = minedBack.getBusinessInvestment();
+
+        check("the population trend survives, so forecasts are not flat",
+                backBi.getPopulationGrowth(), liveBi.getPopulationGrowth(), .0001);
+
+        boolean streaksMatch = true;
+        for (java.util.Map.Entry<String, Integer> e : liveBi.getLossMonthsState().entrySet()) {
+            if (!e.getValue().equals(backBi.getLossMonths(e.getKey()))) streaksMatch = false;
+        }
+        System.out.printf("   loss streaks carried: %s%n", liveBi.getLossMonthsState());
+        assertTrue("every sector's losing streak survives a load", streaksMatch);
+
         cleanUp(root);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
