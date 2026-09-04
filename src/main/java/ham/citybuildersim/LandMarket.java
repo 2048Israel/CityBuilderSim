@@ -93,13 +93,57 @@ public class LandMarket {
     /** However big the tract, this many sites is the most it will ever carry. */
     private static final int MAX_DEPOSITS = 4;
 
-    /* ------------------------- what businesses pay ------------------------- */
+    /* ------------------------- what businesses pay -------------------------
 
-    /** The city's margin on land nobody is competing for. */
-    private static final double BASE_MARKUP = .15;
+       TWO PRICES, TWO DIFFERENT MARKETS, and they were only nominally different
+       before.
 
-    /** How much more a full city can charge on top of that. */
-    private static final double SCARCITY_MARKUP = .90;
+       OUTSIDE the city, the price of ground the city can annex rises with the
+       city: more blocks owned and more people mean the next tract costs more.
+       That is unchanged and it is what marketPricePerSqFt does.
+
+       INSIDE the city, none of that matters. A developer does not care what the
+       city paid for the ground; they care whether there is anywhere left to
+       build. So the inside price is set by SCARCITY and nothing else: plenty of
+       free land makes it cheap, a built-out city makes it dear.
+
+       THE OLD VERSION MEASURED SCARCITY WITH UTILISATION, WHICH DOES NOT MOVE.
+       Measured over 2,400 months of an ordinary game, utilisation sat between
+       86% and 100% the entire time - the city only ever annexes when it has run
+       out - so `SCARCITY_MARKUP * utilisation` was very nearly a constant. The
+       markup ranged 85% to 105% across the whole run while both prices rose 17x
+       together. The inside price was the outside price doubled, and the word
+       "scarcity" was decoration.
+
+       PRESSURE IS BUILT AGAINST FREE, which does move, and sharply:
+
+           pressure = allocated / available
+
+       At half built that is 1; at 90% it is 9; at 99% it is 99. The same city
+       before and after annexing two blocks reads very differently, which is the
+       entire point - buying land is supposed to make land cheaper.
+
+       Saturating rather than linear, because pressure is unbounded and a linear
+       response to 99 would price a nearly-full city off the map.
+       ------------------------------------------------------------------- */
+
+    /** Multiplier on acquisition cost when land is abundant. */
+    private static final double SCARCITY_FLOOR = .65;
+
+    /** Multiplier when there is effectively nothing left. */
+    private static final double SCARCITY_CEILING = 1.90;
+
+    /**
+     * Pressure at which the curve is half way up.
+     *
+     * Sets where the city stops making money on land: the multiplier passes 1.0
+     * at a pressure of about 1.6, which is roughly 61% built. Above that - which
+     * is where ordinary play sits - the city profits on every sale. Below it,
+     * a city that has annexed far more than it can use is selling ground for
+     * less than it paid, which is the whole point of letting the margin go
+     * negative. Over-buying should cost something.
+     */
+    private static final double SCARCITY_MIDPOINT = 4.0;
 
     /* ------------------------- how big a plot is ------------------------- */
 
@@ -157,7 +201,7 @@ public class LandMarket {
     private double marketPricePerSqFt = BASE_PRICE_PER_SQ_FT;
 
     /** What businesses are charged. Derived, not set. */
-    private double salePricePerSqFt = BASE_PRICE_PER_SQ_FT * (1 + BASE_MARKUP);
+    private double salePricePerSqFt = BASE_PRICE_PER_SQ_FT * SCARCITY_FLOOR;
 
     /* ===================================================================
        PRICING
@@ -187,25 +231,50 @@ public class LandMarket {
         minBlocks = Math.min(MAX_MIN_BLOCKS,
                 MIN_BLOCKS + Math.floor(blocksOwned / BLOCKS_PER_FLOOR_STEP));
 
-        /*
-         * Supply against demand, inside the city.
-         *
-         * Utilisation is the honest measure of both at once: it is what share of
-         * the city's land is already spoken for, so a city with room is a city
-         * whose land nobody is fighting over. Priced off the market rate rather
-         * than a constant so the sale price rises with acquisition costs on its
-         * own - otherwise a mature city would eventually be selling at a loss.
-         */
-        double utilisation = (ownedSqFt > 0)
-                ? Math.min(Math.max(allocatedSqFt / ownedSqFt, 0), 1)
-                : 1;
-
-        salePricePerSqFt = marketPricePerSqFt
-                * (1 + BASE_MARKUP + SCARCITY_MARKUP * utilisation);
+        salePricePerSqFt = marketPricePerSqFt * scarcityMultiplier(ownedSqFt, allocatedSqFt);
 
         while (listing.size() < LISTING_SIZE) {
             listing.add(generate(nextId++));
         }
+    }
+
+    /**
+     * How dear inside land is, as a multiple of what the ground cost outside.
+     *
+     * ANCHORED TO ACQUISITION COST, and that is deliberate rather than lazy. The
+     * alternative - a fixed base scaled only by scarcity - was measured and
+     * rejected: it leaves the inside price roughly flat for the whole game while
+     * the outside price rises 17x, so a mature city buys at $13 and sells at
+     * $1.50 on every square foot forever. That is not a bet, it is a leak.
+     *
+     * Anchoring keeps the two prices in the same band so the MARGIN can go
+     * either way, which is what makes annexation a judgement call. Scarcity
+     * decides which way:
+     *
+     *     ~60% built and falling  ->  below cost, the city eats the difference
+     *     ~90% built              ->  about 1.5x cost
+     *     nearly full             ->  approaching 1.9x
+     *
+     * So "the more land available, the cheaper for investors" holds exactly, and
+     * a city that over-annexes pays for the privilege.
+     */
+    public double scarcityMultiplier(double ownedSqFt, double allocatedSqFt) {
+
+        double available = ownedSqFt - allocatedSqFt;
+
+        // Nothing left at all. Not a divide-by-zero - it is the most expensive
+        // the land can possibly be, which is what the ceiling is for.
+        if (available <= 0) {
+            return SCARCITY_CEILING;
+        }
+        if (allocatedSqFt <= 0) {
+            return SCARCITY_FLOOR;
+        }
+
+        double pressure = allocatedSqFt / available;
+
+        return SCARCITY_FLOOR + (SCARCITY_CEILING - SCARCITY_FLOOR)
+                * (pressure / (pressure + SCARCITY_MIDPOINT));
     }
 
     /** Ground price per square foot the city would pay today, in thousands. */
@@ -491,6 +560,6 @@ public class LandMarket {
         nextId = 1;
         minBlocks = MIN_BLOCKS;
         marketPricePerSqFt = BASE_PRICE_PER_SQ_FT;
-        salePricePerSqFt = BASE_PRICE_PER_SQ_FT * (1 + BASE_MARKUP);
+        salePricePerSqFt = BASE_PRICE_PER_SQ_FT * SCARCITY_FLOOR;
     }
 }

@@ -99,17 +99,39 @@ public class BusinessInvestment {
         public final String reason;
         public final boolean build;
 
+        /**
+         * True when the ONLY thing stopping this was nowhere to put it.
+         *
+         * Carried as a flag rather than left for the caller to recognise in the
+         * reason text: land is the one refusal the player can personally clear,
+         * by annexing, and the warning banner has to be able to tell it apart
+         * from "demand is already met" without matching on prose that anyone is
+         * free to reword.
+         */
+        public final boolean landBlocked;
+
         Decision(String sector, BuildingsTemplate template, int quantity,
                  String reason, boolean build) {
+            this(sector, template, quantity, reason, build, false);
+        }
+
+        Decision(String sector, BuildingsTemplate template, int quantity,
+                 String reason, boolean build, boolean landBlocked) {
             this.sector = sector;
             this.template = template;
             this.quantity = quantity;
             this.reason = reason;
             this.build = build;
+            this.landBlocked = landBlocked;
         }
 
         static Decision no(String sector, String reason) {
             return new Decision(sector, null, 0, reason, false);
+        }
+
+        /** Wanted to build, had nowhere to put it. */
+        static Decision noLand(String sector, String reason) {
+            return new Decision(sector, null, 0, reason, false, true);
         }
     }
 
@@ -141,6 +163,49 @@ public class BusinessInvestment {
         int first = populationHistory.get(0);
         int last = populationHistory.get(populationHistory.size() - 1);
         return (last - first) / (double) (populationHistory.size() - 1);
+    }
+
+    /**
+     * The most people this city could physically hold once everything already
+     * on site is finished.
+     *
+     * WHY A TREND NEEDS A CEILING. Population is min(housing, jobs * 2.25) and
+     * it has no inertia at all - it is recomputed from scratch every month, so
+     * the moment a block of flats opens, it fills. That means a STEP in housing
+     * reads as a RATE in a twelve-month trend window, and anything extrapolating
+     * that trend is extrapolating a one-off.
+     *
+     * Measured, in a city handed 500 houses at once: population went 0 to 2,100
+     * in eight months, the trend read +350 a month, and retail forecast its way
+     * to 35,320 units of store coverage for 2,100 people - seventeen times what
+     * anyone could shop in, since demand is min(coverage, population). It was
+     * still delivering that order twenty months after the trend had gone to
+     * zero. The load put roads at 71% and throttled the city's only foundry,
+     * which is how a retail forecast ended up being measured as a steel margin.
+     *
+     * Real estate is already exempt from this trap - it reads latent job demand
+     * precisely so it is not "reading its own echo". This is the same discipline
+     * for everyone else: forecast whatever the trend says, but never past what
+     * the city could actually house. A shop cannot serve a customer who has
+     * nowhere to live.
+     *
+     * HOUSING ONLY, DELIBERATELY, AND NOT ALSO THE JOB CEILING. The other half
+     * of the population formula is jobs * 2.25, and capping against that too
+     * looks more complete until you notice who is being capped: retail and
+     * industry EMPLOY people, so a ceiling that includes jobs is a ceiling those
+     * sectors move by building. Capping them with it makes them throttle
+     * themselves - the same echo real estate was exempted from, pointed the
+     * other way. Measured over four land seeds it cost about 4% of final
+     * population against capping on housing alone, for no gain anywhere.
+     *
+     * Housing is the honest ceiling here precisely because it is the one neither
+     * sector controls. Homes under construction count, on the same reasoning
+     * that lets real estate see jobs under construction: they are committed and
+     * they will be standing before the shop opens.
+     */
+    private double reachablePopulation() {
+        return buildingManager.getTotalHouseCapacity()
+                + buildingManager.getHouseCapacityUnderConstruction();
     }
 
     /** Months before a building of this size would actually open. */
@@ -348,12 +413,37 @@ public class BusinessInvestment {
             return Decision.no(sector, "already building");
         }
 
-        // Population is min(housing, jobs * 2.25). If the job market could carry
-        // more people than there are homes, that gap is unhoused demand.
-        double latentDemand = totalJobs * 2.25;
+        /*
+         * Population is min(housing, jobs * 2.25), so housing demand IS the job
+         * market - and the job market a block of flats will open into is not the
+         * one standing when it is ordered.
+         *
+         * WHY THE JOBS ON SITE COUNT TOO. Real estate used to size against
+         * totalJobs alone, which is the number of posts that exist right now. A
+         * mill going up next door is a thousand jobs the developer can already
+         * see, and it will be staffed long before the flats are finished. Reading
+         * only today's posts means reading a figure that is out of date by the
+         * whole lead time of your own project, and it under-builds every time the
+         * city is growing - which is every time it matters. Observed in play: a
+         * city sat at 100% fill with zero vacancies and housing exactly equal to
+         * population, growing only as fast as the last building happened to land.
+         *
+         * JOBS ON SITE AND NOTHING MORE SPECULATIVE. Retail projects population
+         * forward on a trend; housing deliberately does not. A trend in
+         * population is a poor signal here because population is CAPPED by
+         * housing - so when housing is the binding constraint, the trend measures
+         * what real estate itself has already built and building against it
+         * would be reading its own echo. Jobs under construction are different:
+         * they are committed, funded and visible, and they are exactly the
+         * demand this housing will open into.
+         */
+        int jobsComing = buildingManager.getJobsUnderConstruction();
+
+        double latentDemand = (totalJobs + jobsComing) * 2.25;
 
         if (latentDemand <= housingCapacity * (1 + TARGET_HEADROOM)) {
-            return Decision.no(sector, "housing ahead of jobs");
+            return Decision.no(sector, String.format(
+                    "housing ahead of jobs (%d now, %d coming)", totalJobs, jobsComing));
         }
 
         BuildingsTemplate best = null;
@@ -386,7 +476,7 @@ public class BusinessInvestment {
                 best.getCapacity(), best, cityConstructionOutput);
 
         if (quantity <= 0) {
-            return Decision.no(sector, landReason(best));
+            return Decision.noLand(sector, landReason(best));
         }
 
         return new Decision(sector, best, quantity,
@@ -416,7 +506,13 @@ public class BusinessInvestment {
             if (t.getCoverage() <= 0) continue;
 
             double months = leadTime(t, 1, cityConstructionOutput) + PLANNING_HORIZON;
-            double projected = population + getPopulationGrowth() * months;
+
+            // Capped at what the city could actually house - see
+            // reachablePopulation(). Without the cap a plateaued city forecasts
+            // its way to seventeen times the coverage anyone can shop in.
+            double projected = Math.min(
+                    population + getPopulationGrowth() * months,
+                    Math.max(population, reachablePopulation()));
 
             if (projected <= storeCoverage * (1 + TARGET_HEADROOM)) {
                 continue;
@@ -446,7 +542,7 @@ public class BusinessInvestment {
                 best.getCoverage(), best, cityConstructionOutput);
 
         if (quantity <= 0) {
-            return Decision.no(sector, landReason(best));
+            return Decision.noLand(sector, landReason(best));
         }
 
         return new Decision(sector, best, quantity,
@@ -490,8 +586,9 @@ public class BusinessInvestment {
 
             // The stores buy roughly one unit per covered customer per month, so
             // demand tracks whichever of coverage and population is smaller.
-            double projectedCustomers =
-                    Math.min(storeCoverage, population + getPopulationGrowth() * months);
+            double projectedCustomers = Math.min(storeCoverage,
+                    Math.min(population + getPopulationGrowth() * months,
+                             Math.max(population, reachablePopulation())));
 
             if (projectedCustomers <= currentOutput * (1 + TARGET_HEADROOM)) {
                 continue;
@@ -519,7 +616,7 @@ public class BusinessInvestment {
                 best.getProduction1(), best, cityConstructionOutput);
 
         if (quantity <= 0) {
-            return Decision.no(sector, landReason(best));
+            return Decision.noLand(sector, landReason(best));
         }
 
         return new Decision(sector, best, quantity,
@@ -585,7 +682,7 @@ public class BusinessInvestment {
         // out of a construction bottleneck runs through the land the player
         // has not bought.
         if (plotsAvailableFor(best) < 1) {
-            return Decision.no(sector, landReason(best));
+            return Decision.noLand(sector, landReason(best));
         }
 
         return new Decision(sector, best, 1,
@@ -666,7 +763,7 @@ public class BusinessInvestment {
         }
 
         if (plotsAvailableFor(best) < 1) {
-            return Decision.no(sector, landReason(best));
+            return Decision.noLand(sector, landReason(best));
         }
 
         return new Decision(sector, best, 1,
@@ -726,7 +823,7 @@ public class BusinessInvestment {
         }
 
         if (plotsAvailableFor(best) < 1) {
-            return Decision.no(sector, landReason(best));
+            return Decision.noLand(sector, landReason(best));
         }
 
         return new Decision(sector, best, 1,

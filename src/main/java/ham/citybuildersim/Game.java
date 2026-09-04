@@ -63,7 +63,15 @@ public class Game {
      * medium-term bond. The player buys lower monthly payments with a higher
      * all-in cost; this is the size of that trade.
      */
-    private static final double LONG_BOND_COST_MULTIPLIER = 1.15;
+    /*
+     * RETIRED. Long bonds used to be grossed up by this over an equivalent
+     * medium bond, on a simple-interest relation that did not survive being
+     * discounted properly - see faceValueOfLongBond(). The instrument is priced
+     * at present value now and is still dearer all-in, because it runs longer
+     * at a real rate rather than because a constant said so.
+     *
+     * private static final double LONG_BOND_COST_MULTIPLIER = 1.15;
+     */
 
     //settings
     boolean reports = true;
@@ -136,6 +144,7 @@ public class Game {
         
         landManager = new LandManager();
         demolitionLog = new DemolitionLog();
+        buildLog = new BuildLog();
         skipReport = new TimeSkipReport();
         households = new HouseholdAccounts();
         lastInvestment = new java.util.LinkedHashMap<>();
@@ -461,6 +470,19 @@ public class Game {
         return paySubsidyIfOwed(sector, netIncome);
     }
 
+    /**
+     * Puts the treasury at a stated figure, for a fixture that needs to CAUSE a
+     * condition rather than wait for one.
+     *
+     * Package-private, and the only reason it exists: RestructureCheck has to
+     * put a city in front of a bond it cannot afford, and has to give another
+     * one enough cash to attempt eight round trips. Playing a city into either
+     * state would make the test about the trajectory instead of the rule.
+     */
+    void setCashForTest(double amount){
+        this.cash = amount;
+    }
+
     private double paySubsidyIfOwed(PolicySector sector, double netIncome){
 
         subsidyPaid[sector.ordinal()] = 0;
@@ -637,6 +659,11 @@ public class Game {
     private void runPrivateInvestment(){
 
         businessInvestment.recordMonth(populationManager.getPopulation());
+
+        // This month's answer, not last month's. Cleared here rather than in
+        // consider() because consider() runs once per sector - clearing it there
+        // would leave only whichever sector planned last.
+        landBlockedSectors.clear();
 
         // Shrinking is decided before growing. A sector cannot sensibly do both
         // in one month, and running retirement first means a firm that has just
@@ -975,6 +1002,58 @@ public class Game {
         constructionShedPoints = 0;
     }
 
+    /* =====================================================================
+       PRIVATE INVESTMENT WITH NOWHERE TO GO
+       ===================================================================== */
+
+    /**
+     * Sectors that wanted to build this month and had no land to build on.
+     *
+     * Measured over 1,951 months of an ordinary game, real estate spent 12.2%
+     * of every month in this state and once sat in it for 120 CONSECUTIVE
+     * MONTHS - ten years wanting to build houses with nowhere to put them, in a
+     * city whose job market could have filled them. Nothing said so. The player
+     * finds out when the city stops growing, and by then the only visible
+     * symptom is a number that has stopped moving.
+     *
+     * Land is deliberately the player's to buy - that is the game - which is
+     * exactly why this has to be visible. A constraint the player is meant to
+     * clear, and cannot see, is not a decision; it is a trap.
+     */
+    private final java.util.Set<String> landBlockedSectors = new java.util.LinkedHashSet<>();
+
+    public java.util.Set<String> getLandBlockedSectors(){
+        return java.util.Collections.unmodifiableSet(landBlockedSectors);
+    }
+
+    /**
+     * Whether to warn that the private sector is out of room.
+     *
+     * DERIVED, NOT CARRIED, and that is the whole reason it needs no save
+     * format. The shedding warning had to be saved because it reports an EVENT
+     * - crews were laid off in some month, and the month it happened in is not
+     * recoverable from the city that is left. This reports a STANDING CONDITION:
+     * somebody wants to build and there is no land. It is recomputed from the
+     * month's own decisions, so a reloaded city re-derives it, and if the
+     * condition is still true the warning is still true - which is correct,
+     * not a bug. Acknowledging it is likewise per-session: the player dismissed
+     * the situation as it stood, and on a fresh look the situation is asked
+     * again.
+     */
+    private int landWarningAcknowledged = -1;
+
+    public boolean isPrivateInvestmentLandLocked(){
+        if (landBlockedSectors.isEmpty()) {
+            return false;
+        }
+        return landWarningAcknowledged < 0 || month - landWarningAcknowledged > 24;
+    }
+
+    /** The player has seen it. */
+    public void acknowledgeLandLock(){
+        landWarningAcknowledged = month;
+    }
+
     /** Written off in the most recent insolvency sweep, for the credit screen. */
     private double lastWriteOff;
 
@@ -989,10 +1068,40 @@ public class Game {
      * question of whether the business can carry what it would have to borrow -
      * a lender here will fund anything, so the discipline has to come from the
      * borrower.
+     *
+     * TWO SIDES OF THE SAME SCALE, AND THEY USED NOT TO MATCH.
+     *
+     * getCostOf() takes a quantity; estimatedMonthlyProfit() does not - it is
+     * documented as what "a finished building" earns, singular. This method
+     * passed the first against the second, so the brake compared ONE building's
+     * rent with the interest on the WHOLE order, and the mismatch got worse
+     * exactly as the order got bigger.
+     *
+     * That is not a rounding error, it is a deadlock. Measured on a city at 15%
+     * job fill with 3,024 unhoused demand: real estate asked for 98 houses,
+     * $9,825k, borrowing $6,162k at 2.28% - $11.71k of interest a month against
+     * the $1.40k of rent ONE house pays. Declined. With the order's own rent,
+     * $137.20k, it clears by nine times. It stalled 34 straight months and only
+     * built again once the city had collapsed far enough for the order to shrink
+     * - the shortage tightening the very brake that was stopping it being fixed.
+     *
+     * AND IT NEVER SETTLES FOR LESS. 42 of those 98 houses would have passed.
+     * The old code took the order or left it, so it built nothing. Now the
+     * project is trimmed to the largest slice that carries itself, because a
+     * business short of credit builds four floors instead of ten - it does not
+     * go home.
+     *
+     * Scanning down from the requested quantity rather than solving for it: the
+     * test is very nearly monotone in quantity but not exactly, since the
+     * materials shortfall kinks once the yard is empty. The first size that
+     * passes on the way down is the largest that passes, whatever the shape.
      */
     private void consider(BusinessInvestment.Decision decision, Investor payer){
 
         if (decision == null || !decision.build) {
+            if (decision != null && decision.landBlocked) {
+                landBlockedSectors.add(decision.sector);
+            }
             lastInvestment.put(decision == null ? "?" : decision.sector,
                     decision == null ? "" : "Holding: " + decision.reason);
             return;
@@ -1000,31 +1109,47 @@ public class Game {
 
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
 
-        double cost = businessInvestment.getCostOf(decision.template, decision.quantity);
-        double borrowed = Math.max(cost - payer.getCash(), 0);
-        double profit = businessInvestment.estimatedMonthlyProfit(
+        double rate = credit.getRate(decision.sector);
+        double cash = payer.getCash();
+        double perUnitProfit = businessInvestment.estimatedMonthlyProfit(
                 decision.sector, decision.template);
 
-        if (!businessInvestment.servicesItsOwnDebt(
-                profit, borrowed, credit.getRate(decision.sector))) {
+        int affordable = 0;
+        for (int n = decision.quantity; n >= 1; n--) {
+            double cost = businessInvestment.getCostOf(decision.template, n);
+            double borrowed = Math.max(cost - cash, 0);
+            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed, rate)) {
+                affordable = n;
+                break;
+            }
+        }
+
+        if (affordable <= 0) {
             lastInvestment.put(decision.sector,
-                    String.format("Declined %s - would not cover its interest",
+                    String.format("Declined %s - not even one would cover its interest",
                             decision.template.getName()));
             return;
         }
 
-        if (buildFor(payer, decision.template, decision.quantity)) {
+        int quantity = affordable;
+        String trimmed = quantity < decision.quantity
+                ? String.format(" (trimmed from %,d - could not carry the interest)",
+                        decision.quantity)
+                : "";
+
+        if (buildFor(payer, decision.template, quantity)) {
             lastInvestment.put(decision.sector,
-                    String.format("Built %,d %s - %s",
-                            decision.quantity, decision.template.getName(), decision.reason));
+                    String.format("Built %,d %s%s - %s",
+                            quantity, decision.template.getName(), trimmed, decision.reason));
         } else {
             // The plan cleared every test and the build still did not happen,
             // which now has exactly one cause: the land went between planning
             // and buying. Saying so beats the silence this used to leave.
+            landBlockedSectors.add(decision.sector);
             lastInvestment.put(decision.sector,
                     String.format("Could not build %s - needs %,.0f sq ft, %,.0f free",
                             decision.template.getName(),
-                            decision.template.getLandSqFt() * (double) decision.quantity,
+                            decision.template.getLandSqFt() * (double) quantity,
                             landManager.getAvailableSqFt()));
         }
     }
@@ -1735,20 +1860,20 @@ public class Game {
     }
     
     private void addShortTermTBill() {
-        issueDebtInstrument("T-Bill", 3, 12, 1000);
+        issueDebtInstrument("Note", 3, 12, 1000);
     }
     
     private void addMediumTermBond(){
-        issueDebtInstrument("Medium-Term", 1, 10, 10000);
+        issueDebtInstrument("Serial", 1, 10, 10000);
     }
     
     private void addLongTermBond() {
-        issueDebtInstrument("Long-Term", 10, 50, 100000);
+        issueDebtInstrument("Term", 10, 50, 100000);
 
     }
     private void issueDebtInstrument(String type, int minDur, int maxDur, double roundingFactor) {
         System.out.printf("Must be %d to %d %s in length. Press 0 to exit.%nDuration: ",
-                minDur, maxDur, (type.equals("T-Bill") ? "months" : "years"));
+                minDur, maxDur, (type.equals("Note") ? "months" : "years"));
 
         int duration = 0;
         while (true) {
@@ -1768,11 +1893,11 @@ public class Game {
 
         // Logic branches based on type
         switch (type) {
-            case "T-Bill" ->
+            case "Note" ->
                 handleTBillLogic(requestedAmount, duration, roundingFactor);
-            case "Medium-Term" ->
+            case "Serial" ->
                 handleMediumBondLogic(requestedAmount, duration, roundingFactor);
-            case "Long-Term" ->
+            case "Term" ->
                 handleLongBondLogic(requestedAmount, duration, roundingFactor);
         }
     }
@@ -1792,20 +1917,36 @@ public class Game {
         double before = debtManager.getRate();
 
         if (amount <= 0) {
-            return new DebtQuote("T-Bill", duration, 0, before, before, 0, 0, 0, 0);
+            return new DebtQuote("Note", duration, 0, before, before, 0, 0, 0, 0);
         }
 
         final double requested = amount;
+        final int months = duration;
+
+        /*
+         * DISCOUNTED ON ITS OWN TERM, which it was not.
+         *
+         * The face used to be requested/(1 - rate) with the full ANNUAL rate
+         * applied whatever the duration, so a three-month note and a two-year
+         * note were priced identically. A quarter's borrowing was charged a
+         * year of interest and two years' borrowing was charged one.
+         *
+         * ShortTermTBill.faceFor() owns the convention now, so the quote, the
+         * rate fixed point and the emergency path in nextMonth() cannot each
+         * have their own version of it - which is exactly what they had.
+         */
         double rate = debtManager.quoteRate(requested,
-                r -> Math.ceil((requested / (1 - r)) / rounding) * rounding);
+                r -> Math.ceil(ShortTermTBill.faceFor(requested, r, months) / rounding) * rounding);
 
-        // The player wants $X, so the face value is grossed up to whatever
-        // leaves $X standing after the discount is taken out of it.
-        double faceValue = Math.ceil((requested / (1 - rate)) / rounding) * rounding;
-        double received = Math.round(faceValue * (1 - rate) * 100) / 100.0;
+        double faceValue = Math.ceil(
+                ShortTermTBill.faceFor(requested, rate, months) / rounding) * rounding;
 
-        // A bill pays no coupon; the discount IS the whole cost of the credit.
-        return new DebtQuote("T-Bill", duration, requested, rate, before,
+        double gross = faceValue * (1 - ShortTermTBill.discountFraction(rate, months));
+        double fees = costOfIssuance(faceValue);
+        double received = Math.round((gross - fees) * 100) / 100.0;
+
+        // A note pays no coupon; the discount IS the whole cost of the credit.
+        return new DebtQuote("Note", duration, requested, rate, before,
                 faceValue, received, 0, faceValue - received);
     }
 
@@ -1825,7 +1966,7 @@ public class Game {
         this.cash += quote.cashReceived();
 
         debtManager.updateInterest();
-        return "T-Bill Issued!\n" + quote.summary();
+        return "Note issued.\n" + quote.summary();
     }
 
     /**
@@ -1840,16 +1981,33 @@ public class Game {
         double before = debtManager.getRate();
 
         if (requestedAmount <= 0) {
-            return new DebtQuote("Medium-Term", duration, 0, before, before, 0, 0, 0, 0);
+            return new DebtQuote("Serial", duration, 0, before, before, 0, 0, 0, 0);
         }
 
         double faceValue = Math.ceil(requestedAmount / rounding) * rounding;
         double annualRate = debtManager.quoteRate(faceValue);
         double monthlyInterest = faceValue * (annualRate / 12.0);
+        double received = Math.round((faceValue - costOfIssuance(faceValue)) * 100) / 100.0;
 
-        // Par instrument: the cash is the principal, so the cost is the coupons.
-        return new DebtQuote("Medium-Term", duration, requestedAmount, annualRate, before,
-                faceValue, faceValue, monthlyInterest, monthlyInterest * duration * 12);
+        /*
+         * Issued at par, so the face IS the principal - but the city receives
+         * less, because the underwriter and bond counsel are paid first.
+         *
+         * The all-in cost is now the fees plus every coupon the SERIAL schedule
+         * actually charges, which is materially less than face x rate x years:
+         * principal amortises, so the coupon falls each year and roughly half
+         * the old bullet's interest simply never accrues. That is the trade
+         * against the term bond, and it should show on the quote.
+         */
+        double coupons = 0;
+        MediumTermBond shape = new MediumTermBond(
+                faceValue, duration * 12, month, annualRate);
+        for (double cf : shape.remainingCashFlows()) coupons += cf;
+        coupons -= faceValue;   // strip the principal back out
+
+        return new DebtQuote("Serial", duration, requestedAmount, annualRate, before,
+                faceValue, received, monthlyInterest,
+                (faceValue - received) + coupons);
     }
 
     /** Books a medium-term bond on exactly the terms quoted. */
@@ -1862,7 +2020,7 @@ public class Game {
         this.cash += quote.cashReceived();
 
         debtManager.updateInterest();
-        return "Medium Bond Issued!\n" + quote.summary();
+        return "Serial bond issued.\n" + quote.summary();
     }
 
     /**
@@ -1870,19 +2028,69 @@ public class Game {
      * more than you borrowed, but your monthly payment is well below a medium
      * bond's. The premium is what that cash-flow relief costs.
      *
-     * The premium is solved so the all-in cost lands LONG_BOND_COST_MULTIPLIER
-     * above an equivalent medium-term bond:
+     * PRICED AS A PRESENT VALUE, WHICH IT WAS NOT BEFORE.
+     *
+     * The old premium solved a SIMPLE-interest relation over the bond's life:
      *
      *     premium + (1 + premium) * couponYield * duration
      *         = LONG_BOND_COST_MULTIPLIER * marketRate * duration
      *
-     * NOTE: the previous version grossed the face up by (1 + yield)^duration -
-     * that discount already priced the full compounded interest - and then
-     * LongTermBond.processMonth() charged a coupon on the grossed-up face on top.
-     * The same interest was billed twice: a 30-year bond paid out $573,464 and
-     * repaid $840,036, a 46% cost on a "0.67%" instrument, making long bonds
-     * strictly worse than medium at every duration.
+     * That is fine as a balance knob and wrong as a price. Over twenty-five
+     * years simple and compound interest are not close - 7.6% simple is 2.9x,
+     * compound is 6.4x - so the face it produced was far too small for the cash
+     * it handed over. Discounted properly, a 25-year bond that raised $200,000
+     * was a promise worth only $174,548.
+     *
+     * Nobody noticed while debt could only be issued. The moment it could also
+     * be BOUGHT BACK at market value, the gap became an infinite money button:
+     * issue, repurchase, pocket $25,453, repeat. Measured at every duration -
+     * $2,145 at ten years rising to $28,059 at thirty - and caught by
+     * RestructureCheck section 5, which exists for exactly this.
+     *
+     * So the face value is now SOLVED from the present value instead. With
+     * n = duration * 12 months, r = marketRate / 12 and d = (1 + r)^-n:
+     *
+     *     PV = F * [ (couponYield / 12) * (1 - d) / r  +  d ]
+     *
+     * and the face is whatever makes that PV equal the cash the player asked
+     * for. Issue price and repurchase price are now the same function of the
+     * same inputs, so a round trip is neutral BY CONSTRUCTION rather than by a
+     * rule bolted on to forbid it - the same reason DebtQuote exists at all.
+     *
+     * LONG_BOND_COST_MULTIPLIER is retired with it. The instrument is still
+     * dearer all-in than a medium bond, but now because it runs for longer at a
+     * real rate rather than because a constant said so.
+     *
+     * The coupon curve is untouched: long money still carries a low coupon
+     * (about a third of the medium-term rate), which is the whole point of the
+     * instrument. Only what the city receives for it has changed.
      */
+    private static double longBondCouponYield(double marketRate, int duration) {
+        return (marketRate / 3) + (.00667 * duration) / (duration + 30);
+    }
+
+    /**
+     * The present value of one dollar of long-bond face, at a given rate.
+     *
+     * Shared by the face solver and the quote so they cannot drift, and it is
+     * deliberately the SAME shape as Debt.getMarketValue() - coupon annuity plus
+     * discounted principal - because it has to be: that method is what will
+     * price this bond back.
+     */
+    private double longBondPvPerFace(double marketRate, int duration) {
+
+        int n = duration * 12;
+        double r = marketRate / 12.0;
+        double monthlyCoupon = longBondCouponYield(marketRate, duration) / 12.0;
+
+        if (r <= 1e-9) {
+            return monthlyCoupon * n + 1;
+        }
+
+        double d = Math.pow(1 + r, -n);
+        return monthlyCoupon * (1 - d) / r + d;
+    }
+
     /**
      * What a long bond of this size would put on the books at a given rate.
      *
@@ -1892,11 +2100,19 @@ public class Game {
      */
     private double faceValueOfLongBond(double amount, int duration,
                                        double rounding, double marketRate) {
-        double couponYield = (marketRate / 3) + (.00667 * duration) / (duration + 30);
-        double premium = (duration * (LONG_BOND_COST_MULTIPLIER * marketRate - couponYield))
-                / (1 + couponYield * duration);
-        premium = Math.max(premium, 0);
-        return Math.ceil((amount * (1 + premium)) / rounding) * rounding;
+
+        double pvPerFace = longBondPvPerFace(marketRate, duration);
+
+        // A coupon at or above the market rate would price at or over par and
+        // the instrument would stop being a discount bond. The curve puts the
+        // coupon at about a third of market so this cannot happen in play, but
+        // a fixture is free to hand in anything and dividing by ~0 is not a
+        // failure mode worth leaving open.
+        if (pvPerFace <= 1e-9) {
+            return Math.ceil(amount / rounding) * rounding;
+        }
+
+        return Math.ceil((amount / pvPerFace) / rounding) * rounding;
     }
 
     /**
@@ -1917,7 +2133,7 @@ public class Game {
         double before = debtManager.getRate();
 
         if (amount <= 0) {
-            return new DebtQuote("Long-Term", duration, 0, before, before, 0, 0, 0, 0);
+            return new DebtQuote("Term", duration, 0, before, before, 0, 0, 0, 0);
         }
 
         final double requested = amount;
@@ -1926,20 +2142,21 @@ public class Game {
 
         // Yield curve: long money carries a lower coupon than the medium-term
         // market rate. Small monthly payments are the point of the instrument.
-        double curveSlope = .00667;
-        double smoothing = 30;
-        double couponYield = (marketRate / 3) + (curveSlope * duration) / (duration + smoothing);
-
-        double premium = (duration * (LONG_BOND_COST_MULTIPLIER * marketRate - couponYield))
-                / (1 + couponYield * duration);
-        premium = Math.max(premium, 0);
+        double couponYield = longBondCouponYield(marketRate, duration);
 
         double faceValue = faceValueOfLongBond(requested, duration, rounding, marketRate);
-        double received = Math.round((faceValue / (1 + premium)) * 100) / 100.0;
+
+        // What that face is actually worth today. Equal to the request before
+        // rounding; a little above it after, because the face rounds UP to the
+        // instrument's granularity and the proceeds follow the face.
+        double received = Math.round(
+                (faceValue * longBondPvPerFace(marketRate, duration)
+                        - costOfIssuance(faceValue)) * 100) / 100.0;
+
         double monthlyInterest = (faceValue * couponYield) / 12;
         double totalCost = (faceValue - received) + (monthlyInterest * duration * 12);
 
-        return new DebtQuote("Long-Term", duration, requested, marketRate, before,
+        return new DebtQuote("Term", duration, requested, marketRate, before,
                 faceValue, received, monthlyInterest, totalCost);
     }
 
@@ -1955,7 +2172,7 @@ public class Game {
         this.cash += quote.cashReceived();
 
         debtManager.updateInterest();
-        return "Long Bond Issued!\n" + quote.summary();
+        return "Term bond issued.\n" + quote.summary();
     }
 
     /**
@@ -1966,9 +2183,9 @@ public class Game {
      */
     public DebtQuote quoteDebt(String type, double amount, int duration, double rounding) {
         return switch (type) {
-            case "T-Bill" -> quoteTBill(amount, duration, rounding);
-            case "Medium-Term" -> quoteMediumBond(amount, duration, rounding);
-            case "Long-Term" -> quoteLongBond(amount, duration, rounding);
+            case "Note" -> quoteTBill(amount, duration, rounding);
+            case "Serial" -> quoteMediumBond(amount, duration, rounding);
+            case "Term" -> quoteLongBond(amount, duration, rounding);
             // Loudly, rather than handing a screen a null to dereference three
             // frames later where the cause is invisible.
             default -> throw new IllegalArgumentException("No such instrument: " + type);
@@ -1982,7 +2199,7 @@ public class Game {
         double received = Math.round(amount * (1 - rate) * 100) / 100.0;
 
         System.out.println(
-                "A T-Bill of " + formatter.format(amount)
+                "A note of " + formatter.format(amount)
                 + " with duration of " + duration
                 + " months was issued for " + formatter.format(received));
         debtManager.addShortTermTBill(amount, duration, month);
@@ -2084,27 +2301,28 @@ public class Game {
              * is the most desperate borrowing there is, and from the first month
              * it costs what desperate borrowing costs.
              */
-            priceTheDebtMarket();
-            double rate = debtManager.quoteRate(gap,
-                    r -> Math.ceil((gap / (1 - r)) / 1000.0) * 1000);
-
-            // 1. Calculate Face Value needed so the cash received covers the gap
-            // Formula: Face Value = Gap / (1 - rate)
-            double faceValue = gap / (1 - rate);
-
-            // 2. Round up to nearest 1000 for market standardization
-            faceValue = Math.ceil(faceValue / 1000.0) * 1000;
-
-            // 3. Calculate actual cash hitting the bank (Face Value minus the "Interest/Discount")
-            double cashReceived = faceValue * (1 - rate);
-
-            // Record the debt (The city owes the full faceValue in 4 months)
-            debtManager.addShortTermTBill(faceValue, 4, month);
-
-            // Add the discounted cash to the wallet
-            cash += cashReceived;
-
-            System.out.println("Emergency Funding: Issued $" + faceValue + " T-Bill to cover deficit.");
+            /*
+             * ONE DEFINITION, and this used not to be.
+             *
+             * These twenty lines were a hand-rolled second copy of
+             * issueEmergencyDebt(): its own face formula, its own rounding, its
+             * own four-month term, and - once the note learned to discount on
+             * its own duration - its own now-wrong pricing. The finance screen
+             * and the automatic path would have quoted the same city two
+             * different numbers for the same borrowing.
+             *
+             * Deleted in favour of the real method. This codebase has now been
+             * bitten by a duplicated calculation four separate times (the
+             * materials quote, the business tax, the wage sync, this), and the
+             * pattern is always the same: the copy is fine on the day it is
+             * written and wrong the first time the original changes.
+             *
+             * SIX MONTHS, which is Jerus's call and the right one: long enough
+             * that a city has a real chance to fix the underlying problem or
+             * refinance into something longer, short enough that it still hurts
+             * and still has to be dealt with.
+             */
+            issueEmergencyDebt(gap, EMERGENCY_NOTE_MONTHS);
         }
         month++;
         monthsSinceAutosave++;
@@ -2330,6 +2548,107 @@ public class Game {
      * three have to be current before updateInterest() or any quote, which is
      * why this is one call rather than three scattered ones.
      */
+    /* =====================================================================
+       WHAT IT COSTS TO GO TO MARKET AT ALL
+
+       Underwriting, bond counsel, the rating agency, printing the official
+       statement. Real municipal issues pay this before a dollar arrives, and it
+       is the reason small issues are rare: the legal and rating work costs
+       roughly the same whether you raise one million or fifty.
+
+       So it is a fixed component plus a percentage, not a flat rate. That shape
+       is the whole point - it makes churning debt genuinely expensive, it makes
+       a tiny issue absurd rather than merely unwise, and it is what motivates
+       the minimum issue size below instead of that minimum being an arbitrary
+       constant nobody can justify.
+       ===================================================================== */
+
+    /** Bond counsel, rating and printing. Payable however small the deal is. */
+    /** Term of the note the city is forced into when it cannot pay its bills. */
+    public static final int EMERGENCY_NOTE_MONTHS = 6;
+
+    /** Bond counsel, rating and printing. Payable however small the deal is. */
+    private static final double FIXED_ISSUE_COST = 12;
+
+    /** Underwriter's spread, as a fraction of face. */
+    private static final double UNDERWRITING_SPREAD = .0075;
+
+    /**
+     * Taken off the proceeds at issue, never added to what is owed.
+     *
+     * The city borrows the face value and receives less; it does not borrow more
+     * to cover its own fees. That keeps the arithmetic honest against
+     * getMarketValue(), which prices the FACE - if fees were rolled into the
+     * face, a bond would be worth more than it raised the instant it was signed
+     * and the buyback would be an arbitrage again.
+     */
+    public double costOfIssuance(double faceValue) {
+        if (faceValue <= 0) return 0;
+        return FIXED_ISSUE_COST + faceValue * UNDERWRITING_SPREAD;
+    }
+
+    /**
+     * The smallest deal worth doing, which grows with the city.
+     *
+     * Replaces the silent $100,000k floor the long-bond screen used to pass as a
+     * rounding factor - a $100M minimum face on a city with a $4M budget, with
+     * nothing anywhere saying so (design queue F2). It was not wrong to have a
+     * minimum; it was wrong to have one nobody could see and that never moved.
+     *
+     * Tied to a year of tax revenue, because that is what makes the fixed costs
+     * proportionate: a city that collects $4M a year has no business arranging a
+     * $50k issue, and a city collecting $400M has no business arranging a $400k
+     * one. Floored so a brand new city can still borrow at all.
+     */
+    public double minimumIssueSize() {
+        double annualRevenue = economyManager.getTaxIncome() * 12;
+        return Math.max(50, annualRevenue * .05);
+    }
+
+    /* =====================================================================
+       THE CITY'S CREDIT, IN THE LANGUAGE PEOPLE USE
+
+       The rate curve already knows exactly how sound the city is. It just says
+       so as "4.27%", which tells a player what they are paying and nothing at
+       all about whether that is good. A letter says the second thing, and it is
+       how every real borrower experiences its own credit.
+
+       Measured off position within the market's own band rather than typed-in
+       percentages, for the reason the band assertions kept teaching: a rate
+       threshold written as a number is wrong the next time the curve is
+       reshaped, and the curve has been reshaped twice already.
+       ===================================================================== */
+
+    public String getCreditRating() {
+
+        double floor = debtManager.floorRate();
+        double ceiling = debtManager.ceilingRate();
+        if (ceiling <= floor) return "AAA";
+
+        double position = (debtManager.getRate() - floor) / (ceiling - floor);
+
+        if (position < .05) return "AAA";
+        if (position < .15) return "AA";
+        if (position < .30) return "A";
+        if (position < .50) return "BBB";
+        if (position < .70) return "BB";
+        if (position < .88) return "B";
+        return "CCC";
+    }
+
+    /** What the rating means, in one line, for the screen. */
+    public String getCreditOutlook() {
+        return switch (getCreditRating()) {
+            case "AAA" -> "Impeccable - the market will lend you anything";
+            case "AA"  -> "Very strong";
+            case "A"   -> "Strong";
+            case "BBB" -> "Adequate - the lowest rating still called investment grade";
+            case "BB"  -> "Speculative - you are paying for the doubt";
+            case "B"   -> "Highly speculative";
+            default    -> "Distressed - lenders expect not to be repaid in full";
+        };
+    }
+
     private void priceTheDebtMarket(){
         debtManager.setGDP(economyManager.getMonthGdp());
         debtManager.setTaxRevenue(economyManager.getTaxIncome());
@@ -2447,6 +2766,28 @@ public class Game {
 
     /** What businesses have scrapped, so the panel can say what went and when. */
     private DemolitionLog demolitionLog = new DemolitionLog();
+    private BuildLog buildLog = new BuildLog();
+
+    /**
+     * Files the month's finished buildings.
+     *
+     * Called from SimulationEngine with whatever advanceConstruction() handed
+     * back, and stamped with the month HERE rather than there because the clock
+     * lives on this side. Note the month it stamps is the one that is still
+     * running: advanceConstruction() is the first thing the month does, so a
+     * building that opens is recorded against the month it opened in, which is
+     * the same month the player sees it appear.
+     */
+    public void recordCompletions(java.util.List<BuildingManager.Completion> finished) {
+        if (finished == null) return;
+        for (BuildingManager.Completion done : finished) {
+            buildLog.record(done.building, done.quantity, month);
+        }
+    }
+
+    public BuildLog getBuildLog(){
+        return buildLog;
+    }
 
     /** What happened during the last fast-forward. See TimeSkipReport. */
     private TimeSkipReport skipReport = new TimeSkipReport();
@@ -2630,6 +2971,7 @@ public class Game {
 
         // History, not state: what the city lost and what its lenders wrote off.
         dataSave.setDemolitions(demolitionLog.all());
+        dataSave.setBuilds(buildLog.all());
         dataSave.setWriteOffTotals(
                 economyManager.getBusinessDebtManager().getWriteOffTotals());
 
@@ -2770,7 +3112,7 @@ public class Game {
         // 1. Calculate the actual cash gap (How much we are short)
         double gap = totalCost - cash;
 
-        System.out.println("Issue T-Bill to obtain funding? \nFunding required: " + formatter.format(gap));
+        System.out.println("Issue a short-term note to cover the shortfall? \nFunding required: " + formatter.format(gap));
         System.out.println("1. Yes\n2. No.");
 
         if (getInput() == 1) {
@@ -2821,12 +3163,77 @@ public class Game {
     * @param cashNeeded what has to reach the treasury
     * @return the terms actually struck, so a caller can show them
     */
+    /* =====================================================================
+       BUYING YOUR OWN DEBT BACK
+
+       The other half of the finance menu. Issuing turns future payments into
+       cash now; this turns cash now into no future payments, and the price is
+       whatever the paper is actually worth rather than what it says on it.
+       ===================================================================== */
+
+    /** What one bond would cost to clear right now, at the standing rate. */
+    public double quoteRepurchase(Debt debt) {
+        if (debt == null) return 0;
+        priceTheDebtMarket();
+        debtManager.updateInterest();
+        return debt.getMarketValue(debtManager.getRate());
+    }
+
+    /** What the city would book as a gain (positive) or loss (negative). */
+    public double repurchaseGain(Debt debt) {
+        if (debt == null) return 0;
+        return debt.getOustandingPrincipal() - quoteRepurchase(debt);
+    }
+
+    /**
+     * Buys one bond back and takes it off the books.
+     *
+     * PAID FOR IN CASH, AND ONLY IN CASH. A city that cannot afford this is
+     * refused rather than allowed to go overdrawn for it, and that is a rule
+     * about what the action MEANS, not a safety check: the overdraft is priced
+     * as principal by the same market (getPricedDebt) and charged the emergency
+     * rate, so borrowing at the worst rate available in order to retire cheaper
+     * paper is strictly worse than doing nothing. Letting the button do it would
+     * be handing the player a trap with a green tick on it.
+     *
+     * THE PRICE IS STRUCK ONCE, and the quote the player was shown is the quote
+     * they get. Re-pricing after taking the cash would move the rate (cash
+     * position feeds the market) and change the answer between reading it and
+     * paying it - the exact "asking the price changes the price" bug that
+     * calculateTotalCost() had.
+     *
+     * @return what it cost, or 0 if nothing happened
+     */
+    public double repurchaseDebt(Debt debt) {
+
+        if (debt == null) return 0;
+
+        double price = quoteRepurchase(debt);
+
+        if (price <= 0 || price > cash) {
+            return 0;
+        }
+
+        if (!debtManager.retire(debt)) {
+            return 0;   // not on the books; do not charge for it
+        }
+
+        cash -= price;
+
+        // Both sides moved - one bond fewer, and less cash - so the market has
+        // to be told before anything reads the rate again.
+        priceTheDebtMarket();
+        debtManager.updateInterest();
+
+        return price;
+    }
+
    public DebtQuote issueEmergencyDebt(double cashNeeded, int duration){
 
        DebtQuote quote = quoteTBill(cashNeeded, duration, 1000.0);
        if (quote.isEmpty()) return quote;
 
-       System.out.println("A T-Bill of $" + formatter.format(quote.faceValue())
+       System.out.println("A note of $" + formatter.format(quote.faceValue())
                + " with duration of " + duration
                + " was issued for $" + formatter.format(quote.cashReceived())
                + String.format(" at %.2f%%.", quote.marketRate() * 100));
@@ -3284,16 +3691,42 @@ public class Game {
                     JsonObject obj = element.getAsJsonObject();
                     String type = obj.get("type").getAsString();
 
+                    /*
+                     * THE OLD NAMES ARE STILL LISTED, AND MUST STAY LISTED.
+                     *
+                     * This switch is a FORMAT KEY, not a label. Renaming the
+                     * instruments to Note / Serial / Term without adding the new
+                     * strings here dropped every debt in every save on the floor
+                     * - silently, because an unmatched case just falls through
+                     * and the city reloads owing nothing. A player would have
+                     * seen their debt vanish and called it a gift.
+                     *
+                     * Same lesson as buildings.json: the display name is free to
+                     * change, the id is not. Anything that ever appears in a save
+                     * file is an id whatever it is called in the UI.
+                     */
                     switch (type) {
 
-                        case "T-BILL":
+                        case "NOTE":
+                        case "T-BILL":              // pre-rename saves
                             loadedDebts.add(gson.fromJson(obj, ShortTermTBill.class));
                             break;
-                        case "MEDIUM-BOND":
-                            loadedDebts.add(gson.fromJson(obj, MediumTermBond.class));
+
+                        case "SERIAL":
+                        case "MEDIUM-BOND":         // pre-serial saves; see repairAfterLoad
+                            MediumTermBond serial = gson.fromJson(obj, MediumTermBond.class);
+                            serial.repairAfterLoad();
+                            loadedDebts.add(serial);
                             break;
-                        case "LONG-BOND":
+
+                        case "TERM":
+                        case "LONG-BOND":           // pre-rename saves
                             loadedDebts.add(gson.fromJson(obj, LongTermBond.class));
+                            break;
+
+                        default:
+                            GameLog.note("Save contains an unknown debt type '"
+                                    + type + "' - it was not restored.");
                             break;
                     }
 
@@ -3447,6 +3880,7 @@ public class Game {
             economyManager.restoreNationalAccounts(restoredFlows.getNationalAccounts());
 
             demolitionLog.restore(restoredFlows.getDemolitions());
+            buildLog.restore(restoredFlows.getBuilds());
             economyManager.getBusinessDebtManager()
                     .restoreWriteOffs(restoredFlows.getWriteOffTotals());
 

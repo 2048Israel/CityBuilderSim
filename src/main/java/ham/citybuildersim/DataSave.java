@@ -231,6 +231,13 @@ public class DataSave {
      * is the one kind of state that cannot be recomputed from the present.
      */
     private java.util.List<DemolitionLog.Entry> demolitions;
+
+    /*
+     * The other half of that history: what the city GAINED. Reads back null on
+     * every save written before this build, which BuildLog.restore() takes as an
+     * empty log - the ordinary downward-compatible case, not an error.
+     */
+    private java.util.List<BuildLog.Entry> builds;
     private java.util.Map<String, Double> writeOffTotals;
 
     /*
@@ -632,6 +639,11 @@ public class DataSave {
         this.demolitions = entries;
     }
     public java.util.List<DemolitionLog.Entry> getDemolitions() { return demolitions; }
+
+    public void setBuilds(java.util.List<BuildLog.Entry> entries) {
+        this.builds = entries;
+    }
+    public java.util.List<BuildLog.Entry> getBuilds() { return builds; }
 
     public void setWriteOffTotals(java.util.Map<String, Double> totals) {
         this.writeOffTotals = totals;

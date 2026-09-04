@@ -9,6 +9,9 @@ public class BuildingsStacks {
     private BuildingsTemplate template;
     private int quantity;
     private int underConstruction;
+
+    /** Finished in the most recent advanceConstruction() call. Not saved: monthly. */
+    private int lastFinished;
     private double constructionProgress;
     private int constructionMaterialCost;
 
@@ -38,6 +41,7 @@ public class BuildingsStacks {
 
     public void advanceConstruction(double constructionOutput) {
         constructionMaterialCost = 0;
+        lastFinished = 0;
 
         if (underConstruction == 0) {
             return;
@@ -56,6 +60,7 @@ public class BuildingsStacks {
         int startedConstruction = underConstruction + finished;
         quantity += finished;
         constructionProgress = remainingOutput;
+        lastFinished = finished;
 
         // Print how many finished
         System.out.print(finished + "/" + startedConstruction + " " + template.name + "(s) finished construction.");
@@ -85,6 +90,19 @@ public class BuildingsStacks {
                             / constructionOutput);
             System.out.println(" " + (int) monthsLeft + " month(s).");
         }
+    }
+
+    /**
+     * How many finished in the most recent advanceConstruction() call.
+     *
+     * Reset at the top of that method, so it means "this month" for as long as
+     * the month lasts and reads zero for a stack that was asked and had nothing
+     * to finish. Deliberately not accumulated: the build log wants the month's
+     * completions, and a running total here would need clearing by someone,
+     * which is the shape of bug this codebase keeps finding in monthly state.
+     */
+    public int getLastFinished() {
+        return lastFinished;
     }
 
     //getters

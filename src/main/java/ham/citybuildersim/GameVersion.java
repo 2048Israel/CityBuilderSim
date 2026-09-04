@@ -62,8 +62,15 @@ public final class GameVersion {
      *     restores with the baseline marked unknown and skips one month's
      *     inventory term - which costs a month's accuracy instead of booking an
      *     entire existing warehouse as that month's production.
+     * 10 - the build log, the other half of the demolition log. An older build
+     *     reads none of it and hands back a city that appears never to have
+     *     finished anything, which is harmless in itself - but the same save
+     *     also carries everything 9 added, and THAT is what this number is
+     *     guarding. Downward is fine as always: a format-9 save has no build
+     *     log, Gson reads the field as null, and BuildLog.restore() takes null
+     *     as an empty log rather than an error.
      */
-    public static final int SAVE_FORMAT = 9;
+    public static final int SAVE_FORMAT = 10;
 
     public static final String NAME = "CityBuilderSim";
 

@@ -15,7 +15,7 @@ public class LongTermBond extends Debt {
         this.monthStarted = monthStarted;
         this.monthlyCouponRate = couponRate / 12;
         this.outstandingPrincipal = faceValue;
-        this.type = "LONG-BOND";
+        this.type = "TERM";
     }
 
     /**
@@ -69,5 +69,33 @@ public class LongTermBond extends Debt {
     public double getMonthlyInterestExpense(){
         double interest = (faceValue*monthlyCouponRate);
         return interest;
+    }
+
+    public double getCouponRate() {
+        return monthlyCouponRate * 12;
+    }
+
+    /**
+     * Coupon every month, and the whole face at the end.
+     *
+     * The bullet, and now the ONLY bullet among the three: the note repays a
+     * lump but pays no coupon, and the serial bond amortises. That makes this
+     * the instrument with the redemption cliff, which is its character rather
+     * than a flaw - you buy a very low monthly payment and you owe the lot in
+     * twenty-five years. The maturity strip along the bottom of the window
+     * exists so that is visible for years beforehand rather than on the morning.
+     */
+    @Override
+    public double[] remainingCashFlows() {
+
+        if (remainingMonths <= 0) {
+            return new double[0];
+        }
+
+        double coupon = faceValue * monthlyCouponRate;
+        double[] flows = new double[remainingMonths];
+        java.util.Arrays.fill(flows, coupon);
+        flows[remainingMonths - 1] += faceValue;
+        return flows;
     }
 }

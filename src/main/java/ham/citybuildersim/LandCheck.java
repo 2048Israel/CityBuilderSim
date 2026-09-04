@@ -182,11 +182,68 @@ public class LandCheck {
 
         assertTrue("a full city sells land dearer than an empty one",
                 full.getPricePerSqFt() > emptyPrice);
-        assertTrue("...and both are above what the city paid for it",
-                emptyPrice > empty.getAcquisitionCostPerSqFt()
-                        && full.getPricePerSqFt() > full.getAcquisitionCostPerSqFt());
-        System.out.printf("   $%.4f/sq ft empty, $%.4f/sq ft full%n",
-                emptyPrice, full.getPricePerSqFt());
+
+        /*
+         * THE OLD ASSERTION HERE WAS "and both are above what the city paid for
+         * it", and it is now DELIBERATELY FALSE at the empty end.
+         *
+         * That invariant only held because the sale price was the acquisition
+         * price times a markup that never dropped below 1.15 - which is also why
+         * scarcity did nothing: measured over 2,400 months the markup sat
+         * between 85% and 105% for the whole game while utilisation sat between
+         * 86% and 100%. The word "scarcity" was decoration.
+         *
+         * Inside land is priced on how much is left now, so a city holding far
+         * more ground than it can build on sells below what it paid, and eats
+         * the difference. Over-annexing is supposed to cost something.
+         */
+        assertTrue("a city with nothing built sells BELOW what it paid",
+                emptyPrice < empty.getAcquisitionCostPerSqFt());
+        assertTrue("...and a built-out one sells well above",
+                full.getPricePerSqFt() > full.getAcquisitionCostPerSqFt() * 1.4);
+
+        System.out.printf("   $%.4f/sq ft empty (%.0f%% of cost), "
+                        + "$%.4f/sq ft full (%.0f%% of cost)%n",
+                emptyPrice, emptyPrice / empty.getAcquisitionCostPerSqFt() * 100,
+                full.getPricePerSqFt(),
+                full.getPricePerSqFt() / full.getAcquisitionCostPerSqFt() * 100);
+
+        /*
+         * The property Jerus actually asked for, stated outright: annexing more
+         * ground makes the ground already inside CHEAPER. It is the reason the
+         * old measure had to go - utilisation moved so little that buying land
+         * barely registered.
+         */
+        LandManager tight = new LandManager();
+        tight.allocate(LandManager.STARTING_SQ_FT * .92);
+        tight.updateMarket(2000);
+        double whenTight = tight.getPricePerSqFt();
+
+        tight.setOwnedSqFt(tight.getOwnedSqFt() + LandManager.BLOCK_SQ_FT * 12);
+        tight.updateMarket(2000);
+        double afterBuying = tight.getPricePerSqFt();
+
+        System.out.printf("   tight $%.4f -> after annexing twelve blocks $%.4f%n",
+                whenTight, afterBuying);
+        assertTrue("buying land makes land cheaper for investors",
+                afterBuying < whenTight);
+
+        // And the curve is monotone, which a saturating ratio could get wrong.
+        LandMarket curve = new LandMarket();
+        double previous = -1;
+        boolean rising = true;
+        for (double built = .05; built <= 1.0; built += .05) {
+            double m = curve.scarcityMultiplier(1_000_000, 1_000_000 * built);
+            if (m < previous) rising = false;
+            previous = m;
+        }
+        assertTrue("the scarcity curve never goes backwards", rising);
+        check("nothing built is the cheapest it gets",
+                curve.scarcityMultiplier(1_000_000, 0), .65);
+        check("completely full is the dearest",
+                curve.scarcityMultiplier(1_000_000, 1_000_000), 1.90);
+        check("...and bad data cannot price below that",
+                curve.scarcityMultiplier(1_000_000, 1_200_000), 1.90);
 
         /* ==================== 5e. iron in the ground ==================== */
         System.out.println("\n--- ore ---");

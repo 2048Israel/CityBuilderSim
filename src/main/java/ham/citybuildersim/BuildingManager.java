@@ -477,17 +477,50 @@ public class BuildingManager {
         instances.add(new BuildingInstance(template));
     }
 
-    public void advanceConstruction(int constructionOutput) {
+    /**
+     * Runs the month's construction and reports what actually opened.
+     *
+     * Returns rather than logging here, because BuildingManager has no clock -
+     * the month a completion happened in is Game's to know, and handing this
+     * class the month just so it could stamp a log entry would be the wrong
+     * dependency in the wrong direction.
+     *
+     * Instances are advanced but not reported. They are latent (nothing calls
+     * addInstance() yet) and the aggregation helpers already skip them - see
+     * backlog item 4 - so reporting them would be the only place in the codebase
+     * pretending that path is live.
+     */
+    public java.util.List<Completion> advanceConstruction(int constructionOutput) {
+
+        java.util.List<Completion> finished = new java.util.ArrayList<>();
+
         if (getUnderConstruction() != 0) {
             double outputPerStack = (double) constructionOutput / getUnderConstruction();
             for (BuildingsStacks stack : stacks) {
                 stack.advanceConstruction(outputPerStack);
+                if (stack.getLastFinished() > 0) {
+                    finished.add(new Completion(
+                            stack.getBuilding().getName(), stack.getLastFinished()));
+                }
             }
             for (BuildingInstance inst : instances) {
                 inst.advanceConstruction();
             }
         }
 
+        return finished;
+    }
+
+    /** One building type and how many of it opened this month. */
+    public static final class Completion {
+
+        public final String building;
+        public final int quantity;
+
+        Completion(String building, int quantity) {
+            this.building = building;
+            this.quantity = quantity;
+        }
     }
 
     public void displayAllBuildings() {
@@ -597,6 +630,36 @@ public class BuildingManager {
                     * stack.getBuilding().getConstructionMaterials();
         }
         return units;
+    }
+
+    /**
+     * Jobs that will exist once everything on site is finished.
+     *
+     * Real estate needs this. Population is capped at jobs x 2.25, so housing
+     * demand is a function of the JOB market - and by the time an apartment
+     * block is up, the mill that was being built alongside it is staffed. An
+     * investor looking only at jobs that exist today is reading a number that is
+     * already out of date by exactly the lead time of its own project, and it
+     * under-builds every time the city is growing, which is every time it
+     * matters.
+     */
+    public int getJobsUnderConstruction() {
+        int jobs = 0;
+        for (BuildingsStacks stack : getStacksUnderConstruction()) {
+            jobs += stack.getUnderConstruction() * stack.getBuilding().getTotalJobs();
+        }
+        return jobs;
+    }
+
+    /** Homes that will exist once everything on site is finished. */
+    public int getHouseCapacityUnderConstruction() {
+        int capacity = 0;
+        for (BuildingsStacks stack : getStacksUnderConstruction()) {
+            if (stack.getBuilding().getCategory() == BuildingType.RESIDENTIAL) {
+                capacity += stack.getUnderConstruction() * stack.getBuilding().getCapacity();
+            }
+        }
+        return capacity;
     }
 
     public int getUnderConstruction() {

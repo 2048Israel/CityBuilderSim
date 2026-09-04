@@ -18,6 +18,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -33,6 +36,10 @@ public class UserInterface extends Application {
     private VBox rootMenu;
     private VBox constructionPanel;
     private VBox cityPanel;
+
+    /** Always-visible strips on the two BorderPane edges nothing else uses. */
+    private HBox dateBar;
+    private HBox debtBar;
     private Scene scene;
 
     @Override
@@ -61,10 +68,33 @@ public class UserInterface extends Application {
                 "-fx-padding: 16; -fx-background-color: #f4f4f4;"
                 + " -fx-border-color: #cccccc; -fx-border-width: 0 1 0 0;");
 
+        /*
+         * Date, cash and population across the top; the next debt maturities
+         * across the bottom.
+         *
+         * Both live outside rootMenu for exactly the reason the two side panels
+         * do: the menu system clears its own children on every screen change, so
+         * anything meant to be always-visible has to hang off the BorderPane
+         * instead. These were the two edges still unused.
+         */
+        this.dateBar = new HBox(18);
+        this.dateBar.setAlignment(Pos.CENTER_LEFT);
+        this.dateBar.setStyle(
+                "-fx-padding: 8 16 8 16; -fx-background-color: #263238;"
+                + " -fx-border-color: #37474f; -fx-border-width: 0 0 1 0;");
+
+        this.debtBar = new HBox(16);
+        this.debtBar.setAlignment(Pos.CENTER_LEFT);
+        this.debtBar.setStyle(
+                "-fx-padding: 6 16 6 16; -fx-background-color: #eceff1;"
+                + " -fx-border-color: #cfd8dc; -fx-border-width: 1 0 0 0;");
+
         BorderPane root = new BorderPane();
         root.setCenter(rootMenu);
         root.setLeft(cityPanel);
         root.setRight(constructionPanel);
+        root.setTop(dateBar);
+        root.setBottom(debtBar);
         this.scene = new Scene(root);
 
 
@@ -92,6 +122,197 @@ public class UserInterface extends Application {
         rootMenu.getChildren().clear();
         refreshCityPanel();
         refreshConstructionPanel();
+        refreshDateBar();
+        refreshDebtBar();
+    }
+
+    /* =====================================================================
+       THE TWO STRIPS
+       ===================================================================== */
+
+    /**
+     * Date, month number, cash and population across the top.
+     *
+     * THE MONTH NUMBER STAYS, next to the date rather than instead of it. Every
+     * save, log entry, bond maturity and report in this game is keyed to the
+     * integer month, so a player cross-referencing anything - "the demolition
+     * log says 14 months ago", "this bond matures in month 340" - needs the
+     * number the game actually counts in. The date is what a person thinks in;
+     * the number is what the game thinks in, and hiding the second would make
+     * every other screen harder to read, not easier.
+     */
+    private void refreshDateBar() {
+
+        dateBar.getChildren().clear();
+
+        int month = game.getMonth();
+
+        Label date = new Label(CityCalendar.format(month));
+        date.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #ffffff;");
+
+        Label counter = new Label("month " + month);
+        counter.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-text-fill: #90a4ae;");
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+
+        double cash = game.getCash();
+        Label cashLabel = new Label("Cash  $" + formatter.format(cash));
+        cashLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 13px;"
+                + " -fx-font-weight: bold; -fx-text-fill: "
+                // Overdrawn is not a rounding detail - it is being charged the
+                // emergency rate - so it gets the same red as everything else
+                // that is actively costing the player money.
+                + (cash < 0 ? "#ef5350" : "#a5d6a7") + ";");
+
+        Label popLabel = new Label("Pop  "
+                + formatter.format(game.getPopulationManager().getPopulation()));
+        popLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 13px;"
+                + " -fx-text-fill: #eceff1;");
+
+        // The rating, next to the money it governs. The rate curve already knew
+        // this; a letter is how a borrower actually experiences its own credit.
+        String rating = game.getCreditRating();
+        Label ratingLabel = new Label(rating);
+        ratingLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
+                + " -fx-font-weight: bold; -fx-padding: 1 6 1 6; -fx-background-radius: 3;"
+                + " -fx-text-fill: #ffffff; -fx-background-color: "
+                + switch (rating) {
+                    case "AAA", "AA" -> "#2e7d32";
+                    case "A", "BBB"  -> "#558b2f";
+                    case "BB"        -> "#ef6c00";
+                    case "B"         -> "#e64a19";
+                    default          -> "#c62828";
+                } + ";");
+
+        dateBar.getChildren().addAll(date, counter, gap, ratingLabel, popLabel, cashLabel);
+    }
+
+    /**
+     * The next five city debts to come due, and what the city owes altogether.
+     *
+     * CITY DEBT ONLY. The business sectors borrow too, and their paper is their
+     * own problem - it is serviced out of sector cash and the player cannot pay
+     * it off. Mixing the two here would put numbers in front of the player that
+     * they have no control over, next to numbers they very much do.
+     *
+     * The total is ALL outstanding city principal, not just the five shown, and
+     * that distinction matters: five near maturities can look small while a
+     * twenty-five-year bond sits behind them. The overdraft is called out
+     * separately when there is one, because it is priced as principal by the
+     * market (see DebtManager.getPricedDebt) but it is not an instrument and it
+     * has no maturity date to list.
+     */
+    private void refreshDebtBar() {
+
+        debtBar.getChildren().clear();
+
+        DebtManager debtManager = game.getDebtManager();
+        java.util.List<Debt> debts = new java.util.ArrayList<>(debtManager.getDebt());
+        int month = game.getMonth();
+
+        debts.sort(java.util.Comparator.comparingInt(Debt::getMaturityMonth));
+
+        Label heading = new Label("NEXT DUE");
+        heading.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #546e7a;");
+        debtBar.getChildren().add(heading);
+
+        if (debts.isEmpty()) {
+            Label none = new Label("No city debt outstanding.");
+            none.setStyle("-fx-font-size: 11px; -fx-text-fill: #78909c;");
+            debtBar.getChildren().add(none);
+        } else {
+            int shown = 0;
+            for (Debt debt : debts) {
+                if (shown++ >= 5) break;
+                debtBar.getChildren().add(maturityChip(debt, month));
+            }
+            if (debts.size() > 5) {
+                Label more = new Label("+" + (debts.size() - 5) + " more");
+                more.setStyle("-fx-font-size: 10px; -fx-text-fill: #90a4ae;");
+                debtBar.getChildren().add(more);
+            }
+        }
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        debtBar.getChildren().add(gap);
+
+        /*
+         * COUPON, not "interest", and the word is load-bearing.
+         *
+         * This sum is exactly what the city is charged each month - it is the
+         * same figure the bonds' own processMonth() puts through
+         * InterestExpense(). But a T-Bill is a DISCOUNT instrument: it charges
+         * nothing monthly and repays its whole face at maturity, so its
+         * getMonthlyInterestExpense() is 0, correctly. Summing that under the
+         * heading "INTEREST" tells a player whose only debt is bills that they
+         * are borrowing for free, which is the opposite of true - the cost is
+         * real, it is just sitting in the maturity chip instead.
+         *
+         * So the recurring figure is named for what it actually is, and when
+         * there is zero-coupon paper outstanding the strip says where the rest
+         * of the cost went rather than leaving a suspicious zero to interpret.
+         */
+        double principal = debtManager.getAllPrincipal();
+        double coupon = 0;
+        double discountPaper = 0;
+        for (Debt debt : debtManager.getDebt()) {
+            coupon += debt.getMonthlyInterestExpense();
+            if (debt.getMonthlyInterestExpense() <= 0) {
+                discountPaper += debt.getOustandingPrincipal();
+            }
+        }
+
+        Label totals = new Label(String.format("TOTAL PRINCIPAL  $%s      COUPON  $%s/mo",
+                formatter.format(principal), formatter.format(coupon)));
+        totals.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #37474f;");
+        debtBar.getChildren().add(totals);
+
+        if (discountPaper > 0) {
+            Label discount = new Label(String.format("  ($%s of that pays at maturity, not monthly)",
+                    formatter.format(discountPaper)));
+            discount.setStyle("-fx-font-size: 10px; -fx-text-fill: #78909c;");
+            debtBar.getChildren().add(discount);
+        }
+
+        double overdraft = debtManager.getOverdraft();
+        if (overdraft > 0) {
+            Label od = new Label(String.format("  + $%s overdrawn",
+                    formatter.format(overdraft)));
+            od.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                    + " -fx-font-weight: bold; -fx-text-fill: #c62828;");
+            debtBar.getChildren().add(od);
+        }
+    }
+
+    /** One maturity on the bottom strip: amount, type, date, how far off. */
+    private VBox maturityChip(Debt debt, int currentMonth) {
+
+        int due = debt.getMaturityMonth();
+        int gap = due - currentMonth;
+
+        // Urgency by colour as well as by position, so a wall of paper coming
+        // due reads at a glance without anyone parsing five dates.
+        String colour = (gap <= 3) ? "#c62828" : (gap <= 12) ? "#ef6c00" : "#37474f";
+
+        Label amount = new Label("$" + formatter.format(debt.getOustandingPrincipal()));
+        amount.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
+                + " -fx-font-weight: bold; -fx-text-fill: " + colour + ";");
+
+        Label when = new Label(CityCalendar.formatShort(due)
+                + "  " + CityCalendar.until(currentMonth, due));
+        when.setStyle("-fx-font-size: 9px; -fx-text-fill: #78909c;");
+
+        Label type = new Label(debt.getType());
+        type.setStyle("-fx-font-size: 9px; -fx-text-fill: #90a4ae;");
+
+        VBox chip = new VBox(0);
+        chip.getChildren().addAll(amount, when, type);
+        chip.setStyle("-fx-padding: 0 14 0 0;");
+        return chip;
     }
 
     private void showMainMenu() {
@@ -459,6 +680,16 @@ public class UserInterface extends Application {
         rootMenu.getChildren().add(constructionSheddingBanner(this::showStartMenu));
     }
 
+    /*
+     * The other thing that stops a city silently. Construction shedding at
+     * least destroys something visible; this destroys nothing at all - the
+     * private sector simply asks for land every month, is told no, and waits.
+     * Measured at 120 consecutive months in one ordinary run.
+     */
+    if (game.isPrivateInvestmentLandLocked()) {
+        rootMenu.getChildren().add(landLockedBanner(this::showStartMenu));
+    }
+
     
 }
     
@@ -526,6 +757,65 @@ public class UserInterface extends Application {
 
         banner.getChildren().add(actions);
         return banner;
+    }
+
+    /**
+     * "Your businesses want to build and have nowhere to put it."
+     *
+     * Deliberately NOT phrased as an error, because nothing has gone wrong.
+     * Buying land is the player's job by design - this only says that the job
+     * is currently outstanding and what it is costing, which is the part the
+     * game never told anyone.
+     *
+     * The button goes to the land office rather than annexing anything itself.
+     * Spending the city's money is a decision, and the banner's whole complaint
+     * is that a decision was being made invisibly.
+     */
+    private VBox landLockedBanner(Runnable andThen) {
+
+        java.util.Set<String> blocked = game.getLandBlockedSectors();
+        double free = game.getLandManager().getAvailableSqFt();
+        double used = game.getLandManager().getUtilisation() * 100;
+
+        VBox banner = criticalSection("[!] YOUR BUSINESSES HAVE NOWHERE TO BUILD",
+                blocked.size() == 1
+                        ? String.format("%s wants to expand and cannot -", first(blocked))
+                        : String.format("%d sectors want to expand and cannot -",
+                                blocked.size()),
+                "there is no land left to build on.",
+                "",
+                String.format("Waiting:            %s", String.join(", ", blocked)),
+                String.format("Land free:          %s sq ft", formatter.format(free)),
+                String.format("Land in use:        %.0f%%", used),
+                "",
+                "They will keep asking every month and keep being refused.",
+                "Nothing else is wrong, and nothing will fix itself.");
+
+        Button annex = new Button("Go to the land office");
+        annex.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
+        annex.setOnAction(e -> {
+            game.acknowledgeLandLock();
+            showLandMenu();
+        });
+
+        Button dismiss = new Button("Not now");
+        dismiss.setOnAction(e -> {
+            game.acknowledgeLandLock();
+            andThen.run();
+        });
+
+        javafx.scene.layout.FlowPane actions = new javafx.scene.layout.FlowPane(8, 8);
+        actions.setAlignment(Pos.CENTER);
+        actions.setPrefWrapLength(340);
+        actions.getChildren().addAll(annex, dismiss);
+        actions.setStyle("-fx-padding: 8 0 0 0;");
+
+        banner.getChildren().add(actions);
+        return banner;
+    }
+
+    private static String first(java.util.Set<String> set) {
+        return set.iterator().next();
     }
 
     private void showBuildingsMenu() {
@@ -636,9 +926,6 @@ public class UserInterface extends Application {
         // button with a price on it, which was a slider rather than a decision:
         // the price only ever went up, so the answer was always "now or later".
         column.getChildren().add(reportSection("ON OFFER",
-                String.format("Market rate:            $%.2f /sq ft",
-                        land.getAcquisitionCostPerSqFt() * 1000),
-                "  (rises with the size of the city - land, and people)",
                 String.format("Smallest plot sold:     %.0f block%s",
                         land.getMarket().getMinBlocks(),
                         land.getMarket().getMinBlocks() == 1 ? "" : "s"),
@@ -701,15 +988,38 @@ public class UserInterface extends Application {
         double price = land.getPricePerSqFt();
         double margin = land.getMarginPerSqFt();
 
-        VBox selling = reportSection("SELLING TO BUSINESSES",
-                String.format("Your price:             $%.2f /sq ft", price * 1000),
-                String.format("Costs you:              $%.2f /sq ft",
-                        land.getAcquisitionCostPerSqFt() * 1000));
+        /*
+         * TWO PRICES, TWO MARKETS, and the screen said so about neither.
+         *
+         * Outside the city, ground gets dearer the bigger the city is. Inside
+         * it, none of that matters - a developer cares whether there is anywhere
+         * left to build, so the price is scarcity and nothing else. Which means
+         * the margin between them is now a CONSEQUENCE of how much land the city
+         * is sitting on, and can go either way. That is the decision annexing
+         * has become, and it was previously invisible because the markup never
+         * left the 85-105% band whatever the player did.
+         */
+        double acquisition = land.getAcquisitionCostPerSqFt();
 
-        Label marginLine = monoLabel(String.format("%-24s$%.2f /sq ft", "Margin:", margin * 1000));
+        VBox selling = reportSection("SELLING TO BUSINESSES",
+                String.format("Outside, you buy at:    $%.2f /sq ft", acquisition * 1000),
+                "  (rises with the city - land owned, and people)",
+                String.format("Inside, they buy at:    $%.2f /sq ft   (%.0f%% of what it cost you)",
+                        price * 1000, acquisition > 0 ? price / acquisition * 100 : 0),
+                "  (supply against demand - the more land free, the cheaper)");
+
+        Label marginLine = monoLabel(String.format("%-24s$%+.2f /sq ft", "Margin:", margin * 1000));
         marginLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
                 + (margin < 0 ? "#c62828" : "#2e7d32") + ";");
         selling.getChildren().add(marginLine);
+
+        Label meaning = monoLabel(margin < 0
+                ? "  you hold more ground than anyone wants to build on, and are"
+                        + " selling it below cost"
+                : "  land is tight enough that the city profits on every sale");
+        meaning.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                + " -fx-text-fill: " + (margin < 0 ? "#c62828" : "#6d8f6d") + ";");
+        selling.getChildren().add(meaning);
 
         // What the price actually means to a buyer, since "per square foot" is
         // not a number anyone can price a decision from.
@@ -826,10 +1136,10 @@ public class UserInterface extends Application {
         b4.setOnAction(e -> showSectorMenu());
         b5.setOnAction(e -> showGovernmentMenu());
 
-        // NOTE: "Restructure" (b2) was never implemented even in the old terminal
-        // menu (its case was an empty stub) - leaving disabled. "Sector Info" (b4)
-        // is now wired up below.
-        b2.setDisable(true);
+        // "Restructure" was an empty stub in the terminal build and disabled here
+        // for a long time. It buys the city's own paper back now - see
+        // showRestructureMenu().
+        b2.setOnAction(e -> showRestructureMenu());
 
         b0.setOnAction(e -> {
             // go back to main menu
@@ -1242,16 +1552,16 @@ public class UserInterface extends Application {
         
         Label gameInfo = new Label("Month: " + month + " | Cash: $" + formatter.format(cash)+ "\nInterestRate: " + formatter.format(interest*100)+"%");
 
-        Button b1 = new Button("Short Term T-Bills");
-        Button b2 = new Button("Medium Term Bonds");
-        Button b3 = new Button("Long Term Bonds");
+        Button b1 = new Button("Short-Term Notes  (no coupon, repay one lump)");
+        Button b2 = new Button("Serial Bonds  (principal amortises, no lump)");
+        Button b3 = new Button("Term Bonds  (low coupon, whole par due at the end)");
         
         ;
         Button b0 = new Button("Back");
         
-        b1.setOnAction(e -> showDebtIssuanceMenu("T-Bill", 3, 12, 1000));
-        b2.setOnAction(e -> showDebtIssuanceMenu("Medium-Term", 1, 10, 10000));
-        b3.setOnAction(e -> showDebtIssuanceMenu("Long-Term", 10, 50, 100000));
+        b1.setOnAction(e -> showDebtIssuanceMenu("Note", 3, 12, 1000));
+        b2.setOnAction(e -> showDebtIssuanceMenu("Serial", 1, 10, 10000));
+        b3.setOnAction(e -> showDebtIssuanceMenu("Term", 10, 50, 100000));
         
         b0.setOnAction(e -> {
             // go back to main menu
@@ -1476,7 +1786,7 @@ public class UserInterface extends Application {
     double totalCost = game.calculateTotalCost(selected, quantity);
     double gap = totalCost - game.getCash();
 
-    // Three months, matching what issueEmergencyDebt books.
+    // Matching what the automatic path books when cash runs out.
     DebtQuote quote = game.quoteTBill(gap, 3, 1000.0);
 
     Label warning = new Label("INSUFFICIENT FUNDS");
@@ -1492,7 +1802,7 @@ public class UserInterface extends Application {
 
     Button confirmDebt = new Button("Issue T-Bill");
     confirmDebt.setOnAction(e -> {
-        game.issueEmergencyDebt(gap, 3);            // quotes it again, identically
+        game.issueEmergencyDebt(gap, Game.EMERGENCY_NOTE_MONTHS);   // quotes it again, identically
         game.buildStack(selected, quantity, false);
         handleAllBuildingMenus(prevTitle, prevCats);
     });
@@ -1532,9 +1842,28 @@ public class UserInterface extends Application {
     private void showDebtIssuanceMenu(String type, int minDur, int maxDur, double roundingFactor) {
     clearMenu();
     
-    String timeUnit = type.equals("T-Bill") ? "months" : "years";
-    Label title = new Label("Issue " + type + "\nSelect Duration (" + timeUnit + "):");
+    String timeUnit = type.equals("Note") ? "months" : "years";
+    Label title = new Label("Issue a " + type + "\nSelect Duration (" + timeUnit + "):");
     title.setStyle("-fx-font-weight: bold; -fx-text-alignment: center;");
+
+    /*
+     * The minimum, SAID OUT LOUD. It used to be the rounding factor and nothing
+     * else - the long-bond screen quietly passed 100,000, so a city with a $4M
+     * budget was being offered a $100M minimum face with no explanation and no
+     * way to find out (design queue F2). A floor is fine; an invisible one is
+     * not, and one that never moves as the city grows is worse.
+     */
+    Label terms = new Label(String.format(
+            "Rated %s at %.2f%%.  Issues round to $%s, and the market will not "
+            + "arrange anything under $%s for a city this size - the legal and "
+            + "rating work costs the same however little you raise.",
+            game.getCreditRating(), game.getInterestRate() * 100,
+            formatter.format(roundingFactor),
+            formatter.format(game.minimumIssueSize())));
+    terms.setWrapText(true);
+    terms.setMaxWidth(TABLE_WIDTH);
+    terms.setStyle("-fx-text-fill: #37474f; -fx-font-size: 11px; -fx-padding: 4 0 8 0;");
+    terms.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
     // Container for duration buttons
     javafx.scene.layout.FlowPane durationGrid = new javafx.scene.layout.FlowPane(10, 10);
@@ -1552,7 +1881,7 @@ public class UserInterface extends Application {
     Button back = new Button("Back");
     back.setOnAction(e -> showFinanceMenu());
 
-    rootMenu.getChildren().addAll(title, durationGrid, back);
+    rootMenu.getChildren().addAll(title, terms, durationGrid, back);
 }
     
     /**
@@ -1579,7 +1908,7 @@ public class UserInterface extends Application {
     final double[] requestedAmount = {0};
 
     Label heading = new Label(String.format("Issuing %s (%d %s)",
-            type, duration, type.equals("T-Bill") ? "months" : "years"));
+            type, duration, type.equals("Note") ? "months" : "years"));
     heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
     Label amountLabel = new Label("Amount Requested: $0");
@@ -1668,9 +1997,9 @@ public class UserInterface extends Application {
 }
     private String executeDebtLogic(String type, double amount, int duration, double rounding) {
         return switch (type) {
-            case "T-Bill" -> game.handleTBillLogic(amount, duration, rounding);
-            case "Medium-Term" -> game.handleMediumBondLogic(amount, duration, rounding);
-            case "Long-Term" -> game.handleLongBondLogic(amount, duration, rounding);
+            case "Note" -> game.handleTBillLogic(amount, duration, rounding);
+            case "Serial" -> game.handleMediumBondLogic(amount, duration, rounding);
+            case "Term" -> game.handleLongBondLogic(amount, duration, rounding);
             default -> "Unknown instrument.";
         };
     }
@@ -2078,7 +2407,10 @@ public class UserInterface extends Application {
             );
         }
 
+        // The one scrolled screen that never got this, so it alone rendered
+        // hard against the left edge while the rest were centred.
         VBox content = new VBox(0);
+        content.setAlignment(Pos.CENTER);
         content.getChildren().addAll(overview, laborSummary, jobTable, status);
 
         Button cashflow = new Button("Household Cash Flow");
@@ -3198,6 +3530,78 @@ public class UserInterface extends Application {
         return formatter.format(roads.getUtilisation() * 100) + "% used";
     }
 
+    /* =====================================================================
+       HEADROOM, NOT SATISFACTION
+
+       getEnergyRatio() and getWaterRatio() are min(supply/demand, 1) - they are
+       the multiplier the economy is throttled by, and as a READOUT they are
+       nearly useless: they sit at exactly 100% right up until the moment the
+       city browns out, then fall off a cliff. "Everything is fine" and "you are
+       one factory away from a blackout" print identically.
+
+       So the panel shows the other side of the same fraction: how much of what
+       the city can generate is being drawn. That number climbs steadily and
+       visibly, which is what makes it a warning rather than an obituary.
+
+       Past 100% it keeps counting rather than clamping, because how far over
+       you are is exactly what you need to know while fixing it - 118% and 190%
+       want very different responses, and both would read as "0% spare".
+       ===================================================================== */
+
+    /** Amber from three-quarters, red once there is no headroom left. */
+    private Label utilityLine(String label, double consumption, double production) {
+
+        if (production <= 0) {
+            // No plant at all. Not a shortage until something actually draws.
+            return statLine(label, consumption > 0 ? "no supply" : "-");
+        }
+
+        double used = consumption / production;
+
+        Label row = statLine(label, formatter.format(used * 100) + "% used");
+
+        String colour = (used >= 1.0) ? "#c62828"
+                      : (used >= .75) ? "#ef6c00"
+                                      : "#2e7d32";
+        boolean bold = used >= .75;
+
+        row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                + " -fx-text-fill: " + colour + ";"
+                + (bold ? " -fx-font-weight: bold;" : ""));
+        return row;
+    }
+
+    /**
+     * Roads, red once traffic is actually being held up.
+     *
+     * The two thresholds Jerus asked for - "above 90%" and "restricting flow" -
+     * turn out to be the SAME line: InfrastructureManager.FREE_FLOW is 0.9, so
+     * throughput starts falling at exactly 90% utilisation. Written against
+     * isCongested() rather than a typed-in .90 so that stays true if FREE_FLOW
+     * is ever retuned; hardcoding the number here is the same mistake the debt
+     * band assertions kept making.
+     *
+     * STRAINED (0.85) gives the amber step, which is the useful one: it is the
+     * last point at which building more roads is cheaper than the congestion.
+     */
+    private Label roadLine() {
+
+        InfrastructureManager roads = game.getInfrastructureManager();
+        Label row = statLine("Roads", roadSummary());
+
+        if (roads.isCongested()) {
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
+        } else if (roads.isStrained()) {
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #ef6c00; -fx-font-weight: bold;");
+        } else {
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #2e7d32;");
+        }
+        return row;
+    }
+
     /** A bold green/red status row, e.g. "System Stability:  STABLE". */
     private Label statusLabel(String label, boolean good, String goodText, String badText) {
         Label line = monoLabel(String.format("%-24s%s", label, good ? goodText : badText));
@@ -3426,6 +3830,166 @@ public class UserInterface extends Application {
         section.getChildren().add(line);
     }
 
+    /**
+     * Buying the city's own debt back, one bond at a time.
+     *
+     * The mirror of the finance menu: that one turns future payments into cash
+     * now, this one turns cash now into no future payments.
+     *
+     * WHY EVERY ROW SHOWS THE DISCOUNT AND NOT JUST THE PRICE. The interesting
+     * thing here is never the price on its own, it is the gap between the price
+     * and the face - which is a statement about the city's credit. Paper issued
+     * when the city was sound and held while its rate climbed is CHEAP to
+     * retire: $500,000 of face for $302,646, a real $197,354 gain. Paper issued
+     * dear and held while the city improved costs a premium to escape. Showing
+     * only "Buy back: $302,646" would hide the entire mechanic behind a number
+     * that looks like a bill.
+     */
+    /**
+     * How wide the paragraph above the buyback table wraps.
+     *
+     * The table sizes itself - scrolled() pins it to its own preferred width -
+     * so this only has to stop the explanatory line running the full width of a
+     * maximised window and reading as a different column from the table under
+     * it.
+     */
+    private static final double TABLE_WIDTH = 660;
+
+    private void showRestructureMenu() {
+        clearMenu();
+
+        Label title = new Label("BUY BACK CITY DEBT");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        DebtManager debtManager = game.getDebtManager();
+        List<Debt> sorted = new ArrayList<>(debtManager.getDebt());
+        sorted.sort(java.util.Comparator.comparingInt(Debt::getMaturityMonth));
+
+        double rate = debtManager.getRate();
+        int currentMonth = game.getMonth();
+
+        Label explain = new Label(String.format(
+                "Bonds are priced at what they are worth today - the present value of "
+                + "everything each one still owes, discounted at the city's current "
+                + "rate of %.2f%% (rated %s). Above 100 of par means getting out costs "
+                + "a premium; below means your own paper has become cheap to retire.",
+                rate * 100, game.getCreditRating()));
+        explain.setStyle("-fx-text-fill: #37474f; -fx-padding: 0 0 6 0;");
+        explain.setWrapText(true);
+        explain.setMaxWidth(TABLE_WIDTH);
+        explain.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        Label cashLine = new Label("Cash available: $" + formatter.format(game.getCash()));
+        cashLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;");
+
+        rootMenu.getChildren().addAll(title, explain, cashLine);
+
+        if (sorted.isEmpty()) {
+            Label none = new Label("The city owes nothing. Nothing to buy back.");
+            none.setStyle("-fx-text-fill: #78909c; -fx-padding: 16;");
+            rootMenu.getChildren().add(none);
+        } else {
+            VBox rows = new VBox(4);
+            rows.setAlignment(Pos.CENTER_LEFT);
+            rows.setStyle("-fx-padding: 8 0 0 0;");
+
+            Label header = new Label(String.format("%-11s %-13s %-13s %-13s %-13s",
+                    "Type", "Par", "Matures", "Buy back for", "Gain"));
+            header.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                    + " -fx-text-fill: #546e7a;");
+            rows.getChildren().add(header);
+
+            for (Debt debt : sorted) {
+                rows.getChildren().add(repurchaseRow(debt, rate, currentMonth));
+            }
+
+            /*
+             * SAME TRAP AS THE SHEDDING BANNER, and scrolled() already solves
+             * it. rootMenu is a centred VBox, but a VBox fills its children to
+             * its own width unless they refuse, and a ScrollPane refuses
+             * nothing - it stretches across the whole window, so the rows sit
+             * hard against the left edge while every label above them is neatly
+             * centred. Nothing is misaligned; the container is just wider than
+             * its contents.
+             *
+             * scrolled() pins the column to USE_PREF_SIZE and wraps it in a
+             * centred box before the ScrollPane ever sees it, which is why every
+             * other screen using it sits where it should. Written out by hand
+             * here first, which was the mistake - the fix already existed.
+             */
+            rootMenu.getChildren().add(scrolled(rows));
+
+            Label totals = new Label(String.format(
+                    "All of it: $%s of face would cost $%s to clear today.",
+                    formatter.format(debtManager.getAllPrincipal()),
+                    formatter.format(debtManager.getTotalMarketValue())));
+            totals.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                    + " -fx-text-fill: #37474f; -fx-padding: 8 0 0 0;");
+            rootMenu.getChildren().add(totals);
+        }
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showEconomyMenu());
+        rootMenu.getChildren().add(back);
+    }
+
+    /** One bond, with what it would cost to clear and what that saves. */
+    private VBox repurchaseRow(Debt debt, double rate, int currentMonth) {
+
+        double face = debt.getOustandingPrincipal();
+        double price = debt.getMarketValue(rate);
+        double gain = face - price;
+        boolean affordable = price <= game.getCash();
+
+        Label line = monoLabel(String.format("%-11s %-13s %-13s %-13s %-13s",
+                debt.getType(),
+                "$" + formatter.format(face),
+                CityCalendar.formatShort(debt.getMaturityMonth()),
+                "$" + formatter.format(price),
+                (gain >= 0 ? "+$" : "-$") + formatter.format(Math.abs(gain))));
+
+        // Green when retiring it clears more face than it costs cash, red when
+        // the bond has become dearer than its face and getting out costs a
+        // premium. Those are the two states worth telling apart at a glance.
+        line.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-text-fill: " + (gain >= 0 ? "#2e7d32" : "#c62828") + ";");
+
+        Button buy = new Button(affordable
+                ? "Buy back for $" + formatter.format(price)
+                : "Cannot afford ($" + formatter.format(price) + ")");
+        buy.setDisable(!affordable);
+        if (affordable) {
+            buy.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
+        }
+        buy.setOnAction(e -> {
+            game.repurchaseDebt(debt);
+            // Straight back to a freshly built screen: the rate moves when debt
+            // leaves the books, so every other row's price is now stale.
+            showRestructureMenu();
+        });
+
+        // The bond vocabulary, on the row where the decision is made. Price
+        // against par says whether it is cheap; yield says what it is really
+        // costing, which for a deep-discount term bond is nowhere near coupon.
+        Label detail = monoLabel(String.format(
+                "   %s of par   yield %.2f%%   coupon $%s/mo   %s",
+                String.format("%.1f", debt.getPriceAsPercentOfPar(rate)),
+                debt.getCurrentYield(rate) * 100,
+                formatter.format(debt.getMonthlyInterestExpense()),
+                CityCalendar.until(currentMonth, debt.getMaturityMonth())));
+        detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
+                + " -fx-text-fill: #90a4ae;");
+
+        HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getChildren().addAll(line, buy);
+
+        VBox cell = new VBox(1);
+        cell.getChildren().addAll(row, detail);
+        cell.setStyle("-fx-padding: 2 0 4 0;");
+        return cell;
+    }
+
     private void showDebtInfoMenu() {
         clearMenu();
 
@@ -3539,6 +4103,7 @@ public class UserInterface extends Application {
             Label idle = new Label("Nothing being built.");
             idle.setStyle("-fx-text-fill: #888888; -fx-padding: 8 0 0 0;");
             constructionPanel.getChildren().add(idle);
+            addBuildLog();
             addDemolitionLog();
             return;
         }
@@ -3599,6 +4164,7 @@ public class UserInterface extends Application {
         scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
         constructionPanel.getChildren().add(scroller);
 
+        addBuildLog();
         addDemolitionLog();
     }
 
@@ -3660,6 +4226,61 @@ public class UserInterface extends Application {
         constructionPanel.getChildren().add(scroller);
     }
 
+    /**
+     * What the city has GAINED lately, above what it has lost.
+     *
+     * Deliberately the same panel, the same two-year window and the same fading
+     * as the demolition log, because they are two halves of one question - what
+     * changed while I was not watching - and a player comparing them should not
+     * have to hold two different clocks in their head.
+     *
+     * Above rather than below: things going up is the more common event and the
+     * more expected one, so it reads in the order the eye already travels -
+     * under construction, then opened, then lost.
+     */
+    private void addBuildLog() {
+
+        java.util.List<BuildLog.Entry> built =
+                game.getBuildLog().recent(game.getMonth());
+
+        if (built.isEmpty()) {
+            return;
+        }
+
+        Label header = new Label("RECENTLY BUILT");
+        header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
+                + " -fx-text-fill: #2e7d32; -fx-padding: 14 0 2 0;");
+        constructionPanel.getChildren().add(header);
+
+        VBox list = new VBox(6);
+
+        for (BuildLog.Entry entry : built) {
+
+            Label what = new Label(String.format("%,d x %s", entry.quantity, entry.building));
+            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #1b5e20;");
+
+            // Fading with age, same as demolitions, so the eye goes to what just
+            // happened without older entries disappearing entirely.
+            int ago = entry.monthsAgo(game.getMonth());
+            String shade = (ago <= 1) ? "#2e7d32" : (ago <= 6) ? "#6d8f6d" : "#9e9e9e";
+
+            Label when = monoLabel("  opened " + entry.when(game.getMonth())
+                    + " (" + CityCalendar.formatShort(entry.month) + ")");
+            when.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: " + shade + ";");
+
+            VBox row = new VBox(1);
+            row.getChildren().addAll(what, when);
+            list.getChildren().add(row);
+        }
+
+        javafx.scene.control.ScrollPane scroller = new javafx.scene.control.ScrollPane(list);
+        scroller.setFitToWidth(true);
+        scroller.setPrefHeight(Math.min(190, 44 * built.size() + 8));
+        scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
+        constructionPanel.getChildren().add(scroller);
+    }
+
     /* =====================================================================
        CITY OVERVIEW PANEL
 
@@ -3705,6 +4326,7 @@ public class UserInterface extends Application {
         EconomyManager economyManager = game.getEconomyManager();
         PopulationManager populationManager = game.getPopulationManager();
         BuildingManager buildingManager = game.getBuildingManager();
+        UtilitiesHandler utilities = game.getServicesManager().getUtilitiesHandler();
 
         /* ---------------- ECONOMY ---------------- */
         double debt = game.getDebtManager().getAllPrincipal();
@@ -3788,9 +4410,11 @@ public class UserInterface extends Application {
                 statLine("Materials", String.format("%,d", game.getConstructionMaterials())),
                 statLine("Store stock", String.format("%,d", economyManager.getStoreInventory())),
                 statLine("Food stock", String.format("%,d", economyManager.getIndustryFoodInventory())),
-                statLine("Energy", formatter.format(game.getEnergyRatio() * 100) + "%"),
-                statLine("Water", formatter.format(game.getWaterRatio() * 100) + "%"),
-                statLine("Roads", roadSummary()));
+                utilityLine("Energy",
+                        utilities.getConsumption(), utilities.getProduction()),
+                utilityLine("Water",
+                        utilities.getWaterConsumption(), utilities.getWaterProduction()),
+                roadLine());
 
         /* ---------------- LAND ---------------- */
         LandManager land = game.getLandManager();

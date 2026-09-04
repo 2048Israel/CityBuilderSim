@@ -52,7 +52,8 @@ public class SimulationEngine {
          * keeps that from being a trap - it always digs itself out eventually,
          * slowly, at a real cost in months.
          */
-        buildingManager.advanceConstruction(game.getConstructionOutput());
+        game.recordCompletions(
+                buildingManager.advanceConstruction(game.getConstructionOutput()));
 
         // Roads, before anything reads them. Capacity and load are both pure
         // functions of what is standing, and what is standing just changed:

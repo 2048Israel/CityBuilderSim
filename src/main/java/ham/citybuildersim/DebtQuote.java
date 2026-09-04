@@ -27,7 +27,7 @@ import java.util.Locale;
  * Everything here is a term of the loan, not a description of it - the wording
  * lives in summary(), so the console and the JavaFX screens say the same thing.
  *
- * @param instrument      "T-Bill", "Medium-Term" or "Long-Term"
+ * @param instrument      "Note", "Serial" or "Term"
  * @param duration        months for a T-Bill, years for either bond
  * @param requested       what the player asked to receive
  * @param marketRate      the rate struck, WITH this loan priced in
@@ -52,7 +52,7 @@ public record DebtQuote(
 
     /** Years for a bond, months for a bill - the unit the duration is in. */
     public String timeUnit() {
-        return "T-Bill".equals(instrument) ? "months" : "years";
+        return "Note".equals(instrument) ? "months" : "years";
     }
 
     /**
@@ -72,33 +72,57 @@ public record DebtQuote(
     }
 
     /** The terms, as the player should see them before confirming. */
+    /**
+     * The terms, in the vocabulary a bond is actually described in.
+     *
+     * PAR, DISCOUNT AND PREMIUM ARE STATED, not left for the player to work out
+     * from two dollar figures. "Received $198,488 against $200,000 of par" is
+     * arithmetic; "issued at 99.2 - a discount" is what a bond desk would say,
+     * and it is the phrasing that makes the three instruments comparable at all,
+     * since they differ mainly in where they sit against par and why.
+     */
     public String summary() {
         return switch (instrument) {
-            case "T-Bill" -> String.format(
-                    "Face Value (repay):   $%s%n"
-                    + "Cash Received:        $%s%n"
-                    + "Discount Cost:        $%s%n"
-                    + "Term:                 %d months @ %.2f%%",
-                    f(faceValue), f(cashReceived), f(totalCost), duration, marketRate * 100);
-
-            case "Medium-Term" -> String.format(
-                    "Principal:            $%s%n"
-                    + "Cash Received:        $%s%n"
-                    + "Monthly Interest:     $%s%n"
-                    + "Total Cost of Credit: $%s%n"
-                    + "Term:                 %d years @ %.2f%%",
-                    f(faceValue), f(cashReceived), f(monthlyInterest),
+            case "Note" -> String.format(
+                    "Par value (repay):    $%s%n"
+                    + "Cash received:        $%s%n"
+                    + "Issued at:            %.2f of par  (a discount - the note pays no coupon)%n"
+                    + "Cost of the credit:   $%s%n"
+                    + "Term:                 %d months, discounted at %.2f%%/yr",
+                    f(faceValue), f(cashReceived), pricePerPar(),
                     f(totalCost), duration, marketRate * 100);
 
+            case "Serial" -> String.format(
+                    "Par value:            $%s%n"
+                    + "Cash received:        $%s   (issued at %.2f of par)%n"
+                    + "Coupon:               %.2f%%, paid monthly on the balance outstanding%n"
+                    + "First payment:        $%s   (it falls as principal amortises)%n"
+                    + "Principal:            repaid in %d annual slices - no lump at the end%n"
+                    + "Total cost of credit: $%s over %d years",
+                    f(faceValue), f(cashReceived), pricePerPar(),
+                    marketRate * 100, f(monthlyInterest),
+                    Math.max(1, duration), f(totalCost), duration);
+
             default -> String.format(
-                    "Cash Received:        $%s%n"
-                    + "Repay at Maturity:    $%s%n"
-                    + "Monthly Interest:     $%s%n"
-                    + "Total Cost of Credit: $%s%n"
-                    + "Term:                 %d years @ %.2f%% coupon",
-                    f(cashReceived), f(faceValue), f(monthlyInterest),
-                    f(totalCost), duration, couponRate() * 100);
+                    "Par value (repay):    $%s%n"
+                    + "Cash received:        $%s   (issued at %.2f of par - a deep discount)%n"
+                    + "Coupon:               %.2f%%, paid monthly on the full par value%n"
+                    + "Monthly payment:      $%s%n"
+                    + "Principal:            the WHOLE par value falls due in %d years%n"
+                    + "Total cost of credit: $%s",
+                    f(faceValue), f(cashReceived), pricePerPar(),
+                    couponRate() * 100, f(monthlyInterest), duration, f(totalCost));
         };
+    }
+
+    /** Where it was issued against par, the way bonds are quoted. */
+    public double pricePerPar() {
+        return faceValue > 0 ? cashReceived / faceValue * 100 : 0;
+    }
+
+    /** True when the city receives less than it will repay. */
+    public boolean isDiscount() {
+        return cashReceived < faceValue - 1e-9;
     }
 
     /**

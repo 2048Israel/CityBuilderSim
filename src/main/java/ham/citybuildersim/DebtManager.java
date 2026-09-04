@@ -44,12 +44,20 @@ public class DebtManager {
     /**
      * The most either measure alone can add to the rate.
      *
-     * Two measures, ten points each, so the spread runs 0 to 20 points over the
-     * floor and the rate runs 1% to 21%. Neither measure can price the city on
+     * Two measures, five points each, so the spread runs 0 to 10 points over the
+     * floor and the rate runs 1% to 11%. Neither measure can price the city on
      * its own: a city with no economy but plenty of revenue, or the reverse, is
      * capped at half the punishment.
+     *
+     * GENTLER AGAIN. This was ten points each, and Jerus asked for "a lot more
+     * gentler" after playing a city by hand: a young city with a small tax base
+     * was quoted 18% for one ordinary apartment block, because a sensible build
+     * is simply large next to the revenue of a town of two thousand people. The
+     * curve was punishing the size of the city, not the recklessness of the
+     * borrowing.
      */
-    private static final double MAX_SPREAD_PER_MEASURE = 0.10;
+    private static final double MAX_SPREAD_PER_MEASURE = 0.05;
+
 
     /**
      * Debt, as a multiple of a year of the thing, at which a measure maxes out.
@@ -61,23 +69,28 @@ public class DebtManager {
      * bad." He is right, and 20x was never defensible - real cities carry
      * multiples of revenue for decades without being priced as distressed.
      *
-     * Fifty years of revenue is genuinely all-in, so that is where a measure
-     * reaches its ten points, and it ramps linearly to get there.
+     * A hundred and fifty years of revenue is where a measure reaches its five
+     * points, and it ramps linearly to get there.
      *
-     * MEASURED on a city of 1,256 - annual GDP $17.5M, annual tax $3.7M, so GDP
-     * runs 4.7x revenue - with the loan itself priced in:
+     * That is deliberately far out. Fifty was the first attempt and it read as
+     * harsh in play, because the ratio a growing city runs at is dominated by
+     * how small its tax base is rather than by how rash it is being - a city
+     * borrowing to build the thing that will produce its revenue is at its worst
+     * ratio precisely when the borrowing is most sensible.
      *
-     *     1x revenue   1.2%      20x    5.9%      100x   15.3%
-     *     2x revenue   1.5%      30x    8.3%      200x   19.5%
-     *     5x revenue   2.2%      50x   13.1%      500x   the ceiling
-     *    10x revenue   3.4%
+     * MEASURED on a city of 1,256 with $3.6M of annual tax revenue, with the
+     * loan itself priced in:
      *
-     * Ordinary municipal leverage - one to five years of revenue - is now low
-     * single digits, which is about what a real city pays. The kink at 50x is
-     * the revenue measure topping out; past it only the GDP measure is still
-     * climbing, which is why the curve visibly flattens there.
+     *      1x revenue  1.05%      30x   2.44%      200x   8.96%
+     *      2x revenue  1.10%      50x   3.41%      500x   the 11% ceiling
+     *      5x revenue  1.24%     100x   5.81%
+     *     10x revenue  1.48%
+     *
+     * For comparison, the ask that made Jerus raise this - $900k on a town of
+     * 2,000, about 42x its annual revenue - was quoted 18.23% under the old
+     * curve and prices at about 3% under this one.
      */
-    private static final double FULL_STRESS_MULTIPLE = 50;
+    private static final double FULL_STRESS_MULTIPLE = 150;
 
     /** The cheapest money the market will ever offer, whatever the books say. */
     private static final double MIN_RATE = 0.005;
@@ -227,6 +240,30 @@ public class DebtManager {
      */
     public double getPricedDebt() {
         return getAllPrincipal() + Math.max(0, overdraft);
+    }
+
+    /**
+     * Takes one bond off the books. The caller has already paid for it.
+     *
+     * Deliberately dumb: no cash, no pricing, no policy. Game.repurchaseDebt()
+     * owns the decision and the money, and this owns the list - which keeps the
+     * one irreversible step (a debt disappearing) in the class that is allowed
+     * to change the list, and keeps DebtManager from needing to know what the
+     * city can afford.
+     *
+     * @return true if that bond was on the books and is not any more
+     */
+    public boolean retire(Debt debt) {
+        return debts.remove(debt);
+    }
+
+    /** What every outstanding bond would cost to buy back at today's rate. */
+    public double getTotalMarketValue() {
+        double total = 0;
+        for (Debt debt : debts) {
+            total += debt.getMarketValue(currentRate);
+        }
+        return total;
     }
 
     /**

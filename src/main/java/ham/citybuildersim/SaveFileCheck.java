@@ -324,6 +324,13 @@ public class SaveFileCheck {
         city.getDemolitionLog().record("Construction Depot", 2, "Construction",
                 city.getMonth(), 480);
         int demolitionsBefore = city.getDemolitionLog().size();
+
+        // The other half of that history. Recorded by hand for the same reason:
+        // whether this particular city finishes a building in these months is
+        // not something the assertion should be hostage to.
+        city.getBuildLog().record("Coal Power Plant", 1, city.getMonth());
+        city.getBuildLog().record("House", 12, city.getMonth());
+        int buildsBefore = city.getBuildLog().size();
         double writtenOffBefore =
                 city.getEconomyManager().getBusinessDebtManager().getTotalWrittenOff();
 
@@ -570,6 +577,26 @@ public class SaveFileCheck {
                 Math.round(reloaded.getEconomyManager()
                         .getBusinessDebtManager().getTotalWrittenOff() * 10000),
                 Math.round(writtenOffBefore * 10000));
+
+        /*
+         * And the build log, which is format 10.
+         *
+         * Worth stating the quantity and not just the count: BuildLog merges
+         * same-building-same-month rows on record(), and restore() replays
+         * through record(), so a restore that re-merged or double-counted would
+         * come back with the right number of ROWS and the wrong number of
+         * buildings in them - which is exactly the shape of bug a size check
+         * sails past.
+         */
+        assertTrue("the city did finish something", buildsBefore > 0);
+        assertEquals("the build log came back",
+                reloaded.getBuildLog().size(), buildsBefore);
+        assertEquals("...with its entries intact",
+                reloaded.getBuildLog().all().get(0).building,
+                city.getBuildLog().all().get(0).building);
+        assertEquals("...and the merged quantities unchanged",
+                reloaded.getBuildLog().all().get(0).quantity,
+                city.getBuildLog().all().get(0).quantity);
 
         /* ============ 11. a city that is still MOVING ============ */
         System.out.println("\n--- and a city that has not settled down ---");

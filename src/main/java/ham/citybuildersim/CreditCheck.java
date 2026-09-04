@@ -277,8 +277,18 @@ public class CreditCheck {
         System.out.printf("   quote for $5,000,000:       %.2f%%%n", large * 100);
         assertTrue("a big loan is quoted dearer than a small one, on the same books",
                 large > tiny);
-        assertTrue("...and ten million is nowhere near the floor",
-                market.quoteRate(10_000_000) > .10);
+        /*
+         * Measured against the BAND, not against a number.
+         *
+         * This used to read "> .10", which was half the band when the ceiling
+         * was 20% and is most of it now that the curve has been made gentler
+         * twice. An assertion pinned to a constant that the thing under test is
+         * allowed to move is an assertion that fails for being right.
+         */
+        double halfwayUp = market.floorRate()
+                + (market.ceilingRate() - market.floorRate()) / 2;
+        assertTrue("...and ten million is well up the band, not near the floor",
+                market.quoteRate(10_000_000) > halfwayUp);
         assertTrue("the standing rate is unmoved by merely asking",
                 Math.abs(market.getRate() - clean) < 1e-9);
 
@@ -401,8 +411,8 @@ public class CreditCheck {
                 Math.abs(modest.rateBefore() - city.getDebtManager().getRate()) < 1e-12);
 
         // Now book each instrument and hold the ledger against the quote.
-        bookAndCompare(city, "T-Bill",      5_000,  3,  1000,   true);
-        bookAndCompare(city, "Medium-Term", 20_000, 5,  10000,  true);
+        bookAndCompare(city, "Note",      5_000,  3,  1000,   true);
+        bookAndCompare(city, "Serial", 20_000, 5,  10000,  true);
 
         /*
          * The long bond twice. Once at a fine rounding so the rate lands on the
@@ -411,8 +421,8 @@ public class CreditCheck {
          * city this size is far past the cap - that is the path players use, so
          * it is checked too, just with no illusion about what its rate proves.
          */
-        bookAndCompare(city, "Long-Term",   10_000, 20, 1000,   true);
-        bookAndCompare(city, "Long-Term",   100_000, 20, 100000, false);
+        bookAndCompare(city, "Term",   10_000, 20, 1000,   true);
+        bookAndCompare(city, "Term",   100_000, 20, 100000, false);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -469,8 +479,8 @@ public class CreditCheck {
         int debtsBefore = g.getDebtManager().getDebt().size();
 
         switch (type) {
-            case "T-Bill"      -> g.handleTBillLogic(amount, duration, rounding);
-            case "Medium-Term" -> g.handleMediumBondLogic(amount, duration, rounding);
+            case "Note"      -> g.handleTBillLogic(amount, duration, rounding);
+            case "Serial" -> g.handleMediumBondLogic(amount, duration, rounding);
             default            -> g.handleLongBondLogic(amount, duration, rounding);
         }
 
