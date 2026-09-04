@@ -1633,32 +1633,91 @@ public class Game {
     }
     
     
-    public String handleTBillLogic(double amount, int duration, double rounding) {
-        double rate = debtManager.getRate();
-        // Discounting logic: The user wants $X, so we calculate the Face Value (amount) 
-        // needed to get $X after the discount is taken.
-        amount = Math.ceil((amount / (1 - rate)) / rounding) * rounding;
-        double received = Math.round(amount * (1 - rate) * 100) / 100.0;
+    /**
+     * What a T-Bill of this size would cost. Books nothing.
+     *
+     * Priced with itself included. A bill discounts by the rate, so its face
+     * value is request/(1-rate) - which means the face depends on the rate and,
+     * now, the rate depends on the face. quoteRate() walks that fixed point; the
+     * lambda is this instrument's half of it.
+     */
+    public DebtQuote quoteTBill(double amount, int duration, double rounding) {
 
-        debtManager.addShortTermTBill(amount, duration, month);
-        this.cash += received;
+        priceTheDebtMarket();
+        double before = debtManager.getRate();
 
-        debtManager.updateInterest();
-        return String.format("T-Bill Issued!\nFace Value: $%s\nCash Received: $%s\nTerm: %d months",
-                formatter.format(amount), formatter.format(received), duration);
+        if (amount <= 0) {
+            return new DebtQuote("T-Bill", duration, 0, before, before, 0, 0, 0, 0);
+        }
+
+        final double requested = amount;
+        double rate = debtManager.quoteRate(requested,
+                r -> Math.ceil((requested / (1 - r)) / rounding) * rounding);
+
+        // The player wants $X, so the face value is grossed up to whatever
+        // leaves $X standing after the discount is taken out of it.
+        double faceValue = Math.ceil((requested / (1 - rate)) / rounding) * rounding;
+        double received = Math.round(faceValue * (1 - rate) * 100) / 100.0;
+
+        // A bill pays no coupon; the discount IS the whole cost of the credit.
+        return new DebtQuote("T-Bill", duration, requested, rate, before,
+                faceValue, received, 0, faceValue - received);
     }
 
-    public String handleMediumBondLogic(double requestedAmount, int duration, double rounding) {
-        double faceValue = Math.ceil(requestedAmount / rounding) * rounding;
-        double annualRate = debtManager.getRate();
-        double monthlyInterest = faceValue * (annualRate / 12.0);
+    /**
+     * Books a T-Bill on exactly the terms quoted.
+     *
+     * Every figure comes off the quote. Nothing is recalculated here, because a
+     * booking that does its own arithmetic is free to disagree with the screen
+     * that promised it.
+     */
+    public String handleTBillLogic(double amount, int duration, double rounding) {
 
-        debtManager.addMediumTermBond(faceValue, duration * 12, month, annualRate);
-        this.cash += faceValue;
+        DebtQuote quote = quoteTBill(amount, duration, rounding);
+        if (quote.isEmpty()) return "Nothing issued.";
+
+        debtManager.addShortTermTBill(quote.faceValue(), duration, month);
+        this.cash += quote.cashReceived();
 
         debtManager.updateInterest();
-        return String.format("Medium Bond Issued!\nPrincipal: $%s\nMonthly Interest: $%s\nTerm: %d years",
-                formatter.format(faceValue), formatter.format(monthlyInterest), duration);
+        return "T-Bill Issued!\n" + quote.summary();
+    }
+
+    /**
+     * What a medium-term bond of this size would cost. Books nothing.
+     *
+     * Face value is the request here, so there is no fixed point to walk - but
+     * the loan still has to be priced with itself on the books.
+     */
+    public DebtQuote quoteMediumBond(double requestedAmount, int duration, double rounding) {
+
+        priceTheDebtMarket();
+        double before = debtManager.getRate();
+
+        if (requestedAmount <= 0) {
+            return new DebtQuote("Medium-Term", duration, 0, before, before, 0, 0, 0, 0);
+        }
+
+        double faceValue = Math.ceil(requestedAmount / rounding) * rounding;
+        double annualRate = debtManager.quoteRate(faceValue);
+        double monthlyInterest = faceValue * (annualRate / 12.0);
+
+        // Par instrument: the cash is the principal, so the cost is the coupons.
+        return new DebtQuote("Medium-Term", duration, requestedAmount, annualRate, before,
+                faceValue, faceValue, monthlyInterest, monthlyInterest * duration * 12);
+    }
+
+    /** Books a medium-term bond on exactly the terms quoted. */
+    public String handleMediumBondLogic(double requestedAmount, int duration, double rounding) {
+
+        DebtQuote quote = quoteMediumBond(requestedAmount, duration, rounding);
+        if (quote.isEmpty()) return "Nothing issued.";
+
+        debtManager.addMediumTermBond(quote.faceValue(), duration * 12, month, quote.marketRate());
+        this.cash += quote.cashReceived();
+
+        debtManager.updateInterest();
+        return "Medium Bond Issued!\n" + quote.summary();
     }
 
     /**
@@ -1679,9 +1738,46 @@ public class Game {
      * repaid $840,036, a 46% cost on a "0.67%" instrument, making long bonds
      * strictly worse than medium at every duration.
      */
-    public String handleLongBondLogic(double amount, int duration, double rounding) {
+    /**
+     * What a long bond of this size would put on the books at a given rate.
+     *
+     * Extracted so quoteRate() and the issuance below run the SAME arithmetic.
+     * A quote that is computed differently from the deal it quotes is just a
+     * second definition waiting to drift from the first.
+     */
+    private double faceValueOfLongBond(double amount, int duration,
+                                       double rounding, double marketRate) {
+        double couponYield = (marketRate / 3) + (.00667 * duration) / (duration + 30);
+        double premium = (duration * (LONG_BOND_COST_MULTIPLIER * marketRate - couponYield))
+                / (1 + couponYield * duration);
+        premium = Math.max(premium, 0);
+        return Math.ceil((amount * (1 + premium)) / rounding) * rounding;
+    }
 
-        double marketRate = debtManager.getRate();
+    /**
+     * What a long bond of this size would cost. Books nothing.
+     *
+     * Priced with itself included, and this is the instrument where that bites
+     * hardest: the redemption premium grosses the face value up, and the premium
+     * is a function of the market rate. So a long bond taken at a stretched rate
+     * puts far more debt on the books than the cash it hands over, and the rate
+     * has to know that before it is struck.
+     *
+     * The lambda calls faceValueOfLongBond(), which is also what sizes the deal
+     * below - one definition, so the quote and the booking cannot disagree.
+     */
+    public DebtQuote quoteLongBond(double amount, int duration, double rounding) {
+
+        priceTheDebtMarket();
+        double before = debtManager.getRate();
+
+        if (amount <= 0) {
+            return new DebtQuote("Long-Term", duration, 0, before, before, 0, 0, 0, 0);
+        }
+
+        final double requested = amount;
+        double marketRate = debtManager.quoteRate(requested,
+                r -> faceValueOfLongBond(requested, duration, rounding, r));
 
         // Yield curve: long money carries a lower coupon than the medium-term
         // market rate. Small monthly payments are the point of the instrument.
@@ -1693,22 +1789,45 @@ public class Game {
                 / (1 + couponYield * duration);
         premium = Math.max(premium, 0);
 
-        double faceValue = Math.ceil((amount * (1 + premium)) / rounding) * rounding;
+        double faceValue = faceValueOfLongBond(requested, duration, rounding, marketRate);
         double received = Math.round((faceValue / (1 + premium)) * 100) / 100.0;
         double monthlyInterest = (faceValue * couponYield) / 12;
         double totalCost = (faceValue - received) + (monthlyInterest * duration * 12);
 
-        debtManager.addLongTermBond(faceValue, duration * 12, month, couponYield);
-        this.cash += received;
+        return new DebtQuote("Long-Term", duration, requested, marketRate, before,
+                faceValue, received, monthlyInterest, totalCost);
+    }
+
+    /** Books a long bond on exactly the terms quoted. */
+    public String handleLongBondLogic(double amount, int duration, double rounding) {
+
+        DebtQuote quote = quoteLongBond(amount, duration, rounding);
+        if (quote.isEmpty()) return "Nothing issued.";
+
+        // The coupon, not the market rate - a long bond's whole shape is a low
+        // monthly payment bought with a redemption premium.
+        debtManager.addLongTermBond(quote.faceValue(), duration * 12, month, quote.couponRate());
+        this.cash += quote.cashReceived();
 
         debtManager.updateInterest();
+        return "Long Bond Issued!\n" + quote.summary();
+    }
 
-        return String.format(
-                "Long Bond Issued!%nCash Received: $%s%nRepay at Maturity: $%s%n"
-                + "Monthly Interest: $%s%nTotal Cost of Credit: $%s%nTerm: %d years @ %.2f%%",
-                formatter.format(received), formatter.format(faceValue),
-                formatter.format(monthlyInterest), formatter.format(totalCost),
-                duration, couponYield * 100);
+    /**
+     * The quote for whichever instrument, by the name the menus use.
+     *
+     * Mirrors the dispatch in the issuance screens so a screen can ask "what
+     * would this cost" without knowing which instrument it is looking at.
+     */
+    public DebtQuote quoteDebt(String type, double amount, int duration, double rounding) {
+        return switch (type) {
+            case "T-Bill" -> quoteTBill(amount, duration, rounding);
+            case "Medium-Term" -> quoteMediumBond(amount, duration, rounding);
+            case "Long-Term" -> quoteLongBond(amount, duration, rounding);
+            // Loudly, rather than handing a screen a null to dereference three
+            // frames later where the cause is invisible.
+            default -> throw new IllegalArgumentException("No such instrument: " + type);
+        };
     }
     
     /*
@@ -1804,8 +1923,25 @@ public class Game {
         updateConstructionCost();
 
         if (cash < 0) {
-            double gap = -cash; // The actual negative amount
-            double rate = debtManager.getRate();
+            final double gap = -cash; // The actual negative amount
+
+            /*
+             * Priced like any other borrowing, which it now is.
+             *
+             * The market has to see the hole before it quotes: priceTheDebtMarket()
+             * puts the overdraft on the books, and quoteRate() then walks the
+             * face-value/rate fixed point exactly as the finance screen does.
+             * The bill's proceeds close the gap, so quoteRate() nets the overdraft
+             * back out and prices against bonds-plus-bill - the honest position
+             * a moment after the money lands.
+             *
+             * This is the deliberate consequence of "no free money": an overdraft
+             * is the most desperate borrowing there is, and from the first month
+             * it costs what desperate borrowing costs.
+             */
+            priceTheDebtMarket();
+            double rate = debtManager.quoteRate(gap,
+                    r -> Math.ceil((gap / (1 - r)) / 1000.0) * 1000);
 
             // 1. Calculate Face Value needed so the cash received covers the gap
             // Formula: Face Value = Gap / (1 - rate)
@@ -1835,7 +1971,7 @@ public class Game {
         simulationEngine.simulateMonth(this);
         finalUpdateEconomy();
         economyManager.setPreviousGdp(historySave);
-        debtManager.setGDP(economyManager.getMonthGdp());
+        priceTheDebtMarket();
         debtManager.processAllDebts(this);
         
         dataSave.setCash(cash);
@@ -2014,6 +2150,21 @@ public class Game {
     
     
     
+    /**
+     * Hands the debt market everything it prices against.
+     *
+     * Three inputs, and the overdraft is the one that used to be missing: the
+     * market could not see that the city was in the red, so a city $1.1M
+     * overdrawn with no bonds left outstanding was quoted the floor rate. All
+     * three have to be current before updateInterest() or any quote, which is
+     * why this is one call rather than three scattered ones.
+     */
+    private void priceTheDebtMarket(){
+        debtManager.setGDP(economyManager.getMonthGdp());
+        debtManager.setTaxRevenue(economyManager.getTaxIncome());
+        debtManager.setCashPosition(cash);
+    }
+
     private void finalUpdateEconomy(){
         economyManager.setDebt(debtManager.getAllPrincipal());
         double tempCash = cash;
@@ -2477,26 +2628,40 @@ public class Game {
     }
     
     
-   public void issueEmergencyDebt(double faceValue, int duration){
-       double rate = debtManager.getRate();
+   /**
+    * The build-funding bill: raises a stated amount of CASH, not face value.
+    *
+    * NOTE: this used to take a face value already grossed up by the caller off
+    * debtManager.getRate() - the STANDING rate, struck before this bill was on
+    * the books. Two things were wrong with that. It priced the loan against a
+    * balance sheet that stopped existing the moment the money arrived, which is
+    * exactly what the repricing was meant to end; and because the screen did the
+    * same sum separately, the number shown to the player and the number booked
+    * were two independent calculations that only happened to agree.
+    *
+    * It takes the cash the city needs now and quotes it like any other bill.
+    *
+    * @param cashNeeded what has to reach the treasury
+    * @return the terms actually struck, so a caller can show them
+    */
+   public DebtQuote issueEmergencyDebt(double cashNeeded, int duration){
 
-            
+       DebtQuote quote = quoteTBill(cashNeeded, duration, 1000.0);
+       if (quote.isEmpty()) return quote;
 
-            // 3. Round up to nearest 1000
-            faceValue = Math.ceil(faceValue / 1000.0) * 1000;
+       System.out.println("A T-Bill of $" + formatter.format(quote.faceValue())
+               + " with duration of " + duration
+               + " was issued for $" + formatter.format(quote.cashReceived())
+               + String.format(" at %.2f%%.", quote.marketRate() * 100));
 
-            // 4. Actual cash hitting the bank account
-            double cashReceivedFromBill = faceValue * (1 - rate);
+       debtManager.addShortTermTBill(quote.faceValue(), duration, month);
+       cash += quote.cashReceived();
 
-            System.out.println("A T-Bill of $" + formatter.format(faceValue)
-                    + " with duration of " + duration
-                    + " was issued for $" + formatter.format(cashReceivedFromBill) + ".");
-
-            // Record the debt
-            debtManager.addShortTermTBill(faceValue, duration, month);
-
-            // Add the new money to the wallet
-            cash += cashReceivedFromBill;
+       // The books have changed, so the standing rate has too. Leaving this out
+       // let a city borrow and go on being quoted its pre-loan rate until the
+       // next month tick.
+       debtManager.updateInterest();
+       return quote;
    }
     
    /**
@@ -2599,7 +2764,7 @@ public class Game {
 
     // GDP reads commercialHandler.getNetIncome(), so it has to come after the
     // refresh above to see this month's figure rather than a stale one.
-    debtManager.setGDP(economyManager.getMonthGdp());
+    priceTheDebtMarket();
     debtManager.updateInterest();
 
     // Was only done by the second rebuild pass in loadGameSave(). It has to

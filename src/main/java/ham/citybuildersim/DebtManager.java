@@ -17,11 +17,74 @@ public class DebtManager {
     private double currentRate = baseRate - .02;
     private double GDP;
 
-    /** Extra annual interest charged per 1.0 of debt-to-GDP. */
-    private static final double RISK_SPREAD_PER_DEBT_TO_GDP = 0.01;
+    /**
+     * The month's tax take. One of the two measures the rate is priced on.
+     *
+     * GDP alone is the wrong denominator for a city: the lender is not repaid
+     * out of the economy's output, it is repaid out of what the government can
+     * actually collect from it. Real municipal credit is rated on debt against
+     * revenue for exactly that reason. Using both, evenly, means a city that
+     * grows its economy AND one that raises its rate both become better credits,
+     * which is the right pair of levers to reward.
+     */
+    private double monthlyTaxRevenue;
 
-    /** Debt-to-GDP assumed when the city has no measurable output to price against. */
-    private static final double UNPRICEABLE_DEBT_TO_GDP = 100;
+    /**
+     * How far the city is overdrawn. Counted as borrowing, because it is.
+     *
+     * Without this the city could sit $1.1M in the red with no bonds outstanding
+     * and be quoted 1%, because getAllPrincipal() was the only input. That
+     * happened in the hand-played run the day this was written: the 30-year
+     * balloon matured, principal went to zero, cash went to -$1,143,330, and the
+     * market immediately offered the floor rate. An overdraft is the most
+     * desperate borrowing there is and it now prices like it.
+     */
+    private double overdraft;
+
+    /**
+     * The most either measure alone can add to the rate.
+     *
+     * Two measures, ten points each, so the spread runs 0 to 20 points over the
+     * floor and the rate runs 1% to 21%. Neither measure can price the city on
+     * its own: a city with no economy but plenty of revenue, or the reverse, is
+     * capped at half the punishment.
+     */
+    private static final double MAX_SPREAD_PER_MEASURE = 0.10;
+
+    /**
+     * Debt, as a multiple of a year of the thing, at which a measure maxes out.
+     *
+     * GENTLER ON PURPOSE. The first version blended the two measures into one
+     * index and multiplied by a flat spread, with no per-measure ceiling, which
+     * put the rate against its cap at about 20x annual revenue. Jerus played a
+     * run under it: "the financing actually should be gentler... debt was really
+     * bad." He is right, and 20x was never defensible - real cities carry
+     * multiples of revenue for decades without being priced as distressed.
+     *
+     * Fifty years of revenue is genuinely all-in, so that is where a measure
+     * reaches its ten points, and it ramps linearly to get there.
+     *
+     * MEASURED on a city of 1,256 - annual GDP $17.5M, annual tax $3.7M, so GDP
+     * runs 4.7x revenue - with the loan itself priced in:
+     *
+     *     1x revenue   1.2%      20x    5.9%      100x   15.3%
+     *     2x revenue   1.5%      30x    8.3%      200x   19.5%
+     *     5x revenue   2.2%      50x   13.1%      500x   the ceiling
+     *    10x revenue   3.4%
+     *
+     * Ordinary municipal leverage - one to five years of revenue - is now low
+     * single digits, which is about what a real city pays. The kink at 50x is
+     * the revenue measure topping out; past it only the GDP measure is still
+     * climbing, which is why the curve visibly flattens there.
+     */
+    private static final double FULL_STRESS_MULTIPLE = 50;
+
+    /** The cheapest money the market will ever offer, whatever the books say. */
+    private static final double MIN_RATE = 0.005;
+
+    /** How many times to walk the face-value/rate fixed point. See quoteRate(). */
+    private static final int QUOTE_ITERATIONS = 6;
+
     private List<Debt> debts;
 
     public DebtManager() {
@@ -118,6 +181,23 @@ public class DebtManager {
         this.GDP = GDP;
     }
 
+    /** The month's tax take - the other half of what the market prices against. */
+    public void setTaxRevenue(double monthlyTaxRevenue) {
+        this.monthlyTaxRevenue = monthlyTaxRevenue;
+    }
+
+    /**
+     * How far the city is overdrawn, pushed in from Game each month.
+     *
+     * Takes the CASH balance and keeps the negative part; a positive balance is
+     * not credit and does not improve the rate.
+     */
+    public void setCashPosition(double cash) {
+        this.overdraft = Math.max(0, -cash);
+    }
+
+    public double getOverdraft()  { return overdraft; }
+
     public List<Debt> getDebt() {
         return debts;
     }
@@ -140,33 +220,133 @@ public class DebtManager {
     }
 
     /**
-     * Prices new borrowing off the city's debt-to-GDP ratio.
+     * Everything the city owes, including what it is overdrawn.
      *
-     * The spread is unchanged in magnitude from the original formula - that
-     * worked out to (baseRate - 0.02) + debtToGdp * 0.01, i.e. one extra point of
-     * interest per unit of debt-to-GDP - just written so the units are visible.
+     * NOT the same as getAllPrincipal(), which is bonds and bills only. This is
+     * what the market is actually looking at when it decides what to charge.
+     */
+    public double getPricedDebt() {
+        return getAllPrincipal() + Math.max(0, overdraft);
+    }
+
+    /**
+     * What one measure adds to the rate: a linear ramp, then flat.
+     *
+     * PIECEWISE, AND THAT IS THE POINT. Below FULL_STRESS_MULTIPLE years of
+     * whatever is being measured against, each extra dollar of debt costs the
+     * same small amount of rate. Above it, the measure has said everything it
+     * has to say and stops. A single unbounded term is what let one bad
+     * denominator - a city whose GDP had not caught up yet, say - drag the whole
+     * quote to the ceiling on its own.
+     *
+     * @param annualCapacity a year of GDP, or a year of tax revenue
+     */
+    private double spreadFor(double debt, double annualCapacity) {
+
+        if (debt <= 0) return 0;
+
+        // Nothing to measure against is the worst case, not a free pass: a
+        // borrower whose capacity to repay cannot be established pays the full
+        // ten points for that measure.
+        if (annualCapacity <= 0) return MAX_SPREAD_PER_MEASURE;
+
+        double yearsOfIt = debt / annualCapacity;
+        return MAX_SPREAD_PER_MEASURE * Math.min(1.0, yearsOfIt / FULL_STRESS_MULTIPLE);
+    }
+
+    /**
+     * The curve itself: a floor, plus up to ten points from each measure.
+     *
+     * Either one alone is a bad measure. GDP flatters a city that cannot tax
+     * what it produces, and revenue alone would let a city with a tiny economy
+     * borrow freely by taxing it to death. Between them they say "how much of
+     * this can you carry", and because each is capped separately, being poor on
+     * one measure and sound on the other is priced as exactly that - half of the
+     * worst case, not the whole of it.
+     *
+     * The market always lends. There is a price at which it will do anything.
+     */
+    private double priceAt(double debt) {
+        double rate = floorRate()
+                + spreadFor(debt, GDP * 12)
+                + spreadFor(debt, monthlyTaxRevenue * 12);
+        return Math.max(MIN_RATE, Math.min(rate, ceilingRate()));
+    }
+
+    /** What a spotless city pays. */
+    public double floorRate() {
+        return Math.max(MIN_RATE, baseRate - 0.02);
+    }
+
+    /** What a hopeless one pays - both measures maxed out. */
+    public double ceilingRate() {
+        return (baseRate - 0.02) + 2 * MAX_SPREAD_PER_MEASURE;
+    }
+
+    /**
+     * Re-prices the standing rate off what the city owes right now.
      *
      * NOTE: the old version did `if (GDP == 0) GDP = allPrincipal;`, permanently
      * overwriting the GDP field with a debt figure. That corruption then fed
      * every later rate calculation. Uses a local fallback instead.
      */
     public void updateInterest() {
+        currentRate = priceAt(getPricedDebt());
+    }
 
-        double principal = getAllPrincipal();
+    /**
+     * What a NEW loan of this size would cost - priced with itself included.
+     *
+     * WHY THIS IS NOT JUST priceAt(debt + amount)
+     *
+     * The face value of a loan depends on the rate (a T-Bill discounts by it, a
+     * bond takes a premium off it), and the rate now depends on the face value.
+     * That is a fixed point, not a formula. It needs no calculus though: the
+     * spread is small and the curve is clamped at both ends, so iterating the
+     * two definitions against each other contracts onto the answer in three or
+     * four passes. Six, for margin.
+     *
+     * The caller supplies faceOf(), because each instrument grosses a request up
+     * differently - and getting that wrong is the whole point of the exercise.
+     * Pricing off the balance sheet BEFORE the loan is what let a debt-free city
+     * borrow ten million at one percent, which is not a thing that happens.
+     *
+     * @param requested what the city wants to receive
+     * @param faceOf    given a rate, what the city would end up owing
+     */
+    public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf) {
 
-        if (principal <= 0) {
-            currentRate = baseRate - 0.02;
-        } else {
-            double annualGdp = GDP * 12;
-            double debtToGdp = (annualGdp > 0)
-                    ? (principal / annualGdp)
-                    : UNPRICEABLE_DEBT_TO_GDP;
+        double existing = debtAfterProceedsOf(requested);
+        double rate = priceAt(existing + Math.max(0, requested));
 
-            currentRate = (baseRate - 0.02)
-                    + (RISK_SPREAD_PER_DEBT_TO_GDP * debtToGdp);
+        for (int i = 0; i < QUOTE_ITERATIONS; i++) {
+            double face = faceOf.applyAsDouble(rate);
+            if (!Double.isFinite(face) || face < 0) break;
+            rate = priceAt(existing + face);
         }
+        return rate;
+    }
 
-        currentRate = Math.max(0.005, Math.min(currentRate, 0.20));
+    /** Straight-line version for instruments whose face value IS the request. */
+    public double quoteRate(double requested) {
+        return priceAt(debtAfterProceedsOf(requested) + Math.max(0, requested));
+    }
+
+    /**
+     * The debt the loan lands ON TOP OF - which is not simply what is owed now.
+     *
+     * The cash a loan hands over pays the overdraft down, so an overdrawn city
+     * borrowing its way out is not left owing both. Counting both would price
+     * the hole twice and quote a rate for a balance sheet that will not exist a
+     * moment after the money arrives.
+     *
+     * The emergency T-Bill is exactly this case: it is issued precisely to
+     * cover the gap, so what it should be priced against is the bonds plus the
+     * bill itself, not the bonds plus the bill plus the gap it is closing.
+     */
+    private double debtAfterProceedsOf(double received) {
+        double clearsOverdraft = Math.min(Math.max(0, overdraft), Math.max(0, received));
+        return getAllPrincipal() + Math.max(0, overdraft) - clearsOverdraft;
     }
 
     public void clearDebts() {

@@ -374,9 +374,9 @@ public class LongPlaytest {
         if (result == Game.BuildResult.NEEDS_FUNDING) {
             // A city borrows for capital projects. Long bonds, because the
             // whole point of the instrument is small monthly payments.
-            double needed = t.getCashCost() * quantity * 1.6;
-            if (g.getDebtManager().getAllPrincipal() < debtCeiling(g)) {
-                g.handleLongBondLogic(Math.max(needed, 5000), 20, 100);
+            double needed = Math.max(t.getCashCost() * quantity * 1.6, 5000);
+            if (canService(g, needed)) {
+                g.handleLongBondLogic(needed, 20, 100);
                 result = g.buildStack(t, quantity, false);
             }
         }
@@ -391,37 +391,49 @@ public class LongPlaytest {
     }
 
     /**
-     * How much the advisor is willing to owe.
+     * Whether the advisor can afford the PAYMENTS, not whether it likes the size.
      *
-     * WHY THIS IS NOT A FLAT NUMBER ANY MORE
+     * WHY THE PRINCIPAL LIMIT HAD TO GO
      *
-     * It used to be `< 4_000_000`, which is not a debt limit, it is a constant
-     * that happens to be large. At a city collecting $1.5M a month in tax it
-     * authorised about two thousand six hundred months of revenue, and the only
-     * reason no run had ever hit it is that the old economy never gave the
-     * advisor anything worth borrowing that hard for.
+     * This used to be "borrow while principal < 60 months of tax revenue".
+     * Before the debt market was repriced, that was a workable proxy, because
+     * every loan cost about the same: a city with no debt was quoted 1% whatever
+     * it asked for. It is meaningless now. The same principal can cost 1% or
+     * 20% depending on how large it is relative to the city, so a limit written
+     * in units of principal says nothing about whether the city can pay.
      *
-     * The ore rebalance did. Mines became worth building, the advisor chased
-     * them, borrowed $2.5B against a $1.5M/month tax base, and the city was
-     * insolvent by month 498 - after which the emergency T-Bills of backlog item
-     * 21 rolled the debt to 10^80 and the run was over. Every figure in that run
-     * was about this line and nothing about ore.
+     * Left alone through the repricing it did what you would expect: the advisor
+     * kept borrowing five years of revenue at rates approaching the ceiling, the
+     * interest ate the budget, and the 4,000-month run finished at 6,372 people
+     * and 3,453 months in emergency funding - against 39,875 before. Every
+     * number in that run was about this line.
      *
-     * Sixty months of actual revenue is a limit that means something and that
-     * scales with the city, which is what a municipal debt limit is for. The
-     * floor lets a city with almost no tax base still borrow for its first
-     * power station.
-     *
-     * MEASURED: on the same build, ceiling 60 months finishes at 39,875 people
-     * and $45.5B; the old flat ceiling finishes bankrupt. At 240 months it goes
-     * bankrupt again, which is the honest answer - borrowing twenty years of
-     * revenue really does ruin a city, and the fixture should not pretend
-     * otherwise.
+     * A debt-service ratio is what a real municipal borrower actually tests, and
+     * it self-scales: as the quoted rate rises, the amount that passes falls.
+     * A quarter of revenue going to interest is at the aggressive end of what
+     * real cities carry, which suits an advisor that is supposed to push.
      */
-    static double debtCeiling(Game g) {
+    static final double DEBT_SERVICE_LIMIT = .25;
+
+    static boolean canService(Game g, double extra) {
+
         double monthlyRevenue = Math.max(g.getEconomyManager().getTaxIncome(), 0);
-        return Math.max(monthlyRevenue * 60, 25_000);
+        if (monthlyRevenue <= 0) {
+            return false;   // nothing to service it with
+        }
+
+        DebtManager market = g.getDebtManager();
+
+        // Quoted WITH the new loan in it, which is the whole point of the
+        // repricing: ask what this specific borrowing would cost, not what the
+        // balance sheet happens to look like before the money arrives.
+        double rate = market.quoteRate(extra);
+        double projected = market.getAllPrincipal() + extra;
+        double monthlyInterest = projected * rate / 12.0;
+
+        return monthlyInterest <= monthlyRevenue * DEBT_SERVICE_LIMIT;
     }
+
 
     /**
      * Why the advisor could not do the thing it wanted to.

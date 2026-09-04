@@ -1212,36 +1212,73 @@ public class UserInterface extends Application {
         rootMenu.getChildren().addAll(warning, details, cost, toLand, back);
     }
 
+    /**
+     * "You cannot afford this - borrow for it?" with the terms on the screen.
+     *
+     * NOTE: this used to gross the gap up itself using getRate(), the standing
+     * rate, and hand the resulting face value to issueEmergencyDebt() - which
+     * then grossed it up a second time off the same stale rate. The quote does
+     * both now, priced with the bill included, and the button books precisely
+     * what is printed above it.
+     */
     private void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats) {
     clearMenu();
 
-    double totalCost = game.calculateTotalCost(selected, quantity); // You'll need a getter for this
+    double totalCost = game.calculateTotalCost(selected, quantity);
     double gap = totalCost - game.getCash();
-    double rate = game.getDebtManager().getRate();
-    double faceValue = Math.ceil((gap / (1 - rate)) / 1000.0) * 1000;
-    double cashReceived = faceValue * (1 - rate);
+
+    // Three months, matching what issueEmergencyDebt books.
+    DebtQuote quote = game.quoteTBill(gap, 3, 1000.0);
 
     Label warning = new Label("INSUFFICIENT FUNDS");
     warning.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
 
     Label details = new Label(String.format(
-        "Funding Required: $%s\nIssue T-Bill for: $%s\nCash to be Received: $%s\nRate: %.2f%%",
-        formatter.format(gap), formatter.format(faceValue), formatter.format(cashReceived), rate * 100
-    ));
+        "Funding Required: $%s%n%s",
+        formatter.format(gap), quote.summary()));
+    details.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
+
+    Label impact = new Label(quote.creditImpact());
+    impact.setStyle(rateStyle(quote));
 
     Button confirmDebt = new Button("Issue T-Bill");
     confirmDebt.setOnAction(e -> {
-        // Move the logic from your old quickIssueDebt here
-        game.issueEmergencyDebt(faceValue, 3); // Tell game to add the cash/debt
-        game.buildStack(selected, quantity, false); // Try building again
-        handleAllBuildingMenus(prevTitle, prevCats); // Go back to building list
+        game.issueEmergencyDebt(gap, 3);            // quotes it again, identically
+        game.buildStack(selected, quantity, false);
+        handleAllBuildingMenus(prevTitle, prevCats);
     });
 
     Button cancel = new Button("Cancel Build");
     cancel.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
 
-    rootMenu.getChildren().addAll(warning, details, confirmDebt, cancel);
+    rootMenu.getChildren().addAll(warning, details, impact, confirmDebt, cancel);
 }
+
+    /**
+     * Colours a quoted rate by how punishing it is.
+     *
+     * Not decoration. The whole point of showing the quote is that a player can
+     * see they are being charged for the size of the ask, and a number that
+     * looks the same at 1% and at 20% does not communicate that at a glance.
+     */
+    private String rateStyle(DebtQuote quote) {
+
+        // Measured against the market's OWN band rather than typed-in numbers,
+        // so re-shaping the curve cannot leave this colouring behind. When the
+        // spread ran 1%-20% a flat "red above 15%" was about right; the moment
+        // the curve was made gentler the same thresholds would have painted
+        // ordinary municipal leverage green and nothing else anything at all.
+        DebtManager market = game.getDebtManager();
+        double floor = market.floorRate();
+        double span = Math.max(1e-9, market.ceilingRate() - floor);
+        double howFarUp = (quote.marketRate() - floor) / span;
+
+        String colour;
+        if (howFarUp >= .55)      colour = "#B00020";   // deep into the expensive half
+        else if (howFarUp >= .25) colour = "#C77700";   // getting dear
+        else                      colour = "#2E7D32";   // ordinary money
+        return "-fx-text-fill: " + colour + "; -fx-font-weight: bold; -fx-padding: 4 0 0 0;";
+    }
     
     private void showDebtIssuanceMenu(String type, int minDur, int maxDur, double roundingFactor) {
     clearMenu();
@@ -1269,29 +1306,98 @@ public class UserInterface extends Application {
     rootMenu.getChildren().addAll(title, durationGrid, back);
 }
     
+    /**
+     * Pick an amount, and see what it costs BEFORE agreeing to it.
+     *
+     * The market prices a loan with the loan itself on the books, so the rate is
+     * a function of how much you ask for - ask for twice as much and you are not
+     * charged twice as much, you are charged more than twice as much. That was
+     * true and invisible: the player added increments blind, hit Confirm, and
+     * found out the price on the results screen, one action too late.
+     *
+     * So every click re-quotes. The terms panel below the buttons is the actual
+     * quote from Game.quoteDebt() - the same call the booking makes - and it
+     * moves as the number moves.
+     *
+     * The minus buttons exist for the same reason. When the amount was purely
+     * additive an overshoot meant cancelling and starting over, which was merely
+     * annoying while every loan cost 1% and is a real cost now that overshooting
+     * is what moves the rate.
+     */
     private void showDebtAmountMenu(String type, int duration, double rounding) {
     clearMenu();
-    
+
     final double[] requestedAmount = {0};
+
+    Label heading = new Label(String.format("Issuing %s (%d %s)",
+            type, duration, type.equals("T-Bill") ? "months" : "years"));
+    heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
     Label amountLabel = new Label("Amount Requested: $0");
     amountLabel.setStyle("-fx-font-size: 16px;");
+
+    Label terms = new Label();
+    terms.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
+
+    Label impact = new Label();
+
+    Button confirm = new Button("Confirm Issuance");
+
+    // One updater, called by every button, so no control can change the amount
+    // without the quote following it.
+    Runnable reprice = () -> {
+        amountLabel.setText("Amount Requested: $" + formatter.format(requestedAmount[0]));
+
+        if (requestedAmount[0] <= 0) {
+            terms.setText("Add an amount to see what it would cost.");
+            impact.setText(String.format("Market rate right now: %.2f%%",
+                    game.getDebtManager().getRate() * 100));
+            impact.setStyle("-fx-text-fill: #555555; -fx-padding: 4 0 0 0;");
+            confirm.setDisable(true);
+            return;
+        }
+
+        DebtQuote quote = game.quoteDebt(type, requestedAmount[0], duration, rounding);
+        terms.setText(quote.summary());
+        impact.setText(quote.creditImpact());
+        impact.setStyle(rateStyle(quote));
+        confirm.setDisable(false);
+    };
 
     javafx.scene.layout.FlowPane amountGrid = new javafx.scene.layout.FlowPane(10, 10);
     amountGrid.setAlignment(Pos.CENTER);
 
-    // Increments based on the scale of the debt (roundingFactor)
+    // Increments based on the scale of the instrument (its rounding factor).
     double[] increments = {rounding, rounding * 5, rounding * 10, rounding * 50};
-    
+
     for (double inc : increments) {
         Button b = new Button("+$" + formatter.format(inc));
         b.setOnAction(e -> {
             requestedAmount[0] += inc;
-            amountLabel.setText("Amount Requested: $" + formatter.format(requestedAmount[0]));
+            reprice.run();
         });
         amountGrid.getChildren().add(b);
     }
 
-    Button confirm = new Button("Confirm Issuance");
+    javafx.scene.layout.FlowPane downGrid = new javafx.scene.layout.FlowPane(10, 10);
+    downGrid.setAlignment(Pos.CENTER);
+
+    for (double inc : increments) {
+        Button b = new Button("-$" + formatter.format(inc));
+        b.setOnAction(e -> {
+            requestedAmount[0] = Math.max(0, requestedAmount[0] - inc);
+            reprice.run();
+        });
+        downGrid.getChildren().add(b);
+    }
+
+    Button reset = new Button("Reset to $0");
+    reset.setOnAction(e -> {
+        requestedAmount[0] = 0;
+        reprice.run();
+    });
+    downGrid.getChildren().add(reset);
+
     confirm.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
     confirm.setOnAction(e -> {
         if (requestedAmount[0] > 0) {
@@ -1306,7 +1412,10 @@ public class UserInterface extends Application {
     Button cancel = new Button("Cancel");
     cancel.setOnAction(e -> showFinanceMenu());
 
-    rootMenu.getChildren().addAll(new Label("Issuing " + type + " (" + duration + " units)"), amountLabel, amountGrid, confirm, cancel);
+    reprice.run();      // so the screen opens with the standing rate on it
+
+    rootMenu.getChildren().addAll(heading, amountLabel, amountGrid, downGrid,
+            terms, impact, confirm, cancel);
 }
     private String executeDebtLogic(String type, double amount, int duration, double rounding) {
         return switch (type) {
