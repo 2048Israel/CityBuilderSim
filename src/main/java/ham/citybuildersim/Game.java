@@ -172,6 +172,14 @@ public class Game {
          * short is the bug that keeps recurring here, not any one field on it.
          */
         this.constructionSubsidy = 0;
+
+        // Policy is the player's, so a new city starts with none of it: no
+        // sector protected, no offsets, both rates at their defaults. Leaving
+        // any of these behind is the leak New Game has produced twice already.
+        java.util.Arrays.fill(autoSubsidy, false);
+        java.util.Arrays.fill(subsidyPaid, 0);
+        economyManager.getTaxPolicy().reset();
+        economyManager.getSalesTaxLedger().reset();
         this.constructionShedMonth = -1;
         this.constructionShedPoints = 0;
 
@@ -388,6 +396,123 @@ public class Game {
         this.constructionSubsidy = Math.max(0, monthlyAmount);
     }
 
+    /* ====================================================================
+       STANDING POLICY: NEVER LET THIS SECTOR SHRINK
+
+       Jerus's brief: "always subsidize this industry if negative net income,
+       aka if you want some industry to never downsize."
+
+       WHAT IT PAYS. Exactly enough to reach zero, and no cap - his call, and
+       the right one: the fixed construction retainer that this generalises had
+       to be re-set five times in a single playtest because a number picked once
+       goes stale the moment the sector grows. Covering the loss self-scales.
+
+       WHAT IT COSTS. Real money, and the city will go overdrawn to pay it - also
+       his call. An overdraft is priced as debt principal now, so the bill for an
+       over-generous policy arrives as a worse interest rate rather than as a
+       silent failure to pay. A policy that quietly stops working when it matters
+       most is the failure mode the old retainer already had.
+
+       WHY IT IS A CAPITAL CONTRIBUTION, NOT REVENUE. It moves cash from the
+       city to the sector and touches neither income statement. The sector's
+       books still say it lost money, because it did - what changed is that
+       somebody else absorbed it. Booking it as sector revenue would have been
+       easier and would have made every subsidised sector report a permanent
+       break-even, hiding the very thing the player needs to see to decide
+       whether to keep paying.
+       ==================================================================== */
+
+    private final boolean[] autoSubsidy = new boolean[PolicySector.values().length];
+    private final double[] subsidyPaid = new double[PolicySector.values().length];
+
+    public boolean isAutoSubsidised(PolicySector sector){
+        return autoSubsidy[sector.ordinal()];
+    }
+
+    public void setAutoSubsidised(PolicySector sector, boolean on){
+        autoSubsidy[sector.ordinal()] = on;
+    }
+
+    /** What this sector was paid this month. Zero when it did not need it. */
+    public double getSubsidyPaid(PolicySector sector){
+        return subsidyPaid[sector.ordinal()];
+    }
+
+    public double getTotalSubsidyPaid(){
+        double total = 0;
+        for (double d : subsidyPaid) total += d;
+        return total;
+    }
+
+    /**
+     * Tops a protected sector up to break-even.
+     *
+     * @return what was paid, so the caller can hand the loss counter the figure
+     *         AFTER support rather than before it
+     */
+    /**
+     * One subsidy payment against a stated loss, for PolicyCheck.
+     *
+     * Package-private and named for what it is. It calls the real method rather
+     * than reproducing it, because a test helper that does its own arithmetic
+     * agrees with itself and proves nothing about the code that ships.
+     */
+    double subsidiseForTest(PolicySector sector, double netIncome){
+        return paySubsidyIfOwed(sector, netIncome);
+    }
+
+    private double paySubsidyIfOwed(PolicySector sector, double netIncome){
+
+        subsidyPaid[sector.ordinal()] = 0;
+
+        if (!autoSubsidy[sector.ordinal()] || netIncome >= 0) {
+            return 0;
+        }
+
+        double owed = -netIncome;
+
+        cash -= owed;                       // overdrawn if it must be
+        creditSectorCash(sector, owed);
+        subsidyPaid[sector.ordinal()] = owed;
+        return owed;
+    }
+
+    /**
+     * Moves cash into a sector's own books.
+     *
+     * The six sectors keep cash in five different places - Retail and Real
+     * Estate share CommercialHandler - so this switch is the one place that has
+     * to know which. Every branch is a plain add: nothing here may compute an
+     * amount, or the money the city spent and the money the sector received
+     * could differ, which is precisely the money-from-nowhere this codebase has
+     * produced before.
+     */
+    private void creditSectorCash(PolicySector sector, double amount){
+
+        CommercialHandler ch = economyManager.getCommercialHandler();
+
+        switch (sector) {
+            case RETAIL -> ch.setCommercialCash(ch.getCommercialCash() + amount);
+            case REAL_ESTATE -> ch.setRealEstateCash(ch.getRealEstateCash() + amount);
+            case INDUSTRY -> {
+                IndustrialHandler ih = economyManager.getIndustrialHandler();
+                ih.setIndustrialCash(ih.getIndustrialCash() + amount);
+            }
+            case CONSTRUCTION -> {
+                ConstructionHandler c = servicesManager.getConstructionHandler();
+                c.setCash(c.getCash() + amount);
+            }
+            case HEAVY_INDUSTRY -> {
+                HeavyIndustryHandler h = economyManager.getHeavyIndustryHandler();
+                h.setCash(h.getCash() + amount);
+            }
+            case MINING -> {
+                MiningHandler m = economyManager.getMiningHandler();
+                m.setCash(m.getCash() + amount);
+            }
+        }
+    }
+
     /**
      * Construction capacity the current subsidy keeps alive.
      *
@@ -396,15 +521,26 @@ public class Game {
      * capacity that exists, because a subsidy cannot protect plant nobody owns.
      */
     public double getSubsidisedCapacity(){
+        return protectedConstructionCapacity();
+    }
 
-        double capacity = buildingManager.getTotalConstructionCapacity();
-        double perPoint = servicesManager.getConstructionHandler()
-                .getStandingCostPerCapacity(capacity);
-
-        if (perPoint <= 0 || constructionSubsidy <= 0) {
-            return 0;
-        }
-        return Math.min(capacity, constructionSubsidy / perPoint);
+    /**
+     * Construction capacity the standing policy keeps alive.
+     *
+     * ALL of it, when the policy is on. The old retainer bought a slice - a
+     * dollar figure divided by what a point of capacity costs to keep - which is
+     * why it went stale: the slice shrank every time the sector grew. Protecting
+     * the sector means protecting the sector.
+     *
+     * Counted as DEMAND rather than bolted on as a floor, which is what it is:
+     * the city has undertaken to keep those crews available, so from the
+     * sector's side that capacity is spoken for, and every rule downstream keeps
+     * working untouched.
+     */
+    private double protectedConstructionCapacity(){
+        return isAutoSubsidised(PolicySector.CONSTRUCTION)
+                ? buildingManager.getTotalConstructionCapacity()
+                : 0;
     }
 
     public double getIncome(){
@@ -646,18 +782,27 @@ public class Game {
         int population = populationManager.getPopulation();
         int storeCoverage = buildingManager.getTotalStoreCoverage();
 
-        businessInvestment.recordSectorResult(BusinessDebtManager.RETAIL,
-                ch.getReportRetailNetIncome());
-        businessInvestment.recordSectorResult(BusinessDebtManager.REAL_ESTATE,
-                ch.getReportRealEstateNetIncome());
-        businessInvestment.recordSectorResult(BusinessDebtManager.INDUSTRY,
-                ih.getNetIncome());
-        businessInvestment.recordSectorResult(BusinessDebtManager.CONSTRUCTION,
-                construction.getNetIncome());
-        businessInvestment.recordSectorResult(BusinessDebtManager.HEAVY_INDUSTRY,
-                economyManager.getHeavyIndustryHandler().getNetIncome());
-        businessInvestment.recordSectorResult(BusinessDebtManager.MINING,
-                economyManager.getMiningHandler().getNetIncome());
+        /*
+         * Standing policy first: a sector the city has undertaken to protect is
+         * brought up to break-even BEFORE the loss counter sees the month, which
+         * is the whole point - six consecutive losses is what makes a sector
+         * start selling its capacity, so a subsidy that arrives after the count
+         * protects nothing.
+         */
+        double[] net = {
+            ch.getReportRetailNetIncome(),
+            ch.getReportRealEstateNetIncome(),
+            ih.getNetIncome(),
+            construction.getNetIncome(),
+            economyManager.getHeavyIndustryHandler().getNetIncome(),
+            economyManager.getMiningHandler().getNetIncome()
+        };
+
+        for (PolicySector sector : PolicySector.values()) {
+            double covered = paySubsidyIfOwed(sector, net[sector.ordinal()]);
+            businessInvestment.recordSectorResult(sector.creditName(),
+                    net[sector.ordinal()] + covered);
+        }
 
         // Housing: demand is people actually living in it. Empty units can go;
         // occupied ones can never be scrapped out from under anyone.
@@ -712,7 +857,7 @@ public class Game {
          * spoken for, and every rule downstream (the headroom, the gradual
          * shedding, the loss counter) keeps working untouched.
          */
-        double demand = Math.max(workAvailable, getSubsidisedCapacity());
+        double demand = Math.max(workAvailable, protectedConstructionCapacity());
 
         retire(businessInvestment.planRetirement(
                 BusinessDebtManager.CONSTRUCTION, BuildingType.CONSTRUCTION,
@@ -2014,13 +2159,19 @@ public class Game {
         ConstructionHandler construction = servicesManager.getConstructionHandler();
         construction.recogniseWork(getConstructionOutput());
 
-        // The retainer, paid before the sector's statement runs so the month it
-        // books is the month the city paid for.
-        if (constructionSubsidy > 0) {
-            double paid = Math.min(constructionSubsidy, Math.max(0, cash));
-            construction.receiveSubsidy(paid);
-            cash -= paid;
-        }
+        /*
+         * The fixed construction retainer used to be paid here.
+         *
+         * RETIRED. It was a dollar figure the player picked once, so it went
+         * stale the moment the sector grew - five re-settings in a single
+         * playtest - and it protected a SLICE of capacity rather than the
+         * sector. The per-sector standing policy in runRetirement() replaces it
+         * and covers construction like any other sector: it self-scales, because
+         * it is measured against the loss rather than against a number.
+         *
+         * The field survives only to carry old saves across; loadGame() turns a
+         * non-zero retainer into the toggle and then leaves it alone.
+         */
 
         // Grab the recognised figure before updateConstructionReport() banks the
         // month and clears it - that value IS this month's investment.
@@ -2031,6 +2182,10 @@ public class Game {
         economyManager.updateHeavyIndustryReport();
         economyManager.updateMiningReport();
         economyManager.updateConstructionReport();
+
+        // The month's VAT, struck once, after every sector has reported and
+        // before anything reads the tax total. See settleSalesTax().
+        economyManager.settleSalesTax();
 
         economyManager.updateNationalAccounts(
                 constructionWorkDone,
@@ -2439,6 +2594,12 @@ public class Game {
                 economyManager.getHeavyIndustryReportState(),
                 economyManager.getMiningReportState());
 
+        // Policy: the rates, every offset, the protected sectors, and the
+        // month's VAT ledger.
+        dataSave.setTaxPolicyState(economyManager.getTaxPolicy().getPolicyState());
+        dataSave.setAutoSubsidy(autoSubsidy.clone());
+        dataSave.setSalesTaxLedger(economyManager.getSalesTaxLedger().getLedgerState());
+
         // The land office's window, the ore under the city, and the retainer.
         dataSave.setLandState(
                 landManager.getMarket().getListingState(),
@@ -2717,6 +2878,10 @@ public class Game {
     economyManager.setHouseholds(getHouseholdCapacity());
     economyManager.setTotalJobs(populationManager.getTotalJobs());
     economyManager.setTotalWage(populationManager.getTotalWage());
+
+    // The split behind that total, because the wage tax is banded now and a
+    // single figure cannot be charged at four different rates.
+    economyManager.setWageDetail(populationManager.getStaffedWagePerType());
     economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
     economyManager.setWaterRatio(servicesManager.getWaterRatio());
     economyManager.setRoadRatio(servicesManager.getRoadRatio());
@@ -2906,9 +3071,33 @@ public class Game {
                 landManager.getMarket().restoreListingState(loaded.getLandListing());
             }
             landManager.restoreIron(loaded.getIronDeposits(), loaded.getIronReserveTonnes());
+
+            /*
+             * Policy. Each piece is restored only if the save carries it in this
+             * build's shape - a save from before the Policy tab existed simply
+             * keeps the defaults, which are the single city rate applied to
+             * everything, which is exactly what that save meant.
+             */
+            economyManager.getTaxPolicy().restorePolicyState(loaded.getTaxPolicyState());
+
+            boolean[] savedSubsidy = loaded.getAutoSubsidy();
+            if (savedSubsidy != null && savedSubsidy.length == autoSubsidy.length) {
+                System.arraycopy(savedSubsidy, 0, autoSubsidy, 0, autoSubsidy.length);
+            }
+
+            economyManager.restoreSalesTaxLedger(loaded.getSalesTaxLedger());
             economyManager.setMiningCash(loaded.getMiningCash());
             restoredOrePrice = loaded.getIronLocalPrice();
+            /*
+             * A save from before the standing policy existed. A city that was
+             * paying a retainer had decided its builders were worth keeping, so
+             * that decision is carried across as the toggle rather than dropped
+             * - the retainer itself no longer does anything.
+             */
             this.constructionSubsidy = Math.max(0, loaded.getConstructionSubsidy());
+            if (this.constructionSubsidy > 0) {
+                setAutoSubsidised(PolicySector.CONSTRUCTION, true);
+            }
 
             // The warning, restored with the crisis that caused it. A save from
             // before this was carried decodes to -1, which isConstructionShedding()

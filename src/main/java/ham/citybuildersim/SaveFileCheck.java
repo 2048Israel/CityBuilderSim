@@ -379,13 +379,24 @@ public class SaveFileCheck {
         warned.buildStack(depot, 2, false);
         warned.simulateMonths(8);
 
-        warned.setConstructionSubsidy(180);
+        /*
+         * UNPROTECTED, deliberately.
+         *
+         * This used to set a partial dollar retainer and check the warning
+         * survived alongside it. That state no longer exists: the retainer was a
+         * slice of capacity bought with a fixed sum, and the standing policy
+         * that replaced it protects the sector or does not. So the warning is
+         * now tested in both of its two real positions instead - up when nothing
+         * is protecting the crews, and down the moment something is.
+         */
+        warned.setAutoSubsidised(PolicySector.CONSTRUCTION, false);
         warned.restoreConstructionShedding(warned.getMonth(), 900);
 
         boolean warningUp = warned.isConstructionShedding();
+        assertTrue("an unprotected city with a fresh shed IS warned", warningUp);
+
         int shedMonth = warned.getConstructionShedMonth();
         double shedPoints = warned.getConstructionShedPoints();
-        double retainer = warned.getConstructionSubsidy();
 
         warned.saveGame(6, "warned city");
 
@@ -396,10 +407,16 @@ public class SaveFileCheck {
                 stillWarned.getConstructionShedMonth(), shedMonth);
         assertEquals("...and the capacity it has sold since",
                 stillWarned.getConstructionShedPoints(), shedPoints);
-        assertEquals("...and the retainer answering it",
-                stillWarned.getConstructionSubsidy(), retainer);
+        assertEquals("...and it is still unprotected",
+                stillWarned.isAutoSubsidised(PolicySector.CONSTRUCTION) ? 1 : 0, 0);
         assertEquals("...so the player is still being warned",
                 stillWarned.isConstructionShedding(), warningUp);
+
+        // ...and protecting the sector is what actually answers the warning.
+        stillWarned.setAutoSubsidised(PolicySector.CONSTRUCTION, true);
+        assertTrue("protecting construction takes the warning down",
+                !stillWarned.isConstructionShedding());
+        stillWarned.setAutoSubsidised(PolicySector.CONSTRUCTION, false);
 
         // Acknowledging it has to stick too, or the banner comes back on reload
         // for a player who has already said no.

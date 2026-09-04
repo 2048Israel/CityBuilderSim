@@ -277,6 +277,9 @@ public class MiningHandler {
     public double getReportOreSoldLocally(){ return rOreSoldLocally; }
     public double getReportOreExported()  { return rOreExported; }
     public double getReportLocalPrice()   { return rLocalPrice; }
+
+    /** What exported ore fetched. Zero-rated for sales tax; see SalesTaxLedger. */
+    public double getReportExportPrice()  { return rExportPrice; }
     public double getReportRevenue()      { return rRevenue; }
     public double getReportPayroll()      { return rPayroll; }
     public double getReportOperatingCost(){ return rOperatingCost; }

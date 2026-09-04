@@ -81,8 +81,16 @@ public class ReadPathCheck {
         e.getTaxIncome();
         e.getTotalIncome();
         e.getExpenses();
-        e.calculateSalesTax();
         e.getMonthGdp();
+
+        /*
+         * calculateSalesTax() used to be read here. It is settleSalesTax() now -
+         * a monthly step that strikes the VAT and assigns it, exactly like
+         * chargePropertyTax() - so it has no business in a sweep whose entire
+         * premise is that nothing in it changes anything. It is called once a
+         * month from the month loop, and getTaxIncome() above reads the result,
+         * which is the read path this sweep is actually for.
+         */
 
         // each sector's tax line, read on its own the way the panels do
         c.getBusinessTaxIncome(e.getTaxRate());

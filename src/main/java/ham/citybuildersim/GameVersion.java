@@ -51,8 +51,13 @@ public final class GameVersion {
      *     that only knows four-wide rows sees a length that divides by neither
      *     shape, throws the whole listing away, and silently hands the player
      *     ten new plots in place of the tract they were saving up for.
+     * 8 - policy: the two city rates plus every wage-band and per-sector offset,
+     *     which sectors the city has undertaken to subsidise, and the month's
+     *     VAT ledger. An older build reads none of these and would hand back a
+     *     city with one flat rate everywhere and nothing protected - a load that
+     *     looks perfectly successful right up until the sectors start shrinking.
      */
-    public static final int SAVE_FORMAT = 7;
+    public static final int SAVE_FORMAT = 8;
 
     public static final String NAME = "CityBuilderSim";
 

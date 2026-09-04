@@ -11,9 +11,9 @@ import java.util.Locale;
 public class PopulationManager {
     private int population;
     //dont use this one for anything other than create different jobs
-    JobType[] jobNoUse = JobType.values();
+    JobType[] jobTypes = JobType.values();
     //
-    private int[] jobs = new int[jobNoUse.length];
+    private int[] jobs = new int[jobTypes.length];
     private double[] jobWage = new double[jobs.length];
     private double[] totalWagePerType = new double[jobWage.length];
     private int totalJobs;
@@ -99,6 +99,27 @@ public class PopulationManager {
     
     public double[] getWagesPerType(){
         return jobWage;
+    }
+
+    /**
+     * The wage bill per job type with the fill rate already applied.
+     *
+     * The banded wage tax needs the split behind getTotalWage(), and it must be
+     * the SAME split: this sums to getTotalWage() by construction, because it is
+     * that method's loop body with the accumulation taken out.
+     *
+     * Handing out the unstaffed array and a separately-sampled fill rate looked
+     * equivalent and was not - the fill rate is recomputed live on every call,
+     * so the two were sampled at different moments and a reloaded city taxed a
+     * different wage bill from the live one it was supposed to match.
+     */
+    public double[] getStaffedWagePerType(){
+        double[] fillRate = getJobFillRate();
+        double[] staffed = new double[totalWagePerType.length];
+        for (int i = 0; i < totalWagePerType.length; i++) {
+            staffed[i] = totalWagePerType[i] * fillRate[i];
+        }
+        return staffed;
     }
     
     //setters
@@ -267,7 +288,7 @@ public class PopulationManager {
 
             if (jobs[i] > 0) {
 
-                String jobName = jobNoUse[i].name();
+                String jobName = jobTypes[i].name();
 
                 double payroll = jobWage[i] * jobs[i];
 

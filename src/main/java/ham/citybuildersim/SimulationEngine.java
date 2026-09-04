@@ -92,6 +92,13 @@ public class SimulationEngine {
         economyManager.updateHeavyIndustryWages(populationManager.getWagesPerType());
         economyManager.updateMiningWages(populationManager.getWagesPerType());
         economyManager.setTotalWage(populationManager.getTotalWage());
+
+        // The split behind that total. The wage tax is banded, so a single
+        // figure cannot be charged at four different rates - and this line has
+        // to sit beside setTotalWage() in BOTH places that sync wages, the
+        // monthly path here and rebuildSimulationState() on load, or the two
+        // disagree and a reloaded city taxes a different wage bill.
+        economyManager.setWageDetail(populationManager.getStaffedWagePerType());
         economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
         economyManager.setWaterRatio(servicesManager.getWaterRatio());
         economyManager.setRoadRatio(servicesManager.getRoadRatio());

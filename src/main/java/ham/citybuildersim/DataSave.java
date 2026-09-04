@@ -576,6 +576,29 @@ public class DataSave {
     public void setConstructionSubsidy(double amount) { this.constructionSubsidy = amount; }
     public double getConstructionSubsidy()            { return constructionSubsidy; }
 
+    /* -------------------------- policy --------------------------
+     *
+     * The city's two rates and every band and sector offset, plus which sectors
+     * the city has undertaken to protect, plus the month's VAT ledger.
+     *
+     * The ledger is here because it is a FLOW - what each sector sold and what
+     * tax it had already paid on its inputs during the month. Nothing about the
+     * state the month ended in can reconstruct it, which is the same reason the
+     * income statements are carried rather than recomputed.
+     */
+    private double[] taxPolicyState;
+    private boolean[] autoSubsidy;
+    private double[] salesTaxLedger;
+
+    public void setTaxPolicyState(double[] state)  { this.taxPolicyState = state; }
+    public double[] getTaxPolicyState()            { return taxPolicyState; }
+
+    public void setAutoSubsidy(boolean[] on)       { this.autoSubsidy = on; }
+    public boolean[] getAutoSubsidy()              { return autoSubsidy; }
+
+    public void setSalesTaxLedger(double[] state)  { this.salesTaxLedger = state; }
+    public double[] getSalesTaxLedger()            { return salesTaxLedger; }
+
     public void setConstructionShedding(int month, double points) {
         this.constructionShedMonth = month;
         this.constructionShedPoints = points;

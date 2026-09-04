@@ -421,6 +421,7 @@ public class UserInterface extends Application {
 
     Button buildings = new Button("Buildings");
     Button economy = new Button("Economy");
+    Button policy = new Button("Policy");
     Button population = new Button("Population");
     Button nextMonth = new Button("Next Month: $" + formatter.format(income));
     Button simulateMultipleMonths = new Button("Simulate Multiple Months");
@@ -428,6 +429,7 @@ public class UserInterface extends Application {
 
     buildings.setOnAction(e -> showBuildingsMenu()); // current menu becomes previousMenu
     economy.setOnAction(e -> showEconomyMenu());
+    policy.setOnAction(e -> showPolicyMenu());
     nextMonth.setOnAction(e -> {
         game.toggleNextMonth();
         showStartMenu();
@@ -441,7 +443,7 @@ public class UserInterface extends Application {
 
     simulateMultipleMonths.setOnAction(e -> showSimulateMonthsMenu());
 
-    rootMenu.getChildren().addAll(gameInfo, buildings, economy, population, nextMonth, simulateMultipleMonths, back);
+    rootMenu.getChildren().addAll(gameInfo, buildings, economy, policy, population, nextMonth, simulateMultipleMonths, back);
 
     /*
      * The one thing that interrupts the main screen.
@@ -475,7 +477,7 @@ public class UserInterface extends Application {
     private VBox constructionSheddingBanner(Runnable andThen) {
 
         double capacity = game.getBuildingManager().getTotalConstructionCapacity();
-        double covered = game.getSubsidisedCapacity();
+        boolean protectedNow = game.isAutoSubsidised(PolicySector.CONSTRUCTION);
         double lost = game.getConstructionShedPoints();
 
         VBox banner = criticalSection("[!] YOUR BUILDERS ARE BEING LAID OFF",
@@ -484,19 +486,22 @@ public class UserInterface extends Application {
                 "orders, so it is losing money and shrinking to fit.",
                 "",
                 String.format("Capacity left:      %s pts", formatter.format(capacity)),
-                String.format("You are paying to keep: %s pts", formatter.format(covered)),
+                protectedNow
+                        ? "Standing policy:    ON - the city covers its losses"
+                        : "Standing policy:    off - nothing is protecting them",
                 "",
                 "Everything you build runs through these crews. Once they are",
                 "gone, rebuilding them is the slowest thing in the game.");
 
-        ConstructionHandler ch = game.getServicesManager().getConstructionHandler();
-        double coverAll = capacity * ch.getStandingCostPerCapacity(capacity);
-
-        Button pay = new Button(String.format("Keep them all - $%s /month",
-                formatter.format(coverAll)));
+        // NOTE: this button used to set a fixed dollar retainer sized to today's
+        // capacity, which is why it had to be pressed again every time the sector
+        // grew - five times in one playtest. It turns the standing policy on now,
+        // and the policy is measured against the loss rather than against a
+        // number, so it does not go stale.
+        Button pay = new Button("Keep them all - cover their losses");
         pay.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
         pay.setOnAction(e -> {
-            game.setConstructionSubsidy(coverAll);
+            game.setAutoSubsidised(PolicySector.CONSTRUCTION, true);
             game.acknowledgeConstructionShedding();
             andThen.run();
         });
@@ -806,7 +811,10 @@ public class UserInterface extends Application {
         Button b3 = new Button("Debt Info");
         Button b4 = new Button("Sector Info");
         Button b5 = new Button("Government & National Accounts");
-        Button b6 = new Button("Tax Policy");
+        // NOTE: "Tax Policy" used to sit here. It moved to the Policy tab, with
+        // the standing subsidies, because they are the same decision seen from
+        // two sides - what you charge a sector and what you are prepared to pay
+        // to keep it - and having them two menus apart made that invisible.
         
         Button b0 = new Button("Back");
         
@@ -817,7 +825,6 @@ public class UserInterface extends Application {
         b3.setOnAction(e -> showDebtInfoMenu());
         b4.setOnAction(e -> showSectorMenu());
         b5.setOnAction(e -> showGovernmentMenu());
-        b6.setOnAction(e -> showTaxPolicyMenu());
 
         // NOTE: "Restructure" (b2) was never implemented even in the old terminal
         // menu (its case was an empty stub) - leaving disabled. "Sector Info" (b4)
@@ -832,7 +839,7 @@ public class UserInterface extends Application {
 
         
 
-        rootMenu.getChildren().addAll(marketStatus,gameInfo,b1,b2,b3,b4,b5,b6, b0);
+        rootMenu.getChildren().addAll(marketStatus,gameInfo,b1,b2,b3,b4,b5, b0);
 
         
     }
@@ -988,10 +995,242 @@ public class UserInterface extends Application {
         toLand.setOnAction(e -> showLandMenu());
 
         Button back = new Button("Back");
-        back.setOnAction(e -> showEconomyMenu());
+        back.setOnAction(e -> showPolicyMenu());
 
         rootMenu.getChildren().addAll(title, gameInfo, scroll,
                 incomeLabel, incomeDial, propertyLabel, propertyDial, toLand, back);
+    }
+
+    /* =====================================================================
+       THE POLICY TAB
+
+       Three screens, because there are three different decisions and putting
+       them on one page made none of them readable: what the city charges people
+       (Wages), what it charges businesses (Business), and what it is prepared to
+       pay to keep a sector alive (Subsidies).
+
+       Every rate below is an OFFSET from a city rate, so each row prints the
+       offset AND what it resolves to. A screen that showed only "-3%" would be
+       asking the player to do the arithmetic that TaxPolicy already did.
+       ===================================================================== */
+
+    private void showPolicyMenu() {
+        clearMenu();
+
+        TaxPolicy policy = game.getEconomyManager().getTaxPolicy();
+
+        Label title = new Label("POLICY");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Label rates = monoLabel(String.format(
+                "City income tax %.1f%%     City property tax %.2f%%/yr",
+                policy.getIncomeTaxRate() * 100, policy.getPropertyTaxRate() * 100));
+
+        int protectedCount = 0;
+        for (PolicySector sector : PolicySector.values()) {
+            if (game.isAutoSubsidised(sector)) protectedCount++;
+        }
+
+        Label standing = monoLabel(String.format(
+                "%d of %d sectors protected     paid last month $%s",
+                protectedCount, PolicySector.values().length,
+                formatter.format(game.getTotalSubsidyPaid())));
+        standing.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-text-fill: "
+                + (protectedCount > 0 ? "#2e7d32" : "#555555") + ";");
+
+        Button taxes = new Button("City Tax Rates");
+        taxes.setOnAction(e -> showTaxPolicyMenu());
+
+        Button wages = new Button("Wages - by education");
+        wages.setOnAction(e -> showWagePolicyMenu());
+
+        Button business = new Button("Business - by sector");
+        business.setOnAction(e -> showBusinessPolicyMenu());
+
+        Button subsidies = new Button("Subsidies - what you will protect");
+        subsidies.setOnAction(e -> showSubsidyPolicyMenu());
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showStartMenu());
+
+        rootMenu.getChildren().addAll(title, rates, standing,
+                taxes, wages, business, subsidies, back);
+    }
+
+    /** One row of -/+ buttons that move an offset and redraw. */
+    private javafx.scene.layout.FlowPane offsetDial(double[] steps, String format,
+                                                    java.util.function.DoubleConsumer move,
+                                                    Runnable redraw) {
+        javafx.scene.layout.FlowPane dial = new javafx.scene.layout.FlowPane(6, 6);
+        dial.setAlignment(Pos.CENTER_LEFT);
+        for (double step : steps) {
+            final double delta = step / 100;
+            Button b = new Button((step > 0 ? "+" : "") + String.format(format, step));
+            b.setPrefWidth(58);
+            b.setOnAction(e -> { move.accept(delta); redraw.run(); });
+            dial.getChildren().add(b);
+        }
+        return dial;
+    }
+
+    private void showWagePolicyMenu() {
+        clearMenu();
+
+        TaxPolicy policy = game.getEconomyManager().getTaxPolicy();
+
+        Label title = new Label("WAGE TAX");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox column = new VBox(6);
+        column.setAlignment(Pos.TOP_LEFT);
+
+        column.getChildren().add(monoLabel(String.format(
+                "City income tax %.1f%% - each band is set as a move from it.",
+                policy.getIncomeTaxRate() * 100)));
+        column.getChildren().add(monoLabel(
+                "The eleven job types are grouped by the education they need."));
+
+        for (WageBand band : WageBand.values()) {
+            double offset = policy.getWageOffset(band);
+            double effective = policy.effectiveWageRate(band);
+
+            Label row = monoLabel(String.format("%-12s  %+5.1f pts  ->  %5.2f%%",
+                    band.label(), offset * 100, effective * 100));
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-text-fill: "
+                    + (offset < 0 ? "#2e7d32" : offset > 0 ? "#b00020" : "#555555") + ";");
+
+            column.getChildren().add(row);
+            column.getChildren().add(offsetDial(new double[]{ -5, -1, 1, 5 }, "%.0f",
+                    d -> policy.setWageOffset(band, policy.getWageOffset(band) + d),
+                    this::showWagePolicyMenu));
+        }
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showPolicyMenu());
+
+        rootMenu.getChildren().addAll(title, scrolled(column), back);
+    }
+
+    private void showBusinessPolicyMenu() {
+        clearMenu();
+
+        TaxPolicy policy = game.getEconomyManager().getTaxPolicy();
+
+        Label title = new Label("BUSINESS TAX BY SECTOR");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox column = new VBox(4);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.getChildren().add(monoLabel(
+                "Profit and sales move from the city income tax; property from"));
+        column.getChildren().add(monoLabel(
+                "the property rate. Sales tax is charged on VALUE ADDED - what a"));
+        column.getChildren().add(monoLabel(
+                "sector sells, less the tax it already paid on what it bought."));
+
+        SalesTaxLedger vat = game.getEconomyManager().getSalesTaxLedger();
+
+        for (PolicySector sector : PolicySector.values()) {
+
+            Label head = monoLabel(String.format("%s   (net sales tax last month $%s)",
+                    sector.label().toUpperCase(), formatter.format(vat.getNet(sector))));
+            head.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; "
+                    + "-fx-font-weight: bold; -fx-padding: 8 0 0 0;");
+            column.getChildren().add(head);
+
+            column.getChildren().add(sectorRow("profit  ",
+                    policy.getProfitOffset(sector), policy.effectiveProfitRate(sector)));
+            column.getChildren().add(offsetDial(new double[]{ -5, -1, 1, 5 }, "%.0f",
+                    d -> policy.setProfitOffset(sector, policy.getProfitOffset(sector) + d),
+                    this::showBusinessPolicyMenu));
+
+            column.getChildren().add(sectorRow("sales   ",
+                    policy.getSalesOffset(sector), policy.effectiveSalesRate(sector)));
+            column.getChildren().add(offsetDial(new double[]{ -5, -1, 1, 5 }, "%.0f",
+                    d -> policy.setSalesOffset(sector, policy.getSalesOffset(sector) + d),
+                    this::showBusinessPolicyMenu));
+
+            column.getChildren().add(sectorRow("property",
+                    policy.getPropertyOffset(sector), policy.effectivePropertyRate(sector)));
+            column.getChildren().add(offsetDial(new double[]{ -1, -.25, .25, 1 }, "%.2f",
+                    d -> policy.setPropertyOffset(sector, policy.getPropertyOffset(sector) + d),
+                    this::showBusinessPolicyMenu));
+        }
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showPolicyMenu());
+
+        rootMenu.getChildren().addAll(title, scrolled(column), back);
+    }
+
+    private Label sectorRow(String what, double offset, double effective) {
+        Label row = monoLabel(String.format("   %s  %+6.2f pts  ->  %5.2f%%",
+                what, offset * 100, effective * 100));
+        row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-text-fill: "
+                + (offset < 0 ? "#2e7d32" : offset > 0 ? "#b00020" : "#555555") + ";");
+        return row;
+    }
+
+    private void showSubsidyPolicyMenu() {
+        clearMenu();
+
+        Label title = new Label("STANDING SUBSIDIES");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox column = new VBox(6);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.getChildren().add(monoLabel(
+                "A protected sector is topped up to break-even every month it"));
+        column.getChildren().add(monoLabel(
+                "loses money, so it never sells its capacity. The city pays what"));
+        column.getChildren().add(monoLabel(
+                "it takes - and goes overdrawn if it must, which costs interest."));
+
+        for (PolicySector sector : PolicySector.values()) {
+
+            boolean on = game.isAutoSubsidised(sector);
+            double paid = game.getSubsidyPaid(sector);
+
+            Label row = monoLabel(String.format("%-16s %-4s   paid last month $%s",
+                    sector.label(), on ? "ON" : "off", formatter.format(paid)));
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-text-fill: "
+                    + (on ? "#2e7d32" : "#555555") + ";");
+
+            Button toggle = new Button(on ? "Stop protecting" : "Protect this sector");
+            if (on) {
+                toggle.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
+            }
+            toggle.setOnAction(e -> {
+                game.setAutoSubsidised(sector, !game.isAutoSubsidised(sector));
+                showSubsidyPolicyMenu();
+            });
+
+            javafx.scene.layout.HBox line = new javafx.scene.layout.HBox(10, toggle, row);
+            line.setAlignment(Pos.CENTER_LEFT);
+            column.getChildren().add(line);
+        }
+
+        column.getChildren().add(monoLabel(String.format(
+                "%nTotal paid last month: $%s", formatter.format(game.getTotalSubsidyPaid()))));
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showPolicyMenu());
+
+        rootMenu.getChildren().addAll(title, scrolled(column), back);
+    }
+
+    /** A left-aligned column inside a scroll pane, which these screens all want. */
+    private javafx.scene.control.ScrollPane scrolled(VBox column) {
+        VBox content = new VBox(0);
+        content.setAlignment(Pos.CENTER);
+        column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        content.getChildren().add(column);
+
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(content);
+        scroll.setFitToWidth(true);
+        scroll.setPrefHeight(400);
+        scroll.setStyle("-fx-background-color:transparent;");
+        return scroll;
     }
 
     private void showFinanceMenu() {
@@ -3001,59 +3240,38 @@ public class UserInterface extends Application {
          * Shown as capacity protected rather than as money, because that is the
          * decision. The money is the price of it.
          * ------------------------------------------------------------------- */
-        double protectedCapacity = game.getSubsidisedCapacity();
+        boolean protectedNow = game.isAutoSubsidised(PolicySector.CONSTRUCTION);
         double capacity = game.getBuildingManager().getTotalConstructionCapacity();
 
-        VBox retainer = reportSection("STANDING RETAINER",
-                String.format("Paying:                 $%s /month",
-                        formatter.format(game.getConstructionSubsidy())),
-                String.format("Keeps:                  %s of %s pts of capacity",
-                        formatter.format(protectedCapacity), formatter.format(capacity)),
+        /*
+         * NOTE: this was a dollar retainer with -$100 / +$100 buttons, and the
+         * number it needed went stale every time the sector grew - it had to be
+         * re-set five times in a single playtest. It is the standing policy now,
+         * measured against the loss rather than against a figure picked once,
+         * and it is set here or on the Policy tab; both are the same switch.
+         */
+        VBox retainer = reportSection("STANDING POLICY",
+                String.format("Protected:              %s",
+                        protectedNow ? "YES - the city covers this sector's losses" : "no"),
+                String.format("Capacity at stake:      %s pts", formatter.format(capacity)),
+                String.format("Paid last month:        $%s",
+                        formatter.format(game.getSubsidyPaid(PolicySector.CONSTRUCTION))),
                 "",
-                "Builders you are not using will be let go. This keeps crews on",
-                "the books between projects - exactly as many as it pays for.");
-
-        if (game.getConstructionSubsidy() > 0 && protectedCapacity < capacity) {
-            retainer.getChildren().add(monoLabel(String.format(
-                    "  not covered: %s pts, which can still be sold",
-                    formatter.format(capacity - protectedCapacity))));
-        }
+                "Builders you are not using will be let go. Protecting the sector",
+                "tops it up to break-even so it never has to sell its crews.");
         column.getChildren().add(retainer);
 
-        javafx.scene.layout.FlowPane subsidy = new javafx.scene.layout.FlowPane(8, 8);
-        subsidy.setAlignment(Pos.CENTER);
-        subsidy.setPrefWrapLength(340);
-
-        double[] steps = {-100, -10, 10, 100};
-        for (double step : steps) {
-            final double delta = step;
-            Button button = new Button((step > 0 ? "+$" : "-$")
-                    + formatter.format(Math.abs(step)));
-            button.setPrefWidth(76);
-            button.setOnAction(e -> {
-                game.setConstructionSubsidy(game.getConstructionSubsidy() + delta);
-                showConstructionInfoMenu();
-            });
-            subsidy.getChildren().add(button);
+        Button toggle = new Button(protectedNow
+                ? "Stop protecting construction" : "Protect construction");
+        if (protectedNow) {
+            toggle.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
         }
-
-        Button coverAll = new Button("Cover it all");
-        coverAll.setOnAction(e -> {
-            ConstructionHandler c = game.getServicesManager().getConstructionHandler();
-            double all = game.getBuildingManager().getTotalConstructionCapacity();
-            game.setConstructionSubsidy(all * c.getStandingCostPerCapacity(all));
+        toggle.setOnAction(e -> {
+            game.setAutoSubsidised(PolicySector.CONSTRUCTION,
+                    !game.isAutoSubsidised(PolicySector.CONSTRUCTION));
             showConstructionInfoMenu();
         });
-        subsidy.getChildren().add(coverAll);
-
-        Button none = new Button("Stop paying");
-        none.setOnAction(e -> {
-            game.setConstructionSubsidy(0);
-            showConstructionInfoMenu();
-        });
-        subsidy.getChildren().add(none);
-
-        column.getChildren().add(subsidy);
+        column.getChildren().add(toggle);
 
         showSectorReport("MUNICIPAL CONSTRUCTION AUTHORITY", column, this::showSectorMenu);
     }

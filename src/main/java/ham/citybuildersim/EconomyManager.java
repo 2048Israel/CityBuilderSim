@@ -143,7 +143,7 @@ public class EconomyManager {
         // now (see CommercialHandler.getBusinessTaxIncome()), so it has to be
         // struck at the rate in force during the month rather than at whatever
         // the last read of getTaxIncome() happened to leave behind.
-        commercialHandler.setTaxRate(getTaxRate());
+        commercialHandler.setTaxRate(taxPolicy.effectiveProfitRate(PolicySector.RETAIL));
         commercialHandler.calculateCommercialResults();
     }
 
@@ -661,7 +661,7 @@ public class EconomyManager {
         // Before the statement runs, so the month is taxed at the rate in force
         // during it rather than at whatever the last read of getTaxIncome()
         // happened to leave behind.
-        industrialHandler.setTaxRate(getTaxRate());
+        industrialHandler.setTaxRate(taxPolicy.effectiveProfitRate(PolicySector.INDUSTRY));
         updateFoodProduction();
         industrialHandler.setFoodCapacity(buildingManager.getFoodCapacity());
 
@@ -740,31 +740,138 @@ public class EconomyManager {
         setElectricityConsumption();
     }
 
-    public double calculateSalesTax(){
-        salesTax = 0;
-        salesTax += industrialHandler.getGrossRevenue()*getTaxRate();
-        salesTax += commercialHandler.getGrossRevenue()*getTaxRate();
-        salesTax += commercialHandler.getImportTax()*getTaxRate();
+    /**
+     * The month's sales tax, as payable less input tax credits.
+     *
+     * NOTE: this used to be three lines - food-plant revenue, store revenue and
+     * the retail import tax, each times the one city rate. It taxed the same
+     * food TWICE, once at the plant and again at the store, and it never touched
+     * Heavy Industry or Mining at all, so steel and ore moved untaxed while
+     * bread was charged at every step.
+     *
+     * Every sector now charges on what it sells and claims back the tax embedded
+     * in what it bought, so the city collects tax on VALUE ADDED and the total
+     * across the chain is the tax on final consumption. SalesTaxLedger carries
+     * the reasoning and the two departures from real HST.
+     *
+     * RESIDENTIAL RENT IS AN EXEMPT SUPPLY - no tax charged, no credits claimed -
+     * exactly as long-term residential rent is exempt under real HST. Taxing it
+     * would put a fifteen-percent charge on every tenant in the city, which is a
+     * balance change nobody asked for hiding inside a plumbing change.
+     */
+    /**
+     * SETTLED ONCE A MONTH, not recomputed on every read.
+     *
+     * This is the same rule property tax already follows two methods down, and
+     * for the same reason: what the city collects has to be the figure the
+     * businesses were actually charged, not a re-derivation from whatever state
+     * happens to be loaded when somebody reads the total.
+     *
+     * It matters more here than it did for the old three-line sales tax, because
+     * the VAT reads figures that a reload does NOT restore - construction
+     * carries no report state at all, so its revenue and materials expense are
+     * live fields that come back as whatever the fresh handler was built with.
+     * Recomputing on the load path produced a sales tax of 267 against the 438
+     * the same month had actually collected, in nine months of a 4,000-month
+     * playtest. The ledger is a flow; flows are carried, never rebuilt.
+     */
+    public double settleSalesTax(){
 
+        salesTaxLedger.startMonth();
+
+        // --- Mining: ore sold to local mills is taxable, ore leaving the city
+        //     is zero-rated. No goods inputs are tracked, so no credit.
+        // REPORT figures, not live ones: oreSoldLocally is set by settle() during
+        // the month and is not restored by a load, while rOreSoldLocally is.
+        salesTaxLedger.recordSales(PolicySector.MINING,
+                miningHandler.getReportOreSoldLocally() * miningHandler.getReportLocalPrice());
+        salesTaxLedger.recordExport(PolicySector.MINING,
+                miningHandler.getReportOreExported() * miningHandler.getReportExportPrice());
+
+        // --- Heavy industry: sells steel, credits the ore and scrap it bought.
+        //     Local ore was charged at MINING's rate - the credit has to be what
+        //     the supplier actually remitted, or the city refunds tax it never
+        //     collected. Imported scrap is charged at the buyer's own rate.
+        salesTaxLedger.recordSales(PolicySector.HEAVY_INDUSTRY,
+                heavyIndustryHandler.getReportRevenue());
+        salesTaxLedger.recordInputTax(PolicySector.HEAVY_INDUSTRY,
+                heavyIndustryHandler.getReportLocalOreUsed() * ironMarket.getLocalPrice()
+                        * taxPolicy.effectiveSalesRate(PolicySector.MINING));
+        salesTaxLedger.chargeImport(PolicySector.HEAVY_INDUSTRY,
+                heavyIndustryHandler.getReportScrapImported() * ironMarket.getScrapPrice(),
+                taxPolicy);
+
+        // --- Food processing: sells to the stores.
+        salesTaxLedger.recordSales(PolicySector.INDUSTRY,
+                industrialHandler.getGrossRevenue());
+
+        // --- Retail: sells to residents, which is where the chain ends and the
+        //     tax finally sticks. Credits the tax inside its inventory.
+        salesTaxLedger.recordSales(PolicySector.RETAIL,
+                commercialHandler.getGrossRevenue());
+        salesTaxLedger.recordInputTax(PolicySector.RETAIL,
+                commercialHandler.getReportInventoryCost()
+                        * taxPolicy.effectiveSalesRate(PolicySector.INDUSTRY));
+        salesTaxLedger.chargeImport(PolicySector.RETAIL,
+                commercialHandler.getImportTax(), taxPolicy);
+
+        // --- Construction: sells the work it puts in place, credits materials.
+        if (constructionHandler != null) {
+            salesTaxLedger.recordSales(PolicySector.CONSTRUCTION,
+                    constructionHandler.getRevenue());
+            salesTaxLedger.recordInputTax(PolicySector.CONSTRUCTION,
+                    constructionHandler.getMaterialsExpense()
+                            * taxPolicy.effectiveSalesRate(PolicySector.CONSTRUCTION));
+        }
+
+        salesTax = salesTaxLedger.settle(taxPolicy);
         return salesTax;
-
     }
 
+    public SalesTaxLedger getSalesTaxLedger() { return salesTaxLedger; }
+
+    /**
+     * Puts a saved month's VAT back, AND the total that came out of it.
+     *
+     * Both, through one call, because they are one fact. Restoring only the
+     * ledger left salesTax at the zero a fresh EconomyManager starts with, so a
+     * reloaded city collected nothing where the live one had collected 438 -
+     * which is the same class of mistake as recomputing the ledger, arrived at
+     * from the opposite direction.
+     */
+    public boolean restoreSalesTaxLedger(double[] state) {
+        if (!salesTaxLedger.restoreLedgerState(state)) return false;
+        salesTax = salesTaxLedger.getTotalRemitted();
+        return true;
+    }
+
+    private final SalesTaxLedger salesTaxLedger = new SalesTaxLedger();
 
     public double getTaxIncome(){
         double tax = 0;
-        totalBusinessTax = commercialHandler.getBusinessTaxIncome(getTaxRate());
-        totalIndustrialTax = industrialHandler.getIndustrialTaxIncome(getTaxRate());
-        totalWageTax = Math.max(totalWage*getTaxRate(),0);
-        totalHeavyIndustryTax = heavyIndustryHandler.getTaxIncome(getTaxRate())
-                + miningHandler.getTaxIncome(getTaxRate());
-        calculateSalesTax();
+        totalBusinessTax = commercialHandler.getBusinessTaxIncome(
+                taxPolicy.effectiveProfitRate(PolicySector.RETAIL));
+        totalIndustrialTax = industrialHandler.getIndustrialTaxIncome(
+                taxPolicy.effectiveProfitRate(PolicySector.INDUSTRY));
+
+        // Banded, and summed job type by job type rather than as one total times
+        // an average - averaging would throw away exactly the distinction the
+        // bands exist to express while still looking about right.
+        totalWageTax = taxPolicy.wageTaxOn(staffedWagePerType, null);
+
+        totalHeavyIndustryTax =
+                heavyIndustryHandler.getTaxIncome(
+                        taxPolicy.effectiveProfitRate(PolicySector.HEAVY_INDUSTRY))
+                + miningHandler.getTaxIncome(
+                        taxPolicy.effectiveProfitRate(PolicySector.MINING));
         // Property tax is assigned by chargePropertyTax() earlier in the month,
         // not recomputed here: the sectors have already been billed it and have
         // already borne it in their income statements. Recomputing would risk
         // the city collecting a different figure from the one the businesses
         // paid, which is exactly the kind of money-from-nowhere this codebase
         // keeps producing.
+        // salesTax is NOT recomputed here - see settleSalesTax(). Same rule as
+        // property tax below, and the same reason.
         tax = totalBusinessTax + totalIndustrialTax + totalWageTax + salesTax
                 + totalHeavyIndustryTax + totalPropertyTax;
         return tax;
@@ -979,8 +1086,16 @@ public class EconomyManager {
     }
 
     /** One month's property tax on a category. */
+    /**
+     * One month's property tax on a category, at that sector's own rate.
+     *
+     * A city-owned category (roads, utilities) maps to no PolicySector, and
+     * propertyTaxOn falls back to the city rate for it - which charges nothing
+     * in practice, because the city does not assess itself.
+     */
     public double getPropertyTaxFor(BuildingType category){
-        return taxPolicy.propertyTaxOn(getAssessedValue(category));
+        return taxPolicy.propertyTaxOn(getAssessedValue(category),
+                PolicySector.byCategory(category));
     }
 
     /**
@@ -1194,6 +1309,23 @@ public class EconomyManager {
     public void updateInterestExpense(double interest){
         this.interest += interest;
     }
+
+    /**
+     * The wage bill per job type, and how much of each is actually staffed.
+     *
+     * Kept because the wage tax is banded now: a single total cannot be taxed at
+     * four different rates, and rebuilding the split from the population on
+     * demand would make the tax depend on the state the month ENDED in rather
+     * than on the wages actually paid during it.
+     */
+    private double[] staffedWagePerType = new double[JobType.values().length];
+
+    /** Already staffed - it sums to totalWage by construction. */
+    public void setWageDetail(double[] staffedPerType){
+        if (staffedPerType != null) this.staffedWagePerType = staffedPerType.clone();
+    }
+
+    public double[] getStaffedWagePerType() { return staffedWagePerType.clone(); }
 
     public void setTotalWage(double totalWage){
         this.totalWage = totalWage;

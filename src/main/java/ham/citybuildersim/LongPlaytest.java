@@ -366,11 +366,8 @@ public class LongPlaytest {
          * Setting it no longer returns, because paying a retainer is not a
          * month's work. It is a decision you make while doing something else.
          */
-        double wantedCapacity = Math.max(b.getTotalConstructionCapacity(), 1500);
-        double wantedSubsidy = Math.min(wantedCapacity * .06,
-                Math.max(0, g.getCash()) * .02);
-        if (wantedSubsidy > g.getConstructionSubsidy() * 1.25) {
-            g.setConstructionSubsidy(wantedSubsidy);
+        if (!g.isAutoSubsidised(PolicySector.CONSTRUCTION)) {
+            g.setAutoSubsidised(PolicySector.CONSTRUCTION, true);
         }
 
         if (b.getTotalConstructionCapacity() < 1500) {
