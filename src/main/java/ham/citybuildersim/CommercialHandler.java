@@ -708,7 +708,9 @@ public class CommercialHandler {
 
     public double getElectricityCost(){
         double cost = 0;
-        cost = electricity*pricePerWatt;
+        // Charged for what was DELIVERED, not what was asked for - the utility
+        // books the same slice. See UtilitiesHandler.getElectricityRevenue().
+        cost = electricity * energyRatio * pricePerWatt;
         return cost;
 
     }
@@ -823,7 +825,7 @@ public class CommercialHandler {
          * storeInventoryCost is carried in the save for the same reason.
          */
         rInventoryCost = storeInventoryCost;
-        rElectricityCost = electricity * pricePerWatt;
+        rElectricityCost = electricity * bEnergyRatio * pricePerWatt;
         rWaterCost = water * bWaterRatio * pricePerWaterUnit;
 
         rRetailPropertyTax = retailPropertyTax;

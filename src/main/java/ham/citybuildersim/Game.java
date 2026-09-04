@@ -271,13 +271,39 @@ public class Game {
         initialize();
     }
     public void loadGameSave(int slot){
-        // NOTE: my earlier fix to resumeGame() (above) added initialize() so
-        // buildingManager's templates exist before use, but I missed doing the
-        // same here. If "Load Game" is the very first thing clicked in a session
-        // (no New Game / Resume Game first), buildingManager.templates was never
-        // populated, so loadGame()'s per-index template lookups would hit an
-        // empty list. initialize() is idempotent (guarded by `initialized`), so
-        // this is safe even if a game was already started.
+
+        /*
+         * REBUILD THE WORLD FIRST, exactly as newGame() does.
+         *
+         * This used to be a bare initialize(), and initialize() is guarded by
+         * `initialized` - so once any game was running it did NOTHING. The reset
+         * that should have cleared the old city was commented out inside
+         * loadGame(), and BuildingManager.addStack() matches on name and ADDS.
+         *
+         * Measured: load a save, keep playing, load it again, and the city's
+         * house capacity went 2,720 -> 2,720 -> 5,340. Every building count
+         * doubled. Debt is replaced rather than accumulated, so the result was a
+         * city with twice the buildings and the right debt - solvent-looking,
+         * corrupt, and reported as a successful load. Load is on the pause menu
+         * beside Resume and Save, so this is a thing players do.
+         *
+         * No harness could see it. Every one of the twenty-three builds a fresh
+         * Game per case, so the same Game object is never loaded into twice -
+         * a whole blind quadrant, now covered by ConservationCheck.
+         *
+         * Rebuilding rather than resetting is the same argument buildWorld()
+         * makes for newGame(): a list of fields to clear is a list somebody will
+         * forget to extend, and the old one had fallen twenty-three fields
+         * behind. A loaded city is now identical to one loaded into a fresh
+         * process BY CONSTRUCTION, and no field added in future can leak across.
+         */
+        buildWorld();
+
+        // buildWorld() made a new BuildingManager, so the templates have to be
+        // reloaded into it - and initialize() is guarded, so the flag has to
+        // drop first or loadGame()'s per-index template lookups hit an empty
+        // list. Same two lines, same reason, as newGame().
+        initialized = false;
         initialize();
 
         /*
@@ -3633,11 +3659,14 @@ public class Game {
             }
             loadFailure = null;
 
-            /* Reset current state
-            buildingManager.clearStacks();
-            debtManager.clearDebts();
-            */
-            // Load simple fieldsS
+            /*
+             * The reset that used to be commented out here is gone for good.
+             * loadGameSave() now calls buildWorld() before reaching this, so
+             * there is nothing left to clear - the managers are new objects.
+             * Clearing two of them by hand was the wrong shape anyway: it is a
+             * list, and a list falls behind.
+             */
+            // Load simple fields
             this.cash = loaded.getCash();
             this.month = loaded.getMonth();
             buildingManager.setConstructionMaterials(loaded.getConstructionMaterials());

@@ -130,9 +130,39 @@ public class UtilitiesHandler {
        and payroll have to be attributable to one side or the other.
        ----------------------------------------------------------------------- */
 
-    /** You only bill what you actually deliver, hence the min. */
+    /**
+     * The month's electricity bill - only the draw somebody is actually invoiced
+     * for, and only the fraction delivered.
+     *
+     * THIS USED TO READ `min(consumption, production) * pricePerWatt`, where
+     * `consumption` is EVERY STANDING BUILDING. Only four categories are ever
+     * charged - commercial, industrial, heavy industry and mining - so houses,
+     * the construction depot, the materials plant, the coal plant, the 900W
+     * water treatment plant and the road network all drew power that the utility
+     * booked as revenue and nobody paid. Measured on a small city: 73% of the
+     * draw was unbilled, and the revenue went to the treasury through
+     * getServiceNetIncome(). Money from nowhere, scaling with the housing stock.
+     *
+     * It is the same bug water was already fixed for, and the fix is a copy of
+     * that one: bill the billed draw, and apply the ratio on BOTH sides so a
+     * brownout charges customers for what they received rather than what they
+     * asked for. The comment in EconomyManager.setElectricityConsumption() has
+     * said "water is billed to the sectors that draw it, exactly as power is"
+     * for months. It was not.
+     */
     public double getElectricityRevenue() {
-        return Math.min(consumption, production) * pricePerWatt;
+        return Math.min(billedElectricityDraw * energyRatio, production) * pricePerWatt;
+    }
+
+    /** What the four charged categories draw. Set by ServicesManager. */
+    public double billedElectricityDraw;
+
+    public void setBilledElectricityDraw(double draw) {
+        this.billedElectricityDraw = Math.max(0, draw);
+    }
+    public double getBilledElectricityDraw()   { return billedElectricityDraw; }
+    public double getUnbilledElectricityDraw() {
+        return Math.max(0, consumption - billedElectricityDraw);
     }
 
     /**

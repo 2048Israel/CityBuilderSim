@@ -181,6 +181,16 @@ public class IndustrialHandler {
         this.productsImportedCopy = imported;
         computeMonthlyReport(foodInventory + sold + imported,
                 energyBasis, waterBasis, roadBasis);
+
+        /*
+         * Re-asserted AFTER the recompute, because computeMonthlyReport() now
+         * derives these itself. What was sold is a fact about the saved month,
+         * not something to re-derive from balances that have since moved - the
+         * standing rule in this codebase, and the reason this method exists at
+         * all.
+         */
+        this.productsSoldCopy = sold;
+        this.productsImportedCopy = imported;
     }
 
     public void updateFinalIndustrialHandler(){
@@ -458,63 +468,20 @@ public class IndustrialHandler {
     }
     
     
-    public double getIndustrialIncome() {
-
-        double industrialRev = 0;
-        double industrialWage = 0;
-        double industrialExp = 0;
-
-        // 1. Sell up to demand
-        int productsSold = (int) Math.min(foodInventory, foodDemand);
-        productsSoldCopy = productsSold;
-
-        // 2. Check for excess inventory (>80% of capacity) and sell extra at discounted price
-        int excessSold = 0;
-        if (foodInventory > 0 && ((double) foodInventory / foodCapacity) > 0.8) {
-            // calculate how much is above 80% threshold
-            double threshold = foodCapacity * 0.8;
-            excessSold = (int) Math.round(foodInventory - threshold);
-            // make sure we don't sell more than we have
-            excessSold = Math.min(excessSold, foodInventory - productsSold);
-            productsImportedCopy = excessSold;  // for reporting
-        } else {
-            productsImportedCopy = 0;
-        }
-
-        // 3. Revenue: normal + discounted excess
-        industrialRev = productsSold * foodPrice;
-        industrialRev += excessSold * foodPrice * importCost;
-
-        /*
-         * That discounted excess leaves the city, so it is an EXPORT, and the
-         * national accounts have to be told.
-         *
-         * Without this the food simply vanished from the measure: inventory fell
-         * by the whole shipment (negative investment) and nothing was added back,
-         * so a mill clearing its warehouse abroad read as the city producing
-         * less. It was the last remaining way GDP could go below zero.
-         */
-        foodExportRevenue = excessSold * foodPrice * importCost;
-
-        
-
-        // 5. Wages
-        if (industrialWages != null) {
-            for (double wage : industrialWages) {
-                industrialWage += wage;
-            }
-        }
-        industrialWage *= averageIndustrialFill;
-
-        // 6. Expenses
-        industrialExp = industrialWage + getElectricityCost() + getWaterCost()
-                + interestExpense + propertyTaxExpense;
-
-        // 7. Net income
-        double netIncome = industrialRev - industrialExp;
-
-        return netIncome;
-    }
+    /*
+     * getIndustrialIncome() lived here and is deleted.
+     *
+     * It was superseded by computeMonthlyReport() and nothing had called it
+     * since - but it was the ONLY writer of productsSoldCopy, productsImportedCopy
+     * and foodExportRevenue in a live game, so deleting it without moving that
+     * arithmetic across is what left the warehouse permanently full. The
+     * arithmetic now lives in computeMonthlyReport() where the rest of the
+     * month's statement is worked out.
+     *
+     * This is the second dormant-code casualty in this codebase after
+     * BuildingManager.instances. A method nothing calls is not harmless when
+     * something else still reads the fields it used to write.
+     */
     
     /** The rate the month is taxed at. Set before the statement runs. */
     public void setTaxRate(double taxRate){
@@ -547,7 +514,9 @@ public class IndustrialHandler {
 
     public double getElectricityCost() {
         double cost = 0;
-        cost = electricity * pricePerWatt;
+        // Charged for what was DELIVERED, not what was asked for - the utility
+        // books the same slice. See UtilitiesHandler.getElectricityRevenue().
+        cost = electricity * energyRatio * pricePerWatt;
         return cost;
 
     }
@@ -683,11 +652,53 @@ public class IndustrialHandler {
                 * bEnergyRatio * bWaterRatio * bRoadRatio;
         rDemand = foodDemand;
 
+        /*
+         * WHAT LEFT THE WAREHOUSE THIS MONTH, and the two fields that make it
+         * actually leave.
+         *
+         * These were computed in getIndustrialIncome(), which nothing has called
+         * since computeMonthlyReport() replaced it. The replacement kept
+         * productsSold as a LOCAL and never wrote productsSoldCopy - and
+         * updateFinalIndustrialHandler() subtracts exactly those two fields from
+         * the stock every month.
+         *
+         * So they were permanently zero and the stock never moved. Measured: a
+         * city's food inventory sat at 18,000 for six months while the mills
+         * booked revenue on it every one of them, the shops added stock the mills
+         * never lost, and produceFood()'s capacity clamp wrote off the entire
+         * month's production as spoilage - which NationalAccounts then added back
+         * into GDP through a guard meant for demolitions. Food was created from
+         * nothing, monthly, and no harness looked.
+         *
+         * The export dump went the same way: foodExportRevenue was only ever set
+         * in the dead method, so no city has ever exported a single unit of food.
+         */
         int productsSold = (int) Math.min(inventoryBasis, foodDemand);
 
+        int exported = 0;
+        if (foodCapacity > 0 && inventoryBasis / (double) foodCapacity > DUMP_THRESHOLD) {
+            double threshold = foodCapacity * DUMP_THRESHOLD;
+            exported = (int) Math.round(inventoryBasis - threshold);
+            // Never ship what has already been sold at home, and never a
+            // negative shipment.
+            exported = Math.max(0, Math.min(exported, (int) inventoryBasis - productsSold));
+        }
+
+        productsSoldCopy = productsSold;
+        productsImportedCopy = exported;
+
+        /*
+         * The discounted excess LEAVES THE CITY, so it is an export and the
+         * national accounts have to be told. Without this the food vanishes from
+         * the measure: inventory falls by the whole shipment as negative
+         * investment with nothing added back, so a mill clearing its warehouse
+         * abroad reads as the city producing less.
+         */
+        foodExportRevenue = exported * foodPrice * importCost;
+
         double averageSellPrice = productsSold * foodPrice
-                + productsImportedCopy * foodPrice * importCost;
-        productsSold += productsImportedCopy;
+                + exported * foodPrice * importCost;
+        productsSold += exported;
 
         if (productsSold != 0) {
             averageSellPrice /= productsSold;
@@ -697,7 +708,7 @@ public class IndustrialHandler {
         rAverageSellPrice = averageSellPrice;
         rGrossRevenue = productsSold * averageSellPrice;
 
-        rElectricityCost = electricity * pricePerWatt;
+        rElectricityCost = electricity * bEnergyRatio * pricePerWatt;
         rWaterCost = water * bWaterRatio * pricePerWaterUnit;
 
         double industrialWage = 0;

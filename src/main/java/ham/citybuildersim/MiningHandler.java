@@ -189,7 +189,9 @@ public class MiningHandler {
     }
 
     public double getElectricityCost() {
-        return electricity * pricePerWatt;
+        // Charged for what was DELIVERED, not what was asked for - the utility
+        // books the same slice. See UtilitiesHandler.getElectricityRevenue().
+        return electricity * energyRatio * pricePerWatt;
     }
 
     /** Scaled by the water ratio, matching every other sector. */
@@ -226,7 +228,7 @@ public class MiningHandler {
         rRevenue = oreSoldLocally * localPrice + oreExported * exportPrice;
 
         rPayroll = getPayroll();
-        rElectricityCost = electricity * pricePerWatt;
+        rElectricityCost = electricity * energyRatio * pricePerWatt;
         rWaterCost = water * bWaterRatio * pricePerWaterUnit;
 
         rOperatingCost = rPayroll + rElectricityCost + rWaterCost;
@@ -270,6 +272,14 @@ public class MiningHandler {
     public double getCapacityTonnes()     { return capacityTonnes; }
     public double getAverageFill()        { return averageFill; }
     public double getLocalPrice()         { return localPrice; }
+
+    /**
+     * The mine's power bill, exposed so ConservationCheck can total what the
+     * four billed sectors actually paid against what the utility booked. Its
+     * three siblings already had one; mining was simply never asked.
+     */
+    public double getReportElectricityCost(){ return rElectricityCost; }
+    public double getReportWaterCost()      { return rWaterCost; }
 
     public double getReportCapacity()     { return rCapacity; }
     public double getReportOperatingRate(){ return rOperatingRate; }

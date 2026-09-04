@@ -80,6 +80,23 @@ public class ServicesManager {
         // mean a mill paying a water bill the utility never books - money
         // leaving the economy with no one receiving it, which is the exact
         // shape of bug this file has already been fixed for once.
+        /*
+         * The same for power, and for the same reason. Four categories are
+         * invoiced for electricity - the two above plus mining, which bills
+         * itself on its own income statement. Everything else in the city draws
+         * power nobody pays for, and until this existed the utility booked
+         * revenue on all of it.
+         */
+        utilitiesHandler.setBilledElectricityDraw(
+                buildingManager.getTotalByCategoryDouble(
+                        BuildingType.COMMERCIAL, BuildingsTemplate::getElectricityConsumption)
+                + buildingManager.getTotalByCategoryDouble(
+                        BuildingType.INDUSTRIAL, BuildingsTemplate::getElectricityConsumption)
+                + buildingManager.getTotalByCategoryDouble(
+                        BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getElectricityConsumption)
+                + buildingManager.getTotalByCategoryDouble(
+                        BuildingType.MINING, BuildingsTemplate::getElectricityConsumption));
+
         utilitiesHandler.setBilledWaterDraw(
                 buildingManager.getTotalByCategoryDouble(
                         BuildingType.COMMERCIAL, BuildingsTemplate::getWaterConsumption)

@@ -248,7 +248,9 @@ public class HeavyIndustryHandler {
     }
 
     public double getElectricityCost() {
-        return electricity * pricePerWatt;
+        // Charged for what was DELIVERED, not what was asked for - the utility
+        // books the same slice. See UtilitiesHandler.getElectricityRevenue().
+        return electricity * energyRatio * pricePerWatt;
     }
 
     /** Scaled by waterRatio, matching the other handlers - see UtilitiesHandler. */
