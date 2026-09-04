@@ -122,7 +122,23 @@ public class EconomyManager {
         commercialHandler.setStoreCoverage(buildingManager.getTotalStoreCoverage());
         commercialHandler.setStoreCapacity(buildingManager.getTotalStoreCapacity());
         commercialHandler.setHousehold(households);
+
+        // Rent is charged per home now, not per head, so the handler needs to
+        // know how many front doors there are and how many are lived in.
+        commercialHandler.setHomes(buildingManager.getTotalHomes());
+        commercialHandler.setOccupiedHomes(occupiedHomes);
     }
+
+    /**
+     * Households actually living somewhere, from FamilyModel.
+     *
+     * Set beside setHouseholds() (which is CAPACITY, confusingly) because the
+     * two are different questions - one is how many people the buildings hold,
+     * the other is how many cheques the landlords receive.
+     */
+    private double occupiedHomes;
+
+    public void setOccupiedHomes(double occupied){ this.occupiedHomes = occupied; }
 
     /**
      * Runs the commercial sector's monthly income statement.
@@ -872,13 +888,66 @@ public class EconomyManager {
         // keeps producing.
         // salesTax is NOT recomputed here - see settleSalesTax(). Same rule as
         // property tax below, and the same reason.
+        /*
+         * Pension contributions, taken off the same staffed wage bill the wage
+         * tax is charged on. Revenue to the city, and NOT a tax - the money is
+         * earmarked in the sense that the screen shows it against the pension
+         * bill, though nothing ring-fences it, which is what pay-as-you-go
+         * means.
+         */
+        totalContributions = SocialSecurity.contributionsOn(totalWage);
+
         tax = totalBusinessTax + totalIndustrialTax + totalWageTax + salesTax
-                + totalHeavyIndustryTax + totalPropertyTax;
+                + totalHeavyIndustryTax + totalPropertyTax + totalContributions;
         return tax;
+    }
+
+    /* =====================================================================
+       PENSIONS
+
+       The city pays every senior, per Jerus. Contributions cover part of it and
+       general revenue covers the rest - see SocialSecurity, where the split and
+       the reason for it live.
+
+       Fed the senior count rather than deriving it, because the age pyramid
+       belongs to Game and this class has no business reaching into it.
+       ===================================================================== */
+
+    private double seniors;
+    private double totalContributions;
+
+    public void setSeniors(double seniors)   { this.seniors = Math.max(0, seniors); }
+    public double getSeniors()               { return seniors; }
+    public double getContributions()         { return totalContributions; }
+    public double getPensionsPaid()          { return SocialSecurity.pensionsFor(seniors); }
+    public double getPensionShortfall()      {
+        return SocialSecurity.shortfall(totalWage, seniors);
+    }
+    public double getPensionCoverage()       {
+        return SocialSecurity.coverage(totalWage, seniors);
     }
 
     //getters
     public double getExpenses(){
+        return interest + getPensionsPaid();
+    }
+
+    /**
+     * The interest alone, which is the only part of getExpenses() that is CARRIED.
+     *
+     * The save used to store getExpenses() under the name "city interest
+     * accrued" and hand it straight back to setInterest() on load. That was
+     * correct while the two were the same number, and it broke the moment
+     * pensions joined the expense side: the saved figure came back as interest,
+     * getExpenses() added the pension bill to it a second time, and a reloaded
+     * city's outgoings doubled. InfrastructureCheck caught it as an income
+     * mismatch across a save, which is exactly what that assertion is for.
+     *
+     * Pensions are re-derived from the restored senior count instead - they are
+     * a function of who is alive, not a fact about the month that has to be
+     * carried.
+     */
+    public double getInterestAccrued(){
         return interest;
     }
     public double getTotalIncome(){
@@ -977,7 +1046,8 @@ public class EconomyManager {
                 totalBusinessTax + totalHeavyIndustryTax,
                 totalIndustrialTax, salesTax, totalWageTax,
                 utilityIncome, landSales, propertyTax,
-                interest, capitalSpending, landPurchases);
+                interest, capitalSpending, landPurchases,
+                totalContributions, getPensionsPaid());
 
         GDP = nationalAccounts.getGdp();
     }

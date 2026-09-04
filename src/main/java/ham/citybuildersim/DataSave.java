@@ -640,6 +640,29 @@ public class DataSave {
     }
     public java.util.List<DemolitionLog.Entry> getDemolitions() { return demolitions; }
 
+    /*
+     * The demographics. `cohorts` is the population itself since the switch, so
+     * this is no longer a nicety - a city that lost its pyramid would lose its
+     * residents. `families` is derived and saved anyway, so a reloaded city
+     * looks identical on the first frame rather than after the next tick.
+     *
+     * `migration` is the twelve months of per-tier wage history behind the
+     * decline test. It has to be carried for the reason every other flow in this
+     * codebase has to be: a streak cannot be reconstructed from the month it
+     * ended in. Without it a reloaded city forgets that its steel industry has
+     * been dying since spring and cannot shed a single resident for a year.
+     */
+    private double[] cohorts;
+    private double[] families;
+    private double[] migration;
+
+    public void setCohorts(double[] a)  { this.cohorts = a; }
+    public double[] getCohorts()        { return cohorts; }
+    public void setFamilies(double[] a) { this.families = a; }
+    public double[] getFamilies()       { return families; }
+    public void setMigration(double[] a){ this.migration = a; }
+    public double[] getMigration()      { return migration; }
+
     public void setBuilds(java.util.List<BuildLog.Entry> entries) {
         this.builds = entries;
     }

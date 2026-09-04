@@ -278,6 +278,7 @@ public class RestructureCheck {
         Debt live = amort.getDebtManager().getDebt()
                 .get(amort.getDebtManager().getDebt().size() - 1);
         double owedAtIssue = live.getOustandingPrincipal();
+        double couponAtIssue = live.getMonthlyInterestExpense();
 
         System.setOut(quiet);
         try { amort.simulateMonths(13); } finally { System.setOut(out); }
@@ -286,9 +287,22 @@ public class RestructureCheck {
                 owedAtIssue, live.getOustandingPrincipal());
         assertTrue("principal actually fell over the first year",
                 live.getOustandingPrincipal() < owedAtIssue);
+        /*
+         * AGAINST ITS OWN COUPON AT ISSUE, not against a typed-in rate.
+         *
+         * This read `owedAtIssue * .06 / 12`, which asserted two things at once:
+         * that the coupon falls as the principal amortises (the point) and that
+         * the market lends at 6% (an accident of whatever this fixture's city
+         * looked like the day it was written). The second one broke the moment
+         * rent changed - a different rent bill means different cash, a different
+         * debt ratio and a different quoted rate - and the harness reported a
+         * failure in the bond mechanics that were fine.
+         *
+         * Fifth time in this codebase: an assertion about a rate must be
+         * expressed relative to the market's own number, never to a literal.
+         */
         assertTrue("...and the coupon fell with it",
-                live.getMonthlyInterestExpense()
-                        < owedAtIssue * .06 / 12 + 1e-9);
+                live.getMonthlyInterestExpense() < couponAtIssue);
 
         /* ============ 5c. the note knows its own term ============ */
         System.out.println("\n--- a note is discounted on its term ---");

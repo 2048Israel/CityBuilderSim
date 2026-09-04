@@ -338,6 +338,27 @@ public class NationalAccounts {
                                  double wage, double utilities, double land,
                                  double property,
                                  double interest, double capital, double landBought) {
+        updateGovernment(business, industrial, sales, wage, utilities, land,
+                property, interest, capital, landBought, 0, 0);
+    }
+
+    /**
+     * The same, with the pension flows.
+     *
+     * Appended rather than woven in, per the standing rule that order is the
+     * format - and the shorter overload above is kept so the existing callers
+     * and the harnesses that pin this signature do not all have to move at once.
+     *
+     * Contributions are REVENUE and pensions are SPENDING, on separate lines
+     * rather than netted. A city where both are large and cancel is a very
+     * different city from one where neither exists, and netting them would make
+     * the two look identical on the balance line.
+     */
+    public void updateGovernment(double business, double industrial, double sales,
+                                 double wage, double utilities, double land,
+                                 double property,
+                                 double interest, double capital, double landBought,
+                                 double contributions, double pensions) {
         taxBusiness = business;
         taxIndustrial = industrial;
         taxSales = sales;
@@ -348,7 +369,16 @@ public class NationalAccounts {
         interestExpense = interest;
         capitalSpending = capital;
         landPurchases = landBought;
+        this.contributions = contributions;
+        this.pensions = pensions;
     }
+
+    /** Pension contributions in, pensions out. See SocialSecurity. */
+    private double contributions;
+    private double pensions;
+
+    public double getContributions() { return contributions; }
+    public double getPensions()      { return pensions; }
 
     /* ------------------------------- GDP ------------------------------------ */
 
@@ -438,7 +468,7 @@ public class NationalAccounts {
 
     public double getTotalRevenue() {
         return taxBusiness + taxIndustrial + taxSales + taxWage
-                + utilityIncome + landSales + propertyTax;
+                + utilityIncome + landSales + propertyTax + contributions;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -446,7 +476,7 @@ public class NationalAccounts {
     public double getLandPurchases()   { return landPurchases; }
 
     public double getTotalExpenses() {
-        return interestExpense + capitalSpending + landPurchases;
+        return interestExpense + capitalSpending + landPurchases + pensions;
     }
 
     /** Surplus or deficit - what actually moves the city's cash this month. */

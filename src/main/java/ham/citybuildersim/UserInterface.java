@@ -166,10 +166,35 @@ public class UserInterface extends Application {
                 // that is actively costing the player money.
                 + (cash < 0 ? "#ef5350" : "#a5d6a7") + ";");
 
+        /*
+         * Population, and underneath it the four flows that moved it.
+         *
+         * The headline number alone cannot tell a player WHY it changed, and
+         * since the switch there are four different reasons - and they call for
+         * opposite responses. A city losing people because nobody is being born
+         * needs nothing done about it this decade; a city losing people because
+         * they are leaving needs jobs, now. Putting the flows next to the stock
+         * is the difference between a number that reports and one that explains.
+         */
         Label popLabel = new Label("Pop  "
                 + formatter.format(game.getPopulationManager().getPopulation()));
         popLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 13px;"
                 + " -fx-text-fill: #eceff1;");
+
+        PopulationCohorts pyramid = game.getCohorts();
+        Migration flows = game.getMigration();
+
+        HBox flowRow = new HBox(7);
+        flowRow.setAlignment(Pos.CENTER_RIGHT);
+        flowRow.getChildren().addAll(
+                flowChip("+" + flowText(pyramid.getLastBirths()) + " born",  "#a5d6a7"),
+                flowChip("-" + flowText(pyramid.getLastDeaths()) + " died",  "#90a4ae"),
+                flowChip("+" + flowText(flows.getLastArrivals()) + " in",    "#81d4fa"),
+                flowChip("-" + flowText(flows.getLastDepartures()) + " out", "#ef9a9a"));
+
+        VBox popBox = new VBox(0);
+        popBox.setAlignment(Pos.CENTER_RIGHT);
+        popBox.getChildren().addAll(popLabel, flowRow);
 
         // The rating, next to the money it governs. The rate curve already knew
         // this; a letter is how a borrower actually experiences its own credit.
@@ -186,7 +211,63 @@ public class UserInterface extends Application {
                     default          -> "#c62828";
                 } + ";");
 
-        dateBar.getChildren().addAll(date, counter, gap, ratingLabel, popLabel, cashLabel);
+        dateBar.getChildren().addAll(date, counter, gap, ratingLabel, popBox, cashLabel);
+    }
+
+    /** A label, six tier columns, and a trailing cell. */
+    private String cellRow(String label,
+                           java.util.function.Function<PayTier, String> of,
+                           String tail) {
+        StringBuilder row = new StringBuilder(String.format("%-26s", label));
+        for (PayTier tier : PayTier.values()) {
+            row.append(String.format("%9s", of.apply(tier)));
+        }
+        return row.append(tail).toString();
+    }
+
+    /** A count, or a dot where there is nothing - a grid of zeros reads as data. */
+    private String cell(double value) {
+        return value >= .5 ? formatter.format(value) : ".";
+    }
+
+    /**
+     * Pay tiers, shortened to fit six across.
+     *
+     * "Senior professional" is nineteen characters and the column is nine, so
+     * something has to give. Cutting to the distinguishing word keeps the six
+     * readable as a ladder, which is what the column is for.
+     */
+    private String shortTier(PayTier tier) {
+        return switch (tier) {
+            case UNSKILLED           -> "unskilled";
+            case SKILLED             -> "skilled";
+            case COLLEGE             -> "college";
+            case PROFESSIONAL        -> "prof";
+            case SENIOR_PROFESSIONAL -> "sr prof";
+            case ELITE               -> "elite";
+        };
+    }
+
+    /** One small coloured figure on the population strip. */
+    private Label flowChip(String text, String colour) {
+        Label chip = new Label(text);
+        chip.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                + " -fx-text-fill: " + colour + ";");
+        return chip;
+    }
+
+    /**
+     * A monthly flow, at a precision that stays honest in a small city.
+     *
+     * Rounding to whole people would print "0 born" every month in a village of
+     * two hundred, which reads as a broken counter rather than as a slow one -
+     * so anything under ten keeps a decimal. The pyramid holds fractions of
+     * people by design; only the display rounds, and it should not round away
+     * the only thing happening.
+     */
+    private String flowText(double value) {
+        if (value > 0 && value < 10) return String.format("%.1f", value);
+        return formatter.format(value);
     }
 
     /**
@@ -657,10 +738,12 @@ public class UserInterface extends Application {
     });
     back.setOnAction(e -> showMainMenu()); // go back to previous menu
 
-    // NOTE: Population still has no JavaFX screen of its own - the demographics
-    // report is reachable through Economy > Sector Info instead - so it stays
-    // disabled. Simulate Multiple Months is now wired to Game.simulateMonths().
-    population.setDisable(true);
+    // It has a screen now. It was disabled for as long as the demographic
+    // report lived behind Economy > Sector Info and there was nothing here to
+    // open; the People screen carries ages, households, migration, housing
+    // pressure and the labour market in one place, which is what this button
+    // was always meant to mean.
+    population.setOnAction(e -> showPopulationInfoMenu());
 
     simulateMultipleMonths.setOnAction(e -> showSimulateMonthsMenu());
 
@@ -2031,7 +2114,7 @@ public class UserInterface extends Application {
 
         Label gameInfo = new Label("Month: " + game.getMonth() + " | Cash: $" + formatter.format(game.getCash()));
 
-        Button population = new Button("Demographics & Labor Pool");
+        Button population = new Button("People");
         Button privateSector = new Button("Private Enterprise Sector");
         // NOTE: "Municipal Utility Services" here was a dead label even in the
         // terminal version - handleSectorMenu()'s case 3 was an empty stub.
@@ -2325,16 +2408,33 @@ public class UserInterface extends Application {
         showSectorReport("HEAVY INDUSTRY", column, this::showPrivateSectorMenu);
     }
 
+    /**
+     * Everything about the city's people, on one screen.
+     *
+     * IT USED TO BE TWO. This screen carried a population total, a flat
+     * "workforce share" and a job table; the ages, households, migration and
+     * housing pressure lived behind a second button, which meant no single view
+     * could answer the question a player actually has - why is my city this
+     * size, and what would change it. Jerus: "fill it up, with the population
+     * info so that all the info is visible."
+     *
+     * Ordered as the causal chain rather than by which class owns what: who is
+     * here, what moved this month, why they came or went, where they sleep, how
+     * they are grouped, and finally what work there is for them.
+     */
     private void showPopulationInfoMenu() {
         clearMenu();
 
-        Label title = new Label("DEMOGRAPHIC & LABOR REPORT");
+        Label title = new Label("PEOPLE");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
 
         PopulationManager pm = game.getPopulationManager();
+        PopulationCohorts cohorts = game.getCohorts();
+        FamilyModel families = game.getFamilies();
+        Migration migration = game.getMigration();
+        BuildingManager bm = game.getBuildingManager();
 
         int population = pm.getPopulation();
-        double adultPercent = pm.getAdultPercent();
         int workforce = pm.getWorkforce();
         int totalJobs = pm.getTotalJobs();
         int[] vacancies = pm.getJobVacancy();
@@ -2343,75 +2443,313 @@ public class UserInterface extends Application {
         double[] jobWage = pm.getWagesPerType();
 
         int totalVacancies = 0;
-        for (int v : vacancies) {
-            totalVacancies += v;
+        for (int v : vacancies) totalVacancies += v;
+
+        double total = cohorts.total();
+
+        VBox column = new VBox(0);
+
+        /* =============================== who is here =============================== */
+        int unemployed = pm.getUnemployed();
+        double jobless = pm.getUnemploymentRate();
+        VBox city = reportSection("THE CITY",
+                String.format("%-26s%s", "Living here:", formatter.format(population)),
+                String.format("%-26s%s  (%.0f%% of the city)", "Of working age:",
+                        formatter.format(cohorts.workingAge()),
+                        total > 0 ? cohorts.workingAge() / total * 100 : 0),
+                String.format("%-26s%s", "In work:",
+                        formatter.format(pm.getJobsFilled())),
+                String.format("%-26s%s", "Looking for work:",
+                        formatter.format(unemployed)));
+
+        /*
+         * Unemployment gets its own coloured line rather than sitting in the
+         * list, because it is the one figure here that is a verdict rather than
+         * a count - and because it is the number that quietly went wrong when
+         * the workforce stopped being half the city. See Migration's note on
+         * residents per job.
+         */
+        Label joblessLine = monoLabel(String.format("%-26s%.1f%%  %s",
+                "Unemployment:", jobless * 100,
+                jobless > .25 ? "- far too many adults with nothing to do"
+                        : jobless > .15 ? "- high"
+                        : jobless < .03 ? "- nobody spare; every new job goes unfilled"
+                        : "- a healthy amount of slack"));
+        joblessLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                + " -fx-text-fill: " + (jobless > .25 || jobless < .03 ? "#c62828"
+                        : jobless > .15 ? "#ef6c00" : "#2e7d32") + ";");
+        city.getChildren().add(joblessLine);
+
+        city.getChildren().add(monoLabel(String.format("%-26s%.0f per 100 working",
+                "Dependency ratio:", cohorts.dependencyRatio())));
+        city.getChildren().add(monoLabel(
+                "  children and pensioners each working adult supports"));
+        column.getChildren().add(city);
+
+        /* ============================== the month's flows ============================== */
+        double net = migration.getLastArrivals() - migration.getLastDepartures()
+                + cohorts.getLastBirths() - cohorts.getLastDeaths();
+        VBox month = reportSection("THIS MONTH",
+                String.format("%-26s%s", "Born:", flowText(cohorts.getLastBirths())),
+                String.format("%-26s%s", "Died:", flowText(cohorts.getLastDeaths())),
+                String.format("%-26s%s", "Moved in:", flowText(migration.getLastArrivals())),
+                String.format("%-26s%s", "Moved out:", flowText(migration.getLastDepartures())));
+
+        Label netLine = monoLabel(String.format("%-26s%s%s", "Net:",
+                net >= 0 ? "+" : "-", flowText(Math.abs(net))));
+        netLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                + " -fx-text-fill: " + (net >= 0 ? "#2e7d32" : "#c62828") + ";");
+        month.getChildren().add(netLine);
+        column.getChildren().add(month);
+
+        /* ============================== why they come ============================== */
+        double target = migration.getLastTarget();
+        VBox pull = reportSection("WHY PEOPLE COME",
+                String.format("%-26s%,d  (each supports about %.2f people)", "Jobs on offer:",
+                        totalJobs, migration.getLastResidentsPerJob()),
+                String.format("%-26s%,d", "Housing built for:", game.getHouseholdCapacity()),
+                String.format("%-26s%s", "A city this good draws:", formatter.format(target)),
+                String.format("%-26s%s", population > target ? "More than it can hold by:"
+                        : "Room to grow:", formatter.format(Math.abs(target - population))));
+
+        String why;
+        String tone;
+        if (migration.getLastCrowding() <= 0) {
+            why = "Nobody else can fit. Every flatshare and every doubled-up household "
+                + "the city can form has already formed - build homes and the queue "
+                + "outside starts moving again.";
+            tone = "#c62828";
+        } else if (migration.getLastCrowding() < .95) {
+            why = String.format("Housing is tight enough to turn people away: only %.0f%% "
+                    + "of the people this city attracts can find somewhere to live. The "
+                    + "jobs are still pulling.", migration.getLastCrowding() * 100);
+            tone = "#ef6c00";
+        } else if (migration.getLastDepartures() > 0) {
+            why = String.format("People are leaving. %.0f%% of the city's payroll sits in "
+                    + "trades that have been shrinking for a year or have stopped paying "
+                    + "altogether.", migration.getLastDecliningShare() * 100);
+            tone = "#c62828";
+        } else if (target > population) {
+            why = "Work is going begging and there is room to house whoever takes it. "
+                + "People are still arriving.";
+            tone = "#2e7d32";
+        } else {
+            why = "The city is about the size its jobs and housing support. Nobody is "
+                + "leaving - a shortage of work is unemployment, not an exodus, until a "
+                + "whole trade has been dying for a year.";
+            tone = "#546e7a";
+        }
+        Label whyLabel = monoLabel(why);
+        whyLabel.setWrapText(true);
+        whyLabel.setMaxWidth(TABLE_WIDTH - 40);
+        whyLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + tone + ";"
+                + " -fx-padding: 6 0 0 0;");
+        pull.getChildren().add(whyLabel);
+
+        for (PayTier tier : PayTier.values()) {
+            if (!migration.isDeclining(tier)) continue;
+            Label row = monoLabel(String.format("   %s work has been shrinking %d months",
+                    tier.getLabel(), migration.getDecliningStreak(tier)));
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #c62828;");
+            pull.getChildren().add(row);
+        }
+        column.getChildren().add(pull);
+
+        /* ================================ the pyramid ================================ */
+        VBox pyramid = reportSection("AGES");
+        for (int i = AgeBand.values().length - 1; i >= 0; i--) {
+            AgeBand band = AgeBand.values()[i];
+            double count = cohorts.get(band);
+            double share = cohorts.share(band);
+
+            // A bar, because five numbers in a column do not read as a shape and
+            // the shape is what tells a player their city is ageing.
+            int blocks = (int) Math.round(share * 40);
+            Label row = monoLabel(String.format("%-10s %-9s %5.1f%%  %s",
+                    band.getLabel(), formatter.format(count), share * 100,
+                    "#".repeat(Math.max(0, blocks))));
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                    + " -fx-text-fill: " + (band.isWorkingAge() ? "#2e7d32" : "#546e7a") + ";");
+            pyramid.getChildren().add(row);
+        }
+        pyramid.getChildren().add(monoLabel(String.format(
+                "   ages 0-120;  adults are %d-%d and are the whole workforce",
+                AgeBand.ADULT.getFromAge(), AgeBand.ADULT.getToAge() - 1)));
+        column.getChildren().add(pyramid);
+
+        /* ================================== homes ================================== */
+        int builtHomes = bm.getTotalHomes();
+        int building = bm.getHomesUnderConstruction();
+        double needed = families.homesNeeded();
+        double shares = families.getSharedHouseholds();
+        double doubled = families.getDoubledUpHouseholds();
+        double spare = builtHomes - needed;
+
+        VBox doors = reportSection("HOMES",
+                String.format("%-26s%,d", "Homes in the city:", builtHomes),
+                String.format("%-26s%,d", "Under construction:", building),
+                String.format("%-26s%s", "Households wanting one:", formatter.format(needed)),
+                String.format("%-26s%s", spare >= 0 ? "Spare:" : "Short by:",
+                        formatter.format(Math.abs(spare))));
+
+        String pressure;
+        String pressureTone;
+        if (shares < .5 && doubled < .5) {
+            pressure = "Everyone who wants their own front door has one.";
+            pressureTone = "#2e7d32";
+        } else if (doubled < .5) {
+            pressure = String.format("%s households are flatshares - five single adults to "
+                    + "a home, which is what people do first when housing is tight. They "
+                    + "would rather live alone.", formatter.format(shares));
+            pressureTone = "#ef6c00";
+        } else {
+            pressure = String.format("%s flatshares, and %s households are doubled up two "
+                    + "to a home. Doubling up is the last resort - the city has run out of "
+                    + "single adults to crowd and is now crowding families.",
+                    formatter.format(shares), formatter.format(doubled));
+            pressureTone = "#c62828";
+        }
+        Label pressureLabel = monoLabel(pressure);
+        pressureLabel.setWrapText(true);
+        pressureLabel.setMaxWidth(TABLE_WIDTH - 40);
+        pressureLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + pressureTone + ";"
+                + " -fx-padding: 6 0 0 0;");
+        doors.getChildren().add(pressureLabel);
+        column.getChildren().add(doors);
+
+        /* ================================ households ================================ */
+        VBox homes = reportSection("HOUSEHOLDS",
+                String.format("%-26s%s", "Total:", formatter.format(families.totalHouseholds())),
+                String.format("%-26s%.2f people", "Average size:",
+                        families.averageHouseholdSize()),
+                String.format("%-26s%s", "Adults unplaced:",
+                        formatter.format(families.getUnhousedAdults())));
+
+        /*
+         * THE FULL MATRIX: household shape down, pay tier across.
+         *
+         * It used to be one row per shape with the tiers crushed into a trailing
+         * string, which made the two axes impossible to compare - you could see
+         * that large families existed and that unskilled households existed, but
+         * not whether the city's large families were the poor ones. That
+         * crossing is the entire reason the model has two axes, and burying one
+         * of them in a sentence threw it away.
+         *
+         * Six tiers of eight columns plus the labels fits inside the table width
+         * in this font. A dot rather than a zero where a cell is empty, because
+         * a grid of zeros reads as data and an empty cell reads as empty.
+         */
+        StringBuilder head = new StringBuilder(String.format("%n%-26s", "household"));
+        for (PayTier tier : PayTier.values()) {
+            head.append(String.format("%9s", shortTier(tier)));
+        }
+        head.append(String.format("%10s", "total"));
+        Label shapeHeader = monoLabel(head.toString());
+        shapeHeader.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                + " -fx-font-size: 10px; -fx-text-fill: #546e7a;");
+        homes.getChildren().add(shapeHeader);
+
+        Label wageRow = monoLabel(cellRow("  pays per worker",
+                tier -> "$" + formatter.format(tier.getMonthlyWage()), ""));
+        wageRow.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
+                + " -fx-text-fill: #90a4ae;");
+        homes.getChildren().add(wageRow);
+
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            double count = families.totalOf(shape);
+            if (count < .5) continue;
+
+            String line = cellRow(shape.getLabel(),
+                    tier -> cell(families.get(shape, tier)),
+                    shape.isRetired() ? "  no earner"
+                            : String.format("%10s", formatter.format(count)));
+
+            Label row = monoLabel(line);
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + (shape == FamilyStructure.SHARED_ADULTS
+                            ? " -fx-text-fill: #ef6c00;" : ""));
+            homes.getChildren().add(row);
         }
 
-        VBox overview = new VBox(4);
-        overview.setAlignment(Pos.CENTER);
-        overview.getChildren().addAll(
-                new Label("POPULATION OVERVIEW"),
-                new Label(String.format("Total Population:      %,d citizens", population)),
-                new Label(String.format("Workforce Share:        %.1f%%", adultPercent * 100)),
-                new Label(String.format("Total Workforce:        %,d workers", workforce))
-        );
+        // The column totals, which is the answer to "how rich is this city".
+        Label totalsRow = monoLabel(cellRow("ALL HOUSEHOLDS",
+                tier -> cell(families.totalOf(tier)),
+                String.format("%10s", formatter.format(families.totalHouseholds()))));
+        totalsRow.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                + " -fx-font-size: 10px; -fx-padding: 4 0 0 0;");
+        homes.getChildren().add(totalsRow);
 
-        VBox laborSummary = new VBox(4);
-        laborSummary.setAlignment(Pos.CENTER);
-        laborSummary.setStyle("-fx-padding: 15 0 0 0;");
-        laborSummary.getChildren().addAll(
-                new Label("LABOR MARKET SUMMARY"),
-                new Label(String.format("Total Jobs Available:   %,d positions", totalJobs)),
-                new Label(String.format("Total Vacancies:        %,d positions", totalVacancies))
-        );
+        homes.getChildren().add(monoLabel(
+                "  Seniors carry no tier - they have no earner - so their whole row"));
+        homes.getChildren().add(monoLabel(
+                "  sits under the first column by convention rather than by wage."));
+        column.getChildren().add(homes);
 
-        // Job distribution table
-        VBox jobTable = new VBox(3);
-        jobTable.setAlignment(Pos.CENTER);
-        jobTable.setStyle("-fx-padding: 15 0 0 0;");
+        /* =============================== the labour market =============================== */
+        VBox labour = reportSection("WORK",
+                String.format("%-26s%s", "Workers:", formatter.format(workforce)),
+                String.format("%-26s%,d", "Positions:", totalJobs),
+                String.format("%-26s%,d", "Unfilled:", totalVacancies));
 
-        Label header = new Label(String.format("%-16s | %-8s | %-9s | %-9s | %-14s",
-                "Job Type", "Jobs", "Vacancies", "Fill Rate", "Payroll"));
-        header.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;");
-        jobTable.getChildren().add(header);
+        Label jobHeader = monoLabel(String.format("%n%-20s %8s %10s %10s %14s",
+                "job", "posts", "unfilled", "filled", "payroll"));
+        jobHeader.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                + " -fx-font-size: 10px; -fx-text-fill: #546e7a;");
+        labour.getChildren().add(jobHeader);
 
         JobType[] jobTypes = JobType.values();
         for (int i = 0; i < jobs.length; i++) {
-            if (jobs[i] > 0) {
-                double payroll = jobWage[i] * jobs[i];
-                Label row = new Label(String.format("%-16s | %,8d | %,9d | %8.1f%% | $%-13s",
-                        jobTypes[i].name(), jobs[i], vacancies[i], fillRates[i] * 100,
-                        formatter.format(payroll)));
-                row.setStyle("-fx-font-family: 'Courier New';");
-                jobTable.getChildren().add(row);
-            }
+            if (jobs[i] <= 0) continue;
+            Label row = monoLabel(String.format("%-20s %,8d %,10d %9.0f%% %14s",
+                    jobTypes[i].name(), jobs[i], vacancies[i], fillRates[i] * 100,
+                    "$" + formatter.format(jobWage[i] * jobs[i])));
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: " + (fillRates[i] < .9 ? "#c62828" : "#37474f") + ";");
+            labour.getChildren().add(row);
         }
 
-        VBox status = new VBox(4);
-        status.setAlignment(Pos.CENTER);
-        status.setStyle("-fx-padding: 15; -fx-border-color: black; -fx-border-width: 1 0 0 0;");
-
+        String labourNote;
+        String labourTone;
         if (workforce > totalJobs) {
-            Label statusLabel = new Label("STATUS: LABOR SURPLUS");
-            statusLabel.setStyle("-fx-font-weight: bold;");
-            status.getChildren().addAll(
-                    statusLabel,
-                    new Label(String.format("%,d citizens are currently seeking employment.", workforce - totalJobs))
-            );
+            labourNote = String.format("Labour surplus: %,d adults with nowhere to work. "
+                    + "That is unemployment, not an exodus - people do not leave over it "
+                    + "until a whole trade has been dying for a year.",
+                    workforce - totalJobs);
+            labourTone = "#ef6c00";
         } else if (totalVacancies > 0) {
-            Label statusLabel = new Label("WARNING: LABOR SHORTAGE");
-            statusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: red;");
-            status.getChildren().addAll(
-                    statusLabel,
-                    new Label(String.format("%,d positions across the city remain unfilled.", totalVacancies))
-            );
+            labourNote = String.format("Labour shortage: %,d positions across the city "
+                    + "stand empty, and every one of them is pulling people toward the "
+                    + "city.", totalVacancies);
+            labourTone = "#2e7d32";
+        } else {
+            labourNote = "Every position is filled and every worker has one.";
+            labourTone = "#546e7a";
         }
+        Label labourLabel = monoLabel(labourNote);
+        labourLabel.setWrapText(true);
+        labourLabel.setMaxWidth(TABLE_WIDTH - 40);
+        labourLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + labourTone + ";"
+                + " -fx-padding: 8 0 0 0;");
+        labour.getChildren().add(labourLabel);
+        column.getChildren().add(labour);
 
-        // The one scrolled screen that never got this, so it alone rendered
-        // hard against the left edge while the rest were centred.
-        VBox content = new VBox(0);
-        content.setAlignment(Pos.CENTER);
-        content.getChildren().addAll(overview, laborSummary, jobTable, status);
+        /* ============================ what it cannot do yet ============================ */
+        column.getChildren().add(reportSection("NOT MODELLED YET",
+                "Births are a flat rate - healthcare, housing and prosperity",
+                "  will eventually have a say.",
+                "Nobody has an age. Each band holds a mean, so an intake spreads",
+                "  out rather than moving through as a wave.",
+                "Mortality is one figure per band, so an adult of twenty carries",
+                "  the same risk as one of sixty-nine.",
+                "Arrivals copy the city's age mix, so a growing city imports its",
+                "  own dependency ratio. Real migrants skew young.",
+                "Anyone can do any job. Education does not gate the pay tiers yet.",
+                "No multi-generational households, and couples share one tier.",
+                "Households are rebuilt from scratch each month - nobody keeps",
+                "  the family they had last month.",
+                "Crowding is counted but costs nothing. Nobody is unhappy about it",
+                "  and no rent goes up."));
 
         Button cashflow = new Button("Household Cash Flow");
         cashflow.setOnAction(e -> showHouseholdMenu());
@@ -2419,14 +2757,8 @@ public class UserInterface extends Application {
         Button back = new Button("Back");
         back.setOnAction(e -> showSectorMenu());
 
-        javafx.scene.control.ScrollPane scrollPane = new javafx.scene.control.ScrollPane(content);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(400);
-        scrollPane.setStyle("-fx-background-color:transparent;");
-
-        rootMenu.getChildren().addAll(title, scrollPane, cashflow, back);
+        rootMenu.getChildren().addAll(title, scrolled(column), cashflow, back);
     }
-
     /**
      * The residents' own books - the last participant in this economy that did
      * not have any.
@@ -2486,6 +2818,15 @@ public class UserInterface extends Application {
         column.getChildren().add(result);
 
         /* ---------------------------- affordability ---------------------------- */
+        column.getChildren().add(reportSection("PENSIONS",
+                String.format("%-32s-$%s", "Contributions off wages:",
+                        formatter.format(hh.getContributions())),
+                String.format("%-32s $%s", "Pensions received:",
+                        formatter.format(hh.getPensions())),
+                String.format("  %.2f%% of every wage, and $%s a month to each senior",
+                        SocialSecurity.CONTRIBUTION_RATE * 100,
+                        formatter.format(SocialSecurity.pensionPerSenior()))));
+
         VBox afford = reportSection("AFFORDABILITY");
 
         double burden = hh.getRentBurden();
@@ -2507,14 +2848,89 @@ public class UserInterface extends Application {
                 "Average filled job pays:", formatter.format(hh.getAverageWage()))));
         column.getChildren().add(afford);
 
+        /* --------------------------- the same books, per tier --------------------------- */
+        /*
+         * One statement per pay tier, plus the retired.
+         *
+         * The city total above hides the only interesting thing about it. Income
+         * across these rows varies about tenfold; rent and shopping per head do
+         * not vary at all, because nothing in the model lets what a household
+         * earns affect what it spends. So the bottom rows run a deficit and the
+         * top rows bank almost everything, and a single averaged statement shows
+         * a comfortable middle that nobody actually lives in.
+         */
+        VBox tiers = reportSection("BY PAY TIER");
+
+        Label tierHead = monoLabel(String.format("%-19s%6s%7s%9s%7s%8s%8s%9s%7s",
+                "who", "homes", "people", "earned", "tax", "cpp", "pension",
+                "spends", "left"));
+        tierHead.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                + " -fx-font-size: 10px; -fx-text-fill: #546e7a;");
+        tiers.getChildren().add(tierHead);
+
+        for (int row = 0; row < hh.getRowCount(); row++) {
+            if (hh.getRowHouseholds(row) < .5 && hh.getRowPeople(row) < .5) continue;
+
+            double left = hh.getRowSaving(row);
+            Label line = monoLabel(String.format("%-19s%6s%7s%9s%7s%8s%8s%9s%7s",
+                    hh.getRowLabel(row),
+                    formatter.format(hh.getRowHouseholds(row)),
+                    formatter.format(hh.getRowPeople(row)),
+                    "$" + formatter.format(hh.getRowWages(row)),
+                    "$" + formatter.format(hh.getRowTax(row)),
+                    "$" + formatter.format(hh.getRowContributions(row)),
+                    "$" + formatter.format(hh.getRowPensions(row)),
+                    "$" + formatter.format(hh.getRowSpending(row)),
+                    (left < 0 ? "-$" : "$") + formatter.format(Math.abs(left))));
+            line.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: " + (left < 0 ? "#c62828" : "#2e7d32") + ";");
+            tiers.getChildren().add(line);
+        }
+
+        // Where the deficits are, said out loud rather than left to be read off
+        // the colours - and named as the modelling gap it is.
+        int broke = 0;
+        for (int row = 0; row < hh.getRowCount(); row++) {
+            if (hh.getRowPeople(row) >= .5 && hh.getRowSaving(row) < 0) broke++;
+        }
+        String verdict = broke == 0
+                ? "Every group covers its own rent and shopping."
+                : String.format("%d of these groups cannot cover their rent and shopping "
+                        + "out of what they earn. Nothing in the model ties spending to "
+                        + "income yet - rent is the same per head for everyone and so is "
+                        + "the weekly shop - so a poor household is charged what a rich "
+                        + "one is. Those deficits are a missing budget constraint, not a "
+                        + "result.", broke);
+        Label verdictLabel = monoLabel(verdict);
+        verdictLabel.setWrapText(true);
+        verdictLabel.setMaxWidth(TABLE_WIDTH - 40);
+        verdictLabel.setStyle("-fx-font-size: 11px; -fx-padding: 8 0 0 0;"
+                + " -fx-text-fill: " + (broke == 0 ? "#2e7d32" : "#ef6c00") + ";");
+        tiers.getChildren().add(verdictLabel);
+
+        if (hh.getRowPeople(HouseholdAccounts.RETIRED) >= .5) {
+            double retiredLeft = hh.getRowSaving(HouseholdAccounts.RETIRED);
+            Label pensions = monoLabel(String.format(
+                    "Pensioners have no wages - the pension is their whole income, $%s a "
+                    + "month each, paid by the city out of the contributions above and "
+                    + "whatever general revenue has to make up. On that they %s.",
+                    formatter.format(SocialSecurity.pensionPerSenior()),
+                    retiredLeft >= 0 ? "can cover a home and their shopping"
+                            : "still cannot cover a home and their shopping"));
+            pensions.setWrapText(true);
+            pensions.setMaxWidth(TABLE_WIDTH - 40);
+            pensions.setStyle("-fx-font-size: 11px; -fx-padding: 4 0 0 0; -fx-text-fill: "
+                    + (retiredLeft >= 0 ? "#2e7d32" : "#c62828") + ";");
+            tiers.getChildren().add(pensions);
+        }
+        column.getChildren().add(tiers);
+
         /* ------------------------------- who works ------------------------------- */
         column.getChildren().add(reportSection("WHO IS EARNING IT",
                 String.format("Population:             %,d", hh.getPopulation()),
                 String.format("Workforce:              %,d", hh.getWorkforce()),
                 String.format("Jobs actually filled:   %,d", hh.getJobsFilled()),
-                String.format("People per worker:      %.2f", hh.getDependencyRatio()),
-                "",
-                "one household for now; income groups come much later"));
+                String.format("People per worker:      %.2f", hh.getDependencyRatio())));
 
         showSectorReport("HOUSEHOLD CASH FLOW", column, this::showPopulationInfoMenu);
     }
@@ -3790,6 +4206,9 @@ public class UserInterface extends Application {
                 String.format("Industrial Tax:         $%s", formatter.format(na.getTaxIndustrial())),
                 String.format("Sales Tax:              $%s", formatter.format(na.getTaxSales())),
                 String.format("Wage Tax:               $%s", formatter.format(na.getTaxWage())),
+                String.format("Pension Contributions:  $%s  (%.2f%% of every wage)",
+                        formatter.format(na.getContributions()),
+                        SocialSecurity.CONTRIBUTION_RATE * 100),
                 String.format("Utility Net Income:     $%s", formatter.format(na.getUtilityIncome())),
                 String.format("Property Tax:           $%s", formatter.format(na.getPropertyTax())),
                 String.format("Land Sold:              $%s", formatter.format(na.getLandSales())),
@@ -3798,10 +4217,68 @@ public class UserInterface extends Application {
 
         column.getChildren().add(reportSection("EXPENDITURE",
                 String.format("Debt Interest:         -$%s", formatter.format(na.getInterestExpense())),
+                String.format("Pensions:              -$%s  (%,.0f seniors at $%s each)",
+                        formatter.format(na.getPensions()), em.getSeniors(),
+                        formatter.format(SocialSecurity.pensionPerSenior())),
                 String.format("Buildings (capital):   -$%s", formatter.format(na.getCapitalSpending())),
                 String.format("Land Bought:           -$%s", formatter.format(na.getLandPurchases())),
                 "---------------------------------------------------",
                 String.format("Total Expenditure:     -$%s", formatter.format(na.getTotalExpenses()))));
+
+        /* ------------------------ THE PENSION GAP ------------------------ */
+        /*
+         * Contributions and pensions are on the two lists above like any other
+         * revenue and expense, and that is correct - but it hides the one thing
+         * worth knowing about them, which is that they are two halves of the
+         * same promise and the first does not cover the second.
+         *
+         * The gap is a pure function of the dependency ratio: contributions
+         * scale with workers, pensions with pensioners. A city that lets its
+         * pyramid grey buys a structural deficit without changing a single
+         * policy, and this is where it shows up first.
+         */
+        double coverage = em.getPensionCoverage();
+        VBox pension = reportSection("THE PENSION PROMISE",
+                String.format("Collected from workers: $%s", formatter.format(na.getContributions())),
+                String.format("Paid to pensioners:    -$%s", formatter.format(na.getPensions())));
+
+        Label gapLine = monoLabel(String.format("%-23s %.0f%% covered by contributions",
+                "Shortfall on the rest:", coverage * 100));
+        gapLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                + " -fx-text-fill: " + (coverage >= .9 ? "#2e7d32"
+                        : coverage >= .5 ? "#ef6c00" : "#c62828") + ";");
+        pension.getChildren().add(gapLine);
+
+        Label gapNote = monoLabel(coverage >= .99
+                ? "Workers cover the pensions between them."
+                : String.format("General revenue finds the other $%s a month. That gap widens "
+                        + "as the city ages - contributions follow workers and pensions follow "
+                        + "pensioners, so nothing has to change for it to grow.",
+                        formatter.format(em.getPensionShortfall())));
+        gapNote.setWrapText(true);
+        gapNote.setMaxWidth(TABLE_WIDTH - 40);
+        gapNote.setStyle("-fx-font-size: 11px; -fx-text-fill: #546e7a; -fx-padding: 4 0 0 0;");
+        pension.getChildren().add(gapNote);
+        column.getChildren().add(pension);
+
+        /* --------------------------- THE PIE --------------------------- */
+        HBox pies = new HBox(24);
+        pies.setAlignment(Pos.CENTER);
+        pies.setStyle("-fx-padding: 14 0 0 0;");
+        pies.getChildren().addAll(
+                budgetPie("WHERE IT COMES FROM", new String[]{
+                        "Business", "Industrial", "Sales", "Wage",
+                        "Pensions in", "Utilities", "Property", "Land"},
+                        new double[]{
+                        na.getTaxBusiness(), na.getTaxIndustrial(), na.getTaxSales(),
+                        na.getTaxWage(), na.getContributions(), na.getUtilityIncome(),
+                        na.getPropertyTax(), na.getLandSales()}),
+                budgetPie("WHERE IT GOES", new String[]{
+                        "Interest", "Pensions", "Buildings", "Land"},
+                        new double[]{
+                        na.getInterestExpense(), na.getPensions(),
+                        na.getCapitalSpending(), na.getLandPurchases()}));
+        column.getChildren().add(pies);
 
         VBox balance = reportSection("BALANCE");
         addNetIncomeLine(balance, na.getBalance() < 0 ? "DEFICIT:" : "SURPLUS:", na.getBalance());
@@ -3820,6 +4297,58 @@ public class UserInterface extends Application {
                         formatter.format(em.getBusinessDebtManager().getTotalPrincipal()))));
 
         showSectorReport("GOVERNMENT & NATIONAL ACCOUNTS", column, this::showEconomyMenu);
+    }
+
+    /**
+     * A budget pie: where the money came from, or where it went.
+     *
+     * NEGATIVE AND ZERO SLICES ARE DROPPED, not clamped. Utility net income and
+     * land sales can both come out negative in a bad month, and a pie chart
+     * cannot draw a negative wedge - it would either throw or silently render as
+     * its absolute value, which is worse, because a loss would appear as
+     * revenue. Dropping them means the chart shows the composition of what
+     * actually came in, and the numbered lists above it remain the place where a
+     * negative figure is readable as negative.
+     */
+    private VBox budgetPie(String heading, String[] names, double[] values) {
+
+        javafx.scene.chart.PieChart chart = new javafx.scene.chart.PieChart();
+        double total = 0;
+        for (double v : values) if (v > 0) total += v;
+
+        for (int i = 0; i < names.length && i < values.length; i++) {
+            if (values[i] <= 0) continue;
+            // The share goes in the label: a wedge under a few percent is
+            // impossible to judge by eye and that is exactly when the number
+            // matters, because it is the line somebody is deciding to cut.
+            chart.getData().add(new javafx.scene.chart.PieChart.Data(
+                    String.format("%s  %.0f%%", names[i],
+                            total > 0 ? values[i] / total * 100 : 0),
+                    values[i]));
+        }
+
+        chart.setLegendVisible(false);
+        chart.setLabelsVisible(true);
+        chart.setLabelLineLength(8);
+        chart.setPrefSize(300, 240);
+        chart.setMinSize(300, 240);
+
+        Label title = new Label(heading);
+        title.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                + " -fx-font-size: 11px; -fx-text-fill: #546e7a;");
+
+        VBox box = new VBox(2);
+        box.setAlignment(Pos.CENTER);
+        box.setMaxWidth(Region.USE_PREF_SIZE);
+
+        if (chart.getData().isEmpty()) {
+            Label none = monoLabel("  nothing yet");
+            none.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #90a4ae;");
+            box.getChildren().addAll(title, none);
+        } else {
+            box.getChildren().addAll(title, chart);
+        }
+        return box;
     }
 
     /** A growth rate, green when positive and red when the city is shrinking. */
@@ -3989,6 +4518,7 @@ public class UserInterface extends Application {
         cell.setStyle("-fx-padding: 2 0 4 0;");
         return cell;
     }
+
 
     private void showDebtInfoMenu() {
         clearMenu();

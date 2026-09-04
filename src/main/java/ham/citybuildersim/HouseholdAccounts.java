@@ -27,12 +27,25 @@ package ham.citybuildersim;
  * that shortfall would be money appearing from nowhere. Now it is a visible
  * negative line rather than an invisible one.
  *
- * ONE ENTITY, FOR NOW
+ * AND NOW, SEVEN SETS OF BOOKS
  *
- * A single household, deliberately. Splitting residents into income groups is
- * the obvious next step and would make this the natural place to do it - the
- * statement is the same shape per group - but that is a long way off, and one
- * set of books that is correct beats five that are guesses.
+ * The note that used to sit here said splitting residents into income groups was
+ * "the obvious next step" and "a long way off". It is here: the city total, plus
+ * one statement per pay tier and one for the retired, who have no tier because
+ * they have no earner.
+ *
+ * NOTHING IN THE SPLIT IS ESTIMATED, which is the only reason it is worth having.
+ * Wages come from the job mix by tier. The tax is the SAME banded calculation the
+ * city collects, split rather than re-derived. Rent is charged per resident at a
+ * uniform price, and shopping is driven by headcount, so allocating both by the
+ * people living in each tier's households is exact arithmetic rather than an
+ * apportionment.
+ *
+ * That last point is also the finding. Income across the tiers varies about
+ * tenfold; rent and shopping per head do not vary at all, because nothing in the
+ * model lets what a household earns affect what it spends. So the poorest tier
+ * runs a deficit and the richest banks almost everything, and both are artefacts
+ * of a missing budget constraint rather than results. The screen says so.
  */
 public class HouseholdAccounts {
 
@@ -41,6 +54,18 @@ public class HouseholdAccounts {
     private double wageTax;
     private double rent;
     private double shopping;
+
+    /**
+     * Pension contributions off the workers, and pensions in to the retired.
+     *
+     * Two flows in opposite directions between the same two parties, and they
+     * must NOT be netted into one line. A worker seeing 5.95% gone from their
+     * pay and a pensioner seeing money arrive are different facts about
+     * different households, and the whole point of splitting these books by tier
+     * was to stop facts about one group being averaged into another.
+     */
+    private double contributions;
+    private double pensions;
 
     private int population;
     private int workforce;
@@ -60,11 +85,19 @@ public class HouseholdAccounts {
     /** Feed it the month. Every argument is a figure someone else already had. */
     public void update(double wages, double wageTax, double rent, double shopping,
                        int population, int workforce, int jobsFilled) {
+        update(wages, wageTax, rent, shopping, 0, 0, population, workforce, jobsFilled);
+    }
+
+    public void update(double wages, double wageTax, double rent, double shopping,
+                       double contributions, double pensions,
+                       int population, int workforce, int jobsFilled) {
 
         this.wages = wages;
         this.wageTax = wageTax;
         this.rent = rent;
         this.shopping = shopping;
+        this.contributions = contributions;
+        this.pensions = pensions;
 
         this.population = population;
         this.workforce = workforce;
@@ -75,14 +108,22 @@ public class HouseholdAccounts {
 
     /* ----------------------------- the statement ----------------------------- */
 
-    public double getWages()    { return wages; }
-    public double getWageTax()  { return wageTax; }
-    public double getRent()     { return rent; }
-    public double getShopping() { return shopping; }
+    public double getWages()         { return wages; }
+    public double getWageTax()       { return wageTax; }
+    public double getRent()          { return rent; }
+    public double getShopping()      { return shopping; }
+    public double getContributions() { return contributions; }
+    public double getPensions()      { return pensions; }
 
-    /** What the people actually have to spend after the city has taken its share. */
+    /**
+     * What the people actually have to spend after the city has taken its share.
+     *
+     * Pensions are income and contributions are a deduction, so both belong
+     * here rather than beside the rent. A pensioner's whole income is on this
+     * line; a worker's is this line minus a seventeenth.
+     */
     public double getDisposableIncome() {
-        return wages - wageTax;
+        return wages - wageTax - contributions + pensions;
     }
 
     public double getSpending() {
@@ -128,7 +169,7 @@ public class HouseholdAccounts {
     /* ------------------------------- per head ------------------------------- */
 
     public double getIncomePerResident() {
-        return (population > 0) ? wages / population : 0;
+        return (population > 0) ? (wages + pensions) / population : 0;
     }
 
     public double getSpendingPerResident() {
@@ -154,14 +195,148 @@ public class HouseholdAccounts {
         return getNetSaving() < 0;
     }
 
+    /* =====================================================================
+       THE SAME STATEMENT, PER PAY TIER
+
+       Seven rows: the six tiers, plus the retired at the end. Held as parallel
+       arrays rather than seven objects because every row is the same four
+       figures and the screen walks them in order; a class per row would be
+       ceremony around an array index.
+
+       The retired row is not an afterthought. Pensioners have NO income in this
+       model - there is no pension, no savings drawdown, nothing - so their row
+       is pure outgoing, and their deficit is the largest single thing on the
+       screen. That is a real gap in the game, and putting it in the same table
+       as everyone else is how it stops being invisible.
+       ===================================================================== */
+
+    /** Index of the retired row, which sits after the six tiers. */
+    public static final int RETIRED = PayTier.values().length;
+    private static final int ROWS = PayTier.values().length + 1;
+
+    private final double[] rowWages     = new double[ROWS];
+    private final double[] rowTax       = new double[ROWS];
+    private final double[] rowRent      = new double[ROWS];
+    private final double[] rowShopping  = new double[ROWS];
+    private final double[] rowPeople    = new double[ROWS];
+    private final double[] rowHouseholds = new double[ROWS];
+    private final double[] rowContributions = new double[ROWS];
+    private final double[] rowPensions      = new double[ROWS];
+
+    /**
+     * Splits the month across the tiers.
+     *
+     * Called straight after update(), with the totals it was given. Rent and
+     * shopping are shared out BY PEOPLE rather than by household or by income,
+     * because that is literally how the model charges them - rent is
+     * `residents * rentPrice` and retail demand is a headcount - so this is the
+     * same arithmetic read backwards, not an allocation rule invented here.
+     *
+     * @param wagesPerTier what each tier earned, staffed
+     * @param taxPerTier   the banded wage tax on it, split not re-derived
+     * @param peoplePerRow residents in each row's households, retired last
+     * @param housePerRow  households in each row, retired last
+     */
+    public void updateByTier(double[] wagesPerTier, double[] taxPerTier,
+                             double[] peoplePerRow, double[] housePerRow) {
+
+        java.util.Arrays.fill(rowWages, 0);
+        java.util.Arrays.fill(rowTax, 0);
+        java.util.Arrays.fill(rowRent, 0);
+        java.util.Arrays.fill(rowShopping, 0);
+        java.util.Arrays.fill(rowPeople, 0);
+        java.util.Arrays.fill(rowHouseholds, 0);
+        java.util.Arrays.fill(rowContributions, 0);
+        java.util.Arrays.fill(rowPensions, 0);
+
+        if (peoplePerRow == null || peoplePerRow.length != ROWS
+                || housePerRow == null || housePerRow.length != ROWS) {
+            return;   // refused whole, per the standing rule on state arrays
+        }
+
+        double heads = 0;
+        for (double n : peoplePerRow) heads += n;
+
+        for (int r = 0; r < ROWS; r++) {
+            rowPeople[r] = peoplePerRow[r];
+            rowHouseholds[r] = housePerRow[r];
+
+            if (r < PayTier.values().length) {
+                if (wagesPerTier != null && r < wagesPerTier.length) rowWages[r] = wagesPerTier[r];
+                if (taxPerTier != null && r < taxPerTier.length)     rowTax[r]   = taxPerTier[r];
+            }
+
+            double share = heads > 0 ? peoplePerRow[r] / heads : 0;
+            rowRent[r] = rent * share;
+            rowShopping[r] = shopping * share;
+        }
+
+        /*
+         * Contributions follow WAGES, not people - it is a slice off a payslip,
+         * so a tier that earns nothing contributes nothing. The pension goes
+         * entirely to the retired row, which is the whole point of it: that row
+         * read "earned $0" before this existed.
+         */
+        double totalWages = 0;
+        for (double w : rowWages) totalWages += w;
+        for (int r = 0; r < ROWS; r++) {
+            rowContributions[r] = totalWages > 0
+                    ? contributions * (rowWages[r] / totalWages) : 0;
+        }
+        rowPensions[RETIRED] = pensions;
+    }
+
+    public double getRowWages(int row)      { return rowWages[row]; }
+    public double getRowTax(int row)        { return rowTax[row]; }
+    public double getRowRent(int row)       { return rowRent[row]; }
+    public double getRowShopping(int row)   { return rowShopping[row]; }
+    public double getRowPeople(int row)     { return rowPeople[row]; }
+    public double getRowHouseholds(int row) { return rowHouseholds[row]; }
+    public int getRowCount()                { return ROWS; }
+
+    public double getRowContributions(int row) { return rowContributions[row]; }
+    public double getRowPensions(int row)      { return rowPensions[row]; }
+
+    public double getRowDisposable(int row) {
+        return rowWages[row] - rowTax[row] - rowContributions[row] + rowPensions[row];
+    }
+
+    public double getRowSpending(int row) {
+        return rowRent[row] + rowShopping[row];
+    }
+
+    public double getRowSaving(int row) {
+        return getRowDisposable(row) - getRowSpending(row);
+    }
+
+    /** Saving as a share of take-home. Zero income has no rate, only a deficit. */
+    public double getRowSavingRate(int row) {
+        double disposable = getRowDisposable(row);
+        return disposable > 0 ? getRowSaving(row) / disposable : 0;
+    }
+
+    public String getRowLabel(int row) {
+        return row == RETIRED ? "Retired (no earner)" : PayTier.values()[row].getLabel();
+    }
+
     public void reset() {
         wages = 0;
         wageTax = 0;
         rent = 0;
         shopping = 0;
+        contributions = 0;
+        pensions = 0;
         population = 0;
         workforce = 0;
         jobsFilled = 0;
         cumulativeSaving = 0;
+        java.util.Arrays.fill(rowWages, 0);
+        java.util.Arrays.fill(rowTax, 0);
+        java.util.Arrays.fill(rowRent, 0);
+        java.util.Arrays.fill(rowShopping, 0);
+        java.util.Arrays.fill(rowPeople, 0);
+        java.util.Arrays.fill(rowHouseholds, 0);
+        java.util.Arrays.fill(rowContributions, 0);
+        java.util.Arrays.fill(rowPensions, 0);
     }
 }

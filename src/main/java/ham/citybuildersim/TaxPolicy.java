@@ -201,10 +201,37 @@ public class TaxPolicy {
      * @param fillRate    what share of each type's posts are actually staffed
      */
     public double wageTaxOn(double[] wagePerType, double[] fillRate) {
-
-        if (wagePerType == null) return 0;
-
         double tax = 0;
+        for (double t : wageTaxPerTier(wagePerType, fillRate)) tax += t;
+        return Math.max(0, tax);
+    }
+
+    /**
+     * The same wage tax, split across the six pay tiers.
+     *
+     * The residents' books needed the split so each tier could have its own
+     * cash-flow statement, and this is the ONLY place either figure is worked
+     * out - wageTaxOn() is now a sum over this array rather than a second loop
+     * that does the same thing. That is deliberate and it is not tidiness.
+     *
+     * The last time this codebase kept a second copy of the wage tax it cost
+     * 23%. Game.updateHouseholdAccounts() computed the residents' tax as
+     * `wages * incomeTaxRate` under a comment claiming it was "the identical
+     * formula EconomyManager uses". It was, the day it was written - and then
+     * the Policy tab added per-band offsets in this file only, so the moment a
+     * player used the wage bands at all, the households were shown paying a
+     * different tax from the one the city collected. With every offset at zero
+     * the two agreed exactly, which is precisely why nothing noticed.
+     *
+     * Banded, and summed job type by job type rather than as one total times an
+     * average - averaging would throw away exactly the distinction the bands
+     * exist to express while still looking about right.
+     */
+    public double[] wageTaxPerTier(double[] wagePerType, double[] fillRate) {
+
+        double[] byTier = new double[PayTier.values().length];
+        if (wagePerType == null) return byTier;
+
         for (int i = 0; i < wagePerType.length && i < JobType.values().length; i++) {
 
             double paid = wagePerType[i];
@@ -213,9 +240,11 @@ public class TaxPolicy {
             }
             if (paid <= 0) continue;
 
-            tax += paid * effectiveWageRate(WageBand.of(JobType.values()[i]));
+            JobType type = JobType.values()[i];
+            byTier[PayTier.of(type).ordinal()] +=
+                    paid * effectiveWageRate(WageBand.of(type));
         }
-        return Math.max(0, tax);
+        return byTier;
     }
 
     /* ==================================================================

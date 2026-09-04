@@ -145,6 +145,9 @@ public class Game {
         landManager = new LandManager();
         demolitionLog = new DemolitionLog();
         buildLog = new BuildLog();
+        cohorts = new PopulationCohorts();
+        families = new FamilyModel();
+        migration = new Migration();
         skipReport = new TimeSkipReport();
         households = new HouseholdAccounts();
         lastInvestment = new java.util.LinkedHashMap<>();
@@ -763,16 +766,65 @@ public class Game {
         NationalAccounts na = economyManager.getNationalAccounts();
 
         double wages = populationManager.getTotalWage();
-        double wageTax = Math.max(wages * economyManager.getTaxRate(), 0);
+
+        /*
+         * THE BANDED CALCULATION, not a flat rate on the total.
+         *
+         * This line used to read `wages * economyManager.getTaxRate()`, under a
+         * comment claiming it was "the identical formula EconomyManager uses".
+         * It was, until the Policy tab added per-band wage offsets in TaxPolicy
+         * and nothing updated the copy. From then on the residents were shown
+         * paying a different tax from the one the city collected the moment a
+         * player touched the wage bands - measured at 23% on a city with one
+         * band lowered ten points and another raised ten. With every offset at
+         * zero the two agreed exactly, which is why it survived a year.
+         *
+         * Called fresh rather than read from EconomyManager's stored total,
+         * which would import a one-month lag: that field is assigned during the
+         * PREVIOUS month's finalUpdateEconomy(), so it would pair this month's
+         * wages with last month's tax. Same function, current inputs.
+         */
+        double[] staffedPerType = populationManager.getStaffedWagePerType();
+        TaxPolicy tax = economyManager.getTaxPolicy();
+        double wageTax = tax.wageTaxOn(staffedPerType, null);
+
+        /*
+         * The pension flows, both directions, from the same source the city's
+         * own books use - so the money the workers are shown losing is exactly
+         * the money the city is shown collecting, and the same for what the
+         * pensioners receive. Two copies of either figure is how this codebase
+         * has produced money from nowhere four times.
+         */
+        double contributions = economyManager.getContributions();
+        double pensions = economyManager.getPensionsPaid();
 
         households.update(
                 wages,
                 wageTax,
                 na.getConsumptionHousing(),
                 na.getConsumptionGoods(),
+                contributions,
+                pensions,
                 populationManager.getPopulation(),
                 populationManager.getWorkforce(),
                 populationManager.getJobsFilled());
+
+        /* ---- and the same month, split seven ways ---- */
+        int rows = HouseholdAccounts.RETIRED + 1;
+        double[] people = new double[rows];
+        double[] houses = new double[rows];
+
+        for (PayTier tier : PayTier.values()) {
+            people[tier.ordinal()] = families.peopleIn(tier);
+            houses[tier.ordinal()] = families.workingHouseholdsIn(tier);
+        }
+        people[HouseholdAccounts.RETIRED] = families.retiredPeople();
+        houses[HouseholdAccounts.RETIRED] = families.retiredHouseholds();
+
+        households.updateByTier(
+                populationManager.getStaffedWagePerTier(),
+                tax.wageTaxPerTier(staffedPerType, null),
+                people, houses);
     }
 
     /** Tells the investment engine what land is left to sell, right now. */
@@ -2707,11 +2759,13 @@ public class Game {
         }
     }
 
+    /**
+     * Recounts the posts on offer. Does NOT decide how many people live here -
+     * that is advanceDemographics(), which runs after this and needs the job
+     * count to work out what the city is pulling.
+     */
     void updatePopulation() {
-        //TBE
         refreshJobs();
-        population = populationManager.updatePop(getHouseholdCapacity());
-        
     }
     
     private void shutdown() {
@@ -2767,6 +2821,112 @@ public class Game {
     /** What businesses have scrapped, so the panel can say what went and when. */
     private DemolitionLog demolitionLog = new DemolitionLog();
     private BuildLog buildLog = new BuildLog();
+
+    /* =====================================================================
+       DEMOGRAPHICS - LOAD-BEARING SINCE THE SWITCH
+
+       These three decide how many people live here. The pyramid is the stock,
+       Migration is what moves it, and FamilyModel arranges whoever is here into
+       households and crowds them into the homes that exist.
+
+       WHAT THE SWITCH REPLACED. The population was min(housing, jobs * 2.25),
+       recomputed from nothing every month. It had no memory: finish a tower and
+       it filled that same month, demolish one and its residents ceased to exist,
+       and a city could double between two ticks. That expression survives, in
+       Migration, as the TARGET a city moves toward - which is the whole change.
+       Housing and jobs now say how attractive the city is, not how many people
+       are in it.
+
+       WHAT THAT COST. Two batches of this model ran deliberately inert, with a
+       harness playing two identical cities and requiring every figure to match,
+       because everything downstream keys off the population - the workforce, the
+       fill rate, every sector's output, the wage bill, the wage tax, GDP. That
+       assertion is gone now, on purpose, and what replaced it is in
+       PopulationCheck: tests that the city fills toward its jobs, keeps taking
+       arrivals while crowded, stops before anybody is homeless, and sheds people
+       only after a pay tier has been dying for a year.
+       ===================================================================== */
+
+    private PopulationCohorts cohorts = new PopulationCohorts();
+    private FamilyModel families = new FamilyModel();
+    private Migration migration = new Migration();
+
+    public PopulationCohorts getCohorts() { return cohorts; }
+    public FamilyModel getFamilies()      { return families; }
+    public Migration getMigration()       { return migration; }
+    /**
+     * Turns the placeholder off, for the harness that proves it is a placeholder.
+     *
+     * PopulationCheck plays two identical cities with this set either way and
+     * requires every live figure to match. Package-private and static because it
+     * is a property of the build under test rather than of any one city, and
+     * because the alternative - threading a flag through the constructor - would
+     * put a permanent seam in Game for a temporary claim.
+     */
+    /**
+     * Ages the city, moves people in and out, and rebuilds the households.
+     *
+     * THIS IS NOW THE MONTH'S POPULATION STEP. It used to be a placeholder that
+     * ran after the population was settled and fed nothing; it now decides the
+     * figure, which is why SimulationEngine calls it where it does. The order
+     * inside is the model:
+     *
+     *   1. File the month's wage bill per tier, so the twelve-month decline test
+     *      has this month in it before it is asked a question about this month.
+     *      Read from the arrays SimulationEngine has just refreshed, and staffed
+     *      by LAST month's workforce - which is correct, because last month's
+     *      residents are who worked.
+     *   2. Age, give birth, die.
+     *   3. Migrate, which is by far the biggest of the three.
+     *   4. Hand the total to PopulationManager, which derives the workforce from
+     *      the population as it stood BEFORE the arrivals - so somebody who moves
+     *      in this month starts work next month.
+     *   5. Rebuild households and crowd them into whatever homes exist.
+     *
+     * Steps 4 and 5 must stay in that order: the household rebuild reads the job
+     * fill, and the job fill reads the workforce that step 4 sets.
+     */
+    void advanceDemographics() {
+
+        migration.recordWages(populationManager.getStaffedWagePerTier());
+
+        cohorts.advanceMonth();
+
+        /*
+         * Who works this month: the adults who were already living here, read
+         * off before migration moves anybody. Captured HERE rather than after
+         * the arrivals because somebody who moves in this month starts work next
+         * month - the same property PopulationManager.applyPopulation() used to
+         * get by reading last month's population, now got honestly.
+         */
+        double adultsAlreadyHere = cohorts.get(AgeBand.ADULT);
+
+        cohorts.migrate(migration.monthlyNet(
+                population,
+                populationManager.getTotalJobs(),
+                getHouseholdCapacity(),
+                buildingManager.getTotalHomes(),
+                families,
+                cohorts.share(AgeBand.ADULT)));
+
+        population = populationManager.applyPopulation(
+                (int) Math.round(cohorts.total()), adultsAlreadyHere);
+
+        double[] jobsByTier = new double[PayTier.values().length];
+        double[] fillRate = populationManager.getJobFillRate();
+        int[] posts = populationManager.getJobs();
+
+        for (JobType type : JobType.values()) {
+            int i = type.ordinal();
+            jobsByTier[PayTier.of(type).ordinal()] += posts[i] * fillRate[i];
+        }
+
+        families.rebuild(cohorts, jobsByTier);
+
+        // One household, one home - and if there are not enough homes, they
+        // crowd rather than sleep outside. See FamilyModel.squeeze().
+        families.squeeze(buildingManager.getTotalHomes());
+    }
 
     /**
      * Files the month's finished buildings.
@@ -2921,7 +3081,10 @@ public class Game {
         // Accrued after this month's income was banked, so it is charged next
         // month. Nothing can rederive it from the debt book, because whether it
         // has been charged yet is a fact about where in the month we are.
-        dataSave.setCityInterestAccrued(economyManager.getExpenses());
+        // getInterestAccrued(), NOT getExpenses(): the field is named for the
+        // interest and the load path feeds it straight back to setInterest().
+        // Saving the whole expense line double-counted pensions on load.
+        dataSave.setCityInterestAccrued(economyManager.getInterestAccrued());
         dataSave.setPropertyTaxCharges(economyManager.getPropertyTaxCharges());
         dataSave.setInterestCharges(economyManager.getInterestCharges());
 
@@ -2972,6 +3135,9 @@ public class Game {
         // History, not state: what the city lost and what its lenders wrote off.
         dataSave.setDemolitions(demolitionLog.all());
         dataSave.setBuilds(buildLog.all());
+        dataSave.setCohorts(cohorts.toSaveArray());
+        dataSave.setFamilies(families.toSaveArray());
+        dataSave.setMigration(migration.toSaveArray());
         dataSave.setWriteOffTotals(
                 economyManager.getBusinessDebtManager().getWriteOffTotals());
 
@@ -3299,6 +3465,8 @@ public class Game {
     // economy sync
     economyManager.setPopulation(populationManager.getPopulation());
     economyManager.setHouseholds(getHouseholdCapacity());
+    economyManager.setOccupiedHomes(families.homesNeeded());
+    economyManager.setSeniors(cohorts.get(AgeBand.SENIOR));
     economyManager.setTotalJobs(populationManager.getTotalJobs());
     economyManager.setTotalWage(populationManager.getTotalWage());
 
@@ -3843,6 +4011,26 @@ public class Game {
          */
         economyManager.setInterest(restoredCityInterest);
 
+        /*
+         * THE HOUSEHOLDS, BEFORE THE REBUILD RATHER THAN AFTER IT.
+         *
+         * These three used to be restored further down, with the rest of the
+         * carried flows, and that was fine while nothing read them. Rent is now
+         * charged per occupied HOME, and rebuildSimulationState() re-runs the
+         * commercial sector - so a FamilyModel still empty at that moment made a
+         * reloaded city collect zero rent for its first month. SaveFileCheck
+         * caught it as "both cities have paid the same bill", which is exactly
+         * what that assertion is for.
+         *
+         * Safe to hoist: all three are plain array copies with no dependency on
+         * anything the rebuild does, and the rebuild very much depends on them.
+         */
+        if (restoredFlows != null) {
+            cohorts.restore(restoredFlows.getCohorts());
+            families.restore(restoredFlows.getFamilies());
+            migration.restore(restoredFlows.getMigration());
+        }
+
         rebuildSimulationState();
 
         /*
@@ -3881,6 +4069,8 @@ public class Game {
 
             demolitionLog.restore(restoredFlows.getDemolitions());
             buildLog.restore(restoredFlows.getBuilds());
+            // cohorts, families and migration are restored ABOVE, before
+            // rebuildSimulationState() re-runs the economy off them.
             economyManager.getBusinessDebtManager()
                     .restoreWriteOffs(restoredFlows.getWriteOffTotals());
 

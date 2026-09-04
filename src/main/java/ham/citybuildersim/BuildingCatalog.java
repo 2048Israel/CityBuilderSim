@@ -186,6 +186,7 @@ public class BuildingCatalog {
         BuildingsTemplate template = new BuildingsTemplate(name, category)
                 .setId(id)
                 .setCapacity((int) number(o, "capacity"))
+                .setDwellings((int) number(o, "dwellings"))
                 .setCoverage((int) number(o, "coverage"))
                 .setCashCost(number(o, "cashCost"))
                 .setConstructionPoints((int) number(o, "constructionPoints"))

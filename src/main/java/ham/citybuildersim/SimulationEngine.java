@@ -64,11 +64,29 @@ public class SimulationEngine {
         // from - see ServicesManager.updateInfrastructure().
         servicesManager.updateInfrastructure();
 
-        // updatePopulation(), NOT refreshPopulationInputs() - a month is exactly
-        // when the city's population is supposed to move. Routing this through
-        // refreshDerivedState() once seemed tidy and quietly froze every city at
-        // zero residents, which is the difference between the two calls.
+        // Recount the posts and refresh the wage arrays. This NO LONGER decides
+        // how many people live here - it used to, and the comment that lived
+        // here warned that routing it through refreshDerivedState() would freeze
+        // every city at zero residents. That trap has moved: the population step
+        // is now advanceDemographics(), immediately below.
         updatePopulation(game);
+
+        /*
+         * THE POPULATION STEP.
+         *
+         * It sits AFTER the jobs and wages are refreshed because it reads both -
+         * the job count is what the city is pulling against, and the per-tier
+         * wage bill is what the twelve-month decline test is filed from. It sits
+         * BEFORE the economy because everything there keys off the population it
+         * produces.
+         *
+         * This ordering was the reverse until the switch, when demographics were
+         * a placeholder that consumed the month's population and fed nothing.
+         * The comment that used to sit here said it "must never be a source" for
+         * the population. It is now the only source.
+         */
+        game.advanceDemographics();
+
         updateEconomy(game);
         updateServices(game);
     }
@@ -85,6 +103,8 @@ public class SimulationEngine {
         economyManager.setTotalJobs(populationManager.getTotalJobs());
         economyManager.setPopulation(populationManager.getPopulation());
         economyManager.setHouseholds(buildingManager.getTotalHouseCapacity());
+        economyManager.setOccupiedHomes(game.getFamilies().homesNeeded());
+        economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR));
         economyManager.updateStoreWages(populationManager.getWagesPerType(),buildingManager.getJobArrayPerCategory(BuildingType.COMMERCIAL));
         economyManager.updateIndustrialWages(populationManager.getWagesPerType());
         economyManager.updateJobFillRate(populationManager.getJobFillRate());

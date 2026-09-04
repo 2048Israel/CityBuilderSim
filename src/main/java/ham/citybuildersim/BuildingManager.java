@@ -73,11 +73,32 @@ public class BuildingManager {
     public void initializeBuiltInTemplates() {
         
         //Residential Buildings
+        /*
+         * HOUSING IS CHEAP TO BUILD, AND THAT IS NOT A BALANCE TWEAK.
+         *
+         * Rent stopped being charged per head and became one cheque per home,
+         * which cut what a landlord collects by about two thirds. Measured
+         * straight afterwards: the advisor stopped building apartments
+         * ENTIRELY - 62 low-rise blocks over four thousand months became zero -
+         * and put the money into steel instead.
+         *
+         * So the three residential templates carry a third of the construction
+         * points and materials they used to. Same cash price, per Jerus: the
+         * capital outlay is unchanged, what fell is the EFFORT. Which is the
+         * right lever, because effort was the binding one - a low-rise block
+         * needed 7,000 points against a mid-game city's 35 a month, or two
+         * hundred months of every builder in the city on one building, and
+         * `orderSize` refuses anything over twelve.
+         *
+         * A third, because that is what rent fell by. Not a number chosen to
+         * make the playtest come out well.
+         */
         BuildingsTemplate house = new BuildingsTemplate("House", BuildingType.RESIDENTIAL);
         house.setCapacity(4);
+        house.setDwellings(1);
         house.setCashCost(30);
-        house.setConstructionPoints(30);
-        house.setConstructionMaterials(30);
+        house.setConstructionPoints(10);
+        house.setConstructionMaterials(10);
         house.setElectricityConsumption(1);
         house.setWaterConsumption(.2);
         house.setLandSqFt(8000);
@@ -87,9 +108,10 @@ public class BuildingManager {
 
         BuildingsTemplate studioApartments = new BuildingsTemplate("Studio Apartments", BuildingType.RESIDENTIAL);
         studioApartments.setCapacity(80);
+        studioApartments.setDwellings(80);
         studioApartments.setCashCost(2000);
-        studioApartments.setConstructionPoints(2000);
-        studioApartments.setConstructionMaterials(2000);
+        studioApartments.setConstructionPoints(680);
+        studioApartments.setConstructionMaterials(680);
         studioApartments.setElectricityConsumption(8);
         studioApartments.setWaterConsumption(2);
         studioApartments.setLandSqFt(25000);
@@ -99,9 +121,10 @@ public class BuildingManager {
 
         BuildingsTemplate lowRiseApartments = new BuildingsTemplate("Low-Rise Apartments", BuildingType.RESIDENTIAL);
         lowRiseApartments.setCapacity(250);
+        lowRiseApartments.setDwellings(100);
         lowRiseApartments.setCashCost(7000);
-        lowRiseApartments.setConstructionPoints(7000);
-        lowRiseApartments.setConstructionMaterials(6000);
+        lowRiseApartments.setConstructionPoints(2400);
+        lowRiseApartments.setConstructionMaterials(2050);
         lowRiseApartments.setElectricityConsumption(25);
         lowRiseApartments.setWaterConsumption(6);
         lowRiseApartments.setLandSqFt(60000);
@@ -685,6 +708,50 @@ public class BuildingManager {
             total += inst.getJobs(type);
         }
         return total;
+    }
+
+    /**
+     * How many separate HOMES the city has, each holding one household.
+     *
+     * The other way of counting housing, and the one the demographics model
+     * uses: capacity says how many people fit, this says how many front doors
+     * there are. A city can have room for ten thousand people and only two
+     * thousand homes, and which of those binds is a different question with a
+     * different answer.
+     *
+     * FALLS BACK RATHER THAN RETURNING ZERO for residential buildings whose data
+     * predates the dwellings field. A building that houses people but declares
+     * no homes would otherwise read as uninhabitable, which is worse than an
+     * estimate - four people to a home is the House's own ratio and the least
+     * surprising guess available.
+     */
+    public int getTotalHomes() {
+        int homes = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
+
+            int per = t.getDwellings() > 0
+                    ? t.getDwellings()
+                    : Math.max(1, t.getCapacity() / 4);
+            homes += stack.getQuantity() * per;
+        }
+        return homes;
+    }
+
+    /** Homes that will exist once everything on site is finished. */
+    public int getHomesUnderConstruction() {
+        int homes = 0;
+        for (BuildingsStacks stack : getStacksUnderConstruction()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
+
+            int per = t.getDwellings() > 0
+                    ? t.getDwellings()
+                    : Math.max(1, t.getCapacity() / 4);
+            homes += stack.getUnderConstruction() * per;
+        }
+        return homes;
     }
 
     public int getTotalHouseCapacity() {

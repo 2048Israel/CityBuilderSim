@@ -630,6 +630,26 @@ public class SaveFileCheck {
         growing.buildStack(template(growing, "Texttile Mill"), 1, false);
         growing.simulateMonths(40);
 
+        /*
+         * CAUSE THE CONDITION, DO NOT WAIT FOR IT.
+         *
+         * This section needs a city genuinely mid-stride - one whose statement
+         * was written against a smaller population than it now has - and it used
+         * to get there by building a city and hoping forty months left it in
+         * that state. It did, until housing got cheap enough to build that the
+         * city filled up and settled by month forty, and then the fixture failed
+         * while nothing it was testing had changed.
+         *
+         * So: drop a block of shops in instantly, which raises the jobs the city
+         * is pulling against, and run one month. Migration moves people during
+         * that month by construction, and the month's statement necessarily
+         * describes the city as it was before they arrived. Standing rule in
+         * this codebase, hit again.
+         */
+        BuildingManager gbm = growing.getBuildingManager();
+        gbm.addStack(gbm.getTemplateByName("Convience Store"), 30, true);
+        growing.simulateMonths(1);
+
         PopulationManager gp = growing.getPopulationManager();
         CommercialHandler gc = growing.getEconomyManager().getCommercialHandler();
 

@@ -186,7 +186,80 @@ public class CommercialHandler {
 
     //temporary variables
     private double storeSellPrice = .3;
-    private double rentPrice = .35;
+
+    /* =====================================================================
+       RENT
+
+       WHAT IT USED TO BE: $350 a month PER RESIDENT. Babies paid rent. So did
+       pensioners, and children, and every teenager. Jerus, reading the new
+       per-tier household statement: "not only is there no room for rent to
+       increase... but already people are broke."
+
+       He was right, and by more than it looked. Measured on a city of 1,218:
+       rent came to 106% OF THE ENTIRE WAGE BILL. Per household, at the
+       unskilled wage:
+
+         couple, no children     2 people   $700 on $1,600   44%
+         couple with a baby      3 people $1,049 on $1,600   66%
+         couple, two children    4 people $1,400 on $1,600   87%
+         LARGE FAMILY            6 people $2,099 on $1,600  131%
+         senior living alone     1 person   $350 on nothing   -
+
+       A childless couple was fine. Every child cost $350 a month and earned
+       nothing, so a family was bankrupt before it bought food - and the model
+       had no way to say so, because rent scaled with heads and nothing else.
+
+       WHY IT WAS WRITTEN THAT WAY: there were no households. Residents were a
+       single number, homes did not exist as a concept, and per-head was the only
+       thing that COULD be written. `dwellings` and FamilyModel changed that.
+
+       WHAT IT IS NOW: one household, one rent, scaled by how big the home is. A
+       studio flat costs less than a house because it holds fewer people. Nobody
+       is charged for their children.
+       ===================================================================== */
+
+    /** What share of a working household's income rent should take. */
+    public static final double TARGET_RENT_BURDEN = .30;
+
+    /**
+     * The household and the home the price is set against.
+     *
+     * A couple both working, in a House - the starter residence, and the only
+     * one a new city can afford. Its capacity is 4 across 1 dwelling, and
+     * `HouseholdCheck` asserts that is still true, so if somebody re-costs the
+     * House this derivation fails loudly instead of drifting.
+     *
+     * Deriving rather than typing a price is the point. The last four bugs in
+     * this codebase were all constants that were correct when written and
+     * silently invalidated by a change somewhere else; this one follows the wage
+     * table, so raising pay raises rent with it.
+     */
+    public static final int REFERENCE_EARNERS = 2;
+    public static final int REFERENCE_HOME_CAPACITY = 4;
+
+    /**
+     * Rent per person of DWELLING CAPACITY, not per resident.
+     *
+     * A house of capacity 4 costs 4 x this whether one person lives in it or
+     * six. That is what a landlord actually charges for: the flat.
+     */
+    private double rentPrice = TARGET_RENT_BURDEN
+            * (REFERENCE_EARNERS * PayTier.UNSKILLED.getMonthlyWage())
+            / REFERENCE_HOME_CAPACITY;
+
+    /** Front doors the city has, and how many of them are lived in. */
+    private int homes;
+    private double occupiedHomes;
+
+    public void setHomes(int homes)              { this.homes = homes; }
+    public void setOccupiedHomes(double occupied){ this.occupiedHomes = occupied; }
+    public int getHomes()                        { return homes; }
+    public double getOccupiedHomes()             { return occupiedHomes; }
+
+    /** Capacity per front door, averaged over whatever the city has built. */
+    public double averageHomeSize() {
+        return homes > 0 ? household / (double) homes : 0;
+    }
 
     public CommercialHandler(){
 
@@ -272,8 +345,25 @@ public class CommercialHandler {
         return rTotalTax;
     }
 
+    /**
+     * The month's rent: one cheque per occupied home, sized by the home.
+     *
+     * An EMPTY home earns nothing, which is why this is occupied homes rather
+     * than all of them - a landlord with no tenant has no income, and a city
+     * that overbuilds housing should feel it. A city with more households than
+     * front doors lets every one of them; the extra households are crowded in
+     * with somebody else and do not pay twice.
+     *
+     * Falls back to the old per-resident figure only when the city has no homes
+     * recorded at all, which is a save written before dwellings existed. Better
+     * a month of the old number than a month of zero rent.
+     */
     public double getRentIncome(){
-        return Math.min(household, population)*rentPrice;
+        if (homes <= 0) {
+            return Math.min(household, population) * rentPrice;
+        }
+        double let = Math.min(occupiedHomes, homes);
+        return let * averageHomeSize() * rentPrice;
     }
 
     //getters

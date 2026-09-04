@@ -69,8 +69,16 @@ public final class GameVersion {
      *     guarding. Downward is fine as always: a format-9 save has no build
      *     log, Gson reads the field as null, and BuildLog.restore() takes null
      *     as an empty log rather than an error.
+     * 11 - the twelve months of per-tier wage history behind migration's decline
+     *     test, and with it the fact that the AGE PYRAMID IS NOW THE POPULATION
+     *     rather than a display. A format-10 save carries the pyramid already,
+     *     so it loads with its residents intact; what it lacks is the history,
+     *     so Migration.restore() refuses the null and the city starts with a
+     *     clean slate - meaning it cannot shed anybody for a year even if a tier
+     *     was already dying when it was saved. That is a real difference and
+     *     this number is what records it, rather than it being discovered.
      */
-    public static final int SAVE_FORMAT = 10;
+    public static final int SAVE_FORMAT = 11;
 
     public static final String NAME = "CityBuilderSim";
 

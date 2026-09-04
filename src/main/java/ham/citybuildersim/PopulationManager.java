@@ -25,26 +25,46 @@ public class PopulationManager {
     
     
     
-    public int updatePop(int householdCapacity){
-
-        /*
-         * Workforce is taken from the population BEFORE the month moves it, and
-         * that ordering is deliberate rather than accidental: the people who
-         * worked this month are the ones who already lived here. Somebody who
-         * moves in this month starts work next month.
-         *
-         * It is also why the workforce has to be SAVED rather than recomputed -
-         * see recomputeWorkforce(). Leave this order alone unless you mean to
-         * change how fast a growing city staffs itself, which is a balance
-         * decision, not a tidy-up.
-         */
-        double temp = population*adultPercent;
-        workforce = (int)temp;
-        double cap = totalJobs*(1+adultPercent)*1.5;
-        int cap1 = (int)Math.round(cap);
-        return population = Math.min(householdCapacity,cap1);
-        
-        
+    /**
+     * Takes the population the demographics arrived at, and works out who can
+     * work this month.
+     *
+     * THIS USED TO DECIDE THE POPULATION. It computed
+     * `min(householdCapacity, totalJobs * 2.25)` and returned it, which meant
+     * the city had no memory at all - the number was rebuilt from scratch every
+     * month, so a finished tower filled instantly and a demolished one erased
+     * its residents. That expression still exists, in `Migration`, but it is now
+     * a TARGET the city migrates toward rather than the answer.
+     *
+     * THE WORKFORCE IS NOW THE CITY'S ACTUAL ADULTS. It used to be
+     * `population * 0.5` - a flat share, typed in, that took no notice of who
+     * actually lived here. The pyramid has known the real figure for three
+     * batches and nothing read it, which made a city of pensioners staff its
+     * factories exactly as well as a city of thirty-year-olds.
+     *
+     * A settled pyramid runs about 57% adults rather than 50%, so this is worth
+     * roughly a seventh more workers at the same population - but the point is
+     * not the level, it is that the number now MOVES. A city that ages loses
+     * workers without losing residents, and the dependency ratio on the People
+     * screen stops being decoration.
+     *
+     * Taken from the adults who ALREADY LIVED HERE, before this month's
+     * arrivals, and that ordering is deliberate rather than accidental: the
+     * people who worked this month are the ones who were here. Somebody who
+     * moves in this month starts work next month. That property is the reason
+     * this method still exists rather than the caller just assigning the field.
+     *
+     * It is also why the workforce has to be SAVED rather than recomputed - see
+     * recomputeWorkforce(). Leave the order alone unless you mean to change how
+     * fast a growing city staffs itself, which is a balance decision, not a
+     * tidy-up.
+     *
+     * @param newPopulation      what the demographics arrived at
+     * @param adultsAlreadyHere  the adult band before this month's migration
+     */
+    public int applyPopulation(int newPopulation, double adultsAlreadyHere){
+        workforce = (int) Math.max(0, adultsAlreadyHere);
+        return population = Math.max(0, newPopulation);
     }
     
     public void updateJobs(int[] newJobs){
@@ -122,20 +142,44 @@ public class PopulationManager {
         return staffed;
     }
     
+    /**
+     * The same staffed wage bill, collapsed onto the six pay tiers.
+     *
+     * Migration watches a tier's cashflow for twelve months of decline, and a
+     * tier is a group of job types - so somebody has to do this mapping. Doing
+     * it HERE rather than at the call site is the whole point: this method is one
+     * line of aggregation over getStaffedWagePerType(), so it cannot disagree
+     * with the wage bill the tax is charged on. A second copy of the fill-rate
+     * arithmetic somewhere else is exactly the bug this codebase keeps finding -
+     * the copy is right the day it is written and wrong the first time the
+     * original changes.
+     */
+    public double[] getStaffedWagePerTier(){
+        double[] byType = getStaffedWagePerType();
+        double[] byTier = new double[PayTier.values().length];
+        for (JobType type : JobType.values()) {
+            byTier[PayTier.of(type).ordinal()] += byType[type.ordinal()];
+        }
+        return byTier;
+    }
+
     //setters
+    /**
+     * Wages, read from PayTier rather than typed out here.
+     *
+     * This used to be eleven hand-written figures with TEN distinct values -
+     * UNIV_FINANCE and UNIV_HIGHTECH_ENG were both 6.5 - which made "group
+     * families by what they earn" a ten-way split. PayTier collapses that to
+     * six by role, and owns the numbers, so there is one wage table rather than
+     * one table and a copy of it that agrees until somebody edits the wrong one.
+     *
+     * Measured cost of the collapse on a city of 8,792: the whole wage bill
+     * moved -1.08%.
+     */
     public void setWagesPerType(){
-        jobWage[0] = .800;
-        jobWage[1] = 1.500;
-        jobWage[2] = 3.500;
-        jobWage[3] = 3.000;
-        jobWage[4] = 4.000;
-        jobWage[5] = 8.000;
-        jobWage[6] = 7.500;
-        jobWage[7] = 6.500;
-        jobWage[8] = 5.500;
-        jobWage[9] = 6.500;
-        jobWage[10] = 6.000;
-        
+        for (JobType type : JobType.values()) {
+            jobWage[type.ordinal()] = PayTier.wageOf(type);
+        }
     }
     public void setPopulation(int population){
         this.population = population;
@@ -231,6 +275,30 @@ public class PopulationManager {
     
     public int getWorkforce(){
         return workforce;
+    }
+
+    /**
+     * Adults who want work and have none.
+     *
+     * Defined against getJobsFilled() rather than against the raw job count,
+     * because a city can have more posts than workers AND unemployment at the
+     * same time - a mine with nobody willing to take the shift does not employ
+     * the shop assistant it could not hire either. The fill rate already
+     * allocates the workforce across the posts; this is whatever it could not
+     * place.
+     *
+     * Lives here rather than at the two screens that show it. The wage bill was
+     * once computed in two places from a separately-sampled fill rate and the
+     * copies disagreed, which is how a reloaded city came to tax a different
+     * payroll from the live one; one definition, and it cannot happen again.
+     */
+    public int getUnemployed(){
+        return Math.max(0, workforce - getJobsFilled());
+    }
+
+    /** Unemployed as a share of everyone who could work, 0-1. */
+    public double getUnemploymentRate(){
+        return workforce > 0 ? getUnemployed() / (double) workforce : 0;
     }
     
     public int[] getJobs(){

@@ -80,6 +80,35 @@ public class LongPlaytest {
        opinions - if one of these is false, something is broken.
        =================================================================== */
 
+    /** How far past the buildings' comfortable capacity the city was pulled. */
+    static double worstCrowding = 0;
+    static int worstCrowdingMonth = 0;
+
+    /*
+     * DOES THE DECLINE GATE EVER ACTUALLY OPEN?
+     *
+     * Jerus's rule is that people only leave once a pay tier has been shrinking
+     * for twelve CONSECUTIVE months or has gone to zero. Twelve consecutive
+     * anythings is a strong condition in a noisy series - one good month resets
+     * the count - so it is entirely possible the gate never opens in four
+     * thousand months, which would make out-migration a mechanic that exists
+     * only in the harness. That is worth knowing rather than assuming, in either
+     * direction, so it is counted.
+     */
+    /*
+     * Unemployment, watched rather than asserted. It is a balance figure, not an
+     * invariant - but it is the figure that silently went from 11% to 23% when
+     * the workforce became the actual adults and `residents per job` stayed a
+     * constant, and nothing noticed for a batch. Now it is printed.
+     */
+    static double worstUnemployment = 0;
+    static double lastUnemployment = 0;
+
+    static int monthsAnyTierDeclining = 0;
+    static int monthsPeopleLeft = 0;
+    static double totalDepartures = 0;
+    static double totalArrivals = 0;
+
     static void audit(Game g) {
 
         int month = g.getMonth();
@@ -130,12 +159,48 @@ public class LongPlaytest {
                     String.format("%.2f", e.getNationalAccounts().getAnnualGdp()));
         }
 
-        // updatePop() caps population at household capacity, so exceeding it
-        // means somebody is housing people in buildings that do not exist.
-        if (p.getPopulation() > b.getTotalHouseCapacity()) {
-            flag(month, "more residents than housing",
-                    p.getPopulation() + " in " + b.getTotalHouseCapacity());
+        /*
+         * NOBODY IS HOMELESS. This used to read "more residents than housing",
+         * comparing the population against household CAPACITY - correct while
+         * updatePop() capped the one at the other, and meaningless the moment
+         * migration replaced that cap. A city that is full but hiring is now
+         * supposed to keep taking people; they crowd, per Jerus, and capacity is
+         * a comfort figure rather than a wall.
+         *
+         * What is still a wall is FRONT DOORS. FamilyModel crowds households
+         * until they fit - flatshares first, then doubling up - and migration is
+         * damped to zero at the point those valves run out. If households ever
+         * outnumber homes after that squeeze, one of those two mechanisms has
+         * failed and somebody in this city is sleeping outside.
+         *
+         * A whole household of slack is allowed for rounding: the pyramid holds
+         * fractions of people and the homes are integers.
+         */
+        double homesNeeded = g.getFamilies().homesNeeded();
+        if (homesNeeded > b.getTotalHomes() + 1) {
+            flag(month, "households with no home",
+                    String.format("%.0f households, %d homes",
+                            homesNeeded, b.getTotalHomes()));
         }
+
+        // Worth watching even though it is no longer a fault: how far past what
+        // the buildings comfortably hold the city has been pulled by its jobs.
+        if (b.getTotalHouseCapacity() > 0) {
+            double over = p.getPopulation() / (double) b.getTotalHouseCapacity();
+            if (over > worstCrowding) {
+                worstCrowding = over;
+                worstCrowdingMonth = month;
+            }
+        }
+
+        lastUnemployment = p.getUnemploymentRate();
+        if (lastUnemployment > worstUnemployment) worstUnemployment = lastUnemployment;
+
+        Migration mig = g.getMigration();
+        if (mig.decliningShare() > 0) monthsAnyTierDeclining++;
+        if (mig.getLastDepartures() > 0) monthsPeopleLeft++;
+        totalDepartures += mig.getLastDepartures();
+        totalArrivals += mig.getLastArrivals();
 
         if (p.getWorkforce() > p.getPopulation()) {
             flag(month, "more workers than residents",
@@ -804,6 +869,14 @@ public class LongPlaytest {
         out.println();
         out.println("  months a skip refused to run (treasury empty, stepped instead): "
                 + refusedSkips);
+        out.printf("  most crowded the city ever got: %.0f%% of what its buildings"
+                + " comfortably hold (month %d)%n", worstCrowding * 100, worstCrowdingMonth);
+        out.printf("  people who moved in: %,.0f   people who left: %,.0f%n",
+                totalArrivals, totalDepartures);
+        out.printf("  unemployment: %.1f%% at the end, worst %.1f%%%n",
+                lastUnemployment * 100, worstUnemployment * 100);
+        out.printf("  months with a pay tier in decline: %d   months anybody left: %d%n",
+                monthsAnyTierDeclining, monthsPeopleLeft);
 
         out.println("\n--- what the advisor tried, and what happened ---\n");
         refusals.entrySet().stream()

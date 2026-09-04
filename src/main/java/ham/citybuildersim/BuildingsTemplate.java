@@ -10,6 +10,18 @@ public class BuildingsTemplate {
     double cashCost;
     int constructionPoints;
     int capacity;
+
+    /**
+     * How many separate HOMES this building contains, each holding one household.
+     *
+     * Distinct from capacity, which is how many PEOPLE fit. A House is one home
+     * for up to four; a Studio block is eighty one-person homes; a Low-Rise is a
+     * hundred homes averaging two and a half. Zero for anything that is not
+     * residential, and zero for a residential building in an older data file -
+     * see BuildingManager.getTotalHomes(), which falls back rather than
+     * pretending a building with no dwellings declared houses nobody.
+     */
+    int dwellings;
     double upkeep;
     int constructionMaterials;
     int electricityConsumption;
@@ -187,6 +199,15 @@ public class BuildingsTemplate {
 
     public int getConstructionPoints() {
         return constructionPoints;
+    }
+
+    public int getDwellings() {
+        return dwellings;
+    }
+
+    public BuildingsTemplate setDwellings(int dwellings) {
+        this.dwellings = dwellings;
+        return this;
     }
 
     public int getCapacity() {
