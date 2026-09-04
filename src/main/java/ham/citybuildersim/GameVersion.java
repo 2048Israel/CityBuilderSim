@@ -44,8 +44,15 @@ public final class GameVersion {
      *     capacity and road load are both pure functions of the building stock.
      * 6 - the land office's listing, iron deposits and reserves, the ore price,
      *     the mining sector's books, and the construction subsidy
+     * 7 - parcels carry a DEPOSIT COUNT, so the listing is five fields per plot
+     *     behind a marker instead of four. Reading downward is unaffected - a
+     *     format-6 listing still loads, with any ore counting as one site, which
+     *     is exactly what it meant. Upward is what this number is for: a build
+     *     that only knows four-wide rows sees a length that divides by neither
+     *     shape, throws the whole listing away, and silently hands the player
+     *     ten new plots in place of the tract they were saving up for.
      */
-    public static final int SAVE_FORMAT = 6;
+    public static final int SAVE_FORMAT = 7;
 
     public static final String NAME = "CityBuilderSim";
 

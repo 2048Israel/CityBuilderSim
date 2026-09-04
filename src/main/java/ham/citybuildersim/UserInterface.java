@@ -634,6 +634,10 @@ public class UserInterface extends Application {
                 String.format("Market rate:            $%.2f /sq ft",
                         land.getAcquisitionCostPerSqFt() * 1000),
                 "  (rises with the size of the city - land, and people)",
+                String.format("Smallest plot sold:     %.0f block%s",
+                        land.getMarket().getMinBlocks(),
+                        land.getMarket().getMinBlocks() == 1 ? "" : "s"),
+                "  (the office stops splitting lots as the city grows)",
                 String.format("Iron deposits owned:    %d, %s tonnes in the ground",
                         land.getIronDeposits(),
                         formatter.format(land.getIronReserveTonnes())),
@@ -646,11 +650,17 @@ public class UserInterface extends Application {
 
             boolean affordable = parcel.getPrice() <= game.getCash();
 
+            // The SITE COUNT leads on a multi-deposit plot, because that is what
+            // decides how many mines it is worth. The tonnage is centuries deep
+            // either way, so it is the smaller of the two numbers in practice.
+            String ore = !parcel.hasIron() ? ""
+                    : parcel.getDeposits() > 1
+                        ? String.format("IRON x%d  %,.0fk t",
+                                parcel.getDeposits(), parcel.getIronTonnes() / 1000)
+                        : String.format("IRON %,.0fk t", parcel.getIronTonnes() / 1000);
+
             Label detail = monoLabel(String.format("%,10.0f sq ft  %5.1f blk   $%,10.0f  %s",
-                    parcel.getSizeSqFt(), parcel.getBlocks(), parcel.getPrice(),
-                    parcel.hasIron()
-                            ? String.format("IRON %,.0fk t", parcel.getIronTonnes() / 1000)
-                            : ""));
+                    parcel.getSizeSqFt(), parcel.getBlocks(), parcel.getPrice(), ore));
             detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px; -fx-text-fill: "
                     + (parcel.hasIron() ? "#6a1b9a" : "#555555") + ";");
 

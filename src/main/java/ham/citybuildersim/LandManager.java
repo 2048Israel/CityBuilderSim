@@ -204,7 +204,11 @@ public class LandManager {
         landPurchasesThisMonth += parcel.getPrice();
 
         if (parcel.hasIron()) {
-            ironDeposits++;
+            // A parcel is worth as many mines as it has sites, which is not
+            // always one: this was `ironDeposits++`, so a tract holding four
+            // deposits bought the city exactly the same mining capacity as the
+            // smallest strike on the listing.
+            ironDeposits += parcel.getDeposits();
             ironReserveTonnes += parcel.getIronTonnes();
         }
 

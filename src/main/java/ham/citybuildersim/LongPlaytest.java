@@ -264,6 +264,44 @@ public class LongPlaytest {
         BuildingManager b = g.getBuildingManager();
         InfrastructureManager roads = g.getInfrastructureManager();
 
+        /*
+         * 0. Room to grow.
+         *
+         * WHY THIS RULE HAD TO EXIST. The advisor only ever bought land as a
+         * side effect of wanting to build something specific, so a city that was
+         * merely FULL asked for nothing: every rule below is phrased as "is
+         * something short", and running out of ground is not short of anything
+         * yet. Traced month by month, the city ran itself down to 8,000 spare
+         * square feet with $106M in the bank, sat there while private investment
+         * had nowhere to go, and then the construction sector - with nothing
+         * left to build - shed itself from 2,900 capacity to 100 over four
+         * months, taking half the jobs with it.
+         *
+         * That collapse is NOT new. It happens identically under the old parcel
+         * sizes, at the same months, to the same depth. What changed is that the
+         * city used to blunder into enough surplus land to recover and now does
+         * not, which makes this a fixture that was always wrong and only
+         * sometimes lucky.
+         *
+         * A player watching their city suffocate at 98% with a full treasury
+         * buys land. That is the entire reason the land listing exists.
+         */
+        LandManager land = g.getLandManager();
+        double utilisation = (land.getOwnedSqFt() > 0)
+                ? land.getAllocatedSqFt() / land.getOwnedSqFt() : 1;
+
+        if (utilisation > .90) {
+            // Best value per square foot, not cheapest - a city buying room to
+            // grow wants the most ground per dollar, and the price of land is
+            // driven by how much you already own, so a scrappy purchase costs
+            // nearly as much in future pricing as a good one.
+            LandParcel room = land.getMarket().bestValue();
+            if (room != null && room.getPrice() < g.getCash() * .30
+                    && g.buyLandParcel(room.getId())) {
+                return "bought room to grow";
+            }
+        }
+
         // 1. Keep the lights on. A brownout throttles everything.
         if (g.getEnergyRatio() < .999 && qty(g, "Coal Power Plant") < 6) {
             if (build(g, "Coal Power Plant", 1)) return "power plant";
@@ -297,25 +335,46 @@ public class LongPlaytest {
             if (build(g, "Food Processing Plant", 1)) return "food plant";
         }
 
-        // 7. Builders, so the queue does not become the constraint...
-        if (b.getTotalConstructionCapacity() < 1500) {
-            if (build(g, "Construction Depot", 1)) return "depot";
-        }
-
         /*
-         * ...and pay to keep them.
+         * 7. Builders, and the retainer that keeps them - IN THAT ORDER, and
+         *    without the retainer costing a move.
          *
-         * The single most expensive lesson of the last playtest: buying depots
-         * and then letting the sector scrap them in the next lull cost the city
-         * everything it had just gained, 187 times over. The retainer is set
-         * against the capacity actually standing, so it grows with the sector
-         * rather than being a number picked once.
+         * The single most expensive lesson of the previous playtest: buying
+         * depots and then letting the sector scrap them in the next lull cost
+         * the city everything it had just gained, 187 times over. The fixture
+         * learned that and then implemented it the wrong way round, which cost
+         * a second playtest.
+         *
+         * TWO FAULTS, AND THEY COMPOUNDED.
+         *
+         * The retainer sat BELOW the depot rule and returned. So while capacity
+         * was under 1,500 the advisor said "depot" on every move it had, the
+         * retainer line was never reached, and the depots it had just bought
+         * shed in the next lull - which kept capacity under 1,500, which kept
+         * the advisor on the depot rule. A city that fell to 100 capacity could
+         * never climb out: three moves buy three depots, +400 each, and 100+1200
+         * is still short of the threshold it needs to clear to reach any rule
+         * below it. Observed: 160 depots bought across 4,000 months, capacity
+         * pinned at 1,300, population frozen at 1,118 for three centuries with
+         * $100M in the bank.
+         *
+         * And the retainer was scaled to the capacity STANDING, so exactly when
+         * the sector had collapsed - and needed paying to come back - it offered
+         * 100 x .06 = six dollars. It is scaled to the capacity the city is
+         * trying to have now.
+         *
+         * Setting it no longer returns, because paying a retainer is not a
+         * month's work. It is a decision you make while doing something else.
          */
-        double wantedSubsidy = Math.min(b.getTotalConstructionCapacity() * .06,
+        double wantedCapacity = Math.max(b.getTotalConstructionCapacity(), 1500);
+        double wantedSubsidy = Math.min(wantedCapacity * .06,
                 Math.max(0, g.getCash()) * .02);
         if (wantedSubsidy > g.getConstructionSubsidy() * 1.25) {
             g.setConstructionSubsidy(wantedSubsidy);
-            return "subsidy";
+        }
+
+        if (b.getTotalConstructionCapacity() < 1500) {
+            if (build(g, "Construction Depot", 1)) return "depot";
         }
 
         // 8. Ore. A deposit is the one thing the private sector cannot buy for
