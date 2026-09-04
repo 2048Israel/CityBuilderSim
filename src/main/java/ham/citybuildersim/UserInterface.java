@@ -2206,6 +2206,23 @@ public class UserInterface extends Application {
         box.setAlignment(Pos.CENTER_LEFT);
         box.setStyle("-fx-padding: 14 0 0 0;");
 
+        /*
+         * ...and hug the content, so the box can be centred by whatever holds it.
+         *
+         * A VBox child stretches to its parent's full width by default. Combined
+         * with CENTER_LEFT above, that put every row hard against the left edge
+         * of whatever pane the section landed in - invisible inside the report
+         * columns, which are pref-sized already, and glaring on the construction
+         * shedding banner, which is added straight to the centred root menu. It
+         * read as detached from the menu because it was the only thing on the
+         * screen not lining up with it.
+         *
+         * Fixed here rather than at the banner so any other section added
+         * directly to a pane gets it too. Sections inside a pref-sized column are
+         * unaffected: they were already only as wide as their widest row.
+         */
+        box.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+
         Label headingLabel = new Label(heading);
         headingLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;");
         box.getChildren().add(headingLabel);
