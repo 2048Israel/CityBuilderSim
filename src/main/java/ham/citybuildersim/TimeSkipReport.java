@@ -68,11 +68,22 @@ public class TimeSkipReport {
     /* ----------------------------- episodes ----------------------------- */
     private int monthsShortOfPower;
     private int monthsShortOfWater;
+
+    /**
+     * Months the road network could not carry the traffic on it.
+     *
+     * Counted for the same reason as the two above, and more urgently: power
+     * and water fail loudly, all at once, and a player notices. Congestion
+     * arrives one building at a time and shows up only as growth that quietly
+     * stopped paying - which is exactly the thing a forty-month skip hides.
+     */
+    private int monthsCongested;
     private int monthsOutOfLand;
     private int monthsHouseholdsShort;
     private int monthsNothingBuilt;
 
     private double worstEnergyRatio = 1;
+    private double worstRoadRatio = 1;
     private int peakPopulation;
 
     public void beginSkip(int requested) {
@@ -82,10 +93,12 @@ public class TimeSkipReport {
 
         monthsShortOfPower = 0;
         monthsShortOfWater = 0;
+        monthsCongested = 0;
         monthsOutOfLand = 0;
         monthsHouseholdsShort = 0;
         monthsNothingBuilt = 0;
         worstEnergyRatio = 1;
+        worstRoadRatio = 1;
         peakPopulation = 0;
 
         before = null;
@@ -151,11 +164,22 @@ public class TimeSkipReport {
     public void sampleMonth(double energyRatio, double waterRatio,
                             double landAvailableSqFt, boolean householdsShort,
                             boolean anythingUnderConstruction, int population) {
+        sampleMonth(energyRatio, waterRatio, 1, landAvailableSqFt, householdsShort,
+                anythingUnderConstruction, population);
+    }
+
+    /** @param roadRatio what congestion let the city actually get done that month. */
+    public void sampleMonth(double energyRatio, double waterRatio, double roadRatio,
+                            double landAvailableSqFt, boolean householdsShort,
+                            boolean anythingUnderConstruction, int population) {
 
         completed++;
 
         if (energyRatio < .99) monthsShortOfPower++;
         if (waterRatio < .99)  monthsShortOfWater++;
+        if (roadRatio < .99)   monthsCongested++;
+
+        worstRoadRatio = Math.min(worstRoadRatio, roadRatio);
         if (landAvailableSqFt <= 0) monthsOutOfLand++;
         if (householdsShort) monthsHouseholdsShort++;
         if (!anythingUnderConstruction) monthsNothingBuilt++;
@@ -293,6 +317,8 @@ public class TimeSkipReport {
 
     public int getMonthsShortOfPower()     { return monthsShortOfPower; }
     public int getMonthsShortOfWater()     { return monthsShortOfWater; }
+    public int getMonthsCongested()        { return monthsCongested; }
+    public double getWorstRoadRatio()      { return worstRoadRatio; }
     public int getMonthsOutOfLand()        { return monthsOutOfLand; }
     public int getMonthsHouseholdsShort()  { return monthsHouseholdsShort; }
     public int getMonthsNothingBuilt()     { return monthsNothingBuilt; }
@@ -344,6 +370,13 @@ public class TimeSkipReport {
         if (monthsShortOfWater > 0) {
             lines.add("Short of water for " + monthsShortOfWater
                     + (monthsShortOfWater == 1 ? " month." : " months."));
+        }
+
+        if (monthsCongested > 0) {
+            lines.add(String.format(
+                    "Traffic was over capacity for %d month%s, down to %.0f%% throughput.",
+                    monthsCongested, monthsCongested == 1 ? "" : "s",
+                    worstRoadRatio * 100));
         }
 
         if (getBuildingsLost() > 0) {

@@ -55,10 +55,11 @@ public class BusinessDebtManager {
     public static final String INDUSTRY = "Industry";
     public static final String CONSTRUCTION = "Construction";
     public static final String HEAVY_INDUSTRY = "Heavy Industry";
+    public static final String MINING = "Mining";
 
     /** Every set of books that can borrow. Add a sector here and it just works. */
     public static final String[] SECTORS =
-            { RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY };
+            { RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING };
 
     /** Floor over the government rate. Nobody borrows at sovereign. */
     private static final double MIN_SPREAD = .01;
@@ -383,6 +384,28 @@ public class BusinessDebtManager {
 
     public int getRestructureCount(String sector) {
         return restructures.getOrDefault(sector, 0);
+    }
+
+    /**
+     * Puts the write-off history back on load.
+     *
+     * Per sector, because that is how it is kept and how the credit screen
+     * reads it. This is a record of money that was destroyed - a city that
+     * forgets it on every load reads as having a cleaner credit history than it
+     * has, which is the one direction this figure must never move by accident.
+     */
+    public void restoreWriteOffs(java.util.Map<String, Double> totals) {
+        writtenOffTotal.clear();
+        if (totals == null) return;
+        for (java.util.Map.Entry<String, Double> e : totals.entrySet()) {
+            if (e.getKey() != null && e.getValue() != null) {
+                writtenOffTotal.put(e.getKey(), e.getValue());
+            }
+        }
+    }
+
+    public java.util.Map<String, Double> getWriteOffTotals() {
+        return new LinkedHashMap<>(writtenOffTotal);
     }
 
     public double getTotalWrittenOff() {

@@ -22,6 +22,16 @@ public class BuildingsTemplate {
      * land before the building can go up, whoever is paying for it.
      */
     double landSqFt;
+
+    /**
+     * Trips this building puts on the road network every month.
+     *
+     * The same shape as electricityConsumption and waterConsumption: a demand
+     * every building makes on a shared municipal capacity, whatever its
+     * category. Unlike those two it is not billed to anyone - nobody pays a
+     * road bill - so the only way it shows up is as congestion.
+     */
+    double roadLoad;
     int coverage;
     double production1;
     double production2;
@@ -130,6 +140,11 @@ public class BuildingsTemplate {
         return this;
     }
 
+    public BuildingsTemplate setRoadLoad(double roadLoad) {
+        this.roadLoad = roadLoad;
+        return this;
+    }
+
     public BuildingsTemplate setCoverage(int coverage) {
         this.coverage = coverage;
         return this;
@@ -196,6 +211,10 @@ public class BuildingsTemplate {
 
     public double getLandSqFt() {
         return landSqFt;
+    }
+
+    public double getRoadLoad() {
+        return roadLoad;
     }
 
     public int getCoverage() {

@@ -10,14 +10,20 @@ public class BuildingsStacks {
     private int quantity;
     private int underConstruction;
     private double constructionProgress;
-    private boolean ifUnderConstruction;
     private int constructionMaterialCost;
 
+    /**
+     * @param initialQuantity buildings that already exist, finished and standing
+     *
+     * The parameter used to be accepted and then thrown away - the body assigned
+     * quantity = 0 regardless. Every caller passes 0, so honouring it changes
+     * nothing today; the point is that the next one to pass 5 will get 5 rather
+     * than silently losing five buildings.
+     */
     public BuildingsStacks(BuildingsTemplate template, int initialQuantity) {
         this.template = template;
-        this.quantity = 0;
+        this.quantity = Math.max(0, initialQuantity);
         this.underConstruction = 0;
-
     }
 
     public void startConstruction(int n) {
@@ -56,7 +62,27 @@ public class BuildingsStacks {
 
         // If there are still buildings under construction, calculate months to finish
         if (underConstruction > 0) {
-            double monthsLeft = Math.ceil((underConstruction * template.getConstructionPoints() - remainingOutput) / constructionOutput);
+
+            /*
+             * constructionOutput can genuinely be zero, and dividing by it used
+             * to print "2147483647 month(s)" - (int) of positive infinity.
+             *
+             * It got easier to reach with every pass. The site's share is the
+             * city's construction capacity scaled by the sector's labour fill
+             * rate and now by road throughput as well, and either of those can
+             * round the whole thing to nothing: a city whose builders have no
+             * staff, or one so congested that nothing reaches the site, really
+             * is making no progress. "Stalled" is the honest word for that, and
+             * it tells the player something a nonsense number does not.
+             */
+            if (constructionOutput <= 0) {
+                System.out.println(" Stalled - no construction capacity.");
+                return;
+            }
+
+            double monthsLeft = Math.ceil(
+                    (underConstruction * template.getConstructionPoints() - remainingOutput)
+                            / constructionOutput);
             System.out.println(" " + (int) monthsLeft + " month(s).");
         }
     }
@@ -96,10 +122,10 @@ public class BuildingsStacks {
     }
 
     public boolean getIfUnderConstruction() {
-        if (underConstruction > 0) {
-            return ifUnderConstruction = true;
-        }
-        return ifUnderConstruction = false;
+        // Was a getter that ASSIGNED a field on every read, which made an
+        // innocuous-looking call a mutation. The field it maintained was never
+        // read anywhere else, so it is gone; this answers the question directly.
+        return underConstruction > 0;
     }
 
     public int getConstructionMaterialCost() {

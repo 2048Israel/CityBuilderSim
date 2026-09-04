@@ -10,6 +10,7 @@ public class ServicesManager {
 
     private final UtilitiesHandler utilitiesHandler;
     private final ConstructionHandler constructionHandler;
+    private final InfrastructureManager infrastructureManager;
 
     // universal
     private final double[] fillRate = new double[11];
@@ -28,6 +29,7 @@ public class ServicesManager {
         this.buildingManager = buildingManager;
         utilitiesHandler = new UtilitiesHandler();
         constructionHandler = new ConstructionHandler();
+        infrastructureManager = new InfrastructureManager();
     }
 
     // ===============================
@@ -86,6 +88,8 @@ public class ServicesManager {
                 + buildingManager.getTotalByCategoryDouble(
                         BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getWaterConsumption));
 
+        updateInfrastructure();
+
         // construction
         updateByCategoryHandlerDouble(
                 BuildingType.CONSTRUCTION,
@@ -96,6 +100,46 @@ public class ServicesManager {
                 BuildingType.CONSTRUCTION,
                 constructionHandler::setConstructionMaterialsProduction,
                 BuildingsTemplate::getProduction2);
+    }
+
+    /**
+     * Recomputes the road network from what is standing right now.
+     *
+     * Capacity comes from the INFRASTRUCTURE buildings, load from every building
+     * in the city - the same whole-city sweep the power draw uses, and for the
+     * same reason: a house generates traffic exactly as it draws current,
+     * whoever owns it.
+     *
+     * Both read the standing stock only, so a road still under construction
+     * carries nothing and a factory still under construction sends no trucks.
+     * You cannot relieve congestion by ordering a road, only by finishing one.
+     *
+     * PUBLIC, AND CALLED TWICE A MONTH ON PURPOSE
+     *
+     * This is a pure function of the building stock and holds no history, which
+     * makes it the one piece of derived state that can safely be recomputed at
+     * any point - and it has to be, because the economy reads it mid-month,
+     * after construction has completed but before updateServices() runs.
+     *
+     * Leaving it to the end-of-month sweep alone cost a round trip: the live
+     * game ran a month against the network as it stood before that month's
+     * buildings opened, while a reloaded save recomputed it from the stock the
+     * month ENDED on. Same city, two different sales-tax figures, and the save
+     * check caught it as a $0.51 drift in next month's income. Energy and water
+     * have the same one-month lag and it has never shown, because it only
+     * matters once a ratio is actually below 1 - the reason a sector with
+     * nothing in it proves nothing about that sector.
+     */
+    public void updateInfrastructure() {
+
+        updateByCategoryHandlerDouble(
+                BuildingType.INFRASTRUCTURE,
+                infrastructureManager::setBuiltCapacity,
+                BuildingsTemplate::getCapacity);
+
+        updateHandlerDouble(
+                infrastructureManager::setLoad,
+                BuildingsTemplate::getRoadLoad);
     }
 
     private void updateLabor() {
@@ -161,12 +205,27 @@ public class ServicesManager {
         return utilitiesHandler;
     }
 
+    public InfrastructureManager getInfrastructureManager() {
+        return infrastructureManager;
+    }
+
     public double getEnergyRatio() {
         return utilitiesHandler.getEnergyRatio();
     }
 
     public double getWaterRatio() {
         return utilitiesHandler.getWaterRatio();
+    }
+
+    /**
+     * What congestion lets the city actually get done, 0.35 to 1.
+     *
+     * Sits alongside getEnergyRatio() and getWaterRatio() deliberately: three
+     * municipal capacities, three throttles on the same private activity, all
+     * applied at the same point in the month.
+     */
+    public double getRoadRatio() {
+        return infrastructureManager.getThroughputRatio();
     }
 
     /**

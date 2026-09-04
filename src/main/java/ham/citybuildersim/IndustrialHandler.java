@@ -77,6 +77,7 @@ public class IndustrialHandler {
     private double rElectricityCost;
     private double rWaterCost;
     private double rWaterRatio;
+    private double rRoadRatio;
     private double rOperatingCost;
     private double rOperatingIncome;
     private double rTaxIncome;
@@ -92,6 +93,37 @@ public class IndustrialHandler {
     private double waterRatio = 1;
     private double pricePerWaterUnit;
     private double water;
+
+    /**
+     * How much of its trade congestion lets it actually do.
+     *
+     * A third throttle beside energyRatio and waterRatio, and it multiplies with
+     * them rather than replacing them: a gridlocked city in a brownout is worse
+     * off than either alone. Defaults to 1 so a handler nobody tells about roads
+     * behaves exactly as it did before they existed.
+     */
+    private double roadRatio = 1;
+
+    /* ------------------------- the ratio basis -------------------------
+       What the month was actually TRADED at, which is not always what the
+       city looks like by the time anyone reads the report.
+
+       Same problem as storeFillBasis and the same answer. A month's income
+       statement runs at the START of the month, off the utilisation figures
+       the previous month left behind; simulateMonth() then moves them. Save
+       after that and the live game's report and a reloaded game's recompute
+       disagree - the reload prices the month at ratios it was never traded
+       at. It showed up the day roads arrived, as $0.51 of income appearing
+       out of a reload, because energy and water are 1 in almost every city
+       and roads are the first of the three that is routinely below it.
+
+       Carried in the save for the same reason the property-tax charge is:
+       it is a fact about a month, not a function of the state that month
+       ended in.
+       ------------------------------------------------------------------- */
+    private double bEnergyRatio = 1;
+    private double bWaterRatio = 1;
+    private double bRoadRatio = 1;
     
     //temporary variables
     private int productsSoldCopy;
@@ -124,7 +156,8 @@ public class IndustrialHandler {
      * month began with is what it ended with plus everything that left, and both
      * of those numbers are already here.
      */
-    public void restoreMonthReport(double demand, int sold, int imported) {
+    public void restoreMonthReport(double demand, int sold, int imported,
+                                   double energyBasis, double waterBasis, double roadBasis) {
         /*
          * Demand is a flow too, and a second-hand one: it is set from what the
          * shops actually bought from the mills last month
@@ -135,7 +168,8 @@ public class IndustrialHandler {
         this.foodDemand = demand;
         this.productsSoldCopy = sold;
         this.productsImportedCopy = imported;
-        computeMonthlyReport(foodInventory + sold + imported);
+        computeMonthlyReport(foodInventory + sold + imported,
+                energyBasis, waterBasis, roadBasis);
     }
 
     public void updateFinalIndustrialHandler(){
@@ -155,6 +189,7 @@ public class IndustrialHandler {
         rAverageFill = 0;
         rEnergyRatio = 0;
         rWaterRatio = 0;
+        rRoadRatio = 0;
         rInterestExpense = 0;
         rPropertyTaxExpense = 0;
         rOperatingIncome = 0;
@@ -181,7 +216,7 @@ public class IndustrialHandler {
 
     /** This month's expected output: base capacity scaled by labour and power. */
     public double getMonthlyOutput() {
-        return foodProduction * averageIndustrialFill * energyRatio * waterRatio;
+        return foodProduction * averageIndustrialFill * energyRatio * waterRatio * roadRatio;
     }
 
     public double getReportCostPerUnit() { return rCostPerUnit; }
@@ -194,7 +229,8 @@ public class IndustrialHandler {
      */
     public double getCostPerUnit() {
 
-        double output = foodProduction * averageIndustrialFill * energyRatio * waterRatio;
+        double output = foodProduction * averageIndustrialFill
+                * energyRatio * waterRatio * roadRatio;
         if (output <= 0) {
             return Double.MAX_VALUE;      // producing nothing - any sale is a loss
         }
@@ -262,6 +298,9 @@ public class IndustrialHandler {
     public void setEnergyRatio(double ratio){
         this.energyRatio = ratio;
     }
+    public void setRoadRatio(double ratio){
+        this.roadRatio = ratio;
+    }
     public void setPricePerWatt(double price){
         this.pricePerWatt = price;
     }
@@ -304,17 +343,39 @@ public class IndustrialHandler {
         }
     }
     //Industrial Methods
+    /**
+     * Runs the month's production into the warehouse.
+     *
+     * NOTE: this used to scale foodProduction IN PLACE - four compound
+     * assignments straight onto the field - and that was a bug hiding behind a
+     * multiplication by one.
+     *
+     * foodProduction means "what the mills could make in a month", and every
+     * other reader treats it that way: getMonthlyOutput(), getCostPerUnit() and
+     * the report all take it and apply the staffing and utilisation ratios
+     * themselves. Scaling the field here left it holding last month's ACTUAL
+     * output instead, so the next statement - which runs before
+     * updateFoodProduction() resets it - applied the ratios to a number they
+     * had already been applied to. Every ratio was 1, so squaring them changed
+     * nothing and it sat there for the life of the project. Roads are the first
+     * throttle that is routinely below 1, and it showed up immediately: a city
+     * at 35% throughput reported 735 units made against the 2,100 it actually
+     * made, and a reloaded save disagreed with the game it came from.
+     *
+     * The output is a local now. The field means one thing all month.
+     */
     public void produceFood(){
-        foodProduction *= averageIndustrialFill;
-        foodProduction *= energyRatio;
-        foodProduction *= waterRatio;
-        
-        foodInventory += foodProduction;
-        foodInventory = Math.min(foodInventory,foodCapacity);
-       
-        
-        
-        
+
+        double output = foodProduction
+                * averageIndustrialFill * energyRatio * waterRatio * roadRatio;
+
+        // Cast written out rather than left to the compound assignment. The
+        // value is the same - foodInventory is a whole number, so truncating
+        // the sum and truncating the addend agree - but four of the five lossy
+        // assignments -Xlint complains about were the four lines this replaced,
+        // and the last one should at least be deliberate.
+        foodInventory += (int) output;
+        foodInventory = Math.min(foodInventory, foodCapacity);
     }
     
     public void updateIndustrialWages(double[] wages, int[] jobs) {
@@ -404,11 +465,33 @@ public class IndustrialHandler {
         return netIncome;
     }
     
+    /** The rate the month is taxed at. Set before the statement runs. */
+    public void setTaxRate(double taxRate){
+        this.pTaxRate = taxRate;
+    }
+
+    /**
+     * What the city collects from industry this month.
+     *
+     * READS THE REPORT. It used to call getIndustrialIncome(), which recomputes
+     * the whole month from the live fields - and getIndustrialIncome() is not
+     * even a getter: it assigns productsSoldCopy and productsImportedCopy on
+     * its way through, so reading the city's tax revenue quietly rewrote two of
+     * industry's report figures.
+     *
+     * That is the same shape of bug as printCommercialInfo() banking cash, and
+     * it broke the save the moment the sectors' statements started being
+     * carried rather than rebuilt: the report said industry made money and this
+     * line recomputed it from a food price the load had re-derived, so a
+     * reloaded city collected 0 where the live one collected $89,347.
+     *
+     * rTaxIncome is what industry's own income statement deducts, so the city
+     * now collects exactly the figure the business paid - the same correction
+     * property tax needed, for the same reason.
+     */
     public double getIndustrialTaxIncome(double taxRate){
-        double totalIndustrialTax =0;
         pTaxRate = taxRate;
-        totalIndustrialTax += Math.max(getIndustrialIncome() * taxRate, 0);
-        return totalIndustrialTax;
+        return Math.max(rTaxIncome, 0);
     }
 
     public double getElectricityCost() {
@@ -441,6 +524,7 @@ public class IndustrialHandler {
     public double getReportAverageFill()    { return rAverageFill; }
     public double getReportEnergyRatio()    { return rEnergyRatio; }
     public double getReportWaterRatio()     { return rWaterRatio; }
+    public double getReportRoadRatio()      { return rRoadRatio; }
     public int getReportBaseProduction()    { return rBaseProduction; }
     public double getReportActualProduction(){ return rActualProduction; }
     public double getReportDemand()         { return rDemand; }
@@ -526,14 +610,26 @@ public class IndustrialHandler {
      * the instant it began.
      */
     public void computeMonthlyReport(int inventoryBasis) {
+        computeMonthlyReport(inventoryBasis, energyRatio, waterRatio, roadRatio);
+    }
+
+    /** @see CommercialHandler for what the ratio basis is and why it is carried. */
+    public void computeMonthlyReport(int inventoryBasis,
+                                     double energyBasis, double waterBasis, double roadBasis) {
+
+        bEnergyRatio = energyBasis;
+        bWaterRatio = waterBasis;
+        bRoadRatio = roadBasis;
 
         rFoodCapacity = foodCapacity;
         rFoodInventory = inventoryBasis;
         rAverageFill = averageIndustrialFill;
-        rEnergyRatio = energyRatio;
-        rWaterRatio = waterRatio;
+        rEnergyRatio = bEnergyRatio;
+        rWaterRatio = bWaterRatio;
+        rRoadRatio = bRoadRatio;
         rBaseProduction = foodProduction;
-        rActualProduction = foodProduction * averageIndustrialFill * energyRatio * waterRatio;
+        rActualProduction = foodProduction * averageIndustrialFill
+                * bEnergyRatio * bWaterRatio * bRoadRatio;
         rDemand = foodDemand;
 
         int productsSold = (int) Math.min(inventoryBasis, foodDemand);
@@ -551,7 +647,7 @@ public class IndustrialHandler {
         rGrossRevenue = productsSold * averageSellPrice;
 
         rElectricityCost = electricity * pricePerWatt;
-        rWaterCost = water * waterRatio * pricePerWaterUnit;
+        rWaterCost = water * bWaterRatio * pricePerWaterUnit;
 
         double industrialWage = 0;
         if (industrialWages != null) {
@@ -664,6 +760,7 @@ public class IndustrialHandler {
         System.out.printf("Labor Fill Rate:         %.1f%%%n", rAverageFill * 100);
         System.out.printf("Energy Efficiency:       %.1f%%%n", rEnergyRatio * 100);
         System.out.printf("Water Efficiency:        %.1f%%%n", rWaterRatio * 100);
+        System.out.printf("Road Throughput:         %.1f%%%n", rRoadRatio * 100);
 
         /* 2. Production Analysis */
         System.out.println("\nPRODUCTION ANALYSIS");
@@ -714,5 +811,103 @@ public class IndustrialHandler {
     static {
         formatter.setMaximumFractionDigits(2);
         formatter.setMinimumFractionDigits(0);
+    }
+
+    /* ======================= THE MONTH'S REPORT ========================
+
+       Every r-field, as one array, so a save can carry the statement itself
+       rather than the ingredients for rebuilding it.
+
+       WHY THIS EXISTS
+
+       A month's income statement runs at the START of the month, against what
+       the previous month left behind. The month then moves those inputs, and a
+       reloaded save used to rebuild the statement from the state the save was
+       taken IN - a different city from the one the statement described.
+
+       The project closed that one input at a time: the store fill basis, then
+       the imports, then the property-tax and interest charges, then the three
+       utilisation ratios. Each fix uncovered the next term underneath - the
+       food price was next, with payroll and the electricity draw behind it.
+       Enumerating inputs is a losing game when the report has thirty of them.
+
+       So the report is carried instead. A reloaded city now agrees with the one
+       it came from by construction rather than by list-making.
+
+       ORDER IS THE FORMAT. These two methods must stay mirror images, and new
+       fields go on the END - the array is positional, and inserting one in the
+       middle would silently shift every figure after it into the wrong line of
+       a player's income statement. A saved array of a different length is
+       refused whole rather than padded, because a partially restored statement
+       is worse than an honestly recomputed one; the caller falls back to
+       recomputing, which is what saves written before this did anyway.
+       ================================================================== */
+
+    public double[] getReportState() {
+        return new double[] {
+            rInterestExpense,
+            rPropertyTaxExpense,
+            rNetIncome,
+            rGrossRevenue,
+            rFoodCapacity,
+            rFoodInventory,
+            rAverageFill,
+            rEnergyRatio,
+            rBaseProduction,
+            rActualProduction,
+            rDemand,
+            rUnitsSold,
+            rAverageSellPrice,
+            rPayroll,
+            rElectricityCost,
+            rWaterCost,
+            rWaterRatio,
+            rRoadRatio,
+            rOperatingCost,
+            rOperatingIncome,
+            rTaxIncome,
+            rCostPerUnit,
+            rOffered,
+            rWithheld,
+        };
+    }
+
+    /**
+     * Puts a saved statement back, exactly as it was written.
+     *
+     * @return false if the array is not this build's shape, in which case
+     *         nothing was changed and the caller should recompute instead
+     */
+    public boolean restoreReportState(double[] r) {
+
+        if (r == null || r.length != 24) return false;
+
+        int i = 0;
+        rInterestExpense = r[i++];
+        rPropertyTaxExpense = r[i++];
+        rNetIncome = r[i++];
+        rGrossRevenue = r[i++];
+        rFoodCapacity = (int) r[i++];
+        rFoodInventory = (int) r[i++];
+        rAverageFill = r[i++];
+        rEnergyRatio = r[i++];
+        rBaseProduction = (int) r[i++];
+        rActualProduction = r[i++];
+        rDemand = r[i++];
+        rUnitsSold = (int) r[i++];
+        rAverageSellPrice = r[i++];
+        rPayroll = r[i++];
+        rElectricityCost = r[i++];
+        rWaterCost = r[i++];
+        rWaterRatio = r[i++];
+        rRoadRatio = r[i++];
+        rOperatingCost = r[i++];
+        rOperatingIncome = r[i++];
+        rTaxIncome = r[i++];
+        rCostPerUnit = r[i++];
+        rOffered = r[i++];
+        rWithheld = r[i++];
+
+        return true;
     }
 }

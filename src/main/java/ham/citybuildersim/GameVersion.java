@@ -39,8 +39,13 @@ public final class GameVersion {
      * 2 - land, and both tax rates
      * 3 - construction keyed by template id; the month's flows carried
      * 4 - numbered slots, names, and this stamp
+     * 5 - the month's income statements carried whole, plus the utilisation
+     *     they were written against. Roads needed nothing of their own: road
+     *     capacity and road load are both pure functions of the building stock.
+     * 6 - the land office's listing, iron deposits and reserves, the ore price,
+     *     the mining sector's books, and the construction subsidy
      */
-    public static final int SAVE_FORMAT = 4;
+    public static final int SAVE_FORMAT = 6;
 
     public static final String NAME = "CityBuilderSim";
 

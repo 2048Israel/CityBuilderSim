@@ -25,8 +25,32 @@ public enum BuildingType {
     HEAVY_INDUSTRY,
 
     ELECTRICITY,
-    WATER
-    
-    
-    
+    WATER,
+
+    /**
+     * The road network. Public works, not a business.
+     *
+     * APPENDED, NOT INSERTED - and it has to stay that way. Several saved arrays
+     * are indexed by BuildingType.ordinal() (the per-sector property tax and
+     * interest charges), so slipping a new constant in above an existing one
+     * would silently hand every old save's industrial tax bill to whoever now
+     * holds that ordinal. New categories go on the end, for the same reason
+     * building ids in buildings.json are permanent.
+     */
+    INFRASTRUCTURE,
+
+    /**
+     * Iron mines. Its own category because the ore has a price.
+     *
+     * The cheap version made a mine a HEAVY_INDUSTRY building so the mills just
+     * had a lower input cost - invisible, and no decision in it. Separate books
+     * mean the ore clears on a market between two sectors that need each other,
+     * which is the first thing in this economy that rewards building two
+     * different things near each other. See MiningHandler.
+     *
+     * On the END, like INFRASTRUCTURE and for the same reason: the saved
+     * per-sector tax and interest arrays are indexed by ordinal().
+     */
+    MINING
+
 }

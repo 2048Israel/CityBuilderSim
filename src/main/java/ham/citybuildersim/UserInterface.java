@@ -131,6 +131,15 @@ public class UserInterface extends Application {
         Label version = new Label(GameVersion.title());
         version.setStyle("-fx-font-size: 9px; -fx-text-fill: #9e9e9e; -fx-padding: 12 0 0 0;");
 
+        // Where the log is, in the one place everyone can find. A bug report
+        // that arrives with this file attached is worth ten that do not.
+        Label logLine = new Label(GameLog.file() == null
+                ? "(logging is not running)"
+                : "Log: " + GameLog.file());
+        logLine.setStyle("-fx-font-size: 9px; -fx-text-fill: #9e9e9e;");
+        logLine.setWrapText(true);
+        logLine.setMaxWidth(320);
+
         rootMenu.getChildren().addAll(
                 startNewGame,
                 resumeGame,
@@ -138,7 +147,8 @@ public class UserInterface extends Application {
                 saveGame,
                 settings,
                 quit,
-                version
+                version,
+                logLine
         );
 
         
@@ -162,8 +172,15 @@ public class UserInterface extends Application {
     /** One line describing what is in a slot, or that it is empty. */
     private String slotSummary(int slot) {
 
-        SaveHeader header = game.getGameFiles().readHeader(slot);
-        if (header == null) return "Empty";
+        GameFiles files = game.getGameFiles();
+
+        // Empty and unreadable are different things, and saying "Empty" for
+        // both was the bug: the button stayed enabled because the FILE existed,
+        // so clicking Load on a slot labelled Empty did nothing at all.
+        if (files.slotIsEmpty(slot)) return "Empty";
+
+        SaveHeader header = files.readHeader(slot);
+        if (header == null) return "Damaged - this file cannot be read";
 
         if (header.isFromNewerBuild()) {
             return "From a newer version (" + header.getGameVersion() + ")";
@@ -194,16 +211,22 @@ public class UserInterface extends Application {
         VBox row = new VBox(1);
         row.setAlignment(Pos.CENTER);
 
-        boolean empty = game.getGameFiles().slotIsEmpty(slot);
+        GameFiles files = game.getGameFiles();
+        boolean empty = files.slotIsEmpty(slot);
+        boolean broken = files.slotIsUnreadable(slot);
 
         Button pick = new Button(slotTitle(slot));
         pick.setMaxWidth(300);
-        pick.setDisable(disableEmpty && empty);
+
+        // On the LOAD list, a slot is clickable only if it can actually be
+        // loaded. A damaged file is not an empty slot and must not offer a
+        // button that silently does nothing.
+        pick.setDisable(disableEmpty && !files.slotIsLoadable(slot));
         pick.setOnAction(e -> onPick.accept(slot));
 
         Label detail = new Label(slotSummary(slot));
         detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
-                + (empty ? "#9e9e9e" : "#555555") + ";");
+                + (broken ? "#c62828" : empty ? "#9e9e9e" : "#555555") + ";");
 
         row.getChildren().addAll(pick, detail);
         return row;
@@ -420,9 +443,86 @@ public class UserInterface extends Application {
 
     rootMenu.getChildren().addAll(gameInfo, buildings, economy, population, nextMonth, simulateMultipleMonths, back);
 
+    /*
+     * The one thing that interrupts the main screen.
+     *
+     * Construction dismantling itself is the single most expensive thing that
+     * happens quietly in this game - it is what froze every city in the
+     * 4,000-month playtest at 660 people - and it happens inside a skip, where
+     * nothing is on screen at all. The fix exists and costs money, so the
+     * banner asks the question rather than just reporting the fact, and the
+     * button goes straight to the control.
+     */
+    if (game.isConstructionShedding()) {
+        rootMenu.getChildren().add(constructionSheddingBanner(this::showStartMenu));
+    }
+
     
 }
     
+    /**
+     * "Your builders are being laid off. Do you want to pay to keep them?"
+     *
+     * Shared by the main screen and the skip report, so the wording and the
+     * button are the same in both places - a player who sees it after a skip
+     * and a player who sees it on the main menu are being asked one question,
+     * not two.
+     *
+     * @param andThen where to go back to after the retainer is set, so the
+     *                banner does not dump the player somewhere they did not
+     *                come from
+     */
+    private VBox constructionSheddingBanner(Runnable andThen) {
+
+        double capacity = game.getBuildingManager().getTotalConstructionCapacity();
+        double covered = game.getSubsidisedCapacity();
+        double lost = game.getConstructionShedPoints();
+
+        VBox banner = criticalSection("[!] YOUR BUILDERS ARE BEING LAID OFF",
+                String.format("Construction sold %s points of capacity - it has no",
+                        formatter.format(lost)),
+                "orders, so it is losing money and shrinking to fit.",
+                "",
+                String.format("Capacity left:      %s pts", formatter.format(capacity)),
+                String.format("You are paying to keep: %s pts", formatter.format(covered)),
+                "",
+                "Everything you build runs through these crews. Once they are",
+                "gone, rebuilding them is the slowest thing in the game.");
+
+        ConstructionHandler ch = game.getServicesManager().getConstructionHandler();
+        double coverAll = capacity * ch.getStandingCostPerCapacity(capacity);
+
+        Button pay = new Button(String.format("Keep them all - $%s /month",
+                formatter.format(coverAll)));
+        pay.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
+        pay.setOnAction(e -> {
+            game.setConstructionSubsidy(coverAll);
+            game.acknowledgeConstructionShedding();
+            andThen.run();
+        });
+
+        Button manage = new Button("Set it myself");
+        manage.setOnAction(e -> {
+            game.acknowledgeConstructionShedding();
+            showConstructionInfoMenu();
+        });
+
+        Button dismiss = new Button("Let them go");
+        dismiss.setOnAction(e -> {
+            game.acknowledgeConstructionShedding();
+            andThen.run();
+        });
+
+        javafx.scene.layout.FlowPane actions = new javafx.scene.layout.FlowPane(8, 8);
+        actions.setAlignment(Pos.CENTER);
+        actions.setPrefWrapLength(340);
+        actions.getChildren().addAll(pay, manage, dismiss);
+        actions.setStyle("-fx-padding: 8 0 0 0;");
+
+        banner.getChildren().add(actions);
+        return banner;
+    }
+
     private void showBuildingsMenu() {
         clearMenu();
         
@@ -436,6 +536,7 @@ public class UserInterface extends Application {
         Button b3 = new Button("Industrial");
         Button b4 = new Button("Other");
         Button b5 = new Button("Land");
+        Button b6 = new Button("Infrastructure");
         Button b0 = new Button("Return to menu");
         
         b1.setOnAction(e-> {
@@ -445,7 +546,15 @@ public class UserInterface extends Application {
             handleAllBuildingMenus("Commercial Buildings",EnumSet.of(BuildingType.COMMERCIAL));
         });
         b3.setOnAction(e-> {
-            handleAllBuildingMenus("Industrial Buildings",EnumSet.of(BuildingType.INDUSTRIAL,BuildingType.HEAVY_INDUSTRY,BuildingType.CONSTRUCTION,BuildingType.ELECTRICITY,BuildingType.WATER));
+            handleAllBuildingMenus("Industrial Buildings",EnumSet.of(BuildingType.INDUSTRIAL,BuildingType.HEAVY_INDUSTRY,BuildingType.MINING,BuildingType.CONSTRUCTION,BuildingType.ELECTRICITY,BuildingType.WATER));
+        });
+
+        // Its own button rather than a line in Industrial, because roads are the
+        // one thing here the city builds for itself and gets no revenue from.
+        // A player looking for the fix to congestion should not have to find it
+        // filed under factories.
+        b6.setOnAction(e-> {
+            handleAllBuildingMenus("Infrastructure", EnumSet.of(BuildingType.INFRASTRUCTURE));
         });
 
         // NOTE: "Other" has no JavaFX screen yet (was buildingManager.displayAllBuildings()
@@ -463,7 +572,7 @@ public class UserInterface extends Application {
 
         
 
-        rootMenu.getChildren().addAll(gameInfo,b1,b2,b3,b4,b5,b0);
+        rootMenu.getChildren().addAll(gameInfo,b1,b2,b3,b6,b4,b5,b0);
 
         
     }
@@ -516,35 +625,62 @@ public class UserInterface extends Application {
         }
         column.getChildren().add(holding);
 
-        /* --------------------------- annexing --------------------------- */
-        double blockCost = land.getNextBlockCost();
-
-        column.getChildren().add(reportSection("BUYING",
-                String.format("Block size:             %s sq ft",
-                        formatter.format(LandManager.BLOCK_SQ_FT)),
-                String.format("Next block costs:       $%s", formatter.format(blockCost)),
-                String.format("...which is:            $%.2f /sq ft",
+        /* ------------------------- the listing ------------------------- */
+        //
+        // Ten plots, all different, some with ore under them. This replaced a
+        // button with a price on it, which was a slider rather than a decision:
+        // the price only ever went up, so the answer was always "now or later".
+        column.getChildren().add(reportSection("ON OFFER",
+                String.format("Market rate:            $%.2f /sq ft",
                         land.getAcquisitionCostPerSqFt() * 1000),
-                String.format("Blocks bought so far:   %,d", land.getBlocksPurchased()),
-                "  (each block makes the next 2% dearer - annexing outward)"));
+                "  (rises with the size of the city - land, and people)",
+                String.format("Iron deposits owned:    %d, %s tonnes in the ground",
+                        land.getIronDeposits(),
+                        formatter.format(land.getIronReserveTonnes())),
+                String.format("Mines on them:          %d", game.minesCommitted())));
 
+        VBox offers = new VBox(4);
+        offers.setStyle("-fx-padding: 6 0 0 0;");
+
+        for (LandParcel parcel : land.getListing()) {
+
+            boolean affordable = parcel.getPrice() <= game.getCash();
+
+            Label detail = monoLabel(String.format("%,10.0f sq ft  %5.1f blk   $%,10.0f  %s",
+                    parcel.getSizeSqFt(), parcel.getBlocks(), parcel.getPrice(),
+                    parcel.hasIron()
+                            ? String.format("IRON %,.0fk t", parcel.getIronTonnes() / 1000)
+                            : ""));
+            detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px; -fx-text-fill: "
+                    + (parcel.hasIron() ? "#6a1b9a" : "#555555") + ";");
+
+            Button buy = new Button("Buy");
+            buy.setDisable(!affordable);
+            buy.setOnAction(e -> {
+                game.buyLandParcel(parcel.getId());
+                showLandMenu();
+            });
+
+            javafx.scene.layout.HBox row = new javafx.scene.layout.HBox(8, buy, detail);
+            row.setAlignment(Pos.CENTER_LEFT);
+            offers.getChildren().add(row);
+        }
+        column.getChildren().add(offers);
+
+        // The old button, kept: sometimes a player just wants some land and
+        // does not want to read ten rows to get it.
         javafx.scene.layout.FlowPane buying = new javafx.scene.layout.FlowPane(8, 8);
         buying.setAlignment(Pos.CENTER);
         buying.setPrefWrapLength(340);
 
-        int[] blockCounts = {1, 5, 10};
-        for (int count : blockCounts) {
-            final int howMany = count;
-            Button buy = new Button("Buy " + count + (count == 1 ? " block" : " blocks"));
-            buy.setDisable(game.getCash() < blockCost);
-            buy.setOnAction(e -> {
-                // One at a time, because the price rises with each - and it
-                // stops when the treasury runs out rather than overdrawing.
-                for (int i = 0; i < howMany && game.buyLandBlock(); i++) { }
-                showLandMenu();
-            });
-            buying.getChildren().add(buy);
-        }
+        LandParcel cheapest = land.getMarket().cheapest();
+        Button quick = new Button("Buy the cheapest");
+        quick.setDisable(cheapest == null || cheapest.getPrice() > game.getCash());
+        quick.setOnAction(e -> {
+            game.buyLandBlock();
+            showLandMenu();
+        });
+        buying.getChildren().add(quick);
 
         /* --------------------------- selling --------------------------- */
         double price = land.getPricePerSqFt();
@@ -581,30 +717,17 @@ public class UserInterface extends Application {
                 formatter.format(land.getLandSalesThisMonth()))));
         column.getChildren().add(selling);
 
-        javafx.scene.layout.FlowPane pricing = new javafx.scene.layout.FlowPane(8, 8);
-        pricing.setAlignment(Pos.CENTER);
-        pricing.setPrefWrapLength(340);
-
-        // Dollars per square foot, converted to the internal thousands scale.
-        double[] steps = {-1, -.10, .10, 1};
-        for (double step : steps) {
-            final double delta = step / 1000;
-            Button button = new Button((step > 0 ? "+$" : "-$")
-                    + String.format("%.2f", Math.abs(step)));
-            button.setPrefWidth(72);
-            button.setOnAction(e -> {
-                land.setPricePerSqFt(land.getPricePerSqFt() + delta);
-                showLandMenu();
-            });
-            pricing.getChildren().add(button);
-        }
-
-        Button atCost = new Button("Match cost");
-        atCost.setOnAction(e -> {
-            land.setPricePerSqFt(land.getAcquisitionCostPerSqFt());
-            showLandMenu();
-        });
-        pricing.getChildren().add(atCost);
+        /*
+         * No buttons here any more.
+         *
+         * What businesses pay used to be a dial the player turned. It is a
+         * market now: supply against demand inside the city limits, so a city
+         * with empty blocks sells cheap and a full one sells dear. The way to
+         * make land cheap for your builders is to go and buy some, which is a
+         * better decision than a slider was.
+         */
+        selling.getChildren().add(monoLabel(String.format("%-24s%.0f%% full",
+                "Set by demand:", land.getUtilisation() * 100)));
 
         /* ------------------- who is waiting on land ------------------- */
         // Last month's decisions, not this instant's: the sectors only decide
@@ -641,14 +764,14 @@ public class UserInterface extends Application {
         scroll.setPrefHeight(420);
         scroll.setStyle("-fx-background-color:transparent;");
 
-        Label buyLabel = new Label("Annex more land");
-        Label priceLabel = new Label("Set your price per square foot");
+        // No price controls any more - what businesses pay is the market's, not
+        // the player's. What is left to do on this screen is buy ground.
+        Label buyLabel = new Label("Or take the cheapest thing on offer");
 
         Button back = new Button("Back");
         back.setOnAction(e -> showBuildingsMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, scroll,
-                buyLabel, buying, priceLabel, pricing, back);
+        rootMenu.getChildren().addAll(title, gameInfo, scroll, buyLabel, buying, back);
     }
 
     private void showEconomyMenu() {
@@ -991,6 +1114,8 @@ public class UserInterface extends Application {
                     showQuickDebtMenu(template, runningTotal[0], menuTitle, categories);
                 } else if (result == Game.BuildResult.NO_LAND) {
                     showNoLandMenu(template, runningTotal[0], menuTitle, categories);
+                } else if (result == Game.BuildResult.NO_DEPOSIT) {
+                    showNoDepositMenu(template, runningTotal[0], menuTitle, categories);
                 }
             }
         });
@@ -1010,6 +1135,47 @@ public class UserInterface extends Application {
      * no land only by annexing, and offering a T-Bill for a land shortage would
      * sell debt that cannot fix the problem.
      */
+    /**
+     * The city has the money, the land, and nothing to dig.
+     *
+     * Its own refusal for the same reason no-land has one: the answer is
+     * specific. A mine is not short of cash or short of space, it is short of
+     * ore, and the only thing that fixes that is a land parcel with iron under
+     * it. Sending the player to the funding screen would sell them a bond that
+     * cannot help.
+     */
+    private void showNoDepositMenu(BuildingsTemplate selected, int quantity,
+                                   String menuTitle, EnumSet<BuildingType> categories) {
+        clearMenu();
+
+        LandManager land = game.getLandManager();
+
+        Label title = new Label("NO IRON DEPOSIT");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox explanation = reportSection("WHY",
+                quantity + " x " + selected.getName() + " needs "
+                        + (game.minesCommitted() + quantity) + " deposit(s).",
+                "The city owns " + land.getIronDeposits()
+                        + ", with " + game.minesCommitted() + " already spoken for.",
+                "",
+                "A mine has to stand on ground with ore under it. Deposits come",
+                "with land: some parcels in the land office have iron, and they",
+                "cost more because of it.");
+
+        Label reserves = monoLabel(String.format(
+                "Ore still in the ground: %,.0f tonnes", land.getIronReserveTonnes()));
+        reserves.setStyle("-fx-font-family: 'Courier New'; -fx-padding: 6 0 0 0;");
+
+        Button toLand = new Button("Go to the Land Office");
+        toLand.setOnAction(e -> showLandMenu());
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
+
+        rootMenu.getChildren().addAll(title, explanation, reserves, toLand, back);
+    }
+
     private void showNoLandMenu(BuildingsTemplate selected, int quantity,
                                 String prevTitle, EnumSet<BuildingType> prevCats) {
         clearMenu();
@@ -1218,16 +1384,110 @@ public class UserInterface extends Application {
         // label was just stale. Relabeled to match what it actually shows.
         Button utility = new Button("Utility Services");
         Button heavy = new Button("Heavy Industry (Steel)");
+        Button mining = new Button("Mining (Iron Ore)");
         Button back = new Button("Back");
 
         commercial.setOnAction(e -> showCommercialInfoMenu());
         industrial.setOnAction(e -> showIndustrialInfoMenu());
         utility.setOnAction(e -> showUtilityInfoMenu());
         heavy.setOnAction(e -> showHeavyIndustryMenu());
+        mining.setOnAction(e -> showMiningMenu());
 
         back.setOnAction(e -> showSectorMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, commercial, industrial, utility, heavy, back);
+        rootMenu.getChildren().addAll(title, gameInfo, commercial, industrial,
+                utility, heavy, mining, back);
+    }
+
+    /**
+     * The mining books, and the ore market both sides trade on.
+     *
+     * The market is at the top because it is the only number that matters to
+     * either sector: where the ore clears inside its band decides whether the
+     * mines or the mills are taking the gain, and a player who cannot see it
+     * cannot tell why their steel is suddenly worth building.
+     */
+    private void showMiningMenu() {
+        clearMenu();
+
+        MiningHandler mh = game.getEconomyManager().getMiningHandler();
+        IronMarket ore = game.getIronMarket();
+        LandManager land = game.getLandManager();
+
+        VBox column = new VBox(0);
+
+        /* ---------------------------- the market ---------------------------- */
+        column.getChildren().add(sectionHeading("=== THE ORE MARKET ==="));
+
+        VBox band = reportSection("PRICE",
+                String.format("Local ore:              $%.2f /tonne", ore.getLocalPrice() * 1000),
+                String.format("  a mine could export at $%.2f - it will not sell below that",
+                        ore.getExportPrice() * 1000),
+                String.format("  a mill could import scrap at $%.2f - it will not pay above that",
+                        ore.getScrapPrice() * 1000),
+                "",
+                String.format("Mines can lift:         %s tonnes/mo", formatter.format(ore.getSupply())),
+                String.format("Mills want:             %s tonnes/mo", formatter.format(ore.getDemand())));
+
+        band.getChildren().add(statusLabel("Who is winning:",
+                ore.getPriceIndex() < .5, "THE MILLS", "THE MINES"));
+        column.getChildren().add(band);
+
+        /* --------------------------- the ground --------------------------- */
+        column.getChildren().add(reportSection("THE GROUND",
+                String.format("Deposits owned:         %d", land.getIronDeposits()),
+                String.format("Mines on them:          %d", game.minesCommitted()),
+                String.format("Ore remaining:          %s tonnes",
+                        formatter.format(land.getIronReserveTonnes())),
+                String.format("Lifted this month:      %s tonnes",
+                        formatter.format(mh.getReportOreLifted())),
+                "",
+                "Deposits come with land. Buy a parcel with iron under it in",
+                "the Land Office, and one deposit supports one mine."));
+
+        if (mh.getCapacityTonnes() <= 0) {
+            column.getChildren().add(reportSection("NO MINES YET",
+                    "A mine is the biggest employer in the game - 376 jobs, more",
+                    "than a food processing plant - and population here is capped",
+                    "at jobs times 2.25. One mine is worth about 850 residents to",
+                    "a city that can house them.",
+                    "",
+                    "It pays on its own, exporting ore. It pays considerably",
+                    "better next to a steel mill that wants the ore instead."));
+            showSectorReport("MINING", column, this::showPrivateSectorMenu);
+            return;
+        }
+
+        /* --------------------------- the books --------------------------- */
+        column.getChildren().add(sectionHeading("=== THE SECTOR ==="));
+
+        column.getChildren().add(reportSection("OUTPUT",
+                String.format("Capacity:               %s tonnes/mo",
+                        formatter.format(mh.getReportCapacity())),
+                String.format("Running at:             %.1f%%", mh.getReportOperatingRate() * 100),
+                String.format("Sold to local mills:    %s tonnes",
+                        formatter.format(mh.getReportOreSoldLocally())),
+                String.format("Exported:               %s tonnes",
+                        formatter.format(mh.getReportOreExported()))));
+
+        VBox statement = reportSection("INCOME STATEMENT",
+                String.format("Ore Sales:                       $%s",
+                        formatter.format(mh.getReportRevenue())),
+                String.format("Payroll:                        -$%s",
+                        formatter.format(mh.getReportPayroll())),
+                String.format("Operating Costs:                -$%s",
+                        formatter.format(mh.getReportOperatingCost())),
+                "---------------------------------------------------");
+        addNetIncomeLine(statement, "NET INCOME:", mh.getReportNetIncome());
+        column.getChildren().add(statement);
+
+        if (land.getIronReserveTonnes() <= 0) {
+            column.getChildren().add(criticalSection("[CRITICAL] THE ORE IS GONE",
+                    "Every deposit the city owns is worked out.",
+                    "The mines still draw their payroll and lift nothing."));
+        }
+
+        showSectorReport("MINING", column, this::showPrivateSectorMenu);
     }
 
     /**
@@ -1940,6 +2200,29 @@ public class UserInterface extends Application {
 
         VBox column = new VBox(0);
 
+        /*
+         * If the simulation itself broke, say so first and say where to look.
+         *
+         * Before this the window simply stopped responding partway through a
+         * skip: the exception reached the FX thread's default handler and a
+         * stderr that does not exist in a packaged build, so the player got a
+         * month counter that stopped and no explanation at all.
+         */
+        String failure = game.takeSkipFailure();
+        if (failure != null) {
+            VBox problem = reportSection("SOMETHING WENT WRONG");
+            for (String line : failure.split("\n")) {
+                Label item = monoLabel("  " + line);
+                item.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+                problem.getChildren().add(item);
+            }
+            Label advice = monoLabel("  The months that did run are real. "
+                    + "Save or reload before continuing.");
+            advice.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #555555;");
+            problem.getChildren().add(advice);
+            column.getChildren().add(problem);
+        }
+
         /* ---------------------------- headlines ---------------------------- */
         VBox headlines = reportSection("WHAT HAPPENED");
 
@@ -2475,7 +2758,69 @@ public class UserInterface extends Application {
         addNetIncomeLine(consolidated, "NET INCOME (UTILITIES):", totalRevenue - totalPayroll);
         column.getChildren().add(consolidated);
 
-        showSectorReport("MUNICIPAL UTILITIES REPORT", column, this::showPrivateSectorMenu);
+        /* ------------------------------ ROAD NETWORK -----------------------------
+           Last, and after the consolidated totals rather than inside them: roads
+           bill nobody, so they have no income statement to add. What they have
+           is a capacity, a load, and a bill the whole city pays in throughput.
+           ---------------------------------------------------------------------- */
+        InfrastructureManager roads = game.getInfrastructureManager();
+
+        column.getChildren().add(sectionHeading("=== ROAD NETWORK ==="));
+
+        VBox network = reportSection("NETWORK STATUS",
+                String.format("Throughput:             %.1f%%", roads.getThroughputRatio() * 100),
+                String.format("Traffic:                %s of %s trips",
+                        formatter.format(roads.getLoad()),
+                        formatter.format(roads.getCapacity())),
+                String.format("Utilisation:            %.1f%%", roads.getUtilisation() * 100));
+        network.getChildren().add(statusLabel("Traffic Status:",
+                !roads.isCongested(), roads.getStatus(), "CONGESTED"));
+        column.getChildren().add(network);
+
+        column.getChildren().add(reportSection("CAPACITY",
+                String.format("Built by the city:      %s",
+                        formatter.format(roads.getBuiltCapacity())),
+                String.format("Existing streets:       %s",
+                        formatter.format(InfrastructureManager.BASE_CAPACITY)),
+                String.format("Room before it slows:   %s trips",
+                        formatter.format(roads.getHeadroom())),
+                "Traffic flows freely up to "
+                        + Math.round(InfrastructureManager.FREE_FLOW * 100)
+                        + "% of capacity."));
+
+        if (roads.isCongested()) {
+            // The number a player can act on: not "you are congested" but "this
+            // much more capacity and you are not".
+            double needed = roads.getLoad() / InfrastructureManager.FREE_FLOW
+                    - roads.getCapacity();
+            column.getChildren().add(criticalSection("[CRITICAL] TRAFFIC CONGESTION",
+                    String.format("Additional capacity needed: %s trips",
+                            formatter.format(Math.max(0, needed))),
+                    "Retail sales, industrial output and construction are all reduced."));
+        } else if (roads.isStrained()) {
+            column.getChildren().add(reportSection("[NOTICE] APPROACHING CAPACITY",
+                    String.format("Room for %s more trips before traffic slows.",
+                            formatter.format(roads.getHeadroom())),
+                    "Order roads before the next expansion, not after."));
+        }
+
+        showSectorReport("MUNICIPAL SERVICES REPORT", column, this::showPrivateSectorMenu);
+    }
+
+    /**
+     * Roads on the city overview, in one cell.
+     *
+     * Shows utilisation while there is room and throughput once there is not,
+     * because those are the two different questions a player is asking: "how
+     * much more can I build" until it jams, and "how much is this costing me"
+     * after.
+     */
+    private String roadSummary() {
+        InfrastructureManager roads = game.getInfrastructureManager();
+        if (roads.isCongested()) {
+            return formatter.format(roads.getThroughputRatio() * 100) + "% flow";
+        }
+        return formatter.format(roads.getUtilisation() * 100) + "% used";
     }
 
     /** A bold green/red status row, e.g. "System Stability:  STABLE". */
@@ -2526,6 +2871,70 @@ public class UserInterface extends Application {
                 "---------------------------------------------------");
         addNetIncomeLine(statement, "TOTAL OPERATING COSTS:", -ch.getExpenses());
         column.getChildren().add(statement);
+
+        /* ---------------------------- the retainer ----------------------------
+         *
+         * The one control on this screen, and the reason it exists: idle
+         * construction is loss-making, so it scraps capacity in any lull -
+         * including the capacity the city just paid for. Over four thousand
+         * months of playtesting that cost one city 187 depots.
+         *
+         * Shown as capacity protected rather than as money, because that is the
+         * decision. The money is the price of it.
+         * ------------------------------------------------------------------- */
+        double protectedCapacity = game.getSubsidisedCapacity();
+        double capacity = game.getBuildingManager().getTotalConstructionCapacity();
+
+        VBox retainer = reportSection("STANDING RETAINER",
+                String.format("Paying:                 $%s /month",
+                        formatter.format(game.getConstructionSubsidy())),
+                String.format("Keeps:                  %s of %s pts of capacity",
+                        formatter.format(protectedCapacity), formatter.format(capacity)),
+                "",
+                "Builders you are not using will be let go. This keeps crews on",
+                "the books between projects - exactly as many as it pays for.");
+
+        if (game.getConstructionSubsidy() > 0 && protectedCapacity < capacity) {
+            retainer.getChildren().add(monoLabel(String.format(
+                    "  not covered: %s pts, which can still be sold",
+                    formatter.format(capacity - protectedCapacity))));
+        }
+        column.getChildren().add(retainer);
+
+        javafx.scene.layout.FlowPane subsidy = new javafx.scene.layout.FlowPane(8, 8);
+        subsidy.setAlignment(Pos.CENTER);
+        subsidy.setPrefWrapLength(340);
+
+        double[] steps = {-100, -10, 10, 100};
+        for (double step : steps) {
+            final double delta = step;
+            Button button = new Button((step > 0 ? "+$" : "-$")
+                    + formatter.format(Math.abs(step)));
+            button.setPrefWidth(76);
+            button.setOnAction(e -> {
+                game.setConstructionSubsidy(game.getConstructionSubsidy() + delta);
+                showConstructionInfoMenu();
+            });
+            subsidy.getChildren().add(button);
+        }
+
+        Button coverAll = new Button("Cover it all");
+        coverAll.setOnAction(e -> {
+            ConstructionHandler c = game.getServicesManager().getConstructionHandler();
+            double all = game.getBuildingManager().getTotalConstructionCapacity();
+            game.setConstructionSubsidy(all * c.getStandingCostPerCapacity(all));
+            showConstructionInfoMenu();
+        });
+        subsidy.getChildren().add(coverAll);
+
+        Button none = new Button("Stop paying");
+        none.setOnAction(e -> {
+            game.setConstructionSubsidy(0);
+            showConstructionInfoMenu();
+        });
+        subsidy.getChildren().add(none);
+
+        column.getChildren().add(subsidy);
 
         showSectorReport("MUNICIPAL CONSTRUCTION AUTHORITY", column, this::showSectorMenu);
     }
@@ -2812,7 +3221,11 @@ public class UserInterface extends Application {
             // divide by zero and render as 2147483647.
             String eta;
             if (perSite <= 0) {
-                eta = "stalled - no workers";
+                // Two things can stall a site now, and they want different
+                // words: nobody to do the work, or nothing able to reach it.
+                eta = game.getInfrastructureManager().isCongested()
+                        ? "stalled - gridlocked"
+                        : "stalled - no workers";
             } else {
                 double monthsLeft = Math.ceil((remaining * (double) pointsEach - progress) / perSite);
                 eta = "~" + (int) monthsLeft + " mo";
@@ -3022,7 +3435,8 @@ public class UserInterface extends Application {
                 statLine("Store stock", String.format("%,d", economyManager.getStoreInventory())),
                 statLine("Food stock", String.format("%,d", economyManager.getIndustryFoodInventory())),
                 statLine("Energy", formatter.format(game.getEnergyRatio() * 100) + "%"),
-                statLine("Water", formatter.format(game.getWaterRatio() * 100) + "%"));
+                statLine("Water", formatter.format(game.getWaterRatio() * 100) + "%"),
+                statLine("Roads", roadSummary()));
 
         /* ---------------- LAND ---------------- */
         LandManager land = game.getLandManager();

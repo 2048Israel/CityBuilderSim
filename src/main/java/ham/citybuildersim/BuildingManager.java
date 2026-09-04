@@ -17,11 +17,9 @@ public class BuildingManager {
     private List<BuildingsTemplate> templates;
     private List<BuildingsStacks> stacks;
     private List<BuildingInstance> instances;
-    private JobType[] jobNoUse = JobType.values();
-    private int totalConstructionMaterialCost;
+    private JobType[] jobTypes = JobType.values();
     private int constructionMaterials;
     private double materialsCost = 2;
-    private double cost; //the total cost of materials that need to be purchased this month
 
     public BuildingManager() {
         templates = new ArrayList<>();
@@ -83,6 +81,7 @@ public class BuildingManager {
         house.setElectricityConsumption(1);
         house.setWaterConsumption(.2);
         house.setLandSqFt(8000);
+        house.setRoadLoad(2);
         house.setId(0);
         templates.add(house);
 
@@ -94,6 +93,7 @@ public class BuildingManager {
         studioApartments.setElectricityConsumption(8);
         studioApartments.setWaterConsumption(2);
         studioApartments.setLandSqFt(25000);
+        studioApartments.setRoadLoad(35);
         studioApartments.setId(1);
         templates.add(studioApartments);
 
@@ -105,6 +105,7 @@ public class BuildingManager {
         lowRiseApartments.setElectricityConsumption(25);
         lowRiseApartments.setWaterConsumption(6);
         lowRiseApartments.setLandSqFt(60000);
+        lowRiseApartments.setRoadLoad(100);
         lowRiseApartments.setId(6);
         templates.add(lowRiseApartments);
 
@@ -118,6 +119,7 @@ public class BuildingManager {
         convienceStore.setElectricityConsumption(6);
         convienceStore.setWaterConsumption(1);
         convienceStore.setLandSqFt(5000);
+        convienceStore.setRoadLoad(10);
         convienceStore.setJobs(JobType.NO_DIPLOMA, 2);
         convienceStore.setJobs(JobType.DIPLOMA, 3);
         convienceStore.setId(2);
@@ -132,6 +134,7 @@ public class BuildingManager {
         smallGroceryStore.setElectricityConsumption(35);
         smallGroceryStore.setWaterConsumption(6);
         smallGroceryStore.setLandSqFt(40000);
+        smallGroceryStore.setRoadLoad(55);
         smallGroceryStore.setJobs(JobType.NO_DIPLOMA, 15);
         smallGroceryStore.setJobs(JobType.DIPLOMA, 10);
         smallGroceryStore.setJobs(JobType.COLLEGE_BUSINESS, 2);
@@ -148,6 +151,7 @@ public class BuildingManager {
         texttileMill.setElectricityConsumption(40);
         texttileMill.setWaterConsumption(60);
         texttileMill.setLandSqFt(80000);
+        texttileMill.setRoadLoad(40);
         texttileMill.setJobs(JobType.NO_DIPLOMA, 45);
         texttileMill.setJobs(JobType.DIPLOMA, 20);
         texttileMill.setId(3);
@@ -162,6 +166,7 @@ public class BuildingManager {
         foodProcessingPlant.setElectricityConsumption(120);
         foodProcessingPlant.setWaterConsumption(150);
         foodProcessingPlant.setLandSqFt(200000);
+        foodProcessingPlant.setRoadLoad(200);
         foodProcessingPlant.setJobs(JobType.NO_DIPLOMA, 140);
         foodProcessingPlant.setJobs(JobType.DIPLOMA, 120);
         foodProcessingPlant.setJobs(JobType.COLLEGE_ENGINEERING, 10);
@@ -177,6 +182,7 @@ public class BuildingManager {
         constructionMaterialsPlant.setElectricityConsumption(200);
         constructionMaterialsPlant.setWaterConsumption(80);
         constructionMaterialsPlant.setLandSqFt(300000);
+        constructionMaterialsPlant.setRoadLoad(350);
         constructionMaterialsPlant.setJobs(JobType.NO_DIPLOMA, 160);
         constructionMaterialsPlant.setJobs(JobType.DIPLOMA, 80);
         constructionMaterialsPlant.setJobs(JobType.COLLEGE_ENGINEERING, 10);
@@ -192,6 +198,7 @@ public class BuildingManager {
         constructionDepot.setElectricityConsumption(25);
         constructionDepot.setWaterConsumption(3);
         constructionDepot.setLandSqFt(60000);
+        constructionDepot.setRoadLoad(90);
         constructionDepot.setJobs(JobType.NO_DIPLOMA, 35);
         constructionDepot.setJobs(JobType.DIPLOMA, 15);
         constructionDepot.setId(4);
@@ -206,6 +213,7 @@ public class BuildingManager {
                 .setElectricityConsumption(15)
                 .setWaterConsumption(400) // cooling - the biggest single draw in the game
                 .setLandSqFt(2000000)
+                .setRoadLoad(120)
                 .setJobs(JobType.NO_DIPLOMA, 40)
                 .setJobs(JobType.DIPLOMA, 20)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 6)
@@ -236,6 +244,7 @@ public class BuildingManager {
                 .setElectricityConsumption(900)
                 .setWaterConsumption(20) // filter backwash and process losses
                 .setLandSqFt(800000)
+                .setRoadLoad(15)
                 .setJobs(JobType.NO_DIPLOMA, 8)
                 .setJobs(JobType.DIPLOMA, 14)          // certified operators, the bulk of the crew
                 .setJobs(JobType.COLLEGE_ENGINEERING, 4)
@@ -268,6 +277,7 @@ public class BuildingManager {
                 .setElectricityConsumption(750)
                 .setWaterConsumption(65)
                 .setLandSqFt(90000)
+                .setRoadLoad(110)
                 .setJobs(JobType.NO_DIPLOMA, 22)
                 .setJobs(JobType.DIPLOMA, 12)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 4)
@@ -288,6 +298,7 @@ public class BuildingManager {
                 .setElectricityConsumption(3700)
                 .setWaterConsumption(320)
                 .setLandSqFt(400000)
+                .setRoadLoad(500)
                 .setJobs(JobType.NO_DIPLOMA, 70)
                 .setJobs(JobType.DIPLOMA, 45)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 12)
@@ -296,7 +307,103 @@ public class BuildingManager {
 
         templates.add(steelMiniMill);
 
-        //add more buildings; next Building ID is 13
+        /* --------------------------- INFRASTRUCTURE ---------------------------
+           Roads, as a building, because that is what makes them cost anything.
+
+           A road order goes through the construction sector like everything
+           else: it consumes materials, occupies the build queue, and pays the
+           builders. That is the whole reason for modelling public works this
+           way - it makes them a demand-side lever on a private industry rather
+           than a number the player raises for free.
+
+           Deliberately materials-heavy and cash-light next to the power plant:
+           a road is mostly aggregate and labour, not equipment. 5,000 materials
+           at market is more than the $3.5M of cash, which means the first road
+           a city needs is also the thing that makes the materials plant worth
+           building.
+
+           No jobs. Nobody staffs a road; the construction crews that build it
+           are already paid, and pretending a highway has an operating payroll
+           would put wages in the economy that no employer is paying.
+           ---------------------------------------------------------------- */
+        BuildingsTemplate roadNetwork = new BuildingsTemplate("Road Network", BuildingType.INFRASTRUCTURE)
+                .setCapacity(1200)              // road capacity provided
+                .setCashCost(3500)
+                .setConstructionPoints(4000)
+                .setConstructionMaterials(5000)
+                .setElectricityConsumption(40)  // street lighting and signals
+                .setLandSqFt(250000)
+                .setRoadLoad(0)                 // a road does not drive on itself
+                .setId(13);
+
+        templates.add(roadNetwork);
+
+        /* ------------------------------ MINING ------------------------------
+           An iron mine, and the biggest employer in the game.
+
+           The profit is the smaller half of why it exists. 396 jobs against a
+           Food Processing Plant's 270 - and population here is capped at jobs
+           times 2.25, so one mine is worth about nine hundred residents to a
+           city that can house them. The 4,000-month playtest froze every city
+           at 297 jobs; a single mine is larger than that whole equilibrium.
+
+           The economics, at the mid-band ore price of $360 a tonne:
+
+               revenue   1,330 t x $360        =  $478.8k
+               payroll   300 x $800 + 70 x $1,500 + 6 x $4,000 = $369k
+               power     1,200 kW              =   $12k
+               water     90 units              =    $4.5k
+               ---------------------------------------------
+               about $63k a month on an asset costing about $2.2M
+
+           Just under 3% a month, which is a real industrial return. Exporting
+           everything instead - a mine in a city with no mills - clears about
+           $10k, which is thin but positive: worth building first, much better
+           once the mills follow.
+           ------------------------------------------------------------------ */
+        /*
+         * THE MINE IS A VOLUME BUSINESS, AND IT WAS NOT PRICED AS ONE
+         *
+         * It used to lift 1,330 tonnes a month with 376 people on shift - three
+         * and a half tonnes per worker per month, which is not a mine, it is a
+         * quarry with a shovel. That single number was what made the whole ore
+         * economy marginal: at $290 of cost in every tonne, ore could never be
+         * cheap enough to make steel worth building AND dear enough to make the
+         * mine worth building. The band had nowhere to sit.
+         *
+         * 2,500 tonnes for the same crew puts the cost at $159 a tonne, which
+         * leaves room underneath it for a floor at $200. That is what lets both
+         * halves work at once:
+         *
+         *   selling every tonne abroad at the floor    NET  $103.5k/month
+         *   with one mill next door, ore at $269       NET  $276.0k/month
+         *
+         * The first of those is the important one. A mine is now profitable with
+         * nobody to sell to locally, so an investor will sink one on the strength
+         * of the export market alone and the mills follow the ore rather than the
+         * other way round.
+         *
+         * Power and water rise with the tonnage; the workforce, the footprint and
+         * the site do not. Same hole in the ground, worked properly.
+         */
+        BuildingsTemplate ironMine = new BuildingsTemplate("Iron Mine", BuildingType.MINING)
+                .setCashCost(1600)
+                .setConstructionPoints(1600)
+                .setConstructionMaterials(650)
+                .setProduction1(2500)           // tonnes of ore a month
+                .setProductionModifier1(.20)    // export price per tonne - THE FLOOR
+                .setElectricityConsumption(2000)
+                .setWaterConsumption(150)
+                .setLandSqFt(400000)
+                .setRoadLoad(420)               // every tonne leaves by truck
+                .setJobs(JobType.NO_DIPLOMA, 300)
+                .setJobs(JobType.DIPLOMA, 70)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 6)
+                .setId(14);
+
+        templates.add(ironMine);
+
+        //add more buildings; next Building ID is 15
     }
 
     public void finalUpdateBuildings() {
@@ -304,12 +411,6 @@ public class BuildingManager {
         constructionMaterials += getConstructionMaterialsProduction();
         System.out.println("Total Available:                            " + constructionMaterials);
 
-    }
-
-    public double getSetCost() {
-        double cost1 = cost;
-        cost = 0;
-        return cost1;
     }
 
     //getters
@@ -387,7 +488,6 @@ public class BuildingManager {
             }
         }
 
-        totalConstructionMaterialCost = 0;
     }
 
     public void displayAllBuildings() {
@@ -522,11 +622,24 @@ public class BuildingManager {
         return getTotalByCategoryInteger(BuildingType.COMMERCIAL, BuildingsTemplate::getCapacity);
     }
 
+    /**
+     * The city's own crews, plus whatever the depots add.
+     *
+     * BASE_CONSTRUCTION is the municipal works department: a city with no
+     * Construction Depot at all still puts up 100 points a month, which is what
+     * makes the opening city able to build its first depot.
+     */
+    public static final int BASE_CONSTRUCTION = 100;
+
+    /** Same idea for materials: a yard that produces 80 a month on its own. */
+    public static final int BASE_MATERIALS = 80;
+
     public int getTotalConstructionCapacity() {
         // NOTE: getProduction1() is a double; the original loop truncated it via
         // implicit int += double narrowing. Casting explicitly here to keep that
         // same truncating behavior rather than silently changing it to round.
-        return 100 + getTotalByCategoryInteger(BuildingType.CONSTRUCTION, t -> (int) t.getProduction1());
+        return BASE_CONSTRUCTION
+                + getTotalByCategoryInteger(BuildingType.CONSTRUCTION, t -> (int) t.getProduction1());
     }
 
     /**
@@ -535,7 +648,8 @@ public class BuildingManager {
      * @return Construction Materials production
      */
     public int getConstructionMaterialsProduction() {
-        return 80 + getTotalByCategoryInteger(BuildingType.CONSTRUCTION, t -> (int) t.getProduction2());
+        return BASE_MATERIALS
+                + getTotalByCategoryInteger(BuildingType.CONSTRUCTION, t -> (int) t.getProduction2());
     }
 
     /*
@@ -655,7 +769,7 @@ public class BuildingManager {
             if (stacks.get(i).getBuilding().getCategory() == category) {
 
                 for (int j = 0; j < jobs.length; j++) {
-                    jobs[j] += stacks.get(i).getTotalJobs(jobNoUse[j]);
+                    jobs[j] += stacks.get(i).getTotalJobs(jobTypes[j]);
                 }
 
             }
@@ -685,11 +799,11 @@ public class BuildingManager {
         return null;
     }
 
+    /** How many of template id {@code i} are finished and standing. */
     public int getQuantity(int i) {
-        int quantity = 0;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getId() == i) {
-                return quantity = stack.getQuantity();
+                return stack.getQuantity();
             }
         }
         return 0;
@@ -877,6 +991,31 @@ public class BuildingManager {
         stacks.clear();
     }
 
+    /**
+     * Takes the order's materials out of the yard, importing whatever is short.
+     *
+     * MOVES STOCK, DOES NOT BILL (backlog item 1)
+     *
+     * This used to also write the import bill into a `cost` field, drained by a
+     * getSetCost() that every caller had to remember to call. Three things were
+     * wrong with that at once:
+     *
+     *   - it was `cost =`, not `cost +=`, so two orders short of materials in
+     *     one month lost the first bill entirely
+     *   - the drain lived inside calculateTotalCost(), which is the QUOTE the
+     *     build screen shows. Asking the price changed the price: after a
+     *     private investor built six stores, the player's quote for their own
+     *     twenty houses read $2,600, and reading it a second time read $1,800.
+     *     The $800 difference was the investor's materials, about to be charged
+     *     to the city because buildFor() never drained the field
+     *   - and it was a second, redundant copy of a number every caller already
+     *     computes for itself: processBuildOrder(), buildFor() and
+     *     calculateTotalCost() each work out the shortage from the same yard
+     *     stock and the same order, and each bills its own payer for it
+     *
+     * So the field is gone rather than patched. The yard is stock, the bill is
+     * the caller's, and a quote is a quote.
+     */
     public void handleConstructionMaterials(int required) {
 
         if (constructionMaterials >= required) {
@@ -887,11 +1026,10 @@ public class BuildingManager {
         int shortage = required - constructionMaterials;
         constructionMaterials = 0;
 
-        cost = shortage * materialsCost;
-
         System.out.println(
                 "Construction Materials Imported: "
-                + formatter.format(shortage) + " Cost: $" + formatter.format(cost)
+                + formatter.format(shortage)
+                + " Cost: $" + formatter.format(shortage * materialsCost)
         );
     }
 
@@ -915,8 +1053,6 @@ public class BuildingManager {
     public void resetBuildingManager() {
         clearStacks();
         constructionMaterials = 80;
-        totalConstructionMaterialCost = 0;
-        cost = 0;
     }
 
 }

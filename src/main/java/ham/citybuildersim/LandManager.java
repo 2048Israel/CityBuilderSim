@@ -95,8 +95,41 @@ public class LandManager {
 
     private int blocksPurchased;
 
-    /** What businesses pay per square foot. The player sets this. */
+    /**
+     * What businesses pay per square foot.
+     *
+     * NO LONGER SET BY THE PLAYER. It is the land market's clearing price now -
+     * see LandMarket - and moves with how full the city is: empty city, cheap
+     * land; full city, dear land. The way to make land cheap is to go and buy
+     * some, which is a more interesting lever than a slider was.
+     *
+     * Kept as a field rather than read through every time because it is a
+     * MONTH'S price: the sale price a business paid is a fact about the month it
+     * built in, and re-deriving it later is the mistake this codebase has made
+     * in four other places.
+     */
     private double pricePerSqFt = DEFAULT_PRICE_PER_SQ_FT;
+
+    /** Ten plots on offer, and what the next one costs. */
+    private final LandMarket market = new LandMarket();
+
+    /* ------------------------------ ore ------------------------------
+     *
+     * Deposits are POOLED rather than tracked per parcel, and that is a
+     * deliberate simplification with one consequence worth knowing: the count
+     * caps how many mines can stand, and the tonnage is drawn down by all of
+     * them together. Nothing sits on a particular deposit, because nothing in
+     * this game sits anywhere - buildings are stacks, not locations.
+     * ---------------------------------------------------------------- */
+
+    /** Deposit sites the city owns. Caps how many Iron Mines can stand. */
+    private int ironDeposits;
+
+    /** Ore still in the ground across all of them, in tonnes. */
+    private double ironReserveTonnes;
+
+    /** Lifted this month, for the mining report. */
+    private double ironMinedThisMonth;
 
     /* Monthly flows, for the government accounts. Cleared each month. */
     private double landSalesThisMonth;
@@ -126,14 +159,90 @@ public class LandManager {
     public double getLandPurchasesThisMonth() { return landPurchasesThisMonth; }
     public double getSqFtBoughtBackThisMonth(){ return sqFtBoughtBackThisMonth; }
 
-    /** What the next block costs the city, in thousands. */
+    /** What a block's worth of land costs at today's market rate, in thousands. */
     public double getNextBlockCost() {
-        return BASE_BLOCK_COST * (1 + COST_GROWTH_PER_BLOCK * blocksPurchased);
+        return getAcquisitionCostPerSqFt() * BLOCK_SQ_FT;
     }
 
-    /** What the city paid per square foot for its most recent block. */
+    /** Ground price per square foot the city would pay today. */
     public double getAcquisitionCostPerSqFt() {
-        return getNextBlockCost() / BLOCK_SQ_FT;
+        return market.getMarketPricePerSqFt();
+    }
+
+    /* --------------------------- the market --------------------------- */
+
+    public LandMarket getMarket()                 { return market; }
+    public java.util.List<LandParcel> getListing(){ return market.getListing(); }
+
+    /**
+     * Re-prices the market and refills the window. Once a month, and again
+     * after any purchase so the replacement plot is priced against the city as
+     * it stands afterwards.
+     */
+    public void updateMarket(int population) {
+        market.update(ownedSqFt, allocatedSqFt, population);
+        pricePerSqFt = market.getSalePricePerSqFt();
+    }
+
+    /**
+     * Buys one listed parcel.
+     *
+     * @return what it cost, or 0 if it could not be afforded or is not listed -
+     *         in which case nothing changed and the caller must not spend
+     */
+    public double buyParcel(int parcelId, double availableCash, int population) {
+
+        LandParcel parcel = market.find(parcelId);
+        if (parcel == null || parcel.getPrice() > availableCash) {
+            return 0;
+        }
+
+        market.take(parcelId);
+
+        ownedSqFt += parcel.getSizeSqFt();
+        blocksPurchased++;
+        landPurchasesThisMonth += parcel.getPrice();
+
+        if (parcel.hasIron()) {
+            ironDeposits++;
+            ironReserveTonnes += parcel.getIronTonnes();
+        }
+
+        // Refill and re-price AFTER the purchase, so a city that just got
+        // bigger sees the next offer at its new size.
+        updateMarket(population);
+
+        return parcel.getPrice();
+    }
+
+    /* ------------------------------ ore ------------------------------ */
+
+    public int getIronDeposits()          { return ironDeposits; }
+    public double getIronReserveTonnes()  { return ironReserveTonnes; }
+    public double getIronMinedThisMonth() { return ironMinedThisMonth; }
+
+    public boolean hasUnminedDeposit(int minesStanding) {
+        return minesStanding < ironDeposits && ironReserveTonnes > 0;
+    }
+
+    /**
+     * Lifts ore out of the ground.
+     *
+     * @return what was actually there, which is less than asked for once the
+     *         reserves run low and zero once they are gone. A mine standing on
+     *         an exhausted deposit still costs its payroll; that is what
+     *         "finite" means and the player is expected to notice.
+     */
+    public double extractIron(double tonnes) {
+        double lifted = Math.max(0, Math.min(tonnes, ironReserveTonnes));
+        ironReserveTonnes -= lifted;
+        ironMinedThisMonth = lifted;
+        return lifted;
+    }
+
+    public void restoreIron(int deposits, double reserveTonnes) {
+        this.ironDeposits = Math.max(0, deposits);
+        this.ironReserveTonnes = Math.max(0, reserveTonnes);
     }
 
     /** Margin per square foot at the current sale price. Negative sells at a loss. */
@@ -142,6 +251,14 @@ public class LandManager {
     }
 
     //setters
+    /**
+     * @deprecated The sale price is the market's now, not the player's. Kept so
+     *             the load path can put back the price a saved month traded at
+     *             before the market recomputes it, and so older callers still
+     *             compile. Anything that calls this to STEER the price is doing
+     *             nothing useful - updateMarket() overwrites it next month.
+     */
+    @Deprecated
     public void setPricePerSqFt(double price) {
         this.pricePerSqFt = Math.max(price, 0);
     }
@@ -207,17 +324,31 @@ public class LandManager {
      * @return the cost, or 0 if the city could not afford it
      */
     public double buyBlock(double availableCash) {
+        return buyBlock(availableCash, 0);
+    }
 
-        double cost = getNextBlockCost();
-        if (cost > availableCash) {
+    /**
+     * Buys the cheapest thing on offer.
+     *
+     * The old "annex one block" button, kept working. There are no blocks any
+     * more - there are ten plots of assorted sizes - so the nearest honest
+     * equivalent is the cheapest one, which is what a player pressing a button
+     * labelled "buy some land" means.
+     *
+     * @return what it cost, or 0 if nothing on offer was affordable
+     */
+    public double buyBlock(double availableCash, int population) {
+
+        LandParcel cheapest = market.cheapest();
+        if (cheapest == null) {
+            updateMarket(population);
+            cheapest = market.cheapest();
+        }
+        if (cheapest == null) {
             return 0;
         }
 
-        ownedSqFt += BLOCK_SQ_FT;
-        blocksPurchased++;
-        landPurchasesThisMonth += cost;
-
-        return cost;
+        return buyParcel(cheapest.getId(), availableCash, population);
     }
 
     /** Called once a month, after the government accounts have read the flows. */
@@ -226,6 +357,7 @@ public class LandManager {
         sqFtSoldThisMonth = 0;
         landPurchasesThisMonth = 0;
         sqFtBoughtBackThisMonth = 0;
+        ironMinedThisMonth = 0;
     }
 
     public void reset() {
@@ -233,6 +365,9 @@ public class LandManager {
         allocatedSqFt = 0;
         blocksPurchased = 0;
         pricePerSqFt = DEFAULT_PRICE_PER_SQ_FT;
+        ironDeposits = 0;
+        ironReserveTonnes = 0;
+        market.reset();
         clearMonth();
     }
 
@@ -246,7 +381,18 @@ public class LandManager {
                 formatter.format(getAvailableSqFt()), getAvailableBlocks());
         System.out.printf("Utilisation:        %.1f%%%n", getUtilisation() * 100);
         System.out.println();
-        System.out.printf("Next block costs:   $%s%n", formatter.format(getNextBlockCost()));
+        System.out.printf("Market rate:        $%s /sq ft (a block: $%s)%n",
+                formatter.format(getAcquisitionCostPerSqFt()),
+                formatter.format(getNextBlockCost()));
+        if (ironDeposits > 0) {
+            System.out.printf("Iron deposits:      %d, %s tonnes left%n",
+                    ironDeposits, formatter.format(ironReserveTonnes));
+        }
+        System.out.println("\n--- on offer ---");
+        for (LandParcel parcel : market.getListing()) {
+            System.out.printf("  #%-4d %s%n", parcel.getId(), parcel.describe());
+        }
+        System.out.println();
         System.out.printf("Sale price:         $%s /sq ft%n", formatter.format(pricePerSqFt));
         System.out.printf("Margin:             $%s /sq ft%n", formatter.format(getMarginPerSqFt()));
         System.out.printf("Sold this month:    %s sq ft for $%s%n",

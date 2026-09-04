@@ -243,13 +243,43 @@ public final class GameFiles {
             return new com.google.gson.Gson()
                     .fromJson(Files.readString(file), SaveHeader.class);
         } catch (IOException | RuntimeException e) {
-            System.out.println("Could not read " + slotLabel(slot) + ": " + e.getMessage());
+            // Not a crash, and not silence either. A corrupt file in one slot
+            // must not stop the other ten drawing - but it does go in the log,
+            // because "the menu says Empty and it is not empty" is exactly the
+            // kind of thing a player cannot diagnose and a log line can.
+            GameLog.note("Could not read " + slotLabel(slot) + " ("
+                    + saveFile(slot) + "): " + e);
             return null;
         }
     }
 
+    /** No file at all. NOT the same as a file that cannot be read - see below. */
     public boolean slotIsEmpty(int slot) {
         return !Files.isRegularFile(saveFile(slot));
+    }
+
+    /**
+     * True when a slot holds a file the game cannot make sense of.
+     *
+     * This distinction is the whole bug it was written for. readHeader() fails
+     * safely on a truncated or corrupt save and returns null, so the menu drew
+     * the slot as "Empty" - but slotIsEmpty() asks whether the FILE exists, and
+     * it does, so the Load button stayed enabled. The player clicked Load on a
+     * slot labelled Empty and the game did nothing whatsoever: no message, no
+     * error, no load, because the JsonSyntaxException went to a console that
+     * does not exist.
+     *
+     * Empty and unreadable are different things and the player is entitled to
+     * know which one they are looking at.
+     */
+    public boolean slotIsUnreadable(int slot) {
+        return !slotIsEmpty(slot) && readHeader(slot) == null;
+    }
+
+    /** Loadable: something is there, and it can be read. */
+    public boolean slotIsLoadable(int slot) {
+        SaveHeader header = readHeader(slot);
+        return header != null && !header.isFromNewerBuild();
     }
 
     /* ------------------------------- writing ------------------------------- */
@@ -273,6 +303,11 @@ public final class GameFiles {
         }
 
         static Result succeeded(Path file) { return new Result(true, file, null); }
+
+        /** For a failure that is not an exception - see DataSave.saveGame(). */
+        static Result failed(Path file, String reason) {
+            return new Result(false, file, reason);
+        }
 
         static Result failed(Path file, Throwable cause) {
             String detail = (cause.getMessage() == null)

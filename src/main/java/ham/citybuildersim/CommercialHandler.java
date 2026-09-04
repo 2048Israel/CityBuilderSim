@@ -28,12 +28,44 @@ public class CommercialHandler {
     private double pricePerWaterUnit;
     private double water;
 
+    /**
+     * How much of its trade congestion lets it actually do.
+     *
+     * A third throttle beside energyRatio and waterRatio, and it multiplies with
+     * them rather than replacing them: a gridlocked city in a brownout is worse
+     * off than either alone. Defaults to 1 so a handler nobody tells about roads
+     * behaves exactly as it did before they existed.
+     */
+    private double roadRatio = 1;
+
+    /* ------------------------- the ratio basis -------------------------
+       What the month was actually TRADED at, which is not always what the
+       city looks like by the time anyone reads the report.
+
+       Same problem as storeFillBasis and the same answer. A month's income
+       statement runs at the START of the month, off the utilisation figures
+       the previous month left behind; simulateMonth() then moves them. Save
+       after that and the live game's report and a reloaded game's recompute
+       disagree - the reload prices the month at ratios it was never traded
+       at. It showed up the day roads arrived, as $0.51 of income appearing
+       out of a reload, because energy and water are 1 in almost every city
+       and roads are the first of the three that is routinely below it.
+
+       Carried in the save for the same reason the property-tax charge is:
+       it is a fact about a month, not a function of the state that month
+       ended in.
+       ------------------------------------------------------------------- */
+    private double bEnergyRatio = 1;
+    private double bWaterRatio = 1;
+    private double bRoadRatio = 1;
+
     //store variables
     private double averageStoreFill;
     private int storeCoverage;
     private int storeCapacity;
     private int storeInventory;
-    private int neededInventory;
+    /** Units the shops sold last month. Drives the restock target. */
+    private int lastMonthSales;
     private int productsSold;
     private double storeInventoryCost;
     private double commercialCash;
@@ -93,6 +125,7 @@ public class CommercialHandler {
     private double rElectricityCost;
     private double rWaterCost;
     private double rWaterRatio;
+    private double rRoadRatio;
 
     /* Business credit. Two separate books, two separate loans, two rates. */
     private double retailInterestExpense;
@@ -132,6 +165,17 @@ public class CommercialHandler {
     private double rRealEstateNetIncome;
 
     private double rTotalNetIncome;
+
+    /* The tax each company owes, kept apart on purpose.
+     *
+     * The city has always taxed the two separately - a bad month in retail does
+     * not shelter real estate's rent - but the report showed
+     * rTotalNetIncome * rate, which nets them. So the screen could print a tax
+     * bill the treasury never collected, and in a month where retail lost money
+     * it printed a smaller one (or a negative one) than the city actually took.
+     * Now the collected figure and the printed figure are the same number. */
+    private double rRetailTax;
+    private double rRealEstateTax;
     private double rTotalTax;
 
     /** Months of recent sales a store tries to keep on the shelf. */
@@ -198,62 +242,34 @@ public class CommercialHandler {
     }
 
     //getters
+    /**
+     * What the city collects from the two commercial companies this month.
+     *
+     * THIS USED TO RE-RUN THE SECTOR (backlog item 7)
+     *
+     * It called getStoreIncome(), which was not a getter at all: it ASSIGNED
+     * productsSold on its way through, with `Math.min(storeCoverage, population)`
+     * - demand, with no inventory cap. EconomyManager.getTaxIncome() calls this
+     * method, so every read of the city's income rewrote the shops' sales
+     * figure, and updateCommercialHandler() then took that quantity off the
+     * shelf. Two bugs in one line: the shelf could go negative, and the units
+     * the shops were BILLED for stopped matching the units the income statement
+     * said they SOLD.
+     *
+     * It is the third getter-that-was-not-a-getter this project has had, after
+     * printCommercialInfo() banking cash and getIndustrialTaxIncome() rewriting
+     * industry's report. Same fix as the industrial one: the month's statement
+     * is the authority, so the city collects the figure the businesses were
+     * charged rather than a second, differently-computed one.
+     *
+     * Still two separate taxes, not one on the consolidated total - a loss in
+     * retail does not shelter real estate's rent, which is what the old code
+     * did with its two Math.max calls and what computeMonthlyReport() now does
+     * with rRetailTax and rRealEstateTax.
+     */
     public double getBusinessTaxIncome(double taxRate){
-        double businessTaxIncome = 0;
         pTaxRate = taxRate;
-        businessTaxIncome += Math.max(getStoreIncome()*taxRate, 0);
-
-        // Rent less interest, not gross rent - real estate's borrowing is
-        // deductible like anyone else's, and taxing gross would disagree with
-        // the income statement below it.
-        // Property tax is deductible like any other operating cost, and has to
-        // be here or the income statement below and the tax collected above
-        // would disagree about what real estate earned.
-        businessTaxIncome += Math.max(
-                (getRentIncome() - realEstateInterestExpense - realEstatePropertyTax)
-                        * taxRate, 0);
-
-        return businessTaxIncome;
-    }
-    public double getBusinessIncome(){
-        double totalIncome = getStoreIncome() + getRentIncome();
-        return totalIncome;
-    }
-    public double getStoreIncome() {
-        double storeRev = 0;
-        double storeWage = 0;
-        double storeExp = 0;
-
-
-        productsSold = Math.min(storeCoverage, population);
-
-
-        storeRev =  productsSold* storeSellPrice;
-
-
-        if (storeWages != null) {
-            for (int i = 0; i < storeWages.length; i++) {
-                storeWage += storeWages[i];
-
-            }
-        }
-        storeWage *= averageStoreFill;
-
-
-
-        storeExp = storeWage + storeInventoryCost;
-        storeExp += getElectricityCost();
-        storeExp += getWaterCost();
-        storeExp += retailInterestExpense;
-        storeExp += retailPropertyTax;
-        storeRev *= averageStoreFill;
-        storeRev *= energyRatio;
-        storeRev *= waterRatio;
-
-        double netIncome = storeRev - storeExp;
-
-
-        return netIncome;
+        return rTotalTax;
     }
 
     public double getRentIncome(){
@@ -261,11 +277,21 @@ public class CommercialHandler {
     }
 
     //getters
-    public int getNeededInventory(){
-        return neededInventory;
-    }
     public int getStoreInventory(){
         return storeInventory;
+    }
+
+    /**
+     * The units updateCommercialHandler() will take off the shelf this month.
+     *
+     * Distinct from getReportProductsSold(), which is the figure ON the
+     * statement - and the whole of backlog item 7 was that those two were
+     * allowed to differ. computeMonthlyReport() sets both, from the same line;
+     * this getter exists so ReadPathCheck can watch the live one and notice if
+     * anything else ever starts writing to it again.
+     */
+    public int getProductsSold(){
+        return productsSold;
     }
     public double getNetIncome(){
         return rNetIncome;
@@ -294,6 +320,7 @@ public class CommercialHandler {
     public double getAverageStoreFill()   { return averageStoreFill; }
     public double getEnergyRatio()        { return energyRatio; }
     public double getWaterRatio()         { return waterRatio; }
+    public double getRoadRatio()          { return roadRatio; }
     public double getStoreSellPrice()     { return storeSellPrice; }
     public double getRentPrice()          { return rentPrice; }
     public double getFoodPrice()          { return foodPrice; }
@@ -306,6 +333,7 @@ public class CommercialHandler {
     public double getReportAverageStoreFill() { return rAverageStoreFill; }
     public double getReportEnergyRatio()  { return rEnergyRatio; }
     public double getReportWaterRatio()   { return rWaterRatio; }
+    public double getReportRoadRatio()    { return rRoadRatio; }
 
     public int getReportDemand()          { return rDemand; }
     public int getReportProductsSold()    { return rProductsSold; }
@@ -356,6 +384,8 @@ public class CommercialHandler {
 
     public double getReportTotalNetIncome() { return rTotalNetIncome; }
     public double getReportTotalTax()       { return rTotalTax; }
+    public double getReportRetailTax()      { return rRetailTax; }
+    public double getReportRealEstateTax()  { return rRealEstateTax; }
     public double getReportTaxRate()        { return pTaxRate; }
 
     //setters
@@ -382,7 +412,7 @@ public class CommercialHandler {
     }
     /** Units sold last month - the demand signal the restock target is built on. */
     public int getLastMonthSales(){
-        return neededInventory;
+        return lastMonthSales;
     }
     public double getImportPrice(){
         return importPrice;
@@ -401,6 +431,9 @@ public class CommercialHandler {
     }
     public void setEnergyRatio(double ratio){
         this.energyRatio = ratio;
+    }
+    public void setRoadRatio(double ratio){
+        this.roadRatio = ratio;
     }
     public void setPricePerWatt(double price){
         this.pricePerWatt = price;
@@ -446,8 +479,9 @@ public class CommercialHandler {
      * Rebuilds the month's statement from the basis it was written against, and
      * puts back the import tax, which only buyInventory() ever sets.
      */
-    public void restoreMonthReport(double storeFillBasis, double importTax) {
-        computeMonthlyReport(storeFillBasis);
+    public void restoreMonthReport(double storeFillBasis, double importTax,
+                                   double energyBasis, double waterBasis, double roadBasis) {
+        computeMonthlyReport(storeFillBasis, energyBasis, waterBasis, roadBasis);
         rImportTax = importTax;
     }
 
@@ -455,6 +489,21 @@ public class CommercialHandler {
         this.pLocalImport = local;
         this.pGlobalImport = global;
     }
+
+    /**
+     * The rate the month is taxed at, set before the statement runs.
+     *
+     * The rate used to arrive as a side effect of getBusinessTaxIncome(), which
+     * runs LATE in the month - so computeMonthlyReport(), which runs at the top
+     * of it, always taxed the month at the rate in force during the previous
+     * one. Harmless while the tax was recomputed later anyway; not harmless now
+     * that the statement's figure is the one the city collects, because a rate
+     * change would have taken a month to reach the treasury.
+     *
+     * Mirrors IndustrialHandler.setTaxRate(), and is called from the same place
+     * in the month.
+     */
+    public void setTaxRate(double taxRate) { this.pTaxRate = taxRate; }
 
     public double getRetailPropertyTax()     { return retailPropertyTax; }
     public double getRealEstatePropertyTax() { return realEstatePropertyTax; }
@@ -564,7 +613,7 @@ public class CommercialHandler {
 
     public void sellInventory(int quantity){
         storeInventory -= quantity;
-        neededInventory = quantity;
+        lastMonthSales = quantity;
     }
 
     public double getElectricityCost(){
@@ -615,6 +664,14 @@ public class CommercialHandler {
     }
 
     /**
+     * The statement-time call: the month is running now, so what the city is
+     * living through IS the basis. Only the load path passes anything else.
+     */
+    public void computeMonthlyReport(double storeFillBasis) {
+        computeMonthlyReport(storeFillBasis, energyRatio, waterRatio, roadRatio);
+    }
+
+    /**
      * @param storeFillBasis the staffing level the month was actually TRADED at.
      *
      * Not always the current one. A month's report is written before the job
@@ -624,7 +681,12 @@ public class CommercialHandler {
      * that had just opened four stores that was 1.0 against 0.9508, and $3.16 of
      * revenue that appeared out of a reload.
      */
-    public void computeMonthlyReport(double storeFillBasis) {
+    public void computeMonthlyReport(double storeFillBasis,
+                                     double energyBasis, double waterBasis, double roadBasis) {
+
+        bEnergyRatio = energyBasis;
+        bWaterRatio = waterBasis;
+        bRoadRatio = roadBasis;
 
         // snapshot the inputs first, so every figure on the report - inputs and
         // results alike - describes the same moment
@@ -634,15 +696,17 @@ public class CommercialHandler {
         rStoreCapacity = storeCapacity;
         rStoreInventory = storeInventory;
         rAverageStoreFill = storeFillBasis;
-        rEnergyRatio = energyRatio;
-        rWaterRatio = waterRatio;
+        rEnergyRatio = bEnergyRatio;
+        rWaterRatio = bWaterRatio;
+        rRoadRatio = bRoadRatio;
 
         /* -------------------- RETAIL / COMMERCIAL COMPANY -------------------- */
         rDemand = Math.min(storeCoverage, population);
         productsSold = Math.min(rDemand, storeInventory);
         rProductsSold = productsSold;
 
-        rGrossRevenue = (productsSold * storeSellPrice) * energyRatio * waterRatio * storeFillBasis;
+        rGrossRevenue = (productsSold * storeSellPrice)
+                * bEnergyRatio * bWaterRatio * bRoadRatio * storeFillBasis;
 
         double payroll = 0;
         if (storeWages != null) {
@@ -653,14 +717,24 @@ public class CommercialHandler {
         payroll *= storeFillBasis;
         rPayroll = payroll;
 
-        // Matches what buyInventory() actually charged, tax included. This line
-        // used to price globals at 1.5x the local price while buyInventory() used
-        // 1.3x, so the income statement never agreed with the money that left the
-        // account (backlog item 6).
-        rInventoryCost = (pLocalImport * foodPrice + pGlobalImport * importPrice)
-                * (1 + pTaxRate);
+        /*
+         * The money that actually left the account, read rather than re-derived.
+         *
+         * This line used to recompute the cost from the import quantities and
+         * the prevailing prices - which is how it came to price globals at 1.5x
+         * the local price while buyInventory() charged 1.3x, so the income
+         * statement never agreed with the bank (backlog item 6). Matching the
+         * two formulas fixed the symptom; reading the charge fixes the shape.
+         *
+         * It also unhooks the statement from pTaxRate, which matters now that
+         * the rate is set at the top of the month: the imports on this line were
+         * bought last month and charged sales tax at last month's rate, and
+         * re-deriving them at the new one would invent a cost nobody paid.
+         * storeInventoryCost is carried in the save for the same reason.
+         */
+        rInventoryCost = storeInventoryCost;
         rElectricityCost = electricity * pricePerWatt;
-        rWaterCost = water * waterRatio * pricePerWaterUnit;
+        rWaterCost = water * bWaterRatio * pricePerWaterUnit;
 
         rRetailPropertyTax = retailPropertyTax;
         rRetailOperatingCost = rPayroll + rInventoryCost + rElectricityCost + rWaterCost
@@ -688,7 +762,13 @@ public class CommercialHandler {
 
         /* -------------------- CONSOLIDATED -------------------- */
         rTotalNetIncome = rRetailNetIncome + rRealEstateNetIncome;
-        rTotalTax = rTotalNetIncome * pTaxRate;
+
+        // Per company, floored at zero, because that is what the city collects -
+        // see getBusinessTaxIncome(), which now returns this figure instead of
+        // computing a second one of its own.
+        rRetailTax = Math.max(rRetailNetIncome * pTaxRate, 0);
+        rRealEstateTax = Math.max(rRealEstateNetIncome * pTaxRate, 0);
+        rTotalTax = rRetailTax + rRealEstateTax;
 
         rNetIncome = rTotalNetIncome;
     }
@@ -719,6 +799,7 @@ public class CommercialHandler {
         System.out.printf("Labor Fill Rate:        %.1f%%%n", rAverageStoreFill * 100);
         System.out.printf("Energy Efficiency:      %.1f%%%n", rEnergyRatio * 100);
         System.out.printf("Water Efficiency:       %.1f%%%n", rWaterRatio * 100);
+        System.out.printf("Road Throughput:        %.1f%%%n", rRoadRatio * 100);
 
         /* 3. Retail Sales Performance */
         System.out.println("\nSALES PERFORMANCE");
@@ -782,6 +863,8 @@ public class CommercialHandler {
         System.out.printf("Real Estate Net Income:      $%s%n", formatter.format(rRealEstateNetIncome));
         System.out.println("-------------------------------------------------------------------");
         System.out.printf("TOTAL NET INCOME:            $%s%n", formatter.format(rTotalNetIncome));
+        System.out.printf("  Tax on Retail:             $%s%n", formatter.format(rRetailTax));
+        System.out.printf("  Tax on Real Estate:        $%s%n", formatter.format(rRealEstateTax));
         System.out.printf("TOTAL TAX REVENUE:           $%s%n", formatter.format(rTotalTax));
         System.out.printf("%nRetail Cash:                 $%s%n", formatter.format(commercialCash));
         System.out.printf("Real Estate Cash:            $%s%n", formatter.format(realEstateCash));
@@ -804,6 +887,7 @@ public class CommercialHandler {
         rAverageStoreFill = 0;
         rEnergyRatio = 0;
         rWaterRatio = 0;
+        rRoadRatio = 0;
         rDemand = 0;
         rProductsSold = 0;
         rGrossRevenue = 0;
@@ -825,6 +909,8 @@ public class CommercialHandler {
         rRealEstateExpenses = 0;
         rRealEstateNetIncome = 0;
         rTotalNetIncome = 0;
+        rRetailTax = 0;
+        rRealEstateTax = 0;
         rTotalTax = 0;
         rNetIncome = 0;
     }
@@ -836,4 +922,124 @@ public class CommercialHandler {
     }
 
 
+
+    /* ======================= THE MONTH'S REPORT ========================
+
+       Every r-field, as one array, so a save can carry the statement itself
+       rather than the ingredients for rebuilding it.
+
+       WHY THIS EXISTS
+
+       A month's income statement runs at the START of the month, against what
+       the previous month left behind. The month then moves those inputs, and a
+       reloaded save used to rebuild the statement from the state the save was
+       taken IN - a different city from the one the statement described.
+
+       The project closed that one input at a time: the store fill basis, then
+       the imports, then the property-tax and interest charges, then the three
+       utilisation ratios. Each fix uncovered the next term underneath - the
+       food price was next, with payroll and the electricity draw behind it.
+       Enumerating inputs is a losing game when the report has thirty of them.
+
+       So the report is carried instead. A reloaded city now agrees with the one
+       it came from by construction rather than by list-making.
+
+       ORDER IS THE FORMAT. These two methods must stay mirror images, and new
+       fields go on the END - the array is positional, and inserting one in the
+       middle would silently shift every figure after it into the wrong line of
+       a player's income statement. A saved array of a different length is
+       refused whole rather than padded, because a partially restored statement
+       is worse than an honestly recomputed one; the caller falls back to
+       recomputing, which is what saves written before this did anyway.
+       ================================================================== */
+
+    public double[] getReportState() {
+        return new double[] {
+            rNetIncome,
+            rGrossRevenue,
+            rImportTax,
+            rPopulation,
+            rHousehold,
+            rStoreCoverage,
+            rStoreCapacity,
+            rStoreInventory,
+            rAverageStoreFill,
+            rEnergyRatio,
+            rDemand,
+            rProductsSold,
+            rPayroll,
+            rInventoryCost,
+            rElectricityCost,
+            rWaterCost,
+            rWaterRatio,
+            rRoadRatio,
+            rRetailInterest,
+            rRealEstateInterest,
+            rRetailPropertyTax,
+            rRetailOperatingCost,
+            rRetailOperatingIncome,
+            rRetailNetIncome,
+            rOccupiedUnits,
+            rVacantUnits,
+            rRentIncome,
+            rPropertyMaintenance,
+            rPropertyTaxExpense,
+            rRealEstateExpenses,
+            rRealEstateNetIncome,
+            rTotalNetIncome,
+            rTotalTax,
+            rRetailTax,
+            rRealEstateTax,
+        };
+    }
+
+    /**
+     * Puts a saved statement back, exactly as it was written.
+     *
+     * @return false if the array is not this build's shape, in which case
+     *         nothing was changed and the caller should recompute instead
+     */
+    public boolean restoreReportState(double[] r) {
+
+        if (r == null || r.length != 35) return false;
+
+        int i = 0;
+        rNetIncome = r[i++];
+        rGrossRevenue = r[i++];
+        rImportTax = r[i++];
+        rPopulation = (int) r[i++];
+        rHousehold = (int) r[i++];
+        rStoreCoverage = (int) r[i++];
+        rStoreCapacity = (int) r[i++];
+        rStoreInventory = (int) r[i++];
+        rAverageStoreFill = r[i++];
+        rEnergyRatio = r[i++];
+        rDemand = (int) r[i++];
+        rProductsSold = (int) r[i++];
+        rPayroll = r[i++];
+        rInventoryCost = r[i++];
+        rElectricityCost = r[i++];
+        rWaterCost = r[i++];
+        rWaterRatio = r[i++];
+        rRoadRatio = r[i++];
+        rRetailInterest = r[i++];
+        rRealEstateInterest = r[i++];
+        rRetailPropertyTax = r[i++];
+        rRetailOperatingCost = r[i++];
+        rRetailOperatingIncome = r[i++];
+        rRetailNetIncome = r[i++];
+        rOccupiedUnits = (int) r[i++];
+        rVacantUnits = (int) r[i++];
+        rRentIncome = r[i++];
+        rPropertyMaintenance = r[i++];
+        rPropertyTaxExpense = r[i++];
+        rRealEstateExpenses = r[i++];
+        rRealEstateNetIncome = r[i++];
+        rTotalNetIncome = r[i++];
+        rTotalTax = r[i++];
+        rRetailTax = r[i++];
+        rRealEstateTax = r[i++];
+
+        return true;
+    }
 }

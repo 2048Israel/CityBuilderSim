@@ -115,6 +115,7 @@ public class ConstructionHandler {
         netIncome = revenue - expenses - interestExpense - propertyTaxExpense;
         cash += netIncome;
         revenue = 0;
+        subsidyThisMonth = 0;
         materialsConsumed = 0;
     }
 
@@ -124,6 +125,58 @@ public class ConstructionHandler {
      *
      * @param points construction points the job represents - the work owed
      */
+    /**
+     * A retainer from the city, booked as revenue for the month.
+     *
+     * WHY THIS EXISTS
+     *
+     * Construction is loss-making whenever its order book is empty - it has a
+     * standing payroll and no revenue - so a lull triggers capacity retirement,
+     * and the 4,000-month playtest showed what that does: the city buys four
+     * depots, population doubles inside two years, the projects finish, and the
+     * sector scraps the depots it just used. Every city in the game converged to
+     * construction capacity 100 and stayed there for centuries.
+     *
+     * The subsidy is the answer to a real question - what does a city do when it
+     * needs builders to still exist next year? - and it is honest about the
+     * cost. Paying it keeps crews on the books between projects; not paying it
+     * lets them go. Nothing is protected for free.
+     *
+     * @param amount the city's monthly payment, in thousands
+     */
+    public void receiveSubsidy(double amount){
+        if (amount > 0) {
+            revenue += amount;
+            subsidyThisMonth = amount;
+        }
+    }
+
+    private double subsidyThisMonth;
+
+    public double getSubsidyThisMonth(){ return subsidyThisMonth; }
+
+    /**
+     * What it costs to keep one point of capacity standing for a month.
+     *
+     * Payroll only. Materials are bought per job and interest is a function of
+     * borrowing, but the crews are there whether or not anyone orders anything -
+     * which is exactly the cost a subsidy is offsetting.
+     *
+     * Uses the UNDISCOUNTED payroll on purpose: wageExp has already been scaled
+     * down by the idle-payroll floor, so pricing the subsidy off it would offer
+     * to protect capacity at a third of what keeping it actually costs.
+     */
+    public double getStandingCostPerCapacity(double capacity){
+
+        if (capacity <= 0) return 0;
+
+        double fullPayroll = 0;
+        for (double tier : wages) {
+            fullPayroll += tier;
+        }
+        return (fullPayroll * averageFill) / capacity;
+    }
+
     public void bill(double amount, double points){
         unearnedRevenue += amount;
         backlogPoints += points;
@@ -312,6 +365,14 @@ public class ConstructionHandler {
         System.out.println("Construction Output:      " + formatter.format(construction));
         System.out.println("Materials Production:     " + formatter.format(materials));
         System.out.println("Materials Inventory:      " + formatter.format(materialsInventory));
+
+        // Both figures include the city's own works department, which is not
+        // obvious from the screen and reads as a bug the first time a player
+        // demolishes every depot and still sees output. Naming it is the whole
+        // fix (backlog item 14).
+        System.out.println("  (of which municipal works: "
+                + BuildingManager.BASE_CONSTRUCTION + " points, "
+                + BuildingManager.BASE_MATERIALS + " materials, with no depots at all)");
 
         System.out.println("\n------------------ MATERIALS CONSUMPTION ------------------");
 

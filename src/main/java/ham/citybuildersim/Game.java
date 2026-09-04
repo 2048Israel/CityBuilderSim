@@ -156,6 +156,24 @@ public class Game {
 
         this.lastSaveResult = null;
         this.loadFailure = null;
+        this.skipFailure = null;
+
+        /*
+         * The retainer and the warning about needing one.
+         *
+         * buildWorld() rebuilds every MANAGER, which is what made the
+         * twenty-three-field reset bug go away - but these three live on Game
+         * itself, so nothing was clearing them. A new game inherited the
+         * previous city's construction subsidy and went on paying it every
+         * month, and inherited its shedding warning too.
+         *
+         * NewGameCheck did not catch it because its snapshot did not reach
+         * these fields. It does now, which is the actual fix - the list being
+         * short is the bug that keeps recurring here, not any one field on it.
+         */
+        this.constructionSubsidy = 0;
+        this.constructionShedMonth = -1;
+        this.constructionShedPoints = 0;
 
         this.reports = true;
         this.graphs = true;
@@ -188,6 +206,10 @@ public class Game {
             System.out.println("Brought " + file
                     + " over from the old save folder into " + gameFiles.getDirectory());
         }
+
+        // Ten plots have to be on offer before the player's first turn, not
+        // after their first month.
+        landManager.updateMarket(populationManager.getPopulation());
 
         initialized = true;
         }
@@ -342,6 +364,49 @@ public class Game {
     public double getCash(){
         return cash;
     }
+    /* ======================= THE CONSTRUCTION SUBSIDY =======================
+     *
+     * A monthly retainer that keeps builders on the books between projects.
+     *
+     * The 4,000-month playtest found that idle construction is loss-making, so
+     * it sheds capacity in any lull - including the capacity a player just paid
+     * for. Buy four depots, watch the population double, watch the sector scrap
+     * all four sixty months later, and the city falls back to where it started
+     * for the next eight centuries.
+     *
+     * This is the lever against that, and it is deliberately not free and not
+     * absolute. The money is real, it is paid every month whether anything is
+     * being built or not, and it protects exactly as much capacity as it covers
+     * the payroll of. Protecting more costs more.
+     * ==================================================================== */
+
+    private double constructionSubsidy;
+
+    public double getConstructionSubsidy(){ return constructionSubsidy; }
+
+    public void setConstructionSubsidy(double monthlyAmount){
+        this.constructionSubsidy = Math.max(0, monthlyAmount);
+    }
+
+    /**
+     * Construction capacity the current subsidy keeps alive.
+     *
+     * What the player actually wants to know when setting the figure: not "how
+     * much am I spending" but "how many depots does that keep". Capped at the
+     * capacity that exists, because a subsidy cannot protect plant nobody owns.
+     */
+    public double getSubsidisedCapacity(){
+
+        double capacity = buildingManager.getTotalConstructionCapacity();
+        double perPoint = servicesManager.getConstructionHandler()
+                .getStandingCostPerCapacity(capacity);
+
+        if (perPoint <= 0 || constructionSubsidy <= 0) {
+            return 0;
+        }
+        return Math.min(capacity, constructionSubsidy / perPoint);
+    }
+
     public double getIncome(){
         double income = economyManager.getTotalIncome()+servicesManager.getServiceNetIncome();
         return income;
@@ -362,18 +427,57 @@ public class Game {
         return servicesManager.getWaterRatio();
     }
 
+    public double getRoadRatio(){
+        return servicesManager.getRoadRatio();
+    }
+
+    /** The ore market, for the mining screen. */
+    public IronMarket getIronMarket(){
+        return economyManager.getIronMarket();
+    }
+
+    public MiningHandler getMiningHandler(){
+        return economyManager.getMiningHandler();
+    }
+
+    /** The road network itself, for the infrastructure screen. */
+    public InfrastructureManager getInfrastructureManager(){
+        return servicesManager.getInfrastructureManager();
+    }
+
     public LandManager getLandManager(){
         return landManager;
     }
 
-    /** Annexes one block if the city can afford it. @return true if bought. */
+    /** Buys the cheapest plot on offer, if the city can afford it. */
     public boolean buyLandBlock(){
-        double cost = landManager.buyBlock(cash);
+        double cost = landManager.buyBlock(cash, populationManager.getPopulation());
         if (cost <= 0) {
             return false;
         }
         cash -= cost;
         return true;
+    }
+
+    /**
+     * Buys one specific listed plot - the land office screen's action.
+     *
+     * @return true if it was bought. False means it was not listed or not
+     *         affordable, and nothing changed.
+     */
+    public boolean buyLandParcel(int parcelId){
+        double cost = landManager.buyParcel(
+                parcelId, cash, populationManager.getPopulation());
+        if (cost <= 0) {
+            return false;
+        }
+        cash -= cost;
+        return true;
+    }
+
+    /** The plots on offer. */
+    public java.util.List<LandParcel> getLandListing(){
+        return landManager.getListing();
     }
 
     public BusinessInvestment getBusinessInvestment(){
@@ -439,6 +543,33 @@ public class Game {
                 constructionOutput,
                 buildingManager.getUnderConstructionByCategory(BuildingType.INDUSTRIAL)),
                 sectorInvestor(BusinessDebtManager.INDUSTRY));
+
+        /*
+         * Mines before mills, because a mill's business case is the ore.
+         *
+         * planHeavyIndustry() refuses to build into ore that does not exist, so
+         * running it first would have it decline every month and the cluster
+         * would never start. This ordering is the whole reason the two sectors
+         * can bootstrap each other: the city buys a deposit, a mine opens on it,
+         * the spare ore shows up as a reason to smelt, and a mill follows.
+         */
+        IronMarket ore = economyManager.getIronMarket();
+
+        refreshLand();
+        consider(businessInvestment.planMining(
+                landManager.getIronDeposits() - minesCommitted(),
+                landManager.getIronReserveTonnes(),
+                constructionOutput,
+                buildingManager.getUnderConstructionByCategory(BuildingType.MINING)),
+                sectorInvestor(BusinessDebtManager.MINING));
+
+        refreshLand();
+        consider(businessInvestment.planHeavyIndustry(
+                economyManager.getHeavyIndustryHandler().getOreDemand(),
+                economyManager.getMiningHandler().getPotentialOutput(),
+                constructionOutput,
+                buildingManager.getUnderConstructionByCategory(BuildingType.HEAVY_INDUSTRY)),
+                sectorInvestor(BusinessDebtManager.HEAVY_INDUSTRY));
 
         // Construction last: it reads the queue everyone else just added to.
         refreshLand();
@@ -523,6 +654,10 @@ public class Game {
                 ih.getNetIncome());
         businessInvestment.recordSectorResult(BusinessDebtManager.CONSTRUCTION,
                 construction.getNetIncome());
+        businessInvestment.recordSectorResult(BusinessDebtManager.HEAVY_INDUSTRY,
+                economyManager.getHeavyIndustryHandler().getNetIncome());
+        businessInvestment.recordSectorResult(BusinessDebtManager.MINING,
+                economyManager.getMiningHandler().getNetIncome());
 
         // Housing: demand is people actually living in it. Empty units can go;
         // occupied ones can never be scrapped out from under anyone.
@@ -568,9 +703,20 @@ public class Game {
         double workAvailable = Math.min(
                 buildingManager.getRemainingConstructionPoints(), capacity);
 
+        /*
+         * A subsidised depot has a customer: the city.
+         *
+         * Rather than bolting a floor onto planRetirement(), the subsidy simply
+         * counts as demand - which is what it is. The city is paying to keep
+         * those crews available, so from the sector's side that capacity is
+         * spoken for, and every rule downstream (the headroom, the gradual
+         * shedding, the loss counter) keeps working untouched.
+         */
+        double demand = Math.max(workAvailable, getSubsidisedCapacity());
+
         retire(businessInvestment.planRetirement(
                 BusinessDebtManager.CONSTRUCTION, BuildingType.CONSTRUCTION,
-                workAvailable, capacity,
+                demand, capacity,
                 buildingManager.getUnderConstructionByCategory(BuildingType.CONSTRUCTION)),
                 sectorInvestor(BusinessDebtManager.CONSTRUCTION));
     }
@@ -614,6 +760,74 @@ public class Game {
         // to reconstruct what it lost from a building count going down.
         demolitionLog.record(decision.template.getName(), scrapped,
                 decision.sector, month, proceeds);
+
+        /*
+         * Construction shedding capacity is the one retirement worth
+         * interrupting the player about.
+         *
+         * Every other sector shrinking is the market working: too many shops,
+         * fewer shops. Construction shrinking is different because it is the
+         * bottleneck on everything else - the 4,000-month playtest showed a city
+         * buy four depots, double its population, and lose all four sixty months
+         * later, and the only signal was a number on a screen nobody had open.
+         *
+         * Recorded rather than popped up, because it happens inside a skip. The
+         * UI decides when to say it.
+         */
+        if (BusinessDebtManager.CONSTRUCTION.equals(decision.sector)) {
+            constructionShedMonth = month;
+            constructionShedPoints += decision.template.getProduction1() * scrapped;
+        }
+    }
+
+    /* =================== THE CONSTRUCTION WARNING ===================
+     *
+     * Two facts and a question. The facts: when construction last sold
+     * capacity, and how much it has sold since anyone last looked. The
+     * question the player actually needs asked is "do you want to pay to
+     * stop this", and the answer is one screen away.
+     * ============================================================== */
+
+    private int constructionShedMonth = -1;
+    private double constructionShedPoints;
+
+    /**
+     * Whether the city should be told construction is dismantling itself.
+     *
+     * Only while it is RECENT and the retainer is not already covering the
+     * capacity that is left. A player who has set a subsidy has answered the
+     * question and should not keep being asked it.
+     */
+    /**
+     * Puts the warning back where it stood.
+     *
+     * The load path's entry point, and the one place that decides what an
+     * absent or nonsensical month means. Months are 1-based, so anything at or
+     * below zero is "no warning on file" - which covers a save written before
+     * this was carried, and any future decoder that zero-fills rather than
+     * running the field initialiser.
+     */
+    public void restoreConstructionShedding(int month, double points){
+        this.constructionShedMonth = (month > 0) ? month : -1;
+        this.constructionShedPoints = Math.max(0, points);
+    }
+
+    public boolean isConstructionShedding(){
+
+        if (constructionShedMonth < 0 || month - constructionShedMonth > 24) {
+            return false;
+        }
+        return getSubsidisedCapacity()
+                < buildingManager.getTotalConstructionCapacity() - 1e-9;
+    }
+
+    public int getConstructionShedMonth()    { return constructionShedMonth; }
+    public double getConstructionShedPoints(){ return constructionShedPoints; }
+
+    /** The player has seen it. Stops the banner nagging about old news. */
+    public void acknowledgeConstructionShedding(){
+        constructionShedMonth = -1;
+        constructionShedPoints = 0;
     }
 
     /** Written off in the most recent insolvency sweep, for the credit screen. */
@@ -706,9 +920,27 @@ public class Game {
         return servicesManager;
     }
 
+    /**
+     * This month's effective construction output: the sector's capacity scaled
+     * by how well it is staffed and by what the roads will carry.
+     *
+     * THE ONE DEFINITION. SimulationEngine.simulateMonth() calls this rather
+     * than working it out again, and startOfMonthUpdate() hands the same figure
+     * to ConstructionHandler.recogniseWork() as the month's revenue. Those three
+     * numbers have to be the same number: the second is what the sites actually
+     * advance by and the third is what the sector is paid for, so a copy that
+     * drifts from the original books revenue for work nobody did.
+     *
+     * It very nearly did. The road throttle went into simulateMonth() alone,
+     * which left the screen and the revenue line both quoting an uncongested
+     * build rate while the sites crawled - construction paid in full for a
+     * third of a month's work.
+     */
     public int getConstructionOutput(){
         double constructionFillRate = servicesManager.getConstructionHandler().getAverageFill();
-        return (int) Math.round(buildingManager.getTotalConstructionCapacity() * constructionFillRate);
+        double roadRatio = servicesManager.getRoadRatio();
+        return (int) Math.round(
+                buildingManager.getTotalConstructionCapacity() * constructionFillRate * roadRatio);
     }
 
     public int getConstructionMaterials(){
@@ -785,11 +1017,33 @@ public class Game {
                 skipReport.sampleMonth(
                         servicesManager.getEnergyRatio(),
                         servicesManager.getWaterRatio(),
+                        servicesManager.getRoadRatio(),
                         landManager.getAvailableSqFt(),
                         households.isLivingBeyondIncome(),
                         !buildingManager.getStacksUnderConstruction().isEmpty(),
                         populationManager.getPopulation());
             }
+
+        } catch (RuntimeException e) {
+            /*
+             * A skip that throws halfway leaves the city part-simulated, and
+             * before this the window simply stopped responding: the exception
+             * went to the FX thread's default handler and a stderr that does
+             * not exist in a packaged build.
+             *
+             * Swallowed rather than rethrown, deliberately. The months that DID
+             * complete are real - cash moved, buildings finished, the autosave
+             * before the skip is on disk - so the honest thing is to stop where
+             * it stopped, report how far it got, and let the player save or
+             * reload. Rethrowing would lose a working city over one bad month.
+             */
+            GameLog.failure("The simulation failed during month " + (month)
+                    + " of a " + months + "-month skip, after " + completed
+                    + " completed", e);
+            skipFailure = "The simulation stopped after " + completed
+                    + " of " + months + " months. The details are in the log:\n"
+                    + (GameLog.file() == null ? "(no log file)" : GameLog.file());
+
         } finally {
             graphs = previousGraphs;
             reports = previousReports;
@@ -937,7 +1191,7 @@ public class Game {
             case 1:
                 System.out.print("How many? ");
                 int quantity = getInput();
-                processBuildOrder(selected, quantity); // Extracted one step further for clarity
+                processBuildOrder(selected, quantity, false); // Extracted one step further for clarity
                 break;
             case 2:
                 printBuildingInfo(selected.getName());
@@ -961,19 +1215,37 @@ public class Game {
             neededMaterials = totalMaterials - constructionMaterials;
         }
 
-        double totalCost = (selected.getCashCost() * quantity);
-        totalCost += (neededMaterials * materialsPrice);
-
-        // CRITICAL: Must include the manager's setup cost
-        totalCost += buildingManager.getSetCost();
-
-        return totalCost;
+        return (selected.getCashCost() * quantity)
+                + (neededMaterials * materialsPrice);
     }
-    private void processBuildOrder(BuildingsTemplate selected, int quantity) {
+    /**
+     * @param noConstruction put the buildings up immediately instead of queueing
+     *                       them, and charge nothing for the construction.
+     *
+     * WHAT THE FLAG ACTUALLY MEANS (backlog item 24)
+     *
+     * buildStack() has always taken this parameter and this method has always
+     * ignored it, hardcoding false. Nothing in the game passed true, so nothing
+     * broke - which is exactly what makes a parameter that does nothing worth
+     * fixing rather than leaving: the first caller to trust it would have got
+     * silently queued buildings and no way to tell.
+     *
+     * It follows BuildingManager.addStack()'s existing meaning of the same flag:
+     * no construction process at all. So no materials are drawn (they are an
+     * input to building, not to existing), the construction sector is not paid
+     * (it did no work), and the order costs the cash price only. It is a
+     * scenario and fixture path - the harnesses that want a city standing on
+     * month one - and it now goes through the land and cash checks like any
+     * other order rather than around them.
+     */
+    private void processBuildOrder(BuildingsTemplate selected, int quantity,
+                                   boolean noConstruction) {
         // 1. Calculate costs accurately
         double materialsPrice = buildingManager.getConstructionMaterialPrice();
         double currentMaterials = buildingManager.getConstructionMaterials();
-        double totalMaterialsRequired = selected.constructionMaterials * quantity;
+        double totalMaterialsRequired = noConstruction
+                ? 0
+                : selected.constructionMaterials * quantity;
 
         double neededMaterials = 0;
         if (currentMaterials < totalMaterialsRequired) {
@@ -981,9 +1253,8 @@ public class Game {
         }
 
         // Combine EVERYTHING into totalCost
-        double totalCost = (selected.getCashCost() * quantity);
-        totalCost += (neededMaterials * materialsPrice);
-        totalCost += buildingManager.getSetCost(); // Move this HERE
+        double totalCost = (selected.getCashCost() * quantity)
+                + (neededMaterials * materialsPrice);
 
         // 2. Set stats for the UI Receipt
         this.totalMaterialsImported = neededMaterials;
@@ -1009,7 +1280,7 @@ public class Game {
             this.hasNewReceipt = true;
             lastBuildingName = buildingManager.getName(selected);
 
-            buildingManager.addStack(selected, quantity, false);
+            buildingManager.addStack(selected, quantity, noConstruction);
             materialsConsumed += totalMaterialsRequired;
 
             // 4. Subtract everything at once
@@ -1020,8 +1291,15 @@ public class Game {
             // ...and it lands somewhere now. The construction sector did the
             // work; this is what it gets paid for doing it - recognised as the
             // work is actually delivered, not all on the order month.
-            servicesManager.getConstructionHandler().bill(totalCost,
-                    selected.getConstructionPoints() * (double) quantity);
+            //
+            // Unless there was no work: an instant build skips the queue, so
+            // paying construction for it would be revenue against nothing
+            // delivered, and recogniseWork() would never have the points to
+            // earn it back.
+            if (!noConstruction) {
+                servicesManager.getConstructionHandler().bill(totalCost,
+                        selected.getConstructionPoints() * (double) quantity);
+            }
 
             System.out.println(quantity + " " + selected.getName()
                     + " construction started. $" + totalCost + " cash used");
@@ -1035,7 +1313,42 @@ public class Game {
 
     
     
-    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, FAILED}
+    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, FAILED}
+
+    /**
+     * Mines standing, being built, or already ordered.
+     *
+     * A deposit supports one mine, and the count has to include work in progress
+     * or the player could queue five mines against one deposit and have four of
+     * them open onto nothing.
+     */
+    public int minesCommitted() {
+        int committed = 0;
+        int[] underConstruction = buildingManager.getUnderConstructionById();
+        for (BuildingsTemplate t : buildingManager.getTemplates()) {
+            if (t.getCategory() != BuildingType.MINING) continue;
+            committed += buildingManager.getQuantity(t.getId());
+            if (t.getId() < underConstruction.length) {
+                committed += underConstruction[t.getId()];
+            }
+        }
+        return committed;
+    }
+
+    /**
+     * Whether this order can go ahead on the ore the city owns.
+     *
+     * A mine needs ground with iron under it. Buying a land parcel with a
+     * deposit is what unlocks one, which is the whole reason the listing has
+     * deposits in it - and why the parcels that carry them cost more.
+     */
+    public boolean hasDepositFor(BuildingsTemplate template, int quantity) {
+        if (template == null || template.getCategory() != BuildingType.MINING) {
+            return true;
+        }
+        return landManager.getIronDeposits() >= minesCommitted() + quantity
+                && landManager.getIronReserveTonnes() > 0;
+    }
 
     /**
      * A build order paid for by someone other than the city.
@@ -1055,6 +1368,10 @@ public class Game {
         double neededMaterials = Math.max(totalMaterialsRequired - currentMaterials, 0);
 
         double landNeeded = template.getLandSqFt() * quantity;
+
+        if (!hasDepositFor(template, quantity)) {
+            return false;   // no ground with ore in it to sell them
+        }
 
         if (!landManager.canAllocate(landNeeded)) {
             return false;   // the city has no plot to sell them
@@ -1107,20 +1424,30 @@ public class Game {
 
     public Investor getGovernmentInvestor() { return government; }
     
-    public BuildResult buildStack(BuildingsTemplate template, int quantity,boolean noConstuction){
-        double totalCost = calculateTotalCost(template,quantity);
+    public BuildResult buildStack(BuildingsTemplate template, int quantity, boolean noConstruction){
+        double totalCost = noConstruction
+                ? template.getCashCost() * quantity
+                : calculateTotalCost(template, quantity);
 
         // Land before money. processBuildOrder() checks it too, but by then the
         // caller has already been offered a T-Bill: without this the player can
         // borrow three hundred million to fund a building the city has nowhere
         // to put, and only find out after the debt is issued.
+        // Ore before land and before money: a mine with nowhere to dig is not a
+        // funding problem, and offering the player a bond to fix it would be a
+        // lie about what is wrong.
+        if (!hasDepositFor(template, quantity)) {
+            this.hasNewReceipt = false;
+            return BuildResult.NO_DEPOSIT;
+        }
+
         if (!landManager.canAllocate(template.getLandSqFt() * quantity)) {
             this.hasNewReceipt = false;
             return BuildResult.NO_LAND;
         }
 
         if(totalCost <= cash){
-            processBuildOrder(template,quantity);
+            processBuildOrder(template, quantity, noConstruction);
             return BuildResult.SUCCESS;
         } else{
             return BuildResult.NEEDS_FUNDING;
@@ -1533,6 +1860,10 @@ public class Game {
         // bill BEFORE the statements run, so the figures they bank are net of it.
         // The assessor works off the price the player is currently charging, so
         // it has to know it before anything is valued or billed.
+        // The land market re-prices first: what businesses pay this month, and
+        // what the next parcel costs, are both inputs to everything below.
+        landManager.updateMarket(populationManager.getPopulation());
+
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
 
         economyManager.updateBusinessCredit(debtManager.getRate());
@@ -1547,6 +1878,14 @@ public class Game {
         ConstructionHandler construction = servicesManager.getConstructionHandler();
         construction.recogniseWork(getConstructionOutput());
 
+        // The retainer, paid before the sector's statement runs so the month it
+        // books is the month the city paid for.
+        if (constructionSubsidy > 0) {
+            double paid = Math.min(constructionSubsidy, Math.max(0, cash));
+            construction.receiveSubsidy(paid);
+            cash -= paid;
+        }
+
         // Grab the recognised figure before updateConstructionReport() banks the
         // month and clears it - that value IS this month's investment.
         double constructionWorkDone = construction.getRevenue();
@@ -1554,6 +1893,7 @@ public class Game {
         economyManager.updateCommercialReport();
         economyManager.updateIndustrialReport();
         economyManager.updateHeavyIndustryReport();
+        economyManager.updateMiningReport();
         economyManager.updateConstructionReport();
 
         economyManager.updateNationalAccounts(
@@ -1681,6 +2021,12 @@ public class Game {
         economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
         tempCash += servicesManager.getServiceNetIncome();
         economyManager.finalEconUpdate();
+
+        // The ore, after the rest of the month. Lifting it needs the ground,
+        // which EconomyManager has no business knowing about - LandManager owns
+        // the reserves and decides how much was actually there.
+        economyManager.mineIron(landManager);
+
         servicesManager.updateServices();
         economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
         economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
@@ -1908,6 +2254,11 @@ public class Game {
         // can recompute it on load. Without this the freshly loaded city showed
         // a next-month income missing its whole property-tax line.
         dataSave.setPropertyTaxCharged(economyManager.getTotalPropertyTax());
+
+        // Accrued after this month's income was banked, so it is charged next
+        // month. Nothing can rederive it from the debt book, because whether it
+        // has been charged yet is a fact about where in the month we are.
+        dataSave.setCityInterestAccrued(economyManager.getExpenses());
         dataSave.setPropertyTaxCharges(economyManager.getPropertyTaxCharges());
         dataSave.setInterestCharges(economyManager.getInterestCharges());
 
@@ -1923,7 +2274,36 @@ public class Game {
                 economyManager.getIndustryUnitsSold(),
                 economyManager.getIndustryUnitsImported());
 
+        // The utilisation those statements were written against - see DataSave.
+        dataSave.setRatioBasis(
+                economyManager.getEnergyRatioBasis(),
+                economyManager.getWaterRatioBasis(),
+                economyManager.getRoadRatioBasis());
+
+        // ...and the statements themselves, which is what makes the line above
+        // a fallback rather than the fix. See CommercialHandler.getReportState().
+        dataSave.setReportState(
+                economyManager.getCommercialReportState(),
+                economyManager.getIndustrialReportState(),
+                economyManager.getHeavyIndustryReportState(),
+                economyManager.getMiningReportState());
+
+        // The land office's window, the ore under the city, and the retainer.
+        dataSave.setLandState(
+                landManager.getMarket().getListingState(),
+                landManager.getIronDeposits(),
+                landManager.getIronReserveTonnes());
+        dataSave.setIronLocalPrice(economyManager.getIronLocalPrice());
+        dataSave.setMiningCash(economyManager.getMiningCash());
+        dataSave.setConstructionSubsidy(constructionSubsidy);
+        dataSave.setConstructionShedding(constructionShedMonth, constructionShedPoints);
+
         dataSave.setNationalAccounts(economyManager.getNationalAccountsState());
+
+        // History, not state: what the city lost and what its lenders wrote off.
+        dataSave.setDemolitions(demolitionLog.all());
+        dataSave.setWriteOffTotals(
+                economyManager.getBusinessDebtManager().getWriteOffTotals());
 
         ConstructionHandler builders = servicesManager.getConstructionHandler();
         dataSave.setConstructionBooks(builders.getCash(),
@@ -1932,6 +2312,11 @@ public class Game {
         dataSave.setStoreInventory(economyManager.getStoreInventory());
         dataSave.setIndustryFoodInventory(economyManager.getIndustryFoodInventory());
         dataSave.setPopulation(populationManager.getPopulation());
+
+        // Not derivable from the population beside it: the month was worked by
+        // the people who lived here when it started. See
+        // PopulationManager.restoreWorkforce().
+        dataSave.setWorkforce(populationManager.getWorkforceForSave());
         dataSave.setCommercialCash(economyManager.getCommercialCash());
         dataSave.setRealEstateCash(economyManager.getRealEstateCash());
         dataSave.setIndustrialCash(economyManager.getIndustrialCash());
@@ -1961,6 +2346,20 @@ public class Game {
         if (!history.ok) {
             System.out.println(history.message());
         }
+    }
+
+    /**
+     * Why the last fast-forward stopped early, or null.
+     *
+     * Read and cleared by the UI, so a skip that broke says so on screen once
+     * instead of leaving the player wondering why the month counter stopped.
+     */
+    private String skipFailure;
+
+    public String takeSkipFailure() {
+        String failure = skipFailure;
+        skipFailure = null;
+        return failure;
     }
 
     /** What the last write attempt did. Null until something has been saved. */
@@ -2100,6 +2499,14 @@ public class Game {
             cash += cashReceivedFromBill;
    }
     
+   /**
+    * Set by loadGame() from the save, consumed by the next
+    * rebuildSimulationState(). -1 means "recompute", which is what a save from
+    * before the workforce was carried gets, and what newGame() and every other
+    * caller of the rebuild gets too.
+    */
+   private int pendingWorkforce = -1;
+
    private void rebuildSimulationState() {
 
     // rebuild jobs from buildings
@@ -2112,7 +2519,23 @@ public class Game {
     // assigned the field to itself. It looked like it was restoring population
     // state but did nothing, and left workforce at 0 for the whole load path.
     // Must run before the getJobFillRate() reads below, which depend on workforce.
-    populationManager.recomputeWorkforce();
+    /*
+     * The workforce the month was worked by, if the save carries it.
+     *
+     * recomputeWorkforce() derives it from the population the save was taken
+     * WITH; updatePop() derives it from the population the month STARTED with.
+     * In a growing city those differ by a month of arrivals, and everything
+     * below this line - the fill rate, four payrolls, the wage tax, the
+     * construction discount - is priced off whichever one wins. Restoring is
+     * right; recomputing is the fallback for saves written before it was
+     * carried, where it is still far better than the zero it replaced.
+     */
+    if (pendingWorkforce >= 0) {
+        populationManager.restoreWorkforce(pendingWorkforce);
+        pendingWorkforce = -1;
+    } else {
+        populationManager.recomputeWorkforce();
+    }
     populationManager.updateJobs(jobs);
     populationManager.UpdateTotalWagePerType();
 
@@ -2131,6 +2554,7 @@ public class Game {
     economyManager.setTotalWage(populationManager.getTotalWage());
     economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
     economyManager.setWaterRatio(servicesManager.getWaterRatio());
+    economyManager.setRoadRatio(servicesManager.getRoadRatio());
 
     economyManager.updateIndustrialWages(populationManager.getWagesPerType());
     economyManager.updateStoreWages(
@@ -2171,6 +2595,7 @@ public class Game {
     economyManager.refreshCommercialReport();
     economyManager.refreshIndustrialReport();
     economyManager.refreshHeavyIndustryReport();
+    economyManager.refreshMiningReport();
 
     // GDP reads commercialHandler.getNetIncome(), so it has to come after the
     // refresh above to see this month's figure rather than a stale one.
@@ -2237,9 +2662,15 @@ public class Game {
          * and then rebuilding would put the bug straight back.
          */
         double restoredPropertyTax = 0;
+        double restoredCityInterest = 0;
         double[] restoredPropertyTaxCharges = null;
         DataSave restoredFlows = null;
         double[] restoredInterestCharges = null;
+
+        // The ore price the month traded at. Restored AFTER the rebuild, which
+        // re-prices the market from current supply and demand and would
+        // otherwise overwrite it - the same trap the interest charges sit in.
+        double restoredOrePrice = 0;
 
         try {
             Path path = gameFiles.saveFile(slot);
@@ -2254,6 +2685,15 @@ public class Game {
 
             // Deserialize normally
             DataSave loaded = gson.fromJson(json, DataSave.class);
+
+            // An empty file parses to null rather than throwing. Caught by the
+            // RuntimeException handler below either way, but a NullPointerException
+            // in the log is a worse explanation than this sentence.
+            if (loaded == null) {
+                GameLog.note(GameFiles.slotLabel(slot) + " is empty or unreadable: " + path);
+                loadFailure = "This save file is empty.";
+                return;
+            }
 
             /*
              * Stop here rather than half-reading it. An older build silently
@@ -2284,6 +2724,41 @@ public class Game {
             economyManager.setIndustryFoodInventory(loaded.getIndustryFoodInventory());
             populationManager.setPopulation(loaded.getPopulation());
             this.population = loaded.getPopulation();
+
+            /*
+             * The land office and the ore, before rebuildSimulationState().
+             *
+             * The listing has to be back before anything re-prices the market,
+             * or the window refills with parcels 1-10 all over again and the
+             * player's plot - possibly the deposit they were saving for - is
+             * replaced by a different one at a different price.
+             *
+             * A save from before parcels carries no listing, and updateMarket()
+             * fills a fresh one, which is the only sensible answer for a city
+             * that never had a window.
+             */
+            if (loaded.getLandListing() != null) {
+                landManager.getMarket().restoreListingState(loaded.getLandListing());
+            }
+            landManager.restoreIron(loaded.getIronDeposits(), loaded.getIronReserveTonnes());
+            economyManager.setMiningCash(loaded.getMiningCash());
+            restoredOrePrice = loaded.getIronLocalPrice();
+            this.constructionSubsidy = Math.max(0, loaded.getConstructionSubsidy());
+
+            // The warning, restored with the crisis that caused it. A save from
+            // before this was carried decodes to -1, which isConstructionShedding()
+            // reads as "nothing to warn about" - correct for a save that has no
+            // record of one.
+            restoreConstructionShedding(loaded.getConstructionShedMonth(),
+                    loaded.getConstructionShedPoints());
+
+            // Read here, consumed by rebuildSimulationState() below. It has to
+            // be in place BEFORE the rebuild rather than corrected after it:
+            // the fill rate, every sector's payroll, the wage tax and the
+            // construction discount are all priced off the workforce during
+            // that call, so putting it right afterwards fixes the number and
+            // leaves everything derived from it wrong.
+            pendingWorkforce = loaded.getWorkforce();
             economyManager.setCommercialCash(loaded.getCommercialCash());
             economyManager.setRealEstateCash(loaded.getRealEstateCash());
             economyManager.setIndustrialCash(loaded.getIndustrialCash());
@@ -2423,6 +2898,7 @@ public class Game {
             }
 
             restoredPropertyTax = loaded.getPropertyTaxCharged();
+            restoredCityInterest = loaded.getCityInterestAccrued();
             restoredPropertyTaxCharges = loaded.getPropertyTaxCharges();
             restoredFlows = loaded.hasMonthFlows() ? loaded : null;
             restoredInterestCharges = loaded.getInterestCharges();
@@ -2487,7 +2963,28 @@ public class Game {
             System.out.println("Game loaded successfully.");
 
         } catch (IOException e) {
-            System.out.println("Failed to load save file.");
+            GameLog.failure("Could not read " + GameFiles.slotLabel(slot), e);
+            loadFailure = "The save file could not be read: " + e.getMessage();
+            return;
+
+        } catch (RuntimeException e) {
+            /*
+             * A truncated or corrupt save throws JsonSyntaxException, which is a
+             * RuntimeException and sailed straight through the IOException catch
+             * above - the same shape as the IllegalArgumentException that used
+             * to abandon half a load in silence.
+             *
+             * In the packaged build that meant clicking Load did nothing at all:
+             * no message, no error, no load, because the exception reached the
+             * FX thread's default handler and a stderr that does not exist.
+             *
+             * Returning before the rebuild is deliberate. A half-applied save is
+             * worse than none - the city would be part this save and part
+             * whatever was loaded before it, with no way for the player to tell.
+             */
+            GameLog.failure("Corrupt save in " + GameFiles.slotLabel(slot), e);
+            loadFailure = "This save file is damaged and could not be read.";
+            return;
         }
 
         /*
@@ -2532,6 +3029,17 @@ public class Game {
             }
         }
 
+        /*
+         * The city's own accrued interest, which nothing was restoring at all.
+         *
+         * Unconditional, including when it is zero: a city that has paid its
+         * bonds off really does owe nothing, and treating 0 as "absent" would
+         * leave whatever the fresh Game happened to be carrying. A save from
+         * before this field simply reads 0, which is what those saves already
+         * behaved as.
+         */
+        economyManager.setInterest(restoredCityInterest);
+
         rebuildSimulationState();
 
         /*
@@ -2555,14 +3063,49 @@ public class Game {
                     restoredFlows.getRetailImportTax(),
                     restoredFlows.getIndustryDemand(),
                     restoredFlows.getIndustryUnitsSold(),
-                    restoredFlows.getIndustryUnitsImported());
+                    restoredFlows.getIndustryUnitsImported(),
+                    // A save from before roads carries no basis. Falling back to
+                    // what the city looks like now is exactly what those saves
+                    // used to do, and their ratios were 1, so it costs nothing.
+                    restoredFlows.hasRatioBasis()
+                            ? restoredFlows.getEnergyRatioBasis() : getEnergyRatio(),
+                    restoredFlows.hasRatioBasis()
+                            ? restoredFlows.getWaterRatioBasis() : getWaterRatio(),
+                    restoredFlows.hasRatioBasis()
+                            ? restoredFlows.getRoadRatioBasis() : getRoadRatio());
 
             economyManager.restoreNationalAccounts(restoredFlows.getNationalAccounts());
+
+            demolitionLog.restore(restoredFlows.getDemolitions());
+            economyManager.getBusinessDebtManager()
+                    .restoreWriteOffs(restoredFlows.getWriteOffTotals());
 
             servicesManager.getConstructionHandler().restoreOrderBook(
                     restoredFlows.getConstructionCash(),
                     restoredFlows.getConstructionUnearnedRevenue(),
                     restoredFlows.getConstructionBacklogPoints());
+
+            /*
+             * Last, and it has to be last.
+             *
+             * Everything above rebuilds the sectors' statements from restored
+             * inputs - restoreMonthFlows() recomputes all three of them - and
+             * this puts the statements the save was actually taken with back
+             * over the top. Move it earlier and it is simply overwritten, which
+             * is the same trap restoreInterestCharges() above is sitting in.
+             *
+             * The recompute above is not wasted work: it sets the handlers'
+             * non-report state (imports, demand, units sold, the inventory cost)
+             * which the next month reads, and it is the fallback when a save
+             * carries no statements or ones of a different shape.
+             */
+            economyManager.restoreIronMarket(restoredOrePrice);
+
+            economyManager.restoreReportState(
+                    restoredFlows.getCommercialReport(),
+                    restoredFlows.getIndustrialReport(),
+                    restoredFlows.getHeavyIndustryReport(),
+                    restoredFlows.getMiningReport());
         }
     }
 
@@ -2596,11 +3139,18 @@ public class Game {
 
             System.out.println("History loaded successfully.");
 
-        } catch (IOException e) {
-            System.out.println("Failed to load save file.");
+        } catch (IOException | RuntimeException e) {
+            // Survivable on its own: the city loads and the graphs start empty.
+            // loadHistory() runs INSIDE loadGame(), so throwing here would take
+            // a whole city down over a graph.
+            GameLog.failure("Could not read the history for "
+                    + GameFiles.slotLabel(slot) + " - graphs will start empty", e);
         }
-        
-        rebuildSimulationState();
+
+        // NOTE: this used to call rebuildSimulationState() a second time.
+        // loadHistory() runs inside loadGame(), which rebuilds immediately
+        // afterwards, so every load rebuilt the city twice - the same duplicate
+        // pass that was removed from loadGameSave().
     }
 }
  

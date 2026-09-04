@@ -194,6 +194,7 @@ public class BuildingCatalog {
                 .setElectricityConsumption((int) number(o, "electricity"))
                 .setWaterConsumption(number(o, "water"))
                 .setLandSqFt(number(o, "land"))
+                .setRoadLoad(number(o, "roadLoad"))
                 .setProduction1(number(o, "production1"))
                 .setProduction2(number(o, "production2"))
                 .setProductionModifier1(number(o, "productionModifier1"))

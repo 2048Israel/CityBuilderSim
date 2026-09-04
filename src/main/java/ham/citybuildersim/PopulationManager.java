@@ -26,7 +26,18 @@ public class PopulationManager {
     
     
     public int updatePop(int householdCapacity){
-        //change later
+
+        /*
+         * Workforce is taken from the population BEFORE the month moves it, and
+         * that ordering is deliberate rather than accidental: the people who
+         * worked this month are the ones who already lived here. Somebody who
+         * moves in this month starts work next month.
+         *
+         * It is also why the workforce has to be SAVED rather than recomputed -
+         * see recomputeWorkforce(). Leave this order alone unless you mean to
+         * change how fast a growing city staffs itself, which is a balance
+         * decision, not a tidy-up.
+         */
         double temp = population*adultPercent;
         workforce = (int)temp;
         double cap = totalJobs*(1+adultPercent)*1.5;
@@ -128,6 +139,32 @@ public class PopulationManager {
      */
     public void recomputeWorkforce(){
         workforce = (int)(population * adultPercent);
+    }
+
+    /**
+     * Puts back the workforce the month was actually worked by.
+     *
+     * recomputeWorkforce() above was the first fix for this and is no longer
+     * the right one. It derives the workforce from the population the save was
+     * taken WITH, but updatePop() derives it from the population the month
+     * STARTED with - so in any city that is still growing, a reloaded save came
+     * back with a month's extra workers. Measured at 418 against the 386 that
+     * actually worked, on a city of 836: a 5% overstatement of the wage bill,
+     * the wage tax, and every fill rate downstream of it.
+     *
+     * The third value in this codebase to be re-derived on load from state that
+     * had since moved, after the property-tax charge and the month's income
+     * statements. Same answer as both: it is a fact about a month, so carry it.
+     *
+     * recomputeWorkforce() stays as the fallback for saves written before this,
+     * where it is still much better than the zero it originally replaced.
+     */
+    public void restoreWorkforce(int workforce){
+        this.workforce = Math.max(0, workforce);
+    }
+
+    public int getWorkforceForSave(){
+        return workforce;
     }
     
     public void UpdateTotalWagePerType(){

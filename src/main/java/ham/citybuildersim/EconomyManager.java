@@ -113,6 +113,7 @@ public class EconomyManager {
         updateCommercial();
         updateIndustrial();
         updateHeavyIndustry();
+        updateMining();
     }
     public void updateCommercial(){
         commercialHandler.updateJobFillRate(fillRate);
@@ -137,6 +138,12 @@ public class EconomyManager {
      * Must run before calculateSalesTax() or getMonthGdp() read the result.
      */
     public void updateCommercialReport(){
+        // Before the statement runs, for the same reason industry's rate is set
+        // before its own: the tax line on this report IS what the city collects
+        // now (see CommercialHandler.getBusinessTaxIncome()), so it has to be
+        // struck at the rate in force during the month rather than at whatever
+        // the last read of getTaxIncome() happened to leave behind.
+        commercialHandler.setTaxRate(getTaxRate());
         commercialHandler.calculateCommercialResults();
     }
 
@@ -158,6 +165,106 @@ public class EconomyManager {
        food's break-even price. See HeavyIndustryHandler.
        ----------------------------------------------------------------------- */
     private final HeavyIndustryHandler heavyIndustryHandler = new HeavyIndustryHandler();
+
+    /* --------------------------------- ORE ---------------------------------
+       Its own sector, and its own market between the mines and the mills. See
+       MiningHandler for why this is not just a cheaper input on the mills'
+       books, and IronMarket for the band the ore clears in.
+       ---------------------------------------------------------------------- */
+    private final MiningHandler miningHandler = new MiningHandler();
+    private final IronMarket ironMarket = new IronMarket();
+
+    public MiningHandler getMiningHandler() { return miningHandler; }
+    public IronMarket getIronMarket()       { return ironMarket; }
+
+    /** Once-per-month mining income statement. */
+    public void updateMiningReport(){ miningHandler.calculateResults(); }
+
+    /** Pure recompute for the load path - does not bank cash. */
+    public void refreshMiningReport(){ miningHandler.computeMonthlyReport(); }
+
+    /** Reads the mines' capacity off whatever is built. */
+    public void updateMining(){
+        miningHandler.setCapacityTonnes(buildingManager.getTotalByCategoryDouble(
+                BuildingType.MINING, BuildingsTemplate::getProduction1));
+
+        // Every mine ships at the same world price today, so an average is
+        // exact; written as a weighted average anyway so a second mine type
+        // with a different export price does not silently break it.
+        double tonnes = buildingManager.getTotalByCategoryDouble(
+                BuildingType.MINING, BuildingsTemplate::getProduction1);
+        double value = buildingManager.getTotalByCategoryDouble(
+                BuildingType.MINING,
+                b -> b.getProduction1() * b.getProductionModifier1());
+
+        if (tonnes > 0) {
+            ironMarket.setExportPrice(value / tonnes);
+        }
+        miningHandler.setExportPrice(ironMarket.getExportPrice());
+    }
+
+    public void updateMiningWages(double[] wages){
+        rememberWageRates(wages);
+        miningHandler.updateJobFillRate(fillRate);
+        miningHandler.updateWages(wages,
+                buildingManager.getJobArrayPerCategory(BuildingType.MINING));
+    }
+
+    /* ------------------------- the wage schedule -------------------------
+     *
+     * What ONE job of each tier costs a month, as PopulationManager last set it.
+     *
+     * Every handler is handed this array and immediately multiplies it out by
+     * its own job counts, so nothing kept the rates themselves. The investment
+     * engine needs them un-multiplied: it is pricing a building that does not
+     * exist yet, and cannot read a payroll off a sector that is not running one.
+     */
+    private final double[] wageRates = new double[11];
+
+    private void rememberWageRates(double[] wages) {
+        if (wages == null) return;
+        System.arraycopy(wages, 0, wageRates, 0,
+                Math.min(wages.length, wageRates.length));
+    }
+
+    /** A copy, so nothing downstream can quietly rewrite the schedule. */
+    public double[] getWageRates() { return wageRates.clone(); }
+
+    /**
+     * Prices the ore market and tells both sides what it settled at.
+     *
+     * Split out from the production step the way priceFoodMarket() is, so the
+     * load path can have the price without lifting any ore.
+     */
+    public void priceIronMarket(){
+
+        // The mills' fallback is imported scrap, and that is the market's
+        // ceiling - read off the mills themselves so the two can never drift.
+        double scrap = heavyIndustryHandler.getScrapPricePerTonne();
+        if (scrap > 0) {
+            ironMarket.setScrapPrice(scrap);
+        }
+
+        ironMarket.updatePrice(miningHandler.getPotentialOutput(),
+                heavyIndustryHandler.getOreDemand());
+
+        miningHandler.setLocalPrice(ironMarket.getLocalPrice());
+        miningHandler.setLocalDemand(heavyIndustryHandler.getOreDemand());
+        heavyIndustryHandler.setOrePrice(ironMarket.getLocalPrice());
+    }
+
+    /**
+     * Lifts the month's ore and settles who got it.
+     *
+     * The ground is the limit, not the mine: extractIron() hands back what was
+     * actually there, which is less than asked for once a deposit runs low and
+     * nothing once it is out.
+     */
+    public void mineIron(LandManager land){
+        double lifted = land.extractIron(miningHandler.getPotentialOutput());
+        miningHandler.settle(lifted, heavyIndustryHandler.getOreDemand());
+        heavyIndustryHandler.setLocalOreAvailable(miningHandler.getOreSoldLocally());
+    }
 
     public HeavyIndustryHandler getHeavyIndustryHandler(){
         return heavyIndustryHandler;
@@ -248,6 +355,9 @@ public class EconomyManager {
         if (BusinessDebtManager.CONSTRUCTION.equals(sector) && constructionHandler != null) {
             return constructionHandler.getCash();
         }
+        if (BusinessDebtManager.MINING.equals(sector)) {
+            return miningHandler.getCash();
+        }
         if (BusinessDebtManager.HEAVY_INDUSTRY.equals(sector)) {
             return heavyIndustryHandler.getCash();
         }
@@ -264,6 +374,9 @@ public class EconomyManager {
         else if (BusinessDebtManager.INDUSTRY.equals(sector))    industrialHandler.setIndustrialCash(cash);
         else if (BusinessDebtManager.CONSTRUCTION.equals(sector) && constructionHandler != null) {
             constructionHandler.setCash(cash);
+        }
+        else if (BusinessDebtManager.MINING.equals(sector)) {
+            miningHandler.setCash(cash);
         }
         else if (BusinessDebtManager.HEAVY_INDUSTRY.equals(sector)) {
             heavyIndustryHandler.setCash(cash);
@@ -310,6 +423,9 @@ public class EconomyManager {
         heavyIndustryHandler.setInterestExpense(
                 businessDebtManager.getMonthlyInterest(BusinessDebtManager.HEAVY_INDUSTRY));
 
+        miningHandler.setInterestExpense(
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.MINING));
+
         interestCharges = new double[BuildingType.values().length];
         interestCharges[BuildingType.COMMERCIAL.ordinal()] =
                 businessDebtManager.getMonthlyInterest(BusinessDebtManager.RETAIL);
@@ -321,6 +437,8 @@ public class EconomyManager {
                 businessDebtManager.getMonthlyInterest(BusinessDebtManager.CONSTRUCTION);
         interestCharges[BuildingType.HEAVY_INDUSTRY.ordinal()] =
                 businessDebtManager.getMonthlyInterest(BusinessDebtManager.HEAVY_INDUSTRY);
+        interestCharges[BuildingType.MINING.ordinal()] =
+                businessDebtManager.getMonthlyInterest(BusinessDebtManager.MINING);
 
         pushBalanceSheetInputs();
     }
@@ -343,18 +461,51 @@ public class EconomyManager {
     /** Assigns expense figures only. No money moves; see restorePropertyTaxCharges. */
     public void restoreInterestCharges(double[] charges) {
 
-        if (charges == null || charges.length < BuildingType.values().length) return;
+        double[] c = widen(charges);
+        if (c == null) return;
 
-        commercialHandler.setRetailInterestExpense(charges[BuildingType.COMMERCIAL.ordinal()]);
-        commercialHandler.setRealEstateInterestExpense(charges[BuildingType.RESIDENTIAL.ordinal()]);
-        industrialHandler.setInterestExpense(charges[BuildingType.INDUSTRIAL.ordinal()]);
-        heavyIndustryHandler.setInterestExpense(charges[BuildingType.HEAVY_INDUSTRY.ordinal()]);
+        commercialHandler.setRetailInterestExpense(c[BuildingType.COMMERCIAL.ordinal()]);
+        commercialHandler.setRealEstateInterestExpense(c[BuildingType.RESIDENTIAL.ordinal()]);
+        industrialHandler.setInterestExpense(c[BuildingType.INDUSTRIAL.ordinal()]);
+        heavyIndustryHandler.setInterestExpense(c[BuildingType.HEAVY_INDUSTRY.ordinal()]);
+        miningHandler.setInterestExpense(c[BuildingType.MINING.ordinal()]);
 
         if (constructionHandler != null) {
-            constructionHandler.setInterestExpense(charges[BuildingType.CONSTRUCTION.ordinal()]);
+            constructionHandler.setInterestExpense(c[BuildingType.CONSTRUCTION.ordinal()]);
         }
 
-        interestCharges = charges.clone();
+        interestCharges = c;
+    }
+
+    /**
+     * Pads a per-category array saved by an older build up to today's length.
+     *
+     * These arrays are indexed by BuildingType.ordinal(), so every category
+     * added to that enum makes every existing save's copy one slot short. The
+     * old code refused anything shorter than the current length and silently
+     * restored nothing - which meant adding INFRASTRUCTURE would have wiped the
+     * property tax and interest off the first month of every save ever taken,
+     * a bug that would have shown up as exactly the kind of one-month income
+     * drift this whole area was fixed for.
+     *
+     * Padding with zero is right rather than merely convenient: the missing
+     * slots are categories that did not exist when the month ran, so nothing
+     * was charged to them. A LONGER array - a save from a newer build - is
+     * refused; guessing at a layout we do not know is worse than restoring
+     * nothing, and GameFiles already turns those away by save format.
+     *
+     * @return an array of exactly the current length, or null if unusable
+     */
+    private double[] widen(double[] charges) {
+
+        int wanted = BuildingType.values().length;
+
+        if (charges == null || charges.length > wanted) return null;
+        if (charges.length == wanted) return charges.clone();
+
+        double[] padded = new double[wanted];
+        System.arraycopy(charges, 0, padded, 0, charges.length);
+        return padded;
     }
 
     /**
@@ -381,6 +532,8 @@ public class EconomyManager {
 
         businessDebtManager.setAssets(BusinessDebtManager.HEAVY_INDUSTRY,
                 heavyIndustryHandler.getBalanceSheet().getTotalAssets());
+        businessDebtManager.setAssets(BusinessDebtManager.MINING,
+                miningHandler.getBalanceSheet().getTotalAssets());
     }
 
     /**
@@ -433,6 +586,12 @@ public class EconomyManager {
                 buildingManager.getBookValueByCategory(BuildingType.HEAVY_INDUSTRY));
         heavyIndustryHandler.setBondsPayable(
                 businessDebtManager.getPrincipal(BusinessDebtManager.HEAVY_INDUSTRY));
+
+        miningHandler.setLandValue(landValueOf(BuildingType.MINING));
+        miningHandler.setBuildingsValue(
+                buildingManager.getBookValueByCategory(BuildingType.MINING));
+        miningHandler.setBondsPayable(
+                businessDebtManager.getPrincipal(BusinessDebtManager.MINING));
     }
 
     /** What a category's land is worth at the city's current price. */
@@ -471,6 +630,11 @@ public class EconomyManager {
                 heavyIndustryHandler.getNetIncome(),
                 heavyIndustryHandler::setCash);
 
+        settleSector(BusinessDebtManager.MINING, month,
+                miningHandler.getCash(),
+                miningHandler.getNetIncome(),
+                miningHandler::setCash);
+
         pushBalanceSheetInputs();
     }
 
@@ -494,6 +658,10 @@ public class EconomyManager {
     }
 
     public void updateIndustrial(){
+        // Before the statement runs, so the month is taxed at the rate in force
+        // during it rather than at whatever the last read of getTaxIncome()
+        // happened to leave behind.
+        industrialHandler.setTaxRate(getTaxRate());
         updateFoodProduction();
         industrialHandler.setFoodCapacity(buildingManager.getFoodCapacity());
 
@@ -510,6 +678,7 @@ public class EconomyManager {
      */
     public void procedureUpdate(){
         priceFoodMarket();
+        priceIronMarket();
         industrialHandler.produceFood();
     }
 
@@ -559,6 +728,7 @@ public class EconomyManager {
      */
     public void refreshEconPrices(){
         priceFoodMarket();
+        priceIronMarket();
         setElectricityConsumption();
     }
     public void finalEconUpdate(){
@@ -586,7 +756,8 @@ public class EconomyManager {
         totalBusinessTax = commercialHandler.getBusinessTaxIncome(getTaxRate());
         totalIndustrialTax = industrialHandler.getIndustrialTaxIncome(getTaxRate());
         totalWageTax = Math.max(totalWage*getTaxRate(),0);
-        totalHeavyIndustryTax = heavyIndustryHandler.getTaxIncome(getTaxRate());
+        totalHeavyIndustryTax = heavyIndustryHandler.getTaxIncome(getTaxRate())
+                + miningHandler.getTaxIncome(getTaxRate());
         calculateSalesTax();
         // Property tax is assigned by chargePropertyTax() earlier in the month,
         // not recomputed here: the sectors have already been billed it and have
@@ -658,8 +829,25 @@ public class EconomyManager {
         // abroad and buys its raw material from abroad, so it shows up on both
         // sides of net exports - and only the difference is output the city
         // actually produced.
-        double exports = heavyIndustryHandler.getReportRevenue();
-        double rawImports = heavyIndustryHandler.getReportInputCost();
+        /*
+         * Only what actually crosses the border.
+         *
+         * Steel is all exported, so its revenue is an export. Its raw material
+         * is NOT all imported any more - ore bought from a local mine is a
+         * domestic purchase, and counting it as an import would understate GDP
+         * by the whole of the mining sector's local sales. Only the scrap the
+         * mills still bring in from abroad counts.
+         *
+         * Ore the mines could not sell locally goes abroad, so that half of
+         * mining's revenue is an export too. Its local half is not: it is an
+         * intermediate good, already inside the steel that gets exported, and
+         * counting it again would be double-counting the same tonne.
+         */
+        double exports = heavyIndustryHandler.getReportRevenue()
+                + miningHandler.getReportOreExported() * ironMarket.getExportPrice();
+
+        double rawImports = heavyIndustryHandler.getReportScrapImported()
+                * heavyIndustryHandler.getScrapPricePerTonne();
 
         nationalAccounts.update(retailSales, rentPaid,
                 constructionWorkDone, inventoryValue,
@@ -808,6 +996,7 @@ public class EconomyManager {
         double industrial   = getPropertyTaxFor(BuildingType.INDUSTRIAL);
         double construction = getPropertyTaxFor(BuildingType.CONSTRUCTION);
         double heavy        = getPropertyTaxFor(BuildingType.HEAVY_INDUSTRY);
+        double mining       = getPropertyTaxFor(BuildingType.MINING);
 
         commercialHandler.setRetailPropertyTax(commercial);
         commercialHandler.setRealEstatePropertyTax(residential);
@@ -818,8 +1007,9 @@ public class EconomyManager {
         }
 
         heavyIndustryHandler.setPropertyTaxExpense(heavy);
+        miningHandler.setPropertyTaxExpense(mining);
 
-        totalPropertyTax = commercial + residential + industrial + heavy
+        totalPropertyTax = commercial + residential + industrial + heavy + mining
                 + (constructionHandler != null ? construction : 0);
 
         propertyTaxCharges = new double[BuildingType.values().length];
@@ -827,6 +1017,7 @@ public class EconomyManager {
         propertyTaxCharges[BuildingType.RESIDENTIAL.ordinal()]    = residential;
         propertyTaxCharges[BuildingType.INDUSTRIAL.ordinal()]     = industrial;
         propertyTaxCharges[BuildingType.HEAVY_INDUSTRY.ordinal()] = heavy;
+        propertyTaxCharges[BuildingType.MINING.ordinal()] = mining;
         propertyTaxCharges[BuildingType.CONSTRUCTION.ordinal()]   =
                 (constructionHandler != null) ? construction : 0;
     }
@@ -859,12 +1050,88 @@ public class EconomyManager {
     public void restoreMonthFlows(double retailCostOfGoods, int retailLocal, int retailGlobal,
                                   double retailFillBasis, double retailImportTax,
                                   double industryDemand,
-                                  int industrySold, int industryImported) {
+                                  int industrySold, int industryImported,
+                                  double energyBasis, double waterBasis, double roadBasis) {
         commercialHandler.setStoreInventoryCost(retailCostOfGoods);
         commercialHandler.setReportImports(retailLocal, retailGlobal);
-        commercialHandler.restoreMonthReport(retailFillBasis, retailImportTax);
-        industrialHandler.restoreMonthReport(industryDemand, industrySold, industryImported);
+        commercialHandler.restoreMonthReport(retailFillBasis, retailImportTax,
+                energyBasis, waterBasis, roadBasis);
+        industrialHandler.restoreMonthReport(industryDemand, industrySold, industryImported,
+                energyBasis, waterBasis, roadBasis);
+        heavyIndustryHandler.computeMonthlyReport(energyBasis, waterBasis, roadBasis);
+        miningHandler.computeMonthlyReport(energyBasis, waterBasis, roadBasis);
     }
+
+    /* ---------------------- the month's ratio basis ----------------------
+     *
+     * The utilisation the statements were actually written against. All three
+     * sectors are handed the same figures at the same moment, so one triple
+     * describes the whole month and the commercial handler's snapshot is as
+     * good a place to read it from as any.
+     */
+    /* ------------------- the month's statements, carried -------------------
+     *
+     * The three sectors' income statements, saved whole. See
+     * CommercialHandler.getReportState() for why this is carried rather than
+     * rebuilt, and note that the ratio basis above is now a belt-and-braces
+     * measure: it keeps a RECOMPUTED statement honest for a save whose report
+     * arrays are the wrong shape, which is the only path left that recomputes.
+     */
+    public double[] getCommercialReportState()    { return commercialHandler.getReportState(); }
+    public double[] getIndustrialReportState()    { return industrialHandler.getReportState(); }
+    public double[] getHeavyIndustryReportState() { return heavyIndustryHandler.getReportState(); }
+    public double[] getMiningReportState()        { return miningHandler.getReportState(); }
+
+    /**
+     * Puts the month's statements back.
+     *
+     * All three or none: a city showing a saved retail statement beside a
+     * recomputed industrial one would be a mix of two different months, and
+     * harder to reason about than either alone.
+     *
+     * @return false if any array is the wrong shape, in which case NOTHING was
+     *         applied and the statements the load already recomputed stand
+     */
+    public boolean restoreReportState(double[] commercial, double[] industrial,
+                                      double[] heavy, double[] mining) {
+
+        if (commercial == null || industrial == null || heavy == null) return false;
+
+        // Mining arrived after the other three, so a save from before it simply
+        // has none - the sector is empty in those cities anyway, and refusing
+        // the whole restore over it would throw away three good statements.
+        if (mining != null
+                && mining.length == miningHandler.getReportState().length) {
+            miningHandler.restoreReportState(mining);
+        }
+
+        // Checked before anything is written, so a mismatched save cannot leave
+        // two sectors restored and one rebuilt.
+        if (commercial.length != commercialHandler.getReportState().length
+                || industrial.length != industrialHandler.getReportState().length
+                || heavy.length != heavyIndustryHandler.getReportState().length) {
+            return false;
+        }
+
+        return commercialHandler.restoreReportState(commercial)
+                & industrialHandler.restoreReportState(industrial)
+                & heavyIndustryHandler.restoreReportState(heavy);
+    }
+
+    /* ------------------- the ore market's month ------------------- */
+
+    public double getIronLocalPrice() { return ironMarket.getLocalPrice(); }
+    public double getMiningCash()     { return miningHandler.getCash(); }
+
+    public void restoreIronMarket(double localPrice) {
+        if (localPrice > 0) ironMarket.setLocalPrice(localPrice);
+    }
+
+    public void setMiningCash(double cash) { miningHandler.setCash(cash); }
+
+    public double getEnergyRatioBasis() { return commercialHandler.getReportEnergyRatio(); }
+    public double getWaterRatioBasis()  { return commercialHandler.getReportWaterRatio(); }
+    public double getRoadRatioBasis()   { return commercialHandler.getReportRoadRatio(); }
 
     public double[] getPropertyTaxCharges() {
         return (propertyTaxCharges == null)
@@ -879,25 +1146,28 @@ public class EconomyManager {
      */
     public void restorePropertyTaxCharges(double[] charges) {
 
-        if (charges == null || charges.length < BuildingType.values().length) return;
+        double[] c = widen(charges);
+        if (c == null) return;
 
-        double commercial   = charges[BuildingType.COMMERCIAL.ordinal()];
-        double residential  = charges[BuildingType.RESIDENTIAL.ordinal()];
-        double industrial   = charges[BuildingType.INDUSTRIAL.ordinal()];
-        double heavy        = charges[BuildingType.HEAVY_INDUSTRY.ordinal()];
-        double construction = charges[BuildingType.CONSTRUCTION.ordinal()];
+        double commercial   = c[BuildingType.COMMERCIAL.ordinal()];
+        double residential  = c[BuildingType.RESIDENTIAL.ordinal()];
+        double industrial   = c[BuildingType.INDUSTRIAL.ordinal()];
+        double heavy        = c[BuildingType.HEAVY_INDUSTRY.ordinal()];
+        double mining       = c[BuildingType.MINING.ordinal()];
+        double construction = c[BuildingType.CONSTRUCTION.ordinal()];
 
         commercialHandler.setRetailPropertyTax(commercial);
         commercialHandler.setRealEstatePropertyTax(residential);
         industrialHandler.setPropertyTaxExpense(industrial);
         heavyIndustryHandler.setPropertyTaxExpense(heavy);
+        miningHandler.setPropertyTaxExpense(mining);
 
         if (constructionHandler != null) {
             constructionHandler.setPropertyTaxExpense(construction);
         }
 
-        propertyTaxCharges = charges.clone();
-        totalPropertyTax = commercial + residential + industrial + heavy
+        propertyTaxCharges = c;
+        totalPropertyTax = commercial + residential + industrial + heavy + mining
                 + (constructionHandler != null ? construction : 0);
     }
     public double getBusinessTax(){ return totalBusinessTax; }
@@ -938,23 +1208,45 @@ public class EconomyManager {
     public void setWaterRatio(double ratio){
         commercialHandler.setWaterRatio(ratio);
         industrialHandler.setWaterRatio(ratio);
+        miningHandler.setWaterRatio(ratio);
     }
 
     public void setEnergyRatio(double ratio){
         commercialHandler.setEnergyRatio(ratio);
         industrialHandler.setEnergyRatio(ratio);
         heavyIndustryHandler.setEnergyRatio(ratio);
+        miningHandler.setEnergyRatio(ratio);
     }
+
+    /** The road network's throughput, handed to everyone whose goods move on it. */
+    public void setRoadRatio(double ratio){
+        commercialHandler.setRoadRatio(ratio);
+        industrialHandler.setRoadRatio(ratio);
+        heavyIndustryHandler.setRoadRatio(ratio);
+        miningHandler.setRoadRatio(ratio);
+    }
+    /* The utility prices, kept so the investment engine can cost a building it
+     * has not built yet. Every handler is told them; nothing remembered them. */
+    private double pricePerWatt;
+    private double pricePerWaterUnit;
+
+    public double getPricePerWatt()      { return pricePerWatt; }
+    public double getPricePerWaterUnit() { return pricePerWaterUnit; }
+
     public void setPricePerWaterUnit(double price){
+        this.pricePerWaterUnit = price;
         commercialHandler.setPricePerWaterUnit(price);
         industrialHandler.setPricePerWaterUnit(price);
         heavyIndustryHandler.setPricePerWaterUnit(price);
+        miningHandler.setPricePerWaterUnit(price);
     }
 
     public void setPricePerWatt(double price){
+        this.pricePerWatt = price;
         commercialHandler.setPricePerWatt(price);
         industrialHandler.setPricePerWatt(price);
         heavyIndustryHandler.setPricePerWatt(price);
+        miningHandler.setPricePerWatt(price);
     }
     public void setElectricityConsumption(){
         commercialHandler.setElectricityConsumption(buildingManager.getTotalByCategoryInteger(BuildingType.COMMERCIAL, BuildingsTemplate::getElectricityConsumption));
@@ -970,6 +1262,11 @@ public class EconomyManager {
                 BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getElectricityConsumption));
         heavyIndustryHandler.setWaterConsumption(buildingManager.getTotalByCategoryDouble(
                 BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getWaterConsumption));
+
+        miningHandler.setElectricityConsumption(buildingManager.getTotalByCategoryDouble(
+                BuildingType.MINING, BuildingsTemplate::getElectricityConsumption));
+        miningHandler.setWaterConsumption(buildingManager.getTotalByCategoryDouble(
+                BuildingType.MINING, BuildingsTemplate::getWaterConsumption));
     }
     public void setUtilityIncome(double income){
         this.utilityIncome = income;
@@ -1147,6 +1444,8 @@ public class EconomyManager {
         commercialHandler.resetCommercialHandler();
         industrialHandler.resetIndustrialHandler();
         heavyIndustryHandler.reset();
+        miningHandler.reset();
+        ironMarket.reset();
         foodMarket.resetFoodMarket();
     }
 

@@ -83,6 +83,21 @@ public class DataSave {
      */
     private double propertyTaxCharged;
 
+    /**
+     * Interest the city's own bonds accrued this month, not yet charged.
+     *
+     * The exact twin of propertyTaxCharged above, and it was the half of that
+     * fix that never got wired up: EconomyManager.setInterest() was written for
+     * this, with a comment saying so, and nothing ever called it.
+     *
+     * DebtManager.processAllDebts() accrues this AFTER the month's income has
+     * been banked, so it is always charged one month later. A save taken in
+     * between came back with it at zero - the city skipped a month's interest,
+     * and its next-month figure jumped by the whole bill. On $219,700 of bonds
+     * that was a $110 swing from a $103 deficit to a $7 surplus.
+     */
+    private double cityInterestAccrued;
+
     /*
      * And the same figure split by sector, indexed by BuildingType ordinal.
      *
@@ -124,11 +139,99 @@ public class DataSave {
     private boolean hasMonthFlows;
 
     /*
+     * The utilisation the month's income statements were written against.
+     *
+     * A flow, not a balance, exactly like the figures above: the statements run
+     * at the start of a month off last month's ratios, and the month then moves
+     * them. Recomputing from the state the save was taken in prices the month at
+     * ratios it was never traded at - which is invisible while every ratio is 1
+     * and obvious the moment roads make one of them routinely less.
+     *
+     * Absent from saves written before roads existed; hasRatioBasis says so, and
+     * the load falls back to recomputing, which is what those saves did anyway.
+     */
+    private double energyRatioBasis = 1;
+    private double waterRatioBasis = 1;
+    private double roadRatioBasis = 1;
+    private boolean hasRatioBasis;
+
+    /*
+     * The month's income statements, as the sectors actually wrote them.
+     *
+     * The end of the road the four fields above are on. Every one of them is an
+     * INPUT to a statement, carried so the statement could be rebuilt - and
+     * each one carried revealed another input underneath it. These three arrays
+     * are the statements themselves, so there is nothing left to rebuild.
+     *
+     * Positional, and refused whole rather than padded if the shape does not
+     * match this build. See CommercialHandler.getReportState().
+     */
+    /**
+     * The workforce the month was worked by - see
+     * PopulationManager.restoreWorkforce(). -1 means a save from before this
+     * was carried, where the load recomputes as it always did.
+     */
+    private int workforce = -1;
+
+    private double[] commercialReport;
+    private double[] industrialReport;
+    private double[] heavyIndustryReport;
+    private double[] miningReport;
+
+    /* ------------------------- land, ore and the retainer -------------------
+     *
+     * The listing is written out in full rather than regenerated from a seed.
+     * Regenerating would be smaller and would tie every existing save to the
+     * exact contents of the parcel generator forever - change one weighting and
+     * every player's window silently reshuffles, including the expensive plot
+     * they were saving up for.
+     * ---------------------------------------------------------------------- */
+    private double[] landListing;
+    private int ironDeposits;
+    private double ironReserveTonnes;
+
+    /** The ore price the month traded at. A flow, like every other price here. */
+    private double ironLocalPrice;
+
+    private double miningCash;
+    private double constructionSubsidy;
+
+    /* ------------------------- the shedding warning -------------------------
+     *
+     * When construction last sold capacity, and how much it has sold since the
+     * player last acknowledged it.
+     *
+     * A warning is state, not decoration. Without these two fields a reload
+     * silently cleared the banner: the city was still dismantling its
+     * construction industry, the player had never answered the question, and the
+     * game had quietly stopped asking. That is worse than never having warned at
+     * all - the one save-and-reload a player does mid-crisis is exactly when
+     * they need it most.
+     *
+     * -1 is "not shedding", which is what a save from before this existed
+     * decodes to, and it is the right answer for one: an old save has no record
+     * of a warning, so it has no warning to restore.
+     * ---------------------------------------------------------------------- */
+    private int constructionShedMonth = -1;
+    private double constructionShedPoints;
+
+    /*
      * The month's GDP, and the inventory level it was measured against.
      * Investment in inventories is a change, so a loaded city that believes
      * last month's stock was zero books its entire warehouse as new production.
      */
     private double[] nationalAccounts;
+
+    /*
+     * Two records of things that HAPPENED, rather than things the city has.
+     *
+     * Neither was saved, so every load emptied the demolition log and reset the
+     * write-off history to zero - a city came back looking like it had never
+     * lost a building or defaulted on anything. Both are history, and history
+     * is the one kind of state that cannot be recomputed from the present.
+     */
+    private java.util.List<DemolitionLog.Entry> demolitions;
+    private java.util.Map<String, Double> writeOffTotals;
 
     /*
      * Construction's books: cash, and the order book that percentage-of-
@@ -302,9 +405,76 @@ public class DataSave {
      * someone their city is safe when it is not is worse than not saving at all,
      * because it is the point at which they stop worrying about it.
      */
+    /**
+     * Writes the save, and refuses to take the game down with it if it cannot.
+     *
+     * Gson will not serialise NaN or Infinity - it throws
+     * IllegalArgumentException rather than writing them - and that throw used
+     * to escape all the way out of Game.save(). Which meant one overflowed
+     * number anywhere in the city killed the process, from the AUTOSAVE, in the
+     * middle of a skip, where the player is not even looking. The city was
+     * still perfectly playable; it just could not be written down.
+     *
+     * Found by the long playtest: an insolvent city rolls its emergency T-Bills
+     * at 25% every four months, which is exponential, so given enough centuries
+     * the numbers leave what a double can hold. That underlying spiral is a
+     * design question and is written up separately. THIS is not: whatever state
+     * the city gets into, failing to save is a message, not a crash.
+     */
     public GameFiles.Result saveGame(GameFiles files, int slot) {
+
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return files.write(files.saveFile(slot), gson.toJson(this));
+        String json;
+
+        try {
+            json = gson.toJson(this);
+        } catch (RuntimeException e) {
+            return GameFiles.Result.failed(files.saveFile(slot),
+                    "the city's numbers cannot be written down"
+                    + describeUnwritable()
+                    + " (" + e.getClass().getSimpleName() + ")");
+        }
+
+        return files.write(files.saveFile(slot), json);
+    }
+
+    /**
+     * Names the field that broke, if it can find it.
+     *
+     * "Could not save" is a dead end for whoever reads the log; "cash is
+     * Infinity" is a bug report. Reflection rather than an enumerated list on
+     * purpose - this runs once, on a path that has already failed, and a list
+     * would go stale the next time a field is added.
+     */
+    private String describeUnwritable() {
+
+        StringBuilder found = new StringBuilder();
+
+        for (java.lang.reflect.Field field : DataSave.class.getDeclaredFields()) {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(this);
+
+                if (value instanceof Double d && !Double.isFinite(d)) {
+                    append(found, field.getName(), d);
+                } else if (value instanceof double[] array) {
+                    for (int i = 0; i < array.length; i++) {
+                        if (!Double.isFinite(array[i])) {
+                            append(found, field.getName() + "[" + i + "]", array[i]);
+                        }
+                    }
+                }
+            } catch (Exception | LinkageError ignored) {
+                // A field that will not answer is not worth failing over twice.
+            }
+        }
+
+        return (found.length() == 0) ? "" : ": " + found;
+    }
+
+    private void append(StringBuilder sb, String name, double value) {
+        if (sb.length() > 0) sb.append(", ");
+        if (sb.length() < 200) sb.append(name).append(" is ").append(value);
     }
 
 
@@ -344,6 +514,9 @@ public class DataSave {
     public void setPropertyTaxCharged(double value) { this.propertyTaxCharged = value; }
     public double getPropertyTaxCharged()           { return propertyTaxCharged; }
 
+    public void setCityInterestAccrued(double value) { this.cityInterestAccrued = value; }
+    public double getCityInterestAccrued()           { return cityInterestAccrued; }
+
     public void setPropertyTaxCharges(double[] charges) { this.propertyTaxCharges = charges; }
     public double[] getPropertyTaxCharges()             { return propertyTaxCharges; }
 
@@ -364,6 +537,63 @@ public class DataSave {
         this.hasMonthFlows = true;
     }
 
+    public void setRatioBasis(double energy, double water, double road) {
+        this.energyRatioBasis = energy;
+        this.waterRatioBasis = water;
+        this.roadRatioBasis = road;
+        this.hasRatioBasis = true;
+    }
+
+    public void setWorkforce(int workforce) { this.workforce = workforce; }
+
+    /** -1 when the save predates this field. */
+    public int getWorkforce()               { return workforce; }
+
+    public void setReportState(double[] commercial, double[] industrial,
+                               double[] heavy, double[] mining) {
+        this.commercialReport = commercial;
+        this.industrialReport = industrial;
+        this.heavyIndustryReport = heavy;
+        this.miningReport = mining;
+    }
+
+    public void setLandState(double[] listing, int deposits, double reserveTonnes) {
+        this.landListing = listing;
+        this.ironDeposits = deposits;
+        this.ironReserveTonnes = reserveTonnes;
+    }
+
+    public double[] getLandListing()        { return landListing; }
+    public int getIronDeposits()            { return ironDeposits; }
+    public double getIronReserveTonnes()    { return ironReserveTonnes; }
+
+    public void setIronLocalPrice(double price) { this.ironLocalPrice = price; }
+    public double getIronLocalPrice()           { return ironLocalPrice; }
+
+    public void setMiningCash(double cash)      { this.miningCash = cash; }
+    public double getMiningCash()               { return miningCash; }
+
+    public void setConstructionSubsidy(double amount) { this.constructionSubsidy = amount; }
+    public double getConstructionSubsidy()            { return constructionSubsidy; }
+
+    public void setConstructionShedding(int month, double points) {
+        this.constructionShedMonth = month;
+        this.constructionShedPoints = points;
+    }
+    public int getConstructionShedMonth()     { return constructionShedMonth; }
+    public double getConstructionShedPoints() { return constructionShedPoints; }
+
+    public double[] getMiningReport()        { return miningReport; }
+    public double[] getCommercialReport()    { return commercialReport; }
+    public double[] getIndustrialReport()    { return industrialReport; }
+    public double[] getHeavyIndustryReport() { return heavyIndustryReport; }
+
+    /** False for a save written before roads, whose ratios were all 1 anyway. */
+    public boolean hasRatioBasis()          { return hasRatioBasis; }
+    public double getEnergyRatioBasis()     { return energyRatioBasis; }
+    public double getWaterRatioBasis()      { return waterRatioBasis; }
+    public double getRoadRatioBasis()       { return roadRatioBasis; }
+
     /** False for a save written before flows were carried. */
     public boolean hasMonthFlows()          { return hasMonthFlows; }
     public double getRetailCostOfGoods()    { return retailCostOfGoods; }
@@ -374,6 +604,16 @@ public class DataSave {
     public double getIndustryDemand()       { return industryDemand; }
     public int getIndustryUnitsSold()       { return industryUnitsSold; }
     public int getIndustryUnitsImported()   { return industryUnitsImported; }
+
+    public void setDemolitions(java.util.List<DemolitionLog.Entry> entries) {
+        this.demolitions = entries;
+    }
+    public java.util.List<DemolitionLog.Entry> getDemolitions() { return demolitions; }
+
+    public void setWriteOffTotals(java.util.Map<String, Double> totals) {
+        this.writeOffTotals = totals;
+    }
+    public java.util.Map<String, Double> getWriteOffTotals() { return writeOffTotals; }
 
     public void setNationalAccounts(double[] state) { this.nationalAccounts = state; }
     public double[] getNationalAccounts()           { return nationalAccounts; }

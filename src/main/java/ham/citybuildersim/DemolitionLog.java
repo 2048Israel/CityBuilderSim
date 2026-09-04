@@ -106,6 +106,26 @@ public class DemolitionLog {
         return copy;
     }
 
+    /**
+     * Puts a saved log back, in the order it was written.
+     *
+     * The log is a record of things the city LOST, which is exactly the kind of
+     * thing a player wants to still be there after a reload - and it was being
+     * emptied by every load, silently, because it was never saved at all.
+     * Entries are re-recorded rather than assigned so the cap and the ordering
+     * stay the business of one method.
+     */
+    public void restore(List<Entry> saved) {
+        clear();
+        if (saved == null) return;
+        for (int i = saved.size() - 1; i >= 0; i--) {
+            Entry e = saved.get(i);
+            if (e != null) {
+                record(e.building, e.quantity, e.sector, e.month, e.proceeds);
+            }
+        }
+    }
+
     public int size() {
         return entries.size();
     }

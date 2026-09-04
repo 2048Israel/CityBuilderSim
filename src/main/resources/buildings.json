@@ -10,9 +10,18 @@
     "Money is in thousands: cashCost 30 is $30,000.",
     "Water is in units of 10,000 gallons/month.",
     "land is the lot footprint in square feet; a city block is 100,000.",
+    "roadLoad is the traffic a building puts on the road network each month.",
+    "For INFRASTRUCTURE, capacity is the road capacity the building provides;",
+    "the city starts with 400 of it for free. Traffic flows freely up to 90% of",
+    "capacity and then degrades, so headroom is what matters, not the raw total.",
     "production1 / production2 mean different things per category - food or goods for",
     "INDUSTRIAL, construction points for CONSTRUCTION (production2 is materials),",
     "watts for ELECTRICITY, water units for WATER.",
+    "For MINING: production1 is tonnes of ore lifted a month and productionModifier1",
+    "is the export price per tonne - what a mine gets when no local mill wants it.",
+    "Ore sold to local mills clears on the iron market instead, between that export",
+    "floor and the mills' imported-scrap price. A mine also needs a DEPOSIT: buy a",
+    "land parcel with iron under it, and one deposit supports one mine.",
     "For HEAVY_INDUSTRY: production1 is tonnes of product made a month, production2",
     "is tonnes of raw material that takes, productionModifier1 is the export price",
     "per tonne and productionModifier2 the import price. Everything is bought and",
@@ -27,7 +36,7 @@
     "If this file is missing or malformed the game falls back to its built-in",
     "buildings and prints why, so a typo here can never stop it starting."
   ],
-  "nextId": 13,
+  "nextId": 15,
   "buildings": [
     {
       "id": 0,
@@ -39,7 +48,8 @@
       "constructionMaterials": 30,
       "electricity": 1,
       "water": 0.2,
-      "land": 8000
+      "land": 8000,
+      "roadLoad": 2
     },
     {
       "id": 1,
@@ -51,7 +61,8 @@
       "constructionMaterials": 2000,
       "electricity": 8,
       "water": 2,
-      "land": 25000
+      "land": 25000,
+      "roadLoad": 35
     },
     {
       "id": 6,
@@ -63,7 +74,8 @@
       "constructionMaterials": 6000,
       "electricity": 25,
       "water": 6,
-      "land": 60000
+      "land": 60000,
+      "roadLoad": 100
     },
     {
       "id": 2,
@@ -80,7 +92,8 @@
         "NO_DIPLOMA": 2,
         "DIPLOMA": 3
       },
-      "land": 5000
+      "land": 5000,
+      "roadLoad": 10
     },
     {
       "id": 5,
@@ -98,7 +111,8 @@
         "DIPLOMA": 10,
         "COLLEGE_BUSINESS": 2
       },
-      "land": 40000
+      "land": 40000,
+      "roadLoad": 55
     },
     {
       "id": 3,
@@ -115,7 +129,8 @@
         "NO_DIPLOMA": 45,
         "DIPLOMA": 20
       },
-      "land": 80000
+      "land": 80000,
+      "roadLoad": 40
     },
     {
       "id": 7,
@@ -133,7 +148,8 @@
         "DIPLOMA": 120,
         "COLLEGE_ENGINEERING": 10
       },
-      "land": 200000
+      "land": 200000,
+      "roadLoad": 200
     },
     {
       "id": 8,
@@ -151,7 +167,8 @@
         "DIPLOMA": 80,
         "COLLEGE_ENGINEERING": 10
       },
-      "land": 300000
+      "land": 300000,
+      "roadLoad": 350
     },
     {
       "id": 4,
@@ -168,7 +185,8 @@
         "NO_DIPLOMA": 35,
         "DIPLOMA": 15
       },
-      "land": 60000
+      "land": 60000,
+      "roadLoad": 90
     },
     {
       "id": 9,
@@ -186,7 +204,8 @@
         "COLLEGE_ENGINEERING": 6,
         "UNIV_SCIENCE": 2
       },
-      "land": 2000000
+      "land": 2000000,
+      "roadLoad": 120
     },
     {
       "id": 11,
@@ -206,7 +225,8 @@
         "DIPLOMA": 12,
         "COLLEGE_ENGINEERING": 4
       },
-      "land": 90000
+      "land": 90000,
+      "roadLoad": 110
     },
     {
       "id": 12,
@@ -227,7 +247,8 @@
         "COLLEGE_ENGINEERING": 12,
         "UNIV_SCIENCE": 3
       },
-      "land": 400000
+      "land": 400000,
+      "roadLoad": 500
     },
     {
       "id": 10,
@@ -245,7 +266,40 @@
         "COLLEGE_ENGINEERING": 4,
         "UNIV_SCIENCE": 3
       },
-      "land": 800000
+      "land": 800000,
+      "roadLoad": 15
+    },
+    {
+      "id": 13,
+      "name": "Road Network",
+      "category": "INFRASTRUCTURE",
+      "capacity": 1200,
+      "cashCost": 3500,
+      "constructionPoints": 4000,
+      "constructionMaterials": 5000,
+      "electricity": 40,
+      "water": 0,
+      "land": 250000,
+      "roadLoad": 0
+    },
+    {
+      "id": 14,
+      "name": "Iron Mine",
+      "category": "MINING",
+      "cashCost": 1600,
+      "constructionPoints": 1600,
+      "constructionMaterials": 650,
+      "production1": 2500,
+      "productionModifier1": 0.2,
+      "electricity": 2000,
+      "water": 150,
+      "jobs": {
+        "NO_DIPLOMA": 300,
+        "DIPLOMA": 70,
+        "COLLEGE_ENGINEERING": 6
+      },
+      "land": 400000,
+      "roadLoad": 420
     }
   ]
 }

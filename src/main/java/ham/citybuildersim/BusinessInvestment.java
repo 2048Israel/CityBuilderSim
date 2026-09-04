@@ -594,6 +594,148 @@ public class BusinessInvestment {
     }
 
     /* =====================================================================
+       THE TWO SECTORS NOBODY USED TO BUILD
+
+       Heavy industry has existed since the steel pass and the investment
+       engine has never once considered it - only housing, retail, industry
+       and construction were ever planned. That was defensible while a mill
+       cleared a quarter of a percent a month: there was nothing to invest in.
+       With local ore there is, and a sector nobody can invest in is a sector
+       that only ever grows when the player builds it by hand.
+       ===================================================================== */
+
+    /**
+     * Whether to build another steel mill.
+     *
+     * The signal is the ore price. A mill's margin is the gap between what
+     * steel sells for and what its raw material costs, and that second number
+     * now moves: cheap local ore makes mills worth building, dear ore or none at
+     * all leaves them exactly as marginal as they have always been.
+     *
+     * @param oreDemand what the existing mills already want, in tonnes
+     * @param oreSupply what the mines can lift, in tonnes
+     */
+    public Decision planHeavyIndustry(double oreDemand, double oreSupply,
+                                      double cityConstructionOutput, int ordersInFlight) {
+
+        String sector = BusinessDebtManager.HEAVY_INDUSTRY;
+
+        if (ordersInFlight >= MAX_CONCURRENT_ORDERS) {
+            return Decision.no(sector, "already building");
+        }
+
+        /*
+         * Only build into ore that exists.
+         *
+         * A mill can always fall back on imported scrap, so nothing stops it
+         * being built - but on scrap alone it earns almost nothing, and a
+         * sector that expands on a business case it does not have is the
+         * borrowing spiral this whole file was written to end. Requiring spare
+         * local ore also gives the two sectors an order: mines first, mills
+         * after, which is the cluster the ore market was designed to reward.
+         */
+        double spareOre = oreSupply - oreDemand;
+        if (spareOre <= 0) {
+            return Decision.no(sector, "no spare local ore to smelt");
+        }
+
+        BuildingsTemplate best = null;
+        double bestScore = 0;
+
+        for (BuildingsTemplate t : buildingManager.getTemplatesByCategory(
+                java.util.EnumSet.of(BuildingType.HEAVY_INDUSTRY))) {
+
+            if (t.getProduction1() <= 0 || t.getProduction2() <= 0) continue;
+
+            // No point building a mill twice the size of the ore available.
+            if (t.getProduction2() > spareOre) continue;
+
+            double cost = totalCostOf(t, 1);
+            if (cost <= 0) continue;
+
+            double score = estimatedMonthlyProfit(sector, t) / cost;
+            if (score > bestScore) {
+                bestScore = score;
+                best = t;
+            }
+        }
+
+        if (best == null) {
+            return Decision.no(sector,
+                    String.format("%,.0f t of spare ore, nothing worth smelting it", spareOre));
+        }
+
+        if (plotsAvailableFor(best) < 1) {
+            return Decision.no(sector, landReason(best));
+        }
+
+        return new Decision(sector, best, 1,
+                String.format("%,.0f tonnes of local ore going begging", spareOre),
+                true);
+    }
+
+    /**
+     * Whether to open another iron mine.
+     *
+     * Unlike every other sector, this one can be refused by geology. A mine
+     * needs ground with ore under it, and that is the city's to buy - so the
+     * private sector expanding into mining depends on the player having gone
+     * and bought a deposit. That is the intended coupling: land is the one
+     * input only the city controls, and now it gates an industry.
+     *
+     * @param unminedDeposits deposits the city owns that have no mine on them
+     * @param reserveTonnes   ore still in the ground across all of them
+     */
+    public Decision planMining(int unminedDeposits, double reserveTonnes,
+                               double cityConstructionOutput, int ordersInFlight) {
+
+        String sector = BusinessDebtManager.MINING;
+
+        if (ordersInFlight >= MAX_CONCURRENT_ORDERS) {
+            return Decision.no(sector, "already building");
+        }
+
+        if (unminedDeposits <= 0) {
+            return Decision.no(sector, "no deposit to dig");
+        }
+
+        if (reserveTonnes <= 0) {
+            return Decision.no(sector, "the ore is worked out");
+        }
+
+        BuildingsTemplate best = null;
+        double bestScore = 0;
+
+        for (BuildingsTemplate t : buildingManager.getTemplatesByCategory(
+                java.util.EnumSet.of(BuildingType.MINING))) {
+
+            if (t.getProduction1() <= 0) continue;
+
+            double cost = totalCostOf(t, 1);
+            if (cost <= 0) continue;
+
+            double score = estimatedMonthlyProfit(sector, t) / cost;
+            if (score > bestScore) {
+                bestScore = score;
+                best = t;
+            }
+        }
+
+        if (best == null) {
+            return Decision.no(sector, "nothing worth sinking");
+        }
+
+        if (plotsAvailableFor(best) < 1) {
+            return Decision.no(sector, landReason(best));
+        }
+
+        return new Decision(sector, best, 1,
+                String.format("%d deposit(s) unworked, %,.0fk tonnes in the ground",
+                        unminedDeposits, reserveTonnes / 1000),
+                true);
+    }
+
+    /* =====================================================================
        THE BRAKE
        ===================================================================== */
 
@@ -647,7 +789,62 @@ public class BusinessInvestment {
             return t.getProduction1() * buildingManager.getConstructionMaterialPrice();
         }
 
+        if (BusinessDebtManager.HEAVY_INDUSTRY.equals(sector)) {
+            // Steel out at its export price, raw material in at whatever the ore
+            // market is charging. That gap IS the business - it is why a mill is
+            // worth building next to a mine and not worth building alone.
+            double orePrice = economyManager.getIronMarket().getLocalPrice();
+            return t.getProduction1() * t.getProductionModifier1()
+                    - t.getProduction2() * orePrice;
+        }
+
+        if (BusinessDebtManager.MINING.equals(sector)) {
+            /*
+             * The one sector where the gross figure is not a screening number,
+             * it is a fantasy.
+             *
+             * Everywhere else above, gross-of-payroll is a defensible shortcut:
+             * a shop's wages are small beside its turnover, so ranking projects
+             * on revenue ranks them roughly right. A mine is the opposite shape.
+             * It employs 376 people - more than a food plant and a foundry put
+             * together - and its payroll is about three quarters of what it
+             * sells. Gross said a mine earned $672k a month when it earned $276k,
+             * and that number also feeds servicesItsOwnDebt(), which is supposed
+             * to be the brake.
+             *
+             * Priced at the local rate rather than the export floor, still: a
+             * mine gets built where mills want the ore, and where they do not,
+             * the price is already at the floor and this reads the floor.
+             */
+            double revenue = t.getProduction1()
+                    * economyManager.getIronMarket().getLocalPrice();
+            return revenue - runningCostOf(t);
+        }
+
         return 0;
+    }
+
+    /**
+     * Wages, power and water for a building that does not exist yet.
+     *
+     * Read off the template and the current schedule rather than off a sector's
+     * income statement, because the first mine in a city has no sector to read.
+     */
+    private double runningCostOf(BuildingsTemplate t) {
+
+        double[] rates = economyManager.getWageRates();
+
+        double payroll = 0;
+        for (JobType type : JobType.values()) {
+            int slot = type.ordinal();
+            if (slot < rates.length) {
+                payroll += t.getJobs(type) * rates[slot];
+            }
+        }
+
+        return payroll
+                + t.getElectricityConsumption() * economyManager.getPricePerWatt()
+                + t.getWaterConsumption() * economyManager.getPricePerWaterUnit();
     }
 
     /**
