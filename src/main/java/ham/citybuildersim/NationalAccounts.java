@@ -40,8 +40,42 @@ import java.util.List;
  * same reason, because they were produced somewhere else.
  *
  * It cannot go negative for a bad month of trading, which is the whole point.
- * The only negative term is net imports, and a city importing more than it makes
- * genuinely is producing very little.
+ *
+ * WHY IT WENT NEGATIVE ANYWAY, AND THE TWO ARITHMETIC ERRORS BEHIND IT
+ *
+ * A hand-played city of 37,730 people reported monthly GDP of -$446,424 for a
+ * hundred months while its shops were full, its builders busy and its net income
+ * positive. The line above claimed only net exports could be negative. It was
+ * wrong twice.
+ *
+ * 1. IMPORTED MATERIALS WERE SUBTRACTED AND NEVER ADDED BACK.
+ *
+ *    Construction materials bought abroad were counted as an import the month
+ *    they were bought, but the stockpile they went into was not counted as
+ *    anything - inventory only ever meant food. So ordering 8,000 houses took
+ *    $480,000 straight off GDP on the spot, and the houses those materials
+ *    became were recognised gradually over the following years as construction
+ *    work. Buy in bulk and the city's measured output collapses in the month it
+ *    invests the most, which is exactly backwards.
+ *
+ *    Materials in the yard are inventory. They are counted as such now, so the
+ *    import and the stock-build cancel in the month of purchase and the value
+ *    appears as output only when the work is actually put in place.
+ *
+ * 2. INVENTORY WAS VALUED, NOT MEASURED.
+ *
+ *    investmentInventories was `units x price now` less `units x price then`, so
+ *    a change in PRICE moved GDP with no change in production at all. A city
+ *    holding 804,000 units of food books a quarter of its warehouse as negative
+ *    output when the food price eases. That is a holding loss, not a fall in
+ *    production, and real accounts strip it out with an inventory valuation
+ *    adjustment for precisely this reason.
+ *
+ *    The change is measured in VOLUME at the current price now: what the
+ *    warehouse GREW BY, priced today. A pure price move contributes nothing.
+ *
+ * With both fixed, every term except net exports is non-negative, and net
+ * exports is bounded by trade the city actually did.
  */
 public class NationalAccounts {
 
@@ -96,8 +130,45 @@ public class NationalAccounts {
     private double capitalSpending;
     private double landPurchases;
 
-    /** Value of all stock held, so next month can measure the change. */
-    private double lastInventoryValue;
+    /**
+     * Stock held at the end of last month, in UNITS, so the change can be
+     * measured as a volume rather than as a value. See the class note.
+     */
+    private double lastFoodUnits;
+    private double lastMaterialUnits;
+
+    /**
+     * Construction ordered and not yet delivered, in contract dollars.
+     *
+     * A value rather than a volume, and legitimately so: a contract is struck
+     * once and never repriced, so a change in it is always a change in real work
+     * in hand. Measuring whole unfinished BUILDINGS instead does not work - the
+     * materials leave in a lump when the last unit completes, while the revenue
+     * that replaces them accrues smoothly, so a finishing batch booked a large
+     * negative for no change in activity.
+     */
+    private double lastWorkInProgress;
+
+    /* The three parts of the inventory term, kept so a diagnostic can say which
+       one moved rather than leaving the reader to infer it from the total. */
+    private double invFood;
+    private double invMaterials;
+    private double invWorkInProgress;
+
+    /**
+     * Whether last month's stock is actually known.
+     *
+     * TRUE for a new city, and that is not a technicality: a city that has never
+     * traded really does start with an empty warehouse, so its first month of
+     * stock IS production and skipping it would lose real output.
+     *
+     * It goes false in exactly one place - restoring a save written before stock
+     * was tracked in units. Such a save has no baseline to compare against, and
+     * the month after it books no inventory change at all, which costs one
+     * month's accuracy instead of booking an entire existing warehouse as that
+     * month's production.
+     */
+    private boolean inventoryBaselineKnown = true;
 
     /**
      * Recomputes the month.
@@ -118,14 +189,19 @@ public class NationalAccounts {
      * The rolling history is deliberately not restored: it is not saved at all
      * yet, and inventing entries for it would be worse than a short one.
      */
-    public void restore(double gdp, double lastInventoryValue,
+    public void restore(double gdp, double lastFoodUnits,
                         double consumptionGoods, double consumptionHousing,
                         double investmentConstruction, double investmentInventories,
                         double government, double importsFood, double importsMaterials,
-                        double importsRawMaterial, double exports) {
+                        double importsRawMaterial, double exports,
+                        double lastMaterialUnits, double lastWorkInProgress,
+                        boolean baselineKnown) {
 
         this.gdp = gdp;
-        this.lastInventoryValue = lastInventoryValue;
+        this.lastFoodUnits = lastFoodUnits;
+        this.lastMaterialUnits = lastMaterialUnits;
+        this.lastWorkInProgress = lastWorkInProgress;
+        this.inventoryBaselineKnown = baselineKnown;
 
         // The components too, not just the total. They are what the national
         // accounts screen shows and what the GDP figure is made of; restoring
@@ -142,12 +218,27 @@ public class NationalAccounts {
         this.exports = exports;
     }
 
-    public double getLastInventoryValue() {
-        return lastInventoryValue;
-    }
+    public double getLastFoodUnits()     { return lastFoodUnits; }
+    public double getLastMaterialUnits() { return lastMaterialUnits; }
+    public double getLastWorkInProgress() { return lastWorkInProgress; }
+    public double getInventoryFood()         { return invFood; }
+    public double getInventoryMaterials()    { return invMaterials; }
+    public double getInventoryWorkInProgress(){ return invWorkInProgress; }
+    public boolean isBaselineKnown()     { return inventoryBaselineKnown; }
 
+    /**
+     * Measures the month.
+     *
+     * Stock arrives as UNITS and a price, never as a pre-multiplied value - see
+     * the class note. Materials are here alongside food because a yard full of
+     * imported brick is inventory in exactly the way a warehouse full of food
+     * is, and leaving it out is what made a bulk order read as negative output.
+     */
     public void update(double retailSales, double rentPaid,
-                       double constructionWorkDone, double inventoryValue,
+                       double constructionWorkDone,
+                       double foodUnits, double foodStockWrittenOff, double foodPrice,
+                       double materialUnits, double materialPrice,
+                       double workInProgress,
                        double governmentServices,
                        double foodImports, double materialImports,
                        double rawMaterialImports, double exportRevenue) {
@@ -157,11 +248,50 @@ public class NationalAccounts {
 
         investmentConstruction = constructionWorkDone;
 
-        // Change in stock, not the stock itself. Building up a warehouse is
-        // production that has not been sold yet; running it down is consumption
-        // of something produced in an earlier month.
-        investmentInventories = inventoryValue - lastInventoryValue;
-        lastInventoryValue = inventoryValue;
+        /*
+         * The change in stock, as a VOLUME, priced today.
+         *
+         * Building up a warehouse is production that has not been sold yet;
+         * running it down is consumption of something produced in an earlier
+         * month. A change in PRICE is neither, and measuring the change in value
+         * rather than in volume booked every price move as production.
+         */
+        if (inventoryBaselineKnown) {
+            /*
+             * The write-off is added back before the change is measured. Stock
+             * destroyed with the capacity that held it left the city, but it was
+             * not consumed and it was not unproduced - counting it here would
+             * book a demolition as a month of negative output.
+             */
+            invFood = ((foodUnits + foodStockWrittenOff) - lastFoodUnits) * foodPrice;
+            invWorkInProgress = workInProgress - lastWorkInProgress;
+
+            /*
+             * The materials yard is deliberately NOT a third term.
+             *
+             * Work in progress is measured at CONTRACT value, and a contract
+             * already embodies the materials the job will consume. Counting the
+             * yard as well subtracts the same brick twice: once when the order
+             * capitalises it into the contract, and again when the yard actually
+             * hands it over - which can be months later, leaving an unmatched
+             * negative in between. Observed as Imatl -1,340 against Iconstr
+             * +1,163 in a month with no trade at all.
+             *
+             * The yard is an intermediate input whose value is captured in the
+             * contracts it serves, so it stays out of the measure and the
+             * parameters below are kept only to make that choice explicit.
+             */
+            invMaterials = 0;
+
+            investmentInventories = invFood + invWorkInProgress;
+        } else {
+            investmentInventories = 0;
+            inventoryBaselineKnown = true;
+        }
+
+        lastFoodUnits = foodUnits;
+        lastMaterialUnits = materialUnits;
+        lastWorkInProgress = workInProgress;
 
         government = governmentServices;
 
@@ -170,7 +300,22 @@ public class NationalAccounts {
         importsRawMaterial = rawMaterialImports;
         exports = exportRevenue;
 
-        gdp = getConsumption() + getInvestment() + government + getNetExports();
+        /*
+         * Rounded to the cent, which is how every other money figure in the game
+         * is carried - and here it also settles the last way GDP could read
+         * negative.
+         *
+         * Construction revenue earned and the work in progress it comes out of
+         * are the same quantity reached by two different routes, so in a month
+         * where they are all that happened they cancel to about -1e-13 rather
+         * than to zero. Rounding turns that into -0.0, which in IEEE arithmetic
+         * is NOT less than zero, so an idle month reads as the zero it is.
+         *
+         * This is a rounding guard, not a floor: a genuinely negative figure
+         * survives it intact and will still be caught.
+         */
+        gdp = Math.round((getConsumption() + getInvestment()
+                + government + getNetExports()) * 100) / 100.0;
 
         history.add(gdp);
         while (history.size() > HISTORY_MONTHS) {
@@ -322,7 +467,10 @@ public class NationalAccounts {
 
     public void reset() {
         history.clear();
-        lastInventoryValue = 0;
+        lastFoodUnits = 0;
+        lastMaterialUnits = 0;
+        lastWorkInProgress = 0;
+        inventoryBaselineKnown = true;   // an empty warehouse is a real baseline
         gdp = 0;
     }
 }

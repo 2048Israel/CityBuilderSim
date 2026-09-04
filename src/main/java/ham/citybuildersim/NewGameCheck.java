@@ -119,7 +119,7 @@ public class NewGameCheck {
         m.put("na.investmentConstruction", na.getInvestmentConstruction());
         m.put("na.investmentInventories", na.getInvestmentInventories());
         m.put("na.government", na.getGovernment());
-        m.put("na.lastInventory", na.getLastInventoryValue());
+        m.put("na.lastFoodUnits", na.getLastFoodUnits());
 
         m.put("credit.principal", e.getBusinessDebtManager().getTotalPrincipal());
         m.put("credit.writtenOff", e.getBusinessDebtManager().getTotalWrittenOff());

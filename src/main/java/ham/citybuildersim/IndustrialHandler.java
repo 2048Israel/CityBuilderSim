@@ -150,6 +150,17 @@ public class IndustrialHandler {
     public int getProductsImportedCopy() { return productsImportedCopy; }
 
     /**
+     * What the surplus food shipped out of the city earned this month.
+     *
+     * Despite the name of the field it is derived from, productsImportedCopy is
+     * food sold ABROAD - stock above 80% of capacity, dumped at a discount. It
+     * is an export and the national accounts count it as one.
+     */
+    public double getFoodExportRevenue() { return foodExportRevenue; }
+
+    private double foodExportRevenue;
+
+    /**
      * Puts a saved month's trading back and rebuilds its statement.
      *
      * The opening stock is reconstructed rather than saved separately: what the
@@ -375,8 +386,37 @@ public class IndustrialHandler {
         // assignments -Xlint complains about were the four lines this replaced,
         // and the last one should at least be deliberate.
         foodInventory += (int) output;
-        foodInventory = Math.min(foodInventory, foodCapacity);
+
+        /*
+         * Stock above what the sector can now hold is destroyed - and that has
+         * to be REPORTED, not just done.
+         *
+         * When a Food Processing Plant is demolished, capacity falls and this
+         * clamp quietly deletes the food that was in it. That is a loss of
+         * assets, not a month of negative production, but the national accounts
+         * measure inventory investment as the change in stock and so booked the
+         * whole vanished warehouse as negative output. It was the last thing
+         * still able to drive GDP below zero.
+         *
+         * Real accounts call this an "other change in the volume of assets" and
+         * keep it out of production entirely. NationalAccounts adds this figure
+         * back before measuring the change, so the loss shows up where it
+         * belongs - on the balance sheet - and not as output the city never made.
+         */
+        int capped = Math.min(foodInventory, foodCapacity);
+        inventoryWrittenOff = Math.max(0, foodInventory - capped);
+        foodInventory = capped;
     }
+
+    /**
+     * Food destroyed this month because the capacity holding it went away.
+     *
+     * A flow, cleared and re-measured every month, and NOT production. See the
+     * clamp above.
+     */
+    private int inventoryWrittenOff;
+
+    public int getInventoryWrittenOff() { return inventoryWrittenOff; }
     
     public void updateIndustrialWages(double[] wages, int[] jobs) {
 
@@ -444,6 +484,17 @@ public class IndustrialHandler {
         // 3. Revenue: normal + discounted excess
         industrialRev = productsSold * foodPrice;
         industrialRev += excessSold * foodPrice * importCost;
+
+        /*
+         * That discounted excess leaves the city, so it is an EXPORT, and the
+         * national accounts have to be told.
+         *
+         * Without this the food simply vanished from the measure: inventory fell
+         * by the whole shipment (negative investment) and nothing was added back,
+         * so a mill clearing its warehouse abroad read as the city producing
+         * less. It was the last remaining way GDP could go below zero.
+         */
+        foodExportRevenue = excessSold * foodPrice * importCost;
 
         
 

@@ -56,8 +56,14 @@ public final class GameVersion {
      *     VAT ledger. An older build reads none of these and would hand back a
      *     city with one flat rate everywhere and nothing protected - a load that
      *     looks perfectly successful right up until the sectors start shrinking.
+     * 9 - the national accounts carry the inventory baseline in UNITS plus the
+     *     construction backlog, because GDP measures the change in stock as a
+     *     volume now rather than as a value. A format-8 save has neither, so it
+     *     restores with the baseline marked unknown and skips one month's
+     *     inventory term - which costs a month's accuracy instead of booking an
+     *     entire existing warehouse as that month's production.
      */
-    public static final int SAVE_FORMAT = 8;
+    public static final int SAVE_FORMAT = 9;
 
     public static final String NAME = "CityBuilderSim";
 

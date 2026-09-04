@@ -2191,6 +2191,22 @@ public class Game {
                 constructionWorkDone,
                 servicesManager.getUtilitiesHandler().getUtilityPayroll(),
                 monthlyMaterialImports * buildingManager.getConstructionMaterialPrice(),
+                /*
+                 * The yard AND the materials already embedded in unfinished
+                 * buildings. Both are stock the city has bought and not yet
+                 * turned into output - and the second is much the larger, because
+                 * an order's materials are imported in full up front and consumed
+                 * into the backlog immediately rather than sitting in the yard.
+                 * Counting only the yard left the import unmatched, which is the
+                 * whole of why GDP went negative on a big build.
+                 */
+                buildingManager.getConstructionMaterials(),
+                buildingManager.getConstructionMaterialPrice(),
+                // Work in hand: contracts placed and not yet delivered. The
+                // materials for a whole order are imported the moment it is
+                // placed, so without this the import lands months before the
+                // output it pays for and a big build reads as negative.
+                construction.getUnearnedRevenue(),
                 cityInterestPaid,
                 cityCapitalSpending,
                 landManager.getLandSalesThisMonth(),

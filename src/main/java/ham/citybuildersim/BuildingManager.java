@@ -576,6 +576,29 @@ public class BuildingManager {
         return count;
     }
 
+    /**
+     * Materials already bought for buildings that are not finished yet.
+     *
+     * WHY GDP NEEDS THIS. Materials for a whole order are imported and paid for
+     * the moment the player confirms it, but the buildings they become are
+     * recognised as investment only as the work is put in place - months later
+     * for a large order. Measured without this, the import lands as a straight
+     * hit to output in the month the city invests the MOST, which is how a city
+     * ordering eight thousand houses reported negative production.
+     *
+     * They are work in progress: bought, embedded in something unfinished, and
+     * not yet output. Counting them as inventory holds the import and the
+     * building it becomes in the same accounts until the building is done.
+     */
+    public double getMaterialsInProgress() {
+        double units = 0;
+        for (BuildingsStacks stack : getStacksUnderConstruction()) {
+            units += (double) stack.getUnderConstruction()
+                    * stack.getBuilding().getConstructionMaterials();
+        }
+        return units;
+    }
+
     public int getUnderConstruction() {
         int sum = 0;
         for (BuildingsStacks stack : stacks) {

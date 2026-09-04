@@ -912,6 +912,9 @@ public class EconomyManager {
     public void updateNationalAccounts(double constructionWorkDone,
                                        double governmentServices,
                                        double materialImports,
+                                       double materialsInStock,
+                                       double materialPrice,
+                                       double workInProgress,
                                        double interest,
                                        double capitalSpending,
                                        double landSales,
@@ -923,11 +926,12 @@ public class EconomyManager {
         double retailSales = commercialHandler.getGrossRevenue();
         double rentPaid = commercialHandler.getReportRentIncome();
 
-        // Stock on both sides of the food chain, at the market price - what a
-        // warehouse is worth is what it would fetch today.
-        double price = foodMarket.getLocalPrice();
-        double inventoryValue =
-                (industrialHandler.getFoodInventory() + commercialHandler.getStoreInventory()) * price;
+        // Stock on both sides of the food chain, in UNITS. The price goes in
+        // separately: NationalAccounts measures the change in volume, because
+        // measuring the change in value books every price move as production.
+        double foodPrice = foodMarket.getLocalPrice();
+        double foodUnits =
+                industrialHandler.getFoodInventory() + commercialHandler.getStoreInventory();
 
         double foodImports = commercialHandler.getReportGlobalImports()
                 * commercialHandler.getImportPrice();
@@ -951,13 +955,20 @@ public class EconomyManager {
          * counting it again would be double-counting the same tonne.
          */
         double exports = heavyIndustryHandler.getReportRevenue()
-                + miningHandler.getReportOreExported() * ironMarket.getExportPrice();
+                + miningHandler.getReportOreExported() * ironMarket.getExportPrice()
+                // Surplus food dumped abroad at a discount. It leaves the city
+                // and it earns money, which makes it an export - and leaving it
+                // out meant the stock it drained was never added back anywhere.
+                + industrialHandler.getFoodExportRevenue();
 
         double rawImports = heavyIndustryHandler.getReportScrapImported()
                 * heavyIndustryHandler.getScrapPricePerTonne();
 
         nationalAccounts.update(retailSales, rentPaid,
-                constructionWorkDone, inventoryValue,
+                constructionWorkDone,
+                foodUnits, industrialHandler.getInventoryWrittenOff(), foodPrice,
+                materialsInStock, materialPrice,
+                workInProgress,
                 governmentServices,
                 foodImports, materialImports,
                 rawImports, exports);
@@ -979,18 +990,35 @@ public class EconomyManager {
      * swamped the wage bill and the city's output read as negative while its
      * shops were full. Both are fixed; see NationalAccounts.
      */
-    public double getLastInventoryValue(){ return nationalAccounts.getLastInventoryValue(); }
+    public double getLastFoodUnits(){ return nationalAccounts.getLastFoodUnits(); }
 
+    /**
+     * Puts the month's accounts back.
+     *
+     * Accepts both shapes. A save from before materials were counted as
+     * inventory carries eleven entries and no unit baseline, so it restores with
+     * the baseline marked UNKNOWN - the first month afterwards sets it and books
+     * no inventory change, which costs one month's accuracy instead of booking
+     * an entire warehouse as that month's production.
+     */
     public void restoreNationalAccounts(double[] a){
         if (a == null || a.length < 11) return;
-        nationalAccounts.restore(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10]);
+
+        boolean hasUnits = a.length >= 13;
+        boolean hasWip = a.length >= 14;
+        nationalAccounts.restore(a[0], hasUnits ? a[11] : 0,
+                a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10],
+                hasUnits ? a[12] : 0, hasWip ? a[13] : 0, hasUnits);
     }
 
     /** The month's accounts, flattened for the save. Order matches restore(). */
     public double[] getNationalAccountsState(){
         return new double[] {
             nationalAccounts.getGdp(),
-            nationalAccounts.getLastInventoryValue(),
+            // Slot 1 was the inventory VALUE. It is kept only so an older build
+            // reading this save finds something plausible there; this build
+            // reads the unit counts on the end instead.
+            nationalAccounts.getLastFoodUnits(),
             nationalAccounts.getConsumptionGoods(),
             nationalAccounts.getConsumptionHousing(),
             nationalAccounts.getInvestmentConstruction(),
@@ -999,7 +1027,12 @@ public class EconomyManager {
             nationalAccounts.getImportsFood(),
             nationalAccounts.getImportsMaterials(),
             nationalAccounts.getImportsRawMaterial(),
-            nationalAccounts.getExports()
+            nationalAccounts.getExports(),
+            // Appended, per the rule that order is the format: the inventory
+            // baseline in units, which is what the volume measure needs.
+            nationalAccounts.getLastFoodUnits(),
+            nationalAccounts.getLastMaterialUnits(),
+            nationalAccounts.getLastWorkInProgress()
         };
     }
 

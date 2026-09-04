@@ -102,6 +102,34 @@ public class LongPlaytest {
             flag(month, "negative population", "" + p.getPopulation());
         }
 
+        /*
+         * Output cannot be negative. Jerus, after a hand-played city reported
+         * -$446,424 a month for a century: "negative GDP should just be
+         * impossible, some arithmetic is wrong."
+         *
+         * It was - twice. Imported materials were subtracted as an import and
+         * the yard they went into was not counted as inventory, so buying in
+         * bulk read as a collapse in output; and inventory was measured by VALUE
+         * rather than by volume, so a price move booked as production. Both are
+         * fixed in NationalAccounts, and this is the invariant that keeps them
+         * fixed across four thousand months of a city doing everything.
+         */
+        if (e.getMonthGdp() < 0) {
+            NationalAccounts na = e.getNationalAccounts();
+            flag(month, "negative monthly GDP", String.format(
+                    "%.2f  (C %.0f  Iconstr %.0f  Istock %.0f  G %.0f  NX %.0f)"
+                    + "  Ifood %.0f  Imatl %.0f  Iwip %.0f",
+                    e.getMonthGdp(), na.getConsumption(),
+                    na.getInvestmentConstruction(), na.getInvestmentInventories(),
+                    na.getGovernment(), na.getNetExports(),
+                    na.getInventoryFood(), na.getInventoryMaterials(),
+                    na.getInventoryWorkInProgress()));
+        }
+        if (e.getNationalAccounts().getAnnualGdp() < 0) {
+            flag(month, "negative annual GDP",
+                    String.format("%.2f", e.getNationalAccounts().getAnnualGdp()));
+        }
+
         // updatePop() caps population at household capacity, so exceeding it
         // means somebody is housing people in buildings that do not exist.
         if (p.getPopulation() > b.getTotalHouseCapacity()) {
