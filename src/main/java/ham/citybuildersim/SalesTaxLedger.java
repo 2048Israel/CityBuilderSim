@@ -118,6 +118,34 @@ public class SalesTaxLedger {
         return tax;
     }
 
+    /**
+     * The sector in the biggest refund position this month, or null if none is.
+     *
+     * The city's total sales tax is allowed to go negative and deliberately not
+     * floored - under the producer-rate design a sector buying at a high rate
+     * and selling at a low one genuinely is owed money, and flooring would
+     * quietly turn a rate cut into a partial one.
+     *
+     * But a negative figure with no explanation reads as a bug, and it was one
+     * once: retail claimed its input credit on a TAX-INCLUSIVE cost and
+     * over-claimed by exactly the rate, which was enough on its own to make the
+     * whole city's sales tax negative. So the screen names whoever is in refund,
+     * and the next time this happens it will be answerable at a glance instead
+     * of by an audit.
+     */
+    public PolicySector deepestRefund() {
+        PolicySector worst = null;
+        double deepest = 0;
+        for (PolicySector sector : PolicySector.values()) {
+            double net = getNet(sector);
+            if (net < deepest) {
+                deepest = net;
+                worst = sector;
+            }
+        }
+        return worst;
+    }
+
     /* ==================================================================
        WHAT IT COMES TO
        ================================================================== */

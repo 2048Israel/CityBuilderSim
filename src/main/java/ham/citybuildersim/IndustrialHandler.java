@@ -16,6 +16,26 @@ public class IndustrialHandler {
     
     //Industry variables
     private double averageIndustrialFill;
+
+    /**
+     * How much of its capacity the mills can actually run at.
+     *
+     * Staffing times the three utilisation throttles. HeavyIndustryHandler and
+     * MiningHandler have had this as one method for a while; this class wrote
+     * the same product out FOUR separate times - in getMonthlyOutput(), inside
+     * getCostPerUnit(), in produceFood() and in the monthly report - and the
+     * fourth used the CARRIED ratio basis while the other three used the live
+     * fields. The class comment further down is a record of the last time that
+     * expression drifted: roads at 35% throughput, 735 units reported against
+     * 2,100 actually made.
+     *
+     * The report keeps its own line, deliberately: it has to be struck at the
+     * basis the month was TRADED at, not at today's ratios, which is a different
+     * question rather than a second copy of this one.
+     */
+    public double getOperatingRate() {
+        return averageIndustrialFill * energyRatio * waterRatio * roadRatio;
+    }
     private int foodProduction = 0;
     private int foodCapacity =0;
     private int foodInventory = 0;
@@ -237,7 +257,7 @@ public class IndustrialHandler {
 
     /** This month's expected output: base capacity scaled by labour and power. */
     public double getMonthlyOutput() {
-        return foodProduction * averageIndustrialFill * energyRatio * waterRatio * roadRatio;
+        return foodProduction * getOperatingRate();
     }
 
     public double getReportCostPerUnit() { return rCostPerUnit; }
@@ -388,7 +408,7 @@ public class IndustrialHandler {
     public void produceFood(){
 
         double output = foodProduction
-                * averageIndustrialFill * energyRatio * waterRatio * roadRatio;
+                * getOperatingRate();
 
         // Cast written out rather than left to the compound assignment. The
         // value is the same - foodInventory is a whole number, so truncating

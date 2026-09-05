@@ -1612,21 +1612,31 @@ public class Game {
      */
     private void processBuildOrder(BuildingsTemplate selected, int quantity,
                                    boolean noConstruction) {
-        // 1. Calculate costs accurately
+        /*
+         * QUOTED AND CHARGED BY THE SAME METHOD.
+         *
+         * These five lines used to be a re-typed copy of calculateTotalCost(),
+         * which buildStack() uses for the affordability check - so the city
+         * quoted with one copy and debited with the other. They agreed exactly,
+         * and would have kept agreeing right up until the first time anything
+         * was added to a build price in one place and not the other. A permit
+         * fee, a sector materials markup, a land charge on city builds: any of
+         * them would have let a player be quoted one number and charged another.
+         *
+         * The materials figure is still needed separately for the receipt and
+         * the import count, so it stays - but the money comes from one place.
+         */
         double materialsPrice = buildingManager.getConstructionMaterialPrice();
         double currentMaterials = buildingManager.getConstructionMaterials();
         double totalMaterialsRequired = noConstruction
                 ? 0
                 : selected.constructionMaterials * quantity;
 
-        double neededMaterials = 0;
-        if (currentMaterials < totalMaterialsRequired) {
-            neededMaterials = totalMaterialsRequired - currentMaterials;
-        }
+        double neededMaterials = Math.max(totalMaterialsRequired - currentMaterials, 0);
 
-        // Combine EVERYTHING into totalCost
-        double totalCost = (selected.getCashCost() * quantity)
-                + (neededMaterials * materialsPrice);
+        double totalCost = noConstruction
+                ? selected.getCashCost() * quantity
+                : calculateTotalCost(selected, quantity);
 
         // 2. Set stats for the UI Receipt
         this.totalMaterialsImported = neededMaterials;
@@ -2533,6 +2543,15 @@ public class Game {
                 landManager.getLandPurchasesThisMonth(),
                 economyManager.getTotalPropertyTax());
 
+        /*
+         * Stashed before they are cleared, so the government's books can be
+         * struck AGAIN at the end of the month against the same period's
+         * spending - see finalUpdateEconomy().
+         */
+        accountedCapitalSpending = cityCapitalSpending;
+        accountedLandSales = landManager.getLandSalesThisMonth();
+        accountedLandPurchases = landManager.getLandPurchasesThisMonth();
+
         cityCapitalSpending = 0;
         cityInterestPaid = 0;
         monthlyMaterialImports = 0;
@@ -2757,6 +2776,16 @@ public class Game {
         debtManager.setCashPosition(cash);
     }
 
+    /**
+     * What the period was: the spending the accounts were struck against.
+     *
+     * Captured at the start of the month, before the accumulators are cleared,
+     * and used again at the end - see the government re-strike below.
+     */
+    private double accountedCapitalSpending;
+    private double accountedLandSales;
+    private double accountedLandPurchases;
+
     private void finalUpdateEconomy(){
         economyManager.setDebt(debtManager.getAllPrincipal());
         double tempCash = cash;
@@ -2779,6 +2808,31 @@ public class Game {
         } else {
             System.out.println("Cash update blocked due to invalid value.");
         }
+
+        /*
+         * THE GOVERNMENT'S BOOKS, STRUCK AGAINST THE TAXES THAT JUST MOVED THE CASH.
+         *
+         * updateNationalAccounts() runs at the START of the month and reads the
+         * tax fields as the PREVIOUS month's getTaxIncome() left them - while
+         * salesTax and propertyTax, charged on the same pass, are current. So the
+         * SURPLUS/DEFICIT line mixed two months and did not equal what the
+         * treasury actually did.
+         *
+         * Re-struck here, a few lines after getTotalIncome() has assigned every
+         * tax field for this month, against the SAME period's capital spending
+         * and land trading - which is why those three were stashed before being
+         * cleared rather than read live, since by now they are zero.
+         *
+         * Deliberately narrower than moving the whole of updateNationalAccounts()
+         * down here. That call also measures GDP, moves the inventory baseline
+         * and depends on a construction figure captured mid-way through the
+         * start of the month; it belongs where it is. Only the government block
+         * was mistimed, and refreshGovernmentAccounts() is the same method the
+         * load path uses, so nothing is computed in two places.
+         */
+        economyManager.refreshGovernmentAccounts(
+                accountedLandSales, accountedCapitalSpending, accountedLandPurchases);
+
         materialsConsumed = 0;
     }
     
@@ -3140,6 +3194,11 @@ public class Game {
 
         // The month's flows. Balances alone cannot reconstruct a month's
         // income statement - see DataSave for which ones and why.
+        // The local/imported split behind that cost. Set beside it because it
+        // is the same fact about the same month.
+        dataSave.setRetailLocalPurchase(economyManager.getRetailLocalPurchase());
+        dataSave.setRetailImportPurchase(economyManager.getRetailImportPurchase());
+
         dataSave.setMonthFlows(
                 economyManager.getRetailCostOfGoods(),
                 economyManager.getRetailLocalImports(),
@@ -4160,6 +4219,9 @@ public class Game {
         }
 
         if (restoredFlows != null) {
+            economyManager.restoreRetailPurchases(
+                    restoredFlows.getRetailLocalPurchase(),
+                    restoredFlows.getRetailImportPurchase());
             economyManager.restoreMonthFlows(
                     restoredFlows.getRetailCostOfGoods(),
                     restoredFlows.getRetailLocalImports(),

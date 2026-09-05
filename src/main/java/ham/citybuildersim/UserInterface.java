@@ -4280,6 +4280,34 @@ public class UserInterface extends Application {
                         na.getCapitalSpending(), na.getLandPurchases()}));
         column.getChildren().add(pies);
 
+        /*
+         * A NEGATIVE SALES TAX IS ALLOWED, AND HAS TO SAY SO.
+         *
+         * The ledger deliberately does not floor a refund: under the
+         * producer-rate design a sector buying at a high rate and selling at a
+         * low one genuinely is owed money, and flooring would quietly turn a rate
+         * cut into a partial one. But an unexplained negative reads as a bug -
+         * and once was one, when retail claimed its input credit on a
+         * tax-inclusive cost and dragged the whole city's sales tax below zero.
+         * So when it happens, the screen names who.
+         */
+        if (na.getTaxSales() < 0) {
+            PolicySector owed = em.getDeepestRefundSector();
+            Label refund = monoLabel(owed == null
+                    ? "Sales tax is negative this month - the city is refunding more input "
+                      + "tax than it collected."
+                    : String.format("Sales tax is negative this month: the city owes %s "
+                            + "$%s back. That happens when a sector buys at a higher rate "
+                            + "than it sells at, which is a rate you set - not a fault.",
+                            owed.name().toLowerCase().replace('_', ' '),
+                            formatter.format(-em.getSectorSalesTax(owed))));
+            refund.setWrapText(true);
+            refund.setMaxWidth(TABLE_WIDTH - 40);
+            refund.setStyle("-fx-font-size: 11px; -fx-text-fill: #ef6c00;"
+                    + " -fx-padding: 6 0 0 0;");
+            column.getChildren().add(refund);
+        }
+
         VBox balance = reportSection("BALANCE");
         addNetIncomeLine(balance, na.getBalance() < 0 ? "DEFICIT:" : "SURPLUS:", na.getBalance());
         balance.getChildren().add(monoLabel(String.format("%-32s $%s", "Cash Reserves:",

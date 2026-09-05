@@ -178,6 +178,55 @@ public class CommercialHandler {
     private double rRealEstateTax;
     private double rTotalTax;
 
+    /**
+     * The sales tax rates on what the shop BUYS - not to be confused with
+     * pTaxRate, which is the profit rate it is taxed on what it earns.
+     *
+     * `supplierSalesRate` is the food mill's rate, because under the
+     * producer-rate design a supplier charges its own. `ownSalesRate` is
+     * retail's, which is what an import is charged at since there is no local
+     * supplier to have charged anything.
+     *
+     * Both default to zero so a handler nobody tells behaves as if it bought
+     * tax-free, which is what a harness that never sets them expects.
+     */
+    private double supplierSalesRate;
+    private double ownSalesRate;
+
+    public void setPurchaseTaxRates(double supplierRate, double ownRate) {
+        this.supplierSalesRate = Math.max(0, supplierRate);
+        this.ownSalesRate = Math.max(0, ownRate);
+    }
+
+    /**
+     * What the stock cost BEFORE the supplier's tax - live, then reported.
+     *
+     * The split matters and it caught me out. buyInventory() runs DURING the
+     * month; computeMonthlyReport() runs at the START of one, off what the
+     * previous month left behind - which is why rInventoryCost is assigned from
+     * storeInventoryCost rather than computed. Feeding the tax ledger the LIVE
+     * figure would have paired this month's purchases with last month's sales,
+     * and the ledger uses report figures everywhere else for exactly that
+     * reason (see the note on the mining line in EconomyManager).
+     *
+     * So these come in pairs, and the live half is carried in the save beside
+     * storeInventoryCost, which is carried for the same reason.
+     */
+    private double localPurchaseValue;
+    private double importPurchaseValue;
+    private double rLocalPurchaseValue;
+    private double rImportPurchaseValue;
+
+    public double getLocalPurchaseValue()  { return localPurchaseValue; }
+    public double getImportPurchaseValue() { return importPurchaseValue; }
+    public void setPurchaseValues(double local, double imported) {
+        this.localPurchaseValue = local;
+        this.importPurchaseValue = imported;
+    }
+
+    public double getReportLocalPurchaseValue()  { return rLocalPurchaseValue; }
+    public double getReportImportPurchaseValue() { return rImportPurchaseValue; }
+
     /** Months of recent sales a store tries to keep on the shelf. */
     private static final double STORE_COVER_MONTHS = 2.5;
 
@@ -685,10 +734,27 @@ public class CommercialHandler {
 
         storeInventory += localImport + globalImport;
 
-        double cost = localImport * foodPrice * (1 + pTaxRate)
-                + globalImport * importPrice * (1 + pTaxRate);
+        /*
+         * WHAT THE SHOP ACTUALLY PAID, and at whose rate.
+         *
+         * Both halves used to be marked up by `pTaxRate`, which is the retail
+         * PROFIT rate - a profit tax used as a purchase markup. Under the
+         * producer-rate design the supplier charges its OWN sales rate, so local
+         * food carries INDUSTRY's and an import carries the buyer's own, exactly
+         * as SalesTaxLedger.chargeImport() describes.
+         *
+         * The two net values are kept as well as the gross. The gross is what
+         * the shop pays out and belongs on its income statement; the NET is what
+         * the input credit has to be struck against, and blending the two was
+         * the whole of the bug - the credit was taken on a tax-inclusive figure
+         * and over-claimed by exactly the rate. Measured at 15%, which was
+         * enough to make the city's whole sales tax negative.
+         */
+        localPurchaseValue = localImport * foodPrice;
+        importPurchaseValue = globalImport * importPrice;
 
-        rImportTax = globalImport * importPrice * pTaxRate;
+        double cost = localPurchaseValue * (1 + supplierSalesRate)
+                + importPurchaseValue * (1 + ownSalesRate);
 
         if (globalImport != 0) {
             System.out.println("Stores imported: " + formatter.format(globalImport)
@@ -825,6 +891,13 @@ public class CommercialHandler {
          * storeInventoryCost is carried in the save for the same reason.
          */
         rInventoryCost = storeInventoryCost;
+
+        // The same month's purchase, split into its two halves, so the tax
+        // ledger credits the input tax on the stock this statement was written
+        // against rather than on stock bought since.
+        rLocalPurchaseValue = localPurchaseValue;
+        rImportPurchaseValue = importPurchaseValue;
+        rImportTax = importPurchaseValue * ownSalesRate;
         rElectricityCost = electricity * bEnergyRatio * pricePerWatt;
         rWaterCost = water * bWaterRatio * pricePerWaterUnit;
 
@@ -1082,6 +1155,15 @@ public class CommercialHandler {
             rTotalTax,
             rRetailTax,
             rRealEstateTax,
+
+            /*
+             * Appended, per the standing rule that order is the format. The two
+             * NET purchase values, which the sales-tax ledger needs and could
+             * not previously get - it was handed the tax-inclusive cost and
+             * over-claimed the input credit by exactly the rate.
+             */
+            rLocalPurchaseValue,
+            rImportPurchaseValue
         };
     }
 
@@ -1093,7 +1175,13 @@ public class CommercialHandler {
      */
     public boolean restoreReportState(double[] r) {
 
-        if (r == null || r.length != 35) return false;
+        /*
+         * 37 now, 35 before the two net purchase values were appended. Both are
+         * accepted: a shorter array is a save from the older build, and the
+         * statement it describes is complete without them - they are inputs to
+         * the tax ledger, not lines on the income statement.
+         */
+        if (r == null || (r.length != 37 && r.length != 35)) return false;
 
         int i = 0;
         rNetIncome = r[i++];
@@ -1131,6 +1219,19 @@ public class CommercialHandler {
         rTotalTax = r[i++];
         rRetailTax = r[i++];
         rRealEstateTax = r[i++];
+
+        if (r.length >= 37) {
+            rLocalPurchaseValue = r[i++];
+            rImportPurchaseValue = r[i++];
+        } else {
+            // A pre-37 save. Reconstructed from the gross cost the older build
+            // did carry, which is exact whenever the two purchase rates agree
+            // and close enough otherwise - and better than a zero, which would
+            // hand the shop no input credit for a month.
+            double rate = 1 + supplierSalesRate;
+            rLocalPurchaseValue = rate > 0 ? rInventoryCost / rate : rInventoryCost;
+            rImportPurchaseValue = 0;
+        }
 
         return true;
     }

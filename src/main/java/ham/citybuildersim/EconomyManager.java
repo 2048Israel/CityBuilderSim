@@ -160,6 +160,13 @@ public class EconomyManager {
         // struck at the rate in force during the month rather than at whatever
         // the last read of getTaxIncome() happened to leave behind.
         commercialHandler.setTaxRate(taxPolicy.effectiveProfitRate(PolicySector.RETAIL));
+
+        // What the shop is charged on what it BUYS, which is a different tax
+        // from the one above. The mill charges its own rate on local food; an
+        // import has no local supplier, so it is charged at the buyer's.
+        commercialHandler.setPurchaseTaxRates(
+                taxPolicy.effectiveSalesRate(PolicySector.INDUSTRY),
+                taxPolicy.effectiveSalesRate(PolicySector.RETAIL));
         commercialHandler.calculateCommercialResults();
     }
 
@@ -813,8 +820,20 @@ public class EconomyManager {
         salesTaxLedger.recordInputTax(PolicySector.HEAVY_INDUSTRY,
                 heavyIndustryHandler.getReportLocalOreUsed() * ironMarket.getLocalPrice()
                         * taxPolicy.effectiveSalesRate(PolicySector.MINING));
+        /*
+         * The mill's own scrap price, not the market's copy of it.
+         *
+         * These are two sources for one number, held equal by priceIronMarket()
+         * copying one into the other each month - and that copy is guarded by
+         * `if (scrap > 0)`, so with no mills standing getScrapPricePerTonne()
+         * returns 0, the copy is skipped, and ironMarket keeps its .40 default.
+         * The two were already unequal in that state and the VAT line read a
+         * stale price. Charging the buyer at the price the buyer actually paid
+         * removes the question.
+         */
         salesTaxLedger.chargeImport(PolicySector.HEAVY_INDUSTRY,
-                heavyIndustryHandler.getReportScrapImported() * ironMarket.getScrapPrice(),
+                heavyIndustryHandler.getReportScrapImported()
+                        * heavyIndustryHandler.getScrapPricePerTonne(),
                 taxPolicy);
 
         // --- Food processing: sells to the stores.
@@ -825,11 +844,25 @@ public class EconomyManager {
         //     tax finally sticks. Credits the tax inside its inventory.
         salesTaxLedger.recordSales(PolicySector.RETAIL,
                 commercialHandler.getGrossRevenue());
+        /*
+         * THE NET PURCHASE, AT THE SUPPLIER'S RATE - the same shape as heavy
+         * industry three blocks up, which had it right all along.
+         *
+         * This read `getReportInventoryCost() * effectiveSalesRate(INDUSTRY)`,
+         * and was wrong three ways at once. The inventory cost is TAX-INCLUSIVE,
+         * so the credit was struck on a figure that already contained the tax
+         * and over-claimed by exactly the rate - measured at 15%, enough on its
+         * own to make the city's whole sales tax NEGATIVE. The imported half was
+         * already inside that cost, so chargeImport() credited it a second time.
+         * And chargeImport() takes a landed VALUE and was handed getImportTax(),
+         * which is already a tax - so that second credit came out in units of
+         * tax squared.
+         */
         salesTaxLedger.recordInputTax(PolicySector.RETAIL,
-                commercialHandler.getReportInventoryCost()
+                commercialHandler.getReportLocalPurchaseValue()
                         * taxPolicy.effectiveSalesRate(PolicySector.INDUSTRY));
         salesTaxLedger.chargeImport(PolicySector.RETAIL,
-                commercialHandler.getImportTax(), taxPolicy);
+                commercialHandler.getReportImportPurchaseValue(), taxPolicy);
 
         // --- Construction: sells the work it puts in place, credits materials.
         if (constructionHandler != null) {
@@ -843,6 +876,10 @@ public class EconomyManager {
         salesTax = salesTaxLedger.settle(taxPolicy);
         return salesTax;
     }
+
+    /** Whoever the city owes this month, or null. See SalesTaxLedger. */
+    public PolicySector getDeepestRefundSector() { return salesTaxLedger.deepestRefund(); }
+    public double getSectorSalesTax(PolicySector s) { return salesTaxLedger.getNet(s); }
 
     public SalesTaxLedger getSalesTaxLedger() { return salesTaxLedger; }
 
@@ -1183,8 +1220,16 @@ public class EconomyManager {
        ======================================================================= */
 
     /** Land plus buildings, at current value, for one building category. */
-    public double getAssessedValue(BuildingType category){
-        return buildingManager.getLandSqFtByCategory(category) * landPricePerSqFt
+    public double getAssessedValue(BuildingType category) {
+        /*
+         * Asked of landValueOf(), not re-typed from it. The comment above states
+         * the invariant in prose - "the same number the property tax is assessed
+         * on, deliberately, because a business should be taxed on the value its
+         * own balance sheet claims" - and an invariant asserted in prose and
+         * enforced by two identical expressions is one zoning multiplier away
+         * from being false.
+         */
+        return landValueOf(category)
                 + buildingManager.getBookValueByCategory(category);
     }
 
@@ -1257,6 +1302,11 @@ public class EconomyManager {
      * month ended in, which is exactly why they have to be carried.
      */
     public double getRetailCostOfGoods()  { return commercialHandler.getStoreInventoryCost(); }
+    public double getRetailLocalPurchase()  { return commercialHandler.getLocalPurchaseValue(); }
+    public double getRetailImportPurchase() { return commercialHandler.getImportPurchaseValue(); }
+    public void restoreRetailPurchases(double local, double imported) {
+        commercialHandler.setPurchaseValues(local, imported);
+    }
     public double getRetailFillBasis()    { return commercialHandler.getReportAverageStoreFill(); }
     public double getRetailImportTax()    { return commercialHandler.getImportTax(); }
     public int getRetailLocalImports()    { return commercialHandler.getReportLocalImports(); }

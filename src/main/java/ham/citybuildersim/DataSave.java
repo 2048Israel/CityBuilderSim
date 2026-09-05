@@ -129,6 +129,15 @@ public class DataSave {
     private double[] interestCharges;
 
     private double retailCostOfGoods;
+    /*
+     * The two halves of that cost, before the supplier's tax. Carried for the
+     * same reason as the gross beside them: buyInventory() sets them during the
+     * month and nothing can re-derive the local/imported split from the closing
+     * shelves. Without them a reloaded city credits its input tax on stock it
+     * did not buy.
+     */
+    private double retailLocalPurchase;
+    private double retailImportPurchase;
     private int retailLocalImports;
     private int retailGlobalImports;
     private double retailFillBasis;
@@ -627,6 +636,10 @@ public class DataSave {
     /** False for a save written before flows were carried. */
     public boolean hasMonthFlows()          { return hasMonthFlows; }
     public double getRetailCostOfGoods()    { return retailCostOfGoods; }
+    public void setRetailLocalPurchase(double v){ this.retailLocalPurchase = v; }
+    public double getRetailLocalPurchase()      { return retailLocalPurchase; }
+    public void setRetailImportPurchase(double v){ this.retailImportPurchase = v; }
+    public double getRetailImportPurchase()      { return retailImportPurchase; }
     public int getRetailLocalImports()      { return retailLocalImports; }
     public int getRetailGlobalImports()     { return retailGlobalImports; }
     public double getRetailFillBasis()      { return retailFillBasis; }
