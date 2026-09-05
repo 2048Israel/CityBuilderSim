@@ -38,6 +38,19 @@ public class CommercialHandler {
      */
     private double roadRatio = 1;
 
+    /**
+     * How much of the month's work an unwell workforce actually did.
+     *
+     * A FOURTH throttle beside energyRatio, waterRatio and roadRatio, and it
+     * multiplies with them for the same reason they multiply with each other.
+     * It is different from the three in one way that matters: it cuts OUTPUT
+     * ONLY and never payroll. The staff are on the books and get paid whether
+     * they came in or not - see Health for why that is the point of the whole
+     * mechanic. Defaults to 1, so a handler nobody tells about sickness behaves
+     * exactly as it did before it existed.
+     */
+    private double healthRatio = 1;
+
     /* ------------------------- the ratio basis -------------------------
        What the month was actually TRADED at, which is not always what the
        city looks like by the time anyone reads the report.
@@ -58,6 +71,8 @@ public class CommercialHandler {
     private double bEnergyRatio = 1;
     private double bWaterRatio = 1;
     private double bRoadRatio = 1;
+    /** Sickness, carried for the same reason - see Health. */
+    private double bHealthRatio = 1;
 
     //store variables
     private double averageStoreFill;
@@ -471,6 +486,9 @@ public class CommercialHandler {
     public int getReportStoreInventory()  { return rStoreInventory; }
     public double getReportAverageStoreFill() { return rAverageStoreFill; }
     public double getReportEnergyRatio()  { return rEnergyRatio; }
+    /** The sick rate the month was traded at. Not an r-field: see computeMonthlyReport. */
+    public double getReportHealthRatio()   { return bHealthRatio; }
+    public double getHealthRatio()         { return healthRatio; }
     public double getReportWaterRatio()   { return rWaterRatio; }
     public double getReportRoadRatio()    { return rRoadRatio; }
 
@@ -574,6 +592,9 @@ public class CommercialHandler {
     public void setRoadRatio(double ratio){
         this.roadRatio = ratio;
     }
+    public void setHealthRatio(double ratio){
+        this.healthRatio = ratio;
+    }
     public void setPricePerWatt(double price){
         this.pricePerWatt = price;
     }
@@ -619,8 +640,9 @@ public class CommercialHandler {
      * puts back the import tax, which only buyInventory() ever sets.
      */
     public void restoreMonthReport(double storeFillBasis, double importTax,
-                                   double energyBasis, double waterBasis, double roadBasis) {
-        computeMonthlyReport(storeFillBasis, energyBasis, waterBasis, roadBasis);
+                                   double energyBasis, double waterBasis, double roadBasis,
+                                   double healthBasis) {
+        computeMonthlyReport(storeFillBasis, energyBasis, waterBasis, roadBasis, healthBasis);
         rImportTax = importTax;
     }
 
@@ -826,7 +848,7 @@ public class CommercialHandler {
      * living through IS the basis. Only the load path passes anything else.
      */
     public void computeMonthlyReport(double storeFillBasis) {
-        computeMonthlyReport(storeFillBasis, energyRatio, waterRatio, roadRatio);
+        computeMonthlyReport(storeFillBasis, energyRatio, waterRatio, roadRatio, healthRatio);
     }
 
     /**
@@ -840,11 +862,26 @@ public class CommercialHandler {
      * revenue that appeared out of a reload.
      */
     public void computeMonthlyReport(double storeFillBasis,
-                                     double energyBasis, double waterBasis, double roadBasis) {
+                                     double energyBasis, double waterBasis, double roadBasis,
+                                     double healthBasis) {
 
         bEnergyRatio = energyBasis;
         bWaterRatio = waterBasis;
         bRoadRatio = roadBasis;
+
+        /*
+         * DELIBERATELY NOT AN r-FIELD, unlike the other three.
+         *
+         * rEnergyRatio and its siblings are in the report state array that the
+         * save carries, and every one of those arrays is refused whole on a
+         * length mismatch. Appending a fifth ratio to four of them would make
+         * every existing save recompute its statements instead of restoring
+         * them - a real regression, to display a number that is the same in all
+         * four sectors and already on the People screen. The basis is still
+         * carried, through DataSave's ratio basis, which is what keeps the one
+         * remaining recompute path honest.
+         */
+        bHealthRatio = healthBasis;
 
         // snapshot the inputs first, so every figure on the report - inputs and
         // results alike - describes the same moment
@@ -864,7 +901,7 @@ public class CommercialHandler {
         rProductsSold = productsSold;
 
         rGrossRevenue = (productsSold * storeSellPrice)
-                * bEnergyRatio * bWaterRatio * bRoadRatio * storeFillBasis;
+                * bEnergyRatio * bWaterRatio * bRoadRatio * bHealthRatio * storeFillBasis;
 
         double payroll = 0;
         if (storeWages != null) {

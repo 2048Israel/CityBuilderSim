@@ -63,7 +63,15 @@ public class UserInterface extends Application {
         // City overview down the left. Same reasoning as the construction panel:
         // it lives outside rootMenu so the menu system can't clear it away.
         this.cityPanel = new VBox(8);
-        this.cityPanel.setPrefWidth(250);
+        /*
+         * WIDER THAN IT WAS, because health went in it.
+         *
+         * 250 was set when every row here was a label and a short number.
+         * Health's rows carry two figures apiece - coverage AND what it buys,
+         * places AND the people who need them - and at 250 they wrapped or got
+         * cut by shorten(). Thirty pixels buys the whole section.
+         */
+        this.cityPanel.setPrefWidth(290);
         this.cityPanel.setStyle(
                 "-fx-padding: 16; -fx-background-color: #f4f4f4;"
                 + " -fx-border-color: #cccccc; -fx-border-width: 0 1 0 0;");
@@ -191,6 +199,37 @@ public class UserInterface extends Application {
                 flowChip("-" + flowText(pyramid.getLastDeaths()) + " died",  "#90a4ae"),
                 flowChip("+" + flowText(flows.getLastArrivals()) + " in",    "#81d4fa"),
                 flowChip("-" + flowText(flows.getLastDepartures()) + " out", "#ef9a9a"));
+
+        /*
+         * A fifth chip, and only when there is something to say.
+         *
+         * The four above are flows - they belong there permanently because their
+         * value is the comparison between them. Sickness is a condition, and a
+         * chip that reads "3% sick" every month for four hundred months is noise
+         * a player learns to stop seeing. So it appears exactly when the city is
+         * losing more work than a well-served one has to, which means it appears
+         * for a city with no clinics and for an outbreak, and otherwise not at
+         * all.
+         */
+        Health illness = game.getHealth();
+        if (illness.isOutbreak()) {
+            /*
+             * NAMED, not just coloured. The chip used to go red during an
+             * epidemic and otherwise amber, which told a player who already knew
+             * what the colours meant and nobody else - and an outbreak is a
+             * temporary event with a cause, unlike the standing rate beside it.
+             * A player wants to know THAT one is running before they want to
+             * know what it is costing.
+             */
+            int since = Math.max(1, game.getMonth() - illness.getOutbreakStarted() + 1);
+            flowRow.getChildren().add(flowChip(
+                    String.format("OUTBREAK - month %d", since), "#ef5350"));
+        }
+        if (illness.getSickRate() > Health.WELL_SERVED_RATE + 1e-9) {
+            flowRow.getChildren().add(flowChip(
+                    String.format("%.0f%% sick", illness.getSickRate() * 100),
+                    illness.isOutbreak() ? "#ef9a9a" : "#ffcc80"));
+        }
 
         VBox popBox = new VBox(0);
         popBox.setAlignment(Pos.CENTER_RIGHT);
@@ -773,9 +812,113 @@ public class UserInterface extends Application {
         rootMenu.getChildren().add(landLockedBanner(this::showStartMenu));
     }
 
+    /*
+     * And the third: the one nothing on the main screen could otherwise tell
+     * you about.
+     *
+     * The other two banners are about the private sector visibly stalling.
+     * Healthcare is different - the city just quietly does less, every month,
+     * and the only place that says so is a section of the People screen a
+     * player has to already suspect something to open. The private sector will
+     * never build any of it, and the advisor has no opinion, so if this banner
+     * does not say it nothing does.
+     */
+    VBox healthNeeded = healthcareBanner();
+    if (healthNeeded != null) {
+        rootMenu.getChildren().add(healthNeeded);
+    }
+
     
 }
     
+    /**
+     * The three things healthcare is silently costing the city, when they apply.
+     *
+     * ONE BANNER, UP TO THREE LINES, rather than three banners - they are one
+     * subject and one button, and a main screen with three red boxes on it
+     * teaches a player to stop reading red boxes.
+     *
+     * Ordered by how expensive each is right now rather than by category, so
+     * whatever is actually hurting most is the first thing read. Returns null
+     * when the city has nothing to answer for, which is the common case in a
+     * city that has built its clinics and its cemetery.
+     */
+    private VBox healthcareBanner() {
+
+        Health health = game.getHealth();
+        Healthcare service = game.getHealthcare();
+        BuildingManager bm = game.getBuildingManager();
+        PopulationCohorts cohorts = game.getCohorts();
+        double[] staffing = game.getPopulationManager().getJobFillRate();
+
+        java.util.List<String> lines = new java.util.ArrayList<>();
+
+        /* 1. the dead, because it is the sharpest and the cheapest to fix */
+        if (service.getUnburied() > 0) {
+            lines.add(String.format("%,.0f people have nowhere to be buried. It is adding %.0f",
+                    service.getUnburied(), health.getUnburiedRate() * 100));
+            lines.add("points to the sick rate. A cemetery or a crematorium ends it.");
+            lines.add("");
+        }
+
+        /* 2. general care, which is the largest standing loss */
+        double generalCover = Health.coverageOf(
+                bm.getStaffedCareCapacity(CareType.GENERAL, staffing), cohorts.total());
+        if (generalCover < .9 && cohorts.total() > 0) {
+            lines.add(String.format("Only %.0f%% of the city can see a doctor, so %.0f%% of every",
+                    generalCover * 100, health.getBaselineRate() * 100));
+            lines.add("month's work is not done. Clinics and hospitals fix it.");
+            lines.add("");
+        }
+
+        /* 3. the two that kill people rather than slow them down */
+        double childCover = Health.coverageOf(
+                bm.getStaffedCareCapacity(CareType.CHILDCARE, staffing),
+                CareType.CHILDCARE.populationServed(cohorts));
+        double seniorCover = Health.coverageOf(
+                bm.getStaffedCareCapacity(CareType.SENIOR, staffing),
+                CareType.SENIOR.populationServed(cohorts));
+
+        if (childCover < .5) {
+            lines.add(String.format("Childcare reaches %.0f%%, so infants die at %.1fx the rate a",
+                    childCover * 100,
+                    Healthcare.mortalityFactor(AgeBand.BABY, childCover, .5, .5)));
+            lines.add(String.format("half-served city loses - %.2f%% a year - and %.0f%% fewer",
+                    AgeBand.BABY.getAnnualMortality()
+                            * Healthcare.mortalityFactor(AgeBand.BABY, childCover, .5, .5) * 100,
+                    (1 - Healthcare.birthFactor(childCover)
+                            / Healthcare.birthFactor(1)) * 100));
+            lines.add("children are born than in a city that has somewhere to put them.");
+            lines.add("");
+        }
+
+        if (seniorCover < .5) {
+            lines.add(String.format("Senior care reaches %.0f%%. Covering them would cut senior",
+                    seniorCover * 100));
+            lines.add(String.format("deaths to %.0f%% of today's and draw %.0f%% more people here.",
+                    Healthcare.mortalityFactor(AgeBand.SENIOR, .5, .5, 1) * 100,
+                    (Migration.seniorCarePull(1) - Migration.seniorCarePull(seniorCover)) * 100));
+            lines.add("");
+        }
+
+        if (lines.isEmpty()) return null;
+
+        // Drop the trailing blank so the box does not end in whitespace.
+        lines.remove(lines.size() - 1);
+
+        VBox banner = criticalSection("[!] THE CITY IS NOT LOOKING AFTER ITS PEOPLE",
+                lines.toArray(new String[0]));
+
+        Button build = new Button("Build healthcare");
+        build.setOnAction(e -> handleAllBuildingMenus("Healthcare",
+                EnumSet.of(BuildingType.HEALTHCARE)));
+        HBox actions = new HBox(10, build);
+        actions.setAlignment(Pos.CENTER);
+        actions.setStyle("-fx-padding: 8 0 0 0;");
+        banner.getChildren().add(actions);
+        return banner;
+    }
+
     /**
      * "Your builders are being laid off. Do you want to pay to keep them?"
      *
@@ -915,6 +1058,7 @@ public class UserInterface extends Application {
         Button b4 = new Button("Other");
         Button b5 = new Button("Land");
         Button b6 = new Button("Infrastructure");
+        Button b7 = new Button("Services");
         Button b0 = new Button("Return to menu");
         
         b1.setOnAction(e-> {
@@ -940,6 +1084,17 @@ public class UserInterface extends Application {
         // dead click until that screen is ported.
         b4.setDisable(true);
 
+        /*
+         * Services, and inside it Healthcare.
+         *
+         * A submenu rather than a fourteenth button on this screen, because
+         * healthcare is the first of several things the city builds for its
+         * people rather than for its economy - education and public safety are
+         * the obvious siblings, and BuildingType has room after HEALTHCARE for
+         * exactly that. Jerus asked for the two levels by name.
+         */
+        b7.setOnAction(e -> showServicesMenu());
+
         b5.setOnAction(e -> showLandMenu());
 
         b0.setOnAction(e -> {
@@ -950,11 +1105,43 @@ public class UserInterface extends Application {
 
         
 
-        rootMenu.getChildren().addAll(gameInfo,b1,b2,b3,b6,b4,b5,b0);
+        rootMenu.getChildren().addAll(gameInfo,b1,b2,b3,b6,b7,b4,b5,b0);
 
         
     }
     
+    /**
+     * What the city builds for its people rather than for its economy.
+     *
+     * One entry so far. The button exists as a level of its own because the
+     * things that belong here - healthcare now, education and public safety
+     * later - have nothing in common with factories except that somebody has to
+     * pay for them, and burying them in "Other" is how a player never finds
+     * them.
+     */
+    private void showServicesMenu() {
+        clearMenu();
+
+        Label title = new Label("Services\nBuilt by the city, for the people who live in it.");
+        title.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        Button healthcare = new Button("Healthcare");
+        healthcare.setOnAction(e ->
+                handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
+
+        // Named, disabled, and honest about it - so the shape of what is coming
+        // is visible without pretending it is here.
+        Button education = new Button("Education  [not built yet]");
+        education.setDisable(true);
+        Button safety = new Button("Public Safety  [not built yet]");
+        safety.setDisable(true);
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showBuildingsMenu());
+
+        rootMenu.getChildren().addAll(title, healthcare, education, safety, back);
+    }
+
     /**
      * The land office: what the city owns, what it is buying, what it charges.
      *
@@ -1668,21 +1855,56 @@ public class UserInterface extends Application {
                 + "Cash: $" + formatter.format(game.getCash()) + "\n"
                 + "ConstructionMaterials: " + game.getConstructionMaterials());
 
-        // 2. The Building Selection Buttons
+        /* ---------------------------------------------------------------
+           2. THE BUILDINGS, GROUPED BY WHAT THEY ACTUALLY DO
+
+           Fourteen buttons in one column told a player nothing - "Home Care
+           Service" and "Home Daycare" sit next to each other and do opposite
+           things to opposite ends of the pyramid, and the only way to tell was
+           to already know. Jerus: "group it further cause its hard to know
+           whats for what".
+
+           Grouped on the CareType field rather than on the names, which is the
+           whole reason that field exists. It is also general: every menu that
+           contains no care types at all - which is every other menu in the game
+           - falls through the loop below unchanged and comes out as the same
+           flat column it always was.
+           --------------------------------------------------------------- */
         List<BuildingsTemplate> buildings = buildingManager.getTemplatesByCategory(categories);
-        VBox buildingsBox = new VBox(5); // Keep buttons organized
+        VBox buildingsBox = new VBox(5);
         buildingsBox.setAlignment(Pos.CENTER);
 
-        for (int i = 0; i < buildings.size(); i++) {
-            final int index = i;
-            Button b = new Button(buildings.get(i).getName());
-            b.setOnAction(e -> {
-                handleBuildingTextBox(buildings.get(index),menuTitle, categories, quantity -> {
-                    game.buildStack(buildings.get(index), quantity, false);
-                    handleAllBuildingMenus(menuTitle, categories); // Refresh shows the receipt
-                });
-            });
-            buildingsBox.getChildren().add(b);
+        // NONE first, so an ungrouped menu is byte-identical to what it was.
+        for (CareType care : CareType.values()) {
+
+            List<BuildingsTemplate> group = new ArrayList<>();
+            for (BuildingsTemplate template : buildings) {
+                if (template.getCare() == care) group.add(template);
+            }
+            if (group.isEmpty()) continue;
+
+            if (care != CareType.NONE) {
+                Label heading = new Label(careHeading(care));
+                heading.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
+                        + " -fx-text-fill: #1a237e; -fx-padding: 10 0 0 0;");
+                buildingsBox.getChildren().add(heading);
+
+                Label what = new Label(careSubtitle(care));
+                what.setStyle("-fx-font-size: 10px; -fx-text-fill: #546e7a;"
+                        + " -fx-padding: 0 0 3 0;");
+                buildingsBox.getChildren().add(what);
+            }
+
+            for (BuildingsTemplate template : group) {
+                Button b = new Button(template.getName());
+                b.setMaxWidth(Double.MAX_VALUE);
+                b.setOnAction(e ->
+                        handleBuildingTextBox(template, menuTitle, categories, quantity -> {
+                            game.buildStack(template, quantity, false);
+                            handleAllBuildingMenus(menuTitle, categories);
+                        }));
+                buildingsBox.getChildren().add(b);
+            }
         }
 
         // 3. The "Back" Button - Clears the receipt logic
@@ -1702,6 +1924,48 @@ public class UserInterface extends Application {
                     + "\nTotal Cost: $" + formatter.format(game.getTotalBuildingCost()));
             buildInfo.setStyle("-fx-text-fill: #2e7d32; -fx-font-weight: bold; -fx-border-color: #2e7d32; -fx-padding: 5;");
             rootMenu.getChildren().add(buildInfo);
+        }
+    }
+
+    /** The group's name, in the player's words rather than the enum's. */
+    private String careHeading(CareType care) {
+        switch (care) {
+            case CHILDCARE: return "CHILDCARE  -  babies and children";
+            case GENERAL:   return "GENERAL CARE  -  everybody";
+            case SENIOR:    return "SENIOR CARE  -  the over-seventies";
+            case BURIAL:    return "CEMETERIES  -  land, permanently";
+            case CREMATION: return "CREMATORIA  -  power, not land";
+            default:        return care.getLabel();
+        }
+    }
+
+    /**
+     * What building one of these actually gets you.
+     *
+     * The numbers are read off the model rather than written down, because a
+     * menu that describes yesterday's balance is worse than one that describes
+     * nothing - and every one of these figures has already moved once.
+     */
+    private String careSubtitle(CareType care) {
+        switch (care) {
+            case CHILDCARE:
+                return String.format("Full coverage cuts infant deaths to 1/%.0f and doubles"
+                        + " the birth rate.", Healthcare.CHILDCARE_SWING);
+            case GENERAL:
+                return String.format("Sets how much of the workforce is off sick (%.0f%% to"
+                        + " %.0f%%) and cuts adult deaths.",
+                        Health.UNTREATED_RATE * 100, Health.WELL_SERVED_RATE * 100);
+            case SENIOR:
+                return String.format("Cuts senior deaths, and draws up to %.0f%% more people"
+                        + " to the city.", Migration.SENIOR_CARE_PULL * 100);
+            case BURIAL:
+                return "Plots are consumed forever and the land never comes back."
+                        + " Turns a profit.";
+            case CREMATION:
+                return "Almost no land, a great deal of electricity, and breaks even"
+                        + " only when busy.";
+            default:
+                return "";
         }
     }
 
@@ -2578,6 +2842,195 @@ public class UserInterface extends Application {
                 AgeBand.ADULT.getFromAge(), AgeBand.ADULT.getToAge() - 1)));
         column.getChildren().add(pyramid);
 
+        /* ================================= health ================================= */
+        /*
+         * Sits under the ages on purpose: coverage is beds divided by the band
+         * that needs them, so the two panels are the same arithmetic read from
+         * opposite ends. An ageing pyramid IS a senior-care shortage, and
+         * putting them next to each other is the cheapest way to say so.
+         */
+        Health health = game.getHealth();
+        double sick = health.getSickRate();
+
+        VBox care = reportSection(health.isOutbreak()
+                        ? String.format("HEALTH  -  OUTBREAK, MONTH %d",
+                                Math.max(1, game.getMonth()
+                                        - health.getOutbreakStarted() + 1))
+                        : "HEALTH",
+                String.format("%-26s%.1f%%", "Off sick this month:", sick * 100),
+                String.format("%-26s%s of the workforce", "That is:",
+                        formatter.format(workforce * sick)),
+                String.format("%-26s%.0f%%  (%s staffed beds for %s people)",
+                        "General care covers:",
+                        health.getCoverage() * 100,
+                        formatter.format(bm.getStaffedCareCapacity(
+                                CareType.GENERAL, pm.getJobFillRate())),
+                        formatter.format(total)),
+                String.format("%-26sadult deaths x%.2f", "...which also buys:",
+                        Healthcare.mortalityFactor(AgeBand.ADULT, .5,
+                                health.getCoverage(), .5)));
+
+        /*
+         * Stated plainly, because it is the part a player will assume works the
+         * other way. Every city builder trains you to expect a service shortage
+         * to shrink the population; this one takes the output and leaves the
+         * wage bill alone, which is a squeeze on margins rather than on people.
+         */
+        Label carried = monoLabel("  they are still on the payroll and still get paid"
+                + " - the loss is output, not wages");
+        carried.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                + " -fx-text-fill: #546e7a;");
+        care.getChildren().add(carried);
+
+        String illness;
+        String illnessTone;
+        if (health.isOutbreak()) {
+            illness = String.format("An outbreak that began in %s is adding %.1f points on "
+                    + "top of the usual %.1f%%. It fades on its own over a few months, and "
+                    + "hospitals make it milder rather than shorter.",
+                    CityCalendar.format(health.getOutbreakStarted()),
+                    health.getOutbreakSeverity() * 100, health.getBaselineRate() * 100);
+            illnessTone = "#c62828";
+        } else if (health.getCoverage() <= 0) {
+            illness = String.format("There is no general care in this city at all, so %.0f%% "
+                    + "of every month's work simply does not happen. A walk-in clinic is the "
+                    + "cheapest thing on the healthcare list.", sick * 100);
+            illnessTone = "#c62828";
+        } else if (health.getCoverage() < 1) {
+            illness = String.format("Clinics and hospitals reach %.0f%% of the city. Covering "
+                    + "the rest would take the absence rate down toward %.0f%%.",
+                    health.getCoverage() * 100, Health.WELL_SERVED_RATE * 100);
+            illnessTone = "#ef6c00";
+        } else {
+            illness = "Everyone can get seen. This is as healthy as a workforce gets - "
+                + "people still fall ill, and an outbreak can still arrive.";
+            illnessTone = "#2e7d32";
+        }
+        Label illnessLabel = monoLabel(illness);
+        illnessLabel.setWrapText(true);
+        illnessLabel.setMaxWidth(TABLE_WIDTH - 40);
+        illnessLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + illnessTone + ";"
+                + " -fx-padding: 6 0 0 0;");
+        care.getChildren().add(illnessLabel);
+
+        /*
+         * The unburied get their own line rather than a place in the list,
+         * because they are the one thing here that is an emergency rather than
+         * a level - and because a player seeing the sick rate climb with full
+         * hospital coverage has no other way to find out why.
+         */
+        Healthcare service = game.getHealthcare();
+        if (service.getUnburied() > 0) {
+            Label dead = monoLabel(String.format(
+                    "%-26s%s  (adding %.1f points to the rate above)",
+                    "Lying unburied:", formatter.format(service.getUnburied()),
+                    health.getUnburiedRate() * 100));
+            dead.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                    + " -fx-text-fill: #c62828;");
+            care.getChildren().add(dead);
+        }
+
+        /*
+         * The other two care types, and what each of them buys.
+         *
+         * Coverage is STAFFED, not built - a hospital with no doctors treats
+         * nobody, and this is the screen where a player would otherwise wonder
+         * why the wards they paid for changed nothing.
+         */
+        double[] staffing = pm.getJobFillRate();
+        for (CareType type : new CareType[]{CareType.CHILDCARE, CareType.SENIOR}) {
+            double served = type.populationServed(cohorts);
+            double beds = bm.getStaffedCareCapacity(type, staffing);
+            double cover = Health.coverageOf(beds, served);
+
+            String buys = type == CareType.CHILDCARE
+                    ? String.format("infant deaths x%.3f, births x%.2f",
+                            Healthcare.mortalityFactor(AgeBand.BABY, cover, .5, 0),
+                            Healthcare.birthFactor(cover))
+                    : String.format("senior deaths x%.2f, +%.0f%% draw",
+                            Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, cover),
+                            (Migration.seniorCarePull(cover) - 1) * 100);
+
+            Label row = monoLabel(String.format("   %-14s %5.0f%%  %s places for %s  - %s",
+                    type.getLabel() + ":", cover * 100,
+                    formatter.format(beds), formatter.format(served), buys));
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: " + (cover < .5 ? "#ef6c00" : "#546e7a") + ";");
+            care.getChildren().add(row);
+        }
+
+        column.getChildren().add(care);
+
+        /* ============================== death care ==============================
+         *
+         * SHAPED LIKE THE GRID, per Jerus - "same as energy and electricity".
+         * A satisfaction percentage, a one-word status, a load analysis and a
+         * critical block naming the shortfall are exactly what the electricity
+         * and water panels already show, and a player who has read those knows
+         * how to read this without being taught anything.
+         *
+         * The one difference is worth saying out loud on screen, because it
+         * changes what a player should do: a power station short of demand is
+         * short every month until somebody builds another, but a cemetery is
+         * completely fine right up to the month it is full and then permanently
+         * useless. So the useful warning is the one that comes BEFORE, and it
+         * is a countdown rather than a level.
+         */
+        double plots = bm.getCareCapacity(CareType.BURIAL);
+        double ovens = bm.getStaffedCareCapacity(CareType.CREMATION, staffing);
+        double plotsLeft = Healthcare.plotsRemaining(plots, service.getPlotsUsed());
+        double monthsLeft = service.monthsOfPlotsLeft(plots);
+
+        VBox death = reportSection("DEATH CARE",
+                String.format("%-26s%.1f%%", "Funerals dealt with:",
+                        service.getDeathCareRatio() * 100));
+        death.getChildren().add(statusLabel("Capacity:",
+                !service.isOverwhelmed() && !service.isStrained(),
+                service.getStatus(), service.getStatus()));
+
+        death.getChildren().add(monoLabel(String.format("%-26s%s a month",
+                "Deaths:", formatter.format(service.getDeaths()))));
+        death.getChildren().add(monoLabel(String.format("%-26s%s buried, %s cremated",
+                "Dealt with:", formatter.format(service.getBurials()),
+                formatter.format(service.getCremations()))));
+        death.getChildren().add(monoLabel(String.format("%-26s%s of %s plots (%.0f%% full)",
+                "Ground left:", formatter.format(plotsLeft), formatter.format(plots),
+                service.getPlotUtilisation() * 100)));
+        death.getChildren().add(monoLabel(String.format("%-26s%s a month (%.0f%% used)",
+                "Crematoria:", formatter.format(ovens),
+                service.getCremationUtilisation() * 100)));
+        column.getChildren().add(death);
+
+        if (service.isOverwhelmed()) {
+            column.getChildren().add(criticalSection("[CRITICAL] NOWHERE TO BURY THEM",
+                    String.format("%s people are lying unburied.",
+                            formatter.format(service.getUnburied())),
+                    String.format("It is adding %.0f points to the sick rate above,",
+                            health.getUnburiedRate() * 100),
+                    "and it does not go away on its own.",
+                    "",
+                    plotsLeft <= 0 && plots > 0
+                            ? "Every plot in the city is full. Build another cemetery,"
+                            : "Build a cemetery or a crematorium.",
+                    plotsLeft <= 0 && plots > 0
+                            ? "or a crematorium, which needs almost no land."
+                            : "A cemetery is cheap and vast; a crematorium is the"
+                                    + " opposite."));
+
+        } else if (service.isStrained()) {
+            String pressure2 = service.getCremationUtilisation() >= Healthcare.STRAINED
+                    ? String.format("The crematoria are at %.0f%% of what they can handle.",
+                            service.getCremationUtilisation() * 100)
+                    : String.format("The ground runs out in about %,.0f months at this rate.",
+                            monthsLeft);
+
+            column.getChildren().add(criticalSection("[!] DEATH CARE IS FILLING UP", pressure2,
+                    "",
+                    "A cemetery is a stock, not a rate: it is fine until the month",
+                    "it is full, and then people start piling up immediately.",
+                    "Plots are consumed permanently - the land never comes back."));
+        }
+
         /* ================================== homes ================================== */
         int builtHomes = bm.getTotalHomes();
         int building = bm.getHomesUnderConstruction();
@@ -3446,6 +3899,50 @@ public class UserInterface extends Application {
             column.getChildren().add(demolished);
         }
 
+        /* ------------------------------ health ------------------------------ */
+        /*
+         * An epidemic lasts three or four months and then decays to nothing, so
+         * a city that lost a quarter of its output to one in the middle of a
+         * twenty-month skip looks identical at both ends to a city that was well
+         * throughout. That is the same argument the power and water samples were
+         * added for, and a sharper case of it - a brownout at least tends to
+         * persist long enough to still be there when the skip stops.
+         */
+        if (skip.getOutbreaks() > 0 || skip.getMonthsSick() > 0
+                || skip.getPeakUnburied() > 0) {
+
+            VBox illness = reportSection("HEALTH DURING THE SKIP");
+
+            if (skip.getOutbreaks() > 0) {
+                Label epidemic = monoLabel(String.format(
+                        "%-20s%d, running for %d months in total",
+                        "Outbreaks", skip.getOutbreaks(), skip.getMonthsInOutbreak()));
+                epidemic.setStyle("-fx-font-family: 'Courier New';"
+                        + " -fx-font-weight: bold; -fx-text-fill: #c62828;");
+                illness.getChildren().add(epidemic);
+            } else {
+                illness.getChildren().add(monoLabel(
+                        String.format("%-20s%s", "Outbreaks", "none")));
+            }
+
+            illness.getChildren().add(monoLabel(String.format(
+                    "%-20s%.0f%% of the workforce, in the worst month",
+                    "Worst absence", (1 - skip.getWorstWorkRatio()) * 100)));
+            illness.getChildren().add(monoLabel(String.format(
+                    "%-20s%d of %d", "Months below full", skip.getMonthsSick(),
+                    skip.getCompleted())));
+
+            if (skip.getPeakUnburied() > 0) {
+                Label dead = monoLabel(String.format(
+                        "%-20s%,.0f at its worst - build a cemetery or a crematorium",
+                        "Left unburied", skip.getPeakUnburied()));
+                dead.setStyle("-fx-font-family: 'Courier New';"
+                        + " -fx-font-weight: bold; -fx-text-fill: #c62828;");
+                illness.getChildren().add(dead);
+            }
+            column.getChildren().add(illness);
+        }
+
         /* ---------------------------- households ---------------------------- */
         column.getChildren().add(reportSection("HOUSEHOLDS",
                 String.format("%-20s%.1f%% of take-home", "Rent",
@@ -4210,6 +4707,10 @@ public class UserInterface extends Application {
                         formatter.format(na.getContributions()),
                         SocialSecurity.CONTRIBUTION_RATE * 100),
                 String.format("Utility Net Income:     $%s", formatter.format(na.getUtilityIncome())),
+                String.format("Healthcare Fees:        $%s  (%.0f%% of what it costs)",
+                        formatter.format(na.getHealthFees()),
+                        em.getHealthcareBill() > 0
+                                ? na.getHealthFees() / em.getHealthcareBill() * 100 : 0),
                 String.format("Property Tax:           $%s", formatter.format(na.getPropertyTax())),
                 String.format("Land Sold:              $%s", formatter.format(na.getLandSales())),
                 "---------------------------------------------------",
@@ -4220,10 +4721,57 @@ public class UserInterface extends Application {
                 String.format("Pensions:              -$%s  (%,.0f seniors at $%s each)",
                         formatter.format(na.getPensions()), em.getSeniors(),
                         formatter.format(SocialSecurity.pensionPerSenior())),
+                String.format("Healthcare:            -$%s  (%s wages, %s upkeep)",
+                        formatter.format(na.getHealthSpending()),
+                        formatter.format(game.getHealthcare().getPayroll()),
+                        formatter.format(game.getHealthcare().getUpkeep())),
                 String.format("Buildings (capital):   -$%s", formatter.format(na.getCapitalSpending())),
                 String.format("Land Bought:           -$%s", formatter.format(na.getLandPurchases())),
                 "---------------------------------------------------",
                 String.format("Total Expenditure:     -$%s", formatter.format(na.getTotalExpenses()))));
+
+        /* ---------------------- THE HEALTH SERVICE ----------------------
+         *
+         * Its own block, beside the pension gap and for the same reason: the
+         * two lines above are a revenue and an expense like any other, and that
+         * hides the fact that they are one business. It is a net-deficit
+         * business on purpose - patients pay a little, per Jerus - and the size
+         * of the deficit is the number a player is actually deciding about.
+         *
+         * The service employs 2,128 people across the catalogue, more than any
+         * other category in the game, and until this batch it was paid by
+         * nobody at all: its wages were counted in the city's wage bill, taxed,
+         * spent by the households, and debited from no account anywhere.
+         */
+        if (game.getHealthcare().getGrossCost() > 0
+                || game.getBuildingManager().getCareCapacity(CareType.GENERAL) > 0) {
+
+            Healthcare hc = game.getHealthcare();
+            VBox service = reportSection("THE HEALTH SERVICE",
+                    String.format("%-24s-$%s", "Wages:", formatter.format(hc.getPayroll())),
+                    String.format("%-24s-$%s", "Running the buildings:",
+                            formatter.format(hc.getUpkeep())),
+                    String.format("%-24s $%s", "Patient fees:",
+                            formatter.format(hc.getTreatmentFees())),
+                    String.format("%-24s $%s  (%,.0f buried, %,.0f cremated)",
+                            "Funerals:", formatter.format(hc.getFuneralFees()),
+                            hc.getBurials(), hc.getCremations()));
+
+            Label net = monoLabel(String.format("%-24s-$%s  a month, %.0f%% covered by fees",
+                    "Net cost to the city:", formatter.format(hc.getNetCost()),
+                    hc.getCostRecovery() * 100));
+            net.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                    + " -fx-text-fill: #ef6c00;");
+            service.getChildren().add(net);
+
+            Label deficit = monoLabel("A net-deficit business by design: patients pay a"
+                    + " little, the city pays the rest. What it buys is on the People screen.");
+            deficit.setWrapText(true);
+            deficit.setMaxWidth(TABLE_WIDTH - 40);
+            deficit.setStyle("-fx-font-size: 11px; -fx-text-fill: #546e7a; -fx-padding: 4 0 0 0;");
+            service.getChildren().add(deficit);
+            column.getChildren().add(service);
+        }
 
         /* ------------------------ THE PENSION GAP ------------------------ */
         /*
@@ -4268,15 +4816,16 @@ public class UserInterface extends Application {
         pies.getChildren().addAll(
                 budgetPie("WHERE IT COMES FROM", new String[]{
                         "Business", "Industrial", "Sales", "Wage",
-                        "Pensions in", "Utilities", "Property", "Land"},
+                        "Pensions in", "Utilities", "Health fees", "Property", "Land"},
                         new double[]{
                         na.getTaxBusiness(), na.getTaxIndustrial(), na.getTaxSales(),
                         na.getTaxWage(), na.getContributions(), na.getUtilityIncome(),
-                        na.getPropertyTax(), na.getLandSales()}),
+                        na.getHealthFees(), na.getPropertyTax(), na.getLandSales()}),
                 budgetPie("WHERE IT GOES", new String[]{
-                        "Interest", "Pensions", "Buildings", "Land"},
+                        "Interest", "Pensions", "Healthcare", "Buildings", "Land"},
                         new double[]{
                         na.getInterestExpense(), na.getPensions(),
+                        na.getHealthSpending(),
                         na.getCapitalSpending(), na.getLandPurchases()}));
         column.getChildren().add(pies);
 
@@ -4962,6 +5511,68 @@ public class UserInterface extends Application {
         body.getChildren().add(
                 statLine("Housing", String.format("%,d/%,d", population, housing)));
 
+        /* ---------------- HEALTH ----------------
+         *
+         * ALWAYS ON SCREEN, per Jerus, and it earns the space: sickness is a
+         * multiplier on every sector's output and mortality decides how many
+         * people the city keeps, and neither of them announces itself. Every
+         * other thing on this panel that silently costs the city output -
+         * energy, water, roads - is already here; health was the one that was
+         * not, and it is the largest of the four.
+         *
+         * Sits between the population and the resources because it is about
+         * both: the top three rows are what illness costs the ECONOMY, and the
+         * bottom four are what care does to the PEOPLE.
+         */
+        Health health = game.getHealth();
+        Healthcare service = game.getHealthcare();
+        double[] staffing = populationManager.getJobFillRate();
+        PopulationCohorts pyramid = game.getCohorts();
+
+        body.getChildren().add(sectionHeading("HEALTH"));
+
+        if (health.isOutbreak()) {
+            Label epidemic = statLine("OUTBREAK", String.format("month %d",
+                    Math.max(1, game.getMonth() - health.getOutbreakStarted() + 1)));
+            epidemic.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
+            body.getChildren().add(epidemic);
+        }
+
+        Label sickRow = statLine("Off sick", String.format("%.1f%%", health.getSickRate() * 100));
+        if (health.getSickRate() > Health.WELL_SERVED_RATE * 2) {
+            sickRow.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
+        }
+        body.getChildren().add(sickRow);
+
+        body.getChildren().add(careLine("General care", CareType.GENERAL,
+                pyramid.total(), staffing));
+        body.getChildren().add(careLine("Childcare", CareType.CHILDCARE,
+                CareType.CHILDCARE.populationServed(pyramid), staffing));
+        body.getChildren().add(careLine("Senior care", CareType.SENIOR,
+                CareType.SENIOR.populationServed(pyramid), staffing));
+
+        Label graves = statLine("Death care", service.getStatus());
+        if (service.isOverwhelmed() || service.isStrained()) {
+            graves.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: " + (service.isOverwhelmed() ? "#c62828" : "#ef6c00")
+                    + "; -fx-font-weight: bold;");
+        }
+        body.getChildren().add(graves);
+
+        if (service.getUnburied() > 0) {
+            Label waiting = statLine("Unburied", formatter.format(service.getUnburied()));
+            waiting.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
+            body.getChildren().add(waiting);
+        } else {
+            body.getChildren().add(statLine("Plots left",
+                    formatter.format(service.getPlotsLeft())));
+        }
+
+        body.getChildren().add(statLine("Health bill", money(service.getNetCost())));
+
         /* ---------------- RESOURCES ---------------- */
         body.getChildren().addAll(
                 sectionHeading("RESOURCES"),
@@ -5032,6 +5643,39 @@ public class UserInterface extends Application {
         scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
 
         cityPanel.getChildren().addAll(title, subtitle, scroller);
+    }
+
+    /**
+     * One coverage row: the percentage, and the two numbers behind it.
+     *
+     * STAFFED, not built, which is the whole reason it is worth a line - a
+     * hospital with no doctors is on the BUILDINGS list below looking like an
+     * asset while treating nobody, and this is the row that says so.
+     */
+    private Label careLine(String label, CareType care, double needed, double[] staffing) {
+
+        double places = game.getBuildingManager().getStaffedCareCapacity(care, staffing);
+        double cover = Health.coverageOf(places, needed);
+
+        Label row = statLine(label, String.format("%.0f%%  %s/%s", cover * 100,
+                shortNumber(places), shortNumber(needed)));
+
+        if (cover < .5) {
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
+        } else if (cover < .9) {
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #ef6c00;");
+        }
+        return row;
+    }
+
+    /** 12.4k rather than 12,400 - the panel is narrow and these are two to a row. */
+    private String shortNumber(double value) {
+        if (value >= 1_000_000) return String.format("%.1fM", value / 1_000_000);
+        if (value >= 10_000)    return String.format("%.0fk", value / 1_000);
+        if (value >= 1_000)     return String.format("%.1fk", value / 1_000);
+        return String.format("%.0f", value);
     }
 
     /** Keeps building names inside the panel's fixed-width column. */

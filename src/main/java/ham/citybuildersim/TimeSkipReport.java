@@ -172,8 +172,40 @@ public class TimeSkipReport {
     public void sampleMonth(double energyRatio, double waterRatio, double roadRatio,
                             double landAvailableSqFt, boolean householdsShort,
                             boolean anythingUnderConstruction, int population) {
+        sampleMonth(energyRatio, waterRatio, roadRatio, landAvailableSqFt,
+                householdsShort, anythingUnderConstruction, population, 1, false, 0);
+    }
+
+    /**
+     * The same, plus the month's health.
+     *
+     * AN OUTBREAK IS THE THING A SKIP HIDES BEST. It lasts three or four months
+     * and then decays to nothing, so a city that lost a quarter of its output to
+     * an epidemic in the middle of a twenty-month skip looks, at both ends,
+     * exactly like a city that was well the whole time - which is the same
+     * argument the power and water samples were added for, and a sharper case of
+     * it, because at least a brownout tends to persist.
+     *
+     * @param workRatio what sickness left of the month's work
+     * @param outbreak  whether an epidemic was running
+     * @param unburied  the dead the city had nowhere to put
+     */
+    public void sampleMonth(double energyRatio, double waterRatio, double roadRatio,
+                            double landAvailableSqFt, boolean householdsShort,
+                            boolean anythingUnderConstruction, int population,
+                            double workRatio, boolean outbreak, double unburied) {
 
         completed++;
+
+        if (outbreak) {
+            monthsInOutbreak++;
+            if (!wasOutbreak) outbreaks++;
+        }
+        wasOutbreak = outbreak;
+
+        worstWorkRatio = Math.min(worstWorkRatio, workRatio);
+        if (workRatio < .99) monthsSick++;
+        peakUnburied = Math.max(peakUnburied, unburied);
 
         if (energyRatio < .99) monthsShortOfPower++;
         if (waterRatio < .99)  monthsShortOfWater++;
@@ -189,6 +221,23 @@ public class TimeSkipReport {
     }
 
     /* ------------------------------- deltas ------------------------------- */
+
+    /* -------------------------- health, sampled -------------------------- */
+
+    private int outbreaks;
+    private int monthsInOutbreak;
+    private boolean wasOutbreak;
+    private int monthsSick;
+    private double worstWorkRatio = 1;
+    private double peakUnburied;
+
+    /** How many separate epidemics started during the skip. */
+    public int getOutbreaks()          { return outbreaks; }
+    public int getMonthsInOutbreak()   { return monthsInOutbreak; }
+    public int getMonthsSick()         { return monthsSick; }
+    /** The worst single month, as a share of work done. 1 means nobody was ill. */
+    public double getWorstWorkRatio()  { return worstWorkRatio; }
+    public double getPeakUnburied()    { return peakUnburied; }
 
     public boolean isComplete()   { return complete && before != null && after != null; }
     public int getRequested()     { return requested; }

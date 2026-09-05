@@ -123,6 +123,9 @@ public class SimulationEngine {
         economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
         economyManager.setWaterRatio(servicesManager.getWaterRatio());
         economyManager.setRoadRatio(servicesManager.getRoadRatio());
+        // The fourth ratio. advanceDemographics() has already set it for this
+        // month - see Game.advanceDemographics step 6.
+        economyManager.setHealthRatio(game.getHealth().getWorkRatio());
         economyManager.updateEcon();
         
          

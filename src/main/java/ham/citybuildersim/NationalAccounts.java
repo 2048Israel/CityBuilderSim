@@ -359,6 +359,30 @@ public class NationalAccounts {
                                  double property,
                                  double interest, double capital, double landBought,
                                  double contributions, double pensions) {
+        updateGovernment(business, industrial, sales, wage, utilities, land, property,
+                interest, capital, landBought, contributions, pensions, 0, 0);
+    }
+
+    /**
+     * The same again, with healthcare.
+     *
+     * Two lines, not one net figure, for exactly the reason the pension flows
+     * are two lines: a city running a $6M health service that recovers $1.4M in
+     * fees is a very different city from one running a $4.6M service, and
+     * netting them would draw both the same. The fees are revenue like any
+     * other; the bill is spending like any other.
+     *
+     * The bill is the GROSS cost - payroll plus upkeep - because that is what
+     * leaves the treasury. See Healthcare.
+     */
+    public void updateGovernment(double business, double industrial, double sales,
+                                 double wage, double utilities, double land,
+                                 double property,
+                                 double interest, double capital, double landBought,
+                                 double contributions, double pensions,
+                                 double healthFees, double healthSpending) {
+        this.healthFees = healthFees;
+        this.healthSpending = healthSpending;
         taxBusiness = business;
         taxIndustrial = industrial;
         taxSales = sales;
@@ -377,8 +401,14 @@ public class NationalAccounts {
     private double contributions;
     private double pensions;
 
+    /** Patient and funeral fees in, the health service's bill out. See Healthcare. */
+    private double healthFees;
+    private double healthSpending;
+
     public double getContributions() { return contributions; }
     public double getPensions()      { return pensions; }
+    public double getHealthFees()    { return healthFees; }
+    public double getHealthSpending(){ return healthSpending; }
 
     /* ------------------------------- GDP ------------------------------------ */
 
@@ -468,7 +498,8 @@ public class NationalAccounts {
 
     public double getTotalRevenue() {
         return taxBusiness + taxIndustrial + taxSales + taxWage
-                + utilityIncome + landSales + propertyTax + contributions;
+                + utilityIncome + landSales + propertyTax + contributions
+                + healthFees;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -476,7 +507,8 @@ public class NationalAccounts {
     public double getLandPurchases()   { return landPurchases; }
 
     public double getTotalExpenses() {
-        return interestExpense + capitalSpending + landPurchases + pensions;
+        return interestExpense + capitalSpending + landPurchases + pensions
+                + healthSpending;
     }
 
     /** Surplus or deficit - what actually moves the city's cash this month. */

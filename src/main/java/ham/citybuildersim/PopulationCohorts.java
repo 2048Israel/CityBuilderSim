@@ -47,8 +47,14 @@ public class PopulationCohorts {
      *
      * Slightly above the rate that would hold the population exactly steady
      * against the mortality in AgeBand - which works out near 1.4% - so a city
-     * left alone grows very slowly rather than shrinking. That only matters once
-     * the cohorts are load-bearing; today scaleTo() overrides the total anyway.
+     * left alone grows very slowly rather than shrinking.
+     *
+     * THIS IS THE FLOOR NOW, not the rate. Childcare multiplies it, up to
+     * double at full coverage, so fifteen per thousand is what a city with
+     * nowhere to leave a child manages and thirty is what one that has solved
+     * the problem does. See Healthcare.birthFactor(). (The note that used to sit
+     * here said scaleTo() overrode the total anyway; that stopped being true the
+     * day the pyramid became the population.)
      */
     public static final double BIRTHS_PER_1000_PER_YEAR = 15.0;
 
@@ -122,6 +128,46 @@ public class PopulationCohorts {
      * age here and nobody to give birth.
      */
     public void advanceMonth() {
+        advanceMonth(null);
+    }
+
+    /**
+     * The same month, with healthcare's hand on the death rate.
+     *
+     * @param mortalityFactor one multiplier per band, in band order, or null for
+     *                        a city where nothing modifies mortality. A wrong-
+     *                        length array is refused whole and treated as null,
+     *                        per the standing rule - a pyramid that applied a
+     *                        childcare multiplier to seniors because the array
+     *                        was read at an offset would be far worse than one
+     *                        that applied nothing.
+     *
+     * The multiplier goes through AgeBand.monthlyFromAnnual() rather than
+     * multiplying monthlyMortality() directly, which is not the same thing and
+     * is the whole reason that method is public. Scaling the ANNUAL rate and
+     * re-compounding is the honest conversion, and it is what keeps the figure
+     * checkable against a life table; scaling the monthly rate would drift, and
+     * would skip the MAX_MONTHLY_MORTALITY cap that stops an unreviewed factor
+     * emptying a band in a month.
+     */
+    public void advanceMonth(double[] mortalityFactor) {
+        advanceMonth(mortalityFactor, 1);
+    }
+
+    /**
+     * The same month, with healthcare's hand on BOTH ends of a life.
+     *
+     * @param birthFactor what the birth rate is multiplied by - somewhere to
+     *                    leave a child is the difference between one and two,
+     *                    and until this existed births were a flat fifteen per
+     *                    thousand a year whatever the player did. See
+     *                    Healthcare.birthFactor().
+     */
+    public void advanceMonth(double[] mortalityFactor, double birthFactor) {
+
+        double[] factor = (mortalityFactor != null
+                && mortalityFactor.length == AgeBand.values().length)
+                ? mortalityFactor : null;
 
         java.util.Arrays.fill(lastPromoted, 0);
         java.util.Arrays.fill(lastDeathsByBand, 0);
@@ -148,7 +194,11 @@ public class PopulationCohorts {
             double opening = band[i];
             if (opening <= 0) continue;
 
-            double dying  = opening * b.monthlyMortality();
+            double rate = factor == null
+                    ? b.monthlyMortality()
+                    : AgeBand.monthlyFromAnnual(b.getAnnualMortality() * Math.max(0, factor[i]));
+
+            double dying  = opening * rate;
             double ageing = opening * b.monthlyOutflowRate();
 
             // Belt and braces. The rates are far below this and the cap in
@@ -177,7 +227,8 @@ public class PopulationCohorts {
             }
         }
 
-        lastBirths = total() * (BIRTHS_PER_1000_PER_YEAR / 1000.0) / 12.0;
+        lastBirths = total() * (BIRTHS_PER_1000_PER_YEAR / 1000.0) / 12.0
+                * Math.max(0, birthFactor);
         band[AgeBand.BABY.ordinal()] += lastBirths;
     }
 

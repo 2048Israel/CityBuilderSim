@@ -91,8 +91,46 @@ public final class GameVersion {
      *     saves already behaved as; and PopulationCohorts.restore() accepts BOTH
      *     the old and new array lengths rather than refusing, because that array
      *     is the population now and refusing it would hand back an empty city.
+     * 13 - sickness. The city's health state - the outbreak currently decaying,
+     *     the coverage and the sick rate the month's statements were throttled
+     *     by - plus a fourth entry in the ratio basis.
+     *
+     *     This is exactly the direction the number exists for. The outbreak roll
+     *     is a pure function of the month, so a build that does not read the
+     *     health array does not re-roll the epidemic the save was taken in the
+     *     middle of - it simply walks out of it, at full output, and looks
+     *     entirely well while doing so. Nothing on screen would say anything was
+     *     lost.
+     *
+     *     Downward is fine and needed no work at all: the health array is null
+     *     in an older save and Health.restore() takes null as "start well",
+     *     while the fourth ratio basis defaults to 1, which is precisely what
+     *     every city before this ran at.
+     * 14 - the health service's own state: plots consumed, the unburied
+     *     backlog, and the month's bill and fees.
+     *
+     *     The two STOCKS are why this number moved. Plots used and the backlog
+     *     of dead nobody could deal with are both permanent facts about a city
+     *     that nothing can reconstruct by looking at it - a build that ignored
+     *     them would empty the graveyards, hand the player a cemetery that
+     *     never fills, and clear an epidemic the city had created for itself,
+     *     all while looking like a clean load.
+     *
+     *     Downward is fine: Healthcare.restore() refuses a null array whole, so
+     *     a format-13 city loads with empty graveyards and no backlog, which is
+     *     precisely what those cities were.
+     * 15 - the health service's array grew by two: the plots ever built and the
+     *     crematoria's monthly throughput, so the death-care panel can say how
+     *     tight the month actually was rather than how tight it looks now.
+     *
+     *     Small, and the number still moves, because Healthcare.restore()
+     *     refuses a wrong-length array WHOLE. A format-14 save carries ten
+     *     entries where this build wants twelve, so it is refused - and a
+     *     refused Healthcare is a city with empty graveyards, which for a save
+     *     that HAS filled graves is exactly the silent loss SAVE_FORMAT exists
+     *     to make loud.
      */
-    public static final int SAVE_FORMAT = 12;
+    public static final int SAVE_FORMAT = 15;
 
     public static final String NAME = "CityBuilderSim";
 

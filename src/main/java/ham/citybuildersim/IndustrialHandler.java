@@ -34,7 +34,7 @@ public class IndustrialHandler {
      * question rather than a second copy of this one.
      */
     public double getOperatingRate() {
-        return averageIndustrialFill * energyRatio * waterRatio * roadRatio;
+        return averageIndustrialFill * energyRatio * waterRatio * roadRatio * healthRatio;
     }
     private int foodProduction = 0;
     private int foodCapacity =0;
@@ -124,6 +124,19 @@ public class IndustrialHandler {
      */
     private double roadRatio = 1;
 
+    /**
+     * How much of the month's work an unwell workforce actually did.
+     *
+     * A FOURTH throttle beside energyRatio, waterRatio and roadRatio, and it
+     * multiplies with them for the same reason they multiply with each other.
+     * It is different from the three in one way that matters: it cuts OUTPUT
+     * ONLY and never payroll. The staff are on the books and get paid whether
+     * they came in or not - see Health for why that is the point of the whole
+     * mechanic. Defaults to 1, so a handler nobody tells about sickness behaves
+     * exactly as it did before it existed.
+     */
+    private double healthRatio = 1;
+
     /* ------------------------- the ratio basis -------------------------
        What the month was actually TRADED at, which is not always what the
        city looks like by the time anyone reads the report.
@@ -144,6 +157,8 @@ public class IndustrialHandler {
     private double bEnergyRatio = 1;
     private double bWaterRatio = 1;
     private double bRoadRatio = 1;
+    /** Sickness, carried for the same reason - see Health. */
+    private double bHealthRatio = 1;
     
     //temporary variables
     private int productsSoldCopy;
@@ -188,7 +203,8 @@ public class IndustrialHandler {
      * of those numbers are already here.
      */
     public void restoreMonthReport(double demand, int sold, int imported,
-                                   double energyBasis, double waterBasis, double roadBasis) {
+                                   double energyBasis, double waterBasis, double roadBasis,
+                                   double healthBasis) {
         /*
          * Demand is a flow too, and a second-hand one: it is set from what the
          * shops actually bought from the mills last month
@@ -200,7 +216,7 @@ public class IndustrialHandler {
         this.productsSoldCopy = sold;
         this.productsImportedCopy = imported;
         computeMonthlyReport(foodInventory + sold + imported,
-                energyBasis, waterBasis, roadBasis);
+                energyBasis, waterBasis, roadBasis, healthBasis);
 
         /*
          * Re-asserted AFTER the recompute, because computeMonthlyReport() now
@@ -260,6 +276,10 @@ public class IndustrialHandler {
         return foodProduction * getOperatingRate();
     }
 
+    public void setHealthRatio(double ratio) { this.healthRatio = ratio; }
+    public double getHealthRatio()           { return healthRatio; }
+    public double getReportHealthRatio()     { return bHealthRatio; }
+
     public double getReportCostPerUnit() { return rCostPerUnit; }
     public double getReportOffered()     { return rOffered; }
     public double getReportWithheld()    { return rWithheld; }
@@ -271,7 +291,7 @@ public class IndustrialHandler {
     public double getCostPerUnit() {
 
         double output = foodProduction * averageIndustrialFill
-                * energyRatio * waterRatio * roadRatio;
+                * energyRatio * waterRatio * roadRatio * healthRatio;
         if (output <= 0) {
             return Double.MAX_VALUE;      // producing nothing - any sale is a loss
         }
@@ -415,7 +435,25 @@ public class IndustrialHandler {
         // the sum and truncating the addend agree - but four of the five lossy
         // assignments -Xlint complains about were the four lines this replaced,
         // and the last one should at least be deliberate.
-        foodInventory += (int) output;
+        /*
+         * RECORDED, not just done, and this is what makes the conservation law
+         * exact rather than approximate.
+         *
+         * ConservationCheck used to compare the warehouse against
+         * rActualProduction, and those are two different numbers on purpose:
+         * the report is struck at the ratios the month was TRADED at, while
+         * this line uses the live ones. With energy and water pinned at 1 in a
+         * small test city they agreed and nobody noticed; sickness moves every
+         * month, so the gap surfaced immediately as 1.06 units against a
+         * one-unit tolerance. That was the harness measuring the wrong thing,
+         * not the warehouse leaking.
+         *
+         * Storing the integer that actually went in lets the law be asserted
+         * with no slack at all: opening + this - spoiled - sold - exported IS
+         * the closing balance, exactly, every month.
+         */
+        producedThisMonth = (int) output;
+        foodInventory += producedThisMonth;
 
         /*
          * Stock above what the sector can now hold is destroyed - and that has
@@ -447,6 +485,18 @@ public class IndustrialHandler {
     private int inventoryWrittenOff;
 
     public int getInventoryWrittenOff() { return inventoryWrittenOff; }
+
+    /**
+     * Units that actually entered the warehouse this month, after truncation.
+     *
+     * NOT getReportActualProduction(), which is the same quantity priced at the
+     * ratios the month's income statement was written against. Both are right
+     * and they answer different questions; this one is the one a conservation
+     * law can be built on.
+     */
+    private int producedThisMonth;
+
+    public int getProducedThisMonth() { return producedThisMonth; }
     
     public void updateIndustrialWages(double[] wages, int[] jobs) {
 
@@ -650,16 +700,19 @@ public class IndustrialHandler {
      * the instant it began.
      */
     public void computeMonthlyReport(int inventoryBasis) {
-        computeMonthlyReport(inventoryBasis, energyRatio, waterRatio, roadRatio);
+        computeMonthlyReport(inventoryBasis, energyRatio, waterRatio, roadRatio, healthRatio);
     }
 
     /** @see CommercialHandler for what the ratio basis is and why it is carried. */
     public void computeMonthlyReport(int inventoryBasis,
-                                     double energyBasis, double waterBasis, double roadBasis) {
+                                     double energyBasis, double waterBasis, double roadBasis,
+                                     double healthBasis) {
 
         bEnergyRatio = energyBasis;
         bWaterRatio = waterBasis;
         bRoadRatio = roadBasis;
+        /** @see CommercialHandler for why this one is not an r-field. */
+        bHealthRatio = healthBasis;
 
         rFoodCapacity = foodCapacity;
         rFoodInventory = inventoryBasis;
@@ -669,7 +722,7 @@ public class IndustrialHandler {
         rRoadRatio = bRoadRatio;
         rBaseProduction = foodProduction;
         rActualProduction = foodProduction * averageIndustrialFill
-                * bEnergyRatio * bWaterRatio * bRoadRatio;
+                * bEnergyRatio * bWaterRatio * bRoadRatio * bHealthRatio;
         rDemand = foodDemand;
 
         /*

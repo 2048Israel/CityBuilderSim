@@ -162,6 +162,17 @@ public class DataSave {
     private double energyRatioBasis = 1;
     private double waterRatioBasis = 1;
     private double roadRatioBasis = 1;
+
+    /**
+     * The sick rate the statements were written against.
+     *
+     * No presence flag of its own, and it does not need one: a save from before
+     * sickness existed reads 1, which is exactly what that city was running at.
+     * The other three needed hasRatioBasis because their honest default was
+     * "unknown, go and ask the live game"; this one's honest default is "nobody
+     * was ill".
+     */
+    private double healthRatioBasis = 1;
     private boolean hasRatioBasis;
 
     /*
@@ -553,10 +564,11 @@ public class DataSave {
         this.hasMonthFlows = true;
     }
 
-    public void setRatioBasis(double energy, double water, double road) {
+    public void setRatioBasis(double energy, double water, double road, double health) {
         this.energyRatioBasis = energy;
         this.waterRatioBasis = water;
         this.roadRatioBasis = road;
+        this.healthRatioBasis = health;
         this.hasRatioBasis = true;
     }
 
@@ -632,6 +644,7 @@ public class DataSave {
     public double getEnergyRatioBasis()     { return energyRatioBasis; }
     public double getWaterRatioBasis()      { return waterRatioBasis; }
     public double getRoadRatioBasis()       { return roadRatioBasis; }
+    public double getHealthRatioBasis()     { return healthRatioBasis; }
 
     /** False for a save written before flows were carried. */
     public boolean hasMonthFlows()          { return hasMonthFlows; }
@@ -669,12 +682,42 @@ public class DataSave {
     private double[] families;
     private double[] migration;
 
+    /**
+     * The month's sickness: the outbreak still decaying, and the rate the
+     * sectors were throttled by.
+     *
+     * A decaying outbreak is a streak by another name, and the same rule
+     * applies - it cannot be rebuilt from the month it ended in. Worse, the
+     * outbreak roll is a pure function of the month number, so a city that
+     * forgot its severity on load would re-roll nothing and simply walk out of
+     * the epidemic. Null in a save from before healthcare, which Health.restore
+     * takes as "start well".
+     */
+    private double[] health;
+
+    /**
+     * The health service: plots used, the unburied backlog, and the month's
+     * bill.
+     *
+     * The first two are STOCKS and are the reason this exists. A reloaded city
+     * that forgot its plots would resurrect a century of graves and hand the
+     * player a cemetery that never fills; one that forgot its backlog would
+     * walk out of an epidemic of its own making. Null in a save from before
+     * healthcare had books, which Healthcare.restore() refuses whole - leaving
+     * a city with empty graveyards, which is exactly what those saves were.
+     */
+    private double[] healthcare;
+
     public void setCohorts(double[] a)  { this.cohorts = a; }
     public double[] getCohorts()        { return cohorts; }
     public void setFamilies(double[] a) { this.families = a; }
     public double[] getFamilies()       { return families; }
     public void setMigration(double[] a){ this.migration = a; }
     public double[] getMigration()      { return migration; }
+    public void setHealth(double[] a)   { this.health = a; }
+    public double[] getHealth()         { return health; }
+    public void setHealthcare(double[] a){ this.healthcare = a; }
+    public double[] getHealthcare()      { return healthcare; }
 
     /*
      * The private sector's memory, and the player's own turn.

@@ -106,6 +106,17 @@ public class LongPlaytest {
 
     static int monthsAnyTierDeclining = 0;
     static int monthsPeopleLeft = 0;
+
+    /* Sickness. Counted rather than assumed - a mechanic that never fires over
+       four thousand months looks exactly like one that does not exist, which is
+       how out-migration got shipped inert. */
+    static int outbreaks = 0;
+    static int monthsInOutbreak = 0;
+    static boolean wasInOutbreak = false;
+    static double worstSickRate = 0;
+    static double lastSickRate = 0;
+    static double workLostToIllness = 0;
+    static int monthsObserved = 0;
     static double totalDepartures = 0;
     static double totalArrivals = 0;
 
@@ -195,6 +206,17 @@ public class LongPlaytest {
 
         lastUnemployment = p.getUnemploymentRate();
         if (lastUnemployment > worstUnemployment) worstUnemployment = lastUnemployment;
+
+        monthsObserved++;
+        Health health = g.getHealth();
+        lastSickRate = health.getSickRate();
+        if (lastSickRate > worstSickRate) worstSickRate = lastSickRate;
+        workLostToIllness += lastSickRate;
+        if (health.isOutbreak()) {
+            monthsInOutbreak++;
+            if (!wasInOutbreak) outbreaks++;
+        }
+        wasInOutbreak = health.isOutbreak();
 
         Migration mig = g.getMigration();
         if (mig.decliningShare() > 0) monthsAnyTierDeclining++;
@@ -877,6 +899,25 @@ public class LongPlaytest {
                 lastUnemployment * 100, worstUnemployment * 100);
         out.printf("  months with a pay tier in decline: %d   months anybody left: %d%n",
                 monthsAnyTierDeclining, monthsPeopleLeft);
+        out.printf("  off sick: %.1f%% at the end, worst %.1f%%, %.1f%% averaged over the run%n",
+                lastSickRate * 100, worstSickRate * 100,
+                monthsObserved > 0 ? workLostToIllness / monthsObserved * 100 : 0);
+        out.printf("  outbreaks: %d, ill for %d months of %d%n",
+                outbreaks, monthsInOutbreak, monthsObserved);
+
+        /*
+         * The health service, which in this run is a service the advisor never
+         * builds - the private sector correctly will not touch healthcare, and
+         * nobody is playing. So these lines are the DO-NOTHING case, and that is
+         * what makes them worth printing: they are the floor a player is
+         * measured against.
+         */
+        Healthcare hc = g.getHealthcare();
+        out.printf("  healthcare: $%,.0fk a month, %.0f%% covered by fees%n",
+                hc.getGrossCost(), hc.getCostRecovery() * 100);
+        out.printf("  funerals: %,.0f buried and %,.0f cremated last month,"
+                + " %,.0f plots used, %,.0f lying unburied%n",
+                hc.getBurials(), hc.getCremations(), hc.getPlotsUsed(), hc.getUnburied());
 
         out.println("\n--- what the advisor tried, and what happened ---\n");
         refusals.entrySet().stream()

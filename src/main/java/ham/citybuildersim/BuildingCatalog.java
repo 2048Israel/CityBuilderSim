@@ -201,9 +201,32 @@ public class BuildingCatalog {
                 .setProductionModifier1(number(o, "productionModifier1"))
                 .setProductionModifier2(number(o, "productionModifier2"));
 
+        readCare(o, template, name);
         readJobs(o, template, name);
 
         return template;
+    }
+
+    /**
+     * The care type, if there is one.
+     *
+     * Absent reads as NONE, which is right for every building that is not
+     * healthcare and is most of the file. An UNKNOWN string is a different thing
+     * and is reported: it means somebody meant to say something and mistyped it,
+     * and silently filing that hospital under "not healthcare" would leave the
+     * city wondering why its coverage never moved.
+     */
+    private void readCare(JsonObject o, BuildingsTemplate template, String name) {
+
+        String careName = string(o, "care");
+        if (careName.isEmpty()) return;
+
+        try {
+            template.setCare(CareType.valueOf(careName));
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" has unknown care type \""
+                    + careName + "\"; treated as NONE.");
+        }
     }
 
     private void readJobs(JsonObject o, BuildingsTemplate template, String name) {

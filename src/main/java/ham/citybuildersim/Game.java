@@ -841,11 +841,20 @@ public class Game {
         double contributions = economyManager.getContributions();
         double pensions = economyManager.getPensionsPaid();
 
+        /*
+         * What the people paid the health service, taken from the SAME figure
+         * the city is shown collecting rather than recomputed here. Fee revenue
+         * credited to the city and debited to nobody would be money from
+         * nowhere, which is the exact failure these books exist to catch - and
+         * two copies of one number is how this codebase has produced it before.
+         */
+        double healthFees = healthcare.getFees();
+
         if (accrue) {
             households.update(
                     wages, wageTax,
                     na.getConsumptionHousing(), na.getConsumptionGoods(),
-                    contributions, pensions,
+                    contributions, pensions, healthFees,
                     populationManager.getPopulation(),
                     populationManager.getWorkforce(),
                     populationManager.getJobsFilled());
@@ -853,7 +862,7 @@ public class Game {
             households.refresh(
                     wages, wageTax,
                     na.getConsumptionHousing(), na.getConsumptionGoods(),
-                    contributions, pensions,
+                    contributions, pensions, healthFees,
                     populationManager.getPopulation(),
                     populationManager.getWorkforce(),
                     populationManager.getJobsFilled());
@@ -1311,8 +1320,19 @@ public class Game {
     public int getConstructionOutput(){
         double constructionFillRate = servicesManager.getConstructionHandler().getAverageFill();
         double roadRatio = servicesManager.getRoadRatio();
-        return (int) Math.round(
-                buildingManager.getTotalConstructionCapacity() * constructionFillRate * roadRatio);
+
+        /*
+         * Sickness slows the sites too, and construction is where a player
+         * NOTICES it - a mill producing 8% less food is a number on a report,
+         * while a hospital that takes an extra month to open during the
+         * epidemic it was meant to end is a story.
+         *
+         * Same three-way agreement as roads: this figure is the screen's, the
+         * sites' and the sector's revenue, so it belongs here rather than being
+         * applied in one of the three.
+         */
+        return (int) Math.round(buildingManager.getTotalConstructionCapacity()
+                * constructionFillRate * roadRatio * health.getWorkRatio());
     }
 
     public int getConstructionMaterials(){
@@ -1393,7 +1413,10 @@ public class Game {
                         landManager.getAvailableSqFt(),
                         households.isLivingBeyondIncome(),
                         !buildingManager.getStacksUnderConstruction().isEmpty(),
-                        populationManager.getPopulation());
+                        populationManager.getPopulation(),
+                        health.getWorkRatio(),
+                        health.isOutbreak(),
+                        healthcare.getUnburied());
             }
 
         } catch (RuntimeException e) {
@@ -2519,7 +2542,20 @@ public class Game {
 
         economyManager.updateNationalAccounts(
                 constructionWorkDone,
-                servicesManager.getUtilitiesHandler().getUtilityPayroll(),
+                /*
+                 * GOVERNMENT CONSUMPTION, and healthcare is most of it now.
+                 *
+                 * This was the utility payroll alone, so a city that staffed a
+                 * 996-person Regional Medical Centre added nothing whatever to
+                 * measured output - while every real national accounts adds
+                 * government healthcare to GDP at exactly what it costs to
+                 * provide, because there is no market price to value it at.
+                 * The gross cost is the right figure: what the city buys is the
+                 * wages and the running of the buildings, and the fees are a
+                 * transfer from households, not a second lot of output.
+                 */
+                servicesManager.getUtilitiesHandler().getUtilityPayroll()
+                        + healthcare.getGrossCost(),
                 monthlyMaterialImports * buildingManager.getConstructionMaterialPrice(),
                 /*
                  * The yard AND the materials already embedded in unfinished
@@ -2955,9 +2991,28 @@ public class Game {
     private FamilyModel families = new FamilyModel();
     private Migration migration = new Migration();
 
+    /**
+     * How much of the workforce is off sick.
+     *
+     * Sits with the demographics because that is what it is about, but note it
+     * does NOT move anybody: the pyramid, the workforce and the payroll are all
+     * exactly what they would have been. See Health.
+     */
+    private Health health = new Health();
+
+    /**
+     * The health SERVICE - its payroll, its fees, and its cemeteries.
+     *
+     * Distinct from `health` above, which is the sick rate it buys. One is the
+     * cause and the bill; the other is the effect.
+     */
+    private Healthcare healthcare = new Healthcare();
+
     public PopulationCohorts getCohorts() { return cohorts; }
     public FamilyModel getFamilies()      { return families; }
     public Migration getMigration()       { return migration; }
+    public Health getHealth()             { return health; }
+    public Healthcare getHealthcare()     { return healthcare; }
     /**
      * Turns the placeholder off, for the harness that proves it is a placeholder.
      *
@@ -2994,7 +3049,47 @@ public class Game {
 
         migration.recordWages(populationManager.getStaffedWagePerTier());
 
-        cohorts.advanceMonth();
+        /*
+         * WHAT THE HEALTH SERVICE COULD ACTUALLY DO THIS MONTH, measured before
+         * anybody ages, is born, dies or moves.
+         *
+         * Both halves of that sentence matter. STAFFED, because a General
+         * Hospital with no doctors was treating forty thousand people and every
+         * other sector in the game has its output cut by its fill rate. And
+         * BEFORE, because these beds served the people who were living here -
+         * computing coverage against the population the month ended with would
+         * credit a hospital for treating somebody who moved in after the fact.
+         */
+        double[] fill = populationManager.getJobFillRate();
+        double childcareCoverage = careCoverage(CareType.CHILDCARE, fill);
+        double seniorCoverage    = careCoverage(CareType.SENIOR, fill);
+        double generalCoverage   = careCoverage(CareType.GENERAL, fill);
+        double generalCapacity   =
+                buildingManager.getStaffedCareCapacity(CareType.GENERAL, fill);
+        double servedThisMonth   = cohorts.total();
+
+        double[] served = new double[CareType.values().length];
+        for (CareType care : CareType.values()) {
+            if (!care.servesTheLiving()) continue;
+            served[care.ordinal()] = Math.min(
+                    buildingManager.getStaffedCareCapacity(care, fill),
+                    care.populationServed(cohorts));
+        }
+
+        /*
+         * BOTH ENDS OF A LIFE, and now the beginning of one too.
+         *
+         * Childcare swings infant mortality forty-fold and doubles the birth
+         * rate; general care swings the adult band three-fold; senior care moves
+         * the seniors' gently. Today's rates are what a HALF-served city gets, so
+         * building care does better than the game has ever done and building none
+         * does very much worse. The multipliers and the reasoning live in
+         * Healthcare.
+         */
+        cohorts.advanceMonth(
+                Healthcare.mortalityFactors(childcareCoverage, generalCoverage,
+                        seniorCoverage),
+                Healthcare.birthFactor(childcareCoverage));
 
         /*
          * Who works this month: the adults who were already living here, read
@@ -3011,7 +3106,12 @@ public class Game {
                 getHouseholdCapacity(),
                 buildingManager.getTotalHomes(),
                 families,
-                cohorts.share(AgeBand.ADULT)));
+                cohorts.share(AgeBand.ADULT),
+                // A city that looks after its parents is a city people move to.
+                // Seniors are otherwise pure burden here - pension, home, the
+                // dearest care in the game, no work - so this is what makes an
+                // ageing pyramid something to manage rather than merely endure.
+                seniorCoverage));
 
         population = populationManager.applyPopulation(
                 (int) Math.round(cohorts.total()), adultsAlreadyHere);
@@ -3030,6 +3130,100 @@ public class Game {
         // One household, one home - and if there are not enough homes, they
         // crowd rather than sleep outside. See FamilyModel.squeeze().
         families.squeeze(buildingManager.getTotalHomes());
+
+        /*
+         * 6. WHO IS TOO ILL TO WORK.
+         *
+         * Last, and after the population is settled, because coverage is beds
+         * divided by the people who need them and both halves have just moved.
+         * It changes no figure above this line - not the pyramid, not the
+         * workforce, not one wage - which is the whole specification: it
+         * modifies the fill rate, it does not reduce the workforce.
+         *
+         * The result reaches the sectors through SimulationEngine.updateEconomy,
+         * one line below setRoadRatio, because it is the fourth ratio and
+         * travels the same road as the other three.
+         */
+        /*
+         * 6. THE HEALTH SERVICE'S OWN MONTH: what it cost, what it collected,
+         *    and what it did with the people who died in step 2.
+         *
+         * Runs after the population is settled because the fees are charged on
+         * who was actually treated, and the funerals on who actually died. The
+         * bill it produces reaches the treasury through EconomyManager, whose
+         * getExpenses() finalUpdateEconomy() moves the cash by - which is the
+         * whole of the funding fix.
+         *
+         * PLOTS ARE NOMINAL AND CREMATION IS STAFFED, deliberately. A plot is a
+         * piece of ground: it exists whether or not anybody is on the payroll,
+         * and it is consumed permanently. A crematorium is a machine, and a
+         * machine with nobody to run it handles nobody.
+         */
+        healthcare.advanceMonth(
+                buildingManager.getCategoryPayroll(BuildingType.HEALTHCARE,
+                        populationManager.getWagesPerType(), fill),
+                buildingManager.getUpkeepByCategory(BuildingType.HEALTHCARE),
+                served,
+                cohorts.getLastDeaths(),
+                burialShare(),
+                buildingManager.getCareCapacity(CareType.BURIAL),
+                buildingManager.getStaffedCareCapacity(CareType.CREMATION, fill));
+
+        economyManager.setHealthcare(healthcare.getGrossCost(), healthcare.getFees());
+
+        /*
+         * 7. And who is too ill to work. Last, because the dead nobody buried
+         *    are one of the three things that decide it.
+         */
+        health.advanceMonth(generalCapacity, servedThisMonth, month,
+                healthcare.getUnburied());
+    }
+
+    /**
+     * How much of the people who need a kind of care the city can actually give.
+     *
+     * Zero denominators read as fully covered, not as a crisis: a city with no
+     * children does not have a childcare shortage. See Health.coverageOf().
+     */
+    private double careCoverage(CareType care, double[] fill) {
+        return Health.coverageOf(
+                buildingManager.getStaffedCareCapacity(care, fill),
+                care.populationServed(cohorts));
+    }
+
+    /**
+     * The share of the dead whose families would choose a plot over an urn.
+     *
+     * Jerus: "if there is excess savings then people prefer cemetery, otherwise
+     * crematorium". A plot is saved up for rather than paid out of one month's
+     * income, so the test is whether a household's monthly surplus would cover
+     * one over ten years - and the answer is yes for almost anybody who is not
+     * running a deficit, which is the intended reading.
+     *
+     * Weighted by HOUSEHOLDS rather than by people, because a funeral is bought
+     * by a family rather than per head. Read from last month's statement, which
+     * is the same one-month lag the pension figures on that statement already
+     * carry: the books are struck at the top of the month and this runs in the
+     * middle of it.
+     *
+     * A city whose books are empty - the first month of a new game - buries
+     * nobody, which is correct rather than convenient. It has no cemetery
+     * either.
+     */
+    private double burialShare() {
+
+        double threshold = Healthcare.BURIAL_FEE / Healthcare.BURIAL_SAVING_MONTHS;
+        double afford = 0, all = 0;
+
+        for (int row = 0; row < households.getRowCount(); row++) {
+            double homes = households.getRowHouseholds(row);
+            if (homes <= 0) continue;
+
+            all += homes;
+            if (households.getRowSaving(row) / homes >= threshold) afford += homes;
+        }
+
+        return all > 0 ? afford / all : 0;
     }
 
     /**
@@ -3213,7 +3407,8 @@ public class Game {
         dataSave.setRatioBasis(
                 economyManager.getEnergyRatioBasis(),
                 economyManager.getWaterRatioBasis(),
-                economyManager.getRoadRatioBasis());
+                economyManager.getRoadRatioBasis(),
+                economyManager.getHealthRatioBasis());
 
         // ...and the statements themselves, which is what makes the line above
         // a fallback rather than the fix. See CommercialHandler.getReportState().
@@ -3247,6 +3442,8 @@ public class Game {
         dataSave.setCohorts(cohorts.toSaveArray());
         dataSave.setFamilies(families.toSaveArray());
         dataSave.setMigration(migration.toSaveArray());
+        dataSave.setHealth(health.getState());
+        dataSave.setHealthcare(healthcare.getState());
 
         /*
          * The private sector's memory and the player's own turn. Both are
@@ -3596,6 +3793,28 @@ public class Game {
     economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
     economyManager.setWaterRatio(servicesManager.getWaterRatio());
     economyManager.setRoadRatio(servicesManager.getRoadRatio());
+
+    /*
+     * The fourth ratio, on the load path.
+     *
+     * Its sibling above sits in SimulationEngine.updateEconomy, and this whole
+     * class of bug is a line that made it into one of those two places and not
+     * the other - mining's wages went that way, and the property-tax charge
+     * before it. Health is restored above, so this hands the sectors the sick
+     * rate the save was taken with rather than a healthy month they never had.
+     */
+    economyManager.setHealthRatio(health.getWorkRatio());
+
+    /*
+     * And the health service's books, on the load path.
+     *
+     * Same class of gap as the health ratio above and as mining's wages before
+     * it: set in advanceDemographics() on the monthly path and nowhere here, so
+     * a reloaded city would show a healthcare bill of zero, collect no fees,
+     * and hand the treasury a month of free hospitals. Restored above, applied
+     * here.
+     */
+    economyManager.setHealthcare(healthcare.getGrossCost(), healthcare.getFees());
 
     economyManager.updateIndustrialWages(populationManager.getWagesPerType());
     economyManager.updateStoreWages(
@@ -4194,6 +4413,8 @@ public class Game {
             cohorts.restore(restoredFlows.getCohorts());
             families.restore(restoredFlows.getFamilies());
             migration.restore(restoredFlows.getMigration());
+            health.restore(restoredFlows.getHealth());
+            healthcare.restore(restoredFlows.getHealthcare());
 
             // Hoisted here with the rest: rebuildSimulationState() reads
             // cityCapitalSpending when it refreshes the government's books.
@@ -4239,7 +4460,10 @@ public class Game {
                     restoredFlows.hasRatioBasis()
                             ? restoredFlows.getWaterRatioBasis() : getWaterRatio(),
                     restoredFlows.hasRatioBasis()
-                            ? restoredFlows.getRoadRatioBasis() : getRoadRatio());
+                            ? restoredFlows.getRoadRatioBasis() : getRoadRatio(),
+                    // Sickness needs no hasRatioBasis test: a save from before
+                    // it carries 1, and 1 is what those cities ran at.
+                    restoredFlows.getHealthRatioBasis());
 
             economyManager.restoreNationalAccounts(restoredFlows.getNationalAccounts());
 

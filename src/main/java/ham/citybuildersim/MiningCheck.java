@@ -376,6 +376,24 @@ public class MiningCheck {
             buildings.addStack(template(game, "Water Treatment Plant"), 1, true);
             buildings.addStack(template(game, "Road Network"), 3, true);
 
+            /*
+             * ...and healthy, and with somewhere to bury its dead, for exactly
+             * the reason above.
+             *
+             * Sickness is the fourth utilisation ratio and it behaves like the
+             * other three: a mill at 82% health pays its whole payroll and sells
+             * four fifths of its output, which was worth four and a half points
+             * of margin - more than the entire question this fixture is asking.
+             * The cemetery is not decoration either: thirty-six months with
+             * nowhere to put anybody leaves enough unburied to add fifteen
+             * points to the sick rate on its own.
+             *
+             * A residual 3% remains and cannot be removed - WELL_SERVED_RATE is
+             * a floor, because people fall ill in the best-served city on earth.
+             */
+            buildings.addStack(template(game, "Walk-in Clinic"), 2, true);
+            buildings.addStack(template(game, "Memorial Cemetery"), 1, true);
+
             buildings.addStack(template(game, "Steel Foundry"), 1, true);
 
             if (withMine) {

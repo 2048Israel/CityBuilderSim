@@ -28,6 +28,13 @@
     "sold abroad, so those two prices are the whole business - the gap between",
     "them has to cover wages, power and water, and it deliberately barely does.",
     "",
+    "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
+    "many of those people it has room for: CHILDCARE counts babies and children,",
+    "SENIOR counts seniors, GENERAL counts everyone and is what decides how much",
+    "of the workforce is off sick. BURIAL and CREMATION serve the dead instead, so",
+    "their capacity is measured against deaths, not against a share of the living.",
+    "A healthcare building with no 'care' line treats nobody.",
+    "",
     "Any field you leave out defaults to 0, so a House needs no 'coverage' line.",
     "jobs keys are JobType names: NO_DIPLOMA, DIPLOMA, COLLEGE_HEALTH,",
     "COLLEGE_BUSINESS, COLLEGE_ENGINEERING, UNIV_DOCTOR, UNIV_LAW, UNIV_FINANCE,",
@@ -303,6 +310,294 @@
       },
       "land": 400000,
       "roadLoad": 420
+    },
+    {
+      "id": 15,
+      "name": "Home Daycare",
+      "category": "HEALTHCARE",
+      "care": "CHILDCARE",
+      "capacity": 8,
+      "cashCost": 60,
+      "constructionPoints": 40,
+      "constructionMaterials": 40,
+      "upkeep": 3,
+      "electricity": 2,
+      "water": 1,
+      "jobs": {
+        "NO_DIPLOMA": 2
+      },
+      "land": 6000,
+      "roadLoad": 3
+    },
+    {
+      "id": 16,
+      "name": "Neighbourhood Daycare",
+      "category": "HEALTHCARE",
+      "care": "CHILDCARE",
+      "capacity": 60,
+      "cashCost": 700,
+      "constructionPoints": 600,
+      "constructionMaterials": 500,
+      "upkeep": 22,
+      "electricity": 12,
+      "water": 4,
+      "jobs": {
+        "NO_DIPLOMA": 10,
+        "DIPLOMA": 5,
+        "COLLEGE_HEALTH": 1
+      },
+      "land": 25000,
+      "roadLoad": 14
+    },
+    {
+      "id": 17,
+      "name": "Childcare Centre",
+      "category": "HEALTHCARE",
+      "care": "CHILDCARE",
+      "capacity": 220,
+      "cashCost": 2600,
+      "constructionPoints": 2200,
+      "constructionMaterials": 1800,
+      "upkeep": 70,
+      "electricity": 40,
+      "water": 12,
+      "jobs": {
+        "NO_DIPLOMA": 34,
+        "DIPLOMA": 16,
+        "COLLEGE_HEALTH": 3
+      },
+      "land": 70000,
+      "roadLoad": 40
+    },
+    {
+      "id": 18,
+      "name": "Walk-in Clinic",
+      "category": "HEALTHCARE",
+      "care": "GENERAL",
+      "capacity": 2500,
+      "cashCost": 1400,
+      "constructionPoints": 1200,
+      "constructionMaterials": 900,
+      "upkeep": 45,
+      "electricity": 30,
+      "water": 5,
+      "jobs": {
+        "DIPLOMA": 4,
+        "COLLEGE_HEALTH": 5,
+        "UNIV_DOCTOR": 2
+      },
+      "land": 20000,
+      "roadLoad": 30
+    },
+    {
+      "id": 19,
+      "name": "Community Health Centre",
+      "category": "HEALTHCARE",
+      "care": "GENERAL",
+      "capacity": 12000,
+      "cashCost": 9000,
+      "constructionPoints": 8000,
+      "constructionMaterials": 6000,
+      "upkeep": 190,
+      "electricity": 160,
+      "water": 30,
+      "jobs": {
+        "NO_DIPLOMA": 12,
+        "DIPLOMA": 20,
+        "COLLEGE_HEALTH": 26,
+        "COLLEGE_BUSINESS": 3,
+        "UNIV_DOCTOR": 8
+      },
+      "land": 90000,
+      "roadLoad": 90
+    },
+    {
+      "id": 20,
+      "name": "General Hospital",
+      "category": "HEALTHCARE",
+      "care": "GENERAL",
+      "capacity": 40000,
+      "cashCost": 55000,
+      "constructionPoints": 52000,
+      "constructionMaterials": 34000,
+      "upkeep": 700,
+      "electricity": 900,
+      "water": 180,
+      "jobs": {
+        "NO_DIPLOMA": 60,
+        "DIPLOMA": 90,
+        "COLLEGE_HEALTH": 150,
+        "COLLEGE_BUSINESS": 12,
+        "UNIV_SCIENCE": 6,
+        "UNIV_DOCTOR": 45
+      },
+      "land": 500000,
+      "roadLoad": 300
+    },
+    {
+      "id": 21,
+      "name": "Regional Medical Centre",
+      "category": "HEALTHCARE",
+      "care": "GENERAL",
+      "capacity": 120000,
+      "cashCost": 150000,
+      "constructionPoints": 140000,
+      "constructionMaterials": 90000,
+      "upkeep": 2100,
+      "electricity": 2600,
+      "water": 520,
+      "jobs": {
+        "NO_DIPLOMA": 150,
+        "DIPLOMA": 240,
+        "COLLEGE_HEALTH": 420,
+        "COLLEGE_BUSINESS": 30,
+        "UNIV_SCIENCE": 20,
+        "UNIV_HIGHTECH_ENG": 6,
+        "UNIV_DOCTOR": 130
+      },
+      "land": 1400000,
+      "roadLoad": 700
+    },
+    {
+      "id": 22,
+      "name": "Home Care Service",
+      "category": "HEALTHCARE",
+      "care": "SENIOR",
+      "capacity": 400,
+      "cashCost": 900,
+      "constructionPoints": 500,
+      "constructionMaterials": 300,
+      "upkeep": 30,
+      "electricity": 15,
+      "water": 3,
+      "jobs": {
+        "NO_DIPLOMA": 22,
+        "DIPLOMA": 12,
+        "COLLEGE_HEALTH": 4
+      },
+      "land": 15000,
+      "roadLoad": 45
+    },
+    {
+      "id": 23,
+      "name": "Assisted Living Residence",
+      "category": "HEALTHCARE",
+      "care": "SENIOR",
+      "capacity": 90,
+      "cashCost": 6000,
+      "constructionPoints": 5000,
+      "constructionMaterials": 4000,
+      "upkeep": 150,
+      "electricity": 110,
+      "water": 40,
+      "jobs": {
+        "NO_DIPLOMA": 24,
+        "DIPLOMA": 10,
+        "COLLEGE_HEALTH": 4
+      },
+      "land": 80000,
+      "roadLoad": 25
+    },
+    {
+      "id": 24,
+      "name": "Nursing Home",
+      "category": "HEALTHCARE",
+      "care": "SENIOR",
+      "capacity": 220,
+      "cashCost": 16000,
+      "constructionPoints": 14000,
+      "constructionMaterials": 10000,
+      "upkeep": 380,
+      "electricity": 280,
+      "water": 95,
+      "jobs": {
+        "NO_DIPLOMA": 70,
+        "DIPLOMA": 34,
+        "COLLEGE_HEALTH": 18,
+        "UNIV_DOCTOR": 2
+      },
+      "land": 160000,
+      "roadLoad": 55
+    },
+    {
+      "id": 25,
+      "name": "Long-Term Care Complex",
+      "category": "HEALTHCARE",
+      "care": "SENIOR",
+      "capacity": 650,
+      "cashCost": 42000,
+      "constructionPoints": 38000,
+      "constructionMaterials": 26000,
+      "upkeep": 1000,
+      "electricity": 750,
+      "water": 260,
+      "jobs": {
+        "NO_DIPLOMA": 200,
+        "DIPLOMA": 100,
+        "COLLEGE_HEALTH": 55,
+        "COLLEGE_BUSINESS": 5,
+        "UNIV_DOCTOR": 6
+      },
+      "land": 380000,
+      "roadLoad": 130
+    },
+    {
+      "id": 26,
+      "name": "Crematorium",
+      "category": "HEALTHCARE",
+      "care": "CREMATION",
+      "capacity": 120,
+      "cashCost": 3000,
+      "constructionPoints": 2500,
+      "constructionMaterials": 2000,
+      "upkeep": 90,
+      "electricity": 220,
+      "water": 8,
+      "jobs": {
+        "NO_DIPLOMA": 5,
+        "DIPLOMA": 3
+      },
+      "land": 30000,
+      "roadLoad": 20
+    },
+    {
+      "id": 27,
+      "name": "Memorial Cemetery",
+      "category": "HEALTHCARE",
+      "care": "BURIAL",
+      "capacity": 12000,
+      "cashCost": 1200,
+      "constructionPoints": 900,
+      "constructionMaterials": 400,
+      "upkeep": 25,
+      "electricity": 6,
+      "water": 20,
+      "jobs": {
+        "NO_DIPLOMA": 8,
+        "DIPLOMA": 2
+      },
+      "land": 400000,
+      "roadLoad": 15
+    },
+    {
+      "id": 28,
+      "name": "Municipal Cemetery",
+      "category": "HEALTHCARE",
+      "care": "BURIAL",
+      "capacity": 60000,
+      "cashCost": 4500,
+      "constructionPoints": 3200,
+      "constructionMaterials": 1400,
+      "upkeep": 80,
+      "electricity": 15,
+      "water": 90,
+      "jobs": {
+        "NO_DIPLOMA": 26,
+        "DIPLOMA": 6,
+        "COLLEGE_BUSINESS": 2
+      },
+      "land": 2000000,
+      "roadLoad": 30
     }
   ]
 }

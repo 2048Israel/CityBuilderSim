@@ -67,6 +67,16 @@ public class HouseholdAccounts {
     private double contributions;
     private double pensions;
 
+    /**
+     * What the people paid the healthcare service this month.
+     *
+     * Fees and funerals together, on one line, because they are one bill from
+     * the household's point of view - and because the alternative was to credit
+     * the city with fee revenue and debit nobody, which is precisely the shape
+     * of money-from-nowhere this account exists to make visible.
+     */
+    private double healthcare;
+
     private int population;
     private int workforce;
     private int jobsFilled;
@@ -91,8 +101,15 @@ public class HouseholdAccounts {
     public void update(double wages, double wageTax, double rent, double shopping,
                        double contributions, double pensions,
                        int population, int workforce, int jobsFilled) {
+        update(wages, wageTax, rent, shopping, contributions, pensions, 0,
+                population, workforce, jobsFilled);
+    }
 
-        assign(wages, wageTax, rent, shopping, contributions, pensions,
+    public void update(double wages, double wageTax, double rent, double shopping,
+                       double contributions, double pensions, double healthcare,
+                       int population, int workforce, int jobsFilled) {
+
+        assign(wages, wageTax, rent, shopping, contributions, pensions, healthcare,
                 population, workforce, jobsFilled);
         cumulativeSaving += getNetSaving();
     }
@@ -112,15 +129,23 @@ public class HouseholdAccounts {
     public void refresh(double wages, double wageTax, double rent, double shopping,
                         double contributions, double pensions,
                         int population, int workforce, int jobsFilled) {
+        refresh(wages, wageTax, rent, shopping, contributions, pensions, 0,
+                population, workforce, jobsFilled);
+    }
 
-        assign(wages, wageTax, rent, shopping, contributions, pensions,
+    public void refresh(double wages, double wageTax, double rent, double shopping,
+                        double contributions, double pensions, double healthcare,
+                        int population, int workforce, int jobsFilled) {
+
+        assign(wages, wageTax, rent, shopping, contributions, pensions, healthcare,
                 population, workforce, jobsFilled);
     }
 
     private void assign(double wages, double wageTax, double rent, double shopping,
-                        double contributions, double pensions,
+                        double contributions, double pensions, double healthcare,
                         int population, int workforce, int jobsFilled) {
 
+        this.healthcare = healthcare;
         this.wages = wages;
         this.wageTax = wageTax;
         this.rent = rent;
@@ -141,6 +166,7 @@ public class HouseholdAccounts {
     public double getShopping()      { return shopping; }
     public double getContributions() { return contributions; }
     public double getPensions()      { return pensions; }
+    public double getHealthcare()    { return healthcare; }
 
     /**
      * What the people actually have to spend after the city has taken its share.
@@ -154,7 +180,7 @@ public class HouseholdAccounts {
     }
 
     public double getSpending() {
-        return rent + shopping;
+        return rent + shopping + healthcare;
     }
 
     /** Income less tax less everything paid out. Negative means living beyond it. */
@@ -249,6 +275,7 @@ public class HouseholdAccounts {
     private final double[] rowHouseholds = new double[ROWS];
     private final double[] rowContributions = new double[ROWS];
     private final double[] rowPensions      = new double[ROWS];
+    private final double[] rowHealthcare    = new double[ROWS];
 
     /**
      * Splits the month across the tiers.
@@ -275,6 +302,7 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowHouseholds, 0);
         java.util.Arrays.fill(rowContributions, 0);
         java.util.Arrays.fill(rowPensions, 0);
+        java.util.Arrays.fill(rowHealthcare, 0);
 
         if (peoplePerRow == null || peoplePerRow.length != ROWS
                 || housePerRow == null || housePerRow.length != ROWS) {
@@ -296,6 +324,18 @@ public class HouseholdAccounts {
             double share = heads > 0 ? peoplePerRow[r] / heads : 0;
             rowRent[r] = rent * share;
             rowShopping[r] = shopping * share;
+
+            /*
+             * Healthcare follows PEOPLE, like rent and shopping and for the same
+             * reason: the fees are charged per person served and the funeral
+             * fees per body, so spreading them by headcount is the same
+             * arithmetic read backwards rather than an allocation rule invented
+             * here. It is not exact - a tier with more children pays more
+             * childcare in reality - but the model has no per-tier child count
+             * to be exact WITH, and inventing one would be an estimate wearing
+             * a fact's clothes.
+             */
+            rowHealthcare[r] = healthcare * share;
         }
 
         /*
@@ -323,13 +363,14 @@ public class HouseholdAccounts {
 
     public double getRowContributions(int row) { return rowContributions[row]; }
     public double getRowPensions(int row)      { return rowPensions[row]; }
+    public double getRowHealthcare(int row)    { return rowHealthcare[row]; }
 
     public double getRowDisposable(int row) {
         return rowWages[row] - rowTax[row] - rowContributions[row] + rowPensions[row];
     }
 
     public double getRowSpending(int row) {
-        return rowRent[row] + rowShopping[row];
+        return rowRent[row] + rowShopping[row] + rowHealthcare[row];
     }
 
     public double getRowSaving(int row) {
@@ -353,6 +394,7 @@ public class HouseholdAccounts {
         shopping = 0;
         contributions = 0;
         pensions = 0;
+        healthcare = 0;
         population = 0;
         workforce = 0;
         jobsFilled = 0;
@@ -365,5 +407,6 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowHouseholds, 0);
         java.util.Arrays.fill(rowContributions, 0);
         java.util.Arrays.fill(rowPensions, 0);
+        java.util.Arrays.fill(rowHealthcare, 0);
     }
 }

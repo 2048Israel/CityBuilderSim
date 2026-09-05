@@ -51,6 +51,27 @@ public enum BuildingType {
      * On the END, like INFRASTRUCTURE and for the same reason: the saved
      * per-sector tax and interest arrays are indexed by ordinal().
      */
-    MINING
+    MINING,
+
+    /**
+     * Childcare, hospitals, senior care and the two ways a city buries people.
+     *
+     * The city builds these and they never pay for themselves - patients are
+     * charged something, but not enough, which is the point. Per Jerus: "the
+     * first option, but patients still pay, just not much, aka its a net deficit
+     * business."
+     *
+     * Its own category rather than a line under Industrial for the same reason
+     * INFRASTRUCTURE got one: this is the second thing in the game the city
+     * builds for itself, and a player looking for a hospital should not have to
+     * find it filed under factories.
+     *
+     * ON THE END, like INFRASTRUCTURE and MINING before it. The per-sector
+     * property tax and interest arrays are indexed by ordinal(), so inserting a
+     * constant above an existing one would hand every old save's industrial tax
+     * bill to whoever now holds that ordinal. There is room after this for
+     * EDUCATION and SAFETY, which is why the menu button says Services.
+     */
+    HEALTHCARE
 
 }

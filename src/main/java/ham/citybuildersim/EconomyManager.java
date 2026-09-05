@@ -935,9 +935,38 @@ public class EconomyManager {
         totalContributions = SocialSecurity.contributionsOn(totalWage);
 
         tax = totalBusinessTax + totalIndustrialTax + totalWageTax + salesTax
-                + totalHeavyIndustryTax + totalPropertyTax + totalContributions;
+                + totalHeavyIndustryTax + totalPropertyTax + totalContributions
+                + healthcareFees;
         return tax;
     }
+
+    /* =====================================================================
+       THE HEALTH SERVICE'S BOOKS
+
+       Held here rather than computed here, for the same reason the senior
+       count is: the buildings, the job fill and the age pyramid all belong to
+       Game, and this class has no business reaching into any of them.
+       Healthcare works the figures out; these two fields are where they land
+       so that getTaxIncome() and getExpenses() can see them.
+
+       BOTH SIDES, SEPARATELY. The bill is the gross cost - what actually
+       leaves the treasury every month - and the fees are revenue like the
+       pension contributions beside them. Netting them into one number would
+       make a large service that nearly pays for itself look identical to a
+       small one that does not.
+       ===================================================================== */
+
+    private double healthcareBill;
+    private double healthcareFees;
+
+    public void setHealthcare(double grossCost, double fees) {
+        this.healthcareBill = Math.max(0, grossCost);
+        this.healthcareFees = fees;
+    }
+
+    public double getHealthcareBill() { return healthcareBill; }
+    public double getHealthcareFees() { return healthcareFees; }
+    public double getHealthcareNet()  { return healthcareBill - healthcareFees; }
 
     /* =====================================================================
        PENSIONS
@@ -965,8 +994,18 @@ public class EconomyManager {
     }
 
     //getters
+    /**
+     * What the city pays out this month.
+     *
+     * Healthcare joined interest and pensions here, and that one line is the
+     * whole of the funding fix: getTotalIncome() is getTaxIncome() minus this,
+     * and finalUpdateEconomy() moves the cash by it. Before, the health
+     * service's 2,128 jobs were paid by nobody at all - counted in the wage
+     * bill, taxed, spent by the households, and debited from no account
+     * anywhere.
+     */
     public double getExpenses(){
-        return interest + getPensionsPaid();
+        return interest + getPensionsPaid() + healthcareBill;
     }
 
     /**
@@ -1084,7 +1123,8 @@ public class EconomyManager {
                 totalIndustrialTax, salesTax, totalWageTax,
                 utilityIncome, landSales, propertyTax,
                 interest, capitalSpending, landPurchases,
-                totalContributions, getPensionsPaid());
+                totalContributions, getPensionsPaid(),
+                healthcareFees, healthcareBill);
 
         GDP = nationalAccounts.getGdp();
     }
@@ -1319,15 +1359,16 @@ public class EconomyManager {
                                   double retailFillBasis, double retailImportTax,
                                   double industryDemand,
                                   int industrySold, int industryImported,
-                                  double energyBasis, double waterBasis, double roadBasis) {
+                                  double energyBasis, double waterBasis, double roadBasis,
+                                  double healthBasis) {
         commercialHandler.setStoreInventoryCost(retailCostOfGoods);
         commercialHandler.setReportImports(retailLocal, retailGlobal);
         commercialHandler.restoreMonthReport(retailFillBasis, retailImportTax,
-                energyBasis, waterBasis, roadBasis);
+                energyBasis, waterBasis, roadBasis, healthBasis);
         industrialHandler.restoreMonthReport(industryDemand, industrySold, industryImported,
-                energyBasis, waterBasis, roadBasis);
-        heavyIndustryHandler.computeMonthlyReport(energyBasis, waterBasis, roadBasis);
-        miningHandler.computeMonthlyReport(energyBasis, waterBasis, roadBasis);
+                energyBasis, waterBasis, roadBasis, healthBasis);
+        heavyIndustryHandler.computeMonthlyReport(energyBasis, waterBasis, roadBasis, healthBasis);
+        miningHandler.computeMonthlyReport(energyBasis, waterBasis, roadBasis, healthBasis);
     }
 
     /* ---------------------- the month's ratio basis ----------------------
@@ -1400,6 +1441,10 @@ public class EconomyManager {
     public double getEnergyRatioBasis() { return commercialHandler.getReportEnergyRatio(); }
     public double getWaterRatioBasis()  { return commercialHandler.getReportWaterRatio(); }
     public double getRoadRatioBasis()   { return commercialHandler.getReportRoadRatio(); }
+    public double getHealthRatioBasis() { return commercialHandler.getReportHealthRatio(); }
+
+    /** What the sectors are currently running at, for the harnesses. */
+    public double getHealthRatio()      { return commercialHandler.getHealthRatio(); }
 
     public double[] getPropertyTaxCharges() {
         return (propertyTaxCharges == null)
@@ -1510,6 +1555,22 @@ public class EconomyManager {
         heavyIndustryHandler.setRoadRatio(ratio);
         miningHandler.setRoadRatio(ratio);
     }
+
+    /**
+     * What is left of the workforce once this month's illness is taken off.
+     *
+     * Deliberately shaped exactly like setEnergyRatio - same fan-out, same four
+     * handlers, same multiplier on the far end - because sickness IS a
+     * utilisation ratio and pretending otherwise would have meant a second
+     * mechanism doing the same job. The one difference lives inside the
+     * handlers: this one never touches payroll. See Health.
+     */
+    public void setHealthRatio(double ratio){
+        commercialHandler.setHealthRatio(ratio);
+        industrialHandler.setHealthRatio(ratio);
+        heavyIndustryHandler.setHealthRatio(ratio);
+        miningHandler.setHealthRatio(ratio);
+    }
     /* The utility prices, kept so the investment engine can cost a building it
      * has not built yet. Every handler is told them; nothing remembered them. */
     private double pricePerWatt;
@@ -1575,7 +1636,8 @@ public class EconomyManager {
                 totalIndustrialTax, salesTax, totalWageTax,
                 utilityIncome, landSales, getTotalPropertyTax(),
                 interest, capitalSpending, landPurchases,
-                totalContributions, getPensionsPaid());
+                totalContributions, getPensionsPaid(),
+                healthcareFees, healthcareBill);
     }
 
     public void setUtilityIncome(double income){

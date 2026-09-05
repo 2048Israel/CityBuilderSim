@@ -115,6 +115,25 @@ public class MiningHandler {
     public void setEnergyRatio(double ratio)          { this.energyRatio = ratio; }
     public void setWaterRatio(double ratio)           { this.waterRatio = ratio; }
     public void setRoadRatio(double ratio)            { this.roadRatio = ratio; }
+    public void setHealthRatio(double ratio)          { this.healthRatio = ratio; }
+
+    /**
+     * How much of the month's work an unwell workforce actually did.
+     *
+     * A FOURTH throttle beside energyRatio, waterRatio and roadRatio, and it
+     * multiplies with them for the same reason they multiply with each other.
+     * It cuts OUTPUT ONLY and never payroll: the staff are on the books and get
+     * paid whether they came in or not. See Health.
+     */
+    private double healthRatio = 1;
+
+    /** Sickness, carried for the same reason the other three are - see Health. */
+    private double bHealthRatio = 1;
+
+    public double getHealthRatio()       { return healthRatio; }
+    /** @see CommercialHandler for why this is not an r-field. */
+    public double getReportHealthRatio() { return bHealthRatio; }
+
 
     public void setCash(double cash)                  { this.cash = cash; }
     public void setInterestExpense(double value)      { this.interestExpense = value; }
@@ -154,11 +173,11 @@ public class MiningHandler {
      * is the ask, and LandManager decides how much of it is actually there.
      */
     public double getPotentialOutput() {
-        return capacityTonnes * averageFill * energyRatio * waterRatio * roadRatio;
+        return capacityTonnes * getOperatingRate();
     }
 
     public double getOperatingRate() {
-        return averageFill * energyRatio * waterRatio * roadRatio;
+        return averageFill * energyRatio * waterRatio * roadRatio * healthRatio;
     }
 
     /**
@@ -206,18 +225,20 @@ public class MiningHandler {
      * anything, and every screen reads the r-fields this leaves behind.
      */
     public void computeMonthlyReport() {
-        computeMonthlyReport(energyRatio, waterRatio, roadRatio);
+        computeMonthlyReport(energyRatio, waterRatio, roadRatio, healthRatio);
     }
 
     /** @see CommercialHandler for what the ratio basis is and why it is carried. */
-    public void computeMonthlyReport(double energyBasis, double waterBasis, double roadBasis) {
+    public void computeMonthlyReport(double energyBasis, double waterBasis, double roadBasis,
+                                     double healthBasis) {
 
         bEnergyRatio = energyBasis;
         bWaterRatio = waterBasis;
         bRoadRatio = roadBasis;
+        bHealthRatio = healthBasis;
 
         rCapacity = capacityTonnes;
-        rOperatingRate = averageFill * bEnergyRatio * bWaterRatio * bRoadRatio;
+        rOperatingRate = averageFill * bEnergyRatio * bWaterRatio * bRoadRatio * bHealthRatio;
 
         rOreLifted = oreLifted;
         rOreSoldLocally = oreSoldLocally;
@@ -308,6 +329,7 @@ public class MiningHandler {
         energyRatio = 1;
         waterRatio = 1;
         roadRatio = 1;
+        healthRatio = 1;
         bEnergyRatio = 1;
         bWaterRatio = 1;
         bRoadRatio = 1;

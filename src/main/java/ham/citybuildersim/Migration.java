@@ -100,6 +100,32 @@ public class Migration {
     public static final double JOB_WEIGHT  = .75;
     public static final double HOME_WEIGHT = .25;
 
+    /* ===================================================================
+       WHY A CITY WITH GOOD SENIOR CARE IS WORTH MOVING TO
+
+       Jerus's, and it is the answer to a problem the model created for
+       itself. Seniors are pure burden here: they draw a pension, occupy a
+       home, need the most expensive care in the game and work not at all. An
+       ageing pyramid was therefore something to be endured, and the only
+       rational play was to hope your city stayed young - which is not a game,
+       it is a wait.
+
+       So senior care buys something. At full coverage the city is 30% more
+       attractive to everybody, not just to the old: places that look after
+       their parents are places people are willing to raise children. It is a
+       multiplier on the TARGET rather than on the arrival rate, because the
+       claim is about how big a city these conditions support, not how fast it
+       fills - the same distinction JOB_WEIGHT and ARRIVAL_RATE already make.
+       =================================================================== */
+
+    /** How much more attractive full senior coverage makes the city. */
+    public static final double SENIOR_CARE_PULL = .30;
+
+    /** The multiplier on the target, given senior-care coverage. */
+    public static double seniorCarePull(double seniorCoverage) {
+        return 1 + SENIOR_CARE_PULL * Math.max(0, Math.min(1, seniorCoverage));
+    }
+
     /**
      * How much of the gap closes each month.
      *
@@ -139,11 +165,14 @@ public class Migration {
     private double lastDepartures;
     private double lastCrowding = 1;
     private double lastDecliningShare;
+    private double lastSeniorPull = 1;
     private double lastResidentsPerJob = residentsPerJob(0);
 
     /* ------------------------------- reading ------------------------------- */
 
     public double getLastTarget()         { return lastTarget; }
+    /** What senior care multiplied the target by. 1 when there is none. */
+    public double getLastSeniorPull()     { return lastSeniorPull; }
     public double getLastArrivals()       { return lastArrivals; }
     public double getLastDepartures()     { return lastDepartures; }
     public double getLastCrowding()       { return lastCrowding; }
@@ -312,12 +341,27 @@ public class Migration {
      */
     public double monthlyNet(int population, int totalJobs, int householdCapacity,
                              int homes, FamilyModel families, double adultShare) {
+        return monthlyNet(population, totalJobs, householdCapacity, homes,
+                families, adultShare, 0);
+    }
+
+    /**
+     * The same, with the draw good senior care adds.
+     *
+     * @param seniorCoverage places in senior care against the seniors who need
+     *                       them; 0 in a city that has built none, which is
+     *                       exactly how every city behaved before this existed
+     */
+    public double monthlyNet(int population, int totalJobs, int householdCapacity,
+                             int homes, FamilyModel families, double adultShare,
+                             double seniorCoverage) {
 
         lastResidentsPerJob = residentsPerJob(adultShare);
         double jobTarget  = totalJobs * lastResidentsPerJob;
         double homeTarget = householdCapacity;
 
-        lastTarget = JOB_WEIGHT * jobTarget + HOME_WEIGHT * homeTarget;
+        lastSeniorPull = seniorCarePull(seniorCoverage);
+        lastTarget = (JOB_WEIGHT * jobTarget + HOME_WEIGHT * homeTarget) * lastSeniorPull;
         lastArrivals = 0;
         lastDepartures = 0;
         lastCrowding = 1;
@@ -398,6 +442,7 @@ public class Migration {
         lastDepartures = 0;
         lastCrowding = 1;
         lastDecliningShare = 0;
+        lastSeniorPull = 1;
         lastResidentsPerJob = residentsPerJob(0);
     }
 }

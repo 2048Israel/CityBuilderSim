@@ -50,6 +50,16 @@ public class BuildingsTemplate {
     double productionModifier1;
     double productionModifier2;
     boolean nationalized = false;
+
+    /**
+     * What a healthcare building is for; NONE for everything else.
+     *
+     * Deliberately not derived from the name. "Nursing Home" and "Home Daycare"
+     * both contain "Home", and a rule that reads the label is a rule that breaks
+     * the first time somebody renames a building or translates the game.
+     */
+    private CareType care = CareType.NONE;
+
     private int id;
  
  
@@ -191,6 +201,11 @@ public class BuildingsTemplate {
         this.id = id;
         return this;
     }
+
+    public BuildingsTemplate setCare(CareType care) {
+        this.care = care == null ? CareType.NONE : care;
+        return this;
+    }
     
     //getters
     public double getCashCost() {
@@ -275,6 +290,10 @@ public class BuildingsTemplate {
     
     public int getId(){
         return id;
+    }
+
+    public CareType getCare() {
+        return care;
     }
  
    

@@ -132,6 +132,292 @@ public class BuildingManager {
         lowRiseApartments.setId(6);
         templates.add(lowRiseApartments);
 
+        /* =====================================================================
+           HEALTHCARE
+
+           Four functions, fourteen buildings, small to very large. The city
+           builds all of them and none of them pays for itself.
+
+           CAPACITY IS THE AGE BAND IT SERVES, which is the whole reason these
+           are interesting: childcare counts babies and children, senior care
+           counts seniors, and general care counts everyone. An ageing city
+           needs beds it did not need twenty years ago, so the pyramid finally
+           decides what has to be built rather than just being looked at.
+
+           WHERE THE TOP OF THE WAGE LADDER FINALLY WORKS. COLLEGE_HEALTH and
+           UNIV_DOCTOR have sat in JobType unused since the beginning - six of
+           the eleven job types were never employed by anything. A doctor costs
+           $8,000 a month against an unskilled $800, so a hospital's payroll is
+           unlike anything else in the game, and that is correct: healthcare is
+           expensive because of who works there.
+
+           THE TWO WAYS TO BURY SOMEBODY are a genuine trade, per Jerus:
+           cemeteries turn a profit and consume land permanently, crematoria run
+           at breakeven on almost no land but burn a great deal of electricity.
+           A Municipal Cemetery is 2,000,000 sq ft - the largest footprint in
+           the game - and costs less to build than a nursing home.
+
+           AND NOW THEY ARE WIRED IN. General care sets the workforce's sick
+           rate; childcare and senior care move the death rate in their bands
+           (drastically for infants, gently for seniors); senior coverage makes
+           the whole city more attractive to migrants; the cemeteries and the
+           crematoria decide what happens to the dead, and a city that has
+           neither makes the living ill. The whole service is paid for out of
+           the treasury, minus what patients and funerals bring back - see
+           Healthcare, and claude/healthcare-funded.md.
+
+           The one thing UPKEEP is charged on. getUpkeep() had two callers in
+           the entire codebase before this - a debug println and
+           BuildingDataCheck - so every building's upkeep in this file was a
+           wish. Healthcare pays its own.
+           ===================================================================== */
+
+        BuildingsTemplate homeDaycare = new BuildingsTemplate("Home Daycare", BuildingType.HEALTHCARE)
+                .setCapacity(8)
+                .setCashCost(60)
+                .setConstructionPoints(40)
+                .setConstructionMaterials(40)
+                .setUpkeep(3)
+                .setElectricityConsumption(2)
+                .setWaterConsumption(1)
+                .setLandSqFt(6000)
+                .setRoadLoad(3)
+                .setJobs(JobType.NO_DIPLOMA, 2)
+                .setCare(CareType.CHILDCARE)
+                .setId(15);
+        templates.add(homeDaycare);
+
+        BuildingsTemplate neighbourhoodDaycare = new BuildingsTemplate("Neighbourhood Daycare", BuildingType.HEALTHCARE)
+                .setCapacity(60)
+                .setCashCost(700)
+                .setConstructionPoints(600)
+                .setConstructionMaterials(500)
+                .setUpkeep(22)
+                .setElectricityConsumption(12)
+                .setWaterConsumption(4)
+                .setLandSqFt(25000)
+                .setRoadLoad(14)
+                .setJobs(JobType.NO_DIPLOMA, 10)
+                .setJobs(JobType.DIPLOMA, 5)
+                .setJobs(JobType.COLLEGE_HEALTH, 1)
+                .setCare(CareType.CHILDCARE)
+                .setId(16);
+        templates.add(neighbourhoodDaycare);
+
+        BuildingsTemplate childcareCentre = new BuildingsTemplate("Childcare Centre", BuildingType.HEALTHCARE)
+                .setCapacity(220)
+                .setCashCost(2600)
+                .setConstructionPoints(2200)
+                .setConstructionMaterials(1800)
+                .setUpkeep(70)
+                .setElectricityConsumption(40)
+                .setWaterConsumption(12)
+                .setLandSqFt(70000)
+                .setRoadLoad(40)
+                .setJobs(JobType.NO_DIPLOMA, 34)
+                .setJobs(JobType.DIPLOMA, 16)
+                .setJobs(JobType.COLLEGE_HEALTH, 3)
+                .setCare(CareType.CHILDCARE)
+                .setId(17);
+        templates.add(childcareCentre);
+
+        BuildingsTemplate walkInClinic = new BuildingsTemplate("Walk-in Clinic", BuildingType.HEALTHCARE)
+                .setCapacity(2500)
+                .setCashCost(1400)
+                .setConstructionPoints(1200)
+                .setConstructionMaterials(900)
+                .setUpkeep(45)
+                .setElectricityConsumption(30)
+                .setWaterConsumption(5)
+                .setLandSqFt(20000)
+                .setRoadLoad(30)
+                .setJobs(JobType.DIPLOMA, 4)
+                .setJobs(JobType.COLLEGE_HEALTH, 5)
+                .setJobs(JobType.UNIV_DOCTOR, 2)
+                .setCare(CareType.GENERAL)
+                .setId(18);
+        templates.add(walkInClinic);
+
+        BuildingsTemplate communityHealthCentre = new BuildingsTemplate("Community Health Centre", BuildingType.HEALTHCARE)
+                .setCapacity(12000)
+                .setCashCost(9000)
+                .setConstructionPoints(8000)
+                .setConstructionMaterials(6000)
+                .setUpkeep(190)
+                .setElectricityConsumption(160)
+                .setWaterConsumption(30)
+                .setLandSqFt(90000)
+                .setRoadLoad(90)
+                .setJobs(JobType.NO_DIPLOMA, 12)
+                .setJobs(JobType.DIPLOMA, 20)
+                .setJobs(JobType.COLLEGE_HEALTH, 26)
+                .setJobs(JobType.COLLEGE_BUSINESS, 3)
+                .setJobs(JobType.UNIV_DOCTOR, 8)
+                .setCare(CareType.GENERAL)
+                .setId(19);
+        templates.add(communityHealthCentre);
+
+        BuildingsTemplate generalHospital = new BuildingsTemplate("General Hospital", BuildingType.HEALTHCARE)
+                .setCapacity(40000)
+                .setCashCost(55000)
+                .setConstructionPoints(52000)
+                .setConstructionMaterials(34000)
+                .setUpkeep(700)
+                .setElectricityConsumption(900)
+                .setWaterConsumption(180)
+                .setLandSqFt(500000)
+                .setRoadLoad(300)
+                .setJobs(JobType.NO_DIPLOMA, 60)
+                .setJobs(JobType.DIPLOMA, 90)
+                .setJobs(JobType.COLLEGE_HEALTH, 150)
+                .setJobs(JobType.COLLEGE_BUSINESS, 12)
+                .setJobs(JobType.UNIV_SCIENCE, 6)
+                .setJobs(JobType.UNIV_DOCTOR, 45)
+                .setCare(CareType.GENERAL)
+                .setId(20);
+        templates.add(generalHospital);
+
+        BuildingsTemplate regionalMedicalCentre = new BuildingsTemplate("Regional Medical Centre", BuildingType.HEALTHCARE)
+                .setCapacity(120000)
+                .setCashCost(150000)
+                .setConstructionPoints(140000)
+                .setConstructionMaterials(90000)
+                .setUpkeep(2100)
+                .setElectricityConsumption(2600)
+                .setWaterConsumption(520)
+                .setLandSqFt(1400000)
+                .setRoadLoad(700)
+                .setJobs(JobType.NO_DIPLOMA, 150)
+                .setJobs(JobType.DIPLOMA, 240)
+                .setJobs(JobType.COLLEGE_HEALTH, 420)
+                .setJobs(JobType.COLLEGE_BUSINESS, 30)
+                .setJobs(JobType.UNIV_SCIENCE, 20)
+                .setJobs(JobType.UNIV_HIGHTECH_ENG, 6)
+                .setJobs(JobType.UNIV_DOCTOR, 130)
+                .setCare(CareType.GENERAL)
+                .setId(21);
+        templates.add(regionalMedicalCentre);
+
+        BuildingsTemplate homeCareService = new BuildingsTemplate("Home Care Service", BuildingType.HEALTHCARE)
+                .setCapacity(400)
+                .setCashCost(900)
+                .setConstructionPoints(500)
+                .setConstructionMaterials(300)
+                .setUpkeep(30)
+                .setElectricityConsumption(15)
+                .setWaterConsumption(3)
+                .setLandSqFt(15000)
+                .setRoadLoad(45)
+                .setJobs(JobType.NO_DIPLOMA, 22)
+                .setJobs(JobType.DIPLOMA, 12)
+                .setJobs(JobType.COLLEGE_HEALTH, 4)
+                .setCare(CareType.SENIOR)
+                .setId(22);
+        templates.add(homeCareService);
+
+        BuildingsTemplate assistedLivingResidence = new BuildingsTemplate("Assisted Living Residence", BuildingType.HEALTHCARE)
+                .setCapacity(90)
+                .setCashCost(6000)
+                .setConstructionPoints(5000)
+                .setConstructionMaterials(4000)
+                .setUpkeep(150)
+                .setElectricityConsumption(110)
+                .setWaterConsumption(40)
+                .setLandSqFt(80000)
+                .setRoadLoad(25)
+                .setJobs(JobType.NO_DIPLOMA, 24)
+                .setJobs(JobType.DIPLOMA, 10)
+                .setJobs(JobType.COLLEGE_HEALTH, 4)
+                .setCare(CareType.SENIOR)
+                .setId(23);
+        templates.add(assistedLivingResidence);
+
+        BuildingsTemplate nursingHome = new BuildingsTemplate("Nursing Home", BuildingType.HEALTHCARE)
+                .setCapacity(220)
+                .setCashCost(16000)
+                .setConstructionPoints(14000)
+                .setConstructionMaterials(10000)
+                .setUpkeep(380)
+                .setElectricityConsumption(280)
+                .setWaterConsumption(95)
+                .setLandSqFt(160000)
+                .setRoadLoad(55)
+                .setJobs(JobType.NO_DIPLOMA, 70)
+                .setJobs(JobType.DIPLOMA, 34)
+                .setJobs(JobType.COLLEGE_HEALTH, 18)
+                .setJobs(JobType.UNIV_DOCTOR, 2)
+                .setCare(CareType.SENIOR)
+                .setId(24);
+        templates.add(nursingHome);
+
+        BuildingsTemplate longTermCareComplex = new BuildingsTemplate("Long-Term Care Complex", BuildingType.HEALTHCARE)
+                .setCapacity(650)
+                .setCashCost(42000)
+                .setConstructionPoints(38000)
+                .setConstructionMaterials(26000)
+                .setUpkeep(1000)
+                .setElectricityConsumption(750)
+                .setWaterConsumption(260)
+                .setLandSqFt(380000)
+                .setRoadLoad(130)
+                .setJobs(JobType.NO_DIPLOMA, 200)
+                .setJobs(JobType.DIPLOMA, 100)
+                .setJobs(JobType.COLLEGE_HEALTH, 55)
+                .setJobs(JobType.COLLEGE_BUSINESS, 5)
+                .setJobs(JobType.UNIV_DOCTOR, 6)
+                .setCare(CareType.SENIOR)
+                .setId(25);
+        templates.add(longTermCareComplex);
+
+        BuildingsTemplate crematorium = new BuildingsTemplate("Crematorium", BuildingType.HEALTHCARE)
+                .setCapacity(120)
+                .setCashCost(3000)
+                .setConstructionPoints(2500)
+                .setConstructionMaterials(2000)
+                .setUpkeep(90)
+                .setElectricityConsumption(220)
+                .setWaterConsumption(8)
+                .setLandSqFt(30000)
+                .setRoadLoad(20)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setCare(CareType.CREMATION)
+                .setId(26);
+        templates.add(crematorium);
+
+        BuildingsTemplate memorialCemetery = new BuildingsTemplate("Memorial Cemetery", BuildingType.HEALTHCARE)
+                .setCapacity(12000)
+                .setCashCost(1200)
+                .setConstructionPoints(900)
+                .setConstructionMaterials(400)
+                .setUpkeep(25)
+                .setElectricityConsumption(6)
+                .setWaterConsumption(20)
+                .setLandSqFt(400000)
+                .setRoadLoad(15)
+                .setJobs(JobType.NO_DIPLOMA, 8)
+                .setJobs(JobType.DIPLOMA, 2)
+                .setCare(CareType.BURIAL)
+                .setId(27);
+        templates.add(memorialCemetery);
+
+        BuildingsTemplate municipalCemetery = new BuildingsTemplate("Municipal Cemetery", BuildingType.HEALTHCARE)
+                .setCapacity(60000)
+                .setCashCost(4500)
+                .setConstructionPoints(3200)
+                .setConstructionMaterials(1400)
+                .setUpkeep(80)
+                .setElectricityConsumption(15)
+                .setWaterConsumption(90)
+                .setLandSqFt(2000000)
+                .setRoadLoad(30)
+                .setJobs(JobType.NO_DIPLOMA, 26)
+                .setJobs(JobType.DIPLOMA, 6)
+                .setJobs(JobType.COLLEGE_BUSINESS, 2)
+                .setCare(CareType.BURIAL)
+                .setId(28);
+        templates.add(municipalCemetery);
+
         // Commercial Buildings
         BuildingsTemplate convienceStore = new BuildingsTemplate("Convience Store", BuildingType.COMMERCIAL);
         convienceStore.setCoverage(120);
@@ -906,6 +1192,104 @@ public class BuildingManager {
             }
         }
         return total;
+    }
+
+    /**
+     * How many people the city's finished buildings of one care type have room
+     * for.
+     *
+     * FINISHED ONLY, unlike getLandSqFtByCategory. A half-built hospital treats
+     * nobody, and the whole point of the number is that the city has to have
+     * actually paid for and completed the capacity before it counts. Land is the
+     * opposite case - a site is occupied the day it is bought - which is why the
+     * two methods differ and why this comment exists.
+     *
+     * Keyed on the care type rather than the category, so a future non-HEALTHCARE
+     * building that happens to provide care (a company clinic, say) counts
+     * without this method changing.
+     */
+    public double getCareCapacity(CareType care) {
+        if (care == null || care == CareType.NONE) return 0;
+
+        // The doctor, the nursery, the almshouse and the churchyard the city was
+        // founded with, exactly as getTotalHouseCapacity() starts at 100 and the
+        // road network at 400. See Healthcare.foundingCapacity().
+        double total = Healthcare.foundingCapacity(care);
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getCare() == care) {
+                total += stack.getQuantity() * (double) stack.getBuilding().getCapacity();
+            }
+        }
+        return total;
+    }
+
+    /**
+     * The same capacity, discounted by how much of it is actually staffed.
+     *
+     * A General Hospital with no doctors was treating forty thousand people.
+     * Every other sector's output is cut by its fill rate - the mills, the
+     * shops, the mines, the crews - and care was the one thing in the game you
+     * could get for free by pouring concrete.
+     *
+     * Staffing is worked out PER BUILDING from its own job mix rather than from
+     * one city-wide average, because a healthcare building's mix is unlike
+     * anything else: a Walk-in Clinic is two doctors and five nurses, and if the
+     * city has no doctors that clinic is shut whatever the unskilled fill rate
+     * says. A building with no jobs at all counts as fully staffed, which is the
+     * right answer for a cemetery that needs nobody.
+     *
+     * @param jobFillRate the per-JobType fill, from PopulationManager
+     */
+    public double getStaffedCareCapacity(CareType care, double[] jobFillRate) {
+        if (care == null || care == CareType.NONE) return 0;
+        if (jobFillRate == null) return getCareCapacity(care);
+
+        // Undiscounted, because nobody is on the payroll for it - the founding
+        // endowment is not a building and has no fill rate to be short of.
+        double total = Healthcare.foundingCapacity(care);
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getCare() != care) continue;
+
+            double posts = 0, staffed = 0;
+            for (JobType job : JobType.values()) {
+                int n = t.getJobs(job);
+                if (n == 0) continue;
+                posts += n;
+                staffed += n * (job.ordinal() < jobFillRate.length
+                        ? jobFillRate[job.ordinal()] : 1);
+            }
+
+            double staffing = posts > 0 ? staffed / posts : 1;
+            total += stack.getQuantity() * (double) t.getCapacity() * staffing;
+        }
+        return total;
+    }
+
+    /**
+     * The healthcare service's wage bill, with the fill rate applied.
+     *
+     * Charged to the city, which is the whole point - see Healthcare. Computed
+     * here rather than in EconomyManager because this is where the job arrays
+     * live, and computing it anywhere else would be a second copy of a sum that
+     * has to agree with getJobArrayPerCategory().
+     */
+    public double getCategoryPayroll(BuildingType category,
+                                     double[] wagePerType, double[] jobFillRate) {
+        if (wagePerType == null) return 0;
+
+        int[] jobs = getJobArrayPerCategory(category);
+        double payroll = 0;
+        for (int i = 0; i < jobs.length && i < wagePerType.length; i++) {
+            double fill = (jobFillRate != null && i < jobFillRate.length) ? jobFillRate[i] : 1;
+            payroll += jobs[i] * wagePerType[i] * fill;
+        }
+        return payroll;
+    }
+
+    /** What the standing buildings of one category cost to run each month. */
+    public double getUpkeepByCategory(BuildingType category) {
+        return getTotalByCategoryDouble(category, BuildingsTemplate::getUpkeep);
     }
 
     public double getBookValueByCategory(BuildingType category) {

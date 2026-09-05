@@ -118,7 +118,15 @@ public class ConservationCheck {
             System.setOut(quiet);
             try { g.simulateMonths(1); } finally { System.setOut(out); }
 
-            double made = ih.getReportActualProduction();
+            /*
+             * What went INTO the warehouse, not what the income statement said
+             * was made. The two differ whenever a ratio moved during the month -
+             * which is the entire reason the report carries a basis - and this
+             * line used to read the report, so the law could only ever be
+             * asserted to within a unit. Sickness moves every month and pushed
+             * the gap to 1.06, which read as a leak and was a mis-measurement.
+             */
+            double made = ih.getProducedThisMonth();
             int spoiled = ih.getInventoryWrittenOff();
             int sold = ih.getProductsSoldCopy();
             int exported = ih.getProductsImportedCopy();
@@ -134,8 +142,8 @@ public class ConservationCheck {
             double expected = opening + made - spoiled - sold - exported;
             double gap = Math.abs(expected - ih.getFoodInventory());
             if (gap > worstGap) { worstGap = gap; worstMonth = m; }
-            // A unit of slack: production is a double and the warehouse is an int.
-            if (gap > 1.0) conserved = false;
+            // No slack at all now: both sides are the integers that moved.
+            if (gap > 1e-9) conserved = false;
         }
 
         System.out.printf("   over 36 months: made %,.0f  sold %,.0f  exported %,.0f"
