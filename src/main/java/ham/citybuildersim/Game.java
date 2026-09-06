@@ -2105,15 +2105,52 @@ public class Game {
          * rate fixed point and the emergency path in nextMonth() cannot each
          * have their own version of it - which is exactly what they had.
          */
+        /*
+         * SIZED SO THE CITY ACTUALLY RECEIVES WHAT IT ASKED FOR.
+         *
+         * ShortTermTBill.faceFor() inverts the DISCOUNT and nothing else, so the
+         * face it returns raises `requested` gross - and then the underwriter
+         * and bond counsel are paid out of the proceeds, and the city banks
+         * less than it asked for. Rounding the face up to the next granule
+         * covered the fee often enough to look like it worked, which is what
+         * made this so hard to see: the slack from rounding is at most one
+         * granule and the fee grows with the face, so the shortfall appeared
+         * and disappeared with the size of the ask and always arrived for good
+         * once the face passed about $130,000.
+         *
+         * Jerus found it from the far end - "the tbill is inacted but the roads
+         * are not built and you are just left with the cash unspent". Roads are
+         * simply the first thing expensive enough to land in the failing range:
+         * the emergency path borrows the exact shortfall, receives a few
+         * hundred less than that, and buildStack() re-tests the price against
+         * cash and refuses. Debt issued, nothing built.
+         *
+         * THE BONDS ARE NOT THE SAME BUG and are deliberately left alone. For a
+         * serial or a term bond the face value IS the request - the player asks
+         * for an amount of paper and receives par less fees, which is what
+         * issuing at par means and what those quotes say. It is only the note
+         * whose whole job is "how much paper do I need to RAISE this cash", and
+         * only the note that was answering it wrong.
+         */
         double rate = debtManager.quoteRate(requested,
-                r -> Math.ceil(ShortTermTBill.faceFor(requested, r, months) / rounding) * rounding);
+                r -> Math.ceil(faceForNetProceeds(requested, r, months) / rounding) * rounding);
 
         double faceValue = Math.ceil(
-                ShortTermTBill.faceFor(requested, rate, months) / rounding) * rounding;
+                faceForNetProceeds(requested, rate, months) / rounding) * rounding;
 
-        double gross = faceValue * (1 - ShortTermTBill.discountFraction(rate, months));
-        double fees = costOfIssuance(faceValue);
-        double received = Math.round((gross - fees) * 100) / 100.0;
+        double received = netProceeds(faceValue, rate, months);
+
+        /*
+         * ...and the proceeds are rounded to the cent, which can still land a
+         * fraction under the ask when the face lands exactly on a granule. A
+         * quote that does not cover what was asked for is not a quote for it,
+         * so it buys one more granule. Each one adds at least
+         * rounding x 4.25% to the proceeds, so this cannot spin.
+         */
+        while (received < requested) {
+            faceValue += rounding;
+            received = netProceeds(faceValue, rate, months);
+        }
 
         // A note pays no coupon; the discount IS the whole cost of the credit.
         return new DebtQuote("Note", duration, requested, rate, before,
@@ -2777,6 +2814,42 @@ public class Game {
     public double costOfIssuance(double faceValue) {
         if (faceValue <= 0) return 0;
         return FIXED_ISSUE_COST + faceValue * UNDERWRITING_SPREAD;
+    }
+
+    /**
+     * What the city actually banks for a note of this face.
+     *
+     * The discount and the fees in one place, because the quote used to compute
+     * them inline and the sizing had no way to ask what a face was worth
+     * without restating the same three lines.
+     */
+    private double netProceeds(double faceValue, double annualRate, int months) {
+        double gross = faceValue * (1 - ShortTermTBill.discountFraction(annualRate, months));
+        return Math.round((gross - costOfIssuance(faceValue)) * 100) / 100.0;
+    }
+
+    /**
+     * Face value whose NET proceeds cover cashNeeded - fees included.
+     *
+     * ShortTermTBill.faceFor() answers a subtly different question: face such
+     * that the DISCOUNTED gross is cashNeeded, before anyone is paid. That is
+     * the right question for the instrument, which knows nothing about this
+     * city's underwriter, and the wrong one for a caller who needs a specific
+     * sum in the bank. So the gross-up lives here, where the fee does.
+     *
+     *     face x (1 - discount) - FIXED - face x SPREAD  >=  cashNeeded
+     *
+     * solved for face. The denominator is (1 - discount) - SPREAD, and since
+     * the discount is capped at 95% it is never below about 4.25%, so it cannot
+     * go to zero or turn negative.
+     */
+    private double faceForNetProceeds(double cashNeeded, double annualRate, int months) {
+        double perDollarOfFace =
+                (1 - ShortTermTBill.discountFraction(annualRate, months)) - UNDERWRITING_SPREAD;
+        if (perDollarOfFace <= 0) {
+            return ShortTermTBill.faceFor(cashNeeded, annualRate, months);
+        }
+        return (cashNeeded + FIXED_ISSUE_COST) / perDollarOfFace;
     }
 
     /**

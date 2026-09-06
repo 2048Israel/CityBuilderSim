@@ -424,6 +424,134 @@ public class CreditCheck {
         bookAndCompare(city, "Term",   10_000, 20, 1000,   true);
         bookAndCompare(city, "Term",   100_000, 20, 100000, false);
 
+        /* ============ 9. A NOTE DELIVERS WHAT IT WAS ASKED FOR ============
+
+           Found in play, 2026-09-06. Jerus: "when roads are issues with tbill,
+           the tbill is inacted but the roads are not built and you are just
+           left with the cash unspent."
+
+           quoteTBill() takes a CASH amount - "how much paper do I need to raise
+           this" - and it was inverting the discount only, so the underwriter's
+           fee came out of the proceeds and the city banked less than it asked
+           for. Rounding the face up to the next $1,000 covered the fee often
+           enough that the failure looked random: the slack from rounding is at
+           most one granule and the fee grows with the face, so the shortfall
+           came and went with the size of the ask and became permanent above
+           about $130,000 of face.
+
+           Then the emergency path borrowed the exact shortfall, came up short,
+           and buildStack() re-tested the price and refused - and the UI threw
+           the refusal away. Debt on the books, nothing built.
+
+           A sweep, because a single amount would have passed: $5k, $20k, $40k
+           and $72k all worked BEFORE the fix.
+           ================================================================== */
+        System.out.println("\n--- a note raises what it was asked to raise ---");
+
+        Game notes = new Game();
+        notes.getBuildingManager().initializeTemplates();
+
+        int shortfalls = 0;
+        for (int months : new int[]{3, 6, 12}) {
+            for (double ask : new double[]{1_000, 5_000, 20_000, 40_000, 60_000,
+                                           72_000, 100_000, 205_000, 500_000}) {
+                DebtQuote q = notes.quoteTBill(ask, months, 1000.0);
+                if (q.cashReceived() < ask) {
+                    shortfalls++;
+                    System.out.printf("   SHORT  %2dmo  asked $%,.0f  got $%,.2f%n",
+                            months, ask, q.cashReceived());
+                }
+                assertTrue(String.format("a %dmo note for $%,.0f is not free money",
+                                months, ask),
+                        q.cashReceived() <= q.faceValue() + 1e-6);
+            }
+        }
+        assertTrue("every note covers the cash it was quoted for", shortfalls == 0);
+
+        /*
+         * AND THE BONDS ARE DIFFERENT ON PURPOSE.
+         *
+         * A serial or term bond is issued at PAR: the face is what the player
+         * asked for and the city receives par less fees, which is what issuing
+         * at par means. Asserted here so nobody later "fixes" them to match the
+         * note and quietly changes what those two instruments are.
+         */
+        DebtQuote serial = notes.quoteMediumBond(100_000, 10, 10000.0);
+        assertTrue("a serial bond's face IS the request",
+                serial.faceValue() >= 100_000 - 1e-6);
+        assertTrue("...and the city receives par less fees, by design",
+                serial.cashReceived() < serial.faceValue());
+
+        /* ============ 10. THE STORY THAT BROKE, END TO END ============
+
+           The unit test above would have caught the arithmetic. This catches
+           the thing the player actually experienced, which is one step further
+           on: borrow for a building you cannot afford, and END UP WITH THE
+           BUILDING.
+           ============================================================== */
+        System.out.println("\n--- borrow for a road, and get the road ---");
+
+        Game roadCity = new Game();
+        roadCity.newGame();
+        BuildingManager yard = roadCity.getBuildingManager();
+
+        BuildingsTemplate road = null;
+        for (BuildingsTemplate t : yard.getTemplates()) {
+            if (t.getName().equals("Paved Road")) road = t;
+        }
+        assertTrue("the Paved Road template exists", road != null);
+
+        // Land, so the refusal under test is about MONEY and nothing else - a
+        // road is a quarter of a million square feet and would otherwise fail
+        // the land check first and prove nothing about funding.
+        roadCity.getLandManager().setOwnedSqFt(
+                roadCity.getLandManager().getOwnedSqFt() + road.getLandSqFt() * 60);
+
+        /*
+         * BIG ENOUGH TO ACTUALLY BE SHORT.
+         *
+         * The first version of this ordered five, which a founding city can
+         * simply afford out of its $300k - so it built them, the funding path
+         * was never entered, and two of the assertions below were measuring a
+         * city that had already built the roads twice. A fixture has to CAUSE
+         * the condition it is testing, and the condition here is "cannot pay".
+         *
+         * Forty roads is about $540k against $300k of cash, and the assertion
+         * right below refuses to go on if that ever stops being true.
+         */
+        int howMany = 40;
+        double price = roadCity.calculateTotalCost(road, howMany);
+        double cashBefore = roadCity.getCash();
+
+        System.out.printf("   %d x Paved Road costs $%,.2f against $%,.2f of cash%n",
+                howMany, price, cashBefore);
+        System.out.printf("   short by $%,.2f%n", price - cashBefore);
+
+        assertTrue("the fixture is actually short of the money - or this proves nothing",
+                price > cashBefore);
+        assertTrue("...and the city is told so rather than refused outright",
+                roadCity.buildStack(road, howMany, false) == Game.BuildResult.NEEDS_FUNDING);
+        assertTrue("nothing was built by the refusal", yard.getQuantity(road.getId()) == 0);
+
+        double gap = price - roadCity.getCash();
+        roadCity.issueEmergencyDebt(gap, Game.EMERGENCY_NOTE_MONTHS);
+
+        System.out.printf("   borrowed the $%,.2f gap; cash is now $%,.2f%n",
+                gap, roadCity.getCash());
+
+        assertTrue("the note actually covered the gap", roadCity.getCash() >= price - 1e-6);
+
+        Game.BuildResult after = roadCity.buildStack(road, howMany, false);
+        System.out.println("   second attempt: " + after);
+
+        assertTrue("THE ROADS ARE BUILT", after == Game.BuildResult.SUCCESS);
+        assertTrue("...all forty of them",
+                yard.getQuantity(road.getId()) + yard.getUnderConstructionById()[road.getId()]
+                        == howMany);
+        assertTrue("...and the cash was actually spent, not left sitting",
+                roadCity.getCash() < cashBefore + gap);
+        assertTrue("...and there is a receipt for it", roadCity.hasNewReceipt());
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

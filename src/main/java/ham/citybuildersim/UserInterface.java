@@ -2624,6 +2624,103 @@ public class UserInterface extends Application {
         Label totalLabel = new Label("Total Quantity: 0");
         totalLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
+        /* -----------------------------------------------------------------
+           WHAT IT COSTS, WHILE YOU ARE STILL CHOOSING
+
+           Jerus: "in the choosing how much to build window ... on the top add a
+           little thing showing how much it would cost".
+
+           The screen used to say "Total Quantity: 200" and nothing else, so the
+           only way to find out what two hundred houses cost was to press
+           Confirm and see whether the city could pay. That is a menu that
+           answers a question by doing the thing.
+
+           Everything here is recomputed on every press rather than scaled from
+           a per-unit figure, because none of it is linear. The materials line
+           steps: the first few come out of the yard for free and the rest are
+           imported at market, so ten houses can cost less than ten times one.
+           The land line is a hard wall, not a price. And the build time is the
+           whole city's construction output, which the player has no other way
+           to see against an order.
+           ----------------------------------------------------------------- */
+        VBox quote = new VBox(1);
+        quote.setAlignment(Pos.CENTER_LEFT);
+        quote.setStyle("-fx-background-color: #eceff1; -fx-border-color: #b0bec5;"
+                + " -fx-border-width: 1; -fx-background-radius: 3;"
+                + " -fx-border-radius: 3; -fx-padding: 9 14 9 14;");
+        quote.setMaxWidth(Region.USE_PREF_SIZE);
+
+        Runnable reprice = () -> {
+            quote.getChildren().clear();
+            int n = runningTotal[0];
+
+            if (n <= 0) {
+                Label none = new Label("One " + template.getName() + " costs $"
+                        + formatter.format(game.calculateTotalCost(template, 1))
+                        + " today. Pick a number.");
+                none.setStyle("-fx-font-size: 11px; -fx-text-fill: #607d8b;");
+                quote.getChildren().add(none);
+                return;
+            }
+
+            double sticker = template.getCashCost() * n;
+            double total   = game.calculateTotalCost(template, n);
+            double stock   = game.getBuildingManager().getConstructionMaterials();
+            double price   = game.getBuildingManager().getConstructionMaterialPrice();
+            double needed  = template.getConstructionMaterials() * (double) n;
+            double imported = Math.max(needed - stock, 0);
+
+            quote.getChildren().add(quoteLine("Cash cost", "$" + formatter.format(sticker)));
+            if (imported > 0) {
+                quote.getChildren().add(quoteLine(
+                        String.format("Materials to import  %s @ $%.2f",
+                                formatter.format(imported), price),
+                        "$" + formatter.format(imported * price)));
+            }
+            quote.getChildren().add(quoteRule());
+            quote.getChildren().add(quoteLine("TOTAL", "$" + formatter.format(total)));
+            quote.getChildren().add(quoteLine("Cash on hand", "$" + formatter.format(game.getCash())));
+
+            double land = template.getLandSqFt() * n;
+            double free = game.getLandManager().getAvailableSqFt();
+            quote.getChildren().add(quoteLine("Land needed",
+                    formatter.format(land) + " of " + formatter.format(free) + " free"));
+
+            // Months, because a big order is a commitment of the city's whole
+            // building capacity and nothing else on screen says so. An Elevated
+            // Highway is 10,000 points against an output in the hundreds.
+            double output = game.getConstructionOutput();
+            if (output > 0) {
+                double months = template.getConstructionPoints() * (double) n / output;
+                quote.getChildren().add(quoteLine("Build time",
+                        String.format("about %s month%s at today's output",
+                                months < 1 ? "half a" : formatter.format(Math.round(months)),
+                                Math.round(months) == 1 ? "" : "s")));
+            }
+
+            String verdict;
+            String tone;
+            if (land > free) {
+                verdict = "NOT ENOUGH LAND - short "
+                        + formatter.format(land - free) + " sq ft. Annex more first.";
+                tone = "#c62828";
+            } else if (total > game.getCash()) {
+                verdict = "SHORT $" + formatter.format(total - game.getCash())
+                        + " - you will be offered a T-Bill for the difference.";
+                tone = "#ef6c00";
+            } else {
+                verdict = "Affordable. $" + formatter.format(game.getCash() - total)
+                        + " left afterwards.";
+                tone = "#2e7d32";
+            }
+            Label say = new Label(verdict);
+            say.setWrapText(true);
+            say.setMaxWidth(380);
+            say.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 6 0 0 0;"
+                    + " -fx-text-fill: " + tone + ";");
+            quote.getChildren().add(say);
+        };
+
         // 3. Create the increment buttons
         int[] increments = {1, 5, 10, 20, 50, 100, 500, 1000};
         VBox buttonContainer = new VBox(10);
@@ -2640,6 +2737,7 @@ public class UserInterface extends Application {
             btn.setOnAction(e -> {
                 runningTotal[0] += amount;
                 totalLabel.setText("Total Quantity: " + runningTotal[0]);
+                reprice.run();
             });
             buttonGrid.getChildren().add(btn);
         }
@@ -2649,6 +2747,7 @@ public class UserInterface extends Application {
         reset.setOnAction(e -> {
             runningTotal[0] = 0;
             totalLabel.setText("Total Quantity: 0");
+            reprice.run();
         });
 
         Button confirm = new Button("Confirm Purchase");
@@ -2674,7 +2773,26 @@ public class UserInterface extends Application {
         back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
 
         // 5. Assemble everything
-        rootMenu.getChildren().addAll(totalLabel, buttonGrid, reset, confirm, back);
+        Label what = new Label(template.getName());
+        what.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+
+        reprice.run();
+        rootMenu.getChildren().addAll(what, totalLabel, quote, buttonGrid, reset, confirm, back);
+    }
+
+    /** A label on the left and a figure on the right, in a fixed-width row. */
+    private Label quoteLine(String label, String value) {
+        Label l = new Label(String.format("%-34s%14s", label, value));
+        l.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-text-fill: #37474f;");
+        return l;
+    }
+
+    private Label quoteRule() {
+        Label l = new Label("-".repeat(48));
+        l.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-text-fill: #b0bec5;");
+        return l;
     }
     
     /**
@@ -2794,8 +2912,33 @@ public class UserInterface extends Application {
     Button confirmDebt = new Button("Issue T-Bill");
     confirmDebt.setOnAction(e -> {
         game.issueEmergencyDebt(gap, Game.EMERGENCY_NOTE_MONTHS);   // quotes it again, identically
-        game.buildStack(selected, quantity, false);
-        handleAllBuildingMenus(prevTitle, prevCats);
+
+        /*
+         * THE RESULT IS LOOKED AT NOW, and that is the more important half of
+         * this fix.
+         *
+         * This line used to be a bare call. The note was issued, the build was
+         * asked for, and whatever it answered was thrown away - so when the
+         * proceeds came up a few hundred short of the price (see
+         * Game.faceForNetProceeds) the city took on debt, built nothing, and
+         * returned to a menu that said nothing at all. Jerus found it in play:
+         * "the tbill is inacted but the roads are not built and you are just
+         * left with the cash unspent."
+         *
+         * The sizing bug is fixed, so the last branch should now be
+         * unreachable. It stays anyway. A refusal that is not read is a refusal
+         * that is silent, and silence is what made a plain arithmetic error
+         * look like a mystery.
+         */
+        switch (game.buildStack(selected, quantity, false)) {
+            case SUCCESS    -> handleAllBuildingMenus(prevTitle, prevCats);
+            case NO_LAND    -> showNoLandMenu(selected, quantity, prevTitle, prevCats);
+            case NO_DEPOSIT -> showNoDepositMenu(selected, quantity, prevTitle, prevCats);
+            // NOT back to this screen. Re-offering a T-Bill to a city that has
+            // just bought one and is still short would loop the player through
+            // the same button forever, borrowing every time.
+            default         -> showFundingFellShortMenu(selected, quantity, prevTitle, prevCats);
+        }
     });
 
     Button cancel = new Button("Cancel Build");
@@ -2803,6 +2946,45 @@ public class UserInterface extends Application {
 
     rootMenu.getChildren().addAll(warning, details, impact, confirmDebt, cancel);
 }
+
+    /**
+     * The note went through and the building still did not.
+     *
+     * Should be unreachable. It exists because the state it describes - debt on
+     * the books, nothing built, cash sitting in the treasury - is a state the
+     * player CAN end up in and could not previously be told about, and a screen
+     * that says what happened is worth more than an assertion that it cannot.
+     */
+    private void showFundingFellShortMenu(BuildingsTemplate selected, int quantity,
+                                          String prevTitle, EnumSet<BuildingType> prevCats) {
+        clearMenu();
+
+        Label heading = new Label("THE MONEY IS IN, THE BUILDING IS NOT");
+        heading.setStyle("-fx-text-fill: #c62828; -fx-font-weight: bold; -fx-font-size: 14px;");
+
+        double price = game.calculateTotalCost(selected, quantity);
+
+        Label what = new Label(String.format(
+                "The note was issued and the cash is in the treasury, but %d x %s"
+                + " still costs more than the city is holding.%n%n"
+                + "  Price now      $%s%n"
+                + "  Cash on hand   $%s%n"
+                + "  Still short    $%s%n%n"
+                + "Nothing was built and nothing beyond the note was spent. Order a"
+                + " smaller batch, or borrow again from the finance screen where you"
+                + " can choose the size yourself.",
+                quantity, selected.getName(),
+                formatter.format(price), formatter.format(game.getCash()),
+                formatter.format(Math.max(0, price - game.getCash()))));
+        what.setWrapText(true);
+        what.setMaxWidth(460);
+        what.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;");
+
+        Button back = new Button("Back to the build menu");
+        back.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
+
+        rootMenu.getChildren().addAll(heading, what, back);
+    }
 
     /**
      * Colours a quoted rate by how punishing it is.
