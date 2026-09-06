@@ -177,6 +177,27 @@ public class Migration {
      */
     public static final double MAX_LICENSED_ARRIVALS = .55;
 
+    /**
+     * What share of a band still moves here when there is no work at its level.
+     *
+     * THE WAGE ALONE WAS NOT A DETERRENT, and that is what Jerus found: a city
+     * with no schools and almost no graduate posts still filled up with
+     * graduates. A band with nothing hiring has its wage pinned at the bottom
+     * of its range, which is only 0.70x base - and 0.70^1.6 is 0.56, so an
+     * utterly unwanted skill was still arriving at more than half strength
+     * forever.
+     *
+     * The missing term is not price, it is OPPORTUNITY. Nobody moves across the
+     * country for a job that does not exist, whatever it pays. So the pull is
+     * now also weighted by a band's chance of finding work at its own level -
+     * its posts against the people already holding them.
+     *
+     * Not to zero, though. People move for families and weather and a hundred
+     * things that are not a job, and a band that can never receive anybody is a
+     * city that can never change its mind.
+     */
+    public static final double OPPORTUNITY_FLOOR = .15;
+
     /** The multiplier on the target, given senior-care coverage. */
     public static double seniorCarePull(double seniorCoverage) {
         return 1 + SENIOR_CARE_PULL * Math.max(0, Math.min(1, seniorCoverage));
@@ -512,7 +533,7 @@ public class Migration {
         double net = monthlyNet(population, totalJobs, householdCapacity, homes,
                 families, adultShare, seniorCoverage);
 
-        composeArrivals(market);
+        composeArrivals(market, people);
 
         if (market == null || people == null) return net;
 
@@ -528,16 +549,38 @@ public class Migration {
         double pushed = 0;
         for (WageBand band : WageBand.values()) {
             if (!market.isPinned(band)) continue;
-            double leaving = people.surplusInBand(band) * SURPLUS_DEPARTURE_RATE;
+
+            /*
+             * WEIGHTED BY MOBILITY, and that is the difference between a model
+             * and a caricature. A graduate with no graduate work does not sit
+             * in the city being unemployed at the same rate a labourer does -
+             * their market is the whole country, so they go, at roughly twice
+             * the rate. See WageBand.mobility() for the measurement.
+             */
+            double leaving = people.surplusInBand(band)
+                    * SURPLUS_DEPARTURE_RATE * band.mobility();
             lastDepartureMix[band.ordinal()] += leaving;
             pushed += leaving;
         }
 
-        // The decline-driven departures are not about any one band, so they
-        // come out of the workforce as it stands.
+        /*
+         * The decline-driven departures are not about any one band, so the
+         * TOTAL stays exactly as it was - that number is tuned, and this is not
+         * the place to change how many people leave a dying trade. What changes
+         * is WHICH of them go: weighted by mobility as well as by headcount, so
+         * the graduates are over-represented among the leavers exactly as they
+         * are in life.
+         */
         double[] share = people.getBandShare();
+        double weighted = 0;
         for (WageBand band : WageBand.values()) {
-            lastDepartureMix[band.ordinal()] += lastDepartures * share[band.ordinal()];
+            weighted += share[band.ordinal()] * band.mobility();
+        }
+        for (WageBand band : WageBand.values()) {
+            double slice = weighted > 0
+                    ? share[band.ordinal()] * band.mobility() / weighted
+                    : share[band.ordinal()];
+            lastDepartureMix[band.ordinal()] += lastDepartures * slice;
         }
 
         double before = lastDepartures;
@@ -563,11 +606,16 @@ public class Migration {
      * anybody, which is what makes the number the player can see - the premium
      * on the People screen - the one that actually does something.
      */
-    private void composeArrivals(LabourMarket market) {
+    private void composeArrivals(LabourMarket market, PopulationManager people) {
         double[] weight = new double[WageBand.values().length];
         double total = 0;
 
+        double[] posts = people == null ? null : people.postsByBand();
+        double[] here  = people == null ? null : people.workforceByBand();
+
         for (WageBand band : WageBand.values()) {
+            int b = band.ordinal();
+
             double premium = 1;
             if (market != null) {
                 // Every job in a band shares a multiplier, so any of them reads
@@ -576,9 +624,23 @@ public class Migration {
                     if (WageBand.of(job) == band) { premium = market.premium(job); break; }
                 }
             }
-            weight[band.ordinal()] = band.worldShare()
-                    * Math.pow(Math.max(premium, .01), PREMIUM_ELASTICITY);
-            total += weight[band.ordinal()];
+
+            /*
+             * The chance of working at your own level if you come. A band with
+             * three times as many people as posts is one you arrive in to
+             * labour, whatever your degree says - and that is a reason not to
+             * come, which the wage on its own never expressed.
+             */
+            double chance = 1;
+            if (posts != null && here[b] > 0) {
+                chance = Math.min(1, posts[b] / here[b]);
+            }
+            double opportunity = OPPORTUNITY_FLOOR + (1 - OPPORTUNITY_FLOOR) * chance;
+
+            weight[b] = band.worldShare()
+                    * Math.pow(Math.max(premium, .01), PREMIUM_ELASTICITY)
+                    * opportunity;
+            total += weight[b];
         }
 
         for (WageBand band : WageBand.values()) {

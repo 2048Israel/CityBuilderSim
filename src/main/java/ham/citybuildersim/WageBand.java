@@ -16,10 +16,10 @@ package ham.citybuildersim;
  */
 public enum WageBand {
 
-    NONE      ("No diploma",  .46),
-    DIPLOMA   ("Diploma",     .32),
-    COLLEGE   ("College",     .16),
-    UNIVERSITY("University",  .06);
+    NONE      ("No diploma",  .50),
+    DIPLOMA   ("Diploma",     .34),
+    COLLEGE   ("College",     .12),
+    UNIVERSITY("University",  .04);
 
     private final String label;
     private final double worldShare;
@@ -72,11 +72,53 @@ public enum WageBand {
      * rather than by rule: import while you are small, train once you are big,
      * with nothing to unlock and nothing to explain.
      *
-     * Loosely a developed economy's attainment mix. The exact figures are a
-     * balance question and get re-asked against a long run, like every other
-     * constant here.
+     * Loosely a developed economy's attainment mix, PULLED DOWN AT THE TOP once
+     * it met the game's own demand curve. Measured: the buildings in this game
+     * offer 51% unskilled / 41% diploma / 6% college / 1.4% university posts,
+     * and a world of 46/32/16/6 poured four times as many graduates into a city
+     * as it had graduate jobs. That is not the world being wrong - a real
+     * economy employs far more professionals than this building set does - but
+     * a migration model has to be aimed at the jobs that exist, not at the ones
+     * a fuller game would have.
+     *
+     * Revisit these the day the building set grows a professional sector.
      */
     public double worldShare() { return worldShare; }
+
+    /**
+     * How readily somebody at this level will move away for work.
+     *
+     * EDUCATED PEOPLE ARE MORE MOBILE, NOT LESS, and it is not a small
+     * difference. Jerus guessed the other way, which is the common intuition -
+     * a graduate has a career and a mortgage and roots - and the measured
+     * answer is the reverse of it. The Boston Fed, tracking the same people
+     * from 1979 to 1996, found the share who changed STATE was:
+     *
+     *     high school only .................. 19.2%
+     *     four-year degree ................. 36.6%
+     *     more than four years ............. 45.0%
+     *
+     * Roughly double, and better than double at the top. The reason is the
+     * shape of the market rather than anything about the person: a labourer's
+     * job market is the town they are in, so leaving is a gamble; a
+     * radiologist's is the whole country, so a town with no radiology is
+     * simply somewhere they are not going to stay.
+     *
+     * Which makes this the honest fix for what Jerus was seeing - graduates
+     * piling up in a city with nothing for them to do. In reality they leave,
+     * faster than anybody else. The multipliers are those percentages
+     * normalised on the high-school figure, with the no-diploma band placed
+     * below it for the same reason it sits below in the table.
+     */
+    public double mobility() {
+        switch (this) {
+            case NONE:       return .80;
+            case DIPLOMA:    return 1.00;
+            case COLLEGE:    return 1.90;
+            case UNIVERSITY: return 2.35;
+            default:         return 1.00;
+        }
+    }
 
     /**
      * Which band a job sits in.

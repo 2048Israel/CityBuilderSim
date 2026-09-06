@@ -7545,6 +7545,28 @@ public class UserInterface extends Application {
                     }
                     b.getChildren().add(statLine("Min wage",
                             money(market.getMinimumWage())));
+
+                    /*
+                     * WHERE THEY CAME FROM, because otherwise it reads as a bug.
+                     *
+                     * Jerus: "i had no schools, yet there was an over supply of
+                     * skilled and above workers". They were right to ask - the
+                     * panel showed graduates in a city that had never taught
+                     * anybody, and nothing on it said those people had moved
+                     * here. A number with no visible cause is indistinguishable
+                     * from a number that is wrong.
+                     */
+                    double[] built = buildings.getBuiltEducationPlaces();
+                    double seats = 0;
+                    for (double p : built) seats += p;
+                    double trained = 0;
+                    for (int i = 1; i < own.length; i++) trained += own[i];
+
+                    if (seats <= 0 && trained > 0) {
+                        b.getChildren().add(panelNote(
+                                "no schools - every trained worker here moved in,"
+                                + " and only as many as the jobs attract"));
+                    }
                     return b;
                 }));
 

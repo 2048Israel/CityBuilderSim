@@ -519,11 +519,35 @@ public class SaveFileCheck {
         assertTrue("the city has people at all", peopleBefore > 0);
         assertEquals("population is not invented by loading", peopleAfter, peopleBefore);
 
-        assertTrue("industry is actually trading, so this proves something",
-                city.getEconomyManager().getIndustryDemand() > 0);
-
         EconomyManager e1 = city.getEconomyManager();
         EconomyManager e2 = reloaded.getEconomyManager();
+
+        /*
+         * THIS USED TO ASSERT getIndustryDemand() > 0, AND THAT WAS A PHASE OF
+         * A CYCLE, NOT A PROPERTY.
+         *
+         * Demand is a REORDER: what the shops are about to buy from the mills.
+         * A shop with full shelves orders nothing this month and is trading
+         * perfectly well, so the assertion held only while the restock happened
+         * to land on the month the fixture stopped. It went red the first time
+         * anything shifted the city's consumption by a few people - here, a
+         * change to the skill mix of who moves in - and the simulation was
+         * fine.
+         *
+         * What this section actually needs is that the figures compared below
+         * are not all zero, because two zeros match perfectly and prove
+         * nothing. So that is what it asks: goods exist, they reached the
+         * shops, and the taxes being compared are real money.
+         */
+        System.out.printf("   food stock %d, shop stock %d, taxes $%.2f%n",
+                e1.getIndustryFoodInventory(), e1.getStoreInventory(), e1.getTaxIncome());
+
+        assertTrue("the mills have actually produced something",
+                e1.getIndustryFoodInventory() > 0);
+        assertTrue("...and it reached the shops",
+                e1.getStoreInventory() > 0);
+        assertTrue("...so the figures compared below are not all zero",
+                e1.getTaxIncome() > 0);
 
         // Exact, and they have to stay exact.
         assertEquals("business tax", Math.round(e2.getBusinessTax() * 10000),

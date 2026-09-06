@@ -506,6 +506,32 @@ public class PopulationManager {
     }
 
     /**
+     * Death and retirement, which take the skilled along with everybody else.
+     *
+     * A RATCHET, AND IT WAS REAL. Skilled counts only ever moved by migration,
+     * while the workforce also shrank by mortality and by adults ageing into
+     * SENIOR - and the unskilled band is the REMAINDER, so every one of those
+     * losses came out of the unskilled band alone. A doctor was, in effect,
+     * immortal and never retired, and the city drifted more educated every
+     * month for no reason anybody chose.
+     *
+     * The correction is the obvious one: an adult who dies or turns seventy is
+     * a random adult, and a random adult is skilled in proportion to the mix.
+     * Rate taken from AgeBand's own numbers rather than typed in here, so the
+     * day somebody retunes adult mortality this follows it.
+     *
+     * Small - about two tenths of a per cent a month - and it compounds over
+     * four hundred, which is exactly the kind of slow wrong that never looks
+     * like a bug on any single screen.
+     */
+    public void retireSkilled(double leaveRate) {
+        if (leaveRate <= 0) return;
+        double survive = Math.max(0, 1 - leaveRate);
+        for (int b = 1; b < skilledHeads.length; b++) skilledHeads[b] *= survive;
+        for (int i = 0; i < licensed.length; i++) licensed[i] *= survive;
+    }
+
+    /**
      * Keeps the licensed counts inside the band that contains them.
      *
      * A licence holder is a university graduate first. When the graduate count

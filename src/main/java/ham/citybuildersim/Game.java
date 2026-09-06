@@ -3493,6 +3493,16 @@ public class Game {
      * quietly bred graduates out of the city's own births.
      */
     private void applyMigrationSkills() {
+
+        /*
+         * FIRST, THE PEOPLE WHO LEFT THE WORKFORCE ALTOGETHER.
+         *
+         * Before migration, because this month's arrivals have not worked a day
+         * yet and should not be dying of old age on the way in.
+         */
+        populationManager.retireSkilled(
+                AgeBand.ADULT.monthlyMortality() + AgeBand.ADULT.monthlyOutflowRate());
+
         populationManager.applySkilledFlows(
                 migration.getLastArrivalMix(),
                 migration.getLastDepartureMix());
