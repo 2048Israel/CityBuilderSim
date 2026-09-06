@@ -819,8 +819,8 @@ public class HealthCheck {
     static void stock(Game g) {
         BuildingManager b = g.getBuildingManager();
         b.addStack(b.getTemplateByName("House"), 400, true);
-        b.addStack(b.getTemplateByName("Convience Store"), 10, true);
-        b.addStack(b.getTemplateByName("Texttile Mill"), 3, true);
+        b.addStack(b.getTemplateByName("Convenience Store"), 10, true);
+        b.addStack(b.getTemplateByName("Textile Mill"), 3, true);
         b.addStack(b.getTemplateByName("Construction Depot"), 3, true);
         b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
         b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);

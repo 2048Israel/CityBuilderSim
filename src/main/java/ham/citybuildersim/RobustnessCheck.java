@@ -58,7 +58,7 @@ public class RobustnessCheck {
         Game game = new Game(files);
         game.run();
         game.buildStack(template(game, "House"), 30, false);
-        game.buildStack(template(game, "Convience Store"), 2, false);
+        game.buildStack(template(game, "Convenience Store"), 2, false);
         game.simulateMonths(20);
         assertTrue("a good save to work from", game.saveGame(1, "good").ok);
 

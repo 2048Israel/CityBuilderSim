@@ -43,7 +43,7 @@
     "If this file is missing or malformed the game falls back to its built-in",
     "buildings and prints why, so a typo here can never stop it starting."
   ],
-  "nextId": 15,
+  "nextId": 31,
   "buildings": [
     {
       "id": 0,
@@ -89,7 +89,7 @@
     },
     {
       "id": 2,
-      "name": "Convience Store",
+      "name": "Convenience Store",
       "category": "COMMERCIAL",
       "coverage": 120,
       "capacity": 350,
@@ -126,7 +126,7 @@
     },
     {
       "id": 3,
-      "name": "Texttile Mill",
+      "name": "Textile Mill",
       "category": "INDUSTRIAL",
       "capacity": 3000,
       "cashCost": 1200,
@@ -280,8 +280,21 @@
       "roadLoad": 15
     },
     {
+      "id": 29,
+      "name": "Gravel Road",
+      "category": "INFRASTRUCTURE",
+      "capacity": 900,
+      "cashCost": 1800,
+      "constructionPoints": 1400,
+      "constructionMaterials": 2000,
+      "electricity": 5,
+      "water": 0,
+      "land": 450000,
+      "roadLoad": 0
+    },
+    {
       "id": 13,
-      "name": "Road Network",
+      "name": "Paved Road",
       "category": "INFRASTRUCTURE",
       "capacity": 1200,
       "cashCost": 3500,
@@ -290,6 +303,19 @@
       "electricity": 40,
       "water": 0,
       "land": 250000,
+      "roadLoad": 0
+    },
+    {
+      "id": 30,
+      "name": "Elevated Highway",
+      "category": "INFRASTRUCTURE",
+      "capacity": 1500,
+      "cashCost": 8000,
+      "constructionPoints": 10000,
+      "constructionMaterials": 8000,
+      "electricity": 135,
+      "water": 0,
+      "land": 63000,
       "roadLoad": 0
     },
     {

@@ -121,7 +121,7 @@ public class CalendarCheck {
         check("same building, same month, still one entry", log.size(), 1);
         check("...and the quantities added", log.recent(10).get(0).quantity, 7);
 
-        log.record("Convience Store", 2, 10);
+        log.record("Convenience Store", 2, 10);
         check("a different building is its own entry", log.size(), 2);
 
         log.record("House", 5, 11);

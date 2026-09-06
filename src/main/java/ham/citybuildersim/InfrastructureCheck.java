@@ -147,7 +147,7 @@ public class InfrastructureCheck {
         // failing, the opening of the game has become a traffic puzzle, which
         // is not what a first turn should be.
         city.buildStack(template(city, "House"), 40, false);
-        city.buildStack(template(city, "Convience Store"), 3, false);
+        city.buildStack(template(city, "Convenience Store"), 3, false);
         city.simulateMonths(12);
 
         System.out.printf("   a starter city: %.0f of %.0f used%n",
@@ -206,7 +206,7 @@ public class InfrastructureCheck {
         /* ================= 6. building a road fixes it ================= */
         System.out.println("\n--- and building a road fixes it ---");
 
-        BuildingsTemplate roadNetwork = template(city, "Road Network");
+        BuildingsTemplate roadNetwork = template(city, "Paved Road");
 
         assertTrue("roads are a building the city can order",
                 roadNetwork.getCategory() == BuildingType.INFRASTRUCTURE);
@@ -285,7 +285,7 @@ public class InfrastructureCheck {
         Game jammed = new Game(files);
         jammed.run();
         jammed.buildStack(template(jammed, "House"), 300, false);
-        jammed.buildStack(template(jammed, "Convience Store"), 6, false);
+        jammed.buildStack(template(jammed, "Convenience Store"), 6, false);
         jammed.simulateMonths(40);
 
         /*
@@ -356,6 +356,122 @@ public class InfrastructureCheck {
 
         assertTrue("the basis is NOT just the current ratio, or this proved nothing",
                 Math.abs(basisBefore - 1) > 1e-9);
+
+        /* ================= 7b. THREE ROADS, AND ALL THREE USEFUL =================
+
+           A building that loses to something else at EVERY price is not a
+           choice, it is a mistake the player is allowed to make. Studio
+           Apartments are that today - houses beat them below $38.81 a square
+           foot and low-rises from $32.55, so there is no land price at which a
+           studio is the right answer, and nothing in the game says so.
+
+           The three roads were costed to avoid exactly that, and costing is not
+           a promise. This is the promise: each of them is the cheapest road per
+           trip carried somewhere in the range of land prices the game actually
+           reaches, and every one of those bands is non-empty.
+
+           The comparison has to be PER TRIP. A gravel road is cheaper than an
+           elevated highway in every column and carries 40% of the traffic, so
+           comparing sticker prices would "prove" the gravel road dominates when
+           it does nothing of the kind.
+           ================================================================= */
+        System.out.println("\n--- three roads, and each of them wins somewhere ---");
+
+        BuildingsTemplate gravel   = template(reloaded, "Gravel Road");
+        BuildingsTemplate paved    = template(reloaded, "Paved Road");
+        BuildingsTemplate elevated = template(reloaded, "Elevated Highway");
+        BuildingsTemplate[] roads  = { gravel, paved, elevated };
+
+        for (BuildingsTemplate r : roads) {
+            assertTrue(r.getName() + " carries traffic",     r.getCapacity() > 0);
+            assertTrue(r.getName() + " generates none",      r.getRoadLoad() == 0);
+            assertTrue(r.getName() + " employs nobody",      r.getTotalJobs() == 0);
+            assertTrue(r.getName() + " takes months",        r.getConstructionPoints() > 0);
+            assertTrue(r.getName() + " occupies ground",     r.getLandSqFt() > 0);
+        }
+
+        /*
+         * THE TRADE ITSELF, asserted rather than described.
+         *
+         * Jerus asked for one that is cheap in construction and hungry for land
+         * and one that is the reverse. If a rebalance ever quietly undid that,
+         * the three would still all be "useful" by the band test below while no
+         * longer being the three things they were asked to be.
+         */
+        double gravelPoints   = gravel.getConstructionPoints()   / (double) gravel.getCapacity();
+        double pavedPoints    = paved.getConstructionPoints()    / (double) paved.getCapacity();
+        double elevatedPoints = elevated.getConstructionPoints() / (double) elevated.getCapacity();
+
+        double gravelLand   = gravel.getLandSqFt()   / (double) gravel.getCapacity();
+        double pavedLand    = paved.getLandSqFt()    / (double) paved.getCapacity();
+        double elevatedLand = elevated.getLandSqFt() / (double) elevated.getCapacity();
+
+        System.out.printf("  per 1,000 trips:  %-18s %8s %12s %10s%n",
+                "", "points", "land sqft", "power");
+        for (BuildingsTemplate r : roads) {
+            System.out.printf("                    %-18s %8.0f %12.0f %10.1f%n", r.getName(),
+                    r.getConstructionPoints() * 1000.0 / r.getCapacity(),
+                    r.getLandSqFt() * 1000.0 / r.getCapacity(),
+                    r.getElectricityConsumption() * 1000.0 / r.getCapacity());
+        }
+
+        assertTrue("the gravel road is the cheapest to build per trip",
+                gravelPoints < pavedPoints && pavedPoints < elevatedPoints);
+        assertTrue("...and the hungriest for ground per trip",
+                gravelLand > pavedLand && pavedLand > elevatedLand);
+        assertTrue("the elevated highway draws the most power per trip",
+                elevated.getElectricityConsumption() / (double) elevated.getCapacity()
+                > paved.getElectricityConsumption() / (double) paved.getCapacity());
+        assertTrue("...and the gravel road the least",
+                gravel.getElectricityConsumption() / (double) gravel.getCapacity()
+                < paved.getElectricityConsumption() / (double) paved.getCapacity());
+
+        /*
+         * AND NOW THE BANDS.
+         *
+         * Money for one trip of capacity = (cash + materials x price + land x
+         * ground price) / capacity. Only the last term moves with the land
+         * price, so each road is a straight line in it and the cheapest of three
+         * lines is a step function with at most three steps. Walking the price
+         * upward and recording who is cheapest finds them without solving
+         * anything.
+         *
+         * The range walked is the range the game reaches: ground starts at
+         * $0.70 a square foot and is multiplied by blocks owned and population,
+         * and the housing analysis found live crossovers in the thirties.
+         */
+        double matPrice = reloaded.getBuildingManager().getConstructionMaterialPrice();
+        java.util.Set<String> everCheapest = new java.util.LinkedHashSet<>();
+        String cheapestSoFar = null;
+
+        System.out.println("\n  cheapest road per trip, walking the ground price:");
+        for (int tenthsOfCent = 0; tenthsOfCent <= 600; tenthsOfCent++) {
+
+            double landPrice = tenthsOfCent / 10.0 * .001;   // $/sq ft, in thousands
+
+            BuildingsTemplate best = null;
+            double bestCost = Double.MAX_VALUE;
+            for (BuildingsTemplate r : roads) {
+                double cost = (r.getCashCost()
+                        + r.getConstructionMaterials() * matPrice
+                        + r.getLandSqFt() * landPrice) / r.getCapacity();
+                if (cost < bestCost) { bestCost = cost; best = r; }
+            }
+
+            everCheapest.add(best.getName());
+            if (!best.getName().equals(cheapestSoFar)) {
+                System.out.printf("    from $%5.2f / sq ft:  %s%n",
+                        landPrice * 1000, best.getName());
+                cheapestSoFar = best.getName();
+            }
+        }
+
+        for (BuildingsTemplate r : roads) {
+            assertTrue(r.getName() + " is the right answer at SOME land price",
+                    everCheapest.contains(r.getName()));
+        }
+        assertTrue("all three roads win a band, not two of them",
+                everCheapest.size() == 3);
 
         /* ================= 8. a new game forgets the traffic ================= */
         System.out.println("\n--- and a new game starts clear ---");

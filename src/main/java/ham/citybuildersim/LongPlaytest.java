@@ -428,8 +428,8 @@ public class LongPlaytest {
         }
 
         // 3. Roads, once traffic is actually costing something.
-        if (roads.isCongested() && qty(g, "Road Network") < 40) {
-            if (build(g, "Road Network", 2)) return "roads";
+        if (roads.isCongested() && qty(g, "Paved Road") < 40) {
+            if (build(g, "Paved Road", 2)) return "roads";
         }
 
         // 4. Somewhere to live, if jobs are going unfilled for want of people.
@@ -441,7 +441,7 @@ public class LongPlaytest {
         // 5. Somewhere to shop. Coverage below population means unmet demand.
         if (b.getTotalStoreCoverage() < p.getPopulation()) {
             if (build(g, "Small Grocery Store", 1)) return "grocery";
-            if (build(g, "Convience Store", 3)) return "shops";
+            if (build(g, "Convenience Store", 3)) return "shops";
         }
 
         // 6. Food, if the shops are importing rather than buying local.
@@ -509,7 +509,7 @@ public class LongPlaytest {
         // 9. Jobs for their own sake.
         if (p.getWorkforce() > p.getTotalJobs()) {
             if (build(g, "Steel Foundry", 1)) return "foundry";
-            if (build(g, "Texttile Mill", 1)) return "mill";
+            if (build(g, "Textile Mill", 1)) return "mill";
         }
 
         return null;
@@ -771,11 +771,11 @@ public class LongPlaytest {
 
             /* ---------- founding: a few months at a time, by hand ---------- */
             build(g, "House", 40);
-            build(g, "Convience Store", 3);
+            build(g, "Convenience Store", 3);
             run(g, 3);
             build(g, "House", 20);
             run(g, 4);
-            build(g, "Convience Store", 2);
+            build(g, "Convenience Store", 2);
             build(g, "Construction Depot", 1);
             run(g, 5);
             advise(g);

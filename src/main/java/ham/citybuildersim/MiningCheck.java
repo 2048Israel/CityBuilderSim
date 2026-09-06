@@ -355,7 +355,7 @@ public class MiningCheck {
             land.restoreIron(withMine ? 1 : 0, 20_000_000);
 
             buildings.addStack(template(game, "House"), 500, true);
-            buildings.addStack(template(game, "Convience Store"), 8, true);
+            buildings.addStack(template(game, "Convenience Store"), 8, true);
             buildings.addStack(template(game, "Small Grocery Store"), 2, true);
             buildings.addStack(template(game, "Construction Depot"), 4, true);
 
@@ -368,13 +368,13 @@ public class MiningCheck {
              * A mill throttled to a third of its output still pays its full
              * payroll, so congestion swamps anything the ore price does.
              *
-             * Two Road Networks against a load of about 1,960 trips, one coal
+             * Two Paved Roads against a load of about 1,960 trips, one coal
              * plant and one water plant. All three ratios sit at 1, and what is
              * left in the number is the price of ore.
              */
             buildings.addStack(template(game, "Coal Power Plant"), 1, true);
             buildings.addStack(template(game, "Water Treatment Plant"), 1, true);
-            buildings.addStack(template(game, "Road Network"), 3, true);
+            buildings.addStack(template(game, "Paved Road"), 3, true);
 
             /*
              * ...and healthy, and with somewhere to bury its dead, for exactly

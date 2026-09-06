@@ -366,8 +366,8 @@ public class CreditCheck {
         Game city = new Game(files);
         city.run();
         city.buildStack(template(city, "House"), 200, false);
-        city.buildStack(template(city, "Convience Store"), 5, false);
-        city.buildStack(template(city, "Texttile Mill"), 2, false);
+        city.buildStack(template(city, "Convenience Store"), 5, false);
+        city.buildStack(template(city, "Textile Mill"), 2, false);
         city.buildStack(template(city, "Construction Depot"), 4, false);
         city.buildStack(template(city, "Coal Power Plant"), 1, false);
         city.simulateMonths(60);

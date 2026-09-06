@@ -74,7 +74,7 @@ public class ConservationCheck {
             g.run();
             BuildingManager b = g.getBuildingManager();
             b.addStack(b.getTemplateByName("House"), 300, true);
-            b.addStack(b.getTemplateByName("Convience Store"), 12, true);
+            b.addStack(b.getTemplateByName("Convenience Store"), 12, true);
             b.addStack(b.getTemplateByName("Food Processing Plant"), 3, true);
             b.addStack(b.getTemplateByName("Construction Depot"), 3, true);
             b.addStack(b.getTemplateByName("Coal Power Plant"), 2, true);

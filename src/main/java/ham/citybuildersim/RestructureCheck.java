@@ -465,7 +465,7 @@ public class RestructureCheck {
             g.run();
             BuildingManager b = g.getBuildingManager();
             b.addStack(b.getTemplateByName("House"), 200, true);
-            b.addStack(b.getTemplateByName("Convience Store"), 6, true);
+            b.addStack(b.getTemplateByName("Convenience Store"), 6, true);
             b.addStack(b.getTemplateByName("Construction Depot"), 2, true);
             g.simulateMonths(18);
         } finally { System.setOut(out); }

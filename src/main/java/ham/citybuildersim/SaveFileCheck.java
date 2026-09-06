@@ -284,7 +284,7 @@ public class SaveFileCheck {
         city.run();
 
         BuildingsTemplate house = template(city, "House");
-        BuildingsTemplate store = template(city, "Convience Store");
+        BuildingsTemplate store = template(city, "Convenience Store");
         BuildingsTemplate depot = template(city, "Construction Depot");
 
         // Industry included on purpose. The first version of this city had none,
@@ -293,7 +293,7 @@ public class SaveFileCheck {
         // assertions pass without proving anything.
         city.buildStack(house, 120, false);
         city.buildStack(store, 3, false);
-        city.buildStack(template(city, "Texttile Mill"), 1, false);
+        city.buildStack(template(city, "Textile Mill"), 1, false);
         city.simulateMonths(90);
 
         // Started now and deliberately NOT finished, so the save is taken with
@@ -626,8 +626,8 @@ public class SaveFileCheck {
         Game growing = new Game(growingFiles);
         growing.run();
         growing.buildStack(template(growing, "House"), 300, false);
-        growing.buildStack(template(growing, "Convience Store"), 6, false);
-        growing.buildStack(template(growing, "Texttile Mill"), 1, false);
+        growing.buildStack(template(growing, "Convenience Store"), 6, false);
+        growing.buildStack(template(growing, "Textile Mill"), 1, false);
         growing.simulateMonths(40);
 
         /*
@@ -647,7 +647,7 @@ public class SaveFileCheck {
          * this codebase, hit again.
          */
         BuildingManager gbm = growing.getBuildingManager();
-        gbm.addStack(gbm.getTemplateByName("Convience Store"), 30, true);
+        gbm.addStack(gbm.getTemplateByName("Convenience Store"), 30, true);
         growing.simulateMonths(1);
 
         PopulationManager gp = growing.getPopulationManager();
@@ -718,7 +718,7 @@ public class SaveFileCheck {
         Game indebted = new Game(debtFiles);
         indebted.run();
         indebted.buildStack(template(indebted, "House"), 80, false);
-        indebted.buildStack(template(indebted, "Convience Store"), 3, false);
+        indebted.buildStack(template(indebted, "Convenience Store"), 3, false);
         indebted.simulateMonths(5);
         indebted.handleLongBondLogic(200000, 20, 100);
         indebted.simulateMonths(6);

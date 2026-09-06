@@ -171,8 +171,8 @@ public class NewGameCheck {
         Game used = new Game(files);
         used.run();
         used.buildStack(template(used, "House"), 200, false);
-        used.buildStack(template(used, "Convience Store"), 5, false);
-        used.buildStack(template(used, "Texttile Mill"), 2, false);
+        used.buildStack(template(used, "Convenience Store"), 5, false);
+        used.buildStack(template(used, "Textile Mill"), 2, false);
         used.buildStack(template(used, "Food Processing Plant"), 1, false);
         used.buildStack(template(used, "Construction Depot"), 4, false);
         used.buildStack(template(used, "Coal Power Plant"), 1, false);
@@ -242,7 +242,7 @@ public class NewGameCheck {
         // correctly empty city. The first draft asserted people would move into
         // one and failed - the model was right and the test was wrong.
         assertTrue("and so can shops",
-                used.buildStack(template(used, "Convience Store"), 2, false)
+                used.buildStack(template(used, "Convenience Store"), 2, false)
                         == Game.BuildResult.SUCCESS);
 
         used.simulateMonths(30);

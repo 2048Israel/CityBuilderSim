@@ -129,6 +129,21 @@ public final class GameVersion {
      *     refused Healthcare is a city with empty graveyards, which for a save
      *     that HAS filled graves is exactly the silent loss SAVE_FORMAT exists
      *     to make loud.
+     *
+     * NOT 16: two new roads (ids 29 and 30).
+     *
+     *     Adding a building is deliberately NOT a format change, and it is
+     *     worth writing down why, because it looks like one. The buildings array
+     *     in a save is keyed by template id and sized to the highest id that
+     *     existed when it was written, and loadBuildings() already reads a short
+     *     array as zeros past its end. So a format-15 city written before the
+     *     Gravel Road existed loads into this build with no gravel roads - which
+     *     is exactly what that city had.
+     *
+     *     What WOULD move this number is retiring or renumbering an id, because
+     *     that silently loads the wrong buildings into the wrong slots. Renaming
+     *     one does not: "Road Network" became "Paved Road" and kept id 13, and
+     *     every save that owns them still owns them.
      */
     public static final int SAVE_FORMAT = 15;
 

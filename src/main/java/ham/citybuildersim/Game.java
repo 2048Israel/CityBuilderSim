@@ -57,6 +57,29 @@ public class Game {
     double totalBuildingCost = 0;
     private boolean hasNewReceipt = false;
     String lastBuildingName;
+
+    /**
+     * How MANY of them, so the receipt can say "3 x Walk-in Clinic".
+     *
+     * The receipt already carried the total cost and the imported materials but
+     * not the count, which made the two numbers it did carry unreadable: $4,200
+     * means nothing until you know whether it bought one clinic or three.
+     */
+    int lastBuildQuantity = 0;
+
+    /**
+     * WHICH receipt this is, counted up forever.
+     *
+     * The UI flashes an indicator when there is a build the player has not
+     * looked at yet, and "not looked at yet" cannot be answered from the receipt
+     * contents: build the same three clinics twice in a row and every field is
+     * identical, so a UI comparing contents would decide the second one was old
+     * news. A serial makes the question answerable - the UI remembers the number
+     * it last showed and compares - and it belongs here rather than in the UI
+     * because which receipt this is, is a fact about the game, not about how it
+     * happens to be drawn.
+     */
+    private int receiptSerial = 0;
     
     /**
      * How much more a long-term bond costs in total than an equivalent
@@ -163,6 +186,8 @@ public class Game {
         this.totalBuildingCost = 0;
         this.hasNewReceipt = false;
         this.lastBuildingName = null;
+        this.lastBuildQuantity = 0;
+        this.receiptSerial = 0;
         this.cityInterestPaid = 0;
         this.monthsSinceAutosave = 0;
 
@@ -1683,7 +1708,9 @@ public class Game {
         if (totalCost <= cash) {
             landManager.allocate(landNeeded);
             this.hasNewReceipt = true;
+            this.receiptSerial++;
             lastBuildingName = buildingManager.getName(selected);
+            lastBuildQuantity = quantity;
 
             buildingManager.addStack(selected, quantity, noConstruction);
             materialsConsumed += totalMaterialsRequired;
@@ -1873,6 +1900,14 @@ public class Game {
     }
     public String getBuildingName(){
         return lastBuildingName;
+    }
+    public int getBuildQuantity(){
+        return lastBuildQuantity;
+    }
+
+    /** Which receipt this is. See receiptSerial - the UI compares it to remember. */
+    public int getReceiptSerial(){
+        return receiptSerial;
     }
     
     private void handleOtherMenu() {

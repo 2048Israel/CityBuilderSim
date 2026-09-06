@@ -10,11 +10,16 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.util.Duration;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.BorderPane;
@@ -32,10 +37,55 @@ import javafx.stage.Stage;
 public class UserInterface extends Application {
 
     private Game game;
+
+    /**
+     * JavaFX needs the no-arg one; a harness needs one bound to a city.
+     *
+     * The info card quotes live figures - today's wages, today's materials
+     * price, today's ore price - which is the whole point of deriving it rather
+     * than writing it down, and it means the card cannot be checked without a
+     * game behind it. Rather than a setter that exists only for the test, the
+     * dependency is stated: this window shows THAT city.
+     */
+    public UserInterface() { }
+
+    UserInterface(Game game) { this.game = game; }
+
     private Stage stage;
     private VBox rootMenu;
     private VBox constructionPanel;
     private VBox cityPanel;
+
+    /* =====================================================================
+       THE RECEIPT INDICATOR
+
+       Jerus: "the screen is so occupied you dont get to see the last
+       transaction receipt". The receipt used to be appended to the BOTTOM of
+       the build menu, which is fine for a menu three buttons long and useless
+       for healthcare's fourteen buttons under five headings - the confirmation
+       that a purchase went through landed off the bottom of the screen, so the
+       one message that answers "did that work?" was the one you could not see.
+
+       It is now a dot in the top-right corner of the menu, which flashes while
+       there is a purchase you have not looked at and opens the receipt when
+       clicked. Two fields, because "have you looked at it" is a question about
+       this window and not about the game: the serial the player last opened,
+       and whether the card is currently showing.
+       ===================================================================== */
+    private int receiptSeen = 0;
+    private boolean receiptOpen = false;
+
+    /**
+     * The pulse, held so it can be stopped.
+     *
+     * A FadeTransition goes on running after its node leaves the scene graph,
+     * and this menu rebuilds itself on every click - so starting one per build
+     * and forgetting it would leave a new animation ticking on a detached node
+     * every time the player pressed anything. clearMenu() stops whichever one is
+     * running, which is the single point every screen change already goes
+     * through.
+     */
+    private FadeTransition receiptPulse;
 
     /** Always-visible strips on the two BorderPane edges nothing else uses. */
     private HBox dateBar;
@@ -45,7 +95,7 @@ public class UserInterface extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
-        game = new Game();
+        if (game == null) game = new Game();
 
         //Initialize the core UI once
         this.rootMenu = new VBox(10);
@@ -85,11 +135,11 @@ public class UserInterface extends Application {
          * anything meant to be always-visible has to hang off the BorderPane
          * instead. These were the two edges still unused.
          */
-        this.dateBar = new HBox(18);
+        this.dateBar = new HBox(20);
         this.dateBar.setAlignment(Pos.CENTER_LEFT);
         this.dateBar.setStyle(
-                "-fx-padding: 8 16 8 16; -fx-background-color: #263238;"
-                + " -fx-border-color: #37474f; -fx-border-width: 0 0 1 0;");
+                "-fx-padding: 10 18 10 18; -fx-background-color: #1c262b;"
+                + " -fx-border-color: #37474f; -fx-border-width: 0 0 2 0;");
 
         this.debtBar = new HBox(16);
         this.debtBar.setAlignment(Pos.CENTER_LEFT);
@@ -127,6 +177,12 @@ public class UserInterface extends Application {
      * is always showing current data no matter which screen you're on.
      */
     private void clearMenu() {
+        // See receiptPulse: an animation on a node that is about to be thrown
+        // away keeps running forever otherwise.
+        if (receiptPulse != null) {
+            receiptPulse.stop();
+            receiptPulse = null;
+        }
         rootMenu.getChildren().clear();
         refreshCityPanel();
         refreshConstructionPanel();
@@ -155,24 +211,66 @@ public class UserInterface extends Application {
 
         int month = game.getMonth();
 
+        /*
+         * THE TWO ANCHORS, and they are deliberately the largest text anywhere
+         * in the game.
+         *
+         * What month is it and how much money is there are the only two figures
+         * a player needs on EVERY screen, and at 15px and 13px they were the
+         * same weight as the six things beside them - so the eye had to go
+         * looking. They are 28px now, one at each end of the strip, each on its
+         * own inset panel with a caption under it. Everything between them got
+         * smaller rather than bigger, because pronouncing one thing means
+         * quietening its neighbours; making all eight bold would be the same
+         * screen again, louder.
+         */
         Label date = new Label(CityCalendar.format(month));
-        date.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #ffffff;");
+        date.setStyle("-fx-font-size: 28px; -fx-font-weight: bold;"
+                + " -fx-text-fill: #ffffff;");
 
-        Label counter = new Label("month " + month);
+        Label counter = new Label("month " + formatter.format(month));
         counter.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-text-fill: #90a4ae;");
+                + " -fx-text-fill: #78909c;");
+
+        VBox dateBox = new VBox(-2);
+        dateBox.setAlignment(Pos.CENTER_LEFT);
+        dateBox.getChildren().addAll(date, counter);
+        dateBox.setStyle("-fx-padding: 2 14 4 12; -fx-background-color: #26343b;"
+                + " -fx-background-radius: 4;");
 
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
 
         double cash = game.getCash();
-        Label cashLabel = new Label("Cash  $" + formatter.format(cash));
-        cashLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 13px;"
+        double income = game.getIncome();
+
+        /*
+         * Courier, at 28px, because the digits have to stay in the same columns
+         * from month to month. A proportional face makes the number jitter
+         * sideways as it changes width, and a figure that moves is a figure the
+         * eye has to re-find every turn - the opposite of what this is for.
+         */
+        Label cashLabel = new Label("$" + formatter.format(cash));
+        cashLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 28px;"
                 + " -fx-font-weight: bold; -fx-text-fill: "
                 // Overdrawn is not a rounding detail - it is being charged the
                 // emergency rate - so it gets the same red as everything else
                 // that is actively costing the player money.
                 + (cash < 0 ? "#ef5350" : "#a5d6a7") + ";");
+
+        // What it is doing, under what it is. A treasury of $300k falling by
+        // $40k a month is a different city from one holding steady, and the
+        // headline figure alone cannot tell them apart.
+        Label trend = new Label((income >= 0 ? "+$" : "-$")
+                + formatter.format(Math.abs(income)) + " a month");
+        trend.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-text-fill: " + (income >= 0 ? "#78909c" : "#e57373") + ";");
+
+        VBox cashBox = new VBox(-2);
+        cashBox.setAlignment(Pos.CENTER_RIGHT);
+        cashBox.getChildren().addAll(cashLabel, trend);
+        cashBox.setStyle("-fx-padding: 2 12 4 14; -fx-background-color: #26343b;"
+                + " -fx-background-radius: 4;");
 
         /*
          * Population, and underneath it the four flows that moved it.
@@ -186,8 +284,8 @@ public class UserInterface extends Application {
          */
         Label popLabel = new Label("Pop  "
                 + formatter.format(game.getPopulationManager().getPopulation()));
-        popLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 13px;"
-                + " -fx-text-fill: #eceff1;");
+        popLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #cfd8dc;");
 
         PopulationCohorts pyramid = game.getCohorts();
         Migration flows = game.getMigration();
@@ -239,7 +337,7 @@ public class UserInterface extends Application {
         // this; a letter is how a borrower actually experiences its own credit.
         String rating = game.getCreditRating();
         Label ratingLabel = new Label(rating);
-        ratingLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
+        ratingLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
                 + " -fx-font-weight: bold; -fx-padding: 1 6 1 6; -fx-background-radius: 3;"
                 + " -fx-text-fill: #ffffff; -fx-background-color: "
                 + switch (rating) {
@@ -250,7 +348,7 @@ public class UserInterface extends Application {
                     default          -> "#c62828";
                 } + ";");
 
-        dateBar.getChildren().addAll(date, counter, gap, ratingLabel, popBox, cashLabel);
+        dateBar.getChildren().addAll(dateBox, gap, ratingLabel, popBox, cashBox);
     }
 
     /** A label, six tier columns, and a trailing cell. */
@@ -758,7 +856,6 @@ public class UserInterface extends Application {
     double cash = game.getCash();
     double income = game.getIncome();
     
-    Label gameInfo = new Label("Month: " + month + " | Cash: $" + formatter.format(cash));
 
     Button buildings = new Button("Buildings");
     Button economy = new Button("Economy");
@@ -786,7 +883,7 @@ public class UserInterface extends Application {
 
     simulateMultipleMonths.setOnAction(e -> showSimulateMonthsMenu());
 
-    rootMenu.getChildren().addAll(gameInfo, buildings, economy, policy, population, nextMonth, simulateMultipleMonths, back);
+    rootMenu.getChildren().addAll(buildings, economy, policy, population, nextMonth, simulateMultipleMonths, back);
 
     /*
      * The one thing that interrupts the main screen.
@@ -1158,9 +1255,6 @@ public class UserInterface extends Application {
         Label title = new Label("LAND OFFICE");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
 
-        Label gameInfo = new Label("Month: " + game.getMonth()
-                + " | Cash: $" + formatter.format(game.getCash()));
-
         VBox column = new VBox(0);
 
         /* -------------------------- what we hold -------------------------- */
@@ -1366,7 +1460,7 @@ public class UserInterface extends Application {
         Button back = new Button("Back");
         back.setOnAction(e -> showBuildingsMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, scroll, buyLabel, buying, back);
+        rootMenu.getChildren().addAll(title, scroll, buyLabel, buying, back);
     }
 
     private void showEconomyMenu() {
@@ -1384,7 +1478,6 @@ public class UserInterface extends Application {
     ));
     marketStatus.setStyle("-fx-text-fill: #1a237e; -fx-font-weight: bold; -fx-background-color: #e8eaf6; -fx-padding: 10;");
         
-        Label gameInfo = new Label("Month: " + month + " | Cash: $" + formatter.format(cash));
 
         Button b1 = new Button("Finance");
         Button b2 = new Button("Restructure");
@@ -1419,7 +1512,7 @@ public class UserInterface extends Application {
 
         
 
-        rootMenu.getChildren().addAll(marketStatus,gameInfo,b1,b2,b3,b4,b5, b0);
+        rootMenu.getChildren().addAll(marketStatus,b1,b2,b3,b4,b5, b0);
 
         
     }
@@ -1442,9 +1535,6 @@ public class UserInterface extends Application {
 
         Label title = new Label("TAX POLICY");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
-
-        Label gameInfo = new Label("Month: " + game.getMonth()
-                + " | Cash: $" + formatter.format(game.getCash()));
 
         VBox column = new VBox(0);
 
@@ -1577,7 +1667,7 @@ public class UserInterface extends Application {
         Button back = new Button("Back");
         back.setOnAction(e -> showPolicyMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, scroll,
+        rootMenu.getChildren().addAll(title, scroll,
                 incomeLabel, incomeDial, propertyLabel, propertyDial, toLand, back);
     }
 
@@ -1820,7 +1910,8 @@ public class UserInterface extends Application {
         double cash = game.getCash();
         double interest = game.getInterestRate();
         
-        Label gameInfo = new Label("Month: " + month + " | Cash: $" + formatter.format(cash)+ "\nInterestRate: " + formatter.format(interest*100)+"%");
+        Label gameInfo = new Label("The market is lending at "
+                + formatter.format(interest * 100) + "%");
 
         Button b1 = new Button("Short-Term Notes  (no coupon, repay one lump)");
         Button b2 = new Button("Serial Bonds  (principal amortises, no lump)");
@@ -1896,14 +1987,8 @@ public class UserInterface extends Application {
             }
 
             for (BuildingsTemplate template : group) {
-                Button b = new Button(template.getName());
-                b.setMaxWidth(Double.MAX_VALUE);
-                b.setOnAction(e ->
-                        handleBuildingTextBox(template, menuTitle, categories, quantity -> {
-                            game.buildStack(template, quantity, false);
-                            handleAllBuildingMenus(menuTitle, categories);
-                        }));
-                buildingsBox.getChildren().add(b);
+                buildingsBox.getChildren()
+                        .add(buildingRow(template, menuTitle, categories));
             }
         }
 
@@ -1911,20 +1996,579 @@ public class UserInterface extends Application {
         Button b0 = new Button("Back");
         b0.setOnAction(e -> {
             game.clearReceipt(); // Reset the flag so it's gone next time
+            receiptOpen = false;
             showBuildingsMenu();
         });
 
-        // 4. THE RECEIPT (Only adds if a build just happened)
-        rootMenu.getChildren().addAll(gameInfo, buildingsBox, b0);
+        // 4. THE RECEIPT, in the corner rather than off the bottom.
+        rootMenu.getChildren().addAll(
+                receiptCorner(menuTitle, categories), gameInfo, buildingsBox, b0);
+    }
 
-        if (game.hasNewReceipt()) {
-            Label buildInfo = new Label("\n--- LAST TRANSACTION ---"
-                    + "\n" + game.getBuildingName()
-                    + "\nMaterials Imported: " + formatter.format(game.getMaterialsUsed())
-                    + "\nTotal Cost: $" + formatter.format(game.getTotalBuildingCost()));
-            buildInfo.setStyle("-fx-text-fill: #2e7d32; -fx-font-weight: bold; -fx-border-color: #2e7d32; -fx-padding: 5;");
-            rootMenu.getChildren().add(buildInfo);
+    /** How wide a building row is, so the price column lines up down the list. */
+    private static final double BUILD_ROW_WIDTH = 400;
+
+    /**
+     * One building: what it is called, what it costs, and an i to hover.
+     *
+     * TWO PRICES, and only when they differ. The cash cost on the template is
+     * the sticker price; what the city actually pays is that plus whatever
+     * materials it has to import at today's market price, because a build order
+     * draws from the yard first and buys the shortfall. Jerus: "a quick
+     * calculation of what it would actually cost". They are the same number in a
+     * city with a full yard and very different in one that has just spent it,
+     * and the second is the one that comes out of the treasury - so the row
+     * shows "$1,400 > $3,200" when there is a gap and one figure when there is
+     * not. A column that grows a second number is itself the warning.
+     *
+     * The all-in figure comes from game.calculateTotalCost(), which is the
+     * method processBuildOrder() charges with. Quoting with a re-typed copy of
+     * that formula is exactly the bug that method's own comment was written
+     * about.
+     */
+    private HBox buildingRow(BuildingsTemplate template, String menuTitle,
+                             EnumSet<BuildingType> categories) {
+
+        double sticker = template.getCashCost();
+        double allIn   = game.calculateTotalCost(template, 1);
+        boolean importing = allIn > sticker + .5;
+
+        // Against the all-in price, because that is the one the build order
+        // actually tests. Greyed rather than disabled: the city can borrow for
+        // it, and the game already offers to - a dead button would be a lie.
+        boolean afford = allIn <= game.getCash();
+
+        Label name = new Label(template.getName());
+        name.setStyle("-fx-font-size: 12px; -fx-text-fill: "
+                + (afford ? "#212121" : "#9e9e9e") + ";");
+
+        Region grow = new Region();
+        HBox.setHgrow(grow, Priority.ALWAYS);
+
+        HBox face = new HBox(6);
+        face.setAlignment(Pos.CENTER_LEFT);
+        face.getChildren().addAll(name, grow);
+
+        if (importing) {
+            Label from = new Label("$" + formatter.format(sticker));
+            from.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                    + " -fx-text-fill: #b0bec5; -fx-strikethrough: false;");
+            Label arrow = new Label("\u203a");
+            arrow.setStyle("-fx-font-size: 12px; -fx-text-fill: #b0bec5;");
+            face.getChildren().addAll(from, arrow);
         }
+
+        Label price = new Label("$" + formatter.format(allIn));
+        price.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
+                + " -fx-font-weight: bold; -fx-text-fill: "
+                + (afford ? "#2e7d32" : "#c62828") + ";");
+        face.getChildren().add(price);
+
+        // The graphic does not stretch to the button on its own, so it is given
+        // the width explicitly. Without this the name and the price sit in a
+        // huddle in the middle of the button and the column stops being a list.
+        face.setPrefWidth(BUILD_ROW_WIDTH - 26);
+
+        Button b = new Button();
+        b.setGraphic(face);
+        b.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        b.setPrefWidth(BUILD_ROW_WIDTH);
+        b.setOnAction(e ->
+                handleBuildingTextBox(template, menuTitle, categories, quantity -> {
+                    game.buildStack(template, quantity, false);
+                    handleAllBuildingMenus(menuTitle, categories);
+                }));
+
+        HBox row = new HBox(5);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getChildren().addAll(b, infoBadge(template));
+        return row;
+    }
+
+    /**
+     * The i, and everything behind it.
+     *
+     * Hover only, by request - no click, no screen of its own, nothing to go
+     * Back out of. A player scanning a column of fourteen buildings wants to
+     * compare them, and a menu you have to enter and leave fourteen times is not
+     * a comparison, it is fourteen errands.
+     */
+    private Label infoBadge(BuildingsTemplate template) {
+        Label i = new Label("i");
+        i.setAlignment(Pos.CENTER);
+        i.setMinSize(18, 18);
+        i.setPrefSize(18, 18);
+        i.setMaxSize(18, 18);
+        i.setStyle("-fx-background-color: #cfd8dc; -fx-background-radius: 50%;"
+                + " -fx-text-fill: #37474f; -fx-font-size: 10px;"
+                + " -fx-font-weight: bold; -fx-font-family: 'Georgia'; -fx-cursor: hand;");
+
+        Tooltip tip = new Tooltip();
+        tip.setGraphic(buildingCard(template));
+        tip.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        // The card carries its own background and border; the tooltip chrome
+        // underneath it would otherwise draw a second, darker one around it.
+        tip.setStyle("-fx-background-color: transparent; -fx-padding: 0;"
+                + " -fx-background-radius: 0; -fx-effect: null;");
+        tip.setShowDelay(Duration.millis(120));
+        tip.setHideDelay(Duration.millis(60));
+        // A stat sheet you are reading should not vanish out from under you at
+        // five seconds, which is the default.
+        tip.setShowDuration(Duration.INDEFINITE);
+        Tooltip.install(i, tip);
+        return i;
+    }
+
+    /* =====================================================================
+       THE STAT CARD
+
+       EVERY FIGURE ON IT IS READ OFF THE MODEL. There is no description field
+       on a building and none was added, because a sentence typed into a data
+       file is a claim that stops being checked the moment somebody rebalances
+       the building it describes - and this game rebalances constantly. What the
+       card says a building does, it works out from what the building is: the
+       wage bill from today's wages, the all-in price from today's materials
+       market, the revenue from the fee the service actually charges. A card
+       that cannot go stale is worth more than a card that reads better.
+       ===================================================================== */
+
+    private VBox buildingCard(BuildingsTemplate t) {
+
+        VBox card = new VBox(2);
+        card.setStyle("-fx-background-color: #ffffff; -fx-border-color: #78909c;"
+                + " -fx-border-width: 1; -fx-padding: 12 14 12 14;"
+                + " -fx-background-radius: 3; -fx-border-radius: 3;");
+
+        Label title = new Label(t.getName().toUpperCase());
+        title.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+
+        String kind = t.getCategory().name().replace('_', ' ').toLowerCase();
+        if (t.getCare() != CareType.NONE) kind += "  \u00b7  " + t.getCare().getLabel().toLowerCase();
+        Label sub = new Label(kind);
+        sub.setStyle("-fx-font-size: 10px; -fx-text-fill: #78909c;");
+
+        card.getChildren().addAll(title, sub);
+
+        // WHAT IT DOES, in sentences, derived.
+        for (String line : whatItDoes(t)) {
+            Label l = new Label(line);
+            l.setWrapText(true);
+            l.setMaxWidth(370);
+            l.setStyle("-fx-font-size: 11px; -fx-text-fill: #37474f; -fx-padding: 4 0 0 0;");
+            card.getChildren().add(l);
+        }
+
+        card.getChildren().add(cardGap());
+
+        // WHAT IT COSTS, in a grid. Two columns, because eight one-line rows is
+        // a scroll and four two-column rows is a glance.
+        card.getChildren().addAll(
+                cardRow("Cash cost", "$" + formatter.format(t.getCashCost()),
+                        "Land", formatter.format(t.getLandSqFt()) + " sq ft"),
+                cardRow("Materials", formatter.format(t.getConstructionMaterials()),
+                        "Upkeep", "$" + formatter.format(t.getUpkeep()) + " / mo"),
+                cardRow("Build points", formatter.format(t.getConstructionPoints()),
+                        "Road load", formatter.format(t.getRoadLoad())),
+                cardRow("Electricity", formatter.format(t.getElectricityConsumption()),
+                        "Water", formatter.format(t.getWaterConsumption())));
+
+        /*
+         * THE WAGE BILL, WHICH IS NOT THE UPKEEP.
+         *
+         * Upkeep is the only running cost on the template, and for anything with
+         * staff it is the smaller half - a General Hospital's upkeep is a
+         * rounding error against 363 salaries. Leaving it off the card would
+         * have let a player read the cheap number and buy something that quietly
+         * costs several times it every month, which is the exact shape of the
+         * funding hole healthcare had before it went on the city's books.
+         *
+         * At TODAY'S wages, not a stored figure: the wage rates are a policy
+         * lever the player moves.
+         */
+        double[] wages = game.getPopulationManager().getWagesPerType();
+        double wageBill = 0;
+        int staff = 0;
+        StringBuilder mix = new StringBuilder();
+        for (JobType job : JobType.values()) {
+            int n = t.getJobs(job);
+            if (n == 0) continue;
+            staff += n;
+            if (wages != null && job.ordinal() < wages.length) wageBill += n * wages[job.ordinal()];
+            if (mix.length() > 0) mix.append("  \u00b7  ");
+            mix.append(n).append(" ").append(jobLabel(job));
+        }
+
+        if (staff > 0) {
+            card.getChildren().add(cardGap());
+            card.getChildren().add(cardRow("Staff", formatter.format(staff),
+                    "Wages", "$" + formatter.format(wageBill) + " / mo"));
+            Label m = new Label("   " + mix);
+            m.setWrapText(true);
+            m.setMaxWidth(370);
+            m.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
+                    + " -fx-text-fill: #78909c;");
+            card.getChildren().add(m);
+
+            Label total = new Label(String.format("   Runs at $%s a month, all in.",
+                    formatter.format(t.getUpkeep() + wageBill)));
+            total.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #c62828;");
+            card.getChildren().add(total);
+        }
+
+        // WHAT ONE COSTS TODAY, if the yard cannot cover it.
+        double allIn = game.calculateTotalCost(t, 1);
+        if (allIn > t.getCashCost() + .5) {
+            double shortfall = t.getConstructionMaterials()
+                    - game.getBuildingManager().getConstructionMaterials();
+            card.getChildren().add(cardGap());
+            Label imp = new Label(String.format(
+                    "The yard is %s materials short of one, so one costs $%s"
+                    + " today at $%.2f a unit. Build the materials first and it"
+                    + " drops back to $%s.",
+                    formatter.format(Math.max(shortfall, 0)),
+                    formatter.format(allIn),
+                    game.getBuildingManager().getConstructionMaterialPrice(),
+                    formatter.format(t.getCashCost())));
+            imp.setWrapText(true);
+            imp.setMaxWidth(370);
+            imp.setStyle("-fx-font-size: 10px; -fx-text-fill: #ef6c00;");
+            card.getChildren().add(imp);
+        }
+
+        return card;
+    }
+
+    /** A hairline of space, used where a blank line would be too much. */
+    private Region cardGap() {
+        Region r = new Region();
+        r.setMinHeight(7);
+        return r;
+    }
+
+    /** Two label-and-value pairs across, in a monospaced row that lines up. */
+    private Label cardRow(String a, String av, String b, String bv) {
+        Label l = new Label(String.format("%-13s%12s   %-11s%13s", a, av, b, bv));
+        l.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                + " -fx-text-fill: #37474f;");
+        return l;
+    }
+
+    /**
+     * What this building actually does for the city, worked out from its own
+     * numbers.
+     *
+     * Every branch reads the field the SIMULATION reads for that category -
+     * production1 is tonnes for a mine and construction points for a depot and
+     * kilowatts for a power plant, and capacity is people for a house, shelf
+     * space for a shop, warehouse space for a mill and treatments for a clinic.
+     * Getting that mapping wrong would produce a confident sentence about the
+     * wrong number, which is worse than no sentence, so each one is taken from
+     * the handler that consumes it rather than from the field's name.
+     */
+    // Package-private, not private, so BuildMenuCheck can read the sentences
+    // back. A description that is derived can still be derived WRONGLY - the
+    // whole risk of reading production1 is that it means a different thing in
+    // each category - and the only way to hold that is to print all 29 and
+    // assert on them. Same for the two below.
+    List<String> whatItDoes(BuildingsTemplate t) {
+        List<String> out = new ArrayList<>();
+
+        switch (t.getCategory()) {
+
+            case RESIDENTIAL:
+                out.add(String.format("%s %s for up to %s residents.",
+                        formatter.format(Math.max(t.getDwellings(), 1)),
+                        t.getDwellings() == 1 ? "home" : "homes",
+                        formatter.format(t.getCapacity())));
+                break;
+
+            case COMMERCIAL:
+                // capacity is shelf stock (CommercialHandler.storeCapacity);
+                // coverage is what it actually sells in a month.
+                out.add(String.format("Sells %s units a month and holds %s"
+                        + " units of stock on the shelves.",
+                        formatter.format(t.getCoverage()),
+                        formatter.format(t.getCapacity())));
+                break;
+
+            case INDUSTRIAL:
+                out.add(String.format("Produces %s units a month and warehouses %s.",
+                        formatter.format(t.getProduction1()),
+                        formatter.format(t.getCapacity())));
+                break;
+
+            case CONSTRUCTION:
+                if (t.getProduction1() > 0) {
+                    out.add(String.format("Adds %s construction points a month - the rate"
+                            + " everything in the city goes up at.",
+                            formatter.format(t.getProduction1())));
+                }
+                if (t.getProduction2() > 0) {
+                    out.add(String.format("Produces %s construction materials a month, so"
+                            + " they need not be imported.",
+                            formatter.format(t.getProduction2())));
+                }
+                break;
+
+            case ELECTRICITY:
+                out.add(String.format("Generates %s units of electricity a month.",
+                        formatter.format(t.getProduction1())));
+                break;
+
+            case WATER:
+                out.add(String.format("Treats %s units of water a month.",
+                        formatter.format(t.getProduction1())));
+                break;
+
+            case INFRASTRUCTURE: {
+                out.add(String.format("Carries %s trips a month. Every building in the"
+                        + " city puts load on the same network.",
+                        formatter.format(t.getCapacity())));
+                /*
+                 * PER TRIP CARRIED, because that is the only way three roads of
+                 * different sizes can be compared at all. A Gravel Road is
+                 * cheaper than an Elevated Highway in every single column and
+                 * carries 40% of the traffic - so a player comparing sticker
+                 * prices would conclude the gravel road simply wins, which is
+                 * the opposite of true in a city that has run out of room.
+                 *
+                 * These two numbers ARE the choice: ground, or labour. Every
+                 * other figure on the card follows from which of the two the
+                 * city has less of.
+                 */
+                if (t.getCapacity() > 0) {
+                    out.add(String.format("Per 1,000 trips carried that is %s sq ft of"
+                            + " ground and %s construction points - the whole choice"
+                            + " between the roads is which of those two you have less"
+                            + " of.",
+                            formatter.format(Math.round(
+                                    t.getLandSqFt() * 1000.0 / t.getCapacity())),
+                            formatter.format(Math.round(
+                                    t.getConstructionPoints() * 1000.0 / t.getCapacity()))));
+                }
+                break;
+            }
+
+            case MINING: {
+                /*
+                 * TODAY'S EXPORT PRICE, not the one written on the template.
+                 * productionModifier1 is where the mine's price STARTS; the iron
+                 * market is what it sells at now, and quoting the template would
+                 * hand the player a revenue figure the mine has not earned since
+                 * the market last moved.
+                 */
+                double ship = game.getIronMarket().getExportPrice();
+                out.add(String.format("Mines %s tonnes of ore a month, worth $%s at"
+                        + " today's export price of $%.2f a tonne.",
+                        formatter.format(t.getProduction1()),
+                        formatter.format(t.getProduction1() * ship), ship));
+                out.add("Needs a land parcel with iron under it - cash and space alone"
+                        + " will not put one up.");
+                break;
+            }
+
+            case HEAVY_INDUSTRY: {
+                double revenue = t.getProduction1() * t.getProductionModifier1();
+                double ore     = t.getProduction2() * t.getProductionModifier2();
+                out.add(String.format("Turns %s tonnes of ore into %s tonnes of steel a"
+                        + " month.",
+                        formatter.format(t.getProduction2()),
+                        formatter.format(t.getProduction1())));
+                out.add(String.format("At full throughput that is $%s of steel against"
+                        + " $%s of ore - a margin of $%s a month before wages.",
+                        formatter.format(revenue), formatter.format(ore),
+                        formatter.format(revenue - ore)));
+                break;
+            }
+
+            case HEALTHCARE:
+                out.addAll(whatCareItGives(t));
+                break;
+
+            default:
+                break;
+        }
+        return out;
+    }
+
+    /**
+     * The healthcare version, which needs the care type and not the category.
+     *
+     * A cemetery and a hospital are the same BuildingType and could not be less
+     * alike: one sells a permanent asset once, the other runs a monthly service
+     * that shuts if the doctors do not turn up. That distinction is exactly what
+     * CareType exists to carry.
+     */
+    List<String> whatCareItGives(BuildingsTemplate t) {
+        List<String> out = new ArrayList<>();
+        CareType care = t.getCare();
+        double cap = t.getCapacity();
+        double fee = Healthcare.feeFor(care);
+
+        switch (care) {
+            case CHILDCARE:
+                out.add(String.format("Looks after %s children a month when fully staffed.",
+                        formatter.format(cap)));
+                out.add(String.format("Childcare is the strongest lever in the game:"
+                        + " full coverage cuts infant deaths by a factor of %.0f and"
+                        + " doubles the birth rate.", Healthcare.CHILDCARE_SWING));
+                break;
+
+            case GENERAL:
+                out.add(String.format("Treats %s people a month when fully staffed.",
+                        formatter.format(cap)));
+                out.add(String.format("General care sets how much of the workforce is off"
+                        + " sick - %.0f%% with none, %.0f%% with enough - and cuts adult"
+                        + " deaths.",
+                        Health.UNTREATED_RATE * 100, Health.WELL_SERVED_RATE * 100));
+                break;
+
+            case SENIOR:
+                out.add(String.format("Cares for %s seniors a month when fully staffed.",
+                        formatter.format(cap)));
+                out.add(String.format("Cuts senior deaths, and full coverage draws %.0f%%"
+                        + " more people to the city.", Migration.SENIOR_CARE_PULL * 100));
+                break;
+
+            case BURIAL:
+                out.add(String.format("%s plots. They are consumed permanently and the"
+                        + " land never comes back.", formatter.format(cap)));
+                out.add(String.format("At $%.2f a burial that is $%s of revenue over the"
+                        + " life of the ground - a fixed asset that pays for itself over"
+                        + " decades, not a monthly service.",
+                        fee, formatter.format(cap * fee)));
+                break;
+
+            case CREMATION:
+                out.add(String.format("Handles %s cremations a month when fully staffed,"
+                        + " on almost no land and a great deal of electricity.",
+                        formatter.format(cap)));
+                out.add(String.format("At $%.2f a body it earns $%s a month FLAT OUT,"
+                        + " which is roughly what it costs to run - an underused one"
+                        + " loses money.", fee, formatter.format(cap * fee)));
+                break;
+
+            default:
+                break;
+        }
+
+        /*
+         * The revenue line, for the three that run as a monthly service.
+         *
+         * Deliberately the TOTAL and not the per-head fee. A general treatment
+         * fee is $0.010 in the game's units, and a card that says "charges
+         * $0.01 a head" beside a building that costs $1,400 reads as a bug -
+         * the units are consistent, but nothing else on the screen is small
+         * enough for the player to have calibrated on them. The monthly figure
+         * is in the same register as the upkeep and the wages directly above
+         * it, which is the comparison that actually matters: this is what it
+         * brings in, that is what it costs.
+         */
+        if (care.servesTheLiving() && fee > 0) {
+            out.add(String.format("Brings in $%s a month at full use, charged to the"
+                    + " households that use it.", formatter.format(cap * fee)));
+        }
+        return out;
+    }
+
+    /** JobType, in words a player reads rather than the enum constant. */
+    String jobLabel(JobType job) {
+        switch (job) {
+            case NO_DIPLOMA:          return "unskilled";
+            case DIPLOMA:             return "diploma";
+            case COLLEGE_HEALTH:      return "health college";
+            case COLLEGE_BUSINESS:    return "business college";
+            case COLLEGE_ENGINEERING: return "eng. college";
+            case UNIV_DOCTOR:         return "doctor";
+            case UNIV_LAW:            return "lawyer";
+            case UNIV_FINANCE:        return "finance";
+            case UNIV_SCIENCE:        return "scientist";
+            case UNIV_HIGHTECH_ENG:   return "high-tech eng.";
+            case UNIV_POLICY:         return "policy";
+            default:                  return job.name().toLowerCase();
+        }
+    }
+
+    /**
+     * The receipt dot, top-right of the menu, and the card it opens.
+     *
+     * It flashes only while there is a receipt this window has not shown yet -
+     * compared by serial, not by contents, because building the same three
+     * clinics twice in a row produces two identical receipts and the second one
+     * is still news. Once opened it goes solid: the flash means "something
+     * happened", and a permanent flash means nothing at all.
+     */
+    private HBox receiptCorner(String menuTitle, EnumSet<BuildingType> categories) {
+
+        HBox corner = new HBox();
+        corner.setAlignment(Pos.TOP_RIGHT);
+        corner.setMaxWidth(Double.MAX_VALUE);
+        if (!game.hasNewReceipt()) return corner;
+
+        boolean unseen = game.getReceiptSerial() != receiptSeen;
+
+        Button dot = new Button();
+        dot.setMinSize(18, 18);
+        dot.setPrefSize(18, 18);
+        dot.setMaxSize(18, 18);
+        dot.setStyle("-fx-background-color: #43a047; -fx-background-radius: 50%;"
+                + " -fx-border-color: #1b5e20; -fx-border-width: 1;"
+                + " -fx-border-radius: 50%; -fx-cursor: hand; -fx-padding: 0;");
+        Tooltip dotTip = new Tooltip(unseen
+                ? "A purchase went through - click for the receipt"
+                : "Click for the last receipt");
+        dotTip.setShowDelay(Duration.millis(200));
+        Tooltip.install(dot, dotTip);
+
+        dot.setOnAction(e -> {
+            receiptOpen = !receiptOpen;
+            receiptSeen = game.getReceiptSerial();
+            handleAllBuildingMenus(menuTitle, categories);
+        });
+
+        if (unseen && !receiptOpen) {
+            receiptPulse = new FadeTransition(Duration.millis(600), dot);
+            receiptPulse.setFromValue(1.0);
+            receiptPulse.setToValue(.15);
+            receiptPulse.setAutoReverse(true);
+            receiptPulse.setCycleCount(Animation.INDEFINITE);
+            receiptPulse.play();
+        }
+
+        if (!receiptOpen) {
+            corner.getChildren().add(dot);
+            return corner;
+        }
+
+        VBox card = new VBox(1);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setStyle("-fx-background-color: #e8f5e9; -fx-border-color: #2e7d32;"
+                + " -fx-border-width: 1; -fx-background-radius: 3;"
+                + " -fx-border-radius: 3; -fx-padding: 7 11 7 11;");
+
+        Label head = new Label("LAST TRANSACTION");
+        head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #2e7d32;");
+
+        Label what = new Label(formatter.format(game.getBuildQuantity())
+                + " \u00d7  " + game.getBuildingName());
+        what.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1b5e20;");
+
+        card.getChildren().addAll(head, what,
+                receiptLine("Materials imported", formatter.format(game.getMaterialsUsed())),
+                receiptLine("Total cost", "$" + formatter.format(game.getTotalBuildingCost())));
+
+        HBox stack = new HBox(6);
+        stack.setAlignment(Pos.TOP_RIGHT);
+        stack.getChildren().addAll(card, dot);
+        corner.getChildren().add(stack);
+        return corner;
+    }
+
+    private Label receiptLine(String label, String value) {
+        Label l = new Label(String.format("%-20s%12s", label, value));
+        l.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                + " -fx-text-fill: #33691e;");
+        return l;
     }
 
     /** The group's name, in the player's words rather than the enum's. */
@@ -2376,8 +3020,6 @@ public class UserInterface extends Application {
         Label title = new Label("SECTOR OVERVIEW");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
 
-        Label gameInfo = new Label("Month: " + game.getMonth() + " | Cash: $" + formatter.format(game.getCash()));
-
         Button population = new Button("People");
         Button privateSector = new Button("Private Enterprise Sector");
         // NOTE: "Municipal Utility Services" here was a dead label even in the
@@ -2400,7 +3042,7 @@ public class UserInterface extends Application {
         construction.setOnAction(e -> showConstructionInfoMenu());
         back.setOnAction(e -> showEconomyMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, population, privateSector, construction, systemOps, back);
+        rootMenu.getChildren().addAll(title, population, privateSector, construction, systemOps, back);
     }
 
     private void showPrivateSectorMenu() {
@@ -2408,8 +3050,6 @@ public class UserInterface extends Application {
 
         Label title = new Label("PRIVATE ENTERPRISE SECTOR");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
-
-        Label gameInfo = new Label("Month: " + game.getMonth() + " | Cash: $" + formatter.format(game.getCash()));
 
         Button commercial = new Button("Retail & Consumer Services (Commercial)");
         Button industrial = new Button("Resource Production (Industrial)");
@@ -2429,7 +3069,7 @@ public class UserInterface extends Application {
 
         back.setOnAction(e -> showSectorMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, commercial, industrial,
+        rootMenu.getChildren().addAll(title, commercial, industrial,
                 utility, heavy, mining, back);
     }
 
@@ -3452,9 +4092,6 @@ public class UserInterface extends Application {
         Label title = new Label("COMMERCIAL SECTOR REPORT");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
 
-        Label gameInfo = new Label("Month: " + game.getMonth()
-                + " | Cash: $" + formatter.format(game.getCash()));
-
         /* ---------------- RETAIL / COMMERCIAL COMPANY ---------------- */
 
         VBox market = reportSection("RETAIL OPERATIONS - MARKET OVERVIEW",
@@ -3576,7 +4213,7 @@ public class UserInterface extends Application {
         Button back = new Button("Back");
         back.setOnAction(e -> showPrivateSectorMenu());
 
-        rootMenu.getChildren().addAll(title, gameInfo, scrollPane, financials, back);
+        rootMenu.getChildren().addAll(title, scrollPane, financials, back);
     }
 
     /**
@@ -4028,9 +4665,6 @@ public class UserInterface extends Application {
         Label heading = new Label(title);
         heading.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
 
-        Label gameInfo = new Label("Month: " + game.getMonth()
-                + " | Cash: $" + formatter.format(game.getCash()));
-
         column.setAlignment(Pos.TOP_LEFT);
         column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
 
@@ -4046,7 +4680,7 @@ public class UserInterface extends Application {
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> back.run());
 
-        rootMenu.getChildren().addAll(heading, gameInfo, scrollPane);
+        rootMenu.getChildren().addAll(heading, scrollPane);
         if (extra != null) {
             rootMenu.getChildren().add(extra);
         }
@@ -5567,8 +6201,23 @@ public class UserInterface extends Application {
                     + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
             body.getChildren().add(waiting);
         } else {
-            body.getChildren().add(statLine("Plots left",
-                    formatter.format(service.getPlotsLeft())));
+            /*
+             * CURRENT capacity, not the settled month's.
+             *
+             * This read Healthcare.getPlotsLeft(), which measures against the
+             * plot count the service was handed during the last SETTLED month -
+             * and before month one has run it was handed nothing, so a brand-new
+             * city reported "Plots left 0" while standing on the 2,500-grave
+             * churchyard it was founded with. It also meant a cemetery finished
+             * this month did not show up until the next one.
+             *
+             * The People screen already asked it this way. Both now ask the same
+             * question of the same object.
+             */
+            body.getChildren().add(statLine("Plots left", formatter.format(
+                    Healthcare.plotsRemaining(
+                            buildingManager.getCareCapacity(CareType.BURIAL),
+                            service.getPlotsUsed()))));
         }
 
         body.getChildren().add(statLine("Health bill", money(service.getNetCost())));

@@ -158,13 +158,13 @@ public class ReadPathCheck {
             land.restoreIron(2, 20_000_000);
 
             b.addStack(template(g, "House"), 500, true);
-            b.addStack(template(g, "Convience Store"), 8, true);
+            b.addStack(template(g, "Convenience Store"), 8, true);
             b.addStack(template(g, "Small Grocery Store"), 2, true);
             b.addStack(template(g, "Construction Depot"), 4, true);
             b.addStack(template(g, "Food Processing Plant"), 1, true);
             b.addStack(template(g, "Coal Power Plant"), 1, true);
             b.addStack(template(g, "Water Treatment Plant"), 1, true);
-            b.addStack(template(g, "Road Network"), 3, true);
+            b.addStack(template(g, "Paved Road"), 3, true);
             b.addStack(template(g, "Steel Foundry"), 1, true);
             b.addStack(template(g, "Iron Mine"), 1, true);
 

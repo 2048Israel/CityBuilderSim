@@ -127,6 +127,28 @@ public class Healthcare {
     public static final double CREMATION_FEE = .900;
 
     /**
+     * The fee a care type charges, per head or per body.
+     *
+     * ONE ASSOCIATION, not two. The five constants above are the single source
+     * of the five values, but until this method existed the mapping from a care
+     * type to its fee was written out again in advanceMonth() - and the build
+     * menu now wants to quote a building's revenue before it is built, which
+     * would have made three copies. Three copies of a mapping is how a hospital
+     * ends up quoting a fee it does not charge.
+     */
+    public static double feeFor(CareType care) {
+        if (care == null) return 0;
+        switch (care) {
+            case GENERAL:   return GENERAL_FEE;
+            case CHILDCARE: return CHILDCARE_FEE;
+            case SENIOR:    return SENIOR_FEE;
+            case BURIAL:    return BURIAL_FEE;
+            case CREMATION: return CREMATION_FEE;
+            default:        return 0;
+        }
+    }
+
+    /**
      * How long a household is assumed to be putting money aside for a funeral.
      *
      * Jerus: "if there is excess savings then people prefer cemetery, otherwise
@@ -350,13 +372,14 @@ public class Healthcare {
         this.plotsBuilt = Math.max(0, plotsBuilt);
         this.cremationCapacity = Math.max(0, cremationCapacity);
 
-        treatmentFees = feeOn(served, CareType.GENERAL, GENERAL_FEE)
-                + feeOn(served, CareType.CHILDCARE, CHILDCARE_FEE)
-                + feeOn(served, CareType.SENIOR, SENIOR_FEE);
+        treatmentFees = feeOn(served, CareType.GENERAL, feeFor(CareType.GENERAL))
+                + feeOn(served, CareType.CHILDCARE, feeFor(CareType.CHILDCARE))
+                + feeOn(served, CareType.SENIOR, feeFor(CareType.SENIOR));
 
         settleDeaths(burialShare, plotsBuilt, cremationCapacity);
 
-        funeralFees = burials * BURIAL_FEE + cremations * CREMATION_FEE;
+        funeralFees = burials * feeFor(CareType.BURIAL)
+                + cremations * feeFor(CareType.CREMATION);
         fees = treatmentFees + funeralFees;
     }
 
@@ -476,8 +499,23 @@ public class Healthcare {
     }
 
     public double getPlotsBuilt()        { return plotsBuilt; }
-    public double getPlotsLeft()         { return plotsRemaining(plotsBuilt, plotsUsed); }
     public double getCremationCapacity() { return cremationCapacity; }
+
+    /*
+     * There is deliberately no getPlotsLeft().
+     *
+     * There was, and it measured against plotsBuilt - the count this object was
+     * handed during the last SETTLED month - while its name invited every caller
+     * to read it as "ground left in the city right now". Before month one it had
+     * been handed nothing, so a new city reported zero plots while standing on
+     * the churchyard it was founded with, and a cemetery finished this month did
+     * not appear until the next.
+     *
+     * Callers use plotsRemaining(currentCapacity, getPlotsUsed()) instead, which
+     * cannot be got wrong by accident because the capacity has to be passed in.
+     * A getter answering a subtly different question from the one its name
+     * implies is a shape this codebase keeps getting caught by.
+     */
 
     /** True when the city dealt with fewer people than died. */
     public boolean isOverwhelmed() { return unburied > 0; }

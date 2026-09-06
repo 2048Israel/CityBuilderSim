@@ -419,7 +419,7 @@ public class BuildingManager {
         templates.add(municipalCemetery);
 
         // Commercial Buildings
-        BuildingsTemplate convienceStore = new BuildingsTemplate("Convience Store", BuildingType.COMMERCIAL);
+        BuildingsTemplate convienceStore = new BuildingsTemplate("Convenience Store", BuildingType.COMMERCIAL);
         convienceStore.setCoverage(120);
         convienceStore.setCapacity(350);
         convienceStore.setCashCost(120);
@@ -451,7 +451,7 @@ public class BuildingManager {
         templates.add(smallGroceryStore);
 
         //Industrial Buildings
-        BuildingsTemplate texttileMill = new BuildingsTemplate("Texttile Mill", BuildingType.INDUSTRIAL);
+        BuildingsTemplate texttileMill = new BuildingsTemplate("Textile Mill", BuildingType.INDUSTRIAL);
         texttileMill.setCapacity(3000);
         texttileMill.setCashCost(1200);
         texttileMill.setConstructionPoints(1800);
@@ -625,17 +625,91 @@ public class BuildingManager {
            way - it makes them a demand-side lever on a private industry rather
            than a number the player raises for free.
 
+           No jobs, on any of them. Nobody staffs a road; the construction crews
+           that build it are already paid, and pretending a highway has an
+           operating payroll would put wages in the economy that no employer is
+           paying.
+
+           =====================================================================
+           THREE ROADS, AND WHY THERE ARE THREE
+
+           Jerus: "one that is construction points cheap to build, but more land
+           intensive, one that is land cheap but costly and construction
+           intensive." Which is the real engineering trade: you can spend ground,
+           or you can spend money and labour to avoid spending ground, and a city
+           changes its mind about which it would rather spend as it fills up.
+
+           Before this there was one road, so congestion had exactly one answer
+           and the answer got worse as the city grew - the 4,000-month playtest
+           ends at 42-71% road throughput with population still climbing, and the
+           reason is that the only road on offer eats a quarter of a million
+           square feet a time in a city that has run out of room.
+
+           WHAT MAKES THIS THREE CHOICES AND NOT ONE CHOICE WITH DECORATION
+
+           The trap is Studio Apartments: a building that loses to something else
+           at every price is not an option, it is a mistake the player can make.
+           So these are costed so each one is the cheapest per trip carried
+           across a band of land prices, and InfrastructureCheck asserts it -
+           at today's materials price the crossovers are about $16.50 and $28.50
+           a square foot, against a ground price that starts at $0.70 and climbs
+           with every block owned and every thousand residents.
+
+               under $16.50/sq ft ......... Gravel Road
+               $16.50 to $28.50/sq ft ..... Paved Road
+               over $28.50/sq ft .......... Elevated Highway
+
+           Per 1,000 trips of capacity, which is the only way to compare them:
+
+                              cash   points  materials       land   power
+               Gravel        2,000    1,556      2,222    500,000     5.6
+               Paved         2,917    3,333      4,167    208,333    33.3
+               Elevated      5,333    6,667      5,333     42,000    90.0
+
+           Read across: the gravel road is the cheapest thing in the game to
+           BUILD and the most expensive to FIND ROOM FOR; the elevated highway is
+           the reverse, twelve times more land-efficient and four times slower to
+           put up. The paved road is neither and wins the middle.
+
+           The power column is the third cost and it is deliberate. An elevated
+           highway is lit end to end and pumped and signalled; a gravel road is
+           lit by headlights. So digging your way out of a land shortage lands
+           the bill on the power station instead - which is the point. There is
+           no free direction.
+           ---------------------------------------------------------------- */
+
+        /*
+           The cheap one. Grade a strip, lay aggregate, and let it be wide -
+           which is exactly why it needs half a million square feet for 900
+           trips. Two thirds less construction work than a paved road per trip
+           carried, and two and a half times the ground.
+        */
+        BuildingsTemplate gravelRoad = new BuildingsTemplate("Gravel Road", BuildingType.INFRASTRUCTURE)
+                .setCapacity(900)
+                .setCashCost(1800)
+                .setConstructionPoints(1400)
+                .setConstructionMaterials(2000)
+                .setElectricityConsumption(5)   // barely lit
+                .setLandSqFt(450000)
+                .setRoadLoad(0)                 // a road does not drive on itself
+                .setId(29);
+
+        templates.add(gravelRoad);
+
+        /*
+           The one that was here first, unchanged in every number.
+
            Deliberately materials-heavy and cash-light next to the power plant:
            a road is mostly aggregate and labour, not equipment. 5,000 materials
            at market is more than the $3.5M of cash, which means the first road
            a city needs is also the thing that makes the materials plant worth
            building.
 
-           No jobs. Nobody staffs a road; the construction crews that build it
-           are already paid, and pretending a highway has an operating payroll
-           would put wages in the economy that no employer is paying.
-           ---------------------------------------------------------------- */
-        BuildingsTemplate roadNetwork = new BuildingsTemplate("Road Network", BuildingType.INFRASTRUCTURE)
+           Renamed from "Road Network" when it stopped being the only road. The
+           id is untouched, so every existing save loads it into the same slot -
+           saves key on id, never on the name.
+        */
+        BuildingsTemplate pavedRoad = new BuildingsTemplate("Paved Road", BuildingType.INFRASTRUCTURE)
                 .setCapacity(1200)              // road capacity provided
                 .setCashCost(3500)
                 .setConstructionPoints(4000)
@@ -645,7 +719,30 @@ public class BuildingManager {
                 .setRoadLoad(0)                 // a road does not drive on itself
                 .setId(13);
 
-        templates.add(roadNetwork);
+        templates.add(pavedRoad);
+
+        /*
+           The expensive one, and the only road a built-out city can still put
+           up. 63,000 square feet is a column every so often instead of a
+           right-of-way - a quarter of a paved road's footprint for a quarter
+           more capacity.
+
+           10,000 construction points is several months of the entire city's
+           output, and that is meant: being out of room is a late-game problem,
+           and a late-game city has builders idle and nothing urgent to point
+           them at. It stays inside the existing 12-month order cap.
+        */
+        BuildingsTemplate elevatedHighway = new BuildingsTemplate("Elevated Highway", BuildingType.INFRASTRUCTURE)
+                .setCapacity(1500)
+                .setCashCost(8000)
+                .setConstructionPoints(10000)
+                .setConstructionMaterials(8000)
+                .setElectricityConsumption(135) // lit, pumped and signalled end to end
+                .setLandSqFt(63000)
+                .setRoadLoad(0)                 // a road does not drive on itself
+                .setId(30);
+
+        templates.add(elevatedHighway);
 
         /* ------------------------------ MINING ------------------------------
            An iron mine, and the biggest employer in the game.

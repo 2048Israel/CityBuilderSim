@@ -204,7 +204,7 @@ public class PolicyCheck {
         try {
             city.run();
             city.buildStack(template(city, "House"), 120, false);
-            city.buildStack(template(city, "Convience Store"), 4, false);
+            city.buildStack(template(city, "Convenience Store"), 4, false);
             city.buildStack(template(city, "Construction Depot"), 3, false);
             city.simulateMonths(24);
         } finally {

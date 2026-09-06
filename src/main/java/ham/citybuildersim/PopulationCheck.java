@@ -755,7 +755,7 @@ public class PopulationCheck {
             // city that could never have had one.
             BuildingManager cb = city.getBuildingManager();
             cb.addStack(cb.getTemplateByName("House"), 150, true);
-            cb.addStack(cb.getTemplateByName("Convience Store"), 6, true);
+            cb.addStack(cb.getTemplateByName("Convenience Store"), 6, true);
             city.simulateMonths(60);
             city.saveGame(1, "demographics");
         } finally { System.setOut(out); }
@@ -829,7 +829,7 @@ public class PopulationCheck {
 
             BuildingManager b = g.getBuildingManager();
             b.addStack(b.getTemplateByName("House"), 200, true);
-            b.addStack(b.getTemplateByName("Convience Store"), 8, true);
+            b.addStack(b.getTemplateByName("Convenience Store"), 8, true);
             b.addStack(b.getTemplateByName("Construction Depot"), 2, true);
             g.simulateMonths(months);
         } finally {
