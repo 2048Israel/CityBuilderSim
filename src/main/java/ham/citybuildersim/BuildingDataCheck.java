@@ -89,6 +89,11 @@ public class BuildingDataCheck {
                 System.out.println("  FAIL " + who + ": care " + actual.getCare()
                         + " != " + expected.getCare());
             }
+            if (actual.getTeaches() != expected.getTeaches()) {
+                fails++;
+                System.out.println("  FAIL " + who + ": teaches " + actual.getTeaches()
+                        + " != " + expected.getTeaches());
+            }
 
             int before = fails;
 
@@ -138,6 +143,39 @@ public class BuildingDataCheck {
             }
         }
         assertTrue("healthcare declares a care type, nothing else does", careSane);
+
+        // Same assertion, same reason, one category over. A school filed as
+        // NONE is a perfectly valid building that happens to teach nobody.
+        boolean schoolSane = true;
+        for (BuildingsTemplate t : data) {
+            boolean education = t.getCategory() == BuildingType.EDUCATION;
+            boolean declared = t.getTeaches() != EducationType.NONE;
+            if (education != declared) {
+                schoolSane = false;
+                System.out.println("  " + t.getName() + ": category "
+                        + t.getCategory() + " teaching " + t.getTeaches());
+            }
+        }
+        assertTrue("education declares what it teaches, nothing else does", schoolSane);
+
+        /* ---------- and every profession has exactly one school ----------
+
+           A job type gated by a school nobody can build is a post that can
+           never be filled by a resident, which looks identical to a balance
+           problem. Two schools licensing the same profession is the other
+           half: harmless today, and the shape of a copy-paste. */
+        boolean licences = true;
+        for (EducationType type : EducationType.values()) {
+            if (!type.isProfessional()) continue;
+            int schools = 0;
+            for (BuildingsTemplate t : data) if (t.getTeaches() == type) schools++;
+            if (schools != 1) {
+                licences = false;
+                System.out.println("  " + type + " licenses " + type.licenses()
+                        + " and has " + schools + " schools");
+            }
+        }
+        assertTrue("every gated profession has exactly one school", licences);
 
         /* ---------- ids are unique, which the saves depend on ---------- */
         System.out.println("\n--- ids ---");

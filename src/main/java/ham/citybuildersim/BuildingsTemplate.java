@@ -60,6 +60,17 @@ public class BuildingsTemplate {
      */
     private CareType care = CareType.NONE;
 
+    /**
+     * What a school teaches; NONE for everything else.
+     *
+     * The same field as `care` and for the same reason. "Medical School" and
+     * "Middle School" both end in the same word and do entirely different
+     * things - one licenses a profession, the other moves a twelve-year-old one
+     * step along - and a rule that reads the label breaks the first time
+     * somebody renames a building or translates the game.
+     */
+    private EducationType teaches = EducationType.NONE;
+
     private int id;
  
  
@@ -206,6 +217,11 @@ public class BuildingsTemplate {
         this.care = care == null ? CareType.NONE : care;
         return this;
     }
+
+    public BuildingsTemplate setTeaches(EducationType teaches) {
+        this.teaches = teaches == null ? EducationType.NONE : teaches;
+        return this;
+    }
     
     //getters
     public double getCashCost() {
@@ -294,6 +310,10 @@ public class BuildingsTemplate {
 
     public CareType getCare() {
         return care;
+    }
+
+    public EducationType getTeaches() {
+        return teaches;
     }
  
    

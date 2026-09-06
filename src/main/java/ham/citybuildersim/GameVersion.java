@@ -161,8 +161,47 @@ public final class GameVersion {
      *     strips a series out of a real history file to prove it - because
      *     getting that backwards draws last decade's data over the founding
      *     years and produces a graph that looks entirely correct.
+     * 16 - the labour market: what the city pays, and who it has to pay.
+     *
+     *     TWO THINGS, AND BOTH ARE THE SAME RULE. A wage is now a damped price
+     *     rather than a constant, so today's figure is the result of every
+     *     month of scarcity the city has lived through - rebuild it from the
+     *     posts and workers a month ended with and you get the TARGET the live
+     *     city was still walking toward, not the wage it was actually paying.
+     *     Measured as a $52 gap in next month's income before it was carried.
+     *
+     *     And the skilled workforce is a pure stock. Until schools exist a
+     *     skill arrives in somebody's head and leaves the same way, so the
+     *     count is the entire history of who has moved to this city, and
+     *     nothing in a closing balance reproduces it.
+     *
+     *     Downward is handled, and is the interesting half: a format-15 city
+     *     has a workforce and no record of what any of them can do. Resetting
+     *     them all to unskilled would shut every hospital in the city on load
+     *     for no reason the player could see, so the skills are INFERRED from
+     *     the posts those workers are demonstrably filling - the only reading
+     *     that leaves the city exactly as it was left. The wages fall back to
+     *     PayTier, which is what every city before this was paying anyway.
+     *
+     * 17 - schools: who is licensed to practise what, and what the city has
+     *     taught.
+     *
+     *     A MEDICAL LICENCE IS A STOCK and the most expensive one in the game -
+     *     seven years of somebody's life - so nothing in a closing balance
+     *     reproduces it. A save that forgot it would reload a city whose
+     *     hospitals had no doctors and whose medical school had apparently
+     *     never graduated anybody, all of whom were there the moment before.
+     *
+     *     Downward is the interesting half again, and it is gentler than 16
+     *     was: a format-16 city has skilled workers and no licences, which is
+     *     exactly what a city with no schools looked like before this - the
+     *     gated posts empty and the doctors imported. So the licences restore
+     *     as zero and the city carries on, except that the doctors it was
+     *     staffing out of its general graduate pool now correctly cannot be.
+     *     That is a real change to a loaded city and it is the right one: those
+     *     doctors were the bug.
      */
-    public static final int SAVE_FORMAT = 15;
+    public static final int SAVE_FORMAT = 17;
 
     public static final String NAME = "CityBuilderSim";
 

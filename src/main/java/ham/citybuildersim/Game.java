@@ -171,6 +171,8 @@ public class Game {
         cohorts = new PopulationCohorts();
         families = new FamilyModel();
         migration = new Migration();
+        labourMarket = new LabourMarket();
+        education = new Education();
         skipReport = new TimeSkipReport();
         households = new HouseholdAccounts();
         lastInvestment = new java.util.LinkedHashMap<>();
@@ -3100,6 +3102,18 @@ public class Game {
     private Migration migration = new Migration();
 
     /**
+     * What labour costs. See LabourMarket - wages used to be six constants and
+     * are now a price that moves with how hard the city is to staff.
+     */
+    private LabourMarket labourMarket = new LabourMarket();
+
+    /**
+     * The schools. See Education - the other half of the labour market, and the
+     * only thing in the game that can make a skilled worker rather than hire one.
+     */
+    private Education education = new Education();
+
+    /**
      * How much of the workforce is off sick.
      *
      * Sits with the demographics because that is what it is about, but note it
@@ -3219,10 +3233,23 @@ public class Game {
                 // Seniors are otherwise pure burden here - pension, home, the
                 // dearest care in the game, no work - so this is what makes an
                 // ageing pyramid something to manage rather than merely endure.
-                seniorCoverage));
+                seniorCoverage,
+                labourMarket,
+                populationManager));
 
         population = populationManager.applyPopulation(
                 (int) Math.round(cohorts.total()), adultsAlreadyHere);
+
+        /*
+         * AND THE SKILLS MOVE WITH THE PEOPLE.
+         *
+         * The pyramid owns the headcount; this owns the mix. Arrivals bring
+         * whatever the world sent, departures take whatever was surplus, and
+         * everyone born here enters unskilled - because until schools exist,
+         * the only source of a skill in this game is somebody who already had
+         * one moving in.
+         */
+        applyMigrationSkills();
 
         double[] jobsByTier = new double[PayTier.values().length];
         double[] fillRate = populationManager.getJobFillRate();
@@ -3278,6 +3305,33 @@ public class Game {
                 buildingManager.getStaffedCareCapacity(CareType.CREMATION, fill));
 
         economyManager.setHealthcare(healthcare.getGrossCost(), healthcare.getFees());
+
+        /*
+         * 6b. AND THE SCHOOLS.
+         *
+         * After the population is settled, like healthcare, and for the same
+         * reason: enrolment is measured against the children and the workforce
+         * that actually exist this month. Before the labour reprice, because a
+         * graduate produced now is in the supply the wage is struck against
+         * next month - a person who finished a degree this month is looking for
+         * work, not still studying.
+         */
+        education.advanceMonth(
+                buildingManager.getStaffedEducationPlaces(fill),
+                cohorts,
+                populationManager,
+                labourMarket,
+                buildingManager.getCategoryPayroll(BuildingType.EDUCATION,
+                        populationManager.getWagesPerType(), fill),
+                buildingManager.getUpkeepByCategory(BuildingType.EDUCATION));
+
+        populationManager.applyBandFlow(education.getGraduates());
+        populationManager.addLicences(education.getLicences());
+        // A licence holder is a graduate first, and the graduate count has just
+        // moved. See trimLicencesToBand().
+        populationManager.trimLicencesToBand();
+
+        economyManager.setEducation(education.getGrossCost(), education.getFees());
 
         /*
          * 7. And who is too ill to work. Last, because the dead nobody buried
@@ -3402,6 +3456,53 @@ public class Game {
     }
     public PopulationManager getPopulationManager() {
         return populationManager; //PopulationManager;
+    }
+
+    public LabourMarket getLabourMarket() { return labourMarket; }
+    public Education getEducation() { return education; }
+
+    /**
+     * Re-prices labour, then hands the new wages to everyone who pays them.
+     *
+     * ORDER MATTERS AND IT IS NARROW. It has to run after updateJobs() - the
+     * market prices against the posts that exist THIS month - and before
+     * UpdateTotalWagePerType(), which multiplies posts by wage to get the bill.
+     * Between those two calls is the only place it can go, which is why it is a
+     * method here rather than three lines inlined in SimulationEngine.
+     *
+     * The city's own payroll tracks the market with everybody else's. It
+     * competes for the same doctors, so it pays what they cost - which means a
+     * doctor shortage raises the hospital bill whether the player chose it or
+     * not. That is the pressure that will make a medical school worth building.
+     */
+    public void repriceLabour() {
+        labourMarket.advanceMonth(
+                populationManager.postsByBand(),
+                populationManager.supplyByBand());
+        populationManager.takeWagesFrom(labourMarket);
+    }
+
+    /**
+     * Moves the workforce's skill mix by who arrived and who left.
+     *
+     * Only the SKILLED counts move, and only by migration. The unskilled band
+     * is not stored at all - it is whatever is left of the workforce - so
+     * births, deaths and ageing move it for free and a child growing into work
+     * is unskilled by construction rather than by a formula remembering to
+     * dilute them. The first version multiplied shares by a grown workforce and
+     * quietly bred graduates out of the city's own births.
+     */
+    private void applyMigrationSkills() {
+        populationManager.applySkilledFlows(
+                migration.getLastArrivalMix(),
+                migration.getLastDepartureMix());
+
+        // Some of the graduates who moved in were already doctors. See
+        // Migration.getLastArrivalLicences() - without this a city with no
+        // medical school could never have one at all, which is not "expensive",
+        // it is a wall, and the world-supply design exists to avoid walls.
+        populationManager.addLicences(migration.getLastArrivalLicences());
+        populationManager.trimLicencesToBand();
     }
 
 
@@ -3551,6 +3652,10 @@ public class Game {
         dataSave.setMigration(migration.toSaveArray());
         dataSave.setHealth(health.getState());
         dataSave.setHealthcare(healthcare.getState());
+        dataSave.setLabour(labourMarket.state());
+        dataSave.setSkilledWorkforce(populationManager.getSkilledHeads());
+        dataSave.setLicences(populationManager.getLicensedHeads());
+        dataSave.setEducation(education.getState());
 
         /*
          * The private sector's memory and the player's own turn. Both are
@@ -3876,6 +3981,23 @@ public class Game {
         populationManager.recomputeWorkforce();
     }
     populationManager.updateJobs(jobs);
+
+    /*
+     * THE WAGES THE MONTH WAS WORKED AT, not the ones the constants say.
+     *
+     * Mirrors the monthly path exactly - SimulationEngine.updatePopulation()
+     * puts this same call between updateJobs() and the wage bill - and it is
+     * take, not reprice. advanceMonth() would walk every wage another step
+     * toward its target, which is running a month of the labour market with the
+     * calendar standing still: the same trap refreshEconPrices() exists to
+     * avoid.
+     *
+     * Without it the load path silently used PayTier's constants while the live
+     * city used its market, and the two disagreed on the wage tax from the
+     * first month back. Caught as "next-month income is identical across a
+     * save" - which is exactly what that assertion is for.
+     */
+    populationManager.takeWagesFrom(labourMarket);
     populationManager.UpdateTotalWagePerType();
 
     // services sync
@@ -4523,6 +4645,26 @@ public class Game {
             health.restore(restoredFlows.getHealth());
             healthcare.restore(restoredFlows.getHealthcare());
 
+            labourMarket.restore(restoredFlows.getLabour());
+            populationManager.restoreLicensed(restoredFlows.getLicences());
+            education.restore(restoredFlows.getEducation());
+
+            /*
+             * SKILLS, OR AN INFERENCE OF THEM.
+             *
+             * A save written before skill existed has a workforce and no record
+             * of what any of them can do. Resetting them all to unskilled would
+             * close every hospital in the city on load - the doctors were there
+             * a moment ago and the player did nothing. So the skills are read
+             * off the posts those workers are demonstrably filling, which is
+             * the only inference that leaves the city exactly as it was left.
+             *
+             * The carried case is a plain array copy and belongs here with the
+             * others; the INFERENCE needs the jobs, which do not exist until
+             * rebuildSimulationState() has run, so it waits below.
+             */
+            populationManager.restoreSkilledHeads(restoredFlows.getSkilledWorkforce());
+
             // Hoisted here with the rest: rebuildSimulationState() reads
             // cityCapitalSpending when it refreshes the government's books.
             businessInvestment.restoreLossMonths(restoredFlows.getSectorLossMonths());
@@ -4533,6 +4675,20 @@ public class Game {
         }
 
         rebuildSimulationState();
+
+        /*
+         * The skills of a city that predates skills.
+         *
+         * Below the rebuild because it reads the posts, and those are put back
+         * by the rebuild. A save with no skilled-workforce array is a save from
+         * before this existed: its doctors were real and its hospitals were
+         * running, so they are inferred from the jobs those workers are
+         * demonstrably filling rather than reset to unskilled, which would shut
+         * every hospital in the city on load for no reason the player could see.
+         */
+        if (restoredFlows == null || restoredFlows.getSkilledWorkforce() == null) {
+            populationManager.inferBandShareFromJobs();
+        }
 
         /*
          * After the rebuild, because the rebuild recomputes every sector report

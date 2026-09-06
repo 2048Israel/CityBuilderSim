@@ -360,7 +360,19 @@ public class NationalAccounts {
                                  double interest, double capital, double landBought,
                                  double contributions, double pensions) {
         updateGovernment(business, industrial, sales, wage, utilities, land, property,
-                interest, capital, landBought, contributions, pensions, 0, 0);
+                interest, capital, landBought, contributions, pensions, 0, 0, 0, 0);
+    }
+
+    /** The same again with healthcare but no schools, for the older callers. */
+    public void updateGovernment(double business, double industrial, double sales,
+                                 double wage, double utilities, double land,
+                                 double property,
+                                 double interest, double capital, double landBought,
+                                 double contributions, double pensions,
+                                 double healthFees, double healthSpending) {
+        updateGovernment(business, industrial, sales, wage, utilities, land, property,
+                interest, capital, landBought, contributions, pensions,
+                healthFees, healthSpending, 0, 0);
     }
 
     /**
@@ -380,9 +392,12 @@ public class NationalAccounts {
                                  double property,
                                  double interest, double capital, double landBought,
                                  double contributions, double pensions,
-                                 double healthFees, double healthSpending) {
+                                 double healthFees, double healthSpending,
+                                 double schoolFees, double schoolSpending) {
         this.healthFees = healthFees;
         this.healthSpending = healthSpending;
+        this.educationFees = schoolFees;
+        this.educationSpending = schoolSpending;
         taxBusiness = business;
         taxIndustrial = industrial;
         taxSales = sales;
@@ -405,10 +420,16 @@ public class NationalAccounts {
     private double healthFees;
     private double healthSpending;
 
+    /** Tuition in, and what the schools cost. See EconomyManager.setEducation. */
+    private double educationFees;
+    private double educationSpending;
+
     public double getContributions() { return contributions; }
     public double getPensions()      { return pensions; }
     public double getHealthFees()    { return healthFees; }
     public double getHealthSpending(){ return healthSpending; }
+    public double getEducationFees()    { return educationFees; }
+    public double getEducationSpending(){ return educationSpending; }
 
     /* ------------------------------- GDP ------------------------------------ */
 
@@ -499,7 +520,7 @@ public class NationalAccounts {
     public double getTotalRevenue() {
         return taxBusiness + taxIndustrial + taxSales + taxWage
                 + utilityIncome + landSales + propertyTax + contributions
-                + healthFees;
+                + healthFees + educationFees;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -508,7 +529,7 @@ public class NationalAccounts {
 
     public double getTotalExpenses() {
         return interestExpense + capitalSpending + landPurchases + pensions
-                + healthSpending;
+                + healthSpending + educationSpending;
     }
 
     /** Surplus or deficit - what actually moves the city's cash this month. */

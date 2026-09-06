@@ -121,6 +121,62 @@ public class Migration {
     /** How much more attractive full senior coverage makes the city. */
     public static final double SENIOR_CARE_PULL = .30;
 
+    /* =====================================================================
+       WHO ARRIVES, NOT JUST HOW MANY
+
+       Until now an arrival was an undifferentiated person. The city could not
+       be short of DOCTORS, only of people - which is why PopulationManager was
+       able to staff two hundred doctor posts out of a pool of labourers.
+
+       Now the mix is drawn out of a world that has far more labourers than
+       graduates (WageBand.worldShare) and pulled by what the city is paying
+       over the going rate. So the same premium brings a flood of the first and
+       a trickle of the last, and a small city can import its doctor while a big
+       one cannot import two hundred at any price. That is the whole reason
+       schools will be worth building, and it needs no rule to enforce it.
+       ===================================================================== */
+
+    /**
+     * How hard a wage premium pulls.
+     *
+     * Above one, so paying over the odds is worth more than proportionally -
+     * a 50% premium roughly doubles the draw. Below one it would mean money
+     * barely moves anybody, which makes the whole lever decorative.
+     */
+    public static final double PREMIUM_ELASTICITY = 1.6;
+
+    /**
+     * What share of a band's unemployable surplus leaves each month, once its
+     * wage has stopped falling.
+     *
+     * THE PUSH FACTOR THE MODEL WAS MISSING (backlog L2: "nothing pushes them
+     * out again"). A wage that can still fall is a market still trying to clear;
+     * a wage pinned at its floor with workers to spare is a market that has
+     * given up, and the adjustment has to happen in people instead. That is
+     * precisely what a binding minimum wage does in the real world.
+     *
+     * Small on purpose. This is a drift out of a town with no work, not an
+     * evacuation - and it compounds, so 2% a month is a quarter of the surplus
+     * gone within a year.
+     */
+    public static final double SURPLUS_DEPARTURE_RATE = .02;
+
+    /**
+     * The most of an intake of graduates that can already hold a licence.
+     *
+     * Measured in. Without it, a city short of every profession bids all four
+     * premiums up, each share is multiplied by premium^PREMIUM_ELASTICITY, and
+     * the four together exceed one - so the clamp fired and EVERY graduate who
+     * moved in arrived qualified. Measured at 832 licence holders among 839
+     * graduates, which makes the professional schools decorative: a city could
+     * import its way to a fully staffed hospital and never build one.
+     *
+     * Just over half leaves a real unlicensed graduate pool, keeps the gate
+     * biting, and is about right anyway - most people with a degree do not have
+     * a professional qualification on top of it.
+     */
+    public static final double MAX_LICENSED_ARRIVALS = .55;
+
     /** The multiplier on the target, given senior-care coverage. */
     public static double seniorCarePull(double seniorCoverage) {
         return 1 + SENIOR_CARE_PULL * Math.max(0, Math.min(1, seniorCoverage));
@@ -160,6 +216,35 @@ public class Migration {
     private int monthsRecorded;
 
     /* Last month's working, purely so the screen can show it. */
+    /** The skills of the people who moved in this month, by band. */
+    private double[] lastArrivalMix = new double[WageBand.values().length];
+
+    /**
+     * ...and which of them already hold a professional licence.
+     *
+     * A SUBSET of the university-band arrivals in lastArrivalMix, not people in
+     * addition to them: a doctor who moves here is one graduate, counted once,
+     * about whom a second thing is true.
+     *
+     * Without this a city with no medical school could never have a doctor at
+     * all - not slowly, never - because migration brings a level and the
+     * licence is not a level. That would have taken the whole "import while you
+     * are small, train once you are big" arc out of the game on the day the
+     * professional schools arrived.
+     */
+    private double[] lastArrivalLicences = new double[JobType.values().length];
+
+    /**
+     * ...and of the ones who left, which is NOT the same shape.
+     *
+     * People pushed out by a pinned wage leave from the band that is
+     * oversupplied. If departures were spread across the workforce in
+     * proportion, an unskilled glut would take graduates with it and never
+     * actually clear - the push factor would remove people without removing the
+     * surplus, which is the mechanism failing while appearing to work.
+     */
+    private double[] lastDepartureMix = new double[WageBand.values().length];
+
     private double lastTarget;
     private double lastArrivals;
     private double lastDepartures;
@@ -174,6 +259,9 @@ public class Migration {
     /** What senior care multiplied the target by. 1 when there is none. */
     public double getLastSeniorPull()     { return lastSeniorPull; }
     public double getLastArrivals()       { return lastArrivals; }
+    public double[] getLastArrivalMix()   { return lastArrivalMix; }
+    public double[] getLastArrivalLicences() { return lastArrivalLicences; }
+    public double[] getLastDepartureMix() { return lastDepartureMix; }
     public double getLastDepartures()     { return lastDepartures; }
     public double getLastCrowding()       { return lastCrowding; }
     public double getLastDecliningShare() { return lastDecliningShare; }
@@ -405,6 +493,140 @@ public class Migration {
         lastDepartures = Math.min(lastDepartures, population);
 
         return lastArrivals - lastDepartures;
+    }
+
+    /**
+     * The same month, with a labour market behind it.
+     *
+     * Two things the volume-only version cannot do: give the arrivals a skill
+     * mix, and let a city that cannot employ its people lose them.
+     *
+     * @param market the wages, for the premium that draws people
+     * @param people the workforce, for the surplus that pushes them out
+     */
+    public double monthlyNet(int population, int totalJobs, int householdCapacity,
+                             int homes, FamilyModel families, double adultShare,
+                             double seniorCoverage,
+                             LabourMarket market, PopulationManager people) {
+
+        double net = monthlyNet(population, totalJobs, householdCapacity, homes,
+                families, adultShare, seniorCoverage);
+
+        composeArrivals(market);
+
+        if (market == null || people == null) return net;
+
+        /*
+         * THE PUSH. Counted band by band rather than city-wide, because "there
+         * are more people than jobs" is not a reason to leave - that is
+         * unemployment, and the existing decline term already covers a trade
+         * actually dying. What makes somebody go is that their OWN line of work
+         * is oversupplied and has stopped paying any better for it.
+         */
+        java.util.Arrays.fill(lastDepartureMix, 0);
+
+        double pushed = 0;
+        for (WageBand band : WageBand.values()) {
+            if (!market.isPinned(band)) continue;
+            double leaving = people.surplusInBand(band) * SURPLUS_DEPARTURE_RATE;
+            lastDepartureMix[band.ordinal()] += leaving;
+            pushed += leaving;
+        }
+
+        // The decline-driven departures are not about any one band, so they
+        // come out of the workforce as it stands.
+        double[] share = people.getBandShare();
+        for (WageBand band : WageBand.values()) {
+            lastDepartureMix[band.ordinal()] += lastDepartures * share[band.ordinal()];
+        }
+
+        double before = lastDepartures;
+        lastDepartures = Math.min(lastDepartures + pushed, population);
+
+        // Scaled back together if the evacuation guard bit, so the mix always
+        // sums to the number of people who actually left.
+        double asked = before + pushed;
+        if (asked > lastDepartures && asked > 0) {
+            double keep = lastDepartures / asked;
+            for (int b = 0; b < lastDepartureMix.length; b++) lastDepartureMix[b] *= keep;
+        }
+        return lastArrivals - lastDepartures;
+    }
+
+    /**
+     * Splits this month's arrivals across the skill bands.
+     *
+     * The world's own mix, weighted by what the city is paying over the going
+     * rate. Note it is the PREMIUM and not the wage: a city paying a doctor
+     * eight thousand is not thereby attractive to doctors, because eight
+     * thousand is simply what doctors cost. Only paying MORE than that moves
+     * anybody, which is what makes the number the player can see - the premium
+     * on the People screen - the one that actually does something.
+     */
+    private void composeArrivals(LabourMarket market) {
+        double[] weight = new double[WageBand.values().length];
+        double total = 0;
+
+        for (WageBand band : WageBand.values()) {
+            double premium = 1;
+            if (market != null) {
+                // Every job in a band shares a multiplier, so any of them reads
+                // the band's premium - see LabourMarket.advanceMonth.
+                for (JobType job : JobType.values()) {
+                    if (WageBand.of(job) == band) { premium = market.premium(job); break; }
+                }
+            }
+            weight[band.ordinal()] = band.worldShare()
+                    * Math.pow(Math.max(premium, .01), PREMIUM_ELASTICITY);
+            total += weight[band.ordinal()];
+        }
+
+        for (WageBand band : WageBand.values()) {
+            int b = band.ordinal();
+            lastArrivalMix[b] = total > 0 ? lastArrivals * weight[b] / total : 0;
+        }
+
+        /*
+         * AND WHICH OF THE GRADUATES ARRIVE ALREADY QUALIFIED.
+         *
+         * Drawn out of the university arrivals rather than added to them, and
+         * weighted by what the city is paying over the going rate for that
+         * profession - so a city desperate for doctors attracts a larger share
+         * of doctors among the graduates it gets, which is the same premium
+         * mechanism one level down.
+         *
+         * The shares are small by construction (EducationType.worldLicenceShare)
+         * and clamped so they cannot between them exceed the graduates they are
+         * a subset of. A city short of every profession at once still only gets
+         * as many people as moved in.
+         */
+        java.util.Arrays.fill(lastArrivalLicences, 0);
+        double graduates = lastArrivalMix[WageBand.UNIVERSITY.ordinal()];
+        if (graduates <= 0) return;
+
+        double claimed = 0;
+        for (EducationType type : EducationType.values()) {
+            if (!type.isProfessional()) continue;
+
+            double premium = market == null ? 1 : market.premium(type.licenses());
+            double share = type.worldLicenceShare()
+                    * Math.pow(Math.max(premium, .01), PREMIUM_ELASTICITY);
+
+            double arriving = graduates * share;
+            lastArrivalLicences[type.licenses().ordinal()] = arriving;
+            claimed += arriving;
+        }
+
+        // A licence holder is one of the graduates, so the licences can never
+        // outnumber them however hard the city is bidding - and in practice
+        // they stop well short of that. See MAX_LICENSED_ARRIVALS.
+        double ceiling = graduates * MAX_LICENSED_ARRIVALS;
+        if (claimed > ceiling && claimed > 0) {
+            double keep = ceiling / claimed;
+            for (int i = 0; i < lastArrivalLicences.length; i++) {
+                lastArrivalLicences[i] *= keep;
+            }
+        }
     }
 
     /* ------------------------------- saving ------------------------------- */

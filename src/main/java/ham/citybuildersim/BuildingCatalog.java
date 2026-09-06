@@ -203,6 +203,7 @@ public class BuildingCatalog {
 
         readCare(o, template, name);
         readJobs(o, template, name);
+        readTeaches(o, template, name);
 
         return template;
     }
@@ -226,6 +227,20 @@ public class BuildingCatalog {
         } catch (Exception e) {
             System.out.println(FILE_NAME + ": \"" + name + "\" has unknown care type \""
                     + careName + "\"; treated as NONE.");
+        }
+    }
+
+    /** What a school teaches. Absent reads as NONE; a typo is reported, as with care. */
+    private void readTeaches(JsonObject o, BuildingsTemplate template, String name) {
+
+        String teaches = string(o, "teaches");
+        if (teaches.isEmpty()) return;
+
+        try {
+            template.setTeaches(EducationType.valueOf(teaches));
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" has unknown education type \""
+                    + teaches + "\"; treated as NONE.");
         }
     }
 

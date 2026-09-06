@@ -43,7 +43,7 @@
     "If this file is missing or malformed the game falls back to its built-in",
     "buildings and prints why, so a typo here can never stop it starting."
   ],
-  "nextId": 31,
+  "nextId": 40,
   "buildings": [
     {
       "id": 0,
@@ -624,6 +624,200 @@
       },
       "land": 2000000,
       "roadLoad": 30
+    },
+    {
+      "id": 31,
+      "name": "Elementary School",
+      "category": "EDUCATION",
+      "teaches": "ELEMENTARY",
+      "capacity": 600,
+      "cashCost": 2200,
+      "constructionPoints": 1800,
+      "constructionMaterials": 1500,
+      "upkeep": 38,
+      "electricity": 22,
+      "water": 6,
+      "jobs": {
+        "NO_DIPLOMA": 8,
+        "DIPLOMA": 14,
+        "COLLEGE_BUSINESS": 26
+      },
+      "land": 60000,
+      "roadLoad": 45
+    },
+    {
+      "id": 32,
+      "name": "Middle School",
+      "category": "EDUCATION",
+      "teaches": "MIDDLE",
+      "capacity": 500,
+      "cashCost": 2600,
+      "constructionPoints": 2100,
+      "constructionMaterials": 1800,
+      "upkeep": 44,
+      "electricity": 26,
+      "water": 7,
+      "jobs": {
+        "NO_DIPLOMA": 8,
+        "DIPLOMA": 12,
+        "COLLEGE_BUSINESS": 28
+      },
+      "land": 70000,
+      "roadLoad": 50
+    },
+    {
+      "id": 33,
+      "name": "High School",
+      "category": "EDUCATION",
+      "teaches": "HIGH",
+      "capacity": 900,
+      "cashCost": 6000,
+      "constructionPoints": 4200,
+      "constructionMaterials": 3600,
+      "upkeep": 96,
+      "electricity": 60,
+      "water": 15,
+      "jobs": {
+        "NO_DIPLOMA": 16,
+        "DIPLOMA": 24,
+        "COLLEGE_BUSINESS": 52,
+        "COLLEGE_ENGINEERING": 8
+      },
+      "land": 140000,
+      "roadLoad": 110
+    },
+    {
+      "id": 34,
+      "name": "Community College",
+      "category": "EDUCATION",
+      "teaches": "COLLEGE",
+      "capacity": 700,
+      "cashCost": 9000,
+      "constructionPoints": 6000,
+      "constructionMaterials": 5200,
+      "upkeep": 145,
+      "electricity": 90,
+      "water": 20,
+      "jobs": {
+        "NO_DIPLOMA": 18,
+        "DIPLOMA": 30,
+        "COLLEGE_BUSINESS": 40,
+        "COLLEGE_ENGINEERING": 10,
+        "UNIV_SCIENCE": 6
+      },
+      "land": 180000,
+      "roadLoad": 150
+    },
+    {
+      "id": 35,
+      "name": "University",
+      "category": "EDUCATION",
+      "teaches": "UNIVERSITY",
+      "capacity": 2000,
+      "cashCost": 42000,
+      "constructionPoints": 26000,
+      "constructionMaterials": 22000,
+      "upkeep": 620,
+      "electricity": 380,
+      "water": 90,
+      "jobs": {
+        "NO_DIPLOMA": 70,
+        "DIPLOMA": 95,
+        "COLLEGE_BUSINESS": 110,
+        "COLLEGE_ENGINEERING": 30,
+        "UNIV_SCIENCE": 44,
+        "UNIV_POLICY": 12
+      },
+      "land": 620000,
+      "roadLoad": 520
+    },
+    {
+      "id": 36,
+      "name": "Medical School",
+      "category": "EDUCATION",
+      "teaches": "MEDICAL",
+      "capacity": 420,
+      "cashCost": 78000,
+      "constructionPoints": 44000,
+      "constructionMaterials": 36000,
+      "upkeep": 1150,
+      "electricity": 520,
+      "water": 190,
+      "jobs": {
+        "NO_DIPLOMA": 40,
+        "DIPLOMA": 70,
+        "COLLEGE_HEALTH": 120,
+        "UNIV_DOCTOR": 34,
+        "UNIV_SCIENCE": 16
+      },
+      "land": 480000,
+      "roadLoad": 380
+    },
+    {
+      "id": 37,
+      "name": "Law School",
+      "category": "EDUCATION",
+      "teaches": "LAW",
+      "capacity": 360,
+      "cashCost": 34000,
+      "constructionPoints": 20000,
+      "constructionMaterials": 16000,
+      "upkeep": 520,
+      "electricity": 190,
+      "water": 42,
+      "jobs": {
+        "NO_DIPLOMA": 14,
+        "DIPLOMA": 34,
+        "COLLEGE_BUSINESS": 40,
+        "UNIV_LAW": 26,
+        "UNIV_POLICY": 8
+      },
+      "land": 190000,
+      "roadLoad": 170
+    },
+    {
+      "id": 38,
+      "name": "Business School",
+      "category": "EDUCATION",
+      "teaches": "BUSINESS",
+      "capacity": 480,
+      "cashCost": 30000,
+      "constructionPoints": 18000,
+      "constructionMaterials": 15000,
+      "upkeep": 460,
+      "electricity": 175,
+      "water": 38,
+      "jobs": {
+        "NO_DIPLOMA": 13,
+        "DIPLOMA": 30,
+        "COLLEGE_BUSINESS": 46,
+        "UNIV_FINANCE": 24,
+        "UNIV_POLICY": 6
+      },
+      "land": 175000,
+      "roadLoad": 165
+    },
+    {
+      "id": 39,
+      "name": "Institute of Technology",
+      "category": "EDUCATION",
+      "teaches": "ENGINEERING",
+      "capacity": 520,
+      "cashCost": 56000,
+      "constructionPoints": 33000,
+      "constructionMaterials": 28000,
+      "upkeep": 780,
+      "electricity": 640,
+      "water": 70,
+      "jobs": {
+        "NO_DIPLOMA": 22,
+        "DIPLOMA": 44,
+        "COLLEGE_ENGINEERING": 64,
+        "UNIV_HIGHTECH_ENG": 28,
+        "UNIV_SCIENCE": 18
+      },
+      "land": 300000,
+      "roadLoad": 240
     }
   ]
 }

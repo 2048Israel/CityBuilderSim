@@ -809,7 +809,219 @@ public class BuildingManager {
 
         templates.add(ironMine);
 
-        //add more buildings; next Building ID is 15
+        /* ---------------------------- EDUCATION ----------------------------
+           The other half of the labour market.
+
+           Until these existed every skilled worker in the game had arrived from
+           somewhere else. The city could attract a doctor and could never make
+           one, so the eleven job types were a demand curve with no domestic
+           supply behind it - and a measured city of 9,016 staffed 220 doctor
+           posts out of a pool of labourers because nothing said it could not.
+
+           HOW A SCHOOL WORKS. Capacity is PLACES, and throughput is places
+           divided by the length of the course (EducationType.months()) - so a
+           university with 2,000 seats and a four-year degree graduates about
+           forty a month, not two thousand. The lag is not a special rule, it is
+           that arithmetic, and the lag is the whole character of the mechanic.
+
+           THE BASIC LADDER IS A PIPELINE. Elementary and middle school serve
+           CHILD, high school serves TEEN, and the pipeline is only as wide as
+           its narrowest stage: a city with elementary places for every child
+           and one high school does not produce half-educated adults, it
+           produces as many diplomas as the high school can seat.
+
+           THE FOUR PROFESSIONAL SCHOOLS RAISE NOBODY'S LEVEL. They license one
+           job type each. A city without a medical school can have all the
+           graduates it likes and not one of them can be a doctor - the posts
+           sit empty and the only doctors it will ever have are the ones who
+           moved there.
+
+           AND NOTHING REFUSES TO BE BUILT. Jerus: "basically there would be one
+           student in the whole grad school, so cost ineffective basically." A
+           Medical School is $78M to build and $1,150k a month to run before its
+           280 staff are paid, against a throughput of six doctors a month at
+           full enrolment. In a town of forty thousand it enrols nobody and
+           costs the same. The eight-hundred-thousand-population figure everyone
+           quotes is not a rule anywhere in this file; it is where the
+           arithmetic stops being stupid.
+           ------------------------------------------------------------------ */
+
+        BuildingsTemplate elementarySchool = new BuildingsTemplate("Elementary School", BuildingType.EDUCATION)
+                .setTeaches(EducationType.ELEMENTARY)
+                .setCapacity(600)                // places
+                .setCashCost(2200)
+                .setConstructionPoints(1800)
+                .setConstructionMaterials(1500)
+                .setUpkeep(38)
+                .setElectricityConsumption(22)
+                .setWaterConsumption(6)
+                .setJobs(JobType.NO_DIPLOMA, 8)
+                .setJobs(JobType.DIPLOMA, 14)
+                .setJobs(JobType.COLLEGE_BUSINESS, 26)
+                .setLandSqFt(60000)
+                .setRoadLoad(45)
+                .setId(31);
+
+        templates.add(elementarySchool);
+
+        BuildingsTemplate middleSchool = new BuildingsTemplate("Middle School", BuildingType.EDUCATION)
+                .setTeaches(EducationType.MIDDLE)
+                .setCapacity(500)                // places
+                .setCashCost(2600)
+                .setConstructionPoints(2100)
+                .setConstructionMaterials(1800)
+                .setUpkeep(44)
+                .setElectricityConsumption(26)
+                .setWaterConsumption(7)
+                .setJobs(JobType.NO_DIPLOMA, 8)
+                .setJobs(JobType.DIPLOMA, 12)
+                .setJobs(JobType.COLLEGE_BUSINESS, 28)
+                .setLandSqFt(70000)
+                .setRoadLoad(50)
+                .setId(32);
+
+        templates.add(middleSchool);
+
+        BuildingsTemplate highSchool = new BuildingsTemplate("High School", BuildingType.EDUCATION)
+                .setTeaches(EducationType.HIGH)
+                .setCapacity(900)                // places
+                .setCashCost(6000)
+                .setConstructionPoints(4200)
+                .setConstructionMaterials(3600)
+                .setUpkeep(96)
+                .setElectricityConsumption(60)
+                .setWaterConsumption(15)
+                .setJobs(JobType.NO_DIPLOMA, 16)
+                .setJobs(JobType.DIPLOMA, 24)
+                .setJobs(JobType.COLLEGE_BUSINESS, 52)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 8)
+                .setLandSqFt(140000)
+                .setRoadLoad(110)
+                .setId(33);
+
+        templates.add(highSchool);
+
+        BuildingsTemplate communityCollege = new BuildingsTemplate("Community College", BuildingType.EDUCATION)
+                .setTeaches(EducationType.COLLEGE)
+                .setCapacity(700)                // places
+                .setCashCost(9000)
+                .setConstructionPoints(6000)
+                .setConstructionMaterials(5200)
+                .setUpkeep(145)
+                .setElectricityConsumption(90)
+                .setWaterConsumption(20)
+                .setJobs(JobType.NO_DIPLOMA, 18)
+                .setJobs(JobType.DIPLOMA, 30)
+                .setJobs(JobType.COLLEGE_BUSINESS, 40)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 10)
+                .setJobs(JobType.UNIV_SCIENCE, 6)
+                .setLandSqFt(180000)
+                .setRoadLoad(150)
+                .setId(34);
+
+        templates.add(communityCollege);
+
+        BuildingsTemplate university = new BuildingsTemplate("University", BuildingType.EDUCATION)
+                .setTeaches(EducationType.UNIVERSITY)
+                .setCapacity(2000)                // places
+                .setCashCost(42000)
+                .setConstructionPoints(26000)
+                .setConstructionMaterials(22000)
+                .setUpkeep(620)
+                .setElectricityConsumption(380)
+                .setWaterConsumption(90)
+                .setJobs(JobType.NO_DIPLOMA, 70)
+                .setJobs(JobType.DIPLOMA, 95)
+                .setJobs(JobType.COLLEGE_BUSINESS, 110)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 30)
+                .setJobs(JobType.UNIV_SCIENCE, 44)
+                .setJobs(JobType.UNIV_POLICY, 12)
+                .setLandSqFt(620000)
+                .setRoadLoad(520)
+                .setId(35);
+
+        templates.add(university);
+
+        BuildingsTemplate medicalSchool = new BuildingsTemplate("Medical School", BuildingType.EDUCATION)
+                .setTeaches(EducationType.MEDICAL)
+                .setCapacity(420)                // places
+                .setCashCost(78000)
+                .setConstructionPoints(44000)
+                .setConstructionMaterials(36000)
+                .setUpkeep(1150)
+                .setElectricityConsumption(520)
+                .setWaterConsumption(190)
+                .setJobs(JobType.NO_DIPLOMA, 40)
+                .setJobs(JobType.DIPLOMA, 70)
+                .setJobs(JobType.COLLEGE_HEALTH, 120)
+                .setJobs(JobType.UNIV_DOCTOR, 34)
+                .setJobs(JobType.UNIV_SCIENCE, 16)
+                .setLandSqFt(480000)
+                .setRoadLoad(380)
+                .setId(36);
+
+        templates.add(medicalSchool);
+
+        BuildingsTemplate lawSchool = new BuildingsTemplate("Law School", BuildingType.EDUCATION)
+                .setTeaches(EducationType.LAW)
+                .setCapacity(360)                // places
+                .setCashCost(34000)
+                .setConstructionPoints(20000)
+                .setConstructionMaterials(16000)
+                .setUpkeep(520)
+                .setElectricityConsumption(190)
+                .setWaterConsumption(42)
+                .setJobs(JobType.NO_DIPLOMA, 14)
+                .setJobs(JobType.DIPLOMA, 34)
+                .setJobs(JobType.COLLEGE_BUSINESS, 40)
+                .setJobs(JobType.UNIV_LAW, 26)
+                .setJobs(JobType.UNIV_POLICY, 8)
+                .setLandSqFt(190000)
+                .setRoadLoad(170)
+                .setId(37);
+
+        templates.add(lawSchool);
+
+        BuildingsTemplate businessSchool = new BuildingsTemplate("Business School", BuildingType.EDUCATION)
+                .setTeaches(EducationType.BUSINESS)
+                .setCapacity(480)                // places
+                .setCashCost(30000)
+                .setConstructionPoints(18000)
+                .setConstructionMaterials(15000)
+                .setUpkeep(460)
+                .setElectricityConsumption(175)
+                .setWaterConsumption(38)
+                .setJobs(JobType.NO_DIPLOMA, 13)
+                .setJobs(JobType.DIPLOMA, 30)
+                .setJobs(JobType.COLLEGE_BUSINESS, 46)
+                .setJobs(JobType.UNIV_FINANCE, 24)
+                .setJobs(JobType.UNIV_POLICY, 6)
+                .setLandSqFt(175000)
+                .setRoadLoad(165)
+                .setId(38);
+
+        templates.add(businessSchool);
+
+        BuildingsTemplate instituteOfTechnology = new BuildingsTemplate("Institute of Technology", BuildingType.EDUCATION)
+                .setTeaches(EducationType.ENGINEERING)
+                .setCapacity(520)                // places
+                .setCashCost(56000)
+                .setConstructionPoints(33000)
+                .setConstructionMaterials(28000)
+                .setUpkeep(780)
+                .setElectricityConsumption(640)
+                .setWaterConsumption(70)
+                .setJobs(JobType.NO_DIPLOMA, 22)
+                .setJobs(JobType.DIPLOMA, 44)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 64)
+                .setJobs(JobType.UNIV_HIGHTECH_ENG, 28)
+                .setJobs(JobType.UNIV_SCIENCE, 18)
+                .setLandSqFt(300000)
+                .setRoadLoad(240)
+                .setId(39);
+
+        templates.add(instituteOfTechnology);
+        //add more buildings; next Building ID is 40
     }
 
     public void finalUpdateBuildings() {
@@ -1361,6 +1573,55 @@ public class BuildingManager {
             total += stack.getQuantity() * (double) t.getCapacity() * staffing;
         }
         return total;
+    }
+
+    /**
+     * School places, discounted by how much of the teaching staff turned up.
+     *
+     * The same method as getStaffedCareCapacity() and for the same reason: a
+     * university with no professors teaches nobody, and pouring concrete should
+     * not produce graduates any more than it produces treatments. Staffing is
+     * worked out per building from its own job mix, because a school's mix is
+     * particular - a Medical School is 34 doctors in 280 posts, and a city with
+     * no doctors cannot run one whatever its unskilled fill rate says.
+     *
+     * FINISHED ONLY, like care capacity. A half-built school teaches nobody.
+     */
+    public double[] getStaffedEducationPlaces(double[] jobFillRate) {
+
+        double[] places = new double[EducationType.values().length];
+
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            EducationType teaches = t.getTeaches();
+            if (teaches == EducationType.NONE) continue;
+
+            double posts = 0, staffed = 0;
+            for (JobType job : JobType.values()) {
+                int n = t.getJobs(job);
+                if (n == 0) continue;
+                posts += n;
+                staffed += n * (jobFillRate != null && job.ordinal() < jobFillRate.length
+                        ? jobFillRate[job.ordinal()] : 1);
+            }
+            double staffing = posts > 0 ? staffed / posts : 1;
+
+            places[teaches.ordinal()] +=
+                    stack.getQuantity() * (double) t.getCapacity() * staffing;
+        }
+        return places;
+    }
+
+    /** Places without the staffing discount - what the buildings would seat. */
+    public double[] getBuiltEducationPlaces() {
+        double[] places = new double[EducationType.values().length];
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getTeaches() == EducationType.NONE) continue;
+            places[t.getTeaches().ordinal()] +=
+                    stack.getQuantity() * (double) t.getCapacity();
+        }
+        return places;
     }
 
     /**

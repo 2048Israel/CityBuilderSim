@@ -94,6 +94,9 @@ public class SimulationEngine {
     public void updatePopulation(Game game) {
         game.updatePopulation();
         populationManager.updateJobs(game.getJobs());
+        // Between these two on purpose: the market prices against this month's
+        // posts, and the wage bill below multiplies by the price it sets.
+        game.repriceLabour();
         populationManager.UpdateTotalWagePerType();
     }
     

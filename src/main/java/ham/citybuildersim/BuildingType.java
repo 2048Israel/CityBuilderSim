@@ -72,6 +72,24 @@ public enum BuildingType {
      * bill to whoever now holds that ordinal. There is room after this for
      * EDUCATION and SAFETY, which is why the menu button says Services.
      */
-    HEALTHCARE
+    HEALTHCARE,
+
+    /**
+     * Schools, colleges, universities and the four graduate schools.
+     *
+     * The other half of the labour market. Until this existed, every skilled
+     * worker in the game had arrived from somewhere else - the city could
+     * attract a doctor and could never make one - and the eleven job types were
+     * a demand curve with no domestic supply behind them at all.
+     *
+     * Like healthcare, the city builds these and they never pay for themselves.
+     * Unlike healthcare, what they produce is not a service consumed this month
+     * but a person who will be working in twenty years, which is the longest
+     * feedback loop in the game and the reason this category is worth having.
+     *
+     * ON THE END, for the third time and the same reason: ordinal() is a saved
+     * key. The slot after this one is SAFETY.
+     */
+    EDUCATION
 
 }

@@ -614,9 +614,29 @@ public class PopulationCheck {
         double[] settled   = play(root, "m120", 120);
 
         double adultShare = settled[0] > 0 ? settled[8] / settled[0] : ADULT_MIX;
+
+        /*
+         * Rebuilt here for the RATIO, which is a statement about the job and
+         * home terms and is meant to be independent of anything else that
+         * multiplies them.
+         */
         double target = Migration.JOB_WEIGHT * settled[3]
                         * Migration.residentsPerJob(adultShare)
                 + Migration.HOME_WEIGHT * settled[5];
+
+        /*
+         * ...and asked for, for the assertion, which is a statement about the
+         * MODEL'S OWN target.
+         *
+         * These two are not the same number and the difference is the point.
+         * The target gets multiplied by the senior-care pull, and the day that
+         * factor arrived this restatement quietly stopped describing what
+         * Migration does - so "a city past its target" was being tested against
+         * a target the city had never used. Exactly the trap InfrastructureCheck
+         * fell into when it restated getConstructionOutput() and was wrong the
+         * day a fourth multiplier appeared.
+         */
+        double modelTarget = settled[11];
 
         System.out.printf("   after 1 month: %,.0f people;  after 120: %,.0f"
                 + "  (target %,.0f)%n", oneMonth[0], settled[0], target);
@@ -684,8 +704,11 @@ public class PopulationCheck {
          * model actually has.
          */
         assertTrue("...and does not run away entirely", settled[0] < target * 3.5);
+        System.out.printf("   the model's own target is %,.0f (the ratio above uses"
+                + " %,.0f, before the senior-care pull)%n", modelTarget, target);
+
         assertTrue("...because a city past its target stops pulling people in",
-                settled[0] <= target || settled[9] == 0);
+                settled[0] <= modelTarget || settled[9] == 0);
 
         /*
          * THE WORKFORCE IS THE ADULTS, not a flat share of the population.
@@ -849,7 +872,9 @@ public class PopulationCheck {
             Math.round(e.getTaxIncome() * 10000) / 10000.0,
             g.getCohorts().get(AgeBand.ADULT),
             g.getMigration().getLastArrivals(),
-            g.getMigration().getLastDepartures()
+            g.getMigration().getLastDepartures(),
+            // The target the model ACTUALLY used, not one rebuilt out here.
+            g.getMigration().getLastTarget()
         };
     }
 

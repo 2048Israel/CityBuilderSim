@@ -74,6 +74,24 @@ public class HistorySave {
     /** The wage BILL, not the average - the average needs the workforce too. */
     private List<Double> totalWage = new ArrayList<>();
 
+    /** The dial the player sets, and what the labour market did with it. */
+    private List<Double> minimumWage = new ArrayList<>();
+
+    /**
+     * What an unskilled hour costs relative to its base, and how much of the
+     * workforce has any training at all.
+     *
+     * The second is the one to watch: with no schools in the game it can only
+     * rise by attracting people, so it is a direct read on whether the city is
+     * pulling its weight in the wider labour market.
+     */
+    private List<Double> unskilledPremium = new ArrayList<>();
+    private List<Double> skilledShare = new ArrayList<>();
+
+    /** The schools: how much of the basic ladder is covered, and what it costs. */
+    private List<Double> schoolCoverage = new ArrayList<>();
+    private List<Double> schoolBill = new ArrayList<>();
+
     /* ------------------------- what throttles ------------------------- */
     private List<Double> energyRatio = new ArrayList<>();
     private List<Double> waterRatio = new ArrayList<>();
@@ -131,6 +149,17 @@ public class HistorySave {
         departures.add((int) Math.round(flows.getLastDepartures()));
         totalWage.add(round2(people.getTotalWage()));
 
+        LabourMarket labour = game.getLabourMarket();
+        minimumWage.add(round4(labour.getMinimumWage()));
+        unskilledPremium.add(round4(labour.premium(JobType.NO_DIPLOMA)));
+
+        double[] mix = people.getBandShare();
+        skilledShare.add(round4(1 - mix[WageBand.NONE.ordinal()]));
+
+        Education schools = game.getEducation();
+        schoolCoverage.add(round4(schools.basicCoverage()));
+        schoolBill.add(round2(schools.getNetCost()));
+
         energyRatio.add(round4(game.getEnergyRatio()));
         waterRatio.add(round4(game.getWaterRatio()));
         roadRatio.add(round4(game.getRoadRatio()));
@@ -177,6 +206,11 @@ public class HistorySave {
         arrivals = copy(loaded.arrivals);
         departures = copy(loaded.departures);
         totalWage = copy(loaded.totalWage);
+        minimumWage = copy(loaded.minimumWage);
+        unskilledPremium = copy(loaded.unskilledPremium);
+        skilledShare = copy(loaded.skilledShare);
+        schoolCoverage = copy(loaded.schoolCoverage);
+        schoolBill = copy(loaded.schoolBill);
 
         energyRatio = copy(loaded.energyRatio);
         waterRatio = copy(loaded.waterRatio);
@@ -268,6 +302,11 @@ public class HistorySave {
         map.put("arrivals", arrivals);
         map.put("departures", departures);
         map.put("totalWage", totalWage);
+        map.put("minimumWage", minimumWage);
+        map.put("unskilledPremium", unskilledPremium);
+        map.put("skilledShare", skilledShare);
+        map.put("schoolCoverage", schoolCoverage);
+        map.put("schoolBill", schoolBill);
         map.put("energyRatio", energyRatio);
         map.put("waterRatio", waterRatio);
         map.put("roadRatio", roadRatio);

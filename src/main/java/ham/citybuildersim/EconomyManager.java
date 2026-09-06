@@ -936,7 +936,7 @@ public class EconomyManager {
 
         tax = totalBusinessTax + totalIndustrialTax + totalWageTax + salesTax
                 + totalHeavyIndustryTax + totalPropertyTax + totalContributions
-                + healthcareFees;
+                + healthcareFees + educationFees;
         return tax;
     }
 
@@ -967,6 +967,31 @@ public class EconomyManager {
     public double getHealthcareBill() { return healthcareBill; }
     public double getHealthcareFees() { return healthcareFees; }
     public double getHealthcareNet()  { return healthcareBill - healthcareFees; }
+
+    /* =====================================================================
+       EDUCATION, on the same terms as healthcare.
+
+       The city builds the schools, pays the teachers and covers most of the
+       tuition, and charges households the rest. It never pays for itself and is
+       not meant to - what it buys is a workforce twenty years from now, which
+       is the longest thing on this balance sheet by an order of magnitude.
+
+       Gross and fees separately, for the reason the healthcare comment gives:
+       a net figure makes a large service that nearly pays for itself look
+       identical to a small one that does not.
+       ===================================================================== */
+
+    private double educationBill;
+    private double educationFees;
+
+    public void setEducation(double grossCost, double fees) {
+        this.educationBill = Math.max(0, grossCost);
+        this.educationFees = fees;
+    }
+
+    public double getEducationBill() { return educationBill; }
+    public double getEducationFees() { return educationFees; }
+    public double getEducationNet()  { return educationBill - educationFees; }
 
     /* =====================================================================
        PENSIONS
@@ -1005,7 +1030,7 @@ public class EconomyManager {
      * anywhere.
      */
     public double getExpenses(){
-        return interest + getPensionsPaid() + healthcareBill;
+        return interest + getPensionsPaid() + healthcareBill + educationBill;
     }
 
     /**
@@ -1124,7 +1149,8 @@ public class EconomyManager {
                 utilityIncome, landSales, propertyTax,
                 interest, capitalSpending, landPurchases,
                 totalContributions, getPensionsPaid(),
-                healthcareFees, healthcareBill);
+                healthcareFees, healthcareBill,
+                educationFees, educationBill);
 
         GDP = nationalAccounts.getGdp();
     }
@@ -1637,7 +1663,8 @@ public class EconomyManager {
                 utilityIncome, landSales, getTotalPropertyTax(),
                 interest, capitalSpending, landPurchases,
                 totalContributions, getPensionsPaid(),
-                healthcareFees, healthcareBill);
+                healthcareFees, healthcareBill,
+                educationFees, educationBill);
     }
 
     public void setUtilityIncome(double income){

@@ -87,6 +87,105 @@ public class UserInterface extends Application {
      */
     private FadeTransition receiptPulse;
 
+    /* =====================================================================
+       THE THEME
+
+       Every colour in this file was picked to be read against light grey,
+       because until now the middle of the window was light grey. Jerus:
+       "make the main screen blackish blue... make the Eye get Orgasms".
+
+       TWO HALVES, AND THE SECOND IS THE ONE THAT MATTERS.
+
+       The first is mechanical - every -fx-text-fill in the file was remapped
+       from its light-background value to a dark-background one. A hundred and
+       eighty edits and no judgement in any of them.
+
+       The second is this stylesheet, and without it the remap would have been
+       useless: most of the buttons and labels in the game set no colour at all
+       and were relying on JavaFX's defaults, which are black text on light
+       grey. There are a hundred screens of them. Styling each by hand is not a
+       project, it is a decade - so the defaults themselves are replaced, once,
+       here, and every inline style in the file still wins over it wherever a
+       colour was deliberately chosen.
+
+       Loaded as a data URI rather than a .css on the classpath because a
+       resource is one more thing that can fail to reach the jar, and a theme
+       that silently does not load leaves the game unreadable rather than merely
+       unstyled.
+       ===================================================================== */
+
+    /** The middle of the window: the blackish blue everything else sits on. */
+    private static final String STAGE = "#111a24";
+
+    private void applyTheme(Scene target) {
+
+        String css =
+            ".root {"
+          + "  -fx-base: #1b2530;"
+          + "  -fx-background: #111a24;"
+          + "  -fx-control-inner-background: #17212c;"
+          + "  -fx-text-background-color: #e3e8ec;"
+          + "  -fx-accent: #2f6fa8;"
+          + "  -fx-focus-color: #5cb8ff;"
+          + "  -fx-faint-focus-color: rgba(92,184,255,0.15);"
+          + "}"
+          + ".label { -fx-text-fill: #c3ccd3; }"
+
+          + ".button {"
+          + "  -fx-background-color: #22303c;"
+          + "  -fx-text-fill: #dbe4ea;"
+          + "  -fx-background-radius: 4;"
+          + "  -fx-border-color: #33404b;"
+          + "  -fx-border-radius: 4;"
+          + "  -fx-padding: 6 14 6 14;"
+          + "  -fx-cursor: hand;"
+          + "}"
+          + ".button:hover    { -fx-background-color: #2b3c4b; -fx-border-color: #5cb8ff; }"
+          + ".button:pressed  { -fx-background-color: #18222c; }"
+          + ".button:disabled { -fx-opacity: 0.4; }"
+
+          + ".text-field {"
+          + "  -fx-background-color: #17212c;"
+          + "  -fx-text-fill: #e3e8ec;"
+          + "  -fx-prompt-text-fill: #6b7c89;"
+          + "  -fx-border-color: #33404b;"
+          + "  -fx-border-radius: 3;"
+          + "  -fx-background-radius: 3;"
+          + "}"
+
+          + ".scroll-pane { -fx-background-color: transparent; -fx-background: transparent; }"
+          + ".scroll-pane > .viewport { -fx-background-color: transparent; }"
+          + ".scroll-bar { -fx-background-color: transparent; }"
+          + ".scroll-bar > .thumb { -fx-background-color: #33404b; -fx-background-radius: 6; }"
+          + ".scroll-bar > .thumb:hover { -fx-background-color: #4c6070; }"
+          + ".scroll-bar > .increment-button,"
+          + ".scroll-bar > .decrement-button { -fx-opacity: 0; -fx-padding: 0; }"
+
+          + ".progress-bar > .track { -fx-background-color: #17212c; }"
+          + ".progress-bar > .bar   { -fx-background-color: #5cb8ff; }"
+
+          + ".tooltip { -fx-background-color: transparent; }"
+
+          + ".chart { -fx-background-color: transparent; -fx-padding: 4; }"
+          + ".chart-plot-background { -fx-background-color: #16202a; }"
+          + ".chart-title { -fx-text-fill: #dbe4ea; }"
+          + ".chart-legend { -fx-background-color: transparent; }"
+          + ".chart-vertical-grid-lines, .chart-horizontal-grid-lines { -fx-stroke: #24313c; }"
+          + ".chart-alternative-row-fill { -fx-fill: transparent; -fx-stroke: transparent; }"
+          + ".chart-pie-label { -fx-fill: #b6c2cb; }"
+          + ".chart-pie-label-line { -fx-stroke: #4c6070; }"
+          + ".axis {"
+          + "  -fx-tick-label-fill: #8fa3b0;"
+          + "  -fx-tick-mark-stroke: #4c6070;"
+          + "  -fx-minor-tick-mark-stroke: #33404b;"
+          + "}"
+          + ".axis-label { -fx-text-fill: #8fa3b0; }";
+
+        target.getStylesheets().add("data:text/css;base64,"
+                + java.util.Base64.getEncoder().encodeToString(
+                        css.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+    }
+
     /** Always-visible strips on the two BorderPane edges nothing else uses. */
     private HBox dateBar;
     private HBox debtBar;
@@ -106,9 +205,16 @@ public class UserInterface extends Application {
         // in a BorderPane and survives every screen change.
         this.constructionPanel = new VBox(8);
         this.constructionPanel.setPrefWidth(280);
+        /*
+         * The right-hand strip, dressed to match the left.
+         *
+         * Same ground, same border weight, mirrored - so the two read as one
+         * frame around the stage rather than as two unrelated sidebars. Jerus:
+         * "the right tab make it match the other two".
+         */
         this.constructionPanel.setStyle(
-                "-fx-padding: 16; -fx-background-color: #f4f4f4;"
-                + " -fx-border-color: #cccccc; -fx-border-width: 0 0 0 1;");
+                "-fx-padding: 12 12 12 10; -fx-background-color: #1c262b;"
+                + " -fx-border-color: #37474f; -fx-border-width: 0 0 0 2;");
 
         // City overview down the left. Same reasoning as the construction panel:
         // it lives outside rootMenu so the menu system can't clear it away.
@@ -122,9 +228,18 @@ public class UserInterface extends Application {
          * cut by shorten(). Thirty pixels buys the whole section.
          */
         this.cityPanel.setPrefWidth(290);
+        /*
+         * DARK, and the same dark as the top strip.
+         *
+         * The panel was #f4f4f4 with #333 text, which is a document. It is not
+         * a document - it is an instrument cluster that is on screen at all
+         * times, and the thing it most needs to do is let a figure that has
+         * gone wrong catch the eye of somebody who is looking at something
+         * else. Red on light grey does not; red on near-black does.
+         */
         this.cityPanel.setStyle(
-                "-fx-padding: 16; -fx-background-color: #f4f4f4;"
-                + " -fx-border-color: #cccccc; -fx-border-width: 0 1 0 0;");
+                "-fx-padding: 12 10 12 12; -fx-background-color: #1c262b;"
+                + " -fx-border-color: #37474f; -fx-border-width: 0 2 0 0;");
 
         /*
          * Date, cash and population across the top; the next debt maturities
@@ -144,16 +259,49 @@ public class UserInterface extends Application {
         this.debtBar = new HBox(16);
         this.debtBar.setAlignment(Pos.CENTER_LEFT);
         this.debtBar.setStyle(
-                "-fx-padding: 6 16 6 16; -fx-background-color: #eceff1;"
-                + " -fx-border-color: #cfd8dc; -fx-border-width: 1 0 0 0;");
+                "-fx-padding: 6 16 6 16; -fx-background-color: #1c262b;"
+                + " -fx-border-color: #33404b; -fx-border-width: 1 0 0 0;");
+
+        /* =====================================================================
+           THE MIDDLE COLUMN SCROLLS NOW, and it should have from the start.
+
+           rootMenu was the BorderPane's centre directly, so a menu taller than
+           the window simply had its bottom cut off - and the bottom of a menu
+           is where the Back button lives. Healthcare came close at fourteen
+           buttons under five headings; Education went over, and Jerus lost the
+           only way out of the screen.
+
+           WHY THE MIN-HEIGHT BINDING. A ScrollPane top-aligns its content,
+           which would have un-centred every menu in the game - forty screens
+           changed to fix one. Pinning the VBox to at least the viewport height
+           keeps it centred while it fits and lets it grow past that when it
+           does not, so a short menu looks exactly as it always did and a long
+           one scrolls. Four pixels of slack, or the binding fights the
+           scrollbar it just caused.
+           ===================================================================== */
+        javafx.scene.control.ScrollPane menuScroller =
+                new javafx.scene.control.ScrollPane(rootMenu);
+        menuScroller.setFitToWidth(true);
+        menuScroller.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+        menuScroller.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        menuScroller.setVbarPolicy(
+                javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        rootMenu.minHeightProperty().bind(menuScroller.heightProperty().subtract(4));
 
         BorderPane root = new BorderPane();
-        root.setCenter(rootMenu);
+        // The stage, and deliberately DARKER than the four strips around it.
+        // Chrome frames content; the same colour on both would make the window
+        // one flat field with things floating in it.
+        root.setStyle("-fx-background-color: " + STAGE + ";");
+        menuScroller.setStyle("-fx-background-color: " + STAGE + ";"
+                + " -fx-background: " + STAGE + ";");
+        root.setCenter(menuScroller);
         root.setLeft(cityPanel);
         root.setRight(constructionPanel);
         root.setTop(dateBar);
         root.setBottom(debtBar);
         this.scene = new Scene(root);
+        applyTheme(scene);
 
 
         
@@ -256,7 +404,7 @@ public class UserInterface extends Application {
                 // Overdrawn is not a rounding detail - it is being charged the
                 // emergency rate - so it gets the same red as everything else
                 // that is actively costing the player money.
-                + (cash < 0 ? "#ef5350" : "#a5d6a7") + ";");
+                + (cash < 0 ? "#ff6b6b" : "#8fe0aa") + ";");
 
         // What it is doing, under what it is. A treasury of $300k falling by
         // $40k a month is a different city from one holding steady, and the
@@ -264,7 +412,7 @@ public class UserInterface extends Application {
         Label trend = new Label((income >= 0 ? "+$" : "-$")
                 + formatter.format(Math.abs(income)) + " a month");
         trend.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-text-fill: " + (income >= 0 ? "#78909c" : "#e57373") + ";");
+                + " -fx-text-fill: " + (income >= 0 ? "#78909c" : "#ff9e9e") + ";");
 
         VBox cashBox = new VBox(-2);
         cashBox.setAlignment(Pos.CENTER_RIGHT);
@@ -293,10 +441,10 @@ public class UserInterface extends Application {
         HBox flowRow = new HBox(7);
         flowRow.setAlignment(Pos.CENTER_RIGHT);
         flowRow.getChildren().addAll(
-                flowChip("+" + flowText(pyramid.getLastBirths()) + " born",  "#a5d6a7"),
-                flowChip("-" + flowText(pyramid.getLastDeaths()) + " died",  "#90a4ae"),
-                flowChip("+" + flowText(flows.getLastArrivals()) + " in",    "#81d4fa"),
-                flowChip("-" + flowText(flows.getLastDepartures()) + " out", "#ef9a9a"));
+                flowChip("+" + flowText(pyramid.getLastBirths()) + " born",  "#8fe0aa"),
+                flowChip("-" + flowText(pyramid.getLastDeaths()) + " died",  "#8fa3b0"),
+                flowChip("+" + flowText(flows.getLastArrivals()) + " in",    "#8ed4ff"),
+                flowChip("-" + flowText(flows.getLastDepartures()) + " out", "#ffb3b3"));
 
         /*
          * A fifth chip, and only when there is something to say.
@@ -321,12 +469,12 @@ public class UserInterface extends Application {
              */
             int since = Math.max(1, game.getMonth() - illness.getOutbreakStarted() + 1);
             flowRow.getChildren().add(flowChip(
-                    String.format("OUTBREAK - month %d", since), "#ef5350"));
+                    String.format("OUTBREAK - month %d", since), "#ff6b6b"));
         }
         if (illness.getSickRate() > Health.WELL_SERVED_RATE + 1e-9) {
             flowRow.getChildren().add(flowChip(
                     String.format("%.0f%% sick", illness.getSickRate() * 100),
-                    illness.isOutbreak() ? "#ef9a9a" : "#ffcc80"));
+                    illness.isOutbreak() ? "#ffb3b3" : "#ffcf9e"));
         }
 
         VBox popBox = new VBox(0);
@@ -341,11 +489,11 @@ public class UserInterface extends Application {
                 + " -fx-font-weight: bold; -fx-padding: 1 6 1 6; -fx-background-radius: 3;"
                 + " -fx-text-fill: #ffffff; -fx-background-color: "
                 + switch (rating) {
-                    case "AAA", "AA" -> "#2e7d32";
-                    case "A", "BBB"  -> "#558b2f";
-                    case "BB"        -> "#ef6c00";
-                    case "B"         -> "#e64a19";
-                    default          -> "#c62828";
+                    case "AAA", "AA" -> "#5fd68a";
+                    case "A", "BBB"  -> "#9ccc65";
+                    case "BB"        -> "#ffb454";
+                    case "B"         -> "#ff8a65";
+                    default          -> "#ff6b6b";
                 } + ";");
 
         dateBar.getChildren().addAll(dateBox, gap, ratingLabel, popBox, cashBox);
@@ -433,7 +581,7 @@ public class UserInterface extends Application {
         debts.sort(java.util.Comparator.comparingInt(Debt::getMaturityMonth));
 
         Label heading = new Label("NEXT DUE");
-        heading.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #546e7a;");
+        heading.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #8fa3b0;");
         debtBar.getChildren().add(heading);
 
         if (debts.isEmpty()) {
@@ -448,7 +596,7 @@ public class UserInterface extends Application {
             }
             if (debts.size() > 5) {
                 Label more = new Label("+" + (debts.size() - 5) + " more");
-                more.setStyle("-fx-font-size: 10px; -fx-text-fill: #90a4ae;");
+                more.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
                 debtBar.getChildren().add(more);
             }
         }
@@ -486,7 +634,7 @@ public class UserInterface extends Application {
         Label totals = new Label(String.format("TOTAL PRINCIPAL  $%s      COUPON  $%s/mo",
                 formatter.format(principal), formatter.format(coupon)));
         totals.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-font-weight: bold; -fx-text-fill: #37474f;");
+                + " -fx-font-weight: bold; -fx-text-fill: #c3ccd3;");
         debtBar.getChildren().add(totals);
 
         if (discountPaper > 0) {
@@ -501,7 +649,7 @@ public class UserInterface extends Application {
             Label od = new Label(String.format("  + $%s overdrawn",
                     formatter.format(overdraft)));
             od.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                    + " -fx-font-weight: bold; -fx-text-fill: #c62828;");
+                    + " -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
             debtBar.getChildren().add(od);
         }
     }
@@ -514,7 +662,7 @@ public class UserInterface extends Application {
 
         // Urgency by colour as well as by position, so a wall of paper coming
         // due reads at a glance without anyone parsing five dates.
-        String colour = (gap <= 3) ? "#c62828" : (gap <= 12) ? "#ef6c00" : "#37474f";
+        String colour = (gap <= 3) ? "#ff6b6b" : (gap <= 12) ? "#ffb454" : "#c3ccd3";
 
         Label amount = new Label("$" + formatter.format(debt.getOustandingPrincipal()));
         amount.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
@@ -525,7 +673,7 @@ public class UserInterface extends Application {
         when.setStyle("-fx-font-size: 9px; -fx-text-fill: #78909c;");
 
         Label type = new Label(debt.getType());
-        type.setStyle("-fx-font-size: 9px; -fx-text-fill: #90a4ae;");
+        type.setStyle("-fx-font-size: 9px; -fx-text-fill: #8fa3b0;");
 
         VBox chip = new VBox(0);
         chip.getChildren().addAll(amount, when, type);
@@ -568,14 +716,14 @@ public class UserInterface extends Application {
         // Small, grey, always there. The window title carries it too, but a
         // screenshot of the menu is what people actually send you.
         Label version = new Label(GameVersion.title());
-        version.setStyle("-fx-font-size: 9px; -fx-text-fill: #9e9e9e; -fx-padding: 12 0 0 0;");
+        version.setStyle("-fx-font-size: 9px; -fx-text-fill: #7d8f9c; -fx-padding: 12 0 0 0;");
 
         // Where the log is, in the one place everyone can find. A bug report
         // that arrives with this file attached is worth ten that do not.
         Label logLine = new Label(GameLog.file() == null
                 ? "(logging is not running)"
                 : "Log: " + GameLog.file());
-        logLine.setStyle("-fx-font-size: 9px; -fx-text-fill: #9e9e9e;");
+        logLine.setStyle("-fx-font-size: 9px; -fx-text-fill: #7d8f9c;");
         logLine.setWrapText(true);
         logLine.setMaxWidth(320);
 
@@ -665,7 +813,7 @@ public class UserInterface extends Application {
 
         Label detail = new Label(slotSummary(slot));
         detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
-                + (broken ? "#c62828" : empty ? "#9e9e9e" : "#555555") + ";");
+                + (broken ? "#ff6b6b" : empty ? "#7d8f9c" : "#8fa3b0") + ";");
 
         row.getChildren().addAll(pick, detail);
         return row;
@@ -679,7 +827,7 @@ public class UserInterface extends Application {
 
         Label hint = new Label("Choose a slot. The autosave is not in this list "
                 + "on purpose - it is written for you.");
-        hint.setStyle("-fx-font-size: 10px; -fx-text-fill: #555555;");
+        hint.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
         hint.setWrapText(true);
         hint.setMaxWidth(320);
 
@@ -710,7 +858,7 @@ public class UserInterface extends Application {
         heading.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
         Label current = new Label(slotSummary(slot));
-        current.setStyle("-fx-font-size: 10px; -fx-text-fill: #555555;");
+        current.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
 
         TextField name = new TextField(
                 (header != null && header.hasName()) ? header.getSlotName() : "");
@@ -721,7 +869,7 @@ public class UserInterface extends Application {
 
         if (occupied) {
             Label warn = new Label("This slot already has a city in it. Saving replaces it.");
-            warn.setStyle("-fx-font-size: 10px; -fx-text-fill: #ef6c00;");
+            warn.setStyle("-fx-font-size: 10px; -fx-text-fill: #ffb454;");
             warn.setWrapText(true);
             warn.setMaxWidth(320);
             rootMenu.getChildren().add(warn);
@@ -770,9 +918,9 @@ public class UserInterface extends Application {
             clearMenu();
             Label outcome = new Label("Could not load.");
             outcome.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;"
-                    + " -fx-text-fill: #c62828;");
+                    + " -fx-text-fill: #ff6b6b;");
             Label why = new Label(failure);
-            why.setStyle("-fx-font-size: 10px; -fx-text-fill: #c62828;");
+            why.setStyle("-fx-font-size: 10px; -fx-text-fill: #ff6b6b;");
             why.setWrapText(true);
             why.setMaxWidth(320);
             Button back = new Button("Back");
@@ -789,13 +937,13 @@ public class UserInterface extends Application {
 
         Label outcome = new Label(result.ok ? "Saved." : "Save failed.");
         outcome.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: "
-                + (result.ok ? "#2e7d32" : "#c62828") + ";");
+                + (result.ok ? "#5fd68a" : "#ff6b6b") + ";");
 
         Label detail = new Label(result.ok
                 ? result.file.toString()
                 : result.error);
         detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
-                + (result.ok ? "#555555" : "#c62828") + ";");
+                + (result.ok ? "#8fa3b0" : "#ff6b6b") + ";");
         detail.setWrapText(true);
         detail.setMaxWidth(320);
 
@@ -811,7 +959,7 @@ public class UserInterface extends Application {
             Label advice = new Label(
                     "The city is still running - nothing has been lost yet. "
                     + "Check there is free disk space, then try again.");
-            advice.setStyle("-fx-font-size: 10px; -fx-text-fill: #555555;");
+            advice.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
             advice.setWrapText(true);
             advice.setMaxWidth(320);
             rootMenu.getChildren().add(2, advice);
@@ -1053,7 +1201,7 @@ public class UserInterface extends Application {
         // and the policy is measured against the loss rather than against a
         // number, so it does not go stale.
         Button pay = new Button("Keep them all - cover their losses");
-        pay.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
+        pay.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
         pay.setOnAction(e -> {
             game.setAutoSubsidised(PolicySector.CONSTRUCTION, true);
             game.acknowledgeConstructionShedding();
@@ -1115,7 +1263,7 @@ public class UserInterface extends Application {
                 "Nothing else is wrong, and nothing will fix itself.");
 
         Button annex = new Button("Go to the land office");
-        annex.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
+        annex.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
         annex.setOnAction(e -> {
             game.acknowledgeLandLock();
             showLandMenu();
@@ -1226,17 +1374,19 @@ public class UserInterface extends Application {
         healthcare.setOnAction(e ->
                 handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
 
+        Button schools = new Button("Education");
+        schools.setOnAction(e ->
+                handleAllBuildingMenus("Education", EnumSet.of(BuildingType.EDUCATION)));
+
         // Named, disabled, and honest about it - so the shape of what is coming
         // is visible without pretending it is here.
-        Button education = new Button("Education  [not built yet]");
-        education.setDisable(true);
         Button safety = new Button("Public Safety  [not built yet]");
         safety.setDisable(true);
 
         Button back = new Button("Back");
         back.setOnAction(e -> showBuildingsMenu());
 
-        rootMenu.getChildren().addAll(title, healthcare, education, safety, back);
+        rootMenu.getChildren().addAll(title, healthcare, schools, safety, back);
     }
 
     /**
@@ -1274,12 +1424,12 @@ public class UserInterface extends Application {
         double used = land.getUtilisation();
         Label utilisation = monoLabel(String.format("%-24s%.1f%%", "Utilisation:", used * 100));
         utilisation.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (used >= .90 ? "#c62828" : used >= .75 ? "#ef6c00" : "#2e7d32") + ";");
+                + (used >= .90 ? "#ff6b6b" : used >= .75 ? "#ffb454" : "#5fd68a") + ";");
         holding.getChildren().add(utilisation);
 
         if (used >= .90) {
             Label warning = monoLabel("  the city is nearly full - businesses will stop building");
-            warning.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+            warning.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ff6b6b;");
             holding.getChildren().add(warning);
         }
         column.getChildren().add(holding);
@@ -1318,7 +1468,7 @@ public class UserInterface extends Application {
             Label detail = monoLabel(String.format("%,10.0f sq ft  %5.1f blk   $%,10.0f  %s",
                     parcel.getSizeSqFt(), parcel.getBlocks(), parcel.getPrice(), ore));
             detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px; -fx-text-fill: "
-                    + (parcel.hasIron() ? "#6a1b9a" : "#555555") + ";");
+                    + (parcel.hasIron() ? "#ce93d8" : "#8fa3b0") + ";");
 
             Button buy = new Button("Buy");
             buy.setDisable(!affordable);
@@ -1374,7 +1524,7 @@ public class UserInterface extends Application {
 
         Label marginLine = monoLabel(String.format("%-24s$%+.2f /sq ft", "Margin:", margin * 1000));
         marginLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (margin < 0 ? "#c62828" : "#2e7d32") + ";");
+                + (margin < 0 ? "#ff6b6b" : "#5fd68a") + ";");
         selling.getChildren().add(marginLine);
 
         Label meaning = monoLabel(margin < 0
@@ -1382,7 +1532,7 @@ public class UserInterface extends Application {
                         + " selling it below cost"
                 : "  land is tight enough that the city profits on every sale");
         meaning.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                + " -fx-text-fill: " + (margin < 0 ? "#c62828" : "#6d8f6d") + ";");
+                + " -fx-text-fill: " + (margin < 0 ? "#ff6b6b" : "#9ccc65") + ";");
         selling.getChildren().add(meaning);
 
         // What the price actually means to a buyer, since "per square foot" is
@@ -1431,7 +1581,7 @@ public class UserInterface extends Application {
             String last = game.getLastInvestment(sector);
             if (last != null && last.contains("no land")) {
                 Label line = monoLabel("  " + sector + ": " + last.replace("Holding: ", ""));
-                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ff6b6b;");
                 waiting.getChildren().add(line);
                 anyone = true;
             }
@@ -1476,7 +1626,7 @@ public class UserInterface extends Application {
         "Market Rate: %.2f%% | Total Debt: $%s", 
         rate * 100, formatter.format(totalDebt)
     ));
-    marketStatus.setStyle("-fx-text-fill: #1a237e; -fx-font-weight: bold; -fx-background-color: #e8eaf6; -fx-padding: 10;");
+    marketStatus.setStyle("-fx-text-fill: #5cb8ff; -fx-font-weight: bold; -fx-background-color: #182334; -fx-padding: 10;");
         
 
         Button b1 = new Button("Finance");
@@ -1605,7 +1755,7 @@ public class UserInterface extends Application {
                                         credit.getRestructureCount(sector),
                                         formatter.format(credit.getWrittenOffTotal(sector)))));
                 line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
-                        + (credit.isBorrowingBlocked(sector) ? "#c62828" : "#ef6c00") + ";");
+                        + (credit.isBorrowingBlocked(sector) ? "#ff6b6b" : "#ffb454") + ";");
                 distress.getChildren().add(line);
                 anyTrouble = true;
             }
@@ -1706,13 +1856,19 @@ public class UserInterface extends Application {
                 protectedCount, PolicySector.values().length,
                 formatter.format(game.getTotalSubsidyPaid())));
         standing.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-text-fill: "
-                + (protectedCount > 0 ? "#2e7d32" : "#555555") + ";");
+                + (protectedCount > 0 ? "#5fd68a" : "#8fa3b0") + ";");
 
         Button taxes = new Button("City Tax Rates");
         taxes.setOnAction(e -> showTaxPolicyMenu());
 
         Button wages = new Button("Wages - by education");
         wages.setOnAction(e -> showWagePolicyMenu());
+
+        Button minimum = new Button("Minimum wage - the floor under every wage");
+        minimum.setOnAction(e -> showMinimumWageMenu());
+
+        Button tuition = new Button("Tuition - who pays for school");
+        tuition.setOnAction(e -> showTuitionMenu());
 
         Button business = new Button("Business - by sector");
         business.setOnAction(e -> showBusinessPolicyMenu());
@@ -1724,7 +1880,7 @@ public class UserInterface extends Application {
         back.setOnAction(e -> showStartMenu());
 
         rootMenu.getChildren().addAll(title, rates, standing,
-                taxes, wages, business, subsidies, back);
+                taxes, wages, minimum, tuition, business, subsidies, back);
     }
 
     /** One row of -/+ buttons that move an offset and redraw. */
@@ -1741,6 +1897,215 @@ public class UserInterface extends Application {
             dial.getChildren().add(b);
         }
         return dial;
+    }
+
+    /**
+     * The minimum wage, which is the only wage the player sets directly.
+     *
+     * EVERY OTHER WAGE IS A MULTIPLE OF THIS ONE. That is what makes it a
+     * decision rather than a dial: raising it does not merely protect
+     * labourers, it lifts the doctor's pay in the same proportion, and the
+     * city's own hospital payroll with it.
+     *
+     * And it is the reason unemployment exists in this game at all. The
+     * unskilled band's base IS the minimum wage, so an oversupply of labourers
+     * cannot be priced away - the wage has nowhere to fall. The adjustment has
+     * to happen in people instead, and Migration turns that surplus into
+     * departures. Lower the floor and the market clears by price; raise it and
+     * it clears by emigration. That trade is the screen.
+     */
+    private void showMinimumWageMenu() {
+        clearMenu();
+
+        LabourMarket market = game.getLabourMarket();
+        PopulationManager people = game.getPopulationManager();
+
+        Label title = new Label("MINIMUM WAGE");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox column = new VBox(0);
+
+        Label now = monoLabel(String.format("%n%-30s $%s",
+                "The floor, per worker per month:", formatter.format(market.getMinimumWage())));
+        now.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 16px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #5cb8ff;");
+        column.getChildren().add(now);
+
+        Label what = new Label(
+                "Every wage in the city is a multiple of this number, so moving it moves"
+                + " all of them - including the doctors and nurses the city pays out of its"
+                + " own treasury. Wages walk to their new level over about a year rather"
+                + " than jumping, so a change you make now is a bill you meet slowly.");
+        what.setWrapText(true);
+        what.setMaxWidth(TABLE_WIDTH - 40);
+        what.setStyle("-fx-text-fill: #c3ccd3; -fx-padding: 8 0 8 0;");
+        column.getChildren().add(what);
+
+        /*
+         * The ladder AT THE PROPOSED FLOOR, because "every wage is a multiple
+         * of this" is an abstraction until a player can see what it does to the
+         * doctor's line. Showing the six tiers is the difference between a
+         * number and a decision.
+         */
+        VBox ladder = reportSection("WHAT THE LADDER LOOKS LIKE");
+        for (PayTier tier : PayTier.values()) {
+            double ratio = tier.getMonthlyWage() / PayTier.UNSKILLED.getMonthlyWage();
+            ladder.getChildren().add(monoLabel(String.format("%-24s %8.2fx  $%s",
+                    tier.getLabel(), ratio,
+                    formatter.format(market.getMinimumWage() * ratio))));
+        }
+        column.getChildren().add(ladder);
+
+        /*
+         * And the consequence, named. A pinned band is one whose wage has
+         * nowhere left to fall, so its surplus leaves the city instead - which
+         * is the whole reason this screen is a trade and not a free gift.
+         */
+        VBox effect = reportSection("WHAT IT IS DOING NOW");
+        boolean anyPinned = false;
+        for (WageBand band : WageBand.values()) {
+            double surplus = people.surplusInBand(band);
+            boolean pinned = market.isPinned(band);
+            if (pinned && surplus > 0) anyPinned = true;
+            effect.getChildren().add(monoLabel(String.format("%-14s %-22s surplus %,8.0f",
+                    band.label(),
+                    pinned ? "wage cannot fall further" : "wage still has room",
+                    surplus)));
+        }
+        column.getChildren().add(effect);
+
+        Label verdict = new Label(anyPinned
+                ? "At least one skill level is oversupplied AND cannot get any cheaper, so"
+                  + " those workers are leaving the city rather than taking a pay cut. That"
+                  + " is what a binding minimum wage does: the market clears in people"
+                  + " instead of in price. Lowering the floor would keep them and pay them"
+                  + " less."
+                : "No skill level is pinned against the floor, so the labour market is"
+                  + " clearing on price alone and the minimum wage is not currently binding"
+                  + " on anybody.");
+        verdict.setWrapText(true);
+        verdict.setMaxWidth(TABLE_WIDTH - 40);
+        verdict.setStyle("-fx-padding: 8 0 0 0; -fx-font-size: 11px; -fx-text-fill: "
+                + (anyPinned ? "#ffb454" : "#5fd68a") + ";");
+        column.getChildren().add(verdict);
+
+        column.getChildren().add(monoLabel(""));
+        column.getChildren().add(offsetDial(
+                new double[]{-25, -10, -5, 5, 10, 25},
+                "%.0f%%",
+                delta -> market.setMinimumWage(market.getMinimumWage() * (1 + delta)),
+                this::showMinimumWageMenu));
+
+        showSectorReport("MINIMUM WAGE", column, this::showPolicyMenu);
+    }
+
+    /**
+     * Who pays for school, and therefore who goes.
+     *
+     * THE DIAL DOES TWO OPPOSITE THINGS AND THAT IS THE DECISION. Every point
+     * of subsidy is money out of the treasury and a few more people who can
+     * afford to enrol - and the second effect is far larger than the first,
+     * because tuition is small against what a school costs to run. So this is
+     * not "how much do we spend on education", it is "who is allowed to go",
+     * and the budget line is the smaller half of the answer.
+     *
+     * At no subsidy a university place costs a diploma-holder most of a month's
+     * pay and almost nobody attends: a city can own the buildings, need the
+     * graduates, and produce none of them. That is the poverty trap the three-
+     * layer model exists to have, and this screen is where a player gets out
+     * of it.
+     */
+    private void showTuitionMenu() {
+        clearMenu();
+
+        Education schools = game.getEducation();
+        LabourMarket market = game.getLabourMarket();
+
+        Label title = new Label("TUITION");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox column = new VBox(0);
+
+        Label now = monoLabel(String.format("%n%-34s%5.0f%%",
+                "The city's share of tuition:", schools.getTuitionSubsidy() * 100));
+        now.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 16px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #5cb8ff;");
+        column.getChildren().add(now);
+
+        Label what = new Label(
+                "Households pay the rest out of a month's wages. Nobody enrols in a"
+                + " course that costs more than they can carry, so this number decides"
+                + " attendance far more than it decides the budget - a school's fees are"
+                + " small beside its payroll.");
+        what.setWrapText(true);
+        what.setMaxWidth(TABLE_WIDTH - 40);
+        what.setStyle("-fx-text-fill: #c3ccd3; -fx-padding: 8 0 8 0;");
+        column.getChildren().add(what);
+
+        /*
+         * THE BURDEN, PER COURSE, at the proposed rate. "Sixty per cent" means
+         * nothing until a player can see it as the share of a wage packet the
+         * family actually has to find, which is the number that decides whether
+         * they go.
+         */
+        VBox burden = reportSection("WHAT A FAMILY HAS TO FIND");
+        burden.getChildren().add(monoLabel(String.format("%-26s%10s%10s%12s",
+                "course", "tuition", "they pay", "of a wage")));
+
+        for (EducationType type : EducationType.values()) {
+            if (type == EducationType.NONE) continue;
+
+            double fee = Education.tuitionOf(type);
+            double outOfPocket = fee * (1 - schools.getTuitionSubsidy());
+            WageBand from = type.requires();
+            double wage = from == null
+                    ? market.getWage(JobType.NO_DIPLOMA)
+                    : bestWageIn(market, from);
+            double share = wage > 0 ? outOfPocket / wage : 0;
+
+            Label row = monoLabel(String.format("%-26s%10.2f%10.2f%11.0f%%",
+                    type.getLabel(), fee, outOfPocket, share * 100));
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                    + " -fx-text-fill: " + (share >= Education.MAX_BURDEN ? "#ff6b6b"
+                            : share >= Education.MAX_BURDEN * .6 ? "#ffb454" : "#5fd68a")
+                    + ";");
+            burden.getChildren().add(row);
+        }
+        burden.getChildren().add(monoLabel(String.format(
+                "%nAt %.0f%% of a wage nobody enrols at all.", Education.MAX_BURDEN * 100)));
+        column.getChildren().add(burden);
+
+        /* And what it is doing now. */
+        VBox doing = reportSection("THE SCHOOLS THIS MONTH");
+        doing.getChildren().addAll(
+                monoLabel(String.format("%-26s%12s", "Staff and buildings:",
+                        "$" + formatter.format(schools.getPayroll() + schools.getUpkeep()))),
+                monoLabel(String.format("%-26s%12s", "Tuition the city covers:",
+                        "$" + formatter.format(schools.getSubsidy()))),
+                monoLabel(String.format("%-26s%12s", "Tuition households pay:",
+                        "$" + formatter.format(schools.getFees()))),
+                monoLabel(String.format("%-26s%12s", "Net cost to the city:",
+                        "$" + formatter.format(schools.getNetCost()))));
+        column.getChildren().add(doing);
+
+        column.getChildren().add(monoLabel(""));
+        column.getChildren().add(offsetDial(
+                new double[]{-20, -10, -5, 5, 10, 20},
+                "%.0f pts",
+                delta -> schools.setTuitionSubsidy(
+                        schools.getTuitionSubsidy() + delta),
+                this::showTuitionMenu));
+
+        showSectorReport("TUITION", column, this::showPolicyMenu);
+    }
+
+    /** The best-paid job somebody in this band can hold. */
+    private double bestWageIn(LabourMarket market, WageBand band) {
+        double best = 0;
+        for (JobType job : JobType.values()) {
+            if (WageBand.of(job) == band) best = Math.max(best, market.getWage(job));
+        }
+        return best;
     }
 
     private void showWagePolicyMenu() {
@@ -1767,7 +2132,7 @@ public class UserInterface extends Application {
             Label row = monoLabel(String.format("%-12s  %+5.1f pts  ->  %5.2f%%",
                     band.label(), offset * 100, effective * 100));
             row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-text-fill: "
-                    + (offset < 0 ? "#2e7d32" : offset > 0 ? "#b00020" : "#555555") + ";");
+                    + (offset < 0 ? "#5fd68a" : offset > 0 ? "#ff6b6b" : "#8fa3b0") + ";");
 
             column.getChildren().add(row);
             column.getChildren().add(offsetDial(new double[]{ -5, -1, 1, 5 }, "%.0f",
@@ -1837,7 +2202,7 @@ public class UserInterface extends Application {
         Label row = monoLabel(String.format("   %s  %+6.2f pts  ->  %5.2f%%",
                 what, offset * 100, effective * 100));
         row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-text-fill: "
-                + (offset < 0 ? "#2e7d32" : offset > 0 ? "#b00020" : "#555555") + ";");
+                + (offset < 0 ? "#5fd68a" : offset > 0 ? "#ff6b6b" : "#8fa3b0") + ";");
         return row;
     }
 
@@ -1864,11 +2229,11 @@ public class UserInterface extends Application {
             Label row = monoLabel(String.format("%-16s %-4s   paid last month $%s",
                     sector.label(), on ? "ON" : "off", formatter.format(paid)));
             row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-text-fill: "
-                    + (on ? "#2e7d32" : "#555555") + ";");
+                    + (on ? "#5fd68a" : "#8fa3b0") + ";");
 
             Button toggle = new Button(on ? "Stop protecting" : "Protect this sector");
             if (on) {
-                toggle.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
+                toggle.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
             }
             toggle.setOnAction(e -> {
                 game.setAutoSubsidised(sector, !game.isAutoSubsidised(sector));
@@ -1965,23 +2330,41 @@ public class UserInterface extends Application {
         VBox buildingsBox = new VBox(5);
         buildingsBox.setAlignment(Pos.CENTER);
 
-        // NONE first, so an ungrouped menu is byte-identical to what it was.
-        for (CareType care : CareType.values()) {
+        /*
+         * GROUPED ON WHAT THE BUILDING IS FOR, which is a field and not a name.
+         *
+         * Started as a CareType loop for the healthcare menu. Education needed
+         * exactly the same treatment - nine schools in one column, with
+         * "Middle School" and "Medical School" sitting next to each other doing
+         * entirely different things - so the loop reads whichever of the two
+         * fields the building has. A menu with neither falls through unchanged
+         * and comes out as the flat column it always was.
+         */
+        java.util.List<Object> keys = new ArrayList<>();
+        keys.add(CareType.NONE);
+        for (CareType care : CareType.values()) if (care != CareType.NONE) keys.add(care);
+        for (EducationType type : EducationType.values()) {
+            if (type != EducationType.NONE) keys.add(type);
+        }
+
+        for (Object key : keys) {
 
             List<BuildingsTemplate> group = new ArrayList<>();
             for (BuildingsTemplate template : buildings) {
-                if (template.getCare() == care) group.add(template);
+                if (groupKeyOf(template).equals(key)) group.add(template);
             }
             if (group.isEmpty()) continue;
 
-            if (care != CareType.NONE) {
-                Label heading = new Label(careHeading(care));
+            if (!CareType.NONE.equals(key)) {
+                Label heading = new Label(groupHeading(key));
                 heading.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
-                        + " -fx-text-fill: #1a237e; -fx-padding: 10 0 0 0;");
+                        + " -fx-text-fill: #5cb8ff; -fx-padding: 10 0 0 0;");
                 buildingsBox.getChildren().add(heading);
 
-                Label what = new Label(careSubtitle(care));
-                what.setStyle("-fx-font-size: 10px; -fx-text-fill: #546e7a;"
+                Label what = new Label(groupSubtitle(key));
+                what.setWrapText(true);
+                what.setMaxWidth(BUILD_ROW_WIDTH);
+                what.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;"
                         + " -fx-padding: 0 0 3 0;");
                 buildingsBox.getChildren().add(what);
             }
@@ -2040,7 +2423,7 @@ public class UserInterface extends Application {
 
         Label name = new Label(template.getName());
         name.setStyle("-fx-font-size: 12px; -fx-text-fill: "
-                + (afford ? "#212121" : "#9e9e9e") + ";");
+                + (afford ? "#e3e8ec" : "#7d8f9c") + ";");
 
         Region grow = new Region();
         HBox.setHgrow(grow, Priority.ALWAYS);
@@ -2061,7 +2444,7 @@ public class UserInterface extends Application {
         Label price = new Label("$" + formatter.format(allIn));
         price.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
                 + " -fx-font-weight: bold; -fx-text-fill: "
-                + (afford ? "#2e7d32" : "#c62828") + ";");
+                + (afford ? "#5fd68a" : "#ff6b6b") + ";");
         face.getChildren().add(price);
 
         // The graphic does not stretch to the button on its own, so it is given
@@ -2099,8 +2482,8 @@ public class UserInterface extends Application {
         i.setMinSize(18, 18);
         i.setPrefSize(18, 18);
         i.setMaxSize(18, 18);
-        i.setStyle("-fx-background-color: #cfd8dc; -fx-background-radius: 50%;"
-                + " -fx-text-fill: #37474f; -fx-font-size: 10px;"
+        i.setStyle("-fx-background-color: #22303c; -fx-background-radius: 50%;"
+                + " -fx-text-fill: #c3ccd3; -fx-font-size: 10px;"
                 + " -fx-font-weight: bold; -fx-font-family: 'Georgia'; -fx-cursor: hand;");
 
         Tooltip tip = new Tooltip();
@@ -2135,12 +2518,12 @@ public class UserInterface extends Application {
     private VBox buildingCard(BuildingsTemplate t) {
 
         VBox card = new VBox(2);
-        card.setStyle("-fx-background-color: #ffffff; -fx-border-color: #78909c;"
+        card.setStyle("-fx-background-color: #17212c; -fx-border-color: #33404b;"
                 + " -fx-border-width: 1; -fx-padding: 12 14 12 14;"
                 + " -fx-background-radius: 3; -fx-border-radius: 3;");
 
         Label title = new Label(t.getName().toUpperCase());
-        title.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        title.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5cb8ff;");
 
         String kind = t.getCategory().name().replace('_', ' ').toLowerCase();
         if (t.getCare() != CareType.NONE) kind += "  \u00b7  " + t.getCare().getLabel().toLowerCase();
@@ -2154,7 +2537,7 @@ public class UserInterface extends Application {
             Label l = new Label(line);
             l.setWrapText(true);
             l.setMaxWidth(370);
-            l.setStyle("-fx-font-size: 11px; -fx-text-fill: #37474f; -fx-padding: 4 0 0 0;");
+            l.setStyle("-fx-font-size: 11px; -fx-text-fill: #c3ccd3; -fx-padding: 4 0 0 0;");
             card.getChildren().add(l);
         }
 
@@ -2211,7 +2594,7 @@ public class UserInterface extends Application {
 
             Label total = new Label(String.format("   Runs at $%s a month, all in.",
                     formatter.format(t.getUpkeep() + wageBill)));
-            total.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #c62828;");
+            total.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
             card.getChildren().add(total);
         }
 
@@ -2231,7 +2614,7 @@ public class UserInterface extends Application {
                     formatter.format(t.getCashCost())));
             imp.setWrapText(true);
             imp.setMaxWidth(370);
-            imp.setStyle("-fx-font-size: 10px; -fx-text-fill: #ef6c00;");
+            imp.setStyle("-fx-font-size: 10px; -fx-text-fill: #ffb454;");
             card.getChildren().add(imp);
         }
 
@@ -2249,7 +2632,7 @@ public class UserInterface extends Application {
     private Label cardRow(String a, String av, String b, String bv) {
         Label l = new Label(String.format("%-13s%12s   %-11s%13s", a, av, b, bv));
         l.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                + " -fx-text-fill: #37474f;");
+                + " -fx-text-fill: #c3ccd3;");
         return l;
     }
 
@@ -2385,6 +2768,46 @@ public class UserInterface extends Application {
                 out.addAll(whatCareItGives(t));
                 break;
 
+            case EDUCATION: {
+                EducationType teaches = t.getTeaches();
+                double perMonth = t.getCapacity() / (double) teaches.months();
+
+                out.add(String.format("%s places, and a course that runs %d years - so"
+                        + " about %s people finish here every month once it is full.",
+                        formatter.format(t.getCapacity()), teaches.months() / 12,
+                        formatter.format(Math.max(1, Math.round(perMonth)))));
+
+                if (teaches.isProfessional()) {
+                    /*
+                     * The whole point of a professional school, and it has to be
+                     * the first thing on the card: this is not a bigger version
+                     * of a university, it is the only way the city will ever
+                     * have one of these people who was not already one.
+                     */
+                    out.add(String.format("Without this school, no resident can ever hold"
+                            + " a %s post - the city can only import them.",
+                            jobLabel(teaches.licenses())));
+                    out.add("Takes university graduates. It raises nobody's level; what"
+                            + " they leave with is permission to practise.");
+                } else if (teaches.isBasic()) {
+                    out.add(String.format("Part of the schooling every child needs before"
+                            + " a diploma. The three stages are a pipeline, so the city"
+                            + " produces as many diplomas as its NARROWEST stage seats -"
+                            + " here that is %s.",
+                            teaches.servesAges() == null ? "adults"
+                                    : teaches.servesAges().getLabel().toLowerCase()));
+                } else {
+                    out.add(String.format("Takes people with a %s and turns them into a"
+                            + " %s.", teaches.requires().label().toLowerCase(),
+                            teaches.produces().label().toLowerCase()));
+                }
+
+                out.add(String.format("Tuition is $%.2f a month per student; the city pays"
+                        + " whatever share the education policy says.",
+                        Education.tuitionOf(teaches)));
+                break;
+            }
+
             default:
                 break;
         }
@@ -2511,8 +2934,8 @@ public class UserInterface extends Application {
         dot.setMinSize(18, 18);
         dot.setPrefSize(18, 18);
         dot.setMaxSize(18, 18);
-        dot.setStyle("-fx-background-color: #43a047; -fx-background-radius: 50%;"
-                + " -fx-border-color: #1b5e20; -fx-border-width: 1;"
+        dot.setStyle("-fx-background-color: #2f7d52; -fx-background-radius: 50%;"
+                + " -fx-border-color: #2f7d52; -fx-border-width: 1;"
                 + " -fx-border-radius: 50%; -fx-cursor: hand; -fx-padding: 0;");
         Tooltip dotTip = new Tooltip(unseen
                 ? "A purchase went through - click for the receipt"
@@ -2542,16 +2965,16 @@ public class UserInterface extends Application {
 
         VBox card = new VBox(1);
         card.setAlignment(Pos.CENTER_LEFT);
-        card.setStyle("-fx-background-color: #e8f5e9; -fx-border-color: #2e7d32;"
+        card.setStyle("-fx-background-color: #13291d; -fx-border-color: #2f7d52;"
                 + " -fx-border-width: 1; -fx-background-radius: 3;"
                 + " -fx-border-radius: 3; -fx-padding: 7 11 7 11;");
 
         Label head = new Label("LAST TRANSACTION");
-        head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #2e7d32;");
+        head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #5fd68a;");
 
         Label what = new Label(formatter.format(game.getBuildQuantity())
                 + " \u00d7  " + game.getBuildingName());
-        what.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1b5e20;");
+        what.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #5fd68a;");
 
         card.getChildren().addAll(head, what,
                 receiptLine("Materials imported", formatter.format(game.getMaterialsUsed())),
@@ -2567,8 +2990,76 @@ public class UserInterface extends Application {
     private Label receiptLine(String label, String value) {
         Label l = new Label(String.format("%-20s%12s", label, value));
         l.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                + " -fx-text-fill: #33691e;");
+                + " -fx-text-fill: #8bc34a;");
         return l;
+    }
+
+    /** Which heading a building belongs under: its care type, or what it teaches. */
+    private Object groupKeyOf(BuildingsTemplate template) {
+        if (template.getCare() != CareType.NONE) return template.getCare();
+        if (template.getTeaches() != EducationType.NONE) return template.getTeaches();
+        return CareType.NONE;
+    }
+
+    private String groupHeading(Object key) {
+        if (key instanceof CareType care) return careHeading(care);
+        if (key instanceof EducationType type) return schoolHeading(type);
+        return "";
+    }
+
+    private String groupSubtitle(Object key) {
+        if (key instanceof CareType care) return careSubtitle(care);
+        if (key instanceof EducationType type) return schoolSubtitle(type);
+        return "";
+    }
+
+    /**
+     * A school's heading, and what it is actually for.
+     *
+     * The professional schools get the blunt version because the mechanic is
+     * not guessable from the name: nothing else in the game makes a job type
+     * possible, and a player who does not know that will read a Medical School
+     * as an expensive university and never build one.
+     */
+    private String schoolHeading(EducationType type) {
+        switch (type) {
+            case ELEMENTARY: return "ELEMENTARY  -  ages 6 to 10";
+            case MIDDLE:     return "MIDDLE SCHOOL  -  ages 10 to 13";
+            case HIGH:       return "HIGH SCHOOL  -  the diploma";
+            case COLLEGE:    return "COLLEGE  -  a trade or a technical qualification";
+            case UNIVERSITY: return "UNIVERSITY  -  degrees";
+            default:         return type.getLabel().toUpperCase()
+                                     + "  -  makes " + jobLabel(type.licenses())
+                                     + "s possible at all";
+        }
+    }
+
+    /**
+     * One line, like the care subtitles beside it.
+     *
+     * The first version wrote a paragraph per group. Nine paragraphs plus nine
+     * headings plus nine rows is a screen and a half, which is how the Back
+     * button ended up off the bottom - a menu is an index, and the full
+     * explanation is one hover away on every row.
+     */
+    private String schoolSubtitle(EducationType type) {
+        if (type.isProfessional()) {
+            return "Without one, no resident can ever hold a "
+                    + jobLabel(type.licenses()) + " post - only migrants.";
+        }
+        switch (type) {
+            case ELEMENTARY:
+            case MIDDLE:
+                return "The pipeline is only as wide as its narrowest stage.";
+            case HIGH:
+                return "Where the diploma comes from.";
+            case COLLEGE:
+                return "Diploma in, college tier out. Cheaper and faster than a degree.";
+            case UNIVERSITY:
+                return "Degrees - and the entry requirement for all four schools below.";
+            default:
+                return "";
+        }
     }
 
     /** The group's name, in the player's words rather than the enum's. */
@@ -2645,7 +3136,7 @@ public class UserInterface extends Application {
            ----------------------------------------------------------------- */
         VBox quote = new VBox(1);
         quote.setAlignment(Pos.CENTER_LEFT);
-        quote.setStyle("-fx-background-color: #eceff1; -fx-border-color: #b0bec5;"
+        quote.setStyle("-fx-background-color: #16202a; -fx-border-color: #33404b;"
                 + " -fx-border-width: 1; -fx-background-radius: 3;"
                 + " -fx-border-radius: 3; -fx-padding: 9 14 9 14;");
         quote.setMaxWidth(Region.USE_PREF_SIZE);
@@ -2658,7 +3149,7 @@ public class UserInterface extends Application {
                 Label none = new Label("One " + template.getName() + " costs $"
                         + formatter.format(game.calculateTotalCost(template, 1))
                         + " today. Pick a number.");
-                none.setStyle("-fx-font-size: 11px; -fx-text-fill: #607d8b;");
+                none.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0;");
                 quote.getChildren().add(none);
                 return;
             }
@@ -2703,15 +3194,15 @@ public class UserInterface extends Application {
             if (land > free) {
                 verdict = "NOT ENOUGH LAND - short "
                         + formatter.format(land - free) + " sq ft. Annex more first.";
-                tone = "#c62828";
+                tone = "#ff6b6b";
             } else if (total > game.getCash()) {
                 verdict = "SHORT $" + formatter.format(total - game.getCash())
                         + " - you will be offered a T-Bill for the difference.";
-                tone = "#ef6c00";
+                tone = "#ffb454";
             } else {
                 verdict = "Affordable. $" + formatter.format(game.getCash() - total)
                         + " left afterwards.";
-                tone = "#2e7d32";
+                tone = "#5fd68a";
             }
             Label say = new Label(verdict);
             say.setWrapText(true);
@@ -2751,7 +3242,7 @@ public class UserInterface extends Application {
         });
 
         Button confirm = new Button("Confirm Purchase");
-        confirm.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        confirm.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
         confirm.setOnAction(e -> {
             if (runningTotal[0] > 0) {
                 // NOW we use the 'template' passed into the method
@@ -2774,7 +3265,7 @@ public class UserInterface extends Application {
 
         // 5. Assemble everything
         Label what = new Label(template.getName());
-        what.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        what.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #5cb8ff;");
 
         reprice.run();
         rootMenu.getChildren().addAll(what, totalLabel, quote, buttonGrid, reset, confirm, back);
@@ -2784,7 +3275,7 @@ public class UserInterface extends Application {
     private Label quoteLine(String label, String value) {
         Label l = new Label(String.format("%-34s%14s", label, value));
         l.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-text-fill: #37474f;");
+                + " -fx-text-fill: #c3ccd3;");
         return l;
     }
 
@@ -2855,7 +3346,7 @@ public class UserInterface extends Application {
         double blocks = Math.ceil(short_ / LandManager.BLOCK_SQ_FT);
 
         Label warning = new Label("NOT ENOUGH LAND");
-        warning.setStyle("-fx-text-fill: #c62828; -fx-font-weight: bold; -fx-font-size: 14px;");
+        warning.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold; -fx-font-size: 14px;");
 
         Label details = new Label(String.format(
                 "%,d x %s needs %s sq ft%n"
@@ -2869,7 +3360,7 @@ public class UserInterface extends Application {
                 "Buying %.0f block%s costs roughly $%s",
                 blocks, blocks == 1 ? "" : "s",
                 formatter.format(land.getNextBlockCost() * blocks)));
-        cost.setStyle("-fx-text-fill: #555555;");
+        cost.setStyle("-fx-text-fill: #8fa3b0;");
 
         Button toLand = new Button("Go to the Land Office");
         toLand.setOnAction(e -> showLandMenu());
@@ -2960,7 +3451,7 @@ public class UserInterface extends Application {
         clearMenu();
 
         Label heading = new Label("THE MONEY IS IN, THE BUILDING IS NOT");
-        heading.setStyle("-fx-text-fill: #c62828; -fx-font-weight: bold; -fx-font-size: 14px;");
+        heading.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold; -fx-font-size: 14px;");
 
         double price = game.calculateTotalCost(selected, quantity);
 
@@ -3006,9 +3497,9 @@ public class UserInterface extends Application {
         double howFarUp = (quote.marketRate() - floor) / span;
 
         String colour;
-        if (howFarUp >= .55)      colour = "#B00020";   // deep into the expensive half
-        else if (howFarUp >= .25) colour = "#C77700";   // getting dear
-        else                      colour = "#2E7D32";   // ordinary money
+        if (howFarUp >= .55)      colour = "#ff6b6b";   // deep into the expensive half
+        else if (howFarUp >= .25) colour = "#ffb454";   // getting dear
+        else                      colour = "#5fd68a";   // ordinary money
         return "-fx-text-fill: " + colour + "; -fx-font-weight: bold; -fx-padding: 4 0 0 0;";
     }
     
@@ -3035,7 +3526,7 @@ public class UserInterface extends Application {
             formatter.format(game.minimumIssueSize())));
     terms.setWrapText(true);
     terms.setMaxWidth(TABLE_WIDTH);
-    terms.setStyle("-fx-text-fill: #37474f; -fx-font-size: 11px; -fx-padding: 4 0 8 0;");
+    terms.setStyle("-fx-text-fill: #c3ccd3; -fx-font-size: 11px; -fx-padding: 4 0 8 0;");
     terms.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
     // Container for duration buttons
@@ -3103,7 +3594,7 @@ public class UserInterface extends Application {
             terms.setText("Add an amount to see what it would cost.");
             impact.setText(String.format("Market rate right now: %.2f%%",
                     game.getDebtManager().getRate() * 100));
-            impact.setStyle("-fx-text-fill: #555555; -fx-padding: 4 0 0 0;");
+            impact.setStyle("-fx-text-fill: #8fa3b0; -fx-padding: 4 0 0 0;");
             confirm.setDisable(true);
             return;
         }
@@ -3149,7 +3640,7 @@ public class UserInterface extends Application {
     });
     downGrid.getChildren().add(reset);
 
-    confirm.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+    confirm.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
     confirm.setOnAction(e -> {
         if (requestedAmount[0] > 0) {
             // NOTE: the handle*Logic methods already returned a summary of the
@@ -3189,7 +3680,7 @@ public class UserInterface extends Application {
 
         Label rate = new Label(String.format("New market rate: %.2f%%",
                 game.getInterestRate() * 100));
-        rate.setStyle("-fx-text-fill: #555555; -fx-padding: 10 0 0 0;");
+        rate.setStyle("-fx-text-fill: #8fa3b0; -fx-padding: 10 0 0 0;");
 
         Button back = new Button("Back to Finance");
         back.setOnAction(e -> showFinanceMenu());
@@ -3387,7 +3878,7 @@ public class UserInterface extends Application {
         double rate = hi.getReportOperatingRate();
         Label running = monoLabel(String.format("%-24s%.1f%%", "Running at:", rate * 100));
         running.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (rate < .9 ? "#c62828" : "#2e7d32") + ";");
+                + (rate < .9 ? "#ff6b6b" : "#5fd68a") + ";");
         plant.getChildren().add(running);
 
         if (rate < .9) {
@@ -3410,7 +3901,7 @@ public class UserInterface extends Application {
         Label marginLine = monoLabel(String.format("%-24s$%s /tonne",
                 "Conversion margin:", formatter.format(conversion)));
         marginLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (conversion <= 0 ? "#c62828" : "#2e7d32") + ";");
+                + (conversion <= 0 ? "#ff6b6b" : "#5fd68a") + ";");
         margin.getChildren().add(marginLine);
         margin.getChildren().add(monoLabel(
                 "  wages, power and water all come out of this"));
@@ -3486,7 +3977,7 @@ public class UserInterface extends Application {
             Label line = monoLabel("  cannot borrow for "
                     + credit.getBlockedMonths(BusinessDebtManager.HEAVY_INDUSTRY)
                     + " more months");
-            line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+            line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ff6b6b;");
             distress.getChildren().add(line);
             column.getChildren().add(distress);
         }
@@ -3562,8 +4053,8 @@ public class UserInterface extends Application {
                         : jobless < .03 ? "- nobody spare; every new job goes unfilled"
                         : "- a healthy amount of slack"));
         joblessLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                + " -fx-text-fill: " + (jobless > .25 || jobless < .03 ? "#c62828"
-                        : jobless > .15 ? "#ef6c00" : "#2e7d32") + ";");
+                + " -fx-text-fill: " + (jobless > .25 || jobless < .03 ? "#ff6b6b"
+                        : jobless > .15 ? "#ffb454" : "#5fd68a") + ";");
         city.getChildren().add(joblessLine);
 
         city.getChildren().add(monoLabel(String.format("%-26s%.0f per 100 working",
@@ -3584,7 +4075,7 @@ public class UserInterface extends Application {
         Label netLine = monoLabel(String.format("%-26s%s%s", "Net:",
                 net >= 0 ? "+" : "-", flowText(Math.abs(net))));
         netLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                + " -fx-text-fill: " + (net >= 0 ? "#2e7d32" : "#c62828") + ";");
+                + " -fx-text-fill: " + (net >= 0 ? "#5fd68a" : "#ff6b6b") + ";");
         month.getChildren().add(netLine);
         column.getChildren().add(month);
 
@@ -3604,26 +4095,26 @@ public class UserInterface extends Application {
             why = "Nobody else can fit. Every flatshare and every doubled-up household "
                 + "the city can form has already formed - build homes and the queue "
                 + "outside starts moving again.";
-            tone = "#c62828";
+            tone = "#ff6b6b";
         } else if (migration.getLastCrowding() < .95) {
             why = String.format("Housing is tight enough to turn people away: only %.0f%% "
                     + "of the people this city attracts can find somewhere to live. The "
                     + "jobs are still pulling.", migration.getLastCrowding() * 100);
-            tone = "#ef6c00";
+            tone = "#ffb454";
         } else if (migration.getLastDepartures() > 0) {
             why = String.format("People are leaving. %.0f%% of the city's payroll sits in "
                     + "trades that have been shrinking for a year or have stopped paying "
                     + "altogether.", migration.getLastDecliningShare() * 100);
-            tone = "#c62828";
+            tone = "#ff6b6b";
         } else if (target > population) {
             why = "Work is going begging and there is room to house whoever takes it. "
                 + "People are still arriving.";
-            tone = "#2e7d32";
+            tone = "#5fd68a";
         } else {
             why = "The city is about the size its jobs and housing support. Nobody is "
                 + "leaving - a shortage of work is unemployment, not an exodus, until a "
                 + "whole trade has been dying for a year.";
-            tone = "#546e7a";
+            tone = "#8fa3b0";
         }
         Label whyLabel = monoLabel(why);
         whyLabel.setWrapText(true);
@@ -3637,7 +4128,7 @@ public class UserInterface extends Application {
             Label row = monoLabel(String.format("   %s work has been shrinking %d months",
                     tier.getLabel(), migration.getDecliningStreak(tier)));
             row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #c62828;");
+                    + " -fx-text-fill: #ff6b6b;");
             pull.getChildren().add(row);
         }
         column.getChildren().add(pull);
@@ -3656,7 +4147,7 @@ public class UserInterface extends Application {
                     band.getLabel(), formatter.format(count), share * 100,
                     "#".repeat(Math.max(0, blocks))));
             row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                    + " -fx-text-fill: " + (band.isWorkingAge() ? "#2e7d32" : "#546e7a") + ";");
+                    + " -fx-text-fill: " + (band.isWorkingAge() ? "#5fd68a" : "#8fa3b0") + ";");
             pyramid.getChildren().add(row);
         }
         pyramid.getChildren().add(monoLabel(String.format(
@@ -3701,7 +4192,7 @@ public class UserInterface extends Application {
         Label carried = monoLabel("  they are still on the payroll and still get paid"
                 + " - the loss is output, not wages");
         carried.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                + " -fx-text-fill: #546e7a;");
+                + " -fx-text-fill: #8fa3b0;");
         care.getChildren().add(carried);
 
         String illness;
@@ -3712,21 +4203,21 @@ public class UserInterface extends Application {
                     + "hospitals make it milder rather than shorter.",
                     CityCalendar.format(health.getOutbreakStarted()),
                     health.getOutbreakSeverity() * 100, health.getBaselineRate() * 100);
-            illnessTone = "#c62828";
+            illnessTone = "#ff6b6b";
         } else if (health.getCoverage() <= 0) {
             illness = String.format("There is no general care in this city at all, so %.0f%% "
                     + "of every month's work simply does not happen. A walk-in clinic is the "
                     + "cheapest thing on the healthcare list.", sick * 100);
-            illnessTone = "#c62828";
+            illnessTone = "#ff6b6b";
         } else if (health.getCoverage() < 1) {
             illness = String.format("Clinics and hospitals reach %.0f%% of the city. Covering "
                     + "the rest would take the absence rate down toward %.0f%%.",
                     health.getCoverage() * 100, Health.WELL_SERVED_RATE * 100);
-            illnessTone = "#ef6c00";
+            illnessTone = "#ffb454";
         } else {
             illness = "Everyone can get seen. This is as healthy as a workforce gets - "
                 + "people still fall ill, and an outbreak can still arrive.";
-            illnessTone = "#2e7d32";
+            illnessTone = "#5fd68a";
         }
         Label illnessLabel = monoLabel(illness);
         illnessLabel.setWrapText(true);
@@ -3748,7 +4239,7 @@ public class UserInterface extends Application {
                     "Lying unburied:", formatter.format(service.getUnburied()),
                     health.getUnburiedRate() * 100));
             dead.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                    + " -fx-text-fill: #c62828;");
+                    + " -fx-text-fill: #ff6b6b;");
             care.getChildren().add(dead);
         }
 
@@ -3777,7 +4268,7 @@ public class UserInterface extends Application {
                     type.getLabel() + ":", cover * 100,
                     formatter.format(beds), formatter.format(served), buys));
             row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: " + (cover < .5 ? "#ef6c00" : "#546e7a") + ";");
+                    + " -fx-text-fill: " + (cover < .5 ? "#ffb454" : "#8fa3b0") + ";");
             care.getChildren().add(row);
         }
 
@@ -3872,18 +4363,18 @@ public class UserInterface extends Application {
         String pressureTone;
         if (shares < .5 && doubled < .5) {
             pressure = "Everyone who wants their own front door has one.";
-            pressureTone = "#2e7d32";
+            pressureTone = "#5fd68a";
         } else if (doubled < .5) {
             pressure = String.format("%s households are flatshares - five single adults to "
                     + "a home, which is what people do first when housing is tight. They "
                     + "would rather live alone.", formatter.format(shares));
-            pressureTone = "#ef6c00";
+            pressureTone = "#ffb454";
         } else {
             pressure = String.format("%s flatshares, and %s households are doubled up two "
                     + "to a home. Doubling up is the last resort - the city has run out of "
                     + "single adults to crowd and is now crowding families.",
                     formatter.format(shares), formatter.format(doubled));
-            pressureTone = "#c62828";
+            pressureTone = "#ff6b6b";
         }
         Label pressureLabel = monoLabel(pressure);
         pressureLabel.setWrapText(true);
@@ -3922,13 +4413,13 @@ public class UserInterface extends Application {
         head.append(String.format("%10s", "total"));
         Label shapeHeader = monoLabel(head.toString());
         shapeHeader.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                + " -fx-font-size: 10px; -fx-text-fill: #546e7a;");
+                + " -fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
         homes.getChildren().add(shapeHeader);
 
         Label wageRow = monoLabel(cellRow("  pays per worker",
                 tier -> "$" + formatter.format(tier.getMonthlyWage()), ""));
         wageRow.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
-                + " -fx-text-fill: #90a4ae;");
+                + " -fx-text-fill: #8fa3b0;");
         homes.getChildren().add(wageRow);
 
         for (FamilyStructure shape : FamilyStructure.values()) {
@@ -3943,7 +4434,7 @@ public class UserInterface extends Application {
             Label row = monoLabel(line);
             row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
                     + (shape == FamilyStructure.SHARED_ADULTS
-                            ? " -fx-text-fill: #ef6c00;" : ""));
+                            ? " -fx-text-fill: #ffb454;" : ""));
             homes.getChildren().add(row);
         }
 
@@ -3967,20 +4458,116 @@ public class UserInterface extends Application {
                 String.format("%-26s%,d", "Positions:", totalJobs),
                 String.format("%-26s%,d", "Unfilled:", totalVacancies));
 
-        Label jobHeader = monoLabel(String.format("%n%-20s %8s %10s %10s %14s",
-                "job", "posts", "unfilled", "filled", "payroll"));
+        /* -----------------------------------------------------------------
+           THE SKILL LADDER, which is the explanation for everything below it.
+
+           The per-job table says a post is unfilled. It cannot say WHY, and
+           until the labour market existed there was no why - the workforce was
+           one pool of interchangeable adults and a city with no schools staffed
+           220 doctor posts out of it. Now a post is unfilled because nobody
+           qualified is available, and this block is where a player can see that
+           rather than infer it.
+
+           SUPPLY IS NOT WORKERS. A band's supply is its own people plus anyone
+           from ABOVE who could not find work at their own level - graduates
+           labouring - which is why the college row can show more supply than it
+           has college-trained residents. That cascade is the reason an
+           oversupply of graduates depresses the diploma wage instead of sitting
+           in a pool of its own.
+           ----------------------------------------------------------------- */
+        LabourMarket market = game.getLabourMarket();
+        PopulationManager pm2 = game.getPopulationManager();
+        double[] ownByBand = pm2.workforceByBand();
+        double[] postsByBand = pm2.postsByBand();
+        double[] supplyByBand = pm2.supplyByBand();
+
+        Label ladderHead = monoLabel(String.format("%n%-14s %9s %9s %9s %8s %9s",
+                "skill", "workers", "posts", "supply", "tight", "pay"));
+        ladderHead.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                + " -fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
+        labour.getChildren().add(ladderHead);
+
+        for (WageBand wb : WageBand.values()) {
+            int b = wb.ordinal();
+            double premium = 1;
+            for (JobType job : JobType.values()) {
+                if (WageBand.of(job) == wb) { premium = market.premium(job); break; }
+            }
+            Label row = monoLabel(String.format("%-14s %,9.0f %,9.0f %,9.0f %8.2f %8.2fx",
+                    wb.label(), ownByBand[b], postsByBand[b], supplyByBand[b],
+                    market.getTightness(wb), premium));
+            // Red when the city is paying over the odds to staff it, which is
+            // the shortage showing up as money before it shows up as a gap.
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: " + (premium > 1.05 ? "#ff6b6b"
+                            : premium < .95 ? "#8fa3b0" : "#c3ccd3") + ";");
+            labour.getChildren().add(row);
+        }
+
+        /*
+         * THE GATED PROFESSIONS, which the ladder above cannot show.
+         *
+         * A band row says the city has eight hundred graduates and two hundred
+         * graduate posts, and every one of those posts still stands empty if
+         * they are doctor posts and nobody is a doctor. That is not visible
+         * anywhere else, and "unfilled" on the job table below reads as a
+         * labour shortage when it is actually a licensing one.
+         */
+        boolean anyGated = false;
+        for (JobType job : JobType.values()) {
+            if (!PopulationManager.isGated(job)) continue;
+            if (pm2.getJobs()[job.ordinal()] <= 0 && pm2.getLicensed(job) <= 0) continue;
+            anyGated = true;
+        }
+
+        if (anyGated) {
+            Label gatedHead = monoLabel(String.format("%n%-22s %9s %9s   %s",
+                    "profession", "licensed", "posts", "school"));
+            gatedHead.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                    + " -fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
+            labour.getChildren().add(gatedHead);
+
+            for (EducationType type : EducationType.values()) {
+                if (!type.isProfessional()) continue;
+                JobType job = type.licenses();
+                int posts = pm2.getJobs()[job.ordinal()];
+                double held = pm2.getLicensed(job);
+                if (posts <= 0 && held <= 0) continue;
+
+                boolean built = game.getBuildingManager()
+                        .getBuiltEducationPlaces()[type.ordinal()] > 0;
+
+                Label row = monoLabel(String.format("%-22s %,9.0f %,9d   %s",
+                        jobLabel(job), held, posts,
+                        built ? "yes" : "NONE - imports only"));
+                row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                        + " -fx-text-fill: " + (held < posts ? "#ff6b6b" : "#c3ccd3") + ";");
+                labour.getChildren().add(row);
+            }
+        }
+
+        Label ladderNote = monoLabel(String.format(
+                "  minimum wage $%s - every wage in the city is a multiple of it",
+                formatter.format(market.getMinimumWage())));
+        ladderNote.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                + " -fx-text-fill: #78909c;");
+        labour.getChildren().add(ladderNote);
+
+        Label jobHeader = monoLabel(String.format("%n%-20s %8s %10s %10s %10s %14s",
+                "job", "posts", "unfilled", "filled", "wage", "payroll"));
         jobHeader.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                + " -fx-font-size: 10px; -fx-text-fill: #546e7a;");
+                + " -fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
         labour.getChildren().add(jobHeader);
 
         JobType[] jobTypes = JobType.values();
         for (int i = 0; i < jobs.length; i++) {
             if (jobs[i] <= 0) continue;
-            Label row = monoLabel(String.format("%-20s %,8d %,10d %9.0f%% %14s",
+            Label row = monoLabel(String.format("%-20s %,8d %,10d %9.0f%% %10.3f %14s",
                     jobTypes[i].name(), jobs[i], vacancies[i], fillRates[i] * 100,
+                    jobWage[i],
                     "$" + formatter.format(jobWage[i] * jobs[i])));
             row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: " + (fillRates[i] < .9 ? "#c62828" : "#37474f") + ";");
+                    + " -fx-text-fill: " + (fillRates[i] < .9 ? "#ff6b6b" : "#c3ccd3") + ";");
             labour.getChildren().add(row);
         }
 
@@ -3991,15 +4578,15 @@ public class UserInterface extends Application {
                     + "That is unemployment, not an exodus - people do not leave over it "
                     + "until a whole trade has been dying for a year.",
                     workforce - totalJobs);
-            labourTone = "#ef6c00";
+            labourTone = "#ffb454";
         } else if (totalVacancies > 0) {
             labourNote = String.format("Labour shortage: %,d positions across the city "
                     + "stand empty, and every one of them is pulling people toward the "
                     + "city.", totalVacancies);
-            labourTone = "#2e7d32";
+            labourTone = "#5fd68a";
         } else {
             labourNote = "Every position is filled and every worker has one.";
-            labourTone = "#546e7a";
+            labourTone = "#8fa3b0";
         }
         Label labourLabel = monoLabel(labourNote);
         labourLabel.setWrapText(true);
@@ -4074,13 +4661,13 @@ public class UserInterface extends Application {
         Label rate = monoLabel(String.format("%-32s%.1f%%", "Saving rate:",
                 hh.getSavingRate() * 100));
         rate.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (hh.getSavingRate() < 0 ? "#c62828"
-                        : hh.getSavingRate() < .03 ? "#ef6c00" : "#2e7d32") + ";");
+                + (hh.getSavingRate() < 0 ? "#ff6b6b"
+                        : hh.getSavingRate() < .03 ? "#ffb454" : "#5fd68a") + ";");
         result.getChildren().add(rate);
 
         if (hh.isLivingBeyondIncome()) {
             Label warn = monoLabel("  the people are spending more than they earn");
-            warn.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+            warn.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ff6b6b;");
             result.getChildren().add(warn);
             result.getChildren().add(monoLabel(
                     "  nothing in the model funds this - it is money from nowhere"));
@@ -4108,7 +4695,7 @@ public class UserInterface extends Application {
         Label rentLine = monoLabel(String.format("%-32s%.1f%% of take-home",
                 "Rent:", burden * 100));
         rentLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (burden > .35 ? "#c62828" : burden > .25 ? "#ef6c00" : "#2e7d32") + ";");
+                + (burden > .35 ? "#ff6b6b" : burden > .25 ? "#ffb454" : "#5fd68a") + ";");
         afford.getChildren().add(rentLine);
 
         if (burden > .35) {
@@ -4140,7 +4727,7 @@ public class UserInterface extends Application {
                 "who", "homes", "people", "earned", "tax", "cpp", "pension",
                 "spends", "left"));
         tierHead.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                + " -fx-font-size: 10px; -fx-text-fill: #546e7a;");
+                + " -fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
         tiers.getChildren().add(tierHead);
 
         for (int row = 0; row < hh.getRowCount(); row++) {
@@ -4158,7 +4745,7 @@ public class UserInterface extends Application {
                     "$" + formatter.format(hh.getRowSpending(row)),
                     (left < 0 ? "-$" : "$") + formatter.format(Math.abs(left))));
             line.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: " + (left < 0 ? "#c62828" : "#2e7d32") + ";");
+                    + " -fx-text-fill: " + (left < 0 ? "#ff6b6b" : "#5fd68a") + ";");
             tiers.getChildren().add(line);
         }
 
@@ -4180,7 +4767,7 @@ public class UserInterface extends Application {
         verdictLabel.setWrapText(true);
         verdictLabel.setMaxWidth(TABLE_WIDTH - 40);
         verdictLabel.setStyle("-fx-font-size: 11px; -fx-padding: 8 0 0 0;"
-                + " -fx-text-fill: " + (broke == 0 ? "#2e7d32" : "#ef6c00") + ";");
+                + " -fx-text-fill: " + (broke == 0 ? "#5fd68a" : "#ffb454") + ";");
         tiers.getChildren().add(verdictLabel);
 
         if (hh.getRowPeople(HouseholdAccounts.RETIRED) >= .5) {
@@ -4195,7 +4782,7 @@ public class UserInterface extends Application {
             pensions.setWrapText(true);
             pensions.setMaxWidth(TABLE_WIDTH - 40);
             pensions.setStyle("-fx-font-size: 11px; -fx-padding: 4 0 0 0; -fx-text-fill: "
-                    + (retiredLeft >= 0 ? "#2e7d32" : "#c62828") + ";");
+                    + (retiredLeft >= 0 ? "#5fd68a" : "#ff6b6b") + ";");
             tiers.getChildren().add(pensions);
         }
         column.getChildren().add(tiers);
@@ -4312,7 +4899,7 @@ public class UserInterface extends Application {
         Label retailNet = monoLabel(String.format("NET INCOME (RETAIL):             $%s",
                 formatter.format(ch.getReportRetailNetIncome())));
         retailNet.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (ch.getReportRetailNetIncome() < 0 ? "#c62828" : "#2e7d32") + ";");
+                + (ch.getReportRetailNetIncome() < 0 ? "#ff6b6b" : "#5fd68a") + ";");
         retailStatement.getChildren().add(retailNet);
 
         /* ---------------- REAL ESTATE COMPANY ---------------- */
@@ -4334,7 +4921,7 @@ public class UserInterface extends Application {
         Label realEstateNet = monoLabel(String.format("NET INCOME (REAL ESTATE):        $%s",
                 formatter.format(ch.getReportRealEstateNetIncome())));
         realEstateNet.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (ch.getReportRealEstateNetIncome() < 0 ? "#c62828" : "#2e7d32") + ";");
+                + (ch.getReportRealEstateNetIncome() < 0 ? "#ff6b6b" : "#5fd68a") + ";");
         realEstateStatement.getChildren().add(realEstateNet);
 
         /* ---------------- CONSOLIDATED ---------------- */
@@ -4349,7 +4936,7 @@ public class UserInterface extends Application {
         Label totalNet = monoLabel(String.format("TOTAL NET INCOME:                $%s",
                 formatter.format(ch.getReportTotalNetIncome())));
         totalNet.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: "
-                + (ch.getReportTotalNetIncome() < 0 ? "#c62828" : "#2e7d32") + ";");
+                + (ch.getReportTotalNetIncome() < 0 ? "#ff6b6b" : "#5fd68a") + ";");
 
         consolidated.getChildren().addAll(
                 consolidatedHeading,
@@ -4451,7 +5038,7 @@ public class UserInterface extends Application {
         VBox assets = reportSection("");
         Label totalAssets = monoLabel(String.format("%-32s $%s", "TOTAL ASSETS:",
                 formatter.format(bs.getTotalAssets())));
-        totalAssets.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        totalAssets.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #5cb8ff;");
         assets.getChildren().add(totalAssets);
         column.getChildren().add(assets);
 
@@ -4494,13 +5081,13 @@ public class UserInterface extends Application {
 
         if (credit.getSpread(sector) >= .0799) {
             Label maxed = monoLabel("Credit spread is at its ceiling.");
-            maxed.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #c62828;");
+            maxed.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #ff6b6b;");
             box.getChildren().add(maxed);
         }
 
         if (principal > 0 && netIncome < 0) {
             Label spiral = monoLabel("Losing money while servicing debt - borrowing again next month.");
-            spiral.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #c62828;");
+            spiral.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #ff6b6b;");
             box.getChildren().add(spiral);
         }
 
@@ -4530,7 +5117,7 @@ public class UserInterface extends Application {
         totalLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
         Label note = new Label("Reports and graphs are muted while fast-forwarding.");
-        note.setStyle("-fx-font-size: 11px; -fx-text-fill: #666666;");
+        note.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0;");
 
         javafx.scene.layout.FlowPane grid = new javafx.scene.layout.FlowPane(10, 10);
         grid.setAlignment(Pos.CENTER);
@@ -4555,7 +5142,7 @@ public class UserInterface extends Application {
         });
 
         Button run = new Button("Run");
-        run.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        run.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
         run.setOnAction(e -> {
             if (months[0] > 0) {
                 int completed = game.simulateMonths(months[0]);
@@ -4608,12 +5195,12 @@ public class UserInterface extends Application {
             VBox problem = reportSection("SOMETHING WENT WRONG");
             for (String line : failure.split("\n")) {
                 Label item = monoLabel("  " + line);
-                item.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+                item.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ff6b6b;");
                 problem.getChildren().add(item);
             }
             Label advice = monoLabel("  The months that did run are real. "
                     + "Save or reload before continuing.");
-            advice.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #555555;");
+            advice.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
             problem.getChildren().add(advice);
             column.getChildren().add(problem);
         }
@@ -4629,7 +5216,7 @@ public class UserInterface extends Application {
 
             Label item = monoLabel("  " + line);
             item.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
-                    + (good ? "#2e7d32" : "#c62828") + ";");
+                    + (good ? "#5fd68a" : "#ff6b6b") + ";");
             headlines.getChildren().add(item);
         }
         column.getChildren().add(headlines);
@@ -4666,7 +5253,7 @@ public class UserInterface extends Application {
         if (skip.getWriteOffsDuringSkip() > 0) {
             Label wo = monoLabel(String.format("%-20s%s written off by lenders",
                     "Restructuring", money(skip.getWriteOffsDuringSkip())));
-            wo.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ef6c00;");
+            wo.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ffb454;");
             econ.getChildren().add(wo);
         }
         column.getChildren().add(econ);
@@ -4688,7 +5275,7 @@ public class UserInterface extends Application {
             for (TimeSkipReport.BuildingChange change : built) {
                 Label line = monoLabel(String.format("  %+d  %s", change.change, change.name));
                 line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
-                        + (change.isGain() ? "#2e7d32" : "#c62828") + ";");
+                        + (change.isGain() ? "#5fd68a" : "#ff6b6b") + ";");
                 buildings.getChildren().add(line);
             }
         }
@@ -4710,7 +5297,7 @@ public class UserInterface extends Application {
             for (DemolitionLog.Entry entry : lost) {
                 Label line = monoLabel(String.format("  month %,d: %,d x %s (%s)",
                         entry.month, entry.quantity, entry.building, entry.sector));
-                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #c62828;");
+                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ff6b6b;");
                 demolished.getChildren().add(line);
             }
             demolished.getChildren().add(monoLabel(
@@ -4737,7 +5324,7 @@ public class UserInterface extends Application {
                         "%-20s%d, running for %d months in total",
                         "Outbreaks", skip.getOutbreaks(), skip.getMonthsInOutbreak()));
                 epidemic.setStyle("-fx-font-family: 'Courier New';"
-                        + " -fx-font-weight: bold; -fx-text-fill: #c62828;");
+                        + " -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
                 illness.getChildren().add(epidemic);
             } else {
                 illness.getChildren().add(monoLabel(
@@ -4756,7 +5343,7 @@ public class UserInterface extends Application {
                         "%-20s%,.0f at its worst - build a cemetery or a crematorium",
                         "Left unburied", skip.getPeakUnburied()));
                 dead.setStyle("-fx-font-family: 'Courier New';"
-                        + " -fx-font-weight: bold; -fx-text-fill: #c62828;");
+                        + " -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
                 illness.getChildren().add(dead);
             }
             column.getChildren().add(illness);
@@ -4828,7 +5415,7 @@ public class UserInterface extends Application {
 
         Label line = monoLabel(String.format("%-20s%s", label, value));
         line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
-                + (bad ? "#c62828" : good ? "#2e7d32" : "#666666") + ";");
+                + (bad ? "#ff6b6b" : good ? "#5fd68a" : "#8fa3b0") + ";");
         section.getChildren().add(line);
     }
 
@@ -4873,7 +5460,7 @@ public class UserInterface extends Application {
     private void addNetIncomeLine(VBox section, String label, double value) {
         Label line = monoLabel(String.format("%-32s $%s", label, formatter.format(value)));
         line.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (value < 0 ? "#c62828" : "#2e7d32") + ";");
+                + (value < 0 ? "#ff6b6b" : "#5fd68a") + ";");
         section.getChildren().add(line);
     }
 
@@ -4935,11 +5522,11 @@ public class UserInterface extends Application {
 
         if (ih.getReportWithheld() > 0) {
             Label held = monoLabel("Price is below cost - holding stock back.");
-            held.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #c62828;");
+            held.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #ff6b6b;");
             marketSection.getChildren().add(held);
         } else if (market.isShortage()) {
             Label tight = monoLabel("Local supply short - buyers are importing.");
-            tight.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #2e7d32;");
+            tight.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #5fd68a;");
             marketSection.getChildren().add(tight);
         }
         column.getChildren().add(marketSection);
@@ -4954,7 +5541,7 @@ public class UserInterface extends Application {
             VBox warning = reportSection("[WARNING] WAREHOUSE ABOVE 90%",
                     "Production may stall due to limited storage.");
             warning.getChildren().get(0).setStyle(
-                    "-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #c62828;");
+                    "-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #ff6b6b;");
             column.getChildren().add(warning);
         }
 
@@ -5021,7 +5608,7 @@ public class UserInterface extends Application {
         // cash reserve is credited with the PRE-tax figure while the city also
         // collects the tax, so the same money is counted twice.
         Label taxNote = monoLabel("Note: cash is credited with the pre-tax figure.");
-        taxNote.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #c62828;");
+        taxNote.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #ff6b6b;");
         bottomLine.getChildren().add(taxNote);
         column.getChildren().add(bottomLine);
 
@@ -5047,7 +5634,7 @@ public class UserInterface extends Application {
         VBox assets = reportSection("");
         Label totalAssets = monoLabel(String.format("%-32s $%s", "TOTAL ASSETS:",
                 formatter.format(bs.getTotalAssets())));
-        totalAssets.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        totalAssets.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #5cb8ff;");
         assets.getChildren().add(totalAssets);
         column.getChildren().add(assets);
 
@@ -5063,7 +5650,7 @@ public class UserInterface extends Application {
         VBox tie = reportSection("");
         Label totalLE = monoLabel(String.format("%-32s $%s", "TOTAL LIABILITIES + EQUITY:",
                 formatter.format(bs.getTotalLiabilitiesAndEquity())));
-        totalLE.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        totalLE.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #5cb8ff;");
         tie.getChildren().add(totalLE);
         column.getChildren().add(tie);
 
@@ -5278,26 +5865,20 @@ public class UserInterface extends Application {
        ===================================================================== */
 
     /** Amber from three-quarters, red once there is no headroom left. */
-    private Label utilityLine(String label, double consumption, double production) {
+    private HBox utilityLine(String label, double consumption, double production) {
 
         if (production <= 0) {
             // No plant at all. Not a shortage until something actually draws.
-            return statLine(label, consumption > 0 ? "no supply" : "-");
+            return statLine(label, consumption > 0 ? "no supply" : "-",
+                    consumption > 0 ? PANEL_BAD : null);
         }
 
         double used = consumption / production;
 
-        Label row = statLine(label, formatter.format(used * 100) + "% used");
-
-        String colour = (used >= 1.0) ? "#c62828"
-                      : (used >= .75) ? "#ef6c00"
-                                      : "#2e7d32";
-        boolean bold = used >= .75;
-
-        row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                + " -fx-text-fill: " + colour + ";"
-                + (bold ? " -fx-font-weight: bold;" : ""));
-        return row;
+        String colour = (used >= 1.0) ? PANEL_BAD
+                      : (used >= .75) ? PANEL_WARN
+                                      : PANEL_GOOD;
+        return statLine(label, formatter.format(used * 100) + "% used", colour);
     }
 
     /**
@@ -5313,29 +5894,19 @@ public class UserInterface extends Application {
      * STRAINED (0.85) gives the amber step, which is the useful one: it is the
      * last point at which building more roads is cheaper than the congestion.
      */
-    private Label roadLine() {
+    private HBox roadLine() {
 
         InfrastructureManager roads = game.getInfrastructureManager();
-        Label row = statLine("Roads", roadSummary());
-
-        if (roads.isCongested()) {
-            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
-        } else if (roads.isStrained()) {
-            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #ef6c00; -fx-font-weight: bold;");
-        } else {
-            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #2e7d32;");
-        }
-        return row;
+        return statLine("Roads", roadSummary(),
+                roads.isCongested() ? PANEL_BAD
+                        : roads.isStrained() ? PANEL_WARN : PANEL_GOOD);
     }
 
     /** A bold green/red status row, e.g. "System Stability:  STABLE". */
     private Label statusLabel(String label, boolean good, String goodText, String badText) {
         Label line = monoLabel(String.format("%-24s%s", label, good ? goodText : badText));
         line.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (good ? "#2e7d32" : "#c62828") + ";");
+                + (good ? "#5fd68a" : "#ff6b6b") + ";");
         return line;
     }
 
@@ -5343,7 +5914,7 @@ public class UserInterface extends Application {
     private VBox criticalSection(String heading, String... rows) {
         VBox box = reportSection(heading, rows);
         box.getChildren().get(0).setStyle(
-                "-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #c62828;");
+                "-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #ff6b6b;");
         return box;
     }
 
@@ -5414,7 +5985,7 @@ public class UserInterface extends Application {
         Button toggle = new Button(protectedNow
                 ? "Stop protecting construction" : "Protect construction");
         if (protectedNow) {
-            toggle.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
+            toggle.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
         }
         toggle.setOnAction(e -> {
             game.setAutoSubsidised(PolicySector.CONSTRUCTION,
@@ -5490,7 +6061,7 @@ public class UserInterface extends Application {
         VBox total = reportSection("");
         Label gdpTotal = monoLabel(String.format("%-32s $%s", "GDP = C + I + G + NX:",
                 formatter.format(na.getGdp())));
-        gdpTotal.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #1a237e;");
+        gdpTotal.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: #5cb8ff;");
         total.getChildren().add(gdpTotal);
         column.getChildren().add(total);
 
@@ -5577,14 +6148,14 @@ public class UserInterface extends Application {
                     "Net cost to the city:", formatter.format(hc.getNetCost()),
                     hc.getCostRecovery() * 100));
             net.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                    + " -fx-text-fill: #ef6c00;");
+                    + " -fx-text-fill: #ffb454;");
             service.getChildren().add(net);
 
             Label deficit = monoLabel("A net-deficit business by design: patients pay a"
                     + " little, the city pays the rest. What it buys is on the People screen.");
             deficit.setWrapText(true);
             deficit.setMaxWidth(TABLE_WIDTH - 40);
-            deficit.setStyle("-fx-font-size: 11px; -fx-text-fill: #546e7a; -fx-padding: 4 0 0 0;");
+            deficit.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0; -fx-padding: 4 0 0 0;");
             service.getChildren().add(deficit);
             column.getChildren().add(service);
         }
@@ -5609,8 +6180,8 @@ public class UserInterface extends Application {
         Label gapLine = monoLabel(String.format("%-23s %.0f%% covered by contributions",
                 "Shortfall on the rest:", coverage * 100));
         gapLine.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                + " -fx-text-fill: " + (coverage >= .9 ? "#2e7d32"
-                        : coverage >= .5 ? "#ef6c00" : "#c62828") + ";");
+                + " -fx-text-fill: " + (coverage >= .9 ? "#5fd68a"
+                        : coverage >= .5 ? "#ffb454" : "#ff6b6b") + ";");
         pension.getChildren().add(gapLine);
 
         Label gapNote = monoLabel(coverage >= .99
@@ -5621,7 +6192,7 @@ public class UserInterface extends Application {
                         formatter.format(em.getPensionShortfall())));
         gapNote.setWrapText(true);
         gapNote.setMaxWidth(TABLE_WIDTH - 40);
-        gapNote.setStyle("-fx-font-size: 11px; -fx-text-fill: #546e7a; -fx-padding: 4 0 0 0;");
+        gapNote.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0; -fx-padding: 4 0 0 0;");
         pension.getChildren().add(gapNote);
         column.getChildren().add(pension);
 
@@ -5668,7 +6239,7 @@ public class UserInterface extends Application {
                             formatter.format(-em.getSectorSalesTax(owed))));
             refund.setWrapText(true);
             refund.setMaxWidth(TABLE_WIDTH - 40);
-            refund.setStyle("-fx-font-size: 11px; -fx-text-fill: #ef6c00;"
+            refund.setStyle("-fx-font-size: 11px; -fx-text-fill: #ffb454;"
                     + " -fx-padding: 6 0 0 0;");
             column.getChildren().add(refund);
         }
@@ -5752,6 +6323,11 @@ public class UserInterface extends Application {
         new Trace("interestRate",   "Borrowing rate",     "MONEY",      "percent"),
         new Trace("totalWage",      "Wage bill",          "MONEY",      "money"),
         new Trace("averageWage",    "Average wage",       "MONEY",      "money"),
+        new Trace("minimumWage",    "Minimum wage",       "MONEY",      "money"),
+        new Trace("unskilledPremium","Unskilled vs base", "MONEY",      "ratio"),
+        new Trace("skilledShare",   "Workforce trained",  "PEOPLE",     "percent"),
+        new Trace("schoolCoverage", "Children in school", "PEOPLE",     "percent"),
+        new Trace("schoolBill",     "Schools",            "MONEY",      "money"),
 
         new Trace("population",     "Population",         "PEOPLE",     "count"),
         new Trace("workforce",      "Workforce",          "PEOPLE",     "count"),
@@ -5778,8 +6354,8 @@ public class UserInterface extends Application {
 
     /** Eight, then it wraps - and the legend swatch uses the same list. */
     private static final String[] TRACE_COLOURS = {
-        "#1e88e5", "#e53935", "#43a047", "#fb8c00",
-        "#8e24aa", "#00acc1", "#c0ca33", "#6d4c41"
+        "#5cb8ff", "#ff6b6b", "#5fd68a", "#ffb454",
+        "#ce93d8", "#4dd0e1", "#d4e157", "#c8b0a5"
     };
 
     private void showHistoryMenu() {
@@ -5802,7 +6378,7 @@ public class UserInterface extends Application {
             Label none = new Label("Nothing to draw yet - the city has lived "
                     + h.months() + " month" + (h.months() == 1 ? "" : "s")
                     + ".\nA line needs two points. Come back in a year.");
-            none.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #607d8b;");
+            none.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
             Button back = new Button("Back");
             back.setOnAction(e -> showGovernmentMenu());
             rootMenu.getChildren().addAll(heading, none, back);
@@ -5835,7 +6411,7 @@ public class UserInterface extends Application {
             boolean on = historyWindow == window;
             b.setStyle("-fx-font-size: 11px;"
                     + (on ? " -fx-background-color: #37474f; -fx-text-fill: white;"
-                          : " -fx-text-fill: #37474f;"));
+                          : " -fx-text-fill: #c3ccd3;"));
             b.setOnAction(e -> { historyWindow = window; showHistoryMenu(); });
             row.getChildren().add(b);
         }
@@ -5964,7 +6540,7 @@ public class UserInterface extends Application {
         Label header = monoLabel(String.format("  %-22s %14s %14s %14s %14s",
                 "", "first", "latest", "low", "high"));
         header.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                + " -fx-font-weight: bold; -fx-text-fill: #546e7a;");
+                + " -fx-font-weight: bold; -fx-text-fill: #8fa3b0;");
         box.getChildren().add(header);
 
         List<Integer> months = h.getMonth();
@@ -6003,7 +6579,7 @@ public class UserInterface extends Application {
         if (historyPicked.isEmpty()) {
             Label none = monoLabel("  nothing selected - pick a line below");
             none.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #90a4ae;");
+                    + " -fx-text-fill: #8fa3b0;");
             box.getChildren().add(none);
         }
         return box;
@@ -6021,7 +6597,7 @@ public class UserInterface extends Application {
                 group = t.group();
                 Label g = new Label(group);
                 g.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                        + " -fx-font-weight: bold; -fx-text-fill: #546e7a;"
+                        + " -fx-font-weight: bold; -fx-text-fill: #8fa3b0;"
                         + " -fx-padding: 6 0 0 0;");
                 all.getChildren().add(g);
 
@@ -6034,7 +6610,7 @@ public class UserInterface extends Application {
             Button chip = new Button(t.label());
             chip.setStyle("-fx-font-size: 10px; -fx-background-radius: 3;"
                     + (on ? " -fx-background-color: #37474f; -fx-text-fill: white;"
-                          : " -fx-background-color: #e0e0e0; -fx-text-fill: #37474f;"));
+                          : " -fx-background-color: #26333d; -fx-text-fill: #c3ccd3;"));
             chip.setOnAction(e -> {
                 if (!historyPicked.remove(t.key())) historyPicked.add(t.key());
                 showHistoryMenu();
@@ -6109,6 +6685,7 @@ public class UserInterface extends Application {
             // already shows it multiplied out. Two screens, one convention.
             case "land":      return String.format("$%.2f", v * 1000);
             case "unitprice": return String.format("$%.2f", v);
+            case "ratio":     return String.format("%.2fx", v);
             default:          return formatter.format(Math.round(v));
         }
     }
@@ -6149,7 +6726,7 @@ public class UserInterface extends Application {
 
         Label title = new Label(heading);
         title.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                + " -fx-font-size: 11px; -fx-text-fill: #546e7a;");
+                + " -fx-font-size: 11px; -fx-text-fill: #8fa3b0;");
 
         VBox box = new VBox(2);
         box.setAlignment(Pos.CENTER);
@@ -6157,7 +6734,7 @@ public class UserInterface extends Application {
 
         if (chart.getData().isEmpty()) {
             Label none = monoLabel("  nothing yet");
-            none.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #90a4ae;");
+            none.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
             box.getChildren().addAll(title, none);
         } else {
             box.getChildren().addAll(title, chart);
@@ -6169,7 +6746,7 @@ public class UserInterface extends Application {
     private void addGrowthLine(VBox section, String label, double rate) {
         Label line = monoLabel(String.format("%-32s%+.2f%%", label, rate * 100));
         line.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-text-fill: "
-                + (rate < 0 ? "#c62828" : "#2e7d32") + ";");
+                + (rate < 0 ? "#ff6b6b" : "#5fd68a") + ";");
         section.getChildren().add(line);
     }
 
@@ -6217,7 +6794,7 @@ public class UserInterface extends Application {
                 + "rate of %.2f%% (rated %s). Above 100 of par means getting out costs "
                 + "a premium; below means your own paper has become cheap to retire.",
                 rate * 100, game.getCreditRating()));
-        explain.setStyle("-fx-text-fill: #37474f; -fx-padding: 0 0 6 0;");
+        explain.setStyle("-fx-text-fill: #c3ccd3; -fx-padding: 0 0 6 0;");
         explain.setWrapText(true);
         explain.setMaxWidth(TABLE_WIDTH);
         explain.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
@@ -6239,7 +6816,7 @@ public class UserInterface extends Application {
             Label header = new Label(String.format("%-11s %-13s %-13s %-13s %-13s",
                     "Type", "Par", "Matures", "Buy back for", "Gain"));
             header.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
-                    + " -fx-text-fill: #546e7a;");
+                    + " -fx-text-fill: #8fa3b0;");
             rows.getChildren().add(header);
 
             for (Debt debt : sorted) {
@@ -6267,7 +6844,7 @@ public class UserInterface extends Application {
                     formatter.format(debtManager.getAllPrincipal()),
                     formatter.format(debtManager.getTotalMarketValue())));
             totals.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                    + " -fx-text-fill: #37474f; -fx-padding: 8 0 0 0;");
+                    + " -fx-text-fill: #c3ccd3; -fx-padding: 8 0 0 0;");
             rootMenu.getChildren().add(totals);
         }
 
@@ -6295,14 +6872,14 @@ public class UserInterface extends Application {
         // the bond has become dearer than its face and getting out costs a
         // premium. Those are the two states worth telling apart at a glance.
         line.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-text-fill: " + (gain >= 0 ? "#2e7d32" : "#c62828") + ";");
+                + " -fx-text-fill: " + (gain >= 0 ? "#5fd68a" : "#ff6b6b") + ";");
 
         Button buy = new Button(affordable
                 ? "Buy back for $" + formatter.format(price)
                 : "Cannot afford ($" + formatter.format(price) + ")");
         buy.setDisable(!affordable);
         if (affordable) {
-            buy.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white;");
+            buy.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
         }
         buy.setOnAction(e -> {
             game.repurchaseDebt(debt);
@@ -6321,7 +6898,7 @@ public class UserInterface extends Application {
                 formatter.format(debt.getMonthlyInterestExpense()),
                 CityCalendar.until(currentMonth, debt.getMaturityMonth())));
         detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
-                + " -fx-text-fill: #90a4ae;");
+                + " -fx-text-fill: #8fa3b0;");
 
         HBox row = new HBox(10);
         row.setAlignment(Pos.CENTER_LEFT);
@@ -6429,7 +7006,8 @@ public class UserInterface extends Application {
         constructionPanel.getChildren().clear();
 
         Label header = new Label("UNDER CONSTRUCTION");
-        header.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+        header.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
+                + " -fx-text-fill: #eceff1; -fx-padding: 0 0 4 2;");
         constructionPanel.getChildren().add(header);
 
         BuildingManager buildingManager = game.getBuildingManager();
@@ -6440,12 +7018,12 @@ public class UserInterface extends Application {
         double perSite = (siteCount > 0) ? (double) output / siteCount : output;
 
         Label capacity = monoLabel("Output: " + formatter.format(output) + " pts/mo");
-        capacity.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #555555;");
+        capacity.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
         constructionPanel.getChildren().add(capacity);
 
         if (sites.isEmpty()) {
             Label idle = new Label("Nothing being built.");
-            idle.setStyle("-fx-text-fill: #888888; -fx-padding: 8 0 0 0;");
+            idle.setStyle("-fx-text-fill: #7d8f9c; -fx-padding: 8 0 0 0;");
             constructionPanel.getChildren().add(idle);
             addBuildLog();
             addDemolitionLog();
@@ -6453,7 +7031,7 @@ public class UserInterface extends Application {
         }
 
         Label split = monoLabel(siteCount + " site(s), " + formatter.format(perSite) + " each");
-        split.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #555555;");
+        split.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
         constructionPanel.getChildren().add(split);
 
         VBox list = new VBox(12);
@@ -6474,7 +7052,7 @@ public class UserInterface extends Application {
             Label name = new Label(site.getName());
             // explicit fill: without it the default Label colour renders almost
             // invisibly against the panel's light background
-            name.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #1a237e;");
+            name.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #5cb8ff;");
 
             ProgressBar bar = new ProgressBar(fraction);
             bar.setPrefWidth(240);
@@ -6495,7 +7073,7 @@ public class UserInterface extends Application {
             }
 
             Label detail = monoLabel(remaining + " left / " + built + " built - " + eta);
-            detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #555555;");
+            detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
 
             VBox row = new VBox(3);
             row.getChildren().addAll(name, bar, detail);
@@ -6533,7 +7111,7 @@ public class UserInterface extends Application {
 
         Label header = new Label("RECENTLY DEMOLISHED");
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
-                + " -fx-text-fill: #c62828; -fx-padding: 14 0 2 0;");
+                + " -fx-text-fill: #ff6b6b; -fx-padding: 14 0 2 0;");
         constructionPanel.getChildren().add(header);
 
         VBox list = new VBox(6);
@@ -6541,12 +7119,12 @@ public class UserInterface extends Application {
         for (DemolitionLog.Entry entry : lost) {
 
             Label what = new Label(String.format("%,d x %s", entry.quantity, entry.building));
-            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #7f1d1d;");
+            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #ff8f8f;");
 
             // Fading with age, so the eye goes to what just happened without the
             // older entries disappearing entirely.
             int ago = entry.monthsAgo(game.getMonth());
-            String shade = (ago <= 1) ? "#c62828" : (ago <= 6) ? "#8d6e63" : "#9e9e9e";
+            String shade = (ago <= 1) ? "#ff6b6b" : (ago <= 6) ? "#c8b0a5" : "#7d8f9c";
 
             Label when = monoLabel("  " + entry.sector + ", " + entry.when(game.getMonth()));
             when.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
@@ -6556,7 +7134,7 @@ public class UserInterface extends Application {
                     ? String.format("  plot sold back for $%s", formatter.format(entry.proceeds))
                     : "  plot abandoned");
             how.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #9e9e9e;");
+                    + " -fx-text-fill: #7d8f9c;");
 
             VBox row = new VBox(1);
             row.getChildren().addAll(what, when, how);
@@ -6593,7 +7171,7 @@ public class UserInterface extends Application {
 
         Label header = new Label("RECENTLY BUILT");
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
-                + " -fx-text-fill: #2e7d32; -fx-padding: 14 0 2 0;");
+                + " -fx-text-fill: #5fd68a; -fx-padding: 14 0 2 0;");
         constructionPanel.getChildren().add(header);
 
         VBox list = new VBox(6);
@@ -6601,12 +7179,12 @@ public class UserInterface extends Application {
         for (BuildLog.Entry entry : built) {
 
             Label what = new Label(String.format("%,d x %s", entry.quantity, entry.building));
-            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #1b5e20;");
+            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #5fd68a;");
 
             // Fading with age, same as demolitions, so the eye goes to what just
             // happened without older entries disappearing entirely.
             int ago = entry.monthsAgo(game.getMonth());
-            String shade = (ago <= 1) ? "#2e7d32" : (ago <= 6) ? "#6d8f6d" : "#9e9e9e";
+            String shade = (ago <= 1) ? "#5fd68a" : (ago <= 6) ? "#9ccc65" : "#7d8f9c";
 
             Label when = monoLabel("  opened " + entry.when(game.getMonth())
                     + " (" + CityCalendar.formatShort(entry.month) + ")");
@@ -6643,251 +7221,499 @@ public class UserInterface extends Application {
                 : "$" + formatter.format(value);
     }
 
-    private Label statLine(String label, String value) {
-        Label row = new Label(String.format("%-13s%12s", label, value));
-        row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #333333;");
+    /* =====================================================================
+       THE LEFT PANEL
+
+       Rebuilt from a seventy-row wall into a dozen. Jerus: "have it so it shows
+       the main stuff, clicking shows more info ... also make it not white, and
+       make the numbers bolder".
+
+       THE NUMBERS ARE THE CONTENT AND THE LABELS ARE THE INDEX. Every row used
+       to be one monospaced Label - "Cash        $1,204,300" - which gives the
+       word and the figure identical weight, so reading the panel meant reading
+       all of it. They are two labels now: the name small and grey, the figure
+       bigger, brighter and bold. A player scanning for a number finds a column
+       of numbers instead of a column of text that contains numbers.
+
+       AND MOST OF IT IS FOLDED AWAY. The panel carried around seventy rows,
+       which is not an overview, it is a report that happens to be narrow -
+       and the eight rows that actually matter were buried among sixty that
+       matter once a decade. Now: the vitals always, an alert when something is
+       wrong, and eight collapsed sections each showing the one figure that
+       says whether it is worth opening.
+       ===================================================================== */
+
+    /** Which sections and rows the player has opened. Survives every redraw. */
+    private final java.util.Set<String> panelOpen = new java.util.HashSet<>();
+
+    private static final String PANEL_LABEL = "#78909c";
+    private static final String PANEL_VALUE = "#eceff1";
+    private static final String PANEL_GOOD  = "#5fd68a";
+    private static final String PANEL_WARN  = "#ffb454";
+    private static final String PANEL_BAD   = "#ff6b6b";
+
+    private HBox statLine(String label, String value) {
+        return statLine(label, value, null);
+    }
+
+    /**
+     * One row: what it is on the left, what it reads on the right.
+     *
+     * @param tone a hex colour for the FIGURE when it is saying something -
+     *             a shortage, an overdraft, a coverage gap. The label never
+     *             changes colour, because the label is never the news.
+     */
+    private HBox statLine(String label, String value, String tone) {
+        Label name = new Label(label);
+        name.setStyle("-fx-font-size: 10px; -fx-text-fill: " + PANEL_LABEL + ";");
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+
+        Label figure = new Label(value);
+        figure.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: "
+                + (tone == null ? PANEL_VALUE : tone) + ";");
+
+        HBox row = new HBox(6);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(Double.MAX_VALUE);
+        row.setStyle("-fx-padding: 1 2 1 4;");
+        row.getChildren().addAll(name, gap, figure);
         return row;
+    }
+
+    /**
+     * A row that hides something, and says so.
+     *
+     * The whole redesign in one method. A section is a headline figure the
+     * player can read without opening anything - "LABOUR 94%" answers the
+     * question most months - and the detail behind it only costs screen space
+     * on the months it is actually wanted. Jerus's example was the fill rate:
+     * one number normally, the whole skill ladder when you ask.
+     *
+     * State lives in panelOpen and not on the node, because this panel is
+     * rebuilt from scratch on every screen change - anything remembered by the
+     * widget would be forgotten the next time the player pressed a button.
+     */
+    private VBox panelSection(String key, String heading, String summary,
+                              String tone, java.util.function.Supplier<VBox> detail) {
+
+        boolean open = panelOpen.contains(key);
+
+        Label caret = new Label(open ? "\u25be" : "\u25b8");
+        caret.setStyle("-fx-font-size: 9px; -fx-text-fill: " + PANEL_LABEL + ";");
+
+        Label name = new Label(heading);
+        name.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: "
+                + (open ? "#5cb8ff" : "#b0bec5") + ";");
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+
+        Label figure = new Label(summary == null ? "" : summary);
+        figure.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: "
+                + (tone == null ? PANEL_VALUE : tone) + ";");
+
+        HBox header = new HBox(5);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setMaxWidth(Double.MAX_VALUE);
+        header.setStyle("-fx-padding: 4 2 4 0; -fx-cursor: hand;"
+                + (open ? " -fx-background-color: #26343b; -fx-background-radius: 3;" : ""));
+        header.getChildren().addAll(caret, name, gap, figure);
+        header.setOnMouseClicked(e -> {
+            if (!panelOpen.remove(key)) panelOpen.add(key);
+            refreshCityPanel();
+        });
+
+        VBox box = new VBox(0);
+        box.setMaxWidth(Double.MAX_VALUE);
+        box.getChildren().add(header);
+
+        if (open) {
+            VBox body = detail.get();
+            body.setStyle("-fx-padding: 2 0 6 8; -fx-border-color: #37474f;"
+                    + " -fx-border-width: 0 0 0 1;");
+            box.getChildren().add(body);
+        }
+        return box;
+    }
+
+    /** A section's detail, built from rows. Sugar, to keep the sections short. */
+    private VBox panelBody(javafx.scene.Node... rows) {
+        VBox body = new VBox(0);
+        body.getChildren().addAll(rows);
+        return body;
+    }
+
+    /** A caption inside an open section - a sub-heading, or a note. */
+    private Label panelNote(String text) {
+        Label note = new Label(text);
+        note.setWrapText(true);
+        note.setMaxWidth(240);
+        note.setStyle("-fx-font-size: 9px; -fx-text-fill: #8fa3b0; -fx-padding: 3 0 1 4;");
+        return note;
     }
 
     private Label sectionHeading(String text) {
         Label heading = new Label(text);
         heading.setStyle("-fx-font-weight: bold; -fx-font-size: 10px;"
-                + " -fx-text-fill: #1a237e; -fx-padding: 10 0 2 0;");
+                + " -fx-text-fill: #5cb8ff; -fx-padding: 10 0 2 0;");
         return heading;
     }
 
     private void refreshCityPanel() {
         cityPanel.getChildren().clear();
 
-        Label title = new Label("CITY OVERVIEW");
-        title.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
-
-        Label subtitle = new Label("Month " + game.getMonth());
-        subtitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #555555;");
-
-        VBox body = new VBox(1);
-
-        EconomyManager economyManager = game.getEconomyManager();
-        PopulationManager populationManager = game.getPopulationManager();
-        BuildingManager buildingManager = game.getBuildingManager();
+        EconomyManager economy = game.getEconomyManager();
+        PopulationManager people = game.getPopulationManager();
+        BuildingManager buildings = game.getBuildingManager();
         UtilitiesHandler utilities = game.getServicesManager().getUtilitiesHandler();
-
-        /* ---------------- ECONOMY ---------------- */
-        double debt = game.getDebtManager().getAllPrincipal();
-        double annualGdp = economyManager.getYearGdp();
-
-        body.getChildren().addAll(
-                sectionHeading("ECONOMY"),
-                statLine("Cash", money(game.getCash())),
-                statLine("Net income", money(game.getIncome())),
-                // NOTE: this was getGDP() / 12. The GDP field used to hold an
-                // annual-ish figure, so the divide made sense then; it now holds
-                // the month, and dividing it again showed $64 on a city whose
-                // monthly output was $772.
-                statLine("Monthly GDP", money(economyManager.getMonthGdp())),
-                statLine("Annual GDP", money(annualGdp)));
-
-        int population = populationManager.getPopulation();
-        if (population > 0 && annualGdp != 0) {
-            body.getChildren().add(
-                    statLine("GDP/capita", money((annualGdp / population) * 1000)));
-        }
-
-        body.getChildren().addAll(
-                statLine("Debt", money(debt)),
-                statLine("Biz debt", money(
-                        game.getEconomyManager().getBusinessDebtManager().getTotalPrincipal())),
-                statLine("Interest", formatter.format(game.getInterestRate() * 100) + "%"));
-
-        if (annualGdp != 0) {
-            body.getChildren().add(
-                    statLine("Debt/GDP", formatter.format((debt / annualGdp) * 100) + "%"));
-        }
-
-        /* ---------------- TAX ---------------- */
-        double businessTax = economyManager.getBusinessTax();
-        double industrialTax = economyManager.getIndustrialTax();
-        double salesTax = economyManager.getSalesTax();
-        double wageTax = economyManager.getWageTax();
-
-        body.getChildren().addAll(
-                sectionHeading("TAX REVENUE @ " + formatter.format(economyManager.getTaxRate() * 100) + "%"),
-                statLine("Business", money(businessTax)),
-                statLine("Industrial", money(industrialTax)),
-                statLine("Sales", money(salesTax)),
-                statLine("Wage", money(wageTax)),
-                statLine("Total", money(businessTax + industrialTax + salesTax + wageTax)));
-
-        /* ---------------- POPULATION & LABOUR ---------------- */
-        int workforce = populationManager.getWorkforce();
-        int totalJobs = populationManager.getTotalJobs();
-        int[] vacancies = populationManager.getJobVacancy();
-        int totalVacancies = 0;
-        for (int v : vacancies) {
-            totalVacancies += v;
-        }
-        int housing = game.getHouseholdCapacity();
-
-        body.getChildren().addAll(
-                sectionHeading("POPULATION & LABOUR"),
-                statLine("Population", String.format("%,d", population)),
-                statLine("Workforce", String.format("%,d", workforce)),
-                statLine("Jobs", String.format("%,d", totalJobs)),
-                statLine("Vacancies", String.format("%,d", totalVacancies)));
-
-        if (totalJobs > 0) {
-            double fill = (double) (totalJobs - totalVacancies) / totalJobs;
-            Label fillRow = statLine("Fill rate", String.format("%.1f%%", fill * 100));
-            if (fill < 0.75) {
-                fillRow.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                        + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
-            }
-            body.getChildren().add(fillRow);
-        }
-
-        body.getChildren().add(
-                statLine("Housing", String.format("%,d/%,d", population, housing)));
-
-        /* ---------------- HEALTH ----------------
-         *
-         * ALWAYS ON SCREEN, per Jerus, and it earns the space: sickness is a
-         * multiplier on every sector's output and mortality decides how many
-         * people the city keeps, and neither of them announces itself. Every
-         * other thing on this panel that silently costs the city output -
-         * energy, water, roads - is already here; health was the one that was
-         * not, and it is the largest of the four.
-         *
-         * Sits between the population and the resources because it is about
-         * both: the top three rows are what illness costs the ECONOMY, and the
-         * bottom four are what care does to the PEOPLE.
-         */
+        LabourMarket market = game.getLabourMarket();
         Health health = game.getHealth();
         Healthcare service = game.getHealthcare();
-        double[] staffing = populationManager.getJobFillRate();
+        LandManager land = game.getLandManager();
         PopulationCohorts pyramid = game.getCohorts();
 
-        body.getChildren().add(sectionHeading("HEALTH"));
+        int population = people.getPopulation();
+        double annualGdp = economy.getYearGdp();
+        double debt = game.getDebtManager().getAllPrincipal();
+
+        Label title = new Label("CITY OVERVIEW");
+        title.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
+                + " -fx-text-fill: #eceff1; -fx-padding: 0 0 1 2;");
+
+        Label subtitle = new Label(CityCalendar.format(game.getMonth())
+                + "   ·   month " + game.getMonth());
+        subtitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
+                + " -fx-text-fill: #8fa3b0; -fx-padding: 0 0 6 2;");
+
+        VBox body = new VBox(0);
+        // The ScrollPane's viewport paints its own ground, and on a dark panel
+        // an unpainted one shows through as a white sliver down the side of
+        // every section. Cheaper to state it than to fight the skin.
+        body.setStyle("-fx-background-color: #1c262b;");
+
+        /* =============================================================
+           THE VITALS, which are never folded away.
+
+           Three figures and nothing else. If the panel showed only these it
+           would still be worth having, and that is the test for what belongs
+           here: cash says whether the city can act, income says which way it
+           is going, and population is the score.
+           ============================================================= */
+        double cash = game.getCash();
+        double income = game.getIncome();
+
+        body.getChildren().addAll(
+                statLine("Cash", money(cash), cash < 0 ? PANEL_BAD : null),
+                statLine("Net income", money(income), income < 0 ? PANEL_BAD : PANEL_GOOD),
+                statLine("Population", String.format("%,d", population)));
+
+        /* =============================================================
+           AND WHATEVER IS ACTUALLY WRONG.
+
+           An alert earns its place by being ABSENT most of the time. These are
+           the five conditions that quietly cost the city output or people, each
+           of which used to be a row indistinguishable from the forty around it -
+           an outbreak read exactly like the store stock.
+           ============================================================= */
+        VBox alerts = new VBox(0);
 
         if (health.isOutbreak()) {
-            Label epidemic = statLine("OUTBREAK", String.format("month %d",
-                    Math.max(1, game.getMonth() - health.getOutbreakStarted() + 1)));
-            epidemic.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
-            body.getChildren().add(epidemic);
+            alerts.getChildren().add(statLine("OUTBREAK",
+                    String.format("month %d",
+                            Math.max(1, game.getMonth() - health.getOutbreakStarted() + 1)),
+                    PANEL_BAD));
         }
-
-        Label sickRow = statLine("Off sick", String.format("%.1f%%", health.getSickRate() * 100));
-        if (health.getSickRate() > Health.WELL_SERVED_RATE * 2) {
-            sickRow.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
-        }
-        body.getChildren().add(sickRow);
-
-        body.getChildren().add(careLine("General care", CareType.GENERAL,
-                pyramid.total(), staffing));
-        body.getChildren().add(careLine("Childcare", CareType.CHILDCARE,
-                CareType.CHILDCARE.populationServed(pyramid), staffing));
-        body.getChildren().add(careLine("Senior care", CareType.SENIOR,
-                CareType.SENIOR.populationServed(pyramid), staffing));
-
-        Label graves = statLine("Death care", service.getStatus());
-        if (service.isOverwhelmed() || service.isStrained()) {
-            graves.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: " + (service.isOverwhelmed() ? "#c62828" : "#ef6c00")
-                    + "; -fx-font-weight: bold;");
-        }
-        body.getChildren().add(graves);
-
         if (service.getUnburied() > 0) {
-            Label waiting = statLine("Unburied", formatter.format(service.getUnburied()));
-            waiting.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
-            body.getChildren().add(waiting);
-        } else {
-            /*
-             * CURRENT capacity, not the settled month's.
-             *
-             * This read Healthcare.getPlotsLeft(), which measures against the
-             * plot count the service was handed during the last SETTLED month -
-             * and before month one has run it was handed nothing, so a brand-new
-             * city reported "Plots left 0" while standing on the 2,500-grave
-             * churchyard it was founded with. It also meant a cemetery finished
-             * this month did not show up until the next one.
-             *
-             * The People screen already asked it this way. Both now ask the same
-             * question of the same object.
-             */
-            body.getChildren().add(statLine("Plots left", formatter.format(
-                    Healthcare.plotsRemaining(
-                            buildingManager.getCareCapacity(CareType.BURIAL),
-                            service.getPlotsUsed()))));
+            alerts.getChildren().add(statLine("Unburied",
+                    formatter.format(service.getUnburied()), PANEL_BAD));
+        }
+        if (game.getInfrastructureManager().isCongested()) {
+            alerts.getChildren().add(statLine("Roads", roadSummary(), PANEL_BAD));
+        }
+        if (utilities.getProduction() > 0
+                && utilities.getConsumption() > utilities.getProduction()) {
+            alerts.getChildren().add(statLine("Power", "over capacity", PANEL_BAD));
+        }
+        if (utilities.getWaterProduction() > 0
+                && utilities.getWaterConsumption() > utilities.getWaterProduction()) {
+            alerts.getChildren().add(statLine("Water", "over capacity", PANEL_BAD));
+        }
+        if (land.getUtilisation() >= .95) {
+            alerts.getChildren().add(statLine("Land",
+                    String.format("%.0f%% used", land.getUtilisation() * 100), PANEL_BAD));
         }
 
-        body.getChildren().add(statLine("Health bill", money(service.getNetCost())));
+        if (!alerts.getChildren().isEmpty()) {
+            alerts.setStyle("-fx-padding: 4 2 4 4; -fx-background-color: #331d1d;"
+                    + " -fx-background-radius: 3; -fx-border-color: #c0392b;"
+                    + " -fx-border-width: 0 0 0 2;");
+            VBox spacer = new VBox(alerts);
+            spacer.setStyle("-fx-padding: 6 0 2 0;");
+            body.getChildren().add(spacer);
+        }
 
-        /* ---------------- RESOURCES ---------------- */
-        body.getChildren().addAll(
-                sectionHeading("RESOURCES"),
-                statLine("Materials", String.format("%,d", game.getConstructionMaterials())),
-                statLine("Store stock", String.format("%,d", economyManager.getStoreInventory())),
-                statLine("Food stock", String.format("%,d", economyManager.getIndustryFoodInventory())),
-                utilityLine("Energy",
-                        utilities.getConsumption(), utilities.getProduction()),
-                utilityLine("Water",
-                        utilities.getWaterConsumption(), utilities.getWaterProduction()),
-                roadLine());
+        /* ================= ECONOMY ================= */
+        body.getChildren().add(panelSection("econ", "ECONOMY",
+                money(economy.getMonthGdp()) + "/mo", null,
+                () -> {
+                    VBox b = panelBody(
+                            statLine("Monthly GDP", money(economy.getMonthGdp())),
+                            statLine("Annual GDP", money(annualGdp)));
+                    if (population > 0 && annualGdp != 0) {
+                        b.getChildren().add(statLine("GDP/capita",
+                                money((annualGdp / population) * 1000)));
+                    }
+                    b.getChildren().addAll(
+                            statLine("Debt", money(debt)),
+                            statLine("Biz debt", money(
+                                    economy.getBusinessDebtManager().getTotalPrincipal())),
+                            statLine("Interest",
+                                    formatter.format(game.getInterestRate() * 100) + "%"),
+                            statLine("Rating", game.getCreditRating()));
+                    if (annualGdp != 0) {
+                        b.getChildren().add(statLine("Debt/GDP",
+                                formatter.format((debt / annualGdp) * 100) + "%"));
+                    }
+                    return b;
+                }));
 
-        /* ---------------- LAND ---------------- */
-        LandManager land = game.getLandManager();
+        /* ================= TAX ================= */
+        double businessTax = economy.getBusinessTax();
+        double industrialTax = economy.getIndustrialTax();
+        double salesTax = economy.getSalesTax();
+        double wageTax = economy.getWageTax();
+        double taxTotal = businessTax + industrialTax + salesTax + wageTax;
+
+        body.getChildren().add(panelSection("tax", "TAX", money(taxTotal), null,
+                () -> panelBody(
+                        panelNote("at " + formatter.format(economy.getTaxRate() * 100) + "%"),
+                        statLine("Business", money(businessTax)),
+                        statLine("Industrial", money(industrialTax)),
+                        statLine("Sales", money(salesTax)),
+                        statLine("Wage", money(wageTax)))));
+
+        /* =============================================================
+           LABOUR - and this is the one Jerus asked for by name.
+
+           "clicking on fill rate shows the fill rate for each". Closed it is a
+           single percentage, which is the honest answer most months. Open, it
+           is the skill ladder: who the city has, what it has posts for, and
+           what it is paying to get them - which is the only view in which an
+           unfilled post has a reason rather than just a number.
+           ============================================================= */
+        int workforce = people.getWorkforce();
+        int totalJobs = people.getTotalJobs();
+        int[] vacancies = people.getJobVacancy();
+        int open = 0;
+        for (int v : vacancies) open += v;
+        final int totalVacancies = open;
+        double fill = totalJobs > 0 ? (double) (totalJobs - totalVacancies) / totalJobs : 1;
+
+        body.getChildren().add(panelSection("labour", "LABOUR",
+                totalJobs > 0 ? String.format("%.0f%% filled", fill * 100) : "no jobs",
+                fill < .75 ? PANEL_BAD : fill < .95 ? PANEL_WARN : null,
+                () -> {
+                    VBox b = panelBody(
+                            statLine("Workforce", String.format("%,d", workforce)),
+                            statLine("Posts", String.format("%,d", totalJobs)),
+                            statLine("Unfilled", String.format("%,d", totalVacancies),
+                                    totalVacancies > 0 ? PANEL_WARN : null),
+                            statLine("Unemployed",
+                                    String.format("%,d  (%.0f%%)", people.getUnemployed(),
+                                            people.getUnemploymentRate() * 100),
+                                    people.getUnemploymentRate() > .15 ? PANEL_WARN : null));
+
+                    b.getChildren().add(panelNote("by skill — workers / posts / pay"));
+
+                    double[] own = people.workforceByBand();
+                    double[] posts = people.postsByBand();
+                    for (WageBand band : WageBand.values()) {
+                        int i = band.ordinal();
+                        double premium = 1;
+                        for (JobType job : JobType.values()) {
+                            if (WageBand.of(job) == band) { premium = market.premium(job); break; }
+                        }
+                        b.getChildren().add(statLine(band.label(),
+                                String.format("%s/%s  %.2fx",
+                                        shortNumber(own[i]), shortNumber(posts[i]), premium),
+                                premium > 1.05 ? PANEL_BAD
+                                        : own[i] > posts[i] * 1.2 ? PANEL_WARN : null));
+                    }
+                    b.getChildren().add(statLine("Min wage",
+                            money(market.getMinimumWage())));
+                    return b;
+                }));
+
+        /* ================= SCHOOLS ================= */
+        Education schools = game.getEducation();
+
+        body.getChildren().add(panelSection("school", "SCHOOLS",
+                String.format("%.0f%% taught", schools.basicCoverage() * 100),
+                schools.basicCoverage() < .5 ? PANEL_BAD
+                        : schools.basicCoverage() < .9 ? PANEL_WARN : PANEL_GOOD,
+                () -> {
+                    VBox b = panelBody();
+                    for (EducationType type : EducationType.values()) {
+                        if (type == EducationType.NONE) continue;
+                        double seats = schools.getEnrolled(type);
+                        if (seats <= 0 && !type.isBasic()) continue;
+                        b.getChildren().add(statLine(type.getLabel(),
+                                type.isBasic()
+                                        ? String.format("%.0f%%  %s", 
+                                                schools.getCoverage(type) * 100,
+                                                shortNumber(seats))
+                                        : shortNumber(seats) + " studying",
+                                type.isBasic() && schools.getCoverage(type) < .9
+                                        ? PANEL_WARN : null));
+                    }
+                    // The bottleneck names a building, which is the only
+                    // actionable thing on this section.
+                    if (schools.basicCoverage() < .95) {
+                        b.getChildren().add(panelNote("short of "
+                                + schools.basicBottleneck().getLabel().toLowerCase()
+                                + " places"));
+                    }
+                    b.getChildren().addAll(
+                            statLine("Tuition paid", String.format("%.0f%% by city",
+                                    schools.getTuitionSubsidy() * 100)),
+                            statLine("School bill", money(schools.getNetCost())));
+                    return b;
+                }));
+
+        /* ================= PEOPLE ================= */
+        body.getChildren().add(panelSection("people", "PEOPLE",
+                String.format("%+,.0f/mo", game.getMigration().getLastNet()
+                        + pyramid.getLastBirths() - pyramid.getLastDeaths()),
+                null,
+                () -> panelBody(
+                        statLine("Born", formatter.format(pyramid.getLastBirths())),
+                        statLine("Died", formatter.format(pyramid.getLastDeaths())),
+                        statLine("Moved in", formatter.format(
+                                game.getMigration().getLastArrivals())),
+                        statLine("Moved out", formatter.format(
+                                game.getMigration().getLastDepartures())),
+                        statLine("Housing",
+                                String.format("%,d/%,d", population,
+                                        game.getHouseholdCapacity()),
+                                population > game.getHouseholdCapacity()
+                                        ? PANEL_WARN : null))));
+
+        /* ================= HEALTH ================= */
+        double[] staffing = people.getJobFillRate();
+
+        body.getChildren().add(panelSection("health", "HEALTH",
+                String.format("%.0f%% sick", health.getSickRate() * 100),
+                health.getSickRate() > Health.WELL_SERVED_RATE * 2 ? PANEL_BAD
+                        : health.getSickRate() > Health.WELL_SERVED_RATE * 1.5 ? PANEL_WARN
+                        : PANEL_GOOD,
+                () -> {
+                    VBox b = panelBody(
+                            careLine("General care", CareType.GENERAL,
+                                    pyramid.total(), staffing),
+                            careLine("Childcare", CareType.CHILDCARE,
+                                    CareType.CHILDCARE.populationServed(pyramid), staffing),
+                            careLine("Senior care", CareType.SENIOR,
+                                    CareType.SENIOR.populationServed(pyramid), staffing),
+                            statLine("Death care", service.getStatus(),
+                                    service.isOverwhelmed() ? PANEL_BAD
+                                            : service.isStrained() ? PANEL_WARN : null));
+                    if (service.getUnburied() <= 0) {
+                        b.getChildren().add(statLine("Plots left", formatter.format(
+                                Healthcare.plotsRemaining(
+                                        buildings.getCareCapacity(CareType.BURIAL),
+                                        service.getPlotsUsed()))));
+                    }
+                    b.getChildren().add(statLine("Health bill", money(service.getNetCost())));
+                    return b;
+                }));
+
+        /* ================= RESOURCES ================= */
+        int tight = 0;
+        if (utilities.getProduction() > 0
+                && utilities.getConsumption() / utilities.getProduction() >= .75) tight++;
+        if (utilities.getWaterProduction() > 0
+                && utilities.getWaterConsumption() / utilities.getWaterProduction() >= .75) tight++;
+        if (game.getInfrastructureManager().isStrained()) tight++;
+        final int strained = tight;
+
+        body.getChildren().add(panelSection("res", "RESOURCES",
+                strained == 0 ? "all clear" : strained + " tight",
+                strained == 0 ? PANEL_GOOD : PANEL_WARN,
+                () -> panelBody(
+                        utilityLine("Energy",
+                                utilities.getConsumption(), utilities.getProduction()),
+                        utilityLine("Water",
+                                utilities.getWaterConsumption(), utilities.getWaterProduction()),
+                        roadLine(),
+                        statLine("Materials", String.format("%,d",
+                                game.getConstructionMaterials())),
+                        statLine("Store stock", String.format("%,d",
+                                economy.getStoreInventory())),
+                        statLine("Food stock", String.format("%,d",
+                                economy.getIndustryFoodInventory())))));
+
+        /* ================= LAND ================= */
         double landUsed = land.getUtilisation();
+        body.getChildren().add(panelSection("land", "LAND",
+                String.format("%.0f%% used", landUsed * 100),
+                landUsed >= .95 ? PANEL_BAD : landUsed >= .85 ? PANEL_WARN : null,
+                () -> panelBody(
+                        statLine("Owned", String.format("%.0f blocks",
+                                land.getOwnedSqFt() / LandManager.BLOCK_SQ_FT)),
+                        statLine("Free", String.format("%.1f blocks",
+                                land.getAvailableBlocks())),
+                        statLine("Price/sq ft", String.format("$%.2f",
+                                land.getPricePerSqFt() * 1000)))));
 
-        body.getChildren().addAll(
-                sectionHeading("LAND"),
-                statLine("Owned", String.format("%.0f blocks",
-                        land.getOwnedSqFt() / LandManager.BLOCK_SQ_FT)),
-                statLine("Free", String.format("%.1f blocks", land.getAvailableBlocks())));
+        /* ================= SECTOR CASH ================= */
+        double sectorCash = economy.getCommercialCash() + economy.getRealEstateCash()
+                + economy.getIndustrialCash();
+        body.getChildren().add(panelSection("sectors", "SECTORS", money(sectorCash), null,
+                () -> panelBody(
+                        statLine("Retail", money(economy.getCommercialCash())),
+                        statLine("Real estate", money(economy.getRealEstateCash())),
+                        statLine("Industry", money(economy.getIndustrialCash())),
+                        statLine("Utilities", money(economy.getUtilityIncome())))));
 
-        Label usedRow = statLine("Used", String.format("%.1f%%", landUsed * 100));
-        if (landUsed >= .90) {
-            usedRow.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
+        /* =============================================================
+           BUILDINGS, and this is where the folding pays for itself.
+
+           A grown city owns thirty kinds of building, which was thirty rows of
+           the panel - nearly half of it - describing something that changes
+           once every few months and can be read in full on the build screens.
+           ============================================================= */
+        int kinds = 0, structures = 0;
+        for (int i = 0; i < buildings.getTemplateCount(); i++) {
+            int q = buildings.getQuantity(i);
+            if (q > 0) { kinds++; structures += q; }
         }
-        body.getChildren().add(usedRow);
+        final int builtKinds = kinds;
+        final int builtTotal = structures;
 
-        body.getChildren().add(statLine("Price/sq ft",
-                String.format("$%.2f", land.getPricePerSqFt() * 1000)));
-
-        /* ---------------- SECTOR CASH ---------------- */
-        body.getChildren().addAll(
-                sectionHeading("SECTOR CASH"),
-                statLine("Retail", money(economyManager.getCommercialCash())),
-                statLine("Real estate", money(economyManager.getRealEstateCash())),
-                statLine("Industry", money(economyManager.getIndustrialCash())),
-                statLine("Utilities", money(economyManager.getUtilityIncome())));
-
-        /* ---------------- BUILDINGS ---------------- */
-        // Fills the gap left by the still-disabled "Other" buildings screen.
-        VBox owned = new VBox(1);
-        for (int i = 0; i < buildingManager.getTemplateCount(); i++) {
-            BuildingsTemplate template = buildingManager.getTemplate(i);
-            if (template == null) {
-                continue;
-            }
-            int quantity = buildingManager.getQuantity(i);
-            if (quantity > 0) {
-                owned.getChildren().add(
-                        statLine(shorten(template.getName()), String.format("%,d", quantity)));
-            }
-        }
-
-        body.getChildren().add(sectionHeading("BUILDINGS"));
-        if (owned.getChildren().isEmpty()) {
-            Label none = new Label("None built yet.");
-            none.setStyle("-fx-font-size: 10px; -fx-text-fill: #888888;");
-            body.getChildren().add(none);
-        } else {
-            body.getChildren().add(owned);
-        }
+        body.getChildren().add(panelSection("built", "BUILDINGS",
+                builtTotal == 0 ? "none" : String.format("%,d", builtTotal), null,
+                () -> {
+                    VBox b = panelBody();
+                    if (builtTotal == 0) {
+                        b.getChildren().add(panelNote("Nothing built yet."));
+                        return b;
+                    }
+                    b.getChildren().add(panelNote(builtKinds + " kinds standing"));
+                    for (int i = 0; i < buildings.getTemplateCount(); i++) {
+                        BuildingsTemplate template = buildings.getTemplate(i);
+                        if (template == null) continue;
+                        int quantity = buildings.getQuantity(i);
+                        if (quantity > 0) {
+                            b.getChildren().add(statLine(shorten(template.getName()),
+                                    String.format("%,d", quantity)));
+                        }
+                    }
+                    return b;
+                }));
 
         javafx.scene.control.ScrollPane scroller = new javafx.scene.control.ScrollPane(body);
         scroller.setFitToWidth(true);
@@ -6901,25 +7727,17 @@ public class UserInterface extends Application {
      * One coverage row: the percentage, and the two numbers behind it.
      *
      * STAFFED, not built, which is the whole reason it is worth a line - a
-     * hospital with no doctors is on the BUILDINGS list below looking like an
-     * asset while treating nobody, and this is the row that says so.
+     * hospital with no doctors is on the BUILDINGS list looking like an asset
+     * while treating nobody, and this is the row that says so.
      */
-    private Label careLine(String label, CareType care, double needed, double[] staffing) {
+    private HBox careLine(String label, CareType care, double needed, double[] staffing) {
 
         double places = game.getBuildingManager().getStaffedCareCapacity(care, staffing);
         double cover = Health.coverageOf(places, needed);
 
-        Label row = statLine(label, String.format("%.0f%%  %s/%s", cover * 100,
-                shortNumber(places), shortNumber(needed)));
-
-        if (cover < .5) {
-            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #c62828; -fx-font-weight: bold;");
-        } else if (cover < .9) {
-            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #ef6c00;");
-        }
-        return row;
+        return statLine(label, String.format("%.0f%%  %s/%s", cover * 100,
+                        shortNumber(places), shortNumber(needed)),
+                cover < .5 ? PANEL_BAD : cover < .9 ? PANEL_WARN : null);
     }
 
     /** 12.4k rather than 12,400 - the panel is narrow and these are two to a row. */

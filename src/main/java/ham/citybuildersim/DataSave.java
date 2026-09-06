@@ -708,6 +708,62 @@ public class DataSave {
      */
     private double[] healthcare;
 
+    /**
+     * The minimum wage, then the eleven wages the city is actually paying.
+     *
+     * A DAMPED PRICE CANNOT BE RECOMPUTED. LabourMarket walks each wage a
+     * fraction of the way toward its target every month, so today's wage is the
+     * result of every month of scarcity the city has been through. Rebuild it
+     * from today's posts and workers and you get the TARGET - the number the
+     * live city was still walking toward - and a reloaded city jumps to it
+     * while the live one has not arrived. Measured as a $52 discrepancy in next
+     * month's income before this was carried.
+     *
+     * Same rule that put the health array here: a flow cannot be reconstructed
+     * from the state a month ended in, and neither can a lagged one.
+     */
+    private double[] labour;
+
+    /**
+     * How many skilled workers the city has, by band. Index 0 unused.
+     *
+     * A STOCK, and the purest kind. Until schools exist a skill arrives in
+     * somebody's head and leaves the same way, so this number is the entire
+     * history of who has moved to this city - nothing in the state a month
+     * ended in can reproduce it. A save that forgot it would reload a city
+     * whose hospitals had no doctors and whose mills had no engineers, all of
+     * whom were there a moment ago.
+     */
+    private double[] skilledWorkforce;
+
+    /**
+     * Who is licensed to practise what, and the schools' running total.
+     *
+     * BOTH ARE STOCKS. A medical licence is a fact about a person that took
+     * seven years to acquire and does not expire, so nothing in the state a
+     * month ended in reproduces it - a save that forgot it would reload a city
+     * whose hospitals had no doctors and whose medical school had apparently
+     * never graduated anybody, all of whom were there a moment ago.
+     *
+     * The education array is the tuition subsidy plus everyone the city has
+     * ever put through school by band. The subsidy is a policy the player set;
+     * the totals are the only honest answer to "is this working", because forty
+     * graduates a month is impressive or pitiful depending entirely on how long
+     * it has been going.
+     */
+    private double[] licences;
+    private double[] education;
+
+    public void setLicences(double[] a)  { this.licences = a; }
+    public double[] getLicences()        { return licences; }
+    public void setEducation(double[] a) { this.education = a; }
+    public double[] getEducation()       { return education; }
+
+    public void setLabour(double[] a)           { this.labour = a; }
+    public double[] getLabour()                 { return labour; }
+    public void setSkilledWorkforce(double[] a) { this.skilledWorkforce = a; }
+    public double[] getSkilledWorkforce()       { return skilledWorkforce; }
+
     public void setCohorts(double[] a)  { this.cohorts = a; }
     public double[] getCohorts()        { return cohorts; }
     public void setFamilies(double[] a) { this.families = a; }
