@@ -144,6 +144,23 @@ public final class GameVersion {
      *     that silently loads the wrong buildings into the wrong slots. Renaming
      *     one does not: "Road Network" became "Paved Road" and kept id 13, and
      *     every save that owns them still owns them.
+     *
+     * NOT 16 EITHER: the graph history went from 8 series to 23.
+     *
+     *     The history is its own file beside the save, and its format is the
+     *     FIELD NAMES of HistorySave - Gson matches by name. So a history
+     *     written before a series existed loads into this build with that list
+     *     empty, and a history written by this build loads into an older one,
+     *     which ignores what it does not recognise. Both directions work, so
+     *     neither is a break.
+     *
+     *     The care needed is not in the version number but in the READING: a
+     *     series shorter than the month axis was not being recorded yet, so it
+     *     describes the END of the city's life and not the start.
+     *     HistorySave.aligned() pads it at the front with NaN, and HistoryCheck
+     *     strips a series out of a real history file to prove it - because
+     *     getting that backwards draws last decade's data over the founding
+     *     years and produces a graph that looks entirely correct.
      */
     public static final int SAVE_FORMAT = 15;
 

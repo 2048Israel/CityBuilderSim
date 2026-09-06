@@ -3406,19 +3406,18 @@ public class Game {
 
 
     
-    //save stuff
+    /**
+     * Files this month in the graph history.
+     *
+     * The rounding used to live here, in a call of eight positional numbers.
+     * Both moved into HistorySave when the series went from eight to
+     * twenty-three: a twenty-three-argument call is a machine for transposing
+     * two of them silently, and the recorder is the thing that should know what
+     * precision each series is kept at.
+     */
     public void recordMonth() {
-    historySave.recordMonth(
-            month, // int, no rounding needed
-            Math.round(cash * 100.0) / 100.0, // round to 2 decimals
-            Math.round(economyManager.getMonthGdp() * 100.0) / 100.0,
-            Math.round(debtManager.getAllPrincipal() * 100.0) / 100.0,
-            Math.round(debtManager.getRate() * 10000.0) / 10000.0, // store rate as 2 decimals
-            populationManager.getTotalJobs(), // int, no rounding
-            populationManager.getWorkforce(), // int, no rounding
-            populationManager.getPopulation() // int, no rounding
-    );
-}
+        historySave.recordMonth(this);
+    }
     /* ============================ the save system ============================
      *
      * Ten numbered slots plus an autosave. The slot is chosen by the caller;
@@ -4628,14 +4627,13 @@ public class Game {
             // Deserialize normally
             HistorySave loaded = gson.fromJson(json, HistorySave.class);
 
-            historySave.setGdp(loaded.getGdp());
-            historySave.setCash(loaded.getCash());
-            historySave.setMonth(loaded.getMonth());
-            historySave.setPopulation(loaded.getPopulation());
-            historySave.setWorkforce(loaded.getWorkforce());
-            historySave.setJobs(loaded.getJobs());
-            historySave.setInterestRate(loaded.getInterestRate());
-            historySave.setDebt(loaded.getDebt());
+            // ONE CALL, not eight assignments. Copying the lists out here meant
+            // every series added had to be remembered in two files, and one
+            // forgotten would vanish on reload while looking perfectly fine in a
+            // live game. HistoryCheck saves a played city and compares every
+            // series after a reload, so a line missing from restoreFrom() fails
+            // out loud rather than quietly losing a decade of a graph.
+            historySave.restoreFrom(loaded);
 
             
 

@@ -260,9 +260,16 @@ public class SaveFileCheck {
         assertTrue("no file paths leaked into the save",
                 !json.contains("YourGame") && !json.contains("userHome"));
 
+        // Recorded off a real city rather than from typed-in numbers: the
+        // recorder takes the Game now, because twenty-three positional
+        // arguments is a machine for transposing two of them.
+        Game recorder = new Game();
+        recorder.newGame();
         HistorySave history = new HistorySave();
-        history.recordMonth(1, 300000, 0, 0, .01, 0, 0, 0);
-        history.recordMonth(2, 299000, 20.83, 0, .01, 12, 4, 4);
+        history.recordMonth(recorder);
+        recorder.simulateMonths(1);
+        history.recordMonth(recorder);
+        assertEquals("two months recorded", history.months(), 2);
         assertTrue("HistorySave wrote itself", history.saveHistory(trip, 1).ok);
         assertTrue("...to its own file, not over the save",
                 Files.readString(trip.saveFile(1)).contains("123456"));

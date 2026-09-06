@@ -5689,7 +5689,428 @@ public class UserInterface extends Application {
                 String.format("Private Sector Debt:    $%s",
                         formatter.format(em.getBusinessDebtManager().getTotalPrincipal()))));
 
-        showSectorReport("GOVERNMENT & NATIONAL ACCOUNTS", column, this::showEconomyMenu);
+        Button history = new Button("History  -  every month the city has lived");
+        history.setOnAction(e -> showHistoryMenu());
+
+        showSectorReport("GOVERNMENT & NATIONAL ACCOUNTS", column,
+                this::showEconomyMenu, history);
+    }
+
+    /* =====================================================================
+       THE HISTORY SCREEN
+
+       The accounts screen says what happened THIS month. Everything in it is a
+       stock or a flow at one instant, and a city is a shape over time - the
+       month the rate spiked, the decade growth stalled, the point arrivals went
+       to zero and births carried the population on alone. None of that is
+       visible one month at a time, and the game has been recording it since the
+       first build without ever showing it.
+
+       ONE CHART WITH THINGS OVERLAID, by request. Which forces the awkward
+       question the accounts screen never had to answer: GDP is in thousands,
+       population is a headcount, and the interest rate is a fraction between
+       zero and one. Plotted together on one axis, the rate is a flat line on
+       the floor and everything else is invisible.
+
+       So: one series draws in its own units, and two or more are each mapped
+       onto 0-100 by their OWN range over the window on screen. Not indexed to
+       100 at the start, which is the usual answer and which breaks here -
+       debt, jobs and population all START AT ZERO in a new city, and there is
+       no percentage of zero. Min-to-max also survives the series that go
+       negative, which the surplus does routinely.
+
+       What the normalisation costs is the values, so the legend under the chart
+       carries them: first, last, low and high, in real units, for everything
+       selected. The shape comes off the chart and the numbers come off the
+       legend, and neither pretends to be the other.
+       ===================================================================== */
+
+    /** What the player has ticked, and how far back they are looking. */
+    private final java.util.LinkedHashSet<String> historyPicked = new java.util.LinkedHashSet<>();
+    private int historyWindow = 120;
+
+    /** Above this many points a line is bucket-averaged; see decimate(). */
+    private static final int MAX_PLOT_POINTS = 400;
+
+    /**
+     * One plottable line: where it comes from and how to read it.
+     *
+     * @param key    the stored series name, or a derived one computed in
+     *               historyValues()
+     * @param unit   how to format a value of it - the difference between "0.18"
+     *               and "18%" and "$0.18"
+     */
+    private record Trace(String key, String label, String group, String unit) { }
+
+    private static final Trace[] TRACES = {
+        new Trace("gdp",            "GDP",                "MONEY",      "money"),
+        new Trace("gdpPerCapita",   "GDP per capita (yr)","MONEY",      "money"),
+        new Trace("cash",           "Treasury",           "MONEY",      "money"),
+        new Trace("debt",           "Public debt",        "MONEY",      "money"),
+        new Trace("revenue",        "Revenue",            "MONEY",      "money"),
+        new Trace("surplus",        "Surplus / deficit",  "MONEY",      "money"),
+        new Trace("interestRate",   "Borrowing rate",     "MONEY",      "percent"),
+        new Trace("totalWage",      "Wage bill",          "MONEY",      "money"),
+        new Trace("averageWage",    "Average wage",       "MONEY",      "money"),
+
+        new Trace("population",     "Population",         "PEOPLE",     "count"),
+        new Trace("workforce",      "Workforce",          "PEOPLE",     "count"),
+        new Trace("jobs",           "Jobs",               "PEOPLE",     "count"),
+        new Trace("unemployment",   "Unemployment",       "PEOPLE",     "percent"),
+        new Trace("births",         "Births",             "PEOPLE",     "count"),
+        new Trace("deaths",         "Deaths",             "PEOPLE",     "count"),
+        new Trace("arrivals",       "Arrivals",           "PEOPLE",     "count"),
+        new Trace("departures",     "Departures",         "PEOPLE",     "count"),
+        new Trace("netMigration",   "Net migration",      "PEOPLE",     "count"),
+        new Trace("naturalIncrease","Births - deaths",    "PEOPLE",     "count"),
+
+        new Trace("energyRatio",    "Power supplied",     "THROUGHPUT", "percent"),
+        new Trace("waterRatio",     "Water supplied",     "THROUGHPUT", "percent"),
+        new Trace("roadRatio",      "Road throughput",    "THROUGHPUT", "percent"),
+        new Trace("sickRate",       "Off sick",           "THROUGHPUT", "percent"),
+        new Trace("careCoverage",   "Health coverage",    "THROUGHPUT", "percent"),
+
+        new Trace("landPrice",      "Land",               "PRICES",     "land"),
+        new Trace("foodPrice",      "Food",               "PRICES",     "unitprice"),
+        new Trace("materialsPrice", "Materials",          "PRICES",     "unitprice"),
+        new Trace("orePrice",       "Ore",                "PRICES",     "unitprice"),
+    };
+
+    /** Eight, then it wraps - and the legend swatch uses the same list. */
+    private static final String[] TRACE_COLOURS = {
+        "#1e88e5", "#e53935", "#43a047", "#fb8c00",
+        "#8e24aa", "#00acc1", "#c0ca33", "#6d4c41"
+    };
+
+    private void showHistoryMenu() {
+        clearMenu();
+
+        HistorySave h = game.getHistorySave();
+
+        if (historyPicked.isEmpty()) {
+            // The three Jerus named, so the screen opens showing what it is for
+            // rather than an empty axis with instructions.
+            historyPicked.add("gdp");
+            historyPicked.add("population");
+            historyPicked.add("interestRate");
+        }
+
+        Label heading = new Label("CITY HISTORY");
+        heading.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        if (h.months() < 2) {
+            Label none = new Label("Nothing to draw yet - the city has lived "
+                    + h.months() + " month" + (h.months() == 1 ? "" : "s")
+                    + ".\nA line needs two points. Come back in a year.");
+            none.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #607d8b;");
+            Button back = new Button("Back");
+            back.setOnAction(e -> showGovernmentMenu());
+            rootMenu.getChildren().addAll(heading, none, back);
+            return;
+        }
+
+        VBox column = new VBox(10);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.setMaxWidth(Region.USE_PREF_SIZE);
+
+        column.getChildren().add(historyRangeRow(h));
+        column.getChildren().add(historyChart(h));
+        column.getChildren().add(historyLegend(h));
+        column.getChildren().add(historyPickerRows());
+
+        showSectorReport("CITY HISTORY", column, this::showGovernmentMenu);
+    }
+
+    /** 10 years, 50 years, or the whole life of the city. */
+    private HBox historyRangeRow(HistorySave h) {
+        HBox row = new HBox(6);
+        row.setAlignment(Pos.CENTER_LEFT);
+
+        int[] windows = {120, 600, Integer.MAX_VALUE};
+        String[] names = {"10 years", "50 years", "All " + h.months() + " months"};
+
+        for (int i = 0; i < windows.length; i++) {
+            int window = windows[i];
+            Button b = new Button(names[i]);
+            boolean on = historyWindow == window;
+            b.setStyle("-fx-font-size: 11px;"
+                    + (on ? " -fx-background-color: #37474f; -fx-text-fill: white;"
+                          : " -fx-text-fill: #37474f;"));
+            b.setOnAction(e -> { historyWindow = window; showHistoryMenu(); });
+            row.getChildren().add(b);
+        }
+
+        int drawn = Math.min(h.months(), historyWindow);
+        int bucket = bucketSize(drawn);
+        Label note = new Label(bucket > 1
+                ? String.format("   showing %,d months, averaged %d at a time", drawn, bucket)
+                : String.format("   showing %,d months", drawn));
+        note.setStyle("-fx-font-size: 10px; -fx-text-fill: #78909c;");
+        row.getChildren().add(note);
+        return row;
+    }
+
+    /**
+     * How many months go into one drawn point.
+     *
+     * A LineChart draws a Path node per point, so four thousand months across
+     * three lines is twelve thousand nodes and a screen that visibly hangs. The
+     * range picker is the player's control over WHAT they look at; this is
+     * about whether it can be drawn at all, and it only ever engages on windows
+     * too wide to distinguish single months by eye anyway.
+     */
+    private int bucketSize(int points) {
+        return Math.max(1, (int) Math.ceil(points / (double) MAX_PLOT_POINTS));
+    }
+
+    private javafx.scene.chart.LineChart<Number, Number> historyChart(HistorySave h) {
+
+        javafx.scene.chart.NumberAxis x = new javafx.scene.chart.NumberAxis();
+        x.setLabel("month");
+        javafx.scene.chart.NumberAxis y = new javafx.scene.chart.NumberAxis();
+        y.setLabel(historyPicked.size() == 1
+                ? traceFor(historyPicked.iterator().next()).label()
+                : "each line across its own low-to-high in this window");
+
+        javafx.scene.chart.LineChart<Number, Number> chart =
+                new javafx.scene.chart.LineChart<>(x, y);
+        chart.setCreateSymbols(false);   // a dot per month is unreadable and slow
+        chart.setAnimated(false);        // and an animation per redraw is worse
+        chart.setLegendVisible(false);   // the legend below carries real values
+        chart.setPrefSize(880, 420);
+        chart.setMinSize(880, 420);
+
+        List<Integer> months = h.getMonth();
+        int from = Math.max(0, months.size() - historyWindow);
+        int bucket = bucketSize(months.size() - from);
+
+        int colour = 0;
+        for (String key : historyPicked) {
+
+            double[] all = historyValues(h, key);
+            javafx.scene.chart.XYChart.Series<Number, Number> line =
+                    new javafx.scene.chart.XYChart.Series<>();
+            line.setName(traceFor(key).label());
+
+            // Normalised against THIS window, not the whole history: a decade
+            // that is flat next to the founding boom should look flat, and it
+            // does not if the scale is set by a spike off the left of the screen.
+            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
+            for (int i = from; i < all.length; i++) {
+                if (Double.isNaN(all[i])) continue;
+                lo = Math.min(lo, all[i]);
+                hi = Math.max(hi, all[i]);
+            }
+            boolean flat = hi <= lo;
+            boolean single = historyPicked.size() == 1;
+
+            for (int i = from; i < all.length; i += bucket) {
+                double sum = 0;
+                int n = 0;
+                for (int j = i; j < Math.min(i + bucket, all.length); j++) {
+                    // NaN is "not being recorded yet", which is not zero - see
+                    // HistorySave.aligned(). A bucket of nothing draws nothing.
+                    if (Double.isNaN(all[j])) continue;
+                    sum += all[j];
+                    n++;
+                }
+                if (n == 0) continue;
+
+                double v = sum / n;
+                double plotted = single ? v
+                        : (flat ? 50 : (v - lo) / (hi - lo) * 100);
+                line.getData().add(new javafx.scene.chart.XYChart.Data<>(
+                        months.get(Math.min(i + bucket / 2, months.size() - 1)), plotted));
+            }
+
+            chart.getData().add(line);
+            styleLine(line, TRACE_COLOURS[colour % TRACE_COLOURS.length]);
+            colour++;
+        }
+        return chart;
+    }
+
+    /**
+     * Paints one line, now or as soon as it has a node.
+     *
+     * A series' Path is created when the chart lays the series out, which has
+     * usually happened by the time the series is added and occasionally has
+     * not. Colouring only when it happens to be ready would give a chart whose
+     * lines sometimes did not match its own legend, which is worse than an
+     * uncoloured chart.
+     */
+    private void styleLine(javafx.scene.chart.XYChart.Series<Number, Number> line,
+                           String colour) {
+        String css = "-fx-stroke: " + colour + "; -fx-stroke-width: 2px;";
+        if (line.getNode() != null) {
+            line.getNode().setStyle(css);
+        } else {
+            javafx.application.Platform.runLater(() -> {
+                if (line.getNode() != null) line.getNode().setStyle(css);
+            });
+        }
+    }
+
+    /**
+     * The numbers the chart gave up to be readable.
+     *
+     * First, last, low and high in real units for every selected line, plus the
+     * change between the ends - which is the question a graph is usually being
+     * asked and the one a normalised axis cannot answer.
+     */
+    private VBox historyLegend(HistorySave h) {
+
+        VBox box = new VBox(1);
+        Label header = monoLabel(String.format("  %-22s %14s %14s %14s %14s",
+                "", "first", "latest", "low", "high"));
+        header.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #546e7a;");
+        box.getChildren().add(header);
+
+        List<Integer> months = h.getMonth();
+        int from = Math.max(0, months.size() - historyWindow);
+
+        int colour = 0;
+        for (String key : historyPicked) {
+            Trace t = traceFor(key);
+            double[] all = historyValues(h, key);
+
+            double first = Double.NaN, last = Double.NaN;
+            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
+            for (int i = from; i < all.length; i++) {
+                if (Double.isNaN(all[i])) continue;
+                if (Double.isNaN(first)) first = all[i];
+                last = all[i];
+                lo = Math.min(lo, all[i]);
+                hi = Math.max(hi, all[i]);
+            }
+
+            String line = Double.isNaN(first)
+                    // Not an error and worth saying so plainly: this city was
+                    // played before the game kept that number.
+                    ? String.format("  %-22s %s", t.label(), "not recorded over this window")
+                    : String.format("  %-22s %14s %14s %14s %14s", t.label(),
+                            fmtUnit(t.unit(), first), fmtUnit(t.unit(), last),
+                            fmtUnit(t.unit(), lo), fmtUnit(t.unit(), hi));
+
+            Label row = monoLabel(line);
+            row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: " + TRACE_COLOURS[colour % TRACE_COLOURS.length] + ";");
+            box.getChildren().add(row);
+            colour++;
+        }
+
+        if (historyPicked.isEmpty()) {
+            Label none = monoLabel("  nothing selected - pick a line below");
+            none.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                    + " -fx-text-fill: #90a4ae;");
+            box.getChildren().add(none);
+        }
+        return box;
+    }
+
+    /** The tick boxes, grouped, because twenty-eight in one row is a wall. */
+    private VBox historyPickerRows() {
+        VBox all = new VBox(4);
+
+        String group = null;
+        javafx.scene.layout.FlowPane row = null;
+
+        for (Trace t : TRACES) {
+            if (!t.group().equals(group)) {
+                group = t.group();
+                Label g = new Label(group);
+                g.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                        + " -fx-font-weight: bold; -fx-text-fill: #546e7a;"
+                        + " -fx-padding: 6 0 0 0;");
+                all.getChildren().add(g);
+
+                row = new javafx.scene.layout.FlowPane(5, 5);
+                row.setPrefWrapLength(880);
+                all.getChildren().add(row);
+            }
+
+            boolean on = historyPicked.contains(t.key());
+            Button chip = new Button(t.label());
+            chip.setStyle("-fx-font-size: 10px; -fx-background-radius: 3;"
+                    + (on ? " -fx-background-color: #37474f; -fx-text-fill: white;"
+                          : " -fx-background-color: #e0e0e0; -fx-text-fill: #37474f;"));
+            chip.setOnAction(e -> {
+                if (!historyPicked.remove(t.key())) historyPicked.add(t.key());
+                showHistoryMenu();
+            });
+            row.getChildren().add(chip);
+        }
+        return all;
+    }
+
+    private Trace traceFor(String key) {
+        for (Trace t : TRACES) if (t.key().equals(key)) return t;
+        return new Trace(key, key, "", "count");
+    }
+
+    /**
+     * A series, aligned to the month axis, derived ones included.
+     *
+     * NOTHING DERIVED IS STORED. Unemployment is the workforce and the jobs,
+     * GDP per capita is GDP and the population - and a stored copy of either is
+     * a second number that can disagree with the two it came from, with nothing
+     * to say which is right. They are computed here, on the way to the screen,
+     * from the aligned series so a month missing from one of the inputs is
+     * missing from the result rather than dividing by a zero that was never
+     * recorded.
+     */
+    private double[] historyValues(HistorySave h, String key) {
+        switch (key) {
+            case "unemployment": {
+                double[] w = h.aligned("workforce"), j = h.aligned("jobs");
+                double[] out = new double[w.length];
+                for (int i = 0; i < out.length; i++) {
+                    out[i] = w[i] > 0 ? Math.max(0, (w[i] - j[i]) / w[i]) : Double.NaN;
+                }
+                return out;
+            }
+            case "gdpPerCapita": {
+                double[] g = h.aligned("gdp"), p = h.aligned("population");
+                double[] out = new double[g.length];
+                // Annualised, to match the figure on the accounts screen. A
+                // monthly per-capita number is correct and unrecognisable.
+                for (int i = 0; i < out.length; i++) {
+                    out[i] = p[i] > 0 ? g[i] * 12 / p[i] : Double.NaN;
+                }
+                return out;
+            }
+            case "averageWage": {
+                double[] t = h.aligned("totalWage"), w = h.aligned("workforce");
+                double[] out = new double[t.length];
+                for (int i = 0; i < out.length; i++) {
+                    out[i] = w[i] > 0 ? t[i] / w[i] : Double.NaN;
+                }
+                return out;
+            }
+            case "netMigration":    return minus(h.aligned("arrivals"), h.aligned("departures"));
+            case "naturalIncrease": return minus(h.aligned("births"), h.aligned("deaths"));
+            default:                return h.aligned(key);
+        }
+    }
+
+    private double[] minus(double[] a, double[] b) {
+        double[] out = new double[a.length];
+        for (int i = 0; i < out.length; i++) out[i] = a[i] - b[i];
+        return out;
+    }
+
+    /** A value in the units it is actually kept in. */
+    private String fmtUnit(String unit, double v) {
+        switch (unit) {
+            case "money":     return "$" + formatter.format(Math.round(v));
+            case "percent":   return String.format("%.1f%%", v * 100);
+            // Ground is kept per square foot in thousands, and the land screen
+            // already shows it multiplied out. Two screens, one convention.
+            case "land":      return String.format("$%.2f", v * 1000);
+            case "unitprice": return String.format("$%.2f", v);
+            default:          return formatter.format(Math.round(v));
+        }
     }
 
     /**
