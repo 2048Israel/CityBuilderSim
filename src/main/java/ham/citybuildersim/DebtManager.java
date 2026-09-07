@@ -165,6 +165,18 @@ public class DebtManager {
     public double getRate() {
         return currentRate;
     }
+
+    /**
+     * What the bank's strain is adding to every rate in the city.
+     *
+     * Set once a month from Bank.ratePremium(). Held here rather than reached
+     * for, because the debt market prices in several places and a rate that
+     * changed under a quote half way through would be a quote nobody was
+     * offered.
+     */
+    private double bankPremium;
+    public void setBankPremium(double premium) { this.bankPremium = Math.max(0, premium); }
+    public double getBankPremium()             { return bankPremium; }
     /**
      * Total outstanding principal across every live debt.
      *
@@ -238,6 +250,23 @@ public class DebtManager {
      * NOT the same as getAllPrincipal(), which is bonds and bills only. This is
      * what the market is actually looking at when it decides what to charge.
      */
+    /**
+     * Face value of the discount notes outstanding.
+     *
+     * The screens need it because a note is the one instrument whose interest
+     * is not a monthly expense - it was taken out of the proceeds at issue - so
+     * a city financed entirely on notes shows a Debt Interest line of zero
+     * while plainly owing money. That reads as a bug, and the honest answer is
+     * a sentence rather than a number. See ShortTermTBill.
+     */
+    public double getNotePrincipal() {
+        double total = 0;
+        for (Debt d : debts) {
+            if (d instanceof ShortTermTBill) total += d.getOustandingPrincipal();
+        }
+        return total;
+    }
+
     public double getPricedDebt() {
         return getAllPrincipal() + Math.max(0, overdraft);
     }
@@ -303,11 +332,29 @@ public class DebtManager {
      *
      * The market always lends. There is a price at which it will do anything.
      */
+    /**
+     * @return the city's own credit spread, PLUS what the bank charges for
+     *         funds - and the second half has to be here rather than at the one
+     *         call site that sets the standing rate.
+     *
+     *         It was, for about ten minutes. quoteRate() prices a NEW loan by
+     *         iterating priceAt() against the face it would create, so a
+     *         premium added afterwards was in the repurchase price and not in
+     *         the issue price - and a bond bought back at a higher rate than it
+     *         was sold at is worth less than the city received for it. Free
+     *         money, at $567,131 over eight round trips, caught by
+     *         RestructureCheck's "can the city print money with this?" section,
+     *         which exists for exactly this failure and has now caught it twice.
+     *
+     *         Added outside the clamp on purpose: the ceiling is what a
+     *         hopeless city pays on its OWN merits, and the funding premium is
+     *         a fact about the money rather than about the borrower.
+     */
     private double priceAt(double debt) {
         double rate = floorRate()
                 + spreadFor(debt, GDP * 12)
                 + spreadFor(debt, monthlyTaxRevenue * 12);
-        return Math.max(MIN_RATE, Math.min(rate, ceilingRate()));
+        return Math.max(MIN_RATE, Math.min(rate, ceilingRate())) + bankPremium;
     }
 
     /** What a spotless city pays. */
@@ -328,6 +375,17 @@ public class DebtManager {
      * every later rate calculation. Uses a local fallback instead.
      */
     public void updateInterest() {
+        /*
+         * ...PLUS WHAT THE BANK IS CHARGING FOR BEING STRAINED.
+         *
+         * The city's own paper is priced on its debt against its tax base, and
+         * that is still the whole of the credit judgement. What the bank adds
+         * is the price of the MONEY, not of the borrower: a city whose bank is
+         * lent out past its deposits is funding itself abroad, and a city with
+         * no bank at all is borrowing from strangers who have never heard of
+         * it. Eighteen points, at the worst, which is what a founding city with
+         * no branch now pays until it builds one. See Bank.ratePremium().
+         */
         currentRate = priceAt(getPricedDebt());
     }
 

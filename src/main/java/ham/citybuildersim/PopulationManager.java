@@ -357,8 +357,12 @@ public class PopulationManager {
 
                 int i = job.ordinal();
                 double staffed = Math.min(jobs[i], Math.min(licensed[i], available));
-                vacancy[i] = Math.max(0, jobs[i] - (int) Math.round(staffed));
-                available -= staffed;
+                // Rounded ONCE, and the same rounded figure taken off the pool.
+                // Booking a fractional person against `available` while filling
+                // a whole one leaves half a worker behind on every gated type.
+                int taken = (int) Math.round(staffed);
+                vacancy[i] = Math.max(0, jobs[i] - taken);
+                available -= taken;
                 gatedPosts += jobs[i];
             }
 
@@ -371,11 +375,31 @@ public class PopulationManager {
             double filled = Math.min(Math.max(available, 0), openPosts);
             double share = openPosts > 0 ? filled / openPosts : 1;
 
+            /*
+             * SHARED OUT CUMULATIVELY, so the band cannot staff more people than
+             * it has.
+             *
+             * Rounding each job type on its own looks harmless and is not: five
+             * types each rounding up by less than half a person put two and a
+             * half people into the city who do not live there. LabourCheck
+             * exists to assert exactly that this cannot happen, and it caught it
+             * the moment a change to the bank's job mix moved the numbers into a
+             * range where the rounding bit - 639 College posts staffed by 638
+             * College workers.
+             *
+             * Running the ideal total and taking differences means the whole
+             * band always hands out exactly round(filled) jobs, however many
+             * types it is split across.
+             */
+            double idealSoFar = 0, givenSoFar = 0;
             for (JobType job : JobType.values()) {
                 if (WageBand.of(job).ordinal() != b) continue;
                 if (isGated(job)) continue;
                 int i = job.ordinal();
-                vacancy[i] = Math.max(0, jobs[i] - (int) Math.round(jobs[i] * share));
+                idealSoFar += jobs[i] * share;
+                double give = Math.max(0, Math.min(jobs[i], Math.round(idealSoFar) - givenSoFar));
+                givenSoFar += give;
+                vacancy[i] = Math.max(0, jobs[i] - (int) give);
             }
 
             carried = Math.max(0, available - filled);
@@ -456,6 +480,38 @@ public class PopulationManager {
     }
 
     /**
+     * Posts a band's own members could actually be put into.
+     *
+     * NOT postsByBand(). A gated post is only a job for somebody who holds the
+     * licence, so a hospital with two hundred doctor posts and five doctors is
+     * offering the graduate band five jobs, not two hundred - the other
+     * hundred and ninety-five are a shortage, not an opportunity.
+     *
+     * FOUND BY A HARNESS, 2026-09-07. supplyByBand() cascaded against raw
+     * posts, so a city whose university posts were mostly gated showed its
+     * graduates as fully absorbed while the allocator was quietly sending a
+     * hundred of them down to college work. The staffed count then exceeded
+     * the supply the market had priced, which is the 220-doctors bug's shadow:
+     * not people invented, but people counted in a band that had no room for
+     * them.
+     *
+     * It matters beyond the arithmetic. The band tightness is what
+     * Migration reads to decide whether to pull graduates at all, so with raw
+     * posts an empty HOSPITAL pulled ordinary graduates - which is precisely
+     * the coupling LabourMarket.licencePremium() exists to break.
+     */
+    public double[] staffablePostsByBand() {
+        double[] out = new double[WageBand.values().length];
+        for (JobType job : JobType.values()) {
+            int j = job.ordinal();
+            double open = jobs[j];
+            if (isGated(job)) open = Math.min(open, Math.max(0, licensed[j]));
+            out[WageBand.of(job).ordinal()] += open;
+        }
+        return out;
+    }
+
+    /**
      * Workers actually available to each band, cascade included.
      *
      * What the labour market prices against. NOT the same as workforceByBand():
@@ -463,10 +519,12 @@ public class PopulationManager {
      * find work at their own level, which is what makes an oversupply of
      * graduates depress the diploma wage rather than sitting in a separate
      * pool being unemployed on its own.
+     *
+     * Cascades against STAFFABLE posts, not posts - see above.
      */
     public double[] supplyByBand() {
         double[] own = workforceByBand();
-        double[] posts = postsByBand();
+        double[] posts = staffablePostsByBand();
         double[] out = new double[own.length];
 
         double carried = 0;
@@ -484,9 +542,15 @@ public class PopulationManager {
      * rather than against the cascade, because a graduate labouring is employed,
      * not surplus - they are simply employed below their training, which is a
      * different complaint and not one that makes people leave a city.
+     *
+     * STAFFABLE posts, for the same reason supplyByBand() uses them: a post
+     * only a licence holder can fill is not work this band's members can have.
+     * The two must agree - one definition of "posts you could take" - or a band
+     * is short for the wage and full for the departure in the same month.
      */
     public double surplusInBand(WageBand band) {
-        return Math.max(0, workforceByBand()[band.ordinal()] - postsByBand()[band.ordinal()]);
+        return Math.max(0,
+                workforceByBand()[band.ordinal()] - staffablePostsByBand()[band.ordinal()]);
     }
 
     /** The mix as shares, for anything that wants proportions. Derived. */

@@ -391,14 +391,31 @@ public class LabourCheck {
         }
         assertTrue("fixture: skilled people arrived this month", skilledArrivals > 1);
         assertTrue("fixture: the city is not all adults", adultShare < .9 && adultShare > .3);
-        double expected = (skilledArrivals - skilledDepartures) * adultShare;
+        double net = skilledArrivals - skilledDepartures;
+        double expected = net * adultShare;
         double retirements = held * .01;   // a generous bound on a month of deaths and ageing out
-        System.out.printf("   skilled arrivals %.1f, adult share %.3f, counts moved %.1f, expected %.1f%n",
-                skilledArrivals, adultShare, gained, expected);
+        System.out.printf("   skilled arrivals %.1f, departures %.1f, adult share %.3f,"
+                + " counts moved %.1f, expected %.1f (unscaled %.1f)%n",
+                skilledArrivals, skilledDepartures, adultShare, gained, expected, net);
+
         assertTrue("the skilled counts gained the ADULT share of the skilled arrivals",
                 Math.abs(gained - expected) <= retirements + .5);
+
+        /*
+         * ...AND NOT THE WHOLE MIX, compared by which of the two it is NEARER.
+         *
+         * This asserted an absolute distance from the unscaled figure, which
+         * only works while the two candidates are far apart - and on
+         * 2026-09-07 they were not: departures happened to land where
+         * net == net * adultShare, the two explanations coincided, and the
+         * check failed on a month where nothing was wrong. A fixture must
+         * CAUSE the condition it tests, so the gap between the candidates is
+         * asserted first and the comparison is relative after it.
+         */
+        assertTrue("fixture: the two explanations are far enough apart to tell apart",
+                Math.abs(net - expected) > 1);
         assertTrue("...and not the whole mix",
-                Math.abs(gained - (skilledArrivals - skilledDepartures)) > retirements + .5);
+                Math.abs(gained - expected) < Math.abs(gained - net));
 
         /* ------------------------------------------------------------------
          * A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06).
@@ -443,9 +460,98 @@ public class LabourCheck {
         assertTrue("licence holders arrive in response to the price",
                 short_.getMigration().getLastArrivalLicences()[JobType.UNIV_DOCTOR.ordinal()] > 0);
 
+        /* ------------------------------------------------------------------
+         * WHO MOVES IN, AND WHY (2026-09-07).
+         *
+         * Jerus, on a fresh run: "way too many very well educated people come
+         * in", with no demand for them and no schools to explain them. The
+         * world is now universal high school and nothing else for free -
+         * a diploma is the base, NONE is zero, and every band above the
+         * diploma is bought at a premium or does not come.
+         *
+         * These four assertions are the whole feature. The first two are the
+         * spec; the third is the reason the old model could not be tuned into
+         * this shape; the fourth is what replaces MAX_LICENSED_ARRIVALS.
+         * ------------------------------------------------------------------ */
+        System.out.println("\n--- who moves in, and why ---");
+
+        double[] mixShort = short_.getMigration().getLastArrivalMix();
+        double[] licShort = short_.getMigration().getLastArrivalLicences();
+        double arrivalsTotal = 0;
+        for (double v : mixShort) arrivalsTotal += v;
+        System.out.printf("   arrivals %,.0f - none %.1f%%  diploma %.1f%%  college %.1f%%  university %.1f%%%n",
+                arrivalsTotal,
+                pct(mixShort, WageBand.NONE, arrivalsTotal),
+                pct(mixShort, WageBand.DIPLOMA, arrivalsTotal),
+                pct(mixShort, WageBand.COLLEGE, arrivalsTotal),
+                pct(mixShort, WageBand.UNIVERSITY, arrivalsTotal));
+
+        assertTrue("fixture: somebody moved in at all", arrivalsTotal > 1);
+        assertTrue("NOBODY ARRIVES WITHOUT A DIPLOMA",
+                mixShort[WageBand.NONE.ordinal()] == 0);
+        assertTrue("...so the unskilled band is only ever home-grown",
+                WageBand.NONE.arrivalCeiling() == 0);
+
+        /*
+         * THE DETACH. This city is short of doctors and NOT short of graduates
+         * - the graduate band is at or under its going rate - and doctors
+         * arrive anyway. Under the old model they could not: a licence holder
+         * was carved out of the graduate arrivals, so no graduate pull meant no
+         * doctors however empty the hospital was. Two different shortages were
+         * reading off one number.
+         */
+        double bandPrem = m2.bandPremium(WageBand.UNIVERSITY);
+        System.out.printf("   graduate band premium %.2f, doctor licence premium %.2f, doctors arriving %.3f%n",
+                bandPrem, m2.licencePremium(JobType.UNIV_DOCTOR),
+                licShort[JobType.UNIV_DOCTOR.ordinal()]);
+        assertTrue("fixture: the graduate band is NOT bid up - only doctors are",
+                bandPrem < m2.licencePremium(JobType.UNIV_DOCTOR));
+        assertTrue("a doctor shortage brings doctors on its own",
+                licShort[JobType.UNIV_DOCTOR.ordinal()] > 0);
+
+        /*
+         * ...and they are graduates, counted once. This is the invariant that
+         * let MAX_LICENSED_ARRIVALS be deleted rather than retuned: licences
+         * are no longer a share of the graduate arrivals that could overshoot,
+         * they are part of them by construction.
+         */
+        double licTotal = 0;
+        for (double v : licShort) licTotal += v;
+        assertTrue("a licence holder is one of the university arrivals, not an extra head",
+                licTotal <= mixShort[WageBand.UNIVERSITY.ordinal()] + 1e-9);
+
+        /*
+         * AT THE GOING RATE, NOBODY ABOVE A DIPLOMA COMES.
+         *
+         * Priced directly rather than played, because a city sitting at exactly
+         * 1.00 on every band is a fixture nobody can build. reach() is the one
+         * definition of the curve and this asserts its ends: zero at the going
+         * rate, the full ceiling at the wage ceiling, and a third of the way
+         * at twice the going rate - which is the shape Jerus chose.
+         */
+        System.out.println("\n--- the pull curve ---");
+        assertTrue("at the going rate a graduate has no reason to come",
+                Migration.reach(1.00) == 0);
+        assertTrue("...nor below it", Migration.reach(0.70) == 0);
+        assertTrue("at twice the going rate, a third of the ceiling",
+                Math.abs(Migration.reach(2.00) - 1 / 3.0) < 1e-9);
+        assertTrue("at the wage ceiling, all of it",
+                Math.abs(Migration.reach(LabourMarket.MAX_MULTIPLE) - 1) < 1e-9);
+        assertTrue("...and never more, however far a premium is pushed",
+                Migration.reach(99) == 1);
+        assertTrue("a diploma is the base and is not competed for",
+                WageBand.DIPLOMA.arrivalCeiling() == 1);
+        assertTrue("the graduate ceilings stay under it - the world has few to spare",
+                WageBand.COLLEGE.arrivalCeiling() < 1
+                        && WageBand.UNIVERSITY.arrivalCeiling() < WageBand.COLLEGE.arrivalCeiling());
+
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    static double pct(double[] mix, WageBand band, double total) {
+        return total > 0 ? mix[band.ordinal()] / total * 100 : 0;
     }
 
     static double staffed(int[] jobs, int[] vacancy, WageBand band) {

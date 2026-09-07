@@ -8,10 +8,11 @@ package ham.citybuildersim;
  * Before schools existed, every skilled worker in the game had arrived from
  * somewhere else. The labour market could make a doctor EXPENSIVE and it could
  * not make a doctor, so a city's whole skill mix was a function of how many
- * strangers it had persuaded to move in - and WageBand.worldShare() means the
- * wider world only ever has about six graduates for every hundred people. A
- * city of eighty thousand cannot import two hundred doctors at any price. At
- * some size it has to make its own or go without.
+ * strangers it had persuaded to move in - and WageBand.arrivalCeiling() means
+ * a graduate arrives only where the city is paying over the going rate, and
+ * even then out of a world with few to spare. A city of eighty thousand cannot
+ * import two hundred doctors at any price. At some size it has to make its own
+ * or go without.
  *
  * WHAT MAKES A PERSON GET EDUCATED
  *

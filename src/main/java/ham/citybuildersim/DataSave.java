@@ -628,11 +628,109 @@ public class DataSave {
      * income statements are carried rather than recomputed.
      */
     private double[] taxPolicyState;
+
+    /**
+     * What the households have saved and what they owe, per pay tier.
+     *
+     * A STOCK. Everything else on the household screen is this month's flow and
+     * is rebuilt from the month; savings and debt are the accumulation of every
+     * month before it and cannot be. A save without them reloads a city whose
+     * families are all suddenly solvent.
+     */
+    private double[] householdBalance;
+
+    /**
+     * The bank's cash.
+     *
+     * A STOCK, and one of MoneyAudit's pools since 2026-09-07, so a save that
+     * left it out reloaded a city whose total money supply had changed by
+     * however much its bank happened to be holding. It is a single number
+     * rather than the whole position because everything else the bank knows -
+     * its branches, its deposits, its loan book - is re-read off the city at
+     * the top of every month and would be overwritten a tick later anyway.
+     */
+    private double bankCash;
+
+
+    /**
+     * The housing match the month's rent was struck on.
+     *
+     * Derived, and carried anyway, because it is derived from a stock that has
+     * since changed: homes finish construction after the match runs, so
+     * recomputing it on load bills a different month's housing.
+     */
+    private double rentWeight;
+    private double retailCapacity;
+    private double retailWant;
     private boolean[] autoSubsidy;
     private double[] salesTaxLedger;
 
     public void setTaxPolicyState(double[] state)  { this.taxPolicyState = state; }
     public double[] getTaxPolicyState()            { return taxPolicyState; }
+
+    public void setHouseholdBalance(double[] state) { this.householdBalance = state; }
+    public double[] getHouseholdBalance()           { return householdBalance; }
+
+    public void setBankCash(double cash) { this.bankCash = cash; }
+    public double getBankCash()          { return bankCash; }
+
+    /**
+     * Branches the shareholders have already paid capital for.
+     *
+     * A COUNTER, and it has to be carried or every reload re-capitalises every
+     * branch in the city - which is $32,000 of fresh equity per branch per load,
+     * declared to the audit as money arriving from outside, for nothing. Free
+     * money for anybody who noticed that saving and loading made their bank
+     * stronger.
+     */
+    private double bankBranchesCapitalised;
+
+    public void setBankBranchesCapitalised(double n) { this.bankBranchesCapitalised = n; }
+    public double getBankBranchesCapitalised()       { return bankBranchesCapitalised; }
+
+    /**
+     * The bank's profit for the month this save was taken in.
+     *
+     * A FLOW, and carried for the reason every flow in this file is carried:
+     * next month charges tax on it, and nothing about the balance sheet the
+     * month ended with can reproduce it.
+     */
+    private double bankProfitLastMonth;
+
+    public void setBankProfitLastMonth(double v) { this.bankProfitLastMonth = v; }
+    public double getBankProfitLastMonth()       { return bankProfitLastMonth; }
+
+    /**
+     * ...and the tax the city actually took off it this month.
+     *
+     * The same rule as propertyTaxCharged above: the month's tax figures are
+     * CARRIED, not recomputed, because the city has to report the figure the
+     * business really paid. Left out, a reloaded city previewed next month's
+     * income $19 light - the bank's tax line was simply missing from a total
+     * everything downstream reads.
+     */
+    private double bankTaxCharged;
+
+    public void setBankTaxCharged(double v) { this.bankTaxCharged = v; }
+    public double getBankTaxCharged()       { return bankTaxCharged; }
+
+
+    /** What the landlords billed this month - see FamilyModel.setRentWeight(). */
+    public void setRentWeight(double weight) { this.rentWeight = weight; }
+    public double getRentWeight()            { return rentWeight; }
+
+    /**
+     * The cap the shops sold under, and the demand behind it.
+     *
+     * Carried for the same reason as the rent weight: the reconstruction
+     * re-runs the retail report, and without these it re-runs it with no
+     * budget constraint at all - so a reloaded city sold what a headcount
+     * wanted rather than what its households could pay for.
+     */
+    public void setRetailCapacity(double v) { this.retailCapacity = v; }
+    public double getRetailCapacity()       { return retailCapacity; }
+    public void setRetailWant(double v)     { this.retailWant = v; }
+    public double getRetailWant()           { return retailWant; }
 
     public void setAutoSubsidy(boolean[] on)       { this.autoSubsidy = on; }
     public boolean[] getAutoSubsidy()              { return autoSubsidy; }

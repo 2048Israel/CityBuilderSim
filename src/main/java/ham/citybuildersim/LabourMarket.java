@@ -319,6 +319,28 @@ public class LabourMarket {
      * university job in enum order is UNIV_DOCTOR - so once doctors carried a
      * premium of their own, the whole graduate band would have looked dear.
      */
+    /**
+     * What a licensed profession is paid OVER ITS OWN BAND, as actually paid.
+     *
+     * The band premium answers "are graduates dear here"; this answers "are
+     * DOCTORS dear here", which is a different question with a different
+     * answer - a city can be drowning in graduates and unable to staff a
+     * hospital, and before this the two were one number.
+     *
+     * Realised rather than target, deliberately. getLicenceMultiple() is where
+     * this month's scarcity is aiming; this is where the wage has actually got
+     * to, after ADJUST_RATE. Migration reads THIS one, because a migration
+     * model driven by an undamped signal oscillates for exactly the reason the
+     * damping exists.
+     *
+     * Never below 1: a profession is not made cheap by its band being dear.
+     */
+    public double licencePremium(JobType job) {
+        if (!isGated(job)) return 1;
+        double band = bandPremium(WageBand.of(job));
+        return band > 0 ? Math.max(1, premium(job) / band) : 1;
+    }
+
     public double bandPremium(WageBand band) {
         for (JobType job : JobType.values()) {
             if (WageBand.of(job) == band && !isGated(job)) return premium(job);

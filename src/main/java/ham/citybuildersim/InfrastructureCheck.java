@@ -272,8 +272,58 @@ public class InfrastructureCheck {
         assertTrue("...and cleared the jam", withRoads.getRoadRatio() > without.getRoadRatio());
         assertTrue("...while the city that built nothing is still stuck",
                 without.getInfrastructureManager().isCongested());
-        assertTrue("...and the city that built them is better off for it",
-                withRoads.getIncome() > without.getIncome());
+        /*
+         * BETTER OFF IN OUTPUT, not in the treasury's monthly line.
+         *
+         * This compared getIncome(), which is what the CITY collects - and the
+         * city that built roads is also paying to keep them. At this scale the
+         * upkeep is the same order as the extra tax, so the comparison came
+         * down to a couple of dollars either way and flipped on 2026-09-07 when
+         * the House grew to six and both cities got bigger. The benefit of a
+         * road was never the treasury's; it is that the economy on it runs at
+         * all, which is what GDP measures and what the throughput ratio above
+         * is a direct input to.
+         */
+        /*
+         * AVERAGED, NOT SNAPSHOT - and that correction matters more than it
+         * sounds. One month's GDP contains one month's CAPITAL SPENDING, which
+         * is lumpy in a way nothing else here is: measured on a single month,
+         * the jammed city read $9,012 of investment against the healthy city's
+         * $273, because somebody happened to order a power plant that month.
+         * GDP came out sixteen times higher in the city that could not move its
+         * goods, and the fixture duly reported that roads make you poorer.
+         *
+         * A year, on both, and the lump is one twelfth of what it was. This is
+         * the same mistake as reading whichever month a loop stopped on, which
+         * HouseholdCheck was carrying on the same day.
+         */
+        double gdpWith = 0, gdpWithout = 0;
+        for (int m = 0; m < 12; m++) {
+            withRoads.simulateMonths(1);
+            without.simulateMonths(1);
+            gdpWith += withRoads.getEconomyManager().getMonthGdp();
+            gdpWithout += without.getEconomyManager().getMonthGdp();
+        }
+        gdpWith /= 12;
+        gdpWithout /= 12;
+        System.out.printf("   GDP over a year: with roads %.1f/mo, without %.1f/mo%n",
+                gdpWith, gdpWithout);
+        System.out.printf("   and the shops: %.1f/mo against %.1f/mo, for %d people against %d%n",
+                withRoads.getEconomyManager().getNationalAccounts().getConsumption(),
+                without.getEconomyManager().getNationalAccounts().getConsumption(),
+                withRoads.getPopulationManager().getPopulation(),
+                without.getPopulationManager().getPopulation());
+
+        /*
+         * And the cleaner signal underneath it. Consumption is what "the
+         * economy on it runs at all" actually means - people earning and
+         * spending - and unlike GDP it has no capital lump in it.
+         */
+        assertTrue("...and its shops sell more",
+                withRoads.getEconomyManager().getNationalAccounts().getConsumption()
+                        > without.getEconomyManager().getNationalAccounts().getConsumption());
+        assertTrue("...and the city that built them produces more",
+                gdpWith > gdpWithout);
 
         /* ================= 7. across a save ================= */
         System.out.println("\n--- across a save ---");

@@ -344,9 +344,27 @@ public class PopulationCheck {
             if ("Low-Rise Apartments".equals(t.getName())) lowT = t;
         }
 
+        /*
+         * THE LADDER, ASSERTED AS A LADDER.
+         *
+         * These were three door counts written down - 1, 80, 100 - which is a
+         * copy of buildings.json and fails the day a building is retuned even
+         * though nothing is wrong. What the model actually depends on is that
+         * the three residential types take DIFFERENT SIZED households, in that
+         * order, and that only the smallest refuses a child. That is the rule;
+         * the counts are data.
+         */
         check("a house is one home", houseT.getDwellings(), 1, 0);
-        check("a studio block is eighty", studioT.getDwellings(), 80, 0);
-        check("a low-rise is a hundred", lowT.getDwellings(), 100, 0);
+        assertTrue("a studio block is many small flats",
+                studioT.getDwellings() > 1 && studioT.homeSize() < lowT.homeSize());
+        assertTrue("a low-rise flat is bigger than a studio and smaller than a house",
+                lowT.homeSize() > studioT.homeSize() && lowT.homeSize() < houseT.homeSize());
+        assertTrue("only the studio refuses a child",
+                studioT.adultsOnly() && !lowT.adultsOnly() && !houseT.adultsOnly());
+        assertTrue("every block houses what its flats add up to",
+                Math.abs(lowT.getCapacity() - lowT.getDwellings() * lowT.homeSize()) <= 1
+                        && Math.abs(studioT.getCapacity()
+                                - studioT.getDwellings() * studioT.homeSize()) <= 1);
 
         /*
          * The reason the numbers are these numbers. Cost per HOME is what

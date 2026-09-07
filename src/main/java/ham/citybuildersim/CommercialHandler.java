@@ -13,6 +13,20 @@ public class CommercialHandler {
     private double[] fillRate = new double[11];
     private double[] storeWages = new double[11];
 
+    /**
+     * The bank's share of those jobs, so its wages can be told from the shops'.
+     *
+     * A Commercial Bank is a COMMERCIAL building, so its two hundred and
+     * seventy-eight staff have always been inside this sector's payroll - which
+     * was fine while the bank had no books of its own and absurd the moment it
+     * did. The shops were paying the tellers.
+     */
+    private final double[] bankWages = new double[11];
+    private double rBankPayroll;
+
+    /** What the bank's own staff cost this month - charged to the bank, not here. */
+    public double getReportBankPayroll() { return rBankPayroll; }
+
     private int population;
     private int household;
 
@@ -299,6 +313,19 @@ public class CommercialHandler {
      * table, so raising pay raises rent with it.
      */
     public static final int REFERENCE_EARNERS = 2;
+
+    /**
+     * The home the affordability target is struck against - a family of four.
+     *
+     * AN AFFORDABILITY YARDSTICK, NOT THE HOUSE'S SPEC, and the two parted
+     * company on 2026-09-07 when the House grew to six. Rent is charged per
+     * person of dwelling capacity, so this number decides what one person of
+     * capacity costs; a four-person home costs a working couple
+     * TARGET_RENT_BURDEN of their wages, and a six-person House costs half as
+     * much again. Moving this to six would have kept the House at the same
+     * rent and made every flat in the city a third cheaper, which is the
+     * opposite of what a bigger family home should mean.
+     */
     public static final int REFERENCE_HOME_CAPACITY = 4;
 
     /**
@@ -358,6 +385,16 @@ public class CommercialHandler {
     }
 
     public void updateStoreWages(double[] wages, int[] jobs) {
+        updateStoreWages(wages, jobs, null);
+    }
+
+    /**
+     * @param bankJobs how many of those commercial jobs are the bank's, so its
+     *                 payroll can be charged to the bank rather than to the
+     *                 shops. Null means no bank, which is most cities for a
+     *                 while and every city that predates one.
+     */
+    public void updateStoreWages(double[] wages, int[] jobs, int[] bankJobs) {
 
         if (wages == null || jobs == null ) {
             System.out.println("null stores");
@@ -371,7 +408,11 @@ public class CommercialHandler {
 
         for (int i = 0; i < length; i++) {
             storeWages[i] = wages[i] * jobs[i];
-
+            // The bank's slice of the same rate. Struck HERE, off the same wage
+            // and in the same loop, so the two can never be computed from
+            // different months' prices.
+            bankWages[i] = bankJobs != null && i < bankJobs.length
+                    ? wages[i] * bankJobs[i] : 0;
         }
 
         // Rent follows the unskilled wage the market is paying this month.
@@ -447,6 +488,26 @@ public class CommercialHandler {
      * a month of the old number than a month of zero rent.
      */
     public double getRentIncome(){
+        /*
+         * BILLED OFF THE ACTUAL MATCH since 2026-09-07.
+         *
+         * This was `let homes x average home size x rentPrice`, which charges
+         * every home the city's average whoever is in it - so a studio billed
+         * the same as a house and an empty four-bed billed as if a family were
+         * in it. FamilyModel now puts households behind doors that fit them and
+         * hands back the weight: half the size of the flat and half the size of
+         * the household, per Jerus, so an oversized building discounts toward
+         * what its tenant will actually pay rather than sitting empty at full
+         * price.
+         *
+         * The two fallbacks below are both real paths, not defensive noise: a
+         * save written before dwellings existed has no homes at all, and the
+         * load path reaches here before the first housing pass has run.
+         */
+        if (rentWeight > 0) {
+            return rentWeight * rentPrice;
+        }
+        // (the report snapshots what it used - see rBilledRentWeight)
         if (homes <= 0) {
             return Math.min(household, population) * rentPrice;
         }
@@ -501,6 +562,64 @@ public class CommercialHandler {
     public double getRoadRatio()          { return roadRatio; }
     public double getStoreSellPrice()     { return storeSellPrice; }
     public double getRentPrice()          { return rentPrice; }
+
+    /* ---------------------------------------------------------------------
+       WHAT THE CITY CAN AFFORD TO SPEND IN THE SHOPS THIS MONTH.
+
+       Set from HouseholdBalance at the end of the previous month, because that
+       is when a household knows what it is holding - and read here at the start
+       of this one, which is when it shops. The lag is the point rather than a
+       compromise: people budget from the payslip they have already had.
+       --------------------------------------------------------------------- */
+    private double spendingCapacity;
+    private double wantedSpend;
+
+    /** What the households behind the doors add up to. See getRentIncome(). */
+    private double rentWeight;
+
+    /**
+     * The weight this month's report was actually struck with.
+     *
+     * NOT the same as rentWeight. The housing match runs in updateWorkforce, at
+     * the END of a month, for the next one; the report runs at the START of a
+     * month off the match the previous one left. So at the moment a save is
+     * written, rentWeight holds a figure the books have not used yet - and
+     * carrying that one made the reconstruction bill a month of rent nobody had
+     * been charged. Eight cents on $482,860, found by SaveFileCheck.
+     */
+    private double rBilledRentWeight;
+
+    public void setRentWeight(double weight) { this.rentWeight = weight; }
+    public double getRentWeight()            { return rentWeight; }
+    public double getBilledRentWeight()      { return rBilledRentWeight; }
+
+    /** Units the city WANTED, before it counted its money. */
+    private int rWantedDemand;
+
+    public void setSpendingCapacity(double money) { this.spendingCapacity = money; }
+    public void setWantedSpend(double money)      { this.wantedSpend = money; }
+    public double getWantedSpend()                { return wantedSpend; }
+    public double getSpendingCapacity()           { return spendingCapacity; }
+
+    /** Demand at a headcount, which is what it would have been before budgets. */
+    public int getWantedDemand()                  { return rWantedDemand; }
+
+    /** Units the city wanted and could not pay for. */
+    public int getUnaffordableDemand()            { return Math.max(0, rWantedDemand - rDemand); }
+
+    /**
+     * Share of the units people came in for that the shops actually had, 0-1.
+     *
+     * IN UNITS, not in money, and that distinction is load-bearing. Gross
+     * revenue is scaled by the energy, water, road, health and staffing ratios,
+     * so reading "how much did people actually get" off the takings makes an
+     * understaffed shop look like a famine - and, since hunger makes people
+     * ill and illness lowers the staffing ratio, it closes a feedback loop that
+     * has nothing to do with whether there was food on the shelf.
+     */
+    public double getSupplyRatio() {
+        return rDemand > 0 ? Math.min(1, productsSold / (double) rDemand) : 1;
+    }
     public double getFoodPrice()          { return foodPrice; }
 
     public int getReportPopulation()      { return rPopulation; }
@@ -928,6 +1047,7 @@ public class CommercialHandler {
         // results alike - describes the same moment
         rPopulation = population;
         rHousehold = household;
+        rBilledRentWeight = rentWeight;
         rStoreCoverage = storeCoverage;
         rStoreCapacity = storeCapacity;
         rStoreInventory = storeInventory;
@@ -937,7 +1057,43 @@ public class CommercialHandler {
         rRoadRatio = bRoadRatio;
 
         /* -------------------- RETAIL / COMMERCIAL COMPANY -------------------- */
-        rDemand = Math.min(storeCoverage, population);
+        /*
+         * THE BUDGET CONSTRAINT.
+         *
+         * Demand was min(storeCoverage, population) - a headcount, with no
+         * reference to what anybody earned, so the shops sold the same basket to
+         * a household on $552 and one on $18,673 and the difference came out as
+         * a deficit nothing funded. The third term is what the households can
+         * actually pay for, priced at the shelf price they will pay it at, and
+         * it comes from HouseholdBalance after savings and credit have been
+         * drawn on. See HouseholdBalance for the waterfall.
+         *
+         * Zero capacity means "nobody has told us yet", not "nobody can afford
+         * anything" - a fresh game and the load path both reach here before the
+         * first household statement exists, and a city whose shops sold nothing
+         * in month one would never start.
+         */
+        /*
+         * The headcount is no longer the ceiling either. It was one basket a
+         * person however rich they were, so a city could not spend its way to a
+         * bigger retail sector - the whole top of the income distribution was
+         * capped at the same basket as the bottom. The want comes from
+         * HouseholdBalance now: subsistence for everybody, plus most of
+         * whatever is left over. What survives of the old rule is
+         * storeCoverage, which is the shops' own capacity to serve people, and
+         * a city whose households shop three times as hard needs three times
+         * the shops.
+         */
+        int wanted = Math.min(storeCoverage, population);
+        int affordable = wanted;
+        if (spendingCapacity > 0 && storeSellPrice > 0) {
+            wanted = wantedSpend > 0
+                    ? (int) Math.floor(wantedSpend / storeSellPrice)
+                    : Math.min(storeCoverage, population);
+            affordable = (int) Math.floor(spendingCapacity / storeSellPrice);
+        }
+        rWantedDemand = Math.min(storeCoverage, wanted);
+        rDemand = Math.min(rWantedDemand, affordable);
         productsSold = Math.min(rDemand, storeInventory);
         rProductsSold = productsSold;
 
@@ -951,7 +1107,19 @@ public class CommercialHandler {
             }
         }
         payroll *= storeFillBasis;
-        rPayroll = payroll;
+
+        /*
+         * The bank's tellers, out of the shops' wage bill.
+         *
+         * Apportioned by headcount within each job type, which is exact rather
+         * than approximate: every commercial building in the city is staffed at
+         * the same fill basis, so a fifth of the sector's cashiers costs a fifth
+         * of what the sector pays cashiers.
+         */
+        double bankSlice = 0;
+        for (double w : bankWages) bankSlice += w;
+        rBankPayroll = Math.min(payroll, bankSlice * storeFillBasis);
+        rPayroll = payroll - rBankPayroll;
 
         /*
          * The money that actually left the account, read rather than re-derived.

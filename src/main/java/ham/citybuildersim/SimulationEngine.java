@@ -108,7 +108,10 @@ public class SimulationEngine {
         economyManager.setHouseholds(buildingManager.getTotalHouseCapacity());
         economyManager.setOccupiedHomes(game.getFamilies().homesNeeded());
         economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR));
-        economyManager.updateStoreWages(populationManager.getWagesPerType(),buildingManager.getJobArrayPerCategory(BuildingType.COMMERCIAL));
+        economyManager.updateStoreWages(
+                populationManager.getWagesPerType(),
+                buildingManager.getJobArrayPerCategory(BuildingType.COMMERCIAL),
+                buildingManager.getJobArrayByName("Commercial Bank"));
         economyManager.updateIndustrialWages(populationManager.getWagesPerType());
         economyManager.updateJobFillRate(populationManager.getJobFillRate());
         // After updateJobFillRate: the mills' payroll is discounted by the fill,

@@ -93,8 +93,17 @@ public class BuildingManager {
          * A third, because that is what rent fell by. Not a number chosen to
          * make the playtest come out well.
          */
+        /*
+         * SIX, not four, since 2026-09-07 (Jerus: "houses should be able to
+         * house 6... houses should also be higher rent cost"). A House is the
+         * only home in the game big enough for a large family or a
+         * five-adult flatshare - both exist as household shapes and neither
+         * fitted anything - and because rent is charged per person of dwelling
+         * capacity, a bigger house is a dearer one by construction. It is the
+         * family building now, and it costs like one.
+         */
         BuildingsTemplate house = new BuildingsTemplate("House", BuildingType.RESIDENTIAL);
-        house.setCapacity(4);
+        house.setCapacity(6);
         house.setDwellings(1);
         house.setCashCost(30);
         house.setConstructionPoints(10);
@@ -107,7 +116,13 @@ public class BuildingManager {
         templates.add(house);
 
         BuildingsTemplate studioApartments = new BuildingsTemplate("Studio Apartments", BuildingType.RESIDENTIAL);
-        studioApartments.setCapacity(80);
+        // TWO TO A UNIT since 2026-09-07, and it is the reason the building
+        // stopped being pointless. Eighty one-person flats cost $25 a resident
+        // against a House's $7.50, so nothing could make them the right answer
+        // at any land price - backlog I1, "strictly dominated". A studio that
+        // takes a couple is both what a studio actually is and $12.50 a
+        // resident on a sixth of a House's land.
+        studioApartments.setCapacity(160);
         studioApartments.setDwellings(80);
         studioApartments.setCashCost(2000);
         studioApartments.setConstructionPoints(680);
@@ -120,8 +135,20 @@ public class BuildingManager {
         templates.add(studioApartments);
 
         BuildingsTemplate lowRiseApartments = new BuildingsTemplate("Low-Rise Apartments", BuildingType.RESIDENTIAL);
-        lowRiseApartments.setCapacity(250);
-        lowRiseApartments.setDwellings(100);
+        /*
+         * FOUR TO A FLAT since 2026-09-07 (Jerus: "low rise should be four").
+         * Sixty-three flats rather than a hundred, for the same 252 people -
+         * the block did not get bigger, its units did, which is what makes it
+         * the dense answer for a FAMILY. A studio cannot take one at all and a
+         * House needs five and a half times the land per resident.
+         *
+         * Deliberately not a hundred four-person flats. That would be 400
+         * people on 60,000 sq ft - 150 a head, undercutting the studio's 156 -
+         * and a studio has to be the cheapest ground in the game or the whole
+         * point of a tiny flat is gone.
+         */
+        lowRiseApartments.setCapacity(252);
+        lowRiseApartments.setDwellings(63);
         lowRiseApartments.setCashCost(7000);
         lowRiseApartments.setConstructionPoints(2400);
         lowRiseApartments.setConstructionMaterials(2050);
@@ -1021,7 +1048,56 @@ public class BuildingManager {
                 .setId(39);
 
         templates.add(instituteOfTechnology);
-        //add more buildings; next Building ID is 40
+
+        /* =====================================================================
+           THE BANK
+
+           One building, and every loan in the city goes through it - the
+           sectors', the treasury's bonds and the households' credit alike. What
+           it buys is not a service the way a clinic or a school is: it is the
+           price of borrowing. A city with no branch pays eighteen points over
+           the odds on everything it owes, because a bank with no capacity is
+           infinitely strained and Bank.ratePremium() falls straight out of
+           that - no special case for "there is no bank".
+
+           It is also the first real employer of UNIV_FINANCE. There were
+           sixty-four such posts in the whole building set before this and
+           twenty-four of them were in a research institute, which made a
+           finance degree a qualification for almost nothing.
+           ===================================================================== */
+        BuildingsTemplate bank = new BuildingsTemplate("Commercial Bank", BuildingType.COMMERCIAL);
+        bank.setCapacity(0);
+        bank.setCashCost(9000);
+        bank.setConstructionPoints(4200);
+        bank.setConstructionMaterials(3400);
+        bank.setUpkeep(190);
+        bank.setElectricityConsumption(60);
+        bank.setWaterConsumption(12);
+        bank.setLandSqFt(45000);
+        bank.setRoadLoad(60);
+        /*
+         * SIXTY-NINE STAFF, DOWN FROM 278 - and the old figure was not a
+         * balance choice, it was a building nobody had costed.
+         *
+         * Once the bank had an income statement the number became checkable, and
+         * it did not check: a branch's payroll came to $1,052 a month against
+         * $218 of interest income, so every bank in the game lost money forever.
+         * It was distorting more than its own books - a 278-job building dropped
+         * into a small city takes the workers a steel mill was using, which is
+         * how it moved MiningCheck's foundry margin by more than a point.
+         *
+         * Still a substantial white-collar employer, and still an employer whose
+         * business case needs a loan book worth banking - which is the decision
+         * this building is meant to be.
+         */
+        bank.setJobs(JobType.NO_DIPLOMA, 5);
+        bank.setJobs(JobType.DIPLOMA, 22);
+        bank.setJobs(JobType.COLLEGE_BUSINESS, 30);
+        bank.setJobs(JobType.UNIV_FINANCE, 10);
+        bank.setJobs(JobType.UNIV_LAW, 2);
+        bank.setId(40);
+        templates.add(bank);
+        //add more buildings; next Building ID is 41
     }
 
     public void finalUpdateBuildings() {
@@ -1171,6 +1247,33 @@ public class BuildingManager {
         }
     }
     //getters
+
+    /** How many finished buildings of this name the city has. */
+    public int countByName(String name) {
+        int total = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getName().equals(name)) total += stack.getQuantity();
+        }
+        return total;
+    }
+
+    /**
+     * How many of one named building are on site right now.
+     *
+     * Per NAME rather than per category, because the advisor's "already
+     * building" guard is a question about the thing being ordered. Asked by
+     * category, it told the bank planner that a city with a grocery store going
+     * up was too busy to open a branch - which is how a city with $5.8B of loans
+     * and no bank at all came to sit at the punitive rate for four thousand
+     * months without ever ordering the building that would fix it.
+     */
+    public int underConstructionByName(String name) {
+        int total = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getName().equals(name)) total += stack.getUnderConstruction();
+        }
+        return total;
+    }
 
     public BuildingsTemplate getTemplateByName(String name) {
         for (BuildingsTemplate t : templates) {
@@ -1354,6 +1457,35 @@ public class BuildingManager {
             homes += stack.getQuantity() * per;
         }
         return homes;
+    }
+
+    /**
+     * The city's finished homes, counted by how big a household each one takes.
+     *
+     * Index is the unit size in people; index 0 is unused. What FamilyModel
+     * needs to put households behind doors that actually fit them, rather than
+     * against one pooled count that let a family of six into a studio.
+     */
+    public int[] homesBySize() {
+        int widest = 1;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
+            widest = Math.max(widest, t.homeSize());
+        }
+
+        int[] out = new int[widest + 1];
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
+
+            int per = t.getDwellings() > 0
+                    ? t.getDwellings()
+                    : Math.max(1, t.getCapacity() / 4);
+            int size = Math.max(1, t.homeSize());
+            out[size] += stack.getQuantity() * per;
+        }
+        return out;
     }
 
     /** Homes that will exist once everything on site is finished. */
@@ -1676,6 +1808,25 @@ public class BuildingManager {
         return getTotalByCategoryDouble(
                 category,
                 t -> t.getCashCost() + t.getConstructionMaterials() * materialsCost);
+    }
+
+    /**
+     * The same array, for one named building rather than a whole category.
+     *
+     * Exists so the bank can be charged its own tellers. Its jobs are part of
+     * the commercial category's payroll, and telling the two apart is the whole
+     * of what a bank's income statement needs that the category total cannot
+     * give it.
+     */
+    public int[] getJobArrayByName(String name) {
+        int[] jobs = new int[JobType.values().length];
+        for (BuildingsStacks stack : stacks) {
+            if (!stack.getBuilding().getName().equals(name)) continue;
+            for (int j = 0; j < jobs.length; j++) {
+                jobs[j] += stack.getTotalJobs(jobTypes[j]);
+            }
+        }
+        return jobs;
     }
 
     public int[] getJobArrayPerCategory(BuildingType category) {

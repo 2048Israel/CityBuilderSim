@@ -165,6 +165,8 @@ public class FamilyModel {
         for (double[] row : households) java.util.Arrays.fill(row, 0);
         unhoused = 0;
         doubledUp = 0;
+        pricedOutShares = 0;
+        stillUnplaced = 0;
 
         double babies   = cohorts.get(AgeBand.BABY);
         double children = cohorts.get(AgeBand.CHILD);
@@ -313,12 +315,191 @@ public class FamilyModel {
      *
      * @param homesAvailable front doors the city has
      */
-    public void squeeze(int homesAvailable) {
+    /* =====================================================================
+       PUTTING HOUSEHOLDS BEHIND DOORS THAT FIT
 
+       squeeze() counted doors. It did not care what was behind them, so a
+       family of six could live in a studio as long as the city had eighty
+       spare studios somewhere - which is how Studio Apartments came to be a
+       building with no niche at all: they housed anybody, badly, and lost to a
+       House on price every time.
+
+       A home now has a SIZE (BuildingsTemplate.homeSize) and a household has
+       to fit it:
+
+         - a household no bigger than its unit lives there comfortably;
+         - a bigger one CROWDS, which is what "nobody is homeless" has always
+           meant here and what the crowding pressure already measures;
+         - and a one- or two-person flat REFUSES a dependant outright. Jerus's
+           rule, and the one hard no in the model: you cannot crowd a child
+           into a studio, so a city that builds only studios cannot house
+           families at all.
+
+       Largest households first, into the smallest unit that fits. Largest
+       first because otherwise a city's singles take every House before a
+       family gets one; smallest that fits because a family in a four-person
+       home while couples queue for it is a waste the market would not make.
+       ===================================================================== */
+
+    /** What the landlords can bill for, in person-equivalents. See rentWeight(). */
+    private double rentWeight;
+
+    /** Households living somewhere too small for them. */
+    private double crowdedHouseholds;
+
+    /** Households a studio turned away because they have a child. */
+    private double refusedByStudio;
+
+    /**
+     * The rent base: what the let homes add up to, in people of capacity.
+     *
+     * THE FLAT SETS THE PRICE, FULL STOP. Jerus: "the building earns its rent
+     * regardless - if a couple is living in a mansion it is paying a mansion's
+     * price." Which is what a lease is. The first version weighted the charge
+     * half toward the household in it, on the theory that a big flat with a
+     * small tenant would discount - and that is a market story, not a lease. It
+     * also quietly made a household's rent depend on its own size again, which
+     * is the exact thing the per-door fix had just removed.
+     *
+     * So a home's rent is its size and nothing else. What an oversized building
+     * loses is not price, it is OCCUPANCY: an empty flat earns nothing at all,
+     * because house() only counts a unit somebody is actually in.
+     */
+    public double rentWeight()          { return rentWeight; }
+
+    /**
+     * Puts back the weight the month was actually billed on.
+     *
+     * FOR THE LOAD PATH, and it is the seventh sighting of the same bug class.
+     * house() runs during updateWorkforce, part way through a month, against
+     * the homes that existed THEN; buildings finish later in the same month, so
+     * by the time the save is written the stock has moved on. Re-running the
+     * match on the load path therefore produces a different answer from the one
+     * the landlords were paid - a stale figure recomputed from the state the
+     * month ended in, which is the thing this codebase keeps being caught by.
+     * Carried instead. SaveFileCheck measures the difference at eight cents on
+     * $482,860 and refuses it, which is what that assertion is for.
+     */
+    public void setRentWeight(double weight) { this.rentWeight = weight; }
+    public double getCrowdedHouseholds(){ return crowdedHouseholds; }
+    public double getRefusedByStudio()  { return refusedByStudio; }
+
+    /** What one let home of this size bills, whoever is in it. */
+    static double rentWeightOf(int unitSize) {
+        return Math.max(0, unitSize);
+    }
+
+    /**
+     * What one more home of this size would earn, in person-equivalents.
+     *
+     * WHAT MAKES A STUDIO WORTH BUILDING, OR NOT. The investment advisor used
+     * to value a residential building at capacity x rentPrice - the rent it
+     * would collect if it were full - which is a number about the building and
+     * not about the city. So a city of families kept being offered studios,
+     * and the studios kept losing on price, and backlog I1 ("strictly
+     * dominated at every land price") was really this: the advisor was pricing
+     * a flat nobody in that city could live in.
+     *
+     * Priced on the biggest household that is currently crowded or homeless and
+     * COULD take this unit. An empty flat nobody needs earns nothing, and a
+     * flat that gets a family out of a crowded one earns what a family pays.
+     */
+    public double marginalRentWeight(int unitSize) {
+        if (unitSize <= 0) return 0;
+
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (totalOf(shape) <= 0) continue;
+            if (unitSize <= 2 && shape.dependants() > 0) continue;   // the studio rule
+            return rentWeightOf(unitSize);   // somebody fits: it bills its size
+        }
+        return 0;                            // nobody fits: it bills nothing
+    }
+
+    /**
+     * Matches households to homes by size, and reports what would not fit.
+     *
+     * @param homesBySize count of finished homes, indexed by unit size
+     * @return households with nowhere at all, which squeeze() then crowds
+     */
+    public double house(int[] homesBySize) {
+        rentWeight = 0;
+        crowdedHouseholds = 0;
+        refusedByStudio = 0;
+
+        if (homesBySize == null || homesBySize.length < 2) return totalHouseholds();
+
+        double[] free = new double[homesBySize.length];
+        for (int s = 1; s < homesBySize.length; s++) free[s] = homesBySize[s];
+        int widest = homesBySize.length - 1;
+
+        // Largest households first.
+        FamilyStructure[] order = FamilyStructure.values().clone();
+        java.util.Arrays.sort(order, (x, y) -> Integer.compare(y.size(), x.size()));
+
+        double unplaced = 0;
+
+        for (FamilyStructure shape : order) {
+            double need = totalOf(shape);
+            if (need <= 0) continue;
+
+            boolean hasDependants = shape.dependants() > 0;
+
+            // 1. the smallest unit that actually fits.
+            for (int s = shape.size(); s <= widest && need > 0; s++) {
+                double take = Math.min(need, free[s]);
+                if (take <= 0) continue;
+                free[s] -= take;
+                need -= take;
+                rentWeight += take * rentWeightOf(s);
+            }
+
+            // 2. crowd into whatever is left, biggest first - but never a child
+            //    into a studio.
+            for (int s = widest; s >= 1 && need > 0; s--) {
+                if (hasDependants && s <= 2) continue;
+                double take = Math.min(need, free[s]);
+                if (take <= 0) continue;
+                free[s] -= take;
+                need -= take;
+                crowdedHouseholds += take;
+                rentWeight += take * rentWeightOf(s);
+            }
+
+            if (need > 0) {
+                // What is left could not be housed at all. If the only empty
+                // doors are studios and this household has a child, say so:
+                // that is a different problem from a city with no doors, and
+                // the player fixes it with a different building.
+                double studiosFree = 0;
+                for (int s = 1; s <= Math.min(2, widest); s++) studiosFree += free[s];
+                if (hasDependants && studiosFree > 0) {
+                    refusedByStudio += Math.min(need, studiosFree);
+                }
+                unplaced += need;
+            }
+        }
+        return unplaced;
+    }
+
+    public void squeeze(int homesAvailable) {
         doubledUp = 0;
         if (homesAvailable <= 0) return;
-
         double excess = totalHouseholds() - homesAvailable;
+        squeezeUnplaced(excess);
+        noteUnplaced(Math.max(0, totalHouseholds() - homesAvailable));
+    }
+
+    /**
+     * The same two valves, on households house() could not place.
+     *
+     * Split out because "how many households have nowhere" is a different
+     * question once homes have sizes: a city can have a thousand empty studios
+     * and still not house a family, and a count of spare doors cannot say that.
+     */
+    public void squeezeUnplaced(double excess) {
+
+        doubledUp = 0;
+        stillUnplaced = 0;
         if (excess <= 0) return;
 
         /* ---- valve one: singles move in together, five to a home ---- */
@@ -346,9 +527,131 @@ public class FamilyModel {
             }
         }
 
-        /* ---- valve two: whoever is left doubles up ---- */
-        if (excess > 0) {
-            doubledUp = Math.min(excess, totalHouseholds() / 2);
+        /*
+         * VALVE TWO IS NOT RUN HERE. It used to be, and it double-counted:
+         * this method is handed what the FIRST match could not place, then
+         * valve one turns five singles into one flatshare and frees four doors,
+         * and the match is run again - so most of that first figure gets housed
+         * after all. Doubling every one of them up as well pinned doubledUp at
+         * its ceiling from month forty-two onward and left the genuine leftover
+         * with nowhere to go, which LongPlaytest reported as twelve households
+         * sleeping outside in a city with spare homes.
+         *
+         * noteUnplaced() runs valve two, once, against the final match.
+         */
+    }
+
+    /**
+     * Households both valves failed to place. Zero in a city that works.
+     *
+     * THE HONEST VERSION OF "SOMEBODY IS SLEEPING OUTSIDE". LongPlaytest used
+     * to ask whether households outnumbered homes, which was the right question
+     * while a home was a home - and stopped being one on 2026-09-07, when homes
+     * grew sizes. A city can have five hundred spare studios and still not
+     * house a family, and it can equally have one household more than it has
+     * doors and place every one of them, because five singles went into one
+     * flatshare. Counting doors answers neither. This does.
+     */
+    private double stillUnplaced;
+    public double getStillUnplaced() { return stillUnplaced; }
+
+    /**
+     * Records what the FINAL match left over, after both valves have run.
+     *
+     * The valves change the household shapes - five singles become one
+     * flatshare - so the match has to be run again afterwards, and it is that
+     * second answer that says whether anybody is actually without a home.
+     * Doubling up needs no door of its own, so it absorbs whatever is left.
+     */
+    public void noteUnplaced(double left) {
+        if (left <= 0) { stillUnplaced = 0; return; }
+
+        /*
+         * DOUBLING UP NEEDS NO DOOR OF ITS OWN, which is what makes it the last
+         * resort: a household with nowhere moves in with one that has
+         * somewhere. So whatever the final match could not place is absorbed
+         * here, up to the same half-the-city ceiling squeeze() has always used,
+         * and only what is past THAT is somebody sleeping outside.
+         *
+         * This matters more since homes got sizes. A city can have five hundred
+         * spare studios and a queue of families, and the families are not
+         * homeless - they are crammed in with each other, which is a different
+         * and much commoner failure, and the one the player fixes by building
+         * the right building rather than more buildings.
+         */
+        /*
+         * Half the households, PLUS ONE for rounding.
+         *
+         * The pyramid holds fractions of people and the homes are integers, so
+         * a city sitting exactly on its crowding floor - every home doubled,
+         * which is where migration damping parks it - comes out a tenth of a
+         * household over the ceiling and reads as somebody sleeping outside.
+         * Measured at 509.261 against a ceiling of 509.131 in a city of 1,018
+         * households. The allowance is the same one LongPlaytest's own audit
+         * already made for the same reason; it belongs here, where the number
+         * is decided, rather than in the harness reading it.
+         */
+        double ceiling = totalHouseholds() / 2 + 1;
+        double room = Math.max(0, ceiling - doubledUp);
+        double absorbed = Math.min(left, room);
+        doubledUp += absorbed;
+        stillUnplaced = Math.max(0, left - absorbed);
+    }
+
+    /* =====================================================================
+       AND WHEN THEY CANNOT AFFORD ONE
+
+       squeeze() forms flatshares because the city has run out of front doors.
+       This forms them because a wage has run out of rent, which is the commoner
+       reason and the one the model had no answer to at all: before this, an
+       unskilled single adult who could not cover a home and a basket went on
+       not covering them, month after month, until the credit ran out and they
+       started going hungry. In life they get a flatmate.
+
+       A LEVEL, NOT A RATE. rebuild() wipes every household each month, so
+       nothing here can accumulate: the share of a tier's singles who are
+       sharing has to be a function of how badly that tier is priced out, every
+       month, from scratch. A tier a fifth short of a home puts a fifth of its
+       singles in flatshares; one that cannot cover any of it puts nearly all of
+       them there.
+
+       Kept apart from the shortage valve deliberately. `getSharedHouseholds()`
+       was the housing shortage expressed as a behaviour, and mixing a second
+       cause into the same number would have destroyed the one reading it had.
+       getPricedOutShares() is the poverty half, counted separately.
+       ===================================================================== */
+
+    /** Not everybody doubles up, however dear the rent. Somebody always holds out. */
+    public static final double MAX_SHARING = .85;
+
+    private double pricedOutShares;
+
+    /** Flatshares formed because a wage could not cover a home, not because there was none. */
+    public double getPricedOutShares() { return pricedOutShares; }
+
+    /**
+     * @param pressure per tier, 0-1, from HouseholdAccounts.livingAlonePressure()
+     */
+    public void shareByAffordability(double[] pressure) {
+        pricedOutShares = 0;
+        if (pressure == null || pressure.length != PayTier.values().length) return;
+
+        int singles = FamilyStructure.SINGLE_ADULT.ordinal();
+        int shared  = FamilyStructure.SHARED_ADULTS.ordinal();
+
+        for (PayTier tier : PayTier.values()) {
+            int t = tier.ordinal();
+            double share = Math.max(0, Math.min(MAX_SHARING, pressure[t]));
+            if (share <= 0) continue;
+
+            double alone = households[singles][t];
+            if (alone <= 0) continue;
+
+            // Five to a home, so five singles become one household.
+            double moving = alone * share;
+            households[singles][t] -= moving;
+            households[shared][t]  += moving / 5;
+            pricedOutShares += moving / 5;
         }
     }
 

@@ -76,6 +76,8 @@ public class HouseholdAccounts {
      * of money-from-nowhere this account exists to make visible.
      */
     private double healthcare;
+    private double tuition;
+    private double interest;
 
     private int population;
     private int workforce;
@@ -108,9 +110,22 @@ public class HouseholdAccounts {
     public void update(double wages, double wageTax, double rent, double shopping,
                        double contributions, double pensions, double healthcare,
                        int population, int workforce, int jobsFilled) {
+        update(wages, wageTax, rent, shopping, contributions, pensions, healthcare,
+                0, 0, population, workforce, jobsFilled);
+    }
+
+    /**
+     * @param tuition  what the households paid the schools, net of subsidy - the
+     *                 same figure Education collects, not a second copy of it
+     * @param interest what they paid the lender on household debt
+     */
+    public void update(double wages, double wageTax, double rent, double shopping,
+                       double contributions, double pensions, double healthcare,
+                       double tuition, double interest,
+                       int population, int workforce, int jobsFilled) {
 
         assign(wages, wageTax, rent, shopping, contributions, pensions, healthcare,
-                population, workforce, jobsFilled);
+                tuition, interest, population, workforce, jobsFilled);
         cumulativeSaving += getNetSaving();
     }
 
@@ -136,16 +151,27 @@ public class HouseholdAccounts {
     public void refresh(double wages, double wageTax, double rent, double shopping,
                         double contributions, double pensions, double healthcare,
                         int population, int workforce, int jobsFilled) {
+        refresh(wages, wageTax, rent, shopping, contributions, pensions, healthcare,
+                0, 0, population, workforce, jobsFilled);
+    }
+
+    public void refresh(double wages, double wageTax, double rent, double shopping,
+                        double contributions, double pensions, double healthcare,
+                        double tuition, double interest,
+                        int population, int workforce, int jobsFilled) {
 
         assign(wages, wageTax, rent, shopping, contributions, pensions, healthcare,
-                population, workforce, jobsFilled);
+                tuition, interest, population, workforce, jobsFilled);
     }
 
     private void assign(double wages, double wageTax, double rent, double shopping,
                         double contributions, double pensions, double healthcare,
+                        double tuition, double interest,
                         int population, int workforce, int jobsFilled) {
 
         this.healthcare = healthcare;
+        this.tuition = tuition;
+        this.interest = interest;
         this.wages = wages;
         this.wageTax = wageTax;
         this.rent = rent;
@@ -167,6 +193,8 @@ public class HouseholdAccounts {
     public double getContributions() { return contributions; }
     public double getPensions()      { return pensions; }
     public double getHealthcare()    { return healthcare; }
+    public double getTuition()       { return tuition; }
+    public double getInterest()      { return interest; }
 
     /**
      * What the people actually have to spend after the city has taken its share.
@@ -179,8 +207,17 @@ public class HouseholdAccounts {
         return wages - wageTax - contributions + pensions;
     }
 
+    /**
+     * Everything that leaves a household in a month.
+     *
+     * ALL OF IT, since 2026-09-07 (Jerus: "have it show all costs, including
+     * tuition and healthcare"). Tuition and the interest on household debt were
+     * both real money leaving real households and neither appeared on the
+     * statement - so the bottom line said a city was saving when its families
+     * were paying school fees out of savings they did not have.
+     */
     public double getSpending() {
-        return rent + shopping + healthcare;
+        return rent + shopping + healthcare + tuition + interest;
     }
 
     /** Income less tax less everything paid out. Negative means living beyond it. */
@@ -276,15 +313,27 @@ public class HouseholdAccounts {
     private final double[] rowContributions = new double[ROWS];
     private final double[] rowPensions      = new double[ROWS];
     private final double[] rowHealthcare    = new double[ROWS];
+    private final double[] rowTuition       = new double[ROWS];
+    private final double[] rowInterest      = new double[ROWS];
 
     /**
      * Splits the month across the tiers.
      *
-     * Called straight after update(), with the totals it was given. Rent and
-     * shopping are shared out BY PEOPLE rather than by household or by income,
-     * because that is literally how the model charges them - rent is
-     * `residents * rentPrice` and retail demand is a headcount - so this is the
-     * same arithmetic read backwards, not an allocation rule invented here.
+     * Called straight after update(), with the totals it was given.
+     *
+     * SHOPPING FOLLOWS PEOPLE, RENT FOLLOWS HOUSEHOLDS, and getting that wrong
+     * was worth a screen. Both were shared out by headcount, on a comment that
+     * said rent is `residents * rentPrice` - which stopped being true when
+     * dwellings arrived. CommercialHandler.getRentIncome() charges
+     * `let homes * averageHomeSize * rentPrice`: the same figure for every let
+     * home, whoever is in it, because that is what a landlord charges for - the
+     * flat. Splitting it by headcount then billed a family of five five times
+     * what it billed a single adult in the identical flat, and made every large
+     * household look like it could not afford to live here.
+     *
+     * Jerus, 2026-09-07: "rent should be charged by household not by head, and
+     * grocery is per head." Which is what the engine already did and the books
+     * did not.
      *
      * @param wagesPerTier what each tier earned, staffed
      * @param taxPerTier   the banded wage tax on it, split not re-derived
@@ -293,6 +342,19 @@ public class HouseholdAccounts {
      */
     public void updateByTier(double[] wagesPerTier, double[] taxPerTier,
                              double[] peoplePerRow, double[] housePerRow) {
+        updateByTier(wagesPerTier, taxPerTier, peoplePerRow, housePerRow, null, null);
+    }
+
+    /**
+     * @param spendShare  each row's share of the month's shopping, from
+     *                    HouseholdBalance - who could AFFORD to shop, not who
+     *                    was hungry. Null falls back to headcount, which is what
+     *                    the model did before there was a budget constraint.
+     * @param interestPerRow what each row paid the lender on household debt
+     */
+    public void updateByTier(double[] wagesPerTier, double[] taxPerTier,
+                             double[] peoplePerRow, double[] housePerRow,
+                             double[] spendShare, double[] interestPerRow) {
 
         java.util.Arrays.fill(rowWages, 0);
         java.util.Arrays.fill(rowTax, 0);
@@ -303,6 +365,8 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowContributions, 0);
         java.util.Arrays.fill(rowPensions, 0);
         java.util.Arrays.fill(rowHealthcare, 0);
+        java.util.Arrays.fill(rowTuition, 0);
+        java.util.Arrays.fill(rowInterest, 0);
 
         if (peoplePerRow == null || peoplePerRow.length != ROWS
                 || housePerRow == null || housePerRow.length != ROWS) {
@@ -311,6 +375,8 @@ public class HouseholdAccounts {
 
         double heads = 0;
         for (double n : peoplePerRow) heads += n;
+        double doors = 0;
+        for (double n : housePerRow) doors += n;
 
         for (int r = 0; r < ROWS; r++) {
             rowPeople[r] = peoplePerRow[r];
@@ -322,8 +388,28 @@ public class HouseholdAccounts {
             }
 
             double share = heads > 0 ? peoplePerRow[r] / heads : 0;
-            rowRent[r] = rent * share;
-            rowShopping[r] = shopping * share;
+            double doorShare = doors > 0 ? housePerRow[r] / doors : 0;
+            rowRent[r] = rent * doorShare;
+
+            /*
+             * THE SHOP FOLLOWS THE BUDGET, not the headcount.
+             *
+             * This is the whole of the budget constraint as it reaches the
+             * books: HouseholdBalance decides how much each row could afford to
+             * spend, retail sells what it could, and the takings are split back
+             * by who did the spending. A tier that cannot pay now shows up as
+             * BUYING LESS, which is a fact about the world, instead of as an
+             * unexplained deficit, which was a fact about the model.
+             */
+            rowShopping[r] = shopping * (spendShare != null && r < spendShare.length
+                    ? spendShare[r] : share);
+
+            // Fees follow people. Healthcare is charged per person served and
+            // tuition per student - the model has no per-tier student count, so
+            // headcount is the honest approximation rather than an invented one.
+            rowTuition[r] = tuition * share;
+            rowInterest[r] = interestPerRow != null && r < interestPerRow.length
+                    ? interestPerRow[r] : 0;
 
             /*
              * Healthcare follows PEOPLE, like rent and shopping and for the same
@@ -353,6 +439,142 @@ public class HouseholdAccounts {
         rowPensions[RETIRED] = pensions;
     }
 
+    /* =====================================================================
+       ONE HOUSEHOLD OF A GIVEN SHAPE, AT A GIVEN TIER
+
+       The tier rows above average across every shape in the tier, and the
+       average is the one household nobody lives in: an unskilled single adult
+       and an unskilled large family are the same row, and they are the two
+       households whose books differ most. Jerus asked for the split, and this
+       is where it belongs rather than in the screen - the allocation rule is
+       documented six inches above, and a screen that restated it would be wrong
+       the first time the rule changed.
+
+       Every figure is derived from the SAME per-unit rates the tier split uses:
+       rent per door, shopping per head, wages per earner in the tier. Nothing
+       here invents an allocation.
+       ===================================================================== */
+
+    /** One household's month. All figures in the game's thousands. */
+    public record Statement(double households, double people,
+                            double income, double tax, double rent,
+                            double fees, double shopping, double left) { }
+
+    /** Rent one let home pays, whoever lives in it. */
+    public double rentPerHousehold() {
+        double doors = 0;
+        for (double n : rowHouseholds) doors += n;
+        return doors > 0 ? rent / doors : 0;
+    }
+
+    /**
+     * How badly a single adult in each tier cannot afford to live alone, 0-1.
+     *
+     * Jerus, 2026-09-07: "perhaps poor families start living together." Right,
+     * and it is the response the model was missing - a household that cannot
+     * cover its own front door does not sit there going hungry for twenty
+     * months, it gets a flatmate. FamilyModel already knows how to do that; it
+     * only ever did it when the city ran out of HOMES. This is the other
+     * reason, and the commoner one.
+     *
+     * 0 means one wage covers a home and a basket with room to spare. 1 means
+     * it covers none of it. In between is the share of that tier's single
+     * adults who pair up rather than live alone, which is a LEVEL rather than a
+     * rate on purpose: FamilyModel rebuilds every household from scratch each
+     * month, so anything that had to accumulate would be wiped every tick.
+     *
+     * Computed here rather than in FamilyModel because it is the household
+     * books' arithmetic - rent per door, basket per head, take-home per earner -
+     * and FamilyModel has never known what anybody earns.
+     */
+    public double[] livingAlonePressure(FamilyModel families) {
+        double[] out = new double[PayTier.values().length];
+        if (families == null) return out;
+
+        double costOfLivingAlone = rentPerHousehold() + shoppingPerHead() + feesPerHead();
+        if (costOfLivingAlone <= 0) return out;
+
+        for (PayTier tier : PayTier.values()) {
+            int t = tier.ordinal();
+
+            double earners = 0;
+            for (FamilyStructure s : FamilyStructure.values()) {
+                if (s.isRetired()) continue;
+                earners += families.get(s, tier) * s.earners();
+            }
+            if (earners <= 0) continue;
+
+            double takeHome = (rowWages[t] - rowTax[t] - rowContributions[t]) / earners;
+            double shortfall = costOfLivingAlone - takeHome;
+            out[t] = Math.max(0, Math.min(1, shortfall / costOfLivingAlone));
+        }
+        return out;
+    }
+
+    /** Healthcare and tuition, per person. Both are charged per head served. */
+    public double feesPerHead() {
+        double heads = 0;
+        for (double n : rowPeople) heads += n;
+        return heads > 0 ? (healthcare + tuition) / heads : 0;
+    }
+
+    /** What one pensioner receives, as the policy currently sets it. */
+    private double pensionPerSenior = SocialSecurity.pensionPerSenior();
+    public void setPensionPerSenior(double value) { this.pensionPerSenior = value; }
+    public double getPensionPerSenior()           { return pensionPerSenior; }
+
+    /** The weekly shop, per person, which is how retail demand is counted. */
+    public double shoppingPerHead() {
+        double heads = 0;
+        for (double n : rowPeople) heads += n;
+        return heads > 0 ? shopping / heads : 0;
+    }
+
+    /**
+     * What one household of this shape and tier earns, pays and keeps.
+     *
+     * @param families the household mix, for how many of these there are and
+     *                 how many earners the tier is splitting its wages between
+     */
+    public Statement statementFor(FamilyModel families, FamilyStructure shape, PayTier tier) {
+        double homes = families == null ? 0 : families.get(shape, tier);
+        double people = shape.size();
+
+        /*
+         * Wages per EARNER, not per household. A couple fields two earners at
+         * the same tier and takes home twice what a single adult does, which is
+         * most of why the two can afford such different lives - and dividing a
+         * tier's wage bill by its households would have hidden exactly that.
+         */
+        double earnersInTier = 0;
+        for (FamilyStructure s : FamilyStructure.values()) {
+            if (s.isRetired()) continue;
+            earnersInTier += families == null ? 0 : families.get(s, tier) * s.earners();
+        }
+        double wagePerEarner = earnersInTier > 0
+                ? rowWages[tier.ordinal()] / earnersInTier : 0;
+        double taxRate = rowWages[tier.ordinal()] > 0
+                ? (rowTax[tier.ordinal()] + rowContributions[tier.ordinal()])
+                        / rowWages[tier.ordinal()] : 0;
+
+        double wages = shape.earners() * wagePerEarner;
+        double pension = shape.membersOf(AgeBand.SENIOR) * pensionPerSenior;
+        double income = wages + pension;
+        double tax = wages * taxRate;
+        double rentDue = rentPerHousehold();
+
+        // Healthcare and tuition follow heads, like the shop; the interest a
+        // household pays follows its OWN tier's debt, which is the one figure
+        // here that is not a per-head share of a city total.
+        double feesDue = people * feesPerHead()
+                + (rowHouseholds[tier.ordinal()] > 0
+                        ? rowInterest[tier.ordinal()] / rowHouseholds[tier.ordinal()] : 0);
+        double shop = people * shoppingPerHead();
+
+        return new Statement(homes, people, income, tax, rentDue, feesDue, shop,
+                income - tax - rentDue - feesDue - shop);
+    }
+
     public double getRowWages(int row)      { return rowWages[row]; }
     public double getRowTax(int row)        { return rowTax[row]; }
     public double getRowRent(int row)       { return rowRent[row]; }
@@ -364,13 +586,16 @@ public class HouseholdAccounts {
     public double getRowContributions(int row) { return rowContributions[row]; }
     public double getRowPensions(int row)      { return rowPensions[row]; }
     public double getRowHealthcare(int row)    { return rowHealthcare[row]; }
+    public double getRowTuition(int row)       { return rowTuition[row]; }
+    public double getRowInterest(int row)      { return rowInterest[row]; }
 
     public double getRowDisposable(int row) {
         return rowWages[row] - rowTax[row] - rowContributions[row] + rowPensions[row];
     }
 
     public double getRowSpending(int row) {
-        return rowRent[row] + rowShopping[row] + rowHealthcare[row];
+        return rowRent[row] + rowShopping[row] + rowHealthcare[row]
+                + rowTuition[row] + rowInterest[row];
     }
 
     public double getRowSaving(int row) {
@@ -408,5 +633,9 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowContributions, 0);
         java.util.Arrays.fill(rowPensions, 0);
         java.util.Arrays.fill(rowHealthcare, 0);
+        java.util.Arrays.fill(rowTuition, 0);
+        java.util.Arrays.fill(rowInterest, 0);
+        tuition = 0;
+        interest = 0;
     }
 }

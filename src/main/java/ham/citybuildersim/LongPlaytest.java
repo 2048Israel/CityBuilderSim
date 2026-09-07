@@ -202,11 +202,22 @@ public class LongPlaytest {
          * A whole household of slack is allowed for rounding: the pyramid holds
          * fractions of people and the homes are integers.
          */
-        double homesNeeded = g.getFamilies().homesNeeded();
-        if (homesNeeded > b.getTotalHomes() + 1) {
+        /*
+         * ASKED OF THE MODEL, NOT OF THE DOOR COUNT.
+         *
+         * This compared households against homes, which was the right question
+         * while a home was a home. Since 2026-09-07 homes have SIZES: a city
+         * can have five hundred spare studios and still not house a family, and
+         * it can equally have one household more than it has doors and place
+         * every one of them, because five singles went into one flatshare.
+         * Counting doors answers neither question. FamilyModel now reports what
+         * both valves failed to place, which is the thing this flag is about.
+         */
+        double homeless = g.getFamilies().getStillUnplaced();
+        if (homeless > 1) {
             flag(month, "households with no home",
-                    String.format("%.0f households, %d homes",
-                            homesNeeded, b.getTotalHomes()));
+                    String.format("%.0f households nowhere, %d homes of %d sizes",
+                            homeless, b.getTotalHomes(), b.homesBySize().length - 1));
         }
 
         // Worth watching even though it is no longer a fault: how far past what
@@ -658,6 +669,26 @@ public class LongPlaytest {
 
             int before = g.getMonth();
             g.simulateMonths(1);
+            lifetimeWriteOffs += g.getBank().getWriteOffs();
+            lifetimeHouseholdWriteOffs += g.getHouseholdBalance().getWrittenOff();
+
+            /*
+             * THE PLAYER RECAPITALISES ITS BANK, because a player would.
+             *
+             * A frozen bank means no credit, and no credit means nothing gets
+             * built - so a treasury sitting on billions while its banking system
+             * is shut is not a simulated player, it is a simulated bystander.
+             * This exercises the one lever the failure mechanic has, which is
+             * otherwise never pulled in four thousand months.
+             *
+             * Capped at a quarter of the treasury so it stays a decision with a
+             * cost rather than a reflex.
+             */
+            double needed = g.bankRecapitalisationNeeded();
+            if (needed > 0 && g.getCash() > 0) {
+                double put = g.recapitaliseBank(Math.min(needed, g.getCash() * .25));
+                if (put > 0) lifetimeBailouts += put;
+            }
 
             if (g.getMonth() == before) {
                 /*
@@ -761,6 +792,10 @@ public class LongPlaytest {
     }
 
     /* =================================================================== */
+
+    static double lifetimeWriteOffs;
+    static double lifetimeBailouts;
+    static double lifetimeHouseholdWriteOffs;
 
     public static void main(String[] args) throws Exception {
 
@@ -933,6 +968,29 @@ public class LongPlaytest {
         out.printf("  funerals: %,.0f buried and %,.0f cremated last month,"
                 + " %,.0f plots used, %,.0f lying unburied%n",
                 hc.getBurials(), hc.getCremations(), hc.getPlotsUsed(), hc.getUnburied());
+
+        /*
+         * THE BANK, which nobody in this harness ever builds.
+         *
+         * Printed because it is the one building the private sector is meant to
+         * put up entirely on its own initiative - the player here never orders
+         * one - so this line is the only place a run says whether that actually
+         * happens. A run ending with no branches and a full premium is the
+         * advisor failing to notice, and it is invisible in every other figure.
+         */
+        Bank bnk = g.getBank();
+        out.printf("  the bank: equity $%,.0fk against a book of $%,.0fk"
+                + " (%.1f%% - the ratio requires %.0f%%)%n",
+                bnk.equity(), bnk.getBook(),
+                Math.min(999, bnk.capitalRatio()) * 100, Bank.CAPITAL_RATIO * 100);
+        out.printf("  written off over the run: $%,.0fk, of which $%,.0fk was families%n",
+                lifetimeWriteOffs, lifetimeHouseholdWriteOffs);
+        out.printf("  it failed %d time(s); the city put $%,.0fk of capital back in%n",
+                bnk.getFailures(), lifetimeBailouts);
+        out.printf("  banking: %,.0f branch(es), $%,.0fk deposited, $%,.0fk lent,"
+                + " %.0f%% of capacity, %.1f points of premium%n",
+                bnk.getBranches(), bnk.getDeposits(), bnk.getBook(),
+                Math.min(999, bnk.strain()) * 100, bnk.ratePremium() * 100);
 
         out.println("\n--- what the advisor tried, and what happened ---\n");
         refusals.entrySet().stream()

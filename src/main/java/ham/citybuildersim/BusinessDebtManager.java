@@ -232,6 +232,13 @@ public class BusinessDebtManager {
         return assets.getOrDefault(sector, 0.0);
     }
 
+    /** Everything every sector owes. What the bank has lent the businesses. */
+    public double getAllPrincipal() {
+        double total = 0;
+        for (String s : SECTORS) total += getPrincipal(s);
+        return total;
+    }
+
     public double getPrincipal(String sector) {
         double total = 0;
         for (BusinessDebt loan : loans) {

@@ -241,6 +241,41 @@ public class BuildingsTemplate {
         return this;
     }
 
+    /**
+     * How big a household one of these units takes, in people.
+     *
+     * THE SIZE OF THE FLAT, not of the building. Capacity is how many the block
+     * holds; this is how many fit behind one front door, and until 2026-09-07
+     * nothing in the game knew the difference - homes were a pooled count, so a
+     * family of six could "live" in a studio because the city had eighty spare
+     * doors somewhere.
+     *
+     * Rounded to the nearest person. A Low-Rise averages two and a half, which
+     * is a real mix of flats rather than a half-person, and three is the size
+     * that mix will take: the block is a little crowded when every unit is
+     * full, which is true of low-rise blocks. Falling back to four for anything
+     * that declares no dwellings is the House's own ratio and the same guess
+     * BuildingManager.getTotalHomes() already makes.
+     */
+    public int homeSize() {
+        if (getCategory() != BuildingType.RESIDENTIAL || capacity <= 0) return 0;
+        if (dwellings <= 0) return 4;
+        return Math.max(1, (int) Math.round(capacity / (double) dwellings));
+    }
+
+    /**
+     * True for a flat too small to put a child in.
+     *
+     * Jerus: "only single adults can occupy them, or well two people, so any
+     * other structure is not allowed." Derived from the size rather than
+     * flagged per building, so the rule holds for any one- or two-person unit
+     * anybody adds later - a constant nobody has to remember to set.
+     */
+    public boolean adultsOnly() {
+        int size = homeSize();
+        return size > 0 && size <= 2;
+    }
+
     public int getCapacity() {
         return capacity;
     }

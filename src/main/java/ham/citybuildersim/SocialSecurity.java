@@ -60,7 +60,14 @@ public class SocialSecurity {
      * halve the shortfall, and it belongs with a proper payroll-cost model
      * rather than being smuggled in as a rate.
      */
-    public static final double CONTRIBUTION_RATE = .0595;
+    public static final double DEFAULT_CONTRIBUTION_RATE = .0595;
+
+    /**
+     * @deprecated the rate is a policy dial now - TaxPolicy.getContributionRate().
+     *             Kept as the default so a screen or a harness written against
+     *             the constant still names the right number.
+     */
+    public static final double CONTRIBUTION_RATE = DEFAULT_CONTRIBUTION_RATE;
 
     /**
      * What the pension replaces, as a share of an unskilled wage.
@@ -76,23 +83,47 @@ public class SocialSecurity {
      * which is true of the real thing too, and is the reason pensioner poverty
      * is concentrated among people living alone.
      */
-    public static final double PENSION_REPLACEMENT = .45;
+    public static final double DEFAULT_PENSION_REPLACEMENT = .45;
+
+    /** @deprecated see above - TaxPolicy.getPensionReplacement(). */
+    public static final double PENSION_REPLACEMENT = DEFAULT_PENSION_REPLACEMENT;
 
     /* ------------------------------ the arithmetic ------------------------------ */
 
-    /** What one pensioner receives a month. */
+    /* -----------------------------------------------------------------
+       THE RATES COME IN AS ARGUMENTS NOW.
+       They are policy (TaxPolicy), and a static constant is the wrong shape
+       for a number the player sets. Keeping the arithmetic pure and static
+       also means a harness can price a pension at a rate nobody has ever set,
+       which is how the two dials get tested at their limits rather than at
+       their defaults.
+       ----------------------------------------------------------------- */
+
+    /** What one pensioner receives a month, at the default rate. */
     public static double pensionPerSenior() {
-        return PENSION_REPLACEMENT * PayTier.UNSKILLED.getMonthlyWage();
+        return pensionPerSenior(DEFAULT_PENSION_REPLACEMENT);
     }
 
-    /** Taken off the month's wage bill. */
+    public static double pensionPerSenior(double replacement) {
+        return replacement * PayTier.UNSKILLED.getMonthlyWage();
+    }
+
+    /** Taken off the month's wage bill, at the default rate. */
     public static double contributionsOn(double wageBill) {
-        return Math.max(0, wageBill) * CONTRIBUTION_RATE;
+        return contributionsOn(wageBill, DEFAULT_CONTRIBUTION_RATE);
     }
 
-    /** Paid out to everyone over the retirement age. */
+    public static double contributionsOn(double wageBill, double rate) {
+        return Math.max(0, wageBill) * Math.max(0, rate);
+    }
+
+    /** Paid out to everyone over the retirement age, at the default rate. */
     public static double pensionsFor(double seniors) {
-        return Math.max(0, seniors) * pensionPerSenior();
+        return pensionsFor(seniors, DEFAULT_PENSION_REPLACEMENT);
+    }
+
+    public static double pensionsFor(double seniors, double replacement) {
+        return Math.max(0, seniors) * pensionPerSenior(replacement);
     }
 
     /**

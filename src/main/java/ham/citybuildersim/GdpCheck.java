@@ -280,6 +280,81 @@ public class GdpCheck {
         check("no output -> no ratio blow-up", empty.getDebtToGdp(1000), 0);
         check("...nor for revenue", empty.getRevenueToGdp(), 0);
 
+        /* ==================== 4. THE INTEREST LINE IS REAL ====================
+
+           Jerus, 2026-09-07: "the pie chart works but it doesn't show the
+           interest portion." It never could. refreshGovernmentAccounts() runs a
+           few lines after finalEconUpdate(), which zeroes the interest field it
+           was reading - so the government block was re-struck every month with
+           an interest expense of zero, and budgetPie() drops a zero slice.
+
+           Note which way the failure ran: the LOAD path was correct, because
+           rebuildSimulationState() restores the accrual and never calls
+           finalEconUpdate(). A reloaded city showed its interest and a played
+           one did not - load-path parity wearing its coat inside out. So this
+           asserts both halves, and would have failed on either.
+           ==================================================================== */
+        System.out.println("\n--- the city's interest reaches its own accounts ---");
+
+        java.io.PrintStream out = System.out;
+        java.io.PrintStream quiet = new java.io.PrintStream(new java.io.OutputStream() {
+            @Override public void write(int b) { }
+        });
+
+        GameFiles files = GameFiles.scratch("gdpcheck");
+        Game city = new Game(files);
+        System.setOut(quiet);
+        try {
+            city.newGame();
+            for (BuildingsTemplate t : city.getBuildingManager().getTemplates()) {
+                if (t.getName().equals("Low-Rise Apartments")) city.buildStack(t, 40, true);
+                if (t.getName().equals("Small Grocery Store"))  city.buildStack(t, 6, true);
+                if (t.getName().equals("Coal Power Plant"))     city.buildStack(t, 1, true);
+                if (t.getName().equals("Water Treatment Plant"))city.buildStack(t, 1, true);
+                if (t.getName().equals("Paved Road"))           city.buildStack(t, 12, true);
+            }
+            city.simulateMonths(4);
+            // A COUPON bond, not a note. A note is a discount instrument and
+            // genuinely has no monthly interest - which is a different thing the
+            // screen now says in words rather than showing as a silent zero.
+            city.handleMediumBondLogic(2_000_000, 5, 1000.0);
+            city.simulateMonths(3);
+        } finally { System.setOut(out); }
+
+        NationalAccounts played = city.getEconomyManager().getNationalAccounts();
+        double coupon = 0;
+        for (Debt d : city.getDebtManager().getDebt()) coupon += d.getMonthlyInterestExpense();
+
+        System.out.printf("   coupon due %,.2f, national accounts say %,.2f%n",
+                coupon, played.getInterestExpense());
+
+        assertTrue("fixture: the city really did issue a coupon bond", coupon > 0);
+        assertTrue("THE INTEREST REACHES THE ACCOUNTS AT ALL",
+                played.getInterestExpense() > 0);
+        check("...and it is the coupon, not some other number",
+                played.getInterestExpense(), coupon);
+        assertTrue("...so it survives budgetPie(), which drops a zero slice",
+                played.getInterestExpense() > 0);
+
+        System.setOut(quiet);
+        boolean saved;
+        Game back = new Game(files);
+        try {
+            saved = city.saveGame(1, "gdpcheck city").ok;
+            back.loadGameSave(1);
+        } finally { System.setOut(out); }
+
+        assertTrue("fixture: saved", saved);
+        check("and a reloaded city reports the same interest",
+                back.getEconomyManager().getNationalAccounts().getInterestExpense(),
+                played.getInterestExpense());
+
+        try (var walk = java.nio.file.Files.walk(files.getDirectory())) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
+            });
+        } catch (java.io.IOException ignored) { }
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

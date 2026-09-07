@@ -181,6 +181,8 @@ public class Game {
         education = new Education();
         skipReport = new TimeSkipReport();
         households = new HouseholdAccounts();
+        householdBalance.reset();
+        bank.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
 
         this.isRunning = true;
@@ -697,6 +699,22 @@ public class Game {
         runRetirement();
         lastWriteOff = economyManager.settleInsolvency();
 
+        /*
+         * AND THE BANK EATS IT.
+         *
+         * A restructure writes a sector's debt down to what its assets support,
+         * and until now that loss was written off against nothing at all - the
+         * money had been lent by a lender who was nobody. It is the bank's loan,
+         * so it is the bank's loss, which is what Jerus asked for when he said
+         * the bank should be "the one getting billed the horrible bankrupcies".
+         *
+         * Found by the bank's own balance sheet: equity was moving by more than
+         * the month's net income, worst case $23.5M in a single month, because
+         * the book shrank without anything recording why. A set of books that
+         * articulates is a set of books that catches this.
+         */
+        bank.writeOff(lastWriteOff);
+
         double constructionOutput = getConstructionOutput();
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
         CommercialHandler ch = economyManager.getCommercialHandler();
@@ -717,6 +735,15 @@ public class Game {
                 sectorInvestor(BusinessDebtManager.REAL_ESTATE));
 
         refreshLand();
+        /*
+         * The bank first, and separately - see BusinessInvestment.planBank().
+         * Retail's money, retail's investor, but not retail's one decision:
+         * asked here so that wanting a branch cannot stop the city building
+         * shops for the years it takes to afford one.
+         */
+        consider(businessInvestment.planBank(),
+                sectorInvestor(BusinessDebtManager.RETAIL), "Bank");
+
         consider(businessInvestment.planRetail(
                 populationManager.getPopulation(),
                 buildingManager.getTotalStoreCoverage(),
@@ -847,40 +874,222 @@ public class Game {
          */
         double healthFees = healthcare.getFees();
 
+        /*
+         * ...and what they paid the schools, from the same figure the city is
+         * shown collecting. Tuition was real money leaving real households and
+         * appeared on nobody's statement - the city banked it and the people
+         * who paid it were never debited, which is the same money-from-nowhere
+         * the health fees were fixed for.
+         */
+        double schoolFees = education.getFees();
+
+        /* ---- the rows, needed by the balance sheet and the split alike ---- */
+        int rowCount = HouseholdAccounts.RETIRED + 1;
+        double[] rowPeople = new double[rowCount];
+        double[] rowHomes  = new double[rowCount];
+        for (PayTier t : PayTier.values()) {
+            rowPeople[t.ordinal()] = families.peopleIn(t);
+            rowHomes[t.ordinal()]  = families.workingHouseholdsIn(t);
+        }
+        rowPeople[HouseholdAccounts.RETIRED] = families.retiredPeople();
+        rowHomes[HouseholdAccounts.RETIRED]  = families.retiredHouseholds();
+
+        double interestPaid = householdBalance.totalInterest();
+        households.setPensionPerSenior(tax.pensionPerSenior());
+
+        /*
+         * WHAT THE PEOPLE PAID, READ FROM WHO TOOK IT.
+         *
+         * These were na.getConsumptionHousing() and na.getConsumptionGoods(),
+         * which are the same two figures - NationalAccounts.update() is handed
+         * exactly these - but only once the accounts have been re-struck. On
+         * the load path they have NOT been: rebuildSimulationState() rebuilds
+         * the residents' statement before the national accounts, so a reloaded
+         * city fed its households a month of zero rent and zero shopping. It
+         * did not matter while nothing read the result; the budget constraint
+         * reads it, and SaveFileCheck caught the difference at eight cents.
+         *
+         * One source, both paths, and it is the one that took the money.
+         */
+        CommercialHandler shopsAndFlats = economyManager.getCommercialHandler();
+        double rentPaid = shopsAndFlats.getReportRentIncome();
+        double retailSales = shopsAndFlats.getGrossRevenue();
+
         if (accrue) {
             households.update(
                     wages, wageTax,
-                    na.getConsumptionHousing(), na.getConsumptionGoods(),
-                    contributions, pensions, healthFees,
+                    rentPaid, retailSales,
+                    contributions, pensions, healthFees, schoolFees, interestPaid,
                     populationManager.getPopulation(),
                     populationManager.getWorkforce(),
                     populationManager.getJobsFilled());
         } else {
             households.refresh(
                     wages, wageTax,
-                    na.getConsumptionHousing(), na.getConsumptionGoods(),
-                    contributions, pensions, healthFees,
+                    rentPaid, retailSales,
+                    contributions, pensions, healthFees, schoolFees, interestPaid,
                     populationManager.getPopulation(),
                     populationManager.getWorkforce(),
                     populationManager.getJobsFilled());
         }
 
         /* ---- and the same month, split seven ways ---- */
-        int rows = HouseholdAccounts.RETIRED + 1;
-        double[] people = new double[rows];
-        double[] houses = new double[rows];
+        double[] wagePerTier = populationManager.getStaffedWagePerTier();
+        double[] taxPerTier = tax.wageTaxPerTier(staffedPerType, null);
 
-        for (PayTier tier : PayTier.values()) {
-            people[tier.ordinal()] = families.peopleIn(tier);
-            houses[tier.ordinal()] = families.workingHouseholdsIn(tier);
+        double[] interestPerRow = new double[rowCount];
+        for (int r = 0; r < rowCount; r++) {
+            interestPerRow[r] = householdBalance.getInterest(r) * rowHomes[r];
         }
-        people[HouseholdAccounts.RETIRED] = families.retiredPeople();
-        houses[HouseholdAccounts.RETIRED] = families.retiredHouseholds();
 
-        households.updateByTier(
-                populationManager.getStaffedWagePerTier(),
-                tax.wageTaxPerTier(staffedPerType, null),
-                people, houses);
+        households.updateByTier(wagePerTier, taxPerTier, rowPeople, rowHomes,
+                householdBalance.plannedShare(), interestPerRow);
+
+        /* =================== AND THE BALANCE SHEET ===================
+         *
+         * Settles the month against what was actually spent, then works out
+         * what the households can afford next month - which CommercialHandler
+         * reads at the top of it as the cap on retail demand. The one place a
+         * budget constraint can live without a circular dependency: the shops
+         * cannot know what people can spend until people have been paid, and
+         * people cannot be paid until the shops have sold.
+         *
+         * Not run on the load path. rebuildSimulationState() calls this with
+         * accrue false, and settling a month that has already been settled
+         * would draw a second month of savings out of the same people.
+         */
+        double[] disposable = new double[rowCount];
+        double[] fees = new double[rowCount];
+        double[] actualShopping = new double[rowCount];
+        for (int r = 0; r < rowCount; r++) {
+            disposable[r] = households.getRowDisposable(r);
+            fees[r] = households.getRowHealthcare(r) + households.getRowTuition(r);
+            actualShopping[r] = households.getRowShopping(r);
+        }
+        CommercialHandler shops = economyManager.getCommercialHandler();
+
+        if (accrue) {
+            householdBalance.advanceMonth(rowHomes, rowPeople, disposable,
+                    households.rentPerHousehold(), fees, actualShopping,
+                    shops.getStoreSellPrice(), debtManager.getRate(),
+                    shops.getSupplyRatio());
+        } else {
+            /*
+             * The plan only. The savings and the debt came out of the save;
+             * settling the month again would draw a second time on the same
+             * money - and NOT re-striking the plan leaves the tiers' shopping
+             * split by headcount for a month, which is the load-path parity
+             * bug SaveFileCheck catches to the cent.
+             */
+            householdBalance.planOnly(rowHomes, rowPeople, disposable,
+                    households.rentPerHousehold(), fees,
+                    shops.getStoreSellPrice(), debtManager.getRate());
+        }
+
+        shops.setSpendingCapacity(householdBalance.getSpendingCapacity());
+        shops.setWantedSpend(householdBalance.getWantedSpend());
+
+        if (accrue) {
+            /*
+             * What the bank lent the families, what came back, what they paid
+             * for it, and what it will never see again.
+             *
+             * These four cross the audit's boundary in both directions, because
+             * households are outside the pools and always have been - so unlike
+             * a business loan, this money really does leave and arrive. The
+             * write-off is not among them: it costs the bank its BOOK, not its
+             * cash, since the money went out the door in some earlier month.
+             */
+            bank.lendToHouseholds(householdBalance.totalBorrowed());
+            bank.takeFromHouseholds(householdBalance.totalRepaid(),
+                    householdBalance.totalInterest());
+            bank.writeOff(householdBalance.getWrittenOff());
+        }
+    }
+
+    /**
+     * Re-reads the bank off the city it is banking.
+     *
+     * STRUCK AT THE END OF THE MONTH, once, on both paths, and that placement
+     * is the whole point of the method existing. It first lived inside the
+     * household strike, which runs in the middle of the month - so the bank's
+     * loan book was a mid-month snapshot taken before the month's lending had
+     * happened, and the figure on the bank screen disagreed with the lender's
+     * own principal by whatever was borrowed after it. Everything this reads is
+     * settled by the time the month is over: the families have been struck, the
+     * sectors have banked, and the debts have been processed.
+     *
+     * Its deposits are what the city has banked with it and its book is what
+     * the city owes it. Both are re-derived rather than accumulated, because
+     * neither is a flow: the position is whatever is standing at the end of the
+     * month, and a bank that added up its own history would drift from it.
+     */
+    private void refreshBank() {
+        double sectorCash = 0;
+        for (String s : BusinessDebtManager.SECTORS) {
+            sectorCash += economyManager.getSectorCash(s);
+        }
+        bank.refresh(
+                buildingManager.countByName("Commercial Bank"),
+                householdBalance.totalSavings(),
+                sectorCash,
+                economyManager.getBusinessDebtManager().getAllPrincipal(),
+                debtManager.getAllPrincipal(),
+                householdBalance.bookOwed());
+
+        /*
+         * ...AND WHAT THAT BOOK WEIGHS.
+         *
+         * Walked loan by loan, here rather than in the bank, because the bank
+         * cannot see the individual instruments and has no business knowing what
+         * a serial bond is. Jerus asked why a treasury bill should tie up the
+         * same capacity as a twenty-year industrial mortgage; it does not any
+         * more, and this is the loop that works out by how much.
+         *
+         * Household credit is revolving - no term, never runs off - so it takes
+         * the full weight and is not walked.
+         */
+        double businessWeighted = 0;
+        for (BusinessDebt loan : economyManager.getBusinessDebtManager().getLoans()) {
+            businessWeighted += loan.getOutstandingPrincipal()
+                    * Bank.RISK_BUSINESS * Bank.maturityWeight(loan.getRemainingMonths());
+        }
+        double cityWeighted = 0;
+        for (Debt paper : debtManager.getDebt()) {
+            cityWeighted += paper.getOustandingPrincipal()
+                    * Bank.RISK_CITY * Bank.maturityWeight(paper.getRemainingMonths());
+        }
+        bank.setWeightedBook(businessWeighted, cityWeighted,
+                householdBalance.bookOwed() * Bank.RISK_HOUSEHOLD);
+    }
+
+    /**
+     * The treasury puts capital into its bank.
+     *
+     * An insolvent bank has no capacity, so it cannot lend, so every borrower in
+     * the city pays the maximum premium and nothing gets built. This is the
+     * lever out of that, and it is a real one - the money leaves the treasury
+     * and does not come back.
+     *
+     * SEE Bank.receiveBailout() for the hole in this that Jerus spotted while it
+     * was being written: the city's own borrowing is funded BY this bank, so a
+     * treasury that borrows in order to do this has the bank capitalise itself
+     * with its own loan. Waiting on a source of funds that is not this bank.
+     *
+     * @return what was actually put in, which is nothing if the city cannot pay
+     */
+    public double recapitaliseBank(double amount) {
+        double put = Math.max(0, Math.min(amount, cash));
+        if (put <= 0) return 0;
+        cash -= put;
+        bank.receiveBailout(put);
+        GameLog.note(String.format("The city put $%,.0fk of capital into the bank.", put));
+        return put;
+    }
+
+    /** What it would cost to put the bank back on its feet, right now. */
+    public double bankRecapitalisationNeeded() {
+        return bank.recapitalisationNeeded();
     }
 
     /** Tells the investment engine what land is left to sell, right now. */
@@ -1205,13 +1414,25 @@ public class Game {
      * passes on the way down is the largest that passes, whatever the shape.
      */
     private void consider(BusinessInvestment.Decision decision, Investor payer){
+        consider(decision, payer, null);
+    }
+
+    /**
+     * @param label where to file the advisor's line, when the sector is asked
+     *              more than one question a month. The bank branch is retail's
+     *              money but not retail's shop decision, and filing both under
+     *              "Retail" meant whichever ran second erased the other.
+     */
+    private void consider(BusinessInvestment.Decision decision, Investor payer, String label){
+
+        String slot = label != null ? label
+                : (decision == null ? "?" : decision.sector);
 
         if (decision == null || !decision.build) {
             if (decision != null && decision.landBlocked) {
                 landBlockedSectors.add(decision.sector);
             }
-            lastInvestment.put(decision == null ? "?" : decision.sector,
-                    decision == null ? "" : "Holding: " + decision.reason);
+            lastInvestment.put(slot, decision == null ? "" : "Holding: " + decision.reason);
             return;
         }
 
@@ -1228,7 +1449,7 @@ public class Game {
         // refusal that would have read as "land went" below.
         if (credit.isBorrowingBlocked(decision.sector)
                 && businessInvestment.getCostOf(decision.template, 1) > cash) {
-            lastInvestment.put(decision.sector,
+            lastInvestment.put(slot,
                     String.format("Holding: borrowing ban, %d more months - %s would need credit",
                             credit.getBlockedMonths(decision.sector),
                             decision.template.getName()));
@@ -1249,7 +1470,7 @@ public class Game {
         }
 
         if (affordable <= 0) {
-            lastInvestment.put(decision.sector,
+            lastInvestment.put(slot,
                     String.format("Declined %s - not even one would cover its interest",
                             decision.template.getName()));
             return;
@@ -1262,7 +1483,7 @@ public class Game {
                 : "";
 
         if (buildFor(payer, decision.template, quantity)) {
-            lastInvestment.put(decision.sector,
+            lastInvestment.put(slot,
                     String.format("Built %,d %s%s - %s",
                             quantity, decision.template.getName(), trimmed, decision.reason));
         } else {
@@ -1270,7 +1491,7 @@ public class Game {
             // which now has exactly one cause: the land went between planning
             // and buying. Saying so beats the silence this used to leave.
             landBlockedSectors.add(decision.sector);
-            lastInvestment.put(decision.sector,
+            lastInvestment.put(slot,
                     String.format("Could not build %s - needs %,.0f sq ft, %,.0f free",
                             decision.template.getName(),
                             decision.template.getLandSqFt() * (double) quantity,
@@ -1939,6 +2160,7 @@ public class Game {
         debtManager.addShortTermTBill(quote.faceValue(), duration, month);
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
+       cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
 
         debtManager.updateInterest();
         return "Note issued.\n" + quote.summary();
@@ -1994,6 +2216,7 @@ public class Game {
         debtManager.addMediumTermBond(quote.faceValue(), duration * 12, month, quote.marketRate());
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
+       cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
 
         debtManager.updateInterest();
         return "Serial bond issued.\n" + quote.summary();
@@ -2147,6 +2370,7 @@ public class Game {
         debtManager.addLongTermBond(quote.faceValue(), duration * 12, month, quote.couponRate());
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
+       cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
 
         debtManager.updateInterest();
         return "Term bond issued.\n" + quote.summary();
@@ -2252,6 +2476,7 @@ public class Game {
         // Compared at the bottom against every dollar that crossed the city's
         // boundary this month - see MoneyAudit.
         cityDebtRaisedThisMonth = 0;
+        cityDiscountThisMonth = 0;
         cityPrincipalRepaidThisMonth = 0;
         economyManager.getBusinessDebtManager().startAuditMonth();
         double[] poolsBefore = MoneyAudit.pools(this);
@@ -2259,12 +2484,126 @@ public class Game {
         for (double p : poolsBefore) pooledBefore += p;
         double interestDue = economyManager.getInterestAccrued();
 
+        bank.startMonth();
+
+        /*
+         * THE BANK PAYS ITS PROFIT TAX, on the month that has just finished.
+         *
+         * Here, at the top, and not with the rest of the bank's settlement at
+         * the bottom - because the city's tax take is struck inside
+         * finalUpdateEconomy(), which runs before the bank knows what it made.
+         * See Bank.chargeTax() for why arrears is the only ordering that keeps
+         * the money in one channel.
+         *
+         * At the RETAIL rate: a Commercial Bank is a commercial building, its
+         * property tax already goes through that category, and its jobs already
+         * sit in that sector's headcount. If it ever wants a dial of its own,
+         * the seam is a new PolicySector - which would resize the tax policy's
+         * offset arrays and the save that carries them, so it is deliberately
+         * not done for free here.
+         */
+        economyManager.setBankTax(bank.chargeTax(
+                economyManager.getTaxPolicy().effectiveProfitRate(PolicySector.RETAIL)));
+        cityDebtRaisedForBank = cityDebtRaisedThisMonth;
+        cityDiscountForBank = cityDiscountThisMonth;
+
         startOfMonthUpdate();
         simulationEngine.simulateMonth(this);
         finalUpdateEconomy();
         economyManager.setPreviousGdp(historySave);
         priceTheDebtMarket();
         debtManager.processAllDebts(this);
+
+        /*
+         * THE BANK SETTLES, BEFORE THE AUDIT LOOKS.
+         *
+         * Every loan in the city is its money now, so the four flows that used
+         * to run to and from nowhere - lending, repayment, interest, the
+         * treasury's coupons - move between its cash and the borrower's. Struck
+         * here, once, off the same figures the audit reads, so the two cannot
+         * disagree about a month.
+         */
+        BusinessDebtManager lender = economyManager.getBusinessDebtManager();
+        bank.lend(lender.getLentThisMonth() + cityDebtRaisedForBank);
+        bank.takeRepayment(lender.getRepaidThisMonth() + cityPrincipalRepaidThisMonth);
+        /*
+         * The discount on this month's issuance, recognised as it is earned.
+         * Non-cash - the bank's book already carries the paper at face - and
+         * internal, because it is the city that is paying it.
+         */
+        bank.takeDiscount(cityDiscountForBank);
+
+        bank.takeInterest(interestDue
+                + economyManager.getCommercialHandler().getReportRetailInterest()
+                + economyManager.getCommercialHandler().getReportRealEstateInterest()
+                + economyManager.getIndustrialHandler().getReportInterestExpense()
+                + economyManager.getHeavyIndustryHandler().getReportInterestExpense()
+                + economyManager.getMiningHandler().getReportInterestExpense()
+                + servicesManager.getConstructionHandler().getReportInterestExpense());
+
+        refreshBank();
+
+        /*
+         * AND THE BANK PAYS FOR ITS OWN MONEY.
+         *
+         * Last, after every loan has moved and the position has been re-read,
+         * because what it needs to fund is whatever it is short by once the
+         * month is done. Before the audit looks, because the money it raises
+         * comes from outside the city and the audit has to see it arrive.
+         */
+        /*
+         * Its own staff, on its own books.
+         *
+         * A bank is a COMMERCIAL building, so its tellers were in the shops'
+         * payroll - which was a stated simplification while the bank had no
+         * books, and indefensible the moment it had a set of financial
+         * statements with an operating-expense line on them. The wages are
+         * carved out in CommercialHandler and charged here.
+         */
+        bank.payRunning(economyManager.getCommercialHandler().getReportBankPayroll(), 0);
+
+        /*
+         * Capital for whatever branches opened this month. Shareholders' money,
+         * from outside the city - a bank with no capital has no capacity, and a
+         * bank with no capacity can never earn any, so without this a first
+         * branch could never begin lending.
+         */
+        bank.openBranches(buildingManager.countByName("Commercial Bank"));
+
+        bank.fundToCover(debtManager.getRate());
+
+        // ...and if that left it owing more than it owns, it has failed. Its
+        // creditors take the hole; the city has a decision to make.
+        bank.resolveIfFailed();
+
+        // The month is final, so the figure next month's tax is charged on is
+        // final too. Carried in the save - see Bank.getProfitLastMonth().
+        bank.closeMonth();
+
+        /*
+         * ...AND THE SAVERS ARE PAID.
+         *
+         * Struck inside fundToCover() above; handed out here, because the bank
+         * has no idea who its depositors are. The households' share is credited
+         * to their accounts and the sectors' to their tills, each in proportion
+         * to what they had banked.
+         */
+        householdBalance.creditDepositInterest(bank.getDepositInterestToHouseholds());
+        double sectorInterest = bank.getDepositInterestToSectors();
+        if (sectorInterest > 0) {
+            double totalSectorCash = 0;
+            for (String s : BusinessDebtManager.SECTORS) {
+                totalSectorCash += Math.max(0, economyManager.getSectorCash(s));
+            }
+            if (totalSectorCash > 0) {
+                for (String s : BusinessDebtManager.SECTORS) {
+                    double held = Math.max(0, economyManager.getSectorCash(s));
+                    if (held <= 0) continue;
+                    economyManager.setSectorCash(s, economyManager.getSectorCash(s)
+                            + sectorInterest * held / totalSectorCash);
+                }
+            }
+        }
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
         
@@ -2296,6 +2635,14 @@ public class Game {
 
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
 
+        /*
+         * THE BANK PRICES THE MONEY, BEFORE ANYTHING IS PRICED OFF IT.
+         *
+         * Every rate in the city is the borrower's own risk plus what the bank
+         * is charging for funds, so the premium has to be set before the debt
+         * market re-prices and before the sectors are handed their bills.
+         */
+        debtManager.setBankPremium(bank.ratePremium());
         economyManager.updateBusinessCredit(debtManager.getRate());
 
         // Property tax with the interest bill, and for the same reason: both are
@@ -2383,6 +2730,7 @@ public class Game {
         accountedCapitalSpending = cityCapitalSpending;
         accountedLandSales = landManager.getLandSalesThisMonth();
         accountedLandPurchases = landManager.getLandPurchasesThisMonth();
+        accountedInterest = cityInterestPaid;
 
         cityCapitalSpending = 0;
         cityInterestPaid = 0;
@@ -2649,7 +2997,8 @@ public class Game {
          * load path uses, so nothing is computed in two places.
          */
         economyManager.refreshGovernmentAccounts(
-                accountedLandSales, accountedCapitalSpending, accountedLandPurchases);
+                accountedLandSales, accountedCapitalSpending, accountedLandPurchases,
+                accountedInterest);
 
         materialsConsumed = 0;
     }
@@ -2776,6 +3125,7 @@ public class Game {
 
     public PopulationCohorts getCohorts() { return cohorts; }
     public FamilyModel getFamilies()      { return families; }
+    public HouseholdBalance getHouseholdBalance() { return householdBalance; }
     public Migration getMigration()       { return migration; }
     public Health getHealth()             { return health; }
     public Healthcare getHealthcare()     { return healthcare; }
@@ -2870,6 +3220,14 @@ public class Game {
          */
         double adultsAlreadyHere = cohorts.get(AgeBand.ADULT);
 
+        /*
+         * The families the bank discharged last month are leaving. Set before
+         * the month's migration rather than folded into it, because it is a
+         * push from the balance sheet and has nothing to say about wages.
+         */
+        migration.setBankruptcyDepartures(householdBalance.getLeavingCity()
+                * Math.max(1, families.averageHouseholdSize()));
+
         cohorts.migrate(migration.monthlyNet(
                 population,
                 populationManager.getTotalJobs(),
@@ -2912,7 +3270,42 @@ public class Game {
 
         // One household, one home - and if there are not enough homes, they
         // crowd rather than sleep outside. See FamilyModel.squeeze().
-        families.squeeze(buildingManager.getTotalHomes());
+        /*
+         * HOMES HAVE SIZES NOW, so this is a match rather than a count.
+         *
+         * Two passes on purpose. The first says who could not be housed; the
+         * crowding valves then turn some of those singles into flatshares,
+         * which CHANGES what fits where - five adults sharing need one door,
+         * not five - so the second pass is what the landlords actually bill.
+         */
+        int[] stock = buildingManager.homesBySize();
+        double unplaced = families.house(stock);
+        families.squeezeUnplaced(unplaced);
+        families.noteUnplaced(families.house(stock));
+
+        // What the landlords can bill, off the match rather than off an
+        // average. See CommercialHandler.getRentIncome().
+        economyManager.getCommercialHandler().setRentWeight(families.rentWeight());
+
+        // And the advisor prices a new home on who would move into it.
+        businessInvestment.setFamilies(families);
+        businessInvestment.setBank(bank);
+
+        /*
+         * ...and the ones who cannot afford one either.
+         *
+         * squeeze() above is the housing shortage; this is the poverty. A tier
+         * whose single wage does not cover a home and a basket puts that share
+         * of its single adults into flatshares - which is what people actually
+         * do, and it is the response the model had no answer to at all. Before
+         * this, an unskilled single adult short of rent went on being short of
+         * it until the credit ran out and the hunger started.
+         *
+         * Reads LAST month's books, which is the only honest source: this
+         * month's have not been struck yet, and a household decides where to
+         * live on the payslip it has already had.
+         */
+        families.shareByAffordability(households.livingAlonePressure(families));
 
         /*
          * 6. WHO IS TOO ILL TO WORK.
@@ -2993,7 +3386,10 @@ public class Game {
          *    are one of the three things that decide it.
          */
         health.advanceMonth(generalCapacity, servedThisMonth, month,
-                healthcare.getUnburied());
+                healthcare.getUnburied(),
+                // The last step of the household waterfall, arriving as a health
+                // problem: savings gone, credit gone, so they eat less.
+                householdBalance.getHungerRate());
     }
 
     /**
@@ -3074,6 +3470,24 @@ public class Game {
     /** The residents' own books. See HouseholdAccounts. */
     private HouseholdAccounts households = new HouseholdAccounts();
 
+    /**
+     * What the households have saved and what they owe.
+     *
+     * The stock beside the flow. HouseholdAccounts is a month's statement and
+     * can be rebuilt from the month; this is a balance sheet and cannot, so it
+     * is saved. See HouseholdBalance.
+     */
+    private final HouseholdBalance householdBalance = new HouseholdBalance();
+
+    /**
+     * The city's commercial bank - every loan in it, and every default.
+     *
+     * Owned here rather than by EconomyManager because it lends to all three of
+     * them: the sectors, the treasury and the households. See Bank.
+     */
+    private final Bank bank = new Bank();
+    public Bank getBank() { return bank; }
+
     /** For tests and for the graph screen. */
     public HistorySave getHistorySave(){
         return historySave;
@@ -3101,6 +3515,29 @@ public class Game {
      * were turning over $773.
      */
     private double monthlyMaterialImports;
+
+    /** Stashed before cityInterestPaid is cleared, for the end-of-month re-strike. */
+    private double accountedInterest;
+
+    /**
+     * What a save carried about next month's shopping and rent.
+     *
+     * PUT BACK AFTER THE REBUILD, not before it, and that is the whole point.
+     * rebuildSimulationState() re-derives a great deal of the month, and it
+     * does not reproduce every input exactly - the health service's and the
+     * schools' fees come back within a few thousandths, which never mattered
+     * while nothing downstream read them. The budget constraint reads them:
+     * fees feed the household plan, the plan caps the shops, and the shops feed
+     * the rent through who can afford to live alone. So a rounding difference
+     * five layers up arrived as a different month's cash.
+     *
+     * These three are the interface between one month and the next. Carried
+     * whole and re-applied last, they make the seam exact rather than nearly
+     * exact - which is the standard SaveFileCheck holds, to the cent.
+     */
+    private double carriedRentWeight;
+    private double carriedRetailCapacity;
+    private double carriedRetailWant;
 
     /** Interest the city paid this month, accumulated by InterestExpense(). */
     private double cityInterestPaid;
@@ -3132,7 +3569,10 @@ public class Game {
      */
     public void repriceLabour() {
         labourMarket.advanceMonth(
-                populationManager.postsByBand(),
+                // STAFFABLE, not raw. A band is priced on the work its own
+                // members can take; the posts only a licence holder can fill
+                // are priced separately, as a licence premium on that job.
+                populationManager.staffablePostsByBand(),
                 populationManager.supplyByBand(),
                 populationManager.getJobs(),
                 populationManager.getLicensedHeads());
@@ -3326,6 +3766,14 @@ public class Game {
         // Policy: the rates, every offset, the protected sectors, and the
         // month's VAT ledger.
         dataSave.setTaxPolicyState(economyManager.getTaxPolicy().getPolicyState());
+        dataSave.setHouseholdBalance(householdBalance.toSaveArray());
+        dataSave.setBankCash(bank.getCash());
+        dataSave.setBankBranchesCapitalised(bank.getBranchesCapitalised());
+        dataSave.setBankProfitLastMonth(bank.getProfitLastMonth());
+        dataSave.setBankTaxCharged(economyManager.getBankTax());
+        dataSave.setRentWeight(families.rentWeight());
+        dataSave.setRetailCapacity(economyManager.getCommercialHandler().getSpendingCapacity());
+        dataSave.setRetailWant(economyManager.getCommercialHandler().getWantedSpend());
         dataSave.setAutoSubsidy(autoSubsidy.clone());
         dataSave.setSalesTaxLedger(economyManager.getSalesTaxLedger().getLedgerState());
 
@@ -3496,7 +3944,30 @@ public class Game {
      * zeroed at the top of nextMonth(), never saved.
      */
     private double cityDebtRaisedThisMonth;
+
+    /**
+     * Face value less cash paid, on everything the city issued this month.
+     *
+     * THE BANK BUYS THE PAPER AT A DISCOUNT. The city receives par less fees and
+     * owes par, and the difference is neither a leak nor a fee to nobody - it is
+     * what the buyer makes on the deal. Until this existed the bank's cash fell
+     * by what it paid while its book rose by what it was owed, and the gap came
+     * out in the wash as equity that had appeared from nowhere: $101.76 in one
+     * month of a small city, found by asserting that equity moves by net income
+     * and nothing else.
+     */
+    private double cityDiscountThisMonth;
     private double cityPrincipalRepaidThisMonth;
+
+    /**
+     * What the treasury raised, as it stood when the month began.
+     *
+     * cityDebtRaisedThisMonth is cleared inside startOfMonthUpdate() - the
+     * accounts read it and then zero it - so by the time the bank settles it is
+     * already gone. Snapshotted for the same reason accountedInterest is.
+     */
+    private double cityDebtRaisedForBank;
+    private double cityDiscountForBank;
     double getCityDebtRaisedThisMonth()      { return cityDebtRaisedThisMonth; }
     double getCityPrincipalRepaidThisMonth() { return cityPrincipalRepaidThisMonth; }
 
@@ -3613,6 +4084,7 @@ public class Game {
        debtManager.addShortTermTBill(quote.faceValue(), duration, month);
        cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
+       cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
 
        // The books have changed, so the standing rate has too. Leaving this out
        // let a city borrow and go on being quoted its pre-loan rate until the
@@ -3690,6 +4162,29 @@ public class Game {
     economyManager.setPopulation(populationManager.getPopulation());
     economyManager.setHouseholds(getHouseholdCapacity());
     economyManager.setOccupiedHomes(families.homesNeeded());
+
+    /*
+     * AND THE MATCH, which the rent is billed off.
+     *
+     * The households are restored, not rebuilt, so nothing here has run
+     * house() - and rentWeight would have been zero, dropping the landlords
+     * back onto the pre-2026-09-07 average-home formula for exactly one month
+     * after every load. Caught by SaveFileCheck ("a month later both cities
+     * have paid the same bill") to the cent, which is what that assertion is
+     * for. The same load-path-parity bug class, seventh sighting.
+     */
+    /*
+     * ONE PASS, NOT THE LIVE PATH'S TWO. The households came out of the save
+     * already squeezed - the shares and the doubling-up are in the restored
+     * matrix - so running the valves again would convert a second batch of
+     * single adults into flatshares that never existed.
+     */
+    // The full sequence, not just the match - or stillUnplaced keeps whatever
+    // the live path last left in it, which is a figure about a different month.
+    families.noteUnplaced(families.house(buildingManager.homesBySize()));
+    if (carriedRentWeight > 0) families.setRentWeight(carriedRentWeight);
+    economyManager.getCommercialHandler().setRentWeight(families.rentWeight());
+    businessInvestment.setFamilies(families);
     economyManager.setSeniors(cohorts.get(AgeBand.SENIOR));
     economyManager.setTotalJobs(populationManager.getTotalJobs());
     economyManager.setTotalWage(populationManager.getTotalWage());
@@ -3726,7 +4221,8 @@ public class Game {
     economyManager.updateIndustrialWages(populationManager.getWagesPerType());
     economyManager.updateStoreWages(
             populationManager.getWagesPerType(),
-            buildingManager.getJobArrayPerCategory(BuildingType.COMMERCIAL)
+            buildingManager.getJobArrayPerCategory(BuildingType.COMMERCIAL),
+            buildingManager.getJobArrayByName("Commercial Bank")
     );
 
     economyManager.updateJobFillRate(populationManager.getJobFillRate());
@@ -3821,7 +4317,10 @@ public class Game {
     economyManager.refreshGovernmentAccounts(
             landManager.getLandSalesThisMonth(),
             cityCapitalSpending,
-            landManager.getLandPurchasesThisMonth());
+            landManager.getLandPurchasesThisMonth(),
+            // Restored by setInterest() above and not yet cleared - this path
+            // does not run finalEconUpdate(). See refreshGovernmentAccounts().
+            economyManager.getInterestAccrued());
 }
    
    
@@ -3964,6 +4463,25 @@ public class Game {
              * everything, which is exactly what that save meant.
              */
             economyManager.getTaxPolicy().restorePolicyState(loaded.getTaxPolicyState());
+
+            // Format 18 and earlier carry nothing here, and a null restores as a
+            // no-op - which leaves a founding city's opening buffer, the same
+            // position those saves already behaved as having.
+            householdBalance.restore(loaded.getHouseholdBalance());
+            bank.setCash(loaded.getBankCash());
+            bank.setBranchesCapitalised(loaded.getBankBranchesCapitalised());
+            bank.setProfitLastMonth(loaded.getBankProfitLastMonth());
+            economyManager.setBankTax(loaded.getBankTaxCharged());
+            carriedRentWeight = loaded.getRentWeight();
+
+            /*
+             * Before rebuildSimulationState() re-runs the retail report, or it
+             * runs it with no budget constraint and the shops sell what a
+             * headcount wanted - which is the model as it stood before the
+             * constraint existed, for exactly one month after every load.
+             */
+            carriedRetailCapacity = loaded.getRetailCapacity();
+            carriedRetailWant = loaded.getRetailWant();
 
             boolean[] savedSubsidy = loaded.getAutoSubsidy();
             if (savedSubsidy != null && savedSubsidy.length == autoSubsidy.length) {
@@ -4365,6 +4883,22 @@ public class Game {
         rebuildSimulationState();
 
         /*
+         * The seam between the saved month and the next one, put back last.
+         *
+         * See carriedRetailCapacity: the rebuild re-derives these and does not
+         * reproduce them to the cent, and everything downstream of the budget
+         * constraint amplifies the difference. Carried whole, applied after.
+         */
+        if (carriedRetailCapacity > 0 || carriedRetailWant > 0) {
+            economyManager.getCommercialHandler().setSpendingCapacity(carriedRetailCapacity);
+            economyManager.getCommercialHandler().setWantedSpend(carriedRetailWant);
+        }
+        if (carriedRentWeight > 0) {
+            families.setRentWeight(carriedRentWeight);
+            economyManager.getCommercialHandler().setRentWeight(carriedRentWeight);
+        }
+
+        /*
          * The skills of a city that predates skills.
          *
          * Below the rebuild because it reads the posts, and those are put back
@@ -4463,6 +4997,36 @@ public class Game {
                     economyManager.getSectorWaterCharges());
             economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
         }
+
+        /*
+         * AND THE BANK, LAST OF ALL, FOR THE SAME REASON THE STATEMENTS ARE.
+         *
+         * Its deposits are every sector's cash and its book is every loan, so
+         * it cannot be re-read until all of them are back. Placed earlier - one
+         * block up, above the order book - it read the construction sector's
+         * cash as zero and came back believing a city with $90M banked had
+         * $7.5M, which put a strained bank's premium on a bank that was not
+         * strained. A freshly loaded city then quoted five points over what the
+         * same city had quoted a moment before it was saved.
+         *
+         * AND THE DEBT MARKET WITH IT, which was wrong before the bank went
+         * anywhere near it and is the eighth sighting of the same shape. The
+         * city's GDP, its tax base and its cash are DebtManager's inputs and
+         * are pushed into it by priceTheDebtMarket(), which only nextMonth()
+         * calls - and the standing rate is struck at the end of
+         * processAllDebts(), which only nextMonth() calls either. So a freshly
+         * loaded city priced every bond against a GDP of zero until the player
+         * clicked next month: measured at five points over what the same city
+         * had quoted a moment before it was saved. The rate is not carried in
+         * the save because it is derived; deriving it needs these three lines.
+         *
+         * The live path does all of this at the end of nextMonth(); this is
+         * that same sequence, in that same order, at the end of the load.
+         */
+        priceTheDebtMarket();
+        refreshBank();
+        debtManager.setBankPremium(bank.ratePremium());
+        debtManager.updateInterest();
     }
 
 

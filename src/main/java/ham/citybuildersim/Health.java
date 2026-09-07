@@ -145,11 +145,43 @@ public class Health {
     /** What the unburied dead are adding this month. Zero in a tidy city. */
     private double unburiedRate;
 
+    /** ...and what hunger is adding. Zero in a city that can afford to eat. */
+    private double hungerRate;
+
+    /**
+     * How much sickness a city that cannot feed itself carries.
+     *
+     * The last step of HouseholdBalance's waterfall: savings first, then credit,
+     * and only when both are gone do people eat less - at which point it stops
+     * being an accounting problem. Weighted so a city where a tenth of people go
+     * short carries about one and a half points of extra sickness - visible
+     * beside an unserved city's eighteen without swamping it.
+     *
+     * MEASURED DOWN from .20/.12. At the first setting the 4,002-month playtest
+     * finished with 44.7% off sick against a 45% ceiling, pinned to the cap for
+     * most of the run - and a term at its cap is a term the player cannot read,
+     * because nothing they do to it moves the number. At .15/.08 the same run
+     * ends at 40.7% and averages 37.1%, against 32.8% with no hunger at all.
+     *
+     * Capped, because hunger in this model is a matter of degree - somebody
+     * buying eighty per cent of a basket is eating badly, not starving - and a
+     * term that could run to the sickness ceiling on its own would make every
+     * other health mechanic moot.
+     */
+    public static final double HUNGER_WEIGHT = .15;
+    public static final double MAX_HUNGER_SICKNESS = .08;
+
     /* ---------------------------- the month ---------------------------- */
 
     /** The old three-argument form: a city with nothing left lying about. */
     public void advanceMonth(double generalCareCapacity, double population, int month) {
         advanceMonth(generalCareCapacity, population, month, 0);
+    }
+
+    /** ...and the four-argument form: a city that can feed itself. */
+    public void advanceMonth(double generalCareCapacity, double population, int month,
+                             double unburied) {
+        advanceMonth(generalCareCapacity, population, month, unburied, 0);
     }
 
     /**
@@ -161,7 +193,7 @@ public class Health {
      * @param unburied            the dead the city has nowhere to put
      */
     public void advanceMonth(double generalCareCapacity, double population, int month,
-                             double unburied) {
+                             double unburied, double hungry) {
 
         coverage = coverageOf(generalCareCapacity, population);
         baselineRate = WELL_SERVED_RATE
@@ -193,8 +225,11 @@ public class Health {
                         Math.max(0, unburied) / population * UNBURIED_WEIGHT)
                 : 0;
 
+        hungerRate = Math.min(MAX_HUNGER_SICKNESS,
+                Math.max(0, Math.min(1, hungry)) * HUNGER_WEIGHT);
+
         sickRate = Math.min(MAX_SICK_RATE,
-                baselineRate + outbreakSeverity + unburiedRate);
+                baselineRate + outbreakSeverity + unburiedRate + hungerRate);
     }
 
     /**
@@ -234,6 +269,7 @@ public class Health {
 
     /** What the unburied dead are adding on top. Zero in a city that buries them. */
     public double getUnburiedRate() { return unburiedRate; }
+    public double getHungerRate()   { return hungerRate; }
 
     public boolean isOutbreak() { return outbreakSeverity > 0; }
 

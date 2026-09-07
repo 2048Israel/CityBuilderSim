@@ -77,6 +77,46 @@ public class TaxPolicy {
     private double incomeTaxRate = DEFAULT_INCOME_TAX;
     private double propertyTaxRate = DEFAULT_PROPERTY_TAX;
 
+    /* =====================================================================
+       THE PENSION PROMISE, AS TWO DIALS
+
+       They were constants on SocialSecurity, and constants are the wrong shape
+       for the only two numbers in the game that are a POLICY CHOICE about the
+       age structure. A city whose pyramid is greying has exactly two levers -
+       charge the workers more, or pay the pensioners less - and until now it
+       had neither.
+
+       They live here rather than on SocialSecurity because this is the class
+       that is saved, has a screen, and already holds every other rate the
+       player sets. SocialSecurity keeps the arithmetic and now takes the rate
+       as an argument, which also makes it testable at rates nobody has set.
+       ===================================================================== */
+
+    private double contributionRate  = SocialSecurity.DEFAULT_CONTRIBUTION_RATE;
+    private double pensionReplacement = SocialSecurity.DEFAULT_PENSION_REPLACEMENT;
+
+    /** Nobody hands over more than a fifth of a wage, whatever the deficit. */
+    public static final double MAX_CONTRIBUTION = .20;
+
+    /** A pension of more than one unskilled wage is a wage, not a pension. */
+    public static final double MAX_REPLACEMENT = 1.00;
+
+    public double getContributionRate()   { return contributionRate; }
+    public double getPensionReplacement() { return pensionReplacement; }
+
+    public void setContributionRate(double rate) {
+        contributionRate = Math.max(0, Math.min(MAX_CONTRIBUTION, rate));
+    }
+
+    public void setPensionReplacement(double share) {
+        pensionReplacement = Math.max(0, Math.min(MAX_REPLACEMENT, share));
+    }
+
+    /** What one pensioner receives a month, at the rate currently set. */
+    public double pensionPerSenior() {
+        return SocialSecurity.pensionPerSenior(pensionReplacement);
+    }
+
     private final double[] wageOffset     = new double[WageBand.values().length];
     private final double[] profitOffset   = new double[PolicySector.values().length];
     private final double[] salesOffset    = new double[PolicySector.values().length];
@@ -262,10 +302,12 @@ public class TaxPolicy {
         int bands = WageBand.values().length;
         int sectors = PolicySector.values().length;
 
-        double[] state = new double[2 + bands + sectors * 3];
+        double[] state = new double[4 + bands + sectors * 3];
         int i = 0;
         state[i++] = incomeTaxRate;
         state[i++] = propertyTaxRate;
+        state[i++] = contributionRate;
+        state[i++] = pensionReplacement;
 
         for (int b = 0; b < bands; b++)   state[i++] = wageOffset[b];
         for (int s = 0; s < sectors; s++) state[i++] = profitOffset[s];
@@ -281,13 +323,15 @@ public class TaxPolicy {
         int bands = WageBand.values().length;
         int sectors = PolicySector.values().length;
 
-        if (state == null || state.length != 2 + bands + sectors * 3) {
+        if (state == null || state.length != 4 + bands + sectors * 3) {
             return false;
         }
 
         int i = 0;
         setIncomeTaxRate(state[i++]);
         setPropertyTaxRate(state[i++]);
+        setContributionRate(state[i++]);
+        setPensionReplacement(state[i++]);
 
         for (WageBand b : WageBand.values())     setWageOffset(b, state[i++]);
         for (PolicySector s : PolicySector.values()) setProfitOffset(s, state[i++]);
@@ -300,6 +344,8 @@ public class TaxPolicy {
     public void reset() {
         incomeTaxRate = DEFAULT_INCOME_TAX;
         propertyTaxRate = DEFAULT_PROPERTY_TAX;
+        contributionRate = SocialSecurity.DEFAULT_CONTRIBUTION_RATE;
+        pensionReplacement = SocialSecurity.DEFAULT_PENSION_REPLACEMENT;
         java.util.Arrays.fill(wageOffset, 0);
         java.util.Arrays.fill(profitOffset, 0);
         java.util.Arrays.fill(salesOffset, 0);

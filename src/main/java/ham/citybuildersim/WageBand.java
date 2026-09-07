@@ -16,17 +16,17 @@ package ham.citybuildersim;
  */
 public enum WageBand {
 
-    NONE      ("No diploma",  .50),
-    DIPLOMA   ("Diploma",     .34),
-    COLLEGE   ("College",     .12),
-    UNIVERSITY("University",  .04);
+    NONE      ("No diploma",  .00),
+    DIPLOMA   ("Diploma",    1.00),
+    COLLEGE   ("College",     .35),
+    UNIVERSITY("University",  .12);
 
     private final String label;
-    private final double worldShare;
+    private final double arrivalCeiling;
 
-    WageBand(String label, double worldShare) {
+    WageBand(String label, double arrivalCeiling) {
         this.label = label;
-        this.worldShare = worldShare;
+        this.arrivalCeiling = arrivalCeiling;
     }
 
     public String label() { return label; }
@@ -57,33 +57,41 @@ public enum WageBand {
     public int rank() { return ordinal(); }
 
     /**
-     * Roughly what share of the outside world's workers sit at this level.
+     * The most of a month's arrivals this band can ever be, relative to the
+     * diploma band's 1.00 - and it is reached only at the wage ceiling.
      *
-     * THIS IS WHAT MAKES SCHOOLS NECESSARY LATER, and it is the answer to
-     * "a 4,000-person city needs scientists and cannot have a science school".
+     * THE WORLD HAS UNIVERSAL HIGH SCHOOL AND NOTHING ELSE FOR FREE. That is
+     * the whole model, and it replaces an attainment mix that kept losing this
+     * argument. Three properties fall out of it:
      *
-     * Migrants are drawn by the wage premium, but they are drawn out of a world
-     * that has far more labourers than graduates. So the same premium pulls in
-     * a flood of the first and a trickle of the last. A small city CAN import
-     * its doctor - slowly, expensively, one at a time. A city of eighty
-     * thousand cannot import two hundred of them at any price.
+     * NOBODY ARRIVES WITHOUT A DIPLOMA. NONE is 0.00. The only people in the
+     * unskilled band are the ones this city failed to put through school -
+     * children born here, and the children of migrants, who aged out of the
+     * teen band while the high schools were full or absent. So the unskilled
+     * band is a REPORT CARD rather than an import, and a city that builds its
+     * schools genuinely stops producing unskilled adults.
      *
-     * Which means the handoff to home-grown education arrives by arithmetic
-     * rather than by rule: import while you are small, train once you are big,
-     * with nothing to unlock and nothing to explain.
+     * A DIPLOMA IS THE BASE, at 1.00 and unconditional. It is not competed for
+     * and does not respond to a premium: it is what an ordinary person moving
+     * to an ordinary city has.
      *
-     * Loosely a developed economy's attainment mix, PULLED DOWN AT THE TOP once
-     * it met the game's own demand curve. Measured: the buildings in this game
-     * offer 51% unskilled / 41% diploma / 6% college / 1.4% university posts,
-     * and a world of 46/32/16/6 poured four times as many graduates into a city
-     * as it had graduate jobs. That is not the world being wrong - a real
-     * economy employs far more professionals than this building set does - but
-     * a migration model has to be aimed at the jobs that exist, not at the ones
-     * a fuller game would have.
+     * ABOVE THAT, ARRIVALS ARE DEMAND ONLY. At the going rate a graduate has no
+     * reason to prefer this city to the hundred others hiring, so the pull is
+     * zero and stays zero - which is the fix for the thing Jerus kept seeing,
+     * a city with no schools and no graduate jobs filling up with graduates
+     * anyway. The ceilings bite only as the city bids the wage up, and at the
+     * 4x ceiling they reproduce a developed economy's own graduate mix
+     * (.35 and .12 against a diploma's 1.00 is 24% college and 8% university).
      *
-     * Revisit these the day the building set grows a professional sector.
+     * Which keeps the property the old mix was built for: a small city can
+     * import its doctor, slowly and expensively, and a city of eighty thousand
+     * cannot import two hundred at any price. Import while you are small, train
+     * once you are big - by arithmetic, with nothing to unlock.
+     *
+     * See Migration.reach() for the curve, and Migration.composeArrivals() for
+     * how a licensed profession pulls on its own.
      */
-    public double worldShare() { return worldShare; }
+    public double arrivalCeiling() { return arrivalCeiling; }
 
     /**
      * How readily somebody at this level will move away for work.

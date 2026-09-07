@@ -84,7 +84,7 @@ public final class MoneyAudit {
 
     static final String[] POOL_NAMES = {
         "city", "retail", "real estate", "industry", "heavy industry", "mining",
-        "construction", "order book", "cheque in the post"
+        "construction", "order book", "cheque in the post", "bank"
     };
 
     /** The pools, in POOL_NAMES order. */
@@ -107,7 +107,19 @@ public final class MoneyAudit {
              * EconomyManager.startOfMontEconUpdate). Between the two it is a
              * cheque in the post, and it belongs to the mills.
              */
-            e.getCommercialHandler().getReportLocalPurchaseValue()
+            e.getCommercialHandler().getReportLocalPurchaseValue(),
+            /*
+             * THE BANK, since 2026-09-07. It holds the city's lending, so a
+             * loan to a sector or to the treasury is now an internal transfer
+             * that cancels rather than money arriving from outside and interest
+             * vanishing into it - a strictly better identity than the one it
+             * replaces, where both ends were nowhere.
+             *
+             * Households are still OUTSIDE, as they have always been, so what
+             * the bank lends a family is a real outflow and what it gets back
+             * is a real inflow. Those two lines are declared below.
+             */
+            g.getBank().getCash()
         };
     }
 
@@ -164,13 +176,57 @@ public final class MoneyAudit {
         in += flow.apply("+ food FoodExportRevenue", food.getFoodExportRevenue());
         in += flow.apply("+ mills Revenue", mills.getReportRevenue());
         in += flow.apply("+ mines OreExported * mines ExportPr", mines.getReportOreExported() * mines.getReportExportPrice());
-        // The lender.
-        in += flow.apply("+ lender LentThisMonth", lender.getLentThisMonth());
-        in += flow.apply("+ city CityDebtRaisedThisMonth", g.getCityDebtRaisedThisMonth());
+        /*
+         * THE LENDER IS INSIDE THE CITY NOW.
+         *
+         * A business loan and a city bond used to arrive from outside and their
+         * interest used to leave, so the audit saw money created at one end and
+         * destroyed at the other and balanced only because both were declared.
+         * The bank funds them out of its own cash, so all four of those lines -
+         * lent, repaid, interest, principal - are transfers between two pools
+         * and cancel. What is left is what actually crosses the city's edge.
+         */
+        in += flow.apply("+ bank RepaidByHouseholds", g.getBank().getRepaidByHouseholds());
+        /*
+         * The shareholders' capital when a branch opens - money from outside the
+         * city, and the only reason a bank can begin lending at all. A bailout
+         * paid by the treasury is NOT here: that is the city's own money moving
+         * to the bank's pool, and it cancels.
+         */
+        in += flow.apply("+ bank CapitalInjected", g.getBank().getCapitalInjected());
+        // The first branch settling with the lenders it replaces - see
+        // Bank.openBranches(). Signed, because it goes either way.
+        in += flow.apply("+ bank FoundingSettlement", g.getBank().getFoundingSettlement());
+        /*
+         * A failed bank's creditors absorbing the shortfall. They are the
+         * wholesale funders, who are outside the city, so the money the city
+         * keeps and will not repay arrives here. See Bank.resolveIfFailed().
+         */
+        in += flow.apply("+ bank ResolutionLoss", g.getBank().getResolutionLoss());
+
+        in += flow.apply("+ bank InterestEarned", g.getBank().getInterestEarned()
+                - g.getBank().getInternalInterest());
 
         double out = 0;
         // Payrolls, as each statement charged them.
         out += flow.apply("- retail Payroll", retail.getReportPayroll());
+        /*
+         * The bank's tellers, which used to be inside the line above.
+         *
+         * Wages leave the audited system whoever pays them, so moving them from
+         * the shops' payroll to the bank's changes which pool they come out of
+         * and nothing else about the identity - which is exactly why it was safe
+         * to move. Declared separately so the two can be read apart.
+         */
+        out += flow.apply("- bank Payroll", g.getBank().getPayroll());
+        /*
+         * Interest paid to SAVERS, since the bank started paying for its
+         * deposits. The households' share leaves the audited system, because
+         * households have always been outside it; the sectors' share does not,
+         * because it moves from the bank's pool to theirs and cancels.
+         */
+        out += flow.apply("- bank DepositInterest (households)",
+                g.getBank().getDepositInterestToHouseholds());
         out += flow.apply("- food Payroll", food.getReportPayroll());
         out += flow.apply("- mills Payroll", mills.getReportPayroll());
         out += flow.apply("- mines Payroll", mines.getReportPayroll());
@@ -186,16 +242,28 @@ public final class MoneyAudit {
         out += Math.max(0, mills.getReportInputCost()
                 - mills.getReportLocalOreUsed() * mines.getReportLocalPrice());
         out += flow.apply("- builders MaterialsExpense", builders.getReportMaterialsExpense());
-        // Interest and principal to the lender.
-        out += flow.apply("- retail RetailInterest", retail.getReportRetailInterest());
-        out += flow.apply("- retail RealEstateInterest", retail.getReportRealEstateInterest());
-        out += flow.apply("- food InterestExpense", food.getReportInterestExpense());
-        out += flow.apply("- mills InterestExpense", mills.getReportInterestExpense());
-        out += flow.apply("- mines InterestExpense", mines.getReportInterestExpense());
-        out += flow.apply("- builders InterestExpense", builders.getReportInterestExpense());
-        out += flow.apply("- lender RepaidThisMonth", lender.getRepaidThisMonth());
-        out += flow.apply("- interestDue", interestDue);
-        out += flow.apply("- city CityPrincipalRepaidThisMonth", g.getCityPrincipalRepaidThisMonth());
+        // Lending to a family crosses the city's edge; lending to a sector or
+        // to the treasury no longer does - see the pools above.
+        out += flow.apply("- bank LentToHouseholds", g.getBank().getLentToHouseholds());
+        /*
+         * WHAT THE BANK PAYS FOR MONEY IT DID NOT HAVE, since 2026-09-07.
+         *
+         * A negative cash position IS borrowing, and the part of it the city's
+         * own deposits do not cover is funded abroad. That coupon leaves the
+         * city, so it is declared here. The principal is not: the bank's cash
+         * going further negative is already the loan arriving, and the pool
+         * moves with it - declaring it as well would count it twice.
+         */
+        out += flow.apply("- bank FundingCost", g.getBank().getFundingCost());
+        /*
+         * The bank's OWN staff and upkeep are not here, and that is deliberate
+         * rather than missing. It is a COMMERCIAL building, so its jobs land in
+         * the commercial sector's payroll and its upkeep in the commercial
+         * sector's costs, exactly like a grocery store's - the shops are paying
+         * the tellers. Wrong in an org chart, right in the books, and giving
+         * the bank its own building category to fix it is a bigger change than
+         * it earns today.
+         */
         // What the city pays the outside world: pensions, the schools' tuition
         // subsidy (paid to households), and the upkeep of its own services.
         out += flow.apply("- e PensionsPaid", e.getPensionsPaid());

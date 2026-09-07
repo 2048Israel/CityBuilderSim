@@ -532,6 +532,72 @@ public class BusinessInvestment {
                 true);
     }
 
+    /**
+     * Whether to open another bank branch.
+     *
+     * ITS OWN PLANNER, AND THAT IS THE POINT. A branch first lived inside
+     * planRetail() as an early return, which meant that in every month the city
+     * wanted one the shop planner never ran at all - and since a young city
+     * with any debt and no bank wants one from month one, and cannot service
+     * the loan for it until it has some trade, retail simply stopped building.
+     * Measured over four thousand months: two houses, and a city stuck at 20%
+     * unemployment with families sleeping nowhere. A decision that can block
+     * every other decision in its sector is not a decision, it is a deadlock.
+     *
+     * So it is asked separately and answered separately. It is still the RETAIL
+     * sector's money - a bank is a commercial building and its jobs and upkeep
+     * land in commercial's books, which is stated in MoneyAudit - but it no
+     * longer spends retail's one decision a month.
+     *
+     * Built on the STRAIN and slightly ahead of the premium rather than once the
+     * bill has arrived: a branch takes months to put up, so an advisor that
+     * waited for the premium would pay it for the whole of the lead time every
+     * time. See Bank.BUILD_AT_STRAIN. A city comfortably inside its own deposits
+     * does not fire this.
+     *
+     * FINANCED LIKE EVERYTHING ELSE, too. The first version required the sector
+     * to hold the whole cost in cash, which meant the city that needed a branch
+     * most - one whose credit had gone dear - was the one that could not have
+     * one. consider() borrows the difference when the building services its own
+     * debt, and estimatedMonthlyProfit() now prices a branch so it can.
+     */
+    public Decision planBank() {
+
+        String sector = BusinessDebtManager.RETAIL;
+
+        if (bank == null) return Decision.no(sector, "no bank");
+
+        /*
+         * "Already building" asked about BANKS, not about commerce.
+         *
+         * The category-wide guard every other planner uses is right for shops,
+         * which compete with each other for the same customers. It is wrong
+         * here: a grocery store going up somewhere in the city is not a reason
+         * to leave the whole city unbanked, and because a busy city almost
+         * always has some commercial site open, that guard alone kept a city
+         * with $5.8B of loans from ever ordering the one building that would
+         * have made them cheaper.
+         */
+        if (buildingManager.underConstructionByName("Commercial Bank") > 0) {
+            return Decision.no(sector, "a branch is already going up");
+        }
+        if (!bank.wantsBranch()) {
+            return Decision.no(sector, bank.getBranches() <= 0
+                    ? "nobody is borrowing yet"
+                    : String.format("the bank is %.0f%% lent out - room enough",
+                            bank.strain() * 100));
+        }
+
+        BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
+        if (branch == null) return Decision.no(sector, "no branch to build");
+
+        return new Decision(sector, branch, 1, bank.getBranches() <= 0
+                ? "nowhere in the city to bank - credit is at the punitive rate"
+                : String.format("the bank is %.0f%% lent out - opening a branch",
+                        bank.strain() * 100),
+                true);
+    }
+
     public Decision planRetail(int population, int storeCoverage,
                                double cityConstructionOutput, int ordersInFlight) {
 
@@ -908,12 +974,105 @@ public class BusinessInvestment {
      * utilities, which is deliberate - this is a screening number, and the real
      * income statement is what actually settles it a month later.
      */
+    /**
+     * The household mix, so a residential building can be priced on who would
+     * actually live in it. Set by Game once the families are rebuilt; null
+     * before the first month, which falls back to the old capacity figure.
+     */
+    private FamilyModel families;
+    public void setFamilies(FamilyModel families) { this.families = families; }
+
+    /** The bank, so the advisor can see when credit has got dear. */
+    private Bank bank;
+    public void setBank(Bank bank) { this.bank = bank; }
+
+    /**
+     * What one of these would cost to staff, at what the city pays today.
+     *
+     * The fallback for the FIRST of anything, where there is no running building
+     * to read the real figure off.
+     */
+    private double wageBillFor(BuildingsTemplate t) {
+        double bill = 0;
+        double[] wages = economyManager.getStoreWageRates();
+        if (wages == null) return 0;
+        for (JobType job : JobType.values()) {
+            if (job.ordinal() < wages.length) {
+                bill += wages[job.ordinal()] * t.getJobs(job);
+            }
+        }
+        return bill;
+    }
+
     public double estimatedMonthlyProfit(String sector, BuildingsTemplate t) {
 
         CommercialHandler ch = economyManager.getCommercialHandler();
 
         if (BusinessDebtManager.REAL_ESTATE.equals(sector)) {
-            return t.getCapacity() * ch.getRentPrice();
+            /*
+             * WHAT THE CITY'S HOUSEHOLDS WOULD PAY FOR IT, not what it would
+             * collect if it were full.
+             *
+             * capacity x rentPrice is a number about the building. It says a
+             * studio block is worth eighty rents whether or not a single person
+             * in the city wants one - which is how the advisor came to keep
+             * offering studios to cities full of families, losing on price
+             * every time, and how backlog I1 came to read as "strictly
+             * dominated at every land price" when the real fault was pricing a
+             * flat nobody there could live in.
+             *
+             * marginalRentWeight() prices it on the biggest household that is
+             * currently crowded or homeless and could actually take the unit -
+             * so a studio is worth a lot in a city of single adults and nothing
+             * in a city of families, which is the whole point of having three
+             * residential buildings.
+             */
+            int units = t.getDwellings() > 0
+                    ? t.getDwellings()
+                    : Math.max(1, t.getCapacity() / 4);
+            double weight = families == null
+                    ? t.getCapacity()
+                    : units * families.marginalRentWeight(t.homeSize());
+            return weight * ch.getRentPrice();
+        }
+
+        /*
+         * A BANK BRANCH, WHICH SELLS NOTHING.
+         *
+         * Checked before the sector cases and not inside one, because a branch
+         * is a commercial building whose business has nothing to do with
+         * shopping. Every estimate below prices a building by what it sells,
+         * and a bank sells nothing - so this returned zero, servicesItsOwnDebt()
+         * refused every borrowed dollar, and a branch could only ever be built
+         * out of cash the sector happened to be sitting on. Which is precisely
+         * the city least likely to have any: credit has gone dear.
+         *
+         * What it earns is the interest on the book it takes onto the bank's own
+         * account - see Bank.bookAnotherBranchWouldCarry(). Zero when the bank
+         * is comfortably inside itself, so this does not turn into an advisor
+         * that builds banks a city has no use for.
+         */
+        if (bank != null && t != null && "Commercial Bank".equals(t.getName())) {
+            double carried = bank.bookAnotherBranchWouldCarry();
+            double annual = economyManager.getBusinessDebtManager().getRate(sector);
+            double interest = carried * Math.max(0, annual) / 12;
+
+            /*
+             * NET OF THE STAFF, which is the half this used to be missing.
+             *
+             * A branch's interest income is not its profit - it has to be run,
+             * and until the bank had an income statement nobody could see that
+             * the running cost was several times the income. The advisor was
+             * happily building branches that lost money every month because the
+             * only number it was shown was the revenue.
+             *
+             * Priced off what the city is actually paying a bank's staff, so a
+             * city with expensive labour needs a bigger book to justify one.
+             */
+            double staff = economyManager.getCommercialHandler().getReportBankPayroll();
+            double perBranch = bank.getBranches() > 0 ? staff / bank.getBranches() : staff;
+            if (perBranch <= 0) perBranch = wageBillFor(t);
+            return interest - perBranch;
         }
 
         if (BusinessDebtManager.RETAIL.equals(sector)) {

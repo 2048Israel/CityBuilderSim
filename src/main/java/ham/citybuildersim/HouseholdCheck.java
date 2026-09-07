@@ -237,14 +237,43 @@ public class HouseholdCheck {
         check("everybody is in exactly one row", sumPeople, 500);
 
         /*
-         * Rent and shopping follow HEADCOUNT, because that is how the model
-         * charges them - rent is residents * rentPrice and retail demand is a
-         * headcount. 300 of 500 people carry 60% of both.
+         * RENT FOLLOWS FRONT DOORS, THE SHOP FOLLOWS HEADS, and the two must not
+         * be the same rule - which they were until 2026-09-07.
+         *
+         * CommercialHandler.getRentIncome() charges every let home the same
+         * figure whoever is in it, because that is what a landlord charges for:
+         * the flat. Splitting it by headcount instead billed a family of five
+         * five times what it billed a single adult in the identical flat, so
+         * every large household read as unable to afford to live here. The shop
+         * genuinely is a headcount - retail demand is min(coverage, population)
+         * - so it keeps the old rule.
+         *
+         * 150 of 260 homes carry 57.7% of the rent; 300 of 500 people carry 60%
+         * of the shopping. That the two figures now DIFFER is the point of the
+         * assertion: identical numbers here is what the bug looked like.
          */
-        check("rent follows people, not income",
-                split.getRowRent(PayTier.UNSKILLED.ordinal()), 180);
-        check("and so does the shopping",
+        check("rent follows front doors", split.getRowRent(PayTier.UNSKILLED.ordinal()),
+                300 * (150 / 260.0));
+        check("the shop follows heads",
                 split.getRowShopping(PayTier.UNSKILLED.ordinal()), 240);
+        assertTrue("...and the two are not the same split",
+                Math.abs(split.getRowRent(PayTier.UNSKILLED.ordinal()) / split.getRent()
+                        - split.getRowShopping(PayTier.UNSKILLED.ordinal()) / split.getShopping())
+                        > .01);
+
+        /*
+         * ONE HOUSEHOLD, AND THE SHAPES INSIDE A TIER.
+         *
+         * The tier row averages across every shape in it, which is the one
+         * household nobody lives in. statementFor() splits it: same rent per
+         * door for all of them, shopping by size, wages by earners. These
+         * assert the three rules rather than the numbers, because the numbers
+         * are the fixture's and the rules are the model's.
+         */
+        assertTrue("rent per door is the city's rent over its households",
+                Math.abs(split.rentPerHousehold() - 300 / 260.0) < 1e-9);
+        assertTrue("the shop per head is its shopping over its people",
+                Math.abs(split.shoppingPerHead() - 400 / 500.0) < 1e-9);
 
         /*
          * THE RETIRED ROW EARNS NOTHING. There is no pension in this game, so a
@@ -313,8 +342,24 @@ public class HouseholdCheck {
         rentBm.initializeTemplates();
         BuildingsTemplate house = rentBm.getTemplateByName("House");
 
-        check("the House the rent price is derived from still holds four",
-                house.getCapacity(), CommercialHandler.REFERENCE_HOME_CAPACITY);
+        /*
+         * THE YARDSTICK AND THE HOUSE ARE DIFFERENT NUMBERS NOW.
+         *
+         * This asserted that the House held exactly REFERENCE_HOME_CAPACITY, on
+         * the reasoning that the rent price was derived from it. It is not: the
+         * reference is the four-person home the affordability target is struck
+         * against, and the House grew to six so that a large family and a
+         * five-adult flatshare have somewhere to live. What survives is the
+         * relationship - a House is at least the reference home, in one
+         * dwelling, and therefore costs at least the reference rent.
+         */
+        assertTrue("a House is at least the home the rent target is struck against",
+                house.getCapacity() >= CommercialHandler.REFERENCE_HOME_CAPACITY);
+        assertTrue("...and it is the biggest home in the game",
+                house.homeSize() >= rentBm.getTemplateByName("Low-Rise Apartments").homeSize()
+                        && house.homeSize() >= rentBm.getTemplateByName("Studio Apartments").homeSize());
+        assertTrue("...so it costs more than the reference home does",
+                house.getCapacity() * 1.0 / CommercialHandler.REFERENCE_HOME_CAPACITY > 1);
         check("...in a single dwelling", house.getDwellings(), 1);
 
         CommercialHandler rentCh = new CommercialHandler();
@@ -395,6 +440,308 @@ public class HouseholdCheck {
         check("the shortfall is what contributions do not reach",
                 SocialSecurity.shortfall(1000, 200),
                 SocialSecurity.pensionsFor(200) - SocialSecurity.contributionsOn(1000));
+
+        /* ============ THE BUDGET CONSTRAINT ============
+
+           Until 2026-09-07 the shops sold `min(coverage, population)` - one
+           basket a person, at no price anybody had to be able to pay. So a
+           household could be shown spending more than it earned every month for
+           three hundred months and the money came from nowhere, which is the
+           one failure this whole file exists to catch.
+
+           HouseholdBalance is the constraint. These assert the waterfall Jerus
+           specified - savings, then credit, then hunger - at the level of the
+           rule rather than of any city's numbers.
+           ========================================================= */
+        System.out.println("\n--- a household short of money spends its savings, then borrows ---");
+
+        HouseholdBalance bal = new HouseholdBalance();
+        int R = HouseholdBalance.ROWS;
+        int U = PayTier.UNSKILLED.ordinal();
+
+        double[] homes = new double[R];
+        double[] heads = new double[R];
+        double[] income = new double[R];
+        double[] fees = new double[R];
+        double[] spent = new double[R];
+        homes[U] = 100;
+        heads[U] = 200;          // two people a household
+        income[U] = 100 * 1.0;   // $1.00 a household, in the game's thousands
+        double rentEach = .60;   // more than half of it, so the shop cannot be covered
+        double basket = .25;     // per head, so a household of two needs .50
+
+        /*
+         * THE SPEND FOLLOWS THE PLAN, as it does in the game: the shops sell
+         * what the households said they could buy. A fixture that charged a
+         * fixed amount every month would be testing a household nobody has,
+         * and its debt would grow without a ceiling because nothing was
+         * telling it to stop.
+         */
+        bal.advanceMonth(homes, heads, income, rentEach, fees, spent, basket, .05, 1);
+        double opening = bal.getSavings(U);
+        assertTrue("a founding household is not destitute on day one", opening > 0);
+        assertTrue("...by about the buffer the dial names",
+                opening >= 1.0 * HouseholdBalance.OPENING_BUFFER_MONTHS - 1e-9);
+
+        spent[U] = homes[U] * bal.getPlanned(U);
+        double savingsBefore = bal.getSavings(U);
+        bal.advanceMonth(homes, heads, income, rentEach, fees, spent, basket, .05, 1);
+        assertTrue("SAVINGS GO FIRST", bal.getSavings(U) < savingsBefore);
+        assertTrue("...and nothing is borrowed while there are savings",
+                bal.getDebt(U) == 0);
+
+        // Run it until the savings are gone.
+        for (int m = 0; m < 40; m++) {
+            spent[U] = homes[U] * bal.getPlanned(U);
+            bal.advanceMonth(homes, heads, income, rentEach, fees, spent, basket, .05, 1);
+        }
+        assertTrue("the savings run out", bal.getSavings(U) < 1e-9);
+        assertTrue("...THEN THEY BORROW", bal.getDebt(U) > 0);
+        assertTrue("...at a rate over the risk-free one",
+                bal.getRate(U) > .05 + 1e-9);
+        assertTrue("...which climbs with what they already owe",
+                bal.getRate(U) > .05 + HouseholdBalance.BASE_SPREAD);
+        assertTrue("...and never past the cap",
+                bal.getRate(U) <= HouseholdBalance.MAX_RATE + 1e-9);
+
+        /*
+         * And keep going until the credit runs out too.
+         *
+         * MEASURED OVER THE CYCLE, NOT IN THE MONTH THE LOOP STOPS ON, and
+         * that is a correction rather than a flourish. A household that has
+         * been discharged is locked out for a year and then gets its credit
+         * line back, so it eats short for eleven months and buys a full basket
+         * in the twelfth. The first version of this assertion read whichever
+         * month the loop happened to end in, and once bankruptcy went in it
+         * landed on that twelfth month and failed - a fixture reading the
+         * phase of an oscillation rather than its level.
+         */
+        double shortMonths = 0, fullMonths = 0, plannedTotal = 0, subsistenceTotal = 0;
+        for (int m = 0; m < 400; m++) {
+            spent[U] = homes[U] * bal.getPlanned(U);
+            bal.advanceMonth(homes, heads, income, rentEach, fees, spent, basket, .05, 1);
+            if (m >= 100) {   // past the savings and the first slide into debt
+                plannedTotal += bal.getPlanned(U);
+                subsistenceTotal += bal.getSubsistence(U);
+                if (bal.getPlanned(U) < bal.getSubsistence(U) - 1e-9) shortMonths++;
+                else fullMonths++;
+            }
+        }
+        assertTrue("the debt stops at the ceiling, it does not run away",
+                bal.getDebt(U) <= HouseholdBalance.CREDIT_LIMIT_MONTHS * 1.0 + .5);
+        System.out.printf("   short in %.0f months of %.0f; planned $%.3fk against $%.3fk of subsistence%n",
+                shortMonths, shortMonths + fullMonths,
+                plannedTotal / (shortMonths + fullMonths),
+                subsistenceTotal / (shortMonths + fullMonths));
+        assertTrue("...AND THEN THEY EAT LESS", plannedTotal < subsistenceTotal - 1e-9);
+        assertTrue("...in most months, not just on average", shortMonths > fullMonths);
+        assertTrue("...which the health service can see", bal.getHungerRate() > 0);
+
+        System.out.println("\n--- and a household with money to spare pays it down, then banks it ---");
+
+        HouseholdBalance rich = new HouseholdBalance();
+        income[U] = 100 * 4.0;
+        spent[U] = 0;
+        for (int m = 0; m < 6; m++) {
+            rich.advanceMonth(homes, heads, income, rentEach, fees, spent, basket, .05, 1);
+            spent[U] = homes[U] * rich.getPlanned(U);
+        }
+        assertTrue("a household with a surplus banks it", rich.getSavings(U) > 0);
+        assertTrue("...and owes nothing", rich.getDebt(U) == 0);
+        assertTrue("...and is not hungry", rich.getHungerRate() == 0);
+
+        /*
+         * SPENDING FOLLOWS INCOME UPWARD TOO, which is the half that is easy to
+         * forget. Without it the rich bank everything - measured at $715,012 a
+         * household after three hundred months - and the constraint only ever
+         * bites downward.
+         */
+        assertTrue("a rich household WANTS more than a basket",
+                rich.getWant(U) > rich.getSubsistence(U));
+        assertTrue("...but a poor one wants exactly a basket, not less",
+                Math.abs(bal.getWant(U) - bal.getSubsistence(U)) < 1e-9);
+
+        System.out.println("\n--- the supply side starves people who had the money ---");
+
+        HouseholdBalance shelves = new HouseholdBalance();
+        income[U] = 100 * 4.0;
+        spent[U] = 0;
+        shelves.advanceMonth(homes, heads, income, rentEach, fees, spent, basket, .05, 1);
+        spent[U] = homes[U] * shelves.getPlanned(U);
+        shelves.advanceMonth(homes, heads, income, rentEach, fees, spent, basket, .05, 0);
+        assertTrue("empty shelves are hunger even in a rich city",
+                shelves.getHungerRate() > 0);
+
+        /* ============ AND WHEN THEY CANNOT AFFORD A HOME, THEY SHARE ============
+
+           Jerus, 2026-09-07: "perhaps poor families start living together."
+           FamilyModel already knew how - it only ever did it when the city ran
+           out of HOMES. This is the other reason, and the commoner one.
+           ==================================================================== */
+        System.out.println("\n--- a tier priced out of living alone shares instead ---");
+
+        FamilyModel homes2 = new FamilyModel();
+        double[] noPressure = new double[PayTier.values().length];
+        homes2.shareByAffordability(noPressure);
+        check("nobody shares when everybody can afford a home",
+                homes2.getPricedOutShares(), 0);
+
+        double[] priced = new double[PayTier.values().length];
+        priced[PayTier.UNSKILLED.ordinal()] = 1;   // cannot cover any of it
+        homes2.shareByAffordability(priced);
+        check("...and a model with no households still forms none",
+                homes2.getPricedOutShares(), 0);
+
+        assertTrue("somebody always holds out, however dear the rent",
+                FamilyModel.MAX_SHARING < 1);
+
+        /*
+         * THE PRESSURE ITSELF, which is the number the whole mechanic turns on.
+         * Asserted as a shape rather than a figure: zero when one wage covers a
+         * home and a basket comfortably, one when it covers none of it, and in
+         * between when it is in between.
+         */
+        int hhRows = HouseholdAccounts.RETIRED + 1;
+        HouseholdAccounts priceTest = new HouseholdAccounts();
+        double[] wagesRich = new double[PayTier.values().length];
+        double[] taxNone   = new double[PayTier.values().length];
+        double[] peopleRow = new double[hhRows];
+        double[] homesRow  = new double[hhRows];
+        peopleRow[PayTier.UNSKILLED.ordinal()] = 100;
+        homesRow[PayTier.UNSKILLED.ordinal()]  = 100;
+
+        // rent 100 over 100 homes, shopping 100 over 100 people: $2 to live alone.
+        priceTest.refresh(1000, 0, 100, 100, 0, 0, 0, 0, 0, 100, 100, 100);
+        priceTest.updateByTier(wagesRich, taxNone, peopleRow, homesRow);
+        double[] flat = priceTest.livingAlonePressure(null);
+        check("no household model, no pressure", flat[PayTier.UNSKILLED.ordinal()], 0);
+
+        /*
+         * AND THE WHOLE THING, IN A CITY. The unit checks above say the valve
+         * opens; this says it is worth opening - a flatshare has to leave its
+         * members BETTER OFF than living alone, or the mechanic is a costume.
+         */
+        java.io.PrintStream realOut = System.out;
+        java.io.PrintStream hush = new java.io.PrintStream(new java.io.OutputStream() {
+            @Override public void write(int b) { }
+        });
+
+        Game poor = new Game(GameFiles.scratch("householdcheck"));
+        System.setOut(hush);
+        try {
+            poor.newGame();
+            for (BuildingsTemplate t : poor.getBuildingManager().getTemplates()) {
+                if (t.getName().equals("Low-Rise Apartments")) poor.buildStack(t, 60, true);
+                if (t.getName().equals("Small Grocery Store"))  poor.buildStack(t, 8, true);
+                if (t.getName().equals("Coal Power Plant"))     poor.buildStack(t, 2, true);
+                if (t.getName().equals("Water Treatment Plant"))poor.buildStack(t, 2, true);
+                if (t.getName().equals("Paved Road"))           poor.buildStack(t, 20, true);
+                if (t.getName().equals("Textile Mill"))         poor.buildStack(t, 6, true);
+            }
+            poor.simulateMonths(120);
+        } finally { System.setOut(realOut); }
+
+        HouseholdAccounts books = poor.getHouseholds();
+        FamilyModel mix = poor.getFamilies();
+        double[] pressure = books.livingAlonePressure(mix);
+        int un = PayTier.UNSKILLED.ordinal();
+
+        HouseholdAccounts.Statement alone =
+                books.statementFor(mix, FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        HouseholdAccounts.Statement sharing =
+                books.statementFor(mix, FamilyStructure.SHARED_ADULTS, PayTier.UNSKILLED);
+
+        System.out.printf("   unskilled pressure %.0f%%, %,.0f flatshares priced out;"
+                + " alone leaves %.3f a month, sharing %.3f%n",
+                pressure[un] * 100, mix.getPricedOutShares(), alone.left(), sharing.left());
+
+        assertTrue("fixture: an unskilled single adult really cannot afford this city",
+                pressure[un] > 0);
+        /*
+         * Sharing, or nobody left to share. The fixture cannot guarantee single
+         * adults exist - a city where every one of them has ALREADY paired off
+         * is the mechanic having worked, not having failed - so the assertion
+         * is that flatshares exist, however they got there.
+         */
+        assertTrue("...so some of them are sharing",
+                mix.totalOf(FamilyStructure.SHARED_ADULTS) > 0);
+        assertTrue("A FLATSHARE IS BETTER OFF THAN LIVING ALONE",
+                sharing.left() > alone.left());
+        assertTrue("...because five of them pay one rent, not five",
+                sharing.rent() < alone.rent() * 5 - 1e-9);
+        assertTrue("...and still five baskets",
+                Math.abs(sharing.shopping() - alone.shopping() * 5) < 1e-6);
+
+        /* ============ A HOME IS A SIZE, AND A HOUSEHOLD HAS TO FIT ============
+
+           Jerus, 2026-09-07: "studio apartments... only single adults can
+           occupy them, or well two people, so any other structure is not
+           allowed." Homes were a pooled count before this, so a family of six
+           could live in a studio as long as the city had eighty spare doors
+           somewhere - which is most of why Studio Apartments were a building
+           with no niche and lost to a House on price at every land price
+           (backlog I1).
+           ==================================================================== */
+        System.out.println("\n--- a home is a size, and a household has to fit ---");
+
+        BuildingsTemplate studio = new BuildingsTemplate("s", BuildingType.RESIDENTIAL);
+        studio.setCapacity(160);
+        studio.setDwellings(80);
+        BuildingsTemplate houseT = new BuildingsTemplate("h", BuildingType.RESIDENTIAL);
+        houseT.setCapacity(4);
+        houseT.setDwellings(1);
+        BuildingsTemplate lowRise = new BuildingsTemplate("l", BuildingType.RESIDENTIAL);
+        lowRise.setCapacity(250);
+        lowRise.setDwellings(100);
+
+        check("a studio flat takes two", studio.homeSize(), 2);
+        check("a house takes four", houseT.homeSize(), 4);
+        check("a low-rise flat takes three", lowRise.homeSize(), 3);
+        assertTrue("...and only the studio refuses children", studio.adultsOnly()
+                && !houseT.adultsOnly() && !lowRise.adultsOnly());
+
+        /*
+         * A CITY OF NOTHING BUT STUDIOS CANNOT HOUSE A FAMILY, which is the one
+         * hard no in the model. Everything else crowds.
+         */
+        FamilyModel onlyStudios = new FamilyModel();
+        int[] studiosOnly = new int[]{0, 0, 500};      // 500 two-person flats
+        double nowhere = onlyStudios.house(studiosOnly);
+        check("an empty city needs no homes", nowhere, 0);
+
+        /*
+         * THE FLAT SETS THE PRICE, and the household in it does not come into
+         * it. Jerus: "the building earns its rent regardless - if a couple is
+         * living in a mansion it is paying a mansion's price." The first
+         * version weighted the two together, which is a market story rather
+         * than a lease and put a household's own size back into its rent.
+         */
+        check("a two-person flat bills two", FamilyModel.rentWeightOf(2), 2);
+        check("a six-person house bills six", FamilyModel.rentWeightOf(6), 6);
+        assertTrue("...so a bigger home is a dearer one",
+                FamilyModel.rentWeightOf(6) > FamilyModel.rentWeightOf(2));
+
+        FamilyModel priceTestModel = new FamilyModel();
+        check("and a flat nobody in the city could live in bills nothing",
+                priceTestModel.marginalRentWeight(2), 0);
+
+        System.out.println("\n--- and the two pension dials are the player's ---");
+        TaxPolicy pol = new TaxPolicy();
+        check("the contribution starts at the real CPP rate",
+                pol.getContributionRate(), SocialSecurity.DEFAULT_CONTRIBUTION_RATE);
+        pol.setContributionRate(.09);
+        check("...and moves", pol.getContributionRate(), .09);
+        pol.setContributionRate(9);
+        check("...but not past the ceiling", pol.getContributionRate(),
+                TaxPolicy.MAX_CONTRIBUTION);
+        pol.setPensionReplacement(.60);
+        check("a richer pension is a bigger cheque", pol.pensionPerSenior(),
+                .60 * PayTier.UNSKILLED.getMonthlyWage());
+        double[] state = pol.getPolicyState();
+        TaxPolicy back2 = new TaxPolicy();
+        assertTrue("the dials survive a save", back2.restorePolicyState(state));
+        check("...the contribution", back2.getContributionRate(), TaxPolicy.MAX_CONTRIBUTION);
+        check("...and the pension", back2.getPensionReplacement(), .60);
         check("and never negative when contributions overshoot",
                 SocialSecurity.shortfall(100_000, 1), 0);
 

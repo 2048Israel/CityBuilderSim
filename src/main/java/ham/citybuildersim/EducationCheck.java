@@ -427,9 +427,108 @@ public class EducationCheck {
         assertTrue("it never pays for itself, which is the point",
                 le.getNetCost() > 0);
 
+        /* ============ 11. THE UNSKILLED BAND IS A REPORT CARD ============
+
+           The other half of the 2026-09-07 migration change, and the half that
+           belongs here rather than in LabourCheck. Nobody moves to this city
+           without a high school diploma - the world has universal high school
+           (WageBand.arrivalCeiling). So the only adults in the NONE band are
+           the ones this city failed to put through school: children who aged
+           out of the teen band while the high schools were full or missing.
+
+           Which makes the unskilled share a direct read on the schools, and
+           this asserts exactly that: the same city, same jobs, same everything,
+           schooled and unschooled.
+           ================================================================= */
+        System.out.println("\n--- the unskilled band is a report card on the schools ---");
+
+        Game[] pair = new Game[2];
+        quietly(() -> {
+            pair[0] = city(GameFiles.scratch("educheck-none-a"));
+            pair[0].simulateMonths(300);
+            pair[1] = city(GameFiles.scratch("educheck-none-b"));
+            schools(pair[1]);
+            pair[1].simulateMonths(300);
+        });
+        Game unschooled = pair[0], schooled = pair[1];
+
+        double bareNone = share(unschooled, WageBand.NONE);
+        double taughtNone = share(schooled, WageBand.NONE);
+        System.out.printf("   no diploma: %.1f%% of the workforce with no schools, %.1f%% with them"
+                + "  (basic coverage %.0f%% vs %.0f%%)%n",
+                bareNone * 100, taughtNone * 100,
+                unschooled.getEducation().basicCoverage() * 100,
+                schooled.getEducation().basicCoverage() * 100);
+
+        assertTrue("fixture: the unschooled city really has no basic coverage",
+                unschooled.getEducation().basicCoverage() < .05);
+        assertTrue("fixture: the schooled one really has some",
+                schooled.getEducation().basicCoverage() > .5);
+        assertTrue("a city with no schools makes its own unskilled adults",
+                bareNone > .25);
+        assertTrue("...and schools are what stop it",
+                taughtNone < bareNone * .6);
+        assertTrue("nobody arrived unskilled - not one, in either city",
+                unschooled.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()] == 0
+                        && schooled.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()] == 0);
+
+        /* ============ 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED ============
+
+           Jerus, 2026-09-07: "demand isn't just those who don't have a diploma
+           but also those left over from above tiers." Right, and it was half
+           true: LabourMarket had always priced a band's tightness against
+           supplyByBand(), cascade included, but Migration's opportunity term
+           read the band's OWN workers - so a city whose colleges had flooded
+           the diploma jobs with graduates showed an incoming diploma-holder a
+           wide-open market, because the people already holding those jobs were
+           filed one band up. The price said full and the opportunity said
+           empty, out of the same city in the same month.
+
+           The schooled fixture is exactly that city, so it can say so.
+           ==================================================================== */
+        System.out.println("\n--- the queue for a job includes the overqualified ---");
+
+        double[] queue = schooled.getPopulationManager().supplyByBand();
+        double[] ownHeads = schooled.getPopulationManager().workforceByBand();
+        double[] open = schooled.getPopulationManager().staffablePostsByBand();
+        double[] chance = schooled.getMigration().getLastOpportunity();
+        int dip = WageBand.DIPLOMA.ordinal();
+
+        System.out.printf("   diploma jobs %,.0f - %,.0f diploma-holders, but %,.0f in the queue"
+                + " once the graduates come down.  opportunity %.2f%n",
+                open[dip], ownHeads[dip], queue[dip], chance[dip]);
+
+        assertTrue("fixture: graduates really have come down into diploma work",
+                queue[dip] > ownHeads[dip] * 1.2);
+        assertTrue("fixture: on its own workers alone the market would look open",
+                open[dip] > ownHeads[dip]);
+        assertTrue("...and it is not: the queue is what counts",
+                chance[dip] < Migration.opportunity(open[dip], ownHeads[dip]) - .05);
+        /*
+         * Compared by which of the two it is NEARER, not by equality. The
+         * opportunity was struck mid-month, before this month's arrivals and
+         * job update landed, so the end-of-month arrays cannot reproduce it
+         * exactly - a flow cannot be read off the state a month ended in, and
+         * an equality here would be asserting that it can.
+         */
+        double fromQueue = Migration.opportunity(open[dip], queue[dip]);
+        double fromOwn   = Migration.opportunity(open[dip], ownHeads[dip]);
+        assertTrue("the opportunity read is the queue's, not the band's own",
+                Math.abs(chance[dip] - fromQueue) < Math.abs(chance[dip] - fromOwn));
+        assertTrue("nobody is ever written off entirely - the floor holds",
+                Migration.opportunity(0, 1_000_000) == Migration.OPPORTUNITY_FLOOR);
+
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** A band's share of the workforce. */
+    static double share(Game g, WageBand band) {
+        double[] heads = g.getPopulationManager().workforceByBand();
+        double total = 0;
+        for (double h : heads) total += h;
+        return total > 0 ? heads[band.ordinal()] / total : 0;
     }
 
     static void cleanUp(Path root) {

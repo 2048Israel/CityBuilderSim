@@ -369,7 +369,18 @@ public class CreditCheck {
         city.buildStack(template(city, "Convenience Store"), 5, false);
         city.buildStack(template(city, "Textile Mill"), 2, false);
         city.buildStack(template(city, "Construction Depot"), 4, false);
-        city.buildStack(template(city, "Coal Power Plant"), 1, false);
+        /*
+         * And a bank, because this section is about the CURVE.
+         *
+         * The rate a borrower is quoted is the curve plus whatever the bank's
+         * strain adds, and a city with no branches has no capacity and sits at
+         * the full premium - which pushes every quote here through the ceiling
+         * and turns onCurve() below into a permanent failure. The premium is
+         * real and is tested elsewhere; what is being measured here is what the
+         * city's own debt load does to its price, so the bank is built and left
+         * unstrained.
+         */
+        city.buildStack(template(city, "Commercial Bank"), 1, false);
         city.simulateMonths(60);
 
         System.out.printf("   a city of %d at month %d: GDP $%,.0fk/mo, tax $%,.0fk/mo%n",
@@ -584,13 +595,28 @@ public class CreditCheck {
         ledger.restructure(sector);
         assertTrue("fixture: retail is under a borrowing ban", ledger.isBorrowingBlocked(sector));
 
-        // Enough cash that the advisor wants to build, not enough to pay for it.
-        econ.setSectorCash(sector, 1_000);
+        /*
+         * BROKE, and held broke, which is what the fixture is FOR.
+         *
+         * This was $1,000 and passed by luck: the advisor wanted a Convenience
+         * Store, which costs $120, so a "broke" retailer could pay cash and the
+         * ban never came up - the refusal that got printed was whatever branch
+         * fired next, and on 2026-09-07 that became "coverage ahead of demand"
+         * and the assertion failed. A fixture has to CAUSE the condition under
+         * test, not stand next to it: retail is now poorer than the cheapest
+         * thing it could want, every month, so the only way it builds is credit
+         * and the only reason it cannot is the ban.
+         */
         int loansBefore = ledger.getLoanCount(sector);
         double principalBefore = ledger.getPrincipal(sector);
         int shopsBefore = banned.getBuildingManager().getTotalStoreCoverage();
 
-        quietly(() -> banned.simulateMonths(3));
+        quietly(() -> {
+            for (int pass = 0; pass < 3; pass++) {
+                econ.setSectorCash(sector, 10);
+                banned.simulateMonths(1);
+            }
+        });
 
         System.out.println("   retail's advisor says: " + banned.getLastInvestment(sector));
         // Fewer loans is fine - the written-down ones mature and settle. More

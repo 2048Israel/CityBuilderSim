@@ -168,11 +168,16 @@ public class InvestCheck {
         System.out.println("\n--- orders size to the gap, but stay deliverable ---");
 
         /*
-         * 2,500 unhoused against houses of 4 -> 625 wanted, and the cap is
-         * twelve months of the city's whole output divided by what a house
-         * costs to build. Derived from the template for the same reason as the
-         * lead time above.
+         * The gap in people, divided by what a house holds, and capped at twelve
+         * months of the city's whole output.
+         *
+         * DERIVED FROM THE TEMPLATE, not written down. This said "houses of 4 ->
+         * 625 wanted" and asserted 625, so the day the House grew to six it
+         * failed on a fixture that was still correct - the same restated-formula
+         * trap PopulationCheck and InfrastructureCheck have both been caught by.
+         * The house's capacity is the model's; the arithmetic here is the test's.
          */
+        int wantedForGap = (int) Math.ceil(2500.0 / house.getCapacity());
         int cappedAt100 = (int) (12 * 100 / housePoints);
         d = flat.planRealEstate(2000, 2000, .35, 100, 0);
         assertTrue("ordered more than one", d.quantity > 1);
@@ -182,13 +187,16 @@ public class InvestCheck {
         // gap itself binds, which at 625 wanted it now does.
         d = flat.planRealEstate(2000, 2000, .35, 1000, 0);
         check("more builders, bigger order",
-                d.quantity, Math.min(625, (int) (12 * 1000 / housePoints)));
+                d.quantity, Math.min(wantedForGap, (int) (12 * 1000 / housePoints)));
 
-        // A small gap orders small, not the cap. 1,100 jobs carries 2,475 people
-        // against 2,200 homes: 275 unhoused, 69 houses, well under the 400 cap.
+        // A small gap orders small, not the cap: 1,100 jobs carries 2,475 people
+        // against 2,200 homes, so 275 unhoused - well under the 400-house cap
+        // however big a house is.
         d = flat.planRealEstate(1100, 2200, .35, 1000, 0);
         assertTrue("small gap still builds", d.build);
-        check("small gap -> small order", d.quantity, 69);
+        check("small gap -> small order", d.quantity,
+                (int) Math.ceil(275.0 / house.getCapacity()));
+        assertTrue("...and well under the cap", d.quantity < 12 * 1000 / housePoints);
 
         // Just inside the headroom is not a shortage worth acting on.
         d = flat.planRealEstate(1000, 2200, .35, 1000, 0);

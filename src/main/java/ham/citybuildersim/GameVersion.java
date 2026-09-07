@@ -220,7 +220,7 @@ public final class GameVersion {
      *     the save was made. The old ledger and flow shapes are read with the
      *     new fields at zero.
      */
-    public static final int SAVE_FORMAT = 18;
+    public static final int SAVE_FORMAT = 19;
 
     public static final String NAME = "CityBuilderSim";
 

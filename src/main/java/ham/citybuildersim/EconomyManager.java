@@ -44,6 +44,20 @@ public class EconomyManager {
     /** Income tax on the mills. Folded into the business-tax line on the reports. */
     private double totalHeavyIndustryTax;
     private double totalBusinessTax;
+
+    /**
+     * Last month's profit tax from the bank, already collected.
+     *
+     * Assigned by Game when the bank is charged, and READ BACK here rather than
+     * recomputed - the same rule property tax and sales tax follow, and for the
+     * same reason: the city must collect exactly the figure the business paid.
+     * Recomputing it from a rate and a profit that have both moved since is how
+     * the two ends stop agreeing.
+     */
+    private double totalBankTax;
+
+    public void setBankTax(double amount) { this.totalBankTax = Math.max(0, amount); }
+    public double getBankTax()            { return totalBankTax; }
     private double totalWageTax;
     private int households;
     private double totalIncome = 0;
@@ -118,7 +132,7 @@ public class EconomyManager {
     }
     public void updateCommercial(){
         commercialHandler.updateJobFillRate(fillRate);
-        commercialHandler.updateStoreWages(storeWages, storeJobs);
+        commercialHandler.updateStoreWages(storeWages, storeJobs, bankJobs);
         commercialHandler.setPopulation(population);
         commercialHandler.setStoreCoverage(buildingManager.getTotalStoreCoverage());
         commercialHandler.setStoreCapacity(buildingManager.getTotalStoreCapacity());
@@ -953,11 +967,12 @@ public class EconomyManager {
          * bill, though nothing ring-fences it, which is what pay-as-you-go
          * means.
          */
-        totalContributions = SocialSecurity.contributionsOn(totalWage);
+        totalContributions = SocialSecurity.contributionsOn(totalWage,
+                taxPolicy.getContributionRate());
 
         tax = totalBusinessTax + totalIndustrialTax + totalWageTax + salesTax
                 + totalHeavyIndustryTax + totalPropertyTax + totalContributions
-                + healthcareFees + educationFees;
+                + healthcareFees + educationFees + totalBankTax;
         return tax;
     }
 
@@ -1031,7 +1046,9 @@ public class EconomyManager {
     public void setSeniors(double seniors)   { this.seniors = Math.max(0, seniors); }
     public double getSeniors()               { return seniors; }
     public double getContributions()         { return totalContributions; }
-    public double getPensionsPaid()          { return SocialSecurity.pensionsFor(seniors); }
+    public double getPensionsPaid() {
+        return SocialSecurity.pensionsFor(seniors, taxPolicy.getPensionReplacement());
+    }
     public double getPensionShortfall()      {
         return SocialSecurity.shortfall(totalWage, seniors);
     }
@@ -1704,14 +1721,32 @@ public class EconomyManager {
      * standing still, which is the exact trap refreshEconPrices() exists to
      * avoid. This touches the government block and nothing else.
      */
+    /**
+     * @param interestPaid this period's city interest, PASSED IN rather than
+     *        read off the field.
+     *
+     *        FOUND BY JERUS, 2026-09-07: "the pie chart works but it doesn't
+     *        show the interest portion." It never could. On the live path this
+     *        method runs a few lines after finalEconUpdate(), which zeroes the
+     *        field - so the government block was re-struck every month with an
+     *        interest expense of zero, and budgetPie() drops a zero slice.
+     *
+     *        Note which way round the failure went: the LOAD path was the
+     *        correct one, because rebuildSimulationState() restores the accrual
+     *        and never calls finalEconUpdate(). A reloaded city showed its
+     *        interest and a played one did not. The usual load-path-parity bug
+     *        wearing its coat inside out, and the fix is the same either way -
+     *        a flow gets passed to whoever needs it, not read back off a field
+     *        somebody else is entitled to clear.
+     */
     public void refreshGovernmentAccounts(double landSales, double capitalSpending,
-                                          double landPurchases) {
+                                          double landPurchases, double interestPaid) {
         getTaxIncome();   // assigns the tax fields and the contributions
         nationalAccounts.updateGovernment(
                 totalBusinessTax + totalHeavyIndustryTax,
                 totalIndustrialTax, salesTax, totalWageTax,
                 utilityIncome, landSales, getTotalPropertyTax(),
-                interest, capitalSpending, landPurchases,
+                interestPaid, capitalSpending, landPurchases,
                 totalContributions, getPensionsPaid(),
                 healthcareFees, healthcareBill,
                 educationFees, educationBill);
@@ -1766,10 +1801,21 @@ public class EconomyManager {
         industrialHandler.setBaseFoodProduction(buildingManager.getFoodProduction());
     }
     public void updateStoreWages(double[] wages, int[] jobs) {
+        updateStoreWages(wages, jobs, null);
+    }
+
+    /** The wage RATE per job type, as the commercial sector last saw it. */
+    public double[] getStoreWageRates() { return storeWages; }
+
+    /** @param bankJobs the commercial jobs that belong to the bank - see CommercialHandler. */
+    public void updateStoreWages(double[] wages, int[] jobs, int[] bankJobs) {
 
         System.arraycopy(wages, 0, this.storeWages, 0, wages.length);
         System.arraycopy(jobs, 0, this.storeJobs, 0, wages.length);
+        this.bankJobs = bankJobs;
     }
+
+    private int[] bankJobs;
     public void updateIndustrialWages(double[] wages) {
 
         for (int i = 0; i < wages.length; i++) {

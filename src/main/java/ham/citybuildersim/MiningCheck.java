@@ -354,7 +354,17 @@ public class MiningCheck {
              */
             land.restoreIron(withMine ? 1 : 0, 20_000_000);
 
-            buildings.addStack(template(game, "House"), 500, true);
+            /*
+             * ...and enough of them to staff a bank as well.
+             *
+             * A Commercial Bank is 278 jobs, and it goes up in this city for the
+             * credit-pricing reason below. At 500 houses those jobs came out of
+             * the foundry's shift: a mill short of workers pays its whole
+             * payroll and sells a fraction of its output, which moved the margin
+             * being measured by more than a point - the same class of distortion
+             * as the roads and the power below, and fixed the same way.
+             */
+            buildings.addStack(template(game, "House"), 700, true);
             buildings.addStack(template(game, "Convenience Store"), 8, true);
             buildings.addStack(template(game, "Small Grocery Store"), 2, true);
             buildings.addStack(template(game, "Construction Depot"), 4, true);
@@ -393,6 +403,18 @@ public class MiningCheck {
              */
             buildings.addStack(template(game, "Walk-in Clinic"), 2, true);
             buildings.addStack(template(game, "Memorial Cemetery"), 1, true);
+
+            /*
+             * A bank, for the same reason as the roads and the clinic.
+             *
+             * Business credit is priced off the bank's strain now, and a city
+             * with no branches has no lending capacity and pays the full
+             * eighteen-point premium on every dollar it borrows - which is the
+             * intended answer to "no bank" and has nothing whatever to do with
+             * the price of ore. Left out, this fixture measured the cost of
+             * having no banking system and reported it as the foundry's margin.
+             */
+            buildings.addStack(template(game, "Commercial Bank"), 1, true);
 
             buildings.addStack(template(game, "Steel Foundry"), 1, true);
 
