@@ -40,6 +40,24 @@ public class IndustrialHandler {
     private int foodCapacity =0;
     private int foodInventory = 0;
     private double foodDemand = 0;
+
+    /**
+     * What the stores actually PAID for last month's local purchase, in
+     * dollars - the other side of CommercialHandler.buyInventory().
+     *
+     * The mills used to book local revenue as units x today's price, a month
+     * after the shops had paid units x last month's price for them. Whenever
+     * the price moved between the two, the difference was money from nowhere
+     * or money into nothing, and MoneyAudit found it on the first run. The
+     * shops' cheque is the fact; the mills book the cheque.
+     *
+     * NaN means "not known" - a save from before this existed - and falls
+     * back to the old arithmetic for that one month.
+     */
+    private double localSalesValue = Double.NaN;
+
+    public void setLocalSalesValue(double dollars) { this.localSalesValue = dollars; }
+    public double getLocalSalesValue()             { return localSalesValue; }
     private double []industrialWages = new double[11];
     private double foodPrice = .12;
     private double cash;
@@ -635,13 +653,11 @@ public class IndustrialHandler {
     /**
      * Net income after the business tax the city charges on it.
      *
-     * NOTE: this is NOT what gets banked. calculateIndustrialResults() does
-     * `cash += rNetIncome`, i.e. the PRE-tax figure, while EconomyManager
-     * separately collects rNetIncome * taxRate as government revenue. The same
-     * money is therefore counted twice - the business keeps all of its profit
-     * and the city taxes it anyway. Surfacing that is half the point of putting
-     * a real income statement on the screen; it is shown but deliberately not
-     * fixed here, because deducting it changes sector balance.
+     * This IS what gets banked, since 2026-09-06. It was not: the sector kept
+     * its whole pre-tax profit while the city collected the tax on it, and the
+     * comment that used to sit here said so and left it, "because deducting it
+     * changes sector balance". It does, and MoneyAudit made the alternative
+     * measurable: the tax was the largest single source of money from nowhere.
      */
     public double getReportNetIncomeAfterTax() {
         return rNetIncome - rTaxIncome;
@@ -673,7 +689,8 @@ public class IndustrialHandler {
      */
     public void calculateIndustrialResults() {
         computeMonthlyReport();
-        cash += rNetIncome;
+        // Net of the profit tax - see CommercialHandler.calculateCommercialResults().
+        cash += rNetIncome - rTaxIncome;
     }
 
     /**
@@ -780,6 +797,12 @@ public class IndustrialHandler {
         rUnitsSold = productsSold;
         rAverageSellPrice = averageSellPrice;
         rGrossRevenue = productsSold * averageSellPrice;
+
+        // The stores' cheque, not units x today's price - see localSalesValue.
+        if (!Double.isNaN(localSalesValue) && productsSoldCopy > 0) {
+            rGrossRevenue = localSalesValue + foodExportRevenue;
+            rAverageSellPrice = productsSold > 0 ? rGrossRevenue / productsSold : 0;
+        }
 
         rElectricityCost = electricity * bEnergyRatio * pricePerWatt;
         rWaterCost = water * bWaterRatio * pricePerWaterUnit;

@@ -114,10 +114,28 @@ public class ConstructionHandler {
         calculateExpenses();
         netIncome = revenue - expenses - interestExpense - propertyTaxExpense;
         cash += netIncome;
+
+        // What this month's banking was made of, for MoneyAudit. The live
+        // fields are recomputed later in the same month (updateServices() runs
+        // calculateExpenses() again with next month's inputs), so anything
+        // that wants to know what was actually charged reads these.
+        rRevenue = revenue;
+        rWageExpense = wageExp;
+        rMaterialsExpense = materialsExp;
+        rInterestExpense = interestExpense;
+        rPropertyTaxExpense = propertyTaxExpense;
+
         revenue = 0;
         subsidyThisMonth = 0;
         materialsConsumed = 0;
     }
+
+    private double rRevenue, rWageExpense, rMaterialsExpense, rInterestExpense, rPropertyTaxExpense;
+    public double getReportRevenue()            { return rRevenue; }
+    public double getReportWageExpense()        { return rWageExpense; }
+    public double getReportMaterialsExpense()   { return rMaterialsExpense; }
+    public double getReportInterestExpense()    { return rInterestExpense; }
+    public double getReportPropertyTaxExpense() { return rPropertyTaxExpense; }
 
     /**
      * Take a build order onto the books: cash received now, revenue recognised

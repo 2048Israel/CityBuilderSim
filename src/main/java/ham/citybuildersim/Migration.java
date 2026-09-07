@@ -616,14 +616,9 @@ public class Migration {
         for (WageBand band : WageBand.values()) {
             int b = band.ordinal();
 
-            double premium = 1;
-            if (market != null) {
-                // Every job in a band shares a multiplier, so any of them reads
-                // the band's premium - see LabourMarket.advanceMonth.
-                for (JobType job : JobType.values()) {
-                    if (WageBand.of(job) == band) { premium = market.premium(job); break; }
-                }
-            }
+            // The band's own premium, off an ungated job - a doctor shortage is
+            // priced on doctors (below), not on every graduate.
+            double premium = market == null ? 1 : market.bandPremium(band);
 
             /*
              * The chance of working at your own level if you come. A band with

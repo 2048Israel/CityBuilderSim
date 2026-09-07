@@ -201,7 +201,26 @@ public final class GameVersion {
      *     That is a real change to a loaded city and it is the right one: those
      *     doctors were the bug.
      */
-    public static final int SAVE_FORMAT = 17;
+    /* ---------------------------------------------------------------------
+     * 18  Education carries its pipeline (2026-09-06). Until now `Education`
+     *     handed a school's steady-state throughput out the month the school
+     *     opened; there were no students in flight, so there was nothing to
+     *     save. Now every adult course keeps a queue of cohorts by months
+     *     remaining, and the students are out of the labour supply until they
+     *     graduate. Both facts live in the education state array, which grew
+     *     by the sum of the adult course lengths.
+     *
+     *     Also carried from this format: the dollars the stores paid the mills
+     *     for local food (the mills book that cheque rather than units x
+     *     today's price), and the sales-tax ledger's import charges.
+     *
+     *     Downward: a format-17 city loads with nobody in any course. Its
+     *     schools fill from empty and graduate nobody for a course length,
+     *     which is what they would have done had they been built the month
+     *     the save was made. The old ledger and flow shapes are read with the
+     *     new fields at zero.
+     */
+    public static final int SAVE_FORMAT = 18;
 
     public static final String NAME = "CityBuilderSim";
 

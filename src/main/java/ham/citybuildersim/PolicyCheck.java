@@ -177,9 +177,28 @@ public class PolicyCheck {
         importing.recordSales(PolicySector.RETAIL, 200);      // resold at cost
 
         importing.settle(flat);
-        check("an importer reselling at cost remits nothing",
-                importing.getNet(PolicySector.RETAIL), 0);
-        assertTrue("...so importing carries no advantage over buying locally", true);
+        /*
+         * The import is charged on the way in (20) and credited (20), and the
+         * resale is taxed like any sale (20): net 20. That is exactly what the
+         * LOCAL chain collects on the same goods - the supplier remits 20, the
+         * reseller credits it and remits 20 on its own sale - so importing
+         * carries no advantage over buying locally, which is the property the
+         * heading claims. Until 2026-09-06 the ledger recorded only the credit
+         * half of the import, the importer netted zero, and the charge it was
+         * meant to net against was a purchase markup paid to nobody.
+         */
+        check("an importer reselling at cost remits the tax on its sale",
+                importing.getNet(PolicySector.RETAIL), 20);
+
+        SalesTaxLedger local = new SalesTaxLedger();
+        local.recordSales(PolicySector.INDUSTRY, 200);                 // the supplier's sale
+        local.recordInputTax(PolicySector.RETAIL, 200 * .10);          // the reseller's credit
+        local.recordSales(PolicySector.RETAIL, 200);                   // resold at cost
+        double localChain = local.settle(flat);
+        check("...which is what the local chain remits on the same goods",
+                localChain, importing.getNet(PolicySector.RETAIL));
+        assertTrue("...so importing carries no advantage over buying locally",
+                Math.abs(localChain - importing.settle(flat)) < 1e-9);
 
         /* ============ 7. the subsidy floors a sector and stops the count ==== */
         /*

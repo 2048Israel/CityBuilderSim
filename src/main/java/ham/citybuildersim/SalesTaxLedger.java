@@ -57,6 +57,15 @@ public class SalesTaxLedger {
     private final int sectors = PolicySector.values().length;
 
     private final double[] taxableSales  = new double[sectors];
+    /**
+     * Tax charged on imports, at the buyer's rate. The comment on chargeImport()
+     * always said an import was "charged on the way in and credited"; until
+     * 2026-09-06 only the credit was ever recorded, so every import was a pure
+     * refund from the treasury - and the charge it was meant to net against
+     * was paid by retail as a purchase markup, to nobody. Both halves live in
+     * the ledger now.
+     */
+    private final double[] importTax     = new double[sectors];
     private final double[] zeroRated     = new double[sectors];
     private final double[] creditedInput = new double[sectors];
 
@@ -113,8 +122,8 @@ public class SalesTaxLedger {
     public double chargeImport(PolicySector sector, double landedCost, TaxPolicy policy) {
         if (sector == null || landedCost <= 0) return 0;
         double tax = landedCost * policy.effectiveSalesRate(sector);
-        taxableSales[sector.ordinal()] += 0;      // an import is not a sale
-        creditedInput[sector.ordinal()] += tax;   // ...but the tax on it is creditable
+        importTax[sector.ordinal()]     += tax;   // charged on the way in...
+        creditedInput[sector.ordinal()] += tax;   // ...and creditable, so it nets to zero
         return tax;
     }
 
@@ -165,7 +174,7 @@ public class SalesTaxLedger {
 
             // Zero-rated sales are charged nothing. They are still SALES, so
             // they do not reduce the credit behind them.
-            payable[i] = taxableSales[i] * policy.effectiveSalesRate(s);
+            payable[i] = taxableSales[i] * policy.effectiveSalesRate(s) + importTax[i];
             credit[i]  = creditedInput[i];
 
             totalRemitted += payable[i] - credit[i];
@@ -195,6 +204,7 @@ public class SalesTaxLedger {
      */
     public void startMonth() {
         java.util.Arrays.fill(taxableSales, 0);
+        java.util.Arrays.fill(importTax, 0);
         java.util.Arrays.fill(zeroRated, 0);
         java.util.Arrays.fill(creditedInput, 0);
         java.util.Arrays.fill(payable, 0);
@@ -205,7 +215,7 @@ public class SalesTaxLedger {
     /* ------------------------- save and restore ------------------------- */
 
     public double[] getLedgerState() {
-        double[] state = new double[1 + sectors * 5];
+        double[] state = new double[1 + sectors * 6];
         int i = 0;
         state[i++] = totalRemitted;
         for (int s = 0; s < sectors; s++) state[i++] = taxableSales[s];
@@ -213,13 +223,21 @@ public class SalesTaxLedger {
         for (int s = 0; s < sectors; s++) state[i++] = creditedInput[s];
         for (int s = 0; s < sectors; s++) state[i++] = payable[s];
         for (int s = 0; s < sectors; s++) state[i++] = credit[s];
+        for (int s = 0; s < sectors; s++) state[i++] = importTax[s];
         return state;
     }
 
-    /** @return false if the array is not this build's shape; nothing is changed */
+    /**
+     * @return false if the array is not this build's shape; nothing is changed.
+     * The shape from before importTax existed (format 17 and earlier) is
+     * accepted with the import charges read as zero - that month's ledger was
+     * struck without them, so that IS what it collected.
+     */
     public boolean restoreLedgerState(double[] state) {
 
-        if (state == null || state.length != 1 + sectors * 5) return false;
+        if (state == null) return false;
+        boolean withImports = state.length == 1 + sectors * 6;
+        if (!withImports && state.length != 1 + sectors * 5) return false;
 
         int i = 0;
         totalRemitted = state[i++];
@@ -228,6 +246,10 @@ public class SalesTaxLedger {
         for (int s = 0; s < sectors; s++) creditedInput[s] = state[i++];
         for (int s = 0; s < sectors; s++) payable[s]       = state[i++];
         for (int s = 0; s < sectors; s++) credit[s]        = state[i++];
+        java.util.Arrays.fill(importTax, 0);
+        if (withImports) {
+            for (int s = 0; s < sectors; s++) importTax[s] = state[i++];
+        }
         return true;
     }
 

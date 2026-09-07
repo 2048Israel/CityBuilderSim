@@ -3154,35 +3154,32 @@ public class UserInterface extends Application {
                 return;
             }
 
-            double sticker = template.getCashCost() * n;
-            double total   = game.calculateTotalCost(template, n);
-            double stock   = game.getBuildingManager().getConstructionMaterials();
-            double price   = game.getBuildingManager().getConstructionMaterialPrice();
-            double needed  = template.getConstructionMaterials() * (double) n;
-            double imported = Math.max(needed - stock, 0);
+            // One quote, from the method that charges. Nothing here is
+            // arithmetic; it is a printout of Game.quoteBuild().
+            Game.BuildQuote q = game.quoteBuild(template, n);
+            double total = q.total;
 
-            quote.getChildren().add(quoteLine("Cash cost", "$" + formatter.format(sticker)));
-            if (imported > 0) {
+            quote.getChildren().add(quoteLine("Cash cost", "$" + formatter.format(q.sticker)));
+            if (q.materialsImported > 0) {
                 quote.getChildren().add(quoteLine(
                         String.format("Materials to import  %s @ $%.2f",
-                                formatter.format(imported), price),
-                        "$" + formatter.format(imported * price)));
+                                formatter.format(q.materialsImported), q.materialsPrice),
+                        "$" + formatter.format(q.importCost)));
             }
             quote.getChildren().add(quoteRule());
             quote.getChildren().add(quoteLine("TOTAL", "$" + formatter.format(total)));
             quote.getChildren().add(quoteLine("Cash on hand", "$" + formatter.format(game.getCash())));
 
-            double land = template.getLandSqFt() * n;
-            double free = game.getLandManager().getAvailableSqFt();
+            double land = q.landNeeded;
+            double free = q.landFree;
             quote.getChildren().add(quoteLine("Land needed",
                     formatter.format(land) + " of " + formatter.format(free) + " free"));
 
             // Months, because a big order is a commitment of the city's whole
             // building capacity and nothing else on screen says so. An Elevated
             // Highway is 10,000 points against an output in the hundreds.
-            double output = game.getConstructionOutput();
-            if (output > 0) {
-                double months = template.getConstructionPoints() * (double) n / output;
+            if (!Double.isNaN(q.months)) {
+                double months = q.months;
                 quote.getChildren().add(quoteLine("Build time",
                         String.format("about %s month%s at today's output",
                                 months < 1 ? "half a" : formatter.format(Math.round(months)),
@@ -3386,8 +3383,11 @@ public class UserInterface extends Application {
     double totalCost = game.calculateTotalCost(selected, quantity);
     double gap = totalCost - game.getCash();
 
-    // Matching what the automatic path books when cash runs out.
-    DebtQuote quote = game.quoteTBill(gap, 3, 1000.0);
+    // Matching what the automatic path books when cash runs out - the SAME
+    // duration, not just the same method. This quoted a 3-month bill while the
+    // button below booked the 6-month emergency note, and quoteTBill()
+    // discounts by duration, so the price on screen was not the price paid.
+    DebtQuote quote = game.quoteTBill(gap, Game.EMERGENCY_NOTE_MONTHS, 1000.0);
 
     Label warning = new Label("INSUFFICIENT FUNDS");
     warning.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
@@ -3795,8 +3795,10 @@ public class UserInterface extends Application {
         if (mh.getCapacityTonnes() <= 0) {
             column.getChildren().add(reportSection("NO MINES YET",
                     "A mine is the biggest employer in the game - 376 jobs, more",
-                    "than a food processing plant - and population here is capped",
-                    "at jobs times 2.25. One mine is worth about 850 residents to",
+                    "than a food processing plant - and population here follows",
+                    String.format("jobs times %.2f. One mine is worth about %,d residents to",
+                            game.getMigration().getLastResidentsPerJob(),
+                            Math.round(376 * game.getMigration().getLastResidentsPerJob())),
                     "a city that can house them.",
                     "",
                     "It pays on its own, exporting ore. It pays considerably",
@@ -3935,17 +3937,19 @@ public class UserInterface extends Application {
         VBox worth = reportSection("WHAT THE CITY GETS");
 
         // The honest accounting: the mill's own profit is nearly nothing, and
-        // the payroll it pays out is the actual point of the building.
-        double wageTax = hi.getReportPayroll() * game.getEconomyManager().getTaxRate();
+        // the payroll it pays out is the actual point of the building. The tax
+        // is asked of the policy (it is banded) and the residents of the
+        // migration model (it is not 2.25 any more, and has not been since the
+        // workforce became the adult band).
+        double wageTax = game.getEconomyManager().wageTaxOnPayroll(hi.getStaffedPayrollPerType());
+        double residentsPerJob = game.getMigration().getLastResidentsPerJob();
 
         worth.getChildren().add(monoLabel(String.format("%-32s$%s",
                 "Wages paid into the city:", formatter.format(hi.getReportPayroll()))));
         worth.getChildren().add(monoLabel(String.format("%-32s$%s",
-                String.format("Wage tax on them @ %.0f%%:",
-                        game.getEconomyManager().getTaxRate() * 100),
-                formatter.format(wageTax))));
+                "Wage tax on them (banded):", formatter.format(wageTax))));
         worth.getChildren().add(monoLabel(String.format("%-32s%,d",
-                "Residents supported:", (int) (hi.getTotalJobs() * 2.25))));
+                "Residents supported:", (int) (hi.getTotalJobs() * residentsPerJob))));
         worth.getChildren().add(monoLabel(
                 "  those wages are spent in the shops and taxed again"));
         column.getChildren().add(worth);
@@ -4489,10 +4493,9 @@ public class UserInterface extends Application {
 
         for (WageBand wb : WageBand.values()) {
             int b = wb.ordinal();
-            double premium = 1;
-            for (JobType job : JobType.values()) {
-                if (WageBand.of(job) == wb) { premium = market.premium(job); break; }
-            }
+            // Off an ungated job: the first university job in enum order is
+            // the doctor, whose own licence premium is not the band's.
+            double premium = market.bandPremium(wb);
             Label row = monoLabel(String.format("%-14s %,9.0f %,9.0f %,9.0f %8.2f %8.2fx",
                     wb.label(), ownByBand[b], postsByBand[b], supplyByBand[b],
                     market.getTightness(wb), premium));
@@ -4521,8 +4524,8 @@ public class UserInterface extends Application {
         }
 
         if (anyGated) {
-            Label gatedHead = monoLabel(String.format("%n%-22s %9s %9s   %s",
-                    "profession", "licensed", "posts", "school"));
+            Label gatedHead = monoLabel(String.format("%n%-22s %9s %9s %8s   %s",
+                    "profession", "licensed", "posts", "premium", "school"));
             gatedHead.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
                     + " -fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
             labour.getChildren().add(gatedHead);
@@ -4537,8 +4540,10 @@ public class UserInterface extends Application {
                 boolean built = game.getBuildingManager()
                         .getBuiltEducationPlaces()[type.ordinal()] > 0;
 
-                Label row = monoLabel(String.format("%-22s %,9.0f %,9d   %s",
-                        jobLabel(job), held, posts,
+                // The licence premium: what the shortage is doing to this
+                // one wage, over and above its band. 1.00x is "no shortage".
+                Label row = monoLabel(String.format("%-22s %,9.0f %,9d %7.2fx   %s",
+                        jobLabel(job), held, posts, market.getLicenceMultiple(job),
                         built ? "yes" : "NONE - imports only"));
                 row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
                         + " -fx-text-fill: " + (held < posts ? "#ff6b6b" : "#c3ccd3") + ";");
@@ -5603,13 +5608,9 @@ public class UserInterface extends Application {
                 String.format("%-32s-$%s", String.format("Business Tax @ %.0f%%:", ih.getReportTaxRate() * 100),
                         formatter.format(tax))));
         addNetIncomeLine(bottomLine, "NET INCOME (AFTER TAX):", netAfterTax);
-
-        // Worth surfacing rather than quietly presenting a tidy statement: the
-        // cash reserve is credited with the PRE-tax figure while the city also
-        // collects the tax, so the same money is counted twice.
-        Label taxNote = monoLabel("Note: cash is credited with the pre-tax figure.");
-        taxNote.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #ff6b6b;");
-        bottomLine.getChildren().add(taxNote);
+        // The after-tax line IS what the sector banks now (2026-09-06). The red
+        // note that used to sit here, "cash is credited with the pre-tax
+        // figure", described the leak MoneyAudit closed.
         column.getChildren().add(bottomLine);
 
         /* -------------------------- BALANCE SHEET --------------------------- */
@@ -7015,7 +7016,7 @@ public class UserInterface extends Application {
 
         int output = game.getConstructionOutput();
         int siteCount = buildingManager.getUnderConstruction();
-        double perSite = (siteCount > 0) ? (double) output / siteCount : output;
+        double perSite = buildingManager.outputPerSite(output);
 
         Label capacity = monoLabel("Output: " + formatter.format(output) + " pts/mo");
         capacity.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
@@ -7068,8 +7069,8 @@ public class UserInterface extends Application {
                         ? "stalled - gridlocked"
                         : "stalled - no workers";
             } else {
-                double monthsLeft = Math.ceil((remaining * (double) pointsEach - progress) / perSite);
-                eta = "~" + (int) monthsLeft + " mo";
+                double monthsLeft = buildingManager.monthsLeft(site, perSite);
+                eta = Double.isNaN(monthsLeft) ? "done" : "~" + (int) monthsLeft + " mo";
             }
 
             Label detail = monoLabel(remaining + " left / " + built + " built - " + eta);

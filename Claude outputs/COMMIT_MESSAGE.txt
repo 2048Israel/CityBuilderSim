@@ -1,0 +1,32 @@
+Money is conserved; education has a pipeline; licence premium; housekeeping
+
+Save format 17 -> 18.
+
+- MoneyAudit strikes pooled(after) - pooled(before) == inflows - outflows at
+  the bottom of every nextMonth(); LongPlaytest asserts it to the cent and
+  MoneyCheck (new) plays a prospering and a stressed city against it. Four
+  leaks closed: sectors bank net of profit tax (backlog 8, decided); the
+  producer remits its own VAT and imports are charged as well as credited;
+  the mills book the shops' cheque (carried in the save) instead of units x
+  today's price; the utility books what its customers were charged, and
+  mining charges power at the basis ratio.
+- Education keeps cohorts in flight per course; graduates leave the front
+  of the queue months() later; full-time students are out of the labour
+  supply (also on the load path). EducationCheck asserts the wait.
+- Gated jobs carry a licence premium (posts / licence holders) on top of
+  their band's; Migration and the People screen read the band premium off
+  an ungated job.
+- Skilled migration flows scaled by the adult share (children were being
+  booked as graduates); skilled retirements use the clinics' mortality.
+- Rent follows the live unskilled wage; the borrowing ban binds the
+  investment advisor; quick-debt quotes the 6-month note it books;
+  reports/graphs default off; ~520 lines of dead console UI and
+  MenuManager removed; every harness Game uses GameFiles.scratch()
+  (EducationCheck and LabourCheck were overwriting the real autosave);
+  the UI takes the build quote, banded wage tax, residents-per-job and
+  the construction ETA from Game; AllChecks runs all 28 harnesses.
+
+All 28 harnesses pass; LongPlaytest 4,002 months clean.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01WKteaP4GhGZyraXn5QiVuZ

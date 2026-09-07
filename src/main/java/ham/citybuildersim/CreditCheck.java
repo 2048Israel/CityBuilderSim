@@ -448,7 +448,7 @@ public class CreditCheck {
            ================================================================== */
         System.out.println("\n--- a note raises what it was asked to raise ---");
 
-        Game notes = new Game();
+        Game notes = new Game(GameFiles.scratch("creditcheck"));
         notes.getBuildingManager().initializeTemplates();
 
         int shortfalls = 0;
@@ -491,7 +491,7 @@ public class CreditCheck {
            ============================================================== */
         System.out.println("\n--- borrow for a road, and get the road ---");
 
-        Game roadCity = new Game();
+        Game roadCity = new Game(GameFiles.scratch("creditcheck"));
         roadCity.newGame();
         BuildingManager yard = roadCity.getBuildingManager();
 
@@ -552,6 +552,59 @@ public class CreditCheck {
                 roadCity.getCash() < cashBefore + gap);
         assertTrue("...and there is a receipt for it", roadCity.hasNewReceipt());
 
+        /* ============ 10. THE BAN IS ONE BAN ============
+
+           Found by reading, 2026-09-06. A sector written down in a restructure
+           is barred from shortfall loans for twelve months - and until today
+           could still borrow to EXPAND, because the investment advisor's
+           Investor.canBorrow() said yes to any positive amount. A sector that
+           cannot borrow to keep the lights on could borrow to build a mall.
+
+           The fixture: a city whose retail sector has a healthy appetite (jobs
+           and people, few shops), then that sector is bankrupted by hand and
+           restructured so the ban is live, with cash short of one store.
+           ================================================================ */
+        System.out.println("\n--- a borrowing ban also stops the investment advisor ---");
+
+        Game banned = new Game(GameFiles.scratch("creditcheck"));
+        banned.run();
+        banned.buildStack(template(banned, "House"), 300, false);
+        banned.buildStack(template(banned, "Textile Mill"), 3, false);
+        banned.buildStack(template(banned, "Construction Depot"), 4, false);
+        banned.buildStack(template(banned, "Coal Power Plant"), 1, false);
+        quietly(() -> banned.simulateMonths(36));
+
+        BusinessDebtManager ledger = banned.getEconomyManager().getBusinessDebtManager();
+        EconomyManager econ = banned.getEconomyManager();
+        String sector = BusinessDebtManager.RETAIL;
+
+        // Owe a lot against nothing, and let the restructure fire.
+        ledger.issueLoan(sector, 5_000_000, banned.getMonth());
+        ledger.setAssets(sector, -1);
+        ledger.restructure(sector);
+        assertTrue("fixture: retail is under a borrowing ban", ledger.isBorrowingBlocked(sector));
+
+        // Enough cash that the advisor wants to build, not enough to pay for it.
+        econ.setSectorCash(sector, 1_000);
+        int loansBefore = ledger.getLoanCount(sector);
+        double principalBefore = ledger.getPrincipal(sector);
+        int shopsBefore = banned.getBuildingManager().getTotalStoreCoverage();
+
+        quietly(() -> banned.simulateMonths(3));
+
+        System.out.println("   retail's advisor says: " + banned.getLastInvestment(sector));
+        // Fewer loans is fine - the written-down ones mature and settle. More
+        // is the bug.
+        assertTrue("a banned sector takes no new loan to expand",
+                ledger.getLoanCount(sector) <= loansBefore
+                        && ledger.getPrincipal(sector) <= principalBefore + 1e-6);
+        assertTrue("...and the refusal says why, in the ban's own words",
+                banned.getLastInvestment(sector).contains("borrowing ban"));
+        // Retiring idle shops is allowed (that is what a broke sector does);
+        // opening new ones on credit is not.
+        assertTrue("...and nothing was built on credit it did not have",
+                banned.getBuildingManager().getTotalStoreCoverage() <= shopsBefore);
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -573,6 +626,13 @@ public class CreditCheck {
         // band cannot quietly turn these assertions into "the cap equals the cap".
         DebtManager shape = new DebtManager();
         return rate > shape.floorRate() + 1e-4 && rate < shape.ceilingRate() - 1e-4;
+    }
+
+    /** Runs a stretch of the game without its per-month console output. */
+    static void quietly(Runnable work) {
+        java.io.PrintStream out = System.out;
+        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+        try { work.run(); } finally { System.setOut(out); }
     }
 
     static BuildingsTemplate template(Game game, String name) {

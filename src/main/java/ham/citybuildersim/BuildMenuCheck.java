@@ -39,7 +39,7 @@ public class BuildMenuCheck {
 
     public static void main(String[] args) {
 
-        Game game = new Game();
+        Game game = new Game(GameFiles.scratch("buildmenucheck"));
         UserInterface ui = new UserInterface(game);
         BuildingManager bm = game.getBuildingManager();
         // A raw Game holds no templates until something asks for them; the real

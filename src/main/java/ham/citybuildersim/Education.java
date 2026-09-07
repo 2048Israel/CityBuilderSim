@@ -185,6 +185,35 @@ public class Education {
      */
     private final double[] everGraduated = new double[WageBand.values().length];
 
+    /*
+     * THE PIPELINE (2026-09-06).
+     *
+     * Everybody part way through an adult course, by course and by months
+     * left: inFlight[type][k] is the number of students who graduate in k+1
+     * months. Until today there was no such thing - `taking` was computed
+     * from the seats and the willing pool and handed straight to the band
+     * flow, so a medical school licensed doctors THE MONTH IT OPENED and the
+     * "twenty-year loop" this class was built for existed only in its
+     * comments. The steady-state throughput was right, which is why
+     * EducationCheck passed; what was missing was the wait.
+     *
+     * This is a STOCK, and it is the second thing in this class a save has to
+     * carry: seven years of a medical student's life is not recoverable from
+     * a closing balance. A format-17 city loads with nobody in flight and
+     * the schools fill from empty, which is what they would have done had
+     * they been built the month the save was made.
+     */
+    private final double[][] inFlight = new double[EducationType.values().length][];
+
+    /** Adults currently studying full time, by the band they came FROM. Derived. */
+    private final double[] studying = new double[WageBand.values().length];
+
+    {
+        for (EducationType type : EducationType.values()) {
+            inFlight[type.ordinal()] = type.isAdult() ? new double[type.months()] : new double[0];
+        }
+    }
+
     /* ===================================================================
        THE MONTH
        =================================================================== */
@@ -201,6 +230,18 @@ public class Education {
     public void advanceMonth(double[] places, PopulationCohorts pyramid,
                              PopulationManager people, LabourMarket market,
                              double staffedPayroll, double schoolUpkeep) {
+        advanceMonth(places, pyramid, people, market, staffedPayroll, schoolUpkeep, 0);
+    }
+
+    /**
+     * @param attrition the share of adults who left the city or died this
+     *                  month, so the students in flight thin at the same rate
+     *                  as the workforce they came from
+     */
+    public void advanceMonth(double[] places, PopulationCohorts pyramid,
+                             PopulationManager people, LabourMarket market,
+                             double staffedPayroll, double schoolUpkeep,
+                             double attrition) {
 
         java.util.Arrays.fill(graduates, 0);
         java.util.Arrays.fill(licences, 0);
@@ -210,7 +251,33 @@ public class Education {
         payroll = Math.max(0, staffedPayroll);
         upkeep = Math.max(0, schoolUpkeep);
 
-        if (places == null || pyramid == null || people == null) return;
+        /*
+         * The pipeline moves before anything is measured: this month's
+         * graduates leave it, everyone else is a month closer, and a share of
+         * them died or moved away. Done even when there are no schools - a
+         * city can demolish its university with four cohorts inside it, and
+         * they still graduate; the building was the seats, not the students.
+         */
+        double keep = 1 - Math.max(0, Math.min(1, attrition));
+        for (EducationType type : EducationType.values()) {
+            if (!type.isAdult()) continue;
+            double[] queue = inFlight[type.ordinal()];
+            double finishing = queue.length > 0 ? queue[0] * keep : 0;
+            for (int k = 0; k + 1 < queue.length; k++) queue[k] = queue[k + 1] * keep;
+            if (queue.length > 0) queue[queue.length - 1] = 0;
+            if (finishing <= 0) continue;
+            if (type.isProfessional()) {
+                licences[type.licenses().ordinal()] += finishing;
+            } else if (type.produces() != null) {
+                graduates[type.produces().ordinal()] += finishing;
+                if (type.requires() != null) graduates[type.requires().ordinal()] -= finishing;
+            }
+        }
+
+        if (places == null || pyramid == null || people == null) {
+            refreshStudying();
+            return;
+        }
 
         /* ------------------------- the basic ladder ------------------------- */
         double children = pyramid.get(AgeBand.CHILD);
@@ -296,7 +363,35 @@ public class Education {
         for (int b = 0; b < graduates.length; b++) {
             if (graduates[b] > 0) everGraduated[b] += graduates[b];
         }
+
+        refreshStudying();
     }
+
+    /** Recounts who is in a lecture theatre, by the band they came from. */
+    private void refreshStudying() {
+        java.util.Arrays.fill(studying, 0);
+        for (EducationType type : EducationType.values()) {
+            if (!type.isAdult() || type.requires() == null) continue;
+            studying[type.requires().ordinal()] += studentBody(type);
+        }
+    }
+
+    /** Everybody part way through this course. */
+    public double studentBody(EducationType type) {
+        double total = 0;
+        for (double cohort : inFlight[type.ordinal()]) total += cohort;
+        return total;
+    }
+
+    /**
+     * Adults out of the labour supply this month because they are studying,
+     * by the band they hold NOW (the one they enrolled from). Jerus's call:
+     * full-time students do not work. PopulationManager subtracts these from
+     * the band's supply, so a city that sends four hundred diploma-holders to
+     * college is four hundred workers short for two years - a real cost, and
+     * the reason the wait is felt rather than merely recorded.
+     */
+    public double[] getStudying() { return studying; }
 
     /**
      * One course, for adults who already have what it asks for.
@@ -339,23 +434,28 @@ public class Education {
          * this whole mechanic is about: a four-year degree means four cohorts
          * are in the building for every one that leaves it.
          */
-        double seatsPerMonth = seats / (double) type.months();
-        double taking = Math.min(seatsPerMonth, eligible * willing * ENROLMENT_RATE);
-        if (taking <= 0) return;
-
-        double studentBody = Math.min(seats, taking * type.months());
-
-        enrolled[i] = studentBody;
-        coverage[i] = cover(seats, Math.max(eligible, 1));
-        charge(type, studentBody);
-
-        if (type.isProfessional()) {
-            // Raises nobody's band - a medical student was already a graduate.
-            licences[type.licenses().ordinal()] += taking;
-        } else if (type.produces() != null) {
-            graduates[type.produces().ordinal()] += taking;
-            if (needs != null) graduates[needs.ordinal()] -= taking;
+        /*
+         * The intake: whoever wants to and can, up to the seats the school has
+         * FREE. The seats are occupied by the students already in flight, so a
+         * full school admits only as many as graduate this month - which is
+         * places over course length, the steady-state throughput the first
+         * version computed directly and handed out the same month.
+         *
+         * Nobody graduates here. They join the back of the queue and come out
+         * of the front of it type.months() from now, in advanceMonth().
+         */
+        double[] queue = inFlight[i];
+        double occupied = studentBody(type);
+        double free = Math.max(0, seats - occupied);
+        double intake = Math.min(free, eligible * willing * ENROLMENT_RATE);
+        if (intake > 0 && queue.length > 0) {
+            queue[queue.length - 1] += intake;
         }
+
+        double body = studentBody(type);
+        enrolled[i] = body;
+        coverage[i] = cover(seats, Math.max(eligible, 1));
+        charge(type, body);
     }
 
     /**
@@ -540,20 +640,44 @@ public class Education {
        =================================================================== */
 
     public double[] getState() {
-        double[] out = new double[everGraduated.length + 1];
-        out[0] = tuitionSubsidy;
-        System.arraycopy(everGraduated, 0, out, 1, everGraduated.length);
+        int size = everGraduated.length + 1;
+        for (double[] queue : inFlight) size += queue.length;
+        double[] out = new double[size];
+        int i = 0;
+        out[i++] = tuitionSubsidy;
+        for (double v : everGraduated) out[i++] = v;
+        // Then every cohort in flight, course by course in enum order, each
+        // course's queue in full - so a change to any course length changes
+        // the array's length and the restore below refuses it whole.
+        for (double[] queue : inFlight) for (double v : queue) out[i++] = v;
         return out;
     }
 
-    /** Refused whole on a length mismatch, never padded. The usual rule. */
+    /**
+     * Refused whole on a length mismatch, never padded. The usual rule - with
+     * one exception: the format-17 shape (the dial and the totals, nobody in
+     * flight) is accepted and the schools start empty, because that is what
+     * those cities looked like before the pipeline existed.
+     */
     public void restore(double[] saved) {
-        if (saved == null || saved.length != everGraduated.length + 1) {
+        for (double[] queue : inFlight) java.util.Arrays.fill(queue, 0);
+        java.util.Arrays.fill(studying, 0);
+
+        int shortForm = everGraduated.length + 1;
+        int fullForm = shortForm;
+        for (double[] queue : inFlight) fullForm += queue.length;
+
+        if (saved == null || (saved.length != shortForm && saved.length != fullForm)) {
             tuitionSubsidy = DEFAULT_SUBSIDY;
             java.util.Arrays.fill(everGraduated, 0);
             return;
         }
-        setTuitionSubsidy(saved[0]);
-        System.arraycopy(saved, 1, everGraduated, 0, everGraduated.length);
+        int i = 0;
+        setTuitionSubsidy(saved[i++]);
+        for (int b = 0; b < everGraduated.length; b++) everGraduated[b] = saved[i++];
+        if (saved.length == fullForm) {
+            for (double[] queue : inFlight) for (int k = 0; k < queue.length; k++) queue[k] = saved[i++];
+        }
+        refreshStudying();
     }
 }

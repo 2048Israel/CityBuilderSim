@@ -263,7 +263,7 @@ public class SaveFileCheck {
         // Recorded off a real city rather than from typed-in numbers: the
         // recorder takes the Game now, because twenty-three positional
         // arguments is a machine for transposing two of them.
-        Game recorder = new Game();
+        Game recorder = new Game(GameFiles.scratch("savecheck"));
         recorder.newGame();
         HistorySave history = new HistorySave();
         history.recordMonth(recorder);

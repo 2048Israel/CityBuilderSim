@@ -307,9 +307,25 @@ public class CommercialHandler {
      * A house of capacity 4 costs 4 x this whether one person lives in it or
      * six. That is what a landlord actually charges for: the flat.
      */
-    private double rentPrice = TARGET_RENT_BURDEN
-            * (REFERENCE_EARNERS * PayTier.UNSKILLED.getMonthlyWage())
-            / REFERENCE_HOME_CAPACITY;
+    private double rentPrice = rentFor(PayTier.UNSKILLED.getMonthlyWage());
+
+    /**
+     * Rent per person of capacity at a given unskilled wage.
+     *
+     * Static and pure so the starting value above, the monthly re-derivation
+     * in updateStoreWages() and HouseholdCheck all compute the one number.
+     *
+     * Since 2026-09-06 the wage handed in is the LIVE unskilled wage, not the
+     * PayTier constant. Labour became a market and the minimum wage its base,
+     * which left this the last price in the game still struck off the
+     * compile-time table: raising the floor lifted every wage in the city and
+     * rent stayed where it was, so the rent burden the household screen
+     * reports drifted with a dial that was supposed to move both sides.
+     * Neutral at the default minimum wage, by construction.
+     */
+    public static double rentFor(double unskilledWage) {
+        return TARGET_RENT_BURDEN * (REFERENCE_EARNERS * unskilledWage) / REFERENCE_HOME_CAPACITY;
+    }
 
     /** Front doors the city has, and how many of them are lived in. */
     private int homes;
@@ -356,6 +372,14 @@ public class CommercialHandler {
         for (int i = 0; i < length; i++) {
             storeWages[i] = wages[i] * jobs[i];
 
+        }
+
+        // Rent follows the unskilled wage the market is paying this month.
+        // Same array the payroll is struck from, so the two cannot disagree,
+        // and the load path reaches here through updateEcon() so a reloaded
+        // city charges the rent it was charging.
+        if (wages.length > JobType.NO_DIPLOMA.ordinal() && wages[JobType.NO_DIPLOMA.ordinal()] > 0) {
+            rentPrice = rentFor(wages[JobType.NO_DIPLOMA.ordinal()]);
         }
         double totalFilled = 0;
         int totalJobsStore = 0;
@@ -775,8 +799,19 @@ public class CommercialHandler {
         localPurchaseValue = localImport * foodPrice;
         importPurchaseValue = globalImport * importPrice;
 
-        double cost = localPurchaseValue * (1 + supplierSalesRate)
-                + importPurchaseValue * (1 + ownSalesRate);
+        /*
+         * THE PRICE, AND ONLY THE PRICE, since 2026-09-06.
+         *
+         * Both halves used to be marked up by a sales rate - the supplier's on
+         * local food, the shop's own on imports - and the markup went to
+         * nobody: the mills booked the bare price, the world took the bare
+         * price, and the treasury took its VAT from the ledger without
+         * debiting anyone. The rate follows the producer, so the producer
+         * remits (EconomyManager.settleSalesTax) and the buyer pays what the
+         * goods cost. The two rates are still held here for the report's
+         * input-credit line, which is what the ledger credits the shop.
+         */
+        double cost = localPurchaseValue + importPurchaseValue;
 
         if (globalImport != 0) {
             System.out.println("Stores imported: " + formatter.format(globalImport)
@@ -830,8 +865,14 @@ public class CommercialHandler {
         // The only accumulating state in the sector. Kept out of
         // computeMonthlyReport() so the report can be recalculated for display
         // (e.g. after a load) without banking a phantom month of income.
-        commercialCash += rRetailNetIncome;
-        realEstateCash += rRealEstateNetIncome;
+        // NET OF THE PROFIT TAX, since 2026-09-06. Both companies used to bank
+        // the pre-tax figure while the city collected the tax on it - the same
+        // dollars counted twice, and the largest single leak MoneyAudit found
+        // (backlog item 8, decided by Jerus: deduct it). rRetailTax and
+        // rRealEstateTax are exactly what getBusinessTaxIncome() hands the
+        // treasury, so the payer and the payee now agree to the cent.
+        commercialCash += rRetailNetIncome - rRetailTax;
+        realEstateCash += rRealEstateNetIncome - rRealEstateTax;
     }
 
     /**

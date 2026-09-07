@@ -266,6 +266,13 @@ public class HeavyIndustryHandler {
         return total * averageFill;
     }
 
+    /** The staffed payroll by job type, for the wage tax on it. */
+    public double[] getStaffedPayrollPerType() {
+        double[] out = new double[wages.length];
+        for (int i = 0; i < wages.length; i++) out[i] = wages[i] * averageFill;
+        return out;
+    }
+
     public double getElectricityCost() {
         // Charged for what was DELIVERED, not what was asked for - the utility
         // books the same slice. See UtilitiesHandler.getElectricityRevenue().
@@ -336,8 +343,15 @@ public class HeavyIndustryHandler {
     public void calculateResults() {
         computeMonthlyReport();
         netIncome = rNetIncome;
-        cash += netIncome;
+        // Net of the profit tax, at the rate set before the statement ran -
+        // see CommercialHandler.calculateCommercialResults().
+        cash += netIncome - getTaxIncome(taxRate);
     }
+
+    /** The profit rate in force this month, set by EconomyManager before the statement runs. */
+    private double taxRate;
+    public void setTaxRate(double rate) { this.taxRate = rate; }
+    public double getTaxRate()          { return taxRate; }
 
     /**
      * Its books. No inventory line: everything made is shipped the month it is

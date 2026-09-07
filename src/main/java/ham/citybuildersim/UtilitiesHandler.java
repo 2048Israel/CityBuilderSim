@@ -151,7 +151,31 @@ public class UtilitiesHandler {
      * for months. It was not.
      */
     public double getElectricityRevenue() {
+        if (billedByStatement) return billedElectricityRevenue;
         return Math.min(billedElectricityDraw * energyRatio, production) * pricePerWatt;
+    }
+
+    /*
+     * WHAT THE CUSTOMERS WERE ACTUALLY CHARGED, since 2026-09-06.
+     *
+     * The two formulas here and in getWaterRevenue() recompute the bill from
+     * the draw, the ratio and the price - and they were struck at the END of
+     * the month, after updateServices() had moved the ratio, while the four
+     * sectors were charged at the START of the month against last month's
+     * ratio. Whenever a brownout began or ended, the utility booked a
+     * different number from the one its customers paid. ConservationCheck
+     * did not see it because its fixture's ratios never move; MoneyAudit saw
+     * it on the first run. The customers' statements are the fact, so Game
+     * hands their total in and the utility books that.
+     */
+    private boolean billedByStatement;
+    private double billedElectricityRevenue;
+    private double billedWaterRevenue;
+
+    public void setBilledRevenue(double electricity, double water) {
+        this.billedByStatement = true;
+        this.billedElectricityRevenue = electricity;
+        this.billedWaterRevenue = water;
     }
 
     /** What the four charged categories draw. Set by ServicesManager. */
@@ -172,6 +196,7 @@ public class UtilitiesHandler {
      * handlers book as their water expense. The two sides tie out.
      */
     public double getWaterRevenue() {
+        if (billedByStatement) return billedWaterRevenue;
         return billedWaterDraw * waterRatio * pricePerWaterUnit;
     }
 

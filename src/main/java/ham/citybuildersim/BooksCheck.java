@@ -140,8 +140,8 @@ public class BooksCheck {
         System.out.printf("   cashCost alone would have been %.0f, i.e. %.0f%% of true cost%n",
                 cashOnly, cashOnly / expectedBook * 100);
 
-        /* ============ the tax double-count, demonstrated ============ */
-        System.out.println("\n--- tax double-count (surfaced, not fixed) ---");
+        /* ============ the tax is paid once, by the business ============ */
+        System.out.println("\n--- the profit tax comes out of the business ---");
         IndustrialHandler t = new IndustrialHandler();
         t.setIndustrialCash(1000);
         t.setFoodInventory(1000);
@@ -167,10 +167,15 @@ public class BooksCheck {
         t.calculateIndustrialResults();
         double cityTax = t.getIndustrialTaxIncome(taxRate);
 
-        check("business banked the PRE-tax profit", t.getIndustrialCash(), 1000 + 100);
-        check("city also collected tax on it", cityTax, 100 * taxRate);
-        System.out.println("   -> $15 exists in two places at once. Shown on the statement,");
-        System.out.println("      deliberately not fixed here (it changes sector balance).");
+        // Until 2026-09-06 this asserted the OPPOSITE - that the business
+        // banked the pre-tax figure while the city also collected the tax -
+        // under the heading "surfaced, not fixed". MoneyAudit measured it as
+        // the largest source of money from nowhere in the game, and Jerus
+        // decided: deduct it. The same $15 now exists in one place.
+        check("business banked the AFTER-tax profit", t.getIndustrialCash(), 1000 + 100 - 100 * taxRate);
+        check("city collected exactly the tax it deducted", cityTax, 100 * taxRate);
+        check("...and the statement's after-tax line is what was banked",
+                t.getReportNetIncomeAfterTax(), 100 - 100 * taxRate);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

@@ -91,6 +91,9 @@ public enum EducationType {
     /** The band somebody leaves with, or null for a stage that only feeds one. */
     public WageBand produces() { return produces; }
 
+    /** A course adults enrol in and leave the labour supply for; the basic stages are not. */
+    public boolean isAdult() { return this == COLLEGE || this == UNIVERSITY || isProfessional(); }
+
     /** The job this school makes possible, or null if it teaches a level. */
     public JobType licenses() { return licenses; }
 

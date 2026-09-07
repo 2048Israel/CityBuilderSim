@@ -107,6 +107,7 @@ public class EconomyManager {
         // what the stores actually bought from industry last month, so the two
         // sides trade with each other rather than each guessing at the other.
         industrialHandler.setFoodDemand(commercialHandler.getReportLocalImports());
+        industrialHandler.setLocalSalesValue(commercialHandler.getReportLocalPurchaseValue());
     }
     public void updateEcon(){
         getMonthGdp();
@@ -201,7 +202,10 @@ public class EconomyManager {
     public IronMarket getIronMarket()       { return ironMarket; }
 
     /** Once-per-month mining income statement. */
-    public void updateMiningReport(){ miningHandler.calculateResults(); }
+    public void updateMiningReport(){
+        miningHandler.setTaxRate(taxPolicy.effectiveProfitRate(PolicySector.MINING));
+        miningHandler.calculateResults();
+    }
 
     /** Pure recompute for the load path - does not bank cash. */
     public void refreshMiningReport(){ miningHandler.computeMonthlyReport(); }
@@ -295,6 +299,7 @@ public class EconomyManager {
 
     /** Once-per-month heavy industry income statement. */
     public void updateHeavyIndustryReport(){
+        heavyIndustryHandler.setTaxRate(taxPolicy.effectiveProfitRate(PolicySector.HEAVY_INDUSTRY));
         heavyIndustryHandler.calculateResults();
     }
 
@@ -874,6 +879,22 @@ public class EconomyManager {
         }
 
         salesTax = salesTaxLedger.settle(taxPolicy);
+
+        /*
+         * AND THE SECTORS PAY IT. Until 2026-09-06 the city collected the
+         * ledger's total and nobody was debited: retail paid a markup on its
+         * purchases to nobody at all, and the other five sectors paid nothing.
+         * The rate follows the producer, so the producer remits - its payable
+         * on what it sold, less the credit on what it bought, out of its own
+         * cash. A sector in a refund position is credited. Every dollar the
+         * treasury books here now comes out of a pool MoneyAudit can see.
+         */
+        for (PolicySector sector : PolicySector.values()) {
+            double net = salesTaxLedger.getNet(sector);
+            if (net != 0) {
+                setSectorCash(sector.creditName(), getSectorCash(sector.creditName()) - net);
+            }
+        }
         return salesTax;
     }
 
@@ -1378,15 +1399,17 @@ public class EconomyManager {
     public int getRetailLocalImports()    { return commercialHandler.getReportLocalImports(); }
     public int getRetailGlobalImports()   { return commercialHandler.getReportGlobalImports(); }
     public double getIndustryDemand()     { return industrialHandler.getFoodDemand(); }
+    public double getIndustryLocalSalesValue() { return industrialHandler.getLocalSalesValue(); }
     public int getIndustryUnitsSold()     { return industrialHandler.getProductsSoldCopy(); }
     public int getIndustryUnitsImported() { return industrialHandler.getProductsImportedCopy(); }
 
     public void restoreMonthFlows(double retailCostOfGoods, int retailLocal, int retailGlobal,
                                   double retailFillBasis, double retailImportTax,
-                                  double industryDemand,
+                                  double industryDemand, double industryLocalSalesValue,
                                   int industrySold, int industryImported,
                                   double energyBasis, double waterBasis, double roadBasis,
                                   double healthBasis) {
+        industrialHandler.setLocalSalesValue(industryLocalSalesValue);
         commercialHandler.setStoreInventoryCost(retailCostOfGoods);
         commercialHandler.setReportImports(retailLocal, retailGlobal);
         commercialHandler.restoreMonthReport(retailFillBasis, retailImportTax,
@@ -1512,6 +1535,33 @@ public class EconomyManager {
     public double getBusinessTax(){ return totalBusinessTax; }
     public double getIndustrialTax(){ return totalIndustrialTax; }
     public double getSalesTax(){ return salesTax; }
+    public double getHeavyIndustryTax(){ return totalHeavyIndustryTax; }
+
+    /**
+     * The banded wage tax on one sector's payroll, for a screen that wants to
+     * say what a building's wages are worth to the treasury. Asked of the
+     * policy rather than multiplied out in the UI, because the wage tax is
+     * banded and "payroll x the income rate" was wrong for every band but one.
+     */
+    public double wageTaxOnPayroll(double[] payrollPerType) {
+        return taxPolicy.wageTaxOn(payrollPerType, null);
+    }
+
+    /** The month's power bills, as the four charged sectors' statements booked them. */
+    public double getSectorElectricityCharges() {
+        return commercialHandler.getReportElectricityCost()
+                + industrialHandler.getReportElectricityCost()
+                + heavyIndustryHandler.getReportElectricityCost()
+                + miningHandler.getReportElectricityCost();
+    }
+
+    /** The month's water bills, likewise. */
+    public double getSectorWaterCharges() {
+        return commercialHandler.getReportWaterCost()
+                + industrialHandler.getReportWaterCost()
+                + heavyIndustryHandler.getReportWaterCost()
+                + miningHandler.getReportWaterCost();
+    }
     public double getWageTax(){ return totalWageTax; }
     public double getUtilityIncome(){ return utilityIncome; }
 

@@ -133,6 +133,18 @@ public class BusinessDebtManager {
     /** Principal that fell due this month, per sector, waiting to be settled. */
     private final Map<String, Double> maturedPrincipal = new LinkedHashMap<>();
 
+    /**
+     * The lender's side of the month, for MoneyAudit: what it advanced and what
+     * it took back. Neither is saved - they describe the month in progress and
+     * Game.nextMonth() zeroes them before anything moves.
+     */
+    private double lentThisMonth;
+    private double repaidThisMonth;
+
+    public double getLentThisMonth()   { return lentThisMonth; }
+    public double getRepaidThisMonth() { return repaidThisMonth; }
+    public void startAuditMonth()      { lentThisMonth = 0; repaidThisMonth = 0; }
+
     public BusinessDebtManager() {
         for (String sector : SECTORS) {
             assets.put(sector, 0.0);
@@ -320,6 +332,7 @@ public class BusinessDebtManager {
     public double takeMaturedPrincipal(String sector) {
         double due = maturedPrincipal.getOrDefault(sector, 0.0);
         maturedPrincipal.put(sector, 0.0);
+        repaidThisMonth += due;
         return due;
     }
 
@@ -356,6 +369,7 @@ public class BusinessDebtManager {
                 sector, faceValue, LOAN_TERM_MONTHS, month,
                 priceSector(sector, faceValue));
         loans.add(loan);
+        lentThisMonth += faceValue;
 
         // A new loan changes the sector's leverage, so the next one prices off
         // the new position rather than the one before this loan existed.

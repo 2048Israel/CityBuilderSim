@@ -143,6 +143,21 @@ public class LongPlaytest {
         }
 
         /*
+         * MONEY IS CONSERVED. Every dollar that left a pool this month arrived
+         * in another, or crossed the city's boundary in a way MoneyAudit can
+         * name. A residual is a dollar from nowhere - the profit tax the
+         * sectors never paid, the VAT nobody was debited, the utility booking
+         * a different bill from the one its customers paid: all found the
+         * first time this was struck, 2026-09-06, none of them by any of the
+         * twenty-eight harnesses that came before. A cent, on any month, is a
+         * finding.
+         */
+        MoneyAudit.Result money = g.getLastMoneyAudit();
+        if (Math.abs(money.residual) > .01 && money.relative() > 1e-7) {
+            flag(month, "money was not conserved", money.toString());
+        }
+
+        /*
          * Output cannot be negative. Jerus, after a hand-played city reported
          * -$446,424 a month for a century: "negative GDP should just be
          * impossible, some arithmetic is wrong."

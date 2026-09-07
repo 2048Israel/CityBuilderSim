@@ -143,6 +143,19 @@ public class DataSave {
     private double retailFillBasis;
     private double retailImportTax;
     private double industryDemand;
+    /**
+     * Dollars the stores paid the mills last month. A flag rather than NaN for
+     * "not carried", because Gson refuses to write NaN and the save would fail.
+     */
+    private double industryLocalSalesValue;
+    private boolean hasIndustryLocalSalesValue;
+    public double getIndustryLocalSalesValue() {
+        return hasIndustryLocalSalesValue ? industryLocalSalesValue : Double.NaN;
+    }
+    public void setIndustryLocalSalesValue(double value) {
+        if (Double.isNaN(value)) { hasIndustryLocalSalesValue = false; industryLocalSalesValue = 0; }
+        else { hasIndustryLocalSalesValue = true; industryLocalSalesValue = value; }
+    }
     private int industryUnitsSold;
     private int industryUnitsImported;
     private boolean hasMonthFlows;

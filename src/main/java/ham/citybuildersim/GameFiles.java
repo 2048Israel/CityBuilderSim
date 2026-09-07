@@ -88,6 +88,26 @@ public final class GameFiles {
         this.legacyDirectory = legacyDirectory;
     }
 
+    /**
+     * A throwaway folder for a harness city.
+     *
+     * Every harness that builds a Game and runs it a year or more has to use
+     * this or an explicit temp path, never `new Game()`: the default
+     * constructor points at the player's real %APPDATA% folder, and
+     * Game.AUTOSAVE_MONTHS later the fixture city has overwritten their
+     * autosave and its .bak. EducationCheck and LabourCheck both did exactly
+     * that for a day before anyone noticed, because nothing about a passing
+     * harness says whose save it just replaced.
+     */
+    public static GameFiles scratch(String label) {
+        try {
+            Path root = Files.createTempDirectory(label);
+            return new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
+        } catch (IOException e) {
+            throw new IllegalStateException("could not create a scratch save folder", e);
+        }
+    }
+
     /* ------------------------------ locations ------------------------------ */
 
     public Path getDirectory()  { return directory; }

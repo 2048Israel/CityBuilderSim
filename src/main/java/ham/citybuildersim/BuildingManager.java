@@ -1108,6 +1108,28 @@ public class BuildingManager {
      * backlog item 4 - so reporting them would be the only place in the codebase
      * pretending that path is live.
      */
+    /**
+     * What each site gets of the month's output. The engine splits evenly
+     * per stack (backlog item 2 - per stack, not per work remaining), and the
+     * construction panel used to re-derive this split beside it. One place.
+     */
+    public double outputPerSite(int constructionOutput) {
+        int sites = getUnderConstruction();
+        return sites > 0 ? (double) constructionOutput / sites : constructionOutput;
+    }
+
+    /**
+     * Months until a site's last building finishes at a given per-site
+     * output: the points still owed over the pace. NaN when nothing is
+     * moving, so the screen can say why rather than print 2147483647.
+     */
+    public double monthsLeft(BuildingsStacks site, double perSiteOutput) {
+        if (perSiteOutput <= 0 || site.getUnderConstruction() <= 0) return Double.NaN;
+        double owed = site.getUnderConstruction() * (double) site.getBuilding().getConstructionPoints()
+                - site.getConstructionProgress();
+        return Math.ceil(Math.max(0, owed) / perSiteOutput);
+    }
+
     public java.util.List<Completion> advanceConstruction(int constructionOutput) {
 
         java.util.List<Completion> finished = new java.util.ArrayList<>();

@@ -195,7 +195,7 @@ public class LabourCheck {
            ============================================================== */
         System.out.println("\n--- and a city cannot staff what it has not attracted ---");
 
-        Game city = new Game();
+        Game city = new Game(GameFiles.scratch("labourcheck"));
         quietly(() -> {
             city.newGame();
             city.getGovernmentInvestor().spend(-50_000_000);
@@ -325,6 +325,123 @@ public class LabourCheck {
             if (Math.abs(fresh.getWage(job) - wagesAfter[job.ordinal()]) > 1e-6) differs = true;
         }
         assertTrue("...and a recomputed market would NOT have matched", differs);
+
+        /* ------------------------------------------------------------------
+         * RENT FOLLOWS THE LIVE UNSKILLED WAGE (2026-09-06).
+         *
+         * It was struck off PayTier.UNSKILLED at compile time, the last price
+         * in the game that did not know labour had become a market. Doubling
+         * the minimum wage must double rent, and the reloaded city must charge
+         * what the live one charged.
+         * ------------------------------------------------------------------ */
+        System.out.println("\n--- rent follows the unskilled wage ---");
+        CommercialHandler rents = back.getEconomyManager().getCommercialHandler();
+        double rentBefore = rents.getRentPrice();
+        close("a reloaded city charges the rent it was charging",
+                rentBefore, lived.getEconomyManager().getCommercialHandler().getRentPrice(), 1e-9);
+        close("rent is 30% of two unskilled wages per four-person home",
+                rentBefore, CommercialHandler.rentFor(back.getLabourMarket().getWage(JobType.NO_DIPLOMA)), 1e-9);
+
+        double floorBefore = back.getLabourMarket().getMinimumWage();
+        back.getLabourMarket().setMinimumWage(floorBefore * 2);
+        quietly(() -> back.simulateMonths(1));
+        double unskilledNow = back.getLabourMarket().getWage(JobType.NO_DIPLOMA);
+        assertTrue("fixture: doubling the floor moved the unskilled wage", unskilledNow > floorBefore * 1.5);
+        close("...and rent moved with it", rents.getRentPrice(), CommercialHandler.rentFor(unskilledNow), 1e-9);
+        assertTrue("...upward", rents.getRentPrice() > rentBefore * 1.5);
+
+        /* ------------------------------------------------------------------
+         * ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06).
+         *
+         * The arrival mix sums to everybody who moved in, of every age, and
+         * used to be added whole to the ADULT skilled counts. Now the skilled
+         * counts move by the adult share of the mix, which is the share the
+         * cohorts actually gave the migrants. Checked on a growing city with
+         * no schools, so education cannot move the counts: what the skilled
+         * counts gain in a month is the adult share of the skilled arrivals,
+         * less the month's retirements, within the retirements' size.
+         * ------------------------------------------------------------------ */
+        System.out.println("\n--- arriving children are not graduates ---");
+        Game growing = new Game(GameFiles.scratch("labourcheck"));
+        quietly(() -> {
+            growing.newGame();
+            growing.getGovernmentInvestor().spend(-20_000_000);
+            growing.getLandManager().setOwnedSqFt(
+                    growing.getLandManager().getOwnedSqFt() + 100_000_000);
+            growing.buildStack(t(growing, "Low-Rise Apartments"), 40, true);
+            growing.buildStack(t(growing, "General Hospital"), 1, true);
+            growing.buildStack(t(growing, "Small Grocery Store"), 6, true);
+            growing.buildStack(t(growing, "Coal Power Plant"), 1, true);
+            growing.buildStack(t(growing, "Water Treatment Plant"), 1, true);
+            growing.buildStack(t(growing, "Paved Road"), 12, true);
+            growing.simulateMonths(24);
+        });
+        double[] skilledBefore = growing.getPopulationManager().getSkilledHeads().clone();
+        double adultShare = growing.getCohorts().share(AgeBand.ADULT);
+        quietly(() -> growing.simulateMonths(1));
+        double[] skilledNow = growing.getPopulationManager().getSkilledHeads();
+        double[] arrived = growing.getMigration().getLastArrivalMix();
+        double[] left = growing.getMigration().getLastDepartureMix();
+        double skilledArrivals = 0, skilledDepartures = 0, gained = 0, held = 0;
+        for (int b = 1; b < skilledBefore.length; b++) {
+            skilledArrivals += arrived[b];
+            skilledDepartures += left[b];
+            gained += skilledNow[b] - skilledBefore[b];
+            held += skilledBefore[b];
+        }
+        assertTrue("fixture: skilled people arrived this month", skilledArrivals > 1);
+        assertTrue("fixture: the city is not all adults", adultShare < .9 && adultShare > .3);
+        double expected = (skilledArrivals - skilledDepartures) * adultShare;
+        double retirements = held * .01;   // a generous bound on a month of deaths and ageing out
+        System.out.printf("   skilled arrivals %.1f, adult share %.3f, counts moved %.1f, expected %.1f%n",
+                skilledArrivals, adultShare, gained, expected);
+        assertTrue("the skilled counts gained the ADULT share of the skilled arrivals",
+                Math.abs(gained - expected) <= retirements + .5);
+        assertTrue("...and not the whole mix",
+                Math.abs(gained - (skilledArrivals - skilledDepartures)) > retirements + .5);
+
+        /* ------------------------------------------------------------------
+         * A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06).
+         *
+         * A hospital and no medical school: the doctor posts can only be
+         * filled by licence holders, and there are next to none. The doctor's
+         * wage must climb over the band's, the band's own premium must NOT be
+         * dragged up with it, and the market must report the shortage as a
+         * licence shortage rather than a graduate one.
+         * ------------------------------------------------------------------ */
+        System.out.println("\n--- a doctor shortage is priced on doctors ---");
+        Game short_ = new Game(GameFiles.scratch("labourcheck"));
+        quietly(() -> {
+            short_.newGame();
+            short_.getGovernmentInvestor().spend(-50_000_000);
+            short_.getLandManager().setOwnedSqFt(
+                    short_.getLandManager().getOwnedSqFt() + 100_000_000);
+            short_.buildStack(t(short_, "Low-Rise Apartments"), 40, true);
+            short_.buildStack(t(short_, "General Hospital"), 2, true);
+            short_.buildStack(t(short_, "Small Grocery Store"), 6, true);
+            short_.buildStack(t(short_, "Coal Power Plant"), 1, true);
+            short_.buildStack(t(short_, "Water Treatment Plant"), 1, true);
+            short_.buildStack(t(short_, "Paved Road"), 12, true);
+            short_.simulateMonths(60);
+        });
+        LabourMarket m2 = short_.getLabourMarket();
+        int doctorPosts = short_.getPopulationManager().getJobs()[JobType.UNIV_DOCTOR.ordinal()];
+        double doctorsHeld = short_.getPopulationManager().getLicensedHeads()[JobType.UNIV_DOCTOR.ordinal()];
+        System.out.printf("   doctor posts %d, licensed %.1f, licence tightness %.2f, doctor premium %.2f, band premium %.2f%n",
+                doctorPosts, doctorsHeld, m2.getLicenceTightness(JobType.UNIV_DOCTOR),
+                m2.premium(JobType.UNIV_DOCTOR), m2.bandPremium(WageBand.UNIVERSITY));
+        assertTrue("fixture: more doctor posts than licence holders",
+                doctorPosts > doctorsHeld);
+        assertTrue("the market reports a licence shortage",
+                m2.getLicenceTightness(JobType.UNIV_DOCTOR) > 1);
+        assertTrue("doctors are paid over the band",
+                m2.premium(JobType.UNIV_DOCTOR) > m2.bandPremium(WageBand.UNIVERSITY) * 1.05);
+        assertTrue("...and never over the ceiling",
+                m2.premium(JobType.UNIV_DOCTOR) <= LabourMarket.MAX_MULTIPLE + 1e-9);
+        assertTrue("an ungated graduate job carries no licence premium",
+                m2.getLicenceMultiple(JobType.UNIV_SCIENCE) == 1);
+        assertTrue("licence holders arrive in response to the price",
+                short_.getMigration().getLastArrivalLicences()[JobType.UNIV_DOCTOR.ordinal()] > 0);
 
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");

@@ -249,7 +249,13 @@ public class MiningHandler {
         rRevenue = oreSoldLocally * localPrice + oreExported * exportPrice;
 
         rPayroll = getPayroll();
-        rElectricityCost = electricity * energyRatio * pricePerWatt;
+        // The BASIS ratio, like every other line of this statement and every
+        // other sector's. This read the live ratio, so a reloaded city - which
+        // rebuilds the statement from the carried basis - charged the mines a
+        // different power bill from the one the live city had, and once the
+        // utility started booking what its customers paid (2026-09-06) that
+        // showed up as utility income differing across a save.
+        rElectricityCost = electricity * bEnergyRatio * pricePerWatt;
         rWaterCost = water * bWaterRatio * pricePerWaterUnit;
 
         rOperatingCost = rPayroll + rElectricityCost + rWaterCost;
@@ -265,8 +271,15 @@ public class MiningHandler {
     public void calculateResults() {
         computeMonthlyReport();
         netIncome = rNetIncome;
-        cash += netIncome;
+        // Net of the profit tax, at the rate set before the statement ran -
+        // see CommercialHandler.calculateCommercialResults().
+        cash += netIncome - getTaxIncome(taxRate);
     }
+
+    /** The profit rate in force this month, set by EconomyManager before the statement runs. */
+    private double taxRate;
+    public void setTaxRate(double rate) { this.taxRate = rate; }
+    public double getTaxRate()          { return taxRate; }
 
     /**
      * Its books. No inventory: ore ships the month it is lifted, to the mills or
@@ -315,6 +328,7 @@ public class MiningHandler {
     public double getReportPayroll()      { return rPayroll; }
     public double getReportOperatingCost(){ return rOperatingCost; }
     public double getReportNetIncome()    { return rNetIncome; }
+    public double getReportInterestExpense() { return rInterestExpense; }
     public double getGrossRevenue()       { return rRevenue; }
 
     public void reset() {

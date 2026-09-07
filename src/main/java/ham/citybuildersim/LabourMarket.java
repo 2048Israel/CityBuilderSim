@@ -134,6 +134,37 @@ public class LabourMarket {
      */
     private final double[] tightness = new double[WageBand.values().length];
 
+    /*
+     * THE LICENCE PREMIUM (2026-09-06).
+     *
+     * Scarcity is priced per band because workers are fungible inside a band -
+     * except where they are not. A doctor's post can only be filled by a
+     * licence holder, and until today an empty doctor's post moved the whole
+     * university band's wage and nothing else: the one price that should
+     * have been screaming for a medical school was a band average. Worse,
+     * two other mechanisms read that price - the share of arriving graduates
+     * who already hold a licence (Migration) and the return on studying for
+     * one (Education) - and neither could ever respond to a doctor shortage,
+     * because there was no doctor price to respond to.
+     *
+     * So a gated job carries a second multiplier of its own, on top of its
+     * band's: posts over licence holders, same elasticity, never below one
+     * (a glut of doctors earns the band wage; the band's multiple handles
+     * that), and the two together never exceed MAX_MULTIPLE, which is Jerus's
+     * ceiling on what any wage can reach.
+     */
+    private final double[] licenceTightness = new double[JobType.values().length];
+    private final double[] licenceMultiple  = new double[JobType.values().length];
+    private final double[] bandMultiple     = new double[WageBand.values().length];
+
+    /** True for a job that only a licence holder can fill - see EducationType. */
+    public static boolean isGated(JobType job) {
+        for (EducationType type : EducationType.values()) {
+            if (type.isProfessional() && type.licenses() == job) return true;
+        }
+        return false;
+    }
+
     public LabourMarket() {
         resetToBase();
     }
@@ -175,8 +206,31 @@ public class LabourMarket {
      *                          composition and how it cascades down the bands
      */
     public void advanceMonth(double[] bandPosts, double[] bandSupply) {
+        advanceMonth(bandPosts, bandSupply, null, null);
+    }
+
+    /**
+     * @param jobPosts      posts per job type, for the licence premium; null to price bands only
+     * @param licensedHeads licence holders per job type, likewise
+     */
+    public void advanceMonth(double[] bandPosts, double[] bandSupply,
+                             int[] jobPosts, double[] licensedHeads) {
 
         double[] multiple = new double[WageBand.values().length];
+
+        java.util.Arrays.fill(licenceMultiple, 1);
+        java.util.Arrays.fill(licenceTightness, 0);
+        if (jobPosts != null && licensedHeads != null) {
+            for (JobType job : JobType.values()) {
+                if (!isGated(job)) continue;
+                int j = job.ordinal();
+                double open = j < jobPosts.length ? jobPosts[j] : 0;
+                double held = j < licensedHeads.length ? licensedHeads[j] : 0;
+                if (open <= 0) continue;
+                licenceTightness[j] = open / Math.max(held, 1);
+                licenceMultiple[j] = clamp(Math.pow(licenceTightness[j], ELASTICITY), 1, MAX_MULTIPLE);
+            }
+        }
 
         for (WageBand band : WageBand.values()) {
             int b = band.ordinal();
@@ -197,9 +251,13 @@ public class LabourMarket {
                     : clamp(Math.pow(tightness[b], ELASTICITY), MIN_MULTIPLE, MAX_MULTIPLE);
         }
 
+        System.arraycopy(multiple, 0, bandMultiple, 0, multiple.length);
+
         for (JobType job : JobType.values()) {
             int i = job.ordinal();
-            double target = baseWage(job) * multiple[WageBand.of(job).ordinal()];
+            double combined = Math.min(MAX_MULTIPLE,
+                    multiple[WageBand.of(job).ordinal()] * licenceMultiple[i]);
+            double target = baseWage(job) * combined;
 
             wage[i] += (target - wage[i]) * ADJUST_RATE;
 
@@ -247,6 +305,29 @@ public class LabourMarket {
     public double[] getWages()          { return wage; }
     public double getWage(JobType job)  { return wage[job.ordinal()]; }
     public double getTightness(WageBand band) { return tightness[band.ordinal()]; }
+    /** Posts over licence holders for a gated job; 0 for an ungated one or one with no posts. */
+    public double getLicenceTightness(JobType job) { return licenceTightness[job.ordinal()]; }
+    /** The licence premium's target multiple this month, 1 when there is none. */
+    public double getLicenceMultiple(JobType job)  { return licenceMultiple[job.ordinal()]; }
+    /** The band's own multiple this month, without any licence premium on top. */
+    public double getBandMultiple(WageBand band)   { return bandMultiple[band.ordinal()]; }
+
+    /**
+     * The premium the BAND is paying, read off an ungated job in it.
+     *
+     * Migration used to read "any job in the band" for this, and the first
+     * university job in enum order is UNIV_DOCTOR - so once doctors carried a
+     * premium of their own, the whole graduate band would have looked dear.
+     */
+    public double bandPremium(WageBand band) {
+        for (JobType job : JobType.values()) {
+            if (WageBand.of(job) == band && !isGated(job)) return premium(job);
+        }
+        for (JobType job : JobType.values()) {
+            if (WageBand.of(job) == band) return premium(job);
+        }
+        return 1;
+    }
     public double getMinimumWage()      { return minimumWage; }
 
     /** How far above its base a job is paying - 1.00 is the going rate. */

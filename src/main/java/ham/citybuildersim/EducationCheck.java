@@ -59,7 +59,7 @@ public class EducationCheck {
 
     /** A funded city with room, so the thing under test is never money or land. */
     static Game city(GameFiles files) {
-        Game g = files == null ? new Game() : new Game(files);
+        Game g = new Game(files == null ? GameFiles.scratch("educheck") : files);
         g.newGame();
         g.getGovernmentInvestor().spend(-900_000_000);
         g.getLandManager().setOwnedSqFt(
@@ -196,8 +196,15 @@ public class EducationCheck {
 
         double bandTotal = 0;
         for (double b : bands) bandTotal += b;
-        assertTrue("the bands still add up to the workforce",
-                Math.abs(bandTotal - tp.getWorkforce()) < 2);
+        // Plus the students: since the pipeline exists (2026-09-06) the people
+        // in a lecture theatre are out of the supply, and the supply plus the
+        // students is the workforce.
+        double studying = tp.getStudyingTotal();
+        System.out.printf("   supply %,.0f + studying %,.0f = workforce %,d%n",
+                bandTotal, studying, tp.getWorkforce());
+        assertTrue("the bands plus the students still add up to the workforce",
+                Math.abs(bandTotal + studying - tp.getWorkforce()) < 2);
+        assertTrue("fixture: somebody is actually studying", studying > 1);
 
         /* ============ 6. LICENCES CANNOT OUTNUMBER GRADUATES ============
 
@@ -341,6 +348,65 @@ public class EducationCheck {
         assertTrue("...and the running totals with them", sameTaught);
         assertTrue("...and the tuition policy the player chose",
                 Math.abs(back.getEducation().getTuitionSubsidy() - subsidyBefore) < 1e-9);
+
+        // And the students part way through, who are the pipeline itself.
+        boolean sameStudents = true;
+        double inFlight = 0;
+        for (EducationType type : EducationType.values()) {
+            if (!type.isAdult()) continue;
+            inFlight += lived.getEducation().studentBody(type);
+            if (Math.abs(lived.getEducation().studentBody(type)
+                    - back.getEducation().studentBody(type)) > 1e-6) sameStudents = false;
+        }
+        System.out.printf("   %,.0f students in flight before the save%n", inFlight);
+        assertTrue("fixture: somebody is part way through a course", inFlight > 10);
+        assertTrue("...and every student came back", sameStudents);
+        assertTrue("...and they are out of the supply on both sides",
+                Math.abs(lived.getPopulationManager().getStudyingTotal()
+                        - back.getPopulationManager().getStudyingTotal()) < 1e-6
+                && back.getPopulationManager().getStudyingTotal() > 10);
+
+        /* ============ 9b. THE WAIT IS REAL ============
+
+           A university built today is graduates in four years, not this
+           month. The steady-state throughput was always right; the lag was
+           missing until 2026-09-06, and a mechanic whose whole character is
+           the wait has to be measured on the wait.
+           ================================================================= */
+        System.out.println("\n--- the wait is real ---");
+
+        Game waits = city(null);
+        quietly(() -> {
+            build(waits, "Elementary School", 4);
+            build(waits, "Middle School", 3);
+            build(waits, "High School", 3);
+            waits.simulateMonths(120);   // a city with diploma-holders and no university
+        });
+        double universityBefore = waits.getPopulationManager().workforceByBand()[WageBand.UNIVERSITY.ordinal()]
+                + waits.getPopulationManager().getStudyingTotal() * 0;   // graduates, not students
+        double everBefore = waits.getEducation().getEverGraduated()[WageBand.UNIVERSITY.ordinal()];
+        quietly(() -> build(waits, "University", 1));
+
+        int course = EducationType.UNIVERSITY.months();
+        int firstGraduation = -1;
+        double peakStudents = 0;
+        for (int m = 1; m <= course + 12; m++) {
+            quietly(() -> waits.simulateMonths(1));
+            peakStudents = Math.max(peakStudents, waits.getEducation().studentBody(EducationType.UNIVERSITY));
+            if (firstGraduation < 0
+                    && waits.getEducation().getEverGraduated()[WageBand.UNIVERSITY.ordinal()] > everBefore + .5) {
+                firstGraduation = m;
+            }
+        }
+        System.out.printf("   course %d months; first graduates in month %d; peak %,.0f students%n",
+                course, firstGraduation, peakStudents);
+        assertTrue("fixture: people enrolled", peakStudents > 10);
+        assertTrue("nobody graduates before the course is over",
+                firstGraduation < 0 || firstGraduation >= course);
+        assertTrue("...and somebody graduates once it is",
+                firstGraduation > 0 && firstGraduation <= course + 6);
+        assertTrue("...while the students were out of the supply",
+                waits.getPopulationManager().getStudyingTotal() > 10);
 
         /* ============ 10. AND THE TREASURY PAYS FOR IT ============ */
         System.out.println("\n--- and it is on the city's books ---");

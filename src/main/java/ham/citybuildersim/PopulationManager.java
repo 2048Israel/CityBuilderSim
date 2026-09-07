@@ -420,7 +420,30 @@ public class PopulationManager {
             used += out[b];
         }
         out[WageBand.NONE.ordinal()] = Math.max(0, workforce - used);
+
+        /*
+         * LESS THE STUDENTS. A diploma-holder two years into a degree is still
+         * a diploma-holder - the head stays in skilledHeads, and graduates out
+         * of it when the course ends - but they are not in the labour supply,
+         * not filling a post, not counted as surplus. Full-time students do
+         * not work (Jerus, 2026-09-06). This is the ONE place the supply is
+         * read from, so every consumer sees the same workforce.
+         */
+        if (studying != null) {
+            for (int b = 0; b < out.length && b < studying.length; b++) {
+                out[b] = Math.max(0, out[b] - studying[b]);
+            }
+        }
         return out;
+    }
+
+    /** Adults studying full time, by band, set from Education each month. */
+    private double[] studying;
+    public void setStudying(double[] byBand) { this.studying = byBand; }
+    public double getStudyingTotal() {
+        double total = 0;
+        if (studying != null) for (double v : studying) total += v;
+        return total;
     }
 
     /** Posts that exist at each skill level. The demand side of the same axis. */

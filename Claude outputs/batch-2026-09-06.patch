@@ -1,0 +1,3338 @@
+diff --git a/src/main/java/ham/citybuildersim/AllChecks.java b/src/main/java/ham/citybuildersim/AllChecks.java
+new file mode 100644
+index 0000000..85bcf06
+--- /dev/null
++++ b/src/main/java/ham/citybuildersim/AllChecks.java
+@@ -0,0 +1,78 @@
++package ham.citybuildersim;
++
++import java.io.File;
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Runs every harness, one JVM each, and says which failed.
++ *
++ * Twenty-nine harnesses and no runner meant "all checks pass" was a claim
++ * made by whoever had the patience to run twenty-nine main() methods by hand
++ * that day - and a harness nobody ran is a harness that does not exist. Each
++ * one calls System.exit() with its verdict, so they cannot share a JVM; this
++ * spawns them with the JVM and classpath it was itself started with.
++ *
++ *     java -cp <classes> ham.citybuildersim.AllChecks            everything
++ *     java -cp <classes> ham.citybuildersim.AllChecks -q         verdicts only
++ *     java -cp <classes> ham.citybuildersim.AllChecks Labour Money   a subset, by name
++ *
++ * Exit status is the number of harnesses that failed, so a build script can
++ * stop on it. BuildMenuCheck needs JavaFX on the classpath and is skipped,
++ * with a note, when it is not there.
++ */
++public class AllChecks {
++
++    /** In the order they are cheapest to fail. LongPlaytest last: it is the slow one. */
++    static final String[] HARNESSES = {
++        "BuildingDataCheck", "NewGameCheck", "CalendarCheck", "BooksCheck", "WaterCheck",
++        "PolicyCheck", "LandCheck", "MiningCheck", "InvestCheck", "CreditCheck",
++        "RestructureCheck", "ConservationCheck", "MoneyCheck", "GdpCheck", "HistoryCheck",
++        "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
++        "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck",
++        "SaveSlotCheck", "SkipReportCheck", "BuildMenuCheck", "LongPlaytest"
++    };
++
++    public static void main(String[] args) throws Exception {
++        boolean quiet = false;
++        List<String> only = new ArrayList<>();
++        for (String a : args) {
++            if (a.equals("-q")) quiet = true; else only.add(a.toLowerCase());
++        }
++
++        String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
++        String classpath = System.getProperty("java.class.path");
++        boolean haveFx = classpath.toLowerCase().contains("javafx");
++
++        int failed = 0, ran = 0;
++        long started = System.currentTimeMillis();
++        for (String name : HARNESSES) {
++            if (!only.isEmpty()) {
++                boolean wanted = false;
++                for (String o : only) if (name.toLowerCase().contains(o)) wanted = true;
++                if (!wanted) continue;
++            }
++            if (name.equals("BuildMenuCheck") && !haveFx) {
++                System.out.printf("%-24s skipped (needs JavaFX on the classpath)%n", name);
++                continue;
++            }
++            long t = System.currentTimeMillis();
++            ProcessBuilder pb = new ProcessBuilder(java, "-cp", classpath, "ham.citybuildersim." + name);
++            pb.redirectErrorStream(true);
++            if (quiet) {
++                pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
++            } else {
++                pb.inheritIO();
++            }
++            int code = pb.start().waitFor();
++            ran++;
++            if (code != 0) failed++;
++            System.out.printf("%-24s %s  (%.1fs)%n", name, code == 0 ? "OK" : "FAILED - exit " + code,
++                    (System.currentTimeMillis() - t) / 1000.0);
++        }
++        System.out.printf("%n%d harness%s run in %.0fs: %d passed, %d failed%n",
++                ran, ran == 1 ? "" : "es", (System.currentTimeMillis() - started) / 1000.0,
++                ran - failed, failed);
++        System.exit(failed);
++    }
++}
+diff --git a/src/main/java/ham/citybuildersim/BooksCheck.java b/src/main/java/ham/citybuildersim/BooksCheck.java
+index 1452a08..0e4e34c 100644
+--- a/src/main/java/ham/citybuildersim/BooksCheck.java
++++ b/src/main/java/ham/citybuildersim/BooksCheck.java
+@@ -140,8 +140,8 @@ public class BooksCheck {
+         System.out.printf("   cashCost alone would have been %.0f, i.e. %.0f%% of true cost%n",
+                 cashOnly, cashOnly / expectedBook * 100);
+ 
+-        /* ============ the tax double-count, demonstrated ============ */
+-        System.out.println("\n--- tax double-count (surfaced, not fixed) ---");
++        /* ============ the tax is paid once, by the business ============ */
++        System.out.println("\n--- the profit tax comes out of the business ---");
+         IndustrialHandler t = new IndustrialHandler();
+         t.setIndustrialCash(1000);
+         t.setFoodInventory(1000);
+@@ -167,10 +167,15 @@ public class BooksCheck {
+         t.calculateIndustrialResults();
+         double cityTax = t.getIndustrialTaxIncome(taxRate);
+ 
+-        check("business banked the PRE-tax profit", t.getIndustrialCash(), 1000 + 100);
+-        check("city also collected tax on it", cityTax, 100 * taxRate);
+-        System.out.println("   -> $15 exists in two places at once. Shown on the statement,");
+-        System.out.println("      deliberately not fixed here (it changes sector balance).");
++        // Until 2026-09-06 this asserted the OPPOSITE - that the business
++        // banked the pre-tax figure while the city also collected the tax -
++        // under the heading "surfaced, not fixed". MoneyAudit measured it as
++        // the largest source of money from nowhere in the game, and Jerus
++        // decided: deduct it. The same $15 now exists in one place.
++        check("business banked the AFTER-tax profit", t.getIndustrialCash(), 1000 + 100 - 100 * taxRate);
++        check("city collected exactly the tax it deducted", cityTax, 100 * taxRate);
++        check("...and the statement's after-tax line is what was banked",
++                t.getReportNetIncomeAfterTax(), 100 - 100 * taxRate);
+ 
+         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
+         System.exit(fails == 0 ? 0 : 1);
+diff --git a/src/main/java/ham/citybuildersim/BuildMenuCheck.java b/src/main/java/ham/citybuildersim/BuildMenuCheck.java
+index 3167e03..70f29fd 100644
+--- a/src/main/java/ham/citybuildersim/BuildMenuCheck.java
++++ b/src/main/java/ham/citybuildersim/BuildMenuCheck.java
+@@ -39,7 +39,7 @@ public class BuildMenuCheck {
+ 
+     public static void main(String[] args) {
+ 
+-        Game game = new Game();
++        Game game = new Game(GameFiles.scratch("buildmenucheck"));
+         UserInterface ui = new UserInterface(game);
+         BuildingManager bm = game.getBuildingManager();
+         // A raw Game holds no templates until something asks for them; the real
+diff --git a/src/main/java/ham/citybuildersim/BuildingManager.java b/src/main/java/ham/citybuildersim/BuildingManager.java
+index 2f9f4af..e839436 100644
+--- a/src/main/java/ham/citybuildersim/BuildingManager.java
++++ b/src/main/java/ham/citybuildersim/BuildingManager.java
+@@ -1108,6 +1108,28 @@ public class BuildingManager {
+      * backlog item 4 - so reporting them would be the only place in the codebase
+      * pretending that path is live.
+      */
++    /**
++     * What each site gets of the month's output. The engine splits evenly
++     * per stack (backlog item 2 - per stack, not per work remaining), and the
++     * construction panel used to re-derive this split beside it. One place.
++     */
++    public double outputPerSite(int constructionOutput) {
++        int sites = getUnderConstruction();
++        return sites > 0 ? (double) constructionOutput / sites : constructionOutput;
++    }
++
++    /**
++     * Months until a site's last building finishes at a given per-site
++     * output: the points still owed over the pace. NaN when nothing is
++     * moving, so the screen can say why rather than print 2147483647.
++     */
++    public double monthsLeft(BuildingsStacks site, double perSiteOutput) {
++        if (perSiteOutput <= 0 || site.getUnderConstruction() <= 0) return Double.NaN;
++        double owed = site.getUnderConstruction() * (double) site.getBuilding().getConstructionPoints()
++                - site.getConstructionProgress();
++        return Math.ceil(Math.max(0, owed) / perSiteOutput);
++    }
++
+     public java.util.List<Completion> advanceConstruction(int constructionOutput) {
+ 
+         java.util.List<Completion> finished = new java.util.ArrayList<>();
+diff --git a/src/main/java/ham/citybuildersim/BusinessDebtManager.java b/src/main/java/ham/citybuildersim/BusinessDebtManager.java
+index f1ef672..56b7118 100644
+--- a/src/main/java/ham/citybuildersim/BusinessDebtManager.java
++++ b/src/main/java/ham/citybuildersim/BusinessDebtManager.java
+@@ -133,6 +133,18 @@ public class BusinessDebtManager {
+     /** Principal that fell due this month, per sector, waiting to be settled. */
+     private final Map<String, Double> maturedPrincipal = new LinkedHashMap<>();
+ 
++    /**
++     * The lender's side of the month, for MoneyAudit: what it advanced and what
++     * it took back. Neither is saved - they describe the month in progress and
++     * Game.nextMonth() zeroes them before anything moves.
++     */
++    private double lentThisMonth;
++    private double repaidThisMonth;
++
++    public double getLentThisMonth()   { return lentThisMonth; }
++    public double getRepaidThisMonth() { return repaidThisMonth; }
++    public void startAuditMonth()      { lentThisMonth = 0; repaidThisMonth = 0; }
++
+     public BusinessDebtManager() {
+         for (String sector : SECTORS) {
+             assets.put(sector, 0.0);
+@@ -320,6 +332,7 @@ public class BusinessDebtManager {
+     public double takeMaturedPrincipal(String sector) {
+         double due = maturedPrincipal.getOrDefault(sector, 0.0);
+         maturedPrincipal.put(sector, 0.0);
++        repaidThisMonth += due;
+         return due;
+     }
+ 
+@@ -356,6 +369,7 @@ public class BusinessDebtManager {
+                 sector, faceValue, LOAN_TERM_MONTHS, month,
+                 priceSector(sector, faceValue));
+         loans.add(loan);
++        lentThisMonth += faceValue;
+ 
+         // A new loan changes the sector's leverage, so the next one prices off
+         // the new position rather than the one before this loan existed.
+diff --git a/src/main/java/ham/citybuildersim/CommercialHandler.java b/src/main/java/ham/citybuildersim/CommercialHandler.java
+index 061a909..79b2620 100644
+--- a/src/main/java/ham/citybuildersim/CommercialHandler.java
++++ b/src/main/java/ham/citybuildersim/CommercialHandler.java
+@@ -307,9 +307,25 @@ public class CommercialHandler {
+      * A house of capacity 4 costs 4 x this whether one person lives in it or
+      * six. That is what a landlord actually charges for: the flat.
+      */
+-    private double rentPrice = TARGET_RENT_BURDEN
+-            * (REFERENCE_EARNERS * PayTier.UNSKILLED.getMonthlyWage())
+-            / REFERENCE_HOME_CAPACITY;
++    private double rentPrice = rentFor(PayTier.UNSKILLED.getMonthlyWage());
++
++    /**
++     * Rent per person of capacity at a given unskilled wage.
++     *
++     * Static and pure so the starting value above, the monthly re-derivation
++     * in updateStoreWages() and HouseholdCheck all compute the one number.
++     *
++     * Since 2026-09-06 the wage handed in is the LIVE unskilled wage, not the
++     * PayTier constant. Labour became a market and the minimum wage its base,
++     * which left this the last price in the game still struck off the
++     * compile-time table: raising the floor lifted every wage in the city and
++     * rent stayed where it was, so the rent burden the household screen
++     * reports drifted with a dial that was supposed to move both sides.
++     * Neutral at the default minimum wage, by construction.
++     */
++    public static double rentFor(double unskilledWage) {
++        return TARGET_RENT_BURDEN * (REFERENCE_EARNERS * unskilledWage) / REFERENCE_HOME_CAPACITY;
++    }
+ 
+     /** Front doors the city has, and how many of them are lived in. */
+     private int homes;
+@@ -357,6 +373,14 @@ public class CommercialHandler {
+             storeWages[i] = wages[i] * jobs[i];
+ 
+         }
++
++        // Rent follows the unskilled wage the market is paying this month.
++        // Same array the payroll is struck from, so the two cannot disagree,
++        // and the load path reaches here through updateEcon() so a reloaded
++        // city charges the rent it was charging.
++        if (wages.length > JobType.NO_DIPLOMA.ordinal() && wages[JobType.NO_DIPLOMA.ordinal()] > 0) {
++            rentPrice = rentFor(wages[JobType.NO_DIPLOMA.ordinal()]);
++        }
+         double totalFilled = 0;
+         int totalJobsStore = 0;
+ 
+@@ -775,8 +799,19 @@ public class CommercialHandler {
+         localPurchaseValue = localImport * foodPrice;
+         importPurchaseValue = globalImport * importPrice;
+ 
+-        double cost = localPurchaseValue * (1 + supplierSalesRate)
+-                + importPurchaseValue * (1 + ownSalesRate);
++        /*
++         * THE PRICE, AND ONLY THE PRICE, since 2026-09-06.
++         *
++         * Both halves used to be marked up by a sales rate - the supplier's on
++         * local food, the shop's own on imports - and the markup went to
++         * nobody: the mills booked the bare price, the world took the bare
++         * price, and the treasury took its VAT from the ledger without
++         * debiting anyone. The rate follows the producer, so the producer
++         * remits (EconomyManager.settleSalesTax) and the buyer pays what the
++         * goods cost. The two rates are still held here for the report's
++         * input-credit line, which is what the ledger credits the shop.
++         */
++        double cost = localPurchaseValue + importPurchaseValue;
+ 
+         if (globalImport != 0) {
+             System.out.println("Stores imported: " + formatter.format(globalImport)
+@@ -830,8 +865,14 @@ public class CommercialHandler {
+         // The only accumulating state in the sector. Kept out of
+         // computeMonthlyReport() so the report can be recalculated for display
+         // (e.g. after a load) without banking a phantom month of income.
+-        commercialCash += rRetailNetIncome;
+-        realEstateCash += rRealEstateNetIncome;
++        // NET OF THE PROFIT TAX, since 2026-09-06. Both companies used to bank
++        // the pre-tax figure while the city collected the tax on it - the same
++        // dollars counted twice, and the largest single leak MoneyAudit found
++        // (backlog item 8, decided by Jerus: deduct it). rRetailTax and
++        // rRealEstateTax are exactly what getBusinessTaxIncome() hands the
++        // treasury, so the payer and the payee now agree to the cent.
++        commercialCash += rRetailNetIncome - rRetailTax;
++        realEstateCash += rRealEstateNetIncome - rRealEstateTax;
+     }
+ 
+     /**
+diff --git a/src/main/java/ham/citybuildersim/ConstructionHandler.java b/src/main/java/ham/citybuildersim/ConstructionHandler.java
+index 721f714..cbd95b1 100644
+--- a/src/main/java/ham/citybuildersim/ConstructionHandler.java
++++ b/src/main/java/ham/citybuildersim/ConstructionHandler.java
+@@ -114,11 +114,29 @@ public class ConstructionHandler {
+         calculateExpenses();
+         netIncome = revenue - expenses - interestExpense - propertyTaxExpense;
+         cash += netIncome;
++
++        // What this month's banking was made of, for MoneyAudit. The live
++        // fields are recomputed later in the same month (updateServices() runs
++        // calculateExpenses() again with next month's inputs), so anything
++        // that wants to know what was actually charged reads these.
++        rRevenue = revenue;
++        rWageExpense = wageExp;
++        rMaterialsExpense = materialsExp;
++        rInterestExpense = interestExpense;
++        rPropertyTaxExpense = propertyTaxExpense;
++
+         revenue = 0;
+         subsidyThisMonth = 0;
+         materialsConsumed = 0;
+     }
+ 
++    private double rRevenue, rWageExpense, rMaterialsExpense, rInterestExpense, rPropertyTaxExpense;
++    public double getReportRevenue()            { return rRevenue; }
++    public double getReportWageExpense()        { return rWageExpense; }
++    public double getReportMaterialsExpense()   { return rMaterialsExpense; }
++    public double getReportInterestExpense()    { return rInterestExpense; }
++    public double getReportPropertyTaxExpense() { return rPropertyTaxExpense; }
++
+     /**
+      * Take a build order onto the books: cash received now, revenue recognised
+      * as the work gets done.
+diff --git a/src/main/java/ham/citybuildersim/CreditCheck.java b/src/main/java/ham/citybuildersim/CreditCheck.java
+index f5e4d84..5f9af0a 100644
+--- a/src/main/java/ham/citybuildersim/CreditCheck.java
++++ b/src/main/java/ham/citybuildersim/CreditCheck.java
+@@ -448,7 +448,7 @@ public class CreditCheck {
+            ================================================================== */
+         System.out.println("\n--- a note raises what it was asked to raise ---");
+ 
+-        Game notes = new Game();
++        Game notes = new Game(GameFiles.scratch("creditcheck"));
+         notes.getBuildingManager().initializeTemplates();
+ 
+         int shortfalls = 0;
+@@ -491,7 +491,7 @@ public class CreditCheck {
+            ============================================================== */
+         System.out.println("\n--- borrow for a road, and get the road ---");
+ 
+-        Game roadCity = new Game();
++        Game roadCity = new Game(GameFiles.scratch("creditcheck"));
+         roadCity.newGame();
+         BuildingManager yard = roadCity.getBuildingManager();
+ 
+@@ -552,6 +552,59 @@ public class CreditCheck {
+                 roadCity.getCash() < cashBefore + gap);
+         assertTrue("...and there is a receipt for it", roadCity.hasNewReceipt());
+ 
++        /* ============ 10. THE BAN IS ONE BAN ============
++
++           Found by reading, 2026-09-06. A sector written down in a restructure
++           is barred from shortfall loans for twelve months - and until today
++           could still borrow to EXPAND, because the investment advisor's
++           Investor.canBorrow() said yes to any positive amount. A sector that
++           cannot borrow to keep the lights on could borrow to build a mall.
++
++           The fixture: a city whose retail sector has a healthy appetite (jobs
++           and people, few shops), then that sector is bankrupted by hand and
++           restructured so the ban is live, with cash short of one store.
++           ================================================================ */
++        System.out.println("\n--- a borrowing ban also stops the investment advisor ---");
++
++        Game banned = new Game(GameFiles.scratch("creditcheck"));
++        banned.run();
++        banned.buildStack(template(banned, "House"), 300, false);
++        banned.buildStack(template(banned, "Textile Mill"), 3, false);
++        banned.buildStack(template(banned, "Construction Depot"), 4, false);
++        banned.buildStack(template(banned, "Coal Power Plant"), 1, false);
++        quietly(() -> banned.simulateMonths(36));
++
++        BusinessDebtManager ledger = banned.getEconomyManager().getBusinessDebtManager();
++        EconomyManager econ = banned.getEconomyManager();
++        String sector = BusinessDebtManager.RETAIL;
++
++        // Owe a lot against nothing, and let the restructure fire.
++        ledger.issueLoan(sector, 5_000_000, banned.getMonth());
++        ledger.setAssets(sector, -1);
++        ledger.restructure(sector);
++        assertTrue("fixture: retail is under a borrowing ban", ledger.isBorrowingBlocked(sector));
++
++        // Enough cash that the advisor wants to build, not enough to pay for it.
++        econ.setSectorCash(sector, 1_000);
++        int loansBefore = ledger.getLoanCount(sector);
++        double principalBefore = ledger.getPrincipal(sector);
++        int shopsBefore = banned.getBuildingManager().getTotalStoreCoverage();
++
++        quietly(() -> banned.simulateMonths(3));
++
++        System.out.println("   retail's advisor says: " + banned.getLastInvestment(sector));
++        // Fewer loans is fine - the written-down ones mature and settle. More
++        // is the bug.
++        assertTrue("a banned sector takes no new loan to expand",
++                ledger.getLoanCount(sector) <= loansBefore
++                        && ledger.getPrincipal(sector) <= principalBefore + 1e-6);
++        assertTrue("...and the refusal says why, in the ban's own words",
++                banned.getLastInvestment(sector).contains("borrowing ban"));
++        // Retiring idle shops is allowed (that is what a broke sector does);
++        // opening new ones on credit is not.
++        assertTrue("...and nothing was built on credit it did not have",
++                banned.getBuildingManager().getTotalStoreCoverage() <= shopsBefore);
++
+         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
+         System.exit(fails == 0 ? 0 : 1);
+     }
+@@ -575,6 +628,13 @@ public class CreditCheck {
+         return rate > shape.floorRate() + 1e-4 && rate < shape.ceilingRate() - 1e-4;
+     }
+ 
++    /** Runs a stretch of the game without its per-month console output. */
++    static void quietly(Runnable work) {
++        java.io.PrintStream out = System.out;
++        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
++        try { work.run(); } finally { System.setOut(out); }
++    }
++
+     static BuildingsTemplate template(Game game, String name) {
+         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+             if (t.getName().equals(name)) return t;
+diff --git a/src/main/java/ham/citybuildersim/DataSave.java b/src/main/java/ham/citybuildersim/DataSave.java
+index d57392a..bcb165f 100644
+--- a/src/main/java/ham/citybuildersim/DataSave.java
++++ b/src/main/java/ham/citybuildersim/DataSave.java
+@@ -143,6 +143,19 @@ public class DataSave {
+     private double retailFillBasis;
+     private double retailImportTax;
+     private double industryDemand;
++    /**
++     * Dollars the stores paid the mills last month. A flag rather than NaN for
++     * "not carried", because Gson refuses to write NaN and the save would fail.
++     */
++    private double industryLocalSalesValue;
++    private boolean hasIndustryLocalSalesValue;
++    public double getIndustryLocalSalesValue() {
++        return hasIndustryLocalSalesValue ? industryLocalSalesValue : Double.NaN;
++    }
++    public void setIndustryLocalSalesValue(double value) {
++        if (Double.isNaN(value)) { hasIndustryLocalSalesValue = false; industryLocalSalesValue = 0; }
++        else { hasIndustryLocalSalesValue = true; industryLocalSalesValue = value; }
++    }
+     private int industryUnitsSold;
+     private int industryUnitsImported;
+     private boolean hasMonthFlows;
+diff --git a/src/main/java/ham/citybuildersim/EconomyManager.java b/src/main/java/ham/citybuildersim/EconomyManager.java
+index 00c65b8..57cb980 100644
+--- a/src/main/java/ham/citybuildersim/EconomyManager.java
++++ b/src/main/java/ham/citybuildersim/EconomyManager.java
+@@ -107,6 +107,7 @@ public class EconomyManager {
+         // what the stores actually bought from industry last month, so the two
+         // sides trade with each other rather than each guessing at the other.
+         industrialHandler.setFoodDemand(commercialHandler.getReportLocalImports());
++        industrialHandler.setLocalSalesValue(commercialHandler.getReportLocalPurchaseValue());
+     }
+     public void updateEcon(){
+         getMonthGdp();
+@@ -201,7 +202,10 @@ public class EconomyManager {
+     public IronMarket getIronMarket()       { return ironMarket; }
+ 
+     /** Once-per-month mining income statement. */
+-    public void updateMiningReport(){ miningHandler.calculateResults(); }
++    public void updateMiningReport(){
++        miningHandler.setTaxRate(taxPolicy.effectiveProfitRate(PolicySector.MINING));
++        miningHandler.calculateResults();
++    }
+ 
+     /** Pure recompute for the load path - does not bank cash. */
+     public void refreshMiningReport(){ miningHandler.computeMonthlyReport(); }
+@@ -295,6 +299,7 @@ public class EconomyManager {
+ 
+     /** Once-per-month heavy industry income statement. */
+     public void updateHeavyIndustryReport(){
++        heavyIndustryHandler.setTaxRate(taxPolicy.effectiveProfitRate(PolicySector.HEAVY_INDUSTRY));
+         heavyIndustryHandler.calculateResults();
+     }
+ 
+@@ -874,6 +879,22 @@ public class EconomyManager {
+         }
+ 
+         salesTax = salesTaxLedger.settle(taxPolicy);
++
++        /*
++         * AND THE SECTORS PAY IT. Until 2026-09-06 the city collected the
++         * ledger's total and nobody was debited: retail paid a markup on its
++         * purchases to nobody at all, and the other five sectors paid nothing.
++         * The rate follows the producer, so the producer remits - its payable
++         * on what it sold, less the credit on what it bought, out of its own
++         * cash. A sector in a refund position is credited. Every dollar the
++         * treasury books here now comes out of a pool MoneyAudit can see.
++         */
++        for (PolicySector sector : PolicySector.values()) {
++            double net = salesTaxLedger.getNet(sector);
++            if (net != 0) {
++                setSectorCash(sector.creditName(), getSectorCash(sector.creditName()) - net);
++            }
++        }
+         return salesTax;
+     }
+ 
+@@ -1378,15 +1399,17 @@ public class EconomyManager {
+     public int getRetailLocalImports()    { return commercialHandler.getReportLocalImports(); }
+     public int getRetailGlobalImports()   { return commercialHandler.getReportGlobalImports(); }
+     public double getIndustryDemand()     { return industrialHandler.getFoodDemand(); }
++    public double getIndustryLocalSalesValue() { return industrialHandler.getLocalSalesValue(); }
+     public int getIndustryUnitsSold()     { return industrialHandler.getProductsSoldCopy(); }
+     public int getIndustryUnitsImported() { return industrialHandler.getProductsImportedCopy(); }
+ 
+     public void restoreMonthFlows(double retailCostOfGoods, int retailLocal, int retailGlobal,
+                                   double retailFillBasis, double retailImportTax,
+-                                  double industryDemand,
++                                  double industryDemand, double industryLocalSalesValue,
+                                   int industrySold, int industryImported,
+                                   double energyBasis, double waterBasis, double roadBasis,
+                                   double healthBasis) {
++        industrialHandler.setLocalSalesValue(industryLocalSalesValue);
+         commercialHandler.setStoreInventoryCost(retailCostOfGoods);
+         commercialHandler.setReportImports(retailLocal, retailGlobal);
+         commercialHandler.restoreMonthReport(retailFillBasis, retailImportTax,
+@@ -1512,6 +1535,33 @@ public class EconomyManager {
+     public double getBusinessTax(){ return totalBusinessTax; }
+     public double getIndustrialTax(){ return totalIndustrialTax; }
+     public double getSalesTax(){ return salesTax; }
++    public double getHeavyIndustryTax(){ return totalHeavyIndustryTax; }
++
++    /**
++     * The banded wage tax on one sector's payroll, for a screen that wants to
++     * say what a building's wages are worth to the treasury. Asked of the
++     * policy rather than multiplied out in the UI, because the wage tax is
++     * banded and "payroll x the income rate" was wrong for every band but one.
++     */
++    public double wageTaxOnPayroll(double[] payrollPerType) {
++        return taxPolicy.wageTaxOn(payrollPerType, null);
++    }
++
++    /** The month's power bills, as the four charged sectors' statements booked them. */
++    public double getSectorElectricityCharges() {
++        return commercialHandler.getReportElectricityCost()
++                + industrialHandler.getReportElectricityCost()
++                + heavyIndustryHandler.getReportElectricityCost()
++                + miningHandler.getReportElectricityCost();
++    }
++
++    /** The month's water bills, likewise. */
++    public double getSectorWaterCharges() {
++        return commercialHandler.getReportWaterCost()
++                + industrialHandler.getReportWaterCost()
++                + heavyIndustryHandler.getReportWaterCost()
++                + miningHandler.getReportWaterCost();
++    }
+     public double getWageTax(){ return totalWageTax; }
+     public double getUtilityIncome(){ return utilityIncome; }
+ 
+diff --git a/src/main/java/ham/citybuildersim/Education.java b/src/main/java/ham/citybuildersim/Education.java
+index be4a83b..59c933e 100644
+--- a/src/main/java/ham/citybuildersim/Education.java
++++ b/src/main/java/ham/citybuildersim/Education.java
+@@ -185,6 +185,35 @@ public class Education {
+      */
+     private final double[] everGraduated = new double[WageBand.values().length];
+ 
++    /*
++     * THE PIPELINE (2026-09-06).
++     *
++     * Everybody part way through an adult course, by course and by months
++     * left: inFlight[type][k] is the number of students who graduate in k+1
++     * months. Until today there was no such thing - `taking` was computed
++     * from the seats and the willing pool and handed straight to the band
++     * flow, so a medical school licensed doctors THE MONTH IT OPENED and the
++     * "twenty-year loop" this class was built for existed only in its
++     * comments. The steady-state throughput was right, which is why
++     * EducationCheck passed; what was missing was the wait.
++     *
++     * This is a STOCK, and it is the second thing in this class a save has to
++     * carry: seven years of a medical student's life is not recoverable from
++     * a closing balance. A format-17 city loads with nobody in flight and
++     * the schools fill from empty, which is what they would have done had
++     * they been built the month the save was made.
++     */
++    private final double[][] inFlight = new double[EducationType.values().length][];
++
++    /** Adults currently studying full time, by the band they came FROM. Derived. */
++    private final double[] studying = new double[WageBand.values().length];
++
++    {
++        for (EducationType type : EducationType.values()) {
++            inFlight[type.ordinal()] = type.isAdult() ? new double[type.months()] : new double[0];
++        }
++    }
++
+     /* ===================================================================
+        THE MONTH
+        =================================================================== */
+@@ -201,6 +230,18 @@ public class Education {
+     public void advanceMonth(double[] places, PopulationCohorts pyramid,
+                              PopulationManager people, LabourMarket market,
+                              double staffedPayroll, double schoolUpkeep) {
++        advanceMonth(places, pyramid, people, market, staffedPayroll, schoolUpkeep, 0);
++    }
++
++    /**
++     * @param attrition the share of adults who left the city or died this
++     *                  month, so the students in flight thin at the same rate
++     *                  as the workforce they came from
++     */
++    public void advanceMonth(double[] places, PopulationCohorts pyramid,
++                             PopulationManager people, LabourMarket market,
++                             double staffedPayroll, double schoolUpkeep,
++                             double attrition) {
+ 
+         java.util.Arrays.fill(graduates, 0);
+         java.util.Arrays.fill(licences, 0);
+@@ -210,7 +251,33 @@ public class Education {
+         payroll = Math.max(0, staffedPayroll);
+         upkeep = Math.max(0, schoolUpkeep);
+ 
+-        if (places == null || pyramid == null || people == null) return;
++        /*
++         * The pipeline moves before anything is measured: this month's
++         * graduates leave it, everyone else is a month closer, and a share of
++         * them died or moved away. Done even when there are no schools - a
++         * city can demolish its university with four cohorts inside it, and
++         * they still graduate; the building was the seats, not the students.
++         */
++        double keep = 1 - Math.max(0, Math.min(1, attrition));
++        for (EducationType type : EducationType.values()) {
++            if (!type.isAdult()) continue;
++            double[] queue = inFlight[type.ordinal()];
++            double finishing = queue.length > 0 ? queue[0] * keep : 0;
++            for (int k = 0; k + 1 < queue.length; k++) queue[k] = queue[k + 1] * keep;
++            if (queue.length > 0) queue[queue.length - 1] = 0;
++            if (finishing <= 0) continue;
++            if (type.isProfessional()) {
++                licences[type.licenses().ordinal()] += finishing;
++            } else if (type.produces() != null) {
++                graduates[type.produces().ordinal()] += finishing;
++                if (type.requires() != null) graduates[type.requires().ordinal()] -= finishing;
++            }
++        }
++
++        if (places == null || pyramid == null || people == null) {
++            refreshStudying();
++            return;
++        }
+ 
+         /* ------------------------- the basic ladder ------------------------- */
+         double children = pyramid.get(AgeBand.CHILD);
+@@ -296,8 +363,36 @@ public class Education {
+         for (int b = 0; b < graduates.length; b++) {
+             if (graduates[b] > 0) everGraduated[b] += graduates[b];
+         }
++
++        refreshStudying();
++    }
++
++    /** Recounts who is in a lecture theatre, by the band they came from. */
++    private void refreshStudying() {
++        java.util.Arrays.fill(studying, 0);
++        for (EducationType type : EducationType.values()) {
++            if (!type.isAdult() || type.requires() == null) continue;
++            studying[type.requires().ordinal()] += studentBody(type);
++        }
++    }
++
++    /** Everybody part way through this course. */
++    public double studentBody(EducationType type) {
++        double total = 0;
++        for (double cohort : inFlight[type.ordinal()]) total += cohort;
++        return total;
+     }
+ 
++    /**
++     * Adults out of the labour supply this month because they are studying,
++     * by the band they hold NOW (the one they enrolled from). Jerus's call:
++     * full-time students do not work. PopulationManager subtracts these from
++     * the band's supply, so a city that sends four hundred diploma-holders to
++     * college is four hundred workers short for two years - a real cost, and
++     * the reason the wait is felt rather than merely recorded.
++     */
++    public double[] getStudying() { return studying; }
++
+     /**
+      * One course, for adults who already have what it asks for.
+      *
+@@ -339,23 +434,28 @@ public class Education {
+          * this whole mechanic is about: a four-year degree means four cohorts
+          * are in the building for every one that leaves it.
+          */
+-        double seatsPerMonth = seats / (double) type.months();
+-        double taking = Math.min(seatsPerMonth, eligible * willing * ENROLMENT_RATE);
+-        if (taking <= 0) return;
+-
+-        double studentBody = Math.min(seats, taking * type.months());
++        /*
++         * The intake: whoever wants to and can, up to the seats the school has
++         * FREE. The seats are occupied by the students already in flight, so a
++         * full school admits only as many as graduate this month - which is
++         * places over course length, the steady-state throughput the first
++         * version computed directly and handed out the same month.
++         *
++         * Nobody graduates here. They join the back of the queue and come out
++         * of the front of it type.months() from now, in advanceMonth().
++         */
++        double[] queue = inFlight[i];
++        double occupied = studentBody(type);
++        double free = Math.max(0, seats - occupied);
++        double intake = Math.min(free, eligible * willing * ENROLMENT_RATE);
++        if (intake > 0 && queue.length > 0) {
++            queue[queue.length - 1] += intake;
++        }
+ 
+-        enrolled[i] = studentBody;
++        double body = studentBody(type);
++        enrolled[i] = body;
+         coverage[i] = cover(seats, Math.max(eligible, 1));
+-        charge(type, studentBody);
+-
+-        if (type.isProfessional()) {
+-            // Raises nobody's band - a medical student was already a graduate.
+-            licences[type.licenses().ordinal()] += taking;
+-        } else if (type.produces() != null) {
+-            graduates[type.produces().ordinal()] += taking;
+-            if (needs != null) graduates[needs.ordinal()] -= taking;
+-        }
++        charge(type, body);
+     }
+ 
+     /**
+@@ -540,20 +640,44 @@ public class Education {
+        =================================================================== */
+ 
+     public double[] getState() {
+-        double[] out = new double[everGraduated.length + 1];
+-        out[0] = tuitionSubsidy;
+-        System.arraycopy(everGraduated, 0, out, 1, everGraduated.length);
++        int size = everGraduated.length + 1;
++        for (double[] queue : inFlight) size += queue.length;
++        double[] out = new double[size];
++        int i = 0;
++        out[i++] = tuitionSubsidy;
++        for (double v : everGraduated) out[i++] = v;
++        // Then every cohort in flight, course by course in enum order, each
++        // course's queue in full - so a change to any course length changes
++        // the array's length and the restore below refuses it whole.
++        for (double[] queue : inFlight) for (double v : queue) out[i++] = v;
+         return out;
+     }
+ 
+-    /** Refused whole on a length mismatch, never padded. The usual rule. */
++    /**
++     * Refused whole on a length mismatch, never padded. The usual rule - with
++     * one exception: the format-17 shape (the dial and the totals, nobody in
++     * flight) is accepted and the schools start empty, because that is what
++     * those cities looked like before the pipeline existed.
++     */
+     public void restore(double[] saved) {
+-        if (saved == null || saved.length != everGraduated.length + 1) {
++        for (double[] queue : inFlight) java.util.Arrays.fill(queue, 0);
++        java.util.Arrays.fill(studying, 0);
++
++        int shortForm = everGraduated.length + 1;
++        int fullForm = shortForm;
++        for (double[] queue : inFlight) fullForm += queue.length;
++
++        if (saved == null || (saved.length != shortForm && saved.length != fullForm)) {
+             tuitionSubsidy = DEFAULT_SUBSIDY;
+             java.util.Arrays.fill(everGraduated, 0);
+             return;
+         }
+-        setTuitionSubsidy(saved[0]);
+-        System.arraycopy(saved, 1, everGraduated, 0, everGraduated.length);
++        int i = 0;
++        setTuitionSubsidy(saved[i++]);
++        for (int b = 0; b < everGraduated.length; b++) everGraduated[b] = saved[i++];
++        if (saved.length == fullForm) {
++            for (double[] queue : inFlight) for (int k = 0; k < queue.length; k++) queue[k] = saved[i++];
++        }
++        refreshStudying();
+     }
+ }
+diff --git a/src/main/java/ham/citybuildersim/EducationCheck.java b/src/main/java/ham/citybuildersim/EducationCheck.java
+index 14d1bea..10db48c 100644
+--- a/src/main/java/ham/citybuildersim/EducationCheck.java
++++ b/src/main/java/ham/citybuildersim/EducationCheck.java
+@@ -59,7 +59,7 @@ public class EducationCheck {
+ 
+     /** A funded city with room, so the thing under test is never money or land. */
+     static Game city(GameFiles files) {
+-        Game g = files == null ? new Game() : new Game(files);
++        Game g = new Game(files == null ? GameFiles.scratch("educheck") : files);
+         g.newGame();
+         g.getGovernmentInvestor().spend(-900_000_000);
+         g.getLandManager().setOwnedSqFt(
+@@ -196,8 +196,15 @@ public class EducationCheck {
+ 
+         double bandTotal = 0;
+         for (double b : bands) bandTotal += b;
+-        assertTrue("the bands still add up to the workforce",
+-                Math.abs(bandTotal - tp.getWorkforce()) < 2);
++        // Plus the students: since the pipeline exists (2026-09-06) the people
++        // in a lecture theatre are out of the supply, and the supply plus the
++        // students is the workforce.
++        double studying = tp.getStudyingTotal();
++        System.out.printf("   supply %,.0f + studying %,.0f = workforce %,d%n",
++                bandTotal, studying, tp.getWorkforce());
++        assertTrue("the bands plus the students still add up to the workforce",
++                Math.abs(bandTotal + studying - tp.getWorkforce()) < 2);
++        assertTrue("fixture: somebody is actually studying", studying > 1);
+ 
+         /* ============ 6. LICENCES CANNOT OUTNUMBER GRADUATES ============
+ 
+@@ -342,6 +349,65 @@ public class EducationCheck {
+         assertTrue("...and the tuition policy the player chose",
+                 Math.abs(back.getEducation().getTuitionSubsidy() - subsidyBefore) < 1e-9);
+ 
++        // And the students part way through, who are the pipeline itself.
++        boolean sameStudents = true;
++        double inFlight = 0;
++        for (EducationType type : EducationType.values()) {
++            if (!type.isAdult()) continue;
++            inFlight += lived.getEducation().studentBody(type);
++            if (Math.abs(lived.getEducation().studentBody(type)
++                    - back.getEducation().studentBody(type)) > 1e-6) sameStudents = false;
++        }
++        System.out.printf("   %,.0f students in flight before the save%n", inFlight);
++        assertTrue("fixture: somebody is part way through a course", inFlight > 10);
++        assertTrue("...and every student came back", sameStudents);
++        assertTrue("...and they are out of the supply on both sides",
++                Math.abs(lived.getPopulationManager().getStudyingTotal()
++                        - back.getPopulationManager().getStudyingTotal()) < 1e-6
++                && back.getPopulationManager().getStudyingTotal() > 10);
++
++        /* ============ 9b. THE WAIT IS REAL ============
++
++           A university built today is graduates in four years, not this
++           month. The steady-state throughput was always right; the lag was
++           missing until 2026-09-06, and a mechanic whose whole character is
++           the wait has to be measured on the wait.
++           ================================================================= */
++        System.out.println("\n--- the wait is real ---");
++
++        Game waits = city(null);
++        quietly(() -> {
++            build(waits, "Elementary School", 4);
++            build(waits, "Middle School", 3);
++            build(waits, "High School", 3);
++            waits.simulateMonths(120);   // a city with diploma-holders and no university
++        });
++        double universityBefore = waits.getPopulationManager().workforceByBand()[WageBand.UNIVERSITY.ordinal()]
++                + waits.getPopulationManager().getStudyingTotal() * 0;   // graduates, not students
++        double everBefore = waits.getEducation().getEverGraduated()[WageBand.UNIVERSITY.ordinal()];
++        quietly(() -> build(waits, "University", 1));
++
++        int course = EducationType.UNIVERSITY.months();
++        int firstGraduation = -1;
++        double peakStudents = 0;
++        for (int m = 1; m <= course + 12; m++) {
++            quietly(() -> waits.simulateMonths(1));
++            peakStudents = Math.max(peakStudents, waits.getEducation().studentBody(EducationType.UNIVERSITY));
++            if (firstGraduation < 0
++                    && waits.getEducation().getEverGraduated()[WageBand.UNIVERSITY.ordinal()] > everBefore + .5) {
++                firstGraduation = m;
++            }
++        }
++        System.out.printf("   course %d months; first graduates in month %d; peak %,.0f students%n",
++                course, firstGraduation, peakStudents);
++        assertTrue("fixture: people enrolled", peakStudents > 10);
++        assertTrue("nobody graduates before the course is over",
++                firstGraduation < 0 || firstGraduation >= course);
++        assertTrue("...and somebody graduates once it is",
++                firstGraduation > 0 && firstGraduation <= course + 6);
++        assertTrue("...while the students were out of the supply",
++                waits.getPopulationManager().getStudyingTotal() > 10);
++
+         /* ============ 10. AND THE TREASURY PAYS FOR IT ============ */
+         System.out.println("\n--- and it is on the city's books ---");
+ 
+diff --git a/src/main/java/ham/citybuildersim/EducationType.java b/src/main/java/ham/citybuildersim/EducationType.java
+index 07b185b..c5d2bea 100644
+--- a/src/main/java/ham/citybuildersim/EducationType.java
++++ b/src/main/java/ham/citybuildersim/EducationType.java
+@@ -91,6 +91,9 @@ public enum EducationType {
+     /** The band somebody leaves with, or null for a stage that only feeds one. */
+     public WageBand produces() { return produces; }
+ 
++    /** A course adults enrol in and leave the labour supply for; the basic stages are not. */
++    public boolean isAdult() { return this == COLLEGE || this == UNIVERSITY || isProfessional(); }
++
+     /** The job this school makes possible, or null if it teaches a level. */
+     public JobType licenses() { return licenses; }
+ 
+diff --git a/src/main/java/ham/citybuildersim/Game.java b/src/main/java/ham/citybuildersim/Game.java
+index a4fa9fa..456f8dc 100644
+--- a/src/main/java/ham/citybuildersim/Game.java
++++ b/src/main/java/ham/citybuildersim/Game.java
+@@ -45,7 +45,6 @@ public class Game {
+      */
+     private final GameFiles gameFiles;
+     private HistoryGrapher historyGrapher;
+-    private MenuManager menuManager;
+     private DebtManager debtManager;
+     
+     private SimulationEngine simulationEngine;
+@@ -97,8 +96,16 @@ public class Game {
+      */
+ 
+     //settings
+-    boolean reports = true;
+-    boolean graphs = true;
++    /*
++     * Console output per month: seven sector income statements and three 12x60
++     * ASCII graphs. Off by default since 2026-09-06. GameLog tees everything
++     * that reaches System.out into log.txt and stops writing at its cap, so
++     * with these on a long session filled the log with graphs and the one line
++     * you wanted - the crash - landed after the cap. Both stay switchable from
++     * the Settings screen for anyone reading the log on purpose.
++     */
++    boolean reports = false;
++    boolean graphs = false;
+     
+     //boolean
+     boolean initialized = false;
+@@ -149,7 +156,6 @@ public class Game {
+         dataSave = new DataSave();
+         historySave = new HistorySave();
+         historyGrapher = new HistoryGrapher();
+-        menuManager = new MenuManager();
+         debtManager = new DebtManager();
+         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
+ 
+@@ -222,8 +228,8 @@ public class Game {
+         this.constructionShedMonth = -1;
+         this.constructionShedPoints = 0;
+ 
+-        this.reports = true;
+-        this.graphs = true;
++        this.reports = false;
++        this.graphs = false;
+     }
+     
+     public void run() {
+@@ -270,10 +276,6 @@ public class Game {
+         formatter.setMinimumFractionDigits(0);
+     }
+     
+-    private int getInput() {
+-         return 0;
+-    }
+-    
+ 
+     //buttons
+     public void newGame(){
+@@ -399,38 +401,6 @@ public class Game {
+         nextMonth();
+     }
+     
+-    private void handleStartGame() {
+-        boolean inMainMenu = true;
+-
+-        while (inMainMenu) {
+-            menuManager.showMainMenu(month,cash,economyManager.getTotalIncome()+servicesManager.getServiceNetIncome());
+-
+-            int choice = getInput();
+-            switch (choice) {
+-                case 1:
+-                    
+-                    break;
+-                case 2:
+-                    handleEconomyMenu();
+-                    break;
+-                case 3:
+-                    printPopulationInfo();
+-                    break;
+-                case 4:
+-                    nextMonth();
+-                    break;
+-                case 5:
+-                    handleMultipleMonths();
+-                    break;
+-                case 6:
+-                    inMainMenu = false;
+-                    break;
+-                default:
+-                    System.out.println("Invalid choice.");
+-            }
+-        }
+-    }
+-    
+     public int getMonth(){
+         return month;
+     }
+@@ -1252,10 +1222,26 @@ public class Game {
+         double perUnitProfit = businessInvestment.estimatedMonthlyProfit(
+                 decision.sector, decision.template);
+ 
++        // A banned sector can still build what its own cash covers; it cannot
++        // borrow the difference. Said here, in the same words the People and
++        // credit screens use, rather than discovered as a silent buildFor()
++        // refusal that would have read as "land went" below.
++        if (credit.isBorrowingBlocked(decision.sector)
++                && businessInvestment.getCostOf(decision.template, 1) > cash) {
++            lastInvestment.put(decision.sector,
++                    String.format("Holding: borrowing ban, %d more months - %s would need credit",
++                            credit.getBlockedMonths(decision.sector),
++                            decision.template.getName()));
++            return;
++        }
++
++        boolean banned = credit.isBorrowingBlocked(decision.sector);
+         int affordable = 0;
+         for (int n = decision.quantity; n >= 1; n--) {
+             double cost = businessInvestment.getCostOf(decision.template, n);
+             double borrowed = Math.max(cost - cash, 0);
++            // Under a ban the largest slice is the one its own cash pays for.
++            if (banned && borrowed > 0) continue;
+             if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed, rate)) {
+                 affordable = n;
+                 break;
+@@ -1313,7 +1299,16 @@ public class Game {
+             // Businesses borrow freely here - the rate rises with leverage and
+             // stops at its cap. What stops a spiral is the project having to
+             // service its own debt, checked in consider() above.
+-            @Override public boolean canBorrow(double amount) { return amount > 0; }
++            //
++            // EXCEPT during a borrowing ban. A sector that was just written
++            // down is barred from shortfall loans for twelve months
++            // (BusinessDebtManager.coverShortfall), and until 2026-09-06 that
++            // ban stopped at the shortfall desk: this method said yes to any
++            // positive amount, so the same sector could not borrow to keep the
++            // lights on but could borrow to expand. The ban is one ban.
++            @Override public boolean canBorrow(double amount) {
++                return amount > 0 && !credit.isBorrowingBlocked(sector);
++            }
+ 
+             @Override public void borrow(double amount, int month) {
+                 credit.issueLoan(sector, amount, month);
+@@ -1508,137 +1503,65 @@ public class Game {
+                 economyManager.getBusinessDebtManager().getTotalWrittenOff(),
+                 owned);
+     }
+-
+-    private void handleMultipleMonths() {
+-        System.out.println("How many months? ");
+-        int number = getInput();
+-        
+-
+-        graphs = false;
+-        reports = false;
+-        for (int i = 0; i < number; i++) {
+-            if (cash > 0) {
+-                nextMonth();
+-            } else {
+-                
+-                System.out.println("out of cash, only simulated " + i + " months instead of " + number + " months.");
+-                break;
+-            }
+-
+-        }
+-        graphs = true;
+-        reports = true;
+-        
+-    }
+-    private void handleBuildingsMenu() {
+-        boolean inBuildingsMenu = true;
+-
+-        while (inBuildingsMenu) {
+-            menuManager.showBuildingsMenu(cash,buildingManager.getConstructionMaterials());
+-
+-            int choice = getInput();
+-
+-            switch (choice) {
+-                case 1:
+-                    handleResidentialMenu();
+-                    break;
+-                case 2:
+-                    handleCommercialMenu();
+-                    break;
+-                case 3:
+-                    handleIndustrialMenu();
+-                    break;
+-                case 4:
+-                    handleOtherMenu();
+-                    break;
+-                case 5:
+-                    inBuildingsMenu = false;
+-                    break;
+-                default:
+-                    System.out.println("Invalid choice.");
+-            }
+-        }
+-    }
+-    private void handleResidentialMenu(){
+-        handleBuildingMenu("Residential Buildings",EnumSet.of(BuildingType.RESIDENTIAL));
+-    }
+-    private void handleCommercialMenu(){
+-        handleBuildingMenu("Commercial Buildings",EnumSet.of(BuildingType.COMMERCIAL));
+-    }
+-    private void handleIndustrialMenu(){
+-        handleBuildingMenu("Industrial Buildings",EnumSet.of(BuildingType.INDUSTRIAL,BuildingType.CONSTRUCTION,BuildingType.ELECTRICITY));
+-    }
+-    
+-    //universal building Method
+-    private void handleBuildingMenu(String menuTitle, EnumSet<BuildingType> categories) {
+-        boolean inMenu = true;
+-
+-        while (inMenu) {
+-            // Now it uses the categories passed into the method
+-            List<BuildingsTemplate> buildings = buildingManager.getTemplatesByCategory(categories);
+-
+-            System.out.println("\n--- " + menuTitle + " ---");
+-            System.out.print("Cash: ");
+-            System.out.printf("%.2f%n", cash);
+-            System.out.println("Construction Materials: " + buildingManager.getConstructionMaterials());
+-
+-            // Dynamic List based on the category
+-            for (int i = 0; i < buildings.size(); i++) {
+-                System.out.println((i + 1) + ". " + buildings.get(i).getName());
+-            }
+-
+-            System.out.println((buildings.size() + 1) + ". Back");
+-
+-            int choice = getInput();
+-            if (choice == (buildings.size() + 1)) {
+-                inMenu = false;
+-                continue; // Exit the loop
+-            }
+-
+-            if (choice >= 1 && choice <= buildings.size()) {
+-                handleBuildingSelection(buildings.get(choice - 1));
+-            }
+-        }
+-    }
+-    
+-    private void handleBuildingSelection(BuildingsTemplate selected) {
+-        System.out.println("\n--- " + selected.getName() + " info ---");
+-        System.out.println("1. Build - Cost: " + selected.getCashCost() + " Materials Cost: " + selected.getConstructionMaterials());
+-        System.out.println("2. Info");
+-        System.out.println("3. Back");
+-
+-        int choice = getInput();
+-
+-        switch (choice) {
+-            case 1:
+-                System.out.print("How many? ");
+-                int quantity = getInput();
+-                processBuildOrder(selected, quantity, false); // Extracted one step further for clarity
+-                break;
+-            case 2:
+-                printBuildingInfo(selected.getName());
+-                break;
+-            case 3:
+-                return; // Just goes back to the previous list
+-            default:
+-                System.out.println("Invalid choice.");
+-        }
+-    }
+     public boolean hasNewReceipt(){return hasNewReceipt;}
+     public void clearReceipt(){ hasNewReceipt = false;}
+     
+     public double calculateTotalCost(BuildingsTemplate selected, int quantity) {
+-        double materialsPrice = buildingManager.getConstructionMaterialPrice();
+-        double constructionMaterials = buildingManager.getConstructionMaterials();
+-        double totalMaterials = selected.constructionMaterials * quantity;
+-        double neededMaterials = 0;
++        return quoteBuild(selected, quantity).total;
++    }
+ 
+-        if (constructionMaterials < totalMaterials) {
+-            neededMaterials = totalMaterials - constructionMaterials;
++    /**
++     * Everything the build screen shows about an order, worked out ONCE.
++     *
++     * The screen used to re-derive the materials shortage, the import bill
++     * and the build time beside calculateTotalCost() - four lines of the same
++     * arithmetic in a second file, agreeing with this one right up until the
++     * first time either changed. This codebase has been bitten by that shape
++     * five times (see processBuildOrder). The quote is the one definition;
++     * calculateTotalCost() is its total, and the screen prints its fields.
++     */
++    public static final class BuildQuote {
++        public final int quantity;
++        public final double sticker;
++        public final double materialsNeeded;
++        public final double materialsInStock;
++        public final double materialsImported;
++        public final double materialsPrice;
++        public final double importCost;
++        public final double total;
++        public final double landNeeded;
++        public final double landFree;
++        /** Months at today's construction output, or NaN when there is none. */
++        public final double months;
++
++        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
++                   double materialsPrice, double landNeeded, double landFree, double output,
++                   double points) {
++            this.quantity = quantity;
++            this.sticker = sticker;
++            this.materialsNeeded = materialsNeeded;
++            this.materialsInStock = materialsInStock;
++            this.materialsImported = Math.max(materialsNeeded - materialsInStock, 0);
++            this.materialsPrice = materialsPrice;
++            this.importCost = materialsImported * materialsPrice;
++            this.total = sticker + importCost;
++            this.landNeeded = landNeeded;
++            this.landFree = landFree;
++            this.months = output > 0 ? points / output : Double.NaN;
+         }
++    }
+ 
+-        return (selected.getCashCost() * quantity)
+-                + (neededMaterials * materialsPrice);
++    public BuildQuote quoteBuild(BuildingsTemplate selected, int quantity) {
++        return new BuildQuote(
++                quantity,
++                selected.getCashCost() * quantity,
++                selected.constructionMaterials * (double) quantity,
++                buildingManager.getConstructionMaterials(),
++                buildingManager.getConstructionMaterialPrice(),
++                selected.getLandSqFt() * (double) quantity,
++                landManager.getAvailableSqFt(),
++                getConstructionOutput(),
++                selected.getConstructionPoints() * (double) quantity);
+     }
+     /**
+      * @param noConstruction put the buildings up immediately instead of queueing
+@@ -1738,10 +1661,14 @@ public class Game {
+             System.out.println(quantity + " " + selected.getName()
+                     + " construction started. $" + totalCost + " cash used");
+         } else {
+-            // Now the debt issued will actually cover the FULL price including the setup fee
+-            System.out.println("Not enough Cash (Need " + formatter.format(totalCost)
+-                    + ", have " + formatter.format(cash) + ")");
+-            quickIssueDebt(selected, quantity, totalCost);
++            // buildStack() only calls this once the price is covered, so this
++            // branch is unreachable. It used to fall into quickIssueDebt(), a
++            // console-era T-Bill issuer with its own stale pricing and no land
++            // allocation; the JavaFX path offers the note BEFORE building, on
++            // showQuickDebtMenu(). Loud rather than silent if that ever changes.
++            throw new IllegalStateException("processBuildOrder() called with $"
++                    + formatter.format(totalCost) + " due and $"
++                    + formatter.format(cash) + " on hand");
+         }
+     }
+ 
+@@ -1912,168 +1839,6 @@ public class Game {
+         return receiptSerial;
+     }
+     
+-    private void handleOtherMenu() {
+-        buildingManager.displayAllBuildings();
+-        
+-        
+-    }
+-    
+-    private void handleEconomyMenu() {
+-        boolean inEconomyMenu = true;
+-        
+-        while (inEconomyMenu) {
+-            menuManager.showEconomyMenu(month, cash);
+-            
+-            int choice = getInput();
+-
+-            switch (choice) {
+-                case 1:
+-                    handleFinanceMenu();
+-                    break;
+-                case 2:
+-                    break;
+-                case 3:
+-                    FinanceInfo();
+-                    break;
+-                case 4:
+-                    handleSectorMenu();
+-                    break;
+-                case 5:
+-                    inEconomyMenu = false;
+-                    break;
+-                default:
+-                    System.out.print("Invalid choice.");
+-            }
+-        }
+-    }
+-    
+-    private void handleFinanceMenu(){
+-        boolean inFinanceMenu = true;
+-        
+-        while (inFinanceMenu) {
+-            menuManager.showFinanceMenu(month, cash,debtManager.getRate());
+-            int choice = getInput();
+-            
+-
+-            switch (choice) {
+-                case 1:
+-                    addShortTermTBill();
+-                    break;
+-                case 2:
+-                    addMediumTermBond();
+-                    break;
+-                case 3:
+-                    addLongTermBond();
+-                    break;
+-                case 4:
+-                    inFinanceMenu = false;
+-                    break;
+-                default:
+-                    System.out.print("Invalid choice.");
+-            }
+-        }
+-    }
+-    private void handleSectorMenu(){
+-        boolean inSectorMenu = true;
+-        
+-        while (inSectorMenu) {
+-            menuManager.showSectorMenu(month, cash);
+-            int choice = getInput();
+-            
+-            switch (choice) {
+-                case 1:
+-                    printPopulationInfo();
+-                    break;
+-                case 2:
+-                    handlePrivateBusinesMenu();
+-                    printCommercialInfo();
+-                    break;
+-                case 3:
+-                    ;
+-                    break;
+-                case 4:
+-                    ;
+-                    break;
+-                case 5:
+-                    inSectorMenu = false;
+-                    break;
+-                default:
+-                    System.out.print("Invalid choice.");
+-            }
+-        }
+-    }
+-    
+-    private void handlePrivateBusinesMenu(){
+-        boolean inMenu = true;
+-        
+-        while (inMenu) {
+-            menuManager.showPrivateSectorMenu(month, cash);
+-            int choice = getInput();
+-            
+-            switch (choice) {
+-                case 1:
+-                    printCommercialInfo();
+-                    break;
+-                case 2:
+-                    printIndustrialInfo();
+-                    break;
+-                case 3:
+-                    printUtilityInfo();
+-                    break;
+-                case 4:
+-                    break;
+-                case 5:
+-                    inMenu = false;
+-                    break;
+-                default:
+-                    System.out.print("Invalid choice.");
+-            }
+-        }
+-    }
+-    
+-    private void addShortTermTBill() {
+-        issueDebtInstrument("Note", 3, 12, 1000);
+-    }
+-    
+-    private void addMediumTermBond(){
+-        issueDebtInstrument("Serial", 1, 10, 10000);
+-    }
+-    
+-    private void addLongTermBond() {
+-        issueDebtInstrument("Term", 10, 50, 100000);
+-
+-    }
+-    private void issueDebtInstrument(String type, int minDur, int maxDur, double roundingFactor) {
+-        System.out.printf("Must be %d to %d %s in length. Press 0 to exit.%nDuration: ",
+-                minDur, maxDur, (type.equals("Note") ? "months" : "years"));
+-
+-        int duration = 0;
+-        while (true) {
+-            duration = getInput();
+-            if (duration == 0) {
+-                System.out.println("Cancelled.");
+-                return;
+-            }
+-            if (duration >= minDur && duration <= maxDur) {
+-                break;
+-            }
+-            System.out.printf("Invalid. Must be %d to %d: ", minDur, maxDur);
+-        }
+-
+-        System.out.print("How much: ");
+-        double requestedAmount = getInput();
+-
+-        // Logic branches based on type
+-        switch (type) {
+-            case "Note" ->
+-                handleTBillLogic(requestedAmount, duration, roundingFactor);
+-            case "Serial" ->
+-                handleMediumBondLogic(requestedAmount, duration, roundingFactor);
+-            case "Term" ->
+-                handleLongBondLogic(requestedAmount, duration, roundingFactor);
+-        }
+-    }
+-    
+     
+     /**
+      * What a T-Bill of this size would cost. Books nothing.
+@@ -2173,6 +1938,7 @@ public class Game {
+ 
+         debtManager.addShortTermTBill(quote.faceValue(), duration, month);
+         this.cash += quote.cashReceived();
++       cityDebtRaisedThisMonth += quote.cashReceived();
+ 
+         debtManager.updateInterest();
+         return "Note issued.\n" + quote.summary();
+@@ -2227,6 +1993,7 @@ public class Game {
+ 
+         debtManager.addMediumTermBond(quote.faceValue(), duration * 12, month, quote.marketRate());
+         this.cash += quote.cashReceived();
++       cityDebtRaisedThisMonth += quote.cashReceived();
+ 
+         debtManager.updateInterest();
+         return "Serial bond issued.\n" + quote.summary();
+@@ -2379,6 +2146,7 @@ public class Game {
+         // monthly payment bought with a redemption premium.
+         debtManager.addLongTermBond(quote.faceValue(), duration * 12, month, quote.couponRate());
+         this.cash += quote.cashReceived();
++       cityDebtRaisedThisMonth += quote.cashReceived();
+ 
+         debtManager.updateInterest();
+         return "Term bond issued.\n" + quote.summary();
+@@ -2401,66 +2169,6 @@ public class Game {
+         };
+     }
+     
+-    /*
+-    private void handleTBillLogic(double amount, int duration, double rounding) {
+-        double rate = debtManager.getRate();
+-        amount = Math.ceil((amount / (1 - rate)) / rounding) * rounding;
+-        double received = Math.round(amount * (1 - rate) * 100) / 100.0;
+-
+-        System.out.println(
+-                "A note of " + formatter.format(amount)
+-                + " with duration of " + duration
+-                + " months was issued for " + formatter.format(received));
+-        debtManager.addShortTermTBill(amount, duration, month);
+-        cash += received;
+-    }
+-    
+-    private void handleMediumBondLogic(double requestedAmount, int duration, double rounding) {
+-        // 1. Standardize the Face Value by rounding up (e.g., to the nearest 10,000)
+-        double faceValue = Math.ceil(requestedAmount / rounding) * rounding;
+-
+-        // 2. Calculate the monthly interest payment for the user's information
+-        double annualRate = debtManager.getRate();
+-        double monthlyInterest = faceValue * (annualRate / 12.0);
+-
+-        System.out.println(
+-                "A Medium Term Bond of " + formatter.format(faceValue)
+-                + " with duration of " + duration
+-                + " years was issued for " + formatter.format(faceValue)
+-                + ", monthly interest: " + formatter.format(monthlyInterest));
+-
+-        debtManager.addMediumTermBond(faceValue, duration * 12, month, annualRate);
+-
+-        
+-        cash += faceValue;
+-
+-        System.out.println("Funds of " + formatter.format(faceValue) + " added to treasury.");
+-    }
+-
+-    private void handleLongBondLogic(double amount, int duration, double rounding) {
+-        // Your specific Yield Curve math here
+-        double curveSlope = .00667;
+-        double smoothing = 30;
+-        double yield = (debtManager.getRate() / 3) + (curveSlope * duration) / (duration + smoothing);
+-        double multiplier = Math.pow(yield + 1, duration);
+-
+-        amount = Math.ceil((amount * multiplier) / rounding) * rounding;
+-        double received = Math.round((amount / multiplier) * 100) / 100.0;
+-
+-        System.out.println(
+-                "A Long Term Bond of " + formatter.format(amount)
+-                + " with duration of " + duration
+-                + " years was issued for " + formatter.format(received)
+-                + ", monthly interest: " + formatter.format((amount*yield)/12));
+-        debtManager.addLongTermBond(amount, duration * 12, month, yield);
+-        cash += received;
+-    }
+-    */
+-    
+-    private void FinanceInfo(){
+-        debtManager.printDebtInfo(month);
+-    }
+-    
+     
+     //printers
+     private void printPopulationInfo(){
+@@ -2539,6 +2247,18 @@ public class Game {
+         if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {
+             autosave("month " + month);
+         }
++
++        // Where every dollar in the city is right now, before anything moves.
++        // Compared at the bottom against every dollar that crossed the city's
++        // boundary this month - see MoneyAudit.
++        cityDebtRaisedThisMonth = 0;
++        cityPrincipalRepaidThisMonth = 0;
++        economyManager.getBusinessDebtManager().startAuditMonth();
++        double[] poolsBefore = MoneyAudit.pools(this);
++        double pooledBefore = 0;
++        for (double p : poolsBefore) pooledBefore += p;
++        double interestDue = economyManager.getInterestAccrued();
++
+         startOfMonthUpdate();
+         simulationEngine.simulateMonth(this);
+         finalUpdateEconomy();
+@@ -2546,6 +2266,8 @@ public class Game {
+         priceTheDebtMarket();
+         debtManager.processAllDebts(this);
+ 
++        lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
++        
+         dataSave.setCash(cash);
+         printEndOfTurn();
+         recordMonth();
+@@ -2684,61 +2406,6 @@ public class Game {
+         updateConstruction();
+         economyManager.startOfMontEconUpdate();
+     }
+-
+-    private void handleGraphSettings(){
+-        
+-        boolean inMenu = true;
+-        while(inMenu){
+-            System.out.println("Show monthly graphs?");
+-            System.out.println("1. Yes");
+-            System.out.println("2. No");
+-            System.out.print("choose");
+-            int choice = getInput();
+-            switch(choice){
+-                case 1:
+-                    graphs = true;
+-                    System.out.println("Monthly graphs enabled");
+-                    inMenu = false;
+-                    break;
+-                case 2:
+-                    graphs = false;
+-                    System.out.println("Monthly graphs disabled");
+-                    inMenu = false;
+-                    break;
+-                default:
+-                    System.out.println("Invalid Input");
+-                    
+-                    
+-            }
+-        }
+-    }
+-    private void handleReportSettings(){
+-        
+-        boolean inMenu = true;
+-        while(inMenu){
+-            System.out.println("Show reports graphs?");
+-            System.out.println("1. Yes");
+-            System.out.println("2. No");
+-            System.out.print("choose");
+-            int choice = getInput();
+-            switch(choice){
+-                case 1:
+-                    reports = true;
+-                    System.out.println("Monthly reports enabled");
+-                    inMenu = false;
+-                    break;
+-                case 2:
+-                    reports = false;
+-                    System.out.println("Monthly reports disabled");
+-                    inMenu = false;
+-                    break;
+-                default:
+-                    System.out.println("Invalid Input");
+-                    
+-                    
+-            }
+-        }
+-    }
+     private void printStartOfMonth() {
+         System.out.println("\n================================================================================================================================================================");
+         System.out.println("\n================================================================================================================================================================");
+@@ -2751,7 +2418,7 @@ public class Game {
+             printIndustrialInfo();
+             printUtilityInfo();
+             printConstructionInfo();
+-            FinanceInfo();
++            debtManager.printDebtInfo(month);
+         }
+         printCityStats();
+         System.out.println("Interest Rate: %" + formatter.format(debtManager.getRate()*100));
+@@ -2936,6 +2603,11 @@ public class Game {
+         economyManager.setDebt(debtManager.getAllPrincipal());
+         double tempCash = cash;
+         tempCash += economyManager.getTotalIncome();
++        // The utility books what its customers were charged - see
++        // UtilitiesHandler.setBilledRevenue().
++        servicesManager.getUtilitiesHandler().setBilledRevenue(
++                economyManager.getSectorElectricityCharges(),
++                economyManager.getSectorWaterCharges());
+         economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
+         tempCash += servicesManager.getServiceNetIncome();
+         economyManager.finalEconUpdate();
+@@ -3018,34 +2690,6 @@ public class Game {
+         refreshJobs();
+     }
+     
+-    private void shutdown() {
+-        System.out.println("Game exited.");
+-        isRunning = false;
+-    }
+-    
+-    private void printBuildingInfo(String name){
+-        BuildingsTemplate selected = buildingManager.getTemplateByName(name);
+-        if (selected != null){
+-            System.out.println("Name: " + selected.getName());
+-            System.out.println("Category: " + selected.getCategory());
+-            System.out.println("Cost: " + selected.getCashCost());
+-            System.out.println("Construction Cost: " + selected.getConstructionPoints());
+-            System.out.println("Upkeep: " + selected.getUpkeep());
+-            System.out.println("Construction Materials: " + selected.getConstructionMaterials());
+-            System.out.println("Capacity: " + selected.getCapacity());
+-            System.out.println("Coverage: " + selected.getCoverage());
+-            System.out.println("Total Jobs: " + selected.getTotalJobs());
+-            System.out.println("Production 1: " + selected.getProduction1());
+-            System.out.println("Production 2: " + selected.getProduction2());
+-            System.out.println("Production Modifier 1: " + selected.getProductionModifier1());
+-            System.out.println("Production Modifier 2: " + selected.getProductionModifier2());
+-            System.out.println("Nationalized: " + selected.getNationalized());
+-            System.out.println("Electricity Consumption: " + selected.getElectricityConsumption());
+-            
+-            
+-        }
+-    }
+-    
+     public int getHouseholdCapacity() {
+         return buildingManager.getTotalHouseCapacity();
+ 
+@@ -3208,10 +2852,14 @@ public class Game {
+          * does very much worse. The multipliers and the reasoning live in
+          * Healthcare.
+          */
+-        cohorts.advanceMonth(
+-                Healthcare.mortalityFactors(childcareCoverage, generalCoverage,
+-                        seniorCoverage),
+-                Healthcare.birthFactor(childcareCoverage));
++        double[] mortalityFactors = Healthcare.mortalityFactors(
++                childcareCoverage, generalCoverage, seniorCoverage);
++        cohorts.advanceMonth(mortalityFactors, Healthcare.birthFactor(childcareCoverage));
++        // Kept for the skills step below: the graduates die at the rate the
++        // adults do, and that rate depends on the clinics.
++        lastAdultMortality = AgeBand.monthlyFromAnnual(
++                AgeBand.ADULT.getAnnualMortality()
++                        * Math.max(0, mortalityFactors[AgeBand.ADULT.ordinal()]));
+ 
+         /*
+          * Who works this month: the adults who were already living here, read
+@@ -3323,10 +2971,17 @@ public class Game {
+                 labourMarket,
+                 buildingManager.getCategoryPayroll(BuildingType.EDUCATION,
+                         populationManager.getWagesPerType(), fill),
+-                buildingManager.getUpkeepByCategory(BuildingType.EDUCATION));
++                buildingManager.getUpkeepByCategory(BuildingType.EDUCATION),
++                // The students thin at the rate the adults do - deaths, ageing
++                // out, and this month's share of leavers.
++                lastAdultMortality + AgeBand.ADULT.monthlyOutflowRate()
++                        + (population > 0 ? migration.getLastDepartures() / population : 0));
+ 
+         populationManager.applyBandFlow(education.getGraduates());
+         populationManager.addLicences(education.getLicences());
++        // And whoever is in a lecture theatre is out of the labour supply
++        // until they come out of it - see PopulationManager.workforceByBand().
++        populationManager.setStudying(education.getStudying());
+         // A licence holder is a graduate first, and the graduate count has just
+         // moved. See trimLicencesToBand().
+         populationManager.trimLicencesToBand();
+@@ -3478,7 +3133,9 @@ public class Game {
+     public void repriceLabour() {
+         labourMarket.advanceMonth(
+                 populationManager.postsByBand(),
+-                populationManager.supplyByBand());
++                populationManager.supplyByBand(),
++                populationManager.getJobs(),
++                populationManager.getLicensedHeads());
+         populationManager.takeWagesFrom(labourMarket);
+     }
+ 
+@@ -3492,6 +3149,9 @@ public class Game {
+      * dilute them. The first version multiplied shares by a grown workforce and
+      * quietly bred graduates out of the city's own births.
+      */
++    /** This month's adult death rate with the clinics applied. Set by advanceDemographics(). */
++    private double lastAdultMortality = AgeBand.ADULT.monthlyMortality();
++
+     private void applyMigrationSkills() {
+ 
+         /*
+@@ -3499,22 +3159,48 @@ public class Game {
+          *
+          * Before migration, because this month's arrivals have not worked a day
+          * yet and should not be dying of old age on the way in.
++         *
++         * At the rate the adults actually died this month - the healthcare-
++         * modified one the cohorts were just advanced with - not the table's
++         * base rate. Reading the base rate made an unserved city's graduates
++         * immortal relative to its labourers, so it drifted skill-heavy for
++         * no reason anyone had built.
+          */
+         populationManager.retireSkilled(
+-                AgeBand.ADULT.monthlyMortality() + AgeBand.ADULT.monthlyOutflowRate());
++                lastAdultMortality + AgeBand.ADULT.monthlyOutflowRate());
+ 
++        /*
++         * ADULTS ONLY. The arrival and departure mixes each sum to the whole
++         * headcount that moved, and cohorts.migrate() spreads that headcount
++         * across every age band in the city's own shape - so roughly forty
++         * per cent of the people in each mix are children and seniors, who
++         * hold no skill and do no work. Until 2026-09-06 the whole mix was
++         * added to the ADULT skilled counts, booking every arriving child as
++         * a graduate, and the only thing stopping the skilled from
++         * outnumbering the workforce was a clip in PopulationManager. Scaled
++         * by the adult share the migrants arrived in, which is the share the
++         * cohorts gave them.
++         */
++        double adultShare = cohorts.share(AgeBand.ADULT);
+         populationManager.applySkilledFlows(
+-                migration.getLastArrivalMix(),
+-                migration.getLastDepartureMix());
++                scaled(migration.getLastArrivalMix(), adultShare),
++                scaled(migration.getLastDepartureMix(), adultShare));
+ 
+         // Some of the graduates who moved in were already doctors. See
+         // Migration.getLastArrivalLicences() - without this a city with no
+         // medical school could never have one at all, which is not "expensive",
+         // it is a wall, and the world-supply design exists to avoid walls.
+-        populationManager.addLicences(migration.getLastArrivalLicences());
++        populationManager.addLicences(scaled(migration.getLastArrivalLicences(), adultShare));
+         populationManager.trimLicencesToBand();
+     }
+ 
++    private static double[] scaled(double[] values, double by) {
++        if (values == null) return null;
++        double[] out = new double[values.length];
++        for (int i = 0; i < values.length; i++) out[i] = values[i] * by;
++        return out;
++    }
++
+ 
+     
+     /**
+@@ -3620,6 +3306,7 @@ public class Game {
+                 economyManager.getIndustryDemand(),
+                 economyManager.getIndustryUnitsSold(),
+                 economyManager.getIndustryUnitsImported());
++        dataSave.setIndustryLocalSalesValue(economyManager.getIndustryLocalSalesValue());
+ 
+         // The utilisation those statements were written against - see DataSave.
+         dataSave.setRatioBasis(
+@@ -3797,7 +3484,25 @@ public class Game {
+     
+     public void subtractCash(double amount){
+         cash -= amount;
++        cityPrincipalRepaidThisMonth += amount;
+     }
++
++    /*
++     * THE WORLD'S SIDE OF THE CITY'S DEBT, for MoneyAudit.
++     *
++     * Bonds and bills are the one place the treasury's cash moves against the
++     * outside world inside a month tick without going through a statement:
++     * an emergency note raises cash, a maturing slice repays it. Counted here,
++     * zeroed at the top of nextMonth(), never saved.
++     */
++    private double cityDebtRaisedThisMonth;
++    private double cityPrincipalRepaidThisMonth;
++    double getCityDebtRaisedThisMonth()      { return cityDebtRaisedThisMonth; }
++    double getCityPrincipalRepaidThisMonth() { return cityPrincipalRepaidThisMonth; }
++
++    /** Last month's money-conservation residual. See MoneyAudit. */
++    private MoneyAudit.Result lastMoneyAudit = MoneyAudit.Result.NONE;
++    public MoneyAudit.Result getLastMoneyAudit() { return lastMoneyAudit; }
+     public void InterestExpense(double amount){
+         economyManager.updateInterestExpense(amount);
+         cityInterestPaid += amount;
+@@ -3813,44 +3518,6 @@ public class Game {
+         System.out.println("Construction Capacity: " + buildingManager.getTotalConstructionCapacity());
+     }
+     
+-    public void quickIssueDebt(BuildingsTemplate selected, int quantity, double totalCost) {
+-        // 1. Calculate the actual cash gap (How much we are short)
+-        double gap = totalCost - cash;
+-
+-        System.out.println("Issue a short-term note to cover the shortfall? \nFunding required: " + formatter.format(gap));
+-        System.out.println("1. Yes\n2. No.");
+-
+-        if (getInput() == 1) {
+-            int duration = 3;
+-            double rate = debtManager.getRate();
+-
+-            // 2. Calculate Face Value needed to cover the gap after the discount
+-            double faceValue = gap / (1 - rate);
+-
+-            // 3. Round up to nearest 1000
+-            faceValue = Math.ceil(faceValue / 1000.0) * 1000;
+-
+-            // 4. Actual cash hitting the bank account
+-            double cashReceivedFromBill = faceValue * (1 - rate);
+-
+-            System.out.println("A T-Bill of $" + formatter.format(faceValue)
+-                    + " with duration of " + duration
+-                    + " was issued for $" + formatter.format(cashReceivedFromBill) + ".");
+-
+-            // Record the debt
+-            debtManager.addShortTermTBill(faceValue, duration, month);
+-
+-            // Add the new money to the wallet
+-            cash += cashReceivedFromBill;
+-
+-            // 5. NOW perform the build action since we have the funds
+-            buildingManager.addStack(selected, quantity, false);
+-            cash -= totalCost; // This should now work without going negative
+-
+-            System.out.println(quantity + " " + selected.getName() + " construction started.");
+-        }
+-    }
+-    
+     
+    /**
+     * The build-funding bill: raises a stated amount of CASH, not face value.
+@@ -3945,6 +3612,7 @@ public class Game {
+ 
+        debtManager.addShortTermTBill(quote.faceValue(), duration, month);
+        cash += quote.cashReceived();
++       cityDebtRaisedThisMonth += quote.cashReceived();
+ 
+        // The books have changed, so the standing rate has too. Leaving this out
+        // let a city borrow and go on being quoted its pre-loan rate until the
+@@ -4134,6 +3802,9 @@ public class Game {
+      */
+ 
+     // Utilities read $0 on the finances screen after every load.
++    servicesManager.getUtilitiesHandler().setBilledRevenue(
++            economyManager.getSectorElectricityCharges(),
++            economyManager.getSectorWaterCharges());
+     economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
+ 
+     // The residents' statement, without booking the month onto the running
+@@ -4413,7 +4084,9 @@ public class Game {
+              * which is bad; losing half the save without saying so is worse.
+              *
+              * The format fix - keying both arrays by template id, the way
+-             * buildings[] already is - is the actual repair and is still owed.
++             * buildings[] already is - has since been made: the by-id arrays
++             * below are what a current save carries, and this positional path
++             * is read only for saves from before it.
+              */
+             boolean stacksLineUp = progress.length == buildingManager.getStackCount()
+                     && quantity.length == buildingManager.getStackCount();
+@@ -4658,6 +4331,11 @@ public class Game {
+             labourMarket.restore(restoredFlows.getLabour());
+             populationManager.restoreLicensed(restoredFlows.getLicences());
+             education.restore(restoredFlows.getEducation());
++            // The students in flight are out of the supply, on the load path
++            // exactly as on the monthly one - or a reloaded city has more
++            // workers than the live one until its first month tick. Caught by
++            // EducationCheck ("out of the supply on both sides").
++            populationManager.setStudying(education.getStudying());
+ 
+             /*
+              * SKILLS, OR AN INFERENCE OF THEM.
+@@ -4723,6 +4401,7 @@ public class Game {
+                     restoredFlows.getRetailFillBasis(),
+                     restoredFlows.getRetailImportTax(),
+                     restoredFlows.getIndustryDemand(),
++                    restoredFlows.getIndustryLocalSalesValue(),
+                     restoredFlows.getIndustryUnitsSold(),
+                     restoredFlows.getIndustryUnitsImported(),
+                     // A save from before roads carries no basis. Falling back to
+@@ -4773,6 +4452,16 @@ public class Game {
+                     restoredFlows.getIndustrialReport(),
+                     restoredFlows.getHeavyIndustryReport(),
+                     restoredFlows.getMiningReport());
++
++            // And the utility's bill, which is read off those statements, has
++            // to be re-struck now that they are the carried ones rather than
++            // the recompute rebuildSimulationState() struck it from. Found
++            // by LongPlaytest as "utility income differs across a save" in
++            // five months of four thousand - the months a ratio moved.
++            servicesManager.getUtilitiesHandler().setBilledRevenue(
++                    economyManager.getSectorElectricityCharges(),
++                    economyManager.getSectorWaterCharges());
++            economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
+         }
+     }
+ 
+diff --git a/src/main/java/ham/citybuildersim/GameFiles.java b/src/main/java/ham/citybuildersim/GameFiles.java
+index cfaffe5..5a26f8d 100644
+--- a/src/main/java/ham/citybuildersim/GameFiles.java
++++ b/src/main/java/ham/citybuildersim/GameFiles.java
+@@ -88,6 +88,26 @@ public final class GameFiles {
+         this.legacyDirectory = legacyDirectory;
+     }
+ 
++    /**
++     * A throwaway folder for a harness city.
++     *
++     * Every harness that builds a Game and runs it a year or more has to use
++     * this or an explicit temp path, never `new Game()`: the default
++     * constructor points at the player's real %APPDATA% folder, and
++     * Game.AUTOSAVE_MONTHS later the fixture city has overwritten their
++     * autosave and its .bak. EducationCheck and LabourCheck both did exactly
++     * that for a day before anyone noticed, because nothing about a passing
++     * harness says whose save it just replaced.
++     */
++    public static GameFiles scratch(String label) {
++        try {
++            Path root = Files.createTempDirectory(label);
++            return new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
++        } catch (IOException e) {
++            throw new IllegalStateException("could not create a scratch save folder", e);
++        }
++    }
++
+     /* ------------------------------ locations ------------------------------ */
+ 
+     public Path getDirectory()  { return directory; }
+diff --git a/src/main/java/ham/citybuildersim/GameVersion.java b/src/main/java/ham/citybuildersim/GameVersion.java
+index 60f5936..ed671bd 100644
+--- a/src/main/java/ham/citybuildersim/GameVersion.java
++++ b/src/main/java/ham/citybuildersim/GameVersion.java
+@@ -201,7 +201,26 @@ public final class GameVersion {
+      *     That is a real change to a loaded city and it is the right one: those
+      *     doctors were the bug.
+      */
+-    public static final int SAVE_FORMAT = 17;
++    /* ---------------------------------------------------------------------
++     * 18  Education carries its pipeline (2026-09-06). Until now `Education`
++     *     handed a school's steady-state throughput out the month the school
++     *     opened; there were no students in flight, so there was nothing to
++     *     save. Now every adult course keeps a queue of cohorts by months
++     *     remaining, and the students are out of the labour supply until they
++     *     graduate. Both facts live in the education state array, which grew
++     *     by the sum of the adult course lengths.
++     *
++     *     Also carried from this format: the dollars the stores paid the mills
++     *     for local food (the mills book that cheque rather than units x
++     *     today's price), and the sales-tax ledger's import charges.
++     *
++     *     Downward: a format-17 city loads with nobody in any course. Its
++     *     schools fill from empty and graduate nobody for a course length,
++     *     which is what they would have done had they been built the month
++     *     the save was made. The old ledger and flow shapes are read with the
++     *     new fields at zero.
++     */
++    public static final int SAVE_FORMAT = 18;
+ 
+     public static final String NAME = "CityBuilderSim";
+ 
+diff --git a/src/main/java/ham/citybuildersim/HeavyIndustryHandler.java b/src/main/java/ham/citybuildersim/HeavyIndustryHandler.java
+index c98321f..4326830 100644
+--- a/src/main/java/ham/citybuildersim/HeavyIndustryHandler.java
++++ b/src/main/java/ham/citybuildersim/HeavyIndustryHandler.java
+@@ -266,6 +266,13 @@ public class HeavyIndustryHandler {
+         return total * averageFill;
+     }
+ 
++    /** The staffed payroll by job type, for the wage tax on it. */
++    public double[] getStaffedPayrollPerType() {
++        double[] out = new double[wages.length];
++        for (int i = 0; i < wages.length; i++) out[i] = wages[i] * averageFill;
++        return out;
++    }
++
+     public double getElectricityCost() {
+         // Charged for what was DELIVERED, not what was asked for - the utility
+         // books the same slice. See UtilitiesHandler.getElectricityRevenue().
+@@ -336,9 +343,16 @@ public class HeavyIndustryHandler {
+     public void calculateResults() {
+         computeMonthlyReport();
+         netIncome = rNetIncome;
+-        cash += netIncome;
++        // Net of the profit tax, at the rate set before the statement ran -
++        // see CommercialHandler.calculateCommercialResults().
++        cash += netIncome - getTaxIncome(taxRate);
+     }
+ 
++    /** The profit rate in force this month, set by EconomyManager before the statement runs. */
++    private double taxRate;
++    public void setTaxRate(double rate) { this.taxRate = rate; }
++    public double getTaxRate()          { return taxRate; }
++
+     /**
+      * Its books. No inventory line: everything made is shipped the month it is
+      * made, which is what "exports at the going rate" means - there is no
+diff --git a/src/main/java/ham/citybuildersim/IndustrialHandler.java b/src/main/java/ham/citybuildersim/IndustrialHandler.java
+index 3218478..85e7e75 100644
+--- a/src/main/java/ham/citybuildersim/IndustrialHandler.java
++++ b/src/main/java/ham/citybuildersim/IndustrialHandler.java
+@@ -40,6 +40,24 @@ public class IndustrialHandler {
+     private int foodCapacity =0;
+     private int foodInventory = 0;
+     private double foodDemand = 0;
++
++    /**
++     * What the stores actually PAID for last month's local purchase, in
++     * dollars - the other side of CommercialHandler.buyInventory().
++     *
++     * The mills used to book local revenue as units x today's price, a month
++     * after the shops had paid units x last month's price for them. Whenever
++     * the price moved between the two, the difference was money from nowhere
++     * or money into nothing, and MoneyAudit found it on the first run. The
++     * shops' cheque is the fact; the mills book the cheque.
++     *
++     * NaN means "not known" - a save from before this existed - and falls
++     * back to the old arithmetic for that one month.
++     */
++    private double localSalesValue = Double.NaN;
++
++    public void setLocalSalesValue(double dollars) { this.localSalesValue = dollars; }
++    public double getLocalSalesValue()             { return localSalesValue; }
+     private double []industrialWages = new double[11];
+     private double foodPrice = .12;
+     private double cash;
+@@ -635,13 +653,11 @@ public class IndustrialHandler {
+     /**
+      * Net income after the business tax the city charges on it.
+      *
+-     * NOTE: this is NOT what gets banked. calculateIndustrialResults() does
+-     * `cash += rNetIncome`, i.e. the PRE-tax figure, while EconomyManager
+-     * separately collects rNetIncome * taxRate as government revenue. The same
+-     * money is therefore counted twice - the business keeps all of its profit
+-     * and the city taxes it anyway. Surfacing that is half the point of putting
+-     * a real income statement on the screen; it is shown but deliberately not
+-     * fixed here, because deducting it changes sector balance.
++     * This IS what gets banked, since 2026-09-06. It was not: the sector kept
++     * its whole pre-tax profit while the city collected the tax on it, and the
++     * comment that used to sit here said so and left it, "because deducting it
++     * changes sector balance". It does, and MoneyAudit made the alternative
++     * measurable: the tax was the largest single source of money from nowhere.
+      */
+     public double getReportNetIncomeAfterTax() {
+         return rNetIncome - rTaxIncome;
+@@ -673,7 +689,8 @@ public class IndustrialHandler {
+      */
+     public void calculateIndustrialResults() {
+         computeMonthlyReport();
+-        cash += rNetIncome;
++        // Net of the profit tax - see CommercialHandler.calculateCommercialResults().
++        cash += rNetIncome - rTaxIncome;
+     }
+ 
+     /**
+@@ -781,6 +798,12 @@ public class IndustrialHandler {
+         rAverageSellPrice = averageSellPrice;
+         rGrossRevenue = productsSold * averageSellPrice;
+ 
++        // The stores' cheque, not units x today's price - see localSalesValue.
++        if (!Double.isNaN(localSalesValue) && productsSoldCopy > 0) {
++            rGrossRevenue = localSalesValue + foodExportRevenue;
++            rAverageSellPrice = productsSold > 0 ? rGrossRevenue / productsSold : 0;
++        }
++
+         rElectricityCost = electricity * bEnergyRatio * pricePerWatt;
+         rWaterCost = water * bWaterRatio * pricePerWaterUnit;
+ 
+diff --git a/src/main/java/ham/citybuildersim/LabourCheck.java b/src/main/java/ham/citybuildersim/LabourCheck.java
+index 356d865..96ca23d 100644
+--- a/src/main/java/ham/citybuildersim/LabourCheck.java
++++ b/src/main/java/ham/citybuildersim/LabourCheck.java
+@@ -195,7 +195,7 @@ public class LabourCheck {
+            ============================================================== */
+         System.out.println("\n--- and a city cannot staff what it has not attracted ---");
+ 
+-        Game city = new Game();
++        Game city = new Game(GameFiles.scratch("labourcheck"));
+         quietly(() -> {
+             city.newGame();
+             city.getGovernmentInvestor().spend(-50_000_000);
+@@ -326,6 +326,123 @@ public class LabourCheck {
+         }
+         assertTrue("...and a recomputed market would NOT have matched", differs);
+ 
++        /* ------------------------------------------------------------------
++         * RENT FOLLOWS THE LIVE UNSKILLED WAGE (2026-09-06).
++         *
++         * It was struck off PayTier.UNSKILLED at compile time, the last price
++         * in the game that did not know labour had become a market. Doubling
++         * the minimum wage must double rent, and the reloaded city must charge
++         * what the live one charged.
++         * ------------------------------------------------------------------ */
++        System.out.println("\n--- rent follows the unskilled wage ---");
++        CommercialHandler rents = back.getEconomyManager().getCommercialHandler();
++        double rentBefore = rents.getRentPrice();
++        close("a reloaded city charges the rent it was charging",
++                rentBefore, lived.getEconomyManager().getCommercialHandler().getRentPrice(), 1e-9);
++        close("rent is 30% of two unskilled wages per four-person home",
++                rentBefore, CommercialHandler.rentFor(back.getLabourMarket().getWage(JobType.NO_DIPLOMA)), 1e-9);
++
++        double floorBefore = back.getLabourMarket().getMinimumWage();
++        back.getLabourMarket().setMinimumWage(floorBefore * 2);
++        quietly(() -> back.simulateMonths(1));
++        double unskilledNow = back.getLabourMarket().getWage(JobType.NO_DIPLOMA);
++        assertTrue("fixture: doubling the floor moved the unskilled wage", unskilledNow > floorBefore * 1.5);
++        close("...and rent moved with it", rents.getRentPrice(), CommercialHandler.rentFor(unskilledNow), 1e-9);
++        assertTrue("...upward", rents.getRentPrice() > rentBefore * 1.5);
++
++        /* ------------------------------------------------------------------
++         * ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06).
++         *
++         * The arrival mix sums to everybody who moved in, of every age, and
++         * used to be added whole to the ADULT skilled counts. Now the skilled
++         * counts move by the adult share of the mix, which is the share the
++         * cohorts actually gave the migrants. Checked on a growing city with
++         * no schools, so education cannot move the counts: what the skilled
++         * counts gain in a month is the adult share of the skilled arrivals,
++         * less the month's retirements, within the retirements' size.
++         * ------------------------------------------------------------------ */
++        System.out.println("\n--- arriving children are not graduates ---");
++        Game growing = new Game(GameFiles.scratch("labourcheck"));
++        quietly(() -> {
++            growing.newGame();
++            growing.getGovernmentInvestor().spend(-20_000_000);
++            growing.getLandManager().setOwnedSqFt(
++                    growing.getLandManager().getOwnedSqFt() + 100_000_000);
++            growing.buildStack(t(growing, "Low-Rise Apartments"), 40, true);
++            growing.buildStack(t(growing, "General Hospital"), 1, true);
++            growing.buildStack(t(growing, "Small Grocery Store"), 6, true);
++            growing.buildStack(t(growing, "Coal Power Plant"), 1, true);
++            growing.buildStack(t(growing, "Water Treatment Plant"), 1, true);
++            growing.buildStack(t(growing, "Paved Road"), 12, true);
++            growing.simulateMonths(24);
++        });
++        double[] skilledBefore = growing.getPopulationManager().getSkilledHeads().clone();
++        double adultShare = growing.getCohorts().share(AgeBand.ADULT);
++        quietly(() -> growing.simulateMonths(1));
++        double[] skilledNow = growing.getPopulationManager().getSkilledHeads();
++        double[] arrived = growing.getMigration().getLastArrivalMix();
++        double[] left = growing.getMigration().getLastDepartureMix();
++        double skilledArrivals = 0, skilledDepartures = 0, gained = 0, held = 0;
++        for (int b = 1; b < skilledBefore.length; b++) {
++            skilledArrivals += arrived[b];
++            skilledDepartures += left[b];
++            gained += skilledNow[b] - skilledBefore[b];
++            held += skilledBefore[b];
++        }
++        assertTrue("fixture: skilled people arrived this month", skilledArrivals > 1);
++        assertTrue("fixture: the city is not all adults", adultShare < .9 && adultShare > .3);
++        double expected = (skilledArrivals - skilledDepartures) * adultShare;
++        double retirements = held * .01;   // a generous bound on a month of deaths and ageing out
++        System.out.printf("   skilled arrivals %.1f, adult share %.3f, counts moved %.1f, expected %.1f%n",
++                skilledArrivals, adultShare, gained, expected);
++        assertTrue("the skilled counts gained the ADULT share of the skilled arrivals",
++                Math.abs(gained - expected) <= retirements + .5);
++        assertTrue("...and not the whole mix",
++                Math.abs(gained - (skilledArrivals - skilledDepartures)) > retirements + .5);
++
++        /* ------------------------------------------------------------------
++         * A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06).
++         *
++         * A hospital and no medical school: the doctor posts can only be
++         * filled by licence holders, and there are next to none. The doctor's
++         * wage must climb over the band's, the band's own premium must NOT be
++         * dragged up with it, and the market must report the shortage as a
++         * licence shortage rather than a graduate one.
++         * ------------------------------------------------------------------ */
++        System.out.println("\n--- a doctor shortage is priced on doctors ---");
++        Game short_ = new Game(GameFiles.scratch("labourcheck"));
++        quietly(() -> {
++            short_.newGame();
++            short_.getGovernmentInvestor().spend(-50_000_000);
++            short_.getLandManager().setOwnedSqFt(
++                    short_.getLandManager().getOwnedSqFt() + 100_000_000);
++            short_.buildStack(t(short_, "Low-Rise Apartments"), 40, true);
++            short_.buildStack(t(short_, "General Hospital"), 2, true);
++            short_.buildStack(t(short_, "Small Grocery Store"), 6, true);
++            short_.buildStack(t(short_, "Coal Power Plant"), 1, true);
++            short_.buildStack(t(short_, "Water Treatment Plant"), 1, true);
++            short_.buildStack(t(short_, "Paved Road"), 12, true);
++            short_.simulateMonths(60);
++        });
++        LabourMarket m2 = short_.getLabourMarket();
++        int doctorPosts = short_.getPopulationManager().getJobs()[JobType.UNIV_DOCTOR.ordinal()];
++        double doctorsHeld = short_.getPopulationManager().getLicensedHeads()[JobType.UNIV_DOCTOR.ordinal()];
++        System.out.printf("   doctor posts %d, licensed %.1f, licence tightness %.2f, doctor premium %.2f, band premium %.2f%n",
++                doctorPosts, doctorsHeld, m2.getLicenceTightness(JobType.UNIV_DOCTOR),
++                m2.premium(JobType.UNIV_DOCTOR), m2.bandPremium(WageBand.UNIVERSITY));
++        assertTrue("fixture: more doctor posts than licence holders",
++                doctorPosts > doctorsHeld);
++        assertTrue("the market reports a licence shortage",
++                m2.getLicenceTightness(JobType.UNIV_DOCTOR) > 1);
++        assertTrue("doctors are paid over the band",
++                m2.premium(JobType.UNIV_DOCTOR) > m2.bandPremium(WageBand.UNIVERSITY) * 1.05);
++        assertTrue("...and never over the ceiling",
++                m2.premium(JobType.UNIV_DOCTOR) <= LabourMarket.MAX_MULTIPLE + 1e-9);
++        assertTrue("an ungated graduate job carries no licence premium",
++                m2.getLicenceMultiple(JobType.UNIV_SCIENCE) == 1);
++        assertTrue("licence holders arrive in response to the price",
++                short_.getMigration().getLastArrivalLicences()[JobType.UNIV_DOCTOR.ordinal()] > 0);
++
+         cleanUp(root);
+         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
+         System.exit(fails == 0 ? 0 : 1);
+diff --git a/src/main/java/ham/citybuildersim/LabourMarket.java b/src/main/java/ham/citybuildersim/LabourMarket.java
+index 15accf6..97a61ab 100644
+--- a/src/main/java/ham/citybuildersim/LabourMarket.java
++++ b/src/main/java/ham/citybuildersim/LabourMarket.java
+@@ -134,6 +134,37 @@ public class LabourMarket {
+      */
+     private final double[] tightness = new double[WageBand.values().length];
+ 
++    /*
++     * THE LICENCE PREMIUM (2026-09-06).
++     *
++     * Scarcity is priced per band because workers are fungible inside a band -
++     * except where they are not. A doctor's post can only be filled by a
++     * licence holder, and until today an empty doctor's post moved the whole
++     * university band's wage and nothing else: the one price that should
++     * have been screaming for a medical school was a band average. Worse,
++     * two other mechanisms read that price - the share of arriving graduates
++     * who already hold a licence (Migration) and the return on studying for
++     * one (Education) - and neither could ever respond to a doctor shortage,
++     * because there was no doctor price to respond to.
++     *
++     * So a gated job carries a second multiplier of its own, on top of its
++     * band's: posts over licence holders, same elasticity, never below one
++     * (a glut of doctors earns the band wage; the band's multiple handles
++     * that), and the two together never exceed MAX_MULTIPLE, which is Jerus's
++     * ceiling on what any wage can reach.
++     */
++    private final double[] licenceTightness = new double[JobType.values().length];
++    private final double[] licenceMultiple  = new double[JobType.values().length];
++    private final double[] bandMultiple     = new double[WageBand.values().length];
++
++    /** True for a job that only a licence holder can fill - see EducationType. */
++    public static boolean isGated(JobType job) {
++        for (EducationType type : EducationType.values()) {
++            if (type.isProfessional() && type.licenses() == job) return true;
++        }
++        return false;
++    }
++
+     public LabourMarket() {
+         resetToBase();
+     }
+@@ -175,9 +206,32 @@ public class LabourMarket {
+      *                          composition and how it cascades down the bands
+      */
+     public void advanceMonth(double[] bandPosts, double[] bandSupply) {
++        advanceMonth(bandPosts, bandSupply, null, null);
++    }
++
++    /**
++     * @param jobPosts      posts per job type, for the licence premium; null to price bands only
++     * @param licensedHeads licence holders per job type, likewise
++     */
++    public void advanceMonth(double[] bandPosts, double[] bandSupply,
++                             int[] jobPosts, double[] licensedHeads) {
+ 
+         double[] multiple = new double[WageBand.values().length];
+ 
++        java.util.Arrays.fill(licenceMultiple, 1);
++        java.util.Arrays.fill(licenceTightness, 0);
++        if (jobPosts != null && licensedHeads != null) {
++            for (JobType job : JobType.values()) {
++                if (!isGated(job)) continue;
++                int j = job.ordinal();
++                double open = j < jobPosts.length ? jobPosts[j] : 0;
++                double held = j < licensedHeads.length ? licensedHeads[j] : 0;
++                if (open <= 0) continue;
++                licenceTightness[j] = open / Math.max(held, 1);
++                licenceMultiple[j] = clamp(Math.pow(licenceTightness[j], ELASTICITY), 1, MAX_MULTIPLE);
++            }
++        }
++
+         for (WageBand band : WageBand.values()) {
+             int b = band.ordinal();
+             double open = bandPosts == null ? 0 : bandPosts[b];
+@@ -197,9 +251,13 @@ public class LabourMarket {
+                     : clamp(Math.pow(tightness[b], ELASTICITY), MIN_MULTIPLE, MAX_MULTIPLE);
+         }
+ 
++        System.arraycopy(multiple, 0, bandMultiple, 0, multiple.length);
++
+         for (JobType job : JobType.values()) {
+             int i = job.ordinal();
+-            double target = baseWage(job) * multiple[WageBand.of(job).ordinal()];
++            double combined = Math.min(MAX_MULTIPLE,
++                    multiple[WageBand.of(job).ordinal()] * licenceMultiple[i]);
++            double target = baseWage(job) * combined;
+ 
+             wage[i] += (target - wage[i]) * ADJUST_RATE;
+ 
+@@ -247,6 +305,29 @@ public class LabourMarket {
+     public double[] getWages()          { return wage; }
+     public double getWage(JobType job)  { return wage[job.ordinal()]; }
+     public double getTightness(WageBand band) { return tightness[band.ordinal()]; }
++    /** Posts over licence holders for a gated job; 0 for an ungated one or one with no posts. */
++    public double getLicenceTightness(JobType job) { return licenceTightness[job.ordinal()]; }
++    /** The licence premium's target multiple this month, 1 when there is none. */
++    public double getLicenceMultiple(JobType job)  { return licenceMultiple[job.ordinal()]; }
++    /** The band's own multiple this month, without any licence premium on top. */
++    public double getBandMultiple(WageBand band)   { return bandMultiple[band.ordinal()]; }
++
++    /**
++     * The premium the BAND is paying, read off an ungated job in it.
++     *
++     * Migration used to read "any job in the band" for this, and the first
++     * university job in enum order is UNIV_DOCTOR - so once doctors carried a
++     * premium of their own, the whole graduate band would have looked dear.
++     */
++    public double bandPremium(WageBand band) {
++        for (JobType job : JobType.values()) {
++            if (WageBand.of(job) == band && !isGated(job)) return premium(job);
++        }
++        for (JobType job : JobType.values()) {
++            if (WageBand.of(job) == band) return premium(job);
++        }
++        return 1;
++    }
+     public double getMinimumWage()      { return minimumWage; }
+ 
+     /** How far above its base a job is paying - 1.00 is the going rate. */
+diff --git a/src/main/java/ham/citybuildersim/LongPlaytest.java b/src/main/java/ham/citybuildersim/LongPlaytest.java
+index 232de5f..ac4fd23 100644
+--- a/src/main/java/ham/citybuildersim/LongPlaytest.java
++++ b/src/main/java/ham/citybuildersim/LongPlaytest.java
+@@ -142,6 +142,21 @@ public class LongPlaytest {
+             flag(month, "negative population", "" + p.getPopulation());
+         }
+ 
++        /*
++         * MONEY IS CONSERVED. Every dollar that left a pool this month arrived
++         * in another, or crossed the city's boundary in a way MoneyAudit can
++         * name. A residual is a dollar from nowhere - the profit tax the
++         * sectors never paid, the VAT nobody was debited, the utility booking
++         * a different bill from the one its customers paid: all found the
++         * first time this was struck, 2026-09-06, none of them by any of the
++         * twenty-eight harnesses that came before. A cent, on any month, is a
++         * finding.
++         */
++        MoneyAudit.Result money = g.getLastMoneyAudit();
++        if (Math.abs(money.residual) > .01 && money.relative() > 1e-7) {
++            flag(month, "money was not conserved", money.toString());
++        }
++
+         /*
+          * Output cannot be negative. Jerus, after a hand-played city reported
+          * -$446,424 a month for a century: "negative GDP should just be
+diff --git a/src/main/java/ham/citybuildersim/MenuManager.java b/src/main/java/ham/citybuildersim/MenuManager.java
+deleted file mode 100644
+index a3f641a..0000000
+--- a/src/main/java/ham/citybuildersim/MenuManager.java
++++ /dev/null
+@@ -1,109 +0,0 @@
+-package ham.citybuildersim;
+-
+-import java.text.NumberFormat;
+-import java.util.Locale;
+-
+-/**
+- *
+- * @author Jerus
+- */
+-public class MenuManager {
+-
+-    public void showGameMenu() {
+-        System.out.println("--- City Simulator ---");
+-        System.out.println("1. Start New Game");
+-        System.out.println("2. Resume Game");
+-        System.out.println("3. Load Game");
+-        System.out.println("4. Save Game");
+-        System.out.println("5. Settings");
+-        System.out.println("6. Quit Game");
+-        System.out.print("Choose: ");
+-    }
+-    
+-    public void showSettingsMenu() {
+-        System.out.println("--- Settings ---");
+-        System.out.println("1. Graphs");
+-        System.out.println("2. Reports");
+-        System.out.println("3. Back");
+-        System.out.print("Choose: ");
+-    }
+-
+-
+-    public void showMainMenu(int month, double cash, double income) {
+-        printMenuHeader(month, cash);
+-        System.out.println("1. Buildings");
+-        System.out.println("2. Economy");
+-        System.out.println("3. Population");
+-        System.out.print("4. Next Month: $");
+-        System.out.println(formatter.format(income));
+-        System.out.println("5. Simulate Multiple Months");
+-        System.out.println("6. Main Menu");
+-        System.out.print("Choose: ");
+-    }
+-
+-    public void showBuildingsMenu(double cash, int constructionMaterials) {
+-        System.out.println("\n--- Buildings Menu ---");
+-        System.out.print("Cash: ");
+-        System.out.println(formatter.format(cash));
+-        System.out.println("Construction Materials: " + constructionMaterials);
+-        System.out.println("1. Residential");
+-        System.out.println("2. Commerical");
+-        System.out.println("3. Industrial");
+-        System.out.println("4. Other");
+-        System.out.println("5. Return to menu");
+-        System.out.print("Choose: ");
+-    }
+-
+-    public void showEconomyMenu(int month, double cash) {
+-        printMenuHeader(month, cash);
+-        System.out.println("1. Finance");
+-        System.out.println("2. Restructure");
+-        System.out.println("3. Debt Info");
+-        System.out.println("4. Sector Info");
+-        System.out.println("5. Back");
+-        System.out.print("Choose: ");
+-    }
+-
+-    public void showFinanceMenu(int month, double cash, double rate) {
+-        printMenuHeader(month, cash);
+-        System.out.println("Interest Rate: %" + formatter.format(rate*100)+"%");
+-        System.out.println("1. Short Term T-Bills");
+-        System.out.println("2. Medium Term Bonds");
+-        System.out.println("3. Long Term Bonds");
+-        System.out.println("4. Back");
+-        System.out.print("Choose: ");
+-    }
+-
+-    private void printMenuHeader(int month, double cash) {
+-        System.out.println("\n========================================");
+-        System.out.println("Month: " + month + " | Cash: $" + formatter.format(cash));
+-    }
+-
+-    public void showSectorMenu(int month, double cash) {
+-        printMenuHeader(month, cash);
+-        System.out.println("1. Demographics & Labor Pool");
+-        System.out.println("2. Private Enterprise Sector");
+-        System.out.println("3. Municipal Utility Services");
+-        System.out.println("4. [System Operations]");
+-        System.out.println("5. Return to Main Menu");
+-        System.out.print("Select Department: ");
+-    }
+-
+-    public void showPrivateSectorMenu(int month, double cash) {
+-        printMenuHeader(month, cash);
+-        System.out.println("1. Retail & Consumer Services (Commercial)");
+-        System.out.println("2. Resource Production (Industrial)");
+-        System.out.println("3. [Future Expansion]");
+-        System.out.println("4. [Future Expansion]");
+-        System.out.println("5. Back to Overview");
+-        System.out.print("Select Industry: ");
+-    }
+-
+-    private static final NumberFormat formatter = NumberFormat.getNumberInstance(Locale.CANADA);
+-
+-    static {
+-        formatter.setMaximumFractionDigits(2);
+-        formatter.setMinimumFractionDigits(0);
+-    }
+-
+-}
+diff --git a/src/main/java/ham/citybuildersim/Migration.java b/src/main/java/ham/citybuildersim/Migration.java
+index 3032b09..eff49cd 100644
+--- a/src/main/java/ham/citybuildersim/Migration.java
++++ b/src/main/java/ham/citybuildersim/Migration.java
+@@ -616,14 +616,9 @@ public class Migration {
+         for (WageBand band : WageBand.values()) {
+             int b = band.ordinal();
+ 
+-            double premium = 1;
+-            if (market != null) {
+-                // Every job in a band shares a multiplier, so any of them reads
+-                // the band's premium - see LabourMarket.advanceMonth.
+-                for (JobType job : JobType.values()) {
+-                    if (WageBand.of(job) == band) { premium = market.premium(job); break; }
+-                }
+-            }
++            // The band's own premium, off an ungated job - a doctor shortage is
++            // priced on doctors (below), not on every graduate.
++            double premium = market == null ? 1 : market.bandPremium(band);
+ 
+             /*
+              * The chance of working at your own level if you come. A band with
+diff --git a/src/main/java/ham/citybuildersim/MiningHandler.java b/src/main/java/ham/citybuildersim/MiningHandler.java
+index c84f8e4..0267dca 100644
+--- a/src/main/java/ham/citybuildersim/MiningHandler.java
++++ b/src/main/java/ham/citybuildersim/MiningHandler.java
+@@ -249,7 +249,13 @@ public class MiningHandler {
+         rRevenue = oreSoldLocally * localPrice + oreExported * exportPrice;
+ 
+         rPayroll = getPayroll();
+-        rElectricityCost = electricity * energyRatio * pricePerWatt;
++        // The BASIS ratio, like every other line of this statement and every
++        // other sector's. This read the live ratio, so a reloaded city - which
++        // rebuilds the statement from the carried basis - charged the mines a
++        // different power bill from the one the live city had, and once the
++        // utility started booking what its customers paid (2026-09-06) that
++        // showed up as utility income differing across a save.
++        rElectricityCost = electricity * bEnergyRatio * pricePerWatt;
+         rWaterCost = water * bWaterRatio * pricePerWaterUnit;
+ 
+         rOperatingCost = rPayroll + rElectricityCost + rWaterCost;
+@@ -265,9 +271,16 @@ public class MiningHandler {
+     public void calculateResults() {
+         computeMonthlyReport();
+         netIncome = rNetIncome;
+-        cash += netIncome;
++        // Net of the profit tax, at the rate set before the statement ran -
++        // see CommercialHandler.calculateCommercialResults().
++        cash += netIncome - getTaxIncome(taxRate);
+     }
+ 
++    /** The profit rate in force this month, set by EconomyManager before the statement runs. */
++    private double taxRate;
++    public void setTaxRate(double rate) { this.taxRate = rate; }
++    public double getTaxRate()          { return taxRate; }
++
+     /**
+      * Its books. No inventory: ore ships the month it is lifted, to the mills or
+      * abroad, so there is no stockpile to value - the same reasoning as the
+@@ -315,6 +328,7 @@ public class MiningHandler {
+     public double getReportPayroll()      { return rPayroll; }
+     public double getReportOperatingCost(){ return rOperatingCost; }
+     public double getReportNetIncome()    { return rNetIncome; }
++    public double getReportInterestExpense() { return rInterestExpense; }
+     public double getGrossRevenue()       { return rRevenue; }
+ 
+     public void reset() {
+diff --git a/src/main/java/ham/citybuildersim/MoneyAudit.java b/src/main/java/ham/citybuildersim/MoneyAudit.java
+new file mode 100644
+index 0000000..170ef77
+--- /dev/null
++++ b/src/main/java/ham/citybuildersim/MoneyAudit.java
+@@ -0,0 +1,236 @@
++package ham.citybuildersim;
++
++/**
++ * Where the money went this month, and whether it all went somewhere.
++ *
++ * THE IDENTITY
++ *
++ * Every dollar in the game sits in one of a handful of pools: the treasury,
++ * the six private sectors' cash, and the construction sector's order book (a
++ * build is paid for up front and earned as the work is done, so the unearned
++ * part is money the builder holds and has not yet booked). Everything else -
++ * households, the lender, other cities, the world - is OUTSIDE, and money only
++ * ever crosses that boundary in a known set of ways: wages out, shopping and
++ * rent in, imports out, exports in, loans in, repayments and interest out,
++ * pensions and subsidies out, fees and wage tax in.
++ *
++ * So for one month tick:
++ *
++ *     pooled(after) - pooled(before)  ==  inflows - outflows
++ *
++ * and the difference between the two sides is the RESIDUAL. A residual is a
++ * dollar that appeared from nowhere or vanished into nothing, and every one of
++ * this codebase's money bugs - the quote that charged the city for a private
++ * investor's materials, the tax collected on money the sector kept, the VAT
++ * struck on sales nobody paid for - was a residual that nothing was measuring.
++ *
++ * WHAT IT IS NOT
++ *
++ * Not a second set of books. Every figure here is read off the statement the
++ * sector already wrote for the month, so this cannot disagree with the screen.
++ * What it CAN disagree with is the cash, and that is the point: a statement
++ * that says one thing while the bank balance moves by another is exactly what
++ * this catches. Internal flows - a shop paying a mill, a mill paying a mine,
++ * the city collecting a tax - are deliberately not listed. They cancel if both
++ * sides booked the same number, and show up as residual if they did not.
++ *
++ * Struck by Game.nextMonth() every month, always, because it costs forty
++ * getter reads; asserted by LongPlaytest and MoneyCheck.
++ */
++public final class MoneyAudit {
++
++    /** One month's strike. Immutable, so a harness can keep the worst one. */
++    public static final class Result {
++        public static final Result NONE = new Result(0, 0, 0, 0, 0, 0);
++
++        public final int month;
++        public final double before;
++        public final double after;
++        public final double inflows;
++        public final double outflows;
++        /** (after - before) - (inflows - outflows). Zero when money is conserved. */
++        public final double residual;
++
++        /** Every pool and flow by name, for chasing a residual. */
++        public final String detail;
++
++        Result(int month, double before, double after, double inflows, double outflows, double residual) {
++            this(month, before, after, inflows, outflows, residual, "");
++        }
++
++        Result(int month, double before, double after, double inflows, double outflows, double residual, String detail) {
++            this.month = month;
++            this.before = before;
++            this.after = after;
++            this.inflows = inflows;
++            this.outflows = outflows;
++            this.residual = residual;
++            this.detail = detail;
++        }
++
++        /** Residual as a share of what moved, so a $3 leak in a $3B city reads as 0. */
++        public double relative() {
++            double moved = Math.max(1, Math.abs(inflows) + Math.abs(outflows));
++            return Math.abs(residual) / moved;
++        }
++
++        @Override public String toString() {
++            return String.format("m%d pooled %,.2f -> %,.2f  in %,.2f  out %,.2f  residual %,.2f (%.4f%%)",
++                    month, before, after, inflows, outflows, residual, relative() * 100);
++        }
++    }
++
++    private MoneyAudit() {}
++
++    static final String[] POOL_NAMES = {
++        "city", "retail", "real estate", "industry", "heavy industry", "mining",
++        "construction", "order book", "cheque in the post"
++    };
++
++    /** The pools, in POOL_NAMES order. */
++    public static double[] pools(Game g) {
++        EconomyManager e = g.getEconomyManager();
++        ConstructionHandler c = g.getServicesManager().getConstructionHandler();
++        return new double[] {
++            g.getCash(),
++            e.getSectorCash(BusinessDebtManager.RETAIL),
++            e.getSectorCash(BusinessDebtManager.REAL_ESTATE),
++            e.getSectorCash(BusinessDebtManager.INDUSTRY),
++            e.getSectorCash(BusinessDebtManager.HEAVY_INDUSTRY),
++            e.getSectorCash(BusinessDebtManager.MINING),
++            c.getCash(),
++            c.getUnearnedRevenue(),
++            /*
++             * The stores' payment for local food. Retail's statement charges it
++             * this month; the mills' statement books it NEXT month (the demand
++             * signal is a month behind by design - see
++             * EconomyManager.startOfMontEconUpdate). Between the two it is a
++             * cheque in the post, and it belongs to the mills.
++             */
++            e.getCommercialHandler().getReportLocalPurchaseValue()
++        };
++    }
++
++    /** Every dollar the city and its businesses hold, plus the builder's order book. */
++    public static double pooled(Game g) {
++        double total = 0;
++        for (double p : pools(g)) total += p;
++        return total;
++    }
++
++    /**
++     * Strikes the month. Called at the bottom of nextMonth(), after every
++     * statement has run and every payment has moved.
++     *
++     * @param before      pooled() as it stood at the top of the month
++     * @param interestDue the city's interest accrued going in, which is what
++     *                    finalUpdateEconomy() pays this month and then clears
++     */
++    static Result strike(Game g, double before, double interestDue) {
++        return strike(g, before, null, interestDue);
++    }
++
++    /** As above, and with the opening pools the result can say which pool moved unexplained. */
++    static Result strike(Game g, double before, double[] poolsBefore, double interestDue) {
++        StringBuilder detail = new StringBuilder();
++        java.util.function.BiConsumer<String, Double> note = (label, amount) -> {
++            if (amount != 0) detail.append(String.format("      %-36s %,14.2f%n", label, amount));
++        };
++        java.util.function.BiFunction<String, Double, Double> flow = (label, amount) -> {
++            note.accept(label, amount);
++            return amount;
++        };
++        EconomyManager e = g.getEconomyManager();
++        CommercialHandler retail = e.getCommercialHandler();
++        IndustrialHandler food = e.getIndustrialHandler();
++        HeavyIndustryHandler mills = e.getHeavyIndustryHandler();
++        MiningHandler mines = e.getMiningHandler();
++        ConstructionHandler builders = g.getServicesManager().getConstructionHandler();
++        UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
++        BusinessDebtManager lender = e.getBusinessDebtManager();
++        Healthcare care = g.getHealthcare();
++        Education schools = g.getEducation();
++
++        double in = 0;
++        // Households: what they spend in the shops and on rent, and what the
++        // city takes off their pay and charges them at the door.
++        in += flow.apply("+ retail GrossRevenue", retail.getGrossRevenue());
++        in += flow.apply("+ retail RentIncome", retail.getReportRentIncome());
++        in += flow.apply("+ e WageTax", e.getWageTax());
++        in += flow.apply("+ e Contributions", e.getContributions());
++        in += flow.apply("+ care Fees", care.getFees());
++        in += flow.apply("+ schools Fees", schools.getFees());
++        // The world: exports, at the price the statement sold them for.
++        in += flow.apply("+ food FoodExportRevenue", food.getFoodExportRevenue());
++        in += flow.apply("+ mills Revenue", mills.getReportRevenue());
++        in += flow.apply("+ mines OreExported * mines ExportPr", mines.getReportOreExported() * mines.getReportExportPrice());
++        // The lender.
++        in += flow.apply("+ lender LentThisMonth", lender.getLentThisMonth());
++        in += flow.apply("+ city CityDebtRaisedThisMonth", g.getCityDebtRaisedThisMonth());
++
++        double out = 0;
++        // Payrolls, as each statement charged them.
++        out += flow.apply("- retail Payroll", retail.getReportPayroll());
++        out += flow.apply("- food Payroll", food.getReportPayroll());
++        out += flow.apply("- mills Payroll", mills.getReportPayroll());
++        out += flow.apply("- mines Payroll", mines.getReportPayroll());
++        out += flow.apply("- builders WageExpense", builders.getReportWageExpense());
++        out += flow.apply("- utilities UtilityPayroll", utilities.getUtilityPayroll());
++        out += flow.apply("- care Payroll", care.getPayroll());
++        out += flow.apply("- schools Payroll", schools.getPayroll());
++        // Imports.
++        out += flow.apply("- retail ImportPurchaseValue", retail.getReportImportPurchaseValue());
++        // The mill's input bill less the ore it bought locally, at the price
++        // the mine's statement sold it for. If the two statements disagree on
++        // that price the difference lands in the residual, which is right.
++        out += Math.max(0, mills.getReportInputCost()
++                - mills.getReportLocalOreUsed() * mines.getReportLocalPrice());
++        out += flow.apply("- builders MaterialsExpense", builders.getReportMaterialsExpense());
++        // Interest and principal to the lender.
++        out += flow.apply("- retail RetailInterest", retail.getReportRetailInterest());
++        out += flow.apply("- retail RealEstateInterest", retail.getReportRealEstateInterest());
++        out += flow.apply("- food InterestExpense", food.getReportInterestExpense());
++        out += flow.apply("- mills InterestExpense", mills.getReportInterestExpense());
++        out += flow.apply("- mines InterestExpense", mines.getReportInterestExpense());
++        out += flow.apply("- builders InterestExpense", builders.getReportInterestExpense());
++        out += flow.apply("- lender RepaidThisMonth", lender.getRepaidThisMonth());
++        out += flow.apply("- interestDue", interestDue);
++        out += flow.apply("- city CityPrincipalRepaidThisMonth", g.getCityPrincipalRepaidThisMonth());
++        // What the city pays the outside world: pensions, the schools' tuition
++        // subsidy (paid to households), and the upkeep of its own services.
++        out += flow.apply("- e PensionsPaid", e.getPensionsPaid());
++        out += flow.apply("- care Upkeep", care.getUpkeep());
++        out += flow.apply("- schools Upkeep", schools.getUpkeep());
++        out += flow.apply("- schools Subsidy", schools.getSubsidy());
++
++        // Suspect internal pairs, for the detail only. A flow that should
++        // cancel and does not is where a residual lives.
++        note.accept("chk profit tax collected (city)", e.getBusinessTax() + e.getIndustrialTax() + e.getHeavyIndustryTax());
++        note.accept("chk VAT collected (city)", e.getSalesTax());
++        note.accept("chk property tax collected", e.getTotalPropertyTax());
++        note.accept("chk retail local purchase (net)", retail.getReportLocalPurchaseValue());
++        note.accept("chk retail inventory cost paid", retail.getReportInventoryCost());
++        note.accept("chk industry local revenue", food.getGrossRevenue() - food.getFoodExportRevenue());
++        note.accept("chk utility revenue", utilities.getUtilityRevenue());
++        note.accept("chk sector utility bills", retail.getReportElectricityCost() + retail.getReportWaterCost()
++                + food.getReportElectricityCost() + food.getReportWaterCost()
++                + mills.getReportElectricityCost() + mills.getReportWaterCost()
++                + mines.getReportElectricityCost() + mines.getReportWaterCost());
++        note.accept("chk mills ore bought locally", mills.getReportLocalOreUsed() * mines.getReportLocalPrice());
++        note.accept("chk mines ore sold locally", mines.getReportOreSoldLocally() * mines.getReportLocalPrice());
++        note.accept("chk construction revenue banked", builders.getReportRevenue());
++        note.accept("chk construction subsidy", builders.getSubsidyThisMonth());
++        note.accept("chk land sold to sectors", g.getLandManager().getLandSalesThisMonth());
++
++        double[] poolsAfter = pools(g);
++        double after = 0;
++        for (double p : poolsAfter) after += p;
++        if (poolsBefore != null) {
++            for (int i = 0; i < POOL_NAMES.length; i++) {
++                note.accept("pool " + POOL_NAMES[i] + " moved", poolsAfter[i] - poolsBefore[i]);
++            }
++        }
++        double residual = (after - before) - (in - out);
++        return new Result(g.getMonth(), before, after, in, out, residual, detail.toString());
++    }
++}
+diff --git a/src/main/java/ham/citybuildersim/MoneyCheck.java b/src/main/java/ham/citybuildersim/MoneyCheck.java
+new file mode 100644
+index 0000000..bb527f2
+--- /dev/null
++++ b/src/main/java/ham/citybuildersim/MoneyCheck.java
+@@ -0,0 +1,142 @@
++package ham.citybuildersim;
++
++import java.util.Locale;
++
++/**
++ * Money is conserved: every dollar that leaves a pool arrives in another, or
++ * crosses the city's boundary in a way the audit can name.
++ *
++ * The 29th harness, and the one the other twenty-eight were missing. Every
++ * money bug this codebase has had was a flow with one side - a charge with no
++ * payee, a tax with no payer - and each was found by hand, months after it
++ * started. MoneyAudit strikes the identity every month; this plays a city with
++ * all six sectors trading, borrowing, building and being taxed, and demands
++ * the residual stay at rounding.
++ *
++ * Two cities, because a fixture that only ever grows can hide a leak that
++ * only opens under stress: one is left to prosper, the other is bankrupted
++ * and restructured, taxed hard, and made to import everything.
++ */
++public class MoneyCheck {
++
++    static int fails = 0;
++
++    static void assertTrue(String label, boolean ok) {
++        if (!ok) fails++;
++        System.out.printf("%-70s %s%n", label, ok ? "OK" : "FAIL");
++    }
++
++    static void quietly(Runnable work) {
++        java.io.PrintStream out = System.out;
++        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
++        try { work.run(); } finally { System.setOut(out); }
++    }
++
++    static BuildingsTemplate t(Game g, String name) {
++        for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
++            if (b.getName().equals(name)) return b;
++        }
++        throw new IllegalArgumentException("no template " + name);
++    }
++
++    /** Runs `months` and returns the worst relative residual seen, printing the worst month. */
++    static MoneyAudit.Result play(String label, Game g, int months, boolean verbose) {
++        MoneyAudit.Result worst = MoneyAudit.Result.NONE;
++        double worstRel = -1;
++        for (int i = 0; i < months; i++) {
++            final Game gg = g;
++            quietly(() -> gg.simulateMonths(1));
++            MoneyAudit.Result r = g.getLastMoneyAudit();
++            if (verbose) System.out.println("   " + r);
++            if (r.relative() > worstRel) { worstRel = r.relative(); worst = r; }
++        }
++        System.out.printf("   %s: worst month %s%n", label, worst);
++        if (worst.relative() >= 1e-4) System.out.print(worst.detail);
++        return worst;
++    }
++
++    public static void main(String[] args) {
++        Locale.setDefault(Locale.CANADA);
++        boolean verbose = args.length > 0 && args[0].equals("-v");
++
++        /* ==================== 1. a city that prospers ==================== */
++        System.out.println("--- every sector trading, nothing leaks ---");
++
++        Game g = new Game(GameFiles.scratch("moneycheck"));
++        g.run();
++        g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
++        g.buildStack(t(g, "House"), 400, false);
++        g.buildStack(t(g, "Low-Rise Apartments"), 4, false);
++        g.buildStack(t(g, "Small Grocery Store"), 4, false);
++        g.buildStack(t(g, "Textile Mill"), 3, false);
++        g.buildStack(t(g, "Construction Depot"), 3, false);
++        g.buildStack(t(g, "Coal Power Plant"), 1, false);
++        g.buildStack(t(g, "Water Treatment Plant"), 1, false);
++        g.buildStack(t(g, "Paved Road"), 10, false);
++        g.buildStack(t(g, "Walk-in Clinic"), 2, false);
++        g.buildStack(t(g, "Elementary School"), 1, false);
++
++        MoneyAudit.Result worst = play("founding, 120 months", g, 120, verbose);
++        assertTrue("a founding city conserves money to within 0.01% of what moved",
++                worst.relative() < 1e-4);
++
++        // Heavy industry and mining need a deposit, which the player buys.
++        LandMarket market = g.getLandManager().getMarket();
++        for (LandParcel parcel : market.getListing()) {
++            if (parcel.getIronTonnes() > 0) {
++                g.getGovernmentInvestor().spend(-parcel.getPrice());
++                g.buyLandParcel(parcel.getId());
++                break;
++            }
++        }
++        g.getGovernmentInvestor().spend(-50_000_000);
++        g.buildStack(t(g, "Iron Mine"), 2, false);
++        g.buildStack(t(g, "Steel Foundry"), 1, false);
++        g.buildStack(t(g, "Memorial Cemetery"), 1, false);
++        g.buildStack(t(g, "Community College"), 1, false);
++
++        worst = play("with mines, mills, a cemetery and a college, 240 months", g, 240, verbose);
++        assertTrue("an industrial city conserves money to within 0.01% of what moved",
++                worst.relative() < 1e-4);
++
++        /* ==================== 2. a city under stress ==================== */
++        System.out.println("\n--- broke, banned, taxed and importing: still nothing leaks ---");
++
++        Game s = new Game(GameFiles.scratch("moneycheck"));
++        s.run();
++        s.getLandManager().setOwnedSqFt(s.getLandManager().getOwnedSqFt() + 100_000_000L);
++        s.buildStack(t(s, "House"), 600, false);
++        s.buildStack(t(s, "Convenience Store"), 6, false);
++        s.buildStack(t(s, "Construction Depot"), 2, false);
++        s.buildStack(t(s, "Coal Power Plant"), 1, false);
++        // No food industry at all: the shops import every unit they sell.
++        // Every tax dial up, so the sectors are taxed on everything they do.
++        TaxPolicy policy = s.getEconomyManager().getTaxPolicy();
++        policy.setIncomeTaxRate(.35);
++        for (PolicySector sector : PolicySector.values()) {
++            policy.setProfitOffset(sector, .25);
++            policy.setSalesOffset(sector, .10);
++        }
++        // Take the treasury to the edge so emergency notes get issued and
++        // repaid inside the window.
++        s.setCashForTest(20_000);
++
++        worst = play("a stressed city, 180 months", s, 180, verbose);
++        assertTrue("a stressed city conserves money to within 0.01% of what moved",
++                worst.relative() < 1e-4);
++
++        // Bankrupt retail by hand and let the restructure and its ban run.
++        BusinessDebtManager credit = s.getEconomyManager().getBusinessDebtManager();
++        credit.issueLoan(BusinessDebtManager.RETAIL, 5_000_000, s.getMonth());
++        s.getEconomyManager().setSectorCash(BusinessDebtManager.RETAIL,
++                s.getEconomyManager().getSectorCash(BusinessDebtManager.RETAIL) + 5_000_000);
++        credit.setAssets(BusinessDebtManager.RETAIL, -1);
++
++        worst = play("through a restructure, 60 months", s, 60, verbose);
++        assertTrue("a restructure moves no cash the audit cannot see",
++                worst.relative() < 1e-4);
++
++        System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
++        System.exit(fails == 0 ? 0 : 1);
++    }
++}
+diff --git a/src/main/java/ham/citybuildersim/PolicyCheck.java b/src/main/java/ham/citybuildersim/PolicyCheck.java
+index 035477c..8f62c51 100644
+--- a/src/main/java/ham/citybuildersim/PolicyCheck.java
++++ b/src/main/java/ham/citybuildersim/PolicyCheck.java
+@@ -177,9 +177,28 @@ public class PolicyCheck {
+         importing.recordSales(PolicySector.RETAIL, 200);      // resold at cost
+ 
+         importing.settle(flat);
+-        check("an importer reselling at cost remits nothing",
+-                importing.getNet(PolicySector.RETAIL), 0);
+-        assertTrue("...so importing carries no advantage over buying locally", true);
++        /*
++         * The import is charged on the way in (20) and credited (20), and the
++         * resale is taxed like any sale (20): net 20. That is exactly what the
++         * LOCAL chain collects on the same goods - the supplier remits 20, the
++         * reseller credits it and remits 20 on its own sale - so importing
++         * carries no advantage over buying locally, which is the property the
++         * heading claims. Until 2026-09-06 the ledger recorded only the credit
++         * half of the import, the importer netted zero, and the charge it was
++         * meant to net against was a purchase markup paid to nobody.
++         */
++        check("an importer reselling at cost remits the tax on its sale",
++                importing.getNet(PolicySector.RETAIL), 20);
++
++        SalesTaxLedger local = new SalesTaxLedger();
++        local.recordSales(PolicySector.INDUSTRY, 200);                 // the supplier's sale
++        local.recordInputTax(PolicySector.RETAIL, 200 * .10);          // the reseller's credit
++        local.recordSales(PolicySector.RETAIL, 200);                   // resold at cost
++        double localChain = local.settle(flat);
++        check("...which is what the local chain remits on the same goods",
++                localChain, importing.getNet(PolicySector.RETAIL));
++        assertTrue("...so importing carries no advantage over buying locally",
++                Math.abs(localChain - importing.settle(flat)) < 1e-9);
+ 
+         /* ============ 7. the subsidy floors a sector and stops the count ==== */
+         /*
+diff --git a/src/main/java/ham/citybuildersim/PopulationManager.java b/src/main/java/ham/citybuildersim/PopulationManager.java
+index 96512bf..c847e1c 100644
+--- a/src/main/java/ham/citybuildersim/PopulationManager.java
++++ b/src/main/java/ham/citybuildersim/PopulationManager.java
+@@ -420,9 +420,32 @@ public class PopulationManager {
+             used += out[b];
+         }
+         out[WageBand.NONE.ordinal()] = Math.max(0, workforce - used);
++
++        /*
++         * LESS THE STUDENTS. A diploma-holder two years into a degree is still
++         * a diploma-holder - the head stays in skilledHeads, and graduates out
++         * of it when the course ends - but they are not in the labour supply,
++         * not filling a post, not counted as surplus. Full-time students do
++         * not work (Jerus, 2026-09-06). This is the ONE place the supply is
++         * read from, so every consumer sees the same workforce.
++         */
++        if (studying != null) {
++            for (int b = 0; b < out.length && b < studying.length; b++) {
++                out[b] = Math.max(0, out[b] - studying[b]);
++            }
++        }
+         return out;
+     }
+ 
++    /** Adults studying full time, by band, set from Education each month. */
++    private double[] studying;
++    public void setStudying(double[] byBand) { this.studying = byBand; }
++    public double getStudyingTotal() {
++        double total = 0;
++        if (studying != null) for (double v : studying) total += v;
++        return total;
++    }
++
+     /** Posts that exist at each skill level. The demand side of the same axis. */
+     public double[] postsByBand() {
+         double[] out = new double[WageBand.values().length];
+diff --git a/src/main/java/ham/citybuildersim/SalesTaxLedger.java b/src/main/java/ham/citybuildersim/SalesTaxLedger.java
+index 499f01b..ca997e5 100644
+--- a/src/main/java/ham/citybuildersim/SalesTaxLedger.java
++++ b/src/main/java/ham/citybuildersim/SalesTaxLedger.java
+@@ -57,6 +57,15 @@ public class SalesTaxLedger {
+     private final int sectors = PolicySector.values().length;
+ 
+     private final double[] taxableSales  = new double[sectors];
++    /**
++     * Tax charged on imports, at the buyer's rate. The comment on chargeImport()
++     * always said an import was "charged on the way in and credited"; until
++     * 2026-09-06 only the credit was ever recorded, so every import was a pure
++     * refund from the treasury - and the charge it was meant to net against
++     * was paid by retail as a purchase markup, to nobody. Both halves live in
++     * the ledger now.
++     */
++    private final double[] importTax     = new double[sectors];
+     private final double[] zeroRated     = new double[sectors];
+     private final double[] creditedInput = new double[sectors];
+ 
+@@ -113,8 +122,8 @@ public class SalesTaxLedger {
+     public double chargeImport(PolicySector sector, double landedCost, TaxPolicy policy) {
+         if (sector == null || landedCost <= 0) return 0;
+         double tax = landedCost * policy.effectiveSalesRate(sector);
+-        taxableSales[sector.ordinal()] += 0;      // an import is not a sale
+-        creditedInput[sector.ordinal()] += tax;   // ...but the tax on it is creditable
++        importTax[sector.ordinal()]     += tax;   // charged on the way in...
++        creditedInput[sector.ordinal()] += tax;   // ...and creditable, so it nets to zero
+         return tax;
+     }
+ 
+@@ -165,7 +174,7 @@ public class SalesTaxLedger {
+ 
+             // Zero-rated sales are charged nothing. They are still SALES, so
+             // they do not reduce the credit behind them.
+-            payable[i] = taxableSales[i] * policy.effectiveSalesRate(s);
++            payable[i] = taxableSales[i] * policy.effectiveSalesRate(s) + importTax[i];
+             credit[i]  = creditedInput[i];
+ 
+             totalRemitted += payable[i] - credit[i];
+@@ -195,6 +204,7 @@ public class SalesTaxLedger {
+      */
+     public void startMonth() {
+         java.util.Arrays.fill(taxableSales, 0);
++        java.util.Arrays.fill(importTax, 0);
+         java.util.Arrays.fill(zeroRated, 0);
+         java.util.Arrays.fill(creditedInput, 0);
+         java.util.Arrays.fill(payable, 0);
+@@ -205,7 +215,7 @@ public class SalesTaxLedger {
+     /* ------------------------- save and restore ------------------------- */
+ 
+     public double[] getLedgerState() {
+-        double[] state = new double[1 + sectors * 5];
++        double[] state = new double[1 + sectors * 6];
+         int i = 0;
+         state[i++] = totalRemitted;
+         for (int s = 0; s < sectors; s++) state[i++] = taxableSales[s];
+@@ -213,13 +223,21 @@ public class SalesTaxLedger {
+         for (int s = 0; s < sectors; s++) state[i++] = creditedInput[s];
+         for (int s = 0; s < sectors; s++) state[i++] = payable[s];
+         for (int s = 0; s < sectors; s++) state[i++] = credit[s];
++        for (int s = 0; s < sectors; s++) state[i++] = importTax[s];
+         return state;
+     }
+ 
+-    /** @return false if the array is not this build's shape; nothing is changed */
++    /**
++     * @return false if the array is not this build's shape; nothing is changed.
++     * The shape from before importTax existed (format 17 and earlier) is
++     * accepted with the import charges read as zero - that month's ledger was
++     * struck without them, so that IS what it collected.
++     */
+     public boolean restoreLedgerState(double[] state) {
+ 
+-        if (state == null || state.length != 1 + sectors * 5) return false;
++        if (state == null) return false;
++        boolean withImports = state.length == 1 + sectors * 6;
++        if (!withImports && state.length != 1 + sectors * 5) return false;
+ 
+         int i = 0;
+         totalRemitted = state[i++];
+@@ -228,6 +246,10 @@ public class SalesTaxLedger {
+         for (int s = 0; s < sectors; s++) creditedInput[s] = state[i++];
+         for (int s = 0; s < sectors; s++) payable[s]       = state[i++];
+         for (int s = 0; s < sectors; s++) credit[s]        = state[i++];
++        java.util.Arrays.fill(importTax, 0);
++        if (withImports) {
++            for (int s = 0; s < sectors; s++) importTax[s] = state[i++];
++        }
+         return true;
+     }
+ 
+diff --git a/src/main/java/ham/citybuildersim/SaveFileCheck.java b/src/main/java/ham/citybuildersim/SaveFileCheck.java
+index 4b855ee..ffbe1aa 100644
+--- a/src/main/java/ham/citybuildersim/SaveFileCheck.java
++++ b/src/main/java/ham/citybuildersim/SaveFileCheck.java
+@@ -263,7 +263,7 @@ public class SaveFileCheck {
+         // Recorded off a real city rather than from typed-in numbers: the
+         // recorder takes the Game now, because twenty-three positional
+         // arguments is a machine for transposing two of them.
+-        Game recorder = new Game();
++        Game recorder = new Game(GameFiles.scratch("savecheck"));
+         recorder.newGame();
+         HistorySave history = new HistorySave();
+         history.recordMonth(recorder);
+diff --git a/src/main/java/ham/citybuildersim/UserInterface.java b/src/main/java/ham/citybuildersim/UserInterface.java
+index b769dc1..1ecba77 100644
+--- a/src/main/java/ham/citybuildersim/UserInterface.java
++++ b/src/main/java/ham/citybuildersim/UserInterface.java
+@@ -3154,35 +3154,32 @@ public class UserInterface extends Application {
+                 return;
+             }
+ 
+-            double sticker = template.getCashCost() * n;
+-            double total   = game.calculateTotalCost(template, n);
+-            double stock   = game.getBuildingManager().getConstructionMaterials();
+-            double price   = game.getBuildingManager().getConstructionMaterialPrice();
+-            double needed  = template.getConstructionMaterials() * (double) n;
+-            double imported = Math.max(needed - stock, 0);
+-
+-            quote.getChildren().add(quoteLine("Cash cost", "$" + formatter.format(sticker)));
+-            if (imported > 0) {
++            // One quote, from the method that charges. Nothing here is
++            // arithmetic; it is a printout of Game.quoteBuild().
++            Game.BuildQuote q = game.quoteBuild(template, n);
++            double total = q.total;
++
++            quote.getChildren().add(quoteLine("Cash cost", "$" + formatter.format(q.sticker)));
++            if (q.materialsImported > 0) {
+                 quote.getChildren().add(quoteLine(
+                         String.format("Materials to import  %s @ $%.2f",
+-                                formatter.format(imported), price),
+-                        "$" + formatter.format(imported * price)));
++                                formatter.format(q.materialsImported), q.materialsPrice),
++                        "$" + formatter.format(q.importCost)));
+             }
+             quote.getChildren().add(quoteRule());
+             quote.getChildren().add(quoteLine("TOTAL", "$" + formatter.format(total)));
+             quote.getChildren().add(quoteLine("Cash on hand", "$" + formatter.format(game.getCash())));
+ 
+-            double land = template.getLandSqFt() * n;
+-            double free = game.getLandManager().getAvailableSqFt();
++            double land = q.landNeeded;
++            double free = q.landFree;
+             quote.getChildren().add(quoteLine("Land needed",
+                     formatter.format(land) + " of " + formatter.format(free) + " free"));
+ 
+             // Months, because a big order is a commitment of the city's whole
+             // building capacity and nothing else on screen says so. An Elevated
+             // Highway is 10,000 points against an output in the hundreds.
+-            double output = game.getConstructionOutput();
+-            if (output > 0) {
+-                double months = template.getConstructionPoints() * (double) n / output;
++            if (!Double.isNaN(q.months)) {
++                double months = q.months;
+                 quote.getChildren().add(quoteLine("Build time",
+                         String.format("about %s month%s at today's output",
+                                 months < 1 ? "half a" : formatter.format(Math.round(months)),
+@@ -3386,8 +3383,11 @@ public class UserInterface extends Application {
+     double totalCost = game.calculateTotalCost(selected, quantity);
+     double gap = totalCost - game.getCash();
+ 
+-    // Matching what the automatic path books when cash runs out.
+-    DebtQuote quote = game.quoteTBill(gap, 3, 1000.0);
++    // Matching what the automatic path books when cash runs out - the SAME
++    // duration, not just the same method. This quoted a 3-month bill while the
++    // button below booked the 6-month emergency note, and quoteTBill()
++    // discounts by duration, so the price on screen was not the price paid.
++    DebtQuote quote = game.quoteTBill(gap, Game.EMERGENCY_NOTE_MONTHS, 1000.0);
+ 
+     Label warning = new Label("INSUFFICIENT FUNDS");
+     warning.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+@@ -3795,8 +3795,10 @@ public class UserInterface extends Application {
+         if (mh.getCapacityTonnes() <= 0) {
+             column.getChildren().add(reportSection("NO MINES YET",
+                     "A mine is the biggest employer in the game - 376 jobs, more",
+-                    "than a food processing plant - and population here is capped",
+-                    "at jobs times 2.25. One mine is worth about 850 residents to",
++                    "than a food processing plant - and population here follows",
++                    String.format("jobs times %.2f. One mine is worth about %,d residents to",
++                            game.getMigration().getLastResidentsPerJob(),
++                            Math.round(376 * game.getMigration().getLastResidentsPerJob())),
+                     "a city that can house them.",
+                     "",
+                     "It pays on its own, exporting ore. It pays considerably",
+@@ -3935,17 +3937,19 @@ public class UserInterface extends Application {
+         VBox worth = reportSection("WHAT THE CITY GETS");
+ 
+         // The honest accounting: the mill's own profit is nearly nothing, and
+-        // the payroll it pays out is the actual point of the building.
+-        double wageTax = hi.getReportPayroll() * game.getEconomyManager().getTaxRate();
++        // the payroll it pays out is the actual point of the building. The tax
++        // is asked of the policy (it is banded) and the residents of the
++        // migration model (it is not 2.25 any more, and has not been since the
++        // workforce became the adult band).
++        double wageTax = game.getEconomyManager().wageTaxOnPayroll(hi.getStaffedPayrollPerType());
++        double residentsPerJob = game.getMigration().getLastResidentsPerJob();
+ 
+         worth.getChildren().add(monoLabel(String.format("%-32s$%s",
+                 "Wages paid into the city:", formatter.format(hi.getReportPayroll()))));
+         worth.getChildren().add(monoLabel(String.format("%-32s$%s",
+-                String.format("Wage tax on them @ %.0f%%:",
+-                        game.getEconomyManager().getTaxRate() * 100),
+-                formatter.format(wageTax))));
++                "Wage tax on them (banded):", formatter.format(wageTax))));
+         worth.getChildren().add(monoLabel(String.format("%-32s%,d",
+-                "Residents supported:", (int) (hi.getTotalJobs() * 2.25))));
++                "Residents supported:", (int) (hi.getTotalJobs() * residentsPerJob))));
+         worth.getChildren().add(monoLabel(
+                 "  those wages are spent in the shops and taxed again"));
+         column.getChildren().add(worth);
+@@ -4489,10 +4493,9 @@ public class UserInterface extends Application {
+ 
+         for (WageBand wb : WageBand.values()) {
+             int b = wb.ordinal();
+-            double premium = 1;
+-            for (JobType job : JobType.values()) {
+-                if (WageBand.of(job) == wb) { premium = market.premium(job); break; }
+-            }
++            // Off an ungated job: the first university job in enum order is
++            // the doctor, whose own licence premium is not the band's.
++            double premium = market.bandPremium(wb);
+             Label row = monoLabel(String.format("%-14s %,9.0f %,9.0f %,9.0f %8.2f %8.2fx",
+                     wb.label(), ownByBand[b], postsByBand[b], supplyByBand[b],
+                     market.getTightness(wb), premium));
+@@ -4521,8 +4524,8 @@ public class UserInterface extends Application {
+         }
+ 
+         if (anyGated) {
+-            Label gatedHead = monoLabel(String.format("%n%-22s %9s %9s   %s",
+-                    "profession", "licensed", "posts", "school"));
++            Label gatedHead = monoLabel(String.format("%n%-22s %9s %9s %8s   %s",
++                    "profession", "licensed", "posts", "premium", "school"));
+             gatedHead.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;"
+                     + " -fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
+             labour.getChildren().add(gatedHead);
+@@ -4537,8 +4540,10 @@ public class UserInterface extends Application {
+                 boolean built = game.getBuildingManager()
+                         .getBuiltEducationPlaces()[type.ordinal()] > 0;
+ 
+-                Label row = monoLabel(String.format("%-22s %,9.0f %,9d   %s",
+-                        jobLabel(job), held, posts,
++                // The licence premium: what the shortage is doing to this
++                // one wage, over and above its band. 1.00x is "no shortage".
++                Label row = monoLabel(String.format("%-22s %,9.0f %,9d %7.2fx   %s",
++                        jobLabel(job), held, posts, market.getLicenceMultiple(job),
+                         built ? "yes" : "NONE - imports only"));
+                 row.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+                         + " -fx-text-fill: " + (held < posts ? "#ff6b6b" : "#c3ccd3") + ";");
+@@ -5603,13 +5608,9 @@ public class UserInterface extends Application {
+                 String.format("%-32s-$%s", String.format("Business Tax @ %.0f%%:", ih.getReportTaxRate() * 100),
+                         formatter.format(tax))));
+         addNetIncomeLine(bottomLine, "NET INCOME (AFTER TAX):", netAfterTax);
+-
+-        // Worth surfacing rather than quietly presenting a tidy statement: the
+-        // cash reserve is credited with the PRE-tax figure while the city also
+-        // collects the tax, so the same money is counted twice.
+-        Label taxNote = monoLabel("Note: cash is credited with the pre-tax figure.");
+-        taxNote.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #ff6b6b;");
+-        bottomLine.getChildren().add(taxNote);
++        // The after-tax line IS what the sector banks now (2026-09-06). The red
++        // note that used to sit here, "cash is credited with the pre-tax
++        // figure", described the leak MoneyAudit closed.
+         column.getChildren().add(bottomLine);
+ 
+         /* -------------------------- BALANCE SHEET --------------------------- */
+@@ -7015,7 +7016,7 @@ public class UserInterface extends Application {
+ 
+         int output = game.getConstructionOutput();
+         int siteCount = buildingManager.getUnderConstruction();
+-        double perSite = (siteCount > 0) ? (double) output / siteCount : output;
++        double perSite = buildingManager.outputPerSite(output);
+ 
+         Label capacity = monoLabel("Output: " + formatter.format(output) + " pts/mo");
+         capacity.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
+@@ -7068,8 +7069,8 @@ public class UserInterface extends Application {
+                         ? "stalled - gridlocked"
+                         : "stalled - no workers";
+             } else {
+-                double monthsLeft = Math.ceil((remaining * (double) pointsEach - progress) / perSite);
+-                eta = "~" + (int) monthsLeft + " mo";
++                double monthsLeft = buildingManager.monthsLeft(site, perSite);
++                eta = Double.isNaN(monthsLeft) ? "done" : "~" + (int) monthsLeft + " mo";
+             }
+ 
+             Label detail = monoLabel(remaining + " left / " + built + " built - " + eta);
+diff --git a/src/main/java/ham/citybuildersim/UtilitiesHandler.java b/src/main/java/ham/citybuildersim/UtilitiesHandler.java
+index e786243..5481a4e 100644
+--- a/src/main/java/ham/citybuildersim/UtilitiesHandler.java
++++ b/src/main/java/ham/citybuildersim/UtilitiesHandler.java
+@@ -151,9 +151,33 @@ public class UtilitiesHandler {
+      * for months. It was not.
+      */
+     public double getElectricityRevenue() {
++        if (billedByStatement) return billedElectricityRevenue;
+         return Math.min(billedElectricityDraw * energyRatio, production) * pricePerWatt;
+     }
+ 
++    /*
++     * WHAT THE CUSTOMERS WERE ACTUALLY CHARGED, since 2026-09-06.
++     *
++     * The two formulas here and in getWaterRevenue() recompute the bill from
++     * the draw, the ratio and the price - and they were struck at the END of
++     * the month, after updateServices() had moved the ratio, while the four
++     * sectors were charged at the START of the month against last month's
++     * ratio. Whenever a brownout began or ended, the utility booked a
++     * different number from the one its customers paid. ConservationCheck
++     * did not see it because its fixture's ratios never move; MoneyAudit saw
++     * it on the first run. The customers' statements are the fact, so Game
++     * hands their total in and the utility books that.
++     */
++    private boolean billedByStatement;
++    private double billedElectricityRevenue;
++    private double billedWaterRevenue;
++
++    public void setBilledRevenue(double electricity, double water) {
++        this.billedByStatement = true;
++        this.billedElectricityRevenue = electricity;
++        this.billedWaterRevenue = water;
++    }
++
+     /** What the four charged categories draw. Set by ServicesManager. */
+     public double billedElectricityDraw;
+ 
+@@ -172,6 +196,7 @@ public class UtilitiesHandler {
+      * handlers book as their water expense. The two sides tie out.
+      */
+     public double getWaterRevenue() {
++        if (billedByStatement) return billedWaterRevenue;
+         return billedWaterDraw * waterRatio * pricePerWaterUnit;
+     }
+ 
