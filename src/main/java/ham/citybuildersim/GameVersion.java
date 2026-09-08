@@ -220,6 +220,33 @@ public final class GameVersion {
      *     the save was made. The old ledger and flow shapes are read with the
      *     new fields at zero.
      */
+    /* ---------------------------------------------------------------------
+     * NOT 20: the inbox, and thirty-one new graph series (2026-09-08).
+     *
+     *     Both are additions that fail SAFELY in both directions, which is the
+     *     test this number exists for - and it is worth writing down, because
+     *     they look like format changes and are not.
+     *
+     *     The inbox is a list of notices under a new key in the save. Gson
+     *     leaves a field alone when the JSON has no key for it, so a format-19
+     *     city loads here with an empty inbox - and an empty inbox is CORRECT
+     *     for that city: nothing had ever been said to it. Whatever is still
+     *     wrong with it says so again next month, because the notices are
+     *     raised from the city's own conditions rather than restored from a
+     *     record of them. Nothing is silently gone, which is the only thing
+     *     this number guards against. Upward, an older build ignores the key
+     *     and shows the four banners it already had.
+     *
+     *     What WOULD move this number is a notice carrying state the city
+     *     cannot reproduce - a decision the player made inside a notice, say.
+     *     Today the only unreproducible thing in there is whether a notice had
+     *     been read, and a warning that reappears unread is a nuisance rather
+     *     than a loss.
+     *
+     *     The graph series are the same argument as "NOT 16 EITHER" above, and
+     *     for exactly the same reason: the history is its own file and its
+     *     format is the field names of HistorySave.
+     * --------------------------------------------------------------------- */
     public static final int SAVE_FORMAT = 19;
 
     public static final String NAME = "CityBuilderSim";

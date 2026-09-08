@@ -403,6 +403,21 @@ public class Healthcare {
         this.plotsBuilt = Math.max(0, plotsBuilt);
         this.cremationCapacity = Math.max(0, cremationCapacity);
 
+        /*
+         * KEPT, so the books can be broken down. served[] arrives, is charged
+         * on and was thrown away, which left the treatment fees as one lump
+         * that no screen could take apart - and "childcare raised $2.1M of it"
+         * is the only form of that number anybody can act on. Reporting only:
+         * nothing reads this back into the model, and it is not saved, because
+         * it is this month's flow like everything else here.
+         */
+        java.util.Arrays.fill(this.served, 0);
+        if (served != null) {
+            for (int i = 0; i < served.length && i < this.served.length; i++) {
+                this.served[i] = Math.max(0, served[i]);
+            }
+        }
+
         treatmentFees = feeOn(served, CareType.GENERAL, feeNow(CareType.GENERAL))
                 + feeOn(served, CareType.CHILDCARE, feeNow(CareType.CHILDCARE))
                 + feeOn(served, CareType.SENIOR, feeNow(CareType.SENIOR));
@@ -456,6 +471,19 @@ public class Healthcare {
     }
 
     /* ------------------------------ reading it ------------------------------ */
+
+    /** People treated this month, by kind of care. Reporting only. */
+    private final double[] served = new double[CareType.values().length];
+
+    /** How many this kind of care actually saw this month. */
+    public double getServed(CareType care) {
+        return care == null || care.ordinal() >= served.length ? 0 : served[care.ordinal()];
+    }
+
+    /** ...and what they were charged for it. */
+    public double feesFrom(CareType care) {
+        return getServed(care) * feeNow(care);
+    }
 
     public double getPayroll()       { return payroll; }
     public double getUpkeep()        { return upkeep; }

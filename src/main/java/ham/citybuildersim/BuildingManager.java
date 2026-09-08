@@ -1836,6 +1836,81 @@ public class BuildingManager {
         return payroll;
     }
 
+    /* ===================================================================
+       THE SAME TWO SUMS, NARROWED TO ONE SERVICE.
+
+       READ-ONLY, and nothing below changes a thing. Payroll and upkeep are
+       charged to the city by CATEGORY - all of healthcare together, all of
+       education together - which is the right unit to bill and the wrong unit
+       to explain. "Health costs $20.5M a month" is not something a player can
+       act on; "childcare is $3.1M of it and covers half the children" is.
+
+       Keyed on the care type and the course exactly as getStaffedCareCapacity
+       and getStaffedEducationPlaces are, so a building that provides care
+       counts here whatever category it was filed under.
+       =================================================================== */
+
+    /** The wage bill of just the buildings providing one kind of care. */
+    public double getCarePayroll(CareType care, double[] wagePerType, double[] jobFillRate) {
+        if (care == null || care == CareType.NONE || wagePerType == null) return 0;
+        double payroll = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getCare() != care) continue;
+            payroll += stack.getQuantity() * jobBill(t, wagePerType, jobFillRate);
+        }
+        return payroll;
+    }
+
+    /** ...and what those same buildings cost to keep standing. */
+    public double getCareUpkeep(CareType care) {
+        if (care == null || care == CareType.NONE) return 0;
+        double upkeep = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getCare() != care) continue;
+            upkeep += stack.getQuantity() * stack.getBuilding().getUpkeep();
+        }
+        return upkeep;
+    }
+
+    /** The wage bill of just the schools teaching one course. */
+    public double getSchoolPayroll(EducationType teaches,
+                                   double[] wagePerType, double[] jobFillRate) {
+        if (teaches == null || teaches == EducationType.NONE || wagePerType == null) return 0;
+        double payroll = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getTeaches() != teaches) continue;
+            payroll += stack.getQuantity() * jobBill(t, wagePerType, jobFillRate);
+        }
+        return payroll;
+    }
+
+    /** ...and their upkeep. */
+    public double getSchoolUpkeep(EducationType teaches) {
+        if (teaches == null || teaches == EducationType.NONE) return 0;
+        double upkeep = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getTeaches() != teaches) continue;
+            upkeep += stack.getBuilding().getUpkeep() * stack.getQuantity();
+        }
+        return upkeep;
+    }
+
+    /** One building's monthly wage bill, with the fill rate applied per post. */
+    private static double jobBill(BuildingsTemplate t,
+                                  double[] wagePerType, double[] jobFillRate) {
+        double bill = 0;
+        for (JobType job : JobType.values()) {
+            int n = t.getJobs(job);
+            if (n == 0) continue;
+            int i = job.ordinal();
+            double fill = (jobFillRate != null && i < jobFillRate.length) ? jobFillRate[i] : 1;
+            bill += n * (i < wagePerType.length ? wagePerType[i] : 0) * fill;
+        }
+        return bill;
+    }
+
     /** What the standing buildings of one category cost to run each month. */
     public double getUpkeepByCategory(BuildingType category) {
         return getTotalByCategoryDouble(category, BuildingsTemplate::getUpkeep);

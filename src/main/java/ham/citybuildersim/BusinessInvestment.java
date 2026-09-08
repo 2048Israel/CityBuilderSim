@@ -41,19 +41,19 @@ import java.util.List;
 public class BusinessInvestment {
 
     /** Months of demand growth to build ahead of, on top of the lead time. */
-    private static final double PLANNING_HORIZON = 6;
+    public static final double PLANNING_HORIZON = 6;
 
     /** How many months of population history to measure the trend over. */
-    private static final int TREND_WINDOW = 12;
+    public static final int TREND_WINDOW = 12;
 
     /** Below this much spare capacity (as a fraction of demand), start building. */
-    private static final double TARGET_HEADROOM = .05;
+    public static final double TARGET_HEADROOM = .05;
 
     /** A project must clear its interest by this much to be worth doing. */
-    private static final double PROFIT_OVER_INTEREST = 1.25;
+    public static final double PROFIT_OVER_INTEREST = 1.25;
 
     /** Never start a second order for a sector while one is still on site. */
-    private static final int MAX_CONCURRENT_ORDERS = 1;
+    public static final int MAX_CONCURRENT_ORDERS = 1;
 
     /**
      * The largest order a sector will place, expressed as months of the city's
@@ -65,13 +65,13 @@ public class BusinessInvestment {
      * decades and starve every other sector - including the power station the
      * player is trying to build.
      */
-    private static final double MAX_ORDER_MONTHS = 12;
+    public static final double MAX_ORDER_MONTHS = 12;
 
     /**
      * Months of construction backlog above which the construction sector builds
      * itself more capacity.
      */
-    private static final double BACKLOG_MONTHS_BEFORE_EXPANDING = 9;
+    public static final double BACKLOG_MONTHS_BEFORE_EXPANDING = 9;
 
     private final BuildingManager buildingManager;
     private final EconomyManager economyManager;
@@ -298,13 +298,13 @@ public class BusinessInvestment {
        ===================================================================== */
 
     /** Consecutive loss-making months before a sector starts selling capacity. */
-    private static final int RETIREMENT_LOSS_MONTHS = 6;
+    public static final int RETIREMENT_LOSS_MONTHS = 6;
 
     /** Capacity has to exceed demand by this much before any of it is spare. */
-    private static final double RETIREMENT_SLACK = .25;
+    public static final double RETIREMENT_SLACK = .25;
 
     /** Most of its excess a sector will scrap in one month. Shrinking is gradual. */
-    private static final double MAX_RETIREMENT_FRACTION = .25;
+    public static final double MAX_RETIREMENT_FRACTION = .25;
 
     /** Call once a month with each sector's net income. */
     public void recordSectorResult(String sector, double netIncome) {

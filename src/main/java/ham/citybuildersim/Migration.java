@@ -437,19 +437,66 @@ public class Migration {
      * sees the month it is deciding about.
      */
     public void recordWages(double[] wagePerTier) {
+        recordWages(wagePerTier, 1);
+    }
+
+    /* =====================================================================
+       IN REAL TERMS, OR EVERY DEFLATION IS AN EXODUS
+       ---------------------------------------------------------------------
+       Jerus's spec: "they only leave if the respective job tier cashflow is
+       declining for 12 months straight or is zero." That sentence was written
+       when this game had no price level, and with no price level it is
+       unambiguous - a tier's cash wage bill falling IS that tier dying.
+
+       It stopped being unambiguous the day prices could move, and the bill came
+       due in Jerus's own save. His city at month 277: shops delivering 100% of
+       what customers came for, nobody hungry, a housing SURPLUS, rent at 13% of
+       take-home, and a migration target of 103,216 against a population of
+       99,299 - a city that by every measure should have been growing. It was
+       losing 760 people a month, and 96% of its payroll was filed as
+       "declining".
+
+       Nothing was declining. The city had mild deflation - the price index at
+       0.885, falling about 1.2% a year - and wages are indexed to the cost of
+       living, so every tier's CASH bill fell a little every month while the
+       purchasing power behind it did not move at all. Twelve of those in a row
+       opens the gate, and the gate does not know the difference.
+
+       Which cuts both ways and the other way is worse: under inflation the same
+       test would have hidden a genuine collapse, because a tier losing a third
+       of its real pay can still post a rising cash bill.
+
+       So the history is kept in REAL terms - this month's bill at this month's
+       prices - and "declining" means declining in what it buys. That is what
+       the spec meant in a world where it could only mean one thing.
+
+       Same shape as MATERIAL_MONTHS, MAX_SETTABLE, MIN_RATE and MIN_TRADE
+       before it: a quantity in one unit tested against a rule that assumed
+       another. This one had a price level added underneath it two phases after
+       it was written.
+       ===================================================================== */
+
+    /**
+     * @param priceLevel what a basket costs against the base year; 1 in a city
+     *                   whose index has not based yet, which is also what every
+     *                   fixture that calls the one-argument form gets
+     */
+    public void recordWages(double[] wagePerTier, double priceLevel) {
         if (wagePerTier == null || wagePerTier.length != TIERS) {
             return;   // refused whole, per the standing rule on state arrays
         }
+
+        double prices = priceLevel > 0 ? priceLevel : 1;
 
         for (int t = 0; t < TIERS; t++) {
             double previous = newest(t);
 
             System.arraycopy(history[t], 1, history[t], 0, DECLINE_MONTHS - 1);
-            history[t][DECLINE_MONTHS - 1] = wagePerTier[t];
+            history[t][DECLINE_MONTHS - 1] = wagePerTier[t] / prices;
 
             // A streak needs something to have declined FROM, so month one of a
             // tier's existence is not a decline - it is an arrival.
-            if (monthsRecorded > 0 && wagePerTier[t] < previous) {
+            if (monthsRecorded > 0 && history[t][DECLINE_MONTHS - 1] < previous) {
                 decliningStreak[t]++;
             } else {
                 decliningStreak[t] = 0;

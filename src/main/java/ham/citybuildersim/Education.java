@@ -612,6 +612,58 @@ public class Education {
 
     public double[] getEverGraduated() { return everGraduated; }
 
+    /* ===================================================================
+       WHAT THE SCREEN NEEDS TO EXPLAIN AN EMPTY SCHOOL
+
+       READ-ONLY, AND NOTHING BELOW CHANGES A THING. Every one of these is a
+       pure function of state this class already holds, exposed because the
+       Services screen has to answer "the university is built and empty - why",
+       and the answer is one of three gates: no seats, nobody eligible, or
+       nobody willing. Recomputing them in the UI would be a second copy of the
+       enrolment rule that could quietly disagree with this one.
+       =================================================================== */
+
+    /** Everybody part way through this course, cohort by cohort, nearest first. */
+    public double[] cohortsInFlight(EducationType type) {
+        return inFlight[type.ordinal()].clone();
+    }
+
+    /** What a household actually pays for a seat, after the subsidy. */
+    public double outOfPocket(EducationType type) {
+        return tuitionOf(type) * (1 - tuitionSubsidy);
+    }
+
+    /** How much better off somebody is for doing it - 0 means not worth it. */
+    public double studyReturn(EducationType type, LabourMarket market) {
+        return returnOn(type, market, type.requires());
+    }
+
+    /** What share of the eligible could pay the un-subsidised part. */
+    public double studyAffordability(EducationType type, LabourMarket market) {
+        return affordability(type, market, type.requires());
+    }
+
+    /** The two above, multiplied and capped: who actually enrols. */
+    public double willingShare(EducationType type, LabourMarket market) {
+        return participation(type, market, type.requires());
+    }
+
+    /**
+     * The pool this course draws on, before anything else is applied.
+     *
+     * The same subtraction study() makes: a professional school does not
+     * re-teach people who already hold its licence.
+     */
+    public double eligibleFor(EducationType type, PopulationManager people) {
+        WageBand needs = type.requires();
+        if (needs == null || people == null) return 0;
+        double eligible = people.workforceByBand()[needs.ordinal()];
+        if (type.isProfessional()) {
+            eligible = Math.max(0, eligible - people.getLicensed(type.licenses()));
+        }
+        return eligible;
+    }
+
     /**
      * Which stage of the basic ladder is holding the rest up.
      *

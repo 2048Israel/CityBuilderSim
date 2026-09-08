@@ -141,9 +141,36 @@ public class BusinessDebtManager {
     private double lentThisMonth;
     private double repaidThisMonth;
 
+    /*
+     * THE SAME TWO FIGURES, PER SECTOR.
+     *
+     * Recording only - nothing below reads these back, and no decision in this
+     * class or any other depends on them. They exist because a cash flow
+     * statement is not a statement without them: a sector's cash moves by its
+     * profit, by what it borrowed and by what it repaid, and with only the
+     * city-wide totals the last two could not be attributed to the sector whose
+     * cash actually moved. See SectorBooks.
+     */
+    private final Map<String, Double> lentBySector = new LinkedHashMap<>();
+    private final Map<String, Double> repaidBySector = new LinkedHashMap<>();
+
     public double getLentThisMonth()   { return lentThisMonth; }
     public double getRepaidThisMonth() { return repaidThisMonth; }
-    public void startAuditMonth()      { lentThisMonth = 0; repaidThisMonth = 0; }
+
+    public double getLentThisMonth(String sector) {
+        return lentBySector.getOrDefault(sector, 0.0);
+    }
+
+    public double getRepaidThisMonth(String sector) {
+        return repaidBySector.getOrDefault(sector, 0.0);
+    }
+
+    public void startAuditMonth() {
+        lentThisMonth = 0;
+        repaidThisMonth = 0;
+        lentBySector.clear();
+        repaidBySector.clear();
+    }
 
     public BusinessDebtManager() {
         for (String sector : SECTORS) {
@@ -340,6 +367,7 @@ public class BusinessDebtManager {
         double due = maturedPrincipal.getOrDefault(sector, 0.0);
         maturedPrincipal.put(sector, 0.0);
         repaidThisMonth += due;
+        repaidBySector.merge(sector, due, Double::sum);
         return due;
     }
 
@@ -377,6 +405,7 @@ public class BusinessDebtManager {
                 priceSector(sector, faceValue));
         loans.add(loan);
         lentThisMonth += faceValue;
+        lentBySector.merge(sector, faceValue, Double::sum);
 
         // A new loan changes the sector's leverage, so the next one prices off
         // the new position rather than the one before this loan existed.
@@ -571,6 +600,8 @@ public class BusinessDebtManager {
     public void redenominate(double scale) {
         lentThisMonth   *= scale;
         repaidThisMonth *= scale;
+        lentBySector.replaceAll((k, v) -> v * scale);
+        repaidBySector.replaceAll((k, v) -> v * scale);
         for (BusinessDebt loan : loans) {
             if (loan != null) loan.redenominate(scale);
         }

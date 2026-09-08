@@ -570,6 +570,64 @@ public class PopulationCheck {
         assertTrue("and they leave slower than they arrived",
                 Migration.DEPARTURE_RATE < Migration.ARRIVAL_RATE);
 
+        /* ------------------------------------------------------------------
+           DECLINING IN WHAT IT BUYS, NOT IN WHAT IT SAYS (2026-09-08)
+
+           Jerus's spec - "they only leave if the respective job tier cashflow
+           is declining for 12 months straight" - was unambiguous when it was
+           written, because there was no price level for it to be ambiguous
+           about. Two phases later there is one, and the sentence has two
+           readings that come apart in exactly the cities a player builds.
+
+           Found in a real save. His city at month 277: shops delivering 100%,
+           nobody hungry, a housing surplus, rent at 13% of take-home, and a
+           migration target 4,000 ABOVE its population - and it was losing 760
+           people a month with 96% of its payroll filed as declining. Nothing
+           was declining. Mild deflation, wages indexed to the cost of living,
+           and every tier's cash bill drifting down about a tenth of a percent a
+           month while the purchasing power behind it stood still.
+
+           Both directions are asserted, because a fix that only handles
+           deflation would leave the worse half in place: under inflation the
+           cash test HIDES a genuine collapse.
+           ------------------------------------------------------------------ */
+        System.out.println("\n--- a tier declines when its pay buys less, not when it counts less ---");
+
+        Migration deflating = new Migration();
+        double[] steady = wages.clone();
+        double prices = 1.0;
+        for (int m = 0; m < 24; m++) {
+            prices *= .999;                       // a tenth of a percent a month
+            steady[PayTier.UNSKILLED.ordinal()] = 1000 * prices;   // indexed wages
+            deflating.recordWages(steady, prices);
+        }
+        System.out.printf("   deflation: cash bill %,.2f after two years, prices %.4f%n",
+                steady[PayTier.UNSKILLED.ordinal()], prices);
+        assertTrue("two years of falling PRICES is not two years of decline",
+                deflating.decliningShare() == 0);
+        check("...so nobody is pushed out of a city that is merely cheaper",
+                deflating.monthlyNet(50_000, 100, 1000, 999_999, roomy, ADULT_MIX), 0, 1e-9);
+
+        Migration inflating = new Migration();
+        double[] nominal = wages.clone();
+        prices = 1.0;
+        for (int m = 0; m < 24; m++) {
+            prices *= 1.01;                       // 1% a month
+            // The cash bill RISES half a percent a month while prices rise one,
+            // so the pay buys half a percent less every month all the way.
+            nominal[PayTier.UNSKILLED.ordinal()] *= 1.005;
+            inflating.recordWages(nominal, prices);
+        }
+        System.out.printf("   inflation: cash bill %,.2f (up from 1,000), real %,.2f%n",
+                nominal[PayTier.UNSKILLED.ordinal()],
+                nominal[PayTier.UNSKILLED.ordinal()] / prices);
+        assertTrue("fixture: the cash bill really did rise the whole way",
+                nominal[PayTier.UNSKILLED.ordinal()] > 1000);
+        assertTrue("...and a tier losing its real pay is in decline anyway",
+                inflating.isDeclining(PayTier.UNSKILLED));
+        assertTrue("...so the people in it are entitled to go",
+                inflating.monthlyNet(50_000, 100, 1000, 999_999, roomy, ADULT_MIX) < 0);
+
         // A tier that goes to zero does not have to wait a year on top.
         Migration closed = new Migration();
         for (int m = 0; m < 12; m++) closed.recordWages(wages);

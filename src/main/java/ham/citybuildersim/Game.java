@@ -38,6 +38,22 @@ public class Game {
     private HistorySave historySave;
 
     /**
+     * What the city has had to say for itself. See Inbox.
+     *
+     * Beside the history rather than anywhere else, because the two are the
+     * same kind of thing: a record of months that have already happened, kept
+     * whether or not a window is open to see it.
+     */
+    private Inbox inbox = new Inbox();
+
+    /*
+     * The sector statements. Beside the inbox because it is the same kind of
+     * thing: something the city writes down once a month whether or not
+     * anybody is looking at the screen that shows it.
+     */
+    private SectorBooks sectorBooks = new SectorBooks();
+
+    /**
      * Where saves live and how they are written. One instance for the whole
      * game: the path used to be spelled out separately in DataSave, HistorySave
      * and twice more down in the load methods, which is four places to get it
@@ -155,6 +171,11 @@ public class Game {
         servicesManager = new ServicesManager(buildingManager);
         dataSave = new DataSave();
         historySave = new HistorySave();
+        // Rebuilt here rather than reset, for the reason buildWorld exists: a
+        // new city has to be identical to a freshly started one by
+        // construction, and a cleared list is one more thing to remember.
+        inbox = new Inbox();
+        sectorBooks = new SectorBooks();
         historyGrapher = new HistoryGrapher();
         debtManager = new DebtManager();
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
@@ -1571,6 +1592,16 @@ public class Game {
             @Override public void spend(double amount) {
                 economyManager.setSectorCash(sector,
                         economyManager.getSectorCash(sector) - amount);
+                /*
+                 * RECORDED, because this is the fourth way a sector's cash
+                 * moves and it was the one nothing wrote down. Businesses buy
+                 * their own premises out of their own cash, and receive() is
+                 * spend() with the sign flipped - so this one line catches both
+                 * the buying and the selling back. Without it the cash flow
+                 * statement on the sector screen could not close, and a cash
+                 * flow statement that does not close is not a statement.
+                 */
+                sectorInvested.merge(sector, amount, Double::sum);
             }
 
             // Businesses borrow freely here - the rate rises with leverage and
@@ -2737,6 +2768,17 @@ public class Game {
         // Where every dollar in the city is right now, before anything moves.
         // Compared at the bottom against every dollar that crossed the city's
         // boundary this month - see MoneyAudit.
+        /*
+         * THE WINDOW IS PRESS TO PRESS, not tick to tick.
+         *
+         * Where the LAST month closed, not where cash stands now - because
+         * between the two the player has been buying land, paying for
+         * buildings, issuing paper and buying bonds back, and every one of
+         * those moved the balance they are watching. A window that opened here
+         * would report a month with none of the player's own decisions in it,
+         * which is precisely the money Jerus noticed going missing.
+         */
+        treasuryOpening = treasuryRecorded ? treasuryClosing : cash;
         cityDebtRaisedThisMonth = 0;
         cityDiscountThisMonth = 0;
         cityPrincipalRepaidThisMonth = 0;
@@ -2744,6 +2786,7 @@ public class Game {
         foreignPrincipalRepaidThisMonth = 0;
         foreignInterestPaidThisMonth = 0;
         economyManager.getBusinessDebtManager().startAuditMonth();
+        sectorInvested.clear();
         double[] poolsBefore = MoneyAudit.pools(this);
         double pooledBefore = 0;
         for (double p : poolsBefore) pooledBefore += p;
@@ -2979,6 +3022,8 @@ public class Game {
         // A year of the rate, so next year can tell a drift from a run.
         rateHistory[month % 12] = foreign.getRate();
         if (rateHistoryFilled < 12) rateHistoryFilled++;
+
+        takeTreasuryMonth();
 
         dataSave.setCash(cash);
         printEndOfTurn();
@@ -3590,7 +3635,11 @@ public class Game {
      */
     void advanceDemographics() {
 
-        migration.recordWages(populationManager.getStaffedWagePerTier());
+        // In REAL terms - see Migration.recordWages(). A city with mild deflation
+        // and indexed wages posts a falling cash bill every month while nothing
+        // about it is declining, and the twelve-month gate cannot tell.
+        migration.recordWages(populationManager.getStaffedWagePerTier(),
+                priceIndex.getIndex());
 
         /*
          * WHAT THE HEALTH SERVICE COULD ACTUALLY DO THIS MONTH, measured before
@@ -4026,6 +4075,14 @@ public class Game {
     private double cityInterestPaid;
     private java.util.Map<String, String> lastInvestment = new java.util.LinkedHashMap<>();
 
+    /** What each sector spent on buildings this month, less what it sold back. */
+    private final java.util.Map<String, Double> sectorInvested =
+            new java.util.LinkedHashMap<>();
+
+    public double getInvestedThisMonth(String sector) {
+        return sectorInvested.getOrDefault(sector, 0.0);
+    }
+
     public EconomyManager getEconomyManager() {
         return economyManager;
     }
@@ -4137,7 +4194,15 @@ public class Game {
      */
     public void recordMonth() {
         historySave.recordMonth(this);
+        // Same call site as the graph, and for the same reason: a warning
+        // raised in the middle of a fifty-month skip has to be raised by the
+        // city, not by whichever screen the player comes back to.
+        inbox.takeMonth(this);
+        sectorBooks.takeMonth(this);
     }
+
+    public Inbox getInbox() { return inbox; }
+    public SectorBooks getSectorBooks() { return sectorBooks; }
     /* ============================ the save system ============================
      *
      * Ten numbered slots plus an autosave. The slot is chosen by the caller;
@@ -4333,6 +4398,10 @@ public class Game {
         dataSave.setLandPricePerSqFt(landManager.getPricePerSqFt());
         dataSave.setIncomeTaxRate(economyManager.getTaxPolicy().getIncomeTaxRate());
         dataSave.setPropertyTaxRate(economyManager.getTaxPolicy().getPropertyTaxRate());
+        dataSave.setNotices(inbox.all());
+        dataSave.setSectorBooks(sectorBooks.thisMonth());
+        dataSave.setSectorBooksBefore(sectorBooks.lastMonth());
+        dataSave.setTreasuryMonth(treasuryMonthToSave());
         dataSave.setReports(reports);
         dataSave.setGraphs(graphs);
         dataSave.setSlotName(slotName);
@@ -4527,6 +4596,97 @@ public class Game {
     private double cityDiscountForBank;
     double getCityDebtRaisedThisMonth()      { return cityDebtRaisedThisMonth; }
     double getCityPrincipalRepaidThisMonth() { return cityPrincipalRepaidThisMonth; }
+
+    /* =======================================================================
+       WHAT THE TREASURY ACTUALLY DID
+       =======================================================================
+
+       Jerus: "show how much was the actual month change, like in the next month
+       button it shows 3k but sometimes cause of land buybacks or sales it was
+       actually more or less."
+
+       He is right, and the reason is not a bug. The surplus is an INCOME
+       measure: revenue less expenses. The treasury balance is a CASH measure.
+       Two things move one without moving the other, and both are ordinary:
+
+         - issuing paper raises cash and is not revenue
+         - repaying principal spends cash and is not an expense (only the
+           coupon is - which is why the interest line can read zero while
+           millions leave for the lenders)
+
+       So a month can close with a $3,056 surplus and a treasury that fell by
+       $200,000, and until now the game showed the first figure and left the
+       player to discover the second by watching the number.
+
+       REPORTING ONLY. Nothing reads these; they are written once at the bottom
+       of the month and read by screens. Saved, because a reconciliation that is
+       blank until you have played a month is blank exactly when a returning
+       player looks at it.
+
+       AND THE RESIDUAL IS NOT SWALLOWED. treasuryUnexplained() is whatever the
+       three named flows do not account for, and the screen prints it as its own
+       line. A breakdown that quietly absorbs its own gap is worse than no
+       breakdown - the same rule the sector cash flow and the sick rate follow.
+       ======================================================================= */
+
+    private double treasuryOpening;
+    private double treasuryClosing;
+    private double treasuryRaised;
+    private double treasuryRepaid;
+    private double treasurySurplus;
+    private boolean treasuryRecorded;
+
+    private void takeTreasuryMonth() {
+        treasuryClosing = cash;
+        treasuryRaised  = cityDebtRaisedThisMonth + foreignDebtRaisedThisMonth;
+        treasuryRepaid  = cityPrincipalRepaidThisMonth + foreignPrincipalRepaidThisMonth;
+        treasurySurplus = economyManager.getNationalAccounts().getBalance();
+        treasuryRecorded = true;
+    }
+
+    /** True once a month has closed. False on a city that has never ticked. */
+    public boolean hasTreasuryMonth() { return treasuryRecorded; }
+
+    public double getTreasuryOpening() { return treasuryOpening; }
+    public double getTreasuryClosing() { return treasuryClosing; }
+    public double getTreasuryRaised()  { return treasuryRaised; }
+    public double getTreasuryRepaid()  { return treasuryRepaid; }
+    public double getTreasurySurplus() { return treasurySurplus; }
+
+    /** What the balance actually did, which is the figure a player watches. */
+    public double getTreasuryChange() { return treasuryClosing - treasuryOpening; }
+
+    /**
+     * Everything the three named flows do not explain.
+     *
+     * NOT A RESIDUAL TO BE HIDDEN, and not zero in this model. It is the rest
+     * of what the treasury did: land the city bought or sold, buildings it paid
+     * for, reserves, capital put into the bank, bonds bought back - none of
+     * which is a budget line - PLUS whatever the government's books date to a
+     * different month from the money. The screen prints it as its own row with
+     * its own name, which is the only honest way to show a total that does not
+     * foot.
+     */
+    public double getTreasuryUnexplained() {
+        return getTreasuryChange()
+                - (treasurySurplus + treasuryRaised - treasuryRepaid);
+    }
+
+    double[] treasuryMonthToSave() {
+        return new double[] { treasuryOpening, treasuryClosing, treasuryRaised,
+                              treasuryRepaid, treasurySurplus,
+                              treasuryRecorded ? 1 : 0 };
+    }
+
+    void restoreTreasuryMonth(double[] saved) {
+        if (saved == null || saved.length < 6) return;
+        treasuryOpening  = saved[0];
+        treasuryClosing  = saved[1];
+        treasuryRaised   = saved[2];
+        treasuryRepaid   = saved[3];
+        treasurySurplus  = saved[4];
+        treasuryRecorded = saved[5] != 0;
+    }
 
     /** Last month's money-conservation residual. See MoneyAudit. */
     private MoneyAudit.Result lastMoneyAudit = MoneyAudit.Result.NONE;
@@ -5224,6 +5384,10 @@ public class Game {
             households.setCumulativeSaving(loaded.getHouseholdSavings());
             this.reports = loaded.getReports();
             this.graphs = loaded.getGraphs();
+            inbox.restoreFrom(loaded.getNotices());
+            sectorBooks.restoreFrom(loaded.getSectorBooks(),
+                    loaded.getSectorBooksBefore());
+            restoreTreasuryMonth(loaded.getTreasuryMonth());
 
             /*
              * Buildings, and the work still on their sites.

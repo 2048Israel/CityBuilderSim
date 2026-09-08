@@ -23,6 +23,9 @@ public class DataSave {
      * the save menu can never describe a different city from the file it came
      * from. See SaveHeader.
      */
+    /** See setNotices: null on every save written before the inbox existed. */
+    private java.util.List<Notice> notices;
+
     private String slotName;
     private String gameVersion;
     private int saveFormat;
@@ -286,6 +289,34 @@ public class DataSave {
     private int industryFoodInventory;
     private int population;
     
+    /*
+     * THE SECTOR STATEMENTS, this month and last.
+     *
+     * Additive, and deliberately NOT a format bump. Gson matches by field name:
+     * an older save has no such key and lands here as null, which restoreFrom
+     * treats as "no books yet" and the screens report honestly; an older BUILD
+     * reading a newer save ignores a field it does not know. Same reasoning as
+     * the notices - see GameVersion's note on why SAVE_FORMAT stayed at 19.
+     */
+    private java.util.List<SectorBooks.SectorMonth> sectorBooks;
+    private java.util.List<SectorBooks.SectorMonth> sectorBooksBefore;
+
+    public void setSectorBooks(java.util.List<SectorBooks.SectorMonth> books) {
+        this.sectorBooks = books;
+    }
+
+    public void setSectorBooksBefore(java.util.List<SectorBooks.SectorMonth> books) {
+        this.sectorBooksBefore = books;
+    }
+
+    public java.util.List<SectorBooks.SectorMonth> getSectorBooks() {
+        return sectorBooks;
+    }
+
+    public java.util.List<SectorBooks.SectorMonth> getSectorBooksBefore() {
+        return sectorBooksBefore;
+    }
+
     //settings
     private boolean reports = true;
     private boolean graphs = true;
@@ -336,6 +367,18 @@ public class DataSave {
     /* ------------------------------- the header ------------------------------- */
 
     public void setSlotName(String name)      { this.slotName = name; }
+
+    /**
+     * The last month the treasury closed: opening, closing, raised, repaid,
+     * surplus, and whether it happened at all. See Game.takeTreasuryMonth().
+     *
+     * An array rather than six fields because it is one fact - a month - and
+     * six loose doubles in this class is six chances to save five of them.
+     */
+    private double[] treasuryMonth;
+
+    public void setTreasuryMonth(double[] state) { this.treasuryMonth = state; }
+    public double[] getTreasuryMonth()           { return treasuryMonth; }
     public String getSlotName()               { return slotName; }
 
     /** Stamped at save time so a save always says which build wrote it. */
@@ -417,6 +460,19 @@ public class DataSave {
     }
     public void setReports(boolean reports){
         this.reports = reports;
+    }
+
+    /**
+     * The city's inbox.
+     *
+     * A typed list rather than a JsonArray, because unlike the debts these are
+     * one shape and Gson can round-trip them without help. A save written
+     * before the inbox existed has no key for this, so Gson leaves the field
+     * null - which restoreFrom reads as "nothing had been said to this city
+     * yet", and next month whatever is still wrong says it again.
+     */
+    public void setNotices(java.util.List<Notice> notices){
+        this.notices = notices;
     }
     public void setGraphs(boolean graphs){
         this.graphs = graphs;
@@ -1130,6 +1186,9 @@ public class DataSave {
     }
     public boolean getReports(){
         return reports;
+    }
+    public java.util.List<Notice> getNotices(){
+        return notices;
     }
     public boolean getGraphs(){
         return graphs;

@@ -141,8 +141,17 @@ public record DebtQuote(
         return requested <= 0 || faceValue <= 0;
     }
 
+    /**
+     * A figure on this quote, in dollars.
+     *
+     * THE MODEL COUNTS IN THOUSANDS and this class was printing the raw number
+     * with a dollar sign in front of it, so a $2.3B bond read as "$2,300,000"
+     * on the confirmation screen and as "$2.3B" on the debt vital a moment
+     * later. Multiplied out here, once, because every figure on this record is
+     * money in the same unit.
+     */
     private static String f(double v) {
-        return FORMAT.format(v);
+        return FORMAT.format(v * 1000);
     }
 
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.CANADA);

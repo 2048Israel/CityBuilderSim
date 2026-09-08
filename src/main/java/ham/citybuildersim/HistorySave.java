@@ -105,6 +105,96 @@ public class HistorySave {
     private List<Double> materialsPrice = new ArrayList<>();
     private List<Double> orePrice = new ArrayList<>();
 
+    /* --------------------------- the edge ---------------------------
+
+       None of this existed when the first twenty-eight series were written,
+       which is the whole reason this block is here: a city can now run a
+       deficit abroad, hold somebody else's money and owe it, and none of that
+       left a mark on the graph.
+
+       THE UNITS ARE NOT ALL THE SAME, and the redenominate() at the bottom is
+       where that is stated. The rate and the current account are quoted in the
+       city's own money and move with a reform; the reserves and the foreign
+       debt are quoted in USD and cannot, because no domestic reform reaches
+       into somebody else's currency.
+       ------------------------------------------------------------------ */
+    private List<Double> fxRate = new ArrayList<>();
+    private List<Double> reservesUsd = new ArrayList<>();
+    private List<Double> foreignDebtUsd = new ArrayList<>();
+    private List<Double> currentAccount = new ArrayList<>();
+    private List<Double> exportsAbroad = new ArrayList<>();
+    private List<Double> importsAbroad = new ArrayList<>();
+
+    /* ------------------------ money and credit ------------------------
+
+       The price level is the one to watch here, and it is deliberately NOT
+       scaled by a reform: an index is a ratio of today's basket to the base
+       year's, and dividing both by a hundred leaves it exactly where it was.
+       ------------------------------------------------------------------ */
+    private List<Double> priceIndex = new ArrayList<>();
+    private List<Double> businessDebt = new ArrayList<>();
+    private List<Double> bankPremium = new ArrayList<>();
+    private List<Double> bankDeposits = new ArrayList<>();
+    private List<Double> bankLent = new ArrayList<>();
+    private List<Double> bankEquity = new ArrayList<>();
+    private List<Double> bankWriteOffs = new ArrayList<>();
+
+    /* ------------------- what the bank could carry, and how hard -------------------
+
+       Added for the Bank tab. The five above say what the bank IS; these four
+       say whether it is in trouble, which is a different question and the one
+       every rate in the city turns on.
+
+       STRAIN IS A RATIO and BRANCHES ARE A COUNT, so neither is scaled by a
+       currency reform - see redenominate(). Capacity and profit are money and
+       are.
+
+       These start empty on a save written before they existed, which is exactly
+       what aligned() pads with NaN: "we were not counting" rather than "it was
+       zero". The chart draws nothing for those months, which is the truth.
+       ------------------------------------------------------------------------ */
+    private List<Double> bankCapacity = new ArrayList<>();
+    private List<Double> bankStrain = new ArrayList<>();
+    private List<Double> bankProfit = new ArrayList<>();
+    private List<Double> bankBranches = new ArrayList<>();
+    private List<Double> householdSavings = new ArrayList<>();
+
+    /* --------------------------- the budget ---------------------------
+
+       Revenue is already kept as one figure. These are its parts, kept
+       separately because the interesting question about a tax take is never
+       how big it is - it is which tax it came from, and a single total cannot
+       answer that.
+       ------------------------------------------------------------------ */
+    private List<Double> taxWage = new ArrayList<>();
+    private List<Double> taxProperty = new ArrayList<>();
+    private List<Double> taxSales = new ArrayList<>();
+    private List<Double> taxBusiness = new ArrayList<>();
+    private List<Double> taxIndustrial = new ArrayList<>();
+    private List<Double> contributions = new ArrayList<>();
+    private List<Double> pensionBill = new ArrayList<>();
+    private List<Double> healthBill = new ArrayList<>();
+
+    /* ---------------------------- housing ----------------------------
+
+       The price, and the two stocks it sits between. Vacancy is not kept - it
+       is homes and households, and a stored third copy could disagree with
+       both.
+       ------------------------------------------------------------------ */
+    private List<Double> rentPrice = new ArrayList<>();
+    private List<Integer> homes = new ArrayList<>();
+    private List<Double> households = new ArrayList<>();
+
+    /* ------------------------- school and care ------------------------- */
+    private List<Double> students = new ArrayList<>();
+    private List<Double> graduates = new ArrayList<>();
+    private List<Double> licences = new ArrayList<>();
+    private List<Double> unburied = new ArrayList<>();
+
+    /* ------------------------- what runs out ------------------------- */
+    private List<Integer> constructionCapacity = new ArrayList<>();
+    private List<Double> landUse = new ArrayList<>();
+
     /* ==================================================================
        RECORDING
        ================================================================== */
@@ -170,6 +260,75 @@ public class HistorySave {
         foodPrice.add(round4(economy.getIndustrialHandler().getFoodPrice()));
         materialsPrice.add(round4(game.getBuildingManager().getConstructionMaterialPrice()));
         orePrice.add(round4(game.getIronMarket().getExportPrice()));
+
+        /* ------------------------- the edge ------------------------- */
+        ForeignAccounts abroad = game.getForeignAccounts();
+        fxRate.add(round4(abroad.getRate()));
+        reservesUsd.add(round2(abroad.getReservesUsd()));
+        foreignDebtUsd.add(round2(abroad.getForeignDebtUsd()));
+        currentAccount.add(round2(abroad.currentAccount()));
+        exportsAbroad.add(round2(abroad.getExports()));
+        importsAbroad.add(round2(abroad.tradeImports()));
+
+        /* --------------------- money and credit --------------------- */
+        priceIndex.add(round4(game.getPriceIndex().getIndex()));
+        businessDebt.add(round2(economy.getBusinessDebtManager().getTotalPrincipal()));
+
+        Bank lender = game.getBank();
+        bankPremium.add(round4(lender.ratePremium()));
+        bankDeposits.add(round2(lender.depositsGathered()));
+        bankLent.add(round2(lender.getBook()));
+        bankEquity.add(round2(lender.equity()));
+        bankWriteOffs.add(round2(lender.getWriteOffs()));
+        bankCapacity.add(round2(lender.capacity()));
+        // CLAMPED AT TEN. strain() is Double.MAX_VALUE in a city with no bank,
+        // which is correct and unplottable - it would flatten every other point
+        // on the chart into the axis. Ten times capacity is already off any
+        // scale a player cares about.
+        bankStrain.add(round4(Math.min(10, lender.strain())));
+        bankProfit.add(round2(lender.getNetIncome()));
+        bankBranches.add(round2(lender.getBranches()));
+        householdSavings.add(round2(game.getHouseholds().getCumulativeSaving()));
+
+        /* ------------------------ the budget ------------------------ */
+        taxWage.add(round2(accounts.getTaxWage()));
+        taxProperty.add(round2(accounts.getPropertyTax()));
+        taxSales.add(round2(accounts.getTaxSales()));
+        taxBusiness.add(round2(accounts.getTaxBusiness()));
+        taxIndustrial.add(round2(accounts.getTaxIndustrial()));
+        contributions.add(round2(accounts.getContributions()));
+        pensionBill.add(round2(accounts.getPensions()));
+        healthBill.add(round2(game.getHealthcare().getNetCost()));
+
+        /* ------------------------- housing ------------------------- */
+        rentPrice.add(round2(economy.getCommercialHandler().getRentPrice()));
+        homes.add(game.getBuildingManager().getTotalHomes());
+        households.add(round2(game.getFamilies().totalHouseholds()));
+
+        /* --------------------- school and care --------------------- */
+        students.add(round2(sum(schools.getStudying())));
+        graduates.add(round2(sum(schools.getGraduates())));
+        licences.add(round2(sum(schools.getLicences())));
+        unburied.add(round2(game.getHealthcare().getUnburied()));
+
+        /* ----------------------- what runs out ----------------------- */
+        constructionCapacity.add(game.getBuildingManager().getTotalConstructionCapacity());
+        landUse.add(round4(game.getLandManager().getUtilisation()));
+    }
+
+    /**
+     * A whole array in one figure.
+     *
+     * The education and licence series are per-type arrays, and the graph wants
+     * the city's total - one line saying "this many people are studying", not
+     * six saying which rung each is on. The screens that care about the split
+     * already have it.
+     */
+    private static double sum(double[] values) {
+        if (values == null) return 0;
+        double total = 0;
+        for (double v : values) total += v;
+        return total;
     }
 
     private static double round2(double v) { return Math.round(v * 100.0) / 100.0; }
@@ -222,6 +381,47 @@ public class HistorySave {
         foodPrice = copy(loaded.foodPrice);
         materialsPrice = copy(loaded.materialsPrice);
         orePrice = copy(loaded.orePrice);
+
+        fxRate = copy(loaded.fxRate);
+        reservesUsd = copy(loaded.reservesUsd);
+        foreignDebtUsd = copy(loaded.foreignDebtUsd);
+        currentAccount = copy(loaded.currentAccount);
+        exportsAbroad = copy(loaded.exportsAbroad);
+        importsAbroad = copy(loaded.importsAbroad);
+
+        priceIndex = copy(loaded.priceIndex);
+        businessDebt = copy(loaded.businessDebt);
+        bankPremium = copy(loaded.bankPremium);
+        bankDeposits = copy(loaded.bankDeposits);
+        bankLent = copy(loaded.bankLent);
+        bankEquity = copy(loaded.bankEquity);
+        bankWriteOffs = copy(loaded.bankWriteOffs);
+        bankCapacity = copy(loaded.bankCapacity);
+        bankStrain = copy(loaded.bankStrain);
+        bankProfit = copy(loaded.bankProfit);
+        bankBranches = copy(loaded.bankBranches);
+        householdSavings = copy(loaded.householdSavings);
+
+        taxWage = copy(loaded.taxWage);
+        taxProperty = copy(loaded.taxProperty);
+        taxSales = copy(loaded.taxSales);
+        taxBusiness = copy(loaded.taxBusiness);
+        taxIndustrial = copy(loaded.taxIndustrial);
+        contributions = copy(loaded.contributions);
+        pensionBill = copy(loaded.pensionBill);
+        healthBill = copy(loaded.healthBill);
+
+        rentPrice = copy(loaded.rentPrice);
+        homes = copy(loaded.homes);
+        households = copy(loaded.households);
+
+        students = copy(loaded.students);
+        graduates = copy(loaded.graduates);
+        licences = copy(loaded.licences);
+        unburied = copy(loaded.unburied);
+
+        constructionCapacity = copy(loaded.constructionCapacity);
+        landUse = copy(loaded.landUse);
     }
 
     /**
@@ -316,6 +516,47 @@ public class HistorySave {
         map.put("foodPrice", foodPrice);
         map.put("materialsPrice", materialsPrice);
         map.put("orePrice", orePrice);
+
+        map.put("fxRate", fxRate);
+        map.put("reservesUsd", reservesUsd);
+        map.put("foreignDebtUsd", foreignDebtUsd);
+        map.put("currentAccount", currentAccount);
+        map.put("exportsAbroad", exportsAbroad);
+        map.put("importsAbroad", importsAbroad);
+
+        map.put("priceIndex", priceIndex);
+        map.put("businessDebt", businessDebt);
+        map.put("bankPremium", bankPremium);
+        map.put("bankDeposits", bankDeposits);
+        map.put("bankLent", bankLent);
+        map.put("bankEquity", bankEquity);
+        map.put("bankWriteOffs", bankWriteOffs);
+        map.put("bankCapacity", bankCapacity);
+        map.put("bankStrain", bankStrain);
+        map.put("bankProfit", bankProfit);
+        map.put("bankBranches", bankBranches);
+        map.put("householdSavings", householdSavings);
+
+        map.put("taxWage", taxWage);
+        map.put("taxProperty", taxProperty);
+        map.put("taxSales", taxSales);
+        map.put("taxBusiness", taxBusiness);
+        map.put("taxIndustrial", taxIndustrial);
+        map.put("contributions", contributions);
+        map.put("pensionBill", pensionBill);
+        map.put("healthBill", healthBill);
+
+        map.put("rentPrice", rentPrice);
+        map.put("homes", homes);
+        map.put("households", households);
+
+        map.put("students", students);
+        map.put("graduates", graduates);
+        map.put("licences", licences);
+        map.put("unburied", unburied);
+
+        map.put("constructionCapacity", constructionCapacity);
+        map.put("landUse", landUse);
         return map;
     }
 
@@ -343,6 +584,25 @@ public class HistorySave {
         scaleAll(scale, cash, gdp, debt, revenue, surplus,
                 totalWage, minimumWage, schoolBill,
                 landPrice, foodPrice, materialsPrice, orePrice);
+
+        /*
+         * The same reform, applied to everything added since - and the list of
+         * what is NOT here is the interesting half.
+         *
+         * reservesUsd and foreignDebtUsd are owed and held in somebody else's
+         * money, which a domestic reform cannot reach. priceIndex is a ratio of
+         * two baskets and a reform divides both. bankPremium is a rate. homes,
+         * households, students, graduates, licences, unburied and
+         * constructionCapacity are counts of things, and landUse is a share -
+         * none of them is money at all.
+         */
+        scaleAll(scale, fxRate, currentAccount, exportsAbroad, importsAbroad,
+                businessDebt, bankDeposits, bankLent, bankEquity, bankWriteOffs,
+                bankCapacity, bankProfit,
+                householdSavings,
+                taxWage, taxProperty, taxSales, taxBusiness, taxIndustrial,
+                contributions, pensionBill, healthBill,
+                rentPrice);
     }
 
     @SafeVarargs

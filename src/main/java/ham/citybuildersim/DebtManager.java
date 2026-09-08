@@ -776,6 +776,71 @@ public class DebtManager {
         return Math.max(MIN_RATE, Math.min(rate, ceilingRate())) + bankPremium;
     }
 
+    /* ===================================================================
+       THE RATE, TAKEN APART - for the Finances screen and nothing else.
+
+       priceAt() is four terms added together, and until these existed the game
+       could tell a player their rate was 1.23% and not one thing about WHY, or
+       which of their decisions would move it. A quoted price with no visible
+       components is a price a player can only respond to by borrowing less.
+
+       Pure reads of the same functions priceAt() uses. Nothing here is a second
+       definition: change the pricing and these change with it.
+       =================================================================== */
+
+    /**
+     * What the city would be quoted if the policy rate were this instead.
+     *
+     * priceAt() with the base rate swapped and nothing else touched, so the
+     * Policies screen can show a player what moving the dial does to their own
+     * borrowing before they move it. It lives here rather than in the screen
+     * for the obvious reason: the day the pricing changes, this changes with
+     * it, and a copy in the UI would not.
+     *
+     * PURE. Reads the same spreads priceAt() reads and sets nothing.
+     */
+    public double rateAtPolicy(double policy) {
+        double floor   = Math.max(MIN_RATE, policy - 0.02);
+        double ceiling = (policy - 0.02) + 2 * MAX_SPREAD_PER_MEASURE;
+        double rate = floor + gdpSpread() + revenueSpread();
+        return Math.max(MIN_RATE, Math.min(rate, ceiling)) + bankPremium;
+    }
+
+    /** The floor everybody pays: the policy rate less the city's own spread. */
+    public double baseComponent() { return floorRate(); }
+
+    /** What the debt costs against the size of the economy. */
+    public double gdpSpread() { return spreadFor(getPricedDebt(), GDP * 12); }
+
+    /** ...and against what the city can actually collect. */
+    public double revenueSpread() { return spreadFor(getPricedDebt(), monthlyTaxRevenue * 12); }
+
+    /** How much of the worst case each measure has used up, 0 to 1. */
+    public double gdpStress() {
+        return MAX_SPREAD_PER_MEASURE > 0 ? gdpSpread() / MAX_SPREAD_PER_MEASURE : 0;
+    }
+
+    public double revenueStress() {
+        return MAX_SPREAD_PER_MEASURE > 0 ? revenueSpread() / MAX_SPREAD_PER_MEASURE : 0;
+    }
+
+    /** The most either measure can add on its own. */
+    public static double maxSpreadPerMeasure() { return MAX_SPREAD_PER_MEASURE; }
+
+    /** Years of GDP, or of revenue, at which a measure has said all it can. */
+    public static double fullStressMultiple() { return FULL_STRESS_MULTIPLE; }
+
+    /** A year of output, as the market is pricing it. */
+    public double annualCapacityGdp() { return GDP * 12; }
+
+    /** ...and a year of tax, likewise. */
+    public double annualCapacityRevenue() { return monthlyTaxRevenue * 12; }
+
+    /** True when the quoted rate is pinned at the top of the curve. */
+    public boolean atCeiling() {
+        return getRate() >= ceilingRate() + bankPremium - 1e-9;
+    }
+
     /** What a spotless city pays. */
     public double floorRate() {
         return Math.max(MIN_RATE, baseRate - 0.02);
