@@ -404,6 +404,12 @@ public class LandCheck {
          * well - so a reader that decides the width by arithmetic reads this back
          * as eight parcels of shifted nonsense. That is why the current format
          * carries a marker, and it is why this case is tested at exactly ten.
+         *
+         * The shelf now holds nine, so the tenth is trimmed off the back after
+         * the parse - which is why the size assertion reads LISTING_SIZE and
+         * the ids are checked at BOTH ends. A width-five misread gives eight
+         * parcels with ids taken out of the middle of the array, so the pair
+         * still catches exactly the failure this case exists for.
          */
         double[] legacy = new double[1 + 10 * 4];
         legacy[0] = 77;
@@ -416,8 +422,12 @@ public class LandCheck {
 
         LandMarket old = new LandMarket();
         assertTrue("a pre-deposit save still loads", old.restoreListingState(legacy));
-        check("...with all ten parcels, not eight", old.getListing().size(), 10);
+        check("...read four fields wide, then trimmed to the shelf",
+                old.getListing().size(), LandMarket.LISTING_SIZE);
         check("...their ids intact", old.getListing().get(0).getId(), 100);
+        check("...to the last one kept",
+                old.getListing().get(old.getListing().size() - 1).getId(),
+                100 + LandMarket.LISTING_SIZE - 1);
         check("...their sizes not read as prices",
                 old.getListing().get(0).getSizeSqFt(), 250_000);
         check("...and its one ore parcel counts as a single site",

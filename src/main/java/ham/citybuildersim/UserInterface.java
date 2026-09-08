@@ -1493,20 +1493,45 @@ public class UserInterface extends Application {
     private record BuildCategory(String name, EnumSet<BuildingType> types) { }
 
     /**
+     * What a private business builds to sell something.
+     *
+     * A FRESH SET EVERY CALL, because EnumSet is mutable and these are handed
+     * to screens that have no reason to know they were sharing one.
+     */
+    private static EnumSet<BuildingType> industrialTypes() {
+        return EnumSet.of(BuildingType.INDUSTRIAL, BuildingType.HEAVY_INDUSTRY,
+                BuildingType.MINING, BuildingType.CONSTRUCTION);
+    }
+
+    /**
+     * ...and what the city runs because everything else needs it.
+     *
+     * SPLIT OUT OF INDUSTRIAL - Jerus: "coal power plant and water treatment to
+     * a utilities not industrial". He is right, and the old grouping was a
+     * filing decision rather than a description: a power plant is not a
+     * business the city hopes will turn a profit, it is a network with a
+     * coverage figure, and the game already treats it that way everywhere else.
+     * The Services tab has had a Utilities section for as long as it has
+     * existed; this makes the shelf you buy them from agree with it.
+     */
+    private static EnumSet<BuildingType> utilityTypes() {
+        return EnumSet.of(BuildingType.ELECTRICITY, BuildingType.WATER);
+    }
+
+    /**
      * The strip, in the order a city is actually built.
      *
      * Housing first because a city with no homes employs nobody, then the shops
-     * that feed them, then the industry that employs them, then the roads and
-     * power that carry it, then the two the city provides rather than sells.
+     * that feed them, then the industry that employs them, then the power and
+     * water that run it, then the roads that carry it, then the two the city
+     * provides rather than sells.
      */
     private static BuildCategory[] buildCategories() {
         return new BuildCategory[] {
             new BuildCategory("Residential",    EnumSet.of(BuildingType.RESIDENTIAL)),
             new BuildCategory("Commercial",     EnumSet.of(BuildingType.COMMERCIAL)),
-            new BuildCategory("Industrial",     EnumSet.of(BuildingType.INDUSTRIAL,
-                    BuildingType.HEAVY_INDUSTRY, BuildingType.MINING,
-                    BuildingType.CONSTRUCTION, BuildingType.ELECTRICITY,
-                    BuildingType.WATER)),
+            new BuildCategory("Industrial",     industrialTypes()),
+            new BuildCategory("Utilities",      utilityTypes()),
             new BuildCategory("Infrastructure", EnumSet.of(BuildingType.INFRASTRUCTURE)),
             new BuildCategory("Healthcare",     EnumSet.of(BuildingType.HEALTHCARE)),
             new BuildCategory("Education",      EnumSet.of(BuildingType.EDUCATION)),
@@ -1538,7 +1563,7 @@ public class UserInterface extends Application {
     /**
      * The strip itself.
      *
-     * A FlowPane rather than an HBox, because six categories at this width fit
+     * A FlowPane rather than an HBox, because seven categories at this width fit
      * on one line on a maximised window and wrap rather than clip on a small
      * one - and the one thing this strip must never do is hide a category.
      */
@@ -1638,24 +1663,31 @@ public class UserInterface extends Application {
                 + " -fx-font-weight: bold; -fx-padding: 14 0 0 0;");
 
         Label smallest = new Label(String.format(
-                "The office will not split a lot smaller than %.0f block%s, and stops"
-                + " splitting them at all as the city grows.",
+                "Nine plots, cheapest ground first \u2014 the top-left card is always the "
+                + "best value per square foot. The office will not split a lot smaller "
+                + "than %.0f block%s, and stops splitting them at all as the city grows.",
                 market.getMinBlocks(), market.getMinBlocks() == 1 ? "" : "s"));
         smallest.setWrapText(true);
         smallest.setMaxWidth(TILE_WIDTH * 3 + TILE_GAP * 2);
         smallest.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
                 + " -fx-padding: 0 0 6 0;");
 
-        LandParcel value = market.bestValue();
         LandParcel richest = market.richestDeposit();
 
         javafx.scene.layout.FlowPane plots =
                 new javafx.scene.layout.FlowPane(TILE_GAP, TILE_GAP);
         plots.setAlignment(Pos.CENTER);
-        plots.prefWrapLengthProperty().bind(
-                menuScroller.widthProperty().subtract(TILE_GAP * 4));
-        plots.maxWidthProperty().bind(
-                menuScroller.widthProperty().subtract(TILE_GAP * 4));
+        /*
+         * THREE ACROSS, CAPPED, so nine plots are a square rather than a
+         * ribbon. The bind to the scroller is still there underneath it: on a
+         * window too narrow for three tiles the row wraps at two and the grid
+         * degrades to 2-2-2-2-1 rather than running off the edge.
+         */
+        final double THREE = TILE_WIDTH * 3 + TILE_GAP * 2 + 2;
+        plots.prefWrapLengthProperty().bind(javafx.beans.binding.Bindings.min(
+                menuScroller.widthProperty().subtract(TILE_GAP * 4), THREE));
+        plots.maxWidthProperty().bind(javafx.beans.binding.Bindings.min(
+                menuScroller.widthProperty().subtract(TILE_GAP * 4), THREE));
 
         /*
          * COMPARED AGAINST THE LISTING, not against the office's quoted rate.
@@ -1680,23 +1712,38 @@ public class UserInterface extends Application {
         java.util.Arrays.sort(rates);
         double going = rates.length == 0 ? 0 : rates[rates.length / 2];
 
-        for (LandParcel parcel : market.getListing()) {
-            plots.getChildren().add(parcelTile(parcel, going,
-                    value != null && value.getId() == parcel.getId(),
+        /*
+         * SORTED, CHEAPEST GROUND FIRST, so the best buy is always the top-left
+         * card. Jerus: "sorted by best value so the best one is always at the
+         * top left".
+         *
+         * Price per square foot ascending, which is the only ranking that means
+         * anything across plots of different sizes - a big plot is not a better
+         * deal for being big. It is also why the listing's own order was worth
+         * throwing away: that was the order the office happened to generate
+         * them in, which is no order at all.
+         *
+         * ORE IS A DIFFERENT QUESTION and is deliberately not folded into the
+         * ranking. A deposit carries a price premium, so on ground value alone
+         * it looks dear; whether the premium is worth paying depends on whether
+         * the city wants a mine, which no single number can decide. It keeps
+         * its own badge instead.
+         *
+         * AND THE "JUST BUY THE CHEAPEST" BUTTON IS GONE. Jerus: "remove the
+         * buy cheapest button since best value is always better and two is
+         * confusing." He is right, and it was worse than redundant - cheapest
+         * by PRICE is whichever plot is smallest, which is the one piece of
+         * ground least worth owning per dollar. The top-left card is the answer
+         * that button was pretending to be.
+         */
+        java.util.List<LandParcel> shelf = market.getListing();
+        shelf.sort(java.util.Comparator.comparingDouble(LandParcel::getPricePerSqFt));
+
+        for (int i = 0; i < shelf.size(); i++) {
+            LandParcel parcel = shelf.get(i);
+            plots.getChildren().add(parcelTile(parcel, going, i == 0,
                     richest != null && richest.getId() == parcel.getId()));
         }
-
-        LandParcel cheapest = market.cheapest();
-        Button quick = new Button("Just buy the cheapest"
-                + (cheapest == null ? "" : "  —  " + money(cheapest.getPrice())));
-        quick.setDisable(cheapest == null || cheapest.getPrice() > game.getCash());
-        quick.setOnAction(e -> {
-            game.buyLandBlock();
-            showLandMenu();
-        });
-        HBox quickRow = new HBox(quick);
-        quickRow.setAlignment(Pos.CENTER);
-        quickRow.setStyle("-fx-padding: 10 0 4 0;");
 
         /* ===================== AND HOW THE MARGIN WORKS =====================
          *
@@ -1788,7 +1835,7 @@ public class UserInterface extends Application {
                 "As of last month — the sectors decide once a month, so ground bought"
                 + " now shows up here next month."));
 
-        VBox all = new VBox(0, offering, smallest, plots, quickRow, column);
+        VBox all = new VBox(0, offering, smallest, plots, column);
         all.setAlignment(Pos.CENTER);
 
         rootMenu.getChildren().addAll(title, position, scrolled(all));
@@ -12351,10 +12398,7 @@ public class UserInterface extends Application {
         javafx.scene.layout.FlowPane row = new javafx.scene.layout.FlowPane(
                 Palette.GAP, Palette.GAP,
                 buildLink("Build " + (type == BuildingType.WATER ? "water" : "power"),
-                        "Industrial", EnumSet.of(BuildingType.INDUSTRIAL,
-                                BuildingType.HEAVY_INDUSTRY, BuildingType.MINING,
-                                BuildingType.CONSTRUCTION, BuildingType.ELECTRICITY,
-                                BuildingType.WATER)));
+                        "Utilities", utilityTypes()));
         row.setStyle("-fx-padding: 8 0 4 0;");
         return row;
     }
@@ -17045,7 +17089,7 @@ public class UserInterface extends Application {
                 ? (historyPicked.size() == 1
                         ? traceFor(historyPicked.iterator().next()).label()
                         : unitName(unit))
-                : "each line across its own low-to-high in this window");
+                : "low to high, each line its own");
         y.setForceZeroInRange(false);
 
         javafx.scene.chart.LineChart<Number, Number> chart =
@@ -17104,7 +17148,61 @@ public class UserInterface extends Application {
             styleLine(line, TRACE_COLOURS[colour % TRACE_COLOURS.length]);
             colour++;
         }
+
+        /*
+         * THE RANGE IS SET HERE RATHER THAN LEFT TO THE AXIS.
+         *
+         * NumberAxis auto-ranging on a real-unit chart put the whole of "The
+         * budget" preset between -$55M and -$15M - three deficit spikes filled
+         * the range and revenue, which is positive, was drawn off the top of
+         * the plot. A chart that silently omits one of its own lines is worse
+         * than no chart, and the fix is not to trust the axis with a question
+         * this screen can answer itself.
+         *
+         * Six per cent of headroom top and bottom so a line that touches its
+         * extreme is not drawn along the frame.
+         */
+        double low = Double.MAX_VALUE, high = -Double.MAX_VALUE;
+        for (javafx.scene.chart.XYChart.Series<Number, Number> line : chart.getData()) {
+            for (javafx.scene.chart.XYChart.Data<Number, Number> point : line.getData()) {
+                double v = point.getYValue().doubleValue();
+                low = Math.min(low, v);
+                high = Math.max(high, v);
+            }
+        }
+        if (low <= high) {
+            y.setAutoRanging(false);
+            if (unit == null) {
+                // Normalised: the values ARE nought to a hundred, so say so
+                // rather than padding a scale that has no units to pad.
+                y.setLowerBound(0);
+                y.setUpperBound(100);
+                y.setTickUnit(10);
+            } else {
+                double pad = high > low ? (high - low) * .06
+                                        : Math.max(1, Math.abs(high) * .1);
+                double step = niceStep((high + pad - (low - pad)) / 8);
+                y.setLowerBound(Math.floor((low - pad) / step) * step);
+                y.setUpperBound(Math.ceil((high + pad) / step) * step);
+                y.setTickUnit(step);
+            }
+        }
         return chart;
+    }
+
+    /**
+     * One, two or five times a power of ten - the only steps a reader can add up.
+     *
+     * Dividing the range by eight gives ticks at -13,019,917.2, which is a
+     * correct number and an unreadable axis. Rounding the STEP and then snapping
+     * the bounds outward to it costs a little empty margin and buys labels
+     * somebody can hold in their head.
+     */
+    private static double niceStep(double raw) {
+        if (!(raw > 0)) return 1;
+        double power = Math.pow(10, Math.floor(Math.log10(raw)));
+        double n = raw / power;
+        return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * power;
     }
 
     /** What the y-axis is measured in, when every line agrees. */
@@ -17252,7 +17350,13 @@ public class UserInterface extends Application {
                 return String.format("%+.3f", delta);
             default:
                 if (Math.abs(first) < 1e-9) return delta == 0 ? "no change" : "from nothing";
-                return String.format("%+.1f%%", delta / Math.abs(first) * 100);
+                double share = delta / Math.abs(first);
+                // A city that grew its output a thousandfold did not grow it by
+                // "+136683.6%". Past a fivefold move the multiple is the figure
+                // a reader can hold, and the percentage is noise with a sign on
+                // it.
+                if (Math.abs(share) >= 5) return String.format("\u00d7%,.0f", last / first);
+                return String.format("%+.1f%%", share * 100);
         }
     }
 
@@ -17976,6 +18080,133 @@ public class UserInterface extends Application {
         return body;
     }
 
+    /* =====================================================================
+       SUMMARY, OR DASHBOARD
+
+       Jerus: "i think you can switch from summary and dashboard, like at a
+       switch, so uh both?"
+
+       The panel had grown into a twelfth rail you read instead of navigate:
+       twelve headline rows, each unfolding into a small statement, all of which
+       now have a real screen behind them that did not exist when the panel was
+       written. That is a good dashboard and a poor summary, and the two are
+       genuinely different jobs:
+
+         SUMMARY   is what you read WHILE doing something else. Six lines that
+                   are always true and always worth a glance, no carets, nothing
+                   to open - and a click goes to the tab that owns the number
+                   rather than unfolding it, because in this mode there is
+                   nothing to unfold and a dead click is worse than no click.
+
+         DASHBOARD is the instrument set: all twelve sections, folded the way
+                   you left them, with open all / close all so the whole wall is
+                   one click away when you actually want to read it.
+
+       TWO THINGS ARE IN BOTH: the vitals, and the alert block. Cash, income and
+       population are the panel's reason to exist, and an outbreak is not
+       something a display mode gets to hide.
+
+       SUMMARY IS NOT A FIXED SIX. Two of them earn a place only when they are
+       saying something - the bank's premium and how far the currency has run -
+       because both are quiet taxes on everything the city does and neither is
+       an emergency, so the red alert block above will never carry them. A
+       player who lives in Summary would otherwise never learn that every loan
+       in the city got dearer.
+       ===================================================================== */
+
+    private HBox panelModeSwitch() {
+
+        HBox row = new HBox(4);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 0 0 8 2;");
+        row.getChildren().addAll(
+                panelModeChip("Summary",   !prefs.isPanelDashboard(), false),
+                panelModeChip("Dashboard",  prefs.isPanelDashboard(), true));
+        return row;
+    }
+
+    private Label panelModeChip(String text, boolean on, boolean dashboard) {
+
+        Label chip = new Label(text);
+        chip.setStyle("-fx-font-size: 9px; -fx-padding: 2 8 3 8; -fx-cursor: hand;"
+                + " -fx-background-radius: 3;"
+                + " -fx-background-color: " + (on ? "#26343b" : "transparent") + ";"
+                + " -fx-border-color: " + (on ? "#5cb8ff" : "transparent") + ";"
+                + " -fx-border-width: 0 0 2 0;"
+                + " -fx-text-fill: " + (on ? "#eceff1" : PANEL_LABEL) + ";");
+        chip.setOnMouseClicked(e -> {
+            prefs.setPanelDashboard(dashboard);
+            prefs.save(game.getGameFiles());
+            refreshCityPanel();
+        });
+        return chip;
+    }
+
+    /**
+     * One line of the summary: a heading, a figure, and somewhere to go.
+     *
+     * Deliberately the same shape as a closed section so switching modes does
+     * not feel like switching programs - minus the caret, because there is
+     * nothing behind it here, and plus a destination, because there is.
+     */
+    private HBox summaryRow(String heading, String value, String tone, Runnable go) {
+
+        Label name = new Label(heading);
+        name.setStyle("-fx-font-size: 10px; -fx-font-weight: bold;"
+                + " -fx-text-fill: #b0bec5;");
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+
+        Label figure = new Label(value);
+        figure.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: "
+                + (tone == null ? PANEL_VALUE : tone) + ";");
+
+        HBox row = new HBox(5, name, gap, figure);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(Double.MAX_VALUE);
+        String rest = "-fx-padding: 5 2 5 4; -fx-cursor: hand;";
+        row.setStyle(rest);
+        row.setOnMouseClicked(e -> go.run());
+        row.setOnMouseEntered(e -> row.setStyle(rest
+                + " -fx-background-color: #26343b; -fx-background-radius: 3;"));
+        row.setOnMouseExited(e -> row.setStyle(rest));
+        return row;
+    }
+
+    /** Open everything, or close it. Dashboard only - Summary has no folds. */
+    private HBox panelFoldAll() {
+
+        HBox row = new HBox(8);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 6 0 2 4;");
+        row.getChildren().addAll(
+                foldLink("open all", () -> {
+                    panelOpen.addAll(java.util.Arrays.asList(PANEL_SECTIONS));
+                    refreshCityPanel();
+                }),
+                foldLink("close all", () -> {
+                    panelOpen.clear();
+                    refreshCityPanel();
+                }));
+        return row;
+    }
+
+    private Label foldLink(String text, Runnable act) {
+        Label link = new Label(text);
+        link.setStyle("-fx-font-size: 9px; -fx-text-fill: #5cb8ff; -fx-cursor: hand;"
+                + " -fx-underline: true;");
+        link.setOnMouseClicked(e -> act.run());
+        return link;
+    }
+
+    /** Every section key, so open-all does not have to be kept in step by hand. */
+    private static final String[] PANEL_SECTIONS = {
+        "econ", "bank", "trade", "tax", "labour", "school",
+        "people", "health", "res", "land", "sectors", "built"
+    };
+
     /** A caption inside an open section - a sub-heading, or a note. */
     private Label panelNote(String text) {
         Label note = new Label(text);
@@ -18683,8 +18914,110 @@ public class UserInterface extends Application {
         incomeDome.getChildren().add(dome);
     }
 
-    private void refreshCityPanel() {
-        cityPanel.getChildren().clear();
+    /**
+     * The twelve sections, folded the way the player left them.
+     *
+     * Lifted out of refreshCityPanel() whole when the Summary switch went in -
+     * it re-reads what it needs from the game rather than taking a dozen
+     * parameters, because the alternative was a signature nobody could call
+     * without checking, for a method with exactly one caller.
+     */
+    /**
+     * The six that are always worth a glance, and the two that sometimes are.
+     *
+     * THE TEST FOR THE SIX: would you want to know this every single month, on
+     * a city that is going fine? Output, what the city collects, whether it can
+     * staff itself, whether its people are well, how much ground is left and
+     * what it costs, and which way the population is going. Everything else on
+     * the dashboard answers a question you have occasionally, which is what the
+     * dashboard is for.
+     *
+     * THE TWO THAT ARE CONDITIONAL are the quiet taxes: a strained bank adds to
+     * every rate in the city and a currency that has run from parity reprices
+     * every import, and neither is an emergency, so the red block above will
+     * never carry either. They appear when they bite and are absent otherwise,
+     * which is the same rule the alerts follow.
+     *
+     * A row goes to the tab that owns the number. In this mode there is nothing
+     * to unfold, and a row that looks clickable and does nothing is worse than
+     * one that is not clickable at all.
+     */
+    private void panelSummaryRows(VBox body) {
+
+        EconomyManager economy = game.getEconomyManager();
+        PopulationManager people = game.getPopulationManager();
+        LabourMarket market = game.getLabourMarket();
+        Health health = game.getHealth();
+        LandManager land = game.getLandManager();
+        PopulationCohorts pyramid = game.getCohorts();
+
+        VBox rows = new VBox(0);
+        rows.setStyle("-fx-padding: 4 0 0 0;");
+
+        /* ------------------------------- the six ------------------------------- */
+        rows.getChildren().add(summaryRow("ECONOMY",
+                money(economy.getMonthGdp()) + "/mo", null, this::showGovernmentMenu));
+
+        double taxTotal = economy.getBusinessTax() + economy.getIndustrialTax()
+                + economy.getSalesTax() + economy.getWageTax();
+        rows.getChildren().add(summaryRow("TAX", money(taxTotal), null,
+                this::showGovernmentMenu));
+
+        int totalJobs = people.getTotalJobs();
+        int unfilled = 0;
+        for (int v : people.getJobVacancy()) unfilled += v;
+        double fill = totalJobs > 0 ? (double) (totalJobs - unfilled) / totalJobs : 1;
+        rows.getChildren().add(summaryRow("LABOUR",
+                totalJobs > 0 ? String.format("%.0f%% filled", fill * 100) : "no jobs",
+                fill < .75 ? PANEL_BAD : fill < .95 ? PANEL_WARN : null,
+                this::showPopulationInfoMenu));
+
+        rows.getChildren().add(summaryRow("HEALTH",
+                String.format("%.0f%% sick", health.getSickRate() * 100),
+                health.getSickRate() > Health.WELL_SERVED_RATE * 2 ? PANEL_BAD
+                        : health.getSickRate() > Health.WELL_SERVED_RATE * 1.5 ? PANEL_WARN
+                        : PANEL_GOOD,
+                this::showServicesStatsMenu));
+
+        double used = land.getUtilisation();
+        rows.getChildren().add(summaryRow("LAND",
+                String.format("%.0f%% used  \u00b7  $%.2f/sq ft",
+                        used * 100, land.getPricePerSqFt() * 1000),
+                used >= .95 ? PANEL_BAD : used >= .85 ? PANEL_WARN : null,
+                this::showLandMenu));
+
+        rows.getChildren().add(summaryRow("PEOPLE",
+                String.format("%+,.0f/mo", game.getMigration().getLastNet()
+                        + pyramid.getLastBirths() - pyramid.getLastDeaths()),
+                null, this::showPopulationInfoMenu));
+
+        /* ------------------------- and the two, when they bite ------------------------- */
+        Bank bank = game.getBank();
+        double premium = bank.ratePremium();
+        if (premium > 0) {
+            rows.getChildren().add(summaryRow("BANK",
+                    "+" + formatter.format(premium * 100) + " pts on every rate",
+                    PANEL_BAD, this::showBankMenu));
+        }
+
+        ForeignAccounts fx = game.getForeignAccounts();
+        double drift = fx.deviationFromParity();
+        if (Math.abs(drift) > .15 && !fx.isPinned()) {
+            rows.getChildren().add(summaryRow("TRADE",
+                    String.format("%.0f%% %s than parity", Math.abs(drift) * 100,
+                            drift > 0 ? "weaker" : "stronger"),
+                    PANEL_WARN, this::showForeignMenu));
+        }
+
+        body.getChildren().add(rows);
+        // "The six" would be a lie on any month the bank or the currency is
+        // biting, and this panel does not get to round its own count.
+        body.getChildren().add(panelNote(
+                "Six that are always worth a glance, plus anything currently biting. "
+                + "Click one to go there; Dashboard has the rest."));
+    }
+
+    private void panelDashboardSections(VBox body) {
 
         EconomyManager economy = game.getEconomyManager();
         PopulationManager people = game.getPopulationManager();
@@ -18699,98 +19032,6 @@ public class UserInterface extends Application {
         int population = people.getPopulation();
         double annualGdp = economy.getYearGdp();
         double debt = game.getDebtManager().getAllPrincipal();
-
-        Label title = new Label("CITY OVERVIEW");
-        title.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
-                + " -fx-text-fill: #eceff1; -fx-padding: 0 0 1 2;");
-
-        Label subtitle = new Label(CityCalendar.format(game.getMonth())
-                + "   ·   month " + game.getMonth());
-        subtitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
-                + " -fx-text-fill: #8fa3b0; -fx-padding: 0 0 6 2;");
-
-        VBox body = new VBox(0);
-        // The ScrollPane's viewport paints its own ground, and on a dark panel
-        // an unpainted one shows through as a white sliver down the side of
-        // every section. Cheaper to state it than to fight the skin.
-        body.setStyle("-fx-background-color: #1c262b;");
-
-        /* =============================================================
-           THE VITALS, which are never folded away.
-
-           Three figures and nothing else. If the panel showed only these it
-           would still be worth having, and that is the test for what belongs
-           here: cash says whether the city can act, income says which way it
-           is going, and population is the score.
-           ============================================================= */
-        double cash = game.getCash();
-        double income = game.getIncome();
-
-        /*
-         * AND THEY ARE NOT IN THE SCROLLER ANY MORE.
-         *
-         * Jerus: "the vitals i think should purely be their own thing."
-         *
-         * They were the first three rows of a column forty rows long, which
-         * meant that scrolling down to the buildings list scrolled the city's
-         * three most important figures off the top of the panel - and the
-         * panel's whole job is to be the thing you can read while looking at
-         * something else. Pinned above the scroller they are always on screen,
-         * and the sections below them can be as long as they like.
-         */
-        VBox vitals = new VBox(0);
-        vitals.getChildren().addAll(
-                statLine("Cash", money(cash), cash < 0 ? PANEL_BAD : null),
-                statLine("Net income", money(income), income < 0 ? PANEL_BAD : PANEL_GOOD),
-                statLine("Population", String.format("%,d", population)));
-        vitals.setStyle("-fx-padding: 6 4 6 2; -fx-background-color: #223038;"
-                + " -fx-background-radius: 4;");
-        VBox.setMargin(vitals, new javafx.geometry.Insets(0, 0, 8, 0));
-
-        /* =============================================================
-           AND WHATEVER IS ACTUALLY WRONG.
-
-           An alert earns its place by being ABSENT most of the time. These are
-           the five conditions that quietly cost the city output or people, each
-           of which used to be a row indistinguishable from the forty around it -
-           an outbreak read exactly like the store stock.
-           ============================================================= */
-        VBox alerts = new VBox(0);
-
-        if (health.isOutbreak()) {
-            alerts.getChildren().add(statLine("OUTBREAK",
-                    String.format("month %d",
-                            Math.max(1, game.getMonth() - health.getOutbreakStarted() + 1)),
-                    PANEL_BAD));
-        }
-        if (service.getUnburied() > 0) {
-            alerts.getChildren().add(statLine("Unburied",
-                    formatter.format(service.getUnburied()), PANEL_BAD));
-        }
-        if (game.getInfrastructureManager().isCongested()) {
-            alerts.getChildren().add(statLine("Roads", roadSummary(), PANEL_BAD));
-        }
-        if (utilities.getProduction() > 0
-                && utilities.getConsumption() > utilities.getProduction()) {
-            alerts.getChildren().add(statLine("Power", "over capacity", PANEL_BAD));
-        }
-        if (utilities.getWaterProduction() > 0
-                && utilities.getWaterConsumption() > utilities.getWaterProduction()) {
-            alerts.getChildren().add(statLine("Water", "over capacity", PANEL_BAD));
-        }
-        if (land.getUtilisation() >= .95) {
-            alerts.getChildren().add(statLine("Land",
-                    String.format("%.0f%% used", land.getUtilisation() * 100), PANEL_BAD));
-        }
-
-        if (!alerts.getChildren().isEmpty()) {
-            alerts.setStyle("-fx-padding: 4 2 4 4; -fx-background-color: #331d1d;"
-                    + " -fx-background-radius: 3; -fx-border-color: #c0392b;"
-                    + " -fx-border-width: 0 0 0 2;");
-            VBox spacer = new VBox(alerts);
-            spacer.setStyle("-fx-padding: 6 0 2 0;");
-            body.getChildren().add(spacer);
-        }
 
         /* ================= ECONOMY ================= */
         body.getChildren().add(panelSection("econ", "ECONOMY",
@@ -19252,13 +19493,131 @@ public class UserInterface extends Application {
                     }
                     return b;
                 }));
+    }
+
+    private void refreshCityPanel() {
+        cityPanel.getChildren().clear();
+
+        EconomyManager economy = game.getEconomyManager();
+        PopulationManager people = game.getPopulationManager();
+        BuildingManager buildings = game.getBuildingManager();
+        UtilitiesHandler utilities = game.getServicesManager().getUtilitiesHandler();
+        LabourMarket market = game.getLabourMarket();
+        Health health = game.getHealth();
+        Healthcare service = game.getHealthcare();
+        LandManager land = game.getLandManager();
+        PopulationCohorts pyramid = game.getCohorts();
+
+        int population = people.getPopulation();
+        double annualGdp = economy.getYearGdp();
+        double debt = game.getDebtManager().getAllPrincipal();
+
+        Label title = new Label("CITY OVERVIEW");
+        title.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
+                + " -fx-text-fill: #eceff1; -fx-padding: 0 0 1 2;");
+
+        Label subtitle = new Label(CityCalendar.format(game.getMonth())
+                + "   ·   month " + game.getMonth());
+        subtitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
+                + " -fx-text-fill: #8fa3b0; -fx-padding: 0 0 6 2;");
+
+        VBox body = new VBox(0);
+        // The ScrollPane's viewport paints its own ground, and on a dark panel
+        // an unpainted one shows through as a white sliver down the side of
+        // every section. Cheaper to state it than to fight the skin.
+        body.setStyle("-fx-background-color: #1c262b;");
+
+        /* =============================================================
+           THE VITALS, which are never folded away.
+
+           Three figures and nothing else. If the panel showed only these it
+           would still be worth having, and that is the test for what belongs
+           here: cash says whether the city can act, income says which way it
+           is going, and population is the score.
+           ============================================================= */
+        double cash = game.getCash();
+        double income = game.getIncome();
+
+        /*
+         * AND THEY ARE NOT IN THE SCROLLER ANY MORE.
+         *
+         * Jerus: "the vitals i think should purely be their own thing."
+         *
+         * They were the first three rows of a column forty rows long, which
+         * meant that scrolling down to the buildings list scrolled the city's
+         * three most important figures off the top of the panel - and the
+         * panel's whole job is to be the thing you can read while looking at
+         * something else. Pinned above the scroller they are always on screen,
+         * and the sections below them can be as long as they like.
+         */
+        VBox vitals = new VBox(0);
+        vitals.getChildren().addAll(
+                statLine("Cash", money(cash), cash < 0 ? PANEL_BAD : null),
+                statLine("Net income", money(income), income < 0 ? PANEL_BAD : PANEL_GOOD),
+                statLine("Population", String.format("%,d", population)));
+        vitals.setStyle("-fx-padding: 6 4 6 2; -fx-background-color: #223038;"
+                + " -fx-background-radius: 4;");
+        VBox.setMargin(vitals, new javafx.geometry.Insets(0, 0, 8, 0));
+
+        /* =============================================================
+           AND WHATEVER IS ACTUALLY WRONG.
+
+           An alert earns its place by being ABSENT most of the time. These are
+           the five conditions that quietly cost the city output or people, each
+           of which used to be a row indistinguishable from the forty around it -
+           an outbreak read exactly like the store stock.
+           ============================================================= */
+        VBox alerts = new VBox(0);
+
+        if (health.isOutbreak()) {
+            alerts.getChildren().add(statLine("OUTBREAK",
+                    String.format("month %d",
+                            Math.max(1, game.getMonth() - health.getOutbreakStarted() + 1)),
+                    PANEL_BAD));
+        }
+        if (service.getUnburied() > 0) {
+            alerts.getChildren().add(statLine("Unburied",
+                    formatter.format(service.getUnburied()), PANEL_BAD));
+        }
+        if (game.getInfrastructureManager().isCongested()) {
+            alerts.getChildren().add(statLine("Roads", roadSummary(), PANEL_BAD));
+        }
+        if (utilities.getProduction() > 0
+                && utilities.getConsumption() > utilities.getProduction()) {
+            alerts.getChildren().add(statLine("Power", "over capacity", PANEL_BAD));
+        }
+        if (utilities.getWaterProduction() > 0
+                && utilities.getWaterConsumption() > utilities.getWaterProduction()) {
+            alerts.getChildren().add(statLine("Water", "over capacity", PANEL_BAD));
+        }
+        if (land.getUtilisation() >= .95) {
+            alerts.getChildren().add(statLine("Land",
+                    String.format("%.0f%% used", land.getUtilisation() * 100), PANEL_BAD));
+        }
+
+        if (!alerts.getChildren().isEmpty()) {
+            alerts.setStyle("-fx-padding: 4 2 4 4; -fx-background-color: #331d1d;"
+                    + " -fx-background-radius: 3; -fx-border-color: #c0392b;"
+                    + " -fx-border-width: 0 0 0 2;");
+            VBox spacer = new VBox(alerts);
+            spacer.setStyle("-fx-padding: 6 0 2 0;");
+            body.getChildren().add(spacer);
+        }
+
+        if (prefs.isPanelDashboard()) {
+            body.getChildren().add(panelFoldAll());
+            panelDashboardSections(body);
+        } else {
+            panelSummaryRows(body);
+        }
 
         javafx.scene.control.ScrollPane scroller = keptPanelScroller("city", body);
         scroller.setFitToWidth(true);
         scroller.setPrefHeight(700);
         scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
 
-        cityPanel.getChildren().addAll(title, subtitle, vitals, scroller);
+        cityPanel.getChildren().addAll(title, subtitle, panelModeSwitch(),
+                vitals, scroller);
     }
 
     /**

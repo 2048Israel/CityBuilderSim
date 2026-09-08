@@ -39,8 +39,19 @@ import java.util.Random;
  */
 public class LandMarket {
 
-    /** Plots on offer at any one time. */
-    public static final int LISTING_SIZE = 10;
+    /**
+     * Plots on offer at any one time.
+     *
+     * NINE, so the shelf is a square. Jerus: "make it so its only 9 cards".
+     * Ten wrapped to 3-3-3-1 at every window width the game is ever played at,
+     * and the orphan on the last row read as an afterthought rather than as the
+     * tenth of ten equal choices it was.
+     *
+     * An older save holding ten is trimmed to nine on restore, from the END of
+     * the listing - the most recently generated offer, and so the one least
+     * likely to be the tract somebody has been saving up for.
+     */
+    public static final int LISTING_SIZE = 9;
 
     /* ------------------------- what the city pays ------------------------- */
 
@@ -555,6 +566,10 @@ public class LandMarket {
                     : new LandParcel((int) state[i], state[i + 1], state[i + 2],
                                      state[i + 3]));
         }
+        // A save written when the shelf held ten. Trim from the back rather
+        // than leaving a tenth card the screen has no room for - see
+        // LISTING_SIZE. update() refills if this ever runs the other way.
+        while (listing.size() > LISTING_SIZE) listing.remove(listing.size() - 1);
         return true;
     }
 

@@ -44,6 +44,23 @@ public final class GamePrefs {
     public boolean isFullScreen()            { return fullScreen; }
     public void setFullScreen(boolean value) { this.fullScreen = value; }
 
+    /**
+     * Which of the two the city panel is showing.
+     *
+     * Jerus: "i think you can switch from summary and dashboard, like at a
+     * switch, so uh both?" - so it is a preference rather than a mode the game
+     * decides, and it belongs here rather than in a save: it is how the player
+     * likes to read, not something true about a particular city.
+     *
+     * DASHBOARD BY DEFAULT, because that is what the panel already was and a
+     * setting should not change what an existing player sees the first time
+     * they launch after it lands.
+     */
+    private boolean panelDashboard = true;
+
+    public boolean isPanelDashboard()            { return panelDashboard; }
+    public void setPanelDashboard(boolean value) { this.panelDashboard = value; }
+
     /* ===================================================================
        THE FILE
        =================================================================== */
