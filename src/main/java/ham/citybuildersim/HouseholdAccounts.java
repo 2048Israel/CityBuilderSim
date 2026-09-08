@@ -638,4 +638,20 @@ public class HouseholdAccounts {
         tuition = 0;
         interest = 0;
     }
+
+    /** The households' income statement, in the new unit. Headcounts do not move. */
+    public void redenominate(double scale) {
+        wages *= scale;  wageTax *= scale;  rent *= scale;  shopping *= scale;
+        contributions *= scale;  pensions *= scale;
+        healthcare *= scale;  tuition *= scale;  interest *= scale;
+        cumulativeSaving *= scale;
+        pensionPerSenior *= scale;
+        for (int r = 0; r < ROWS; r++) {
+            rowWages[r] *= scale;  rowTax[r] *= scale;  rowRent[r] *= scale;
+            rowShopping[r] *= scale;  rowContributions[r] *= scale;
+            rowPensions[r] *= scale;  rowHealthcare[r] *= scale;
+            rowTuition[r] *= scale;  rowInterest[r] *= scale;
+        }
+    }
+
 }

@@ -701,6 +701,131 @@ public class DataSave {
     public double getBankProfitLastMonth()       { return bankProfitLastMonth; }
 
     /**
+     * The city's foreign position: reserves, the trailing import bill the cover
+     * is measured against, how many months have been counted into it, and the
+     * exchange rate.
+     *
+     * All STOCKS. The reserve is the accumulation of every month that has ever
+     * crossed the city's edge and cannot be recovered from the month the save
+     * was taken in; the trailing import figure is an average of months that have
+     * gone. See ForeignAccounts.
+     */
+    private double[] foreignAccounts;
+
+    public void setForeignAccounts(double[] state) { this.foreignAccounts = state; }
+    public double[] getForeignAccounts()           { return foreignAccounts; }
+
+    /**
+     * The city's standing with foreign lenders: the default scar and how long
+     * ago it was earned.
+     *
+     * Carried because a scar that heals on reload is not a scar - a player who
+     * defaulted abroad could otherwise save, load, and find the window open
+     * again the same afternoon.
+     */
+    private double[] foreignStanding;
+
+    public void setForeignStanding(double[] state) { this.foreignStanding = state; }
+    public double[] getForeignStanding()           { return foreignStanding; }
+
+    /**
+     * Hot money: how much is here, and how long the city has left to sweat.
+     *
+     * The stock is the obvious half. The panic clock is the half that would be
+     * missed: a city loaded mid-stop with the clock reset would find the money
+     * flooding straight back in on a currency it had just run from.
+     */
+    private double[] capitalFlows;
+
+    public void setCapitalFlows(double[] state) { this.capitalFlows = state; }
+    public double[] getCapitalFlows()           { return capitalFlows; }
+
+    /**
+     * The price basket, its weights, and a year of readings.
+     *
+     * The index itself could be restruck from today's prices. The YEAR OF
+     * HISTORY could not, and without it a reloaded city reports zero inflation
+     * for twelve months however fast prices are moving.
+     */
+    private double[] priceIndex;
+
+    public void setPriceIndex(double[] state) { this.priceIndex = state; }
+    public double[] getPriceIndex()           { return priceIndex; }
+
+    /**
+     * The world's price level and what it is rising at.
+     *
+     * The level is a compounding stock and cannot be rebuilt from anything the
+     * city holds; the rate is a walk whose position is the whole of its state.
+     * A reloaded city without these starts the world's prices over at founding,
+     * which would make three centuries of imported inflation vanish.
+     */
+    private double[] worldEconomy;
+
+    public void setWorldEconomy(double[] state) { this.worldEconomy = state; }
+    public double[] getWorldEconomy()           { return worldEconomy; }
+
+    /**
+     * The currency's unit and how many reforms it has been through.
+     *
+     * CARRIED, NOT DERIVED, and it has to be: buildings.json is read fresh in
+     * founding dollars every time a game starts, so a reloaded city that did
+     * not know it had lopped two zeros would find a House costing a hundred
+     * times its real price. Absent (null) means a save from before currency
+     * reform existed, which is a city in founding money - exactly what a fresh
+     * Denomination already says.
+     */
+    private double[] denomination;
+
+    public void setDenomination(double[] state) { this.denomination = state; }
+    public double[] getDenomination()           { return denomination; }
+
+    /** The policy rate. A decision, not a derivation - so it has to be carried. */
+    private double policyRate;
+
+    public void setPolicyRate(double rate) { this.policyRate = rate; }
+    public double getPolicyRate()          { return policyRate; }
+
+    /**
+     * How far wages have chased the cost of living.
+     *
+     * A STOCK - it is an accumulation of every month's drift towards a target,
+     * and the target alone cannot reproduce it. A save that forgot it reloaded a
+     * city whose workers had never noticed the last devaluation.
+     */
+    private double costOfLiving = 1;
+
+    public void setCostOfLiving(double v) { this.costOfLiving = v; }
+    public double getCostOfLiving()       { return costOfLiving <= 0 ? 1 : costOfLiving; }
+
+    /**
+     * What the shops are charging.
+     *
+     * A STOCK for the same reason the cost of living is: it is the accumulation
+     * of every month's drift towards what stock cost, and the current invoice
+     * alone cannot reproduce it.
+     */
+    private double storeSellPrice = .3;
+
+    /**
+     * The rent the city was charging when the save was taken.
+     *
+     * SAVED BECAUSE IT IS LAGGED. Rent used to be re-derived from the wage
+     * array on every load and so needed no carrying; since 2026-09-07 it walks
+     * a twelfth of the way to its target each month, and a price halfway to
+     * somewhere cannot be reconstructed from the state a month ended in. A
+     * reloaded city would have snapped to its target and lost a year of lease
+     * stickiness, every load, invisibly.
+     */
+    private double rentPrice;
+
+    public void setRentPrice(double v) { this.rentPrice = v; }
+    public double getRentPrice()       { return rentPrice; }
+
+    public void setStoreSellPrice(double v) { this.storeSellPrice = v; }
+    public double getStoreSellPrice()       { return storeSellPrice <= 0 ? .3 : storeSellPrice; }
+
+    /**
      * ...and the tax the city actually took off it this month.
      *
      * The same rule as propertyTaxCharged above: the month's tax figures are

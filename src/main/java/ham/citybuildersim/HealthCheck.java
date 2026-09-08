@@ -337,9 +337,23 @@ public class HealthCheck {
         check("the employer still pays the full payroll",
                 wellEcon.getCommercialHandler().getReportPayroll(), payrollBefore, 1e-9);
 
+        /*
+         * WITHIN A UNIT, because units are whole things.
+         *
+         * The sick rate throttles how many baskets the shops can serve, and a
+         * shop cannot serve four fifths of a basket - productsSold is an int and
+         * always was. So the revenue lands on a whole number of units either
+         * side of the continuous figure, and the tolerance is one unit's price.
+         *
+         * It used to be exact because the ratio was applied to the MONEY rather
+         * than to the goods, which is the bug this tolerance is the shadow of:
+         * the shops handed over every basket and were paid for four fifths of
+         * them. See CommercialHandler.computeMonthlyReport().
+         */
         check("...and the shops' revenue falls by exactly the sick rate",
                 wellEcon.getCommercialHandler().getGrossRevenue(),
-                revenueBefore * (1 - sickness), Math.max(1e-9, revenueBefore * 1e-9));
+                revenueBefore * (1 - sickness),
+                wellEcon.getCommercialHandler().getStoreSellPrice());
         check("the mills run slower by the same share",
                 wellEcon.getIndustrialHandler().getOperatingRate(),
                 millRateBefore * (1 - sickness), 1e-9);

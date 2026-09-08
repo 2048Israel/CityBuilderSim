@@ -183,6 +183,10 @@ public class Game {
         households = new HouseholdAccounts();
         householdBalance.reset();
         bank.reset();
+        foreign.reset();
+        hotMoney.reset();
+        priceIndex.reset();
+        world.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
 
         this.isRunning = true;
@@ -757,7 +761,9 @@ public class Game {
                 buildingManager.getTotalStoreCoverage(),
                 ih.getMonthlyOutput(),
                 constructionOutput,
-                buildingManager.getUnderConstructionByCategory(BuildingType.INDUSTRIAL)),
+                buildingManager.getUnderConstructionByCategory(BuildingType.INDUSTRIAL),
+                // The shops' import bill is this sector's missed sales.
+                ch.getReportGlobalImports()),
                 sectorInvestor(BusinessDebtManager.INDUSTRY));
 
         /*
@@ -1025,9 +1031,24 @@ public class Game {
      * month, and a bank that added up its own history would drift from it.
      */
     private void refreshBank() {
+        /*
+         * WHAT THE SECTORS ARE IN CREDIT FOR, not what they are worth on net.
+         *
+         * This used to be the plain sum, so a sector deep in overdraft cancelled
+         * out another sector's savings and the bank's deposit book came out
+         * smaller than the money it was actually holding. An overdraft is not a
+         * negative deposit; it is a loan, and it is already on the other side of
+         * the balance sheet as one.
+         *
+         * It also has to be THIS weighting, because it is the weighting
+         * printCityStats() uses when it hands the deposit interest back out
+         * (each sector in proportion to max(0, its cash)). Charging the interest
+         * on one base and paying it on another is how the money went missing -
+         * see Bank.fundToCover().
+         */
         double sectorCash = 0;
         for (String s : BusinessDebtManager.SECTORS) {
-            sectorCash += economyManager.getSectorCash(s);
+            sectorCash += Math.max(0, economyManager.getSectorCash(s));
         }
         bank.refresh(
                 buildingManager.countByName("Commercial Bank"),
@@ -1090,6 +1111,41 @@ public class Game {
     /** What it would cost to put the bank back on its feet, right now. */
     public double bankRecapitalisationNeeded() {
         return bank.recapitalisationNeeded();
+    }
+
+    /**
+     * The treasury buys foreign currency, adding to the city's reserves.
+     *
+     * Real money: the local cash leaves the city to pay for it. Reserves bought
+     * today are what defends the currency tomorrow, and they cost exactly what
+     * anything else the treasury might have bought would have cost.
+     *
+     * @return what was actually bought, which is nothing the city cannot pay for
+     */
+    public double buyForeignCurrency(double amount) {
+        double spend = Math.max(0, Math.min(amount, cash));
+        if (spend <= 0) return 0;
+        cash -= spend;
+        foreign.buyReserves(spend);
+        GameLog.note(String.format("The city bought $%,.0fk of foreign currency.", spend));
+        return spend;
+    }
+
+    /**
+     * ...and sells it, which is what defending a currency actually consists of.
+     *
+     * Selling reserves puts local currency back in the treasury and takes the
+     * city's foreign position down - which lowers its import cover, which raises
+     * the pressure on the rate. A defence that does not fix the trade balance
+     * underneath it makes the next month worse, and that is not a bug in this
+     * model, it is the entire history of currency defences.
+     */
+    public double sellForeignCurrency(double amount) {
+        double sold = foreign.sellReserves(Math.max(0, amount));
+        if (sold <= 0) return 0;
+        cash += sold;
+        GameLog.note(String.format("The city sold $%,.0fk of its reserves.", sold));
+        return sold;
     }
 
     /** Tells the investment engine what land is left to sell, right now. */
@@ -2382,6 +2438,212 @@ public class Game {
      * Mirrors the dispatch in the issuance screens so a screen can ask "what
      * would this cost" without knowing which instrument it is looking at.
      */
+    /* =======================================================================
+       BORROWING IN SOMEBODY ELSE'S MONEY
+       =======================================================================
+
+       Three instruments, the same three shapes, written in USD. What differs
+       from the domestic pair above is small in code and enormous in play:
+
+         - the rate comes off DebtManager.foreignRate(), which is the world's
+           base plus what the world charges THIS city - and starts below the
+           domestic floor
+         - every figure in the quote is in DOLLARS. The screen converts for
+           display; the contract does not
+         - the proceeds do not reach the bank, so the treasury has a funding
+           source that is not the institution it is recapitalising. That is the
+           point of the whole exercise
+         - if the window is shut, there is no quote at all
+
+       Note the ASYMMETRY that makes this dangerous and is not modelled as a
+       special case: the coupon and the principal are fixed in dollars, and the
+       city's ability to pay them is fixed in nothing at all.
+       ======================================================================= */
+
+    /**
+     * WALKING AWAY FROM THE DOLLARS.
+     *
+     * Every piece of foreign paper comes off the books, and the creditors have
+     * no further claim. No cash moves - which is the point, and why MoneyAudit
+     * is untouched by it - so the city's position improves by the whole of what
+     * it repudiated, instantly, on the valuation line.
+     *
+     * That flattering is the trap in the other direction. Debt-to-exports
+     * collapses, the premium looks wonderful, and none of it matters, because
+     * nobody abroad will lend a defaulter a dollar for five years however good
+     * the ratios look. The scar on the price outlasts the closed window by
+     * years more.
+     *
+     * A player's decision, and also the city's fate if it simply cannot pay -
+     * see checkForeignSolvency().
+     */
+    public double defaultOnForeignDebt(String because) {
+        double written = debtManager.repudiateForeignDebt();
+        if (written <= 0) return 0;
+        foreign.forgiveDebt(written);
+        foreign.takeForeignDebt(0, foreign.getRate());
+        debtManager.markForeignDefault();
+        debtManager.updateInterest();
+        GameLog.note(String.format(
+                "THE CITY HAS DEFAULTED ON ITS FOREIGN DEBT - $%,.0fk repudiated (%s). "
+                + "No lender abroad will touch it for five years.", written, because));
+        return written;
+    }
+
+    /** How deep the city may go before its foreign creditors are not paid. */
+    public static final double DEFAULT_OVERDRAFT_YEARS = 1.0;
+
+    /**
+     * The city cannot pay, so it does not.
+     *
+     * Deliberately measured against a YEAR OF TAX REVENUE rather than against
+     * zero. A treasury dipping into overdraft for a month is ordinary municipal
+     * finance and the overdraft is already priced for it; a treasury a full
+     * year of its own revenue in the red, with dollars falling due it has no
+     * way of earning, is insolvent, and pretending otherwise would let a city
+     * carry foreign debt for ever on an overdraft that costs it nothing it
+     * cannot borrow again.
+     */
+    private void checkForeignSolvency() {
+        if (!debtManager.hasForeignDebt()) return;
+        double annualRevenue = debtManager.getMonthlyTaxRevenue() * 12;
+        if (annualRevenue <= 0) return;
+        if (cash < -annualRevenue * DEFAULT_OVERDRAFT_YEARS) {
+            defaultOnForeignDebt("the treasury could not find the dollars");
+        }
+    }
+
+    /** True if anybody abroad will lend the city a dollar today. */
+    public boolean foreignWindowOpen() { return debtManager.foreignWindowOpen(); }
+
+    /** Why not, in words, or null. */
+    public String foreignWindowReason() { return debtManager.foreignWindowReason(); }
+
+    /**
+     * What a USD bond of this size would cost. Books nothing.
+     *
+     * @param requestedUsd what the city wants to raise, in dollars
+     */
+    public DebtQuote quoteForeign(String type, double requestedUsd, int duration, double rounding) {
+
+        double before = debtManager.foreignRate();
+
+        if (requestedUsd <= 0 || !debtManager.foreignWindowOpen()) {
+            return new DebtQuote(type, duration, 0, before, before, 0, 0, 0, 0);
+        }
+
+        return switch (type) {
+            case "Note" -> {
+                double face = Math.ceil(requestedUsd / rounding) * rounding;
+                double rate = debtManager.quoteForeignRate(face);
+                double gross = face * (1 - ShortTermTBill.discountFraction(rate, duration));
+                double received = Math.round((gross - costOfIssuance(face)) * 100) / 100.0;
+                yield new DebtQuote("Note", duration, requestedUsd, rate, before,
+                        face, received, 0, face - received);
+            }
+            case "Serial" -> {
+                double face = Math.ceil(requestedUsd / rounding) * rounding;
+                double rate = debtManager.quoteForeignRate(face);
+                double received = Math.round((face - costOfIssuance(face)) * 100) / 100.0;
+                double coupons = 0;
+                MediumTermBond shape = new MediumTermBond(face, duration * 12, month, rate);
+                for (double cf : shape.remainingCashFlows()) coupons += cf;
+                coupons -= face;
+                yield new DebtQuote("Serial", duration, requestedUsd, rate, before,
+                        face, received, face * (rate / 12.0),
+                        (face - received) + coupons);
+            }
+            case "Term" -> {
+                double face = Math.ceil(requestedUsd / rounding) * rounding;
+                double rate = debtManager.quoteForeignRate(face);
+                double coupon = longBondCouponYield(rate, duration);
+                double received = Math.round(
+                        (face * longBondPvPerFace(rate, duration)
+                                - costOfIssuance(face)) * 100) / 100.0;
+                double monthly = (face * coupon) / 12;
+                yield new DebtQuote("Term", duration, requestedUsd, rate, before,
+                        face, received, monthly,
+                        (face - received) + monthly * duration * 12);
+            }
+            default -> throw new IllegalArgumentException("No such instrument: " + type);
+        };
+    }
+
+    /**
+     * Books a USD bond on exactly the terms quoted.
+     *
+     * @param holdAsReserves true to keep the dollars as reserves; false to sell
+     *        them for local money at today's rate and spend them at home
+     */
+    public String handleForeignLogic(String type, double requestedUsd, int duration,
+                                     double rounding, boolean holdAsReserves) {
+
+        if (!debtManager.foreignWindowOpen()) {
+            return "No lender abroad will take this paper: " + debtManager.foreignWindowReason();
+        }
+
+        DebtQuote quote = quoteForeign(type, requestedUsd, duration, rounding);
+        if (quote.isEmpty()) return "Nothing issued.";
+
+        switch (type) {
+            case "Note"   -> debtManager.addShortTermTBill(
+                    quote.faceValue(), duration, month, true);
+            case "Serial" -> debtManager.addMediumTermBond(
+                    quote.faceValue(), duration * 12, month, quote.marketRate(), true);
+            case "Term"   -> debtManager.addLongTermBond(
+                    quote.faceValue(), duration * 12, month, quote.couponRate(), true);
+            default -> throw new IllegalArgumentException("No such instrument: " + type);
+        }
+
+        /*
+         * THE DOLLARS ARRIVE. WHERE THEY GO IS THE PLAYER'S DECISION.
+         *
+         * Held as reserves, the position improves and the debt is matched by an
+         * asset - which is what a prudent treasury does and what makes the next
+         * bond cheaper, since cover feeds the liquidity term.
+         *
+         * Converted, the treasury gets local money it can spend on a hospital
+         * today, and carries an unhedged foreign liability against nothing at
+         * all. That is the trade, and it is the same one every finance ministry
+         * in the literature has made.
+         *
+         * Either way the money crossed the city's edge, so it is a financial
+         * inflow on the balance of payments, and either way it never touches
+         * bank.lend().
+         */
+        double local = quote.cashReceived() * foreign.getRate();
+        this.cash += local;
+        foreignDebtRaisedThisMonth += local;
+
+        /*
+         * "Hold as reserves" is not a different kind of accounting. It is the
+         * treasury taking the local money it just raised and buying foreign
+         * currency back with it - which is precisely what parking the proceeds
+         * abroad IS, and which the intervention screen has been able to do
+         * since phase 2. One path, already audited, already harnessed.
+         */
+        if (holdAsReserves) buyForeignCurrency(local);
+
+        /*
+         * ...AND THE DEBT IS ON THE SCREEN THE SAME INSTANT THE MONEY IS.
+         *
+         * The stock is normally restruck at the end of the month, which left a
+         * gap a player could see: park $7,742 of proceeds in reserves and the
+         * trade screen showed a net position of +$7,251 - reserves counted, the
+         * $20,000 of paper that paid for them not yet. Measured; it read as a
+         * city that had just got richer by borrowing.
+         *
+         * Same rate, so takeForeignDebt() books no revaluation - it only moves
+         * the stock forward to include the bond just signed.
+         */
+        foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
+
+        debtManager.updateInterest();
+        return (holdAsReserves
+                ? "Issued abroad; the dollars are in reserve.\n"
+                : "Issued abroad and converted.\n") + quote.summary();
+    }
+
     public DebtQuote quoteDebt(String type, double amount, int duration, double rounding) {
         return switch (type) {
             case "Note" -> quoteTBill(amount, duration, rounding);
@@ -2478,6 +2740,9 @@ public class Game {
         cityDebtRaisedThisMonth = 0;
         cityDiscountThisMonth = 0;
         cityPrincipalRepaidThisMonth = 0;
+        foreignDebtRaisedThisMonth = 0;
+        foreignPrincipalRepaidThisMonth = 0;
+        foreignInterestPaidThisMonth = 0;
         economyManager.getBusinessDebtManager().startAuditMonth();
         double[] poolsBefore = MoneyAudit.pools(this);
         double pooledBefore = 0;
@@ -2485,6 +2750,7 @@ public class Game {
         double interestDue = economyManager.getInterestAccrued();
 
         bank.startMonth();
+        foreign.startMonth();
 
         /*
          * THE BANK PAYS ITS PROFIT TAX, on the month that has just finished.
@@ -2606,7 +2872,114 @@ public class Game {
         }
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
-        
+
+        /*
+         * ...AND THE SAME MONTH, READ AS A BALANCE OF PAYMENTS.
+         *
+         * Handed the audit's own Result rather than the city, deliberately: the
+         * Result is the figure that has already been reconciled, and re-reading
+         * the underlying getters here would be a second definition of one month.
+         * Nothing is calculated twice, so nothing can disagree.
+         */
+        foreign.takeMonth(lastMoneyAudit, economyManager.getMonthGdp());
+
+        /*
+         * ...and the currency reprices on it. After the month is taken, so it
+         * moves on a month that has closed rather than one still in progress,
+         * and before the next month reads it at the top of startOfMonthUpdate().
+         */
+        /*
+         * WHERE THE CURRENCY OUGHT TO BE, before it is asked to move.
+         *
+         * Relative PPP: the city's basket against the world's. Set before
+         * repriceCurrency() reads it, and after both levels have been struck
+         * for the month.
+         */
+        foreign.setParity(priceIndex.getIndex(), world.getPriceLevel(),
+                priceIndex.inflation(), world.getInflation());
+        /*
+         * ...AND WHAT THE CITY IS PAYING TO BORROW, AGAINST THE WORLD.
+         *
+         * The policy rate against the world's base rate. This is the channel
+         * that makes the dial a defence: raise it and the currency is supported
+         * because money comes to be lent here, at the cost of every borrower in
+         * the city paying more. Asia 1997, as a lever.
+         */
+        foreign.setRateDifferential(
+                debtManager.getPolicyRate() - DebtManager.WORLD_BASE_RATE);
+        foreign.repriceCurrency();
+
+        /*
+         * ...AND THE CITY'S DOLLAR DEBT IS WORTH WHAT IT IS WORTH.
+         *
+         * After the reprice, so the debt is valued at the rate the month
+         * actually ended on, and after the audit, because a revaluation is not
+         * a cash flow and must not be inside one. See
+         * ForeignAccounts.takeForeignDebt().
+         *
+         * The instruments are told first: everything downstream of here - the
+         * debt screen, debt-to-GDP, the credit rating, the country premium on
+         * the next bond - reads getOustandingPrincipal(), and every one of them
+         * would otherwise be a month behind the currency.
+         */
+        debtManager.setExchangeRate(foreign.getRate());
+        foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
+        debtManager.setTrade(foreign.monthlyExports(), foreign.importCover());
+        debtManager.ageForeignStanding();
+        checkForeignSolvency();
+
+        /*
+         * ...AND WHAT THE MONTH COST A FAMILY.
+         *
+         * Priced on the month that has closed, from the shelf price and the
+         * rent it actually charged and what households actually paid for each.
+         * Read at the top of NEXT month by the wage drift, which is what makes
+         * the wage-price loop a loop with a lag in it rather than a
+         * simultaneous equation.
+         */
+        priceIndex.takeMonth(
+                economyManager.getCommercialHandler().getStoreSellPrice(),
+                economyManager.getCommercialHandler().getRentPrice(),
+                economyManager.getCommercialHandler().getGrossRevenue(),
+                economyManager.getCommercialHandler().getReportRentIncome());
+
+        /* =================================================================
+           AND THE MONEY THAT IS HERE BECAUSE THE RATE IS GOOD.
+
+           Last, after the currency has repriced and the debt has been revalued,
+           because every input this reads is a figure the month has just
+           finished settling. A carry trader reads the month that closed, not
+           the one in progress.
+           ================================================================= */
+        double before = hotMoney.getStock();
+        hotMoney.setMonth(month);
+        hotMoney.takeMonth(
+                bank.depositRate(),
+                debtManager.getRate(),
+                DebtManager.WORLD_BASE_RATE,
+                debtManager.countryPremium(),
+                economyManager.getMonthGdp(),
+                foreign.getReserves(),
+                yearlyDepreciation(),
+                bank.isInsolvent(),
+                debtManager.getMonthsSinceForeignDefault() >= 0
+                        && debtManager.getMonthsSinceForeignDefault() < 24,
+                month);
+
+        /*
+         * THE MONEY MOVES FOR REAL. It lands in the bank's cash, because that
+         * is what funding IS - and it crosses the city's edge to get there, so
+         * MoneyAudit sees both directions. A stop is the bank's cash leaving.
+         */
+        double moved = hotMoney.getStock() - before;
+        if (moved > 0)      bank.receiveHotMoney(moved);
+        else if (moved < 0) bank.returnHotMoney(-moved);
+        bank.setForeignDeposits(hotMoney.getStock());
+
+        // A year of the rate, so next year can tell a drift from a run.
+        rateHistory[month % 12] = foreign.getRate();
+        if (rateHistoryFilled < 12) rateHistoryFilled++;
+
         dataSave.setCash(cash);
         printEndOfTurn();
         recordMonth();
@@ -2630,6 +3003,57 @@ public class Game {
         // The assessor works off the price the player is currently charging, so
         // it has to know it before anything is valued or billed.
         // The land market re-prices first: what businesses pay this month, and
+        /*
+         * THE EXCHANGE RATE, BEFORE ANYTHING FOREIGN IS PRICED.
+         *
+         * Every world price in the game - food, scrap, ore, steel, building
+         * materials - is quoted by the world in its own money and converted at
+         * this rate. Set at the very top of the month so nothing is priced at
+         * last month's rate and settled at this month's.
+         */
+        /*
+         * THE RATE TIMES THE WORLD'S OWN PRICE LEVEL.
+         *
+         * Every consumer of this already multiplies a constant world price by
+         * whatever it is handed - food at $0.20, materials at $2.00, ore at
+         * $0.20 - so world inflation rides in on the same factor without any of
+         * them needing to know about it. What a foreign thing costs in Danzik
+         * dollars is its world price, times what the world charges for it now,
+         * times what a dollar costs.
+         *
+         * getRate() stays the pure exchange rate everywhere it is displayed or
+         * used to convert a currency; this is the only place the two are
+         * multiplied together, and that is deliberate - a rate that quietly had
+         * inflation baked into it would be unreadable on every screen.
+         */
+        world.advanceMonth(month);
+        economyManager.setExchangeRate(foreign.getRate() * world.getPriceLevel());
+
+        /*
+         * ...and wages start chasing what the world now charges.
+         *
+         * The exchange rate IS the price index here: the world's own prices do
+         * not move, so a rate of 1.4 means everything imported costs 40% more
+         * than it did at founding. See LabourMarket.updateCostOfLiving() for why
+         * a third, and why slowly.
+         */
+        labourMarket.updateCostOfLiving(priceIndex.getIndex());
+        /*
+         * ...AND THE FLOOR HOLDS ITS WORTH. The minimum wage is a standard of
+         * living now, so the cash figure is restruck from the index every month
+         * rather than sitting where the player last typed it while prices moved
+         * out from under it. See LabourMarket.reindexMinimumWage().
+         */
+        /*
+         * THE FLOOR NEEDS NO SEPARATE INDEXATION. baseWage() already multiplies
+         * it by costOfLiving, which updateCostOfLiving() has just walked a
+         * twenty-fourth of the way toward this month's prices - so the floor
+         * holds its real worth over about two years without a second
+         * mechanism, and adding one put the price level into every wage twice.
+         * See LabourMarket.baseWage() for the eight years of rent that took to
+         * find. The cash value is LabourMarket.cashMinimumWage().
+         */
+
         // what the next parcel costs, are both inputs to everything below.
         landManager.updateMarket(populationManager.getPopulation());
 
@@ -2716,7 +3140,10 @@ public class Game {
                 // placed, so without this the import lands months before the
                 // output it pays for and a big build reads as negative.
                 construction.getUnearnedRevenue(),
-                cityInterestPaid,
+                // The full interest bill, foreign coupons included - the
+                // government's books should show what it paid, not only the
+                // part its own bank collected. See payForeignInterest().
+                cityInterestPaid + foreignInterestPaidThisMonth,
                 cityCapitalSpending,
                 landManager.getLandSalesThisMonth(),
                 landManager.getLandPurchasesThisMonth(),
@@ -2730,7 +3157,7 @@ public class Game {
         accountedCapitalSpending = cityCapitalSpending;
         accountedLandSales = landManager.getLandSalesThisMonth();
         accountedLandPurchases = landManager.getLandPurchasesThisMonth();
-        accountedInterest = cityInterestPaid;
+        accountedInterest = cityInterestPaid + foreignInterestPaidThisMonth;
 
         cityCapitalSpending = 0;
         cityInterestPaid = 0;
@@ -3228,6 +3655,14 @@ public class Game {
         migration.setBankruptcyDepartures(householdBalance.getLeavingCity()
                 * Math.max(1, families.averageHouseholdSize()));
 
+        /*
+         * ...and what a flat costs here, which is a PULL rather than a push and
+         * so is set in the same place for a different reason. See
+         * Migration.affordabilityPull(): the discharged leave, and the people
+         * who would have arrived simply do not.
+         */
+        migration.setRentBurden(households.getRentBurden());
+
         cohorts.migrate(migration.monthlyNet(
                 population,
                 populationManager.getTotalJobs(),
@@ -3485,6 +3920,54 @@ public class Game {
      * Owned here rather than by EconomyManager because it lends to all three of
      * them: the sectors, the treasury and the households. See Bank.
      */
+    /**
+     * The city's account with the rest of the world. Phase one: measured, not
+     * yet acted on. See ForeignAccounts.
+     */
+    private final ForeignAccounts foreign = new ForeignAccounts();
+
+    /**
+     * Hot money, and the run on it. See CapitalFlows.
+     *
+     * Kept beside the foreign accounts rather than inside them because it is a
+     * different kind of thing: ForeignAccounts records what happened at the
+     * city's edge, and this decides what happens next. One is a ledger, the
+     * other is a crowd.
+     */
+    private final CapitalFlows hotMoney = new CapitalFlows();
+
+    /**
+     * What a month costs a household, against founding. See PriceIndex.
+     *
+     * Priced at the END of the month, from the prices the month actually
+     * charged, and READ at the top of the next one - which is why wages chase
+     * it with a lag rather than reacting to a number struck the same instant.
+     */
+    private final PriceIndex priceIndex = new PriceIndex();
+
+    /** The rest of the world, which has its own inflation. See WorldEconomy. */
+    private final WorldEconomy world = new WorldEconomy();
+
+    public WorldEconomy getWorldEconomy() { return world; }
+
+    public PriceIndex getPriceIndex() { return priceIndex; }
+
+    public CapitalFlows getCapitalFlows() { return hotMoney; }
+
+    /** The rate a year ago, for spotting a run. Twelve months, kept as a ring. */
+    private final double[] rateHistory = new double[12];
+    private int rateHistoryFilled;
+
+    /** How far the currency has fallen over the last year, as a share. */
+    public double yearlyDepreciation() {
+        if (rateHistoryFilled < 12) return 0;
+        double then = rateHistory[month % 12];
+        if (then <= 0) return 0;
+        return foreign.getRate() / then - 1;
+    }
+
+    public ForeignAccounts getForeignAccounts() { return foreign; }
+
     private final Bank bank = new Bank();
     public Bank getBank() { return bank; }
 
@@ -3770,6 +4253,16 @@ public class Game {
         dataSave.setBankCash(bank.getCash());
         dataSave.setBankBranchesCapitalised(bank.getBranchesCapitalised());
         dataSave.setBankProfitLastMonth(bank.getProfitLastMonth());
+        dataSave.setForeignAccounts(foreign.toSaveArray());
+        dataSave.setForeignStanding(debtManager.foreignStandingToSave());
+        dataSave.setCapitalFlows(hotMoney.toSaveArray());
+        dataSave.setPriceIndex(priceIndex.toSaveArray());
+        dataSave.setWorldEconomy(world.toSaveArray());
+        dataSave.setPolicyRate(debtManager.getPolicyRate());
+        dataSave.setCostOfLiving(labourMarket.getCostOfLiving());
+        dataSave.setStoreSellPrice(economyManager.getCommercialHandler().getStoreSellPrice());
+        dataSave.setRentPrice(economyManager.getCommercialHandler().getRentPrice());
+        dataSave.setDenomination(denomination.toSaveArray());
         dataSave.setBankTaxCharged(economyManager.getBankTax());
         dataSave.setRentWeight(families.rentWeight());
         dataSave.setRetailCapacity(economyManager.getCommercialHandler().getSpendingCapacity());
@@ -3933,6 +4426,70 @@ public class Game {
     public void subtractCash(double amount){
         cash -= amount;
         cityPrincipalRepaidThisMonth += amount;
+    }
+
+    /* =======================================================================
+       PAYING THE WORLD BACK
+       =======================================================================
+
+       WHY THESE ARE NOT subtractCash() AND InterestExpense(), which is the
+       whole structural difference between foreign and domestic paper:
+
+       The city's bonds are bought BY ITS OWN BANK. cityDebtRaisedThisMonth is
+       handed to bank.lend() and cityPrincipalRepaidThisMonth to
+       bank.takeRepayment(), so a domestic bond is a loan on the bank's book,
+       the interest is the bank's income, and none of it crosses the city's
+       edge. That is exactly the circular-capital hole: a treasury that can only
+       borrow from the institution it is recapitalising.
+
+       Foreign paper is bought by somebody else. It must never reach the bank's
+       book - so it gets its own counters, which nothing hands to the bank - and
+       the money genuinely leaves, so MoneyAudit has to see it crossing the
+       boundary. Both facts follow from using these two methods instead.
+
+       Kept in LOCAL money, because that is the currency MoneyAudit is written
+       in; the USD figure lives on the instrument.
+       ======================================================================= */
+
+    private double foreignDebtRaisedThisMonth;
+    private double foreignPrincipalRepaidThisMonth;
+    private double foreignInterestPaidThisMonth;
+
+    double getForeignDebtRaisedThisMonth()      { return foreignDebtRaisedThisMonth; }
+    double getForeignPrincipalRepaidThisMonth() { return foreignPrincipalRepaidThisMonth; }
+    double getForeignInterestPaidThisMonth()    { return foreignInterestPaidThisMonth; }
+
+    /**
+     * A slice of USD principal, repaid.
+     *
+     * @param usd what the contract says, in the currency it says it in
+     */
+    public void repayForeignPrincipal(double usd) {
+        double local = usd * foreign.getRate();
+        cash -= local;
+        foreignPrincipalRepaidThisMonth += local;
+    }
+
+    /**
+     * A USD coupon.
+     *
+     * NOT through InterestExpense(), and it took a $69.50 audit residual to
+     * find out why. That method feeds economyManager's interest accrual, and
+     * the whole of that accrual is handed to bank.takeInterest() at the bottom
+     * of the month - because the bank is who holds the city's paper and
+     * therefore who receives its coupons. A foreign coupon routed through it
+     * was paid to the bank AND declared as leaving the country: the same $69.50
+     * counted twice, once inside the pools and once out of them.
+     *
+     * So it leaves cash directly, like the principal does. What the city's
+     * income statement would have lost by that is put back where
+     * accountedInterest is struck - the statement gets the full interest bill,
+     * and only the bank's share reaches the bank.
+     */
+    public void payForeignInterest(double usd) {
+        double local = usd * foreign.getRate();
+        cash -= local;
+        foreignInterestPaidThisMonth += local;
     }
 
     /*
@@ -4101,6 +4658,92 @@ public class Game {
     */
    private int pendingWorkforce = -1;
 
+   /**
+    * What it costs to supply one more person of dwelling capacity, today.
+    *
+    * THE LONG-RUN SUPPLY PRICE OF HOUSING, and the floor under the rent. Nobody
+    * rationally supplies capacity for more than the cheapest way of supplying
+    * it, so this walks the residential templates and takes the lowest cost per
+    * head - which is the House by a wide margin at founding ($8.94 against
+    * $21.07 for a studio block and $44.16 for a low-rise) and stays the House
+    * unless somebody re-costs the catalogue.
+    *
+    * PRICED AT MARKET, ALWAYS, which is the one place this deliberately
+    * disagrees with BusinessInvestment.totalCostOf(). That method charges only
+    * the materials the depot cannot supply from stock, because it is answering
+    * "what cheque does the player write". This is answering "what does housing
+    * cost to make", and a full warehouse does not make concrete free - it means
+    * somebody already paid for it. Reading the shortfall here would have rent
+    * lurching every time the depot filled or emptied, which is inventory noise
+    * wearing a price's clothes.
+    *
+    * NO LAND. See the block above - it is the most important comment attached
+    * to this mechanic.
+    */
+   /* =====================================================================
+      WHY LAND IS NOT IN THE RENT FLOOR
+      ---------------------------------------------------------------------
+      The first version of this method put land in at today's market price,
+      because a developer plainly does pay for the ground. It measured
+      catastrophically and the reason it measured catastrophically is a
+      modelling error, not a tuning one, so it is written down here.
+
+      WHAT HAPPENED. Land in this game gets dearer with population and with
+      how much the city has annexed - both premiums multiply and neither is
+      bounded - so over a 4,001-month run the price per square foot went from
+      $0.000455 to $0.2585, a factor of 568. With land in the floor, the cost
+      of supplying one person of capacity went 8.94 -> 94.55, rent went 0.113
+      -> 1.217, and since rent is about three quarters of the price-index
+      basket the whole price level went with it: index 8.387, wages "lifted"
+      736%. Downstream: households spent their money on rent instead of food,
+      so the shops delivered 40% of what was planned against 54% before,
+      hunger went 42% -> 49%, the bank's capital ratio fell from 10.8% to 2.2%
+      and it failed 179 times, real GDP roughly halved, and the city ended
+      144,635 people instead of 223,777.
+
+      WHY IT WAS WRONG, and this is the part worth keeping. LAND PRICE IS A
+      CAPITALISED RENT. What a plot is worth is the discounted value of what
+      can be earned on it; it is an OUTPUT of the rental market, not an input
+      to it. Feeding it back in as a cost is reverse causation, and reverse
+      causation in a loop is how you get a number that grows because it grew.
+      It is also why real cities have their LOWEST rental yields exactly where
+      land is dearest - Tokyo and Hong Kong run about 2% gross - which the
+      16% this game's founding numbers imply cannot express.
+
+      WHAT IS LEFT IS RIGHT. The floor is the STRUCTURE: the cash the building
+      costs and the materials it eats, at today's material price. That is a
+      real cost, it moves with the industrial economy, and it does not
+      capitalise anything. Land still reaches rent, but through QUANTITY
+      rather than price - dear or scarce land means fewer homes get built,
+      fewer doors against the same households is a higher scarcity multiple,
+      and that channel is bounded because dear rent empties the city.
+      Charging land in the floor AND counting its scarcity in the multiple was
+      charging for it twice.
+
+      NOTE WHAT THIS DOES NOT CHANGE: BusinessInvestment still pays the full
+      market price for land when it decides what to build
+      (totalCostOf() includes it), so dense housing still wins when ground is
+      expensive. Only the rent FLOOR is structure-only.
+      ===================================================================== */
+
+   public double marginalHousingCost() {
+
+       double materialPrice = buildingManager.getConstructionMaterialPrice();
+       double cheapest = 0;
+
+       for (BuildingsTemplate t : buildingManager.getTemplates()) {
+           if (t == null || t.getCategory() != BuildingType.RESIDENTIAL) continue;
+           if (t.getCapacity() <= 0) continue;
+
+           double cost = t.getCashCost()
+                   + t.getConstructionMaterials() * Math.max(0, materialPrice);
+           double perCapacity = cost / t.getCapacity();
+           if (perCapacity <= 0) continue;
+           if (cheapest <= 0 || perCapacity < cheapest) cheapest = perCapacity;
+       }
+       return cheapest;
+   }
+
    private void rebuildSimulationState() {
 
     // rebuild jobs from buildings
@@ -4162,6 +4805,8 @@ public class Game {
     economyManager.setPopulation(populationManager.getPopulation());
     economyManager.setHouseholds(getHouseholdCapacity());
     economyManager.setOccupiedHomes(families.homesNeeded());
+    economyManager.setHouseholdCount(families.totalHouseholds());
+    economyManager.setMarginalHousingCost(marginalHousingCost());
 
     /*
      * AND THE MATCH, which the rent is billed off.
@@ -4472,6 +5117,61 @@ public class Game {
             bank.setBranchesCapitalised(loaded.getBankBranchesCapitalised());
             bank.setProfitLastMonth(loaded.getBankProfitLastMonth());
             economyManager.setBankTax(loaded.getBankTaxCharged());
+            foreign.restore(loaded.getForeignAccounts());
+            /*
+             * LOAD-PATH PARITY, for the third time on this class.
+             *
+             * A city reloaded with USD paper on its books values that paper at
+             * whatever rate the instruments were built with - 1.00 - until the
+             * first month ticks. Long enough for the debt screen, the credit
+             * rating and the player's next decision to all be wrong, and a
+             * whole month of a save-and-reload comparison to disagree.
+             */
+            debtManager.setExchangeRate(foreign.getRate());
+            debtManager.setTrade(foreign.monthlyExports(), foreign.importCover());
+            debtManager.restoreForeignStanding(loaded.getForeignStanding());
+            priceIndex.restore(loaded.getPriceIndex());
+            world.restore(loaded.getWorldEconomy());
+            /*
+             * The player's own decision, and the one thing on the debt market
+             * that is not derived from the city's books. A reload that dropped
+             * it would quietly reset monetary policy to 3%.
+             */
+            if (loaded.getPolicyRate() > 0) debtManager.setPolicyRate(loaded.getPolicyRate());
+            hotMoney.restore(loaded.getCapitalFlows());
+            hotMoney.setMonth(month);
+            bank.setForeignDeposits(hotMoney.getStock());
+            labourMarket.setCostOfLiving(loaded.getCostOfLiving());
+            economyManager.getCommercialHandler().setStoreSellPrice(loaded.getStoreSellPrice());
+            // Zero means a save written before rent became a lagged price; the
+            // setter refuses it and the founding value stands, which is the
+            // right answer for a city that was charging the formula anyway.
+            economyManager.getCommercialHandler().setRentPrice(loaded.getRentPrice());
+
+            /*
+             * THE UNIT, AND THEN THE CONSTANTS THAT DEPEND ON IT.
+             *
+             * Every money constant in this codebase - the price of a House, a
+             * shop's opening price, what a bank branch gathers, what a burial
+             * costs - is seeded from a compile-time figure in FOUNDING dollars
+             * at construction, and this game object was constructed a moment
+             * ago. The saved BALANCES are already in the reformed unit; the
+             * constants are not. Re-seeding them here, once, at the restored
+             * unit is what closes that gap - and it is idempotent, so a save
+             * loaded twice lands in the same place.
+             */
+            denomination.restore(loaded.getDenomination());
+            double unit = denomination.getUnit();
+            if (unit != 1) {
+                buildingManager.seedConstants(unit);
+                economyManager.getCommercialHandler().seedConstants(unit);
+                labourMarket.seedConstants(unit);
+                bank.seedConstants(unit);
+                landManager.seedConstants(unit);
+                healthcare.seedConstants(unit);
+                foreign.seedConstants(unit);
+                economyManager.getTaxPolicy().seedConstants(unit);
+            }
             carriedRentWeight = loaded.getRentWeight();
 
             /*
@@ -5071,6 +5771,172 @@ public class Game {
         // afterwards, so every load rebuilt the city twice - the same duplicate
         // pass that was removed from loadGameSave().
     }
+
+    /* =====================================================================
+       THE CURRENCY REFORM
+       ===================================================================== */
+
+    private final Denomination denomination = new Denomination();
+
+    public Denomination getDenomination() { return denomination; }
+
+    /** Whether the reform button should be showing. */
+    public boolean canReformCurrency() {
+        return denomination.unlocked(priceIndex.getIndex());
+    }
+
+    /**
+     * Lops zeros off the currency: one new dollar for `factor` old ones.
+     *
+     * A CHANGE OF UNITS AND NOTHING ELSE. Every nominal quantity in the city -
+     * every price, wage, balance, loan, reserve, tax charge, the exchange rate
+     * and the whole of the city's recorded history - is divided by the same
+     * factor in the same instant, so that no ratio moves and no real quantity
+     * moves. DenominationCheck runs a reformed city beside an unreformed one
+     * and requires that they stay the same city; that assertion is what makes
+     * this safe, because a reform that missed one balance would be a reform
+     * that quietly created or destroyed money.
+     *
+     * WHAT IS NOT TOUCHED, deliberately:
+     *
+     *   - anything quoted in FOREIGN money. Food at $0.20 abroad, materials at
+     *     $2.00, a bond issued in US dollars: none of them are this city's to
+     *     redenominate. They reach the city through the exchange rate, and the
+     *     exchange rate is divided, so what they cost here falls with
+     *     everything else while what they cost THERE does not move at all.
+     *   - anything that is a ratio, a rate, a count or a physical quantity. The
+     *     price index, the interest rate, the population, the tonnes in the
+     *     ground and the square feet of land are the same numbers afterwards.
+     *
+     * Called by the player, never by the game.
+     *
+     * @return true if the reform happened
+     */
+    public boolean reformCurrency(double factor) {
+
+        if ((!forcedReform && !canReformCurrency()) || !denomination.canLop(factor)) return false;
+
+        double scale = 1.0 / factor;
+
+        // The unit first, so anything that asks mid-reform gets the new answer.
+        denomination.lop(factor);
+
+        cash *= scale;
+        constructionSubsidy *= scale;
+        constructionShedPoints *= scale;
+        lastWriteOff *= scale;
+        accountedCapitalSpending *= scale;
+        accountedLandSales *= scale;
+        accountedLandPurchases *= scale;
+        accountedInterest *= scale;
+        cityCapitalSpending *= scale;
+        monthlyMaterialImports *= scale;
+        carriedRetailCapacity *= scale;
+        carriedRetailWant *= scale;
+        cityInterestPaid *= scale;
+        foreignDebtRaisedThisMonth *= scale;
+        foreignPrincipalRepaidThisMonth *= scale;
+        foreignInterestPaidThisMonth *= scale;
+        cityDebtRaisedThisMonth *= scale;
+        cityDiscountThisMonth *= scale;
+        cityPrincipalRepaidThisMonth *= scale;
+        cityDebtRaisedForBank *= scale;
+        cityDiscountForBank *= scale;
+
+        economyManager.redenominate(scale);
+        bank.redenominate(scale);
+        foreign.redenominate(scale);
+        hotMoney.redenominate(scale);
+        priceIndex.redenominate(scale);
+        householdBalance.redenominate(scale);
+        households.redenominate(scale);
+        labourMarket.redenominate(scale);
+        populationManager.redenominate(scale);
+        landManager.redenominate(scale);
+        debtManager.redenominate(scale);
+        buildingManager.redenominate(scale);
+        healthcare.redenominate(scale);
+        education.redenominate(scale);
+        if (servicesManager != null && servicesManager.getUtilitiesHandler() != null) {
+            servicesManager.getUtilitiesHandler().redenominate(scale);
+        }
+        // NOT the construction handler: ServicesManager owns it and
+        // EconomyManager holds the same object (Game wires them together at
+        // startup), so economyManager.redenominate() has already scaled it.
+        // Scaling it here would halve the builders' cash twice.
+        if (historySave != null) historySave.redenominate(scale);
+
+        /*
+         * ...and the derived figures re-struck, so the screens are in the new
+         * money the moment the player closes the dialog rather than a month
+         * later. These are the same refreshers the load path uses: they price
+         * and re-report, they do not run a month.
+         */
+        /*
+         * THE CACHED EXCHANGE RATES ARE SCALED, NOT RE-PUSHED.
+         *
+         * Four modules hold their own copy of the rate so they can price
+         * imports without asking: FoodMarket, BuildingManager, EconomyManager
+         * and every Debt instrument. Missing them was the first thing this got
+         * wrong - for one month the city bought its food at the OLD rate in NEW
+         * money, a hundredfold import shock that took the currency to its
+         * ceiling inside a decade (food at $26.99 against $0.29).
+         *
+         * The obvious fix, re-pushing the live rate, was the second thing it
+         * got wrong and is subtler. Those caches hold the rate the month was
+         * TRADED at, which is the rate at the START of the month; re-pushing
+         * hands them the rate as it stands now, after the month has moved it.
+         * That is a real repricing, not a change of units, and it showed up as
+         * a materials price 0.62% away from the unreformed city's - small,
+         * permanent, and enough to make the two cities different cities.
+         *
+         * So each cache is divided where it sits, in each module's own
+         * redenominate(). A flow cannot be reconstructed from the state a month
+         * ended in, and neither can the price a month was traded at.
+         */
+        /*
+         * AND NOTHING IS RE-DERIVED. NOT refreshEconPrices(), NOT
+         * refreshCommercialReport(), NOT refreshBank().
+         *
+         * Each of the three looked like tidying up and each is a small economic
+         * event. They re-strike a figure from the state as it stands NOW rather
+         * than as it stood when the month's number was struck: the food market
+         * clears again at today's rate rather than the one the month traded at
+         * (measured: the materials price 0.62% adrift, permanently), and
+         * refreshBank() re-reads the sector tills as they stand after the month
+         * rather than as they stood when the deposit book was last set
+         * (measured: deposits 1.8e-5 adrift, which is a rounding error until
+         * it is a different deposit rate, which is a different interest bill
+         * for everybody, which is a different city a decade later).
+         *
+         * A reform divides what is there. It does not recompute anything, and
+         * that includes the sector statements: refreshCommercialReport() and
+         * its three siblings were tried and they do not re-report the month,
+         * they re-DERIVE it from live state - measured, industry's output came
+         * out at 1,168 units against 918 for the same month. Every derived
+         * figure is re-derived next month in its proper place.
+         */
+
+        return true;
+    }
+
+
+    /**
+     * The reform without the price-level gate, for a harness.
+     *
+     * DenominationCheck needs a city that has been reformed in order to test
+     * what a reform does; it does not need that city to have inflated tenfold
+     * first, and making it do so would be testing the threshold and the reform
+     * at the same time. The threshold is tested on Denomination, where it can
+     * be held still.
+     */
+    boolean reformCurrencyForTest(double factor) {
+        forcedReform = true;
+        try { return reformCurrency(factor); } finally { forcedReform = false; }
+    }
+
+    private boolean forcedReform;
+
 }
  
 

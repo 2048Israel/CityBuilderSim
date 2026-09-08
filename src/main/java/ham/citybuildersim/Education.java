@@ -681,4 +681,13 @@ public class Education {
         }
         refreshStudying();
     }
+
+    /** Tuition and this month's bill, in the new unit. The subsidy is a share. */
+    public void redenominate(double scale) {
+        tuitionCollected *= scale;
+        citySubsidyPaid  *= scale;
+        payroll *= scale;
+        upkeep  *= scale;
+    }
+
 }

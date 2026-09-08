@@ -240,12 +240,33 @@ public class InfrastructureCheck {
 
         double capacityBefore = withRoads.getInfrastructureManager().getCapacity();
 
-        // Funded, and given somewhere to put it. A road is a big lot, and this
-        // check is about traffic rather than about whether a jammed city can
-        // still raise the money - which it can, by borrowing, elsewhere.
+        /*
+         * Funded, and given somewhere to put it. A road is a big lot, and this
+         * check is about traffic rather than about whether a jammed city can
+         * still raise the money - which it can, by borrowing, elsewhere.
+         *
+         * BOTH CITIES GET THE MONEY AND THE LAND since 2026-09-07, and only one
+         * of them spends it on roads. Before, the subsidy and the acreage went
+         * to withRoads alone, so the two cities differed in three ways at once
+         * and the fixture called the sum of them "roads". The consumption
+         * assertion below was the one that noticed: it passed by 2% on a
+         * four-person population gap, which is not a margin, it is a coin
+         * landing the right way up. Rent becoming a market tipped the coin -
+         * roads eat construction materials, dearer materials mean a dearer
+         * rent floor, and the road city's households had less left for the
+         * shops - and a 2% pass became a 3% fail without anything about roads
+         * changing at all.
+         *
+         * Controlled, the question is the one the section actually asks: same
+         * money, same ground, one city builds roads. The GDP claim never needed
+         * this - it wins by 50% - but the consumption claim did.
+         */
         withRoads.getGovernmentInvestor().spend(-500000);
+        without.getGovernmentInvestor().spend(-500000);
         withRoads.getLandManager().setOwnedSqFt(
                 withRoads.getLandManager().getOwnedSqFt() + roadNetwork.getLandSqFt() * 3);
+        without.getLandManager().setOwnedSqFt(
+                without.getLandManager().getOwnedSqFt() + roadNetwork.getLandSqFt() * 3);
 
         Game.BuildResult ordered = withRoads.buildStack(roadNetwork, 2, false);
         assertTrue("the order goes through", ordered == Game.BuildResult.SUCCESS);
@@ -314,14 +335,45 @@ public class InfrastructureCheck {
                 withRoads.getPopulationManager().getPopulation(),
                 without.getPopulationManager().getPopulation());
 
-        /*
-         * And the cleaner signal underneath it. Consumption is what "the
-         * economy on it runs at all" actually means - people earning and
-         * spending - and unlike GDP it has no capital lump in it.
-         */
-        assertTrue("...and its shops sell more",
-                withRoads.getEconomyManager().getNationalAccounts().getConsumption()
-                        > without.getEconomyManager().getNationalAccounts().getConsumption());
+        /* -------------------------------------------------------------------
+           AND THE CLEANER SIGNAL UNDERNEATH IT, WHICH IS NOT CONSUMPTION.
+
+           This used to assert that the road city's shops SELL MORE, on the
+           reasoning that consumption is people earning and spending and has no
+           capital lump in it. That was true when it was written and stopped
+           being true when the shelf price learned to ration.
+
+           Look at what the two cities actually do:
+
+               delivered share   0.889 with roads   0.347 without
+               units sold          143                164
+               consumption       390.6/mo           403.4/mo
+
+           The CONGESTED city spends more money at the shops. Its lorries cannot
+           get through, its shelves are bare, the scarcity mark-up on what does
+           arrive is enormous, and its households hand over more cash for fewer
+           goods. Consumption measured in money now RISES with congestion, so
+           asserting it falls is asserting the opposite of the mechanic.
+
+           (The old assertion passed anyway, by 2% on a four-person population
+           gap - a coin landing the right way up rather than a margin. Rent
+           becoming a market tipped it: roads eat construction materials, dearer
+           materials mean a dearer rent floor, and 2% the right way became 3%
+           the wrong way without anything about roads changing.)
+
+           What roads actually do is MOVE GOODS, and the delivered share says so
+           by a factor of two and a half. That is the clean signal, it is the
+           one this section is about, and unlike consumption it cannot be
+           satisfied by charging more for less.
+           ------------------------------------------------------------------- */
+        double deliveredWith = withRoads.getEconomyManager()
+                .getCommercialHandler().getDeliveredShare();
+        double deliveredWithout = without.getEconomyManager()
+                .getCommercialHandler().getDeliveredShare();
+        System.out.printf("   and the shelves: %.0f%% of what customers came for"
+                + " against %.0f%%%n", deliveredWith * 100, deliveredWithout * 100);
+        assertTrue("...and its shops can actually be supplied",
+                deliveredWith > deliveredWithout * 1.5);
         assertTrue("...and the city that built them produces more",
                 gdpWith > gdpWithout);
 

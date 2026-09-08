@@ -327,28 +327,76 @@ public class LabourCheck {
         assertTrue("...and a recomputed market would NOT have matched", differs);
 
         /* ------------------------------------------------------------------
-         * RENT FOLLOWS THE LIVE UNSKILLED WAGE (2026-09-06).
+         * RENT NO LONGER FOLLOWS THE UNSKILLED WAGE (2026-09-07).
          *
-         * It was struck off PayTier.UNSKILLED at compile time, the last price
-         * in the game that did not know labour had become a market. Doubling
-         * the minimum wage must double rent, and the reloaded city must charge
-         * what the live one charged.
+         * This section used to assert the opposite, and asserting the opposite
+         * was correct for exactly one day. Rent was `30% of two unskilled wages
+         * over four heads`, so the minimum-wage dial moved rent BY
+         * CONSTRUCTION: raising the floor raised rent in the same proportion in
+         * the same month, the rent burden never budged, and the one lever the
+         * player had for making housing affordable could not make housing
+         * affordable. It has a cost floor and a scarcity multiple now.
+         *
+         * Three claims, and the middle one is the whole change:
+         *
+         *   1. a reloaded city charges what the live one charged. Unchanged,
+         *      and it earned its keep again the same afternoon - rent walks a
+         *      twelfth of the way to its target each month and repriceRent()
+         *      was being called from updateEcon(), which the load path also
+         *      calls, so every load stepped it once more than the live city.
+         *      0.174309 against 0.174210.
+         *   2. doubling the minimum wage does NOT double rent.
+         *   3. rent is the cost floor times the scarcity multiple - the
+         *      identity the price is actually built from.
          * ------------------------------------------------------------------ */
-        System.out.println("\n--- rent follows the unskilled wage ---");
+        System.out.println("\n--- rent is a market, not a wage formula ---");
         CommercialHandler rents = back.getEconomyManager().getCommercialHandler();
         double rentBefore = rents.getRentPrice();
         close("a reloaded city charges the rent it was charging",
                 rentBefore, lived.getEconomyManager().getCommercialHandler().getRentPrice(), 1e-9);
-        close("rent is 30% of two unskilled wages per four-person home",
-                rentBefore, CommercialHandler.rentFor(back.getLabourMarket().getWage(JobType.NO_DIPLOMA)), 1e-9);
+
+        assertTrue("fixture: the city has a housing cost to price against",
+                rents.getMarginalHousingCost() > 0);
+        /*
+         * The identity - target == floor x multiple - is NOT asserted here, and
+         * the first draft of this section asserted it and went red. getRentTarget()
+         * is a snapshot of the target the last reprice was struck against;
+         * rentFloor() and rentScarcityMultiple() recompute off inputs that have
+         * moved since. Comparing the two is comparing two different months, which
+         * is the same mistake as ForeignCheck dividing by a price that had moved.
+         * The identity and the step size are tested where they can be held still:
+         * MonetaryCheck, on a handler with numbers put into it by hand.
+         */
 
         double floorBefore = back.getLabourMarket().getMinimumWage();
+        double targetBefore = rents.getRentTarget();
         back.getLabourMarket().setMinimumWage(floorBefore * 2);
         quietly(() -> back.simulateMonths(1));
         double unskilledNow = back.getLabourMarket().getWage(JobType.NO_DIPLOMA);
         assertTrue("fixture: doubling the floor moved the unskilled wage", unskilledNow > floorBefore * 1.5);
-        close("...and rent moved with it", rents.getRentPrice(), CommercialHandler.rentFor(unskilledNow), 1e-9);
-        assertTrue("...upward", rents.getRentPrice() > rentBefore * 1.5);
+
+        /*
+         * The old formula would have put rent at rentFor(unskilledNow) THIS
+         * MONTH. It is nowhere near it, and that gap is the mechanic.
+         */
+        double wouldHaveBeen = CommercialHandler.rentFor(unskilledNow);
+        System.out.printf("   rent %.6f; the old formula would say %.6f%n",
+                rents.getRentPrice(), wouldHaveBeen);
+        assertTrue("doubling the minimum wage does not double rent",
+                rents.getRentPrice() < rentBefore * 1.2);
+        assertTrue("...and rent is not the wage formula any more",
+                Math.abs(rents.getRentPrice() - wouldHaveBeen) > 1e-6);
+
+        /*
+         * And the target barely moved either, which is the stronger claim: it
+         * is not that the lease is hiding a wage effect for a month, it is that
+         * there is no wage effect to hide. What little there is arrives through
+         * construction costs, which is the long way round and is meant to be.
+         */
+        System.out.printf("   rent target %.6f -> %.6f on a doubled wage floor%n",
+                targetBefore, rents.getRentTarget());
+        assertTrue("the rent TARGET is not a wage formula either",
+                rents.getRentTarget() < targetBefore * 1.5);
 
         /* ------------------------------------------------------------------
          * ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06).

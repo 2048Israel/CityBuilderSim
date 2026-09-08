@@ -142,7 +142,28 @@ public class EconomyManager {
         // know how many front doors there are and how many are lived in.
         commercialHandler.setHomes(buildingManager.getTotalHomes());
         commercialHandler.setOccupiedHomes(occupiedHomes);
+
+        /*
+         * ...and the two further inputs the rent price needs. SET here, where
+         * the rest of the housing state is set; WALKED in finalEconUpdate(),
+         * which is a different thing and belongs in a different place - see
+         * repriceRent()'s note there.
+         */
+        commercialHandler.setHouseholdCount(householdCount);
+        commercialHandler.setMarginalHousingCost(marginalHousingCost);
     }
+
+    /**
+     * Households wanting somewhere to live, and what one more person of
+     * capacity would cost to supply. Both are set by Game, from FamilyModel and
+     * from the building templates priced at today's materials and land.
+     */
+    private double householdCount;
+    private double marginalHousingCost;
+
+    public void setHouseholdCount(double count)        { this.householdCount = count; }
+    public void setMarginalHousingCost(double perCap)  { this.marginalHousingCost = perCap; }
+    public double getMarginalHousingCost()             { return marginalHousingCost; }
 
     /**
      * Households actually living somewhere, from FamilyModel.
@@ -239,7 +260,8 @@ public class EconomyManager {
                 b -> b.getProduction1() * b.getProductionModifier1());
 
         if (tonnes > 0) {
-            ironMarket.setExportPrice(value / tonnes);
+            // What the world pays for ore, in the city's money.
+            ironMarket.setExportPrice(value / tonnes * exchangeRate);
         }
         miningHandler.setExportPrice(ironMarket.getExportPrice());
     }
@@ -283,6 +305,7 @@ public class EconomyManager {
         // ceiling - read off the mills themselves so the two can never drift.
         double scrap = heavyIndustryHandler.getScrapPricePerTonne();
         if (scrap > 0) {
+            // Already converted - the mills' input cost is set at the rate below.
             ironMarket.setScrapPrice(scrap);
         }
 
@@ -337,13 +360,14 @@ public class EconomyManager {
         heavyIndustryHandler.setInputTonnes(buildingManager.getTotalByCategoryDouble(
                 BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getProduction2));
 
+        // Steel out and scrap in are both world prices, both converted.
         heavyIndustryHandler.setRevenueAtCapacity(buildingManager.getTotalByCategoryDouble(
                 BuildingType.HEAVY_INDUSTRY,
-                b -> b.getProduction1() * b.getProductionModifier1()));
+                b -> b.getProduction1() * b.getProductionModifier1()) * exchangeRate);
 
         heavyIndustryHandler.setInputCostAtCapacity(buildingManager.getTotalByCategoryDouble(
                 BuildingType.HEAVY_INDUSTRY,
-                b -> b.getProduction2() * b.getProductionModifier2()));
+                b -> b.getProduction2() * b.getProductionModifier2()) * exchangeRate);
     }
 
     public void updateHeavyIndustryWages(double[] wages){
@@ -745,6 +769,7 @@ public class EconomyManager {
         // 3. both sides trade on the same price
         industrialHandler.setFoodPrice(foodMarket.getLocalPrice());
         commercialHandler.setFoodPrice(foodMarket.getLocalPrice());
+        // Already in the city's money - FoodMarket converts at the rate.
         commercialHandler.setImportPrice(foodMarket.getImportPrice());
         commercialHandler.setFoodAvailableForSale((int) offered);
     }
@@ -778,6 +803,23 @@ public class EconomyManager {
         procedureUpdate();
         industrialHandler.updateFinalIndustrialHandler();
         commercialHandler.updateCommercialHandler();
+
+        /*
+         * RENT WALKS HERE, AND ONLY HERE, for the same reason this whole method
+         * is not on the load path: moving a lagged price one step toward its
+         * target IS a month passing. It started life in updateCommercial(),
+         * beside the setters that feed it, and that was wrong in the way this
+         * codebase keeps being wrong - updateEcon() is called by
+         * rebuildSimulationState(), so every load walked rent an extra twelfth
+         * and a reloaded city charged 0.174309 where the live one charged
+         * 0.174210. SaveFileCheck caught it inside a minute, which is the
+         * ninth time that assertion has earned its keep.
+         *
+         * The inputs are still set in updateCommercial(). Setting state is not
+         * advancing it.
+         */
+        commercialHandler.repriceRent();
+
         this.interest = 0;
         setElectricityConsumption();
     }
@@ -1047,7 +1089,10 @@ public class EconomyManager {
     public double getSeniors()               { return seniors; }
     public double getContributions()         { return totalContributions; }
     public double getPensionsPaid() {
-        return SocialSecurity.pensionsFor(seniors, taxPolicy.getPensionReplacement());
+        // Struck off TaxPolicy's cheque, not off SocialSecurity's compile-time
+        // one: the constant is in FOUNDING dollars and TaxPolicy is the only
+        // thing that carries it in today's. See TaxPolicy.pensionPerSenior().
+        return Math.max(0, seniors) * taxPolicy.pensionPerSenior();
     }
     public double getPensionShortfall()      {
         return SocialSecurity.shortfall(totalWage, seniors);
@@ -1285,6 +1330,30 @@ public class EconomyManager {
     public double getTaxRate(){ return taxPolicy.getIncomeTaxRate(); }
 
     public TaxPolicy getTaxPolicy(){ return taxPolicy; }
+
+    /* ===================== THE PRICE OF FOREIGN THINGS =====================
+     *
+     * Every price below is quoted by the world in ITS money, not the city's.
+     * Steel sells abroad for so many dollars a tonne whatever the city's
+     * currency is doing; scrap and shop stock are bought abroad the same way.
+     * So each of them enters the game as a USD price converted at the rate, and
+     * a weaker currency makes imports dearer and exports better paid in local
+     * money - which is the entire mechanism by which an exchange rate does
+     * anything at all.
+     *
+     * Held here rather than reached for through Game, because these conversions
+     * happen deep inside the monthly update where the world is not visible.
+     * Pushed in by Game.startOfMonthUpdate() before anything is priced.
+     */
+    private double exchangeRate = 1.0;
+
+    public void setExchangeRate(double rate) {
+        this.exchangeRate = rate > 0 ? rate : 1.0;
+        foodMarket.setExchangeRate(this.exchangeRate);
+        buildingManager.setExchangeRate(this.exchangeRate);
+    }
+
+    public double getExchangeRate() { return exchangeRate; }
 
     public void setLandPricePerSqFt(double price){ this.landPricePerSqFt = price; }
 
@@ -1955,5 +2024,77 @@ public class EconomyManager {
 
 
 
+
+
+    /**
+     * Every figure the economy manager holds, and every handler under it, in
+     * the new unit.
+     *
+     * The fill rates, the utility ratios and the wage RATES per job are the
+     * handlers' own business; what is here is the tax take, the charges, the
+     * wage bills and the land price, plus the call down into each sector.
+     */
+    public void redenominate(double scale) {
+        cash *= scale;
+        upkeep *= scale;
+        landPricePerSqFt *= scale;
+        totalPropertyTax *= scale;
+        totalHeavyIndustryTax *= scale;
+        totalBusinessTax *= scale;
+        totalBankTax *= scale;
+        totalWageTax *= scale;
+        totalIndustrialTax *= scale;
+        totalIncome *= scale;
+        totalTaxIncome *= scale;
+        interest *= scale;
+        totalWage *= scale;
+        GDP *= scale;
+        yearGDP *= scale;
+        salesTax *= scale;
+        utilityIncome *= scale;
+        debt *= scale;
+        marginalHousingCost *= scale;
+        healthcareBill *= scale;   healthcareFees *= scale;
+        educationBill  *= scale;   educationFees  *= scale;
+        totalContributions *= scale;
+        exchangeRate *= scale;
+        pricePerWatt *= scale;
+        pricePerWaterUnit *= scale;
+
+        scaleArray(propertyTaxCharges, scale);
+        scaleArray(interestCharges, scale);
+        scaleArray(storeWages, scale);
+        scaleArray(industrialWages, scale);
+        scaleArray(wageRates, scale);
+        scaleArray(staffedWagePerType, scale);
+
+        /*
+         * THE TWO MARKETS FIRST, and forgetting them was the bug that took
+         * longest to find. FoodMarket carries the price the month was traded at
+         * AND its own copy of the exchange rate; leaving both in the old unit
+         * meant the national accounts valued the change in the food warehouse
+         * at a hundred times the right price for exactly one month, and booked
+         * the difference as production. GDP came out eleven times too high
+         * while every stock in the city was correct to the last cent - which is
+         * why the money audit was clean throughout and said nothing.
+         */
+        taxPolicy.redenominate(scale);
+        if (foodMarket != null) foodMarket.redenominate(scale);
+        ironMarket.redenominate(scale);
+
+        commercialHandler.redenominate(scale);
+        industrialHandler.redenominate(scale);
+        heavyIndustryHandler.redenominate(scale);
+        miningHandler.redenominate(scale);
+        if (constructionHandler != null) constructionHandler.redenominate(scale);
+        businessDebtManager.redenominate(scale);
+        salesTaxLedger.redenominate(scale);
+        nationalAccounts.redenominate(scale);
+    }
+
+    private static void scaleArray(double[] values, double scale) {
+        if (values == null) return;
+        for (int i = 0; i < values.length; i++) values[i] *= scale;
+    }
 
 }

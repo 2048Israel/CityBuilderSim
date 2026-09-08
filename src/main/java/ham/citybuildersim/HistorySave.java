@@ -327,4 +327,33 @@ public class HistorySave {
     public List<Integer> getJobs()         { return jobs; }
     public List<Integer> getWorkforce()    { return workforce; }
     public List<Integer> getPopulation()   { return population; }
+
+    /**
+     * Redraws the city's whole history in the new unit.
+     *
+     * WITHOUT THIS THE GRAPHS GET A CLIFF. A reform is a change of units, not
+     * an event in the economy, so a chart of three centuries of GDP must not
+     * have a hundredfold step in it on the month the player pressed the button.
+     * Every real country's long-run price series is spliced exactly this way.
+     *
+     * Rates and ratios are left alone - an interest rate, a fill ratio and a
+     * sick rate are the same numbers in any currency - and so are headcounts.
+     */
+    public void redenominate(double scale) {
+        scaleAll(scale, cash, gdp, debt, revenue, surplus,
+                totalWage, minimumWage, schoolBill,
+                landPrice, foodPrice, materialsPrice, orePrice);
+    }
+
+    @SafeVarargs
+    private static void scaleAll(double scale, List<Double>... series) {
+        for (List<Double> s : series) {
+            if (s == null) continue;
+            for (int i = 0; i < s.size(); i++) {
+                Double v = s.get(i);
+                if (v != null) s.set(i, v * scale);
+            }
+        }
+    }
+
 }

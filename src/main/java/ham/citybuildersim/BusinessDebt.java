@@ -77,4 +77,11 @@ public abstract class BusinessDebt {
     public int getRemainingMonths() {
         return remainingMonths;
     }
+
+    /** The loan in the new unit. Business credit is always in the city's money. */
+    public void redenominate(double scale) {
+        faceValue *= scale;
+        outstandingPrincipal *= scale;
+    }
+
 }

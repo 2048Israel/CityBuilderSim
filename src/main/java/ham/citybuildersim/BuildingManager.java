@@ -19,7 +19,20 @@ public class BuildingManager {
     private List<BuildingInstance> instances;
     private JobType[] jobTypes = JobType.values();
     private int constructionMaterials;
+    /**
+     * What a unit of construction material costs, in the city's money.
+     *
+     * Imported - see ConstructionHandler, which only charges for the shortfall
+     * local plants cannot cover - so it is a world price and moves with the
+     * exchange rate. A devaluation makes building dearer, which is one of the
+     * first things a real currency crisis does to a city.
+     */
     private double materialsCost = 2;
+    private static final double MATERIALS_WORLD_PRICE = 2;
+
+    public void setExchangeRate(double rate) {
+        this.materialsCost = MATERIALS_WORLD_PRICE * (rate > 0 ? rate : 1);
+    }
 
     public BuildingManager() {
         templates = new ArrayList<>();
@@ -1341,6 +1354,30 @@ public class BuildingManager {
         return Math.max(total, 0);
     }
 
+    /**
+     * Production capacity of one category that is ON SITE but not finished.
+     *
+     * SUPPLY THAT IS COMING, and leaving it out is what makes a sector build the
+     * same shortage three times. The planner reads what the city PRODUCES,
+     * decides it is short, and orders - and then does the same thing again next
+     * month, because the plants it ordered are still going up and have not
+     * started producing. Measured: food plants went 1 -> 3 -> 4 against a
+     * shortage that one and a half would have covered, and the resulting glut
+     * halved the local price, put the sector below cost, and retired the lot.
+     *
+     * A hog cycle, in the textbook sense, and the textbook cause: acting on a
+     * price signal without counting the capacity your last decision already put
+     * in the ground.
+     */
+    public double productionUnderConstruction(BuildingType category) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getCategory() != category) continue;
+            total += stack.getUnderConstruction() * stack.getBuilding().getProduction1();
+        }
+        return total;
+    }
+
     public int getUnderConstructionByCategory(BuildingType category) {
         int count = 0;
         for (BuildingsStacks stack : stacks) {
@@ -2121,6 +2158,23 @@ public class BuildingManager {
     public void resetBuildingManager() {
         clearStacks();
         constructionMaterials = 80;
+    }
+
+
+    /** Every template's price, and the materials the city is holding, in the new unit. */
+    public void redenominate(double scale) {
+        for (BuildingsTemplate t : templates) {
+            if (t != null) t.redenominate(scale);
+        }
+        materialsCost *= scale;
+    }
+
+
+    /** Re-seeds every template's price at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        for (BuildingsTemplate t : templates) {
+            if (t != null) t.seedConstants(unit);
+        }
     }
 
 }

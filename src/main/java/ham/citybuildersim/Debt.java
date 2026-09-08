@@ -34,11 +34,67 @@ public abstract class Debt {
     protected int monthStarted;
     protected String type;
 
+    /* =======================================================================
+       WHICH MONEY THIS PAPER IS WRITTEN IN
+       =======================================================================
+
+       ORIGINAL SIN, which is the name the literature gives it: a city that
+       cannot borrow abroad in its own currency carries the exchange risk
+       itself. It owes dollars and earns local money, so a devaluation makes the
+       debt dearer without anybody having borrowed another cent. Domestic paper
+       does the opposite - inflation and devaluation quietly shrink it.
+
+       HOW IT IS STORED, and this is the part that has to be got right once:
+
+         - a foreign bond holds its face, its principal and its coupon in USD,
+           because that is what the contract says and it does not change when
+           the currency moves
+         - every PUBLIC getter returns LOCAL money, converted at the live rate,
+           because that is what the city's books, its debt-to-GDP, its credit
+           rating and every screen are denominated in
+
+       So `getOustandingPrincipal()` on a USD bond rises when the currency falls,
+       everywhere in the game at once, with no call site knowing anything about
+       it. That is the whole mechanic.
+
+       ENFORCED BY THE COMPILER rather than by memory. The three money-valued
+       getters are FINAL here and convert; what a subclass declares instead is
+       the figure in the paper's OWN currency. A subclass cannot forget to
+       convert, because it is not given the chance - the previous shape, where
+       each subclass returned its own number, would have needed the conversion
+       written correctly in nine places and wrong in none.
+       ======================================================================= */
+
+    /** True if this paper is written in USD. */
+    protected boolean foreign;
+
+    /** Local currency per USD, as of the last month tick. See DebtManager. */
+    protected double exchangeRate = 1.0;
+
+    public boolean isForeign() { return foreign; }
+
+    /** The rate this paper is currently being valued at. */
+    public double getExchangeRate() { return exchangeRate; }
+
+    /**
+     * Told to it by DebtManager, every month and on the load path.
+     *
+     * A rate of zero or less is refused rather than accepted, because a bond
+     * valued at zero disappears out of the city's debt silently, and a save
+     * restored before the exchange rate is would do exactly that.
+     */
+    void setExchangeRate(double rate) {
+        if (rate > 0) this.exchangeRate = rate;
+    }
+
+    /** USD into local money, for foreign paper; the identity for domestic. */
+    protected double inLocal(double own) {
+        return foreign ? own * exchangeRate : own;
+    }
+
     public abstract void processMonth(Game game);
 
     public abstract double getIssuePrice();
-
-    public abstract double getOustandingPrincipal();
 
     public abstract int getMaturityMonth();
 
@@ -46,25 +102,81 @@ public abstract class Debt {
 
     public abstract String getType();
 
-    /** This month's coupon. Zero for a discount instrument, and honestly so. */
-    public abstract double getMonthlyInterestExpense();
+    /* ------------- what a subclass declares, in its own currency ------------- */
+
+    /** Principal still owed, in the currency the paper is written in. */
+    protected abstract double principalOwed();
+
+    /** This month's coupon, in its own currency. Zero for a discount instrument. */
+    protected abstract double couponOwed();
 
     /**
-     * Every payment still owed, in order, starting with next month's.
+     * Every payment still owed, in order, starting with next month's, in its own
+     * currency.
      *
      * Coupons AND principal, because a buyer does not care which is which - they
      * care what arrives and when. An empty array means nothing is left to pay.
      */
-    public abstract double[] remainingCashFlows();
+    protected abstract double[] scheduleOwed();
+
+    /* -------------------- ...and what the city's books see -------------------- */
+
+    public final double getOustandingPrincipal() { return inLocal(principalOwed()); }
+
+    /** This month's coupon, in local money. Zero for a discount instrument. */
+    public final double getMonthlyInterestExpense() { return inLocal(couponOwed()); }
+
+    public final double[] remainingCashFlows() {
+        double[] own = scheduleOwed();
+        if (!foreign) return own;
+        double[] local = new double[own.length];
+        for (int i = 0; i < own.length; i++) local[i] = own[i] * exchangeRate;
+        return local;
+    }
+
+    /* ------------------- and the same figures, in dollars ------------------- */
+
+    /** Principal still owed, in the currency written on the paper. */
+    public final double principalInCurrency() { return principalOwed(); }
+
+    /** Face value in the currency written on the paper. */
+    public final double faceInCurrency() { return faceValue; }
+
+    /** This month's coupon in the currency written on the paper. */
+    public final double couponInCurrency() { return couponOwed(); }
+
+    /* --------------------------- paying for it --------------------------- */
+
+    /**
+     * A repayment of principal, routed by the currency it is owed in.
+     *
+     * The subclasses used to call `game.subtractCash()` directly, which is
+     * exactly right for domestic paper and exactly wrong for foreign: a USD
+     * repayment does not just leave the treasury, it leaves the COUNTRY, and it
+     * must not be handed to the bank as a repayment of a loan the bank never
+     * made. Both differences live behind this one call.
+     *
+     * @param owed in the paper's own currency
+     */
+    protected void payPrincipal(Game game, double owed) {
+        if (foreign) game.repayForeignPrincipal(owed);
+        else         game.subtractCash(owed);
+    }
+
+    /** A coupon, likewise. @param owed in the paper's own currency */
+    protected void payCoupon(Game game, double owed) {
+        if (foreign) game.payForeignInterest(owed);
+        else         game.InterestExpense(owed);
+    }
 
     /** Months of payments still to run. */
     public int getRemainingMonths() {
         return remainingMonths;
     }
 
-    /** What it says on the bond. Not what is still owed - see getOustandingPrincipal(). */
-    public double getFaceValue() {
-        return faceValue;
+    /** What it says on the bond, in local money. See getOustandingPrincipal(). */
+    public final double getFaceValue() {
+        return inLocal(faceValue);
     }
 
     public int getDuration() {
@@ -211,4 +323,29 @@ public abstract class Debt {
         if (owed <= 0) return 0;
         return getMarketValue(annualMarketRate) / owed * 100;
     }
+
+    /**
+     * The instrument in the new unit.
+     *
+     * FOREIGN PAPER DOES NOT MOVE, and that is the whole reason Debt knows what
+     * currency it is in. A bond issued in US dollars owes US dollars whatever
+     * the city calls its money this century; what changes is the exchange rate
+     * it is translated at, and inLocal() reads that. Redenominating a foreign
+     * face value would be defaulting on it by arithmetic.
+     */
+    public void redenominate(double scale) {
+        if (!foreign) {
+            faceValue *= scale;
+            outstandingPrincipal *= scale;
+        }
+        exchangeRate *= scale;
+        redenominateSchedule(scale);
+    }
+
+    /**
+     * Anything a subclass carries in its own currency - a coupon, an
+     * amortisation schedule - in the new unit. Default: nothing to do.
+     */
+    protected void redenominateSchedule(double scale) { }
+
 }

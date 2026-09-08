@@ -221,6 +221,87 @@ public class Migration {
         return 1 + SENIOR_CARE_PULL * Math.max(0, Math.min(1, seniorCoverage));
     }
 
+    /* =====================================================================
+       AND A CITY NOBODY CAN AFFORD TO LIVE IN IS A CITY PEOPLE DO NOT MOVE TO
+       ---------------------------------------------------------------------
+       Jerus, asked whether expensive housing should change who moves in: "Yes,
+       and it pushes people out too".
+
+       Rent became a market on 2026-09-07 - a cost floor and a scarcity
+       multiple, with NO CEILING, deliberately. Unbounded is only a defensible
+       specification if something stops it, and the something has to be people:
+       a price nobody responds to is not a price, it is a number on a screen,
+       and a rent that can rise for ever in a city that never notices is a
+       runaway with no brake in it.
+
+       There are two responses and only one of them is new.
+
+       THE PUSH ALREADY EXISTED. Rent is a fixed cost on the household balance
+       sheet - HouseholdBalance subtracts it before food - so a household that
+       cannot meet it borrows, and one that cannot service the borrowing is
+       discharged, and a share of the discharged leave the city. That arrives
+       here through setBankruptcyDepartures() and has been audited since the
+       day it was written. Dear rent therefore empties a city already, through
+       the household's books rather than through a rule about rent, which is
+       the better way for it to happen: the city loses the people who cannot
+       pay, not a fixed percentage of everybody.
+
+       THE PULL IS NEW, and it is this. Somebody deciding whether to move here
+       is not on the balance sheet yet and cannot go bankrupt in advance; they
+       look at what a flat costs against what the work pays, and they do not
+       come. That is a different mechanism from the push and it fires much
+       earlier - long before anyone is discharged, a city can simply stop being
+       worth moving to.
+
+       Struck against TARGET_RENT_BURDEN, which is the game's own statement of
+       what rent is supposed to cost a working household, so this needs no
+       number of its own for "too dear": too dear is dearer than the game
+       already says it should be. At the target the multiplier is exactly 1 and
+       nothing changes, which is what makes it safe to add to a model that was
+       balanced without it.
+       ===================================================================== */
+
+    /**
+     * How much of the affordability excess turns into people not coming.
+     *
+     * At 1.0 a city where rent takes twice its target share of income is half
+     * as attractive as one where it takes the target share. Hyperbolic rather
+     * than linear so it can never reach zero: there is always somebody who will
+     * move to an expensive city for the work, which is the whole reason
+     * expensive cities exist.
+     */
+    public static final double PRICED_OUT_WEIGHT = 1.0;
+
+    /**
+     * The multiplier dear housing puts on how big a city these conditions
+     * support. 1.0 at or below the target burden; falling above it.
+     *
+     * @param rentBurden rent as a share of take-home, from HouseholdAccounts
+     */
+    public static double affordabilityPull(double rentBurden) {
+        if (!(rentBurden > 0)) return 1;            // no households yet, or no rent
+        double excess = (rentBurden - CommercialHandler.TARGET_RENT_BURDEN)
+                / CommercialHandler.TARGET_RENT_BURDEN;
+        if (excess <= 0) return 1;
+        return 1 / (1 + PRICED_OUT_WEIGHT * excess);
+    }
+
+    /**
+     * What rent costs a household here, as a share of take-home.
+     *
+     * Carried in rather than derived, like bankruptcyPush and for the same
+     * reason: it is a figure about the month that has just been settled, held
+     * by HouseholdAccounts, and re-deriving it here would be reading a flow off
+     * the state a month ended in.
+     */
+    private double rentBurden;
+
+    public void setRentBurden(double burden) { this.rentBurden = Math.max(0, burden); }
+
+    public double getLastAffordabilityPull() { return lastAffordabilityPull; }
+
+    private double lastAffordabilityPull = 1;
+
     /**
      * How much of the gap closes each month.
      *
@@ -501,7 +582,9 @@ public class Migration {
         double homeTarget = householdCapacity;
 
         lastSeniorPull = seniorCarePull(seniorCoverage);
-        lastTarget = (JOB_WEIGHT * jobTarget + HOME_WEIGHT * homeTarget) * lastSeniorPull;
+        lastAffordabilityPull = affordabilityPull(rentBurden);
+        lastTarget = (JOB_WEIGHT * jobTarget + HOME_WEIGHT * homeTarget)
+                * lastSeniorPull * lastAffordabilityPull;
         lastArrivals = 0;
         lastDepartures = 0;
         lastCrowding = 1;

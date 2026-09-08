@@ -333,11 +333,38 @@ public class IndustrialHandler {
      * DUMP_THRESHOLD full it clears the excess anyway, because stock above that
      * line would otherwise be lost to the capacity cap in produceFood().
      */
+    /**
+     * What it costs to SELL a unit that has already been made.
+     *
+     * Not the same question as getCostPerUnit(), and the difference is the whole
+     * of a bug this sector was carrying. That figure includes PAYROLL, which is
+     * paid whether or not a single unit leaves the warehouse - the staff are
+     * employed, the month is over, and the food is already sitting there. Judging
+     * a SALE against it means refusing revenue to avoid a cost already incurred.
+     *
+     * Measured: the local price dipped 12% under average cost, industry withheld
+     * everything, and the city imported 5,517 units in a month with its own
+     * warehouses full - having paid the wages to fill them. The plants then made
+     * losses, retired, the shortage returned, and it began again: 1 -> 3 -> 4 ->
+     * 2 -> 1 plants over fifteen years with the city importing throughout. A hog
+     * cycle with a fixed cost mistaken for a variable one at the centre of it.
+     *
+     * So the SALE is judged against the costs a sale actually causes, and the
+     * average-cost test stays where it belongs - in the decision to BUILD, which
+     * is what BusinessInvestment asks getCostPerUnit() for.
+     */
+    public double getMarginalCostPerUnit() {
+        double output = foodProduction * averageIndustrialFill
+                * energyRatio * waterRatio * roadRatio * healthRatio;
+        if (output <= 0) return Double.MAX_VALUE;
+        return (getElectricityCost() + getWaterCost()) / output;
+    }
+
     public double offerToMarket(FoodMarket market) {
 
         rCostPerUnit = getCostPerUnit();
 
-        if (market.getLocalPrice() >= rCostPerUnit) {
+        if (market.getLocalPrice() >= getMarginalCostPerUnit()) {
             rOffered = foodInventory;
             rWithheld = 0;
         } else {
@@ -1068,4 +1095,45 @@ public class IndustrialHandler {
 
         return true;
     }
+
+    /** The mills' money, in the new unit. Units of food are units of food. */
+    public void redenominate(double scale) {
+        // The mills' own copy of the payroll. It is refreshed from the labour
+        // market each month, but getCostPerUnit() reads it BEFORE that happens,
+        // and what it decides is whether to sell at all.
+        for (int i = 0; i < industrialWages.length; i++) industrialWages[i] *= scale;
+        cash *= scale;
+        foodPrice *= scale;
+        localSalesValue *= scale;
+        foodExportRevenue *= scale;
+        interestExpense *= scale;
+        propertyTaxExpense *= scale;
+        landValue *= scale;
+        buildingsValue *= scale;
+        bondsPayable *= scale;
+        pricePerWatt *= scale;
+
+        /*
+         * ...AND LAST MONTH'S STATEMENT, which is read at the top of the next
+         * month before it is rewritten - by the tax lines, the national
+         * accounts and the money audit. A statement read before it is
+         * rewritten is a stock for as long as it takes to read it. The RATIOS
+         * and the physical quantities on it - fills, output, tonnes, units -
+         * are not money and stay put.
+         */
+        pricePerWaterUnit *= scale;
+        rInterestExpense *= scale;
+        rPropertyTaxExpense *= scale;
+        rNetIncome *= scale;
+        rGrossRevenue *= scale;
+        rAverageSellPrice *= scale;
+        rPayroll *= scale;
+        rElectricityCost *= scale;
+        rWaterCost *= scale;
+        rOperatingCost *= scale;
+        rOperatingIncome *= scale;
+        rTaxIncome *= scale;
+        rCostPerUnit *= scale;
+    }
+
 }

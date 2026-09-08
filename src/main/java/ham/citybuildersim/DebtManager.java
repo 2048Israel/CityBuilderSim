@@ -13,7 +13,95 @@ import java.util.Locale;
  */
 public class DebtManager {
 
+    /* =======================================================================
+       THE POLICY RATE
+       =======================================================================
+
+       This was a constant, and it was the most load-bearing constant in the
+       game without anybody having decided anything about it. Every price of
+       money in the city is built on it: floorRate() and ceilingRate() are it
+       plus and minus a spread, the city's own borrowing rate sits between them,
+       and Bank.fundToCover() is handed the result and strikes the DEPOSIT rate
+       and the wholesale FUNDING rate off it. Since phase 4 the carry trade
+       reads the gap between those and the world's rate.
+
+       So a central bank does not need new plumbing here. It needs to own this
+       number. Everything downstream already listens.
+
+       WHAT MOVING IT DOES, in the order the ECB lists the channels:
+         - the bank's deposit and lending rates, immediately
+         - what the city itself pays to borrow
+         - how much the bank will lend at all, through the capital and funding
+           limits, which is the channel that actually bites
+         - the carry spread, so foreign money arrives or leaves
+         - and, since this phase, the exchange rate directly
+
+       Bounded at both ends because a policy rate is a decision, not a wish: no
+       central bank sets a negative nominal rate by typing one, and past about a
+       fifth the instrument stops transmitting and starts destroying.
+    */
+    public static final double MIN_POLICY_RATE = .0;
+    public static final double MAX_POLICY_RATE = .25;
+
+    /** What the city's central bank charges. The player's dial. */
     private double baseRate = .03;
+
+    public double getPolicyRate() { return baseRate; }
+
+    public void setPolicyRate(double rate) {
+        baseRate = Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, rate));
+    }
+
+    /** Where the rate sits when nobody is leaning on it either way. */
+    public static final double NEUTRAL_RATE = .03;
+
+    /** What the city is trying to hold inflation at. */
+    public static final double INFLATION_TARGET = .02;
+
+    /**
+     * How hard the advised rate reacts to inflation missing its target.
+     *
+     * The Taylor principle: a coefficient greater than one, so a point of extra
+     * inflation is met with MORE than a point of extra rate and the REAL rate
+     * rises. Below one, raising rates in response to inflation still leaves
+     * money cheaper than it was and feeds the thing it was meant to stop.
+     */
+    public static final double TAYLOR_WEIGHT = 1.5;
+
+    /**
+     * What a rule would set, given this month's inflation.
+     *
+     * INFLATION ONLY, WITH NO OUTPUT GAP, and that is a judgement about this
+     * model rather than about monetary policy. A Taylor rule normally carries a
+     * second term in the output gap; this city runs 34% unemployment and has
+     * for its whole history, so any gap measure built on it would read as
+     * permanent enormous slack and advise the floor for ever. The game has a
+     * trustworthy price index and does not have a trustworthy output gap, so
+     * the rule uses the one it has.
+     *
+     * Advisory. It is shown beside the dial with its reasoning; it never moves
+     * anything on its own.
+     */
+    public double advisedPolicyRate(double inflation) {
+        double advised = NEUTRAL_RATE + TAYLOR_WEIGHT * (inflation - INFLATION_TARGET);
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, advised));
+    }
+
+    /** ...and why, in words, for the screen. */
+    public String adviceReason(double inflation) {
+        double advised = advisedPolicyRate(inflation);
+        if (Math.abs(inflation - INFLATION_TARGET) < .002) {
+            return String.format("Inflation is %.1f%%, on its %.0f%% target. Hold at %.2f%%.",
+                    inflation * 100, INFLATION_TARGET * 100, advised * 100);
+        }
+        return String.format(
+                "Inflation is %.1f%% against a %.0f%% target, so the rule says %.2f%% "
+                + "- %s a point of inflation by %.1f points of rate, which is what it "
+                + "takes to make money genuinely dearer rather than only nominally.",
+                inflation * 100, INFLATION_TARGET * 100, advised * 100,
+                inflation > INFLATION_TARGET ? "meeting" : "giving back",
+                TAYLOR_WEIGHT);
+    }
     private double currentRate = baseRate - .02;
     private double GDP;
 
@@ -106,18 +194,349 @@ public class DebtManager {
     }
 
     public void addShortTermTBill(double faceValue, int months, int monthStarted) {
-        ShortTermTBill shortTermTBill = new ShortTermTBill(faceValue, months, monthStarted);
-        debts.add(shortTermTBill);
+        addShortTermTBill(faceValue, months, monthStarted, false);
+    }
+
+    public void addShortTermTBill(double faceValue, int months, int monthStarted, boolean foreign) {
+        book(new ShortTermTBill(faceValue, months, monthStarted, foreign));
     }
 
     public void addMediumTermBond(double faceValue, int months, int monthStarted, double rate) {
-        MediumTermBond mediumTermBond = new MediumTermBond(faceValue, months, monthStarted, rate);
-        debts.add(mediumTermBond);
+        addMediumTermBond(faceValue, months, monthStarted, rate, false);
+    }
+
+    public void addMediumTermBond(double faceValue, int months, int monthStarted,
+                                  double rate, boolean foreign) {
+        book(new MediumTermBond(faceValue, months, monthStarted, rate, foreign));
     }
 
     public void addLongTermBond(double faceValue, int months, int monthStarted, double rate) {
-        LongTermBond longTermBond = new LongTermBond(faceValue, months, monthStarted, rate);
-        debts.add(longTermBond);
+        addLongTermBond(faceValue, months, monthStarted, rate, false);
+    }
+
+    public void addLongTermBond(double faceValue, int months, int monthStarted,
+                                double rate, boolean foreign) {
+        book(new LongTermBond(faceValue, months, monthStarted, rate, foreign));
+    }
+
+    /**
+     * The one place paper joins the list, so the one place it can be told the
+     * rate.
+     *
+     * Three add methods each doing their own `debts.add()` is three chances to
+     * forget, and a foreign bond that never learned the exchange rate values
+     * itself at 1.00 for ever - it would sit in the city's debt looking cheap
+     * and never respond to the currency at all. Silent, and the kind of thing
+     * that only shows up when somebody wonders why devaluation did nothing.
+     */
+    private void book(Debt paper) {
+        paper.setExchangeRate(exchangeRate);
+        debts.add(paper);
+    }
+
+    /* =======================================================================
+       THE RATE THE FOREIGN PAPER IS VALUED AT
+       ======================================================================= */
+
+    private double exchangeRate = 1.0;
+
+    /**
+     * Pushed down to every instrument, from the month tick AND from the load
+     * path.
+     *
+     * Both, because they are two different ways of arriving at the same state
+     * and only one of them was ever going to be remembered. A city loaded with
+     * USD debt and a currency at 1.40 would otherwise value that debt at 1.00
+     * until the first month ticked, which is long enough for the debt screen,
+     * the credit rating and the player's decision to all be wrong.
+     */
+    public void setExchangeRate(double rate) {
+        if (rate <= 0) return;
+        this.exchangeRate = rate;
+        for (Debt d : debts) d.setExchangeRate(rate);
+    }
+
+    public double getExchangeRate() { return exchangeRate; }
+
+    /** What the city owes abroad, in local money at today's rate. */
+    public double getForeignPrincipal() {
+        double total = 0;
+        for (Debt d : debts) if (d.isForeign()) total += d.getOustandingPrincipal();
+        return total;
+    }
+
+    /** ...and in the dollars it is actually owed in, which do not move. */
+    public double getForeignPrincipalUsd() {
+        double total = 0;
+        for (Debt d : debts) if (d.isForeign()) total += d.principalInCurrency();
+        return total;
+    }
+
+    /** What it owes at home. */
+    public double getDomesticPrincipal() {
+        double total = 0;
+        for (Debt d : debts) if (!d.isForeign()) total += d.getOustandingPrincipal();
+        return total;
+    }
+
+    /** Next month's USD coupon bill, in dollars. */
+    public double getForeignCouponUsd() {
+        double total = 0;
+        for (Debt d : debts) if (d.isForeign()) total += d.couponInCurrency();
+        return total;
+    }
+
+    public boolean hasForeignDebt() {
+        for (Debt d : debts) if (d.isForeign()) return true;
+        return false;
+    }
+
+    /* =======================================================================
+       WHAT THE WORLD CHARGES, AND WHEN IT STOPS ANSWERING
+       =======================================================================
+
+       CHEAPER UP FRONT, AND THAT IS THE TRAP.
+
+       The world's base rate sits below the city's own floor, so the first USD
+       bond a city issues really is cheaper than the domestic one beside it -
+       which is precisely why governments take them, and precisely why the bill
+       arrives later in a currency they do not print. The screen quotes both
+       together so the choice is informed rather than hidden; it does not make
+       the choice safe.
+
+       PRICED ON EXPORTS, not on GDP or tax revenue. A foreign lender is not
+       repaid out of the local economy and cannot be repaid in local money: it
+       is repaid in dollars, and the only dollars the city has ever earned came
+       from selling something abroad. Debt-to-exports is the measure sovereign
+       analysts actually use for exactly this reason.
+
+       AND THE MEASURE IS TAKEN IN LOCAL MONEY, which is what closes the loop.
+       getForeignPrincipal() rises when the currency falls, so a devaluation
+       worsens the ratio without a cent being borrowed, which raises the
+       premium, which makes the next bond dearer. Devalue, the burden rises,
+       solvency looks worse, the currency falls further. Mexico 1994, Asia 1997,
+       Argentina 2001, Turkey repeatedly. It is not modelled as a special case;
+       it falls out of measuring the right two things against each other.
+       ======================================================================= */
+
+    /** The world's price of money. Deliberately below the city's own floor. */
+    public static final double WORLD_BASE_RATE = .02;
+
+    /** What the world adds on top of that, at the city's very worst. */
+    public static final double MAX_COUNTRY_PREMIUM = .16;
+
+    /** USD debt at this many years of exports, and the solvency term maxes out. */
+    public static final double FULL_STRESS_EXPORT_YEARS = 8;
+
+    /**
+     * A year's USD bill at this share of a year's exports, and the service term
+     * maxes out. A quarter of export earnings going to foreign creditors is
+     * roughly where real sovereigns start being priced as distressed.
+     */
+    public static final double FULL_STRESS_SERVICE_SHARE = .25;
+
+    /** How the two halves of country risk are weighted. Can it pay, and can it pay NOW. */
+    public static final double SOLVENCY_WEIGHT = .60, SERVICE_WEIGHT = .40;
+
+    /** Above this many years of exports the window shuts outright. */
+    public static final double WINDOW_SHUT_EXPORT_YEARS = 14;
+
+    /** ...and above this share of exports going out in service, likewise. */
+    public static final double WINDOW_SHUT_SERVICE_SHARE = .45;
+
+    /** What a default abroad adds to the premium the day it happens. */
+    public static final double DEFAULT_SCAR = .10;
+
+    /** ...and how much of the scar is left after each month. Half-life ~5 years. */
+    public static final double SCAR_DECAY = .9885;
+
+    private double monthlyExports;
+    private double importCover = Double.MAX_VALUE;
+    private double defaultScar;
+    private int monthsSinceForeignDefault = -1;
+
+    /**
+     * The two figures the world prices the city on, handed down each month.
+     *
+     * @param monthlyExportsLocal a trailing month of exports, in local money
+     * @param cover               months of import cover
+     */
+    public void setTrade(double monthlyExportsLocal, double cover) {
+        this.monthlyExports = Math.max(0, monthlyExportsLocal);
+        this.importCover = cover;
+    }
+
+    public double getMonthlyExports()    { return monthlyExports; }
+    public double getMonthlyTaxRevenue() { return monthlyTaxRevenue; }
+
+    /**
+     * Tears every piece of foreign paper off the books.
+     *
+     * @return what was written off, in local money at today's rate
+     */
+    public double repudiateForeignDebt() {
+        double written = 0;
+        Iterator<Debt> it = debts.iterator();
+        while (it.hasNext()) {
+            Debt d = it.next();
+            if (d.isForeign()) {
+                written += d.getOustandingPrincipal();
+                it.remove();
+            }
+        }
+        return written;
+    }
+    public double getImportCover()    { return importCover; }
+
+    /** Can it pay at all: USD debt against a year of exports. */
+    public double solvencyStress() {
+        return solvencyStressAt(getForeignPrincipal());
+    }
+
+    /**
+     * ...priced with a proposed bond already on the books.
+     *
+     * A quote that ignores the loan being quoted is the same bug the domestic
+     * curve had and quoteRate() exists to avoid: the city is told a rate that
+     * stops being true the instant it accepts.
+     *
+     * @param owed foreign principal in LOCAL money, the new paper included
+     */
+    public double solvencyStressAt(double owed) {
+        if (owed <= 0) return 0;
+        double annual = monthlyExports * 12;
+        if (annual <= 0) return 1;                       // owes dollars, earns none
+        return Math.min(1, (owed / annual) / FULL_STRESS_EXPORT_YEARS);
+    }
+
+    /**
+     * Can it pay NOW: next year's USD bill against next year's export earnings.
+     *
+     * THE DEBT SERVICE RATIO, which is the other half of every sovereign credit
+     * assessment and the one that actually times a crisis. A country can carry
+     * a large stock of foreign debt indefinitely if the schedule is long; it
+     * fails when too much of it comes due at once against what it earns.
+     *
+     * THIS REPLACED A RESERVE-COVER TERM, and the reason is worth recording.
+     * Cover was the obvious measure and it was wrong twice over: importCover()
+     * returns 0 for any city whose cumulative foreign position is negative,
+     * which is most of them and says nothing about creditworthiness, and it
+     * meant a city with NO foreign debt at all was quoted a 5.6% risk premium
+     * for the privilege of not owing anybody anything. Measured, on a fixture
+     * that had never borrowed a dollar.
+     *
+     * Reserves still matter - they are what defends the currency, which is
+     * phase 2's job and shown on the trade screen. They are not what a lender
+     * is looking at.
+     */
+    public double serviceStress() {
+        return serviceStressAt(nextYearService());
+    }
+
+    public double serviceStressAt(double service) {
+        if (service <= 0) return 0;
+        double annual = monthlyExports * 12;
+        if (annual <= 0) return 1;
+        return Math.min(1, (service / annual) / FULL_STRESS_SERVICE_SHARE);
+    }
+
+    /** Everything foreign paper demands over the next twelve months, in local money. */
+    public double nextYearService() {
+        double total = 0;
+        for (Debt d : debts) {
+            if (!d.isForeign()) continue;
+            double[] flows = d.remainingCashFlows();
+            for (int i = 0; i < Math.min(12, flows.length); i++) total += flows[i];
+        }
+        return total;
+    }
+
+    /** What the world adds to its base rate for lending to THIS city. */
+    public double countryPremium() {
+        return countryPremiumAt(getForeignPrincipal());
+    }
+
+    public double countryPremiumAt(double owed) {
+        double scale = getForeignPrincipal() > 0 ? owed / getForeignPrincipal() : 1;
+        double risk = SOLVENCY_WEIGHT * solvencyStressAt(owed)
+                + SERVICE_WEIGHT * serviceStressAt(nextYearService() * Math.max(1, scale));
+        return Math.min(MAX_COUNTRY_PREMIUM, MAX_COUNTRY_PREMIUM * risk + defaultScar);
+    }
+
+    /** The all-in annual rate on a new USD bond. */
+    public double foreignRate() {
+        return WORLD_BASE_RATE + countryPremium();
+    }
+
+    /**
+     * ...quoted with the proposed bond priced in.
+     *
+     * @param extraUsd face of the bond being contemplated, in dollars
+     */
+    public double quoteForeignRate(double extraUsd) {
+        return WORLD_BASE_RATE
+                + countryPremiumAt(getForeignPrincipal() + Math.max(0, extraUsd) * exchangeRate);
+    }
+
+    /**
+     * Whether anybody abroad is still willing to lend.
+     *
+     * A SUDDEN STOP, on conditions the player can read off the screen before it
+     * happens rather than discover. Existing paper still has to be repaid on
+     * schedule - that is what makes it dangerous - but no new dollars arrive.
+     */
+    public boolean foreignWindowOpen() {
+        return foreignWindowReason() == null;
+    }
+
+    /** Why it is shut, in words, or null if it is open. */
+    public String foreignWindowReason() {
+        if (monthsSinceForeignDefault >= 0 && monthsSinceForeignDefault < 60) {
+            return String.format("the city defaulted abroad %d months ago",
+                    monthsSinceForeignDefault);
+        }
+        double annual = monthlyExports * 12;
+        double owed = getForeignPrincipal();
+        if (owed > 0 && annual <= 0) {
+            return "the city owes dollars and sells nothing abroad";
+        }
+        if (annual > 0 && owed / annual > WINDOW_SHUT_EXPORT_YEARS) {
+            return String.format("USD debt is %.0f years of exports",
+                    owed / annual);
+        }
+        double service = nextYearService();
+        if (annual > 0 && service / annual > WINDOW_SHUT_SERVICE_SHARE) {
+            return String.format("%.0f%% of exports already goes to foreign creditors",
+                    service / annual * 100);
+        }
+        return null;
+    }
+
+    /** Called the month the city fails to pay abroad. */
+    public void markForeignDefault() {
+        defaultScar = Math.min(MAX_COUNTRY_PREMIUM, defaultScar + DEFAULT_SCAR);
+        monthsSinceForeignDefault = 0;
+    }
+
+    /** The scar fades, slowly, and the window reopens before the price does. */
+    public void ageForeignStanding() {
+        if (monthsSinceForeignDefault >= 0) monthsSinceForeignDefault++;
+        defaultScar *= SCAR_DECAY;
+        if (defaultScar < 1e-6) defaultScar = 0;
+    }
+
+    public double getDefaultScar()            { return defaultScar; }
+    public int getMonthsSinceForeignDefault() { return monthsSinceForeignDefault; }
+
+    /** Carried, because a scar that heals on reload is not a scar. */
+    public double[] foreignStandingToSave() {
+        return new double[] { defaultScar, monthsSinceForeignDefault };
+    }
+
+    public void restoreForeignStanding(double[] saved) {
+        if (saved == null || saved.length < 2) return;
+        defaultScar = saved[0];
+        monthsSinceForeignDefault = (int) Math.round(saved[1]);
     }
 
     public void printDebtInfo(int currentMonth) {
@@ -450,6 +869,7 @@ public class DebtManager {
 
     public void setDebt(List<Debt> debts) {
         this.debts = debts;
+        setExchangeRate(exchangeRate);   // the load path's half of the rule above
     }
 
     private static final NumberFormat formatter = NumberFormat.getNumberInstance(Locale.CANADA);
@@ -458,4 +878,17 @@ public class DebtManager {
         formatter.setMaximumFractionDigits(2);
         formatter.setMinimumFractionDigits(0);
     }
+
+    /** The city's debt book, in the new unit. Rates and premiums do not move. */
+    public void redenominate(double scale) {
+        overdraft *= scale;
+        GDP *= scale;
+        monthlyTaxRevenue *= scale;
+        monthlyExports *= scale;
+        exchangeRate *= scale;
+        for (Debt paper : getDebt()) {
+            if (paper != null) paper.redenominate(scale);
+        }
+    }
+
 }

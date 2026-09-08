@@ -434,4 +434,21 @@ public class MiningHandler {
         formatter.setMaximumFractionDigits(2);
         formatter.setMinimumFractionDigits(0);
     }
+
+    /** The mines' money, in the new unit. */
+    public void redenominate(double scale) {
+        cash *= scale;
+        localPrice *= scale;
+        exportPrice *= scale;
+        netIncome *= scale;
+        interestExpense *= scale;
+        propertyTaxExpense *= scale;
+        landValue *= scale;
+        buildingsValue *= scale;
+        bondsPayable *= scale;
+        pricePerWatt *= scale;
+        pricePerWaterUnit *= scale;
+        for (int i = 0; i < wages.length; i++) wages[i] *= scale;
+    }
+
 }

@@ -398,147 +398,315 @@ public class LongPlaytest {
        the thing that is obviously wrong and press on.
        =================================================================== */
 
+    /**
+     * ONE THING THE CITY COULD DO, AND WHAT IT IS WORTH.
+     *
+     * Everything is priced in the same unit - monthly output, gained or
+     * restored - so a road and a clinic and a grocery can be compared without
+     * anybody deciding in advance which matters more. That comparison is the
+     * whole point; see advise().
+     */
+    record Move(String label, double lost, java.util.function.BooleanSupplier act) { }
+
+    /**
+     * WHAT THE CITY DOES NEXT, AND WHY THIS IS NOT A LIST OF RULES ANY MORE.
+     *
+     * THE OLD SHAPE AND WHAT IT COST. This was an ordered sequence of ifs, each
+     * with a hard cap on it - build roads while there are fewer than 40, build
+     * a food plant while there are fewer than 8, and so on. Every one of those
+     * numbers was invented, none of them was ever revisited, and three of them
+     * turned out in a single afternoon to have been silently deciding what the
+     * SIMULATION appeared to do:
+     *
+     *   - no clinic rule at all, so healthcare coverage sat at 1% for four
+     *     thousand months and the city ran permanently at the untreated sick
+     *     rate. Thirty of the forty points of "the sickness doom loop" - written
+     *     up three times as a defect in the model - were this.
+     *   - no cemetery rule, so 10,754 bodies went unburied and the death-care
+     *     mechanic quietly stopped existing.
+     *   - `Paved Road < 40`, in a city of 198,000, so roads sat at 35%
+     *     throughput, the shops could deliver a fifth of what households planned
+     *     to buy, and two thirds of the city went hungry. Read as a retail
+     *     problem for weeks.
+     *
+     * A cap that never binds costs nothing. A cap that binds is a conclusion
+     * about the game, written years earlier by somebody who was thinking about
+     * something else, and it is indistinguishable from the model's own
+     * behaviour when you read the output.
+     *
+     * WHAT REPLACES IT. Every candidate is priced in the same unit - the
+     * monthly output it restores or unlocks - and divided by what it costs. The
+     * best score wins. Nothing has a cap, because nothing needs one: a road
+     * stops being worth buying when roads stop being what is throttling the
+     * city, and that is measured rather than asserted.
+     *
+     * AND IT RANKS CONSTRAINTS, NOT PURCHASES. The first attempt scored every
+     * building by gain-per-dollar and was measurably worse than the rule list
+     * it replaced - population 198,000 -> 90,000, with power sitting at 8% for
+     * three centuries. The probe said why in one line:
+     *
+     *     Coal Power Plant    cost 197,640   gain 531   score 0.0027
+     *     Gravel Road         cost   1,800   gain  75   score 0.0417
+     *
+     * A power plant costs a hundred and ten times a gravel road. Crediting each
+     * candidate with the whole gap it addresses is fine when the candidates are
+     * the same size and nonsense when they are not: the road was credited with
+     * closing a road shortfall it could never close, won every month for ever,
+     * and the city ran on 8% power while buying its eighty-third gravel road.
+     * Per-dollar comparison across two orders of magnitude of scale is not a
+     * comparison, it is a preference for cheap things.
+     *
+     * So the ranking is over CONSTRAINTS - what is this shortage costing the
+     * city a month - and the purchase is chosen inside the winner. Which is
+     * what a player does: see that power is at 8%, decide power is the problem,
+     * then ask which power building. Two decisions, neither of which requires
+     * pricing a hospital against a road.
+     *
+     * The caps are still gone, which was the point of the rewrite. Nothing says
+     * "at most 40 roads"; roads stop winning when roads stop being what the
+     * city is losing most output to, and that is measured every month.
+     */
     static String advise(Game g) {
 
         EconomyManager e = g.getEconomyManager();
         PopulationManager p = g.getPopulationManager();
         BuildingManager b = g.getBuildingManager();
-        InfrastructureManager roads = g.getInfrastructureManager();
-
-        /*
-         * 0. Room to grow.
-         *
-         * WHY THIS RULE HAD TO EXIST. The advisor only ever bought land as a
-         * side effect of wanting to build something specific, so a city that was
-         * merely FULL asked for nothing: every rule below is phrased as "is
-         * something short", and running out of ground is not short of anything
-         * yet. Traced month by month, the city ran itself down to 8,000 spare
-         * square feet with $106M in the bank, sat there while private investment
-         * had nowhere to go, and then the construction sector - with nothing
-         * left to build - shed itself from 2,900 capacity to 100 over four
-         * months, taking half the jobs with it.
-         *
-         * That collapse is NOT new. It happens identically under the old parcel
-         * sizes, at the same months, to the same depth. What changed is that the
-         * city used to blunder into enough surplus land to recover and now does
-         * not, which makes this a fixture that was always wrong and only
-         * sometimes lucky.
-         *
-         * A player watching their city suffocate at 98% with a full treasury
-         * buys land. That is the entire reason the land listing exists.
-         */
         LandManager land = g.getLandManager();
-        double utilisation = (land.getOwnedSqFt() > 0)
-                ? land.getAllocatedSqFt() / land.getOwnedSqFt() : 1;
+        Health health = g.getHealth();
 
-        if (utilisation > .90) {
-            // Best value per square foot, not cheapest - a city buying room to
-            // grow wants the most ground per dollar, and the price of land is
-            // driven by how much you already own, so a scrappy purchase costs
-            // nearly as much in future pricing as a good one.
-            LandParcel room = land.getMarket().bestValue();
-            if (room != null && room.getPrice() < g.getCash() * .30
-                    && g.buyLandParcel(room.getId())) {
-                return "bought room to grow";
-            }
-        }
+        double gdp = Math.max(1, e.getMonthGdp());
+        int population = p.getPopulation();
+        double perHead = population > 0 ? gdp / population : 0;
 
-        // 1. Keep the lights on. A brownout throttles everything.
-        if (g.getEnergyRatio() < .999 && qty(g, "Coal Power Plant") < 6) {
-            if (build(g, "Coal Power Plant", 1)) return "power plant";
-        }
+        /* ================================================================
+           THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.
 
-        // 2. Water, same reason.
-        if (g.getWaterRatio() < .999 && qty(g, "Water Treatment Plant") < 6) {
-            if (build(g, "Water Treatment Plant", 1)) return "water plant";
-        }
+           Neither costs a move, because neither is a month's work. Setting a
+           subsidy and topping up a reserve are decisions you make while doing
+           something else - and the retainer in particular has to be set BEFORE
+           the depot rule can ever be reached, which is the ordering fault that
+           cost a whole playtest the last time this file was rewritten.
+           ================================================================ */
 
-        // 3. Roads, once traffic is actually costing something.
-        if (roads.isCongested() && qty(g, "Paved Road") < 40) {
-            if (build(g, "Paved Road", 2)) return "roads";
-        }
-
-        // 4. Somewhere to live, if jobs are going unfilled for want of people.
-        if (p.getPopulation() >= b.getTotalHouseCapacity() - 4) {
-            if (build(g, "Low-Rise Apartments", 2)) return "apartments";
-            if (build(g, "House", 25)) return "houses";
-        }
-
-        // 5. Somewhere to shop. Coverage below population means unmet demand.
-        if (b.getTotalStoreCoverage() < p.getPopulation()) {
-            if (build(g, "Small Grocery Store", 1)) return "grocery";
-            if (build(g, "Convenience Store", 3)) return "shops";
-        }
-
-        // 6. Food, if the shops are importing rather than buying local.
-        if (e.getIndustryFoodInventory() < p.getPopulation() * 2
-                && qty(g, "Food Processing Plant") < 8) {
-            if (build(g, "Food Processing Plant", 1)) return "food plant";
-        }
-
-        /*
-         * 7. Builders, and the retainer that keeps them - IN THAT ORDER, and
-         *    without the retainer costing a move.
-         *
-         * The single most expensive lesson of the previous playtest: buying
-         * depots and then letting the sector scrap them in the next lull cost
-         * the city everything it had just gained, 187 times over. The fixture
-         * learned that and then implemented it the wrong way round, which cost
-         * a second playtest.
-         *
-         * TWO FAULTS, AND THEY COMPOUNDED.
-         *
-         * The retainer sat BELOW the depot rule and returned. So while capacity
-         * was under 1,500 the advisor said "depot" on every move it had, the
-         * retainer line was never reached, and the depots it had just bought
-         * shed in the next lull - which kept capacity under 1,500, which kept
-         * the advisor on the depot rule. A city that fell to 100 capacity could
-         * never climb out: three moves buy three depots, +400 each, and 100+1200
-         * is still short of the threshold it needs to clear to reach any rule
-         * below it. Observed: 160 depots bought across 4,000 months, capacity
-         * pinned at 1,300, population frozen at 1,118 for three centuries with
-         * $100M in the bank.
-         *
-         * And the retainer was scaled to the capacity STANDING, so exactly when
-         * the sector had collapsed - and needed paying to come back - it offered
-         * 100 x .06 = six dollars. It is scaled to the capacity the city is
-         * trying to have now.
-         *
-         * Setting it no longer returns, because paying a retainer is not a
-         * month's work. It is a decision you make while doing something else.
-         */
         if (!g.isAutoSubsidised(PolicySector.CONSTRUCTION)) {
             g.setAutoSubsidised(PolicySector.CONSTRUCTION, true);
         }
 
-        if (b.getTotalConstructionCapacity() < 1500) {
-            if (build(g, "Construction Depot", 1)) return "depot";
+        /*
+         * ...AND IT SETS THE POLICY RATE.
+         *
+         * K1, earned by shipping out-migration that fired zero times in 4,002
+         * months: a mechanic the fixture never touches is a mechanic no run has
+         * ever tested. The advisor ranks constraints by output lost and
+         * inflation is not one of those, so without this rule the rate dial
+         * would sit at 3% for three centuries and the whole of phase 5's
+         * monetary half would go unexercised.
+         *
+         * It follows the advisory rule, moving a quarter of the way each time,
+         * because that is what the screen recommends and a fixture should play
+         * the game the way it is taught rather than better than it is taught.
+         */
+        DebtManager market = g.getDebtManager();
+        if (g.getPriceIndex().hasRate()) {
+            double advised = market.advisedPolicyRate(g.getPriceIndex().inflation());
+            double now = market.getPolicyRate();
+            market.setPolicyRate(now + (advised - now) * .25);
         }
 
-        // 8. Ore. A deposit is the one thing the private sector cannot buy for
-        // itself, and a mine is the biggest employer in the game.
-        if (g.getLandManager().getIronDeposits() <= g.minesCommitted()) {
-            LandParcel deposit = g.getLandManager().getMarket().richestDeposit();
-            if (deposit != null && deposit.getPrice() < g.getCash() * .25
-                    && g.buyLandParcel(deposit.getId())) {
-                return "bought a deposit";
+        /*
+         * THE WAR CHEST. Hot money that is not backed by reserves is one shock
+         * away from leaving, and reserves are the only defence the city has -
+         * so a careful treasury tops them up while it still can. Deliberately
+         * a rule rather than a scored move: the return on insurance is a loss
+         * that does not happen, and scoring that against a grocery store would
+         * be inventing a number to compare with a measured one.
+         */
+        CapitalFlows hot = g.getCapitalFlows();
+        double wanted = hot.getStock() * CapitalFlows.PANIC_BACKING * 1.5;
+        double held = g.getForeignAccounts().getReserves();
+        if (wanted > held) {
+            double top = Math.min(wanted - held, g.getCash() * .10);
+            if (top > 0) g.buyForeignCurrency(top);
+        }
+
+        /* ================================================================
+           AND EVERYTHING THAT IS A PURCHASE.
+           ================================================================ */
+
+        java.util.List<Move> moves = new java.util.ArrayList<>();
+
+        /* --- room to grow. Not a building, and it gates every building. --- */
+        double utilisation = land.getOwnedSqFt() > 0
+                ? land.getAllocatedSqFt() / land.getOwnedSqFt() : 1;
+        if (utilisation > .85) {
+            LandParcel room = land.getMarket().bestValue();
+            if (room != null) {
+                /*
+                 * Priced as the whole city's output, because a city with no
+                 * ground stops entirely - measured, in an earlier playtest: it
+                 * ran down to 8,000 spare square feet with $106M in the bank
+                 * and then shed its construction sector from 2,900 capacity to
+                 * 100 over four months.
+                 */
+                moves.add(new Move("bought room to grow",
+                        gdp * (utilisation - .85) / .15,
+                        () -> g.buyLandParcel(room.getId())));
             }
         }
-        if (g.getLandManager().hasUnminedDeposit(g.minesCommitted())) {
-            if (build(g, "Iron Mine", 1)) return "mine";
-        }
-        if (qty(g, "Construction Materials Plant") < 3
-                && b.getConstructionMaterials() < 4000) {
-            if (build(g, "Construction Materials Plant", 1)) return "materials plant";
+
+        /* --- the four throttles, each priced at the output it is costing --- */
+        addThrottle(moves, g, "Coal Power Plant", "power plant",
+                gdp * (1 - g.getEnergyRatio()));
+        addThrottle(moves, g, "Water Treatment Plant", "water plant",
+                gdp * (1 - g.getWaterRatio()));
+
+        /*
+         * ROADS, AND ALL THREE OF THEM. The old rule only ever built Paved
+         * Roads and stopped at forty; three_roads.md costed a Gravel Road, a
+         * Paved Road and an Elevated Highway so that each is the cheapest per
+         * trip across a band of land prices, and the advisor never used two of
+         * them. Offered as three moves now, so the price of land picks.
+         */
+        double roadGain = gdp * (1 - g.getRoadRatio());
+        addThrottle(moves, g, "Gravel Road", "gravel road", roadGain);
+        addThrottle(moves, g, "Paved Road", "roads", roadGain);
+        addThrottle(moves, g, "Elevated Highway", "highway", roadGain);
+
+        /* --- and the two health terms, which are throttles wearing a hat --- */
+        double treatable = Math.max(0, health.getBaselineRate() - Health.WELL_SERVED_RATE);
+        addThrottle(moves, g, "Walk-in Clinic", "clinics", gdp * treatable);
+        addThrottle(moves, g, "Community Health Centre", "health centre", gdp * treatable);
+        addThrottle(moves, g, "General Hospital", "hospital", gdp * treatable);
+
+        if (g.getHealthcare().getUnburied() > 0) {
+            double buryGain = gdp * health.getUnburiedRate();
+            addThrottle(moves, g, "Municipal Cemetery", "cemetery", buryGain);
+            addThrottle(moves, g, "Crematorium", "crematorium", buryGain);
         }
 
-        // 9. Jobs for their own sake.
-        if (p.getWorkforce() > p.getTotalJobs()) {
-            if (build(g, "Steel Foundry", 1)) return "foundry";
-            if (build(g, "Textile Mill", 1)) return "mill";
+        /* --- somewhere to live, and somewhere to shop --- */
+        double homesShort = population - b.getTotalHouseCapacity();
+        if (homesShort > -4) {
+            /*
+             * Priced on the output the people it houses would produce, less a
+             * discount because they arrive over the years rather than next
+             * month. Growth is worth less per dollar than restoration, and it
+             * should be - a city that builds houses while its power is out has
+             * simply moved the shortage.
+             */
+            double housingGain = perHead * Math.max(20, homesShort) * GROWTH_DISCOUNT;
+            addThrottle(moves, g, "House", "houses", housingGain);
+            addThrottle(moves, g, "Low-Rise Apartments", "apartments", housingGain);
+            addThrottle(moves, g, "Studio Apartments", "studios", housingGain);
         }
 
+        double shopShort = population - b.getTotalStoreCoverage();
+        if (shopShort > 0) {
+            double shopGain = perHead * shopShort * GROWTH_DISCOUNT;
+            addThrottle(moves, g, "Convenience Store", "shops", shopGain);
+            addThrottle(moves, g, "Small Grocery Store", "grocery", shopGain);
+        }
+
+        /* --- the builders, without whom none of the above arrives --- */
+        double capacity = b.getTotalConstructionCapacity();
+        double wantedCapacity = Math.max(1500, population * .02);
+        if (capacity < wantedCapacity) {
+            addThrottle(moves, g, "Construction Depot", "depot",
+                    gdp * (wantedCapacity - capacity) / wantedCapacity * GROWTH_DISCOUNT);
+        }
+        if (b.getConstructionMaterials() < population * .05) {
+            addThrottle(moves, g, "Construction Materials Plant", "materials plant",
+                    gdp * .05 * GROWTH_DISCOUNT);
+        }
+
+        /* --- food the city grows rather than buys --- */
+        if (e.getIndustryFoodInventory() < population * 2) {
+            addThrottle(moves, g, "Food Processing Plant", "food plant",
+                    gdp * .05);
+        }
+
+        /* --- ore, which is the one thing the private sector cannot buy --- */
+        if (land.getIronDeposits() <= g.minesCommitted()) {
+            LandParcel deposit = land.getMarket().richestDeposit();
+            if (deposit != null) {
+                moves.add(new Move("bought a deposit", gdp * .03,
+                        () -> g.buyLandParcel(deposit.getId())));
+            }
+        }
+        if (land.hasUnminedDeposit(g.minesCommitted())) {
+            addThrottle(moves, g, "Iron Mine", "mine", gdp * .05);
+        }
+
+        /* --- and jobs, when there are people with nothing to do --- */
+        double idle = p.getWorkforce() - p.getTotalJobs();
+        if (idle > 0) {
+            double jobGain = perHead * idle * GROWTH_DISCOUNT;
+            addThrottle(moves, g, "Steel Foundry", "foundry", jobGain);
+            addThrottle(moves, g, "Textile Mill", "mill", jobGain);
+        }
+
+        /* ================================================================
+           AND THE BEST OF THEM WINS.
+           ================================================================ */
+
+        moves.sort((x, y) -> Double.compare(y.lost(), x.lost()));
+        for (Move m : moves) {
+            if (m.lost() <= 0) break;
+            if (m.act().getAsBoolean()) return m.label();
+        }
         return null;
+    }
+
+    /**
+     * How much of a gain arrives later rather than now.
+     *
+     * Restoring a throttle pays this month; a house pays when somebody moves
+     * into it and takes a job. Without a discount the advisor builds for a city
+     * that does not exist yet while the one that does sits in the dark - which
+     * is the failure mode the old ordering was hand-built to avoid, and this is
+     * the one number that replaces that ordering.
+     */
+    static final double GROWTH_DISCOUNT = .15;
+
+    /**
+     * Adds one building as a way of relieving a constraint worth `lost` a month.
+     *
+     * Candidates for the SAME constraint are given the same figure and are
+     * separated by a nudge in listing order, so the list stays a ranking of
+     * shortages with the alternatives for each sitting together. Cost does not
+     * enter here at all - that was the mistake this rewrite exists to undo -
+     * beyond build() refusing what the city cannot fund.
+     */
+    static void addThrottle(java.util.List<Move> moves, Game g,
+                            String name, String label, double lost) {
+        addThrottle(moves, g, name, label, lost, lost / Math.max(1, g.getEconomyManager().getMonthGdp()));
+    }
+
+    /**
+     * @param gap the share of output this shortage is costing, 0-1, which sets
+     *            how many of the building to order
+     */
+    static void addThrottle(java.util.List<Move> moves, Game g,
+                            String name, String label, double lost, double gap) {
+        if (lost <= 0) return;
+        BuildingsTemplate t = template(g, name);
+        if (t == null) return;
+
+        /*
+         * ORDERED IN PROPORTION TO THE SHORTAGE, and this was the second thing
+         * the rewrite got wrong. Buying ONE of whatever wins meant roads sat at
+         * 64% for three centuries in a growing city: the advisor bought a road
+         * every time roads won, roads won every month, and one road a month
+         * never caught a city adding thousands of people a year. It was
+         * perfectly responsive and far too small.
+         *
+         * A player looking at 36% of their output going missing does not buy
+         * one road. Twenty-five is the scale at which a full outage orders a
+         * serious block of building and a 4% shortfall orders one.
+         */
+        int quantity = (int) Math.max(1, Math.min(25, Math.ceil(gap * 25)));
+        moves.add(new Move(label, lost * (1 - moves.size() * 1e-6),
+                () -> build(g, name, quantity)));
     }
 
     static int qty(Game g, String name) {
@@ -573,7 +741,25 @@ public class LongPlaytest {
             // whole point of the instrument is small monthly payments.
             double needed = Math.max(t.getCashCost() * quantity * 1.6, 5000);
             if (canService(g, needed)) {
-                g.handleLongBondLogic(needed, 20, 100);
+                /*
+                 * AND IT TAKES THE CHEAPER MONEY, which is what a treasury
+                 * does and what makes this a test rather than a demonstration.
+                 *
+                 * The playtest is the only thing that runs the foreign
+                 * instruments for four thousand months against a real currency,
+                 * a real export base and a real bank; a rule that never
+                 * borrowed abroad would leave every one of those months
+                 * unexercised. Taking whichever is cheaper is also the naive
+                 * strategy a first-time player will follow, which is exactly
+                 * the one worth knowing the consequences of.
+                 */
+                DebtManager m = g.getDebtManager();
+                if (m.foreignWindowOpen() && m.foreignRate() < m.getRate() * .8) {
+                    g.handleForeignLogic("Term", needed / Math.max(.01, fxRate(g)),
+                            20, 100, false);
+                } else {
+                    g.handleLongBondLogic(needed, 20, 100);
+                }
                 result = g.buildStack(t, quantity, false);
             }
         }
@@ -611,6 +797,9 @@ public class LongPlaytest {
      * real cities carry, which suits an advisor that is supposed to push.
      */
     static final double DEBT_SERVICE_LIMIT = .25;
+
+    /** Local per USD, for turning a local-money need into a dollar ask. */
+    static double fxRate(Game g) { return g.getForeignAccounts().getRate(); }
 
     static boolean canService(Game g, double extra) {
 
@@ -877,6 +1066,32 @@ public class LongPlaytest {
                     log.add(String.format("  m%-5d property tax -> %.1f%%",
                             g.getMonth(), tax.getPropertyTaxRate() * 100));
                 }
+                /*
+                 * ...AND IT BORROWS ABROAD NOW AND AGAIN.
+                 *
+                 * The funding path above only reaches for a bond when a build
+                 * is refused, and this city is rich enough by year forty that
+                 * it never is - so four thousand months went by with the whole
+                 * foreign-debt mechanism untouched, and the run proved exactly
+                 * nothing about it. This is not the advisor being clever; it is
+                 * the harness making sure the code under test actually runs.
+                 *
+                 * Deliberately naive, in the way a first-time player is naive:
+                 * take the cheap dollars when they are on offer, convert them,
+                 * spend them at home, and find out later what that costs.
+                 */
+                if (stop % 19 == 0) {
+                    DebtManager m = g.getDebtManager();
+                    if (m.foreignWindowOpen() && m.foreignRate() < m.getRate()) {
+                        double ask = Math.max(5_000,
+                                g.getEconomyManager().getMonthGdp() * .5
+                                        / Math.max(.01, fxRate(g)));
+                        g.handleForeignLogic("Term", ask, 25, 100, false);
+                        log.add(String.format("  m%-5d borrowed US$%,.0fk abroad at %.2f%%",
+                                g.getMonth(), ask, m.foreignRate() * 100));
+                    }
+                }
+
                 // Land price used to be a dial the player turned. It is the
                 // market's now, so what a player actually does instead is go
                 // and buy some - which changes the price by changing how full
@@ -978,6 +1193,138 @@ public class LongPlaytest {
          * happens. A run ending with no branches and a full premium is the
          * advisor failing to notice, and it is invisible in every other figure.
          */
+        /*
+         * THE CITY'S ACCOUNT WITH THE WORLD.
+         *
+         * Printed because the exchange rate in phase two will be driven off it,
+         * and a run that ends deep in deficit is a run that would have devalued
+         * continuously. Better to know that from the accounting pass than to
+         * discover it after the rate starts moving.
+         */
+        ForeignAccounts fx = g.getForeignAccounts();
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+        out.printf("  NX breakdown: exports %,.0f | food %,.0f  materials %,.0f  scrap %,.0f  => NX %,.0f%n",
+                na.getExports(), na.getImportsFood(), na.getImportsMaterials(),
+                na.getImportsRawMaterial(), na.getNetExports());
+        /*
+         * THE SAME MONTH, AS THE TWO CLASSES THAT MEASURE IT SEE IT.
+         *
+         * The line above is NationalAccounts - the GDP identity's view of net
+         * exports. The line below is ForeignAccounts, which is what the
+         * exchange rate is actually priced off. They are two measurements of
+         * one quantity and they are printed together because a run has just
+         * reported a trade SURPLUS of 264,898 next to a depreciation pressure
+         * of +0.95, which is what a large DEFICIT looks like. At most one of
+         * them is right.
+         */
+        WorldEconomy w = g.getWorldEconomy();
+        out.printf("  monetary policy: rate %.2f%% (the rule advises %.2f%% on %.1f%% inflation);"
+                + " the rate differential is %+.2f points and pulls the currency %+.2f%n",
+                g.getDebtManager().getPolicyRate() * 100,
+                g.getDebtManager().advisedPolicyRate(g.getPriceIndex().inflation()) * 100,
+                g.getPriceIndex().inflation() * 100,
+                fx.getRateDifferential() * 100, fx.ratePressure());
+        out.printf("  the world: prices %.3f since founding, inflating at %.1f%%/yr;"
+                + " parity is %.3f and the rate is %.3f (%+.0f%% off it)%n",
+                w.getPriceLevel(), w.getInflation() * 100,
+                fx.getParity(), fx.getRate(), fx.deviationFromParity() * 100);
+        out.printf("  the same month, per ForeignAccounts: exports %,.0f  imports %,.0f"
+                + "  interest %,.0f  => current account %,.0f%n",
+                fx.getExports(), fx.tradeImports(), fx.getForeignInterest(),
+                fx.currentAccount());
+        out.printf("  ...and trailing: exports %,.0f  imports %,.0f  current %,.0f"
+                + "  (pressure is -current/volume = %+.3f)%n",
+                fx.monthlyExports(), fx.monthlyImports(), fx.monthlyCurrentAccount(),
+                (fx.monthlyExports() + fx.monthlyImports()) > 0
+                        ? -fx.monthlyCurrentAccount()
+                                / (fx.monthlyExports() + fx.monthlyImports()) : 0);
+        out.printf("  shelf price %.4f, food import price %.4f, local food %.4f%n",
+                g.getEconomyManager().getCommercialHandler().getStoreSellPrice(),
+                g.getEconomyManager().getFoodMarket().getImportPrice(),
+                g.getEconomyManager().getFoodMarket().getLocalPrice());
+        out.printf("  the currency: %.3f local per USD (pressure %+.2f, openness %.2f,"
+                + " cover %s), wages lifted %.1f%%%n",
+                fx.getRate(), fx.getLastPressure(), fx.getOpenness(),
+                fx.importCover() == Double.MAX_VALUE ? "inf"
+                        : String.format("%.1f mo", fx.importCover()),
+                (g.getLabourMarket().getCostOfLiving() - 1) * 100);
+        out.printf("  abroad: exports $%,.0fk/mo, imports $%,.0fk/mo,"
+                + " foreign interest $%,.0fk/mo%n",
+                fx.getExports(), fx.tradeImports(), fx.getForeignInterest());
+        out.printf("  since founding: sold $%,.0fk abroad, bought $%,.0fk,"
+                + " paid $%,.0fk of foreign interest, took $%,.0fk of capital%n",
+                fx.getLifetimeExports(), fx.getLifetimeImports(),
+                fx.getLifetimeInterest(), fx.getLifetimeFinancial());
+        DebtManager fxMarket = g.getDebtManager();
+        out.printf("  borrowed abroad: US$%,.0fk owed, $%,.0fk at home;"
+                + " the world charges %.2f%% against %.2f%% at home%s%n",
+                fxMarket.getForeignPrincipalUsd(), fxMarket.getForeignPrincipal(),
+                fxMarket.foreignRate() * 100, fxMarket.getRate() * 100,
+                fxMarket.foreignWindowOpen() ? "" : " (WINDOW SHUT: "
+                        + fxMarket.foreignWindowReason() + ")");
+        out.printf("  the currency did $%,.0fk to that debt over the run;"
+                + " walked away from $%,.0fk; scar %.2f points%n",
+                fx.getLifetimeRevaluation(), fx.getRepudiated(),
+                fxMarket.getDefaultScar() * 100);
+        /*
+         * WHAT THE SICKNESS IS MADE OF, because the total on its own cannot be
+         * acted on. Jerus, looking at 40.9%: "i think more healthcare takes care
+         * of the first one or no?" - and the only honest answer is the split,
+         * since only the baseline term responds to clinics at all.
+         */
+        Health hh = g.getHealth();
+        PriceIndex px = g.getPriceIndex();
+        out.printf("  prices: index %.3f since founding (%.0f%% food / %.0f%% rent),"
+                + " inflation %+.1f%%/yr; shelf carries a %.2fx scarcity mark-up%n",
+                px.getIndex(), px.getFoodWeight() * 100, px.getRentWeight() * 100,
+                px.inflation() * 100,
+                g.getEconomyManager().getCommercialHandler().getScarcityMultiple());
+        CommercialHandler rentCh = g.getEconomyManager().getCommercialHandler();
+        out.printf("  rent: %s per person of capacity - a %s cost floor at a %.2fx"
+                + " scarcity multiple (%,.0f households, %,d doors)%n",
+                String.format("%.4f", rentCh.getRentPrice()),
+                String.format("%.4f", rentCh.rentFloor()),
+                rentCh.rentScarcityMultiple(),
+                rentCh.getHouseholdCount(), rentCh.getHomes());
+        out.printf("  housing costs %s per person of capacity to supply"
+                + " (materials %s, land %s/sqft)%n",
+                String.format("%.2f", rentCh.getMarginalHousingCost()),
+                String.format("%.3f", g.getBuildingManager().getConstructionMaterialPrice()),
+                String.format("%.6f", g.getLandManager().getPricePerSqFt()));
+        out.printf("  wages lifted %.1f%%, the floor is worth %s a month in today's money%n",
+                (g.getLabourMarket().getCostOfLiving() - 1) * 100,
+                String.format("%.3f", g.getLabourMarket().cashMinimumWage()));
+        out.printf("  hunger: %.0f%% of people short, shops delivered %.0f%% of what was planned"
+                + " (roads %.0f%%)%n",
+                g.getHouseholdBalance().getHungerRate() * 100,
+                g.getHouseholdBalance().getDeliveredShare() * 100,
+                g.getInfrastructureManager().getThroughputRatio() * 100);
+        out.printf("  sickness %.1f%% = baseline %.1f%% (coverage %.0f%%) + outbreak %.1f%%"
+                + " + unburied %.1f%% + hunger %.1f%%%s%n",
+                hh.getSickRate() * 100, hh.getBaselineRate() * 100, hh.getCoverage() * 100,
+                hh.getOutbreakSeverity() * 100, hh.getUnburiedRate() * 100,
+                hh.getHungerRate() * 100,
+                hh.getSickRate() >= Health.MAX_SICK_RATE - 1e-9 ? "  (AT THE CAP)" : "");
+        CapitalFlows hot = g.getCapitalFlows();
+        out.printf("  hot money: $%,.0fk here (target $%,.0fk on a %.2f-point spread),"
+                + " %.0f%% of the bank's funding%s%n",
+                hot.getStock(), hot.getTarget(), hot.getSpread() * 100,
+                g.getBank().hotFundingShare() * 100,
+                hot.isStopped() ? "  (STOPPED: " + hot.getStopReason() + ")" : "");
+        out.printf("  since founding: $%,.0fk came in, $%,.0fk left, across %d sudden stop(s);"
+                + " peak $%,.0fk on a peak spread of %.2f points%n",
+                hot.getLifetimeArrived(), hot.getLifetimeDeparted(), hot.getStopsSuffered(),
+                hot.getPeakStock(), hot.getPeakSpread() * 100);
+        out.printf("  the vault: $%,.0fk held abroad (%s months of imports at $%,.0fk/mo)%n",
+                fx.getReserves(),
+                fx.importCover() == Double.MAX_VALUE ? "inf"
+                        : String.format("%.1f", fx.importCover()),
+                fx.monthlyImports());
+        out.printf("  the record: $%,.0fk cumulative balance since founding;"
+                + " net position $%,.0fk (%s)%n",
+                fx.getCumulativeBalance(), fx.netForeignPosition(),
+                fx.inDeficit() ? "owes the world more than it holds there" : "in the clear");
+
         Bank bnk = g.getBank();
         out.printf("  the bank: equity $%,.0fk against a book of $%,.0fk"
                 + " (%.1f%% - the ratio requires %.0f%%)%n",

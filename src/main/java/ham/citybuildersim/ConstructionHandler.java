@@ -419,4 +419,29 @@ public class ConstructionHandler {
         formatter.setMinimumFractionDigits(0);
     }
     
+
+    /**
+     * The builders' money, in the new unit.
+     *
+     * backlogPoints and materialsInventory are WORK and STUFF - construction
+     * points and units of material - and do not move. What they cost does.
+     */
+    public void redenominate(double scale) {
+        cash *= scale;
+        unearnedRevenue *= scale;
+        revenue *= scale;
+        netIncome *= scale;
+        materialsPrice *= scale;
+        expenses *= scale;
+        wageExp *= scale;
+        materialsExp *= scale;
+        interestExpense *= scale;
+        propertyTaxExpense *= scale;
+        landValue *= scale;
+        buildingsValue *= scale;
+        bondsPayable *= scale;
+        subsidyThisMonth *= scale;
+        for (int i = 0; i < wages.length; i++) wages[i] *= scale;
+    }
+
 }

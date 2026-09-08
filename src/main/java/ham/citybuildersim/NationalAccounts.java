@@ -221,6 +221,8 @@ public class NationalAccounts {
     public double getLastFoodUnits()     { return lastFoodUnits; }
     public double getLastMaterialUnits() { return lastMaterialUnits; }
     public double getLastWorkInProgress() { return lastWorkInProgress; }
+    public double getInvFood() { return invFood; }
+    public double getInvWip()  { return invWorkInProgress; }
     public double getInventoryFood()         { return invFood; }
     public double getInventoryMaterials()    { return invMaterials; }
     public double getInventoryWorkInProgress(){ return invWorkInProgress; }
@@ -314,8 +316,34 @@ public class NationalAccounts {
          * This is a rounding guard, not a floor: a genuinely negative figure
          * survives it intact and will still be caught.
          */
-        gdp = Math.round((getConsumption() + getInvestment()
-                + government + getNetExports()) * 100) / 100.0;
+        /*
+         * ROUNDED RELATIVE TO THE MONTH, NOT TO THE CENT.
+         *
+         * This was `Math.round(x * 100) / 100.0`, and the reason was good: the
+         * construction revenue earned and the work in progress it comes out of
+         * are the same quantity reached by two routes, so in an idle month they
+         * cancel to about -1e-13 rather than to zero, and -0.0 reads as
+         * non-negative where -1e-13 does not. It is a rounding guard, not a
+         * floor, and a genuinely negative figure still survives it.
+         *
+         * WHAT WAS WRONG WITH IT: a cent is a UNIT. After a hundred-to-one
+         * currency reform a cent of new money is a dollar of old, so the same
+         * line quantises GDP a hundred times more coarsely - and GDP is read by
+         * the debt manager, the migration target and every investment decision
+         * in the game. Measured: a reformed city and its unreformed twin, run
+         * side by side, ended a hundred months apart at 7,247 people against
+         * 5,435 and a price index of 4.25 against 3.39. Every stock in both
+         * cities was correct to the cent the whole way; they simply rounded
+         * different amounts off the same number and the difference compounded.
+         *
+         * A relative epsilon does the same job in any unit. Twelve digits below
+         * the size of the terms being added is far below anything real and far
+         * above the cancellation being guarded against.
+         */
+        double raw = getConsumption() + getInvestment() + government + getNetExports();
+        double magnitude = Math.abs(getConsumption()) + Math.abs(getInvestment())
+                + Math.abs(government) + Math.abs(getNetExports());
+        gdp = Math.abs(raw) <= magnitude * 1e-12 ? 0 : raw;
 
         history.add(gdp);
         while (history.size() > HISTORY_MONTHS) {
@@ -556,4 +584,45 @@ public class NationalAccounts {
         inventoryBaselineKnown = true;   // an empty warehouse is a real baseline
         gdp = 0;
     }
+
+    /**
+     * The month's national accounts, in the new unit.
+     *
+     * lastFoodUnits and lastMaterialUnits are UNITS - loaves and bricks - and
+     * do not move. lastWorkInProgress looks like their sibling and is not: work
+     * in progress is measured at CONTRACT VALUE, which is money. Leaving it
+     * unscaled was the single worst bug in this whole change and it hid behind
+     * the naming: the next month measured the change in stock as this month's
+     * value against last month's, one of them a hundred times the other, and
+     * booked the difference as production. GDP came out at -958,009 against
+     * +18.43. The two cities never recovered.
+     */
+    public void redenominate(double scale) {
+        consumptionGoods *= scale;  consumptionHousing *= scale;
+        investmentConstruction *= scale;  investmentInventories *= scale;
+        government *= scale;
+        importsFood *= scale;  importsMaterials *= scale;  importsRawMaterial *= scale;
+        exports *= scale;  gdp *= scale;
+        taxBusiness *= scale;  taxIndustrial *= scale;
+        taxSales *= scale;  taxWage *= scale;
+        utilityIncome *= scale;  landSales *= scale;
+        propertyTax *= scale;  interestExpense *= scale;
+        capitalSpending *= scale;  landPurchases *= scale;
+        invFood *= scale;  invMaterials *= scale;  invWorkInProgress *= scale;
+        lastWorkInProgress *= scale;
+
+        /*
+         * ...AND THE ROLLING HISTORY, which is ten years of GDP and is what
+         * getAnnualGdp() and the growth rates are read off. Leaving it alone
+         * spliced a hundred-to-one step into the middle of the series, so the
+         * year to date came out as eleven months of old money plus one of new -
+         * yearGDP of 69,425 where the unreformed city said 710. Everything that
+         * reads a trend read a cliff.
+         */
+        for (int i = 0; i < history.size(); i++) history.set(i, history.get(i) * scale);
+        contributions *= scale;  pensions *= scale;
+        healthFees *= scale;  healthSpending *= scale;
+        educationFees *= scale;  educationSpending *= scale;
+    }
+
 }

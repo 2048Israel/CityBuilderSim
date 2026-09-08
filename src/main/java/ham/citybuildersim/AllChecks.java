@@ -28,7 +28,8 @@ public class AllChecks {
         "BuildingDataCheck", "NewGameCheck", "CalendarCheck", "BooksCheck", "WaterCheck",
         "PolicyCheck", "LandCheck", "MiningCheck", "InvestCheck", "CreditCheck",
         "RestructureCheck", "ConservationCheck", "MoneyCheck", "GdpCheck", "HistoryCheck",
-        "BankCheck",
+        "BankCheck", "ForeignCheck", "ForeignDebtCheck", "CapitalFlowCheck", "MonetaryCheck",
+        "DenominationCheck",
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck",
         "SaveSlotCheck", "SkipReportCheck", "BuildMenuCheck", "LongPlaytest"

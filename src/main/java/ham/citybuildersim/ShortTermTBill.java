@@ -36,7 +36,13 @@ package ham.citybuildersim;
  */
 public class ShortTermTBill extends Debt {
 
-    public ShortTermTBill(double faceValue, int months, int monthStarted){
+    public ShortTermTBill(double faceValue, int months, int monthStarted) {
+        this(faceValue, months, monthStarted, false);
+    }
+
+    /** @param foreign true for a note written in USD. Face is then in USD. */
+    public ShortTermTBill(double faceValue, int months, int monthStarted, boolean foreign){
+        this.foreign = foreign;
         this.faceValue = faceValue;
         this.remainingMonths = months;
         this.duration = months;
@@ -68,7 +74,7 @@ public class ShortTermTBill extends Debt {
     public void processMonth(Game game){
         remainingMonths--;
         if(remainingMonths <= 0){
-            game.subtractCash(faceValue);
+            payPrincipal(game, faceValue);
         }
     }
 
@@ -78,16 +84,12 @@ public class ShortTermTBill extends Debt {
     }
 
     //getters
-    public double getFaceValue(){
-        return faceValue;
-    }
-
     public int getMonths(){
         return remainingMonths;
     }
 
     @Override
-    public double getOustandingPrincipal(){
+    protected double principalOwed(){
         return outstandingPrincipal;
     }
 
@@ -106,13 +108,13 @@ public class ShortTermTBill extends Debt {
     }
 
     @Override
-    public double getMonthlyInterestExpense(){
+    protected double couponOwed(){
         return 0;
     }
 
     /** Nothing until maturity, then the whole face. */
     @Override
-    public double[] remainingCashFlows() {
+    protected double[] scheduleOwed() {
         if (remainingMonths <= 0) {
             return new double[0];
         }

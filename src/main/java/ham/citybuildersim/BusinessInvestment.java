@@ -667,6 +667,34 @@ public class BusinessInvestment {
     public Decision planIndustry(int population, int storeCoverage,
                                  double currentOutput, double cityConstructionOutput,
                                  int ordersInFlight) {
+        return planIndustry(population, storeCoverage, currentOutput,
+                cityConstructionOutput, ordersInFlight, 0);
+    }
+
+    /**
+     * @param importedUnits what the shops had to buy abroad last month.
+     *
+     * DEMAND THIS SECTOR DID NOT SERVE, BY DEFINITION - and leaving it out was
+     * a real hole rather than a refinement. The projection below is built from
+     * customers and from a population trend, and in a city whose population is
+     * falling it can come out BELOW what the city is actually eating. Measured:
+     * a city importing 1,700 units of food a month, every month, while the
+     * advisor declined to build with the words "output ahead of demand" and a
+     * POSITIVE profit estimate on the building it was declining.
+     *
+     * That single line is why a devaluation could not make a city industrialise.
+     * Import substitution is the entire adjustment mechanism a currency is
+     * supposed to have - imports get dear, so you make it yourself - and the
+     * private sector could not see the imports.
+     *
+     * What it left instead was adjustment by CONTRACTION: the city shrank until
+     * it no longer needed what it could not afford. Measured over fifteen years,
+     * a shocked city and an unshocked one both reached zero imports the same
+     * way, by losing 40% of their people.
+     */
+    public Decision planIndustry(int population, int storeCoverage,
+                                 double currentOutput, double cityConstructionOutput,
+                                 int ordersInFlight, double importedUnits) {
 
         String sector = BusinessDebtManager.INDUSTRY;
 
@@ -679,6 +707,25 @@ public class BusinessInvestment {
 
         double costPerUnit = costPerUnit(ih);
         double price = market.getLocalPrice();
+
+        /*
+         * WHAT IS ALREADY COMING COUNTS AS SUPPLY.
+         *
+         * Everything below asks "does the city make enough", and without this it
+         * asks it of the plants that are FINISHED while ignoring the ones its
+         * own previous answer put on site. So it orders for the same shortage
+         * every month until the first of them opens.
+         *
+         * The price makes that fatal rather than merely wasteful.
+         * FoodMarket prices on demand/supply, so supply at twice demand halves
+         * the local price - from $0.200 to $0.100 against a cost of $0.162.
+         * Overbuild by a factor of two and the whole sector is under water, the
+         * plants retire, the shortage returns, and it starts again. Measured at
+         * 1 -> 3 -> 4 -> 2 -> 1 plants over fifteen years, with the city
+         * importing throughout.
+         */
+        double pipeline = buildingManager.productionUnderConstruction(BuildingType.INDUSTRIAL);
+        currentOutput += pipeline;
 
         // No point adding capacity to sell below cost - that is the same test
         // industry already applies when deciding whether to release stock.
@@ -703,7 +750,14 @@ public class BusinessInvestment {
                     Math.min(population + getPopulationGrowth() * months,
                              Math.max(population, reachablePopulation())));
 
-            if (projectedCustomers <= currentOutput * (1 + TARGET_HEADROOM)) {
+            /*
+             * WHAT THE CITY ACTUALLY ATE is a floor on demand, and it is
+             * OBSERVED rather than forecast: local output plus whatever the
+             * shops imported to make up the difference. A projection can be
+             * wrong; last month's consumption happened.
+             */
+            double consumed = currentOutput + Math.max(0, importedUnits);
+            if (Math.max(projectedCustomers, consumed) <= currentOutput * (1 + TARGET_HEADROOM)) {
                 continue;
             }
 
@@ -733,8 +787,11 @@ public class BusinessInvestment {
         }
 
         return new Decision(sector, best, quantity,
-                String.format("%,.0f units/mo forecast against %,.0f made",
-                        demandAtOpening, currentOutput),
+                pipeline > 0
+                        ? String.format("%,.0f units/mo forecast against %,.0f made and %,.0f coming",
+                                demandAtOpening, currentOutput - pipeline, pipeline)
+                        : String.format("%,.0f units/mo forecast against %,.0f made",
+                                demandAtOpening, currentOutput),
                 true);
     }
 

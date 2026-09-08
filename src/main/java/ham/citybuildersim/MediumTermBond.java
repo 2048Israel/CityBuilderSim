@@ -42,6 +42,13 @@ public class MediumTermBond extends Debt {
     private int slicesRemaining;
 
     public MediumTermBond(double faceValue, int months, int monthStarted, double couponRate) {
+        this(faceValue, months, monthStarted, couponRate, false);
+    }
+
+    /** @param foreign true for a bond written in USD. Face and slices are then USD. */
+    public MediumTermBond(double faceValue, int months, int monthStarted,
+                          double couponRate, boolean foreign) {
+        this.foreign = foreign;
         this.faceValue = faceValue;
         this.remainingMonths = months;
         this.duration = months;
@@ -92,7 +99,7 @@ public class MediumTermBond extends Debt {
 
         double interest = outstandingPrincipal * monthlyCouponRate;
         if (interest > 0) {
-            game.InterestExpense(interest);
+            payCoupon(game, interest);
         }
 
         remainingMonths--;
@@ -103,7 +110,7 @@ public class MediumTermBond extends Debt {
             double due = (slicesRemaining == 1)
                     ? outstandingPrincipal
                     : Math.min(principalPerSlice, outstandingPrincipal);
-            game.subtractCash(due);
+            payPrincipal(game, due);
             outstandingPrincipal -= due;
             slicesRemaining--;
         }
@@ -115,7 +122,7 @@ public class MediumTermBond extends Debt {
     }
 
     @Override
-    public double getOustandingPrincipal(){
+    protected double principalOwed(){
         return outstandingPrincipal;
     }
 
@@ -136,7 +143,7 @@ public class MediumTermBond extends Debt {
 
     /** On what is still out, not on the original face. */
     @Override
-    public double getMonthlyInterestExpense(){
+    protected double couponOwed(){
         return outstandingPrincipal * monthlyCouponRate;
     }
 
@@ -158,7 +165,7 @@ public class MediumTermBond extends Debt {
      * annuity cannot see.
      */
     @Override
-    public double[] remainingCashFlows() {
+    protected double[] scheduleOwed() {
 
         if (remainingMonths <= 0) {
             return new double[0];
@@ -186,4 +193,11 @@ public class MediumTermBond extends Debt {
         }
         return flows;
     }
+
+    /** The amortisation slice, in the new unit. The coupon RATE does not move. */
+    @Override
+    protected void redenominateSchedule(double scale) {
+        if (!isForeign()) principalPerSlice *= scale;
+    }
+
 }

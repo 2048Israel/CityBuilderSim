@@ -472,4 +472,16 @@ public class UtilitiesHandler {
         formatter.setMinimumFractionDigits(0);
     }
 
+
+    /** The utilities' prices and this month's bills, in the new unit. */
+    public void redenominate(double scale) {
+        pricePerWatt      *= scale;
+        pricePerWaterUnit *= scale;
+        billedElectricityRevenue *= scale;
+        billedWaterRevenue       *= scale;
+        for (int i = 0; i < utilityWages.length; i++)     utilityWages[i]     *= scale;
+        for (int i = 0; i < electricityWages.length; i++) electricityWages[i] *= scale;
+        for (int i = 0; i < waterWages.length; i++)       waterWages[i]       *= scale;
+    }
+
 }

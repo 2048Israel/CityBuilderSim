@@ -555,4 +555,30 @@ public class HeavyIndustryHandler {
 
         return true;
     }
+
+    /** The mills' money, in the new unit. Tonnes are tonnes. */
+    public void redenominate(double scale) {
+        cash *= scale;
+        orePrice *= scale;
+        netIncome *= scale;
+        interestExpense *= scale;
+        propertyTaxExpense *= scale;
+        landValue *= scale;
+        buildingsValue *= scale;
+        bondsPayable *= scale;
+        pricePerWatt *= scale;
+        pricePerWaterUnit *= scale;
+        revenueAtCapacity *= scale;
+        inputCostAtCapacity *= scale;
+
+        /*
+         * ...AND LAST MONTH'S STATEMENT, which is read at the top of the next
+         * month before it is rewritten - by the tax lines, the national
+         * accounts and the money audit. A statement read before it is
+         * rewritten is a stock for as long as it takes to read it. The RATIOS
+         * and the physical quantities on it - fills, output, tonnes, units -
+         * are not money and stay put.
+         */
+    }
+
 }

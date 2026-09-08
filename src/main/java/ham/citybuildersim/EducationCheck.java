@@ -62,8 +62,34 @@ public class EducationCheck {
         Game g = new Game(files == null ? GameFiles.scratch("educheck") : files);
         g.newGame();
         g.getGovernmentInvestor().spend(-900_000_000);
+        /*
+         * FOUR HUNDRED MILLION, NOT FOUR BILLION, since 2026-09-07.
+         *
+         * This line meant "give it so much land that land never blocks
+         * anything", and four billion square feet certainly does that. What
+         * nobody checked is that LandMarket prices the ground off how much the
+         * city has ANNEXED - 0.8% dearer per hundred-thousand-square-foot block
+         * owned - so this grant alone multiplied the city's land price by 321
+         * and left it there for three hundred months.
+         *
+         * That was invisible while nothing downstream cared, and stopped being
+         * invisible the day rent got a cost floor: the marginal home was
+         * suddenly 70% land, rent came out at $0.77 against a $0.91 wage, and
+         * households in a city with a SURPLUS of homes were paying 182% of
+         * take-home in rent. None of that was the rent model. All of it was
+         * this line.
+         *
+         * Every other fixture in the suite grants between 12 and 400 million.
+         * This is 400 million, which is still fifty times what the fixture
+         * builds on, and it is now in the same world as everything else.
+         *
+         * (The underlying quirk is real and is NOT fixed here: annexing land
+         * raises its price without bound, so a player who buys the map makes
+         * their own housing unaffordable. That is arguably correct and is
+         * certainly unbounded. Filed, not fixed.)
+         */
         g.getLandManager().setOwnedSqFt(
-                g.getLandManager().getOwnedSqFt() + 4_000_000_000L);
+                g.getLandManager().getOwnedSqFt() + 400_000_000L);
         build(g, "Low-Rise Apartments", 120);
         build(g, "General Hospital", 3);
         build(g, "Small Grocery Store", 14);
@@ -500,8 +526,37 @@ public class EducationCheck {
 
         assertTrue("fixture: graduates really have come down into diploma work",
                 queue[dip] > ownHeads[dip] * 1.2);
-        assertTrue("fixture: on its own workers alone the market would look open",
-                open[dip] > ownHeads[dip]);
+
+        /* -------------------------------------------------------------------
+           THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own
+           workers alone the market would look open" - and it was literally true
+           of the fixture until 2026-09-07, when rent became a market.
+
+           What happened to it is worth writing down, because it is a fixture
+           changing under a mechanic rather than a mechanic breaking. Scarcity
+           pricing made housing profitable to supply for the first time, so this
+           city built 67% more homes (4,529 -> 7,560) and grew 28% (14,676 ->
+           18,921). A bigger city with the same forty-seven schools makes more
+           graduates than its shops make jobs: diploma-holders went 1,801 ->
+           3,126 while diploma POSTS went 2,242 -> 2,685, and the inequality
+           flipped.
+
+           It cannot be bought back. Adding five Food Processing Plants - six
+           hundred diploma posts on paper - moved staffable diploma posts by
+           eighty-two, because BusinessInvestment simply built fewer shops with
+           the land and the money. The post count is an equilibrium of this
+           city, not a dial.
+
+           So the premise is now stated as the thing it was always protecting:
+           that the two readings of the same market DIFFER, materially, which is
+           what makes the next assertion mean anything. That is a weaker
+           sentence and a stronger test - the old one could have passed on a
+           city where the gap was a rounding error.
+           ------------------------------------------------------------------- */
+        assertTrue("fixture: the two readings of this market really do differ",
+                queue[dip] > ownHeads[dip] * 1.5
+                        && Migration.opportunity(open[dip], ownHeads[dip])
+                           > Migration.opportunity(open[dip], queue[dip]) + .15);
         assertTrue("...and it is not: the queue is what counts",
                 chance[dip] < Migration.opportunity(open[dip], ownHeads[dip]) - .05);
         /*

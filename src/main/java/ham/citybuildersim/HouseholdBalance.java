@@ -253,6 +253,7 @@ public class HouseholdBalance {
         lastWrittenOff = 0;
         lastLeaving = 0;
         double delivered = Math.max(0, Math.min(1, supplyRatio));
+        lastDelivered = delivered;
         for (int r = 0; r < ROWS; r++) {
             totalPeople += people[r];
             double ate = lastPlanned[r] * delivered;
@@ -551,6 +552,19 @@ public class HouseholdBalance {
     }
 
     public double getHungryPeople()          { return hungryPeople; }
+
+    /**
+     * The share of what households planned to buy that the shops could hand
+     * over - and therefore which of the two hungers is biting.
+     *
+     * A household short of money and a city short of stock both come out as
+     * hunger, and a player who fixes the wrong one gets nowhere. This is the
+     * figure that tells them apart: at 1.0 the shelves were full and anybody
+     * still hungry could not afford to eat.
+     */
+    public double getDeliveredShare() { return lastDelivered; }
+
+    private double lastDelivered = 1;
     /**
      * Interest the bank paid on what these households have saved.
      *
@@ -680,4 +694,31 @@ public class HouseholdBalance {
         totalPeople = 0;
         opened = false;
     }
+
+    /**
+     * The households' stocks and this month's working, in the new unit.
+     *
+     * lastRate is an interest rate and lastBankrupt, lastHouseholds and the
+     * headcounts are people; none of those move. lastDelivered is a share.
+     */
+    public void redenominate(double scale) {
+        lastWrittenOff *= scale;
+        plannedSpend   *= scale;
+        lastDepositInterest *= scale;
+        for (int r = 0; r < ROWS; r++) {
+            savings[r]         *= scale;
+            debt[r]            *= scale;
+            lastAfterFixed[r]  *= scale;
+            lastInterest[r]    *= scale;
+            lastDrawn[r]       *= scale;
+            lastUnfunded[r]    *= scale;
+            lastBorrowed[r]    *= scale;
+            lastRepaid[r]      *= scale;
+            lastSaved[r]       *= scale;
+            lastWant[r]        *= scale;
+            lastPlanned[r]     *= scale;
+            lastSubsistence[r] *= scale;
+        }
+    }
+
 }

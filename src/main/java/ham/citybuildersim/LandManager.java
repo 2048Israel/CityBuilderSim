@@ -90,6 +90,9 @@ public class LandManager {
      */
     private static final double DEFAULT_PRICE_PER_SQ_FT = .001;
 
+    /** The same, in today's money. */
+    private double defaultPricePerSqFt = DEFAULT_PRICE_PER_SQ_FT;
+
     private double ownedSqFt = STARTING_SQ_FT;
     private double allocatedSqFt;
 
@@ -368,7 +371,7 @@ public class LandManager {
         ownedSqFt = STARTING_SQ_FT;
         allocatedSqFt = 0;
         blocksPurchased = 0;
-        pricePerSqFt = DEFAULT_PRICE_PER_SQ_FT;
+        pricePerSqFt = defaultPricePerSqFt;
         ironDeposits = 0;
         ironReserveTonnes = 0;
         market.reset();
@@ -410,4 +413,26 @@ public class LandManager {
         formatter.setMaximumFractionDigits(4);
         formatter.setMinimumFractionDigits(0);
     }
+
+    /**
+     * The city's own land prices and this month's land flows, in the new unit.
+     *
+     * Square feet are square feet: ownedSqFt, allocatedSqFt and the tonnage in
+     * the ground are REAL quantities and do not move. Only what they cost does.
+     */
+    public void redenominate(double scale) {
+        pricePerSqFt            *= scale;
+        defaultPricePerSqFt     *= scale;
+        landSalesThisMonth      *= scale;
+        landPurchasesThisMonth  *= scale;
+        market.redenominate(scale);
+    }
+
+
+    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        defaultPricePerSqFt = DEFAULT_PRICE_PER_SQ_FT / unit;
+        market.seedConstants(unit);
+    }
+
 }

@@ -8,7 +8,14 @@ public class LongTermBond extends Debt {
     
     private double monthlyCouponRate;
     
-    public LongTermBond(double faceValue, int months, int monthStarted,double couponRate) {
+    public LongTermBond(double faceValue, int months, int monthStarted, double couponRate) {
+        this(faceValue, months, monthStarted, couponRate, false);
+    }
+
+    /** @param foreign true for a bond written in USD. Face and coupon are then USD. */
+    public LongTermBond(double faceValue, int months, int monthStarted,
+                        double couponRate, boolean foreign) {
+        this.foreign = foreign;
         this.faceValue = faceValue;
         this.remainingMonths = months;
         this.duration = months;
@@ -32,11 +39,11 @@ public class LongTermBond extends Debt {
     @Override
     public void processMonth(Game game) {
         double interest = (faceValue*monthlyCouponRate);
-        game.InterestExpense(interest);
+        payCoupon(game, interest);
         remainingMonths--;
 
         if (remainingMonths <= 0) {
-            game.subtractCash(faceValue);
+            payPrincipal(game, faceValue);
         }
     }
 
@@ -46,7 +53,7 @@ public class LongTermBond extends Debt {
     }
     
     @Override
-    public double getOustandingPrincipal(){
+    protected double principalOwed(){
         return outstandingPrincipal;
     }
     
@@ -66,9 +73,8 @@ public class LongTermBond extends Debt {
     }
     
     @Override
-    public double getMonthlyInterestExpense(){
-        double interest = (faceValue*monthlyCouponRate);
-        return interest;
+    protected double couponOwed(){
+        return faceValue * monthlyCouponRate;
     }
 
     public double getCouponRate() {
@@ -86,7 +92,7 @@ public class LongTermBond extends Debt {
      * exists so that is visible for years beforehand rather than on the morning.
      */
     @Override
-    public double[] remainingCashFlows() {
+    protected double[] scheduleOwed() {
 
         if (remainingMonths <= 0) {
             return new double[0];

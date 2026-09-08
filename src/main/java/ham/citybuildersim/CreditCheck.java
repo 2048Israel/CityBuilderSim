@@ -579,18 +579,75 @@ public class CreditCheck {
 
         Game banned = new Game(GameFiles.scratch("creditcheck"));
         banned.run();
-        banned.buildStack(template(banned, "House"), 300, false);
+        /* -------------------------------------------------------------------
+           MORE PEOPLE THAN THE SHOPS CAN COVER, AND IT HAS TO STAY THAT WAY.
+
+           Being broke and banned only bites if the advisor WANTS to build, and
+           this fixture has now been patched three times to keep it wanting:
+           300 houses became 800, $1,000 of cash became $10, and on 2026-09-07
+           it went red again when rent became a market. Each patch bought a
+           fixture that worked at one run length. Measured that day: twelve
+           months printed "coverage ahead of demand", eighteen the same,
+           twenty-four passed, thirty-six failed. A fixture whose verdict
+           depends on how long you run it is not causing the condition under
+           test, it is standing next to it.
+
+           The reason is simple once seen: retail BUILDS. Give it thirty-six
+           months of freedom and it puts up exactly the shops its city needs, so
+           by the time the ban lands there is nothing it wants. Adding houses
+           does not help, because retail adds shops to match; planRetail()
+           forecasts on population plus growth, so doors alone cannot outrun it.
+
+           So the fixture stops giving retail those months. It is funded and
+           given ground, it grows into two and a half thousand houses, and after
+           a short spell on the level it is banned and held broke for thirty
+           months with the ban RENEWED EVERY MONTH - a lockout is finite and
+           expires halfway through otherwise. Coverage then stands still while
+           the city keeps growing, so demand is ahead of coverage by
+           construction. It passes at a twelve, eighteen and twenty-four month
+           opening spell rather than at exactly one of them, which is the
+           difference that matters.
+
+           The opening spell cannot be much shorter than twelve: the starting
+           city already has a shop in the construction queue, and a retailer
+           starved from month one leaves it half-built for ever - at six months
+           the refusal that prints is "already building", which is a third
+           reason and not the one under test.
+           ------------------------------------------------------------------- */
+        banned.getGovernmentInvestor().spend(-5_000_000);
+        banned.getLandManager().setOwnedSqFt(200_000_000);
+        banned.buildStack(template(banned, "House"), 2500, false);
         banned.buildStack(template(banned, "Textile Mill"), 3, false);
         banned.buildStack(template(banned, "Construction Depot"), 4, false);
         banned.buildStack(template(banned, "Coal Power Plant"), 1, false);
-        quietly(() -> banned.simulateMonths(36));
-
+        // ...and somewhere to put a shop, or the refusal is about land and the
+        // ban is still never reached.
         BusinessDebtManager ledger = banned.getEconomyManager().getBusinessDebtManager();
         EconomyManager econ = banned.getEconomyManager();
         String sector = BusinessDebtManager.RETAIL;
 
+        // Six months on the level, so any shop the starting city already had in
+        // the queue actually opens. A retailer held broke from month one leaves
+        // it half-built for ever and the refusal that prints is "already
+        // building" rather than the ban.
+        quietly(() -> banned.simulateMonths(12));
+
         // Owe a lot against nothing, and let the restructure fire.
         ledger.issueLoan(sector, 5_000_000, banned.getMonth());
+        ledger.setAssets(sector, -1);
+        ledger.restructure(sector);
+
+        // ...and then held broke and banned for thirty months while the city
+        // grows into its housing, so coverage cannot follow demand.
+        quietly(() -> {
+            for (int mm = 0; mm < 30; mm++) {
+                econ.setSectorCash(sector, 10);
+                ledger.setAssets(sector, -1);
+                ledger.restructure(sector);
+                banned.simulateMonths(1);
+                econ.setSectorCash(sector, 10);
+            }
+        });
         ledger.setAssets(sector, -1);
         ledger.restructure(sector);
         assertTrue("fixture: retail is under a borrowing ban", ledger.isBorrowingBlocked(sector));

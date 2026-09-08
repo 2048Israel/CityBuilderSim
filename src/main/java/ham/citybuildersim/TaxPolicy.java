@@ -113,8 +113,33 @@ public class TaxPolicy {
     }
 
     /** What one pensioner receives a month, at the rate currently set. */
+    /**
+     * A pension, in TODAY's money.
+     *
+     * SocialSecurity computes this as `replacement x PayTier.UNSKILLED`, which
+     * is a compile-time money constant read every month - so a reformed city
+     * went on paying its pensioners the FOUNDING cheque out of the new,
+     * hundred-times-smaller money. Measured at a factor of two: seniors
+     * received 110.65 where 55.32 was due, and they were the last row in the
+     * household matrix that would not come into line.
+     *
+     * (The wage this is struck against does not move with the labour market
+     * either, so a pension is frozen in real terms for three centuries. That is
+     * a separate design question and not this one's to answer - filed, not
+     * fixed.)
+     */
     public double pensionPerSenior() {
-        return SocialSecurity.pensionPerSenior(pensionReplacement);
+        return pensionReplacement * pensionWageBase;
+    }
+
+    /** The wage a pension is a share of, carried in today's money. */
+    private double pensionWageBase = PayTier.UNSKILLED.getMonthlyWage();
+
+    public void redenominate(double scale) { pensionWageBase *= scale; }
+
+    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        pensionWageBase = PayTier.UNSKILLED.getMonthlyWage() / unit;
     }
 
     private final double[] wageOffset     = new double[WageBand.values().length];

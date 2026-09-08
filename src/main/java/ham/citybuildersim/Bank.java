@@ -103,6 +103,9 @@ public class Bank {
     /** How much of a city's savings one branch can gather. */
     public static final double DEPOSITS_PER_BRANCH = 60_000;
 
+    /** The same, in today's money - reformed with every other figure. */
+    private double depositsPerBranch = DEPOSITS_PER_BRANCH;
+
     /**
      * What the shareholders put up when a branch opens.
      *
@@ -117,6 +120,9 @@ public class Bank {
      * this time rather than asserted.
      */
     public static final double PAID_IN_PER_BRANCH = 32_000;
+
+    /** The same, in today's money. */
+    private double paidInPerBranch = PAID_IN_PER_BRANCH;
 
     /* ---------------------- what a dollar of book WEIGHS ---------------------- */
 
@@ -244,7 +250,7 @@ public class Bank {
         this.branches = Math.max(0, branches);
         this.householdDeposits = Math.max(0, householdSavings);
         this.sectorDeposits = Math.max(0, sectorCash);
-        this.deposits = this.householdDeposits + this.sectorDeposits;
+        this.deposits = this.householdDeposits + this.sectorDeposits + this.foreignDeposits;
         this.sectorBook = Math.max(0, sectorBook);
         this.cityBook = Math.max(0, cityBook);
         this.householdBook = Math.max(0, householdBook);
@@ -285,7 +291,11 @@ public class Bank {
         fundingCost = 0;
         depositInterestToHouseholds = 0;
         depositInterestToSectors = 0;
+        depositInterestToForeign = 0;
         capitalInjected = 0;
+        capitalFromHome = 0;
+        hotMoneyIn = 0;
+        hotMoneyOut = 0;
         bailoutReceived = 0;
         foundingSettlement = 0;
         resolutionLoss = 0;
@@ -337,9 +347,106 @@ public class Bank {
         return Math.min(capitalLimit(), depositsGathered() * LEVERAGE);
     }
 
-    /** What the branches let it gather, out of what the city has to bank. */
+    /**
+     * What the branches let it gather, out of what the city has to bank -
+     * PLUS whatever the world has parked here, which needed no branch at all.
+     *
+     * FOREIGN MONEY ARRIVES WHOLESALE. A saver down the road needs a counter to
+     * queue at; a fund in another country moves a hundred million by wire. So
+     * hot money is not subject to the branch cap, and that asymmetry is the
+     * point rather than an oversight: it is why foreign funding can lift a
+     * bank's capacity far past anything its own branch network could support,
+     * and why the capacity vanishes when the money does. The bank cannot build
+     * its way out of a sudden stop.
+     */
     public double depositsGathered() {
-        return Math.min(Math.max(0, deposits), branches * DEPOSITS_PER_BRANCH);
+        double local = Math.min(Math.max(0, deposits - foreignDeposits),
+                branches * depositsPerBranch);
+        return local + Math.max(0, foreignDeposits);
+    }
+
+    private double foreignDeposits;
+
+    /** Hot money currently funding this bank, in local money. */
+    public double getForeignDeposits() { return foreignDeposits; }
+
+    /** Told by Game each month, from CapitalFlows. */
+    public void setForeignDeposits(double amount) {
+        this.foreignDeposits = Math.max(0, amount);
+        this.deposits = this.householdDeposits + this.sectorDeposits + this.foreignDeposits;
+    }
+
+    /**
+     * Hot money arriving, as cash.
+     *
+     * A deposit is a liability the bank funds itself with, so the money is
+     * genuinely here and genuinely someone else's. Counted for the month so
+     * MoneyAudit can declare it crossing the city's edge - which it did.
+     */
+    public void receiveHotMoney(double amount) {
+        if (amount <= 0) return;
+        cash += amount;
+        hotMoneyIn += amount;
+    }
+
+    /**
+     * ...and leaving, which is the whole danger.
+     *
+     * The bank must find the cash. If it does not have it the withdrawal still
+     * happens and the cash goes negative, which is what a bank run IS - the
+     * money was lent out and cannot be recalled on demand. Whether that leaves
+     * the bank insolvent is decided where insolvency is decided, not here.
+     */
+    public void returnHotMoney(double amount) {
+        if (amount <= 0) return;
+        cash -= amount;
+        hotMoneyOut += amount;
+    }
+
+    private double hotMoneyIn, hotMoneyOut;
+
+    public double getHotMoneyIn()  { return hotMoneyIn; }
+    public double getHotMoneyOut() { return hotMoneyOut; }
+
+    /**
+     * The bank's wholesale funding cost, split by whose money it is.
+     *
+     * THE SAME QUESTION AS injectCapital(), AND IT WAS ANSWERED IN ONE PLACE
+     * AND NOT THE OTHER. Paid-in capital was split between the city's own
+     * savers and foreigners on 2026-09-07, because declaring all of it foreign
+     * had $34.6B of branch capital deciding the balance of payments. The
+     * funding side kept declaring 100% of itself foreign, and grew into a
+     * larger version of exactly the same problem:
+     *
+     *     exports    234,348 a month
+     *     imports    203,910
+     *     interest   592,109      <- this line
+     *
+     * Two and a half times everything the city sold abroad, paid to foreign
+     * creditors, every month, for ever. The current account was therefore
+     * always deeply negative however well the city traded, depreciation
+     * pressure sat at +0.95 on a trade SURPLUS, and the exchange rate ran to
+     * its 4.0 ceiling and stayed there - which is a correct response to the
+     * number it was given and a wrong number.
+     *
+     * A city with $124B on deposit has savers who can fund its bank. The same
+     * curve decides how much of the funding they provide as decides how much of
+     * the capital they own, because it is the same question about the same
+     * city.
+     */
+    public double fundingCostAbroad() {
+        return fundingCost * (1 - domesticCapitalShare());
+    }
+
+    /** ...and the part paid to lenders down the road. */
+    public double fundingCostAtHome() {
+        return fundingCost * domesticCapitalShare();
+    }
+
+    /** The share of the bank's funding that could leave at any time. */
+    public double hotFundingShare() {
+        double all = depositsGathered();
+        return all > 0 ? Math.min(1, Math.max(0, foreignDeposits) / all) : 0;
     }
 
     /** What its capital supports, on the risk-weighted book. */
@@ -433,10 +540,66 @@ public class Bank {
      * the whole point of the exercise and the only thing that lifts a bank out
      * of a credit crunch.
      */
+    /**
+     * Deposits at which half of new bank capital is found at home.
+     *
+     * FINANCIAL DEEPENING, which is the honest name for what this models and
+     * the reason it is a curve rather than a constant. A poor country's banks
+     * are owned by foreigners because nobody at home has the savings to own
+     * them; a rich country's are owned by its own savers and pension funds. The
+     * city crosses from one to the other as it accumulates deposits, and it
+     * does so gradually.
+     */
+    public static final double DOMESTIC_CAPITAL_SCALE = 400_000;
+
+    /**
+     * The same, in today's money.
+     *
+     * A SCALE is a money quantity even though it never leaves anybody's
+     * pocket: it is the size of savings at which half a bank's capital can be
+     * raised at home, and after a hundred-to-one reform an unreformed $400,000
+     * would mean forty million founding dollars of savings - so a mature city
+     * would suddenly be raising all its bank capital abroad. Which is exactly
+     * the class of bug that pinned the currency at its ceiling in phase 4.
+     */
+    private double domesticCapitalScale = DOMESTIC_CAPITAL_SCALE;
+
+    /** The share of new paid-in capital the city's own savers can find. */
+    public double domesticCapitalShare() {
+        double savings = getDeposits();
+        if (savings <= 0) return 0;
+        return savings / (savings + domesticCapitalScale);
+    }
+
+    /**
+     * Shareholders' money, put in as capital - and WHOSE shareholders.
+     *
+     * THE BALANCE OF PAYMENTS WAS BEING DECIDED BY THIS METHOD, and nobody
+     * chose that. Every branch takes PAID_IN_PER_BRANCH of capital, all of it
+     * declared as arriving from abroad, and the playtest opened 1,081 branches:
+     * $34.6B of foreign capital over a run, unbounded, uncosted, and larger
+     * than every other item on the city's foreign account put together. Jerus
+     * flagged it twice; the second time was after being told phase 4 would make
+     * it worse, which it would - capital flows land in this same bank.
+     *
+     * The fix is not a cap, because a cap would be a number somebody invented.
+     * It is asking WHO the shareholders are. A city with no savings has no
+     * domestic investors and its bank is foreign-owned by necessity; a city
+     * with $160B on deposit owns its own banks, and the money for the next
+     * branch comes from savers down the road. Nothing is capped. The foreign
+     * share simply stops being 100% as soon as the city has anything of its own.
+     *
+     * The money is identical either way and so is the audit's cash identity -
+     * households sit outside the audited pools whichever country they are in.
+     * What changes is which line of the balance of payments it lands on, which
+     * is the entire question.
+     */
     public void injectCapital(double amount) {
         if (amount <= 0) return;
         cash += amount;
-        capitalInjected += amount;
+        double home = amount * domesticCapitalShare();
+        capitalFromHome += home;
+        capitalInjected += amount - home;
     }
 
     /**
@@ -477,6 +640,7 @@ public class Bank {
     }
 
     private double capitalInjected;
+    private double capitalFromHome;
     private double bailoutReceived;
     private double foundingSettlement;
 
@@ -486,8 +650,17 @@ public class Bank {
      */
     public double getFoundingSettlement() { return foundingSettlement; }
 
-    /** Shareholders' money, from outside the city. Declared in MoneyAudit. */
+    /** Shareholders' money from OUTSIDE the city. Declared as a financial inflow. */
     public double getCapitalInjected() { return capitalInjected; }
+
+    /**
+     * ...and from the city's own savers. Declared, but not as foreign.
+     *
+     * Still an inflow to the audited pools - households are outside them - so
+     * the cash identity is untouched by the split. It is the balance of
+     * payments that stops claiming it.
+     */
+    public double getCapitalFromHome() { return capitalFromHome; }
 
     /** The treasury's money, from inside it. Internal, and deliberately not declared. */
     public double getBailoutReceived() { return bailoutReceived; }
@@ -532,7 +705,7 @@ public class Bank {
             cash = opening;
         }
 
-        injectCapital(opened * PAID_IN_PER_BRANCH);
+        injectCapital(opened * paidInPerBranch);
     }
 
     private double branchesCapitalised;
@@ -700,13 +873,25 @@ public class Bank {
     private double depositInterestToHouseholds;
     private double depositInterestToSectors;
 
+    /**
+     * ...and what the hot money is paid for parking here.
+     *
+     * A third tranche because there is a third kind of depositor and it lives
+     * abroad. Used to be folded into the sectors' share, which sent foreign
+     * savers' interest to domestic businesses and lost it entirely in a month
+     * when no business had a positive balance. See fundToCover().
+     */
+    private double depositInterestToForeign;
+
     /** What savers are being paid. */
     public double depositRate() { return depositRate; }
 
     public double getDepositInterestToHouseholds() { return depositInterestToHouseholds; }
     public double getDepositInterestToSectors()    { return depositInterestToSectors; }
+    public double getDepositInterestToForeign()    { return depositInterestToForeign; }
     public double depositInterest() {
-        return depositInterestToHouseholds + depositInterestToSectors;
+        return depositInterestToHouseholds + depositInterestToSectors
+                + depositInterestToForeign;
     }
 
     /** What it charges borrowers, less what it pays savers. A bank's whole business. */
@@ -790,9 +975,47 @@ public class Bank {
          */
         depositRate = Math.max(0, riskFreeAnnual) * DEPOSIT_PASS_THROUGH;
         double onDeposits = depositFunding() * depositRate / 12;
-        double householdShare = deposits > 0 ? householdDeposits / deposits : 0;
-        depositInterestToHouseholds = onDeposits * householdShare;
-        depositInterestToSectors = onDeposits - depositInterestToHouseholds;
+
+        /* -------------------------------------------------------------------
+           SPLIT THREE WAYS, NOT TWO, AND IT USED TO LOSE MONEY.
+
+           This was `households get their share, SECTORS GET THE REST`, and the
+           rest is not the sectors. Deposits come from three places - families,
+           the city's own companies, and hot money from abroad - and lumping the
+           last two together did two wrong things at once:
+
+             - the foreign depositors' interest was handed to domestic
+               businesses. It is money leaving the country, it belongs on the
+               income line of the balance of payments beside the bank's
+               wholesale funding cost, and instead it was an internal transfer
+               to whoever happened to be holding cash.
+
+             - and when NOBODY was holding cash, it simply vanished. Game pays
+               this out by splitting it across the sectors in proportion to
+               what each has in the till; the loop is guarded by
+               `if (totalSectorCash > 0)`, so in a month where every sector is
+               at or below zero the bank's cash went down and nobody's went up.
+               Money destroyed, silently, by a defensive guard.
+
+           Found on 2026-09-07 by MoneyCheck, in a stressed city three months
+           into a slump: retail 0.00, real estate 0.00, construction 0.00,
+           heavy industry 0.00, mining 0.00, industry -6,881. Every till empty
+           or overdrawn, $16.05 paid to nobody, and $30.84 the month after. It
+           had been reachable since foreign deposits existed and no run had
+           ever been unlucky enough to land on it.
+
+           Now each tranche is charged on its OWN base, so the three add back to
+           the total by construction and the "rest" has nowhere to hide. And
+           sectorDeposits is the sum of what the sectors are actually IN CREDIT
+           for - see Game.refreshBank() - which is the same weighting the payout
+           loop uses, so a month with no sector deposits computes no sector
+           interest and there is nothing left over to lose.
+           ------------------------------------------------------------------- */
+        double base = deposits > 0 ? deposits : 0;
+        depositInterestToHouseholds = base > 0 ? onDeposits * householdDeposits / base : 0;
+        depositInterestToSectors    = base > 0 ? onDeposits * sectorDeposits    / base : 0;
+        depositInterestToForeign    = onDeposits - depositInterestToHouseholds
+                                                 - depositInterestToSectors;
         cash -= onDeposits;
 
         double wholesale = wholesaleFunding();
@@ -837,7 +1060,27 @@ public class Bank {
     public double totalAssets() { return cashReserves() + getBook(); }
 
     /** Total liabilities: what it owes, in its two tranches. */
-    public double totalLiabilities() { return borrowings(); }
+    /**
+     * What the bank owes: its market funding, and the hot money.
+     *
+     * WHY FOREIGN DEPOSITS ARE HERE AND HOUSEHOLD ONES ARE NOT, which looks
+     * inconsistent and is the opposite:
+     *
+     * A family's savings are already counted, in the household pool. They are
+     * the city's own money sitting in an account, and refresh() reads them as a
+     * capacity input without ever moving them onto this balance sheet - putting
+     * them here as both an asset and a liability would count the same dollars
+     * twice.
+     *
+     * Hot money is different in exactly the way that matters. It is money that
+     * was not in the city at all until it arrived, so the cash is genuinely new
+     * here - and it is owed to somebody who can ask for it back on no notice.
+     * An asset with no matching liability is equity, and without this line the
+     * bank's capital rose every time a foreign fund wired it money. Caught by
+     * BankCheck's "equity moves by net income and capital and nothing else",
+     * which is the third distinct bug that assertion has found.
+     */
+    public double totalLiabilities() { return borrowings() + Math.max(0, foreignDeposits); }
 
     /**
      * The residual - and, once the two above are written out, simply the book
@@ -1044,10 +1287,10 @@ public class Bank {
      */
     public double capacityWith(double branchCount) {
         double newBranches = Math.max(0, branchCount - branchesCapitalised);
-        double equityThen = equity() + newBranches * PAID_IN_PER_BRANCH;
+        double equityThen = equity() + newBranches * paidInPerBranch;
         double capital = Math.max(0, equityThen) / CAPITAL_RATIO;
         double funding = Math.min(Math.max(0, deposits),
-                Math.max(0, branchCount) * DEPOSITS_PER_BRANCH) * LEVERAGE;
+                Math.max(0, branchCount) * depositsPerBranch) * LEVERAGE;
         return Math.min(capital, funding);
     }
 
@@ -1062,6 +1305,7 @@ public class Bank {
         cash = 0;
         branches = 0;
         deposits = 0;
+        foreignDeposits = 0;
         sectorBook = 0;
         cityBook = 0;
         householdBook = 0;
@@ -1087,4 +1331,65 @@ public class Bank {
      * carried - so the two halves of this balance sheet cannot come back out of
      * step with each other, because there is only one number.
      */
+
+    /**
+     * Every figure on the bank's balance sheet, in the new unit.
+     *
+     * The books are RE-DERIVED each month by Game.refreshBank() from household
+     * savings, sector tills and the loan ledgers, so scaling them here is
+     * belt-and-braces for the month between the reform and the next refresh -
+     * but the cash, the branch scales, the lifetime capital counters and
+     * last month's profit are carried, not derived, and would be wrong for ever
+     * without this.
+     *
+     * branches is a COUNT and does not move. Nor do the rates.
+     */
+    public void redenominate(double scale) {
+        depositsPerBranch    *= scale;
+        paidInPerBranch      *= scale;
+        domesticCapitalScale *= scale;
+
+        cash              *= scale;
+        deposits          *= scale;
+        householdDeposits *= scale;
+        sectorDeposits    *= scale;
+        foreignDeposits   *= scale;
+        sectorBook        *= scale;
+        cityBook          *= scale;
+        householdBook     *= scale;
+        sectorWeighted    *= scale;
+        cityWeighted      *= scale;
+        householdWeighted *= scale;
+
+        interestEarned    *= scale;
+        internalInterest  *= scale;
+        writeOffs         *= scale;
+        payroll           *= scale;
+        upkeep            *= scale;
+        lentToHouseholds  *= scale;
+        repaidByHouseholds *= scale;
+        fundingCost       *= scale;
+        openingEquity     *= scale;
+        hotMoneyIn        *= scale;
+        hotMoneyOut       *= scale;
+        resolutionLoss    *= scale;
+        capitalInjected   *= scale;
+        capitalFromHome   *= scale;
+        bailoutReceived   *= scale;
+        foundingSettlement *= scale;
+        depositInterestToHouseholds *= scale;
+        depositInterestToSectors    *= scale;
+        depositInterestToForeign    *= scale;
+        taxPaid           *= scale;
+        profitLastMonth   *= scale;
+    }
+
+
+    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        depositsPerBranch    = DEPOSITS_PER_BRANCH / unit;
+        paidInPerBranch      = PAID_IN_PER_BRANCH / unit;
+        domesticCapitalScale = DOMESTIC_CAPITAL_SCALE / unit;
+    }
+
 }

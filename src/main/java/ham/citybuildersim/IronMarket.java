@@ -163,4 +163,12 @@ public class IronMarket {
         rSupply = 0;
         rDemand = 0;
     }
+
+    /** Ore prices in the new unit. All three are the city's own money. */
+    public void redenominate(double scale) {
+        scrapPrice  *= scale;
+        exportPrice *= scale;
+        localPrice  *= scale;
+    }
+
 }

@@ -70,6 +70,22 @@ public class LabourMarket {
     public static final double MIN_SETTABLE = .200;
     public static final double MAX_SETTABLE = 4.000;
 
+    /**
+     * The same bounds, in TODAY's money.
+     *
+     * A settable range is a range of PRICES, so it has to be reformed with
+     * every other price - otherwise a hundred-to-one reform leaves a player
+     * unable to set a minimum wage below what is now a hundred times the
+     * average one. That is the same shape of bug as MAX_SETTABLE being applied
+     * to an indexed floor in phase 5, and as MATERIAL_MONTHS before it: a bound
+     * in one unit applied to a quantity in another.
+     */
+    private double minSettable = MIN_SETTABLE;
+    private double maxSettable = MAX_SETTABLE;
+
+    public double getMinSettable() { return minSettable; }
+    public double getMaxSettable() { return maxSettable; }
+
     private double minimumWage = DEFAULT_MINIMUM_WAGE;
 
     /* ===================================================================
@@ -189,8 +205,130 @@ public class LabourMarket {
     }
 
     /** What this job would pay in a city with exactly enough people for it. */
+    /* ==================== THE COST OF LIVING ====================
+     *
+     * Jerus, on deferring inflation: wages should show "slow partial drift".
+     *
+     * This is the part of inflation that cannot be deferred. A devaluation IS
+     * inflation, through import prices, whether or not a general price model
+     * exists - the shops' stock, the mills' scrap and the builders' materials
+     * are all bought abroad, and halving the currency doubles them. That happens
+     * with or without this class knowing about it.
+     *
+     * What this decides is whether anybody's pay follows. With wages perfectly
+     * sticky a devaluation cuts real incomes with nothing pushing back, and the
+     * household balance sheet turns that straight into hunger, bankruptcy and
+     * emigration - so every currency crisis becomes a death spiral. Real
+     * economies get partial pass-through and a long lag.
+     *
+     * A THIRD of the price move, reached over about a year. Deliberately not
+     * full: workers never quite catch up, which is what makes a devaluation
+     * genuinely cost something rather than being a unit change.
+     */
+
+    /**
+     * How much of a rise in prices wages eventually chase.
+     *
+     * ALL OF IT, IN BOTH DIRECTIONS. It was a third, which is what you write
+     * when the price index is a placeholder and you are not sure you believe
+     * it. A third is a claim that workers permanently accept two thirds of
+     * every price rise as a pay cut and never catch up - which compounds, and
+     * over three hundred years says real wages fall to nothing.
+     *
+     * Prices fall and wages follow them DOWN too. There is no ratchet here,
+     * because a ratchet is a separate mechanism and this model does not have
+     * one. Measured over 4,001 months: wages lifted -6.0%, because prices ended
+     * slightly below where they started.
+     *
+     * AND IT WAS BLAMED ON THE WRONG THING FIRST, which is worth keeping. At
+     * 1.0 four harnesses failed, and the diagnosis was this loop:
+     *
+     *     rent -> price index -> wage -> rent
+     *
+     * rent is most of the basket, rent follows the unskilled wage, and at full
+     * pass-through the wage follows the basket. Steady-state gain is the rent
+     * weight, so the multiplier is about 2 and every shock doubles itself. All
+     * true, and all survivable - the actual cause was one line in MoneyAudit
+     * declaring the bank's entire wholesale funding cost as interest paid
+     * abroad, which put the exchange rate against its ceiling and drove the
+     * whole price level from outside. Fix that and full pass-through is 31/31
+     * green with inflation at zero.
+     *
+     * A loop that is real is not automatically the loop that is biting.
+     */
+    public static final double COST_OF_LIVING_PASS_THROUGH = 1.0;
+
+    /**
+     * How fast they chase it. A twenty-fourth of the gap a month is two years.
+     *
+     * DOUBLED WITH THE PASS-THROUGH, and the two go together. Full
+     * pass-through at the old one-year lag would have wages catching prices
+     * almost as fast as prices move, which leaves no interval in which
+     * inflation HURTS anybody - and a price rise nobody feels is not inflation,
+     * it is a change of units.
+     *
+     * Two years is long enough that a shock costs real wages for a good while
+     * before they recover, and short enough that a SUSTAINED inflation is
+     * chased, which is what turns a shock into a spiral. That is the whole
+     * mechanism: wages chasing last year's prices into this year's prices.
+     */
+    public static final double DRIFT_PER_MONTH = 1.0 / 24;
+
+    private double costOfLiving = 1.0;
+    private double livingTarget = 1.0;
+
+    /**
+     * @param priceIndex what a household's basket costs now against founding.
+     *                   A REAL index since phase 5 - see PriceIndex. It used to
+     *                   be handed the exchange rate as a stand-in, on the
+     *                   reasoning that the world's prices do not move so the
+     *                   rate is the only thing changing what an import costs.
+     *                   That stopped being true when the shelf price became
+     *                   cost-plus, and was never true of rent.
+     */
+    public void updateCostOfLiving(double priceIndex) {
+        if (priceIndex <= 0) return;
+        livingTarget = 1 + (priceIndex - 1) * COST_OF_LIVING_PASS_THROUGH;
+        costOfLiving += (livingTarget - costOfLiving) * DRIFT_PER_MONTH;
+    }
+
+    /** What wages have been lifted by, chasing the cost of living. */
+    public double getCostOfLiving() { return costOfLiving; }
+
+    /** Where they are heading. */
+    public double getLivingTarget() { return livingTarget; }
+
+    public void setCostOfLiving(double value) {
+        if (value > 0) this.costOfLiving = value;
+    }
+
     public double baseWage(JobType job) {
-        return minimumWage * ratioOf(job);
+        /*
+         * ONE INDEXATION, NOT TWO - AND IT IS THIS ONE.
+         *
+         * A runaway lived here for an hour. Making the player's floor real, by
+         * indexing minimumWage to the price level, put costOfLiving into every
+         * wage TWICE: once in the floor and once here. A wage then went as the
+         * SQUARE of the price index, rent follows the unskilled wage, and rent
+         * is half of the price index. index -> wage^2 -> rent -> index is not a
+         * loop with a gain, it is an exponent. Measured: rent went 0.12, 0.14,
+         * 0.24, 0.86, 19,667,429, Infinity over eight years. The shelf price
+         * sat calmly at 0.63 the whole time - the half of the basket that was
+         * NOT in the loop never moved, which is what said where to look.
+         *
+         * THE FIRST FIX WAS THE WRONG END. Removing costOfLiving from here
+         * stopped the runaway and broke four harnesses, because this line is
+         * where every wage in the game learns about prices and the fixtures all
+         * measure wages.
+         *
+         * The right end is that minimumWage was ALREADY real. It is multiplied
+         * by costOfLiving here, so a floor of 0.80 in founding money is already
+         * worth 0.80 in founding money whatever prices do - the only place it
+         * was nominal was the hard clamp in advanceMonth(), which is one line
+         * and is now indexed too. Nothing else had to change, and the player's
+         * ± % sits on top of a floor that was real all along.
+         */
+        return minimumWage * ratioOf(job) * costOfLiving;
     }
 
     /* ===================================================================
@@ -264,7 +402,13 @@ public class LabourMarket {
             // Nobody is paid under the minimum, whatever the band's own floor
             // works out to. For the unskilled band the two are the same number,
             // which is why an unskilled surplus cannot be priced away at all.
-            wage[i] = Math.max(wage[i], minimumWage);
+            /*
+             * INDEXED, because this is the one place the floor was nominal.
+             * baseWage() multiplies the floor by costOfLiving, so the floor is
+             * real everywhere else; a bare `minimumWage` here is a legislated
+             * minimum that inflation quietly removes. See getCashMinimumWage().
+             */
+            wage[i] = Math.max(wage[i], cashMinimumWage());
         }
     }
 
@@ -350,7 +494,68 @@ public class LabourMarket {
         }
         return 1;
     }
+    /* ===================================================================
+       THE MINIMUM WAGE IS A STANDARD OF LIVING, NOT A NUMBER OF DOLLARS.
+
+       Jerus: "set the minimum wage, and then have the player modify the min
+       wage by +- % and then have it go off that".
+
+       So the dial is REAL. The player sets what the floor is worth - in
+       founding money - and it holds that worth as prices move; on top of it
+       sits a percentage they nudge up or down, and that percentage is the
+       actual lever. "Minimum wage, +8%" means eight per cent above the
+       indexed base, and it stays eight per cent above it next year.
+
+       WHY THIS RATHER THAN A CASH FIGURE. With wages now chasing prices in
+       full, a nominal floor is a floor that inflation quietly removes: the
+       player sets $1.20, prices double, and the floor is worth sixty cents
+       while every screen still says $1.20. That is exactly how a real minimum
+       wage behaves and it is a miserable thing to put in a game, because the
+       policy decays through inaction and nothing on screen says so.
+
+       Real, with an explicit percentage, means the player's decision stays the
+       decision they made. The cash figure is still shown - it is what the
+       floor comes to at today's prices - but it is an OUTPUT now, not the
+       input.
+       =================================================================== */
+
+    /** What the player has added to or taken off the floor, as a share. */
+    private double minimumWageAdjustment;
+
+    /** The real floor, in founding money. What the player set. */
     public double getMinimumWage()      { return minimumWage; }
+
+    /** The same figure. Kept because "base" is what the screen calls it. */
+    public double getMinimumWageBase()  { return minimumWage; }
+
+    /** The player's nudge, as a share. +.08 is eight per cent above the base. */
+    public double getMinimumWageAdjustment() { return minimumWageAdjustment; }
+
+    /**
+     * Re-strikes the cash floor from the base, the index and the adjustment.
+     *
+     * Called every month, because the whole point is that it moves when prices
+     * do without anybody touching the dial.
+     */
+    /**
+     * The floor in TODAY'S money: the real floor, lifted by the cost of living.
+     *
+     * NOT clamped to MIN_SETTABLE..MAX_SETTABLE. Those bounds are what a player
+     * may type, in founding money, and they belong on the real figure. Applying
+     * a nominal ceiling of 4.00 to an indexed quantity means that once prices
+     * have quadrupled the floor is frozen and the dial does nothing - the same
+     * shape as MATERIAL_MONTHS against the largest reachable position in
+     * CapitalFlows: a bound set in one unit, applied to a quantity that has
+     * since changed units.
+     */
+    public double cashMinimumWage() {
+        return minimumWage * costOfLiving * (1 + minimumWageAdjustment);
+    }
+
+    /** Moves the percentage. The base is left alone. */
+    public void setMinimumWageAdjustment(double share) {
+        minimumWageAdjustment = Math.max(-.9, Math.min(2.0, share));
+    }
 
     /** How far above its base a job is paying - 1.00 is the going rate. */
     public double premium(JobType job) {
@@ -366,8 +571,29 @@ public class LabourMarket {
      * year rather than on the turn it is signed - which is both truer and the
      * only version a player can see happening.
      */
+    /**
+     * Sets the floor as a CASH figure, in today's money.
+     *
+     * AND SETS THE REAL BASE TO MATCH, which is the whole of a bug worth
+     * recording. This method used to be the only way in, and reindexing runs
+     * every month from the base - so a caller that set the cash figure had it
+     * silently overwritten on the next tick by a base that knew nothing about
+     * it. LabourCheck caught it immediately ("doubling the floor moved the
+     * unskilled wage: FAIL"), which is exactly what that assertion is for: two
+     * setters for one quantity is one setter too many unless they agree.
+     *
+     * They agree now. The base is set to whatever reproduces this cash figure
+     * at today's index, so every existing caller - the harnesses, the load
+     * path, the old screen - behaves exactly as it did, while the real floor
+     * underneath is correct and holds its worth from here on.
+     */
     public void setMinimumWage(double value) {
-        minimumWage = clamp(value, MIN_SETTABLE, MAX_SETTABLE);
+        minimumWage = clamp(value, minSettable, maxSettable);
+    }
+
+    /** Sets the real floor, in founding money. The same dial as setMinimumWage. */
+    public void setMinimumWageBase(double value) {
+        setMinimumWage(value);
     }
 
     /* ===================================================================
@@ -381,9 +607,13 @@ public class LabourMarket {
        =================================================================== */
 
     public double[] state() {
-        double[] out = new double[wage.length + 1];
+        double[] out = new double[wage.length + 3];
         out[0] = minimumWage;
         System.arraycopy(wage, 0, out, 1, wage.length);
+        // The real floor and the player's nudge, appended so an older save
+        // restores its cash figure and starts with the base at default.
+        out[wage.length + 1] = minimumWage;
+        out[wage.length + 2] = minimumWageAdjustment;
         return out;
     }
 
@@ -396,11 +626,42 @@ public class LabourMarket {
      * class was doing.
      */
     public void restore(double[] saved) {
-        if (saved == null || saved.length != wage.length + 1) {
+        /*
+         * `!=` became `<`, and that is the difference between a save format
+         * that can grow and one that cannot. The old check threw away the whole
+         * wage ladder the moment the array changed length by one - so adding
+         * the real minimum wage below would have silently reset every wage in
+         * every existing city to base.
+         */
+        if (saved == null || saved.length < wage.length + 1) {
             resetToBase();
             return;
         }
-        minimumWage = clamp(saved[0], MIN_SETTABLE, MAX_SETTABLE);
+        minimumWage = clamp(saved[0], minSettable, maxSettable);
         System.arraycopy(saved, 1, wage, 0, wage.length);
+        minimumWageAdjustment = saved.length >= wage.length + 3
+                ? saved[wage.length + 2] : 0;
     }
+
+    /**
+     * Wages and the floor, in the new unit. See Denomination.
+     *
+     * costOfLiving and livingTarget are INDICES - ratios against a base year -
+     * so they do not move, and moving them would be the bug. The same reform
+     * that halves every price halves the base it is measured against.
+     */
+    public void redenominate(double scale) {
+        minimumWage *= scale;
+        minSettable *= scale;
+        maxSettable *= scale;
+        for (int i = 0; i < wage.length; i++) wage[i] *= scale;
+    }
+
+
+    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        minSettable = MIN_SETTABLE / unit;
+        maxSettable = MAX_SETTABLE / unit;
+    }
+
 }

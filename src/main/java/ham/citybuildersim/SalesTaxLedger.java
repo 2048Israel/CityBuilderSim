@@ -256,4 +256,16 @@ public class SalesTaxLedger {
     public void reset() {
         startMonth();
     }
+
+    /** The month's VAT working, in the new unit. */
+    public void redenominate(double scale) {
+        for (int i = 0; i < sectors; i++) {
+            taxableSales[i]  *= scale;
+            importTax[i]     *= scale;
+            zeroRated[i]     *= scale;
+            creditedInput[i] *= scale;
+            payable[i]       *= scale;
+        }
+    }
+
 }

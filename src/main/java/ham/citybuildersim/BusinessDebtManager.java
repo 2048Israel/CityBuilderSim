@@ -566,4 +566,18 @@ public class BusinessDebtManager {
         formatter.setMaximumFractionDigits(2);
         formatter.setMinimumFractionDigits(0);
     }
+
+    /** Every business loan and this month's lending, in the new unit. */
+    public void redenominate(double scale) {
+        lentThisMonth   *= scale;
+        repaidThisMonth *= scale;
+        for (BusinessDebt loan : loans) {
+            if (loan != null) loan.redenominate(scale);
+        }
+        maturedPrincipal.replaceAll((sector, due) -> due * scale);
+        writtenOffThisMonth.replaceAll((sector, off) -> off * scale);
+        writtenOffTotal.replaceAll((sector, off) -> off * scale);
+        assets.replaceAll((sector, value) -> value * scale);
+    }
+
 }

@@ -263,7 +263,168 @@ public class CommercialHandler {
     private double importPrice = .20;
 
     //temporary variables
-    private double storeSellPrice = .3;
+    /* ==================== WHAT THE SHOPS CHARGE ====================
+     *
+     * A CONSTANT until 2026-09-07, and the day the exchange rate started moving
+     * that became untenable. The shops buy their stock at the world price
+     * converted at the rate; they were selling it at $0.30 whatever they had
+     * paid. So a devaluation raised what the city spent abroad and raised
+     * nothing anybody was charged for it, and the national accounts came apart:
+     * measured at C 30,136 against NX -31,052, which is a GDP of MINUS $727 in
+     * a city of two hundred thousand people.
+     *
+     * This is the consumer-price half of "a devaluation is inflation", and the
+     * half Jerus wanted to defer. It turns out not to be deferrable: if import
+     * costs enter the economy but never reach a price anybody pays, the accounts
+     * do not balance.
+     *
+     * COST-PLUS, WITH A LAG. The shops price at what their stock cost them plus
+     * a margin, and move towards that over months rather than repricing the
+     * shelf every time the currency twitches. Same shape as the wage drift in
+     * LabourMarket, and for the same reason: a jump straight to the new price
+     * hits households in one month with nothing smoothing it.
+     */
+
+    /** What the shops add to what their stock cost them. */
+    public static final double RETAIL_MARKUP = 1.50;
+
+    /** How fast the shelf catches up with the invoice. A quarter, roughly. */
+    public static final double REPRICE_SPEED = .25;
+
+    /** The price the game opened at, and the floor it will not go below. */
+    public static final double OPENING_SELL_PRICE = .3;
+
+    /**
+     * The same floor, in TODAY's money.
+     *
+     * A money constant cannot survive a currency reform: after lopping two
+     * zeros a thirty-cent floor would be a thirty-dollar floor in the old
+     * unit, which is a hundredfold real increase nobody voted for. So the
+     * constant above is the FOUNDING value and this is the live one, seeded
+     * from it and divided along with every other price when the player reforms.
+     * See Denomination.
+     */
+    private double openingSellPrice = OPENING_SELL_PRICE;
+
+    public double getOpeningSellPrice() { return openingSellPrice; }
+
+    private double storeSellPrice = OPENING_SELL_PRICE;
+
+    /**
+     * Moves the shelf price toward what the stock actually cost.
+     *
+     * Blended across what the shops actually bought: local food at the local
+     * price, imports at the import price. A city buying everything at home is
+     * insulated from the exchange rate, which is the whole point of having
+     * substituted - and is why import substitution shows up as households being
+     * protected rather than only as a better trade balance.
+     */
+    /**
+     * How far above cost-plus a total shortage can push the shelf price.
+     *
+     * A shop that can meet a fifth of what its customers came for does not sell
+     * at cost plus fifty per cent - it sells at whatever clears the shelf, and
+     * what clears the shelf is whatever the people who can still afford it will
+     * pay.
+     *
+     * TUNED DOWN FROM 2.5, AND THE REASON MATTERS MORE THAN THE NUMBER. At 2.5
+     * five harnesses failed at once - nobody enrolled at the college, nobody
+     * migrated in, the bank fixture stopped wanting a bank - because those
+     * cities never build roads, so their delivery ratio sits at about a quarter
+     * FOR EVER and the multiple pinned at its ceiling for three hundred years
+     * while wages chased it two years behind. A permanent famine price is not
+     * what a shortage does; it is what a shortage does if nothing is ever
+     * fixed, which is a property of those fixtures rather than of cities.
+     *
+     * Sixty per cent over cost-plus at total shortage is a real ration and a
+     * survivable one. If a city genuinely wants famine prices it can have them
+     * by being genuinely unable to feed itself for a decade, and the sick rate
+     * will say so.
+     */
+    public static final double MAX_SCARCITY_MULTIPLE = 1.6;
+
+    /** Delivery share at which scarcity stops adding anything. */
+    public static final double COMFORTABLE_DELIVERY = .95;
+
+    /**
+     * What the shops charge, and this is where prices learned to ration.
+     *
+     * COST-PLUS SETS THE FLOOR AND SCARCITY LIFTS IT. Before this the whole
+     * method was the floor: `blendedCost x 1.50`, with no reference of any kind
+     * to whether the shops could actually meet demand. A city whose shops could
+     * hand over 46% of what households planned to buy charged exactly what a
+     * city with full shelves charged, for ever.
+     *
+     * That is not a small omission, and its consequences were being read as
+     * three other problems:
+     *
+     *   - 42% of the city was permanently short of food, because nothing ever
+     *     rationed the shortage. A price that does not move cannot allocate.
+     *   - the hunger term of the sick rate sat at its cap, and was written up
+     *     as a health problem.
+     *   - and there was no demand-pull inflation ANYWHERE in the model, which
+     *     meant a policy interest rate would have had nothing to cool.
+     *
+     * WHAT IT CHANGES ABOUT HUNGER, said plainly because it is the point and it
+     * is not kind. Today a shortage is shared: everybody gets less. After this,
+     * a shortage is PRICED: the shelves clear and the households at the bottom
+     * of the wage ladder are the ones who go without. That is what a shortage
+     * does in an economy with prices in it, it is why bread riots are about
+     * prices rather than about queues, and it turns hunger from a fact about
+     * the city into a fact about who is poor in it - which is a thing the
+     * player can act on, with the minimum wage, the sales tax, or more shops.
+     *
+     * @param plannedUnits demand people came with AND could pay for (rDemand)
+     * @param deliveredUnits what the shops could actually hand over
+     */
+    public void repriceShelf(double localUnits, double localPrice,
+                             double importUnits, double importPrice,
+                             double plannedUnits, double deliveredUnits) {
+        double units = Math.max(0, localUnits) + Math.max(0, importUnits);
+        if (units <= 0) return;
+
+        double blendedCost = (Math.max(0, localUnits) * Math.max(0, localPrice)
+                + Math.max(0, importUnits) * Math.max(0, importPrice)) / units;
+        if (blendedCost <= 0) return;
+
+        double floor = Math.max(openingSellPrice, blendedCost * RETAIL_MARKUP);
+
+        /*
+         * The delivered share, and the multiple it justifies. At or above
+         * COMFORTABLE_DELIVERY the shops met demand and there is nothing to
+         * ration, so the price is cost-plus and this term is exactly 1.
+         */
+        double delivered = plannedUnits > 0
+                ? Math.max(0, Math.min(1, deliveredUnits / plannedUnits))
+                : 1;
+        double shortage = Math.max(0, COMFORTABLE_DELIVERY - delivered)
+                / COMFORTABLE_DELIVERY;
+        double scarcity = 1 + shortage * (MAX_SCARCITY_MULTIPLE - 1);
+
+        lastScarcityMultiple = scarcity;
+        lastDeliveredShare = delivered;
+
+        double target = floor * scarcity;
+        storeSellPrice += (target - storeSellPrice) * REPRICE_SPEED;
+    }
+
+    private double lastScarcityMultiple = 1;
+    private double lastDeliveredShare = 1;
+
+    /** How much of the shelf price is the shortage rather than the cost. */
+    public double getScarcityMultiple() { return lastScarcityMultiple; }
+
+    /** The share of what customers came for that the shops could hand over. */
+    public double getDeliveredShare() { return lastDeliveredShare; }
+
+    /** What the shelf is heading towards, for the screen. */
+    public double getShelfTarget() {
+        return storeSellPrice;
+    }
+
+    public void setStoreSellPrice(double price) {
+        if (price > 0) this.storeSellPrice = price;
+    }
 
     /* =====================================================================
        RENT
@@ -333,8 +494,290 @@ public class CommercialHandler {
      *
      * A house of capacity 4 costs 4 x this whether one person lives in it or
      * six. That is what a landlord actually charges for: the flat.
+     *
+     * A LAGGED STATE since 2026-09-07, not a number re-derived each month, and
+     * that is the whole of what makes it a price rather than a formula. It is
+     * therefore SAVED - see Game.captureSave. A flow cannot be reconstructed
+     * from the state a month ended in and neither can a price that is halfway
+     * to somewhere: a reloaded city would have jumped straight to its target
+     * and the twelve months of lease stickiness would have vanished on every
+     * load. That is the eighth time this codebase has been bitten by rebuilding
+     * something instead of carrying it, and the first where the fix was written
+     * before the bug.
      */
     private double rentPrice = rentFor(PayTier.UNSKILLED.getMonthlyWage());
+
+    /* =====================================================================
+       RENT AS A MARKET
+       ---------------------------------------------------------------------
+       Jerus, asked what scarcity should do to rent: "real estates margin, plus
+       homes vs households both ways, with lag", and separately that rent should
+       be free to leave affordability entirely rather than being capped the way
+       the shelf price is.
+
+       WHAT WAS WRONG WITH THE FORMULA. rentFor() is affordability and nothing
+       else: 30% of two unskilled wages over four heads of capacity. It has
+       never had any connection to what a home costs to build, to how many homes
+       there are, or to how many households want one. Three consequences, and
+       the third is the expensive one:
+
+         - a city 60% short of housing charged exactly what a city with a spare
+           room per household charged. A price that cannot rise cannot ration
+           and cannot signal.
+         - rent moved ONLY when wages moved, so raising the minimum wage raised
+           rent by construction and the rent burden never changed. The dial the
+           player had for making housing affordable could not make housing
+           affordable.
+         - AND IT IS WHY HOUSING NEVER GETS BUILT. BusinessInvestment values a
+           residential building at what it would collect in rent. With rent
+           pinned to wages, a desperate shortage did not make housing one penny
+           more profitable to supply, so the sector looked at the same return in
+           a crisis as in a glut and mostly declined. ShortageProbe was written
+           to hunt for the bug that stopped construction; the bug was that
+           nothing ever paid it to start. A hundred and ten years of a measured
+           run went by with the city stuck at 191 homes and 329 households.
+
+       WHAT IT IS NOW: a cost floor, a scarcity multiple, and a lag.
+
+         THE FLOOR is what it costs to supply one more person of capacity - the
+         cheapest residential building the city could put up, valued at today's
+         materials and today's land, spread over the return a landlord wants for
+         putting money in the ground. Rent therefore rises when building gets
+         dear, which is a channel the game did not have: expensive land and
+         expensive concrete now reach households through their rent.
+
+         THE MULTIPLE is households against front doors, and it goes both ways.
+         Short of doors, rent rises without limit. Overbuild and it falls
+         without limit, below cost, and the landlords eat it - which is what a
+         glut does and is what makes overbuilding a real mistake rather than a
+         free one.
+
+         THE LAG is a twelve-month lease. A twelfth of tenancies come up for
+         renewal each month, so a twelfth of the gap to the new price closes
+         each month. Nobody had to pick a number for this; the lease picked it.
+
+       WHY UNBOUNDED IS SAFE HERE, which is not obvious. Unbounded rent in a
+       permanently short city would run away for ever - except that dear rent
+       empties the city. It goes out through the household balance sheet, which
+       already discharges households that cannot meet their fixed costs and
+       already sends a share of them away (HouseholdBalance.getLeavingCity, fed
+       into Migration.setBankruptcyDepartures), and now also through the
+       arrivals pull, which reads the rent burden. Fewer households against the
+       same doors is a lower multiple. The runaway has a brake with people in
+       it, which is the honest version of a cap.
+
+       AND IT MAKES THE WAGE LOOP SAFER, which was the opposite of what I
+       expected. Rent is about three quarters of the price index basket. Under
+       the old formula the loop was rent -> index -> cost of living -> wage ->
+       rent, closed, with a gain of about .77 at full pass-through: a hair under
+       one, which is why full pass-through had to be measured so carefully. This
+       cuts the last link. Wages no longer set rent; construction costs and
+       housing scarcity do, and wages reach those only distantly through what
+       materials cost to make. The loop that worried me most is now the loop
+       this change opened up and mostly closed.
+       ===================================================================== */
+
+    /**
+     * What a landlord wants back each year for what the building cost.
+     *
+     * READ OFF THE GAME, NOT CHOSEN. At founding the cheapest way to house
+     * somebody is a House: $30 of cash and ten units of materials at $2.00,
+     * which is $50 of structure for six people, or $8.3333 per person of
+     * capacity. Founding rent under the old affordability formula is 30% of
+     * two $0.800 wages over four heads, which is $0.120 a month. Those two
+     * numbers imply 17.3% a year - so that is what this is. The game has been
+     * paying its landlords 17.3% since the day it was written; nobody had ever
+     * had cause to write it down.
+     *
+     * Which is the point. THE LEVEL OF RENT DOES NOT CHANGE ON THE DAY THIS
+     * SHIPS - opening rent comes out at $0.12014 against $0.12000. What
+     * changes is what MOVES it. A rebalance smuggled in under a mechanic is
+     * two changes wearing one coat, and only one of them gets tested.
+     *
+     * It is deliberately generous - 17% gross is a fat yield - because homes in
+     * this game carry no upkeep, no vacancy loss and no depreciation. When they
+     * get one, this comes down.
+     *
+     * If anybody re-costs the House, opening rent moves with it. That is
+     * correct and is the whole reason the cost is read from the template rather
+     * than typed here: a dearer house is dearer to rent.
+     */
+    public static final double LANDLORD_YIELD = .173;
+
+    /**
+     * How hard rent answers a shortage of front doors.
+     *
+     * At 1.0 the multiple is the ratio: two households per door is twice the
+     * rent, half a household per door is half the rent. Proportional, symmetric
+     * in the only way that makes sense for a ratio - a doubling up and a
+     * doubling down cost and save the same - and unbounded in both directions,
+     * which is what Jerus asked for.
+     *
+     * Housing is famously more inelastic than that in the short run and a case
+     * could be made for 1.5 or 2. One is where this starts because it is the
+     * reading that needs no defending: one household bidding per door.
+     */
+    public static final double SCARCITY_ELASTICITY = 1.0;
+
+    /**
+     * The lease, in months, which is also the lag.
+     *
+     * A twelfth of the city's tenancies come up for renewal each month and only
+     * those can be repriced, so rent closes a twelfth of the gap to its target
+     * each month - a half-life of about eight months. Sticky enough that a bad
+     * quarter does not move it and a decade does.
+     */
+    public static final int LEASE_MONTHS = 12;
+
+    /**
+     * Below this many front doors the ratio stops meaning anything.
+     *
+     * A city with two homes and three hundred households is not a housing
+     * market, it is a founding month. Guarding here rather than clamping the
+     * multiple keeps the curve itself unbounded, which is the specification.
+     */
+    private static final int MIN_HOMES_FOR_A_MARKET = 10;
+
+    /** What supplying one person of capacity costs, at today's prices. */
+    private double marginalHousingCost;
+
+    /** Set by EconomyManager each month from the cheapest residential template. */
+    public void setMarginalHousingCost(double perCapacity) {
+        this.marginalHousingCost = Math.max(0, perCapacity);
+    }
+
+    public double getMarginalHousingCost() { return marginalHousingCost; }
+
+    /** The rent that just covers building the next home and the landlord's return. */
+    public double rentFloor() {
+        return marginalHousingCost * LANDLORD_YIELD / 12;
+    }
+
+    /**
+     * How many households the city has, which is NOT `household`.
+     *
+     * `household` in this class is household CAPACITY - the people the
+     * residential buildings hold - and `occupiedHomes` is doors that are lived
+     * in. Neither is the number of families wanting somewhere to live, and the
+     * ratio this price is built on needs exactly that. It comes from
+     * FamilyModel.totalHouseholds(), carried in the same way rentWeight is,
+     * rather than being reconstructed here out of two numbers that nearly mean
+     * it. Guessing from a near-synonym is how the last four of these went
+     * wrong.
+     */
+    private double householdCount;
+
+    public void setHouseholdCount(double count) {
+        this.householdCount = Math.max(0, count);
+    }
+
+    public double getHouseholdCount() { return householdCount; }
+
+    /** Households per front door: above one is a shortage, below one is a glut. */
+    public double housingPressure() {
+        if (homes < MIN_HOMES_FOR_A_MARKET || householdCount <= 0) return 1;
+        return householdCount / homes;
+    }
+
+    /**
+     * The multiple scarcity justifies over the cost floor. Unbounded both ways.
+     */
+    public double rentScarcityMultiple() {
+        double pressure = housingPressure();
+        if (pressure <= 0) return 1;
+        return Math.pow(pressure, SCARCITY_ELASTICITY);
+    }
+
+    /** Where rent is heading, before the lease slows it down. */
+    public double rentTarget() {
+        double floor = rentFloor();
+        if (floor <= 0) return rentPrice;      // no template, no market
+        return floor * rentScarcityMultiple();
+    }
+
+    /**
+     * Moves rent a lease-length closer to what the market says it should be.
+     *
+     * Called once a month from updateCommercial(), AFTER the homes and the
+     * household count are set, because both are inputs. Deliberately not folded
+     * into updateStoreWages(), which is where rent used to be struck: that
+     * method runs off the wage array, and the entire point of this change is
+     * that rent no longer comes from there.
+     */
+    public void repriceRent() {
+        double target = rentTarget();
+        if (target <= 0) return;
+        lastRentTarget = target;
+        rentPrice += (target - rentPrice) / LEASE_MONTHS;
+        if (rentPrice < 0) rentPrice = 0;
+    }
+
+    private double lastRentTarget;
+
+    /** What rent is walking towards, for the screen. */
+    public double getRentTarget() { return lastRentTarget > 0 ? lastRentTarget : rentPrice; }
+
+    public void setRentPrice(double price) {
+        if (price > 0) this.rentPrice = price;
+    }
+
+    /**
+     * Every price and balance this handler owns, in the new unit.
+     *
+     * @param scale what to multiply by - a hundredth for a hundred-to-one reform
+     */
+    public void redenominate(double scale) {
+        openingSellPrice *= scale;
+        storeSellPrice   *= scale;
+        rSellPrice       *= scale;
+        rentPrice        *= scale;
+        lastRentTarget   *= scale;
+        commercialCash   *= scale;
+        realEstateCash   *= scale;
+        foodPrice        *= scale;
+        importPrice      *= scale;
+        spendingCapacity *= scale;
+        wantedSpend      *= scale;
+        marginalHousingCost *= scale;
+        pricePerWatt      *= scale;
+        pricePerWaterUnit *= scale;
+        realEstatePropertyTax   *= scale;
+        realEstateInterestExpense *= scale;
+        retailPropertyTax       *= scale;
+        retailInterestExpense   *= scale;
+        for (int i = 0; i < storeWages.length; i++) storeWages[i] *= scale;
+        for (int i = 0; i < bankWages.length; i++)  bankWages[i]  *= scale;
+
+        /* -------------------------------------------------------------------
+           AND THE MONTH'S REPORT, which is not optional and looked as if it
+           were.
+
+           Every rSomething below is last month's income statement, and the
+           instinct is to leave it alone because computeMonthlyReport() writes
+           it again next month. That is true and it is too late: the figures are
+           READ at the top of the next month, before they are rewritten -
+           households.update() takes rGrossRevenue and rRentIncome to work out
+           what the city earned and paid in rent, and the national accounts take
+           them for C. So for one month a reformed city recorded its shopping
+           and its rent at the OLD scale against the NEW everything else, and
+           the households came out of it richer than they should have been by
+           exactly the factor of the reform.
+
+           A statement that is read before it is rewritten is a stock, not a
+           flow, for as long as it takes to read it.
+           ------------------------------------------------------------------- */
+        rBankPayroll *= scale;  rNetIncome *= scale;  rGrossRevenue *= scale;
+        rImportTax *= scale;    rPayroll *= scale;    rInventoryCost *= scale;
+        rElectricityCost *= scale;  rWaterCost *= scale;
+        rRetailInterest *= scale;   rRealEstateInterest *= scale;
+        rRetailPropertyTax *= scale;  rRetailOperatingCost *= scale;
+        rRetailOperatingIncome *= scale;  rRetailNetIncome *= scale;
+        rRentIncome *= scale;   rPropertyMaintenance *= scale;
+        rPropertyTaxExpense *= scale;  rRealEstateExpenses *= scale;
+        rRealEstateNetIncome *= scale;  rTotalNetIncome *= scale;
+        rRetailTax *= scale;    rRealEstateTax *= scale;  rTotalTax *= scale;
+        rLocalPurchaseValue *= scale;  rImportPurchaseValue *= scale;
+    }
 
     /**
      * Rent per person of capacity at a given unskilled wage.
@@ -415,13 +858,18 @@ public class CommercialHandler {
                     ? wages[i] * bankJobs[i] : 0;
         }
 
-        // Rent follows the unskilled wage the market is paying this month.
-        // Same array the payroll is struck from, so the two cannot disagree,
-        // and the load path reaches here through updateEcon() so a reloaded
-        // city charges the rent it was charging.
-        if (wages.length > JobType.NO_DIPLOMA.ordinal() && wages[JobType.NO_DIPLOMA.ordinal()] > 0) {
-            rentPrice = rentFor(wages[JobType.NO_DIPLOMA.ordinal()]);
-        }
+        /*
+         * RENT NO LONGER COMES FROM HERE. It used to be re-derived off this
+         * very wage array every month - `rentPrice = rentFor(unskilled)` - and
+         * cutting that line is the substance of making rent a market. It is now
+         * a lagged price set in repriceRent() from what housing costs to build
+         * and how many households are chasing how many doors, and wages reach
+         * it only the long way round, through what materials cost to make.
+         *
+         * rentFor() survives as the FOUNDING value and as the affordability
+         * yardstick HouseholdCheck measures the burden against. It is no longer
+         * the price.
+         */
         double totalFilled = 0;
         int totalJobsStore = 0;
 
@@ -538,6 +986,11 @@ public class CommercialHandler {
     public double getGrossRevenue(){
         return rGrossRevenue;
     }
+
+    private double rSellPrice = OPENING_SELL_PRICE;
+
+    /** The shelf price the month's revenue was actually struck at. */
+    public double getReportSellPrice() { return rSellPrice; }
     public double getImportTax(){
         return rImportTax;
     }
@@ -856,9 +1309,27 @@ public class CommercialHandler {
     /** Shelf stock the stores are aiming for: a few months of recent sales. */
     private int restockTarget() {
 
-        // Month one has no sales history, so fall back to the demand the stores
-        // could serve if they were stocked.
-        int recentDemand = Math.max(getLastMonthSales(), Math.min(storeCoverage, population));
+        /*
+         * WHAT THEY SELL, NOT WHO WALKS PAST.
+         *
+         * This was max(lastMonthSales, min(coverage, population)) - a month-one
+         * fallback that never stopped being applied. So the shops stocked for
+         * every customer they could theoretically serve, every month, however
+         * few of them could actually afford anything: measured in a city of
+         * 231,000, they imported 212,000 units a month and sold 77,700.
+         *
+         * Harmless-looking while the import price was a small constant. Once the
+         * exchange rate started moving it became the largest item in the city's
+         * balance of payments by a factor of four - $55,059 a month of imported
+         * food against $12,659 of everything the city sold abroad - and drove
+         * GDP negative, because the units were bought in foreign currency and
+         * then sat on a shelf nobody could buy them from.
+         *
+         * The fallback is still here. It just knows when it is month one.
+         */
+        int recentDemand = getLastMonthSales() > 0
+                ? getLastMonthSales()
+                : Math.min(storeCoverage, population);
 
         int target = (int) Math.ceil(recentDemand * STORE_COVER_MONTHS);
         return Math.min(target, storeCapacity);
@@ -917,6 +1388,27 @@ public class CommercialHandler {
          */
         localPurchaseValue = localImport * foodPrice;
         importPurchaseValue = globalImport * importPrice;
+
+        /*
+         * ...and the shelf follows the invoice, slowly. Struck here, off the
+         * very units and prices the shops just paid, so what they charge and
+         * what they were charged cannot be computed from different months.
+         */
+        /*
+         * Priced on the month that just traded, using the ratio this class
+         * already computes for exactly this question. getSupplyRatio() is
+         * productsSold over rDemand - what left the shelf against what people
+         * came for AND could afford - and its own comment explains why it is
+         * measured in units rather than off the takings: revenue is scaled by
+         * five ratios, so reading it off the money makes an understaffed shop
+         * look like a famine.
+         *
+         * Note what rDemand already is: demand people can PAY for. So a price
+         * rise shrinks the denominator next month, which is precisely how a
+         * price clears a market rather than chasing one.
+         */
+        repriceShelf(localImport, foodPrice, globalImport, importPrice,
+                rDemand, productsSold);
 
         /*
          * THE PRICE, AND ONLY THE PRICE, since 2026-09-06.
@@ -1094,11 +1586,56 @@ public class CommercialHandler {
         }
         rWantedDemand = Math.min(storeCoverage, wanted);
         rDemand = Math.min(rWantedDemand, affordable);
-        productsSold = Math.min(rDemand, storeInventory);
+
+        /*
+         * ================= THE SHOPS SELL WHAT THEY CAN SERVE =================
+         *
+         * The utilisation ratios used to be applied to the REVENUE and not to
+         * the UNITS:
+         *
+         *     productsSold = min(rDemand, storeInventory);
+         *     rGrossRevenue = productsSold * price * energy * water * road
+         *                     * health * fill;
+         *
+         * which handed over every unit and collected the money for a fraction
+         * of them. Measured over 140 months in a city at 35% road throughput:
+         * 419,779 units left the shelf and 117,706 were paid for. SEVENTY-TWO
+         * PERCENT of everything the shops sold was given away.
+         *
+         * The units were not lost to a leak - they were bought, they left
+         * inventory, and the shops restocked to replace them. So the city
+         * imported food, gave most of it away, and imported more. Invisible
+         * while imports were cheap and constant; the largest item in the balance
+         * of payments once the exchange rate started moving, and the reason a
+         * city of a quarter of a million could post a NEGATIVE GDP.
+         *
+         * A ratio of .35 means the shop can serve about a third of the people
+         * who want to buy - the lorries cannot get through, or the lights are
+         * off, or there is nobody on the till. It does not mean the shop serves
+         * everybody and charges a third. So it throttles the QUANTITY, the
+         * revenue is quantity times price with nothing else in it, and the units
+         * that were not sold are still on the shelf next month, which is where
+         * they were all along.
+         */
+        double serviceable = rDemand * bEnergyRatio * bWaterRatio * bRoadRatio
+                * bHealthRatio * storeFillBasis;
+        productsSold = (int) Math.floor(Math.min(serviceable, storeInventory));
         rProductsSold = productsSold;
 
-        rGrossRevenue = (productsSold * storeSellPrice)
-                * bEnergyRatio * bWaterRatio * bRoadRatio * bHealthRatio * storeFillBasis;
+        rGrossRevenue = productsSold * storeSellPrice;
+        /*
+         * THE PRICE THE MONTH ACTUALLY CHARGED, kept beside the revenue it
+         * produced. The shelf price moves every month now that shortage lifts
+         * it, so anybody recovering units from money by dividing by
+         * getStoreSellPrice() gets the answer for a price that was struck
+         * afterwards - which is exactly how ForeignCheck's "every unit that
+         * leaves the shelf is paid for" started reporting a 93-unit hole in an
+         * identity that had not changed.
+         *
+         * A flow cannot be reconstructed from the state a month ended in. This
+         * is that rule applied to a price.
+         */
+        rSellPrice = storeSellPrice;
 
         double payroll = 0;
         if (storeWages != null) {
@@ -1302,6 +1839,7 @@ public class CommercialHandler {
         rDemand = 0;
         rProductsSold = 0;
         rGrossRevenue = 0;
+        rSellPrice = storeSellPrice;
         rPayroll = 0;
         rInventoryCost = 0;
         rElectricityCost = 0;
@@ -1481,4 +2019,10 @@ public class CommercialHandler {
 
         return true;
     }
+
+    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        openingSellPrice = OPENING_SELL_PRICE / unit;
+    }
+
 }

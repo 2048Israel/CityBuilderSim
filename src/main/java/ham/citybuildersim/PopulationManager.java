@@ -848,4 +848,25 @@ public class PopulationManager {
     }
     
     
+
+    /**
+     * The wage table, in the new unit.
+     *
+     * jobWage is a COPY of the labour market's wages, taken at the top of each
+     * month by takeWagesFrom(), and totalWagePerType is that copy times the
+     * posts staffed. Both are money and neither is re-derived until the next
+     * month begins - so a reform that scaled LabourMarket and stopped there
+     * left the households being paid the OLD wage out of the NEW money for one
+     * month. Measured at a factor of two: row wages of 1,069 where 534 was
+     * wanted, households twice as rich as they should be, and a spending plan
+     * that never came back into line.
+     *
+     * Everything else here is people: cohorts, workforce, jobs, vacancies,
+     * licences and who is at school. None of it moves.
+     */
+    public void redenominate(double scale) {
+        for (int i = 0; i < jobWage.length; i++)         jobWage[i] *= scale;
+        for (int i = 0; i < totalWagePerType.length; i++) totalWagePerType[i] *= scale;
+    }
+
 }

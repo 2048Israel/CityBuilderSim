@@ -327,6 +327,24 @@ public class MiningCheck {
         try {
             game.run();
 
+            /*
+             * THE CURRENCY IS HELD STILL. This section measures what a foundry
+             * earns on imported scrap against local ore, and every world price
+             * in the game now moves with the exchange rate - so a drifting rate
+             * would have it measuring the currency instead. Caught the day the
+             * rate started moving: scrap had gone from $400 a tonne to $420 and
+             * the ceiling assertion below failed on a fixture that was right.
+             */
+            game.getForeignAccounts().pinRate(1.0);
+            /*
+             * ...AND THE WORLD'S OWN PRICES TOO, since 2026-09-07. The rate was
+             * pinned when scrap moving $400 -> $420 turned this fixture red;
+             * world inflation is a second way for the same tonne of scrap to
+             * cost something else while the harness is measuring a foundry's
+             * margin. Both pins, or neither means anything.
+             */
+            game.getWorldEconomy().pin();
+
             BuildingManager buildings = game.getBuildingManager();
             LandManager land = game.getLandManager();
 

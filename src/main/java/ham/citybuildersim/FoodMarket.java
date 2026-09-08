@@ -27,7 +27,28 @@ package ham.citybuildersim;
 public class FoodMarket {
 
     /** World price. Imports are always available here; this is the ceiling. */
-    private double importPrice = .20;
+    /**
+     * What the world charges for food, in ITS money. Fixed.
+     *
+     * The price the city actually faces is this converted at the exchange rate -
+     * see getImportPrice(). Keeping the two apart matters because this is the
+     * CEILING on the local price as well as the cost of an import: a weaker
+     * currency lifts the ceiling, which is what lets domestic producers charge
+     * more and is the whole reason a devaluation can cause import substitution.
+     */
+    private double worldPrice = .20;
+
+    private double exchangeRate = 1.0;
+
+    /** Local currency per US dollar. Pushed in by EconomyManager each month. */
+    public void setExchangeRate(double rate) {
+        this.exchangeRate = rate > 0 ? rate : 1.0;
+    }
+
+    public double getExchangeRate() { return exchangeRate; }
+
+    /** The world price, before conversion. */
+    public double getWorldPrice() { return worldPrice; }
 
     /**
      * The local price never falls below this fraction of the import price.
@@ -43,7 +64,7 @@ public class FoodMarket {
      */
     private static final double STOCK_RELEASE_MONTHS = 6;
 
-    private double localPrice = importPrice * MIN_PRICE_FRACTION;
+    private double localPrice = .20 * MIN_PRICE_FRACTION;
 
     // last settlement, for the sector reports
     private double rSupply;
@@ -75,33 +96,49 @@ public class FoodMarket {
         double scarcity = (availableSupply > 0) ? (demand / availableSupply) : 1.0;
 
         double fraction = Math.max(MIN_PRICE_FRACTION, Math.min(scarcity, 1.0));
-        localPrice = importPrice * fraction;
+        localPrice = getImportPrice() * fraction;
     }
 
     //getters
     public double getLocalPrice()  { return localPrice; }
-    public double getImportPrice() { return importPrice; }
+    /** What an import costs the city, in the city's own money. */
+    public double getImportPrice() { return worldPrice * exchangeRate; }
     public double getSupply()      { return rSupply; }
     public double getDemand()      { return rDemand; }
 
     /** Local price as a fraction of the import ceiling - 1.0 means full scarcity. */
     public double getPriceIndex() {
-        return (importPrice > 0) ? (localPrice / importPrice) : 0;
+        double ceiling = getImportPrice();
+        return (ceiling > 0) ? (localPrice / ceiling) : 0;
     }
 
     /** True when local goods are at the ceiling, i.e. local supply is short. */
     public boolean isShortage() {
-        return localPrice >= importPrice;
+        return localPrice >= getImportPrice();
     }
 
     //setters
+    /** Sets the WORLD price. The city's price is this at the exchange rate. */
     public void setImportPrice(double price) {
-        this.importPrice = price;
+        this.worldPrice = price;
     }
 
     public void resetFoodMarket() {
-        localPrice = importPrice * MIN_PRICE_FRACTION;
+        localPrice = getImportPrice() * MIN_PRICE_FRACTION;
         rSupply = 0;
         rDemand = 0;
     }
+
+    /**
+     * The city's food price in the new unit.
+     *
+     * worldPrice is NOT touched: twenty cents a unit abroad is twenty cents
+     * abroad whatever this city calls its money. It reaches the city multiplied
+     * by exchangeRate, which ForeignAccounts has already divided.
+     */
+    public void redenominate(double scale) {
+        localPrice   *= scale;
+        exchangeRate *= scale;
+    }
+
 }

@@ -360,4 +360,61 @@ public class BuildingsTemplate {
         for (int j: jobsByEducation) sum += j;
         return sum;
     }
+
+    /**
+     * What a building costs and what it costs to run, in the new unit.
+     *
+     * THIS IS THE ONE THAT WOULD HAVE BITTEN HARDEST. Building costs live in
+     * buildings.json in founding dollars, so a city that lopped two zeros and
+     * left them alone would find a House costing a hundred times its real price
+     * the next morning - the same trap as every other money constant, except
+     * this one is in a data file where nobody would think to look for it.
+     *
+     * Everything else on a template is physical: capacity, dwellings,
+     * construction points, materials, square feet, road load, production. None
+     * of it moves.
+     */
+    public void redenominate(double scale) {
+        rememberFounding();
+        cashCost *= scale;
+        upkeep   *= scale;
+    }
+
+
+    /**
+     * What this building cost when the catalogue was read, before any currency
+     * reform - so a reformed city that reloads can divide it again.
+     *
+     * buildings.json is in FOUNDING dollars and is re-read from scratch every
+     * time a game starts, so the save carries the UNIT and this carries the
+     * price the unit applies to. Keeping the founding figure rather than
+     * scaling in place is what makes seedConstants() idempotent: applying the
+     * same unit twice is a no-op, which is what a re-seed has to be.
+     */
+    private double foundingCashCost = Double.NaN;
+    private double foundingUpkeep   = Double.NaN;
+
+    /** Re-seeds this template's price at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        if (Double.isNaN(foundingCashCost)) {
+            foundingCashCost = cashCost;
+            foundingUpkeep   = upkeep;
+        }
+        cashCost = foundingCashCost / unit;
+        upkeep   = foundingUpkeep / unit;
+    }
+
+    /**
+     * ...and a reform moves the founding figure with it, so that a LATER
+     * re-seed at the new unit lands in the same place. Without this, a city
+     * that reformed twice and then reloaded would divide by the second unit
+     * from a base that had already been divided by the first.
+     */
+    private void rememberFounding() {
+        if (Double.isNaN(foundingCashCost)) {
+            foundingCashCost = cashCost;
+            foundingUpkeep   = upkeep;
+        }
+    }
+
 }

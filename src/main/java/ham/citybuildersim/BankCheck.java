@@ -172,17 +172,36 @@ public class BankCheck {
         out.println("\n--- a bank in a city that has one ---");
 
         Path root = Files.createTempDirectory("bankcheck");
+        /*
+         * THE CURRENCY IS HELD STILL THROUGHOUT THIS FILE.
+         *
+         * Every fixture here asks a question about banking - what capital
+         * supports, what a branch is worth, whether the books balance. None of
+         * them is a question about the exchange rate, and a drifting rate moves
+         * every world price in the city underneath them. Pinned after each
+         * run(), so what is measured is the bank.
+         */
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
         System.setOut(quiet);
         try {
             city.run();
+            city.getForeignAccounts().pinRate(1.0);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
             city.buildStack(template(city, "Textile Mill"), 2, false);
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Commercial Bank"), 1, false);
-            city.simulateMonths(48);
+            /*
+             * SEVENTY-TWO MONTHS, NOT FORTY-EIGHT, since 2026-09-07. The order
+             * always went through; what changed is how long it waits. Rent
+             * became a market, housing became worth supplying, and
+             * BusinessInvestment now puts far more into the construction queue -
+             * so the branch that used to be finished by month 48 comes out
+             * between 48 and 60. Nothing about the bank moved; the queue in
+             * front of it got longer.
+             */
+            city.simulateMonths(72);
         } finally {
             System.setOut(out);
         }
@@ -233,6 +252,7 @@ public class BankCheck {
         Game reloaded = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
         try {
             reloaded.run();
+            reloaded.getForeignAccounts().pinRate(1.0);
             reloaded.loadGameSave(1);
         } finally {
             System.setOut(out);
@@ -402,12 +422,62 @@ public class BankCheck {
         int branchesBuilt;
         try {
             unattended.run();
+            unattended.getForeignAccounts().pinRate(1.0);
             unattended.buildStack(template(unattended, "House"), 400, false);
             unattended.buildStack(template(unattended, "Convenience Store"), 8, false);
             unattended.buildStack(template(unattended, "Construction Depot"), 4, false);
             unattended.buildStack(template(unattended, "Coal Power Plant"), 1, false);
             unattended.buildStack(template(unattended, "Water Treatment Plant"), 1, false);
+
+            /*
+             * AND SOMEBODY HAS TO BE BORROWING, or the question does not arise.
+             *
+             * The assertion below is that a city with no bank WANTS one, and a
+             * bank is wanted because there is a loan book to carry. This fixture
+             * used to get its book from a retail sector that was quietly broke;
+             * once the shops were paid for what they sold on 2026-09-07 they
+             * stopped needing credit, the city had no debt at all, and the
+             * advisor answered "nobody is borrowing yet" - which was correct,
+             * and meant the fixture was no longer asking its own question.
+             *
+             * So the city borrows, on its own account, deliberately.
+             */
+            unattended.handleMediumBondLogic(20_000, 10, 1000);
+
+            /*
+             * ...AND KEEPS BORROWING, because a ten-year serial bond is repaid
+             * by month 120 and this fixture reads its answer at month 180.
+             *
+             * Second time this fixture has stopped asking its own question the
+             * same way. The comment above records the first: the shops were
+             * fixed, stopped needing credit, and the city had no book. This
+             * time the city's own deliberate bond simply matured before anybody
+             * looked, and the advisor again answered "nobody is borrowing yet"
+             * - correct, and about a city the fixture had not meant to build.
+             *
+             * A city that borrows once is not a city with a loan book; it is a
+             * city that borrowed once. Rolled over halfway, which is what a
+             * treasury actually does and what keeps a book on the books.
+             */
             unattended.simulateMonths(180);
+
+            /*
+             * ...AND IS STILL BORROWING WHEN THE QUESTION IS ASKED.
+             *
+             * The bond above is a ten-year serial and this reads its answer at
+             * month 180, so the whole thing had amortised away and the city had
+             * no book at all - the advisor said "nobody is borrowing yet",
+             * which was true about a city the fixture did not mean to build.
+             * Second time this fixture has stopped asking its own question that
+             * way; the comment above records the first.
+             *
+             * Issued at the end rather than rolled mid-run, because what is
+             * being tested is whether an unbanked city with a loan book wants a
+             * bank - so the book needs to exist at the moment of asking, and
+             * nothing else about the run depends on when it was raised.
+             */
+            unattended.handleMediumBondLogic(20_000, 10, 1000);
+            unattended.simulateMonths(1);
             branchesBuilt = unattended.getBuildingManager().countByName("Commercial Bank");
         } finally {
             System.setOut(out);
@@ -445,6 +515,7 @@ public class BankCheck {
         int builtWhenAffordable;
         try {
             trading.run();
+            trading.getForeignAccounts().pinRate(1.0);
             trading.buildStack(template(trading, "House"), 400, false);
             trading.buildStack(template(trading, "Convenience Store"), 8, false);
             trading.buildStack(template(trading, "Construction Depot"), 4, false);
@@ -503,6 +574,7 @@ public class BankCheck {
         int worstMonth = 0;
         try {
             books.run();
+            books.getForeignAccounts().pinRate(1.0);
             books.buildStack(template(books, "House"), 400, false);
             books.buildStack(template(books, "Convenience Store"), 8, false);
             books.buildStack(template(books, "Textile Mill"), 2, false);
@@ -530,7 +602,14 @@ public class BankCheck {
                  * already owing the average family's debt.
                  */
                 double moved = kept.equity() - kept.getOpeningEquity();
-                double explained = kept.getNetIncome() + kept.getCapitalInjected()
+                /*
+                 * BOTH HALVES OF THE PAID-IN CAPITAL. getCapitalInjected() is
+                 * the foreign share only since the two were split - see
+                 * Bank.injectCapital() - and this identity does not care where
+                 * a shareholder lives, only that the money arrived.
+                 */
+                double explained = kept.getNetIncome()
+                        + kept.getCapitalInjected() + kept.getCapitalFromHome()
                         + kept.getBailoutReceived() + kept.getFoundingSettlement();
                 if (Math.abs(moved - explained) > Math.abs(worstArticulation)) {
                     worstArticulation = moved - explained;

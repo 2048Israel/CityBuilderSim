@@ -108,6 +108,11 @@ public class Healthcare {
     public static final double CHILDCARE_FEE = .150;
     public static final double SENIOR_FEE    = .300;
 
+    /** The same three, in today's money - reformed with every other price. */
+    private double generalFee   = GENERAL_FEE;
+    private double childcareFee = CHILDCARE_FEE;
+    private double seniorFee    = SENIOR_FEE;
+
     /* ===================================================================
        THE TWO WAYS TO BURY SOMEBODY
 
@@ -125,6 +130,10 @@ public class Healthcare {
 
     public static final double BURIAL_FEE    = 3.000;
     public static final double CREMATION_FEE = .900;
+
+    /** The same two, in today's money. */
+    private double burialFee    = BURIAL_FEE;
+    private double cremationFee = CREMATION_FEE;
 
     /**
      * The fee a care type charges, per head or per body.
@@ -144,6 +153,28 @@ public class Healthcare {
             case SENIOR:    return SENIOR_FEE;
             case BURIAL:    return BURIAL_FEE;
             case CREMATION: return CREMATION_FEE;
+            default:        return 0;
+        }
+    }
+
+    /**
+     * The same five fees, at what this city charges TODAY.
+     *
+     * feeFor() above is static and returns the FOUNDING fee, which is right for
+     * anything asking what the game's fees are and wrong for anything charging
+     * one: after a currency reform they are the same fees expressed in a
+     * different unit. Everything that takes money uses this; the build menu
+     * uses it too, so a quoted revenue is a revenue the building will actually
+     * earn.
+     */
+    public double feeNow(CareType care) {
+        if (care == null) return 0;
+        switch (care) {
+            case GENERAL:   return generalFee;
+            case CHILDCARE: return childcareFee;
+            case SENIOR:    return seniorFee;
+            case BURIAL:    return burialFee;
+            case CREMATION: return cremationFee;
             default:        return 0;
         }
     }
@@ -372,14 +403,14 @@ public class Healthcare {
         this.plotsBuilt = Math.max(0, plotsBuilt);
         this.cremationCapacity = Math.max(0, cremationCapacity);
 
-        treatmentFees = feeOn(served, CareType.GENERAL, feeFor(CareType.GENERAL))
-                + feeOn(served, CareType.CHILDCARE, feeFor(CareType.CHILDCARE))
-                + feeOn(served, CareType.SENIOR, feeFor(CareType.SENIOR));
+        treatmentFees = feeOn(served, CareType.GENERAL, feeNow(CareType.GENERAL))
+                + feeOn(served, CareType.CHILDCARE, feeNow(CareType.CHILDCARE))
+                + feeOn(served, CareType.SENIOR, feeNow(CareType.SENIOR));
 
         settleDeaths(burialShare, plotsBuilt, cremationCapacity);
 
-        funeralFees = burials * feeFor(CareType.BURIAL)
-                + cremations * feeFor(CareType.CREMATION);
+        funeralFees = burials * feeNow(CareType.BURIAL)
+                + cremations * feeNow(CareType.CREMATION);
         fees = treatmentFees + funeralFees;
     }
 
@@ -598,4 +629,26 @@ public class Healthcare {
         cremationCapacity = state[i++];
         return true;
     }
+
+    /** The healthcare fees and this month's bill, in the new unit. */
+    public void redenominate(double scale) {
+        generalFee   *= scale;
+        childcareFee *= scale;
+        seniorFee    *= scale;
+        burialFee    *= scale;
+        cremationFee *= scale;
+        payroll *= scale;  upkeep *= scale;  fees *= scale;
+        treatmentFees *= scale;  funeralFees *= scale;
+    }
+
+
+    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        generalFee   = GENERAL_FEE / unit;
+        childcareFee = CHILDCARE_FEE / unit;
+        seniorFee    = SENIOR_FEE / unit;
+        burialFee    = BURIAL_FEE / unit;
+        cremationFee = CREMATION_FEE / unit;
+    }
+
 }

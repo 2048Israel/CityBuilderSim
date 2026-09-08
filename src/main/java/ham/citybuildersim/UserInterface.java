@@ -22,6 +22,8 @@ import javafx.scene.control.Tooltip;
 import javafx.util.Duration;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -1698,6 +1700,7 @@ public class UserInterface extends Application {
         Button b4 = new Button("Sector Info");
         Button b5 = new Button("Government & National Accounts");
         Button b6 = new Button("The Bank");
+        Button b7 = new Button("Trade & The World");
         // NOTE: "Tax Policy" used to sit here. It moved to the Policy tab, with
         // the standing subsidies, because they are the same decision seen from
         // two sides - what you charge a sector and what you are prepared to pay
@@ -1713,6 +1716,7 @@ public class UserInterface extends Application {
         b4.setOnAction(e -> showSectorMenu());
         b5.setOnAction(e -> showGovernmentMenu());
         b6.setOnAction(e -> showBankMenu());
+        b7.setOnAction(e -> showForeignMenu());
 
         // "Restructure" was an empty stub in the terminal build and disabled here
         // for a long time. It buys the city's own paper back now - see
@@ -1727,7 +1731,7 @@ public class UserInterface extends Application {
 
         
 
-        rootMenu.getChildren().addAll(marketStatus,b1,b2,b3,b4,b5,b6, b0);
+        rootMenu.getChildren().addAll(marketStatus,b1,b2,b3,b4,b5,b6,b7, b0);
 
         
     }
@@ -1944,11 +1948,148 @@ public class UserInterface extends Application {
         Button subsidies = new Button("Subsidies - what you will protect");
         subsidies.setOnAction(e -> showSubsidyPolicyMenu());
 
+        Button money = new Button("Interest rate - the price of money");
+        money.setOnAction(e -> showMonetaryMenu());
+
+        /*
+         * THE REFORM BUTTON APPEARS WHEN IT IS WORTH HAVING, and not before.
+         *
+         * Jerus asked for it to "unlock past a threshold" and be the player's
+         * decision, which is also how it works in life: a currency reform is a
+         * deliberate act with a date on it, not something that happens to you.
+         * Below the threshold the button is shown and disabled with the reason
+         * on it, rather than hidden - a control that appears from nowhere after
+         * two hundred years is a control nobody finds.
+         */
+        Denomination unit = game.getDenomination();
+        boolean canReform = game.canReformCurrency();
+        Button reform = new Button(canReform
+                ? "Currency reform - lop the zeros off the money"
+                : String.format("Currency reform - locked until prices are %.0fx founding"
+                        + " (they are %.2fx)",
+                        Denomination.UNLOCK_AT, game.getPriceIndex().getIndex()));
+        reform.setDisable(!canReform);
+        reform.setOnAction(e -> showCurrencyReformMenu());
+
         Button back = new Button("Back");
         back.setOnAction(e -> showStartMenu());
 
         rootMenu.getChildren().addAll(title, rates, standing,
-                taxes, wages, minimum, tuition, pension, business, subsidies, back);
+                taxes, wages, minimum, money, reform, tuition, pension, business, subsidies, back);
+    }
+
+    /**
+     * THE PRICE OF MONEY, and what a rule would do with it.
+     *
+     * The dial is the player's. The rule sits beside it saying what it would do
+     * and why, in a sentence, because a central bank is the most jargon-dense
+     * thing in this game and a number that moves without a reason on the screen
+     * is a number that punishes the player for not having read a textbook.
+     *
+     * Jerus picked this over an independent bank with a mandate: "the dial is
+     * yours, but the screen shows what a Taylor rule would do".
+     */
+    private void showMonetaryMenu() {
+        clearMenu();
+
+        DebtManager market = game.getDebtManager();
+        PriceIndex px = game.getPriceIndex();
+        ForeignAccounts fx = game.getForeignAccounts();
+
+        Label title = new Label("THE PRICE OF MONEY");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox column = new VBox(2);
+        Label state = monoLabel("");
+        state.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-padding: 8;");
+
+        Label advice = new Label();
+        advice.setWrapText(true);
+        advice.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0; -fx-padding: 4 20 4 20;");
+
+        Runnable redraw = () -> {
+            double rate = market.getPolicyRate();
+            double inflation = px.inflation();
+            double advised = market.advisedPolicyRate(inflation);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("%-30s%12s%n", "The policy rate",
+                    String.format("%.2f%%", rate * 100)));
+            sb.append(String.format("%-30s%12s%n", "  the rule would set",
+                    String.format("%.2f%%", advised * 100)));
+            sb.append(String.format("%n%-30s%12s%n", "Inflation, year on year",
+                    px.hasRate() ? String.format("%+.1f%%", inflation * 100) : "not yet"));
+            sb.append(String.format("%-30s%12s%n", "  the target",
+                    String.format("%.0f%%", DebtManager.INFLATION_TARGET * 100)));
+            sb.append(String.format("%-30s%12s%n", "  prices since founding",
+                    String.format("%.3f", px.getIndex())));
+            sb.append(String.format("%-30s%12s%n", "  the world's, likewise",
+                    String.format("%.3f", game.getWorldEconomy().getPriceLevel())));
+
+            /*
+             * ...and which money those prices are IN, once there is more than
+             * one answer. A city that has lopped zeros twice needs to be able
+             * to see that its 0.03 loaf is not the 0.03 loaf of two centuries
+             * ago, and the price index is the line where that matters most:
+             * the index is measured against the FOUNDING basket in FOUNDING
+             * money, and stays comparable across reforms precisely because the
+             * reform divides its base too.
+             */
+            Denomination unit = game.getDenomination();
+            if (unit.getReforms() > 0) {
+                sb.append(String.format("%-30s%12s%n", "  the money is the",
+                        unit.name()));
+                sb.append(String.format("%-30s%12s%n", "  one of which is",
+                        String.format("%,.0f founding", unit.getUnit())));
+            }
+
+            sb.append(String.format("%n%-30s%12s%n", "What the city pays to borrow",
+                    String.format("%.2f%%", market.getRate() * 100)));
+            sb.append(String.format("%-30s%12s%n", "What savers are paid",
+                    String.format("%.2f%%", game.getBank().depositRate() * 100)));
+            sb.append(String.format("%-30s%12s%n", "Against the world's",
+                    String.format("%.2f%%", DebtManager.WORLD_BASE_RATE * 100)));
+            sb.append(String.format("%-30s%12s%n", "  which pulls the currency",
+                    String.format("%+.2f", fx.ratePressure())));
+            state.setText(sb.toString());
+
+            advice.setText(px.hasRate()
+                    ? market.adviceReason(inflation)
+                    : "There is not yet a year of prices to measure inflation against. "
+                      + "The rule has nothing to say until there is.");
+        };
+
+        javafx.scene.layout.FlowPane dial = new javafx.scene.layout.FlowPane(10, 10);
+        dial.setAlignment(Pos.CENTER);
+        for (double step : new double[] {-.01, -.0025, .0025, .01}) {
+            Button b = new Button(String.format("%+.2f%%", step * 100));
+            b.setOnAction(e -> {
+                market.setPolicyRate(market.getPolicyRate() + step);
+                redraw.run();
+            });
+            dial.getChildren().add(b);
+        }
+
+        Button follow = new Button("Do what the rule says");
+        follow.setOnAction(e -> {
+            market.setPolicyRate(market.advisedPolicyRate(px.inflation()));
+            redraw.run();
+        });
+        dial.getChildren().add(follow);
+
+        Label cost = new Label(
+                "Raising it supports the currency and makes every borrower in the city pay "
+                + "more \u2014 that is not a side effect, it is the same act. Cutting it does "
+                + "the reverse, and sends the hot money looking for a better offer.");
+        cost.setWrapText(true);
+        cost.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0; -fx-padding: 4 20 8 20;");
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showPolicyMenu());
+
+        redraw.run();
+        column.getChildren().add(state);
+        rootMenu.getChildren().addAll(title, scrolled(column), advice, dial, cost, back);
     }
 
     /** One row of -/+ buttons that move an offset and redraw. */
@@ -2456,6 +2597,518 @@ public class UserInterface extends Application {
      * household screen was: five boxes of numbers is a screen you read once, and
      * a set of books is a screen you come back to.
      */
+
+    /**
+     * THE BALANCE OF PAYMENTS.
+     *
+     * Everything on this screen was already being computed - MoneyAudit has
+     * tracked every flow across the city's edge since the day it was written.
+     * What it could not do was tell a HOUSEHOLD from a FOREIGNER, because both
+     * sat outside the audited pools for entirely different reasons. Tagging
+     * those apart is all this screen is.
+     *
+     * Written as a statement, in the same shape a real balance of payments takes:
+     * the current account (what was sold and bought abroad, and what was paid to
+     * foreign lenders), the financial account (capital moving), and the position
+     * the two of them leave behind.
+     */
+    private void showForeignMenu() {
+        clearMenu();
+
+        ForeignAccounts fx = game.getForeignAccounts();
+
+        Label title = new Label("TRADE & THE WORLD");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox column = new VBox(2);
+
+        /* ------------------------- the current account ------------------------- */
+
+        Label caTitle = monoLabel("  THIS MONTH, ON THE CURRENT ACCOUNT");
+        caTitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #8ed4ff;");
+        column.getChildren().add(caTitle);
+
+        column.getChildren().addAll(
+                bookLine("  sold abroad", toDollars(fx.getExports()), false, "#9be89b"),
+                bookLine("  bought abroad", -toDollars(fx.tradeImports()), false, "#ff8a7a"),
+                bookRule(),
+                bookLine("  TRADE BALANCE", toDollars(fx.tradeBalance()), true,
+                        fx.tradeBalance() < 0 ? "#ff8a7a" : "#9be89b"),
+                bookLine("  interest paid abroad", -toDollars(fx.getForeignInterest()),
+                        false, "#ff8a7a"),
+                bookRule(),
+                bookLine("  CURRENT ACCOUNT", toDollars(fx.currentAccount()), true,
+                        fx.currentAccount() < 0 ? "#ff8a7a" : "#9be89b"));
+
+        column.getChildren().add(bookNote("steel, ore and surplus food out;"));
+        column.getChildren().add(bookNote("shop stock, mill scrap and building materials in"));
+
+        /* ------------------------ and the financial one ------------------------ */
+
+        column.getChildren().addAll(
+                bookLine("  capital in", toDollars(fx.getFinancialIn()), false, "#7b8f9c"),
+                bookLine("  capital out", -toDollars(fx.getFinancialOut()), false, "#7b8f9c"),
+                bookRule(),
+                bookLine("  THE MONTH'S BALANCE", toDollars(fx.balance()), true,
+                        fx.balance() < 0 ? "#ff8a7a" : "#9be89b"));
+
+        if (Math.abs(fx.valuationChange()) > .005) {
+            column.getChildren().add(bookLine("  claims written off",
+                    toDollars(fx.valuationChange()), false, "#7b8f9c"));
+            column.getChildren().add(bookNote("what foreign creditors gave up on -"));
+            column.getChildren().add(bookNote("it improves the position, it is not a dollar earned"));
+        }
+
+        /* --------------------------- the position --------------------------- */
+
+        column.getChildren().add(bookRule());
+        Label posTitle = monoLabel("  WHAT THE CITY HOLDS ABROAD, AND WHAT IT OWES");
+        posTitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #8ed4ff;");
+        column.getChildren().add(posTitle);
+
+        /*
+         * THE VAULT, which is a different number from the running balance and
+         * spent three bugs pretending not to be. This is what the treasury
+         * actually holds in foreign money and could spend this afternoon; the
+         * cumulative record of what the city has earned from the world is under
+         * "Since founding" below, where it belongs.
+         */
+        column.getChildren().add(bookLine("  held abroad", toDollars(fx.getReserves()),
+                true, fx.getReserves() > 0 ? "#9be89b" : "#7b8f9c"));
+
+        /* --------------------- ...and what it owes in dollars --------------------- */
+
+        if (fx.getForeignDebt() > 0 || fx.getRepudiated() > 0) {
+            column.getChildren().add(bookLine("  owed abroad in " + Currency.FOREIGN_CODE,
+                    -toDollars(fx.getForeignDebt()), false, "#ff8a7a"));
+            column.getChildren().add(bookNote(String.format(
+                    "%s of paper, valued at %.4f",
+                    Currency.foreign(tightMoney(toDollars(fx.getForeignDebtUsd()))),
+                    fx.getRate())));
+
+            /*
+             * WHAT THE CURRENCY DID TO IT, said as its own line because it is
+             * the one number on this screen that nobody paid. A city that
+             * borrowed nothing this month and repaid nothing can still be
+             * hundreds of thousands worse off, and until this was on the screen
+             * the only evidence was that the debt total had moved.
+             */
+            if (Math.abs(fx.getLastRevaluation()) > .005) {
+                column.getChildren().add(bookLine("  what the currency did",
+                        -toDollars(fx.getLastRevaluation()), false,
+                        fx.getLastRevaluation() > 0 ? "#ff8a7a" : "#9be89b"));
+                column.getChildren().add(bookNote(fx.getLastRevaluation() > 0
+                        ? "dearer this month, and nobody was paid a cent for it"
+                        : "cheaper this month - the same debt, a stronger currency"));
+            }
+
+            column.getChildren().add(bookRule());
+            column.getChildren().add(bookLine("  NET POSITION",
+                    toDollars(fx.netForeignPosition()), true,
+                    fx.netForeignPosition() < 0 ? "#ff8a7a" : "#9be89b"));
+            column.getChildren().add(bookNote("what the city holds abroad, less what it owes there"));
+
+            if (fx.getRepudiated() > 0) {
+                column.getChildren().add(bookLine("  walked away from",
+                        toDollars(fx.getRepudiated()), false, "#7b8f9c"));
+            }
+        }
+
+        if (fx.getReserves() <= 0) {
+            column.getChildren().add(bookNote("nothing. Export earnings go to the firms that"));
+            column.getChildren().add(bookNote("earned them - a treasury holds foreign money only"));
+            column.getChildren().add(bookNote("if it has bought some, or borrowed it abroad."));
+        } else {
+            column.getChildren().add(bookNote(String.format(
+                    "%s, held abroad - exchange it to spend it at home",
+                    Currency.foreign(tightMoney(toDollars(fx.getReservesUsd()))))));
+            if (fx.monthlyImports() > 0) {
+                column.getChildren().add(bookNote(String.format(
+                        "%.0f months of imports at $%s a month",
+                        Math.min(9999, fx.importCover()),
+                        tightMoney(toDollars(fx.monthlyImports())))));
+            }
+        }
+
+        /* ---------------------------- since founding ---------------------------- */
+
+        VBox life = new VBox(1);
+        life.getChildren().addAll(
+                bookLine("    sold abroad", toDollars(fx.getLifetimeExports()), false, "#7b8f9c"),
+                bookLine("    bought abroad", -toDollars(fx.getLifetimeImports()), false, "#7b8f9c"),
+                bookLine("    interest paid", -toDollars(fx.getLifetimeInterest()), false, "#7b8f9c"),
+                bookLine("    capital taken", toDollars(fx.getLifetimeFinancial()), false, "#7b8f9c"),
+                bookRule(),
+                bookLine("    the balance", toDollars(fx.balanceFromFlows()), true, null));
+        life.getChildren().add(bookNote("one month says whether a mill was staffed;"));
+        life.getChildren().add(bookNote("the run says whether the city earns its living."));
+        life.getChildren().add(bookNote("Nobody can spend this - it is a record, not a stock."));
+        column.getChildren().add(disclosure(
+                String.format("%-28s%12s", "Since founding",
+                        tightMoney(toDollars(fx.getLifetimeExports() - fx.getLifetimeImports()))),
+                "the whole trade record", life));
+
+        /* ---------------------------- the currency ---------------------------- */
+
+        column.getChildren().add(bookRule());
+
+        Label curTitle = monoLabel("  THE CURRENCY");
+        curTitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #8ed4ff;");
+        column.getChildren().add(curTitle);
+
+        Label fxRate = monoLabel(String.format("%-28s%12s", "  Exchange rate",
+                String.format("%.4f", fx.getRate())));
+        fxRate.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold;");
+        column.getChildren().add(fxRate);
+        column.getChildren().add(bookNote(Currency.rateUnit()
+                + " - how many of ours one of theirs buys"));
+
+        double drift = fx.deviationFromParity();
+        if (fx.isPinned()) {
+            column.getChildren().add(bookNote("the rate is held fixed."));
+        } else if (Math.abs(drift) < .005) {
+            column.getChildren().add(bookNote("sitting at parity"));
+        } else {
+            /* A rate ABOVE parity means it takes more local dollars to buy a
+             * US one - the local currency has got weaker. Players read a
+             * rising number as a rising currency, so the word has to be said. */
+            Label pos = monoLabel(String.format("%-28s%11.1f%%",
+                    drift > 0 ? "  weaker than parity by" : "  stronger than parity by",
+                    Math.abs(drift) * 100));
+            pos.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                    + " -fx-text-fill: " + (drift > 0 ? "#ff8a7a" : "#9be89b") + ";");
+            column.getChildren().add(pos);
+            column.getChildren().add(bookNote(drift > 0
+                    ? "imports cost more; what the city sells abroad earns more at home"
+                    : "imports are cheap; exporters are being squeezed"));
+        }
+
+        /* ------------------------ what is moving it ------------------------ */
+
+        VBox push = new VBox(1);
+        double pressure  = fx.getLastPressure();
+        double absorbed  = fx.getLastAbsorption();
+        double effective = fx.effectivePressure();
+
+        push.getChildren().addAll(
+                bookLine("    current account, 12mo",
+                        toDollars(fx.monthlyCurrentAccount()), false,
+                        fx.monthlyCurrentAccount() < 0 ? "#ff8a7a" : "#9be89b"),
+                bookLine("    trade, 12mo",
+                        toDollars(fx.monthlyExports() + fx.monthlyImports()), false, "#7b8f9c"));
+
+        push.getChildren().add(monoLabel(String.format("%-30s%10.1f%%  %s",
+                "    pressure on the rate", Math.abs(pressure) * 100,
+                pressure > 0 ? "weaker" : pressure < 0 ? "stronger" : "")));
+        push.getChildren().add(bookNote("the current account as a share of what the city trades;"));
+        push.getChildren().add(bookNote("a deficit has to be paid for in someone else's money"));
+        push.getChildren().add(monoLabel(String.format("%-30s%10.1f%%",
+                "    absorbed by reserves", absorbed * 100)));
+        push.getChildren().add(monoLabel(String.format("%-30s%10.1f%%",
+                "    openness of the economy", fx.getOpenness() * 100)));
+        push.getChildren().add(bookRule());
+        push.getChildren().add(monoLabel(String.format("%-30s%10.2f%%",
+                "    this month's push", effective * ForeignAccounts.DRIFT_SPEED * 100)));
+        push.getChildren().add(monoLabel(String.format("%-30s%10.2f%%",
+                "    pull back to parity",
+                (fx.getParity() - fx.getRate()) * ForeignAccounts.REVERSION
+                        / Math.max(.0001, fx.getRate()) * 100)));
+        push.getChildren().add(bookNote("a currency that has wandered a long way from what"));
+        push.getChildren().add(bookNote("the same basket costs abroad gets pulled back"));
+
+        column.getChildren().add(disclosure(
+                String.format("%-28s%12s", "  What is moving it",
+                        String.format("%+.2f%%", effective * ForeignAccounts.DRIFT_SPEED * 100)),
+                "pressure, reserves and openness", push));
+
+        /* ------------------------------ hot money ------------------------------ */
+
+        CapitalFlows hot = game.getCapitalFlows();
+        if (hot.getStock() > 0 || hot.getSpread() > 0 || hot.isStopped()) {
+            column.getChildren().add(bookRule());
+
+            Label hotTitle = monoLabel(hot.isStopped()
+                    ? "  THE MONEY IS LEAVING"
+                    : "  MONEY HERE FOR THE RATE");
+            hotTitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                    + " -fx-font-weight: bold; -fx-text-fill: "
+                    + (hot.isStopped() ? "#ff8a7a" : "#8ed4ff") + ";");
+            column.getChildren().add(hotTitle);
+
+            column.getChildren().add(bookLine("  foreign money here",
+                    toDollars(hot.getStock()), true,
+                    hot.isStopped() ? "#ff8a7a" : "#9be89b"));
+            column.getChildren().add(bookNote(String.format(
+                    "%.0f%% of the bank's funding, and it can leave on no notice",
+                    game.getBank().hotFundingShare() * 100)));
+
+            if (hot.isStopped()) {
+                column.getChildren().add(bookNote(hot.getStopReason() + "."));
+                column.getChildren().add(bookNote(String.format(
+                        "%d months before anybody looks at the city again.",
+                        hot.stopMonthsLeft())));
+            } else {
+                column.getChildren().add(monoLabel(String.format("%-30s%10.2f pts",
+                        "  the excess return pulling it", hot.getSpread() * 100)));
+                column.getChildren().add(bookNote(
+                        "what the city pays over the world rate, less what the"));
+                column.getChildren().add(bookNote(
+                        "world charges it for its own risk. Only the rest is a reason."));
+                column.getChildren().add(bookLine("  and what would come at that rate",
+                        toDollars(hot.getTarget()), false, "#7b8f9c"));
+
+                /*
+                 * THE WARNING THAT IS THE WHOLE MECHANIC. A position this size
+                 * with nothing behind it is not a crisis yet - it is the state a
+                 * city is in when one arrives.
+                 */
+                double backing = hot.getStock() > 0
+                        ? fx.getReserves() / hot.getStock() : 1;
+                if (hot.getStock() > 0) {
+                    Label cover = monoLabel(String.format("%-30s%10.0f%%",
+                            "  backed by reserves", Math.min(999, backing * 100)));
+                    cover.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                            + " -fx-text-fill: "
+                            + (backing < CapitalFlows.PANIC_BACKING ? "#ff8a7a" : "#9be89b") + ";");
+                    column.getChildren().add(cover);
+                    if (backing < CapitalFlows.PANIC_BACKING) {
+                        column.getChildren().add(bookNote(String.format(
+                                "under %.0f%% and the next shock becomes a run.",
+                                CapitalFlows.PANIC_BACKING * 100)));
+                    }
+                }
+            }
+
+            if (hot.getStopsSuffered() > 0) {
+                column.getChildren().add(bookNote(String.format(
+                        "%d sudden stop(s) since founding", hot.getStopsSuffered())));
+            }
+        }
+
+        /* ----------------------------- intervention ----------------------------- */
+
+        column.getChildren().add(bookRule());
+        if (fx.getBoughtThisMonth() > 0 || fx.getSoldThisMonth() > 0) {
+            if (fx.getBoughtThisMonth() > 0) {
+                column.getChildren().add(bookLine("  bought this month",
+                        toDollars(fx.getBoughtThisMonth()), false, "#7b8f9c"));
+            }
+            if (fx.getSoldThisMonth() > 0) {
+                column.getChildren().add(bookLine("  sold this month",
+                        toDollars(fx.getSoldThisMonth()), false, "#7b8f9c"));
+            }
+        }
+
+        Button intervene = new Button("Exchange currency  \u00b7  reserves \u21c4 spendable cash");
+        intervene.setOnAction(e -> showInterventionMenu());
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showEconomyMenu());
+
+        rootMenu.getChildren().addAll(title, scrolled(column), intervene, back);
+    }
+
+    /**
+     * TURNING RESERVES INTO CASH, AND CASH INTO RESERVES.
+     *
+     * This was called "intervening in the currency market", which is what an
+     * economist calls it and is not what a player is looking for. Jerus, having
+     * borrowed abroad and parked the dollars: "add somewhere where you can
+     * convert currency you have to cash, idk if thats the intervene button".
+     *
+     * It was the intervene button. The screen did the right thing under a name
+     * that only made sense if you already knew the answer - so it now says what
+     * it does first and what it MEANS second, because both are true: selling
+     * reserves is how the treasury gets at money it holds abroad, AND it is
+     * everything a central bank has ever been able to do about an exchange rate.
+     *
+     * The cover is shown BEFORE and AFTER, because the cost of a defence is not
+     * the cash - it is the cover you no longer have.
+     */
+    private void showInterventionMenu() {
+        clearMenu();
+
+        ForeignAccounts fx = game.getForeignAccounts();
+
+        Label heading = new Label("EXCHANGE CURRENCY");
+        heading.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Label what = new Label(
+                "Reserves are money the city holds abroad, in " + Currency.FOREIGN_CODE
+                + ". They are not spendable at home until they are sold for "
+                + Currency.PLURAL + " here.");
+        what.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0; -fx-padding: 0 20 6 20;");
+        what.setWrapText(true);
+
+        final double[] amount = {0};
+        final boolean[] buying = {true};
+        final boolean[] atCeiling = {false};
+
+        /*
+         * The most this side of the trade can move: the treasury's cash when
+         * buying, the reserve stock when selling. Read live, because both move
+         * while the screen is open.
+         */
+        java.util.function.DoubleSupplier ceiling =
+                () -> buying[0] ? Math.max(0, game.getCash()) : fx.sellableReserves();
+
+        Label state = monoLabel("");
+        state.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-padding: 8;");
+
+        Button confirm = new Button("Confirm");
+        confirm.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
+
+        Runnable redraw = () -> {
+            double cover   = fx.importCover();
+            double monthly = fx.monthlyImports();
+            double after   = fx.getReserves() + (buying[0] ? amount[0] : -amount[0]);
+            double coverAfter = monthly > 0 ? Math.max(0, after) / monthly : 0;
+
+            double rate = fx.getRate();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("%-28s%14s%n", "Spendable cash at home",
+                    Currency.qualified(tightMoney(toDollars(game.getCash())))));
+            sb.append(String.format("%-28s%14s%n", "Held abroad (reserves)",
+                    Currency.qualified(tightMoney(toDollars(fx.getReserves())))));
+            sb.append(String.format("%-28s%14s%n", "  ...which is",
+                    Currency.foreign(tightMoney(toDollars(fx.getReservesUsd())))));
+            sb.append(String.format("%-28s%14s%n", "Rate", String.format("%.4f", rate)));
+            sb.append(String.format("%-28s%14s%n", "Import cover now",
+                    String.format("%.1f mo", Math.min(9999, cover))));
+            sb.append(String.format("%-28s%14s%n",
+                    buying[0] ? "Most it can park" : "Most it can bring home",
+                    tightMoney(toDollars(ceiling.getAsDouble()))));
+            sb.append(String.format("%n%-28s%14s%n",
+                    buying[0] ? "PARKING ABROAD" : "BRINGING HOME",
+                    tightMoney(toDollars(amount[0]))));
+            sb.append(String.format("%-28s%14s%n", "  which buys",
+                    (buying[0] ? Currency.FOREIGN_SYMBOL : Currency.QUALIFIED)
+                            + tightMoney(toDollars(buying[0] && rate > 0
+                                    ? amount[0] / rate : amount[0]))));
+            sb.append(String.format("%-28s%14s%n", "Cash after",
+                    tightMoney(toDollars(game.getCash()
+                            + (buying[0] ? -amount[0] : amount[0])))));
+            sb.append(String.format("%-28s%14s%n", "Reserves after",
+                    tightMoney(toDollars(after))));
+            sb.append(String.format("%-28s%14s%n", "Import cover after",
+                    String.format("%.1f mo", Math.min(9999, coverAfter))));
+
+            /*
+             * THE CEILING, SAID RATHER THAN ENFORCED SILENTLY.
+             *
+             * The amount is clamped as it is typed now, not refused at the end.
+             * Jerus: "if you try to sell more than what you have it stops you,
+             * like itd only sell the max, and if you wanna sell more then youd
+             * have to borrow or something". Both halves are right - the second
+             * is what a finance ministry with empty reserves actually has to do,
+             * and the screen now says so and points at the door.
+             */
+            if (!buying[0] && atCeiling[0] && fx.sellableReserves() > 0) {
+                sb.append("\nThat is everything the city holds abroad. To raise");
+                sb.append("\nmore it has to tax it, or borrow it - at home, or");
+                sb.append("\nin " + Currency.FOREIGN_CODE + " from the finance screen.");
+            } else if (!buying[0] && fx.sellableReserves() <= 0) {
+                sb.append("\nThe city holds nothing abroad to bring home.");
+            } else if (buying[0] && atCeiling[0] && game.getCash() > 0) {
+                sb.append("\nThat is the whole treasury.");
+            } else if (!buying[0] && amount[0] > 0) {
+                sb.append("\nThis is also what defending the currency looks like:");
+                sb.append("\nit buys the rate a month, it does not buy a trade");
+                sb.append("\nbalance, and next month starts with a thinner buffer.");
+            } else if (buying[0] && amount[0] > 0) {
+                sb.append("\nParked abroad it damps the pressure on the rate, and");
+                sb.append("\nit is money the city is not spending on anything else.");
+            }
+            state.setText(sb.toString());
+
+            confirm.setDisable(amount[0] <= 0);
+        };
+
+        ToggleGroup side = new ToggleGroup();
+        RadioButton buy  = new RadioButton("Cash \u2192 reserves  (park it abroad)");
+        RadioButton sell = new RadioButton("Reserves \u2192 cash  (bring it home to spend)");
+        buy.setToggleGroup(side);
+        sell.setToggleGroup(side);
+        buy.setSelected(true);
+        /* Switching sides re-clamps, because the two have different ceilings. */
+        buy.setOnAction(e -> {
+            buying[0] = true;
+            amount[0] = Math.min(amount[0], ceiling.getAsDouble());
+            atCeiling[0] = amount[0] >= ceiling.getAsDouble() && amount[0] > 0;
+            redraw.run();
+        });
+        sell.setOnAction(e -> {
+            buying[0] = false;
+            amount[0] = Math.min(amount[0], ceiling.getAsDouble());
+            atCeiling[0] = amount[0] >= ceiling.getAsDouble() && amount[0] > 0;
+            redraw.run();
+        });
+
+        HBox sides = new HBox(12, buy, sell);
+        sides.setAlignment(Pos.CENTER);
+
+        javafx.scene.layout.FlowPane up = new javafx.scene.layout.FlowPane(10, 10);
+        up.setAlignment(Pos.CENTER);
+        double[] steps = {100, 500, 2_000, 10_000};
+        for (double inc : steps) {
+            Button b = new Button("+$" + formatter.format(inc));
+            /*
+             * CLAMPED HERE, so the number on the screen is always a number the
+             * city could actually trade. The alternative - let it climb and
+             * refuse at the end - shows the player a total that was never on
+             * offer and makes them work out why by subtraction.
+             */
+            b.setOnAction(e -> {
+                double cap = ceiling.getAsDouble();
+                amount[0] = Math.min(amount[0] + inc, cap);
+                atCeiling[0] = amount[0] >= cap && amount[0] > 0;
+                redraw.run();
+            });
+            up.getChildren().add(b);
+        }
+        Button all = new Button("All of it");
+        all.setOnAction(e -> {
+            amount[0] = ceiling.getAsDouble();
+            atCeiling[0] = amount[0] > 0;
+            redraw.run();
+        });
+        up.getChildren().add(all);
+
+        javafx.scene.layout.FlowPane down = new javafx.scene.layout.FlowPane(10, 10);
+        down.setAlignment(Pos.CENTER);
+        for (double inc : steps) {
+            Button b = new Button("-$" + formatter.format(inc));
+            b.setOnAction(e -> {
+                amount[0] = Math.max(0, amount[0] - inc);
+                atCeiling[0] = false;
+                redraw.run();
+            });
+            down.getChildren().add(b);
+        }
+        Button clear = new Button("Reset");
+        clear.setOnAction(e -> { amount[0] = 0; atCeiling[0] = false; redraw.run(); });
+        down.getChildren().add(clear);
+
+        confirm.setOnAction(e -> {
+            if (buying[0]) game.buyForeignCurrency(amount[0]);
+            else           game.sellForeignCurrency(amount[0]);
+            amount[0] = 0;
+            showForeignMenu();
+        });
+
+        Button cancel = new Button("Back");
+        cancel.setOnAction(e -> showForeignMenu());
+
+        redraw.run();
+
+        rootMenu.getChildren().addAll(heading, what, sides, state, up, down, confirm, cancel);
+    }
+
     private void showBankMenu() {
         clearMenu();
 
@@ -2634,10 +3287,12 @@ public class UserInterface extends Application {
                 bookLine("  equity, start of month", toDollars(bank.getOpeningEquity()), false, "#7b8f9c"),
                 bookLine("  net income", toDollars(bank.getNetIncome()), false, "#7b8f9c"),
                 bookLine("  capital put in", toDollars(
-                        bank.getCapitalInjected() + bank.getBailoutReceived()), false, "#7b8f9c"),
+                        bank.getCapitalInjected() + bank.getCapitalFromHome()
+                                + bank.getBailoutReceived()), false, "#7b8f9c"),
                 bookLine("  equity, end of month", toDollars(bank.equity()), true, null));
         double unreconciled = moved - bank.getNetIncome()
-                - bank.getCapitalInjected() - bank.getBailoutReceived();
+                - bank.getCapitalInjected() - bank.getCapitalFromHome()
+                - bank.getBailoutReceived();
         if (Math.abs(unreconciled) > .005) {
             column.getChildren().add(bookLine("  UNRECONCILED", toDollars(unreconciled),
                     true, "#ff8a7a"));
@@ -2702,23 +3357,157 @@ public class UserInterface extends Application {
         ;
         Button b0 = new Button("Back");
         
-        b1.setOnAction(e -> showDebtIssuanceMenu("Note", 3, 12, 1000));
-        b2.setOnAction(e -> showDebtIssuanceMenu("Serial", 1, 10, 10000));
-        b3.setOnAction(e -> showDebtIssuanceMenu("Term", 10, 50, 100000));
+        b1.setOnAction(e -> showDebtIssuanceMenu("Note", 3, 12, 1000, false));
+        b2.setOnAction(e -> showDebtIssuanceMenu("Serial", 1, 10, 10000, false));
+        b3.setOnAction(e -> showDebtIssuanceMenu("Term", 10, 50, 100000, false));
         
         b0.setOnAction(e -> {
             // go back to main menu
             showEconomyMenu();
         });
-        
 
-        
+        /* =============================================================
+           AND THE SAME THREE, IN SOMEBODY ELSE'S MONEY.
 
-        rootMenu.getChildren().addAll(gameInfo,b1,b2,b3,b0);
+           Both curves on one screen, because the whole decision is the
+           comparison and a player who has to remember one number while
+           navigating to the other is not making it. The foreign rate will
+           usually be the lower one; the sentence underneath is there to say
+           why that is not the same as cheaper.
+           ============================================================= */
 
-        
+        DebtManager market = game.getDebtManager();
+        boolean open = market.foreignWindowOpen();
+
+        Label fxHead = new Label(String.format(
+                "\nABROAD, IN " + Currency.FOREIGN_CODE
+                        + "  \u00b7  the world is lending at %.2f%%",
+                market.foreignRate() * 100));
+        fxHead.setStyle("-fx-font-weight: bold; -fx-padding: 8 0 0 0;");
+
+        Label compare = new Label(String.format(
+                market.foreignRate() < interest
+                        ? "%.2f%% at home, %.2f%% abroad \u2014 and the dollars do not get cheaper "
+                          + "if your currency does."
+                        : "%.2f%% at home, %.2f%% abroad. The world is not the cheap option today.",
+                interest * 100, market.foreignRate() * 100));
+        compare.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0;");
+        compare.setWrapText(true);
+
+        Button f1 = new Button(Currency.FOREIGN_CODE + " Notes  (no coupon, repay one lump)");
+        Button f2 = new Button(Currency.FOREIGN_CODE + " Serial Bonds  (principal amortises)");
+        Button f3 = new Button(Currency.FOREIGN_CODE
+                + " Term Bonds  (low coupon, par due at the end)");
+
+        f1.setOnAction(e -> showDebtIssuanceMenu("Note", 3, 12, 1000, true));
+        f2.setOnAction(e -> showDebtIssuanceMenu("Serial", 1, 10, 10000, true));
+        f3.setOnAction(e -> showDebtIssuanceMenu("Term", 10, 50, 100000, true));
+
+        rootMenu.getChildren().addAll(gameInfo, b1, b2, b3, fxHead);
+
+        if (open) {
+            rootMenu.getChildren().addAll(compare, f1, f2, f3);
+            double owed = market.getForeignPrincipal();
+            if (owed > 0) {
+                Label pos = new Label(String.format(
+                        "Already owed abroad: %s  \u00b7  %s at %.4f  \u00b7  "
+                        + "%.0f%% of exports goes to service it",
+                        Currency.qualified(formatter.format(owed)),
+                        Currency.foreign(formatter.format(market.getForeignPrincipalUsd())),
+                        market.getExchangeRate(),
+                        market.getMonthlyExports() > 0
+                                ? market.nextYearService() / (market.getMonthlyExports() * 12) * 100
+                                : 0));
+                pos.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0;");
+                pos.setWrapText(true);
+                rootMenu.getChildren().add(pos);
+            }
+        } else {
+            Label shut = new Label("The window is shut: " + market.foreignWindowReason()
+                    + ".\nEverything already borrowed still falls due on schedule.");
+            shut.setStyle("-fx-text-fill: #ff8a7a;");
+            shut.setWrapText(true);
+            rootMenu.getChildren().add(shut);
+        }
+
+        if (market.getDefaultScar() > 0) {
+            Label scar = new Label(String.format(
+                    "A default abroad is still costing the city %.1f points of its rate.",
+                    market.getDefaultScar() * 100));
+            scar.setStyle("-fx-font-size: 11px; -fx-text-fill: #ff8a7a;");
+            rootMenu.getChildren().add(scar);
+        }
+
+        /*
+         * AND THE DOOR MARKED DO NOT OPEN.
+         *
+         * Only shown when there is something to walk away from, and it asks
+         * twice - not out of politeness, but because the consequence is five
+         * years long and arrives after the screen has closed.
+         */
+        if (market.hasForeignDebt()) {
+            Button repudiate = new Button("Default on the foreign debt");
+            repudiate.setStyle("-fx-background-color: #7d2f2f; -fx-text-fill: white;");
+            repudiate.setOnAction(e -> showForeignDefaultMenu());
+            rootMenu.getChildren().add(repudiate);
+        }
+
+        rootMenu.getChildren().add(b0);
     }
     
+    /**
+     * Asking twice, with the bill written out.
+     *
+     * The gain is immediate and enormous and the cost is five years away, which
+     * is precisely the shape of decision a confirmation screen exists for. Both
+     * halves are on it in the same size type.
+     */
+    private void showForeignDefaultMenu() {
+        clearMenu();
+
+        DebtManager market = game.getDebtManager();
+
+        Label title = new Label("DEFAULT ON THE FOREIGN DEBT");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;"
+                + " -fx-text-fill: #ff8a7a;");
+
+        VBox column = new VBox(2);
+        column.getChildren().addAll(
+                bookLine("  written off", toDollars(market.getForeignPrincipal()), true, "#9be89b"),
+                bookNote(String.format("%s of paper, at %.4f",
+                        Currency.foreign(tightMoney(toDollars(
+                                market.getForeignPrincipalUsd()))),
+                        market.getExchangeRate())),
+                bookLine("  a year of payments, gone",
+                        toDollars(market.nextYearService()), false, "#9be89b"),
+                bookRule());
+
+        Label cost = monoLabel("  AND WHAT IT COSTS");
+        cost.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #ff8a7a;");
+        column.getChildren().add(cost);
+        column.getChildren().addAll(
+                bookNote("no lender abroad will take this city's paper for five years"),
+                bookNote(String.format("and %.0f points on its rate when they will again,",
+                        DebtManager.DEFAULT_SCAR * 100)),
+                bookNote("fading over about five years after that"),
+                bookNote(""),
+                bookNote("every ratio on the trade screen will look better tomorrow."),
+                bookNote("None of them is what stops the next bond being sold."));
+
+        Button confirm = new Button("Default. I understand nobody will lend abroad for five years.");
+        confirm.setStyle("-fx-background-color: #7d2f2f; -fx-text-fill: white;");
+        confirm.setOnAction(e -> {
+            game.defaultOnForeignDebt("the city chose to");
+            showFinanceMenu();
+        });
+
+        Button back = new Button("Keep paying");
+        back.setOnAction(e -> showFinanceMenu());
+
+        rootMenu.getChildren().addAll(title, scrolled(column), back, confirm);
+    }
+
     private void handleAllBuildingMenus(String menuTitle, EnumSet<BuildingType> categories) {
         clearMenu();
         BuildingManager buildingManager = game.getBuildingManager();
@@ -3243,7 +4032,7 @@ public class UserInterface extends Application {
         List<String> out = new ArrayList<>();
         CareType care = t.getCare();
         double cap = t.getCapacity();
-        double fee = Healthcare.feeFor(care);
+        double fee = game.getHealthcare().feeNow(care);
 
         switch (care) {
             case CHILDCARE:
@@ -3920,11 +4709,13 @@ public class UserInterface extends Application {
         return "-fx-text-fill: " + colour + "; -fx-font-weight: bold; -fx-padding: 4 0 0 0;";
     }
     
-    private void showDebtIssuanceMenu(String type, int minDur, int maxDur, double roundingFactor) {
+    private void showDebtIssuanceMenu(String type, int minDur, int maxDur,
+                                      double roundingFactor, boolean foreign) {
     clearMenu();
     
     String timeUnit = type.equals("Note") ? "months" : "years";
-    Label title = new Label("Issue a " + type + "\nSelect Duration (" + timeUnit + "):");
+    Label title = new Label("Issue a " + (foreign ? Currency.FOREIGN_CODE + " " : "") + type
+            + "\nSelect Duration (" + timeUnit + "):");
     title.setStyle("-fx-font-weight: bold; -fx-text-alignment: center;");
 
     /*
@@ -3996,7 +4787,7 @@ public class UserInterface extends Application {
         final int duration = d;
         Button durBtn = new Button(String.valueOf(duration));
         durBtn.setPrefWidth(50);
-        durBtn.setOnAction(e -> showDebtAmountMenu(type, duration, roundingFactor));
+        durBtn.setOnAction(e -> showDebtAmountMenu(type, duration, roundingFactor, foreign));
         durationGrid.getChildren().add(durBtn);
     }
 
@@ -4024,13 +4815,25 @@ public class UserInterface extends Application {
      * annoying while every loan cost 1% and is a real cost now that overshooting
      * is what moves the rate.
      */
-    private void showDebtAmountMenu(String type, int duration, double rounding) {
+    private void showDebtAmountMenu(String type, int duration, double rounding, boolean foreign) {
     clearMenu();
 
     final double[] requestedAmount = {0};
 
-    Label heading = new Label(String.format("Issuing %s (%d %s)",
-            type, duration, type.equals("Note") ? "months" : "years"));
+    /*
+     * WHERE THE DOLLARS GO, and it is the player's call.
+     *
+     * Parked as reserves the debt is matched by an asset, the position is
+     * unchanged and the next bond is cheaper. Converted, the treasury has money
+     * to build with today and an unhedged foreign liability against nothing at
+     * all. That is the trade every finance ministry in the literature has made,
+     * and it is one toggle rather than a lecture.
+     */
+    final boolean[] hold = {false};
+
+    Label heading = new Label(String.format("Issuing %s%s (%d %s)",
+            foreign ? Currency.FOREIGN_CODE + " " : "", type,
+            duration, type.equals("Note") ? "months" : "years"));
     heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
     Label amountLabel = new Label("Amount Requested: $0");
@@ -4049,16 +4852,43 @@ public class UserInterface extends Application {
         amountLabel.setText("Amount Requested: $" + formatter.format(requestedAmount[0]));
 
         if (requestedAmount[0] <= 0) {
-            terms.setText("Add an amount to see what it would cost.");
+            terms.setText(foreign
+                    ? "Add an amount to see what it would cost. Every figure is in "
+                            + Currency.FOREIGN_CODE + "."
+                    : "Add an amount to see what it would cost.");
             impact.setText(String.format("Market rate right now: %.2f%%",
-                    game.getDebtManager().getRate() * 100));
+                    (foreign ? game.getDebtManager().foreignRate()
+                             : game.getDebtManager().getRate()) * 100));
             impact.setStyle("-fx-text-fill: #8fa3b0; -fx-padding: 4 0 0 0;");
             confirm.setDisable(true);
             return;
         }
 
-        DebtQuote quote = game.quoteDebt(type, requestedAmount[0], duration, rounding);
-        terms.setText(quote.summary());
+        DebtQuote quote = foreign
+                ? game.quoteForeign(type, requestedAmount[0], duration, rounding)
+                : game.quoteDebt(type, requestedAmount[0], duration, rounding);
+        if (foreign) {
+            /*
+             * THE SAME BOND, SAID TWICE. The contract is in dollars and the
+             * city's budget is not, so both have to be on the screen - a player
+             * shown only the USD figure cannot tell whether it pays for a
+             * hospital, and one shown only the local figure does not learn that
+             * it is the local figure that moves.
+             */
+            double rate = game.getForeignAccounts().getRate();
+            terms.setText(quote.summary()
+                    + String.format("%n%nAll figures in %s, at %.4f %s:"
+                            + "%n  you receive        %s"
+                            + "%n  you will owe       %s at today's rate"
+                            + "%n  and if the currency falls 20%%, that becomes %s",
+                            Currency.FOREIGN_CODE, rate, Currency.rateUnit(),
+                            Currency.qualified(formatter.format(quote.cashReceived() * rate)),
+                            Currency.qualified(formatter.format(quote.faceValue() * rate)),
+                            Currency.qualified(formatter.format(
+                                    quote.faceValue() * rate * 1.2))));
+        } else {
+            terms.setText(quote.summary());
+        }
         impact.setText(quote.creditImpact());
         impact.setStyle(rateStyle(quote));
         confirm.setDisable(false);
@@ -4104,7 +4934,9 @@ public class UserInterface extends Application {
             // NOTE: the handle*Logic methods already returned a summary of the
             // terms; the UI was discarding it, so the player never saw what they
             // had actually agreed to.
-            String summary = executeDebtLogic(type, requestedAmount[0], duration, rounding);
+            String summary = foreign
+                    ? game.handleForeignLogic(type, requestedAmount[0], duration, rounding, hold[0])
+                    : executeDebtLogic(type, requestedAmount[0], duration, rounding);
             showDebtResultMenu(summary);
         }
     });
@@ -4114,8 +4946,30 @@ public class UserInterface extends Application {
 
     reprice.run();      // so the screen opens with the standing rate on it
 
-    rootMenu.getChildren().addAll(heading, amountLabel, amountGrid, downGrid,
-            terms, impact, confirm, cancel);
+    rootMenu.getChildren().addAll(heading, amountLabel, amountGrid, downGrid, terms, impact);
+
+    if (foreign) {
+        ToggleGroup use = new ToggleGroup();
+        RadioButton spend = new RadioButton("Convert and spend it");
+        RadioButton park  = new RadioButton("Hold the dollars as reserves");
+        spend.setToggleGroup(use);
+        park.setToggleGroup(use);
+        spend.setSelected(true);
+        spend.setOnAction(e -> hold[0] = false);
+        park.setOnAction(e -> hold[0] = true);
+
+        Label useNote = new Label(
+                "Spending it leaves a dollar debt with nothing behind it. Holding it "
+                + "leaves the position unchanged and the next bond cheaper.");
+        useNote.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0;");
+        useNote.setWrapText(true);
+
+        HBox uses = new HBox(12, spend, park);
+        uses.setAlignment(Pos.CENTER);
+        rootMenu.getChildren().addAll(uses, useNote);
+    }
+
+    rootMenu.getChildren().addAll(confirm, cancel);
 }
     private String executeDebtLogic(String type, double amount, int duration, double rounding) {
         return switch (type) {
@@ -7852,7 +8706,8 @@ public class UserInterface extends Application {
         boolean affordable = price <= game.getCash();
 
         Label line = monoLabel(String.format("%-11s %-13s %-13s %-13s %-13s",
-                debt.getType(),
+                debt.isForeign() ? Currency.FOREIGN_CODE + " " + debt.getType()
+                        : debt.getType(),
                 "$" + formatter.format(face),
                 CityCalendar.formatShort(debt.getMaturityMonth()),
                 "$" + formatter.format(price),
@@ -7882,11 +8737,18 @@ public class UserInterface extends Application {
         // against par says whether it is cheap; yield says what it is really
         // costing, which for a deep-discount term bond is nowhere near coupon.
         Label detail = monoLabel(String.format(
-                "   %s of par   yield %.2f%%   coupon $%s/mo   %s",
+                "   %s of par   yield %.2f%%   coupon $%s/mo   %s%s",
                 String.format("%.1f", debt.getPriceAsPercentOfPar(rate)),
                 debt.getCurrentYield(rate) * 100,
                 formatter.format(debt.getMonthlyInterestExpense()),
-                CityCalendar.until(currentMonth, debt.getMaturityMonth())));
+                CityCalendar.until(currentMonth, debt.getMaturityMonth()),
+                // What the paper actually says, for the ones where the number
+                // above is a translation rather than the contract.
+                debt.isForeign()
+                        ? String.format("   \u00b7 %s at %.4f",
+                                Currency.foreign(formatter.format(debt.principalInCurrency())),
+                                debt.getExchangeRate())
+                        : ""));
         detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
                 + " -fx-text-fill: #8fa3b0;");
 
@@ -8511,6 +9373,117 @@ public class UserInterface extends Application {
                     return b;
                 }));
 
+        /* =============================================================
+           TRADE - the city's edge, in one line.
+
+           The rate is the headline because it is the number that reprices every
+           import and every export at once, and the player has no other view of
+           it while the map is up. Red when the currency is weakening, which is
+           the condition that makes a shop's stock dearer next month.
+           ============================================================= */
+        ForeignAccounts fxPanel = game.getForeignAccounts();
+        double fxDrift = fxPanel.deviationFromParity();
+        double fxCa = fxPanel.monthlyCurrentAccount();
+        body.getChildren().add(panelSection("trade", "TRADE",
+                String.format("%.3f  \u00b7  %s", fxPanel.getRate(),
+                        fxCa < 0 ? "deficit" : "surplus"),
+                fxCa < 0 ? PANEL_WARN : null,
+                () -> {
+                    VBox b = panelBody(
+                            statLine("Rate", String.format("%.4f", fxPanel.getRate())),
+                            statLine("vs parity",
+                                    String.format("%+.1f%%", fxDrift * 100),
+                                    Math.abs(fxDrift) > .15 ? PANEL_WARN : null));
+                    b.getChildren().add(panelNote(fxPanel.isPinned()
+                            ? "held fixed"
+                            : fxDrift > .005 ? "weaker \u2014 imports cost more"
+                            : fxDrift < -.005 ? "stronger \u2014 exporters squeezed"
+                            : "at parity"));
+                    b.getChildren().addAll(
+                            statLine("Sold abroad", money(fxPanel.getExports())),
+                            statLine("Bought abroad", money(fxPanel.tradeImports())),
+                            statLine("Current a/c", money(fxPanel.currentAccount()),
+                                    fxPanel.currentAccount() < 0 ? PANEL_BAD : PANEL_GOOD));
+
+                    /* =====================================================
+                       THE TWO POCKETS, AND WHICH MONEY EACH IS IN.
+
+                       Jerus, after parking borrowed dollars in reserves and
+                       going looking for them: "add USD cash so that the player
+                       knows". The panel had one line called Reserves, in local
+                       money, and nothing anywhere said the city was holding
+                       foreign currency at all - so money that plainly existed
+                       had no visible home and no visible way back.
+
+                       Both figures now, one under the other, because the local
+                       one is what it is worth and the USD one is what it IS -
+                       and a line saying it has to be exchanged before it can be
+                       spent, because that is the question the panel raised and
+                       did not answer.
+                       ===================================================== */
+                    b.getChildren().add(statLine("Held abroad",
+                            money(fxPanel.getReserves())));
+                    if (fxPanel.getReserves() > 0) {
+                        b.getChildren().add(statLine("  in " + Currency.FOREIGN_CODE,
+                                Currency.foreign(money(fxPanel.getReservesUsd()))));
+                        b.getChildren().add(panelNote("exchange it to spend it at home"));
+                        if (fxPanel.monthlyImports() > 0) {
+                            b.getChildren().add(statLine("Import cover",
+                                    String.format("%.1f mo",
+                                            Math.min(9999, fxPanel.importCover())),
+                                    fxPanel.importCover() < 3 ? PANEL_WARN : null));
+                        }
+                    } else {
+                        b.getChildren().add(panelNote("the treasury holds no foreign money"));
+                    }
+                    CapitalFlows hotPanel = game.getCapitalFlows();
+                    if (hotPanel.getStock() > 0 || hotPanel.isStopped()) {
+                        b.getChildren().add(statLine("Hot money",
+                                money(hotPanel.getStock()),
+                                hotPanel.isStopped() ? PANEL_BAD : null));
+                        double backed = hotPanel.getStock() > 0
+                                ? fxPanel.getReserves() / hotPanel.getStock() : 1;
+                        b.getChildren().add(statLine("  backed",
+                                String.format("%.0f%%", Math.min(999, backed * 100)),
+                                backed < CapitalFlows.PANIC_BACKING ? PANEL_WARN : null));
+                        if (hotPanel.isStopped()) {
+                            b.getChildren().add(panelNote("it is leaving \u2014 "
+                                    + hotPanel.stopMonthsLeft() + " months to run"));
+                        }
+                    }
+                    b.getChildren().add(statLine("Trade record",
+                            money(fxPanel.getCumulativeBalance()),
+                            fxPanel.getCumulativeBalance() < 0 ? PANEL_WARN : PANEL_GOOD));
+                    b.getChildren().add(panelNote("since founding; a record, not a stock"));
+                    /*
+                     * POSITIVE PRESSURE IS A CURRENCY ABOUT TO WEAKEN, because
+                     * pressure() is depreciation pressure and carries the minus
+                     * sign off the current account inside it. Written as
+                     * `< -.25` first, which lit the warning on a city running a
+                     * surplus. Shown with the word rather than the sign.
+                     */
+                    double press = fxPanel.getLastPressure();
+                    if (fxPanel.getForeignDebt() > 0) {
+                        b.getChildren().add(statLine("Owed in " + Currency.FOREIGN_CODE,
+                                Currency.foreign(money(fxPanel.getForeignDebtUsd())), PANEL_BAD));
+                        b.getChildren().add(statLine("  costing",
+                                money(fxPanel.getForeignDebt()), PANEL_BAD));
+                        if (Math.abs(fxPanel.getLastRevaluation()) > .005) {
+                            b.getChildren().add(statLine("Currency did",
+                                    money(-fxPanel.getLastRevaluation()),
+                                    fxPanel.getLastRevaluation() > 0 ? PANEL_BAD : PANEL_GOOD));
+                        }
+                        b.getChildren().add(statLine("Net position",
+                                money(fxPanel.netForeignPosition()),
+                                fxPanel.netForeignPosition() < 0 ? PANEL_BAD : null));
+                    }
+                    b.getChildren().add(statLine("Pressure",
+                            String.format("%.0f%% %s", Math.abs(press) * 100,
+                                    press > 0 ? "weaker" : press < 0 ? "stronger" : ""),
+                            press > .25 ? PANEL_WARN : null));
+                    return b;
+                }));
+
         /* ================= TAX ================= */
         double businessTax = economy.getBusinessTax();
         double industrialTax = economy.getIndustrialTax();
@@ -8839,6 +9812,112 @@ public class UserInterface extends Application {
     static {
         formatter.setMaximumFractionDigits(2);
         formatter.setMinimumFractionDigits(0);
+    }
+
+
+    /**
+     * THE CURRENCY REFORM, which is a change of units and says so.
+     *
+     * Jerus: "perhaps even so often the player presses a button and everything
+     * gets divided by 10, or 100, or whatever, so that bread doesnt show as
+     * 300M and we start getting binary rounding issues all over the place."
+     *
+     * The screen's whole job is to make clear that nothing is being taken away.
+     * A player who has just watched their treasury go from $84 billion to $840
+     * million needs to see, in the same instant, that the loaf went from $3.00
+     * to $0.03 and that they can still buy exactly as many loaves. So the
+     * preview shows a before-and-after of four things they know the price of,
+     * and the wording is about ZEROS rather than about value.
+     */
+    private void showCurrencyReformMenu() {
+        clearMenu();
+
+        Denomination unit = game.getDenomination();
+        CommercialHandler shops = game.getEconomyManager().getCommercialHandler();
+
+        Label title = new Label("CURRENCY REFORM");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Label blurb = new Label(
+                "Prices have risen far enough that the numbers are getting hard to read. "
+                + "A reform issues a new " + Currency.NAME + " worth a round number of old "
+                + "ones and restates every price, wage, balance and debt in the city at the "
+                + "same moment. Nobody gains and nobody loses: the same wage buys the same "
+                + "bread. It is what France did in 1960 and Turkey in 2005, and it is the "
+                + "only thing here that is purely a change of units.");
+        blurb.setWrapText(true);
+        blurb.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0; -fx-padding: 4 20 8 20;");
+
+        VBox column = new VBox(2);
+        Label preview = monoLabel("");
+        preview.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-padding: 8;");
+
+        final double[] chosen = { Denomination.FACTORS[1] };
+
+        Runnable redraw = () -> {
+            double f = chosen[0];
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("%-26s%14s%14s%n", "", "today", "after"));
+            sb.append(String.format("%-26s%14s%14s%n", "A unit on the shelf",
+                    money(shops.getStoreSellPrice()), money(shops.getStoreSellPrice() / f)));
+            sb.append(String.format("%-26s%14s%14s%n", "Rent, per person housed",
+                    money(shops.getRentPrice()), money(shops.getRentPrice() / f)));
+            sb.append(String.format("%-26s%14s%14s%n", "The minimum wage",
+                    money(game.getLabourMarket().cashMinimumWage()),
+                    money(game.getLabourMarket().cashMinimumWage() / f)));
+            sb.append(String.format("%-26s%14s%14s%n", "The city's cash",
+                    tightMoney(game.getCash()), tightMoney(game.getCash() / f)));
+            sb.append(String.format("%-26s%14s%14s%n", "US$1 costs",
+                    money(game.getForeignAccounts().getRate()),
+                    money(game.getForeignAccounts().getRate() / f)));
+            sb.append(String.format("%n%-26s%28s%n", "The new money would be",
+                    String.format("1 = %,.0f of today's", f)));
+            sb.append(String.format("%-26s%28s%n", "  and be called",
+                    afterName(unit)));
+            preview.setText(sb.toString());
+        };
+
+        javafx.scene.layout.FlowPane pick = new javafx.scene.layout.FlowPane(10, 10);
+        pick.setAlignment(Pos.CENTER);
+        for (double f : Denomination.FACTORS) {
+            Button b = new Button(String.format("%,.0f to 1", f));
+            b.setDisable(!unit.canLop(f));
+            b.setOnAction(e -> { chosen[0] = f; redraw.run(); });
+            pick.getChildren().add(b);
+        }
+
+        Button go = new Button("Issue the new " + Currency.NAME);
+        go.setOnAction(e -> {
+            if (game.reformCurrency(chosen[0])) {
+                GameLog.note(String.format(
+                        "Currency reform: one new %s for %,.0f old ones.",
+                        Currency.NAME, chosen[0]));
+                showPolicyMenu();
+            }
+        });
+
+        Label caveat = new Label(
+                "Everything foreign stays where it is. A debt owed in US dollars is still "
+                + "owed in US dollars, and food bought abroad still costs abroad what it "
+                + "always did — what changes is the number of " + Currency.NAME
+                + "s it takes to buy one.");
+        caveat.setWrapText(true);
+        caveat.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0; -fx-padding: 4 20 8 20;");
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showPolicyMenu());
+
+        redraw.run();
+        column.getChildren().add(preview);
+        rootMenu.getChildren().addAll(title, blurb, scrolled(column), pick, go, caveat, back);
+    }
+
+    /** What the money would be called after one more reform. */
+    private static String afterName(Denomination unit) {
+        Denomination next = new Denomination();
+        next.restore(unit.toSaveArray());
+        next.lop(10);
+        return next.name();
     }
 
 }

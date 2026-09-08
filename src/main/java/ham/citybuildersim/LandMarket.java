@@ -52,6 +52,9 @@ public class LandMarket {
      */
     private static final double BASE_PRICE_PER_SQ_FT = .0007;
 
+    /** The same, in today's money - reformed with every other price. */
+    private double basePricePerSqFt = BASE_PRICE_PER_SQ_FT;
+
     /**
      * Each block already owned makes the next offer this much dearer.
      *
@@ -77,6 +80,9 @@ public class LandMarket {
      * Expensive enough to be a decision, cheap enough to be a good one.
      */
     private static final double IRON_PRICE_PER_TONNE = .0004;
+
+    /** The same, in today's money. */
+    private double ironPricePerTonne = IRON_PRICE_PER_TONNE;
 
     /**
      * Land a single mine occupies, and therefore the room one deposit needs.
@@ -222,7 +228,7 @@ public class LandMarket {
         double blocksOwned = Math.max(0,
                 (ownedSqFt - LandManager.STARTING_SQ_FT) / LandManager.BLOCK_SQ_FT);
 
-        marketPricePerSqFt = BASE_PRICE_PER_SQ_FT
+        marketPricePerSqFt = basePricePerSqFt
                 * (1 + PREMIUM_PER_BLOCK_OWNED * blocksOwned)
                 * (1 + PREMIUM_PER_1000_PEOPLE * population / 1000.0);
 
@@ -301,7 +307,7 @@ public class LandMarket {
         double ironTonnes = rollTonnes(random, deposits);
 
         double price = sizeSqFt * marketPricePerSqFt
-                + ironTonnes * IRON_PRICE_PER_TONNE;
+                + ironTonnes * ironPricePerTonne;
 
         // Round to something a player can read. Nobody wants to compare
         // $103,847 against $98,211.
@@ -559,7 +565,32 @@ public class LandMarket {
         listing.clear();
         nextId = 1;
         minBlocks = MIN_BLOCKS;
-        marketPricePerSqFt = BASE_PRICE_PER_SQ_FT;
-        salePricePerSqFt = BASE_PRICE_PER_SQ_FT * SCARCITY_FLOOR;
+        marketPricePerSqFt = basePricePerSqFt;
+        salePricePerSqFt = basePricePerSqFt * SCARCITY_FLOOR;
     }
+
+    /**
+     * Land prices in the new unit, and a fresh board at the land office.
+     *
+     * The listing is CLEARED rather than repriced because LandParcel is
+     * immutable by design - a plot's price is fixed when it is listed and never
+     * moves, which is the whole point of listing it. update() refills the board
+     * within the month at the new prices, which is exactly what a land office
+     * would do the week the currency changed.
+     */
+    public void redenominate(double scale) {
+        basePricePerSqFt   *= scale;
+        ironPricePerTonne  *= scale;
+        marketPricePerSqFt *= scale;
+        salePricePerSqFt   *= scale;
+        listing.clear();
+    }
+
+
+    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        basePricePerSqFt  = BASE_PRICE_PER_SQ_FT / unit;
+        ironPricePerTonne = IRON_PRICE_PER_TONNE / unit;
+    }
+
 }

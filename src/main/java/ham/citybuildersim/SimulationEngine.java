@@ -107,6 +107,14 @@ public class SimulationEngine {
         economyManager.setPopulation(populationManager.getPopulation());
         economyManager.setHouseholds(buildingManager.getTotalHouseCapacity());
         economyManager.setOccupiedHomes(game.getFamilies().homesNeeded());
+
+        // The two inputs to the rent price, which is a market now. Set here
+        // beside the other housing figures and mirrored in
+        // Game.rebuildSimulationState(), or a reloaded city prices its rent off
+        // a different shortage from the live one for a month.
+        economyManager.setHouseholdCount(game.getFamilies().totalHouseholds());
+        economyManager.setMarginalHousingCost(game.marginalHousingCost());
+
         economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR));
         economyManager.updateStoreWages(
                 populationManager.getWagesPerType(),
