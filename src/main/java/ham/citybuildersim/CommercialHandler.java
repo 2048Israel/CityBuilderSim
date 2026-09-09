@@ -767,6 +767,7 @@ public class CommercialHandler {
            flow, for as long as it takes to read it.
            ------------------------------------------------------------------- */
         rBankPayroll *= scale;  rNetIncome *= scale;  rGrossRevenue *= scale;
+        rRetailSalesTax *= scale;  rRealEstateSalesTax *= scale;
         rImportTax *= scale;    rPayroll *= scale;    rInventoryCost *= scale;
         rElectricityCost *= scale;  rWaterCost *= scale;
         rRetailInterest *= scale;   rRealEstateInterest *= scale;
@@ -1472,16 +1473,58 @@ public class CommercialHandler {
      */
     public void calculateCommercialResults() {
         computeMonthlyReport();
+    }
 
-        // The only accumulating state in the sector. Kept out of
-        // computeMonthlyReport() so the report can be recalculated for display
-        // (e.g. after a load) without banking a phantom month of income.
-        // NET OF THE PROFIT TAX, since 2026-09-06. Both companies used to bank
-        // the pre-tax figure while the city collected the tax on it - the same
-        // dollars counted twice, and the largest single leak MoneyAudit found
-        // (backlog item 8, decided by Jerus: deduct it). rRetailTax and
-        // rRealEstateTax are exactly what getBusinessTaxIncome() hands the
-        // treasury, so the payer and the payee now agree to the cent.
+    /* =====================================================================
+       THE MONTH'S SALES TAX, ON THE STATEMENT
+
+       Two companies share this handler and only one of them supplies anything
+       taxable: residential rent is exempt, so real estate's line is always
+       zero. Retail's is not - on Jerus's slot 7 it was $4.79M against a
+       reported profit of $16.0M, none of which appeared on the statement.
+
+       Handed in by EconomyManager.settleSalesTax() once the ledger has settled,
+       because the ledger is struck FROM the revenue this statement reports and
+       cannot be known while it is being written. See
+       HeavyIndustryHandler.getReportSalesTax() for the whole reasoning.
+
+       Not in the save array - put back on load from the restored ledger, so
+       there is one record of the number rather than two that can disagree.
+       ===================================================================== */
+    private double rRetailSalesTax;
+    private double rRealEstateSalesTax;
+
+    public double getReportRetailSalesTax()     { return rRetailSalesTax; }
+    public double getReportRealEstateSalesTax() { return rRealEstateSalesTax; }
+
+    void setSalesTaxRemitted(double retail, double realEstate) {
+        this.rRetailSalesTax = retail;
+        this.rRealEstateSalesTax = realEstate;
+    }
+
+    /**
+     * Banks the month, net of both taxes, once the sales tax is known.
+     *
+     * The only accumulating state in the sector. Kept out of
+     * computeMonthlyReport() so the report can be recalculated for display
+     * (e.g. after a load) without banking a phantom month of income.
+     *
+     * NET OF THE PROFIT TAX, since 2026-09-06. Both companies used to bank
+     * the pre-tax figure while the city collected the tax on it - the same
+     * dollars counted twice, and the largest single leak MoneyAudit found
+     * (backlog item 8, decided by Jerus: deduct it). rRetailTax and
+     * rRealEstateTax are exactly what getBusinessTaxIncome() hands the
+     * treasury, so the payer and the payee now agree to the cent.
+     *
+     * ...AND NET OF THE SALES TAX, since 2026-09-09, by the same argument one
+     * layer out. The VAT used to be taken off this cash by a separate loop in
+     * EconomyManager.calculateSalesTax() and to appear on no statement, so the
+     * cash and the income statement described two different months. One
+     * movement now, in one place, made of the figures the statement shows.
+     */
+    void bankMonth(double retailSalesTax, double realEstateSalesTax) {
+        setSalesTaxRemitted(retailSalesTax, realEstateSalesTax);
+        computeMonthlyReport();
         commercialCash += rRetailNetIncome - rRetailTax;
         realEstateCash += rRealEstateNetIncome - rRealEstateTax;
     }
@@ -1692,7 +1735,7 @@ public class CommercialHandler {
         // rRetailNetIncome is what gets banked to commercialCash, so interest has
         // to come out here for the sector to actually bear it.
         rRetailOperatingIncome = rGrossRevenue - rRetailOperatingCost;
-        rRetailNetIncome = rRetailOperatingIncome - rRetailInterest;
+        rRetailNetIncome = rRetailOperatingIncome - rRetailInterest - rRetailSalesTax;
 
         /* -------------------- REAL ESTATE COMPANY -------------------- */
         rOccupiedUnits = Math.min(household, population);
@@ -1706,7 +1749,14 @@ public class CommercialHandler {
 
         // Maintenance is still hardcoded to zero; property tax no longer is.
         rRealEstateExpenses = rPropertyMaintenance + rPropertyTaxExpense + rRealEstateInterest;
-        rRealEstateNetIncome = rRentIncome - rRealEstateExpenses;
+        /*
+         * Residential rent is an EXEMPT supply, so rRealEstateSalesTax is
+         * always zero and this line is here for symmetry rather than for
+         * arithmetic - and to be the place a future taxable supply (a car park,
+         * a commercial let) would land without anybody having to notice that
+         * this company had no tax line at all. See SalesTaxLedger.
+         */
+        rRealEstateNetIncome = rRentIncome - rRealEstateExpenses - rRealEstateSalesTax;
 
         /* -------------------- CONSOLIDATED -------------------- */
         rTotalNetIncome = rRetailNetIncome + rRealEstateNetIncome;

@@ -422,6 +422,31 @@ public class NationalAccounts {
                                  double contributions, double pensions,
                                  double healthFees, double healthSpending,
                                  double schoolFees, double schoolSpending) {
+        updateGovernment(business, industrial, sales, wage, utilities, land, property,
+                interest, capital, landBought, contributions, pensions,
+                healthFees, healthSpending, schoolFees, schoolSpending, 0);
+    }
+
+    /**
+     * ...and with what the city paid to keep a sector alive.
+     *
+     * SPENDING like any other, and the last line the treasury bridge was
+     * missing. A subsidy leaves the treasury on the spot - Game.paySubsidyIfOwed
+     * does `cash -= owed` - and appeared on no budget of any kind, so a city
+     * with the dial on reported a surplus it did not have by exactly what it
+     * had just given away. Held on its own line rather than folded into the
+     * sector's own books deliberately: the sector's statement still shows the
+     * loss, because it made one, and what changed is only who absorbed it.
+     */
+    public void updateGovernment(double business, double industrial, double sales,
+                                 double wage, double utilities, double land,
+                                 double property,
+                                 double interest, double capital, double landBought,
+                                 double contributions, double pensions,
+                                 double healthFees, double healthSpending,
+                                 double schoolFees, double schoolSpending,
+                                 double subsidies) {
+        this.subsidies = subsidies;
         this.healthFees = healthFees;
         this.healthSpending = healthSpending;
         this.educationFees = schoolFees;
@@ -451,6 +476,60 @@ public class NationalAccounts {
     /** Tuition in, and what the schools cost. See EconomyManager.setEducation. */
     private double educationFees;
     private double educationSpending;
+
+    /** What the city paid to hold a loss-making sector at break-even. */
+    private double subsidies;
+    public double getSubsidies() { return subsidies; }
+
+    /* =====================================================================
+       THE MONTH THE GOVERNMENT ACTUALLY HAD
+
+       Seventeen numbers, saved and restored as one.
+
+       WHY THIS IS CARRIED RATHER THAN REBUILT. updateGovernment() is a plain
+       setter and every one of its arguments is a FLOW struck inside the tick -
+       the wage tax off a staffed wage bill that only exists while the month is
+       being played, the contributions off the same, the profit taxes off sector
+       statements the load path re-derives, the utility income off charges that
+       have not been raised yet. The load path used to call
+       refreshGovernmentAccounts() and hope, and it came back with four of the
+       ten revenue lines at zero: wage tax 18.44 -> 0, utilities 8.81 -> 0,
+       contributions 7.32 -> 0, profit tax 0.21 -> 0. A budget of 60.88 reloaded
+       as 26.10, which is the SURPLUS line on the first screen a returning player
+       opens, and the bridge underneath it stopped footing.
+
+       A flow cannot be reconstructed from the state a month ended in. This
+       codebase has now been caught by that ten times; carrying it is the answer
+       every time.
+
+       Refused WHOLE on a wrong length, following Healthcare.restore(): a save
+       from before this existed has no array, keeps whatever the rebuild
+       produced, and fills in properly after one month - which is exactly the
+       city it was.
+       ===================================================================== */
+    double[] governmentToSave() {
+        return new double[] {
+            taxBusiness, taxIndustrial, taxSales, taxWage,
+            utilityIncome, landSales, propertyTax,
+            interestExpense, capitalSpending, landPurchases,
+            contributions, pensions,
+            healthFees, healthSpending,
+            educationFees, educationSpending,
+            subsidies };
+    }
+
+    void restoreGovernment(double[] saved) {
+        if (saved == null || saved.length != 17) return;
+        taxBusiness = saved[0];   taxIndustrial = saved[1];
+        taxSales = saved[2];      taxWage = saved[3];
+        utilityIncome = saved[4]; landSales = saved[5];
+        propertyTax = saved[6];   interestExpense = saved[7];
+        capitalSpending = saved[8]; landPurchases = saved[9];
+        contributions = saved[10]; pensions = saved[11];
+        healthFees = saved[12];   healthSpending = saved[13];
+        educationFees = saved[14]; educationSpending = saved[15];
+        subsidies = saved[16];
+    }
 
     public double getContributions() { return contributions; }
     public double getPensions()      { return pensions; }
@@ -557,7 +636,7 @@ public class NationalAccounts {
 
     public double getTotalExpenses() {
         return interestExpense + capitalSpending + landPurchases + pensions
-                + healthSpending + educationSpending;
+                + healthSpending + educationSpending + subsidies;
     }
 
     /** Surplus or deficit - what actually moves the city's cash this month. */
@@ -623,6 +702,7 @@ public class NationalAccounts {
         contributions *= scale;  pensions *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
+        subsidies *= scale;
     }
 
 }

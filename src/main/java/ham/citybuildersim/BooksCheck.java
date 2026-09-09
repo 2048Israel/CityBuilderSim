@@ -164,7 +164,12 @@ public class BooksCheck {
          * this order; only this fixture did not.
          */
         t.setTaxRate(taxRate);
+        // Two calls, because the month is struck and then banked - the sales
+        // tax is computed FROM the statement and then belongs ON it, so the
+        // cash cannot move until the ledger has answered. There is no ledger in
+        // this fixture, so it answers zero. See EconomyManager.settleSalesTax().
         t.calculateIndustrialResults();
+        t.bankMonth(0);
         double cityTax = t.getIndustrialTaxIncome(taxRate);
 
         // Until 2026-09-06 this asserted the OPPOSITE - that the business

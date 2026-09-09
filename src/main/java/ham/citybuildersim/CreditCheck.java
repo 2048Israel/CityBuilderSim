@@ -184,7 +184,9 @@ public class CreditCheck {
         ih.updateJobFillRate(new double[11]);
         ih.updateIndustrialWages(new double[11], new int[11]);
         ih.setInterestExpense(interest);
+        // Struck, then banked - see BooksCheck for why they are two calls now.
         ih.calculateIndustrialResults();
+        ih.bankMonth(0);
 
         check("operating income excludes interest", ih.getReportOperatingIncome(), 500);
         check("interest expensed", ih.getReportInterestExpense(), interest);

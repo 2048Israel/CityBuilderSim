@@ -379,6 +379,20 @@ public class DataSave {
 
     public void setTreasuryMonth(double[] state) { this.treasuryMonth = state; }
     public double[] getTreasuryMonth()           { return treasuryMonth; }
+
+    /**
+     * The government's own month: seventeen revenue and spending lines, saved
+     * and restored as one. See NationalAccounts.governmentToSave() for why
+     * every one of them has to be carried rather than rebuilt.
+     *
+     * Absent from older saves, which keeps whatever the rebuild produced for
+     * them - the same partial block they always came back with - so SAVE_FORMAT
+     * does not move. See GameVersion, "NOT 20".
+     */
+    private double[] governmentMonth;
+
+    public void setGovernmentMonth(double[] state) { this.governmentMonth = state; }
+    public double[] getGovernmentMonth()           { return governmentMonth; }
     public String getSlotName()               { return slotName; }
 
     /** Stamped at save time so a save always says which build wrote it. */
@@ -756,6 +770,11 @@ public class DataSave {
     public void setBankProfitLastMonth(double v) { this.bankProfitLastMonth = v; }
     public double getBankProfitLastMonth()       { return bankProfitLastMonth; }
 
+    /** What savers were paid. A flow - see Bank.setDepositRate(). */
+    private double bankDepositRate;
+    public void setBankDepositRate(double v) { this.bankDepositRate = v; }
+    public double getBankDepositRate()       { return bankDepositRate; }
+
     /**
      * The city's foreign position: reserves, the trailing import bill the cover
      * is measured against, how many months have been counted into it, and the
@@ -1096,6 +1115,27 @@ public class DataSave {
     public double getMonthlyMaterialImports(){ return monthlyMaterialImports; }
     public void setMaterialsConsumed(int v){ this.materialsConsumed = v; }
     public int getMaterialsConsumed(){ return materialsConsumed; }
+
+    /**
+     * What each protected sector was paid last month.
+     *
+     * A flow the load path cannot re-derive - see Game.paySubsidyIfOwed(). Null
+     * on an older save, which restores as the zeros those cities showed anyway.
+     */
+    private double[] subsidyPaid;
+    public void setSubsidyPaid(double[] v){ this.subsidyPaid = v; }
+    public double[] getSubsidyPaid(){ return subsidyPaid; }
+
+    /**
+     * The residents' month: twelve scalars and eleven per-tier arrays.
+     *
+     * Carried rather than rebuilt - see HouseholdAccounts.getStatementState().
+     * Null on an older save, which keeps whatever the rebuild produced, which
+     * is what those cities always showed.
+     */
+    private double[] householdStatement;
+    public void setHouseholdStatement(double[] v){ this.householdStatement = v; }
+    public double[] getHouseholdStatement(){ return householdStatement; }
 
     public void setBuilds(java.util.List<BuildLog.Entry> entries) {
         this.builds = entries;

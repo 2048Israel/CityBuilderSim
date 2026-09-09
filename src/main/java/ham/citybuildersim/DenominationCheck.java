@@ -44,6 +44,12 @@ public class DenominationCheck {
     }
 
     /** Within a RELATIVE band, for the claims a reform can only keep approximately. */
+    /** How far apart two figures are, as a percentage of the expected one. */
+    static double gap(double actual, double expected) {
+        return Math.abs(expected) < 1e-12 ? 0
+                : Math.abs(actual - expected) / Math.abs(expected) * 100;
+    }
+
     static void within(String label, double actual, double expected, double band) {
         double gap = Math.abs(expected) > 1e-12
                 ? Math.abs(actual - expected) / Math.abs(expected)
@@ -184,7 +190,7 @@ public class DenominationCheck {
         /* ============ 3. AND IT STAYS RECOGNISABLY THE SAME CITY ============
 
            The assertion that cannot be satisfied by luck, and the one this
-           change had to earn the hard way. A hundred more months on both.
+           change had to earn the hard way.
 
            WHAT IT FOUND, because this is worth writing down. The reform is a
            change of units, so in principle the two cities should stay bitwise
@@ -192,28 +198,99 @@ public class DenominationCheck {
            SHAPE of bug: a figure that is read at the top of a month before
            anything rewrites it - a statement, a cached exchange rate, a
            handler's own copy of the payroll - which is a STOCK for as long as
-           it takes to read it, however much it looks like a flow. Eight of
-           those were found this way and every one of them was invisible to the
+           it takes to read it, however much it looks like a flow. Eleven of
+           those have been found this way and every one was invisible to the
            money audit, because none of them created or destroyed a penny; they
-           simply valued a real month at the wrong scale.
+           simply valued a real month at the wrong scale. The last three were
+           the mills', the mines' and the builders' whole income statements,
+           found on 2026-09-09: HeavyIndustryHandler.redenominate() carried a
+           long comment explaining that a statement read before it is rewritten
+           is a stock, and then no code under it at all.
 
-           WHAT IS STILL TRUE AND NOT PERFECT. Two sectors - retail and heavy
-           industry - still come out of the reform month with tills a few
-           percent from where they should be, and because both make DISCRETE
-           decisions (borrow or not, run the furnace or not) a few percent there
-           becomes a different decision, and a different decision compounds.
-           After a hundred months the reformed city is about five percent
-           smaller and its price level about two percent higher. Money is
-           conserved throughout and no player has an unreformed twin to compare
-           against, so nothing about the city they get is wrong - but it is not
-           the same city, and this harness says so rather than pretending.
+           WHAT THE ASSERTIONS ARE NOW, and why they changed shape. This used to
+           run a hundred months and assert a BAND at the end of it - within an
+           eighth on output, a tenth on rent. That was the right instrument
+           while the reform month itself was known to be a few percent adrift,
+           because there was nothing tighter to say. It is the wrong one now:
+           the reform month is EXACT, so the honest test is to say so, and the
+           hundred-month figure is dominated by the advisor's discrete decisions
+           rather than by the reform. A band wide enough to survive that is a
+           band that would not catch anything.
 
-           The bound is asserted, not the equality. If it ever widens, that is a
-           new bug and this will catch it.
+           So: the month after the reform is asserted to the last digit, the
+           year after it is asserted tightly, and the decade after it is
+           MEASURED and printed. If the first two ever move, that is a new bug
+           and this catches it on the month it happens rather than a decade
+           downstream.
+
+           WHAT IS STILL TRUE AND NOT PERFECT. Retail's till comes out of the
+           reform month wrong - measured on this fixture at 552.55 against
+           13.82, which is not a rounding - and because the shops make DISCRETE
+           decisions a wrong till becomes a different decision and a different
+           decision compounds. Everything the player looks at is right on the
+           month; the divergence is entirely downstream of that one number.
+           Money is conserved throughout and no player has an unreformed twin to
+           compare against, so nothing about the city they get is wrong - but it
+           is not the same city, and this harness says so rather than pretending.
+           The trail, for whoever picks it up: rLocalPurchaseValue and
+           rInventoryCost are the two that come out of the reform month at the
+           old scale, while localPurchaseValue - the live field they are copied
+           from - is correct. See CommercialHandler.computeMonthlyReport().
            ================================================================= */
-        out.println("\n--- ...and still recognisably the same city a decade later ---");
+        out.println("\n--- ...and the month after the reform is the same month ---");
 
-        quietly(() -> { plain.simulateMonths(100); lopped.simulateMonths(100); });
+        quietly(() -> { plain.simulateMonths(1); lopped.simulateMonths(1); });
+
+        assertTrue("the same people live there, to the person",
+                plain.getPopulationManager().getPopulation()
+                        == lopped.getPopulationManager().getPopulation());
+        close("the same output, to the cent",
+                lopped.getEconomyManager().getMonthGdp(),
+                plain.getEconomyManager().getMonthGdp() / factor, 1e-9);
+        close("the same rent", rent(lopped), rent(plain) / factor, 1e-9);
+        close("the same price level",
+                lopped.getPriceIndex().getIndex(), plain.getPriceIndex().getIndex(), 1e-9);
+        /*
+         * The rate is the one thing that is NOT exact on the month, and the
+         * reason is worth keeping: it moves on the month's trade balance, and
+         * the trade balance moves on what the shops imported, and the shops'
+         * till is the one figure that comes out of the reform month wrong. So
+         * this is the retail defect measured one layer downstream - 0.025% on
+         * this fixture - rather than a fault of the currency machinery. It is
+         * asserted tightly rather than exactly, and if it ever widens that is
+         * the till getting worse.
+         */
+        within("the same currency, within a thousandth",
+                lopped.getForeignAccounts().getRate(),
+                plain.getForeignAccounts().getRate() / factor, .001);
+
+        out.println("\n--- ...and the same city a year later ---");
+
+        quietly(() -> { plain.simulateMonths(11); lopped.simulateMonths(11); });
+
+        within("the same people live there, within a fiftieth",
+                lopped.getPopulationManager().getPopulation(),
+                plain.getPopulationManager().getPopulation(), .02);
+        /*
+         * A YEAR of output, not a month. A single month's GDP swings on whether
+         * a power station happened to be ordered in it - the same reason
+         * InfrastructureCheck measures roads over twelve months - so comparing
+         * one month here would be measuring the lumpiness, not the reform.
+         */
+        within("the same real economy, within a twelfth",
+                lopped.getEconomyManager().getYearGdp(),
+                plain.getEconomyManager().getYearGdp() / factor, .085);
+        within("the same rent, within a fiftieth", rent(lopped), rent(plain) / factor, .02);
+        within("the same price level, within a twentieth",
+                lopped.getPriceIndex().getIndex(), plain.getPriceIndex().getIndex(), .05);
+        within("the same currency, within a twentieth",
+                lopped.getForeignAccounts().getRate(),
+                plain.getForeignAccounts().getRate() / factor, .05);
+
+        /* ---------------- and a decade on, measured rather than asserted ---------------- */
+        out.println("\n--- ...and a decade later, measured ---");
+
+        quietly(() -> { plain.simulateMonths(88); lopped.simulateMonths(88); });
 
         out.printf("   plain  pop %,d  GDP %,.2f  rent %.6f  index %.4f%n",
                 plain.getPopulationManager().getPopulation(),
@@ -223,25 +300,11 @@ public class DenominationCheck {
                 lopped.getPopulationManager().getPopulation(),
                 lopped.getEconomyManager().getMonthGdp(), rent(lopped),
                 lopped.getPriceIndex().getIndex());
-
-        within("the same people live there, within a tenth",
-                lopped.getPopulationManager().getPopulation(),
-                plain.getPopulationManager().getPopulation(), .10);
-        /*
-         * A YEAR of output, not a month. A single month's GDP swings on whether
-         * a power station happened to be ordered in it - the same reason
-         * InfrastructureCheck measures roads over twelve months - so comparing
-         * one month here would be measuring the lumpiness, not the reform.
-         */
-        within("the same real economy, within an eighth",
-                lopped.getEconomyManager().getYearGdp(),
-                plain.getEconomyManager().getYearGdp() / factor, .125);
-        within("the same rent, within a tenth", rent(lopped), rent(plain) / factor, .10);
-        within("the same price level, within a twentieth",
-                lopped.getPriceIndex().getIndex(), plain.getPriceIndex().getIndex(), .05);
-        within("the same currency, within a tenth",
-                lopped.getForeignAccounts().getRate(),
-                plain.getForeignAccounts().getRate() / factor, .10);
+        out.printf("   a hundred months on they are %.1f%% apart on population and "
+                + "%.1f%% on the price level. Not asserted - see the note above.%n",
+                gap(lopped.getPopulationManager().getPopulation(),
+                    plain.getPopulationManager().getPopulation()),
+                gap(lopped.getPriceIndex().getIndex(), plain.getPriceIndex().getIndex()));
 
         /* ============ 4. AND NO MONEY WAS MADE OR LOST ============
 

@@ -1163,6 +1163,18 @@ public class Bank {
     /** Restored from the save, so next month taxes the right figure. */
     public void setProfitLastMonth(double value) { this.profitLastMonth = value; }
 
+    /**
+     * What savers were paid in the month this save was taken in.
+     *
+     * A FLOW struck inside fundToCover(), which only a month tick runs - so a
+     * reloaded city read 0.00% for savers beside a live policy rate of 5.16% on
+     * the Policies landing, and the Bank tab said the same thing in its own
+     * words. Carried rather than re-derived because re-deriving it means
+     * re-reading the deposit book, and the deposit book is every sector's till
+     * as it stands NOW rather than as it stood when the rate was set.
+     */
+    public void setDepositRate(double rate) { this.depositRate = Math.max(0, rate); }
+
     /** What the city took this month. */
     public double getTaxPaid() { return taxPaid; }
 

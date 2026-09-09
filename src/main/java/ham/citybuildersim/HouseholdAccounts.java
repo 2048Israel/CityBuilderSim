@@ -583,6 +583,74 @@ public class HouseholdAccounts {
     public double getRowHouseholds(int row) { return rowHouseholds[row]; }
     public int getRowCount()                { return ROWS; }
 
+    /* =====================================================================
+       THE MONTH'S STATEMENT, CARRIED
+
+       Twelve scalars and eleven row arrays, saved and restored as one, in the
+       order below - new fields go on the END and a wrong length is refused
+       whole, the same rule CommercialHandler.getReportState() follows and for
+       the same reason: a half-restored statement puts a figure on the wrong
+       line of a player's screen.
+
+       WHY IT IS CARRIED RATHER THAN REBUILT. It was rebuilt, by
+       Game.refreshHouseholdAccounts(), and rebuilding it needs three things a
+       reloaded city does not have: the month's retail revenue (which the
+       recomputed commercial report reads as zero, because the city has not
+       traded yet), the wage bill per tier as it stood when the month was
+       struck, and HouseholdBalance's plan - which is a flow, is not saved, and
+       decides how the shopping splits across the tiers. Two of those were
+       eventually fixed in place; the plan cannot be, because re-striking it
+       needs a disposable income that is itself part of what is being rebuilt.
+
+       So the statement is carried, and the rebuild becomes the fallback for a
+       save too old to have one. Same conclusion the sector reports reached
+       after closing one input at a time: enumerating inputs is a losing game
+       when the report has thirty of them.
+       ===================================================================== */
+    public double[] getStatementState() {
+        double[] out = new double[12 + ROWS * 11];
+        int i = 0;
+        out[i++] = wages;         out[i++] = wageTax;
+        out[i++] = rent;          out[i++] = shopping;
+        out[i++] = contributions; out[i++] = pensions;
+        out[i++] = healthcare;    out[i++] = tuition;
+        out[i++] = interest;
+        out[i++] = population;    out[i++] = workforce;   out[i++] = jobsFilled;
+        for (double[] row : new double[][] {
+                rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
+                rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest }) {
+            System.arraycopy(row, 0, out, i, ROWS);
+            i += ROWS;
+        }
+        return out;
+    }
+
+    /**
+     * Puts a saved statement back, exactly as it was written.
+     *
+     * @return false if the array is not this build's shape, in which case
+     *         nothing was changed and the caller keeps the rebuilt one
+     */
+    public boolean restoreStatement(double[] in) {
+        if (in == null || in.length != 12 + ROWS * 11) return false;
+        int i = 0;
+        wages = in[i++];         wageTax = in[i++];
+        rent = in[i++];          shopping = in[i++];
+        contributions = in[i++]; pensions = in[i++];
+        healthcare = in[i++];    tuition = in[i++];
+        interest = in[i++];
+        population = (int) Math.round(in[i++]);
+        workforce  = (int) Math.round(in[i++]);
+        jobsFilled = (int) Math.round(in[i++]);
+        for (double[] row : new double[][] {
+                rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
+                rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest }) {
+            System.arraycopy(in, i, row, 0, ROWS);
+            i += ROWS;
+        }
+        return true;
+    }
+
     public double getRowContributions(int row) { return rowContributions[row]; }
     public double getRowPensions(int row)      { return rowPensions[row]; }
     public double getRowHealthcare(int row)    { return rowHealthcare[row]; }

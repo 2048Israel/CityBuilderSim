@@ -246,6 +246,42 @@ public final class GameVersion {
      *     The graph series are the same argument as "NOT 16 EITHER" above, and
      *     for exactly the same reason: the history is its own file and its
      *     format is the field names of HistorySave.
+     *
+     * NOT 20: the four figures the government's books were struck with.
+     *
+     *     struckCapitalSpending, struckLandSales, struckLandPurchases and
+     *     struckInterest joined the save so a reloaded city's Government screen
+     *     shows the month it actually played. Gson leaves a missing field alone,
+     *     so a format-19 city loads with four zeros - and four zeros is exactly
+     *     what that city's Government screen showed anyway, because the load
+     *     path used to rebuild the block from accumulators that were empty by
+     *     then. Nothing is silently lost, which is the only thing this number
+     *     guards against, and one press of Next Month fills all four in.
+     *
+     * NOT 20 EITHER: everything else finding #15 asked to be carried.
+     *
+     *     The residents' whole statement, the subsidy the dial paid, what savers
+     *     were paid, the schools' month, the hunger inside the sick rate, and
+     *     the two counters that say WHY a household is doubled up. Six new
+     *     fields and three grown arrays, all on the same argument as above and
+     *     all in the same shape:
+     *
+     *       - the new DataSave fields (householdStatement, subsidyPaid,
+     *         bankDepositRate) are absent from an older save, and Gson leaves an
+     *         absent field alone, so an older city loads with exactly the blank
+     *         it always had
+     *       - the three arrays that GREW - Health's, Education's and
+     *         FamilyModel's - accept BOTH lengths on purpose, which is the one
+     *         place this codebase relaxes "refuse a wrong length whole". Refusing
+     *         a short array here would throw away a real outbreak, a real cohort
+     *         in flight and a real household mix in order to gain a figure those
+     *         saves never had, which is the opposite of what that rule is for.
+     *         Anything that is NEITHER length is still refused whole.
+     *
+     *     So an old save loses nothing and one month fills all of it in. What
+     *     WOULD move this number is any of those arrays changing shape in the
+     *     middle rather than growing at the end, because that silently reads
+     *     one figure into another's line.
      * --------------------------------------------------------------------- */
     public static final int SAVE_FORMAT = 19;
 

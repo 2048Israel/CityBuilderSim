@@ -221,8 +221,17 @@ public class MiningCheck {
         assertTrue("...and it is paying the scrap ceiling to do it",
                 Math.abs(without[2] - .40) < 1e-6);
 
-        assertTrue("local ore takes steel to about a 30% margin",
-                marginWith > 25 && marginWith < 36);
+        /*
+         * REBANDED 2026-09-09, from 25-36%, and the reason is a model change
+         * rather than drift: steel is an export and exports are zero-rated, so
+         * the mills stopped remitting 15% VAT on every tonne they ship. That
+         * was $8.2M a month on Jerus's slot 7 and it was the single biggest
+         * thing making heavy industry look like a bad business. The margin the
+         * ore buys is what it always was; what changed is that the mill now
+         * keeps it. See EconomyManager.settleSalesTax().
+         */
+        assertTrue("local ore takes steel to about a 40% margin",
+                marginWith > 33 && marginWith < 46);
         assertTrue("...which is a different business, not a better month",
                 marginWith - marginWithout > 20);
 

@@ -74,7 +74,17 @@ public final class SectorBooks {
             double repaid,
             double fromTheCity,     // subsidy paid into the sector's own books
             double spentOnBuildings,// its own premises, less anything sold back
-            double salesTaxPaid,    // remitted out of cash, and NOT on the income statement
+            /**
+             * Sales tax remitted. ON THE INCOME STATEMENT since 2026-09-09, as
+             * a deduction between operating income and profit before tax - so
+             * it is NOT a separate cash-flow line any more. It reaches the cash
+             * through netIncome() like every other cost, and subtracting it
+             * here as well would take it twice.
+             *
+             * Kept in this position in the record only so nothing that reads it
+             * by name has to move. See preTaxIncome().
+             */
+            double salesTaxPaid,
 
             /* ------------------------- and its credit ------------------------- */
             double rate,
@@ -108,7 +118,7 @@ public final class SectorBooks {
         public double unexplained() {
             return cash - (openingCash + netIncome
                     + borrowed - repaid + fromTheCity
-                    - spentOnBuildings - salesTaxPaid);
+                    - spentOnBuildings);
         }
 
         public double margin() {
@@ -249,7 +259,11 @@ public final class SectorBooks {
                 interest = h.getReportInterestExpense();
                 propertyTax = h.getReportPropertyTaxExpense();
                 operating = h.getReportOperatingIncome();
-                preTax = operating - interest - propertyTax;
+                // The handler's own figure, not a re-derivation of it. This was
+                // `operating - interest - propertyTax`, which was the same
+                // number until the statement grew a sales tax line and then
+                // silently was not. See MiningHandler.getReportPropertyTaxExpense().
+                preTax = h.getNetIncome();
                 tax = h.getReportTaxIncome();
                 sheet = h.getBalanceSheet();
             }
@@ -279,10 +293,12 @@ public final class SectorBooks {
                 interest = h.getReportInterestExpense();
                 operating = revenue - h.getReportOperatingCost();
                 preTax = h.getReportNetIncome();
-                // No getter, and it is the only term the three above leave
-                // implicit - so it comes out of the identity the handler
-                // itself computes: net = operating - interest - property tax.
-                propertyTax = operating - interest - preTax;
+                // It has a getter now. This used to come out of the identity
+                // net = operating - interest - property tax, which stopped being
+                // true the moment the sales tax joined the statement - and a
+                // derived line does not fail when that happens, it just quietly
+                // becomes the sum of everything nobody named.
+                propertyTax = h.getReportPropertyTaxExpense();
                 tax = h.getTaxIncome(h.getTaxRate());
                 sheet = h.getBalanceSheet();
             }

@@ -738,19 +738,39 @@ public class FamilyModel {
      * months to settle back to its real numbers.
      */
     public double[] toSaveArray() {
-        double[] out = new double[households.length * PayTier.values().length + 2];
+        double[] out = new double[households.length * PayTier.values().length + 4];
         int i = 0;
         for (double[] row : households) {
             for (double v : row) out[i++] = v;
         }
         out[i++] = unhoused;
-        out[i] = doubledUp;
+        out[i++] = doubledUp;
+        /*
+         * The two placement counters, appended 2026-09-09. They are what
+         * separates "this city has no doors" from "this city built the wrong
+         * shape of door", and nothing could tell the difference on a freshly
+         * loaded save because both came back as zero. refusedByStudio in
+         * particular is the whole answer to why a city can hold fifteen
+         * thousand empty flats and ten thousand doubled-up families at once.
+         */
+        out[i++] = crowdedHouseholds;
+        out[i] = refusedByStudio;
         return out;
     }
 
+    /**
+     * Puts the households back.
+     *
+     * TWO LENGTHS ACCEPTED, deliberately. The array grew by two on 2026-09-09
+     * and refusing every older save whole would have thrown away the entire
+     * household mix of every city written before that date to gain two counters
+     * those cities never had. A short array restores what it carries and leaves
+     * the two at zero, which is exactly the state those saves loaded in anyway.
+     * Anything that is neither length is still refused whole.
+     */
     public void restore(double[] saved) {
-        int expected = households.length * PayTier.values().length + 2;
-        if (saved == null || saved.length != expected) {
+        int base = households.length * PayTier.values().length + 2;
+        if (saved == null || (saved.length != base && saved.length != base + 2)) {
             return;   // refused whole, per the standing rule on state arrays
         }
         int i = 0;
@@ -758,7 +778,11 @@ public class FamilyModel {
             for (int t = 0; t < row.length; t++) row[t] = saved[i++];
         }
         unhoused = saved[i++];
-        doubledUp = saved[i];
+        doubledUp = saved[i++];
+        if (saved.length == base + 2) {
+            crowdedHouseholds = saved[i++];
+            refusedByStudio   = saved[i];
+        }
     }
 
     public void reset() {

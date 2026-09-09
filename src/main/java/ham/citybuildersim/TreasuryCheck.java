@@ -28,10 +28,25 @@ package ham.citybuildersim;
  *   4. IT SURVIVES A SAVE. The reconciliation is on the first screen a
  *      returning player opens, so it has to be there before a month is played.
  *
- * AND IT MEASURES THE GAP rather than asserting it away. The "everything else"
- * row is not expected to be zero in this model - see the report it prints, and
- * the note in claude/simulation-findings.md about the government's books dating
- * land, buildings and interest a month behind the money.
+ *   5. AND ON A CITY NOBODY TOUCHED, THE RESIDUAL ROW IS EMPTY. This one is
+ *      new, and it is the assertion this harness was built to earn the right
+ *      to make. The "everything else" row is real money in a played city -
+ *      reserves bought, bonds retired early, capital put into the bank - but
+ *      none of those happen on their own, so a hands-off run has nothing to put
+ *      in it and every dollar must be described by the budget or its borrowing.
+ *
+ *      It did not used to be. Three things were wrong, all found by asking why
+ *      this row was not zero:
+ *
+ *        - the government's books were struck from a stash taken half a tick
+ *          early, so 116 of 120 months reported the PREVIOUS month's land and
+ *          buildings, largest $118.42k
+ *        - the bank's profit tax reached the treasury's cash and appeared on no
+ *          budget, which was the whole of what was left: 110 months adrift by
+ *          exactly the bank's tax and by nothing else
+ *        - a subsidy left the treasury on the spot and was on no budget either,
+ *          which nothing caught because the dial is off by default. Hence the
+ *          second city below, which turns it on.
  *
  * @author Jerus
  */
@@ -85,14 +100,62 @@ public class TreasuryCheck {
                             + game.getTreasuryUnexplained(),
                     game.getTreasuryChange());
 
-            /* ---------------------- ...and how big it is ---------------------- */
+            /* -------- 5. and on a hands-off city there is nothing in it -------- */
             double rest = game.getTreasuryUnexplained();
+            near("nothing the budget cannot explain", month, rest, 0);
             if (Math.abs(rest) > .5) {
                 monthsWithRest++;
                 if (Math.abs(rest) > Math.abs(biggestRest)) biggestRest = rest;
             }
 
             previousClosing = game.getTreasuryClosing();
+        }
+
+        /* ===================================================================
+           AND AGAIN WITH THE SUBSIDY DIAL ON.
+
+           A subsidy is the one budget line that moves cash from inside a method
+           nobody would think to look in: paySubsidyIfOwed() does `cash -= owed`
+           as it decides, months before anything strikes a book. It was on no
+           budget at all until this run was written, and the reason nobody
+           noticed is directly above - the dial is off unless a player turns it
+           on, so the hands-off city could not see it.
+           =================================================================== */
+        System.out.println("\nAnd again with every sector auto-subsidised.");
+
+        Game funded = new Game(GameFiles.scratch("treasury-subsidy"));
+        funded.newGame();
+        for (PolicySector sector : PolicySector.values()) {
+            funded.setAutoSubsidised(sector, true);
+        }
+
+        double paidOut = 0;
+        double previousFunded = Double.NaN;
+        for (int i = 0; i < 120; i++) {
+            funded.toggleNextMonth();
+            int month = funded.getMonth();
+            paidOut += funded.getTotalSubsidyPaid();
+
+            if (!Double.isNaN(previousFunded)) {
+                near("subsidised: window opens where it closed", month,
+                        funded.getTreasuryOpening(), previousFunded);
+            }
+            near("subsidised: the bridge foots", month,
+                    funded.getTreasurySurplus()
+                            + funded.getTreasuryRaised()
+                            - funded.getTreasuryRepaid()
+                            + funded.getTreasuryUnexplained(),
+                    funded.getTreasuryChange());
+            near("subsidised: nothing the budget cannot explain", month,
+                    funded.getTreasuryUnexplained(), 0);
+            previousFunded = funded.getTreasuryClosing();
+        }
+        System.out.printf("   the dial cost the city $%,.0fk over 120 months, "
+                + "and every dollar of it is on a budget line.%n", paidOut);
+        if (paidOut <= 0) {
+            System.out.println("  FAIL  fixture: nothing was ever subsidised, "
+                    + "so this proves nothing");
+            fails++;
         }
 
         /* ===================================================================
@@ -119,6 +182,25 @@ public class TreasuryCheck {
                 reloaded.getTreasuryChange(), savedChange);
         near("...and its closing balance", game.getMonth(),
                 reloaded.getTreasuryClosing(), savedClosing);
+
+        /* ---- and so does the budget the bridge is measured against ----
+
+           The surplus row is NationalAccounts.getBalance(), which is struck
+           inside the tick from four accumulators that are zeroed the instant it
+           is struck. A reloaded city cannot rebuild it from them - they are
+           empty - so the four figures are carried in the save and handed back to
+           refreshGovernmentAccounts(). Without that the returning player's first
+           screen showed a month with no land, no buildings and no interest in
+           it, and a bridge whose named rows did not describe its own total. */
+        near("...and the budget behind it", game.getMonth(),
+                reloaded.getEconomyManager().getNationalAccounts().getBalance(),
+                game.getEconomyManager().getNationalAccounts().getBalance());
+        near("...including what the city spent on buildings", game.getMonth(),
+                reloaded.getEconomyManager().getNationalAccounts().getCapitalSpending(),
+                game.getEconomyManager().getNationalAccounts().getCapitalSpending());
+        near("...and what it paid in interest", game.getMonth(),
+                reloaded.getEconomyManager().getNationalAccounts().getInterestExpense(),
+                game.getEconomyManager().getNationalAccounts().getInterestExpense());
 
         /* ------------- and the first month back still has no gap ------------- */
         reloaded.toggleNextMonth();

@@ -40,6 +40,17 @@ public class SaveFileCheck {
         }
     }
 
+    /** Two readings of one month, which must not differ at all. */
+    static void same(String label, double actual, double expected) {
+        boolean ok = Math.abs(actual - expected) < 1e-9;
+        if (!ok) {
+            fails++;
+            System.out.printf("%-58s FAIL  %,.6f != %,.6f%n", label, actual, expected);
+        } else {
+            System.out.printf("%-58s OK%n", label);
+        }
+    }
+
     /** Forward slashes, so the assertions read the same on any host. */
     static String flat(Path p) {
         return p.toString().replace('\\', '/');
@@ -794,6 +805,92 @@ public class SaveFileCheck {
         assertEquals("and a month later both cities have paid the same bill",
                 Math.round(paidUp.getCash() * 10000),
                 Math.round(indebted.getCash() * 10000));
+
+        /* ============ 13. AND NOTHING READS ZERO ON A FRESHLY LOADED CITY ============
+
+           Finding #15 in claude/simulation-findings.md, as an assertion.
+
+           A whole family of readings are struck inside nextMonth() and are in
+           nobody's getState(). On a save that has just been loaded they were all
+           zero, and the screens that draw them had no way of telling "zero" from
+           "not struck yet": the Policies landing read `savers are paid 0.00%`
+           beside a 5.16% policy rate, the Tuition page had schools that cost
+           nothing to run, and the Household cash flow's tier table showed every
+           pay tier spending $0 in the shops while the grid above it showed
+           $216-$1,793 - which was filed separately as finding #4.
+
+           They are carried now, every one, and this is what stops them being
+           quietly dropped again. The city below has a bank, schools, clinics,
+           mills, mines and the subsidy dial on, because every one of those is
+           needed to make one of these readings non-zero in the first place - a
+           fixture that cannot tell zero from missing proves nothing.
+           ================================================================= */
+        System.out.println("\n--- and a freshly loaded city reads what the live one reads ---");
+
+        Game full = new Game(new GameFiles(root.resolve("everything"),
+                root.resolve("no-legacy")));
+        full.run();
+        full.getGovernmentInvestor().spend(-2_000_000);
+        full.getLandManager().setOwnedSqFt(full.getLandManager().getOwnedSqFt() + 200_000_000L);
+        for (String[] order : new String[][] {
+                {"House", "400"}, {"Convenience Store", "20"}, {"Construction Depot", "6"},
+                {"Coal Power Plant", "2"}, {"Water Treatment Plant", "2"},
+                {"Textile Mill", "4"}, {"Iron Mine", "2"}, {"Steel Foundry", "2"},
+                {"Commercial Bank", "1"}, {"Elementary School", "3"},
+                {"Walk-in Clinic", "3"}, {"Paved Road", "20"} }) {
+            full.buildStack(template(full, order[0]), Integer.parseInt(order[1]), false);
+        }
+        for (PolicySector sector : PolicySector.values()) full.setAutoSubsidised(sector, true);
+        full.simulateMonths(150);
+        assertTrue("saved a city with one of everything in it",
+                full.saveGame(1, "everything").ok);
+
+        Game back = new Game(full.getGameFiles());
+        back.loadGameSave(1);
+
+        /* --- the fixture has to be able to fail before it can pass --- */
+        assertTrue("fixture: savers really were being paid something",
+                full.getBank().depositRate() > 0);
+        assertTrue("fixture: the schools really were running",
+                full.getEducation().getPayroll() > 0);
+        assertTrue("fixture: the dial really did pay out",
+                full.getTotalSubsidyPaid() > 0);
+        assertTrue("fixture: somebody really was hungry",
+                full.getHealth().getHungerRate() > 0);
+        assertTrue("fixture: the tiers really were shopping",
+                full.getHouseholds().getRowShopping(0) > 0);
+
+        same("what savers are paid", back.getBank().depositRate(),
+                full.getBank().depositRate());
+        same("what the dial paid out", back.getTotalSubsidyPaid(),
+                full.getTotalSubsidyPaid());
+        same("the schools' payroll", back.getEducation().getPayroll(),
+                full.getEducation().getPayroll());
+        same("...their upkeep", back.getEducation().getUpkeep(),
+                full.getEducation().getUpkeep());
+        same("...the fees they waived", back.getEducation().getSubsidy(),
+                full.getEducation().getSubsidy());
+        same("...and the fees they collected", back.getEducation().getFees(),
+                full.getEducation().getFees());
+        same("the hunger inside the sick rate", back.getHealth().getHungerRate(),
+                full.getHealth().getHungerRate());
+        same("households doubled up", back.getFamilies().getDoubledUpHouseholds(),
+                full.getFamilies().getDoubledUpHouseholds());
+        same("...and the ones a studio turned away",
+                back.getFamilies().getRefusedByStudio(),
+                full.getFamilies().getRefusedByStudio());
+        for (int r = 0; r < full.getHouseholds().getRowCount(); r++) {
+            same("tier " + r + " shopping", back.getHouseholds().getRowShopping(r),
+                    full.getHouseholds().getRowShopping(r));
+            same("tier " + r + " rent", back.getHouseholds().getRowRent(r),
+                    full.getHouseholds().getRowRent(r));
+        }
+        same("the government's surplus",
+                back.getEconomyManager().getNationalAccounts().getBalance(),
+                full.getEconomyManager().getNationalAccounts().getBalance());
+        same("...and the business tax inside it",
+                back.getEconomyManager().getNationalAccounts().getTaxBusiness(),
+                full.getEconomyManager().getNationalAccounts().getTaxBusiness());
 
         cleanUp(root);
 

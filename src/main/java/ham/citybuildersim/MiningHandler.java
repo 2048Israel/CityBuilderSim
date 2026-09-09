@@ -264,11 +264,47 @@ public class MiningHandler {
         rInterestExpense = interestExpense;
         rPropertyTaxExpense = propertyTaxExpense;
 
-        rNetIncome = rOperatingIncome - rInterestExpense - rPropertyTaxExpense;
+        rNetIncome = rOperatingIncome - rInterestExpense - rPropertyTaxExpense
+                - rSalesTax;
     }
 
-    /** Computes the month and banks it. Called once a month, from EconomyManager. */
+    /* =====================================================================
+       THE MONTH'S SALES TAX, ON THE STATEMENT
+
+       Handed in by EconomyManager.settleSalesTax() after the ledger has
+       settled, because the ledger is struck FROM this statement's revenue and
+       cannot be known while it is being written.
+
+       It used to be charged to the sector's cash and appear on no income
+       statement at all, so every sector reported a profit it had not kept: on
+       Jerus's slot 7, retail showed $16.0M having remitted $4.8M, and food
+       processing showed $1.7M having remitted $1.3M - three quarters of its
+       reported profit. Mining showed it kept -$1.5M when it had kept -$6.0M.
+
+       An operating cost, and the profit tax is struck AFTER it, which is what
+       real accounting does: revenue is booked net of VAT, so the tax authority
+       never taxes a remittance as profit. Jerus's call, with the cost measured:
+       the profit-tax base falls about a third on a mature city.
+
+       Not in the save array. It is put back on load from the restored ledger -
+       see EconomyManager.restoreSalesTaxLedger() - because two records of one
+       number is two records that can disagree.
+       ===================================================================== */
+    private double rSalesTax;
+
+    /** What this sector remitted this month. Reporting and the statement. */
+    public double getReportSalesTax() { return rSalesTax; }
+    void setSalesTaxRemitted(double net) { this.rSalesTax = net; }
+
+    /** Computes the month. Does NOT bank it - see bankMonth(). */
     public void calculateResults() {
+        computeMonthlyReport();
+        netIncome = rNetIncome;
+    }
+
+    /** ...and banks it, net of both taxes, once the sales tax is known. */
+    void bankMonth(double salesTaxRemitted) {
+        rSalesTax = salesTaxRemitted;
         computeMonthlyReport();
         netIncome = rNetIncome;
         // Net of the profit tax, at the rate set before the statement ran -
@@ -299,6 +335,18 @@ public class MiningHandler {
     public double getTaxIncome(double taxRate) {
         return Math.max(rNetIncome * taxRate, 0);
     }
+
+    /**
+     * What the month's statement charged for the ground.
+     *
+     * Every other handler has had this; this one did not, so SectorBooks
+     * derived it from the identity net = operating - interest - property tax.
+     * That worked until the statement grew a fourth deduction, at which point
+     * the derivation quietly absorbed the sales tax into the property tax line
+     * and the screen showed a land bill nobody had been sent. A derived figure
+     * is only ever as right as the last person to add a line.
+     */
+    public double getReportPropertyTaxExpense() { return rPropertyTaxExpense; }
 
     //getters
     public double getCash()               { return cash; }
@@ -449,6 +497,21 @@ public class MiningHandler {
         pricePerWatt *= scale;
         pricePerWaterUnit *= scale;
         for (int i = 0; i < wages.length; i++) wages[i] *= scale;
+
+        /*
+         * ...AND LAST MONTH'S STATEMENT. Read at the top of the next month
+         * before anything rewrites it - by settleSalesTax(), which prices the
+         * ore off rOreSoldLocally x rLocalPrice, by the tax lines and by the
+         * national accounts. A statement read before it is rewritten is a stock
+         * for as long as it takes to read it. Tonnes and rates are not money
+         * and stay put; the prices and the money lines are.
+         */
+        rLocalPrice *= scale;          rExportPrice *= scale;
+        rRevenue *= scale;             rPayroll *= scale;
+        rElectricityCost *= scale;     rWaterCost *= scale;
+        rOperatingCost *= scale;       rOperatingIncome *= scale;
+        rInterestExpense *= scale;     rPropertyTaxExpense *= scale;
+        rNetIncome *= scale;           rSalesTax *= scale;
     }
 
 }

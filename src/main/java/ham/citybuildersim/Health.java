@@ -289,7 +289,16 @@ public class Health {
     public double[] getState() {
         return new double[] {
             outbreakSeverity, outbreakStarted, sickRate, coverage, baselineRate,
-            unburiedRate
+            unburiedRate,
+            /*
+             * ...AND HUNGER, added 2026-09-09. It was the seventh component of
+             * the sick rate and the only one not carried, so a reloaded city
+             * came back with a sickRate that INCLUDED hunger and a hungerRate of
+             * zero: on Jerus's slot 7 the four visible components summed to 3.0
+             * points against a reported 3.7, and the General care screen printed
+             * the gap as "Not accounted for" until the next month closed it.
+             */
+            hungerRate
         };
     }
 
@@ -303,7 +312,18 @@ public class Health {
      * which is the same case.
      */
     public boolean restore(double[] state) {
-        if (state == null || state.length != getState().length) return false;
+        /*
+         * SIX OR SEVEN, and this is the one place the "refuse a wrong length
+         * whole" rule is relaxed on purpose. Hunger joined the array on
+         * 2026-09-09; refusing every six-entry save would have thrown away the
+         * outbreak, the sick rate and the burial backlog of every city written
+         * before that date to gain one number those cities never had. So a
+         * short array restores what it carries and leaves hunger at zero -
+         * which is exactly the state those saves loaded in anyway - and one
+         * month puts it right. Anything that is neither length is still refused
+         * whole, because that is a save this build cannot read.
+         */
+        if (state == null || state.length < 6 || state.length > 7) return false;
 
         outbreakSeverity = state[0];
         outbreakStarted  = (int) state[1];
@@ -311,6 +331,7 @@ public class Health {
         coverage         = state[3];
         baselineRate     = state[4];
         unburiedRate     = state[5];
+        hungerRate       = state.length > 6 ? state[6] : 0;
         return true;
     }
 

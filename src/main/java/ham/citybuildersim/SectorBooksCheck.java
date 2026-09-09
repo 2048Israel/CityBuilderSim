@@ -18,9 +18,15 @@ package ham.citybuildersim;
  *      plug means a figure moved between being read and being used.
  *
  *   2. THE INCOME STATEMENT ADDS UP, top to bottom: revenue less the operating
- *      lines is operating income, less property tax and interest is pre-tax,
- *      less tax is what the sector kept. Every line on the screen is one of
- *      these, so a break here is a screen that does not foot.
+ *      lines is operating income, less property tax, interest and sales tax is
+ *      pre-tax, less profit tax is what the sector kept. Every line on the
+ *      screen is one of these, so a break here is a screen that does not foot.
+ *
+ *      The sales tax joined that chain on 2026-09-09. It used to be remitted
+ *      out of cash and appear on no statement, so this harness had to carry it
+ *      as a cash-flow movement to make the month close - and the screen printed
+ *      a red block saying the profit above it was overstated by that much,
+ *      because it was.
  *
  *   3. THE CASH FLOW CLOSES. Opening cash plus what it kept plus what it
  *      borrowed less what it repaid plus what the city paid in equals closing
@@ -78,7 +84,8 @@ public class SectorBooksCheck {
                         m.revenue() - m.operatingCost());
                 near("pre-tax", sector, m.month(),
                         m.preTaxIncome(),
-                        m.operatingIncome() - m.propertyTax() - m.interest());
+                        m.operatingIncome() - m.propertyTax() - m.interest()
+                                - m.salesTaxPaid());
                 near("net", sector, m.month(),
                         m.netIncome(), m.preTaxIncome() - m.tax());
 

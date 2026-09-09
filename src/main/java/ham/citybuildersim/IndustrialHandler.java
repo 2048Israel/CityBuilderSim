@@ -716,6 +716,31 @@ public class IndustrialHandler {
      */
     public void calculateIndustrialResults() {
         computeMonthlyReport();
+    }
+
+    /* =====================================================================
+       THE MONTH'S SALES TAX, ON THE STATEMENT
+
+       Handed in by EconomyManager.settleSalesTax() after the ledger has
+       settled, because the ledger is struck FROM this statement's revenue and
+       cannot be known while it is being written. See
+       HeavyIndustryHandler.getReportSalesTax() for the whole reasoning; the
+       short version is that every sector used to report a profit it had already
+       remitted part of, and food processing was the worst of them - $1.7M
+       reported against $1.3M of tax paid.
+
+       Not in the save array. Put back on load from the restored ledger.
+       ===================================================================== */
+    private double rSalesTax;
+
+    /** What this sector remitted this month. Reporting and the statement. */
+    public double getReportSalesTax() { return rSalesTax; }
+    void setSalesTaxRemitted(double net) { this.rSalesTax = net; }
+
+    /** Banks the month, net of both taxes, once the sales tax is known. */
+    void bankMonth(double salesTaxRemitted) {
+        rSalesTax = salesTaxRemitted;
+        computeMonthlyReport();
         // Net of the profit tax - see CommercialHandler.calculateCommercialResults().
         cash += rNetIncome - rTaxIncome;
     }
@@ -851,7 +876,8 @@ public class IndustrialHandler {
         // borrowing. Deliberately NOT also charged against cash by the debt
         // manager - that would take the money twice.
         rOperatingIncome = rGrossRevenue - rOperatingCost;
-        rNetIncome = rOperatingIncome - rInterestExpense - rPropertyTaxExpense;
+        rNetIncome = rOperatingIncome - rInterestExpense - rPropertyTaxExpense
+                - rSalesTax;
         // Math.max, to match getIndustrialTaxIncome() - the city never hands out a
         // refund on a loss-making month, it just collects nothing. Without the
         // clamp this reported a negative "Government Tax Revenue" on the tax
@@ -1124,7 +1150,7 @@ public class IndustrialHandler {
         pricePerWaterUnit *= scale;
         rInterestExpense *= scale;
         rPropertyTaxExpense *= scale;
-        rNetIncome *= scale;
+        rNetIncome *= scale;  rSalesTax *= scale;
         rGrossRevenue *= scale;
         rAverageSellPrice *= scale;
         rPayroll *= scale;

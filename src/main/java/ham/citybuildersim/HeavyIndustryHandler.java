@@ -336,11 +336,53 @@ public class HeavyIndustryHandler {
         rInterestExpense = interestExpense;
         rPropertyTaxExpense = propertyTaxExpense;
 
-        rNetIncome = rOperatingIncome - rInterestExpense - rPropertyTaxExpense;
+        rNetIncome = rOperatingIncome - rInterestExpense - rPropertyTaxExpense
+                - rSalesTax;
     }
 
-    /** Computes the month and banks it. Called once a month, from EconomyManager. */
+    /* =====================================================================
+       THE MONTH'S SALES TAX, ON THE STATEMENT
+
+       Handed in by EconomyManager.settleSalesTax() after the ledger has
+       settled, because the ledger is struck FROM this statement's revenue and
+       cannot be known while it is being written.
+
+       It used to be charged to the sector's cash and appear on no income
+       statement at all, so every sector reported a profit it had not kept: on
+       Jerus's slot 7, retail showed $16.0M having remitted $4.8M, and food
+       processing showed $1.7M having remitted $1.3M - three quarters of its
+       reported profit. Mining showed it kept -$1.5M when it had kept -$6.0M.
+
+       An operating cost, and the profit tax is struck AFTER it, which is what
+       real accounting does: revenue is booked net of VAT, so the tax authority
+       never taxes a remittance as profit. Jerus's call, with the cost measured:
+       the profit-tax base falls about a third on a mature city.
+
+       Not in the save array. It is put back on load from the restored ledger -
+       see EconomyManager.restoreSalesTaxLedger() - because two records of one
+       number is two records that can disagree.
+       ===================================================================== */
+    private double rSalesTax;
+
+    /** What this sector remitted this month. Reporting and the statement. */
+    public double getReportSalesTax() { return rSalesTax; }
+    void setSalesTaxRemitted(double net) { this.rSalesTax = net; }
+
+    /**
+     * Computes the month. Does NOT bank it - see bankMonth().
+     *
+     * Split in two because the sales tax is struck from this statement and then
+     * belongs on it: the ledger reads the revenue this call produces, and the
+     * banking cannot happen until the ledger has answered.
+     */
     public void calculateResults() {
+        computeMonthlyReport();
+        netIncome = rNetIncome;
+    }
+
+    /** ...and banks it, net of both taxes, once the sales tax is known. */
+    void bankMonth(double salesTaxRemitted) {
+        rSalesTax = salesTaxRemitted;
         computeMonthlyReport();
         netIncome = rNetIncome;
         // Net of the profit tax, at the rate set before the statement ran -
@@ -578,7 +620,21 @@ public class HeavyIndustryHandler {
          * rewritten is a stock for as long as it takes to read it. The RATIOS
          * and the physical quantities on it - fills, output, tonnes, units -
          * are not money and stay put.
+         *
+         * THIS COMMENT STOOD ALONE FOR TWO DAYS WITH NO CODE UNDER IT, which is
+         * the known "the reform month comes out a few percent adrift" defect
+         * finally having a cause. The mills' whole statement stayed in old money
+         * across a reform while the cash and the prices moved, so the month
+         * after a 100:1 lop the tax lines, the VAT ledger and the national
+         * accounts all read a revenue a hundred times too large. Mining had the
+         * same hole and not even the comment.
          */
+        rRevenue *= scale;             rInputCost *= scale;
+        rPayroll *= scale;             rElectricityCost *= scale;
+        rWaterCost *= scale;           rOperatingCost *= scale;
+        rOperatingIncome *= scale;     rInterestExpense *= scale;
+        rPropertyTaxExpense *= scale;  rNetIncome *= scale;
+        rSalesTax *= scale;
     }
 
 }

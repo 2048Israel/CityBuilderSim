@@ -539,12 +539,20 @@ public final class MoneyAudit {
          * the bank its own building category to fix it is a bigger change than
          * it earns today.
          */
-        // What the city pays the outside world: pensions, the schools' tuition
-        // subsidy (paid to households), and the upkeep of its own services.
+        // What the city pays the outside world: pensions, and the upkeep of its
+        // own services.
+        //
+        // The schools' tuition subsidy WAS a line here, described as "paid to
+        // households". It is not paid to anybody: households are billed tuition
+        // net of it and credited nothing, so the debit was the treasury losing
+        // money to no counterparty. This audit could not catch it - households
+        // are outside the pool, so an outflow to a household and an outflow to
+        // nowhere look identical from in here - and it balanced only because
+        // Education.getGrossCost() was charging the same phantom on the other
+        // side. Both are gone. See Education.getGrossCost() for the whole of it.
         out += debit.apply("- e PensionsPaid", e.getPensionsPaid(), Scope.DOMESTIC);
         out += debit.apply("- care Upkeep", care.getUpkeep(), Scope.DOMESTIC);
         out += debit.apply("- schools Upkeep", schools.getUpkeep(), Scope.DOMESTIC);
-        out += debit.apply("- schools Subsidy", schools.getSubsidy(), Scope.DOMESTIC);
 
         // Suspect internal pairs, for the detail only. A flow that should
         // cancel and does not is where a residual lives.

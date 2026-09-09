@@ -1011,6 +1011,27 @@ public class Game {
             householdBalance.planOnly(rowHomes, rowPeople, disposable,
                     households.rentPerHousehold(), fees,
                     shops.getStoreSellPrice(), debtManager.getRate());
+
+            /*
+             * ...AND THE TIERS SPLIT AGAIN, ON THE PLAN THAT WAS JUST STRUCK.
+             *
+             * updateByTier() ran twenty lines above this with plannedShare() as
+             * it stood BEFORE planOnly() - which on a freshly loaded city is all
+             * zeros, because the plan is a flow and the save does not carry it.
+             * A zero share is not a fallback: rowShopping[r] = shopping * 0, so
+             * every pay tier's shopping column read $0 while the same screen's
+             * per-shape grid showed $216-$1,793. The unskilled row then footed
+             * to "+$674 left over" on a tier that is actually underwater, which
+             * is finding #4 in claude/simulation-findings.md and was filed as a
+             * separate bug from #15. It is #15: one read, one line too early.
+             *
+             * The second call is not a re-derivation of the month - updateByTier
+             * is a plain split of figures it is handed, and it is handed exactly
+             * the same ones. Only the share has changed, from a zero that meant
+             * "not struck yet" to the plan the load path exists to re-strike.
+             */
+            households.updateByTier(wagePerTier, taxPerTier, rowPeople, rowHomes,
+                    householdBalance.plannedShare(), interestPerRow);
         }
 
         shops.setSpendingCapacity(householdBalance.getSpendingCapacity());
@@ -2785,6 +2806,11 @@ public class Game {
         foreignDebtRaisedThisMonth = 0;
         foreignPrincipalRepaidThisMonth = 0;
         foreignInterestPaidThisMonth = 0;
+        // Its domestic twin, cleared in the same breath. This used to be zeroed
+        // inside startOfMonthUpdate(), half a tick earlier than the foreign one,
+        // which is why the government's books needed a stash to see a whole
+        // month's coupon. See strikeGovernmentBooks().
+        cityInterestPaid = 0;
         economyManager.getBusinessDebtManager().startAuditMonth();
         sectorInvested.clear();
         double[] poolsBefore = MoneyAudit.pools(this);
@@ -2822,6 +2848,10 @@ public class Game {
         economyManager.setPreviousGdp(historySave);
         priceTheDebtMarket();
         debtManager.processAllDebts(this);
+
+        // The government's books, over the same window as the treasury bridge
+        // and after the month's coupon has actually been paid.
+        strikeGovernmentBooks();
 
         /*
          * THE BANK SETTLES, BEFORE THE AUDIT LOOKS.
@@ -3195,22 +3225,31 @@ public class Game {
                 economyManager.getTotalPropertyTax());
 
         /*
-         * Stashed before they are cleared, so the government's books can be
-         * struck AGAIN at the end of the month against the same period's
-         * spending - see finalUpdateEconomy().
+         * THE CAPITAL AND LAND ACCUMULATORS ARE NOT CLEARED HERE ANY MORE.
+         *
+         * They used to be, and the government's books were struck from a stash
+         * taken a line above the clear - which made the SURPLUS/DEFICIT line one
+         * month older than the cash it was supposed to explain. The treasury's
+         * window is press to press: it opens where the last month closed and
+         * shuts at the bottom of this tick, so it contains the player's own turn
+         * AND everything the tick then does. The accumulators, cleared here,
+         * spanned start-of-tick to start-of-tick instead - the same length, half
+         * a month out of phase - so a building the advisor bought during the tick
+         * landed in next month's budget while its cash left in this one.
+         *
+         * Measured before the fix, on a city played from new with no player
+         * actions at all: month 5 moved the treasury by +119.75 and reported a
+         * surplus of +1.33; month 6 moved it by +31.61 and reported +119.58.
+         * Every row was the previous row's cash, one month late.
+         *
+         * They are read and cleared together now, at the bottom of the month,
+         * by strikeGovernmentBooks() - which is also after processAllDebts(), so
+         * the interest is this month's too and nothing needs stashing at all.
+         *
+         * monthlyMaterialImports stays here: it feeds GDP, not the government
+         * block, and updateNationalAccounts() has just read it.
          */
-        accountedCapitalSpending = cityCapitalSpending;
-        accountedLandSales = landManager.getLandSalesThisMonth();
-        accountedLandPurchases = landManager.getLandPurchasesThisMonth();
-        accountedInterest = cityInterestPaid + foreignInterestPaidThisMonth;
-
-        cityCapitalSpending = 0;
-        cityInterestPaid = 0;
         monthlyMaterialImports = 0;
-
-        // Cleared only after the accounts have read them, or a month's land
-        // trading would vanish before it was ever reported.
-        landManager.clearMonth();
 
         updateHouseholdAccounts();
 
@@ -3410,14 +3449,39 @@ public class Game {
     }
 
     /**
-     * What the period was: the spending the accounts were struck against.
+     * The government's books, struck once, at the bottom of the month.
      *
-     * Captured at the start of the month, before the accumulators are cleared,
-     * and used again at the end - see the government re-strike below.
+     * AFTER processAllDebts(), so this month's coupon is in it, and over the
+     * accumulators live rather than a snapshot of them - which is only possible
+     * because the clear happens here too, a line later. The window is then
+     * exactly the treasury bridge's: opens where the last month closed, shuts
+     * where this one does. See startOfMonthUpdate() for what it was before.
+     *
+     * updateNationalAccounts() still calls updateGovernment() at the top of the
+     * month, against fields that are mostly last month's. That call is
+     * provisional and this one overwrites it whole - updateGovernment() is a
+     * plain setter, so the second strike wins and nothing accumulates twice.
      */
-    private double accountedCapitalSpending;
-    private double accountedLandSales;
-    private double accountedLandPurchases;
+    private void strikeGovernmentBooks() {
+        // What the dial cost the city this month, handed over before the strike
+        // reads it. Paid inside paySubsidyIfOwed(), which moved the cash then
+        // and there; this is the books catching up with it.
+        economyManager.setSubsidiesPaid(getTotalSubsidyPaid());
+
+        economyManager.refreshGovernmentAccounts(
+                landManager.getLandSalesThisMonth(),
+                cityCapitalSpending,
+                landManager.getLandPurchasesThisMonth(),
+                cityInterestPaid + foreignInterestPaidThisMonth);
+
+        // Read and cleared in one place, a line apart, so nothing in between
+        // can see a half-cleared month and nothing needs a second copy of them.
+        // What a SAVE needs is a different question and has a different answer:
+        // the struck block itself is carried - see
+        // NationalAccounts.governmentToSave().
+        cityCapitalSpending = 0;
+        landManager.clearMonth();
+    }
 
     private void finalUpdateEconomy(){
         economyManager.setDebt(debtManager.getAllPrincipal());
@@ -3448,29 +3512,16 @@ public class Game {
         }
 
         /*
-         * THE GOVERNMENT'S BOOKS, STRUCK AGAINST THE TAXES THAT JUST MOVED THE CASH.
-         *
-         * updateNationalAccounts() runs at the START of the month and reads the
-         * tax fields as the PREVIOUS month's getTaxIncome() left them - while
-         * salesTax and propertyTax, charged on the same pass, are current. So the
-         * SURPLUS/DEFICIT line mixed two months and did not equal what the
-         * treasury actually did.
-         *
-         * Re-struck here, a few lines after getTotalIncome() has assigned every
-         * tax field for this month, against the SAME period's capital spending
-         * and land trading - which is why those three were stashed before being
-         * cleared rather than read live, since by now they are zero.
-         *
-         * Deliberately narrower than moving the whole of updateNationalAccounts()
-         * down here. That call also measures GDP, moves the inventory baseline
-         * and depends on a construction figure captured mid-way through the
-         * start of the month; it belongs where it is. Only the government block
-         * was mistimed, and refreshGovernmentAccounts() is the same method the
-         * load path uses, so nothing is computed in two places.
+         * The government's books used to be re-struck HERE, and that was still
+         * too early: processAllDebts() has not run, so the month's coupon was
+         * not known and had to come from a stash taken a month before. The
+         * strike now happens at the bottom of nextMonth() instead - see
+         * strikeGovernmentBooks(). The reason it needed re-striking at all is
+         * unchanged and worth keeping: updateNationalAccounts() runs at the top
+         * of the month and reads the tax fields as the PREVIOUS month's
+         * getTaxIncome() left them, while salesTax and propertyTax, charged on
+         * the same pass, are current - so the surplus mixed two months.
          */
-        economyManager.refreshGovernmentAccounts(
-                accountedLandSales, accountedCapitalSpending, accountedLandPurchases,
-                accountedInterest);
 
         materialsConsumed = 0;
     }
@@ -4048,9 +4099,6 @@ public class Game {
      */
     private double monthlyMaterialImports;
 
-    /** Stashed before cityInterestPaid is cleared, for the end-of-month re-strike. */
-    private double accountedInterest;
-
     /**
      * What a save carried about next month's shopping and rent.
      *
@@ -4318,6 +4366,7 @@ public class Game {
         dataSave.setBankCash(bank.getCash());
         dataSave.setBankBranchesCapitalised(bank.getBranchesCapitalised());
         dataSave.setBankProfitLastMonth(bank.getProfitLastMonth());
+        dataSave.setBankDepositRate(bank.depositRate());
         dataSave.setForeignAccounts(foreign.toSaveArray());
         dataSave.setForeignStanding(debtManager.foreignStandingToSave());
         dataSave.setCapitalFlows(hotMoney.toSaveArray());
@@ -4368,6 +4417,8 @@ public class Game {
         dataSave.setSectorLossMonths(businessInvestment.getLossMonthsState());
         dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
+        dataSave.setSubsidyPaid(subsidyPaid.clone());
+        dataSave.setHouseholdStatement(households.getStatementState());
         dataSave.setMonthlyMaterialImports(monthlyMaterialImports);
         dataSave.setMaterialsConsumed(materialsConsumed);
         dataSave.setWriteOffTotals(
@@ -4402,6 +4453,7 @@ public class Game {
         dataSave.setSectorBooks(sectorBooks.thisMonth());
         dataSave.setSectorBooksBefore(sectorBooks.lastMonth());
         dataSave.setTreasuryMonth(treasuryMonthToSave());
+        dataSave.setGovernmentMonth(economyManager.governmentMonthToSave());
         dataSave.setReports(reports);
         dataSave.setGraphs(graphs);
         dataSave.setSlotName(slotName);
@@ -4551,9 +4603,9 @@ public class Game {
      * counted twice, once inside the pools and once out of them.
      *
      * So it leaves cash directly, like the principal does. What the city's
-     * income statement would have lost by that is put back where
-     * accountedInterest is struck - the statement gets the full interest bill,
-     * and only the bank's share reaches the bank.
+     * income statement would have lost by that is put back where the month's
+     * interest is struck - see strikeGovernmentBooks(). The statement gets the
+     * full interest bill, and only the bank's share reaches the bank.
      */
     public void payForeignInterest(double usd) {
         double local = usd * foreign.getRate();
@@ -4588,9 +4640,9 @@ public class Game {
     /**
      * What the treasury raised, as it stood when the month began.
      *
-     * cityDebtRaisedThisMonth is cleared inside startOfMonthUpdate() - the
-     * accounts read it and then zero it - so by the time the bank settles it is
-     * already gone. Snapshotted for the same reason accountedInterest is.
+     * cityDebtRaisedThisMonth is cleared at the top of nextMonth(), so by the
+     * time the bank settles at the bottom it holds this month's issuance and
+     * not the one the bank is being told about. Snapshotted rather than read.
      */
     private double cityDebtRaisedForBank;
     private double cityDiscountForBank;
@@ -4687,6 +4739,16 @@ public class Game {
         treasurySurplus  = saved[4];
         treasuryRecorded = saved[5] != 0;
     }
+
+    /**
+     * The government's month as the save carried it, waiting for the rebuild.
+     *
+     * Read where the rest of the save is read and applied after
+     * rebuildSimulationState(), because the rebuild's last act is to re-strike
+     * this block from state that cannot reproduce it. Nulled once applied so
+     * nothing can put a stale month back a second time.
+     */
+    private double[] loadedGovernmentMonth;
 
     /** Last month's money-conservation residual. See MoneyAudit. */
     private MoneyAudit.Result lastMoneyAudit = MoneyAudit.Result.NONE;
@@ -5116,15 +5178,20 @@ public class Game {
      * And the government's own books. updateGovernment() is called from inside
      * updateNationalAccounts() and nowhere else, so a reloaded city showed every
      * tax line, both pension lines, both pie charts and the SURPLUS/DEFICIT as
-     * zero. The land and capital figures are the ones carried in the save; before
-     * they were carried this could only ever have restored zeros anyway.
+     * zero.
+     *
+     * THIS IS THE FLOOR, NOT THE ANSWER. It re-derives what it can from live
+     * state, which is four of the ten revenue lines short - the wage tax, the
+     * contributions, the utility income and the profit taxes are all struck
+     * inside a tick and cannot be rebuilt from a city standing still. loadGame()
+     * restores the saved block over the top of this a moment later; what is left
+     * here is what a save too old to carry one gets, and what a brand new city
+     * gets, both of which are cities with no month behind them.
      */
     economyManager.refreshGovernmentAccounts(
             landManager.getLandSalesThisMonth(),
             cityCapitalSpending,
             landManager.getLandPurchasesThisMonth(),
-            // Restored by setInterest() above and not yet cleared - this path
-            // does not run finalEconUpdate(). See refreshGovernmentAccounts().
             economyManager.getInterestAccrued());
 }
    
@@ -5276,6 +5343,7 @@ public class Game {
             bank.setCash(loaded.getBankCash());
             bank.setBranchesCapitalised(loaded.getBankBranchesCapitalised());
             bank.setProfitLastMonth(loaded.getBankProfitLastMonth());
+            bank.setDepositRate(loaded.getBankDepositRate());
             economyManager.setBankTax(loaded.getBankTaxCharged());
             foreign.restore(loaded.getForeignAccounts());
             /*
@@ -5388,6 +5456,9 @@ public class Game {
             sectorBooks.restoreFrom(loaded.getSectorBooks(),
                     loaded.getSectorBooksBefore());
             restoreTreasuryMonth(loaded.getTreasuryMonth());
+            // Held, not applied: rebuildSimulationState() has not run yet and
+            // it ends by re-striking this block. Put back below it.
+            loadedGovernmentMonth = loaded.getGovernmentMonth();
 
             /*
              * Buildings, and the work still on their sites.
@@ -5740,6 +5811,17 @@ public class Game {
             businessInvestment.restoreLossMonths(restoredFlows.getSectorLossMonths());
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
+            /*
+             * What the dial paid out last month. A flow, and one the load path
+             * cannot re-derive: paySubsidyIfOwed() decides it from a net income
+             * that has already been banked. Without it the Policies tab showed
+             * a protected sector being supported by nothing at all until the
+             * next month ticked.
+             */
+            double[] paid = restoredFlows.getSubsidyPaid();
+            if (paid != null && paid.length == subsidyPaid.length) {
+                System.arraycopy(paid, 0, subsidyPaid, 0, subsidyPaid.length);
+            }
             monthlyMaterialImports = restoredFlows.getMonthlyMaterialImports();
             materialsConsumed = restoredFlows.getMaterialsConsumed();
         }
@@ -5760,6 +5842,21 @@ public class Game {
         if (carriedRentWeight > 0) {
             families.setRentWeight(carriedRentWeight);
             economyManager.getCommercialHandler().setRentWeight(carriedRentWeight);
+        }
+
+        /*
+         * The government's month, put back over the top of the rebuild's
+         * best guess.
+         *
+         * After rebuildSimulationState(), because that ends by calling
+         * refreshGovernmentAccounts() and would otherwise overwrite this with
+         * the partial block it can derive. Same shape as the three flows above,
+         * and the same reason: a month is a set of flows, and the rebuild
+         * re-derives them from a city that has stopped moving.
+         */
+        if (loadedGovernmentMonth != null) {
+            economyManager.restoreGovernmentMonth(loadedGovernmentMonth);
+            loadedGovernmentMonth = null;
         }
 
         /*
@@ -5860,6 +5957,59 @@ public class Game {
                     economyManager.getSectorElectricityCharges(),
                     economyManager.getSectorWaterCharges());
             economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
+
+            /*
+             * ...AND THE RESIDENTS' STATEMENT, for exactly the same reason.
+             *
+             * It is struck inside rebuildSimulationState(), which runs long
+             * before this - so it was struck against the RECOMPUTED commercial
+             * report, and a recomputed report on a city that has not traded yet
+             * has a gross revenue of zero. The households were therefore handed
+             * a month in which nobody bought anything, and every pay tier's
+             * shopping column on the Household cash flow screen read $0 while
+             * the same screen's per-shape grid showed $216-$1,793. The unskilled
+             * row then footed to "+$674 left over" on a tier that is underwater.
+             *
+             * That is finding #4 in claude/simulation-findings.md, filed as its
+             * own high-severity bug and suspected of being an instance of #15.
+             * It is: one statement read one step too early.
+             *
+             * The retail seam is re-applied after it, because this call
+             * re-derives the spending capacity the seam exists to carry - see
+             * carriedRetailCapacity.
+             */
+            refreshHouseholdAccounts();
+            if (carriedRetailCapacity > 0 || carriedRetailWant > 0) {
+                economyManager.getCommercialHandler()
+                        .setSpendingCapacity(carriedRetailCapacity);
+                economyManager.getCommercialHandler()
+                        .setWantedSpend(carriedRetailWant);
+            }
+
+            /*
+             * ...and then the statement the save was taken with, over the top of
+             * the one just rebuilt.
+             *
+             * The rebuild above is not wasted: it re-strikes HouseholdBalance's
+             * plan and the shops' spending capacity, which the NEXT month reads,
+             * and it is the fallback for a save too old to carry a statement.
+             * But it cannot reproduce the split across the tiers - that needs a
+             * plan struck from a disposable income the rebuild is in the middle
+             * of computing - so the statement itself is carried. See
+             * HouseholdAccounts.getStatementState().
+             */
+            households.restoreStatement(restoredFlows.getHouseholdStatement());
+
+            /*
+             * ...and the households' placement, for the third time and the same
+             * reason. FamilyModel.restore() runs with the rest of the save, and
+             * then rebuildSimulationState() re-houses everybody against a stock
+             * it is still in the middle of putting back - so doubledUp came out
+             * different from the figure the save was taken with, and the two
+             * counters that explain WHY people are doubled up were still at
+             * zero. Put back last, like the statement above it.
+             */
+            families.restore(restoredFlows.getFamilies());
         }
 
         /*
@@ -5989,10 +6139,6 @@ public class Game {
         constructionSubsidy *= scale;
         constructionShedPoints *= scale;
         lastWriteOff *= scale;
-        accountedCapitalSpending *= scale;
-        accountedLandSales *= scale;
-        accountedLandPurchases *= scale;
-        accountedInterest *= scale;
         cityCapitalSpending *= scale;
         monthlyMaterialImports *= scale;
         carriedRetailCapacity *= scale;

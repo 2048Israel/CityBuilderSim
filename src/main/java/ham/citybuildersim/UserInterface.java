@@ -10825,6 +10825,11 @@ public class UserInterface extends Application {
         column.getChildren().add(bookLine("Interest on debt",
                 -now.interest(), -then.interest(), known,
                 now.interest() > 0 ? Palette.WARN : null));
+        if (now.salesTaxPaid() != 0 || then.salesTaxPaid() != 0) {
+            column.getChildren().add(bookLine("Sales tax remitted",
+                    -now.salesTaxPaid(), -then.salesTaxPaid(), known,
+                    now.salesTaxPaid() > 0 ? Palette.WARN : Palette.GOOD));
+        }
 
         column.getChildren().add(bookTotal("Profit before tax",
                 now.preTaxIncome(), then.preTaxIncome(), known,
@@ -10859,16 +10864,11 @@ public class UserInterface extends Application {
                     + "Under one and the business is borrowing to pay its lenders."));
         }
 
-        if (Math.abs(now.salesTaxPaid()) > 0) {
-            column.getChildren().add(alert("Sales tax is not on this statement", String.format(
-                    "This sector remitted %s of sales tax out of its own cash this month, "
-                    + "and no line above it accounts for that. So what it actually kept "
-                    + "was %s, not the %s at the bottom of the statement. The handlers "
-                    + "compute profit without it and EconomyManager debits the cash after "
-                    + "the fact — flagging it rather than touching it.",
-                    tightMoney(toDollars(now.salesTaxPaid())),
-                    tightMoney(toDollars(now.netIncome() - now.salesTaxPaid())),
-                    tightMoney(toDollars(now.netIncome())))));
+        if (now.salesTaxPaid() < 0) {
+            column.getChildren().add(statementNote(
+                    "The sales tax line is a REFUND this month: the credit on what this "
+                    + "sector bought came to more than the tax on what it sold. That is "
+                    + "what zero-rating an export means, and the city pays it."));
         }
 
         if (sector == PolicySector.CONSTRUCTION) {
@@ -11004,11 +11004,8 @@ public class UserInterface extends Application {
                     -now.spentOnBuildings(), -then.spentOnBuildings(), known,
                     now.spentOnBuildings() < 0 ? Palette.GOOD : null));
         }
-        if (now.salesTaxPaid() != 0 || then.salesTaxPaid() != 0) {
-            column.getChildren().add(bookLine("Sales tax remitted",
-                    -now.salesTaxPaid(), -then.salesTaxPaid(), known,
-                    now.salesTaxPaid() > 0 ? Palette.WARN : Palette.GOOD));
-        }
+        // Sales tax is NOT a line here any more - it is on the income statement
+        // above, so it is already inside "What it kept". See SectorBooks.
         if (now.fromTheCity() != 0 || then.fromTheCity() != 0) {
             column.getChildren().add(bookLine("Subsidy from the city",
                     now.fromTheCity(), then.fromTheCity(), known, Palette.ACCENT));

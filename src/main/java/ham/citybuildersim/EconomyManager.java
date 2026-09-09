@@ -876,7 +876,24 @@ public class EconomyManager {
         //     Local ore was charged at MINING's rate - the credit has to be what
         //     the supplier actually remitted, or the city refunds tax it never
         //     collected. Imported scrap is charged at the buyer's own rate.
-        salesTaxLedger.recordSales(PolicySector.HEAVY_INDUSTRY,
+        /*
+         * ZERO-RATED, because every tonne of it leaves the city.
+         *
+         * This was recordSales(), which charged the mills full VAT on an export
+         * while the mines beside them shipped ore out free - $8.2M a month on
+         * Jerus's slot 7, more than half the whole VAT take, and the single
+         * biggest reason heavy industry looked unprofitable: it reported losing
+         * $1.2M a month while actually losing $9.4M. The ledger's own header
+         * has said "EXPORTS ARE ZERO-RATED" since the day it was written; the
+         * mills were simply never split into a local half and an export half,
+         * because they have no local half.
+         *
+         * The credits behind the export stay claimable, so a month of heavy
+         * milling can end with the city owing the mills money. That is what
+         * zero-rating means - see the header - and it is why it is a real
+         * incentive to export rather than a bookkeeping nicety. Jerus's call.
+         */
+        salesTaxLedger.recordExport(PolicySector.HEAVY_INDUSTRY,
                 heavyIndustryHandler.getReportRevenue());
         salesTaxLedger.recordInputTax(PolicySector.HEAVY_INDUSTRY,
                 heavyIndustryHandler.getReportLocalOreUsed() * ironMarket.getLocalPrice()
@@ -925,33 +942,99 @@ public class EconomyManager {
         salesTaxLedger.chargeImport(PolicySector.RETAIL,
                 commercialHandler.getReportImportPurchaseValue(), taxPolicy);
 
-        // --- Construction: sells the work it puts in place, credits materials.
+        /*
+         * --- Construction: sells the work it puts in place, credits materials.
+         *
+         * THE REPORT FIELDS, NOT THE LIVE ONES. This read getRevenue(), and
+         * calculateConstructionResults() - which runs four lines earlier in the
+         * same month - sets `revenue = 0` as its last act. So the ledger has
+         * been handed a zero every month since the VAT went in, and the
+         * construction sector has never remitted a cent. rRevenue exists for
+         * exactly this and its own comment says so: "anything that wants to know
+         * what was actually charged reads these".
+         *
+         * Same for the materials credit, which read the live materialsExp - a
+         * field updateServices() rewrites later in the month with NEXT month's
+         * inputs. It happened to still hold this month's figure at this point,
+         * which is the worst kind of correct.
+         */
         if (constructionHandler != null) {
             salesTaxLedger.recordSales(PolicySector.CONSTRUCTION,
-                    constructionHandler.getRevenue());
+                    constructionHandler.getReportRevenue());
             salesTaxLedger.recordInputTax(PolicySector.CONSTRUCTION,
-                    constructionHandler.getMaterialsExpense()
+                    constructionHandler.getReportMaterialsExpense()
                             * taxPolicy.effectiveSalesRate(PolicySector.CONSTRUCTION));
         }
 
         salesTax = salesTaxLedger.settle(taxPolicy);
 
         /*
-         * AND THE SECTORS PAY IT. Until 2026-09-06 the city collected the
-         * ledger's total and nobody was debited: retail paid a markup on its
-         * purchases to nobody at all, and the other five sectors paid nothing.
-         * The rate follows the producer, so the producer remits - its payable
-         * on what it sold, less the credit on what it bought, out of its own
-         * cash. A sector in a refund position is credited. Every dollar the
-         * treasury books here now comes out of a pool MoneyAudit can see.
+         * AND THE SECTORS PAY IT, ON THEIR OWN INCOME STATEMENTS.
+         *
+         * Until 2026-09-06 the city collected the ledger's total and nobody was
+         * debited: retail paid a markup on its purchases to nobody at all, and
+         * the other five sectors paid nothing. The rate follows the producer, so
+         * the producer remits - its payable on what it sold, less the credit on
+         * what it bought, out of its own cash. A sector in a refund position is
+         * credited. Every dollar the treasury books here comes out of a pool
+         * MoneyAudit can see.
+         *
+         * That fix moved the CASH and stopped there. This one puts the same
+         * figure on the statement the cash belongs to. It used to be
+         *
+         *     for each sector: sectorCash -= ledger.getNet(sector)
+         *
+         * with no handler ever told, so every sector reported a profit it had
+         * already paid part of away, and the profit tax was charged on that
+         * overstated figure. The bank movement is one line now, made of the
+         * numbers the statement shows: cash += net income (which has the VAT in
+         * it) less the profit tax (which is struck after it). One movement, one
+         * place, one set of numbers.
          */
-        for (PolicySector sector : PolicySector.values()) {
-            double net = salesTaxLedger.getNet(sector);
-            if (net != 0) {
-                setSectorCash(sector.creditName(), getSectorCash(sector.creditName()) - net);
-            }
-        }
+        bankSectorMonths();
         return salesTax;
+    }
+
+    /**
+     * Hands every sector the VAT it owes and lets it bank the month.
+     *
+     * The five statements were computed BEFORE this - the ledger above is struck
+     * from their revenue - so each one is recomputed here with its tax line
+     * filled in. computeMonthlyReport() is pure and the inputs have not moved
+     * between the two calls, so the second pass changes exactly two lines: net
+     * income, and the profit tax struck off it.
+     */
+    private void bankSectorMonths() {
+        commercialHandler.bankMonth(salesTaxLedger.getNet(PolicySector.RETAIL),
+                                    salesTaxLedger.getNet(PolicySector.REAL_ESTATE));
+        industrialHandler.bankMonth(salesTaxLedger.getNet(PolicySector.INDUSTRY));
+        heavyIndustryHandler.bankMonth(salesTaxLedger.getNet(PolicySector.HEAVY_INDUSTRY));
+        miningHandler.bankMonth(salesTaxLedger.getNet(PolicySector.MINING));
+        if (constructionHandler != null) {
+            constructionHandler.bankMonth(salesTaxLedger.getNet(PolicySector.CONSTRUCTION));
+        }
+    }
+
+    /**
+     * The same figures, put back on a reloaded city WITHOUT banking anything.
+     *
+     * The statements are recomputed by Game.rebuildSimulationState(), and a
+     * recomputed statement with no tax line is the overstated profit all over
+     * again on the first screen a returning player opens. Read off the restored
+     * ledger rather than saved a second time in each handler, so there is one
+     * record of the month's VAT and it cannot disagree with itself.
+     */
+    private void handOutSalesTax() {
+        commercialHandler.setSalesTaxRemitted(salesTaxLedger.getNet(PolicySector.RETAIL),
+                                              salesTaxLedger.getNet(PolicySector.REAL_ESTATE));
+        industrialHandler.setSalesTaxRemitted(salesTaxLedger.getNet(PolicySector.INDUSTRY));
+        heavyIndustryHandler.setSalesTaxRemitted(
+                salesTaxLedger.getNet(PolicySector.HEAVY_INDUSTRY));
+        miningHandler.setSalesTaxRemitted(salesTaxLedger.getNet(PolicySector.MINING));
+        if (constructionHandler != null) {
+            constructionHandler.setSalesTaxRemitted(
+                    salesTaxLedger.getNet(PolicySector.CONSTRUCTION));
+        }
     }
 
     /** Whoever the city owes this month, or null. See SalesTaxLedger. */
@@ -972,6 +1055,9 @@ public class EconomyManager {
     public boolean restoreSalesTaxLedger(double[] state) {
         if (!salesTaxLedger.restoreLedgerState(state)) return false;
         salesTax = salesTaxLedger.getTotalRemitted();
+        // ...and the sectors get their own share of it back, so the statements
+        // rebuildSimulationState() is about to recompute have their tax line.
+        handOutSalesTax();
         return true;
     }
 
@@ -1071,6 +1157,19 @@ public class EconomyManager {
     public double getEducationFees() { return educationFees; }
     public double getEducationNet()  { return educationBill - educationFees; }
 
+    /*
+     * What the city paid this month to hold a protected sector at break-even.
+     *
+     * Held here for the same reason the health and school bills are: Game owns
+     * the dial and does the paying, and both strike sites need the figure. It
+     * is not in getExpenses() - that figure drives the treasury's cash and the
+     * subsidy has ALREADY left it, on the spot, inside paySubsidyIfOwed. This
+     * is the reporting side only.
+     */
+    private double subsidiesPaid;
+    public void setSubsidiesPaid(double v) { this.subsidiesPaid = Math.max(0, v); }
+    public double getSubsidiesPaid()       { return subsidiesPaid; }
+
     /* =====================================================================
        PENSIONS
 
@@ -1150,6 +1249,10 @@ public class EconomyManager {
         return nationalAccounts;
     }
 
+    /** The government's month, carried whole. See NationalAccounts. */
+    double[] governmentMonthToSave()          { return nationalAccounts.governmentToSave(); }
+    void restoreGovernmentMonth(double[] m)   { nationalAccounts.restoreGovernment(m); }
+
     /**
      * Measures the month's output and the government's books.
      *
@@ -1227,13 +1330,21 @@ public class EconomyManager {
                 rawImports, exports);
 
         nationalAccounts.updateGovernment(
-                totalBusinessTax + totalHeavyIndustryTax,
+                // The bank's profit tax rides on the business line. It is
+                // charged at the RETAIL rate off a commercial building whose
+                // property tax and payroll already sit in that sector, so this
+                // is where a reader would look for it - and leaving it out was
+                // the whole of the treasury bridge's remaining residual: every
+                // one of 110 months in a 120-month run was adrift by exactly
+                // the bank's tax and by nothing else. See TreasuryCheck.
+                totalBusinessTax + totalHeavyIndustryTax + totalBankTax,
                 totalIndustrialTax, salesTax, totalWageTax,
                 utilityIncome, landSales, propertyTax,
                 interest, capitalSpending, landPurchases,
                 totalContributions, getPensionsPaid(),
                 healthcareFees, healthcareBill,
-                educationFees, educationBill);
+                educationFees, educationBill,
+                subsidiesPaid);
 
         GDP = nationalAccounts.getGdp();
     }
@@ -1812,13 +1923,15 @@ public class EconomyManager {
                                           double landPurchases, double interestPaid) {
         getTaxIncome();   // assigns the tax fields and the contributions
         nationalAccounts.updateGovernment(
-                totalBusinessTax + totalHeavyIndustryTax,
+                // ...and the bank's, on the same line - see updateNationalAccounts().
+                totalBusinessTax + totalHeavyIndustryTax + totalBankTax,
                 totalIndustrialTax, salesTax, totalWageTax,
                 utilityIncome, landSales, getTotalPropertyTax(),
                 interestPaid, capitalSpending, landPurchases,
                 totalContributions, getPensionsPaid(),
                 healthcareFees, healthcareBill,
-                educationFees, educationBill);
+                educationFees, educationBill,
+                subsidiesPaid);
     }
 
     public void setUtilityIncome(double income){
@@ -2056,6 +2169,7 @@ public class EconomyManager {
         marginalHousingCost *= scale;
         healthcareBill *= scale;   healthcareFees *= scale;
         educationBill  *= scale;   educationFees  *= scale;
+        subsidiesPaid  *= scale;
         totalContributions *= scale;
         exchangeRate *= scale;
         pricePerWatt *= scale;

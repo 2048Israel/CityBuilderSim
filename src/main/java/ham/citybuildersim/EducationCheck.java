@@ -453,6 +453,40 @@ public class EducationCheck {
         assertTrue("it never pays for itself, which is the point",
                 le.getNetCost() > 0);
 
+        /* ---- and the subsidy is forgone revenue, not a second cheque ----
+
+           getGrossCost() used to be payroll + upkeep + citySubsidyPaid, so the
+           city paid the teachers and was then billed again for the fees it had
+           waived. It read $17.4M on slot 7 where wages and buildings less what
+           households actually paid gives $14.2M. Worse, the money moved: the
+           treasury was debited a subsidy that reached nobody, and MoneyAudit
+           could not see it because households sit outside its pool.
+
+           Pinned two ways - the identity, and the dial. Moving the subsidy
+           must change what the city RECOVERS and leave what it SPENDS alone. */
+        assertTrue("the bill is wages and buildings, and nothing else",
+                Math.abs(le.getGrossCost() - (le.getPayroll() + le.getUpkeep())) < 1e-9);
+        assertTrue("...so net cost is that, less the fees households paid",
+                Math.abs(le.getNetCost()
+                        - (le.getPayroll() + le.getUpkeep() - le.getFees())) < 1e-9);
+
+        Game cheap = city(null);
+        Game dear  = city(null);
+        quietly(() -> {
+            schools(cheap); cheap.getEducation().setTuitionSubsidy(0.9);
+            cheap.simulateMonths(120);
+            schools(dear);  dear.getEducation().setTuitionSubsidy(0.1);
+            dear.simulateMonths(120);
+        });
+        Education ce = cheap.getEducation(), de = dear.getEducation();
+        System.out.printf("   subsidy 90%%: spends $%,.0f, recovers $%,.0f"
+                + "   |   subsidy 10%%: spends $%,.0f, recovers $%,.0f%n",
+                ce.getGrossCost(), ce.getFees(), de.getGrossCost(), de.getFees());
+        assertTrue("a generous dial collects less at the door",
+                ce.getFees() < de.getFees());
+        assertTrue("...and the subsidy it forgave is the larger one",
+                ce.getSubsidy() > de.getSubsidy());
+
         /* ============ 11. THE UNSKILLED BAND IS A REPORT CARD ============
 
            The other half of the 2026-09-07 migration change, and the half that

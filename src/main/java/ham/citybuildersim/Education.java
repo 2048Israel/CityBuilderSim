@@ -595,10 +595,41 @@ public class Education {
         tuitionSubsidy = value < 0 ? 0 : (value > 1 ? 1 : value);
     }
 
-    /** What leaves the treasury: staff, buildings, and the city's share of fees. */
-    public double getGrossCost() { return payroll + upkeep + citySubsidyPaid; }
+    /**
+     * What leaves the treasury: staff and buildings. Nothing else.
+     *
+     * THE SUBSIDY IS NOT A COST. It used to be added here, and that was two
+     * mistakes wearing one line. The schools ARE the city, so the "subsidy" is
+     * the city declining to bill itself - forgone revenue, not a second cheque
+     * - and adding it made getNetCost() read
+     *
+     *     payroll + upkeep + s*fee - (1-s)*fee
+     *
+     * where the honest reading is payroll + upkeep - (1-s)*fee. On Jerus's slot
+     * 7 that was $17.4M against a true $14.2M, every month, growing with the
+     * dial. Healthcare next door has always had the right shape
+     * (Healthcare.getGrossCost() is payroll + upkeep) and the two are meant to
+     * be read side by side.
+     *
+     * The second mistake was that the money MOVED. getExpenses() debits this
+     * figure from the treasury and nobody was ever credited the subsidy -
+     * households pay tuition net of it and are handed nothing back. MoneyAudit
+     * could not see it because households sit outside its pool, so a dollar a
+     * month left the city and landed nowhere for as long as the line existed.
+     * That is the same shape as the deposit-interest leak: conservation and
+     * correct attribution are different questions, and only one of them had a
+     * harness.
+     *
+     * The dial still does its work - a higher subsidy means less tuition
+     * collected, so the city recovers less of the same cost - and
+     * citySubsidyPaid is still measured and still on screen, as what the city
+     * forgave rather than what it spent.
+     */
+    public double getGrossCost() { return payroll + upkeep; }
     public double getPayroll()   { return payroll; }
     public double getUpkeep()    { return upkeep; }
+
+    /** Fees the city waived. Reported, not charged - see getGrossCost(). */
     public double getSubsidy()   { return citySubsidyPaid; }
 
     /** ...and what comes back from the households. */
@@ -695,6 +726,7 @@ public class Education {
     public double[] getState() {
         int size = everGraduated.length + 1;
         for (double[] queue : inFlight) size += queue.length;
+        size += MONTH_FIELDS + coverage.length + enrolled.length;
         double[] out = new double[size];
         int i = 0;
         out[i++] = tuitionSubsidy;
@@ -703,8 +735,30 @@ public class Education {
         // course's queue in full - so a change to any course length changes
         // the array's length and the restore below refuses it whole.
         for (double[] queue : inFlight) for (double v : queue) out[i++] = v;
+        /*
+         * ...AND THE MONTH ITSELF, appended 2026-09-09.
+         *
+         * The class comment above says this is all flow and is rebuilt on the
+         * first month back, and that is true - but "the first month back" is one
+         * press of Next Month away, and until then a freshly loaded city showed
+         * a fully staffed elementary school with nobody in it, 0% covered and a
+         * bill of nothing. Finding #13 in claude/simulation-findings.md, filed
+         * as "defensible design, bad first impression". Six doubles and two
+         * short arrays is a cheap way to stop the screen lying, and it is the
+         * same call the sector statements and the residents' statement both
+         * made after being caught the same way.
+         */
+        out[i++] = payroll;
+        out[i++] = upkeep;
+        out[i++] = citySubsidyPaid;
+        out[i++] = tuitionCollected;
+        for (double v : coverage) out[i++] = v;
+        for (double v : enrolled) out[i++] = v;
         return out;
     }
+
+    /** Scalars appended to the state array on 2026-09-09. See getState(). */
+    private static final int MONTH_FIELDS = 4;
 
     /**
      * Refused whole on a length mismatch, never padded. The usual rule - with
@@ -716,11 +770,17 @@ public class Education {
         for (double[] queue : inFlight) java.util.Arrays.fill(queue, 0);
         java.util.Arrays.fill(studying, 0);
 
+        payroll = 0; upkeep = 0; citySubsidyPaid = 0; tuitionCollected = 0;
+        java.util.Arrays.fill(coverage, 0);
+        java.util.Arrays.fill(enrolled, 0);
+
         int shortForm = everGraduated.length + 1;
         int fullForm = shortForm;
         for (double[] queue : inFlight) fullForm += queue.length;
+        int withMonth = fullForm + MONTH_FIELDS + coverage.length + enrolled.length;
 
-        if (saved == null || (saved.length != shortForm && saved.length != fullForm)) {
+        if (saved == null || (saved.length != shortForm && saved.length != fullForm
+                && saved.length != withMonth)) {
             tuitionSubsidy = DEFAULT_SUBSIDY;
             java.util.Arrays.fill(everGraduated, 0);
             return;
@@ -728,8 +788,16 @@ public class Education {
         int i = 0;
         setTuitionSubsidy(saved[i++]);
         for (int b = 0; b < everGraduated.length; b++) everGraduated[b] = saved[i++];
-        if (saved.length == fullForm) {
+        if (saved.length >= fullForm) {
             for (double[] queue : inFlight) for (int k = 0; k < queue.length; k++) queue[k] = saved[i++];
+        }
+        if (saved.length == withMonth) {
+            payroll = saved[i++];
+            upkeep = saved[i++];
+            citySubsidyPaid = saved[i++];
+            tuitionCollected = saved[i++];
+            for (int k = 0; k < coverage.length; k++) coverage[k] = saved[i++];
+            for (int k = 0; k < enrolled.length; k++) enrolled[k] = saved[i++];
         }
         refreshStudying();
     }

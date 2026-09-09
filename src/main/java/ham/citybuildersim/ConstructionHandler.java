@@ -106,14 +106,17 @@ public class ConstructionHandler {
     }
 
     /**
-     * Banks the month. Called once per month, after the build orders for the
+     * Strikes the month. Called once per month, after the build orders for the
      * month have been billed - revenue is cleared here so next month starts
      * from nothing.
+     *
+     * DOES NOT BANK ANY MORE - see bankMonth(). The sales tax is struck from
+     * this statement and then belongs on it, so the cash cannot move until the
+     * ledger has answered.
      */
     public void calculateConstructionResults(){
         calculateExpenses();
         netIncome = revenue - expenses - interestExpense - propertyTaxExpense;
-        cash += netIncome;
 
         // What this month's banking was made of, for MoneyAudit. The live
         // fields are recomputed later in the same month (updateServices() runs
@@ -128,6 +131,37 @@ public class ConstructionHandler {
         revenue = 0;
         subsidyThisMonth = 0;
         materialsConsumed = 0;
+    }
+
+    /* =====================================================================
+       THE MONTH'S SALES TAX, ON THE STATEMENT
+
+       Handed in by EconomyManager.settleSalesTax() once the ledger has settled.
+       See HeavyIndustryHandler.getReportSalesTax() for the reasoning.
+
+       Not in the save array. Put back on load from the restored ledger.
+       ===================================================================== */
+    private double rSalesTax;
+
+    /** What this sector remitted this month. Reporting and the statement. */
+    public double getReportSalesTax() { return rSalesTax; }
+    void setSalesTaxRemitted(double net) { this.rSalesTax = net; }
+
+    /**
+     * Banks the month, once the sales tax is known.
+     *
+     * The other five sectors recompute their statement here with the tax in it.
+     * This one cannot: calculateConstructionResults() CLEARS `revenue` as its
+     * last act, so there is nothing left to recompute from - which is also why
+     * the ledger reads getReportRevenue() rather than getRevenue(). So the tax
+     * is applied to the figures already struck, and rSalesTax is carried into
+     * the NEXT statement's net income as well, where it belongs and where the
+     * clearing cannot reach it.
+     */
+    void bankMonth(double salesTaxRemitted) {
+        rSalesTax = salesTaxRemitted;
+        netIncome -= rSalesTax;
+        cash += netIncome;
     }
 
     private double rRevenue, rWageExpense, rMaterialsExpense, rInterestExpense, rPropertyTaxExpense;
@@ -442,6 +476,12 @@ public class ConstructionHandler {
         bondsPayable *= scale;
         subsidyThisMonth *= scale;
         for (int i = 0; i < wages.length; i++) wages[i] *= scale;
+
+        // ...and the statement it banked, for the same reason as the mills'.
+        rRevenue *= scale;          rWageExpense *= scale;
+        rMaterialsExpense *= scale; rInterestExpense *= scale;
+        rPropertyTaxExpense *= scale;
+        rSalesTax *= scale;
     }
 
 }
