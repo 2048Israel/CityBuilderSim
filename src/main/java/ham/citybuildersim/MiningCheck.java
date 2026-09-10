@@ -160,10 +160,38 @@ public class MiningCheck {
 
         assertTrue("the Iron Mine is its own category",
                 mine.getCategory() == BuildingType.MINING);
-        assertTrue("...and is the biggest employer in the game",
-                mine.getTotalJobs() > template(city, "Food Processing Plant").getTotalJobs());
-        out.printf("   a mine employs %d people; a food plant %d%n",
-                mine.getTotalJobs(), template(city, "Food Processing Plant").getTotalJobs());
+        /* ===================================================================
+           THE MINE IS NOT THE BIGGEST EMPLOYER IN THE GAME ANY MORE, AND IT
+           SHOULD NEVER HAVE BEEN (2026-09-09, rebalance stage two).
+
+           It employed 376 people to lift 2,500 tonnes a month - 30,000 tonnes a
+           YEAR, which is a quarry, not a mine. That is about 80 tonnes per
+           worker per year against a real open-pit figure in the thousands, and
+           the whole of the old iron price band was built on top of it:
+           IronMarket's note recorded that the mine's cost was $159 a tonne and
+           worked backwards from there to a $200 export floor, which is double
+           the real seaborne price.
+
+           Raising wages to real ones made that unpayable - 376 people at real
+           wages is $554 a tonne of payroll alone - and the honest fix was the
+           crew rather than the price. Sixty people lifting 30,000 t/yr costs
+           about $103 a tonne and lives comfortably on $140 ore, which is a real
+           domestic pellet price. Three hundred and sixteen jobs left the city
+           with it; they were jobs the ore price was paying for and the ore
+           price could not pay for.
+
+           So the assertion is now that a mine is a SERIOUS employer, not the
+           largest one. What it is measured against is deliberately the smallest
+           thing that makes the claim mean anything - a Small Grocery Store -
+           rather than a Food Processing Plant, which is a genuinely large
+           industrial employer and should out-employ a small mine.
+           =================================================================== */
+        assertTrue("...and is still a serious employer",
+                mine.getTotalJobs() > template(city, "Small Grocery Store").getTotalJobs());
+        out.printf("   a mine employs %d people; a grocery %d; a food plant %d%n",
+                mine.getTotalJobs(),
+                template(city, "Small Grocery Store").getTotalJobs(),
+                template(city, "Food Processing Plant").getTotalJobs());
 
         System.setOut(quiet);
         Game.BuildResult refused = city.buildStack(mine, 1, false);
@@ -216,10 +244,34 @@ public class MiningCheck {
         out.printf("   buying local ore at $%3.0f/t: $%,9.2fk on $%,.0fk  =  %5.1f%%%n",
                 with[2] * 1000, with[0], with[1], marginWith);
 
-        assertTrue("on imported scrap a foundry barely breaks even, as designed",
-                marginWithout > -2 && marginWithout < 4);
+        /* ===================================================================
+           "BARELY BREAKS EVEN" WAS A CONSEQUENCE OF A FAKE STEEL PRICE.
+
+           This asserted a margin between -2% and 4% on imported scrap, and the
+           design sentence behind it was that steel is only just worth making
+           without a mine next door. That sentence was true, but it was true
+           because the game sold steel at $500 a tonne and bought scrap at $400
+           - a $100 conversion margin against a real one of $874 (US hot-rolled
+           band $1,284, shredded scrap $410, SteelBenchmarker 26 Aug 2026).
+
+           Stage two priced both ends for real. Steel is now scrap plus HALF the
+           real conversion margin, which is the discount IronMarket's own note
+           always asked for - "a small distant producer is a price taker at both
+           ends" - and at that price a mill with a real crew makes about 28% on
+           imported scrap. That is what an electric-arc mill does. A mill that
+           only just breaks even on its main input was never realistic; it was
+           the price being wrong in the mill's favour twice over.
+
+           WHAT THE SECTION IS REALLY FOR SURVIVES INTACT, and it is the next
+           assertion rather than this one: local ore has to be a DIFFERENT
+           BUSINESS, not a better month. That gap is now 28% against 55%, which
+           is wider than it has ever been, so the mine is worth sinking for
+           exactly the reason it always was.
+           =================================================================== */
+        assertTrue("a foundry makes an electric-arc mill's margin on scrap",
+                marginWithout > 20 && marginWithout < 36);
         assertTrue("...and it is paying the scrap ceiling to do it",
-                Math.abs(without[2] - .40) < 1e-6);
+                Math.abs(without[2] - template(city, "Steel Foundry").getProductionModifier2()) < 1e-6);
 
         /*
          * REBANDED 2026-09-09, from 25-36%, and the reason is a model change
@@ -230,8 +282,8 @@ public class MiningCheck {
          * ore buys is what it always was; what changed is that the mill now
          * keeps it. See EconomyManager.settleSalesTax().
          */
-        assertTrue("local ore takes steel to about a 40% margin",
-                marginWith > 33 && marginWith < 46);
+        assertTrue("local ore takes steel past half its revenue",
+                marginWith > 48 && marginWith < 62);
         assertTrue("...which is a different business, not a better month",
                 marginWith - marginWithout > 20);
 

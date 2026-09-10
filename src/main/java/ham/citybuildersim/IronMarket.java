@@ -37,28 +37,42 @@ package ham.citybuildersim;
  *
  * WHY THE NUMBERS ARE THESE NUMBERS
  *
- * A Steel Foundry sells 1,200 t of steel at $500 and buys 1,320 t of scrap at
- * $400, leaving about $4,500 a month after wages, power and water - on an asset
- * costing about $3.6M. That is well under a percent, and it is why nobody has
- * ever built one on purpose.
+ * BOTH ENDS ARE REAL PRICES NOW (2026-09-09, rebalance stage two), which they
+ * had never been before:
  *
- * The floor used to be $320, and the trouble with $320 was arithmetic rather
- * than taste. Steel at a 30% margin needs ore at about $271; a matched mine and
- * mill clear near the middle of the band, so the middle has to BE about $271,
- * so the floor has to be about $200. At $320 the band simply did not reach.
+ *     scrap ceiling   $410/t   US shredded scrap, $417 a gross ton
+ *     steel            $847/t   scrap plus HALF the real conversion margin
+ *     ore floor        $140/t   domestic pellet
  *
- * Which then asks whether a mine can live on $200 ore, and the old one could
- * not - it lifted 1,330 t with 376 people, so its cost was $290 a tonne and a
- * $200 floor would have bankrupted it. That is why the mine's tonnage moved too;
- * see the note on the Iron Mine template. At 2,500 t its cost is $159 a tonne
- * and both ends of the band clear:
+ * The steel figure is the one that needs explaining. US hot-rolled band was
+ * $1,284 a tonne on 26 August 2026 (SteelBenchmarker), so the real conversion
+ * margin over scrap is $874. This game's mill gets half of it, which is the
+ * discount this file always asked for in words - "a small distant producer is a
+ * price taker at both ends" - written down as a number for the first time
+ * rather than approximated by selling steel at $500.
  *
- *     one mill, no mine     ore at the $400 ceiling    mill margin   0.8%
- *     one mill, one mine    ore at $269                mill margin  29.5%
- *                                                      mine margin  31.7%
+ * WHAT THE OLD NUMBERS WERE, and why they had to go. The band used to run $200
+ * to $400 with steel at $500, and every one of those was derived backwards from
+ * a mine that employed 376 people to lift 30,000 tonnes a YEAR. Its cost was
+ * $159 a tonne, so the floor had to be $200, so the middle landed near $271,
+ * and steel at $500 made a $100 conversion margin - a quarter of the real one -
+ * which is why a mill "barely broke even" on imported scrap.
  *
- * The mills' scrap price is unchanged. What changed is that they now have a
- * cheaper supplier, and that supplier is a city building full of jobs.
+ * That whole chain rested on the crew. Raising wages to real ones made 376
+ * people cost $554 a tonne of payroll alone and the chain snapped. The fix was
+ * the crew rather than the price: sixty people lifting 30,000 t/yr, which is
+ * still generous for a quarry-sized operation, and both ends of the band become
+ * numbers somebody actually quotes.
+ *
+ *     one mill, no mine     scrap at the $410 ceiling   mill margin  27.8%
+ *     one mill, one mine    ore at $233                 mill margin  55.3%
+ *                                                       mine margin  ~37%/yr
+ *
+ * A MILL IS A REAL BUSINESS ON IMPORTED SCRAP NOW, and that is the intended
+ * change rather than a side effect - an electric-arc mill makes money, and the
+ * old near-zero margin was the price being wrong in the mill's favour twice
+ * over. What the mine buys it is the gap: 28% against 55% is a wider reason to
+ * sink one than the game has ever offered. See claude/the-rebalance-stage-two.md.
  */
 public class IronMarket {
 
@@ -69,12 +83,12 @@ public class IronMarket {
      * it IS that number: the mills' alternative to buying local ore is the same
      * scrap they have always bought. If one moves, the other has to.
      */
-    private double scrapPrice = .40;
+    private double scrapPrice = .41;
 
     /** What a mine gets shipping ore abroad. The floor. */
-    private double exportPrice = .20;
+    private double exportPrice = .14;
 
-    private double localPrice = .30;
+    private double localPrice = .275;
 
     // last settlement, for the reports
     private double rSupply;

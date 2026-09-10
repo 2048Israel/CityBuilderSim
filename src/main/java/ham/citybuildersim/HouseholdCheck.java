@@ -655,8 +655,31 @@ public class HouseholdCheck {
                 + " alone leaves %.3f a month, sharing %.3f%n",
                 pressure[un] * 100, mix.getPricedOutShares(), alone.left(), sharing.left());
 
-        assertTrue("fixture: an unskilled single adult really cannot afford this city",
-                pressure[un] > 0);
+        /* ===================================================================
+           THIS CITY IS NO LONGER POOR, AND THAT IS NOT A FAILURE (2026-09-09).
+
+           This asserted pressure[un] > 0 - an unskilled single adult who cannot
+           afford to live alone here - as the fixture for everything below it.
+           The 2026-09-09 rebalance put the wage ladder on real Job Bank medians
+           and the homes on real build costs, and the two together leave that
+           adult $366 a month clear after rent and a basket. Squeezing the
+           city's housing does not bring it back either: 22 Low-Rise instead of
+           60 moved it to $317, because rent here is cost-anchored and the
+           scarcity multiple is bounded.
+
+           So a single unskilled adult CAN live alone in a balanced city, which
+           is both correct - a full-time wage should house one person - and the
+           end of this line as a fixture.
+
+           What this block is actually for is the sentence above it: the unit
+           checks say the valve opens, this says it is WORTH opening. That
+           assertion does not need the city to be poor and is unchanged below.
+           The priced-out state itself is still tested, and tested properly, in
+           the unit checks further up, where the rent is set by hand rather than
+           hoped for - which is where a claim about a threshold belongs.
+           =================================================================== */
+        System.out.printf("   living-alone pressure on the unskilled: %.0f%%%n",
+                pressure[un] * 100);
         /*
          * Sharing, or nobody left to share. The fixture cannot guarantee single
          * adults exist - a city where every one of them has ALREADY paired off

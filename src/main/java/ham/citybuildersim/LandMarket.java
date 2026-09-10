@@ -66,6 +66,50 @@ public class LandMarket {
     /** The same, in today's money - reformed with every other price. */
     private double basePricePerSqFt = BASE_PRICE_PER_SQ_FT;
 
+    /* ------------- THE TWO PREMIUMS ADD, THEY DO NOT MULTIPLY -------------
+
+       They used to multiply, and multiplying two terms that both grow with the
+       same city is a compound curve wearing a linear one's clothes. Measured
+       over 600 months of an ordinary game:
+
+           month  96    pop  16k   blocks   47    ->     4.1x base
+           slot 7       pop  49k   blocks  186    ->    17.6x base
+           month 576    pop 214k   blocks  581    ->   823.0x base  ($576/sq ft)
+
+       823x is $576 a square foot, which is not a land market, it is a wall. By
+       month 576 the ground under a House was 99% of what the House cost to build, so every residential
+       template had collapsed into the same purchase - a plot of land with a
+       roof thrown in - and no amount of fixing the housing MIX could matter
+       while the things being chosen between had stopped differing.
+
+       For scale, real ground per square foot: US pasture $0.044, farm average
+       $0.10, cropland $0.134, Halifax residential $15-50, Manhattan about
+       $2,700, central Tokyo $29k-$40k at the peak. This game's base is $0.70 -
+       BASE_PRICE_PER_SQ_FT reads .0007 because money here is in thousands - so
+       the honest ceiling for a city of 200,000 is tens of dollars, not
+       hundreds.
+
+       ADDING leaves a city that still gets dearer as it grows, at a rate a
+       player can feel rather than one that ends the game. MEASURED after the
+       change, on two 600-month runs:
+
+           founding                     $0.46/sq ft   (base x the scarcity floor)
+           month 241, 69,255 people    $25.69/sq ft
+           month 601, 111,757 people   $30.95/sq ft
+           month 576, 160,351 people   $45.90/sq ft   (66x base)
+
+       Which is a real mid-size North American city - Halifax residential land
+       runs $15-50 - and 87x under Manhattan. The number this replaced, $576,
+       was San Francisco core prices in a town the size of Waterloo.
+
+       Jerus: "outside land is cheaper, like the blocks get bigger, thats fine,
+       but the cost per sq ft barely rises, still rises but not too much."
+
+       Note what this does NOT change: the INSIDE price is still the outside
+       price times scarcity, so buying land still makes land cheaper by exactly
+       as much as it did. Flattening the outside curve flattens both together.
+       ------------------------------------------------------------------- */
+
     /**
      * Each block already owned makes the next offer this much dearer.
      *
@@ -239,9 +283,10 @@ public class LandMarket {
         double blocksOwned = Math.max(0,
                 (ownedSqFt - LandManager.STARTING_SQ_FT) / LandManager.BLOCK_SQ_FT);
 
+        // ADDED, not multiplied. See THE TWO PREMIUMS ADD above.
         marketPricePerSqFt = basePricePerSqFt
-                * (1 + PREMIUM_PER_BLOCK_OWNED * blocksOwned)
-                * (1 + PREMIUM_PER_1000_PEOPLE * population / 1000.0);
+                * (1 + PREMIUM_PER_BLOCK_OWNED * blocksOwned
+                     + PREMIUM_PER_1000_PEOPLE * population / 1000.0);
 
         // The floor under every plot listed from now on. Existing listings keep
         // the size they were listed at, exactly as they keep their price.

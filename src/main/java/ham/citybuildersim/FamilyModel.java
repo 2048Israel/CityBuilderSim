@@ -344,6 +344,90 @@ public class FamilyModel {
     /** What the landlords can bill for, in person-equivalents. See rentWeight(). */
     private double rentWeight;
 
+    /* =====================================================================
+       TWO SEGMENTS, BECAUSE A STUDIO AND A THREE-BED ARE NOT THE SAME GOOD
+
+       A door that cannot take a child is a different product from one that
+       can, and pooling them into one rent hid the only fact that mattered:
+       measured on slot 7, the city needed 15,270 doors of size three or more,
+       owned 5,107, and was sitting on about 25,000 spare studios. One blended
+       price said the housing market was roughly balanced. It was not balanced;
+       it was two markets, one in famine and one in glut.
+
+       THE LINE IS THE STUDIO RULE, which already exists and is the one hard no
+       in the model: a household with a dependant cannot take a unit of size
+       two or less. So the split is
+
+           STUDIO segment  units of size 1-2,  adults-only households of 1-2
+           FAMILY segment  units of size 3+,   everybody else
+
+       and every household falls in exactly one of them - a single parent is a
+       two-person household in the FAMILY segment, because a child is what puts
+       it there.
+
+       SUBSTITUTION IS NOT IN THE PRICE, DELIBERATELY. A single adult really
+       can take a house when the studios run out, and house() below really does
+       let them - but that shows up as OCCUPANCY, not as a blended price. If a
+       spare house quietly softened the studio price, a city short of family
+       doors and long on studios would read as balanced again, which is the
+       exact reading this split exists to break.
+       ===================================================================== */
+
+    /** The part of rentWeight billed on units of size 1-2. */
+    private double studioRentWeight;
+
+    /** ...and on units of size 3 and up. The two always sum to rentWeight. */
+    private double familyRentWeight;
+
+    public double studioRentWeight() { return studioRentWeight; }
+    public double familyRentWeight() { return familyRentWeight; }
+
+    /** Whether a household of this shape needs a door a child is allowed in. */
+    public static boolean needsFamilyDoor(FamilyStructure shape) {
+        return shape.dependants() > 0 || shape.size() > STUDIO_MAX_SIZE;
+    }
+
+    /** The largest unit that counts as a studio. The studio rule's own number. */
+    public static final int STUDIO_MAX_SIZE = 2;
+
+    /** Households that could live in a studio: adults only, one or two of them. */
+    public double studioSeekers() {
+        double total = 0;
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (!needsFamilyDoor(shape)) total += totalOf(shape);
+        }
+        return total;
+    }
+
+    /** Households that need a door of size three or more. */
+    public double familySeekers() {
+        double total = 0;
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (needsFamilyDoor(shape)) total += totalOf(shape);
+        }
+        return total;
+    }
+
+    /**
+     * The PEOPLE in each segment, as opposed to the households.
+     *
+     * What turns a head count into a door count, and the advisor needs it: a
+     * hundred more residents is fifty more doors if they are couples and
+     * twenty-eight if they are families, and building for the wrong one of
+     * those is how a city ends up with three studios for every family door.
+     */
+    public double studioSeekerHeads() { return seekerHeads(false); }
+
+    public double familySeekerHeads() { return seekerHeads(true); }
+
+    private double seekerHeads(boolean family) {
+        double total = 0;
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (needsFamilyDoor(shape) == family) total += totalOf(shape) * shape.size();
+        }
+        return total;
+    }
+
     /** Households living somewhere too small for them. */
     private double crowdedHouseholds;
 
@@ -381,6 +465,19 @@ public class FamilyModel {
      * $482,860 and refuses it, which is what that assertion is for.
      */
     public void setRentWeight(double weight) { this.rentWeight = weight; }
+
+    /**
+     * Puts back BOTH weights the month was billed on. Same reason as above.
+     *
+     * The one-argument version survives for the older save that carries only
+     * the total: it leaves the split where the reloaded match put it, which is
+     * the best available answer when the save does not carry one.
+     */
+    public void setRentWeight(double studio, double family) {
+        this.studioRentWeight = Math.max(0, studio);
+        this.familyRentWeight = Math.max(0, family);
+        this.rentWeight = this.studioRentWeight + this.familyRentWeight;
+    }
     public double getCrowdedHouseholds(){ return crowdedHouseholds; }
     public double getRefusedByStudio()  { return refusedByStudio; }
 
@@ -423,6 +520,8 @@ public class FamilyModel {
      */
     public double house(int[] homesBySize) {
         rentWeight = 0;
+        studioRentWeight = 0;
+        familyRentWeight = 0;
         crowdedHouseholds = 0;
         refusedByStudio = 0;
 
@@ -444,13 +543,32 @@ public class FamilyModel {
 
             boolean hasDependants = shape.dependants() > 0;
 
-            // 1. the smallest unit that actually fits.
-            for (int s = shape.size(); s <= widest && need > 0; s++) {
+            /*
+             * 1. the smallest unit that actually fits.
+             *
+             * THE STUDIO RULE APPLIES HERE TOO, and for two weeks it did not.
+             * The guard sat only on step 2, the crowding pass, on the reading
+             * that a studio refuses a child because a child would be CROWDED
+             * into it. But a single parent and one child is a two-person
+             * household, so step 2 was never reached: the pair fitted a
+             * two-person flat exactly and walked straight in, through a door
+             * buildings.json marks adultsOnly.
+             *
+             * Found by HousingCheck's studio-only fixture, which handed the
+             * match 235 studios and 225 households and got 104 refusals where
+             * 180 households had a child in them. The missing 76 were the
+             * single parents.
+             */
+            int smallest = hasDependants
+                    ? Math.max(shape.size(), STUDIO_MAX_SIZE + 1)
+                    : shape.size();
+
+            for (int s = smallest; s <= widest && need > 0; s++) {
                 double take = Math.min(need, free[s]);
                 if (take <= 0) continue;
                 free[s] -= take;
                 need -= take;
-                rentWeight += take * rentWeightOf(s);
+                bill(s, take);
             }
 
             // 2. crowd into whatever is left, biggest first - but never a child
@@ -462,7 +580,7 @@ public class FamilyModel {
                 free[s] -= take;
                 need -= take;
                 crowdedHouseholds += take;
-                rentWeight += take * rentWeightOf(s);
+                bill(s, take);
             }
 
             if (need > 0) {
@@ -479,6 +597,21 @@ public class FamilyModel {
             }
         }
         return unplaced;
+    }
+
+    /**
+     * Books a let: its weight to the whole, and to the segment the DOOR is in.
+     *
+     * The door, not the tenant. A single adult who ends up in a three-bed
+     * because the studios were full is renting a family unit and pays the
+     * family price - which is also what makes the family segment's price the
+     * thing that stops that happening, rather than a discount that hides it.
+     */
+    private void bill(int unitSize, double homes) {
+        double weight = homes * rentWeightOf(unitSize);
+        rentWeight += weight;
+        if (unitSize <= STUDIO_MAX_SIZE) studioRentWeight += weight;
+        else                             familyRentWeight += weight;
     }
 
     public void squeeze(int homesAvailable) {

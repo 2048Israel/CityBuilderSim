@@ -663,21 +663,90 @@ public class HouseholdBalance {
      */
 
     public double[] toSaveArray() {
-        double[] out = new double[ROWS * 3];
+        double[] out = new double[ROWS * 8 + 3];
         System.arraycopy(savings, 0, out, 0, ROWS);
         System.arraycopy(debt, 0, out, ROWS, ROWS);
         // The lockout is a countdown, which is a STOCK: a tier discharged last
         // month is eleven months from borrowing again, and a save that forgot
         // it would hand that tier a fresh line of credit on load.
         for (int r = 0; r < ROWS; r++) out[ROWS * 2 + r] = lockout[r];
+        /*
+         * ...AND THE HOUSEHOLD COUNTS THE STOCKS ARE PER, appended 2026-09-09.
+         *
+         * savings[] and debt[] are PER HOUSEHOLD. totalSavings(), totalDebt()
+         * and totalInterest() all multiply them by lastHouseholds[], so that
+         * array is not last month's working at all - it is the denominator of
+         * three stocks, and the note above about flows not being carried does
+         * not cover it.
+         *
+         * Unsaved, the city's whole stock of household money read differently
+         * for one month after every load: measured at $1.29M against $966k, a
+         * third out, because the rebuild re-strikes the rows against a month
+         * that has not happened yet. Nothing had ever noticed, because nothing
+         * read the total until the bank did - it prices its funding off the
+         * deposits, so the error came out as a wrong bank profit, a wrong bank
+         * tax and $13 of treasury a month later, which is what SaveFileCheck
+         * caught.
+         */
+        for (int r = 0; r < ROWS; r++) out[ROWS * 3 + r] = lastHouseholds[r];
+
+        /*
+         * ...AND THE WORKING THE NEXT MONTH IS READ AGAINST.
+         *
+         * The note at the top of this block says the working is a flow and is
+         * recomputed on the first tick, and that is true of the arithmetic. It
+         * is not true of what READS it: the shops size their month against
+         * getSpendingCapacity() and getWantedSpend(), the advisor sizes its
+         * investment against the same two, and the screens draw all four - all
+         * of them before the tick that would recompute them.
+         *
+         * A reloaded city therefore planned its twelfth month against a
+         * rebuilt eleventh: wanted spend $162,770 against the $204,190 it
+         * actually had, so it bought different buildings, allocated different
+         * land, and came out 1.3% adrift on the land price and $13 adrift on a
+         * $690.7M treasury a month later. Small, and it compounds - which is
+         * the whole argument this codebase keeps making for carrying rather
+         * than recomputing.
+         */
+        for (int r = 0; r < ROWS; r++) {
+            out[ROWS * 4 + r] = lastWant[r];
+            out[ROWS * 5 + r] = lastPlanned[r];
+            out[ROWS * 6 + r] = lastInterest[r];
+            out[ROWS * 7 + r] = lastSubsistence[r];
+        }
+        out[ROWS * 8]     = plannedSpend;
+        out[ROWS * 8 + 1] = hungryPeople;
+        out[ROWS * 8 + 2] = totalPeople;
         return out;
     }
 
+    /**
+     * @param saved ROWS*8+3 from this build, or ROWS*3 from one before the
+     *              household counts and the working were appended. A short
+     *              array restores what it carries and leaves the rest to the
+     *              rebuild, which is exactly the state those saves loaded in
+     *              anyway - and far better than refusing the savings and the
+     *              debt whole to gain a denominator.
+     */
     public void restore(double[] saved) {
-        if (saved == null || saved.length != ROWS * 3) return;   // refused whole
+        if (saved == null) return;
+        boolean current = saved.length == ROWS * 8 + 3;
+        if (!current && saved.length != ROWS * 3) {
+            return;   // refused whole
+        }
         System.arraycopy(saved, 0, savings, 0, ROWS);
         System.arraycopy(saved, ROWS, debt, 0, ROWS);
         for (int r = 0; r < ROWS; r++) lockout[r] = (int) Math.round(saved[ROWS * 2 + r]);
+        if (current) {
+            System.arraycopy(saved, ROWS * 3, lastHouseholds, 0, ROWS);
+            System.arraycopy(saved, ROWS * 4, lastWant, 0, ROWS);
+            System.arraycopy(saved, ROWS * 5, lastPlanned, 0, ROWS);
+            System.arraycopy(saved, ROWS * 6, lastInterest, 0, ROWS);
+            System.arraycopy(saved, ROWS * 7, lastSubsistence, 0, ROWS);
+            plannedSpend = saved[ROWS * 8];
+            hungryPeople = saved[ROWS * 8 + 1];
+            totalPeople  = saved[ROWS * 8 + 2];
+        }
         opened = true;
     }
 

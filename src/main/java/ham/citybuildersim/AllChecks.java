@@ -33,7 +33,7 @@ public class AllChecks {
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck",
         "SaveSlotCheck", "SkipReportCheck", "InboxCheck", "BuildMenuCheck",
-        "SectorBooksCheck", "TreasuryCheck", "LongPlaytest"
+        "SectorBooksCheck", "TreasuryCheck", "HousingCheck", "LongPlaytest"
     };
 
     public static void main(String[] args) throws Exception {

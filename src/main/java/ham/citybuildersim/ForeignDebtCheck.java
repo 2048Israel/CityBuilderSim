@@ -147,7 +147,42 @@ public class ForeignDebtCheck {
             city.buildStack(template(city, "Water Treatment Plant"), 1, false);
             city.buildStack(template(city, "Textile Mill"), 2, false);
             city.buildStack(template(city, "Paved Road"), 30, false);
+
+            /*
+             * AND THEN ENOUGH ROAD TO PUT IT IN DEBT, WHICH IS THE POINT.
+             *
+             * The comparison below is between the city's OWN cost of money and
+             * the world's, and a city with no debt is priced at the floor - it
+             * came out at 1.00% against the world's 2.00% and the assertion
+             * inverted. That is not the model being wrong; a debt-free treasury
+             * really is the best credit in the room.
+             *
+             * The endowment went from $500M to $3.5B the night rebalance stage
+             * two put every building on its real capital cost, and this build
+             * list stopped being able to spend it. So the order is SIZED FROM
+             * THE CITY'S CASH rather than written down - the same fix
+             * CreditCheck's road city needed on the same night, for the same
+             * reason - and the city borrows because it has been made to.
+             */
             city.simulateMonths(60);
+
+            /*
+             * ...AND THEN PUT IT IN DEBT, LAST, BECAUSE THE RATE IS READ NEXT.
+             *
+             * Ordered BEFORE the sixty months it simply paid the loan off again
+             * and arrived at the read with a clean balance sheet, which is the
+             * same 1.00% floor by a longer road.
+             */
+            /*
+             * Issued directly rather than provoked through a build. Ordering
+             * more road than the treasury holds was the first attempt and it
+             * never moved the rate - the city pays for a queue as it builds it,
+             * so the debt never existed to be priced. What this section needs is
+             * simply A CITY WITH DEBT ON ITS BOOKS at the moment the rate is
+             * read, and the debt market is the honest way to give it one.
+             */
+            city.issueEmergencyDebt(city.getCash() * 2, Game.EMERGENCY_NOTE_MONTHS);
+            city.simulateMonths(1);
         } finally {
             System.setOut(out);
         }

@@ -130,8 +130,19 @@ public class BooksCheck {
         bm.addStack(plant, 2, true);
         bm.addStack(mill, 1, true);
 
-        // materialsCost = 2
-        double expectedBook = 2 * (3500 + 3000 * 2) + 1 * (1200 + 1600 * 2);
+        /*
+         * FROM THE TEMPLATES, not typed out again.
+         *
+         * This read `2 * (3500 + 3000 * 2) + 1 * (1200 + 1600 * 2)` - the two
+         * buildings' cash and material costs copied into the test - and broke
+         * the day the realism pass re-costed them, on an assertion that was
+         * still perfectly correct. Same restated-formula trap InvestCheck,
+         * PopulationCheck and InfrastructureCheck have each been caught by:
+         * the costs are the model's, the arithmetic is the test's.
+         */
+        double expectedBook =
+                2 * (plant.getCashCost() + plant.getConstructionMaterials() * bm.getConstructionMaterialPrice())
+              + 1 * (mill.getCashCost()  + mill.getConstructionMaterials()  * bm.getConstructionMaterialPrice());
         System.out.println("\n--- book value from templates ---");
         check("industrial book value",
                 bm.getBookValueByCategory(BuildingType.INDUSTRIAL), expectedBook);

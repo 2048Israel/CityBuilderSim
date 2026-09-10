@@ -116,22 +116,75 @@ public class ConstructionHandler {
      */
     public void calculateConstructionResults(){
         calculateExpenses();
-        netIncome = revenue - expenses - interestExpense - propertyTaxExpense;
+        netIncome = revenue + maintenanceRevenue
+                - expenses - interestExpense - propertyTaxExpense
+                - maintenanceExpense;   // its own depots, an operating cost - see rMaterialsExpense
 
         // What this month's banking was made of, for MoneyAudit. The live
         // fields are recomputed later in the same month (updateServices() runs
         // calculateExpenses() again with next month's inputs), so anything
         // that wants to know what was actually charged reads these.
-        rRevenue = revenue;
+        //
+        // rRevenue is the sector's whole turnover, repairs included - it is
+        // what the VAT ledger is handed, and a repair is a taxable supply to a
+        // company whose own supply (residential rent) is exempt, so the tax on
+        // it sticks. That is not an accident of the model; it is what happens
+        // to real landlords for the same reason.
+        rRevenue = revenue + maintenanceRevenue;
+        rMaintenanceRevenue = maintenanceRevenue;
         rWageExpense = wageExp;
         rMaterialsExpense = materialsExp;
         rInterestExpense = interestExpense;
         rPropertyTaxExpense = propertyTaxExpense;
+        /*
+         * The builders' own depots and plants need repairing too, and they
+         * repair them themselves - so this sector both receives the city's
+         * whole maintenance bill (rMaintenanceRevenue) and pays its own share
+         * of it (rMaintenanceExpense). The two are not netted, because a
+         * turnover figure that quietly cancelled part of itself would understate
+         * what the VAT ledger is handed and what this sector actually does.
+         */
+        rMaintenanceExpense = maintenanceExpense;
 
         revenue = 0;
+        maintenanceRevenue = 0;
         subsidyThisMonth = 0;
         materialsConsumed = 0;
     }
+
+    /* =====================================================================
+       REPAIRS
+
+       Kept apart from `revenue` rather than added to it, and the reason is
+       one line further up the month: Game reads getRevenue() as the month's
+       INVESTMENT for the national accounts. Building a house is investment.
+       Repointing one is not - it is intermediate consumption, an input the
+       real estate company buys and uses up inside the same month - and
+       folding the two together would have put a permanent 1%-a-year phantom
+       into GDP's investment line that no building anywhere corresponded to.
+
+       It is real money and a real order all the same: it lands in net income,
+       in the sector's cash, and in the turnover the VAT is struck on.
+       ===================================================================== */
+
+    /** Repairs billed this month. Cleared with the rest of the month. */
+    private double maintenanceRevenue;
+
+    /** ...and what was billed in the month the statement describes. */
+    private double rMaintenanceRevenue;
+
+    /**
+     * The real estate company's repair order for the month.
+     *
+     * @param amount the bill, in thousands. See Game.chargeHousingMaintenance().
+     */
+    public void receiveMaintenance(double amount){
+        if (amount > 0) {
+            maintenanceRevenue += amount;
+        }
+    }
+
+    public double getReportMaintenanceRevenue() { return rMaintenanceRevenue; }
 
     /* =====================================================================
        THE MONTH'S SALES TAX, ON THE STATEMENT
@@ -300,6 +353,39 @@ public class ConstructionHandler {
     public void setBondsPayable(double value)         { this.bondsPayable = value; }
     public void setInterestExpense(double value)      { this.interestExpense = value; }
     public void setPropertyTaxExpense(double value)   { this.propertyTaxExpense = value; }
+
+    /* =====================================================================
+       A BUILDING COSTS MONEY TO STAND, IN EVERY SECTOR (2026-09-09).
+
+       Jerus: "all buildings need maintenance, and make sure they get billed."
+       The second half is the whole instruction. `upkeep` had been a field on
+       every template since the beginning and was charged on precisely two
+       categories - healthcare and education - so BuildingManager's own note
+       called it what it was: "every building's upkeep in this file was a
+       wish."
+
+       Residential got a real repair flow on 2026-09-09 (money, materials AND
+       construction points, placed as an order with the builders at 1%/yr of
+       what the building cost to put up). This is that same flow for the rest
+       of the city, and it is deliberately shaped like the PROPERTY TAX - a
+       per-category charge handed to whoever owns the category - because that
+       is a path this codebase already trusts.
+
+       Same rule as the tax: no money moves here. The figure is assigned, the
+       income statement subtracts it, and what the sector banks is already net
+       of it.
+       ===================================================================== */
+
+    /** What this sector's buildings cost to keep standing this month. */
+    private double maintenanceExpense;
+    private double rMaintenanceExpense;
+
+    public void setMaintenanceExpense(double value) {
+        this.maintenanceExpense = Math.max(0, value);
+    }
+
+    public double getMaintenanceExpense()       { return maintenanceExpense; }
+    public double getReportMaintenanceExpense() { return rMaintenanceExpense; }
 
     /**
      * Construction's books. It holds no stock of its own - the materials
@@ -471,16 +557,20 @@ public class ConstructionHandler {
         materialsExp *= scale;
         interestExpense *= scale;
         propertyTaxExpense *= scale;
+        maintenanceExpense *= scale;
         landValue *= scale;
         buildingsValue *= scale;
         bondsPayable *= scale;
         subsidyThisMonth *= scale;
+        maintenanceRevenue *= scale;
         for (int i = 0; i < wages.length; i++) wages[i] *= scale;
 
         // ...and the statement it banked, for the same reason as the mills'.
         rRevenue *= scale;          rWageExpense *= scale;
         rMaterialsExpense *= scale; rInterestExpense *= scale;
         rPropertyTaxExpense *= scale;
+        rMaintenanceExpense *= scale;
+        rMaintenanceRevenue *= scale;
         rSalesTax *= scale;
     }
 

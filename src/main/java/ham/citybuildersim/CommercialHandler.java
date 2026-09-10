@@ -507,6 +507,21 @@ public class CommercialHandler {
      */
     private double rentPrice = rentFor(PayTier.UNSKILLED.getMonthlyWage());
 
+    /**
+     * The studio price, per person of capacity per month.
+     *
+     * Opens at the same number as the family price and then goes its own way,
+     * because the two segments have their own scarcity. See TWO SEGMENTS in
+     * FamilyModel: a door a child is not allowed in is a different good, and
+     * one price for both is what let a city hold 25,000 spare studios while
+     * ten thousand families doubled up.
+     *
+     * `rentPrice` keeps its name and is now the FAMILY price - the one the
+     * screens, the price index base and every older save already mean by
+     * "rent" - so nothing that reads it starts reading a different market.
+     */
+    private double studioRentPrice = rentFor(PayTier.UNSKILLED.getMonthlyWage());
+
     /* =====================================================================
        RENT AS A MARKET
        ---------------------------------------------------------------------
@@ -581,28 +596,147 @@ public class CommercialHandler {
      * What a landlord wants back each year for what the building cost.
      *
      * READ OFF THE GAME, NOT CHOSEN. At founding the cheapest way to house
-     * somebody is a House: $30 of cash and ten units of materials at $2.00,
-     * which is $50 of structure for six people, or $8.3333 per person of
-     * capacity. Founding rent under the old affordability formula is 30% of
-     * two $0.800 wages over four heads, which is $0.120 a month. Those two
+     * somebody is a House: $30,000 of cash and ten units of materials at
+     * $2,000, which is $50,000 of structure for six people, or $8,333 per
+     * person of capacity. Founding rent under the old affordability formula is
+     * 30% of two $800 wages over four heads, which is $120 a month. Those two
      * numbers imply 17.3% a year - so that is what this is. The game has been
      * paying its landlords 17.3% since the day it was written; nobody had ever
      * had cause to write it down.
      *
+     * (Every figure in this note is in real dollars. The FIELDS are in
+     * thousands, so the founding rent this describes reads 0.120 in the
+     * debugger. See BuildingsTemplate's header.)
+     *
      * Which is the point. THE LEVEL OF RENT DOES NOT CHANGE ON THE DAY THIS
-     * SHIPS - opening rent comes out at $0.12014 against $0.12000. What
+     * SHIPS - opening rent comes out at $120.14 against $120.00. What
      * changes is what MOVES it. A rebalance smuggled in under a mechanic is
      * two changes wearing one coat, and only one of them gets tested.
      *
-     * It is deliberately generous - 17% gross is a fat yield - because homes in
-     * this game carry no upkeep, no vacancy loss and no depreciation. When they
-     * get one, this comes down.
+     * It WAS deliberately generous - 17.3% gross - because homes in this game
+     * carried no upkeep, no vacancy loss and no depreciation. They carry the
+     * first two now (see MAINTENANCE_PER_YEAR, and rentBreakEven's note on why
+     * an empty flat is the landlord's loss), and the yield is applied to the
+     * whole asset INCLUDING ITS PLOT rather than to the structure alone - which
+     * is what makes an expensive city stop building rather than build the same
+     * house on ground worth ten times as much.
+     *
+     * ------------------------------------------------------------------
+     * 17.3% -> 5.8%, on 2026-09-09, with the rest of the rebalance.
+     *
+     * 5.80% is the Global Property Guide gross rental yield for Canada. 17.3%
+     * was never a measurement of anything - it was the number that left the
+     * opening rent where it already was on the day rent became a market, which
+     * was the right call THAT day (see the paragraph above: a rebalance
+     * smuggled in under a mechanic is two changes wearing one coat) and a debt
+     * that had to be paid once the mechanic was trusted.
+     *
+     * It does not move alone, and could not. Rent here is cost-anchored -
+     * rentRequired() is cost per head times this yield - so dropping the yield
+     * by a factor of three without re-costing the buildings would have taken
+     * the rent floor to a third of a number that was already 4.5x below a real
+     * one. The residential templates move in the same commit, to real build
+     * costs, and the two together are what put the floor in the right place.
+     * Measured before: the market walked a four-person home's rent to $481 a
+     * month against a $6,920 two-earner income - 6.9%, which is not a housing
+     * market, it is free housing with paperwork.
+     * ------------------------------------------------------------------
+     *
+     * Including the land moved opening rent by about 8%, from $120.00 to
+     * $130.00 a month - the ground under a founding House ($3,640) being a
+     * fourteenth of what it costs to put up ($50,000). That is a real move and it is written down here
+     * rather than absorbed quietly, but it is the smallest honest number: the
+     * alternative was a hurdle on one cost basis and an anchor on another,
+     * which makes a balanced market permanently wrong in one direction.
      *
      * If anybody re-costs the House, opening rent moves with it. That is
      * correct and is the whole reason the cost is read from the template rather
      * than typed here: a dearer house is dearer to rent.
      */
-    public static final double LANDLORD_YIELD = .173;
+    public static final double LANDLORD_YIELD = .058;
+
+    /* ==================================================================
+       WHAT KEEPING THE HOUSING STOCK STANDING COSTS
+
+       A building does not stop needing work once it is finished. Until now
+       the real estate company's maintenance line was the literal constant
+       zero, with a comment saying so - which made every home the company
+       owned free to hold for ever, and made an EMPTY home free to hold for
+       ever, which is the part that mattered: nothing anywhere in the model
+       pushed back on building doors nobody wanted.
+
+       Jerus: "they cost a tiny fraction of construction points and
+       materials, which the real estate company pays to the construcitn
+       company."
+
+       So it is not an abstract upkeep number. It is a real order placed with
+       the construction sector, priced in that building's OWN construction
+       inputs, and it moves money between two sectors that both have books:
+
+           bill = MAINTENANCE_PER_YEAR/12 x (cash cost + materials x price)
+
+       summed over every standing residential building. Because the materials
+       half is priced at today's material price, the bill inflates with the
+       rest of the economy on its own - a constant in absolute money is the
+       same bug as a cached figure.
+
+       ONE PERCENT A YEAR OF WHAT IT COST TO BUILD. Measured on a 600-month
+       city, that is:
+
+           month 576:  84,627 homes,  726,990 points of residential stock
+                       repairs 606 points/mo    =  0.8% of construction output
+                       repairs $2.87M/mo        = 18% of gross rent
+
+       (about $34 a home a month, on homes that cost $42,000 to $177,000 to
+       build - which is what one percent a year of a structure comes to)
+
+       Both of those are the right shape. Real landlords spend somewhere
+       between a tenth and a fifth of gross rent on maintenance, and the draw
+       on the building trade is small enough that it can never strangle the
+       city - which it would if a mature city's repairs ate the crews that
+       were supposed to be building its next district.
+       ================================================================== */
+    public static final double MAINTENANCE_PER_YEAR = .01;
+
+    /**
+     * This month's repair bill. Set by Game.chargeHousingMaintenance() before
+     * the statement runs, because the figure is a fact about the BUILDING
+     * STOCK and this class cannot see the building stock.
+     *
+     * Not saved. It is a pure function of what is standing and what materials
+     * cost, so a loaded city recomputes exactly the same number on its next
+     * tick - and the report field that carries it across a load, rPropertyMaintenance,
+     * is saved with the rest of the statement.
+     */
+    private double propertyMaintenance;
+
+    /** @param amount this month's repairs, in thousands. Negative reads as none. */
+    public void setPropertyMaintenance(double amount) {
+        this.propertyMaintenance = Math.max(0, amount);
+    }
+
+    /* =====================================================================
+       THE SHOPS NEED REPAIRING TOO (2026-09-09).
+
+       propertyMaintenance above is the RESIDENTIAL repair bill and always was -
+       it is what the landlords pay the builders to keep the doors standing.
+       This is the same charge on the retail company's own buildings, and it is
+       separate because they are two companies with two income statements, which
+       is the entire reason this class carries everything twice.
+
+       Jerus: "all buildings need maintenance, and make sure they get billed."
+       ===================================================================== */
+    private double retailMaintenance;
+    private double rRetailMaintenance;
+
+    public void setRetailMaintenance(double amount) {
+        this.retailMaintenance = Math.max(0, amount);
+    }
+
+    public double getRetailMaintenance()       { return retailMaintenance; }
+    public double getReportRetailMaintenance() { return rRetailMaintenance; }
+
+    public double getPropertyMaintenance() { return propertyMaintenance; }
 
     /**
      * How hard rent answers a shortage of front doors.
@@ -648,9 +782,165 @@ public class CommercialHandler {
 
     public double getMarginalHousingCost() { return marginalHousingCost; }
 
-    /** The rent that just covers building the next home and the landlord's return. */
+    /* ===================================================================
+       TWO RENTS, BECAUSE THERE ARE TWO DECISIONS
+
+       Jerus: "real estate only goes as low as they can afford, that is both
+       costs and interest, so they can operate at zero, but only if the demand
+       is really bad, otherwise theyll try to make profit" - and then, on
+       whether one number could do both jobs: "basically theyll rent at zero
+       profit, but they wont build more if new rent is zero profit."
+
+       So there are two numbers and they answer two different questions.
+
+       THE FLOOR - rentBreakEven() - is what the EXISTING stock costs to hold
+       for a month, per person of capacity, and rent never goes below it. It
+       is not a model of a building: it is this month's actual maintenance,
+       this month's actual property tax and this month's actual interest,
+       divided by the capacity they are spread across. A company charging the
+       floor makes nothing and loses nothing, which is where a really bad
+       market should put it.
+
+       THE HURDLE - rentToBuild() - is what a NEW building would have to earn.
+       That one HAS to be modelled, because the building does not exist yet:
+       today's land price, today's material price, today's borrowing rate,
+       plus a margin, because nobody builds for nothing.
+
+       AND THE HURDLE DOES NOT SET THE PRICE. It gates the crane. Rent walks
+       toward floor x scarcity, and when that walk carries it past the hurdle,
+       building becomes worth doing and the city adds doors, which brings
+       scarcity back down. Making the hurdle the price instead - measured, on
+       a 240-month city - held rent at six times the going rate and left the
+       city at an eighth of the population, because a price that always
+       clears the cost of the most expensive thing you could build is not a
+       market, it is a toll.
+
+       WHY THE FLOOR IS MEASURED AND THE HURDLE IS MODELLED. The existing
+       stock was bought at the land prices of its own decade; pricing it at
+       today's would charge a tenement in a boomtown as if it had just been
+       bought. Measured on the same city, the modelled figure came out at or
+       above the going rent for most of 240 months - the whole stock priced
+       as if it were all built this morning.
+       =================================================================== */
+
+    /* What a NEW unit would cost per person of capacity, land included, set
+       each month by EconomyManager.repriceHousingCosts(). The two halves are
+       kept apart because only one of them ever needs painting. */
+    private double structurePerCapacity;
+    private double landPerCapacity;
+
+    /**
+     * What a new unit costs, handed in from outside.
+     *
+     * Both come from things this class cannot see - the building templates,
+     * priced at today's materials, and the land office - which is why they
+     * arrive as a setter rather than being worked out here.
+     */
+    public void setHousingCosts(double structurePerCapacity, double landPerCapacity) {
+        this.structurePerCapacity = Math.max(0, structurePerCapacity);
+        this.landPerCapacity      = Math.max(0, landPerCapacity);
+    }
+
+    public double getStructurePerCapacity() { return structurePerCapacity; }
+    public double getLandPerCapacity()      { return landPerCapacity; }
+
+    /**
+     * What the standing stock costs to hold this month, per person of capacity.
+     *
+     * THE THREE FIELDS ARE THIS MONTH'S, not last month's: property tax and
+     * interest are charged before the statements run, and maintenance is
+     * charged in the same pass, so all three are set by the time rent is
+     * repriced at the bottom of the month.
+     *
+     * Divided by CAPACITY rather than by what is actually let, deliberately.
+     * Spreading the cost over paying tenants only would make an empty flat
+     * raise the rent on the full ones, and a glut would price itself upward
+     * for ever. Over capacity, an empty flat is a loss the landlord eats -
+     * which is the whole point of giving empty homes a cost.
+     */
+    public double rentBreakEven() {
+        /*
+         * OVER WHAT THE COMPANY OWNS, not over `household`.
+         *
+         * `household` is the city's whole housing capacity and it includes the
+         * hundred heads the city houses for free before any landlord exists.
+         * Dividing a small company's costs by that answers "rent is nearly
+         * free", which it then is for ever, because a company earning nearly
+         * nothing never funds its second building. Measured with the wrong
+         * denominator: the city sat at 32 people and one house for 240 months.
+         */
+        if (ownedCapacity <= 0) return 0;
+        double carry = propertyMaintenance + realEstatePropertyTax
+                + realEstateInterestExpense;
+        return carry > 0 ? carry / ownedCapacity : 0;
+    }
+
+    /**
+     * People the RESIDENTIAL buildings hold, sites included - the landlords'
+     * whole portfolio, and the denominator the break-even is measured over.
+     * See BuildingManager.getCapacityInPortfolio().
+     */
+    private double ownedCapacity;
+
+    /** Set by EconomyManager beside the other housing inputs. */
+    public void setOwnedHousingCapacity(double capacity) {
+        this.ownedCapacity = Math.max(0, capacity);
+    }
+
+    public double getOwnedHousingCapacity() { return ownedCapacity; }
+
+    /**
+     * What a landlord WANTS on a new building, before scarcity is considered.
+     *
+     * This is the old rentFloor(), unchanged, and it is still the number the
+     * game opens on: LANDLORD_YIELD a year on what the cheapest home costs to
+     * build, which comes out at $120 per person per month in the founding
+     * month exactly as it always has - 0.12 in the field, which is in
+     * thousands like every money field here.
+     *
+     * WHAT CHANGED IS THAT IT IS NO LONGER A FLOOR. It is what the market
+     * pays when supply and demand are balanced - a required return, not a
+     * cash constraint - and a bad enough market pushes the price below it,
+     * down to but never past rentBreakEven(). A good enough market pushes it
+     * above. Before, it was both the middle and the bottom of the range,
+     * which is why a glut could not exist.
+     */
+    public double rentRequired() {
+        double full = structurePerCapacity + landPerCapacity;
+        if (full <= 0) return marginalHousingCost * LANDLORD_YIELD / 12;
+        return full * LANDLORD_YIELD / 12;
+    }
+
+    /**
+     * The margin a new building has to clear over its own costs.
+     *
+     * Not a profit target so much as the reason to bother: a developer who
+     * would exactly break even builds nothing, because breaking even is what
+     * doing nothing pays. A third over costs is the smallest number that
+     * reads as a real return, and because it multiplies COSTS rather than
+     * being a figure in dollars it moves with land, materials and rates on
+     * its own.
+     *
+     * The hurdle itself is EconomyManager.housingBuildHurdle(), which asks it
+     * about one whole building rather than about a head of one - a studio
+     * block and a row of houses need different land and carry different
+     * numbers of doors, and a per-head figure hides all three.
+     */
+    public static final double BUILD_MARGIN = .33;
+
+    /**
+     * The floor under the rent price. Kept under its old name because the
+     * rest of the game asks for it by that name; it is the measured
+     * break-even now rather than a flat yield on construction cost.
+     *
+     * FALLS BACK to the old formula while there is nothing to measure - the
+     * founding months, when the company owns no buildings and owes nothing,
+     * and the first month after a load. Better one month of the number this
+     * game charged for its whole life than one month of no rent at all.
+     */
     public double rentFloor() {
-        return marginalHousingCost * LANDLORD_YIELD / 12;
+        double carry = rentBreakEven();
+        return carry > 0 ? carry : rentRequired();
     }
 
     /**
@@ -673,6 +963,61 @@ public class CommercialHandler {
 
     public double getHouseholdCount() { return householdCount; }
 
+    /* ------------------------- THE TWO SEGMENTS -------------------------
+       Set by EconomyManager each month from FamilyModel and the building
+       stock. Doors of size 1-2 against the households that fit in them; doors
+       of size 3+ against everybody else. See FamilyModel's TWO SEGMENTS note
+       for why substitution is left out of the price on purpose.
+       ------------------------------------------------------------------- */
+
+    private int studioHomes, familyHomes;
+    private double studioSeekers, familySeekers;
+    private double studioSeekerHeads, familySeekerHeads;
+
+    public void setSegments(int studioHomes, int familyHomes,
+                            double studioSeekers, double familySeekers,
+                            double studioSeekerHeads, double familySeekerHeads) {
+        this.studioHomes   = Math.max(0, studioHomes);
+        this.familyHomes   = Math.max(0, familyHomes);
+        this.studioSeekers = Math.max(0, studioSeekers);
+        this.familySeekers = Math.max(0, familySeekers);
+        this.studioSeekerHeads = Math.max(0, studioSeekerHeads);
+        this.familySeekerHeads = Math.max(0, familySeekerHeads);
+    }
+
+    public int getStudioHomes()       { return studioHomes; }
+    public int getFamilyHomes()       { return familyHomes; }
+    public double getStudioSeekers()  { return studioSeekers; }
+    public double getFamilySeekers()  { return familySeekers; }
+
+    /** People, not households - what turns a head shortage into a door count. */
+    public double getStudioSeekerHeads() { return studioSeekerHeads; }
+    public double getFamilySeekerHeads() { return familySeekerHeads; }
+
+    /** Average household size in one segment. One when there is nobody to average. */
+    public double averageHouseholdSize(boolean family) {
+        double heads = family ? familySeekerHeads : studioSeekerHeads;
+        double count = family ? familySeekers : studioSeekers;
+        return count > 0 && heads > 0 ? heads / count : 1;
+    }
+
+    /**
+     * Households per door within one segment.
+     *
+     * FALLS BACK TO THE WHOLE CITY below MIN_HOMES_FOR_A_MARKET, for the same
+     * reason housingPressure() does: a segment with four doors in it is not a
+     * market, and a ratio taken off four doors swings by a quarter every time
+     * one of them changes hands. A young city therefore prices both segments
+     * off the city-wide figure, and they separate as each becomes real.
+     */
+    private double segmentPressure(int doors, double seekers) {
+        if (doors < MIN_HOMES_FOR_A_MARKET || seekers <= 0) return housingPressure();
+        return seekers / doors;
+    }
+
+    public double studioPressure() { return segmentPressure(studioHomes, studioSeekers); }
+    public double familyPressure() { return segmentPressure(familyHomes, familySeekers); }
+
     /** Households per front door: above one is a shortage, below one is a glut. */
     public double housingPressure() {
         if (homes < MIN_HOMES_FOR_A_MARKET || householdCount <= 0) return 1;
@@ -683,16 +1028,47 @@ public class CommercialHandler {
      * The multiple scarcity justifies over the cost floor. Unbounded both ways.
      */
     public double rentScarcityMultiple() {
-        double pressure = housingPressure();
+        return scarcityMultipleOf(housingPressure());
+    }
+
+    /** The same curve, applied to one segment's pressure. */
+    public double scarcityMultipleOf(double pressure) {
         if (pressure <= 0) return 1;
         return Math.pow(pressure, SCARCITY_ELASTICITY);
     }
 
-    /** Where rent is heading, before the lease slows it down. */
+    /**
+     * Where rent is heading, before the lease slows it down.
+     *
+     * Scarcity moves the HURDLE, not the floor: the price a balanced market
+     * settles at is the one that makes building worthwhile, and a glut can
+     * push it down only as far as what the existing stock costs to hold. See
+     * TWO RENTS, above.
+     */
     public double rentTarget() {
-        double floor = rentFloor();
-        if (floor <= 0) return rentPrice;      // no template, no market
-        return floor * rentScarcityMultiple();
+        return targetFor(familyPressure());
+    }
+
+    /** Where the studio price is heading. Same floor, its own scarcity. */
+    public double studioRentTarget() {
+        return targetFor(studioPressure());
+    }
+
+    /**
+     * One segment's target, given how tight that segment is.
+     *
+     * BOTH SEGMENTS SHARE THE FLOOR. The break-even is a portfolio number -
+     * one company, one interest bill, one tax bill - and there is no honest
+     * way to say which of its buildings the debt is against. What differs
+     * between them is what the market will bear, which is the multiple.
+     */
+    private double targetFor(double pressure) {
+        double required = rentRequired();
+        double breakEven = rentBreakEven();
+        if (required <= 0) {
+            return breakEven > 0 ? breakEven : rentPrice;
+        }
+        return Math.max(breakEven, required * scarcityMultipleOf(pressure));
     }
 
     /**
@@ -706,19 +1082,55 @@ public class CommercialHandler {
      */
     public void repriceRent() {
         double target = rentTarget();
-        if (target <= 0) return;
-        lastRentTarget = target;
-        rentPrice += (target - rentPrice) / LEASE_MONTHS;
-        if (rentPrice < 0) rentPrice = 0;
+        if (target > 0) {
+            lastRentTarget = target;
+            rentPrice += (target - rentPrice) / LEASE_MONTHS;
+            if (rentPrice < 0) rentPrice = 0;
+        }
+        // The studio market walks on its own lease toward its own target.
+        // Same twelve months: a tenancy is a tenancy.
+        double studioTarget = studioRentTarget();
+        if (studioTarget > 0) {
+            lastStudioTarget = studioTarget;
+            studioRentPrice += (studioTarget - studioRentPrice) / LEASE_MONTHS;
+            if (studioRentPrice < 0) studioRentPrice = 0;
+        }
     }
 
     private double lastRentTarget;
+    private double lastStudioTarget;
 
     /** What rent is walking towards, for the screen. */
     public double getRentTarget() { return lastRentTarget > 0 ? lastRentTarget : rentPrice; }
 
+    public double getStudioRentTarget() {
+        return lastStudioTarget > 0 ? lastStudioTarget : studioRentPrice;
+    }
+
     public void setRentPrice(double price) {
         if (price > 0) this.rentPrice = price;
+    }
+
+    public double getStudioRentPrice() { return studioRentPrice; }
+
+    public void setStudioRentPrice(double price) {
+        if (price > 0) this.studioRentPrice = price;
+    }
+
+    /**
+     * What one person of capacity actually cost on average this month.
+     *
+     * The number the PRICE INDEX wants, and the number a player means by
+     * "what is rent". Two prices billed on two weights make one average, and
+     * feeding the index either half alone would have it track a segment
+     * rather than the cost of living. Falls back to the family price while
+     * nothing is let, which is what the index used before the split and so
+     * keeps its base continuous.
+     */
+    public double getAverageRentPaid() {
+        double weight = studioRentWeight + familyRentWeight;
+        if (weight <= 0) return rentPrice;
+        return (studioRentWeight * studioRentPrice + familyRentWeight * rentPrice) / weight;
     }
 
     /**
@@ -731,7 +1143,9 @@ public class CommercialHandler {
         storeSellPrice   *= scale;
         rSellPrice       *= scale;
         rentPrice        *= scale;
+        studioRentPrice  *= scale;
         lastRentTarget   *= scale;
+        lastStudioTarget *= scale;
         commercialCash   *= scale;
         realEstateCash   *= scale;
         foodPrice        *= scale;
@@ -739,6 +1153,10 @@ public class CommercialHandler {
         spendingCapacity *= scale;
         wantedSpend      *= scale;
         marginalHousingCost *= scale;
+        // The cost side of the rent market. The two RATES are pure numbers and
+        // do not move; the two per-capacity COSTS are money and do.
+        structurePerCapacity *= scale;
+        landPerCapacity      *= scale;
         pricePerWatt      *= scale;
         pricePerWaterUnit *= scale;
         realEstatePropertyTax   *= scale;
@@ -774,10 +1192,54 @@ public class CommercialHandler {
         rRetailPropertyTax *= scale;  rRetailOperatingCost *= scale;
         rRetailOperatingIncome *= scale;  rRetailNetIncome *= scale;
         rRentIncome *= scale;   rPropertyMaintenance *= scale;
+        propertyMaintenance *= scale;
+        retailMaintenance *= scale;
+        rRetailMaintenance *= scale;
         rPropertyTaxExpense *= scale;  rRealEstateExpenses *= scale;
         rRealEstateNetIncome *= scale;  rTotalNetIncome *= scale;
         rRetailTax *= scale;    rRealEstateTax *= scale;  rTotalTax *= scale;
         rLocalPurchaseValue *= scale;  rImportPurchaseValue *= scale;
+
+        /* -------------------------------------------------------------------
+           ...AND THE LIVE HALF OF THE THREE PAIRS, which is what the report
+           above is COPIED FROM at the top of the next month.
+
+           This was the last piece of "a reformed city is not quite the same
+           city", and it hid behind the r-prefix. Scaling rLocalPurchaseValue
+           and leaving localPurchaseValue alone divides the copy and not the
+           original, and computeMonthlyReport() then does
+
+               rLocalPurchaseValue = localPurchaseValue;
+
+           at the top of the next month and puts the old scale straight back.
+           Measured on the DenominationCheck fixture: the reformed city's shops
+           reported paying 215.81 for the same 789 units the unreformed pair
+           bought for 2.16 in the same money - a hundredfold input bill, on the
+           statement, in the VAT credit struck from it, and in the till. Retail
+           came out of the reform month with 552.55 where it should have had
+           13.82, and because the shops make discrete decisions that one number
+           is what the two cities' whole hundred-month divergence was made of.
+
+           The comment on those fields already said the live half is carried in
+           the save "for the same reason" the report is. Anything carried has to
+           be redenominated; that is the whole rule, and these three were the
+           three that had one half of it.
+           ------------------------------------------------------------------- */
+        localPurchaseValue  *= scale;
+        importPurchaseValue *= scale;
+        storeInventoryCost  *= scale;
+
+        /*
+         * The balance-sheet inputs, which EconomyManager.pushBalanceSheetInputs()
+         * refreshes every month - so they self-correct within a month and are
+         * scaled here anyway, because "self-corrects eventually" is not the same
+         * as "is right when the player looks at it", and the player looks at it
+         * the moment the reform dialog closes.
+         */
+        retailLandValue *= scale;      retailBuildingsValue *= scale;
+        retailBondsPayable *= scale;
+        realEstateLandValue *= scale;  realEstateBuildingsValue *= scale;
+        realEstateBondsPayable *= scale;
     }
 
     /**
@@ -803,7 +1265,28 @@ public class CommercialHandler {
     private double occupiedHomes;
 
     public void setHomes(int homes)              { this.homes = homes; }
-    public void setOccupiedHomes(double occupied){ this.occupiedHomes = occupied; }
+
+    /**
+     * How many of those doors have somebody behind them.
+     *
+     * CLAMPED TO THE STOCK, and the clamp is the point. What arrives here is
+     * FamilyModel.homesNeeded(), which is every household less the ones doubled
+     * up - and that can exceed the doors, because house() runs part way through
+     * a month against the homes that existed THEN while households keep arriving
+     * afterwards. A landlord cannot let a flat that does not exist, so the
+     * excess is households the housing pass has not placed yet rather than
+     * occupancy, and letting it through made "standing empty" go NEGATIVE on
+     * the Real estate screen in any month a city was tight.
+     *
+     * Measured by HousingCheck on a small city: 2.86 homes let out of 2 owned,
+     * for twelve months together. Set before this in the same pass, so `homes`
+     * is always this month's - see EconomyManager.updateCommercial().
+     */
+    public void setOccupiedHomes(double occupied){
+        double want = Math.max(0, occupied);
+        this.occupiedHomes = homes > 0 ? Math.min(want, homes) : want;
+    }
+
     public int getHomes()                        { return homes; }
     public double getOccupiedHomes()             { return occupiedHomes; }
 
@@ -954,7 +1437,14 @@ public class CommercialHandler {
          * load path reaches here before the first housing pass has run.
          */
         if (rentWeight > 0) {
-            return rentWeight * rentPrice;
+            /*
+             * TWO PRICES, TWO WEIGHTS. A studio bills the studio price and a
+             * family unit bills the family one - see FamilyModel's TWO
+             * SEGMENTS. The old single-weight setter puts everything in the
+             * family half, so a save written before the split bills exactly
+             * what it always billed.
+             */
+            return studioRentWeight * studioRentPrice + familyRentWeight * rentPrice;
         }
         // (the report snapshots what it used - see rBilledRentWeight)
         if (homes <= 0) {
@@ -1043,9 +1533,34 @@ public class CommercialHandler {
      */
     private double rBilledRentWeight;
 
-    public void setRentWeight(double weight) { this.rentWeight = weight; }
+    /** The same weight, split by which segment the DOOR was in. */
+    private double studioRentWeight, familyRentWeight;
+    private double rBilledStudioWeight, rBilledFamilyWeight;
+
+    /**
+     * The old single-weight setter. Puts everything in the FAMILY segment,
+     * which is where a save written before the split implicitly had it - the
+     * one price it carried is rentPrice, and rentPrice is the family price.
+     */
+    public void setRentWeight(double weight) {
+        this.rentWeight = weight;
+        this.familyRentWeight = weight;
+        this.studioRentWeight = 0;
+    }
+
+    /** Both halves, from FamilyModel.house(). The two sum to rentWeight. */
+    public void setRentWeight(double studio, double family) {
+        this.studioRentWeight = Math.max(0, studio);
+        this.familyRentWeight = Math.max(0, family);
+        this.rentWeight = this.studioRentWeight + this.familyRentWeight;
+    }
+
     public double getRentWeight()            { return rentWeight; }
+    public double getStudioRentWeight()      { return studioRentWeight; }
+    public double getFamilyRentWeight()      { return familyRentWeight; }
     public double getBilledRentWeight()      { return rBilledRentWeight; }
+    public double getBilledStudioWeight()    { return rBilledStudioWeight; }
+    public double getBilledFamilyWeight()    { return rBilledFamilyWeight; }
 
     /** Units the city WANTED, before it counted its money. */
     private int rWantedDemand;
@@ -1583,6 +2098,8 @@ public class CommercialHandler {
         rPopulation = population;
         rHousehold = household;
         rBilledRentWeight = rentWeight;
+        rBilledStudioWeight = studioRentWeight;
+        rBilledFamilyWeight = familyRentWeight;
         rStoreCoverage = storeCoverage;
         rStoreCapacity = storeCapacity;
         rStoreInventory = storeInventory;
@@ -1728,8 +2245,9 @@ public class CommercialHandler {
         rWaterCost = water * bWaterRatio * pricePerWaterUnit;
 
         rRetailPropertyTax = retailPropertyTax;
+        rRetailMaintenance = retailMaintenance;
         rRetailOperatingCost = rPayroll + rInventoryCost + rElectricityCost + rWaterCost
-                + rRetailPropertyTax;
+                + rRetailPropertyTax + rRetailMaintenance;
         rRetailInterest = retailInterestExpense;
 
         // rRetailNetIncome is what gets banked to commercialCash, so interest has
@@ -1743,11 +2261,12 @@ public class CommercialHandler {
 
         rRentIncome = getRentIncome();
 
-        rPropertyMaintenance = 0;
+        rPropertyMaintenance = propertyMaintenance;
         rPropertyTaxExpense = realEstatePropertyTax;
         rRealEstateInterest = realEstateInterestExpense;
 
-        // Maintenance is still hardcoded to zero; property tax no longer is.
+        // All three are real now. Maintenance was the literal constant zero
+        // until 2026-09-09 - see MAINTENANCE_PER_YEAR.
         rRealEstateExpenses = rPropertyMaintenance + rPropertyTaxExpense + rRealEstateInterest;
         /*
          * Residential rent is an EXEMPT supply, so rRealEstateSalesTax is
@@ -2066,6 +2585,19 @@ public class CommercialHandler {
             rLocalPurchaseValue = rate > 0 ? rInventoryCost / rate : rInventoryCost;
             rImportPurchaseValue = 0;
         }
+
+        /*
+         * The live field follows the restored report line.
+         *
+         * propertyMaintenance is not in the array - it is a pure function of
+         * the building stock, so Game recomputes it on the next tick - but
+         * "the next tick" is not now, and a screen read between the load and
+         * that tick would otherwise show a statement whose expense line and
+         * whose live figure disagreed. Seeding it here costs nothing and
+         * keeps the two the same number until the tick replaces both.
+         */
+        propertyMaintenance = rPropertyMaintenance;
+        retailMaintenance = rRetailMaintenance;
 
         return true;
     }

@@ -86,7 +86,43 @@ public class Education {
      * per cent at the default subsidy, which stops almost nobody. The dial has
      * to move something or it is not a decision.
      */
-    public static double tuitionOf(EducationType type) {
+    /* =====================================================================
+       WHAT A COURSE COSTS, IN TODAY'S MONEY
+
+       The table below is in FOUNDING dollars and never moves. The instance
+       array beside it is the same table in whatever the city currently calls
+       its money, and it is what everything actually charges.
+
+       This was one figure, static, read directly - and it was the thirteenth
+       sighting of the redenomination family and the worst-behaved of them,
+       because it does not merely misreport. tuitionOf() feeds affordability(),
+       which decides who can go to school at all: after a 100:1 reform a
+       university place still cost 1.20 in a city where a month's unskilled wage
+       had become 0.05, so the whole pipeline stalled and the city stopped
+       producing graduates for ever. The city's education FEE revenue was also
+       a hundred times too large, which was 29% of the treasury's whole tax take
+       on the DenominationCheck fixture.
+
+       Seeded at construction and re-seeded on load like every other money
+       constant, and scaled in redenominate() so a reform needs no re-seed.
+       ===================================================================== */
+    private final double[] tuition = new double[EducationType.values().length];
+
+    { seedConstants(1); }
+
+    public void seedConstants(double unit) {
+        for (EducationType t : EducationType.values()) {
+            tuition[t.ordinal()] = foundingTuition(t) / (unit > 0 ? unit : 1);
+        }
+    }
+
+    /** What this city charges for the course today. */
+    public double feeFor(EducationType type) {
+        return type == null ? 0 : tuition[type.ordinal()];
+    }
+
+    /** The same table in founding dollars, which is where the numbers live. */
+    public static double foundingTuition(EducationType type) {
         switch (type) {
             case ELEMENTARY:
             case MIDDLE:      return .10;
@@ -547,7 +583,7 @@ public class Education {
      * the way out is the subsidy dial, or higher wages, or both.
      */
     private double affordability(EducationType type, LabourMarket market, WageBand from) {
-        double outOfPocket = tuitionOf(type) * (1 - tuitionSubsidy);
+        double outOfPocket = feeFor(type) * (1 - tuitionSubsidy);
         if (outOfPocket <= 0) return 1;
 
         double wage = market == null || from == null
@@ -560,7 +596,7 @@ public class Education {
 
     /** Bills the month's tuition, split between the household and the treasury. */
     private void charge(EducationType type, double students) {
-        double fee = tuitionOf(type) * Math.max(0, students);
+        double fee = feeFor(type) * Math.max(0, students);
         citySubsidyPaid += fee * tuitionSubsidy;
         tuitionCollected += fee * (1 - tuitionSubsidy);
     }
@@ -661,7 +697,7 @@ public class Education {
 
     /** What a household actually pays for a seat, after the subsidy. */
     public double outOfPocket(EducationType type) {
-        return tuitionOf(type) * (1 - tuitionSubsidy);
+        return feeFor(type) * (1 - tuitionSubsidy);
     }
 
     /** How much better off somebody is for doing it - 0 means not worth it. */
@@ -808,6 +844,8 @@ public class Education {
         citySubsidyPaid  *= scale;
         payroll *= scale;
         upkeep  *= scale;
+        // ...and the price list itself. See the note on the tuition table.
+        for (int i = 0; i < tuition.length; i++) tuition[i] *= scale;
     }
 
 }

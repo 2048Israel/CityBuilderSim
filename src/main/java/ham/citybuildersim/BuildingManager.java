@@ -118,7 +118,7 @@ public class BuildingManager {
         BuildingsTemplate house = new BuildingsTemplate("House", BuildingType.RESIDENTIAL);
         house.setCapacity(6);
         house.setDwellings(1);
-        house.setCashCost(30);
+        house.setCashCost(426);
         house.setConstructionPoints(10);
         house.setConstructionMaterials(10);
         house.setElectricityConsumption(1);
@@ -129,15 +129,63 @@ public class BuildingManager {
         templates.add(house);
 
         BuildingsTemplate studioApartments = new BuildingsTemplate("Studio Apartments", BuildingType.RESIDENTIAL);
-        // TWO TO A UNIT since 2026-09-07, and it is the reason the building
-        // stopped being pointless. Eighty one-person flats cost $25 a resident
-        // against a House's $7.50, so nothing could make them the right answer
-        // at any land price - backlog I1, "strictly dominated". A studio that
-        // takes a couple is both what a studio actually is and $12.50 a
-        // resident on a sixth of a House's land.
+        /*
+         * TWO TO A UNIT since 2026-09-07, and it is the reason the building
+         * stopped being pointless. Eighty one-person flats cost $25,000 a
+         * resident against a House's $7,500, so nothing could make them the
+         * right answer at any land price - backlog I1, "strictly dominated". A
+         * studio that takes a couple is both what a studio actually is and
+         * $12,500 a resident on a sixth of a House's land.
+         *
+         * WHAT THESE THREE COST IN REAL MONEY, at founding prices, because the
+         * fields below are in thousands and nobody can balance in thousands.
+         *
+         * BEFORE (and why it was wrong):
+         *
+         *     House       $53,640 for one 6-person home    =  $8,940 a head
+         *     Studio    $3,371,375 for 80 2-person homes   = $21,071 a head
+         *     Low-Rise $11,127,300 for 63 4-person homes   = $44,156 a head
+         *
+         * A FIVE-FOLD SPREAD IN COST PER HEAD, with the studio near the cheap
+         * end. In reality the spread is almost flat and runs the OTHER WAY -
+         * about $75,000 a head for a detached house, $90,000 for a studio unit,
+         * $67,500 for a low-rise flat - because a studio is nearly all kitchen
+         * and bathroom, which is where the money in a dwelling is, and a house
+         * amortises one of each over six people.
+         *
+         * That inversion was the whole reason nothing ever built a Low-Rise: a
+         * low-rise door cost 4.2x a studio door for a unit holding twice as
+         * many people, where a real two-bedroom is 1.6-1.8x a studio. The
+         * previous note here said the fix was to raise the studio and the house
+         * rather than cut the low-rise - "cutting the one honest number to
+         * match two wrong ones" - and left it as a rebalance wanting
+         * measurement.
+         *
+         * AFTER (2026-09-09), measured with RealismCheck against North
+         * American build costs:
+         *
+         *     House      $449,640 for one 6-person home    = $74,940 a head
+         *     Studio   $14,401,375 for 80 2-person homes   = $90,009 a head
+         *     Low-Rise $17,017,300 for 63 4-person homes   = $67,529 a head
+         *
+         * All three within 0.1% of the real figure, the spread flat, and the
+         * studio correctly the DEAREST per head.
+         *
+         * ONLY cashCost moved. constructionPoints and constructionMaterials are
+         * PHYSICAL QUANTITIES - the yard's labour and the units of material it
+         * consumes - and multiplying those by eight would have cut the city's
+         * building rate eightfold and octupled the import bill, which is a
+         * pacing change and a trade shock, not a price. The founding works yard
+         * was deliberately quadrupled two days ago; this is not the commit to
+         * quietly undo that. So the split inside a building is now money
+         * against quantity rather than labour against materials, and that is
+         * what these fields mean.
+         *
+         * See claude/reading-the-numbers.md.
+         */
         studioApartments.setCapacity(160);
         studioApartments.setDwellings(80);
-        studioApartments.setCashCost(2000);
+        studioApartments.setCashCost(13028);
         studioApartments.setConstructionPoints(680);
         studioApartments.setConstructionMaterials(680);
         studioApartments.setElectricityConsumption(8);
@@ -162,7 +210,7 @@ public class BuildingManager {
          */
         lowRiseApartments.setCapacity(252);
         lowRiseApartments.setDwellings(63);
-        lowRiseApartments.setCashCost(7000);
+        lowRiseApartments.setCashCost(12882);
         lowRiseApartments.setConstructionPoints(2400);
         lowRiseApartments.setConstructionMaterials(2050);
         lowRiseApartments.setElectricityConsumption(25);
@@ -214,7 +262,7 @@ public class BuildingManager {
 
         BuildingsTemplate homeDaycare = new BuildingsTemplate("Home Daycare", BuildingType.HEALTHCARE)
                 .setCapacity(8)
-                .setCashCost(60)
+                .setCashCost(67)
                 .setConstructionPoints(40)
                 .setConstructionMaterials(40)
                 .setUpkeep(3)
@@ -229,7 +277,7 @@ public class BuildingManager {
 
         BuildingsTemplate neighbourhoodDaycare = new BuildingsTemplate("Neighbourhood Daycare", BuildingType.HEALTHCARE)
                 .setCapacity(60)
-                .setCashCost(700)
+                .setCashCost(688)
                 .setConstructionPoints(600)
                 .setConstructionMaterials(500)
                 .setUpkeep(22)
@@ -246,7 +294,7 @@ public class BuildingManager {
 
         BuildingsTemplate childcareCentre = new BuildingsTemplate("Childcare Centre", BuildingType.HEALTHCARE)
                 .setCapacity(220)
-                .setCashCost(2600)
+                .setCashCost(1868)
                 .setConstructionPoints(2200)
                 .setConstructionMaterials(1800)
                 .setUpkeep(70)
@@ -263,7 +311,7 @@ public class BuildingManager {
 
         BuildingsTemplate walkInClinic = new BuildingsTemplate("Walk-in Clinic", BuildingType.HEALTHCARE)
                 .setCapacity(2500)
-                .setCashCost(1400)
+                .setCashCost(691)
                 .setConstructionPoints(1200)
                 .setConstructionMaterials(900)
                 .setUpkeep(45)
@@ -280,7 +328,7 @@ public class BuildingManager {
 
         BuildingsTemplate communityHealthCentre = new BuildingsTemplate("Community Health Centre", BuildingType.HEALTHCARE)
                 .setCapacity(12000)
-                .setCashCost(9000)
+                .setCashCost(3959)
                 .setConstructionPoints(8000)
                 .setConstructionMaterials(6000)
                 .setUpkeep(190)
@@ -299,7 +347,7 @@ public class BuildingManager {
 
         BuildingsTemplate generalHospital = new BuildingsTemplate("General Hospital", BuildingType.HEALTHCARE)
                 .setCapacity(40000)
-                .setCashCost(55000)
+                .setCashCost(181770)
                 .setConstructionPoints(52000)
                 .setConstructionMaterials(34000)
                 .setUpkeep(700)
@@ -319,7 +367,7 @@ public class BuildingManager {
 
         BuildingsTemplate regionalMedicalCentre = new BuildingsTemplate("Regional Medical Centre", BuildingType.HEALTHCARE)
                 .setCapacity(120000)
-                .setCashCost(150000)
+                .setCashCost(1019356)
                 .setConstructionPoints(140000)
                 .setConstructionMaterials(90000)
                 .setUpkeep(2100)
@@ -340,7 +388,7 @@ public class BuildingManager {
 
         BuildingsTemplate homeCareService = new BuildingsTemplate("Home Care Service", BuildingType.HEALTHCARE)
                 .setCapacity(400)
-                .setCashCost(900)
+                .setCashCost(293)
                 .setConstructionPoints(500)
                 .setConstructionMaterials(300)
                 .setUpkeep(30)
@@ -357,7 +405,7 @@ public class BuildingManager {
 
         BuildingsTemplate assistedLivingResidence = new BuildingsTemplate("Assisted Living Residence", BuildingType.HEALTHCARE)
                 .setCapacity(90)
-                .setCashCost(6000)
+                .setCashCost(14963)
                 .setConstructionPoints(5000)
                 .setConstructionMaterials(4000)
                 .setUpkeep(150)
@@ -374,7 +422,7 @@ public class BuildingManager {
 
         BuildingsTemplate nursingHome = new BuildingsTemplate("Nursing Home", BuildingType.HEALTHCARE)
                 .setCapacity(220)
-                .setCashCost(16000)
+                .setCashCost(40926)
                 .setConstructionPoints(14000)
                 .setConstructionMaterials(10000)
                 .setUpkeep(380)
@@ -392,7 +440,7 @@ public class BuildingManager {
 
         BuildingsTemplate longTermCareComplex = new BuildingsTemplate("Long-Term Care Complex", BuildingType.HEALTHCARE)
                 .setCapacity(650)
-                .setCashCost(42000)
+                .setCashCost(117825)
                 .setConstructionPoints(38000)
                 .setConstructionMaterials(26000)
                 .setUpkeep(1000)
@@ -411,7 +459,7 @@ public class BuildingManager {
 
         BuildingsTemplate crematorium = new BuildingsTemplate("Crematorium", BuildingType.HEALTHCARE)
                 .setCapacity(120)
-                .setCashCost(3000)
+                .setCashCost(986)
                 .setConstructionPoints(2500)
                 .setConstructionMaterials(2000)
                 .setUpkeep(90)
@@ -427,7 +475,7 @@ public class BuildingManager {
 
         BuildingsTemplate memorialCemetery = new BuildingsTemplate("Memorial Cemetery", BuildingType.HEALTHCARE)
                 .setCapacity(12000)
-                .setCashCost(1200)
+                .setCashCost(16016)
                 .setConstructionPoints(900)
                 .setConstructionMaterials(400)
                 .setUpkeep(25)
@@ -443,7 +491,7 @@ public class BuildingManager {
 
         BuildingsTemplate municipalCemetery = new BuildingsTemplate("Municipal Cemetery", BuildingType.HEALTHCARE)
                 .setCapacity(60000)
-                .setCashCost(4500)
+                .setCashCost(80280)
                 .setConstructionPoints(3200)
                 .setConstructionMaterials(1400)
                 .setUpkeep(80)
@@ -462,7 +510,7 @@ public class BuildingManager {
         BuildingsTemplate convienceStore = new BuildingsTemplate("Convenience Store", BuildingType.COMMERCIAL);
         convienceStore.setCoverage(120);
         convienceStore.setCapacity(350);
-        convienceStore.setCashCost(120);
+        convienceStore.setCashCost(588);
         convienceStore.setConstructionPoints(120);
         convienceStore.setConstructionMaterials(80);
         convienceStore.setElectricityConsumption(6);
@@ -477,7 +525,7 @@ public class BuildingManager {
         BuildingsTemplate smallGroceryStore = new BuildingsTemplate("Small Grocery Store", BuildingType.COMMERCIAL);
         smallGroceryStore.setCoverage(800);
         smallGroceryStore.setCapacity(3500);
-        smallGroceryStore.setCashCost(900);
+        smallGroceryStore.setCashCost(4382);
         smallGroceryStore.setConstructionPoints(800);
         smallGroceryStore.setConstructionMaterials(700);
         smallGroceryStore.setElectricityConsumption(35);
@@ -493,7 +541,7 @@ public class BuildingManager {
         //Industrial Buildings
         BuildingsTemplate texttileMill = new BuildingsTemplate("Textile Mill", BuildingType.INDUSTRIAL);
         texttileMill.setCapacity(3000);
-        texttileMill.setCashCost(1200);
+        texttileMill.setCashCost(21763);
         texttileMill.setConstructionPoints(1800);
         texttileMill.setConstructionMaterials(1600);
         texttileMill.setProduction1(1100);
@@ -508,7 +556,7 @@ public class BuildingManager {
 
         BuildingsTemplate foodProcessingPlant = new BuildingsTemplate("Food Processing Plant", BuildingType.INDUSTRIAL);
         foodProcessingPlant.setCapacity(18000);
-        foodProcessingPlant.setCashCost(3500);
+        foodProcessingPlant.setCashCost(53908);
         foodProcessingPlant.setConstructionPoints(3500);
         foodProcessingPlant.setConstructionMaterials(3000);
         foodProcessingPlant.setProduction1(6000);
@@ -524,7 +572,7 @@ public class BuildingManager {
 
         BuildingsTemplate constructionMaterialsPlant = new BuildingsTemplate("Construction Materials Plant", BuildingType.CONSTRUCTION);
         constructionMaterialsPlant.setCapacity(5);
-        constructionMaterialsPlant.setCashCost(20000);
+        constructionMaterialsPlant.setCashCost(45862);
         constructionMaterialsPlant.setConstructionPoints(9000);
         constructionMaterialsPlant.setConstructionMaterials(7000);
         constructionMaterialsPlant.setProduction2(400);
@@ -540,7 +588,7 @@ public class BuildingManager {
 
         BuildingsTemplate constructionDepot = new BuildingsTemplate("Construction Depot", BuildingType.CONSTRUCTION);
         constructionDepot.setCapacity(5);
-        constructionDepot.setCashCost(9000);
+        constructionDepot.setCashCost(472);
         constructionDepot.setConstructionPoints(400);
         constructionDepot.setConstructionMaterials(1000);
         constructionDepot.setProduction1(400);
@@ -555,7 +603,7 @@ public class BuildingManager {
 
         // ELECTRICTY buildings
         BuildingsTemplate coalPowerplant = new BuildingsTemplate("Coal Power Plant", BuildingType.ELECTRICITY)
-                .setCashCost(125000)
+                .setCashCost(1349080)
                 .setConstructionPoints(120000)
                 .setConstructionMaterials(40000)
                 .setProduction1(280000) // electricity output
@@ -571,6 +619,72 @@ public class BuildingManager {
 
         templates.add(coalPowerplant);
 
+        /* ---------------------------- WIND ----------------------------
+           Jerus, 2026-09-09: "a windmill or windmill farm, or you think better
+           no? Cause cost wise its trash right."
+
+           It is not trash - it is the cheap one, and that was the whole problem
+           with adding it. EIA AEO2025 puts onshore wind at $1,489/kW against
+           ultra-supercritical coal at $4,103/kW, both in 2023 dollars. Derate
+           for capacity factor (wind ~40%, coal ~85%) and wind is still about a
+           quarter cheaper per unit of energy actually DELIVERED, before coal
+           buys a single tonne of fuel.
+
+           WHICH IS EXACTLY WHY IT COULD NOT SIMPLY BE CHEAPER POWER. A building
+           that wins on every axis makes the other one dead, and this project
+           has spent two days digging out of that: Low-Rise Apartments were
+           never built because the cost ladder was inverted, and Studio
+           Apartments sat in the backlog as "strictly dominated" for months.
+
+           So it loses on the two axes the model already has, and needs no new
+           mechanic for either:
+
+             LAND. NREL's direct-impact figure for wind is about 1.85 acres per
+             MW - the pads, the access roads and the substation, which is what a
+             city actually has to buy; the rest of a wind lease stays farmland.
+             At 2 acres/MW this farm sits on 40 acres for 8,100 units of power,
+             where the Coal Power Plant sits on 46 acres for 280,000. That is
+             roughly THIRTY TIMES the ground per unit, and this game has a land
+             market whose price climbs with the city ($0.46/sq ft at founding,
+             about $46 in a big one). The crossover lands near $8.50/sq ft: wind
+             wins on cheap ground and loses on dear ground, which is a band,
+             exactly like the three roads.
+
+             JOBS. A coal plant here employs 68. Real wind O&M is about 0.2-0.3
+             permanent jobs per MW, so a 20 MW farm is a handful of turbine
+             technicians - seven, generously. This city wants employers, and
+             this is not one.
+
+           AND IT IS THE SMALL PLANT THE GAME HAS BEEN MISSING. The 4,000-month
+           playtest sat at 2-3% power utilisation for its entire life, because a
+           325 MW coal plant is the only generator in the game and a city of
+           77,000 needs a fraction of one. This farm is 20 MW, $31.8M and 1,800
+           construction points - a founding city can buy it in money AND in
+           time, where the coal plant is 300 months of a founding yard.
+
+           NO INTERMITTENCY SYSTEM, deliberately. The capacity factor is baked
+           into production1 the same way the coal plant's 85% already is:
+           20 MW x 40% x 730 hours = 5.84 GWh a month, and one electricity unit
+           is 720 kWh a month (derived from the Steel Foundry's documented
+           450 kWh a tonne - see RealismCheck). Weather and storage are a
+           different game.
+           ------------------------------------------------------------------ */
+        BuildingsTemplate windFarm = new BuildingsTemplate("Wind Farm", BuildingType.ELECTRICITY)
+                .setCashCost(26998)                 // $31.8M all-in at $1,590/kW
+                .setConstructionPoints(1800)        // months, not years
+                .setConstructionMaterials(2000)
+                .setProduction1(8100)               // 20 MW at a 40% capacity factor
+                .setElectricityConsumption(1)       // its own parasitic load
+                .setWaterConsumption(0)             // none, which is half the point
+                .setLandSqFt(1742400)               // 40 acres - 2 per MW
+                .setRoadLoad(5)
+                .setJobs(JobType.NO_DIPLOMA, 2)
+                .setJobs(JobType.DIPLOMA, 4)        // turbine technicians, a real trade
+                .setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setId(41);
+
+        templates.add(windFarm);
+
         // WATER buildings
         //
         // Costed off a real ~20 MGD conventional treatment plant serving about
@@ -584,7 +698,7 @@ public class BuildingManager {
         // the city hits the water wall well before it can afford a power
         // plant, so it needs to be reachable sooner.
         BuildingsTemplate waterTreatmentPlant = new BuildingsTemplate("Water Treatment Plant", BuildingType.WATER)
-                .setCashCost(45000)
+                .setCashCost(65632)
                 .setConstructionPoints(44000)
                 .setConstructionMaterials(22000)
                 .setProduction1(60000) // water output
@@ -616,13 +730,13 @@ public class BuildingManager {
            the wage tax on it, and everything those wages buy.
            ------------------------------------------------------------------ */
         BuildingsTemplate steelFoundry = new BuildingsTemplate("Steel Foundry", BuildingType.HEAVY_INDUSTRY)
-                .setCashCost(1400)
+                .setCashCost(27759)
                 .setConstructionPoints(1400)
                 .setConstructionMaterials(1100)
                 .setProduction1(1200)               // tonnes of steel a month
                 .setProduction2(1320)               // tonnes of scrap that takes
-                .setProductionModifier1(.5)         // export price per tonne
-                .setProductionModifier2(.4)         // scrap price per tonne
+                .setProductionModifier1(0.847)         // export price per tonne
+                .setProductionModifier2(0.41)         // scrap price per tonne
                 .setElectricityConsumption(750)
                 .setWaterConsumption(65)
                 .setLandSqFt(90000)
@@ -635,13 +749,13 @@ public class BuildingManager {
         templates.add(steelFoundry);
 
         BuildingsTemplate steelMiniMill = new BuildingsTemplate("Steel Mini-Mill", BuildingType.HEAVY_INDUSTRY)
-                .setCashCost(9000)
+                .setCashCost(105816)
                 .setConstructionPoints(9000)
                 .setConstructionMaterials(7000)
                 .setProduction1(6000)
                 .setProduction2(6600)
-                .setProductionModifier1(.5)
-                .setProductionModifier2(.4)
+                .setProductionModifier1(0.847)
+                .setProductionModifier2(0.41)
                 // An arc furnace is the largest single electrical load a city
                 // this size can build. That is the point of it as a mechanic.
                 .setElectricityConsumption(3700)
@@ -833,18 +947,18 @@ public class BuildingManager {
          * the site do not. Same hole in the ground, worked properly.
          */
         BuildingsTemplate ironMine = new BuildingsTemplate("Iron Mine", BuildingType.MINING)
-                .setCashCost(1600)
+                .setCashCost(8416)
                 .setConstructionPoints(1600)
                 .setConstructionMaterials(650)
                 .setProduction1(2500)           // tonnes of ore a month
-                .setProductionModifier1(.20)    // export price per tonne - THE FLOOR
+                .setProductionModifier1(0.14)    // export price per tonne - THE FLOOR
                 .setElectricityConsumption(2000)
                 .setWaterConsumption(150)
                 .setLandSqFt(400000)
                 .setRoadLoad(420)               // every tonne leaves by truck
-                .setJobs(JobType.NO_DIPLOMA, 300)
-                .setJobs(JobType.DIPLOMA, 70)
-                .setJobs(JobType.COLLEGE_ENGINEERING, 6)
+                .setJobs(JobType.NO_DIPLOMA, 45)
+                .setJobs(JobType.DIPLOMA, 12)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 3)
                 .setId(14);
 
         templates.add(ironMine);
@@ -889,7 +1003,7 @@ public class BuildingManager {
         BuildingsTemplate elementarySchool = new BuildingsTemplate("Elementary School", BuildingType.EDUCATION)
                 .setTeaches(EducationType.ELEMENTARY)
                 .setCapacity(600)                // places
-                .setCashCost(2200)
+                .setCashCost(26972)
                 .setConstructionPoints(1800)
                 .setConstructionMaterials(1500)
                 .setUpkeep(38)
@@ -907,7 +1021,7 @@ public class BuildingManager {
         BuildingsTemplate middleSchool = new BuildingsTemplate("Middle School", BuildingType.EDUCATION)
                 .setTeaches(EducationType.MIDDLE)
                 .setCapacity(500)                // places
-                .setCashCost(2600)
+                .setCashCost(28368)
                 .setConstructionPoints(2100)
                 .setConstructionMaterials(1800)
                 .setUpkeep(44)
@@ -925,7 +1039,7 @@ public class BuildingManager {
         BuildingsTemplate highSchool = new BuildingsTemplate("High School", BuildingType.EDUCATION)
                 .setTeaches(EducationType.HIGH)
                 .setCapacity(900)                // places
-                .setCashCost(6000)
+                .setCashCost(67736)
                 .setConstructionPoints(4200)
                 .setConstructionMaterials(3600)
                 .setUpkeep(96)
@@ -944,7 +1058,7 @@ public class BuildingManager {
         BuildingsTemplate communityCollege = new BuildingsTemplate("Community College", BuildingType.EDUCATION)
                 .setTeaches(EducationType.COLLEGE)
                 .setCapacity(700)                // places
-                .setCashCost(9000)
+                .setCashCost(44517)
                 .setConstructionPoints(6000)
                 .setConstructionMaterials(5200)
                 .setUpkeep(145)
@@ -964,7 +1078,7 @@ public class BuildingManager {
         BuildingsTemplate university = new BuildingsTemplate("University", BuildingType.EDUCATION)
                 .setTeaches(EducationType.UNIVERSITY)
                 .setCapacity(2000)                // places
-                .setCashCost(42000)
+                .setCashCost(305715)
                 .setConstructionPoints(26000)
                 .setConstructionMaterials(22000)
                 .setUpkeep(620)
@@ -985,7 +1099,7 @@ public class BuildingManager {
         BuildingsTemplate medicalSchool = new BuildingsTemplate("Medical School", BuildingType.EDUCATION)
                 .setTeaches(EducationType.MEDICAL)
                 .setCapacity(420)                // places
-                .setCashCost(78000)
+                .setCashCost(207779)
                 .setConstructionPoints(44000)
                 .setConstructionMaterials(36000)
                 .setUpkeep(1150)
@@ -1005,7 +1119,7 @@ public class BuildingManager {
         BuildingsTemplate lawSchool = new BuildingsTemplate("Law School", BuildingType.EDUCATION)
                 .setTeaches(EducationType.LAW)
                 .setCapacity(360)                // places
-                .setCashCost(34000)
+                .setCashCost(37913)
                 .setConstructionPoints(20000)
                 .setConstructionMaterials(16000)
                 .setUpkeep(520)
@@ -1025,7 +1139,7 @@ public class BuildingManager {
         BuildingsTemplate businessSchool = new BuildingsTemplate("Business School", BuildingType.EDUCATION)
                 .setTeaches(EducationType.BUSINESS)
                 .setCapacity(480)                // places
-                .setCashCost(30000)
+                .setCashCost(69920)
                 .setConstructionPoints(18000)
                 .setConstructionMaterials(15000)
                 .setUpkeep(460)
@@ -1045,7 +1159,7 @@ public class BuildingManager {
         BuildingsTemplate instituteOfTechnology = new BuildingsTemplate("Institute of Technology", BuildingType.EDUCATION)
                 .setTeaches(EducationType.ENGINEERING)
                 .setCapacity(520)                // places
-                .setCashCost(56000)
+                .setCashCost(13862)
                 .setConstructionPoints(33000)
                 .setConstructionMaterials(28000)
                 .setUpkeep(780)
@@ -1080,7 +1194,7 @@ public class BuildingManager {
            ===================================================================== */
         BuildingsTemplate bank = new BuildingsTemplate("Commercial Bank", BuildingType.COMMERCIAL);
         bank.setCapacity(0);
-        bank.setCashCost(9000);
+        bank.setCashCost(2679);
         bank.setConstructionPoints(4200);
         bank.setConstructionMaterials(3400);
         bank.setUpkeep(190);
@@ -1565,13 +1679,35 @@ public class BuildingManager {
      * The city's own crews, plus whatever the depots add.
      *
      * BASE_CONSTRUCTION is the municipal works department: a city with no
-     * Construction Depot at all still puts up 100 points a month, which is what
-     * makes the opening city able to build its first depot.
+     * Construction Depot at all still puts up this many points a month, which
+     * is what makes the opening city able to build its first depot.
+     *
+     * RAISED FROM 100 TO 400 on 2026-09-09, Jerus's call, with the founding
+     * endowment and the founding bank. A hundred points against a Construction
+     * Depot that costs 3,000 is thirty months of the whole city's output to buy
+     * the thing that makes it build faster - so the opening decade was spent
+     * waiting rather than deciding, and every measurement of the early game was
+     * really a measurement of that queue.
+     *
+     * It is also the number housing maintenance is charged against. At 100 a
+     * depot-less city with a thousand flats was spending a third of its works
+     * department on repairs; at 400 that is under a tenth, which is the share
+     * the maintenance rate was calibrated for.
      */
-    public static final int BASE_CONSTRUCTION = 100;
+    public static final int BASE_CONSTRUCTION = 400;
 
-    /** Same idea for materials: a yard that produces 80 a month on its own. */
-    public static final int BASE_MATERIALS = 80;
+    /**
+     * Same idea for materials: a yard that produces this many a month on its own.
+     *
+     * MOVED WITH BASE_CONSTRUCTION, and by the same factor, deliberately. The
+     * residential templates run at roughly one unit of material per point of
+     * work (a House is 10 and 10, a studio block 680 and 680), so points and
+     * materials are two halves of one build rate. Raising one without the other
+     * would have quadrupled how fast the city can build and left it importing
+     * four times as much material to do it - a change to the trade balance
+     * wearing a change to construction's clothes.
+     */
+    public static final int BASE_MATERIALS = 320;
 
     public int getTotalConstructionCapacity() {
         // NOTE: getProduction1() is a double; the original loop truncated it via
@@ -1683,6 +1819,29 @@ public class BuildingManager {
      * the day the order was placed - a half-built plant is occupying and owing
      * tax on its site exactly like a finished one.
      */
+    /**
+     * People a category's buildings hold, plus those its SITES will hold.
+     *
+     * MATCHES getLandSqFtByCategory below, deliberately. The property tax bill
+     * is assessed on every plot the category occupies, finished or not, so any
+     * per-capacity figure struck against that bill has to count the same
+     * buildings - otherwise a large order on site puts its whole ground rent
+     * on the handful of finished units.
+     *
+     * Measured before this existed, on CreditCheck's fixture: 2,500 houses on
+     * site and 26 standing priced the rent floor at $2.40 a head against a
+     * going rate of $0.08, and the city fell from 22 residents to 5.
+     */
+    public int getCapacityInPortfolio(BuildingType category) {
+        int total = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getCategory() != category) continue;
+            total += (stack.getQuantity() + stack.getUnderConstruction())
+                    * stack.getBuilding().getCapacity();
+        }
+        return total;
+    }
+
     public double getLandSqFtByCategory(BuildingType category) {
         double total = 0;
         for (BuildingsStacks stack : stacks) {

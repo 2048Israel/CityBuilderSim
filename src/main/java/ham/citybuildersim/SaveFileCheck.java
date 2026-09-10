@@ -833,7 +833,7 @@ public class SaveFileCheck {
         full.getGovernmentInvestor().spend(-2_000_000);
         full.getLandManager().setOwnedSqFt(full.getLandManager().getOwnedSqFt() + 200_000_000L);
         for (String[] order : new String[][] {
-                {"House", "400"}, {"Convenience Store", "20"}, {"Construction Depot", "6"},
+                {"House", "400"}, {"Convenience Store", "2"}, {"Construction Depot", "6"},
                 {"Coal Power Plant", "2"}, {"Water Treatment Plant", "2"},
                 {"Textile Mill", "4"}, {"Iron Mine", "2"}, {"Steel Foundry", "2"},
                 {"Commercial Bank", "1"}, {"Elementary School", "3"},
@@ -841,7 +841,78 @@ public class SaveFileCheck {
             full.buildStack(template(full, order[0]), Integer.parseInt(order[1]), false);
         }
         for (PolicySector sector : PolicySector.values()) full.setAutoSubsidised(sector, true);
+
+        /*
+         * AND SOMEBODY HAS TO BE HUNGRY, WHICH NOW TAKES DOING.
+         *
+         * getHungerRate() is the share of people who could not afford their
+         * subsistence basket, and until 2026-09-09 this city produced one for
+         * free: an unskilled wage of $800 a month against a $300 basket left
+         * nothing over once rent was paid. The rebalance put the ladder on real
+         * Job Bank medians, and a city where the lowest full-time wage is
+         * $3,460 does not go hungry - which is the right answer and the end of
+         * this reading as a free fixture.
+         *
+         * IT TAKES BOTH HALVES OF THE READING, and finding that out was the
+         * useful part. getHungerRate() has two doors into it - a household with
+         * no money and a city with no stock - and on its own neither one opens
+         * any more. Cutting the shops to a sixth failed because the retail
+         * planner simply builds more, the same way the housing planner defeated
+         * HousingCheck's studio city on the same day; taxing take-home to the
+         * ceiling failed because 40% of a living wage still buys a basket. Two
+         * shops AND the tax ceiling together do it: the squeeze leaves the
+         * retail sector too poor to build its way out, and the missing stock is
+         * what the households then cannot eat.
+         *
+         * So the hunger is CAUSED, from both directions at once: two
+         * Convenience Stores for four hundred houses, and the income tax at its
+         * own ceiling with the maximum punitive offset on every wage band. That is not a balance
+         * proposal and is not meant to be - it is the fixture making the
+         * reading non-zero so that the SAVE of it can be tested, which is the
+         * only thing this section is about. A fixture that cannot tell zero
+         * from missing proves nothing, as the note above says.
+         *
+         * It took two goes. A flat 78% was the first attempt and did nothing,
+         * because setIncomeTaxRate() clamps at MAX_INCOME_TAX - 60%, "above
+         * this, income tax stops being a policy and starts being confiscation"
+         * - and 40% of a living wage still buys a basket. The ceiling is read
+         * from the constant now rather than guessed past.
+         */
+        TaxPolicy squeeze = full.getEconomyManager().getTaxPolicy();
+        squeeze.setIncomeTaxRate(TaxPolicy.MAX_INCOME_TAX);
+        for (WageBand band : WageBand.values()) squeeze.setWageOffset(band, 1);
+
         full.simulateMonths(150);
+
+        /*
+         * ...AND THEN UNTIL THE BANK IS ACTUALLY OPEN.
+         *
+         * The Commercial Bank above is ordered with the rest and goes into the
+         * same construction queue as four hundred houses, so when it opens is
+         * a function of how fast this particular city builds. At 150 months it
+         * opened in the same month the fixture stopped, which is not a fixture,
+         * it is a coincidence - the housing pass moved the city by a month and
+         * "savers really were being paid something" started failing, on a test
+         * about SAVE FILES.
+         *
+         * Rolled forward until the condition the assertions need is true, with
+         * a bound so a city that never opens one fails loudly rather than
+         * hanging. Same fix LabourCheck's arrivals month got, for the same
+         * reason: a fixture has to CAUSE the condition under test.
+         *
+         * IT WAITS FOR THE HUNGER TOO NOW. Both readings are set inside a tick
+         * and both are transient, and the rebalance moved the month each one
+         * lands in three separate times in one night - once for the wage
+         * ladder, once for the building costs and once for the endowment. A
+         * loop that waits for the state is the only version of this fixture
+         * that survives somebody moving a price.
+         */
+        for (int extra = 0; extra < 240
+                && (full.getBank().depositRate() <= 0
+                    || full.getHealth().getHungerRate() <= 0); extra++) {
+            full.simulateMonths(1);
+        }
+
         assertTrue("saved a city with one of everything in it",
                 full.saveGame(1, "everything").ok);
 
@@ -859,6 +930,19 @@ public class SaveFileCheck {
                 full.getHealth().getHungerRate() > 0);
         assertTrue("fixture: the tiers really were shopping",
                 full.getHouseholds().getRowShopping(0) > 0);
+
+        /*
+         * THE CITY'S REPAIR BILL, added 2026-09-09 when every building in the
+         * city started paying to stand. It is struck inside the tick and is
+         * exactly the shape this section exists for: the standing stock says
+         * what the bill WOULD be, not what was settled, so a reloaded city that
+         * rebuilt it from the buildings would disagree with the one that paid
+         * it for a month after anything was put up or pulled down.
+         */
+        assertTrue("fixture: the city really was paying for repairs",
+                full.getCityMaintenancePaid() > 0);
+        same("what the city paid to keep its buildings up",
+                back.getCityMaintenancePaid(), full.getCityMaintenancePaid());
 
         same("what savers are paid", back.getBank().depositRate(),
                 full.getBank().depositRate());

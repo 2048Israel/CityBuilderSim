@@ -73,6 +73,25 @@ public final class SectorBooks {
             double borrowed,
             double repaid,
             double fromTheCity,     // subsidy paid into the sector's own books
+            /**
+             * What the bank paid this sector for the money in its till.
+             *
+             * A CASH-FLOW LINE AND NOT AN INCOME ONE, which is a compromise and
+             * is written down as such. The bank strikes its deposit interest at
+             * the bottom of the month, long after every sector's income
+             * statement has been struck, and credits it straight to the tills -
+             * so it reaches the cash without passing through any statement.
+             *
+             * It used to reach the cash without passing through anything at
+             * all, and `unexplained()` was left holding it. That was invisible
+             * for as long as a fixture city never got as far as building a
+             * bank; the founding bank of 2026-09-09 made every city have one
+             * from month one and `SectorBooksCheck` found it in every sector
+             * from month 26. Naming it is the fix that was available; putting
+             * it on the income statement where it belongs needs the interest
+             * to be struck a month earlier, and that is its own change.
+             */
+            double depositInterest,
             double spentOnBuildings,// its own premises, less anything sold back
             /**
              * Sales tax remitted. ON THE INCOME STATEMENT since 2026-09-09, as
@@ -117,7 +136,7 @@ public final class SectorBooks {
          */
         public double unexplained() {
             return cash - (openingCash + netIncome
-                    + borrowed - repaid + fromTheCity
+                    + borrowed - repaid + fromTheCity + depositInterest
                     - spentOnBuildings);
         }
 
@@ -130,7 +149,7 @@ public final class SectorBooks {
             return new SectorMonth(sector, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, false);
         }
 
@@ -222,7 +241,7 @@ public final class SectorBooks {
             case RETAIL -> {
                 CommercialHandler h = economy.getCommercialHandler();
                 revenue = h.getGrossRevenue();
-                inputs = h.getReportInventoryCost();
+                inputs = h.getReportInventoryCost() + h.getReportRetailMaintenance();
                 payroll = h.getReportPayroll();
                 power = h.getReportElectricityCost();
                 water = h.getReportWaterCost();
@@ -252,7 +271,7 @@ public final class SectorBooks {
             case INDUSTRY -> {
                 IndustrialHandler h = economy.getIndustrialHandler();
                 revenue = h.getGrossRevenue();
-                inputs = 0;
+                inputs = h.getReportMaintenanceExpense();
                 payroll = h.getReportPayroll();
                 power = h.getReportElectricityCost();
                 water = h.getReportWaterCost();
@@ -271,7 +290,7 @@ public final class SectorBooks {
             case HEAVY_INDUSTRY -> {
                 HeavyIndustryHandler h = economy.getHeavyIndustryHandler();
                 revenue = h.getReportRevenue();
-                inputs = h.getReportInputCost();
+                inputs = h.getReportInputCost() + h.getReportMaintenanceExpense();
                 payroll = h.getReportPayroll();
                 power = h.getReportElectricityCost();
                 water = h.getReportWaterCost();
@@ -286,7 +305,7 @@ public final class SectorBooks {
             case MINING -> {
                 MiningHandler h = economy.getMiningHandler();
                 revenue = h.getReportRevenue();
-                inputs = 0;
+                inputs = h.getReportMaintenanceExpense();
                 payroll = h.getReportPayroll();
                 power = h.getReportElectricityCost();
                 water = h.getReportWaterCost();
@@ -306,7 +325,7 @@ public final class SectorBooks {
             default -> {   // CONSTRUCTION
                 ConstructionHandler h = game.getServicesManager().getConstructionHandler();
                 revenue = h.getReportRevenue();
-                inputs = h.getReportMaterialsExpense();
+                inputs = h.getReportMaterialsExpense() + h.getReportMaintenanceExpense();
                 payroll = h.getReportWageExpense();
                 power = 0;
                 water = 0;
@@ -335,6 +354,7 @@ public final class SectorBooks {
                 credit.getLentThisMonth(key),
                 credit.getRepaidThisMonth(key),
                 game.getSubsidyPaid(sector),
+                economy.getDepositInterestPaid(key),
                 game.getInvestedThisMonth(key),
                 economy.getSectorSalesTax(sector),
                 credit.getRate(key), credit.getLeverage(key),

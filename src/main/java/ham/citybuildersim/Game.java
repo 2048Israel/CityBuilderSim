@@ -212,7 +212,42 @@ public class Game {
 
         this.isRunning = true;
         this.month = 1;
-        this.cash = 300000;
+        /*
+         * THE FOUNDING ENDOWMENT: 300,000 to 500,000, on 2026-09-09.
+         *
+         * In thousands, like every money field here - so $300M to $500M. See
+         * BuildingsTemplate's header, or claude/reading-the-numbers.md.
+         *
+         * Jerus's call, alongside quadrupling the municipal works and giving the
+         * city a bank on day one. All four are the same decision seen from four
+         * sides: the opening was a city that could not afford to do anything
+         * with its first decade. $300M bought about forty Gravel Roads ($6.0M
+         * each) OR one Coal Power Plant ($206M), the works department put up 100
+         * points a month against a Construction Depot costing 3,000 points, and
+         * every dollar borrowed in the meantime carried the eighteen-point
+         * premium a city with no bank pays.
+         *
+         * ...AND 500,000 TO 3,500,000 THE SAME NIGHT, WHICH IS THE SAME
+         * DECISION AGAIN RATHER THAN A NEW ONE.
+         *
+         * Rebalance stage two put every building in the game on its real
+         * capital cost, and almost all of them went up between four and seven
+         * times. A Coal Power Plant is $1.43B now (EIA's $4,390/kW on the 325 MW
+         * this plant actually is) against $206M before. Left at $500M the
+         * endowment would not have bought the ONE building a city cannot start
+         * without, and the harnesses said so immediately: ForeignCheck's
+         * devaluation city could no longer afford its own build list, so it
+         * built no Textile Mill, so it exported NOTHING, and a test about
+         * elasticities was measuring a city with no trade.
+         *
+         * THE ENDOWMENT IS NOT A REAL-WORLD NUMBER. Every other figure in this
+         * pass has a source; this one has a job, which is to buy the opening.
+         * So it is set to hold the opening where Jerus put it: the power plant
+         * was 41% of the endowment at $500M and is 41% of it at $3.5B. The
+         * founding city can do exactly what it could do this morning, in money
+         * that now means what it says.
+         */
+        this.cash = 3500000;
         this.population = 0;
         this.jobs = new int[JobType.values().length];
 
@@ -261,6 +296,7 @@ public class Game {
     
     public void run() {
         initialize();
+        foundingBank();
     }
         
     private void initialize() {
@@ -276,7 +312,13 @@ public class Game {
         // on the highest id mid-save.
         dataSave.setBuildingNum(buildingManager.getMaxTemplateId() + 1);
         populationManager.setWagesPerType();
-        buildingManager.setConstructionMaterials(80);
+        /*
+         * One month of the works yard's own output, in the yard on day one.
+         * Reads the constant rather than repeating it: the two were the same
+         * number by coincidence for as long as nobody moved either, and on
+         * 2026-09-09 somebody moved one.
+         */
+        buildingManager.setConstructionMaterials(BuildingManager.BASE_MATERIALS);
 
         // Has to happen before anything loads or saves, and this is the one
         // place guaranteed to run first: both resumeGame() and loadGameSave()
@@ -317,6 +359,66 @@ public class Game {
         // its catalogue.
         initialized = false;
         initialize();
+        foundingBank();
+    }
+
+    /**
+     * The city opens with a bank already standing.
+     *
+     * WHY. `Bank.ratePremium()` charges the full eighteen points to any city
+     * with a loan book and no branches, because borrowing without a banking
+     * system is borrowing from strangers who do not know you. That is right,
+     * and it lasted about forty years: a Commercial Bank costs $9.0M to build
+     * plus $32.0M of shareholders' capital, and nothing in the model would put
+     * one up until the city could carry both. So the founding decades were
+     * played at the most expensive credit the model can quote, at exactly the
+     * moment a city can least afford it - filed as finding #11, and Jerus's
+     * answer is to hand the city one rather than to soften the premium.
+     *
+     * PLACED, NOT BUILT - `true` is noConstruction - so it does not consume a
+     * decade of the works department's output before it exists. It is part of
+     * the endowment, like the hundred people the city houses for nothing.
+     *
+     * The shareholders' capital arrives on its own: `openBranches()` counts
+     * standing bank buildings every month, sees one it has not capitalised, and
+     * takes the paid-in capital from outside the city - declared, so the
+     * balance of payments knows. The founding branch also gets the clean set of
+     * books that method already gives a city's first bank.
+     *
+     * CALLED FROM newGame() AND run(), NOT FROM initialize(). initialize() also
+     * runs on the load path, and the load path RESTORES buildings by adding to
+     * whatever is standing - so founding a bank there would give every loaded
+     * city one branch more than it was saved with, compounding on every load.
+     */
+    private void foundingBank() {
+        BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
+        if (branch == null) return;                              // no such template
+        if (buildingManager.countByName("Commercial Bank") > 0) return;   // already has one
+
+        buildingManager.addStack(branch, 1, true);
+
+        /*
+         * AND THE GROUND UNDER IT, which is not a detail.
+         *
+         * addStack() puts a building up; it does not tell the land office. Every
+         * other path into it - processBuildOrder(), buildFor() - calls
+         * landManager.allocate() itself, and the first version of this method
+         * did not, so the city stood a 45,000 sq ft bank on ground the ledger
+         * still thought was free.
+         *
+         * It showed up as a SAVE bug, which is the interesting part. The load
+         * path does not restore the allocation: it derives it from what is
+         * standing, deliberately, so that any drift heals on the next load. So
+         * the live city read 1,397,000 sq ft allocated and its own reload read
+         * 1,442,000 - the reload was right - and a 1.3% difference in the land
+         * price walked through the building costs into the treasury. Caught by
+         * SaveFileCheck as $13 adrift on a $690.7M treasury, which is what that
+         * assertion is for.
+         *
+         * No money changes hands: the founding endowment already owns the
+         * ground, exactly as it already houses a hundred people.
+         */
+        landManager.allocate(branch.getLandSqFt());
     }
     public void resumeGame(){
         // Just make sure templates/state are initialized; the JavaFX screen
@@ -399,6 +501,16 @@ public class Game {
         return saveGame(slot, (existing == null) ? null : existing.getSlotName());
     }
     
+    /**
+     * True once a city exists to go back to.
+     *
+     * buildWorld() sets it, and buildWorld() is the one door into a playable
+     * city - newGame() and loadGameSave() both go through it. So at the title
+     * screen this is false and after either of those it is true, which is
+     * exactly the question the main menu's Resume button has to ask.
+     */
+    public boolean isRunning() { return isRunning; }
+
     public void toggleQuit(){
         // Before the window goes, not after. This is the accident that actually
         // costs people cities.
@@ -1686,6 +1798,171 @@ public class Game {
                 * constructionFillRate * roadRatio * health.getWorkRatio());
     }
 
+    /**
+     * Construction points the housing stock consumes just standing there.
+     *
+     * A PURE FUNCTION of what is built, deliberately - no field, nothing
+     * saved, nothing to go stale. A loaded city computes the same number the
+     * saved one did, because the same buildings are standing.
+     *
+     * MAINTENANCE_PER_YEAR of each residential building's own construction
+     * points, which is what makes an apartment block cost more to keep up
+     * than a house without anybody having to write that down anywhere.
+     */
+    public double getHousingMaintenancePoints(){
+        return buildingManager.getTotalByCategoryDouble(
+                BuildingType.RESIDENTIAL, BuildingsTemplate::getConstructionPoints)
+                * CommercialHandler.MAINTENANCE_PER_YEAR / 12;
+    }
+
+    /**
+     * The same figure for EVERY category, which is what comes off the month.
+     *
+     * getHousingMaintenancePoints() above is kept because the Real estate
+     * screen wants the landlords' share on its own, but the builders' time is
+     * not divisible by who is paying for it - a crew repointing a tenement and
+     * a crew resurfacing a road are both off the sites.
+     *
+     * Still a PURE FUNCTION of the standing stock: nothing cached, nothing
+     * saved, nothing to go stale.
+     */
+    public double getMaintenancePoints(){
+        double points = 0;
+        for (BuildingType category : BuildingType.values()) {
+            points += economyManager.maintenancePointsFor(category);
+        }
+        return points;
+    }
+
+    /**
+     * What is left of the month's output for the SITES.
+     *
+     * getConstructionOutput() is still the one definition of what the sector
+     * can do in a month, and this is what it can do on NEW work once the
+     * standing stock has had its repairs. Two figures, and they are different
+     * questions: the screen wants the first (that is the sector's capacity),
+     * while advanceConstruction() and recogniseWork() want the second, because
+     * a crew repointing a tenement is not advancing a site and is not being
+     * paid out of a site's contract.
+     *
+     * Passing the net figure to recogniseWork() also gets UTILISATION right,
+     * which is the part that would have gone quietly wrong: utilisation is
+     * work-done over output-available, and a sector whose repairs filled half
+     * its month was not half idle.
+     *
+     * IT STOPPED BEING A ROUNDING ERROR ON 2026-09-09. While only residential
+     * paid, repairs were 0.3% to 0.8% of output across 600 months. Now that
+     * every category pays, a mature city spends about FORTY PERCENT of its
+     * builders on keeping what it already has.
+     *
+     * That number is not a mistake and it is not tuned. It is forced: this
+     * city's standing stock embodies roughly forty years of its own annual
+     * construction output, and one percent a year of a forty-year stock is
+     * forty percent of a year's output. It is also close to what real
+     * economies do - repair and maintenance is something like 40-50% of all
+     * construction activity in a developed country. A big city has to run to
+     * stand still, and now it does.
+     *
+     * The floor at zero was written for the day this stopped being small. That
+     * day has arrived, and without it a city whose stock had outgrown its
+     * builders would advance its sites by a negative number.
+     */
+    public int getBuildingOutput(){
+        return (int) Math.max(0,
+                Math.round(getConstructionOutput() - getMaintenancePoints()));
+    }
+
+    /**
+     * The month's repairs: real estate pays, construction is paid, and the
+     * materials are actually consumed.
+     *
+     * Jerus: "they cost a tiny fraction of construction points and materials,
+     * which the real estate company pays to the construcitn company."
+     *
+     * THE THREE HALVES OF ONE ORDER, and all three have to happen or it is
+     * not an order at all:
+     *
+     *   money      real estate's expense line, construction's turnover
+     *   materials  out of the yard, and imported when the yard is short -
+     *              exactly what a build does, through the same method
+     *   points     off the top of the month's output, in getBuildingOutput()
+     *
+     * WHY IT IS PRICED ON THE BUILDING AND NOT ON THE RENT. Rent is what the
+     * company can charge; repairs are what the building needs. Tying the
+     * second to the first would have made a slum free to own, which is the
+     * behaviour this is here to stop - an empty home now costs its owner
+     * money every month, so building doors nobody wants finally has a price.
+     *
+     * The materials half is charged at TODAY's material price rather than at
+     * what they cost when the building went up, so the bill inflates on its
+     * own. A constant in absolute money is the same bug as a cached figure.
+     */
+    private void chargeBuildingMaintenance(){
+
+        ConstructionHandler builders = servicesManager.getConstructionHandler();
+        if (builders == null) return;
+
+        double price = Math.max(0, buildingManager.getConstructionMaterialPrice());
+
+        /*
+         * WHO PAYS IS ECONOMYMANAGER'S QUESTION, shaped like the property tax.
+         * This method owns the other half: the materials are really consumed,
+         * the builders are really paid, and the treasury really settles the
+         * share of the bill that belongs to buildings nobody else owns.
+         */
+        economyManager.chargeMaintenance(price);
+
+        double bill = economyManager.getMaintenanceBillTotal();
+        if (!Double.isFinite(bill) || bill <= 0) return;
+
+        /*
+         * The materials, for real. handleConstructionMaterials() is the same
+         * method every build goes through: it takes what the yard has and
+         * imports the rest, and the import is what construction's own
+         * materialsExpense - and therefore the trade balance - is built from.
+         *
+         * The shortfall is worked out BEFORE the call because the call does
+         * not report it, and monthlyMaterialImports has to know.
+         */
+        int wanted = (int) Math.round(economyManager.getMaintenanceMaterialsTotal());
+        if (wanted > 0) {
+            int shortfall = Math.max(0, wanted - buildingManager.getConstructionMaterials());
+            buildingManager.handleConstructionMaterials(wanted);
+            materialsConsumed += wanted;
+            monthlyMaterialImports += shortfall;
+        }
+
+        /*
+         * AND THE CITY SETTLES ITS OWN. Roads, schools, hospitals and the two
+         * plants have no company behind them, so the treasury is the owner and
+         * the treasury pays - out of cash, here, because unlike a sector's
+         * expense there is no income statement between the charge and the
+         * money. This is the leg that makes the whole bill real rather than
+         * half of it: without it the builders would be paid for work five
+         * categories never commissioned, which is money from nowhere.
+         */
+        double cityShare = economyManager.getCityMaintenanceBill();
+        if (cityShare > 0) {
+            cash -= cityShare;
+            cityMaintenancePaid = cityShare;
+        } else {
+            cityMaintenancePaid = 0;
+        }
+
+        builders.receiveMaintenance(bill);
+    }
+
+    /**
+     * What the treasury paid this month to keep the city's own buildings up.
+     *
+     * A FLOW, so it is carried rather than rebuilt - the standing stock says
+     * what the bill WOULD be, not what was actually settled, and those differ
+     * for a month after anything is built or demolished.
+     */
+    private double cityMaintenancePaid;
+
+    public double getCityMaintenancePaid() { return cityMaintenancePaid; }
+
     public int getConstructionMaterials(){
         int constructionMaterials = buildingManager.getConstructionMaterials();
         return constructionMaterials;
@@ -2909,6 +3186,28 @@ public class Game {
          */
         bank.openBranches(buildingManager.countByName("Commercial Bank"));
 
+        /*
+         * WHAT THE WORLD WOULD PAY TO PARK HERE, handed to the bank as a
+         * function rather than as five numbers.
+         *
+         * The bank prices its own deposits now - see Bank.chooseDepositRate() -
+         * and to do that it has to be able to ask what a better rate would
+         * bring in. It must not have to know what a carry trade is to ask,
+         * which is the same rule that keeps the loan book's maturity weighting
+         * in refreshBank() rather than inside the bank: this class can see the
+         * world rate, the country premium and the month's GDP, and the bank
+         * cannot and should not.
+         *
+         * CapitalFlows answers with its OWN arithmetic (stockAt/arrivalsAt are
+         * takeMonth's formula, lifted out and made side-effect-free), so the
+         * forecast cannot drift away from the mechanic it forecasts.
+         */
+        final double cityRateNow = debtManager.getRate();
+        final double premiumNow = debtManager.countryPremium();
+        final double gdpNow = economyManager.getMonthGdp();
+        bank.setDepositMarket(rate -> hotMoney.arrivalsAt(
+                rate, cityRateNow, DebtManager.WORLD_BASE_RATE, premiumNow, gdpNow));
+
         bank.fundToCover(debtManager.getRate());
 
         // ...and if that left it owing more than it owns, it has failed. Its
@@ -2929,6 +3228,13 @@ public class Game {
          */
         householdBalance.creditDepositInterest(bank.getDepositInterestToHouseholds());
         double sectorInterest = bank.getDepositInterestToSectors();
+        /*
+         * Cleared before it is handed out, not after, so a month in which the
+         * bank pays nothing leaves zeroes behind rather than last month's
+         * figures. SectorBooks reads these a few lines below, in the same
+         * month - see EconomyManager.recordDepositInterest().
+         */
+        economyManager.clearDepositInterest();
         if (sectorInterest > 0) {
             double totalSectorCash = 0;
             for (String s : BusinessDebtManager.SECTORS) {
@@ -2938,8 +3244,9 @@ public class Game {
                 for (String s : BusinessDebtManager.SECTORS) {
                     double held = Math.max(0, economyManager.getSectorCash(s));
                     if (held <= 0) continue;
-                    economyManager.setSectorCash(s, economyManager.getSectorCash(s)
-                            + sectorInterest * held / totalSectorCash);
+                    double share = sectorInterest * held / totalSectorCash;
+                    economyManager.setSectorCash(s, economyManager.getSectorCash(s) + share);
+                    economyManager.recordDepositInterest(s, share);
                 }
             }
         }
@@ -3012,7 +3319,14 @@ public class Game {
          */
         priceIndex.takeMonth(
                 economyManager.getCommercialHandler().getStoreSellPrice(),
-                economyManager.getCommercialHandler().getRentPrice(),
+                /*
+                 * The AVERAGE actually paid, not the family price. Rent is
+                 * two prices now and the cost of living is what households
+                 * handed over across both. Continuous with what the index
+                 * used before the split: the two prices open equal, so the
+                 * average opens on the same number the base was struck at.
+                 */
+                economyManager.getCommercialHandler().getAverageRentPaid(),
                 economyManager.getCommercialHandler().getGrossRevenue(),
                 economyManager.getCommercialHandler().getReportRentIncome());
 
@@ -3149,10 +3463,17 @@ public class Game {
         // already net of them.
         economyManager.chargePropertyTax();
 
+        // The repair bill on the housing stock, before EITHER statement runs -
+        // it is an expense on one of them and revenue on the other.
+        chargeBuildingMaintenance();
+
         // Recognise the month's construction work before construction's income
         // statement runs, so the revenue and the payroll describe the same month.
+        //
+        // The BUILDING output, not the gross: the crews that spent part of the
+        // month on repairs did not spend it on sites. See getBuildingOutput().
         ConstructionHandler construction = servicesManager.getConstructionHandler();
-        construction.recogniseWork(getConstructionOutput());
+        construction.recogniseWork(getBuildingOutput());
 
         /*
          * The fixed construction retainer used to be paid here.
@@ -3324,8 +3645,26 @@ public class Game {
     /** Term of the note the city is forced into when it cannot pay its bills. */
     public static final int EMERGENCY_NOTE_MONTHS = 6;
 
-    /** Bond counsel, rating and printing. Payable however small the deal is. */
+    /**
+     * Bond counsel, rating and printing. Payable however small the deal is.
+     *
+     * IN FOUNDING DOLLARS, like every money constant in this codebase, so it is
+     * divided by the unit wherever it is used rather than read raw - see
+     * issuanceFee(). A flat fee read raw is the same bug as a flat threshold
+     * read raw: after a hundred-to-one reform a $12k fee would quietly become
+     * $1,200k of founding money, and every small deal in the city would stop
+     * being worth doing. Found by the same audit that caught
+     * CapitalFlows.MIN_STOCK; it is not currently large enough to move a
+     * measured trajectory, and it would have been the moment somebody reformed
+     * twice.
+     */
     private static final double FIXED_ISSUE_COST = 12;
+
+    /** The fee in today's money. See FIXED_ISSUE_COST. */
+    private double issuanceFee() {
+        double unit = denomination.getUnit();
+        return FIXED_ISSUE_COST / (unit > 0 ? unit : 1);
+    }
 
     /** Underwriter's spread, as a fraction of face. */
     private static final double UNDERWRITING_SPREAD = .0075;
@@ -3341,7 +3680,7 @@ public class Game {
      */
     public double costOfIssuance(double faceValue) {
         if (faceValue <= 0) return 0;
-        return FIXED_ISSUE_COST + faceValue * UNDERWRITING_SPREAD;
+        return issuanceFee() + faceValue * UNDERWRITING_SPREAD;
     }
 
     /**
@@ -3377,7 +3716,7 @@ public class Game {
         if (perDollarOfFace <= 0) {
             return ShortTermTBill.faceFor(cashNeeded, annualRate, months);
         }
-        return (cashNeeded + FIXED_ISSUE_COST) / perDollarOfFace;
+        return (cashNeeded + issuanceFee()) / perDollarOfFace;
     }
 
     /**
@@ -3819,8 +4158,10 @@ public class Game {
         families.noteUnplaced(families.house(stock));
 
         // What the landlords can bill, off the match rather than off an
-        // average. See CommercialHandler.getRentIncome().
-        economyManager.getCommercialHandler().setRentWeight(families.rentWeight());
+        // average, and split by which segment the door was in. See
+        // CommercialHandler.getRentIncome() and FamilyModel's TWO SEGMENTS.
+        economyManager.getCommercialHandler().setRentWeight(
+                families.studioRentWeight(), families.familyRentWeight());
 
         // And the advisor prices a new home on who would move into it.
         businessInvestment.setFamilies(families);
@@ -4116,6 +4457,8 @@ public class Game {
      * exact - which is the standard SaveFileCheck holds, to the cent.
      */
     private double carriedRentWeight;
+    /** ...and the studio half of it. See DataSave.getRentWeightStudio(). */
+    private double carriedStudioWeight;
     private double carriedRetailCapacity;
     private double carriedRetailWant;
 
@@ -4376,9 +4719,12 @@ public class Game {
         dataSave.setCostOfLiving(labourMarket.getCostOfLiving());
         dataSave.setStoreSellPrice(economyManager.getCommercialHandler().getStoreSellPrice());
         dataSave.setRentPrice(economyManager.getCommercialHandler().getRentPrice());
+        dataSave.setStudioRentPrice(
+                economyManager.getCommercialHandler().getStudioRentPrice());
         dataSave.setDenomination(denomination.toSaveArray());
         dataSave.setBankTaxCharged(economyManager.getBankTax());
         dataSave.setRentWeight(families.rentWeight());
+        dataSave.setRentWeightStudio(families.studioRentWeight());
         dataSave.setRetailCapacity(economyManager.getCommercialHandler().getSpendingCapacity());
         dataSave.setRetailWant(economyManager.getCommercialHandler().getWantedSpend());
         dataSave.setAutoSubsidy(autoSubsidy.clone());
@@ -4417,6 +4763,7 @@ public class Game {
         dataSave.setSectorLossMonths(businessInvestment.getLossMonthsState());
         dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
+        dataSave.setCityMaintenancePaid(cityMaintenancePaid);
         dataSave.setSubsidyPaid(subsidyPaid.clone());
         dataSave.setHouseholdStatement(households.getStatementState());
         dataSave.setMonthlyMaterialImports(monthlyMaterialImports);
@@ -5028,6 +5375,8 @@ public class Game {
     economyManager.setHouseholds(getHouseholdCapacity());
     economyManager.setOccupiedHomes(families.homesNeeded());
     economyManager.setHouseholdCount(families.totalHouseholds());
+    economyManager.setHousingSeekers(families.studioSeekers(), families.familySeekers(),
+            families.studioSeekerHeads(), families.familySeekerHeads());
     economyManager.setMarginalHousingCost(marginalHousingCost());
 
     /*
@@ -5049,8 +5398,22 @@ public class Game {
     // The full sequence, not just the match - or stillUnplaced keeps whatever
     // the live path last left in it, which is a figure about a different month.
     families.noteUnplaced(families.house(buildingManager.homesBySize()));
-    if (carriedRentWeight > 0) families.setRentWeight(carriedRentWeight);
-    economyManager.getCommercialHandler().setRentWeight(families.rentWeight());
+    if (carriedRentWeight > 0) {
+        /*
+         * BOTH HALVES, RESTORED, not one total re-split.
+         *
+         * The saved figures are what the landlords were actually paid and must
+         * not move - and with two prices the SPLIT is load-bearing too, so it
+         * is saved rather than reconstructed. A save from before the split
+         * carries a studio half of zero, which is exactly right for it: it had
+         * one price, rentPrice is still that price, and the whole of its weight
+         * belongs to the family half. No version test needed.
+         */
+        double studio = Math.max(0, Math.min(carriedStudioWeight, carriedRentWeight));
+        families.setRentWeight(studio, carriedRentWeight - studio);
+    }
+    economyManager.getCommercialHandler().setRentWeight(
+            families.studioRentWeight(), families.familyRentWeight());
     businessInvestment.setFamilies(families);
     economyManager.setSeniors(cohorts.get(AgeBand.SENIOR));
     economyManager.setTotalJobs(populationManager.getTotalJobs());
@@ -5375,6 +5738,15 @@ public class Game {
             // setter refuses it and the founding value stands, which is the
             // right answer for a city that was charging the formula anyway.
             economyManager.getCommercialHandler().setRentPrice(loaded.getRentPrice());
+            /*
+             * A save from before the split carries no studio price and comes
+             * back as zero, which setStudioRentPrice() refuses - so the
+             * studio market opens at whatever the constructor put there and
+             * walks to its own target within a lease. Restoring a zero would
+             * hand every studio tenant a free flat for a year.
+             */
+            economyManager.getCommercialHandler()
+                    .setStudioRentPrice(loaded.getStudioRentPrice());
 
             /*
              * THE UNIT, AND THEN THE CONSTANTS THAT DEPEND ON IT.
@@ -5399,8 +5771,11 @@ public class Game {
                 healthcare.seedConstants(unit);
                 foreign.seedConstants(unit);
                 economyManager.getTaxPolicy().seedConstants(unit);
+                education.seedConstants(unit);
+                hotMoney.seedConstants(unit);
             }
             carriedRentWeight = loaded.getRentWeight();
+            carriedStudioWeight = loaded.getRentWeightStudio();
 
             /*
              * Before rebuildSimulationState() re-runs the retail report, or it
@@ -5811,6 +6186,7 @@ public class Game {
             businessInvestment.restoreLossMonths(restoredFlows.getSectorLossMonths());
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
+            cityMaintenancePaid = restoredFlows.getCityMaintenancePaid();
             /*
              * What the dial paid out last month. A flow, and one the load path
              * cannot re-derive: paySubsidyIfOwed() decides it from a net income
@@ -5840,9 +6216,35 @@ public class Game {
             economyManager.getCommercialHandler().setWantedSpend(carriedRetailWant);
         }
         if (carriedRentWeight > 0) {
-            families.setRentWeight(carriedRentWeight);
-            economyManager.getCommercialHandler().setRentWeight(carriedRentWeight);
+            // Both halves, and the family one by subtraction so the two always
+            // sum to the figure the landlords were paid. See the note at the
+            // other restore site.
+            double studio = Math.max(0, Math.min(carriedStudioWeight, carriedRentWeight));
+            families.setRentWeight(studio, carriedRentWeight - studio);
+            economyManager.getCommercialHandler()
+                    .setRentWeight(studio, carriedRentWeight - studio);
         }
+
+        /*
+         * THE PRICE OF MONEY, BEFORE ANYTHING IS PRICED OFF IT.
+         *
+         * BusinessDebtManager's risk-free rate is set once a month, at the top
+         * of nextMonth(), from the city's own curve - and nothing on the load
+         * path set it at all, so a reloaded city sat on the 1% default until
+         * its next tick. Everything a household or a business borrowed in the
+         * month after a load was priced off that: measured, two cities that
+         * were otherwise identical came out 0.13% apart on the household book
+         * and $88.90 apart on the bank's interest, and the bank's profit and
+         * tax followed.
+         *
+         * NOT CARRIED, because it does not need to be: it is a pure function
+         * of state the save already restores - the city's debt, its rating and
+         * the bank's premium. Re-derived here, from the same two calls
+         * nextMonth() makes and in the same order, and AFTER the debt is back,
+         * which is why it is here rather than inside the rebuild.
+         */
+        debtManager.setBankPremium(bank.ratePremium());
+        economyManager.getBusinessDebtManager().setRiskFreeRate(debtManager.getRate());
 
         /*
          * The government's month, put back over the top of the rebuild's
@@ -6001,6 +6403,21 @@ public class Game {
             households.restoreStatement(restoredFlows.getHouseholdStatement());
 
             /*
+             * ...and the household counts the savings and the debt are PER, for
+             * the same reason and over the top of the same rebuild.
+             *
+             * HouseholdBalance.restore() has already run once, with the rest of
+             * the save; rebuildSimulationState() then re-strikes the rows
+             * against a month that has not happened yet and overwrites
+             * lastHouseholds with it. That array is the denominator of
+             * totalSavings(), totalDebt() and totalInterest(), so the city's
+             * whole stock of household money read a third out for one month
+             * after every load - $1.29M against $966k, measured. Nothing had
+             * noticed because nothing read the total until the bank did.
+             */
+            householdBalance.restore(restoredFlows.getHouseholdBalance());
+
+            /*
              * ...and the households' placement, for the third time and the same
              * reason. FamilyModel.restore() runs with the rest of the save, and
              * then rebuildSimulationState() re-houses everybody against a stock
@@ -6140,7 +6557,22 @@ public class Game {
         constructionShedPoints *= scale;
         lastWriteOff *= scale;
         cityCapitalSpending *= scale;
-        monthlyMaterialImports *= scale;
+        /*
+         * monthlyMaterialImports IS NOT SCALED, and used to be.
+         *
+         * It counts UNITS of construction material, not dollars - the national
+         * accounts multiply it by the material price to get the import value,
+         * so scaling it as well divided that value twice. This method's own
+         * doc says physical quantities do not move; this was one, and it moved.
+         *
+         * It was invisible for as long as the field happened to be zero
+         * whenever anyone reformed. Housing maintenance drains the yard every
+         * month, so the private builds that follow import more, so the field
+         * is now reliably non-zero at the player's turn - and DenominationCheck
+         * put a reformed city's GDP 56% away from its twin's within one month.
+         * A quantity treated as money, which is the same bug as a constant in
+         * absolute money, seen from the other side.
+         */
         carriedRetailCapacity *= scale;
         carriedRetailWant *= scale;
         cityInterestPaid *= scale;
@@ -6162,6 +6594,7 @@ public class Game {
         households.redenominate(scale);
         labourMarket.redenominate(scale);
         populationManager.redenominate(scale);
+        migration.redenominate(scale);
         landManager.redenominate(scale);
         debtManager.redenominate(scale);
         buildingManager.redenominate(scale);

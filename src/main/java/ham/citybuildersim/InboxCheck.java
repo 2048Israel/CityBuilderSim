@@ -75,10 +75,28 @@ public class InboxCheck {
         /* ============ 2. living raises what is true ============ */
         System.out.println("\n--- and then the city lives a while ---");
 
-        quietly(() -> city.simulateMonths(24));
+        /*
+         * PLAYED UNTIL SOMETHING IS TRUE, not for a fixed 24 months.
+         *
+         * What is under test is that living raises what is true, so the fixture
+         * has to reach a month in which something IS true. It used to reach one
+         * inside two years by luck; the founding endowment and the works
+         * department both went up on 2026-09-09 and the city stopped having
+         * anything to complain about until month 29, when its builders start
+         * being laid off. A test about the INBOX failed for a reason about the
+         * construction sector.
+         *
+         * Bounded, so a city that never has anything to say fails loudly rather
+         * than hanging - which would itself be worth knowing.
+         */
+        quietly(() -> {
+            for (int m = 0; m < 120 && city.getInbox().size() == 0; m++) {
+                city.simulateMonths(1);
+            }
+        });
 
         Inbox inbox = city.getInbox();
-        System.out.println("  notices after 24 months: " + inbox.size());
+        System.out.println("  notices after " + (city.getMonth() - 1) + " months: " + inbox.size());
         for (Notice notice : inbox.newestFirst()) {
             System.out.printf("    %-40s raised %d  read %d  resolved %d  (%d lines)%n",
                     notice.getTitle(), notice.getRaised(), notice.getRead(),

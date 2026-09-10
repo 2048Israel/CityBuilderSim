@@ -66,9 +66,43 @@ public class LabourMarket {
      */
     public static final double DEFAULT_MINIMUM_WAGE = PayTier.UNSKILLED.getMonthlyWage();
 
+    /* =====================================================================
+       THE BOUNDS ARE MULTIPLES OF THE GOING WAGE, NOT DOLLAR FIGURES.
+
+       They used to be .200 and 4.000 flat, and that read as a sensible range
+       for exactly as long as the unskilled wage was .800: a quarter of it to
+       five times it, which is what a minimum-wage dial should offer.
+
+       On 2026-09-09 the wage ladder moved onto real Job Bank medians and the
+       unskilled wage became 3.460. The bounds did not move, so the dial's range
+       silently became 0.058x to 1.16x the going wage - the player could raise
+       the minimum wage by fifteen percent and no further, and setMinimumWage()
+       clamped everything above that without saying so. LabourCheck caught it as
+       "doubling the floor moved the unskilled wage", which is a thing a
+       minimum-wage dial has to be able to do.
+
+       This is the same family as MATERIAL_MONTHS, MIN_RATE, MIN_TRADE and the
+       hot money's flat $1 threshold, and the standing rule covers it exactly: a
+       constant in absolute money is the same bug as a cached figure. The bounds
+       were always MEANT as multiples; they were written as dollars because at
+       the time the two happened to agree.
+
+       The reform hook below is unchanged and still needed: these are seeded
+       from the ladder at construction, and a currency reform moves them with
+       every other price.
+       ===================================================================== */
+
+    /** The lowest the dial goes, as a share of the unskilled wage. */
+    public static final double MIN_SETTABLE_SHARE = .25;
+
+    /** The highest the dial goes, as a multiple of the unskilled wage. */
+    public static final double MAX_SETTABLE_MULTIPLE = 5.0;
+
     /** Bounds on the dial, so the screen cannot ask for a negative wage. */
-    public static final double MIN_SETTABLE = .200;
-    public static final double MAX_SETTABLE = 4.000;
+    public static final double MIN_SETTABLE =
+            PayTier.UNSKILLED.getMonthlyWage() * MIN_SETTABLE_SHARE;
+    public static final double MAX_SETTABLE =
+            PayTier.UNSKILLED.getMonthlyWage() * MAX_SETTABLE_MULTIPLE;
 
     /**
      * The same bounds, in TODAY's money.

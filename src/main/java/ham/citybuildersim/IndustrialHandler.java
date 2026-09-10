@@ -437,6 +437,39 @@ public class IndustrialHandler {
         this.propertyTaxExpense = value;
     }
 
+    /* =====================================================================
+       A BUILDING COSTS MONEY TO STAND, IN EVERY SECTOR (2026-09-09).
+
+       Jerus: "all buildings need maintenance, and make sure they get billed."
+       The second half is the whole instruction. `upkeep` had been a field on
+       every template since the beginning and was charged on precisely two
+       categories - healthcare and education - so BuildingManager's own note
+       called it what it was: "every building's upkeep in this file was a
+       wish."
+
+       Residential got a real repair flow on 2026-09-09 (money, materials AND
+       construction points, placed as an order with the builders at 1%/yr of
+       what the building cost to put up). This is that same flow for the rest
+       of the city, and it is deliberately shaped like the PROPERTY TAX - a
+       per-category charge handed to whoever owns the category - because that
+       is a path this codebase already trusts.
+
+       Same rule as the tax: no money moves here. The figure is assigned, the
+       income statement subtracts it, and what the sector banks is already net
+       of it.
+       ===================================================================== */
+
+    /** What this sector's buildings cost to keep standing this month. */
+    private double maintenanceExpense;
+    private double rMaintenanceExpense;
+
+    public void setMaintenanceExpense(double value) {
+        this.maintenanceExpense = Math.max(0, value);
+    }
+
+    public double getMaintenanceExpense()       { return maintenanceExpense; }
+    public double getReportMaintenanceExpense() { return rMaintenanceExpense; }
+
     public double getPropertyTaxExpense(){
         return propertyTaxExpense;
     }
@@ -867,7 +900,14 @@ public class IndustrialHandler {
         }
         rPayroll = industrialWage * averageIndustrialFill;
 
-        rOperatingCost = rPayroll + rElectricityCost + rWaterCost;
+        rMaintenanceExpense = maintenanceExpense;
+        /*
+         * MAINTENANCE IS AN OPERATING COST - see the note in
+         * HeavyIndustryHandler. It has to be inside operating cost for
+         * SectorBooksCheck's operating-income identity to hold.
+         */
+        rOperatingCost = rPayroll + rElectricityCost + rWaterCost
+                + rMaintenanceExpense;
         rInterestExpense = interestExpense;
         rPropertyTaxExpense = propertyTaxExpense;
 
@@ -1134,6 +1174,7 @@ public class IndustrialHandler {
         foodExportRevenue *= scale;
         interestExpense *= scale;
         propertyTaxExpense *= scale;
+        maintenanceExpense *= scale;
         landValue *= scale;
         buildingsValue *= scale;
         bondsPayable *= scale;
@@ -1150,6 +1191,7 @@ public class IndustrialHandler {
         pricePerWaterUnit *= scale;
         rInterestExpense *= scale;
         rPropertyTaxExpense *= scale;
+        rMaintenanceExpense *= scale;
         rNetIncome *= scale;  rSalesTax *= scale;
         rGrossRevenue *= scale;
         rAverageSellPrice *= scale;

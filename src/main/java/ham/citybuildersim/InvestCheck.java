@@ -168,35 +168,68 @@ public class InvestCheck {
         System.out.println("\n--- orders size to the gap, but stay deliverable ---");
 
         /*
-         * The gap in people, divided by what a house holds, and capped at twelve
-         * months of the city's whole output.
+         * The gap in people, divided by what the CHOSEN building holds, and
+         * capped at twelve months of the city's whole output.
          *
-         * DERIVED FROM THE TEMPLATE, not written down. This said "houses of 4 ->
-         * 625 wanted" and asserted 625, so the day the House grew to six it
-         * failed on a fixture that was still correct - the same restated-formula
-         * trap PopulationCheck and InfrastructureCheck have both been caught by.
-         * The house's capacity is the model's; the arithmetic here is the test's.
+         * DERIVED FROM THE TEMPLATE, not written down - and the phrase used to
+         * mean the HOUSE'S template, which was the bug. The note here already
+         * said this: it once read "houses of 4 -> 625 wanted", asserted 625,
+         * and failed the day the House grew to six on a fixture that was still
+         * correct. So the capacity was made the model's. What stayed the test's
+         * was the ASSUMPTION THAT THE PLANNER WOULD PICK A HOUSE, which is the
+         * same trap one level up, and it sprang on 2026-09-09 when the
+         * residential rebalance re-costed all three homes to real build costs.
+         *
+         * The planner now picks Low-Rise Apartments, and that is the rebalance
+         * WORKING rather than breaking: the old cost ladder had a low-rise door
+         * at 4.2x a studio door for a unit holding twice as many people, and
+         * BuildingManager's own note recorded that as the reason nothing ever
+         * built one. Pinning the assertion to the House would pin the fixture
+         * to the inverted ladder the rebalance existed to remove.
+         *
+         * So everything below reads the template out of the DECISION. Only the
+         * arithmetic is the test's.
          */
-        int wantedForGap = (int) Math.ceil(2500.0 / house.getCapacity());
-        int cappedAt100 = (int) (12 * 100 / housePoints);
         d = flat.planRealEstate(2000, 2000, .35, 100, 0);
+        BuildingsTemplate picked = d.template;
+        assertTrue("the planner picked something", picked != null);
+        System.out.println("   the planner's choice: "
+                + (picked == null ? "none" : picked.getName() + ", "
+                   + picked.getCapacity() + " people at "
+                   + picked.getConstructionPoints() + " points"));
+
+        double pickedPoints = picked == null ? 1 : picked.getConstructionPoints();
+        int wantedForGap = (int) Math.ceil(2500.0 / (picked == null ? 1 : picked.getCapacity()));
+
+        /*
+         * A CAP OF ONE IS NOT A CAP, so the output is scaled to the building
+         * rather than left at 100. A Low-Rise is 2,400 points, so twelve months
+         * of a 100-point yard cannot deliver even one and the cap floors at the
+         * minimum order - which asserts nothing. The output that makes "capped
+         * at twelve months" mean something is whatever delivers a handful of
+         * whatever was chosen, so it is derived too.
+         */
+        double tightOutput = pickedPoints * 5 / 12;      // twelve months buys five
+        int cappedAtTight = (int) (12 * tightOutput / pickedPoints);
+        d = flat.planRealEstate(2000, 2000, .35, tightOutput, 0);
         assertTrue("ordered more than one", d.quantity > 1);
-        check("capped at twelve months of output", d.quantity, cappedAt100);
+        check("capped at twelve months of output", d.quantity, cappedAtTight);
 
         // Ten times the construction capacity, ten times the order - until the
-        // gap itself binds, which at 625 wanted it now does.
-        d = flat.planRealEstate(2000, 2000, .35, 1000, 0);
+        // gap itself binds, which it now does.
+        double looseOutput = tightOutput * 10;
+        d = flat.planRealEstate(2000, 2000, .35, looseOutput, 0);
         check("more builders, bigger order",
-                d.quantity, Math.min(wantedForGap, (int) (12 * 1000 / housePoints)));
+                d.quantity, Math.min(wantedForGap, (int) (12 * looseOutput / pickedPoints)));
 
         // A small gap orders small, not the cap: 1,100 jobs carries 2,475 people
-        // against 2,200 homes, so 275 unhoused - well under the 400-house cap
-        // however big a house is.
-        d = flat.planRealEstate(1100, 2200, .35, 1000, 0);
+        // against 2,200 homes, so 275 unhoused - well under the cap however big
+        // the chosen building is.
+        d = flat.planRealEstate(1100, 2200, .35, looseOutput, 0);
         assertTrue("small gap still builds", d.build);
         check("small gap -> small order", d.quantity,
-                (int) Math.ceil(275.0 / house.getCapacity()));
-        assertTrue("...and well under the cap", d.quantity < 12 * 1000 / housePoints);
+                (int) Math.ceil(275.0 / (d.template == null ? 1 : d.template.getCapacity())));
+        assertTrue("...and well under the cap", d.quantity < 12 * looseOutput / pickedPoints);
 
         // Just inside the headroom is not a shortage worth acting on.
         d = flat.planRealEstate(1000, 2200, .35, 1000, 0);
@@ -283,25 +316,28 @@ public class InvestCheck {
         /* ============ 12. land is the one thing that can say no ============ */
         System.out.println("\n--- land caps the order, and can refuse it ---");
 
-        // Same shortage as section 8, which ordered 40 houses at 100 pts/mo.
-        // A house takes 8,000 sq ft, so five houses' worth of land is five houses.
+        // Same shortage as section 8, and the same rule about where the figures
+        // come from: five buildings' worth of ground is five buildings, and the
+        // footprint is the CHOSEN template's rather than a House's 8,000 sq ft.
         BusinessInvestment tight = new BusinessInvestment(bm, em);
         for (int i = 0; i < 6; i++) tight.recordMonth(3000);
 
-        tight.setLandAvailable(8000 * 5, 0);
-        d = tight.planRealEstate(2000, 2000, .35, 100, 0);
+        double footprint = picked == null ? 8000 : picked.getLandSqFt();
+
+        tight.setLandAvailable(footprint * 5, 0);
+        d = tight.planRealEstate(2000, 2000, .35, looseOutput, 0);
         assertTrue("land short of the gap -> still builds", d.build);
         check("...but only what there are plots for", d.quantity, 5);
 
         // Not quite one plot is no plot.
-        tight.setLandAvailable(7999, 0);
-        d = tight.planRealEstate(2000, 2000, .35, 100, 0);
+        tight.setLandAvailable(footprint - 1, 0);
+        d = tight.planRealEstate(2000, 2000, .35, looseOutput, 0);
         assertTrue("under one plot -> refuses", !d.build);
         assertTrue("...and says land is why", d.reason.startsWith("no land"));
         System.out.println("   " + d.reason);
 
         tight.setLandAvailable(0, 0);
-        d = tight.planRealEstate(2000, 2000, .35, 100, 0);
+        d = tight.planRealEstate(2000, 2000, .35, looseOutput, 0);
         assertTrue("no land at all -> refuses", !d.build);
 
         // Every sector, not just housing.
@@ -320,8 +356,8 @@ public class InvestCheck {
 
         // Plenty of land puts the order back where section 8 had it.
         tight.setLandAvailable(1e12, 0);
-        d = tight.planRealEstate(2000, 2000, .35, 100, 0);
-        check("land no longer binding -> the old cap", d.quantity, cappedAt100);
+        d = tight.planRealEstate(2000, 2000, .35, tightOutput, 0);
+        check("land no longer binding -> the old cap", d.quantity, cappedAtTight);
 
         // Slow builders still floor at one; only land can zero an order.
         BusinessInvestment slow = new BusinessInvestment(bm, em);

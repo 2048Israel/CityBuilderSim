@@ -91,6 +91,111 @@ public class BankCheck {
         assertTrue("a bank that has lost more than it owns is insolvent",
                 new Bank() {{ refresh(1, 100, 0, 0, 0, 0); lend(500); }}.isInsolvent());
 
+        /* ============ 1b. WHAT TO PAY SAVERS IS A DECISION ============
+
+           Jerus, 2026-09-09: "make it variable, the bank will not give out more
+           than it needs to stay net 0, but if its already making profit it will
+           do some forecast to see what new deposits would come in if it
+           increased the deposit interest rate."
+
+           Three rules, and each is CAUSED here rather than hoped for in a city.
+           A run-based fixture cannot reach the third one at all: this economy's
+           bank is almost always either marginGone (capital binds, so more deposits
+           are worthless) or under-lent (nothing to fund, so more deposits are
+           worthless), and a 600-month probe fired it zero times for exactly
+           those two reasons. That is the model being right and a whole-city
+           fixture being the wrong instrument - so the instrument is this.
+           ================================================================= */
+        System.out.println("\n--- what to pay savers is a decision ---");
+
+        /* ---- rule 2 first, because it bounds the other two ---- */
+        Bank marginGone = new Bank();
+        marginGone.refresh(1, 1_000_000, 0, 0, 0, 0);
+        marginGone.injectCapital(1_000_000);
+        marginGone.startMonth();
+        marginGone.lend(500_000);            // borrowed to lend: wholesale funding to pay for
+        marginGone.fundToCover(.10);
+        assertTrue("a bank whose margin is gone pays its savers nothing",
+                marginGone.depositInterest() <= 1e-9);
+
+        /* ---- rule 1: a share of the income, and only of the income ---- */
+        Bank earner = new Bank();
+        earner.refresh(1, 1_000_000, 0, 0, 0, 0);
+        earner.injectCapital(1_000_000);
+        earner.startMonth();
+        earner.takeInterest(1_000);
+        earner.fundToCover(.10);
+        close("...and one that earned pays the baseline share of what it earned",
+                earner.depositInterest(), 1_000 * Bank.DEPOSIT_PASS_THROUGH, 1e-9);
+        assertTrue("...which is a rate on the whole deposit book, derived not set",
+                earner.depositRate() > 0);
+        close("...and that rate is the payout over the deposits",
+                earner.depositRate(),
+                earner.depositInterest() / earner.getDeposits() * 12, 1e-9);
+
+        /* ---- rule 3: and higher, when buying deposits actually pays ---- */
+        /*
+         * CAUSED, which takes all three conditions at once: in profit, LENT OUT
+         * so another dollar would be used, and DEPOSITS binding rather than
+         * capital. Capital is made abundant and the book is pushed past the
+         * comfortable strain, so the only thing between this bank and more
+         * lending is funding.
+         */
+        double savings = 10_000_000;
+        double branchesEnough = savings / Bank.DEPOSITS_PER_BRANCH;   // it can reach all of it
+        double wayPastFunding = savings * Bank.LEVERAGE * 2;          // and has lent twice that
+        double earned = 5_000;
+        double baselinePay = earned * Bank.DEPOSIT_PASS_THROUGH;
+
+        Bank hungry = new Bank();
+        // The BOOK goes in through refresh - lend() only moves cash, and the
+        // weighted book is what strain() is measured on.
+        hungry.refresh(branchesEnough, savings, 0, wayPastFunding, 0, 0);
+        hungry.injectCapital(500_000_000);        // capital is not the problem
+        hungry.startMonth();
+        hungry.takeInterest(earned);              // and it is in profit
+        hungry.lend(wayPastFunding);              // and the cash really went out
+        hungry.setDepositMarket(rate -> rate * 20_000_000);          // money answers the price
+        hungry.fundToCover(.10);
+
+        System.out.printf("   lent out and short of funding: pays %,.1f against a baseline of %,.1f"
+                + " (strain %.1f)%n",
+                hungry.depositInterest(), baselinePay, hungry.strain());
+        assertTrue("fixture: it really is lent out", hungry.strain() > 1);
+        assertTrue("a bank that is lent out bids above its baseline for deposits",
+                hungry.depositInterest() > baselinePay + 1e-9);
+        assertTrue("...and never past the interest it earned",
+                hungry.depositInterest() <= earned + 1e-9);
+
+        /*
+         * ...AND IT DOES NOT BID WHEN THE MONEY WOULD BE NO USE. Same bank,
+         * same offer, but capital is the binding limit now - so another dollar
+         * of deposits cannot be lent and is not worth paying for. This is the
+         * same question wantsBranch() asks before putting up a counter.
+         */
+        /*
+         * Sized so that CAPITAL is the only thing wrong with it. The cash has
+         * to actually go out - a book with no borrowing behind it counts as
+         * equity and this bank would look better capitalised than the one above
+         * - but it must stay inside what the deposits can fund, or the wholesale
+         * bill eats the margin and rule 2 answers before rule 3 is ever asked.
+         */
+        double insideItsDeposits = savings / 2;
+        Bank capped = new Bank();
+        capped.refresh(branchesEnough, savings, 0, insideItsDeposits, 0, 0);
+        capped.injectCapital(1_000);              // almost none
+        capped.startMonth();
+        capped.takeInterest(earned);
+        capped.lend(insideItsDeposits);
+        capped.setDepositMarket(rate -> rate * 20_000_000);
+        capped.fundToCover(.10);
+        System.out.printf("   capital-bound: capacity %,.0f against a book of %,.0f%n",
+                capped.capacity(), capped.getWeightedBook());
+        assertTrue("fixture: capital really is what binds it", capped.capacity()
+                < capped.depositsGathered() * Bank.LEVERAGE);
+        close("a bank short of CAPITAL does not bid for deposits it may not lend",
+                capped.depositInterest(), baselinePay, 1e-9);
+
         /* ================= 2. the price of strain ================= */
         out.println("\n--- and what it charges for being past it ---");
 
@@ -422,6 +527,21 @@ public class BankCheck {
         int branchesBuilt;
         try {
             unattended.run();
+            /*
+             * ...AND THEN THE CITY'S OWN BANK IS PULLED DOWN.
+             *
+             * Every city has founded with one since 2026-09-09, which is right
+             * for the game and fatal for this fixture: the question below is
+             * what a city with NO bank does, and a fixture that stands next to
+             * its condition instead of causing it proves nothing. Scrapped
+             * rather than the founding suppressed, because scrapping is
+             * something the model can actually do and the state it leaves is a
+             * state the game can reach.
+             */
+            unattended.getBuildingManager().retire(
+                    template(unattended, "Commercial Bank"), 1);
+            unattended.getLandManager().release(
+                    template(unattended, "Commercial Bank").getLandSqFt());
             unattended.getForeignAccounts().pinRate(1.0);
             unattended.buildStack(template(unattended, "House"), 400, false);
             unattended.buildStack(template(unattended, "Convenience Store"), 8, false);
@@ -501,11 +621,29 @@ public class BankCheck {
          * asserted here is that it asks; whether it can afford the answer is the
          * next fixture's question.
          */
-        assertTrue("a city with no bank at all wants one, whatever it can afford",
-                wanted.build);
+        /*
+         * WANTS ONE, OR IS ALREADY PUTTING ONE UP - and the second is not a
+         * weaker claim, it is the same claim one month later.
+         *
+         * This asserted `wanted.build` alone and broke when the founding
+         * endowment went to $3.5B with rebalance stage two: the city could now
+         * afford the branch, so it ORDERED one, so by the time the decision was
+         * read the advisor was correctly holding with "a branch is already
+         * going up". The fixture was asking a city that had already solved the
+         * problem whether it still had it.
+         *
+         * What must never happen is the advisor not noticing, and that is what
+         * both branches below rule out. The reason string still has to be about
+         * credit either way, which is the half that catches a bank being
+         * ordered as though it were a shop.
+         */
+        boolean noticed = wanted.build
+                || wanted.reason.toLowerCase().contains("already going up");
+        assertTrue("a city with no bank at all does something about it", noticed);
         assertTrue("...and says so in words about credit, not about shops",
                 wanted.reason.toLowerCase().contains("bank")
-                        || wanted.reason.toLowerCase().contains("credit"));
+                        || wanted.reason.toLowerCase().contains("credit")
+                        || wanted.reason.toLowerCase().contains("branch"));
 
         /* ---- and a city that can pay for one, does ---- */
 

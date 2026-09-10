@@ -422,29 +422,64 @@ public class LabourCheck {
             growing.buildStack(t(growing, "Coal Power Plant"), 1, true);
             growing.buildStack(t(growing, "Water Treatment Plant"), 1, true);
             growing.buildStack(t(growing, "Paved Road"), 12, true);
-            growing.simulateMonths(24);
+            growing.simulateMonths(12);
         });
-        double[] skilledBefore = growing.getPopulationManager().getSkilledHeads().clone();
-        double adultShare = growing.getCohorts().share(AgeBand.ADULT);
-        quietly(() -> growing.simulateMonths(1));
-        double[] skilledNow = growing.getPopulationManager().getSkilledHeads();
-        double[] arrived = growing.getMigration().getLastArrivalMix();
-        double[] left = growing.getMigration().getLastDepartureMix();
-        double skilledArrivals = 0, skilledDepartures = 0, gained = 0, held = 0;
-        for (int b = 1; b < skilledBefore.length; b++) {
-            skilledArrivals += arrived[b];
-            skilledDepartures += left[b];
-            gained += skilledNow[b] - skilledBefore[b];
-            held += skilledBefore[b];
+
+        /* -------------------------------------------------------------------
+         * HUNTED FOR, NOT ASSUMED.
+         *
+         * This used to roll 24 months and read whatever the 25th happened to
+         * be, which worked only while that particular month happened to be a
+         * month with arrivals in it. The fixture's jobs are fixed, so the city
+         * converges on a target and then stops moving - and anything that
+         * shifts where that target sits shifts which months have arrivals.
+         * Housing maintenance shifted it by about 400 residents and the 25th
+         * month became a month with no arrivals at all, so a test about
+         * GRADUATES failed for reasons that had nothing to do with graduates.
+         *
+         * So the month is now searched for. Both preconditions the assertions
+         * below need - somebody arrived, and the two candidate explanations
+         * are far enough apart to tell apart - are checked before the month is
+         * accepted, which is the same fix the "far enough apart" assertion got
+         * on 2026-09-07 for the same reason. A fixture has to CAUSE the
+         * condition under test, not stand next to it and hope.
+         * ------------------------------------------------------------------- */
+        double adultShare = 0, skilledArrivals = 0, skilledDepartures = 0;
+        double gained = 0, held = 0;
+        int found = -1;
+
+        for (int attempt = 0; attempt < 60 && found < 0; attempt++) {
+            double[] before = growing.getPopulationManager().getSkilledHeads().clone();
+            double share = growing.getCohorts().share(AgeBand.ADULT);
+            quietly(() -> growing.simulateMonths(1));
+            double[] now = growing.getPopulationManager().getSkilledHeads();
+            double[] arrived = growing.getMigration().getLastArrivalMix();
+            double[] left = growing.getMigration().getLastDepartureMix();
+
+            double in = 0, out = 0, moved = 0, stock = 0;
+            for (int b = 1; b < before.length; b++) {
+                in += arrived[b];
+                out += left[b];
+                moved += now[b] - before[b];
+                stock += before[b];
+            }
+            double n = in - out;
+            if (in > 1 && Math.abs(n - n * share) > 1) {
+                adultShare = share;
+                skilledArrivals = in; skilledDepartures = out;
+                gained = moved; held = stock;
+                found = growing.getMonth();
+            }
         }
-        assertTrue("fixture: skilled people arrived this month", skilledArrivals > 1);
+
+        assertTrue("fixture: found a month with skilled arrivals in it", found > 0);
         assertTrue("fixture: the city is not all adults", adultShare < .9 && adultShare > .3);
         double net = skilledArrivals - skilledDepartures;
         double expected = net * adultShare;
         double retirements = held * .01;   // a generous bound on a month of deaths and ageing out
-        System.out.printf("   skilled arrivals %.1f, departures %.1f, adult share %.3f,"
+        System.out.printf("   month %d: skilled arrivals %.1f, departures %.1f, adult share %.3f,"
                 + " counts moved %.1f, expected %.1f (unscaled %.1f)%n",
-                skilledArrivals, skilledDepartures, adultShare, gained, expected, net);
+                found, skilledArrivals, skilledDepartures, adultShare, gained, expected, net);
 
         assertTrue("the skilled counts gained the ADULT share of the skilled arrivals",
                 Math.abs(gained - expected) <= retirements + .5);
@@ -488,6 +523,30 @@ public class LabourCheck {
             short_.buildStack(t(short_, "Water Treatment Plant"), 1, true);
             short_.buildStack(t(short_, "Paved Road"), 12, true);
             short_.simulateMonths(60);
+
+            /*
+             * ...AND THEN UNTIL SOMEBODY ACTUALLY MOVES IN.
+             *
+             * Everything below this reads ONE MONTH - the arrival mix, the
+             * licences that came with it, the bands they came from - and month
+             * 60 is not chosen, it is just where simulateMonths stopped. This
+             * city settles into a churn equilibrium in the forties (arrivals
+             * and departures both around 33 a month against a target of 4,980)
+             * and month 60 happened to land on a month with no arrivals at all,
+             * so three assertions about WHO ARRIVES were being asked of a month
+             * in which nobody did.
+             *
+             * That is the same fault this harness was already caught by once,
+             * on the 25th month, and SaveFileCheck twice - eleven sightings now
+             * across the suite. The rule is in claude/todo.md: a fixture has to
+             * CAUSE the condition under test, not stand next to it. Bounded, so
+             * a city that genuinely never attracts anybody fails loudly instead
+             * of hanging.
+             */
+            for (int extra = 0; extra < 120
+                    && short_.getMigration().getLastArrivals() <= 1; extra++) {
+                short_.simulateMonths(1);
+            }
         });
         LabourMarket m2 = short_.getLabourMarket();
         int doctorPosts = short_.getPopulationManager().getJobs()[JobType.UNIV_DOCTOR.ordinal()];

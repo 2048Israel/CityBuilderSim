@@ -151,6 +151,154 @@ public class EconomyManager {
          */
         commercialHandler.setHouseholdCount(householdCount);
         commercialHandler.setMarginalHousingCost(marginalHousingCost);
+        repriceHousingCosts();
+
+        /*
+         * ...and the two segments, so each can be priced on its own scarcity.
+         * The doors come from the building stock, the households from the
+         * family model - which is where the studio rule lives, so it is where
+         * "who can live in a studio" gets answered.
+         */
+        int[] bySize = buildingManager.homesBySize();
+        int studioDoors = 0, familyDoors = 0;
+        for (int size = 1; size < bySize.length; size++) {
+            if (size <= FamilyModel.STUDIO_MAX_SIZE) studioDoors += bySize[size];
+            else                                     familyDoors += bySize[size];
+        }
+        commercialHandler.setSegments(studioDoors, familyDoors,
+                studioSeekers, familySeekers, studioSeekerHeads, familySeekerHeads);
+    }
+
+    /* =====================================================================
+       WHAT IT COSTS TO HOLD A HOME, per person of capacity, per month.
+
+       The four inputs CommercialHandler's BUILD HURDLE needs and cannot get
+       for itself. Worked out here rather than there because every one of them
+       belongs to something else - the templates, the land office, the tax
+       policy and the bank - and this class already talks to all four.
+
+       The FLOOR needs none of this - it is measured off the company's own
+       three cost lines. This is the hurdle only. See CommercialHandler's TWO
+       RENTS note.
+
+       PRICED OFF THE CHEAPEST WAY TO HOUSE ONE MORE PERSON, land included.
+       marginalHousingCost() in Game answers nearly this question and is left
+       alone because half the game reads it, but it leaves LAND out - which
+       was defensible when land was 1% of a house and is not now that it can
+       be most of one. A rent floor that ignores the ground is a floor that
+       says a tower and a field cost the same to hold.
+
+       The cheapest template by FULL cost per head is the right one to price
+       off: it is what a developer would actually build, so it is what sets
+       the price at which building stops being worth it.
+       ===================================================================== */
+    /**
+     * What one of these has to earn a month before it is worth putting up.
+     *
+     * THE SAME FORMULA THE RENT HURDLE USES, asked about ONE template rather
+     * than about the cheapest. CommercialHandler.rentToBuild() answers "what
+     * must a person of capacity pay"; this answers "what must this building
+     * take", which is what an investment decision actually needs - a studio
+     * block and a row of houses have different land, different materials and
+     * different numbers of doors, and a per-head figure hides all three.
+     *
+     * ZERO PROFIT, PLUS A MARGIN. Jerus: "theyll rent at zero profit, but they
+     * wont build more if new rent is zero profit." The break-even floor is the
+     * first half; this is the second. Maintenance on the structure, property
+     * tax on the whole asset with its plot, and then a margin - because a
+     * building that exactly breaks even pays for nothing but its own upkeep
+     * for ever and nobody puts one up.
+     */
+    public double housingBuildHurdle(BuildingsTemplate t) {
+
+        if (t == null || buildingManager == null) return 0;
+
+        double structure = t.getCashCost()
+                + t.getConstructionMaterials()
+                        * Math.max(0, buildingManager.getConstructionMaterialPrice());
+        double land = t.getLandSqFt() * Math.max(0, landPricePerSqFt);
+        double full = structure + land;
+        if (full <= 0) return 0;
+
+        double monthlyPropertyRate = taxPolicy != null
+                ? taxPolicy.effectiveMonthlyPropertyRate(PolicySector.REAL_ESTATE)
+                : 0;
+
+        /*
+         * NO INTEREST IN THIS NUMBER, and it took three tries to see why.
+         *
+         * The first version financed the whole asset at the sector's own rate.
+         * That rate is risk-priced, so a young levered landlord is quoted 23%,
+         * and the hurdle came out at twice any rent the city could bear: no
+         * template ever cleared it and the city sat at five residents and no
+         * homes for 240 months.
+         *
+         * The second used the RISK-FREE rate instead, on the reasoning that a
+         * project is costed at the price of money rather than at the
+         * borrower's distress. In this game the risk-free rate is the city's
+         * own T-bill and it runs at 19% in the early decades - a Low-Rise's
+         * hurdle came out at $266,000 a month against an income of $32,000, and
+         * the city stalled at six homes.
+         *
+         * The third is this one, and it is the right question rather than a
+         * kinder version of the wrong one. THIS ASKS WHETHER THE BUILDING
+         * PAYS. Whether the COMPANY can carry the loan is a different question
+         * about a different thing, and it is already asked, by
+         * servicesItsOwnDebt() - which prices the sector's actual borrowing
+         * against what the building would earn and refuses the loan when it
+         * does not cover it. Putting interest in both places asked it twice
+         * and answered no both times.
+         *
+         * What is left is what the building costs its owner whatever they do
+         * with it and however they paid for it: the painting and the rates.
+         */
+        double carry = structure * CommercialHandler.MAINTENANCE_PER_YEAR / 12
+                + full * monthlyPropertyRate;
+
+        return carry * (1 + CommercialHandler.BUILD_MARGIN);
+    }
+
+    /** What the city charges per square foot today. For the advisor's costing. */
+    public double getLandPricePerSqFt() { return landPricePerSqFt; }
+
+    public void repriceHousingCosts() {
+
+        if (commercialHandler == null || buildingManager == null) return;
+
+        double materialPrice = Math.max(0, buildingManager.getConstructionMaterialPrice());
+
+        double bestFull = 0, bestStructure = 0, bestLand = 0;
+
+        for (BuildingsTemplate t : buildingManager.getTemplates()) {
+            if (t == null || t.getCategory() != BuildingType.RESIDENTIAL) continue;
+            if (t.getCapacity() <= 0) continue;
+
+            double structure = (t.getCashCost()
+                    + t.getConstructionMaterials() * materialPrice) / t.getCapacity();
+            double land = t.getLandSqFt() * Math.max(0, landPricePerSqFt) / t.getCapacity();
+            double full = structure + land;
+
+            if (full <= 0) continue;
+            if (bestFull <= 0 || full < bestFull) {
+                bestFull = full; bestStructure = structure; bestLand = land;
+            }
+        }
+
+        commercialHandler.setHousingCosts(bestStructure, bestLand);
+
+        /*
+         * ...and what the landlords hold, which is the denominator the
+         * break-even is measured over.
+         *
+         * NOT getTotalHouseCapacity(), which adds the hundred heads the city
+         * houses before any landlord exists - a small company's costs divided
+         * by that answers "rent is nearly free".
+         *
+         * SITES INCLUDED, because the tax bill in the numerator includes their
+         * ground. See BuildingManager.getCapacityInPortfolio().
+         */
+        commercialHandler.setOwnedHousingCapacity(
+                buildingManager.getCapacityInPortfolio(BuildingType.RESIDENTIAL));
     }
 
     /**
@@ -162,6 +310,25 @@ public class EconomyManager {
     private double marginalHousingCost;
 
     public void setHouseholdCount(double count)        { this.householdCount = count; }
+
+    /**
+     * The two segments' demand, from FamilyModel. Set by Game beside the
+     * household count, because it comes from the same place and describes the
+     * same month.
+     */
+    private double studioSeekers, familySeekers;
+    private double studioSeekerHeads, familySeekerHeads;
+
+    public void setHousingSeekers(double studio, double family,
+                                  double studioHeads, double familyHeads) {
+        this.studioSeekers = Math.max(0, studio);
+        this.familySeekers = Math.max(0, family);
+        this.studioSeekerHeads = Math.max(0, studioHeads);
+        this.familySeekerHeads = Math.max(0, familyHeads);
+    }
+
+    public double getStudioSeekers() { return studioSeekers; }
+    public double getFamilySeekers() { return familySeekers; }
     public void setMarginalHousingCost(double perCap)  { this.marginalHousingCost = perCap; }
     public double getMarginalHousingCost()             { return marginalHousingCost; }
 
@@ -463,6 +630,30 @@ public class EconomyManager {
        short. Running it before the statements would have charged interest on
        money the sector had not borrowed yet.
        ======================================================================= */
+
+    /* =====================================================================
+       WHAT THE BANK PAID THE SECTORS FOR THE MONEY IN THEIR TILLS
+
+       Recorded by Game when it hands the money out, because Game is what knows
+       the split - the bank has no idea who its depositors are. Read by
+       SectorBooks a few lines later, in the same month, so nothing is carried
+       and nothing can go stale.
+       ===================================================================== */
+
+    private final java.util.Map<String, Double> depositInterestPaid =
+            new java.util.LinkedHashMap<>();
+
+    /** Wipes last month's figures. Called before the month's are handed out. */
+    public void clearDepositInterest() { depositInterestPaid.clear(); }
+
+    public void recordDepositInterest(String sector, double amount) {
+        if (sector == null || !(amount > 0)) return;
+        depositInterestPaid.merge(sector, amount, Double::sum);
+    }
+
+    public double getDepositInterestPaid(String sector) {
+        return depositInterestPaid.getOrDefault(sector, 0.0);
+    }
 
     public void updateBusinessCredit(double governmentRate){
 
@@ -1528,6 +1719,141 @@ public class EconomyManager {
     public double getPropertyTaxFor(BuildingType category){
         return taxPolicy.propertyTaxOn(getAssessedValue(category),
                 PolicySector.byCategory(category));
+    }
+
+    /* =====================================================================
+       EVERY BUILDING IN THE CITY, BILLED FOR STANDING THERE (2026-09-09).
+
+       Jerus: "all buildings need maintenance, and make sure they get billed."
+
+       WHAT WAS ACTUALLY WRONG. `upkeep` has been a field on every template
+       since the beginning and was charged on exactly two categories -
+       healthcare and education - which BuildingManager's own note describes
+       accurately: "getUpkeep() had two callers in the entire codebase before
+       this, a debug println and BuildingDataCheck, so every building's upkeep
+       in this file was a wish." Residential got a real repair flow on
+       2026-09-09. That left EIGHT of eleven categories paying nothing at all
+       to stand, which is the same bug as an empty home costing its owner
+       nothing - the one the housing pass had just finished fixing.
+
+       SHAPED LIKE THE PROPERTY TAX, deliberately. A per-category charge handed
+       to whoever owns the category is a path this codebase already trusts and
+       already audits; inventing a second shape for the same idea is how two
+       breakdowns end up disagreeing. Same rule as the tax, too: NO MONEY MOVES
+       HERE. The figure is assigned, each income statement subtracts it, and
+       what a sector banks is already net of it.
+
+       AND IT IS A REAL ORDER, not a fee. A repair costs money, MATERIALS and
+       CONSTRUCTION POINTS, and all three are placed with the construction
+       sector - which is what makes a city's own building stock compete with its
+       new building for the same builders. Game.chargeBuildingMaintenance() owns
+       that half; this owns who pays.
+
+       WHY THE CITY BEARS FIVE OF THEM. Roads, schools, hospitals, the power
+       plant and the water plant have no company behind them in this model -
+       the utilities net straight to the municipal books and the rest are
+       services - so the treasury is their owner and the treasury is billed.
+       That is not a simplification of the accounting; it IS the accounting.
+
+       UPKEEP IS NOT REPLACED. Healthcare and education keep paying it, and
+       they now pay this as well, because they are different things: upkeep is
+       running the service - supplies, cleaning, the things a hospital consumes
+       - and this is keeping the building standing. A real hospital pays both.
+       ===================================================================== */
+
+    /** The categories whose repairs the treasury pays, because nobody else owns them. */
+    private static final BuildingType[] CITY_MAINTAINED = {
+        BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE,
+        BuildingType.HEALTHCARE,  BuildingType.EDUCATION
+    };
+
+    private double maintenanceBillTotal;
+    private double maintenanceMaterialsTotal;
+    private double maintenancePointsTotal;
+    private double cityMaintenanceBill;
+    private double[] maintenanceCharges = new double[BuildingType.values().length];
+
+    /** The month's repair bill for one category, in money - materials priced in. */
+    public double maintenanceBillFor(BuildingType category, double materialPrice) {
+        double rate = CommercialHandler.MAINTENANCE_PER_YEAR / 12;
+        double cash = buildingManager.getTotalByCategoryDouble(
+                category, BuildingsTemplate::getCashCost) * rate;
+        double mats = buildingManager.getTotalByCategoryDouble(
+                category, BuildingsTemplate::getConstructionMaterials) * rate;
+        double bill = cash + mats * Math.max(0, materialPrice);
+        return Double.isFinite(bill) && bill > 0 ? bill : 0;
+    }
+
+    /** The material UNITS one category's repairs consume this month. */
+    public double maintenanceMaterialsFor(BuildingType category) {
+        double mats = buildingManager.getTotalByCategoryDouble(
+                category, BuildingsTemplate::getConstructionMaterials)
+                * CommercialHandler.MAINTENANCE_PER_YEAR / 12;
+        return Double.isFinite(mats) && mats > 0 ? mats : 0;
+    }
+
+    /** The builders' time one category's repairs consume this month. */
+    public double maintenancePointsFor(BuildingType category) {
+        double pts = buildingManager.getTotalByCategoryDouble(
+                category, BuildingsTemplate::getConstructionPoints)
+                * CommercialHandler.MAINTENANCE_PER_YEAR / 12;
+        return Double.isFinite(pts) && pts > 0 ? pts : 0;
+    }
+
+    /**
+     * Hands every sector its repair bill for the month.
+     *
+     * @param materialPrice what a unit of construction material costs today
+     */
+    public void chargeMaintenance(double materialPrice) {
+
+        java.util.Arrays.fill(maintenanceCharges, 0);
+        maintenanceBillTotal = 0;
+        maintenanceMaterialsTotal = 0;
+        maintenancePointsTotal = 0;
+        cityMaintenanceBill = 0;
+
+        for (BuildingType category : BuildingType.values()) {
+            double bill = maintenanceBillFor(category, materialPrice);
+            maintenanceCharges[category.ordinal()] = bill;
+            maintenanceBillTotal += bill;
+            maintenanceMaterialsTotal += maintenanceMaterialsFor(category);
+            maintenancePointsTotal += maintenancePointsFor(category);
+        }
+
+        commercialHandler.setPropertyMaintenance(charge(BuildingType.RESIDENTIAL));
+        commercialHandler.setRetailMaintenance(charge(BuildingType.COMMERCIAL));
+        industrialHandler.setMaintenanceExpense(charge(BuildingType.INDUSTRIAL));
+        heavyIndustryHandler.setMaintenanceExpense(charge(BuildingType.HEAVY_INDUSTRY));
+        miningHandler.setMaintenanceExpense(charge(BuildingType.MINING));
+        if (constructionHandler != null) {
+            constructionHandler.setMaintenanceExpense(charge(BuildingType.CONSTRUCTION));
+        }
+
+        for (BuildingType category : CITY_MAINTAINED) {
+            cityMaintenanceBill += charge(category);
+        }
+    }
+
+    private double charge(BuildingType category) {
+        return maintenanceCharges[category.ordinal()];
+    }
+
+    /** Every category's repair bill added up - what the builders are owed. */
+    public double getMaintenanceBillTotal()      { return maintenanceBillTotal; }
+
+    /** The share of it the treasury pays, because the city owns those buildings. */
+    public double getCityMaintenanceBill()       { return cityMaintenanceBill; }
+
+    /** Material UNITS, not money - the yard has to find these. */
+    public double getMaintenanceMaterialsTotal() { return maintenanceMaterialsTotal; }
+
+    /** Builders' time, which comes straight off what the city can put up. */
+    public double getMaintenancePointsTotal()    { return maintenancePointsTotal; }
+
+    /** One category's bill, for the screens. */
+    public double getMaintenanceCharge(BuildingType category) {
+        return category == null ? 0 : maintenanceCharges[category.ordinal()];
     }
 
     /**

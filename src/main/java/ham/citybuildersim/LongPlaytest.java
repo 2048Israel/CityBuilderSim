@@ -59,15 +59,47 @@ public class LongPlaytest {
         int firstMonth;
         int lastMonth;
         String worst;
+        double worstSize = Double.NEGATIVE_INFINITY;
+        int worstMonth;
     }
 
+    /* -------------------------------------------------------------------
+       `worst` MEANT `first`, AND THE PRINTOUT SAID SO (2026-09-09).
+
+       The field was called worst and only ever assigned once - on the month a
+       finding was first seen - so a fault that started as a rounding wobble and
+       grew into a catastrophe was reported at its mildest. The summary line
+       hedged it as "first seen as", which is honest about the value and hides
+       how little it tells you: a finding raised 92 times has 92 magnitudes and
+       this kept the least useful one.
+
+       It cost real time the day it was found. A household-with-no-home finding
+       reported "1 households nowhere" - the format string rounded to the
+       integer as well - and deciding whether that was a housing famine or the
+       fractional-people-versus-integer-homes noise the flag's own comment
+       allows for needed the actual number and the actual peak. It was 1.236,
+       and it never got worse.
+
+       flag() now takes the SIZE of the fault, so the worst month is the one
+       reported and the first month is kept separately. The string overload
+       stays for the findings that have no natural magnitude.
+       ------------------------------------------------------------------- */
+
     static void flag(int month, String what, String detail) {
+        flag(month, what, detail, 0);
+    }
+
+    static void flag(int month, String what, String detail, double size) {
         Finding f = findings.get(what);
         if (f == null) {
             f = new Finding();
             f.firstMonth = month;
-            f.worst = detail;
             findings.put(what, f);
+        }
+        if (size > f.worstSize) {
+            f.worstSize = size;
+            f.worst = detail;
+            f.worstMonth = month;
         }
         f.count++;
         f.lastMonth = month;
@@ -216,8 +248,9 @@ public class LongPlaytest {
         double homeless = g.getFamilies().getStillUnplaced();
         if (homeless > 1) {
             flag(month, "households with no home",
-                    String.format("%.0f households nowhere, %d homes of %d sizes",
-                            homeless, b.getTotalHomes(), b.homesBySize().length - 1));
+                    String.format("%.3f households nowhere, %d homes of %d sizes",
+                            homeless, b.getTotalHomes(), b.homesBySize().length - 1),
+                    homeless);
         }
 
         // Worth watching even though it is no longer a fault: how far past what
@@ -555,8 +588,26 @@ public class LongPlaytest {
         }
 
         /* --- the four throttles, each priced at the output it is costing --- */
-        addThrottle(moves, g, "Coal Power Plant", "power plant",
-                gdp * (1 - g.getEnergyRatio()));
+        /*
+         * POWER, AND BOTH OF IT, for exactly the reason the roads below are
+         * offered three ways. This rule only ever built Coal Power Plants,
+         * which was fine while a coal plant was the only generator in the game
+         * and stopped being fine on 2026-09-09 when the Wind Farm arrived.
+         *
+         * The two are costed so each wins a band of LAND prices - wind is about
+         * a quarter cheaper per unit of energy delivered and sits on thirty
+         * times the ground, so it wins on cheap land and loses on dear. A rule
+         * that names one of them decides that question in advance and the band
+         * may as well not exist; offering both lets the price of land pick, and
+         * that is the whole point of having two.
+         *
+         * It also matters more than the roads did: a Wind Farm is $31.8M and
+         * 1,800 construction points against a coal plant's $1.43B and 120,000,
+         * so it is the only power a young city can actually reach.
+         */
+        double powerGain = gdp * (1 - g.getEnergyRatio());
+        addThrottle(moves, g, "Wind Farm", "wind farm", powerGain);
+        addThrottle(moves, g, "Coal Power Plant", "power plant", powerGain);
         addThrottle(moves, g, "Water Treatment Plant", "water plant",
                 gdp * (1 - g.getWaterRatio()));
 
@@ -1280,17 +1331,27 @@ public class LongPlaytest {
                 px.inflation() * 100,
                 g.getEconomyManager().getCommercialHandler().getScarcityMultiple());
         CommercialHandler rentCh = g.getEconomyManager().getCommercialHandler();
-        out.printf("  rent: %s per person of capacity - a %s cost floor at a %.2fx"
-                + " scarcity multiple (%,.0f households, %,d doors)%n",
+        out.printf("  rent: family %s / studio %s per person of capacity"
+                + " - break-even %s, required return %s%n",
                 String.format("%.4f", rentCh.getRentPrice()),
-                String.format("%.4f", rentCh.rentFloor()),
-                rentCh.rentScarcityMultiple(),
+                String.format("%.4f", rentCh.getStudioRentPrice()),
+                String.format("%.4f", rentCh.rentBreakEven()),
+                String.format("%.4f", rentCh.rentRequired()));
+        out.printf("  the two markets: %,d family doors at %.2f households each,"
+                + " %,d studio doors at %.2f (%,.0f households, %,d doors)%n",
+                rentCh.getFamilyHomes(), rentCh.familyPressure(),
+                rentCh.getStudioHomes(), rentCh.studioPressure(),
                 rentCh.getHouseholdCount(), rentCh.getHomes());
         out.printf("  housing costs %s per person of capacity to supply"
-                + " (materials %s, land %s/sqft)%n",
-                String.format("%.2f", rentCh.getMarginalHousingCost()),
+                + " - %s of structure and %s of ground"
+                + " (materials %s, land %s/sqft); repairs %s/mo%n",
+                String.format("%.2f", rentCh.getStructurePerCapacity()
+                        + rentCh.getLandPerCapacity()),
+                String.format("%.2f", rentCh.getStructurePerCapacity()),
+                String.format("%.2f", rentCh.getLandPerCapacity()),
                 String.format("%.3f", g.getBuildingManager().getConstructionMaterialPrice()),
-                String.format("%.6f", g.getLandManager().getPricePerSqFt()));
+                String.format("%.6f", g.getLandManager().getPricePerSqFt()),
+                String.format("%,.0f", rentCh.getReportPropertyMaintenance()));
         out.printf("  wages lifted %.1f%%, the floor is worth %s a month in today's money%n",
                 (g.getLabourMarket().getCostOfLiving() - 1) * 100,
                 String.format("%.3f", g.getLabourMarket().cashMinimumWage()));
@@ -1354,7 +1415,7 @@ public class LongPlaytest {
                 out.printf("  %-46s %5d time(s), months %d-%d%n",
                         entry.getKey(), f.count, f.firstMonth, f.lastMonth);
                 if (f.worst != null) {
-                    out.println("        first seen as: " + f.worst);
+                    out.printf("        worst, month %d: %s%n", f.worstMonth, f.worst);
                 }
             }
         }

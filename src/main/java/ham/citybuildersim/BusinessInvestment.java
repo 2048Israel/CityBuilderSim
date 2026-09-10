@@ -394,19 +394,42 @@ public class BusinessInvestment {
             return Decision.no(sector, "losing money, but nothing spare to sell");
         }
 
-        // Find the biggest holding in the category - the thing there is most of
-        // is the thing to thin out, and it keeps the choice predictable.
+        /*
+         * Find the biggest holding in the category - the thing there is most of
+         * is the thing to thin out, and it keeps the choice predictable.
+         *
+         * HOUSING IS THE EXCEPTION, and it had to become one. "Most of" counts
+         * BUILDINGS, and a House is one door while a studio block is eighty, so
+         * the biggest holding in a city of 16,960 studio doors and 3,123 houses
+         * is the houses - by a factor of fifteen. Measured over 240 months: the
+         * advisor demolished family doors every month it lost money, while
+         * building studios every month it did not, until family pressure stood
+         * at 3.19 households per door against 0.47 in the studios. It was
+         * shedding the only thing the city was short of.
+         *
+         * So a residential holding is only sheddable if ITS OWN segment has
+         * doors to spare. See FamilyModel's TWO SEGMENTS.
+         */
         BuildingsTemplate worst = null;
         int mostHeld = 0;
 
         for (BuildingsTemplate template : buildingManager.getTemplatesByCategory(
                 java.util.EnumSet.of(category))) {
 
+            if (category == BuildingType.RESIDENTIAL && !hasDoorsToSpare(template)) {
+                continue;
+            }
+
             int held = buildingManager.getQuantity(template.getId());
             if (held > mostHeld) {
                 mostHeld = held;
                 worst = template;
             }
+        }
+
+        if (worst == null && category == BuildingType.RESIDENTIAL) {
+            return Decision.no(sector,
+                    "losing money, but every door it owns is wanted");
         }
 
         if (worst == null) {
@@ -460,6 +483,8 @@ public class BusinessInvestment {
             return Decision.no(sector, "already building");
         }
 
+        CommercialHandler ch = economyManager.getCommercialHandler();
+
         /*
          * Population is min(housing, jobs * 2.25), so housing demand IS the job
          * market - and the job market a block of flats will open into is not the
@@ -487,39 +512,111 @@ public class BusinessInvestment {
         int jobsComing = buildingManager.getJobsUnderConstruction();
 
         double latentDemand = (totalJobs + jobsComing) * 2.25;
+        double headShortfall = latentDemand - housingCapacity * (1 + TARGET_HEADROOM);
 
-        if (latentDemand <= housingCapacity * (1 + TARGET_HEADROOM)) {
+        /* -------------------------------------------------------------------
+         * TWO REASONS TO BUILD, AND HEADS IS ONLY ONE OF THEM.
+         *
+         * This used to stop here if the city had room for everyone, counted in
+         * HEADS. A city can have room for everyone and still have nowhere for a
+         * family to live: measured on slot 7, 15,270 households needed a door
+         * of size three or more, 5,107 existed, and about 25,000 studios stood
+         * empty. Head capacity said the city was comfortable. Ten thousand
+         * families were doubled up.
+         *
+         * So a shortage of family doors is its own reason to build, and it is
+         * a reason that does not go away by building more studios - which is
+         * exactly the trap the old gate walked into, because a studio block is
+         * the cheapest heads per dollar in the game.
+         * ------------------------------------------------------------------- */
+        double familyShortfall = doorShortfall(ch, true);
+
+        if (headShortfall <= 0 && familyShortfall <= 0) {
             return Decision.no(sector, String.format(
                     "housing ahead of jobs (%d now, %d coming)", totalJobs, jobsComing));
         }
 
         BuildingsTemplate best = null;
-        double bestScore = 0;
+        double bestScore = 0, bestDoors = 0;
+        String blocked = null;
 
         for (BuildingsTemplate t : buildingManager.getTemplatesByCategory(
                 java.util.EnumSet.of(BuildingType.RESIDENTIAL))) {
 
             if (t.getCapacity() <= 0) continue;
 
-            // Rent is collected per occupied unit; a block's monthly take is its
-            // capacity times the rent. Cost per resident housed is what decides
-            // which building is the right one to put up.
-            double monthlyIncome = t.getCapacity() * rentPrice;
+            /*
+             * WHAT IT WOULD ACTUALLY LET, not what it holds.
+             *
+             * The old line was `capacity * rentPrice` - the rent a block would
+             * collect if it were full - which is a fact about the building and
+             * not about the city it is going into. It made a studio block worth
+             * eighty rents in a city of families who are not allowed to live in
+             * one, and since a studio is also the cheapest capacity per dollar,
+             * the studio won every month for ever. That is the whole of how a
+             * city ends up with 25,000 spare studios.
+             */
+            double doors = fillableDoors(ch, t, headShortfall);
+            if (doors <= 0) {
+                blocked = "nobody the city has could live in one";
+                continue;
+            }
+
+            double price = priceForSegment(ch, t);
+
+            /* -----------------------------------------------------------------
+             * TWO QUESTIONS, AND THEY ARE NOT THE SAME QUESTION.
+             *
+             * WHETHER to build is asked at FULL OCCUPANCY: a block let out
+             * pays this much, and if that does not cover what the block costs
+             * to hold then no version of it is worth putting up. Jerus: "theyll
+             * rent at zero profit, but they wont build more if new rent is zero
+             * profit."
+             *
+             * WHICH to build is asked on the doors the city would actually put
+             * somebody in - a studio block is worth eighty rents in a city of
+             * single adults and nothing in a city of families, which is the
+             * whole of why there are three residential templates.
+             *
+             * Asking BOTH on fillable doors was a mistake worth recording: a
+             * city one household short of comfortable fills a fraction of a
+             * door, so every template failed the hurdle by two orders of
+             * magnitude and the city stopped building housing entirely - six
+             * homes and forty-seven residents at month 240. A shortage measured
+             * in doors is the right way to CHOOSE and the wrong way to JUDGE.
+             * ----------------------------------------------------------------- */
+            double hurdle = economyManager.housingBuildHurdle(t);
+            if (hurdle > 0 && t.getCapacity() * price < hurdle) {
+                blocked = String.format("rent does not cover a new %s", t.getName());
+                continue;
+            }
+
+            double income = doors * FamilyModel.rentWeightOf(t.homeSize()) * price;
+
             double cost = totalCostOf(t, 1);
             if (cost <= 0) continue;
 
-            double score = monthlyIncome / cost;
+            double score = income / cost;
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
+                bestDoors = doors;
             }
         }
 
         if (best == null) {
-            return Decision.no(sector, "nothing worth building");
+            return Decision.no(sector,
+                    blocked != null ? blocked : "nothing worth building");
         }
 
-        int quantity = orderSize(latentDemand - housingCapacity,
+        /*
+         * SIZED ON WHICHEVER SHORTAGE IS THE BIGGER. A city short of heads
+         * sizes on heads; a city with heads to spare and no family doors sizes
+         * on the doors it is short, converted to the capacity they carry.
+         */
+        double byHeads = latentDemand - housingCapacity;
+        double byDoors = bestDoors * FamilyModel.rentWeightOf(best.homeSize());
+        int quantity = orderSize(Math.max(byHeads, byDoors),
                 best.getCapacity(), best, cityConstructionOutput);
 
         if (quantity <= 0) {
@@ -527,9 +624,149 @@ public class BusinessInvestment {
         }
 
         return new Decision(sector, best, quantity,
-                String.format("%,.0f unhoused demand against %,d units",
-                        latentDemand - housingCapacity, housingCapacity),
+                familyShortfall > 0 && headShortfall <= 0
+                        ? String.format("%,.0f households need a door a child is allowed in",
+                                familyShortfall)
+                        : String.format("%,.0f unhoused demand against %,d units",
+                                byHeads, housingCapacity),
                 true);
+    }
+
+    /* =====================================================================
+       THE TWO SEGMENTS, FROM THE ADVISOR'S SIDE
+
+       Doors of size one and two can take an adults-only household of one or
+       two and nobody else; doors of size three and up can take anyone. See
+       FamilyModel's TWO SEGMENTS note, which is where the rule lives.
+       ===================================================================== */
+
+    /**
+     * Whether the segment this residential template belongs to has spare doors.
+     *
+     * The one thing standing between "the company is losing money" and "the
+     * company demolishes the houses the city is short of". A glut in one
+     * segment says nothing about the other, which is the entire reason the two
+     * are counted apart.
+     */
+    private boolean hasDoorsToSpare(BuildingsTemplate template) {
+        CommercialHandler ch = economyManager.getCommercialHandler();
+        if (ch == null) return true;   // nothing to read: behave as before
+        boolean family = template.homeSize() > FamilyModel.STUDIO_MAX_SIZE;
+        return doorShortfall(ch, family) < 0;
+    }
+
+    /**
+     * The head shortage planRealEstate() would see if it were asked right now.
+     *
+     * estimatedMonthlyProfit() is called from the credit check rather than
+     * from the planner, so it does not have the planner's local figures - but
+     * it must value a building the same way or the lender and the buyer are
+     * looking at two different buildings. Recomputed from the same two inputs
+     * rather than cached, because a cached one would be a figure about a
+     * different month.
+     */
+    private double latentHeadShortfall() {
+        int standing = 0;
+        for (int n : buildingManager.getTotalJobs()) standing += n;
+        double latent = (standing + buildingManager.getJobsUnderConstruction()) * 2.25;
+        return latent - buildingManager.getTotalHouseCapacity() * (1 + TARGET_HEADROOM);
+    }
+
+    /** Households in one segment with no door of their own, or fewer than none. */
+    private double doorShortfall(CommercialHandler ch, boolean family) {
+        if (ch == null) return 0;
+        return family
+                ? ch.getFamilySeekers() - ch.getFamilyHomes()
+                : ch.getStudioSeekers() - ch.getStudioHomes();
+    }
+
+    /**
+     * How many of this template's doors the city would actually put somebody in.
+     *
+     * A studio can only ever take a studio-seeker. A family unit takes a family
+     * first and then, if there are studio-seekers still short, one of those -
+     * which is what really happens in the model, because house() lets a single
+     * adult into a house once the studios have run out.
+     *
+     * Capped at what the building HAS, so a city short of ten thousand doors
+     * does not value a single block as if it solved the whole shortage.
+     *
+     * PLUS THE PEOPLE WHO HAVE NOT ARRIVED YET, and it does not work without
+     * them. Today's shortfall is a count of households that already live here,
+     * and a city whose jobs are about to double has none of them yet - so
+     * every template scored zero, nothing was ever built, and the city sat at
+     * five residents and no homes for four decades. The heads the job market
+     * is short are split between the segments in the proportion the city's
+     * OWN households take, because arrivals look like the place they arrive
+     * at, and then divided by the size of this unit to turn heads into doors.
+     */
+    private double fillableDoors(CommercialHandler ch, BuildingsTemplate t,
+                                 double headShortfall) {
+
+        int units = t.getDwellings() > 0
+                ? t.getDwellings()
+                : Math.max(1, t.getCapacity() / 4);
+
+        boolean family = t.homeSize() > FamilyModel.STUDIO_MAX_SIZE;
+
+        double studioNeeded = doorsNeeded(ch, false, headShortfall);
+
+        if (!family) {
+            return Math.min(units, studioNeeded);
+        }
+        return Math.min(units, doorsNeeded(ch, true, headShortfall) + studioNeeded);
+    }
+
+    /**
+     * Doors one segment is short: households here with nowhere, plus the ones
+     * the job market is about to bring.
+     *
+     * HEADS BECOME DOORS AT THE SEGMENT'S OWN HOUSEHOLD SIZE, and that is the
+     * whole of this method. The first version divided the coming heads by the
+     * size of the UNIT, which is a different thing entirely and quietly said
+     * that a hundred arriving residents need fifty studios or seventeen
+     * six-person houses. A studio does not hold two arbitrary people; it holds
+     * one adults-only household, and there are only ever as many of those as
+     * the city's household mix says. Measured with the unit-size version:
+     * studio doors went 1,840 -> 10,000 -> 24,480 over twenty-four months
+     * while family doors froze at 5,863 and family pressure climbed to 1.68.
+     * The old bug in new clothes.
+     */
+    private double doorsNeeded(CommercialHandler ch, boolean family,
+                               double headShortfall) {
+
+        /*
+         * THE SHORTFALL IS SIGNED, and that is the half that was missing.
+         *
+         * A segment with spare doors reads as a NEGATIVE shortfall, and the
+         * demand that has not arrived yet has to be netted against it - the
+         * arrivals will move into the empty flats that are already standing.
+         * Flooring the shortfall at zero first threw that away: a city with
+         * thirteen thousand spare studios still scored a new studio block on
+         * the arrivals alone, so it kept building them. Measured: 24,480
+         * studio doors at 0.47 households per door beside 5,863 family doors
+         * at 1.68, in the same city, in the same month.
+         */
+        double here = doorShortfall(ch, family);
+        if (headShortfall <= 0 || ch == null) return Math.max(0, here);
+
+        double heads = ch.getStudioSeekerHeads() + ch.getFamilySeekerHeads();
+        double share = heads > 0
+                ? (family ? ch.getFamilySeekerHeads() : ch.getStudioSeekerHeads()) / heads
+                : .5;   // a city with no households yet: split it evenly
+
+        double coming = headShortfall * share
+                / Math.max(1, ch.averageHouseholdSize(family));
+
+        return Math.max(0, here + coming);
+    }
+
+    /** The price the segment this template belongs to is charging. */
+    private double priceForSegment(CommercialHandler ch, BuildingsTemplate t) {
+        if (ch == null) return 0;
+        return t.homeSize() <= FamilyModel.STUDIO_MAX_SIZE
+                ? ch.getStudioRentPrice()
+                : ch.getRentPrice();
     }
 
     /**
@@ -1087,10 +1324,26 @@ public class BusinessInvestment {
             int units = t.getDwellings() > 0
                     ? t.getDwellings()
                     : Math.max(1, t.getCapacity() / 4);
-            double weight = families == null
-                    ? t.getCapacity()
-                    : units * families.marginalRentWeight(t.homeSize());
-            return weight * ch.getRentPrice();
+            /*
+             * THE SAME VALUATION planRealEstate() uses, and it has to be: this
+             * is what decides whether the sector may BORROW for the building,
+             * and a lender working from a different number than the buyer is
+             * how a sector ends up funding what it did not want. Doors the
+             * city would actually fill, at the price of the segment they are
+             * in - see fillableDoors() and priceForSegment().
+             *
+             * marginalRentWeight() is still the fallback for a caller with no
+             * family model attached, where the old nameplate figure is the
+             * only thing available.
+             */
+            if (families == null) {
+                return t.getCapacity() * ch.getRentPrice();
+            }
+            double doors = Math.min(units, fillableDoors(ch, t, latentHeadShortfall()));
+            if (doors <= 0) {
+                doors = units * (families.marginalRentWeight(t.homeSize()) > 0 ? 1 : 0);
+            }
+            return doors * FamilyModel.rentWeightOf(t.homeSize()) * priceForSegment(ch, t);
         }
 
         /*

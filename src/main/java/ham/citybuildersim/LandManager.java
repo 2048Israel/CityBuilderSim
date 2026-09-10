@@ -73,7 +73,14 @@ public class LandManager {
      * city of 160,000 needs hundreds of millions of square feet, and at these
      * prices that is hundreds of millions of dollars of land.
      */
-    private static final double BASE_BLOCK_COST = 70;
+    /*
+     * BASE_BLOCK_COST was here: a flat 70 founding dollars for a block of land,
+     * declared and never read. Removed 2026-09-09 rather than left, because a
+     * money constant nobody uses is a money constant nobody redenominates, and
+     * the next person to reach for it would have found a number that quietly
+     * means something different after a currency reform. The land price the
+     * game actually charges is LandMarket's, which is seeded.
+     */
 
     /** Each block bought makes the next this much dearer - annexing outward. */
     private static final double COST_GROWTH_PER_BLOCK = .02;

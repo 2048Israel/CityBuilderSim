@@ -52,8 +52,16 @@ public class SimulationEngine {
          * keeps that from being a trap - it always digs itself out eventually,
          * slowly, at a real cost in months.
          */
+        /*
+         * getBuildingOutput(), not getConstructionOutput(): the second is what
+         * the sector can do in a month, the first is what is left for the
+         * SITES once the standing housing stock has had its repairs. Same
+         * figure recogniseWork() is paid on, one line apart in
+         * startOfMonthUpdate(), so the sites advance by exactly the work the
+         * sector is paid for. See Game.getBuildingOutput().
+         */
         game.recordCompletions(
-                buildingManager.advanceConstruction(game.getConstructionOutput()));
+                buildingManager.advanceConstruction(game.getBuildingOutput()));
 
         // Roads, before anything reads them. Capacity and load are both pure
         // functions of what is standing, and what is standing just changed:
@@ -113,6 +121,12 @@ public class SimulationEngine {
         // Game.rebuildSimulationState(), or a reloaded city prices its rent off
         // a different shortage from the live one for a month.
         economyManager.setHouseholdCount(game.getFamilies().totalHouseholds());
+        // ...and the same count split into the two segments the rent market
+        // now prices separately. See FamilyModel's TWO SEGMENTS.
+        economyManager.setHousingSeekers(game.getFamilies().studioSeekers(),
+                                         game.getFamilies().familySeekers(),
+                                         game.getFamilies().studioSeekerHeads(),
+                                         game.getFamilies().familySeekerHeads());
         economyManager.setMarginalHousingCost(game.marginalHousingCost());
 
         economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR));

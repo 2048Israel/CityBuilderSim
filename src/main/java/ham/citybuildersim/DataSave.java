@@ -897,6 +897,18 @@ public class DataSave {
     public void setRentPrice(double v) { this.rentPrice = v; }
     public double getRentPrice()       { return rentPrice; }
 
+    /**
+     * The studio market's own price, added 2026-09-09 with the segment split.
+     *
+     * Absent from every older save, where it deserialises to zero - and zero
+     * is the signal the load path uses to leave the studio price alone rather
+     * than to charge nothing. See Game's load of it.
+     */
+    private double studioRentPrice;
+
+    public void setStudioRentPrice(double v) { this.studioRentPrice = v; }
+    public double getStudioRentPrice()       { return studioRentPrice; }
+
     public void setStoreSellPrice(double v) { this.storeSellPrice = v; }
     public double getStoreSellPrice()       { return storeSellPrice <= 0 ? .3 : storeSellPrice; }
 
@@ -918,6 +930,27 @@ public class DataSave {
     /** What the landlords billed this month - see FamilyModel.setRentWeight(). */
     public void setRentWeight(double weight) { this.rentWeight = weight; }
     public double getRentWeight()            { return rentWeight; }
+
+    /**
+     * The studio half of that weight, added 2026-09-09 with the segment split.
+     *
+     * Absent from every older save, where it deserialises to zero - and zero is
+     * the right answer for those saves rather than a missing one: they had a
+     * single rent price, that price is what rentPrice still means, and the
+     * family half is where it belongs. So the load path takes the family weight
+     * as `rentWeight - rentWeightStudio` on every save, old or new, and needs
+     * no version test at all.
+     *
+     * Saved rather than re-derived because re-deriving it drifts. The split was
+     * briefly reconstructed by re-running the housing match on load and
+     * apportioning the saved total by it - which lands within a household of
+     * where it was, and SaveFileCheck measured that as 1.3 cents on $690,709
+     * one month later. Two prices make a rounding error into a wrong bill.
+     */
+    private double rentWeightStudio;
+
+    public void setRentWeightStudio(double weight) { this.rentWeightStudio = weight; }
+    public double getRentWeightStudio()            { return rentWeightStudio; }
 
     /**
      * The cap the shops sold under, and the demand behind it.
@@ -1111,6 +1144,25 @@ public class DataSave {
     public java.util.List<Integer> getPopulationTrend(){ return populationTrend; }
     public void setCityCapitalSpending(double v){ this.cityCapitalSpending = v; }
     public double getCityCapitalSpending(){ return cityCapitalSpending; }
+
+    /**
+     * What the treasury paid the builders to keep the city's own buildings up.
+     *
+     * A FLOW, struck inside the tick, so it cannot be rebuilt from the stock a
+     * month ended with - the standing buildings say what the bill WOULD be, not
+     * what was settled, and those differ for a month after anything is built or
+     * pulled down. Without it a reloaded city's Government screen reads $0
+     * repairs beside a treasury that had just paid millions, which is the
+     * fourteen-readings-at-zero bug the load path was audited for once already.
+     *
+     * NOT a SAVE_FORMAT change: Gson leaves an absent field alone, so a save
+     * written before 2026-09-09 loads with zero here - and zero is exactly what
+     * those cities paid, because nothing but housing was billed then.
+     */
+    private double cityMaintenancePaid;
+
+    public void setCityMaintenancePaid(double v){ this.cityMaintenancePaid = v; }
+    public double getCityMaintenancePaid(){ return cityMaintenancePaid; }
     public void setMonthlyMaterialImports(double v){ this.monthlyMaterialImports = v; }
     public double getMonthlyMaterialImports(){ return monthlyMaterialImports; }
     public void setMaterialsConsumed(int v){ this.materialsConsumed = v; }

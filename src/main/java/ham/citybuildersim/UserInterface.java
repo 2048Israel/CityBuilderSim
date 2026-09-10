@@ -1160,9 +1160,47 @@ public class UserInterface extends Application {
             game.newGame();
             openCity();
         });
+        /* =================================================================
+           WHAT "RESUME" MEANS DEPENDS ON WHETHER THERE IS ANYTHING TO RESUME
+           -----------------------------------------------------------------
+           The button used to do one thing in all three situations: call
+           resumeGame(), which only calls initialize(), and then draw a screen.
+           Pressed from the title screen with no city ever started, that drew
+           the city view over an empty world - a game board with no game on it,
+           and no way to tell that from a real one.
+
+           There are three cases and the button now answers all three.
+
+             a game in progress -> back to the screen Esc was pressed on. This
+                is the case it was written for and it is unchanged.
+             no game, but an autosave on disk -> load the autosave. This is
+                what a player means by Resume on a cold start: carry on from
+                where the game last saved itself, without going through the
+                load list to find the one slot they were never going to pick
+                anything but.
+             no game and no autosave -> greyed out. A first run has nothing to
+                resume, and a button that does nothing is worse than one that
+                says so.
+
+           The autosave is deliberately the ONLY slot this reaches. Resume is
+           "carry on", not "choose"; choosing is what Load Game is for.
+           ================================================================= */
+        boolean playing = game.isRunning();
+        boolean autosaveWaiting =
+                game.getGameFiles().slotIsLoadable(GameFiles.AUTOSAVE_SLOT);
+
+        resumeGame.setDisable(!playing && !autosaveWaiting);
+
         resumeGame.setOnAction(e -> {
-            game.resumeGame();
-            if (resumeTo != null) resumeTo.run(); else openCity();
+            if (game.isRunning()) {
+                game.resumeGame();
+                if (resumeTo != null) resumeTo.run(); else openCity();
+            } else {
+                // loadSlot() owns the failure path and draws its own screen,
+                // so a damaged autosave says why rather than dropping the
+                // player into an empty city.
+                loadSlot(GameFiles.AUTOSAVE_SLOT);
+            }
         });
         loadGameSave.setOnAction(e -> showLoadMenu());
         saveGame.setOnAction(e -> showSavingMenu());
@@ -2467,7 +2505,7 @@ public class UserInterface extends Application {
         String worst = null;
         for (EducationType type : EducationType.values()) {
             if (type == EducationType.NONE) continue;
-            double pocket = Education.tuitionOf(type) * (1 - schools.getTuitionSubsidy());
+            double pocket = schools.feeFor(type) * (1 - schools.getTuitionSubsidy());
             WageBand from = type.requires();
             double wage = from == null ? labour.getWage(JobType.NO_DIPLOMA)
                                        : bestWageIn(labour, from);
@@ -3859,7 +3897,7 @@ public class UserInterface extends Application {
         for (EducationType type : EducationType.values()) {
             if (type == EducationType.NONE) continue;
 
-            double fee = Education.tuitionOf(type);
+            double fee = game.getEducation().feeFor(type);
             double pocket = fee * (1 - share);
             WageBand from = type.requires();
             double wage = from == null ? market.getWage(JobType.NO_DIPLOMA)
@@ -9856,7 +9894,7 @@ public class UserInterface extends Application {
 
                 out.add(String.format("Tuition is %s a month per student; the city pays"
                         + " whatever share the education policy says.",
-                        unitPrice(Education.tuitionOf(teaches))));
+                        unitPrice(game.getEducation().feeFor(teaches))));
                 break;
             }
 
@@ -11010,6 +11048,10 @@ public class UserInterface extends Application {
             column.getChildren().add(bookLine("Subsidy from the city",
                     now.fromTheCity(), then.fromTheCity(), known, Palette.ACCENT));
         }
+        if (now.depositInterest() != 0 || then.depositInterest() != 0) {
+            column.getChildren().add(bookLine("Interest on its bank balance",
+                    now.depositInterest(), then.depositInterest(), known, Palette.GOOD));
+        }
 
         double gap = now.unexplained();
         if (Math.abs(toDollars(gap)) > 1) {
@@ -11317,14 +11359,43 @@ public class UserInterface extends Application {
         double perDoor = game.getHouseholds().rentPerHousehold();
         double beds = h.getRentPrice() > 0 ? perDoor / h.getRentPrice() : 0;
 
-        column.getChildren().add(statementHead("The rent, per person of capacity"));
+        column.getChildren().add(statementHead("Family homes, per person of capacity"));
         column.getChildren().add(statementLine("Charged now", cash(h.getRentPrice())));
         column.getChildren().add(statementLine("Heading for", cash(h.getRentTarget()),
                 h.getRentTarget() > h.getRentPrice() ? Palette.WARN : Palette.GOOD));
+        column.getChildren().add(statementLine("Households per door",
+                String.format("%.2f", h.familyPressure()),
+                h.familyPressure() > 1.2 ? Palette.BAD
+                        : h.familyPressure() > 1 ? Palette.WARN : Palette.GOOD));
         column.getChildren().add(statementNote(
                 "Rent moves toward its target a fraction of the gap a month rather than "
                 + "jumping — leases do not all end in the same week. So a rent that is "
                 + "about to rise is visible here months before it is felt."));
+
+        /* -----------------------------------------------------------------
+         * THE SECOND MARKET, and it has to be on screen or the split is
+         * invisible. A door a child is not allowed in is a different product
+         * with its own scarcity and its own price - a city can be desperate
+         * for family homes while its studios stand empty, and one blended
+         * number said that city was comfortable.
+         * ----------------------------------------------------------------- */
+        column.getChildren().add(statementHead("Studios and one-beds"));
+        column.getChildren().add(statementLine("Charged now", cash(h.getStudioRentPrice())));
+        column.getChildren().add(statementLine("Heading for", cash(h.getStudioRentTarget()),
+                h.getStudioRentTarget() > h.getStudioRentPrice()
+                        ? Palette.WARN : Palette.GOOD));
+        column.getChildren().add(statementLine("Households per door",
+                String.format("%.2f", h.studioPressure()),
+                h.studioPressure() > 1.2 ? Palette.BAD
+                        : h.studioPressure() > 1 ? Palette.WARN : Palette.GOOD));
+        column.getChildren().add(statementLine("Doors",
+                people(h.getStudioHomes()) + " against "
+                        + people(h.getFamilyHomes()) + " family"));
+        column.getChildren().add(statementNote(
+                "Nobody with a child may live in a studio, so the two are priced as two "
+                + "markets. If the family figure is high and this one is low, the city is "
+                + "not short of housing — it is short of the right shape of it, and "
+                + "building more studios will not touch it."));
 
         column.getChildren().add(statementLine(
                 beds > 0 ? String.format("What one let home pays, billed for %.1f", beds)
@@ -11337,11 +11408,23 @@ public class UserInterface extends Application {
                 + "ledger — it is the rent figure the Population screens print."
                 + (perDoor > 0 ? "" : " It is struck when a month closes, so it reads nothing"
                         + " until you press Next Month.")));
+        column.getChildren().add(statementHead("What sets the price"));
         column.getChildren().add(statementLine("The cost of the next home",
-                cash(h.getMarginalHousingCost())));
+                cash(h.getStructurePerCapacity() + h.getLandPerCapacity())));
+        column.getChildren().add(statementNote(String.format(
+                "Per person of capacity: %s of building and %s of ground. What it would "
+                + "cost to put up one more, which is what a balanced market pays for. "
+                + "Cheap land and cheap materials are a rent policy.",
+                cash(h.getStructurePerCapacity()), cash(h.getLandPerCapacity()))));
+        column.getChildren().add(statementLine("They will not go below",
+                cash(h.rentBreakEven()), Palette.TEXT_MUTED));
         column.getChildren().add(statementNote(
-                "What it would cost to put up one more, which is what the rent is priced "
-                + "against. Cheap land and cheap materials are a rent policy."));
+                "Repairs, property tax and interest on what the company already owes, "
+                + "over every head its buildings hold — what the standing stock costs "
+                + "to hold whether anyone is in it or not. Rent can be pushed down to "
+                + "this by a glut and no further: below it the landlords are paying to "
+                + "house people. An empty home still costs this, which is why building "
+                + "doors nobody wants is not free."));
     }
 
     private void industryOperations(VBox column) {
@@ -12446,7 +12529,7 @@ public class UserInterface extends Application {
     private VBox tuitionBlock(EducationType course) {
 
         Education schools = game.getEducation();
-        double full = Education.tuitionOf(course);
+        double full = schools.feeFor(course);
         double pocket = schools.outOfPocket(course);
         double subsidy = schools.getTuitionSubsidy();
 
@@ -12871,14 +12954,14 @@ public class UserInterface extends Application {
             if (course == EducationType.NONE) continue;
             double students = schools.getEnrolled(course);
             if (students < .5) continue;
-            double charge = Education.tuitionOf(course) * students;
+            double charge = schools.feeFor(course) * students;
             billed += charge;
 
             fees.add(gridCell(course.getLabel(), Palette.TEXT_BODY,
                     Palette.SIZE_CAPTION, false), 0, line);
             fees.add(gridCell(people(students), Palette.TEXT_BODY,
                     Palette.SIZE_CAPTION, true), 1, line);
-            fees.add(gridCell(cash(Education.tuitionOf(course)), Palette.TEXT_MUTED,
+            fees.add(gridCell(cash(schools.feeFor(course)), Palette.TEXT_MUTED,
                     Palette.SIZE_CAPTION, true), 2, line);
             fees.add(gridCell(tightMoney(toDollars(charge * (1 - subsidy))),
                     Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
@@ -12955,7 +13038,7 @@ public class UserInterface extends Application {
             double keep = bm.getSchoolUpkeep(course);
             if (pay <= 0 && keep <= 0) continue;
 
-            double back = Education.tuitionOf(course)
+            double back = schools.feeFor(course)
                     * schools.getEnrolled(course) * (1 - subsidy);
             double net = pay + keep - back;
 
@@ -12989,7 +13072,20 @@ public class UserInterface extends Application {
         double elecPay = uh.getElectricityPayroll();
         double waterSales = uh.getWaterRevenue();
         double waterPay = uh.getWaterPayroll();
-        double roadUpkeep = bm.getUpkeepByCategory(BuildingType.INFRASTRUCTURE);
+        /*
+         * THE ROADS' REPAIR BILL, which until 2026-09-09 could only ever read
+         * ZERO. This asked BuildingManager for the INFRASTRUCTURE category's
+         * `upkeep`, and no road has ever had an upkeep figure - the field was
+         * only ever filled in for healthcare and education. So the Services
+         * screen carried a line that was structurally incapable of being
+         * non-zero, which is worse than not carrying it: a player reads $0 and
+         * concludes roads are free to keep.
+         *
+         * They are not, and now the model says so. This is the real charge,
+         * from the same per-category maintenance the whole city pays.
+         */
+        double roadUpkeep = game.getEconomyManager()
+                .getMaintenanceCharge(BuildingType.INFRASTRUCTURE);
 
         /*
          * A BUSINESS, unlike the two above it. The utilities sell what they
@@ -16147,15 +16243,27 @@ public class UserInterface extends Application {
 
     private static java.util.List<String> spendingNames() {
         return java.util.List.of("Pensions", "Healthcare", "Education",
-                "Buildings", "Land bought", "Debt interest");
+                "Buildings", "Repairs", "Land bought", "Debt interest");
     }
 
+    /*
+     * REPAIRS JOINED THIS LIST ON 2026-09-09, and it is a real line rather than
+     * a nicety. Jerus: "all buildings need maintenance, and make sure they get
+     * billed." The city owns the roads, the schools, the hospitals and both
+     * utility plants, so the treasury pays their repair bill - and on the first
+     * measurement that was two thirds of the whole city's maintenance and about
+     * $2M a month. A cost that size belongs on the budget the player reads,
+     * not only in the cash balance. Leaving it off is the same failure as the
+     * bank's profit tax and the auto-subsidy, both of which were on no budget
+     * at all until somebody went looking.
+     */
     private java.util.List<Double> spendingAmounts(EconomyManager em, NationalAccounts na) {
         return java.util.List.of(
                 na.getPensions(),
                 na.getHealthSpending(),
                 na.getEducationSpending(),
                 na.getCapitalSpending(),
+                game.getCityMaintenancePaid(),
                 na.getLandPurchases(),
                 na.getInterestExpense());
     }
@@ -16435,7 +16543,7 @@ public class UserInterface extends Application {
             double students = schools.getEnrolled(course);
             if (students < .5) continue;
             box.getChildren().add(payerRow(course.getLabel(),
-                    Education.tuitionOf(course) * students * (1 - subsidy), total,
+                    schools.feeFor(course) * students * (1 - subsidy), total,
                     cash(schools.outOfPocket(course))));
         }
         box.getChildren().add(statementNote(String.format(

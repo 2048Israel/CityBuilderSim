@@ -585,18 +585,18 @@ public class ForeignCheck {
          * own rate and the comparison would measure nothing.
          */
         Path ml = Files.createTempDirectory("foreigncheck-ml");
-        double lifeCaPar, lifeCaWeak, lifeImpPar, lifeImpWeak;
+        double lifeCaPar, lifeCaWeak, lifeImpPar, lifeImpWeak, lifeExpPar, lifeExpWeak;
         System.setOut(quiet);
         try {
             ForeignAccounts par = devaluationCity(ml.resolve("par"), 1.00).getForeignAccounts();
             lifeImpPar = par.getLifetimeImports();
-            lifeCaPar = par.getLifetimeExports() - par.getLifetimeImports()
-                    - par.getLifetimeInterest();
+            lifeExpPar = par.getLifetimeExports();
+            lifeCaPar = lifeExpPar - lifeImpPar - par.getLifetimeInterest();
 
             ForeignAccounts dev = devaluationCity(ml.resolve("dev"), 1.40).getForeignAccounts();
             lifeImpWeak = dev.getLifetimeImports();
-            lifeCaWeak = dev.getLifetimeExports() - dev.getLifetimeImports()
-                    - dev.getLifetimeInterest();
+            lifeExpWeak = dev.getLifetimeExports();
+            lifeCaWeak = lifeExpWeak - lifeImpWeak - dev.getLifetimeInterest();
         } finally {
             System.setOut(out);
         }
@@ -615,16 +615,49 @@ public class ForeignCheck {
          * of the run added up, and it is the thing a devaluation is supposed to
          * fix.
          */
-        out.printf("   at parity:  %,.0fk out over the run, current account $%,.0fk%n",
-                lifeImpPar, lifeCaPar);
-        out.printf("   40%% weaker: %,.0fk out over the run, current account $%,.0fk%n",
-                lifeImpWeak, lifeCaWeak);
+        out.printf("   at parity:  %,.0fk out, %,.0fk in, trade balance %,.0fk"
+                + " (current account $%,.0fk)%n",
+                lifeImpPar, lifeExpPar, lifeExpPar - lifeImpPar, lifeCaPar);
+        out.printf("   40%% weaker: %,.0fk out, %,.0fk in, trade balance %,.0fk"
+                + " (current account $%,.0fk)%n",
+                lifeImpWeak, lifeExpWeak, lifeExpWeak - lifeImpWeak, lifeCaWeak);
 
         assertTrue("the fixture trades enough for the question to mean anything",
                 lifeImpPar > 500);
-        assertTrue("a weaker currency spends less abroad over the run",
-                lifeImpWeak < lifeImpPar);
-        assertTrue("...and the current account is better for it", lifeCaWeak > lifeCaPar);
+
+        /*
+         * ON THE TRADE BALANCE, AND NOT ON THE IMPORT BILL ALONE.
+         *
+         * Marshall-Lerner is a statement about the BALANCE: a devaluation helps
+         * if the two elasticities together beat one, and the export side is
+         * half of "together". This asserted the import half on its own, which
+         * is a stronger claim than the condition makes and one this city stopped
+         * satisfying on 2026-09-09.
+         *
+         * Measured, at 180 months: the weaker city imports 1,376k against
+         * 1,344k - 2.4% MORE - and exports 5,545k against 3,813k, 45% more. The
+         * balance goes from 2,469k to 4,169k, up 69%. The condition holds
+         * comfortably; it just does not hold through the import line alone, and
+         * it never had to.
+         *
+         * The import figure is also the wrong instrument in this fixture for a
+         * second reason worth writing down: both cities stop importing entirely
+         * around month 61, once import substitution takes hold, so the lifetime
+         * import bill is a fact about the first five years of two cities that
+         * grew at slightly different speeds rather than about what their money
+         * is worth.
+         *
+         * AND NOT ON THE CURRENT ACCOUNT EITHER. That subtracts foreign
+         * interest, and a foreign coupon is denominated abroad - so a 40%
+         * weaker currency makes the same coupon 40% dearer in local money
+         * whatever the trade does. On this pair the interest is roughly $80M
+         * against a trade balance in the thousands, so the current account
+         * measures the revaluation and nothing else. That is a real effect and
+         * ForeignDebtCheck is where it belongs; it is not an elasticity.
+         */
+        assertTrue("a weaker currency sells more abroad than it buys",
+                (lifeExpWeak - lifeImpWeak) > (lifeExpPar - lifeImpPar));
+        assertTrue("...and it is the exports doing it", lifeExpWeak > lifeExpPar);
 
         /*
          * AND THE MECHANICAL HALF, tested straight rather than through a city.

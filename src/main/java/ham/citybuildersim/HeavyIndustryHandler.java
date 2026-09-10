@@ -193,6 +193,39 @@ public class HeavyIndustryHandler {
     public void setCash(double cash)                  { this.cash = cash; }
     public void setInterestExpense(double value)      { this.interestExpense = value; }
     public void setPropertyTaxExpense(double value)   { this.propertyTaxExpense = value; }
+
+    /* =====================================================================
+       A BUILDING COSTS MONEY TO STAND, IN EVERY SECTOR (2026-09-09).
+
+       Jerus: "all buildings need maintenance, and make sure they get billed."
+       The second half is the whole instruction. `upkeep` had been a field on
+       every template since the beginning and was charged on precisely two
+       categories - healthcare and education - so BuildingManager's own note
+       called it what it was: "every building's upkeep in this file was a
+       wish."
+
+       Residential got a real repair flow on 2026-09-09 (money, materials AND
+       construction points, placed as an order with the builders at 1%/yr of
+       what the building cost to put up). This is that same flow for the rest
+       of the city, and it is deliberately shaped like the PROPERTY TAX - a
+       per-category charge handed to whoever owns the category - because that
+       is a path this codebase already trusts.
+
+       Same rule as the tax: no money moves here. The figure is assigned, the
+       income statement subtracts it, and what the sector banks is already net
+       of it.
+       ===================================================================== */
+
+    /** What this sector's buildings cost to keep standing this month. */
+    private double maintenanceExpense;
+    private double rMaintenanceExpense;
+
+    public void setMaintenanceExpense(double value) {
+        this.maintenanceExpense = Math.max(0, value);
+    }
+
+    public double getMaintenanceExpense()       { return maintenanceExpense; }
+    public double getReportMaintenanceExpense() { return rMaintenanceExpense; }
     public void setLandValue(double value)            { this.landValue = value; }
     public void setBuildingsValue(double value)       { this.buildingsValue = value; }
     public void setBondsPayable(double value)         { this.bondsPayable = value; }
@@ -330,7 +363,22 @@ public class HeavyIndustryHandler {
         rElectricityCost = getElectricityCost();
         rWaterCost = water * bWaterRatio * pricePerWaterUnit;
 
-        rOperatingCost = rInputCost + rPayroll + rElectricityCost + rWaterCost;
+        rMaintenanceExpense = maintenanceExpense;
+        /*
+         * MAINTENANCE IS AN OPERATING COST, which is where real estate has
+         * always put it (see SectorBooks' REAL_ESTATE case, where the repair
+         * bill sits in `inputs`). Keeping a building standing is a cost of
+         * doing business, not a financing charge, so it belongs above operating
+         * income rather than beside the interest.
+         *
+         * It also has to be here for SectorBooksCheck's identity to hold:
+         * operating income is checked against revenue minus operating cost, so
+         * a cost inside one and outside the other is exactly the "derived line
+         * that quietly becomes the sum of everything nobody named" this file
+         * has been caught by twice.
+         */
+        rOperatingCost = rInputCost + rPayroll + rElectricityCost + rWaterCost
+                + rMaintenanceExpense;
         rOperatingIncome = rRevenue - rOperatingCost;
 
         rInterestExpense = interestExpense;
@@ -605,6 +653,7 @@ public class HeavyIndustryHandler {
         netIncome *= scale;
         interestExpense *= scale;
         propertyTaxExpense *= scale;
+        maintenanceExpense *= scale;
         landValue *= scale;
         buildingsValue *= scale;
         bondsPayable *= scale;
@@ -612,6 +661,31 @@ public class HeavyIndustryHandler {
         pricePerWaterUnit *= scale;
         revenueAtCapacity *= scale;
         inputCostAtCapacity *= scale;
+
+        /*
+         * ...AND THE MILLS' OWN COPY OF THE WAGE SCALE.
+         *
+         * The twelfth sighting, and the loudest of them. EconomyManager pushes
+         * this array in every month, so it looks like it cannot go stale - and
+         * it goes stale for exactly one month, which is the month that matters.
+         * getPayroll() reads it inside computeMonthlyReport(), which runs at the
+         * top of the tick BEFORE updateHeavyIndustryWages() has pushed the new
+         * scale in. So a reformed city's mills paid a hundred times their whole
+         * revenue in wages for one month: payroll 194.53 against a revenue of
+         * 12.87, an operating loss of 193 where the unreformed pair lost 1.69.
+         *
+         * They then did what a business with a hole in its month does - borrowed
+         * to cover it. Bonds payable came out at 826.9 against 56.6, the cash
+         * came back as a surplus, the bank's deposit book took the borrowed
+         * money, its funding cost and its foreign borrowing moved with it, and
+         * from there every financial figure in the city was a different city's.
+         * The real economy - population, output, rent, the price level - stayed
+         * exact throughout, which is why this survived so long: nothing a player
+         * looks at first was wrong.
+         *
+         * Mining and construction scale their wage arrays; this one never did.
+         */
+        for (int i = 0; i < wages.length; i++) wages[i] *= scale;
 
         /*
          * ...AND LAST MONTH'S STATEMENT, which is read at the top of the next
@@ -634,6 +708,7 @@ public class HeavyIndustryHandler {
         rWaterCost *= scale;           rOperatingCost *= scale;
         rOperatingIncome *= scale;     rInterestExpense *= scale;
         rPropertyTaxExpense *= scale;  rNetIncome *= scale;
+        rMaintenanceExpense *= scale;
         rSalesTax *= scale;
     }
 

@@ -59,8 +59,33 @@ public class CapitalFlows {
     /** ...and going out, which is faster, because leaving is always faster. */
     public static final double DEPARTURE_SPEED = .20;
 
-    /** Below this much foreign money, the flow is not worth modelling. */
+    /**
+     * Below this much foreign money, the flow is not worth modelling.
+     *
+     * MONEY, in FOUNDING dollars, so it is seeded rather than read directly -
+     * the fourteenth member of the redenomination family and the last one a
+     * reformed city could feel. A hundred-to-one reform turns $3.01 of hot money
+     * into $0.03, which is under a flat $1 floor, so the reformed city's foreign
+     * money was written off entirely while its unreformed twin kept it - and the
+     * bank's deposit book, its funding cost, its foreign borrowing and the
+     * balance of payments all followed. A threshold in absolute money is a
+     * threshold that means something different after a reform.
+     */
     public static final double MIN_STOCK = 1;
+
+    /** MIN_STOCK in today's money. See seedConstants(). */
+    private double minStock = MIN_STOCK;
+
+    /**
+     * Puts the money constants into the city's current unit.
+     *
+     * Called at construction (unit 1), on load, and kept current through a
+     * reform by redenominate() - the same three doors every other seeded
+     * constant in this codebase goes through.
+     */
+    public void seedConstants(double unit) {
+        minStock = MIN_STOCK / (unit > 0 ? unit : 1);
+    }
 
     /**
      * Months of output below which the hot money is too small to break anything.
@@ -163,6 +188,37 @@ public class CapitalFlows {
      * @param defaulted      true if the city has defaulted abroad recently
      * @param month          the game month
      */
+    /* =====================================================================
+       WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE.
+
+       A pure forecast: no state moves, nothing is recorded. It exists so the
+       BANK can ask "if I paid savers more, how much more would turn up?" before
+       deciding what to pay - see Bank.chooseDepositRate().
+
+       It is the same arithmetic takeMonth() uses, lifted out and made
+       side-effect-free, rather than a second model of the same thing. A
+       forecast that disagrees with the mechanic it forecasts is worse than no
+       forecast, and this codebase has been caught by a re-derived line more
+       than once.
+
+       Panic is deliberately NOT modelled here. A bank deciding its rate for a
+       normal month should not be handed a number that assumes a run; and a bank
+       in a run has fundToCover()'s own guards in front of it.
+       ===================================================================== */
+    public double stockAt(double depositRate, double cityRate, double worldRate,
+                          double countryPremium, double monthlyGdp) {
+        double best = Math.max(depositRate, cityRate);
+        double wouldSpread = Math.max(0, Math.min(MAX_SPREAD, best - worldRate - countryPremium));
+        return wouldSpread * APPETITE * Math.max(0, monthlyGdp) * 12;
+    }
+
+    /** How much of that gap actually arrives in the first month. */
+    public double arrivalsAt(double depositRate, double cityRate, double worldRate,
+                             double countryPremium, double monthlyGdp) {
+        double wouldBe = stockAt(depositRate, cityRate, worldRate, countryPremium, monthlyGdp);
+        return Math.max(0, (wouldBe - stock) * ARRIVAL_SPEED);
+    }
+
     public void takeMonth(double depositRate, double cityRate, double worldRate,
                           double countryPremium, double monthlyGdp,
                           double reserves, double yearlyRateMove,
@@ -196,7 +252,7 @@ public class CapitalFlows {
          * A default is the exception, because a city that has already refused
          * to pay does not need to be fragile for money to leave.
          */
-        boolean material = stock > Math.max(MIN_STOCK, monthlyGdp * MATERIAL_MONTHS);
+        boolean material = stock > Math.max(minStock, monthlyGdp * MATERIAL_MONTHS);
         boolean fragile = material && Math.max(0, reserves) < stock * PANIC_BACKING;
 
         String shock = null;
@@ -258,7 +314,7 @@ public class CapitalFlows {
         }
 
         stock = Math.max(0, stock + arrived - departed);
-        if (stock < MIN_STOCK && target <= 0) {
+        if (stock < minStock && target <= 0) {
             departed += stock;
             stock = 0;
         }
@@ -353,6 +409,9 @@ public class CapitalFlows {
         lifetimeArrived  *= scale;
         lifetimeDeparted *= scale;
         peakStock *= scale;
+        // ...and the floor the stock is measured against, or a reform would
+        // move the threshold without moving the thing being thresholded.
+        minStock *= scale;
     }
 
 }

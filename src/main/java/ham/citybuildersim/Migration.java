@@ -428,6 +428,51 @@ public class Migration {
     private double newest(int t) { return history[t][DECLINE_MONTHS - 1]; }
     private double oldest(int t) { return history[t][0]; }
 
+    /* =====================================================================
+       A REFORM IS A CHANGE OF UNITS, AND THE STREAK IS TWELVE MONTHS LONG
+       ---------------------------------------------------------------------
+       history[][] is a year of each tier's wage bill in REAL terms, and real
+       terms still means DOLLARS - deflated ones. So a currency reform has to
+       divide it like any other money, and for a long time nothing did: Game's
+       reform scaled twenty balances and eleven modules and never called this
+       class at all.
+
+       What that costs is not a rounding error. severity() is
+       1 - newest/oldest, and after an unscaled reform newest is in new money
+       while oldest is still in old, so EVERY qualifying tier reads as 99%
+       destroyed. DenominationCheck caught it as 310 people leaving the
+       reformed city in its first month against 100 leaving its twin - three
+       times the exodus, from a button that was only supposed to relabel the
+       axis.
+
+       WHY IT HID FOR SO LONG, which is the more useful half. severity() is
+       only ever asked of a tier that isDeclining(), and that needs a full
+       twelve-month streak. On the old wage ladder no tier in this fixture ever
+       reached twelve, so the ratio was never struck and the unscaled array was
+       never read. Raising the ladder to real wages (2026-09-09) put UNSKILLED
+       and SKILLED on a genuine thirteen-month decline, the gate opened, and a
+       bug that had been sitting in the file since the reform was written
+       showed up in a harness that had nothing to do with wages.
+
+       The lesson worth keeping: a leak inside a branch is invisible until
+       something opens the branch, and "the suite was green" only ever meant
+       "green on the numbers we happened to be running".
+       ===================================================================== */
+
+    /**
+     * Scales the wage history so a reformed city reads its own past correctly.
+     *
+     * Only the history moves. Streaks are counts of months, monthsRecorded is a
+     * count of months, the mixes and the departure figures are PEOPLE, and the
+     * rent burden is a ratio - none of them are money and none of them move.
+     */
+    public void redenominate(double scale) {
+        if (!(scale > 0) || !Double.isFinite(scale)) return;
+        for (int t = 0; t < TIERS; t++) {
+            for (int m = 0; m < DECLINE_MONTHS; m++) history[t][m] *= scale;
+        }
+    }
+
     /* ------------------------------- recording ------------------------------- */
 
     /**

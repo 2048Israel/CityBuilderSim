@@ -44,6 +44,50 @@ public class DenominationCheck {
     }
 
     /** Within a RELATIVE band, for the claims a reform can only keep approximately. */
+    /**
+     * Everything real to the person, everything nominal to the factor.
+     *
+     * One helper rather than five repeated blocks, so the month, the year and
+     * the decade are held to the SAME standard and the only thing that changes
+     * between them is how much floating-point drift is allowed to accumulate.
+     */
+    static void sameCity(Game plain, Game lopped, double factor, double band) {
+        assertTrue("the same people live there, to the person",
+                plain.getPopulationManager().getPopulation()
+                        == lopped.getPopulationManager().getPopulation());
+        relative("the same output", lopped.getEconomyManager().getMonthGdp(),
+                plain.getEconomyManager().getMonthGdp() / factor, band);
+        relative("...and the same year of it", lopped.getEconomyManager().getYearGdp(),
+                plain.getEconomyManager().getYearGdp() / factor, band);
+        relative("the same rent", rent(lopped), rent(plain) / factor, band);
+        relative("the same price level", lopped.getPriceIndex().getIndex(),
+                plain.getPriceIndex().getIndex(), band);
+        relative("the same currency", lopped.getForeignAccounts().getRate(),
+                plain.getForeignAccounts().getRate() / factor, band);
+        relative("the same treasury", lopped.getCash(), plain.getCash() / factor, band);
+        relative("the same shops' till",
+                lopped.getEconomyManager().getCommercialHandler().getCommercialCash(),
+                plain.getEconomyManager().getCommercialHandler().getCommercialCash() / factor,
+                band);
+        relative("the same city debt", lopped.getDebtManager().getAllPrincipal(),
+                plain.getDebtManager().getAllPrincipal() / factor, band);
+        relative("the same bank", lopped.getBank().getDeposits(),
+                plain.getBank().getDeposits() / factor, band);
+    }
+
+    /** Equal to within a RELATIVE band, so one helper works at any scale. */
+    static void relative(String label, double actual, double expected, double band) {
+        double scale = Math.max(1e-12, Math.abs(expected));
+        double off = Math.abs(actual - expected) / scale;
+        if (off > band) {
+            fails++;
+            out.printf("%-62s FAIL  %,.10f != %,.10f  (%.3g apart)%n",
+                    label, actual, expected, off);
+        } else {
+            out.printf("%-62s OK  (%.1g apart, %.1g allowed)%n", label, off, band);
+        }
+    }
+
     /** How far apart two figures are, as a percentage of the expected one. */
     static double gap(double actual, double expected) {
         return Math.abs(expected) < 1e-12 ? 0
@@ -187,109 +231,67 @@ public class DenominationCheck {
         assertTrue("nor the population", plain.getPopulationManager().getPopulation()
                 == lopped.getPopulationManager().getPopulation());
 
-        /* ============ 3. AND IT STAYS RECOGNISABLY THE SAME CITY ============
+        /* ============ 3. AND IT STAYS THE SAME CITY ============
 
            The assertion that cannot be satisfied by luck, and the one this
-           change had to earn the hard way.
+           change had to earn the hard way. A reform is a change of UNITS, so
+           the reformed city and its unreformed twin should stay the same city
+           for ever. They now do: a hundred months on, the same 5,693 people
+           live there, the price index agrees to four decimals, and every money
+           figure agrees to the last digit once divided.
 
-           WHAT IT FOUND, because this is worth writing down. The reform is a
-           change of units, so in principle the two cities should stay bitwise
-           identical for ever. Every time they did not, the reason was the same
-           SHAPE of bug: a figure that is read at the top of a month before
-           anything rewrites it - a statement, a cached exchange rate, a
-           handler's own copy of the payroll - which is a STOCK for as long as
-           it takes to read it, however much it looks like a flow. Eleven of
-           those have been found this way and every one was invisible to the
-           money audit, because none of them created or destroyed a penny; they
-           simply valued a real month at the wrong scale. The last three were
-           the mills', the mines' and the builders' whole income statements,
-           found on 2026-09-09: HeavyIndustryHandler.redenominate() carried a
-           long comment explaining that a statement read before it is rewritten
-           is a stock, and then no code under it at all.
+           WHAT IT TOOK, because this is the part worth writing down. Fourteen
+           bugs were found by this harness and every one of them was the same
+           SHAPE: a figure that is read before anything rewrites it, which makes
+           it a STOCK for as long as it takes to read it, however much it looks
+           like a flow. Not one of them created or destroyed a penny, so the
+           money audit could not see any of them; they simply valued a real month
+           at the wrong scale. In the order they were found:
 
-           WHAT THE ASSERTIONS ARE NOW, and why they changed shape. This used to
-           run a hundred months and assert a BAND at the end of it - within an
-           eighth on output, a tenth on rent. That was the right instrument
-           while the reform month itself was known to be a few percent adrift,
-           because there was nothing tighter to say. It is the wrong one now:
-           the reform month is EXACT, so the honest test is to say so, and the
-           hundred-month figure is dominated by the advisor's discrete decisions
-           rather than by the reform. A band wide enough to survive that is a
-           band that would not catch anything.
+             1-8   caches, statements and market prices, 2026-09-08
+             9-11  the mills', the mines' and the builders' whole income
+                   statements. HeavyIndustryHandler.redenominate() carried a
+                   long comment explaining that a statement read before it is
+                   rewritten is a stock, and then no code under it at all.
+             12    THE MILLS' OWN COPY OF THE WAGE SCALE, and the loudest of the
+                   lot. EconomyManager pushes it in every month, so it looks like
+                   it cannot go stale - and it goes stale for exactly one month,
+                   which is the month that matters. computeMonthlyReport() runs
+                   at the top of the tick, before the push. So a reformed city's
+                   mills paid a hundred times their whole revenue in wages for
+                   one month, borrowed to cover the hole, and dragged the bank's
+                   deposit book, its funding cost and its foreign borrowing with
+                   them. The REAL economy stayed exact throughout, which is why
+                   it survived so long: nothing a player looks at first was wrong.
+             13    the tuition table, which is not merely a misreport - it feeds
+                   affordability(), so a reformed city's students could no longer
+                   pay for school and the pipeline stalled for ever.
+             14    CapitalFlows.MIN_STOCK, a flat $1 floor under the hot money.
+                   $3.01 of foreign money becomes $0.03 after a hundred-to-one
+                   reform, which is under a threshold denominated in the old
+                   money, so the reformed city wrote its foreign capital off and
+                   the unreformed one did not.
 
-           So: the month after the reform is asserted to the last digit, the
-           year after it is asserted tightly, and the decade after it is
-           MEASURED and printed. If the first two ever move, that is a new bug
-           and this catches it on the month it happens rather than a decade
-           downstream.
+           The last two are the general lesson: a CONSTANT in absolute money is
+           the same bug as a cached figure, and a threshold in absolute money is
+           worse, because it is discrete - it does not drift, it flips.
 
-           WHAT IS STILL TRUE AND NOT PERFECT. Retail's till comes out of the
-           reform month wrong - measured on this fixture at 552.55 against
-           13.82, which is not a rounding - and because the shops make DISCRETE
-           decisions a wrong till becomes a different decision and a different
-           decision compounds. Everything the player looks at is right on the
-           month; the divergence is entirely downstream of that one number.
-           Money is conserved throughout and no player has an unreformed twin to
-           compare against, so nothing about the city they get is wrong - but it
-           is not the same city, and this harness says so rather than pretending.
-           The trail, for whoever picks it up: rLocalPurchaseValue and
-           rInventoryCost are the two that come out of the reform month at the
-           old scale, while localPurchaseValue - the live field they are copied
-           from - is correct. See CommercialHandler.computeMonthlyReport().
+           HOW THIS IS ASSERTED NOW. The month after the reform, to the last
+           digit; the year after, to a millionth; the decade after, to a
+           millionth. There is no band left to hide in. If any of it ever moves
+           again, it is a fifteenth of the same family and this catches it on
+           the month it happens.
            ================================================================= */
         out.println("\n--- ...and the month after the reform is the same month ---");
 
         quietly(() -> { plain.simulateMonths(1); lopped.simulateMonths(1); });
-
-        assertTrue("the same people live there, to the person",
-                plain.getPopulationManager().getPopulation()
-                        == lopped.getPopulationManager().getPopulation());
-        close("the same output, to the cent",
-                lopped.getEconomyManager().getMonthGdp(),
-                plain.getEconomyManager().getMonthGdp() / factor, 1e-9);
-        close("the same rent", rent(lopped), rent(plain) / factor, 1e-9);
-        close("the same price level",
-                lopped.getPriceIndex().getIndex(), plain.getPriceIndex().getIndex(), 1e-9);
-        /*
-         * The rate is the one thing that is NOT exact on the month, and the
-         * reason is worth keeping: it moves on the month's trade balance, and
-         * the trade balance moves on what the shops imported, and the shops'
-         * till is the one figure that comes out of the reform month wrong. So
-         * this is the retail defect measured one layer downstream - 0.025% on
-         * this fixture - rather than a fault of the currency machinery. It is
-         * asserted tightly rather than exactly, and if it ever widens that is
-         * the till getting worse.
-         */
-        within("the same currency, within a thousandth",
-                lopped.getForeignAccounts().getRate(),
-                plain.getForeignAccounts().getRate() / factor, .001);
+        sameCity(plain, lopped, factor, 1e-9);
 
         out.println("\n--- ...and the same city a year later ---");
-
         quietly(() -> { plain.simulateMonths(11); lopped.simulateMonths(11); });
+        sameCity(plain, lopped, factor, 1e-6);
 
-        within("the same people live there, within a fiftieth",
-                lopped.getPopulationManager().getPopulation(),
-                plain.getPopulationManager().getPopulation(), .02);
-        /*
-         * A YEAR of output, not a month. A single month's GDP swings on whether
-         * a power station happened to be ordered in it - the same reason
-         * InfrastructureCheck measures roads over twelve months - so comparing
-         * one month here would be measuring the lumpiness, not the reform.
-         */
-        within("the same real economy, within a twelfth",
-                lopped.getEconomyManager().getYearGdp(),
-                plain.getEconomyManager().getYearGdp() / factor, .085);
-        within("the same rent, within a fiftieth", rent(lopped), rent(plain) / factor, .02);
-        within("the same price level, within a twentieth",
-                lopped.getPriceIndex().getIndex(), plain.getPriceIndex().getIndex(), .05);
-        within("the same currency, within a twentieth",
-                lopped.getForeignAccounts().getRate(),
-                plain.getForeignAccounts().getRate() / factor, .05);
-
-        /* ---------------- and a decade on, measured rather than asserted ---------------- */
-        out.println("\n--- ...and a decade later, measured ---");
-
+        out.println("\n--- ...and the same city a decade later ---");
         quietly(() -> { plain.simulateMonths(88); lopped.simulateMonths(88); });
 
         out.printf("   plain  pop %,d  GDP %,.2f  rent %.6f  index %.4f%n",
@@ -300,11 +302,7 @@ public class DenominationCheck {
                 lopped.getPopulationManager().getPopulation(),
                 lopped.getEconomyManager().getMonthGdp(), rent(lopped),
                 lopped.getPriceIndex().getIndex());
-        out.printf("   a hundred months on they are %.1f%% apart on population and "
-                + "%.1f%% on the price level. Not asserted - see the note above.%n",
-                gap(lopped.getPopulationManager().getPopulation(),
-                    plain.getPopulationManager().getPopulation()),
-                gap(lopped.getPriceIndex().getIndex(), plain.getPriceIndex().getIndex()));
+        sameCity(plain, lopped, factor, 1e-6);
 
         /* ============ 4. AND NO MONEY WAS MADE OR LOST ============
 

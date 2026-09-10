@@ -2,11 +2,32 @@ package ham.citybuildersim;
 
 
 /**
+ * One kind of building, and what it costs to put up.
+ *
+ * MONEY HERE IS IN THOUSANDS OF DOLLARS, and this is the file where that
+ * matters most, because it is the file somebody opens to balance the game.
+ * UserInterface.toDollars() multiplies by a thousand on the way to the screen,
+ * so:
+ *
+ *     cashCost 30           is  $30,000
+ *     cashCost 125,000      is  $125,000,000   (a Coal Power Plant)
+ *     upkeep 190            is  $190,000 a month
+ *
+ * constructionPoints, capacity, dwellings and landSqFt are NOT money and do not
+ * convert - ten points is ten points, 8,000 sq ft is 8,000 sq ft.
+ *
+ * The scale exists to delay floating-point error: four thousand months of
+ * arithmetic in thousands stays in a range where a double has digits to spare.
+ *
+ * claude/reading-the-numbers.md carries every building's price in real dollars
+ * next to what the real thing costs, which is the table to balance against.
  *
  * @author Jerus
  */
 public class BuildingsTemplate {
     String name;
+
+    /** What the buyer pays in cash, in THOUSANDS. 30 is $30,000. See above. */
     double cashCost;
     int constructionPoints;
     int capacity;

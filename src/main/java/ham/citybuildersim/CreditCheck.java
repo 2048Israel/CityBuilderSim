@@ -518,7 +518,7 @@ public class CreditCheck {
         // road is a quarter of a million square feet and would otherwise fail
         // the land check first and prove nothing about funding.
         roadCity.getLandManager().setOwnedSqFt(
-                roadCity.getLandManager().getOwnedSqFt() + road.getLandSqFt() * 60);
+                roadCity.getLandManager().getOwnedSqFt() + road.getLandSqFt() * 100_000L);
 
         /*
          * BIG ENOUGH TO ACTUALLY BE SHORT.
@@ -529,10 +529,25 @@ public class CreditCheck {
          * city that had already built the roads twice. A fixture has to CAUSE
          * the condition it is testing, and the condition here is "cannot pay".
          *
-         * Forty roads is about $540k against $300k of cash, and the assertion
-         * right below refuses to go on if that ever stops being true.
+         * ...AND THEN COUNTED AGAINST THE ENDOWMENT, WHICH IS NOT A CONSTANT.
+         *
+         * "Forty roads is about $540k against $300k of cash" was true when it
+         * was written and stopped being true twice in one day: the founding
+         * endowment went to $500M that afternoon and to $3.5B that night, when
+         * rebalance stage two put every building on its real capital cost. Both
+         * times this fixture went quietly back to being a city that could
+         * simply afford the roads - the exact failure the paragraph above is
+         * about, reintroduced by a number somewhere else.
+         *
+         * So the order is SIZED FROM THE CITY'S OWN CASH rather than written
+         * down. Whatever the endowment is, this asks for half again as much
+         * road as the city can pay for, and the assertion below still refuses
+         * to go on if that somehow stops being true.
          */
-        int howMany = 40;
+        double unitPrice = roadCity.calculateTotalCost(road, 1);
+        int howMany = unitPrice > 0
+                ? (int) Math.ceil(roadCity.getCash() / unitPrice * 1.5) + 1
+                : 40;
         double price = roadCity.calculateTotalCost(road, howMany);
         double cashBefore = roadCity.getCash();
 

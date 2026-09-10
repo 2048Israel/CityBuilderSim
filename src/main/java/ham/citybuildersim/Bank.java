@@ -855,7 +855,7 @@ public class Bank {
      */
 
     /**
-     * What share of the going rate the bank passes on to its depositors.
+     * What share of its INTEREST INCOME the bank passes on to its depositors.
      *
      * The other half of what a bank IS. Until this existed the deposits were
      * free money - the city's savings sat with the bank earning nothing while it
@@ -866,8 +866,34 @@ public class Bank {
      * pays into a NET INTEREST MARGIN, which is the number a real bank lives or
      * dies on. It also closes a loop that was open: household savings now
      * compound, which raises deposits, which raises what the city can borrow.
+     *
+     * ------------------------------------------------------------------
+     * A SHARE OF THE INCOME, NOT A SHARE OF THE RATE (2026-09-09).
+     *
+     * Jerus: "make it so that the banks pay 55% of interest income, not 55% of
+     * the interest rate."
+     *
+     * It used to be `depositRate = riskFree * .55`, charged on whatever the bank
+     * was funding with deposits. Those are the same number only while the bank
+     * has lent out roughly what it has taken in, and this game's banks routinely
+     * are not in that position: measured on a mature city, one branch held
+     * $60M of gathered deposits against a book of $12M and earned $429,900 a
+     * month in interest while paying its tellers $695,800. A bank in that shape
+     * was paying a rate struck against money it had no way to earn on.
+     *
+     * Paying a share of what it ACTUALLY EARNED fixes that by construction. A
+     * bank that cannot lend pays its savers almost nothing, which is both
+     * correct and what a real deposit rate does in a slump; a bank lending its
+     * whole book pays the full margin. The 45% it keeps is the margin, and it
+     * can no longer be squeezed by a book that shrank after the rate was set.
+     *
+     * depositRate() is DERIVED from the payout now rather than driving it - see
+     * fundToCover(). It is still the number the screens show, because "what am
+     * I being paid on my savings" is a rate question whichever way round the
+     * arithmetic runs.
+     * ------------------------------------------------------------------
      */
-    public static final double DEPOSIT_PASS_THROUGH = .55;
+    public static final double DEPOSIT_PASS_THROUGH = .45;
 
     private double depositRate;
     private double depositInterestToHouseholds;
@@ -967,14 +993,30 @@ public class Bank {
         }
 
         /*
-         * THE DEPOSITORS ARE PAID FIRST, on the money the bank is actually
-         * using. Charged on depositFunding() rather than on everything the city
-         * has banked, for the same reason the wholesale tranche is: this is a
-         * bank that holds what it has lent, and paying interest on deposits it
-         * has not taken would be paying for money it never had.
+         * THE MARKET TRANCHE IS PRICED FIRST NOW, because the deposit decision
+         * below needs to know what the month already costs before it can work
+         * out what it can afford. Neither the wholesale amount nor its rate
+         * depends on what savers are paid - wholesaleFunding() is borrowings
+         * less the deposit-funded part, and both are fixed by the time this
+         * runs - so moving it above the depositors changes no arithmetic.
          */
-        depositRate = Math.max(0, riskFreeAnnual) * DEPOSIT_PASS_THROUGH;
-        double onDeposits = depositFunding() * depositRate / 12;
+        double wholesaleNow = wholesaleFunding();
+        double reachNow = deposits > 0 ? Math.min(3, wholesaleNow / deposits)
+                                       : (wholesaleNow > 0 ? 3 : 0);
+        fundingRate = Math.max(0, riskFreeAnnual) + FUNDING_SPREAD + FUNDING_STRETCH * reachNow;
+        fundingCost = wholesaleNow * fundingRate / 12;
+
+        /*
+         * ...AND THEN THE DEPOSITORS, out of what is left.
+         *
+         * See chooseDepositRate(). Three rules, all Jerus's: a share of the
+         * month's INTEREST INCOME rather than of the headline rate; never more
+         * than leaves the bank at net zero; and, when it is already in profit,
+         * as much more as a forecast of the money a better rate would attract
+         * can justify.
+         */
+        double onDeposits = chooseDepositRate(riskFreeAnnual);
+        depositRate = deposits > 0 ? onDeposits / deposits * 12 : 0;
 
         /* -------------------------------------------------------------------
            SPLIT THREE WAYS, NOT TWO, AND IT USED TO LOSE MONEY.
@@ -1018,16 +1060,166 @@ public class Bank {
                                                  - depositInterestToSectors;
         cash -= onDeposits;
 
-        double wholesale = wholesaleFunding();
-        double reach = deposits > 0 ? Math.min(3, wholesale / deposits) : (wholesale > 0 ? 3 : 0);
-        fundingRate = Math.max(0, riskFreeAnnual) + FUNDING_SPREAD + FUNDING_STRETCH * reach;
-
         // Only the market tranche is charged for. The deposits are the city's
-        // own money and cost the bank nothing to use - which is the whole
-        // advantage of having somewhere for people to save.
-        fundingCost = wholesale * fundingRate / 12;
+        // own money and cost the bank nothing to use beyond what it pays for
+        // them - which is the whole advantage of having somewhere for people to
+        // save. Struck above, banked here.
         cash -= fundingCost;
     }
+
+    /* =====================================================================
+       WHAT TO PAY SAVERS: A DECISION, NOT A CONSTANT.
+
+       Jerus, 2026-09-09: "make it variable, the bank will not give out more
+       than it needs to stay net 0, but if its already making profit it will do
+       some forecast to see what new deposits would come in if it increased the
+       deposit interest rate."
+
+       Three rules, in the order they bind.
+
+       1. THE BASELINE IS A SHARE OF THE INCOME. DEPOSIT_PASS_THROUGH of what
+          the book actually earned this month. See that constant for why a share
+          of income and not of the rate.
+
+       2. NEVER PAST A NET ZERO INTEREST MARGIN. It will not pay out more
+          interest than it earned, net of what it paid the market for the money
+          it had to go and borrow. This is the rule that makes rule 1 safe:
+          paid as a flat share of income with no ceiling at all, a bank whose
+          margin had been eaten went on paying anyway, and measured over 4,002
+          months that took the city into a housing famine - 27 households with
+          nowhere to live by month 261, because a bank that cannot hold capital
+          cannot lend and a city that cannot borrow stops building.
+
+          MEASURED ON THE INTEREST MARGIN AND NOT ON THE WHOLE P&L, which was
+          the first attempt and was wrong. Deposit interest is a COST OF
+          FUNDING, not a distribution of profit: a real bank pays its savers and
+          then finds out whether its branches were affordable, not the other way
+          round. Netting the payroll off first meant this game's bank - 69 staff
+          against the interest a single branch can earn - had nothing left for
+          savers in any month at all, which is not "variable", it is zero with
+          extra steps. BankCheck and SaveFileCheck both said so immediately.
+
+       3. AND HIGHER, IF THE MONEY IS WORTH BUYING. Only when all three of
+          these hold, which is the same shape of question wantsBranch() asks
+          about counters:
+
+            - it is in profit, so there is something to spend;
+            - it is LENT OUT, so another dollar of funding would be used
+              rather than sat on;
+            - and DEPOSITS are what is binding, not capital. A bank short of
+              equity cannot lend another dollar however much money it is
+              offered, and bidding for deposits it may not lend is the same
+              error as building counters it cannot use.
+
+          The forecast is CapitalFlows' own arithmetic, asked rather than
+          re-derived: hot money follows the better of the deposit rate and the
+          city's borrowing rate, so the bank has to outbid its own government
+          before a single dollar moves. What makes this a real decision rather
+          than a free lunch is that a rate is paid to EVERYBODY: buying a dollar
+          of new money costs the raise on every dollar already here.
+       ===================================================================== */
+
+    /** How many candidate rates the bank considers between nothing and its ceiling. */
+    private static final int RATE_STEPS = 12;
+
+    /** Set by Game each month so the bank can price deposits without knowing what a carry trade is. */
+    private DepositMarket depositMarket;
+
+    /** What the world would park here at a given deposit rate. */
+    public interface DepositMarket {
+        double arrivalsAt(double depositRate);
+    }
+
+    public void setDepositMarket(DepositMarket market) { this.depositMarket = market; }
+
+    /**
+     * The month's deposit interest, in money. Sets nothing but the answer.
+     *
+     * @return what to pay savers this month, already capped at net zero
+     */
+    private double chooseDepositRate(double riskFreeAnnual) {
+
+        if (deposits <= 0) return 0;
+
+        /* ---- rule 2: never more interest out than interest in ---- */
+        double ceilingCash = Math.max(0, interestEarned) - fundingCost;
+        if (ceilingCash <= 0) return 0;          // the margin is already gone
+
+        /* ---- rule 1: the baseline ---- */
+        double baseline = Math.min(Math.max(0, interestEarned) * DEPOSIT_PASS_THROUGH,
+                                   ceilingCash);
+
+        /* ---- rule 3: and higher, if buying deposits pays for itself ---- */
+        /*
+         * "IF ITS ALREADY MAKING PROFIT" - the real one, after the staff and the
+         * building, because that is the money it would be spending. The ceiling
+         * above is about the margin; this is about whether there is anything to
+         * play with.
+         */
+        double profitNow = ceilingCash - writeOffs - payroll - upkeep - baseline;
+        if (depositMarket == null || profitNow <= 0 || baseline >= ceilingCash) return baseline;
+
+        double lendingRate = Math.max(0, riskFreeAnnual) + ratePremium();
+        double room = capacity();
+        double overflow = Math.max(0, getWeightedBook() - room * EASY_STRAIN);
+        boolean lentOut = overflow > 0;
+        boolean depositsBind = depositsGathered() * LEVERAGE < capitalLimit();
+        if (!lentOut || !depositsBind) return baseline;
+
+        double bestCash = baseline;
+        double bestGain = 0;
+
+        /*
+         * A BANK NEVER PAYS SAVERS MORE THAN IT CHARGES BORROWERS, so that is
+         * where the search stops. Without it the sweep ran from zero to
+         * whatever the margin could bear - 60% a year on a bank with a small
+         * deposit book and a good month - and its FIRST step was already dearer
+         * than any amount of new lending could repay, so a bid that was
+         * comfortably profitable at one percent was never looked at. The bound
+         * is what gives the grid its resolution, and it is a real rule rather
+         * than a tuning constant.
+         */
+        double ceilingRate = Math.min(ceilingCash / deposits * 12, lendingRate);
+        for (int step = 1; step <= RATE_STEPS; step++) {
+            double candidate = ceilingRate * step / RATE_STEPS;
+            double newMoney = Math.max(0, depositMarket.arrivalsAt(candidate));
+            if (newMoney <= 0) continue;
+
+            // What that money is worth: the lending it unlocks, capped by what
+            // the bank actually wants to fund, earning the going rate.
+            double unlocked = Math.min(newMoney * LEVERAGE * EASY_STRAIN, overflow);
+            double extraIncome = unlocked * lendingRate / 12;
+
+            // ...against the raise, paid to every depositor, new money included.
+            double cost = (deposits + newMoney) * candidate / 12;
+            if (cost > ceilingCash) break;       // past net zero; nothing beyond this is allowed
+
+            double gain = extraIncome - cost;
+            if (gain > bestGain) { bestGain = gain; bestCash = cost; }
+        }
+
+        double chosen = Math.min(Math.max(baseline, bestCash), ceilingCash);
+        if (chosen > baseline + 1e-9) {
+            monthsBidUp++;
+            lastBidUpGain = bestGain;
+        }
+        return chosen;
+    }
+
+    /*
+     * HOW OFTEN THE BANK ACTUALLY BID FOR MONEY.
+     *
+     * Counted, and counted for one reason: a mechanic that has never fired in a
+     * real run looks exactly like one that does not exist, and this project has
+     * shipped one of those before - see CapitalFlows' note on counting the
+     * sudden stops. If this stays at zero over four thousand months then rule 3
+     * is decoration and should be taken out rather than admired.
+     */
+    private int monthsBidUp;
+    private double lastBidUpGain;
+
+    public int getMonthsBidUp()        { return monthsBidUp; }
+    public double getLastBidUpGain()   { return lastBidUpGain; }
 
     public double getFundingCost() { return fundingCost; }
 
