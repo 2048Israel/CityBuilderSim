@@ -193,10 +193,25 @@ public class HousingCheck {
              */
             double breakEven = shops.rentBreakEven();
             if (breakEven > 0) {
-                assertNotMore("the rent target never goes under break-even", month,
-                        breakEven, shops.getRentTarget() + TOLERANCE);
-                assertNotMore("...nor does the studio target", month,
-                        breakEven, shops.getStudioRentTarget() + TOLERANCE);
+                /*
+                 * ON THE BLEND, NOT ON EITHER LEG, since 2026-09-10.
+                 *
+                 * This used to assert the floor on the family target and on
+                 * the studio target separately, and that was the test form of
+                 * the bug CommercialHandler.targetFor() describes: a floor
+                 * taken on the whole company applied to each leg forces both
+                 * legs to the same number the moment the floor binds, which in
+                 * any mature city is always. The city then had one rent for
+                 * every building whatever it cost to build, and never built a
+                 * studio again.
+                 *
+                 * The invariant that was actually wanted survives intact: the
+                 * company never charges less than its stock costs to hold. It
+                 * is a statement about the rent roll, so it is asserted on the
+                 * rent roll.
+                 */
+                assertNotMore("the blended rent target never goes under break-even",
+                        month, breakEven, shops.blendedRentTarget() + TOLERANCE);
             }
 
             /* ------------- 3d. repairs are a flow, not a number -------------

@@ -641,14 +641,34 @@ public class LabourMarket {
        =================================================================== */
 
     public double[] state() {
-        double[] out = new double[wage.length + 3];
+        int bands = WageBand.values().length;
+        double[] out = new double[wage.length + 3 + diagnosticsLength()];
         out[0] = minimumWage;
         System.arraycopy(wage, 0, out, 1, wage.length);
         // The real floor and the player's nudge, appended so an older save
         // restores its cash figure and starts with the base at default.
         out[wage.length + 1] = minimumWage;
         out[wage.length + 2] = minimumWageAdjustment;
+        /*
+         * ...AND THE DIAGNOSTICS THE PEOPLE SCREEN PRINTS. tightness,
+         * bandMultiple, licenceMultiple and livingTarget are all struck in
+         * advanceMonth(), which the load path deliberately does not run, and
+         * until 2026-09-10 none of them was carried either - so for one month
+         * after every load the tightness column read a flat 1.00 down the
+         * table, the multiples 0, and the cost-of-living target 1.0. That is
+         * the column that says which bands are short. The wages themselves
+         * were always fine; it was the explanation beside them that reset.
+         */
+        int i = wage.length + 3;
+        System.arraycopy(tightness, 0, out, i, bands);           i += bands;
+        System.arraycopy(bandMultiple, 0, out, i, bands);        i += bands;
+        System.arraycopy(licenceMultiple, 0, out, i, wage.length); i += wage.length;
+        out[i] = livingTarget;
         return out;
+    }
+
+    private int diagnosticsLength() {
+        return WageBand.values().length * 2 + wage.length + 1;
     }
 
     /**
@@ -675,6 +695,16 @@ public class LabourMarket {
         System.arraycopy(saved, 1, wage, 0, wage.length);
         minimumWageAdjustment = saved.length >= wage.length + 3
                 ? saved[wage.length + 2] : 0;
+        // The diagnostics, when the save carries them; the defaults otherwise,
+        // which is what an older save was already reading.
+        if (saved.length >= wage.length + 3 + diagnosticsLength()) {
+            int bands = WageBand.values().length;
+            int i = wage.length + 3;
+            System.arraycopy(saved, i, tightness, 0, bands);           i += bands;
+            System.arraycopy(saved, i, bandMultiple, 0, bands);        i += bands;
+            System.arraycopy(saved, i, licenceMultiple, 0, wage.length); i += wage.length;
+            if (saved[i] > 0) livingTarget = saved[i];
+        }
     }
 
     /**

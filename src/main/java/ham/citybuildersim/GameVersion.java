@@ -282,8 +282,68 @@ public final class GameVersion {
      *     WOULD move this number is any of those arrays changing shape in the
      *     middle rather than growing at the end, because that silently reads
      *     one figure into another's line.
+     *
+     * AND NOT 20 FOR THE 2026-09-10 AUDIT BATCH, on the same argument. Five
+     * more things carried, every one of them a value an older save was already
+     * reading blank or re-deriving wrongly on load, and every one absent-safe:
+     *
+     *       - the borrower's record (restructureCounts, blockedMonths): absent
+     *         reads as a clean record, which is what every load read before
+     *       - the rate the economy traded at (tradedExchangeRate): zero falls
+     *         back to the product the month would have struck
+     *       - the land office's prices (landMarketPrices): absent keeps the
+     *         founding seeds, as before
+     *       - the world's thirteen-month level ring and the labour market's
+     *         diagnostics: both APPENDED to arrays that accept either length
+     *       - the bank's lifetime resolution loss now lives in the slot the
+     *         monthly one used to be saved in; an old save restores whatever
+     *         its save month held, which is what it always did
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 19;
+    /* ---------------------------------------------------------------------
+     * 20  The unit of construction material changed meaning (2026-09-10).
+     *
+     *     NOTHING WAS ADDED TO THE SAVE. This number moves because a field
+     *     that was already there - the yard's stock of construction material,
+     *     `constructionMaterials`, plus the two monthly counts beside it -
+     *     is a COUNT OF UNITS, and a unit was $2,000 through format 19 and is
+     *     $18,000 from here (BuildingManager.MATERIALS_WORLD_PRICE; every
+     *     template's count was re-derived with it, totals held). A format-19
+     *     yard read as it stands is therefore nine times the material it
+     *     was. Not lost - the opposite: 2,000 units that were $4M of
+     *     aggregate silently become $36M of it, and the city's next order is
+     *     free. That is exactly the kind of quiet misreading this number
+     *     exists to make loud, even though it is a windfall rather than a
+     *     loss.
+     *
+     *     Downward is handled: Game reads a format-19 yard at what it was
+     *     WORTH - the old count times MATERIALS_UNIT_BEFORE_20, divided by
+     *     today's unit - and the same for the month's import and consumption
+     *     counts. A format-19 city loads with the same value of material in
+     *     its yard that it saved with. Upward, an older build refuses a
+     *     format-20 save, which is right: it would read the count in its own
+     *     unit and give the city a ninth of its yard.
+     *
+     *     The BUILDINGS in a save are unaffected. They are counts of
+     *     templates, and a template's cost is read from today's catalogue
+     *     when it is valued, as it was through the two rebalances before
+     *     this - a city's power plant did not need a format change to become
+     *     a $1.43B power plant.
+     * --------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------
+     * NOT 21: the sectors' savings abroad (2026-09-10, OutwardInvestment).
+     *
+     *     A new array under a new key (outwardInvestment), two figures
+     *     appended to the foreign accounts' array (slots 20 and 21), and three
+     *     fields added to SectorBooks' month record, which Gson matches by
+     *     name. All absent-safe: an older save loads with nothing abroad, a
+     *     financial account of zero that settles within a year, and sector
+     *     books that show no foreign line - which is exactly what that city
+     *     had, because the mechanic did not exist when it was saved.
+     * --------------------------------------------------------------------- */
+    public static final int SAVE_FORMAT = 20;
+
+    /** What a unit of construction material cost through save format 19, in thousands. */
+    public static final double MATERIALS_UNIT_BEFORE_20 = 2;
 
     public static final String NAME = "CityBuilderSim";
 

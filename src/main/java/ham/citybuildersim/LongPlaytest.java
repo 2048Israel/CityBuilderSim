@@ -267,6 +267,43 @@ public class LongPlaytest {
         if (lastUnemployment > worstUnemployment) worstUnemployment = lastUnemployment;
 
         monthsObserved++;
+        /*
+         * -Dplaytest.fx=true: the currency and what is pushing it, yearly. The
+         * instrument that found the surplus with nowhere to go; kept because
+         * the next currency question will want it again.
+         */
+        if (Boolean.getBoolean("playtest.fx") && g.getMonth() % 12 == 0) {
+            ForeignAccounts fa = g.getForeignAccounts(); OutwardInvestment oi = g.getOutwardInvestment();
+            double tills = 0;
+            for (String s : BusinessDebtManager.SECTORS) tills += Math.max(0, g.getEconomyManager().getSectorCash(s));
+            out.printf("FX m%-4d rate %.3f parity %.3f pressure %+.2f openness %.2f | current %,.0f financial %,.0f | tills %,.0f abroad US$%,.0f ($%,.0f) share %.0f%% | deposit %.2f%% world %.2f%% | pop %d GDP %,.0f%n",
+                g.getMonth(), fa.getRate(), fa.getParity(), fa.getLastPressure(), fa.getOpenness(),
+                fa.monthlyCurrentAccount(), fa.monthlyFinancialAccount(),
+                tills, oi.totalUsd(), oi.totalLocalValue(), oi.getTargetShare() * 100,
+                g.getBank().depositRate() * 100, DebtManager.WORLD_BASE_RATE * 100,
+                g.getPopulationManager().getPopulation(), g.getEconomyManager().getMonthGdp());
+        }
+        /*
+         * -Dplaytest.cells=true: the households going short, cell by cell,
+         * yearly. The instrument that says WHICH families the budget
+         * constraint is biting now that every shape at every tier keeps its
+         * own books - a row average cannot.
+         */
+        if (Boolean.getBoolean("playtest.cells") && g.getMonth() % 12 == 0) {
+            HouseholdBalance hb = g.getHouseholdBalance();
+            out.printf("HH m%-4d households %,.0f saved $%,.0fk owed $%,.0fk | hungry %.1f%% | written off $%,.1fk taken away $%,.1fk leaving %.1f%n",
+                g.getMonth(), hb.sum(Household::households), hb.totalSavings(), hb.totalDebt(),
+                hb.getHungerRate() * 100, hb.getWrittenOff(), hb.getTakenAway(), hb.getLeavingCity());
+            for (Household c : hb.cells()) {
+                if (c.households() < .5) continue;
+                if (!c.isGoingShort() && !c.isCutOff() && !c.isLockedOut() && c.debt() <= 0) continue;
+                out.printf("   %-40s x%,6.0f  take-home %7.3f  after bills %7.3f  basket %6.3f  saved %7.3f  owed %7.3f  rate %4.1f%%%s%s%s%n",
+                    c.label(), c.households(), c.disposable(), c.afterFixed(), c.subsistence(),
+                    c.savings(), c.debt(), c.rate() * 100,
+                    c.isGoingShort() ? "  SHORT" : "", c.isCutOff() ? "  CUT OFF" : "",
+                    c.isLockedOut() ? "  LOCKED " + c.lockout() : "");
+            }
+        }
         Health health = g.getHealth();
         lastSickRate = health.getSickRate();
         if (lastSickRate > worstSickRate) worstSickRate = lastSickRate;
@@ -665,13 +702,37 @@ public class LongPlaytest {
             addThrottle(moves, g, "Construction Depot", "depot",
                     gdp * (wantedCapacity - capacity) / wantedCapacity * GROWTH_DISCOUNT);
         }
-        if (b.getConstructionMaterials() < population * .05) {
+        /*
+         * A unit of material was repriced 9x on 2026-09-10 and the counts
+         * with it, so the yard the advisor wants is a ninth of the count it
+         * used to want - the same value of stock per resident as before.
+         */
+        if (b.getConstructionMaterials() < population * .0056) {
             addThrottle(moves, g, "Construction Materials Plant", "materials plant",
                     gdp * .05 * GROWTH_DISCOUNT);
         }
 
         /* --- food the city grows rather than buys --- */
-        if (e.getIndustryFoodInventory() < population * 2) {
+        /*
+         * ON WHAT THE MILLS CAN MAKE, NOT ON WHAT IS IN THE SHED (2026-09-10).
+         *
+         * This read `foodInventory < population x 2`, which was a reading of
+         * need while a plant ran at nameplate and the shed filled. Since the
+         * distress batch a plant idles at STOCK_MONTHS (two) of the shops'
+         * demand - and the shops' demand is min(coverage, population), which
+         * is below population whenever a shop is short and the shed is drawn
+         * down by a month's sales before this reads it - so the condition
+         * was true at almost every stop of every run: 163 to 185 Food
+         * Processing Plants a run, one per stop, $2bn of public money handed
+         * to the food sector, which exported the spare nameplate at the
+         * world's price and ended runs holding $25-51bn. Every "big" city in
+         * the first ensembles was this, and it was the harness, not the game.
+         *
+         * A player builds a mill when the city cannot feed itself: when the
+         * mills' nameplate is below what the shops will want. That is the
+         * figure the planner and the throttle both work from.
+         */
+        if (b.getFoodProduction() < Math.min(b.getTotalStoreCoverage(), population)) {
             addThrottle(moves, g, "Food Processing Plant", "food plant",
                     gdp * .05);
         }
@@ -684,7 +745,19 @@ public class LongPlaytest {
                         () -> g.buyLandParcel(deposit.getId())));
             }
         }
-        if (land.hasUnminedDeposit(g.minesCommitted())) {
+        /*
+         * ...AND ONLY A MINE THAT WOULD PAY (2026-09-10). A deposit the city
+         * owns is not a reason to sink a mine on it, and this used to be one:
+         * the city built a mine, handed it to the mining sector, watched it
+         * lose money at the export floor with the currency at half of
+         * parity, watched the distress rule scrap it, saw the deposit
+         * unworked again, and built another - 136 to 155 Iron Mines a run,
+         * $4.5-6.5bn written off, twenty-two write-downs on the sector that
+         * was given them. The screen the private sector uses is the one a
+         * player would read: what one of these would clear, at the price
+         * and the staffing the mines actually get.
+         */
+        if (land.hasUnminedDeposit(g.minesCommitted()) && wouldPay(g, "Iron Mine", BusinessDebtManager.MINING)) {
             addThrottle(moves, g, "Iron Mine", "mine", gdp * .05);
         }
 
@@ -692,7 +765,11 @@ public class LongPlaytest {
         double idle = p.getWorkforce() - p.getTotalJobs();
         if (idle > 0) {
             double jobGain = perHead * idle * GROWTH_DISCOUNT;
-            addThrottle(moves, g, "Steel Foundry", "foundry", jobGain);
+            // Same test as the mine: 72 foundries went up in one run for the
+            // jobs alone, into a market that could not pay for the steel.
+            if (wouldPay(g, "Steel Foundry", BusinessDebtManager.HEAVY_INDUSTRY)) {
+                addThrottle(moves, g, "Steel Foundry", "foundry", jobGain);
+            }
             addThrottle(moves, g, "Textile Mill", "mill", jobGain);
         }
 
@@ -758,6 +835,12 @@ public class LongPlaytest {
         int quantity = (int) Math.max(1, Math.min(25, Math.ceil(gap * 25)));
         moves.add(new Move(label, lost * (1 - moves.size() * 1e-6),
                 () -> build(g, name, quantity)));
+    }
+
+    /** Whether one of these would clear its own running costs, on the private sector's screen. */
+    static boolean wouldPay(Game g, String name, String sector) {
+        BuildingsTemplate t = template(g, name);
+        return t != null && g.getBusinessInvestment().estimatedMonthlyProfit(sector, t) > 0;
     }
 
     static int qty(Game g, String name) {
@@ -1015,6 +1098,59 @@ public class LongPlaytest {
         same(month, "  ...ore price",
                 now.getIronMarket().getLocalPrice(), was.getIronMarket().getLocalPrice());
 
+        /*
+         * THE BORROWER'S RECORD. The loans were always restored; the count of
+         * write-downs and the months of ban left were not, and nothing here
+         * compared them - which is why 49 reloads came back "matched" with a
+         * sector's twelve restructures reading zero. A record that is not
+         * compared is not carried.
+         */
+        BusinessDebtManager creditWas = was.getBusinessDebtManager();
+        BusinessDebtManager creditNow = now.getBusinessDebtManager();
+        for (String sector : BusinessDebtManager.SECTORS) {
+            if (creditNow.getRestructureCount(sector) != creditWas.getRestructureCount(sector)) {
+                flag(month, "a sector's DEFAULT RECORD did not survive the save",
+                        sector + ": " + creditWas.getRestructureCount(sector)
+                        + " restructures -> " + creditNow.getRestructureCount(sector));
+            }
+            if (creditNow.getBlockedMonths(sector) != creditWas.getBlockedMonths(sector)) {
+                flag(month, "a sector's BORROWING BAN did not survive the save",
+                        sector + ": " + creditWas.getBlockedMonths(sector)
+                        + " months left -> " + creditNow.getBlockedMonths(sector));
+            }
+        }
+        same(month, "the bank's lifetime resolution loss across a save",
+                back.getBank().getResolutionLoss(), g.getBank().getResolutionLoss());
+        same(month, "what the sectors hold abroad across a save",
+                back.getOutwardInvestment().totalUsd(), g.getOutwardInvestment().totalUsd());
+        same(month, "...and the rate it was valued at",
+                back.getOutwardInvestment().getLastRate(), g.getOutwardInvestment().getLastRate());
+        same(month, "...and the financial account the rate is priced on",
+                back.getForeignAccounts().monthlyFinancialAccount(), g.getForeignAccounts().monthlyFinancialAccount());
+
+        /*
+         * PRICES THAT ARE CACHES. Each of these is struck once a month and
+         * read all month; the load path does not run the strike, so each has
+         * to be carried. None was compared here until 2026-09-10, and three
+         * were not carried: the economy's exchange rate read the founding 1.0
+         * (every import at its founding price, next month's GDP 6.8% low),
+         * the land office read its founding ground price (160x too cheap),
+         * and the labour market's tightness read a flat 1.00 down the table.
+         */
+        same(month, "the exchange rate the economy trades at, across a save",
+                now.getExchangeRate(), was.getExchangeRate());
+        same(month, "the land office's ground price across a save",
+                back.getLandManager().getAcquisitionCostPerSqFt(),
+                g.getLandManager().getAcquisitionCostPerSqFt());
+        same(month, "the land office's minimum lot across a save",
+                back.getLandManager().getMarket().getMinBlocks(),
+                g.getLandManager().getMarket().getMinBlocks());
+        for (WageBand band : WageBand.values()) {
+            same(month, "the labour market's tightness across a save (" + band + ")",
+                    back.getLabourMarket().getTightness(band),
+                    g.getLabourMarket().getTightness(band));
+        }
+
         if (back.getPopulationManager().getPopulation() != pop) {
             flag(month, "population across a save",
                     back.getPopulationManager().getPopulation() + " != " + pop);
@@ -1060,10 +1196,20 @@ public class LongPlaytest {
             g.run();
 
             /* ---------- founding: a few months at a time, by hand ---------- */
-            build(g, "House", 40);
+            /*
+             * ENSEMBLE MODE: -Dplaytest.seed=N nudges the founding order - a few
+             * houses more, a month or two longer - so that a set of runs can be
+             * compared as a distribution. The game is deterministic and four
+             * thousand months amplify any change into a different city, so a
+             * single run before and after a change measures the change plus the
+             * weather. Six seeds either side is the least that separates them.
+             * Seed 0 (the default) is the run as it has always been.
+             */
+            int seed = Integer.getInteger("playtest.seed", 0);
+            build(g, "House", 40 + seed % 4);
             build(g, "Convenience Store", 3);
-            run(g, 3);
-            build(g, "House", 20);
+            run(g, 3 + (seed / 4) % 3);
+            build(g, "House", 20 + (seed / 12) % 3);
             run(g, 4);
             build(g, "Convenience Store", 2);
             build(g, "Construction Depot", 1);
@@ -1173,6 +1319,7 @@ public class LongPlaytest {
 
                 if (g.getMonth() >= nextCheckpoint) {
                     log.add(era(g, "checkpoint"));
+                    log.add(creditEra(g));
                     nextCheckpoint += 250;
                 }
             }
@@ -1275,9 +1422,12 @@ public class LongPlaytest {
                 g.getDebtManager().advisedPolicyRate(g.getPriceIndex().inflation()) * 100,
                 g.getPriceIndex().inflation() * 100,
                 fx.getRateDifferential() * 100, fx.ratePressure());
-        out.printf("  the world: prices %.3f since founding, inflating at %.1f%%/yr;"
-                + " parity is %.3f and the rate is %.3f (%+.0f%% off it)%n",
-                w.getPriceLevel(), w.getInflation() * 100,
+        // Both instruments, side by side on purpose: the headline is what the
+        // band is doing and the realised figure is what the level did. They
+        // disagreed for weeks on this line and nobody put them together.
+        out.printf("  the world: prices %.3f since founding, headline %.1f%%/yr,"
+                + " realised %.1f%%/yr; parity is %.3f and the rate is %.3f (%+.0f%% off it)%n",
+                w.getPriceLevel(), w.getInflation() * 100, w.realisedInflation() * 100,
                 fx.getParity(), fx.getRate(), fx.deviationFromParity() * 100);
         out.printf("  the same month, per ForeignAccounts: exports %,.0f  imports %,.0f"
                 + "  interest %,.0f  => current account %,.0f%n",
@@ -1381,6 +1531,12 @@ public class LongPlaytest {
                 fx.importCover() == Double.MAX_VALUE ? "inf"
                         : String.format("%.1f", fx.importCover()),
                 fx.monthlyImports());
+        OutwardInvestment abroad = g.getOutwardInvestment();
+        out.printf("  abroad, the sectors' own: US$%,.0fk (%s at today's rate), %.0f%% of their wealth wanted"
+                + " on a %.2f-point spread; sent $%,.0fk, brought home $%,.0fk, earned $%,.0fk since founding; peak US$%,.0fk%n",
+                abroad.totalUsd(), String.format("$%,.0fk", abroad.totalLocalValue()),
+                abroad.getTargetShare() * 100, abroad.getSpread() * 100,
+                abroad.getLifetimeOut(), abroad.getLifetimeHome(), abroad.getLifetimeInterest(), abroad.getPeakUsd());
         out.printf("  the record: $%,.0fk cumulative balance since founding;"
                 + " net position $%,.0fk (%s)%n",
                 fx.getCumulativeBalance(), fx.netForeignPosition(),
@@ -1399,6 +1555,28 @@ public class LongPlaytest {
                 + " %.0f%% of capacity, %.1f points of premium%n",
                 bnk.getBranches(), bnk.getDeposits(), bnk.getBook(),
                 Math.min(999, bnk.strain()) * 100, bnk.ratePremium() * 100);
+
+        /*
+         * CREDIT, BY SECTOR. The bank's line above says what it holds; this
+         * says who owes it and who cannot borrow, which is the half nobody
+         * could see without writing a probe. A bank with equity and no book
+         * is either a city that needs no credit or six sectors that are
+         * barred from it, and those are different findings.
+         */
+        out.println("  credit by sector (cash / assets / owes / rate / write-downs / ban left / loss streak):");
+        BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+        java.util.Map<String, Integer> streaks = g.getBusinessInvestment().getLossMonthsState();
+        for (String sector : BusinessDebtManager.SECTORS) {
+            out.printf("    %-15s $%,14.0fk  $%,14.0fk  $%,12.0fk  %5.2f%%  %3d  %4d mo  %5d mo%n",
+                    sector,
+                    g.getEconomyManager().getSectorCash(sector),
+                    credit.getAssets(sector),
+                    credit.getPrincipal(sector),
+                    credit.getRate(sector) * 100,
+                    credit.getRestructureCount(sector),
+                    credit.getBlockedMonths(sector),
+                    streaks.getOrDefault(sector, 0));
+        }
 
         out.println("\n--- what the advisor tried, and what happened ---\n");
         refusals.entrySet().stream()
@@ -1422,6 +1600,30 @@ public class LongPlaytest {
 
         cleanUp(root);
         System.exit(findings.isEmpty() ? 0 : 1);
+    }
+
+    /**
+     * The business economy at a checkpoint, on one line: per sector its cash,
+     * write-downs and months of ban left, then hunger and the shelf.
+     *
+     * The end-of-run table says where a run finished; this says how it got
+     * there, which is the half that was missing when a rule that liquidated
+     * sectors was first measured only at month 4,000.
+     */
+    static String creditEra(Game g) {
+        BusinessDebtManager c = g.getEconomyManager().getBusinessDebtManager();
+        StringBuilder b = new StringBuilder(String.format("       credit  "));
+        String[] tags = { "Ret", "RE", "Ind", "Con", "HI", "Min" };
+        for (int i = 0; i < BusinessDebtManager.SECTORS.length; i++) {
+            String sec = BusinessDebtManager.SECTORS[i];
+            b.append(String.format("%s %s/%d/%d  ", tags[i],
+                    money(g.getEconomyManager().getSectorCash(sec)),
+                    c.getRestructureCount(sec), c.getBlockedMonths(sec)));
+        }
+        b.append(String.format("| hunger %.0f%% shelf %.0f%%",
+                g.getHouseholdBalance().getHungerRate() * 100,
+                g.getHouseholdBalance().getDeliveredShare() * 100));
+        return b.toString();
     }
 
     static String era(Game g, String label) {

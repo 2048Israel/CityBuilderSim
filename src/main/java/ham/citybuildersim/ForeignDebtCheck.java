@@ -230,10 +230,12 @@ public class ForeignDebtCheck {
 
         double worst = 0;
         int worstMonth = 0;
+        double couponsPaid = 0;
         System.setOut(quiet);
         try {
             for (int m = 0; m < 120; m++) {
                 city.simulateMonths(1);
+                couponsPaid += city.getForeignInterestPaidThisMonth();
                 MoneyAudit.Result r = city.getLastMoneyAudit();
                 if (Math.abs(r.relative()) > Math.abs(worst)) {
                     worst = r.relative();
@@ -249,8 +251,15 @@ public class ForeignDebtCheck {
                 worst, worstMonth);
         assertTrue("every month of servicing a dollar bond reconciles",
                 Math.abs(worst) < 1e-9);
+        /*
+         * ON THE CITY'S OWN COUPON. This read the balance of payments' net
+         * interest line, which is what the city pays abroad LESS what its
+         * businesses earn there - and since 2026-09-10 they earn there
+         * (OutwardInvestment), more than a $20M bond costs. The claim is
+         * that the treasury paid its coupons, so that is what is read.
+         */
         assertTrue("...and the fixture really did service it",
-                fx.getLifetimeInterest() > 0);
+                couponsPaid > 0);
 
         /* ============ 4. original sin ============ */
         out.println("\n--- and a devaluation makes it dearer, with nobody paid ---");
@@ -463,8 +472,31 @@ public class ForeignDebtCheck {
         Game reloaded;
         try {
             /* Something to carry: a live bond, on a currency away from parity. */
+            /*
+             * A SCAR AND A CLOCK STILL RUNNING, since 2026-09-10.
+             *
+             * This set the clock to 200 months, which is past the sixty the
+             * window closes for - so the scar was carried but shut nothing, and
+             * the assertion below passed only because this fixture's city
+             * happened to export too little to satisfy the debt-to-exports
+             * test. It was standing next to the condition rather than causing
+             * it. The industrial rebalance of 2026-09-10 turned the city into a
+             * food exporter, the incidental reason went away, and the window
+             * came back open on both sides of the reload with the scar intact -
+             * which is not a bug in the reload, it is what the code says.
+             *
+             * Twelve months, so the reason the window is shut is the reason the
+             * assertion names, and the thing under test is whether the clock
+             * survives the save.
+             */
+            // THE CLOCK RUN OUT so the bond can be sold at all - section 6 left
+            // this city inside its five-year exclusion - and then WOUND BACK so
+            // the window under test is shut by the thing the assertion names.
+            // A shut window refuses the issue, so it has to be both, in this
+            // order, and neither half is decoration.
             city.getDebtManager().restoreForeignStanding(new double[] { .04, 200 });
             city.handleForeignLogic("Serial", 8_000, 10, 100, true);
+            city.getDebtManager().restoreForeignStanding(new double[] { .04, 12 });
             city.simulateMonths(3);
             city.saveGame(4, "the indebted city");
             reloaded = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
@@ -503,8 +535,16 @@ public class ForeignDebtCheck {
                 city.getDebtManager().getDefaultScar(), 1e-9);
         assertTrue("...and it is a scar worth reloading",
                 city.getDebtManager().getDefaultScar() > 0);
+        System.out.printf("   window: live says [%s]; reloaded says [%s]%n",
+                city.getDebtManager().foreignWindowReason(),
+                back.foreignWindowReason());
+        assertTrue("fixture: the live city's window is shut BY THE DEFAULT CLOCK",
+                city.getDebtManager().foreignWindowReason() != null
+                        && city.getDebtManager().foreignWindowReason().contains("defaulted"));
         assertTrue("...so the window is still shut on the reloaded city",
                 !back.foreignWindowOpen());
+        assertTrue("...and shut for the same reason, not a different one",
+                back.foreignWindowReason().contains("defaulted"));
 
         close("the lifetime revaluation reloads",
                 backFx.getLifetimeRevaluation(), fx.getLifetimeRevaluation(), .005);

@@ -101,6 +101,16 @@ public class FoodMarket {
 
     //getters
     public double getLocalPrice()  { return localPrice; }
+
+    /**
+     * The price the month was traded at, put back on load. The load path
+     * re-strikes the market before the shops' statement is restored, so it
+     * priced against a demand of zero and read the floor - 0.050 against the
+     * 0.201 the saved city had - and the mills' first month back booked their
+     * exports at a quarter of the price. Same carry, same reason, as the ore
+     * price. See EconomyManager.restoreFoodMarket().
+     */
+    public void setLocalPrice(double price) { if (price > 0) localPrice = price; }
     /** What an import costs the city, in the city's own money. */
     public double getImportPrice() { return worldPrice * exchangeRate; }
     public double getSupply()      { return rSupply; }

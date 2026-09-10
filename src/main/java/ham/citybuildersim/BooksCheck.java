@@ -5,6 +5,11 @@ public class BooksCheck {
 
     static int fails = 0;
 
+    static void assertTrue(String label, boolean ok) {
+        if (!ok) fails++;
+        System.out.printf("%-56s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
     static void check(String label, double actual, double expected) {
         boolean ok = Math.abs(actual - expected) < 1e-6;
         if (!ok) fails++;
@@ -41,13 +46,25 @@ public class BooksCheck {
 
         double taxRate = .15;
         ih.getIndustrialTaxIncome(taxRate);   // sets pTaxRate
+        /*
+         * The shops want 4,000 a month and the shed holds three months of it,
+         * so the mill has no domestic room and its whole nameplate is spare -
+         * and since 2026-09-10 spare nameplate is made for export at the local
+         * price less the shipping discount, whenever that clears the energy
+         * it costs. The statement's revenue is BOTH halves, and the fixture
+         * asks for both rather than reading a figure that stopped being true.
+         */
+        ih.setPlannedDemand(4000);
+        ih.setImportPrice(.10);
         ih.computeMonthlyReport();
+        double expectedExport   = ih.getExportBoundOutput() * .10 * IndustrialHandler.EXPORT_PRICE_FRACTION;
+        assertTrue("fixture: the mill really is exporting its spare nameplate", expectedExport > 0);
 
         /* ===================== income statement ===================== */
         double expectedPayroll  = 140 * .800 + 120 * 1.500 + 10 * 4.000;   // 332
         double expectedElec     = 120 * .01;                               // 1.2
         double expectedWater    = 150 * .05;                               // 7.5
-        double expectedRevenue  = 4000 * .09;                              // 360
+        double expectedRevenue  = 4000 * .09 + expectedExport;             // 360 at home, the rest abroad
         double expectedOpCost   = expectedPayroll + expectedElec + expectedWater;
         double expectedOpIncome = expectedRevenue - expectedOpCost;
 
@@ -62,14 +79,21 @@ public class BooksCheck {
 
         // A loss-making month must show no tax and no phantom credit - the city
         // collects Math.max(income * rate, 0), so the statement has to agree.
+        // Nobody buying at home AND a world price under the cost of running the
+        // line, so nothing is made for abroad either - the export gate is the
+        // marginal cost, and this is the side of it where the mill idles.
         ih.setFoodDemand(0);
+        ih.setImportPrice(.001);
         ih.computeMonthlyReport();
+        check("fixture: a world price under the line's running cost exports nothing",
+                ih.getExportBoundOutput(), 0);
         check("loss-making month: no revenue", ih.getGrossRevenue(), 0);
         if (ih.getNetIncome() >= 0) { fails++; System.out.println("FAIL: expected a loss"); }
         check("loss-making month: tax is zero", ih.getReportTaxIncome(), 0);
         check("loss-making month: no phantom credit",
                 ih.getReportNetIncomeAfterTax(), ih.getNetIncome());
         ih.setFoodDemand(4000);
+        ih.setImportPrice(.10);
         ih.computeMonthlyReport();
         check("net income after tax", ih.getReportNetIncomeAfterTax(),
                 expectedOpIncome - expectedOpIncome * taxRate);

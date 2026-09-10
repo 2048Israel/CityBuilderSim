@@ -306,6 +306,19 @@ public class BusinessInvestment {
     /** Most of its excess a sector will scrap in one month. Shrinking is gradual. */
     public static final double MAX_RETIREMENT_FRACTION = .25;
 
+    /**
+     * Months of losses before a sector that is overdrawn and refused credit
+     * starts liquidating plant it is actually using. Longer than
+     * RETIREMENT_LOSS_MONTHS on purpose: shedding SPARE capacity after six bad
+     * months is a cheap decision, and liquidating a working plant is not. A
+     * new plant in a small city loses money for its first year or two while
+     * the city grows into it - the playtest's founding food plant, built on
+     * credit at month 3, is under water from month 4 - and a rule that
+     * liquidated it at six months killed every founding plant the advisor
+     * ever built. Two years is the runway a firm burns before it is wound up.
+     */
+    public static final int DISTRESS_LOSS_MONTHS = 24;
+
     /** Call once a month with each sector's net income. */
     public void recordSectorResult(String sector, double netIncome) {
         if (netIncome < 0) {
@@ -457,6 +470,91 @@ public class BusinessInvestment {
         return new Decision(sector, worst, quantity,
                 String.format("%d months of losses, %,.0f capacity against %,.0f used",
                         losses, capacity, demand),
+                true);
+    }
+
+    /**
+     * Whether a sector that cannot pay its way and cannot borrow should shed
+     * capacity anyway, and how much. THE RULE FOR A FIRM IN DISTRESS.
+     *
+     * planRetirement() above sells capacity a sector is not USING. It has
+     * nothing to say to a sector that is using all of it and losing money on
+     * every unit - and until 2026-09-10 neither did anything else. Heavy
+     * Industry and Mining had no retirement call at all, and Industry's could
+     * not shed its single plant, so the three of them ended a 4,000-month run
+     * at -$2.0bn, -$8.2bn and -$13.3bn of cash, owed to nobody, at no interest,
+     * with 1,740 mining wages still being paid 1,400 months after the ore ran
+     * out. A firm with no money and no lender does not keep paying wages; it
+     * lays people off, and here the jobs come with the plant.
+     *
+     * So: six months of losses, a negative balance AFTER the credit desk has
+     * had its turn (which is what says the desk refused - coverShortfall()
+     * lends up to its ceiling or not at all), and the biggest holding goes at
+     * the normal gradual rate whether or not anything is spare. It keeps going
+     * until the sector stops losing money or has nothing left - and a sector
+     * with nothing left is Game's business, see sector bankruptcy.
+     *
+     * The housing guard holds here too: an occupied home is never scrapped out
+     * from under anyone, so a distressed landlord can only shed empty doors.
+     *
+     * @param cash the sector's balance after this month's credit settled
+     */
+    public Decision planDistressRetirement(String sector, BuildingType category,
+                                           double cash, int ordersInFlight) {
+
+        if (ordersInFlight > 0) {
+            return Decision.no(sector, "building, not shrinking");
+        }
+
+        int losses = getLossMonths(sector);
+        if (losses < DISTRESS_LOSS_MONTHS) {
+            return Decision.no(sector,
+                    losses == 0 ? "profitable" : losses + " months of losses");
+        }
+
+        if (cash >= 0) {
+            return Decision.no(sector, "losing money, but still solvent");
+        }
+
+        BuildingsTemplate worst = null;
+        int mostHeld = 0;
+
+        for (BuildingsTemplate template : buildingManager.getTemplatesByCategory(
+                java.util.EnumSet.of(category))) {
+
+            if (category == BuildingType.RESIDENTIAL && !hasDoorsToSpare(template)) {
+                continue;
+            }
+            // Only plant that contributes to the sector's own measure. The
+            // Commercial Bank is a COMMERCIAL building with no coverage, and
+            // the first run of this rule had a distressed RETAIL sector scrap
+            // the city's entire branch network - the biggest holding in the
+            // category - because nothing said it was not a shop.
+            // planRetirement() refuses the same buildings one step later,
+            // through unitsEach; this refuses them at the door.
+            if (capacityOf(template, category) <= 0) {
+                continue;
+            }
+
+            int held = buildingManager.getQuantity(template.getId());
+            if (held > mostHeld) {
+                mostHeld = held;
+                worst = template;
+            }
+        }
+
+        if (worst == null) {
+            return Decision.no(sector, category == BuildingType.RESIDENTIAL
+                    ? "overdrawn, but every door it owns is wanted"
+                    : "overdrawn, and nothing left to sell");
+        }
+
+        int quantity = Math.min(mostHeld,
+                Math.max(1, (int) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION)));
+
+        return new Decision(sector, worst, quantity,
+                String.format("%d months of losses, $%,.0fk overdrawn and no lender",
+                        losses, -cash),
                 true);
     }
 
@@ -993,7 +1091,18 @@ public class BusinessInvestment {
              * shops imported to make up the difference. A projection can be
              * wrong; last month's consumption happened.
              */
-            double consumed = currentOutput + Math.max(0, importedUnits);
+            /*
+             * ...AND IT IS WHAT WAS SOLD, NOT WHAT COULD HAVE BEEN MADE. The
+             * first version added the imports to currentOutput - the
+             * NAMEPLATE - so any import at all put "consumption" above
+             * capacity and the test below passed, however many plants stood
+             * idle. Measured after the mills learned to idle: nine plants for
+             * 10,500 units of demand, an eleventh ordered, payroll 1,658
+             * against 1,170 of revenue at the import ceiling. What the city
+             * ate is the local units the shops actually took plus what they
+             * imported; a plant that made nothing fed nobody.
+             */
+            double consumed = ih.getProductsSoldCopy() + Math.max(0, importedUnits);
             if (Math.max(projectedCustomers, consumed) <= currentOutput * (1 + TARGET_HEADROOM)) {
                 continue;
             }
@@ -1403,12 +1512,38 @@ public class BusinessInvestment {
         }
 
         if (BusinessDebtManager.HEAVY_INDUSTRY.equals(sector)) {
-            // Steel out at its export price, raw material in at whatever the ore
-            // market is charging. That gap IS the business - it is why a mill is
-            // worth building next to a mine and not worth building alone.
+            /*
+             * Steel out at its export price, raw material in at whatever the ore
+             * market is charging. That gap IS the business - it is why a mill is
+             * worth building next to a mine and not worth building alone.
+             *
+             * THREE THINGS THIS GOT WRONG, all in the mill's favour (2026-09-10).
+             * Traced on a run that built eight foundries in a city of 2,200 and
+             * wrote the sector down four times:
+             *
+             *   - productionModifier1 is a DOLLAR price and the ore price is a
+             *     local one. HeavyIndustryHandler converts the steel; this did
+             *     not, so with the currency at half of parity the screen read
+             *     steel at twice what the mill would be paid for it.
+             *   - it read nameplate. The eight foundries were running at 52%
+             *     for want of workers, and the ninth would have too - the
+             *     sector's own operating rate is what a new plant will run at.
+             *   - it was gross of payroll, on the argument (above) that a
+             *     shop's wages are small beside its turnover. A foundry's are a
+             *     fifth of its gross margin, and the interest test is struck on
+             *     the margin.
+             *
+             * Net of the plant's own running costs, at the rate the sector's
+             * plants actually run, in the city's money - the same three
+             * corrections the mine got, for the same reason: the number feeds
+             * servicesItsOwnDebt(), which is the brake.
+             */
+            HeavyIndustryHandler hh = economyManager.getHeavyIndustryHandler();
             double orePrice = economyManager.getIronMarket().getLocalPrice();
-            return t.getProduction1() * t.getProductionModifier1()
-                    - t.getProduction2() * orePrice;
+            double steel = t.getProduction1() * t.getProductionModifier1()
+                    * Math.max(0, economyManager.getExchangeRate());
+            double margin = steel - t.getProduction2() * orePrice;
+            return margin * operatingRateOf(hh.getOperatingRate()) - runningCostOf(t);
         }
 
         if (BusinessDebtManager.MINING.equals(sector)) {
@@ -1431,10 +1566,22 @@ public class BusinessInvestment {
              */
             double revenue = t.getProduction1()
                     * economyManager.getIronMarket().getLocalPrice();
-            return revenue - runningCostOf(t);
+            // ...at the rate the sector's mines actually run, see the mill above.
+            MiningHandler mh = economyManager.getMiningHandler();
+            return revenue * operatingRateOf(mh.getOperatingRate()) - runningCostOf(t);
         }
 
         return 0;
+    }
+
+    /**
+     * A sector's operating rate as a planning figure: what it is, unless the
+     * sector has nothing running yet, in which case a plant that does not exist
+     * runs at nameplate on paper. The handlers default to 1 with no buildings,
+     * so this is a guard against a stray zero, not a policy.
+     */
+    private static double operatingRateOf(double rate) {
+        return (Double.isFinite(rate) && rate > 0) ? Math.min(1, rate) : 1;
     }
 
     /**

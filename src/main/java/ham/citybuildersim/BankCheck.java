@@ -196,6 +196,62 @@ public class BankCheck {
         close("a bank short of CAPITAL does not bid for deposits it may not lend",
                 capped.depositInterest(), baselinePay, 1e-9);
 
+        /* ---------------- ...and it does not open counters either ----------------
+         *
+         * WHY THIS IS ASSERTED ON A CLOSED MONTH AND NOT A LIVE ONE, which is
+         * the whole finding and cost two silent iterations to learn.
+         *
+         * Opening a branch is an equity injection - see capacityWith() - so
+         * while CAPITAL binds, one more branch always raises capacity and
+         * bookAnotherBranchWouldCarry() is always positive. A bank losing money
+         * is short of capital by definition, so it always wanted another
+         * branch, and every branch brought a wage bill it already could not
+         * cover: 1,049 counters by month 4,000, carrying $10,553 of book apiece
+         * where one branch's capital supports $400,000 of it.
+         *
+         * branchWouldPayForItself() closes that, and it has to read LAST
+         * month's figures, because startMonth() zeroes every flow and the
+         * advisor asks between the two. Written against the live fields it is
+         * inert - a four-thousand-month playtest came back byte-identical
+         * twice, which is what a test that never fires looks like. So this
+         * fixture runs a whole month and CLOSES it, exactly as the game does,
+         * or it would assert nothing at all.
+         */
+        Bank overbuilt = new Bank();
+        double manyBranches = branchesEnough * 40;      // far more counters than book
+        overbuilt.refresh(manyBranches, savings, 0, insideItsDeposits / 50, 0, 0);
+        overbuilt.injectCapital(200_000);
+        overbuilt.startMonth();
+        overbuilt.takeInterest(earned / 50);
+        overbuilt.payRunning(earned, 0);                // a wage bill it cannot cover
+        overbuilt.closeMonth();
+
+        System.out.printf("   %,.0f branches carrying %,.0f of book"
+                + " against %,.0f of wages%n",
+                overbuilt.getBranches(), overbuilt.getBook(), earned);
+
+        assertTrue("fixture: the month really did close on a loss",
+                overbuilt.getProfitLastMonth() < 0);
+        assertTrue("a bank whose counters do not pay for themselves wants no more",
+                !overbuilt.branchWouldPayForItself());
+        assertTrue("...so it does not ask for one", !overbuilt.wantsBranch());
+
+        /*
+         * ...and the same bank with a book worth banking says yes. Nothing
+         * changes but how much is lent through the same counters, which is what
+         * the test is supposed to be about.
+         */
+        Bank worthIt = new Bank();
+        worthIt.refresh(branchesEnough, savings, 0, insideItsDeposits, 0, 0);
+        worthIt.injectCapital(200_000);
+        worthIt.startMonth();
+        worthIt.takeInterest(earned);
+        worthIt.payRunning(earned / 50, 0);
+        worthIt.closeMonth();
+
+        assertTrue("...where a counter carrying a real book is worth opening",
+                worthIt.branchWouldPayForItself());
+
         /* ================= 2. the price of strain ================= */
         out.println("\n--- and what it charges for being past it ---");
 
@@ -417,19 +473,26 @@ public class BankCheck {
          */
         HouseholdBalance broke = new HouseholdBalance();
         int rows = HouseholdBalance.ROWS;
-        double[] homes = new double[rows];
-        double[] people = new double[rows];
+        /*
+         * PER CELL, since 2026-09-10: the balance is handed a census rather
+         * than row counts. A thousand unskilled households of two and a half
+         * people - five hundred couples and five hundred couples with a teen -
+         * with the row's take-home between their two thousand earners.
+         */
+        double[][] mix = new double[FamilyStructure.values().length][PayTier.values().length];
+        java.util.function.ToDoubleBiFunction<FamilyStructure, PayTier> census =
+                (s, t) -> mix[s.ordinal()][t.ordinal()];
+        int r = 0;
+        mix[FamilyStructure.COUPLE.ordinal()][r] = 500;
+        mix[FamilyStructure.COUPLE_TEEN.ordinal()][r] = 500;
         double[] disposable = new double[rows];
         double[] fees = new double[rows];
         double[] spent = new double[rows];
-        int r = 0;
-        homes[r] = 1000;
-        people[r] = 2500;
+        double people = 2500;
         disposable[r] = 1000 * 1.2;      // $1.2k a household a month
         fees[r] = 0;
         double rent = 1.0;               // most of it goes on rent
         double foodPerHead = .25;        // ...and food costs more than what is left
-        for (int m = 0; m < rows; m++) { /* no-op: rows are the array width */ }
 
         double firstBankruptMonth = -1;
         double writtenOff = 0;
@@ -437,8 +500,8 @@ public class BankCheck {
         double left = 0;
         for (int m = 1; m <= 120; m++) {
             // Spends what a family must to eat, whether it has it or not.
-            spent[r] = people[r] * foodPerHead;
-            broke.advanceMonth(homes, people, disposable, rent, fees, spent,
+            spent[r] = people * foodPerHead;
+            broke.advanceMonth(census, disposable, rent, fees, spent,
                     foodPerHead, .05, 1);
             writtenOff += broke.getWrittenOff();
             discharged += broke.getBankrupt(r);
@@ -471,7 +534,7 @@ public class BankCheck {
          * row's debt compounds at 36% until it is larger than every dollar in
          * the game, which is what it did before this went in.
          */
-        double ceiling = HouseholdBalance.CREDIT_LIMIT_MONTHS * disposable[r] / homes[r];
+        double ceiling = HouseholdBalance.CREDIT_LIMIT_MONTHS * disposable[r] / 1000;
         out.printf("   the credit ceiling is $%,.2fk; the row is sitting at $%,.2fk%n",
                 ceiling, broke.getDebt(r));
         assertTrue("debt is bounded by the ceiling, not compounding past it",
@@ -485,24 +548,25 @@ public class BankCheck {
          * it is a subsidy.
          */
         HouseholdBalance locked = new HouseholdBalance();
-        double[] one = new double[rows];
-        double[] two = new double[rows];
-        one[r] = 100;
-        two[r] = 250;
+        double[][] few = new double[FamilyStructure.values().length][PayTier.values().length];
+        java.util.function.ToDoubleBiFunction<FamilyStructure, PayTier> fewCensus =
+                (s, t) -> few[s.ordinal()][t.ordinal()];
+        few[FamilyStructure.COUPLE.ordinal()][r] = 50;        // 100 people
+        few[FamilyStructure.COUPLE_TEEN.ordinal()][r] = 50;   // 150 people
         double[] pay = new double[rows];
         pay[r] = 100 * 1.2;
         double[] noFees = new double[rows];
         double[] mustEat = new double[rows];
-        mustEat[r] = two[r] * foodPerHead;
+        mustEat[r] = 250 * foodPerHead;
         double borrowedWhileOpen = 0;
         for (int m = 1; m <= 60; m++) {
-            locked.advanceMonth(one, two, pay, rent, noFees, mustEat, foodPerHead, .05, 1);
+            locked.advanceMonth(fewCensus, pay, rent, noFees, mustEat, foodPerHead, .05, 1);
             if (!locked.isLockedOut(r)) borrowedWhileOpen += locked.getBorrowed(r);
         }
         double borrowedWhileShut = 0;
         for (int m = 1; m <= 6; m++) {
             if (locked.isLockedOut(r)) {
-                locked.advanceMonth(one, two, pay, rent, noFees, mustEat, foodPerHead, .05, 1);
+                locked.advanceMonth(fewCensus, pay, rent, noFees, mustEat, foodPerHead, .05, 1);
                 borrowedWhileShut += locked.getBorrowed(r);
             }
         }
@@ -637,8 +701,16 @@ public class BankCheck {
          * credit either way, which is the half that catches a bank being
          * ordered as though it were a shop.
          */
+        /*
+         * ...OR HAS ONE STANDING. Third time (2026-09-10): the city now puts
+         * the branch up inside the run, so the decision read afterwards is
+         * "room enough" - which is the advisor having noticed, acted, and
+         * finished. The claim is unchanged: a city with no bank does
+         * something about it.
+         */
         boolean noticed = wanted.build
-                || wanted.reason.toLowerCase().contains("already going up");
+                || wanted.reason.toLowerCase().contains("already going up")
+                || branchesBuilt >= 1;
         assertTrue("a city with no bank at all does something about it", noticed);
         assertTrue("...and says so in words about credit, not about shops",
                 wanted.reason.toLowerCase().contains("bank")
@@ -654,11 +726,22 @@ public class BankCheck {
         try {
             trading.run();
             trading.getForeignAccounts().pinRate(1.0);
-            trading.buildStack(template(trading, "House"), 400, false);
-            trading.buildStack(template(trading, "Convenience Store"), 8, false);
-            trading.buildStack(template(trading, "Construction Depot"), 4, false);
-            trading.buildStack(template(trading, "Coal Power Plant"), 1, false);
-            trading.buildStack(template(trading, "Water Treatment Plant"), 1, false);
+            /*
+             * Standing on month one, with roads and food - the same reason
+             * as the books fixture below: queued behind its own power plant
+             * this city starved, its landlord defaulted, and the branch the
+             * shops opened had FAILED by the time it was counted, still
+             * paying the punitive premium with a bank standing in the city.
+             */
+            trading.getLandManager().setOwnedSqFt(30_000_000);
+            trading.buildStack(template(trading, "House"), 400, true);
+            trading.buildStack(template(trading, "Convenience Store"), 8, true);
+            trading.buildStack(template(trading, "Small Grocery Store"), 2, true);
+            trading.buildStack(template(trading, "Food Processing Plant"), 1, true);
+            trading.buildStack(template(trading, "Paved Road"), 20, true);
+            trading.buildStack(template(trading, "Construction Depot"), 4, true);
+            trading.buildStack(template(trading, "Coal Power Plant"), 1, true);
+            trading.buildStack(template(trading, "Water Treatment Plant"), 1, true);
             trading.simulateMonths(24);
             /*
              * CAUSED, not waited for. Two things stand between the advisor's
@@ -706,6 +789,7 @@ public class BankCheck {
         out.println("\n--- and its books actually balance ---");
 
         Path booksRoot = Files.createTempDirectory("bankcheck-books");
+        double profitTaxedNextMonth = 0;
         Game books = new Game(new GameFiles(booksRoot.resolve("data"), booksRoot.resolve("no-legacy")));
         System.setOut(quiet);
         double worstBalance = 0, worstArticulation = 0;
@@ -713,18 +797,47 @@ public class BankCheck {
         try {
             books.run();
             books.getForeignAccounts().pinRate(1.0);
-            books.buildStack(template(books, "House"), 400, false);
-            books.buildStack(template(books, "Convenience Store"), 8, false);
-            books.buildStack(template(books, "Textile Mill"), 2, false);
-            books.buildStack(template(books, "Construction Depot"), 4, false);
-            books.buildStack(template(books, "Coal Power Plant"), 1, false);
-            books.buildStack(template(books, "Water Treatment Plant"), 1, false);
+            /*
+             * A CITY THAT WORKS, STANDING ON MONTH ONE (2026-09-10).
+             *
+             * This fixture used to queue the same list behind a 500-month
+             * construction backlog, with no roads and no food: a city of
+             * 215 people in 400 houses, half of them hungry, whose landlord
+             * borrowed to build Low-Rise blocks for nobody and defaulted on
+             * them. The bank's books balanced on top of that, which is what
+             * was being asserted - right up until the day the material
+             * import bill started being charged and the landlord's second
+             * default took the whole of the bank's equity in month 70. A
+             * failed bank articulates through a resolution loss, which this
+             * fixture's explanation of equity has never included, and a
+             * failed bank has no book, so two assertions fell over for a
+             * reason about starvation.
+             *
+             * So the city is put up whole - roads, food, shops - on ground it
+             * owns, and the book is CAUSED rather than hoped for: Industry
+             * starts $20M short with two mills of collateral, borrows it at
+             * the counter and pays it back out of its own income over the
+             * next four years. What is left being measured is the books.
+             */
+            books.getLandManager().setOwnedSqFt(30_000_000);
+            books.buildStack(template(books, "House"), 400, true);
+            books.buildStack(template(books, "Convenience Store"), 8, true);
+            books.buildStack(template(books, "Small Grocery Store"), 2, true);
+            books.buildStack(template(books, "Food Processing Plant"), 1, true);
+            books.buildStack(template(books, "Paved Road"), 20, true);
+            books.buildStack(template(books, "Textile Mill"), 2, true);
+            books.buildStack(template(books, "Construction Depot"), 4, true);
+            books.buildStack(template(books, "Coal Power Plant"), 1, true);
+            books.buildStack(template(books, "Water Treatment Plant"), 1, true);
             books.simulateMonths(24);
             books.getEconomyManager().setSectorCash(BusinessDebtManager.RETAIL, 250_000);
-            books.getLandManager().setOwnedSqFt(8_000_000);
+            books.getEconomyManager().setSectorCash(BusinessDebtManager.INDUSTRY, -20_000);
 
             Bank kept = books.getBank();
             for (int m = 0; m < 120; m++) {
+                // The profit the NEXT month's tax will be charged on - struck
+                // at closeMonth(), charged at the top of the month after.
+                profitTaxedNextMonth = kept.getProfitLastMonth();
                 books.simulateMonths(1);
 
                 // A = L + E, every month, no exceptions.
@@ -794,8 +907,17 @@ public class BankCheck {
          * one loses money most months - and a fixture that needed it to be
          * profitable would be testing the tuning rather than the tax.
          */
+        /*
+         * ...OF WHAT IT MADE LAST MONTH. chargeTax() runs at the top of the
+         * month on the profit closeMonth() struck at the bottom of the one
+         * before; getProfitLastMonth() after the month has ended is already
+         * the NEXT bill's base. This compared the two and passed for as long
+         * as the fixture's bank made the same profit every month - the moment
+         * an interest reserve let a sector borrow a little each month, the
+         * profit moved 3% and the assertion failed with the tax exactly right.
+         */
         close("the city takes exactly its share of what the bank made",
-                shown.getTaxPaid(), Math.max(0, shown.getProfitLastMonth()) * bankRate, 1e-9);
+                shown.getTaxPaid(), Math.max(0, profitTaxedNextMonth) * bankRate, 1e-9);
         close("...and the figure the treasury books is the figure the bank paid",
                 books.getEconomyManager().getBankTax(), shown.getTaxPaid(), 1e-9);
 
@@ -853,8 +975,32 @@ public class BankCheck {
         bust.receiveBailout(bust.recapitalisationNeeded());
         assertTrue("recapitalised, it is solvent again", !bust.isInsolvent());
         assertTrue("...and lending again", bust.capacity() > 0);
-        close("...and at exactly the ratio it is required to hold",
-                bust.capitalRatio(), Bank.CAPITAL_RATIO, 1e-6);
+        assertTrue("...and above the ratio it is required to hold, by at least the exit buffer",
+                bust.capitalRatio() >= Bank.CAPITAL_RATIO * Bank.RESOLUTION_EXIT_BUFFER - 1e-9);
+        assertTrue("...and holding at least what one branch is capitalised with",
+                bust.equity() >= Bank.PAID_IN_PER_BRANCH - 1e-9);
+        close("...which is exactly what it was asked for, and not a dollar more",
+                bust.recapitalisationNeeded(), 0, 1e-9);
+
+        /*
+         * A BANK WITH NO BOOK ASKED FOR NOTHING, AND SO GOT NOTHING. The ratio
+         * is struck on the book, so a bank that lost its book with its equity
+         * needed - by the ratio - zero, lent nothing because it had nothing,
+         * never got a book, and never needed anything. That was the end state
+         * of every long run ever recorded. The floor is one branch's capital.
+         */
+        Bank hollow = new Bank();
+        hollow.injectCapital(50_000);
+        hollow.refresh(3, 10_000_000, 0, 0, 0, 0);
+        hollow.lend(100_000);                             // half its own, half borrowed
+        hollow.refresh(3, 10_000_000, 0, 0, 0, 0);        // and none of it coming back
+        hollow.resolveIfFailed();
+        assertTrue("fixture: a bank that lost its whole book has failed", hollow.getFailures() == 1);
+        close("fixture: ...and has no book left to strike a ratio on", hollow.getBook(), 0, 1e-9);
+        assertTrue("a failed bank with no book is still asked for one branch's capital",
+                hollow.recapitalisationNeeded() >= Bank.PAID_IN_PER_BRANCH - 1e-9);
+        hollow.receiveBailout(hollow.recapitalisationNeeded());
+        assertTrue("...and can lend again once it has it", hollow.capacity() > 0);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

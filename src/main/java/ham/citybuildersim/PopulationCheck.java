@@ -507,6 +507,86 @@ public class PopulationCheck {
                 mig.crowdingFactor((int) ((oneEach + floorHomes) / 2), houses) > 0
                         && mig.crowdingFactor((int) ((oneEach + floorHomes) / 2), houses) < 1);
 
+        /* ------------- a door a family cannot enter is not room -------------
+         *
+         * The four assertions above were all true of a city whose doors are
+         * interchangeable, and every door was interchangeable until a home got
+         * a SIZE. After that the floor went on counting households against a
+         * door total that included studios families are forbidden to enter, so
+         * a city of studios reported room it did not have and migration went
+         * on damping against a fiction. It never showed, because until the
+         * rent fix of 2026-09-10 no city ever built a studio and the term was
+         * identically zero in every run ever recorded.
+         *
+         * THE FIXTURE HAS TO CAUSE THE CONDITION, so it is built the only way
+         * that does: the SAME households, offered the SAME NUMBER of doors,
+         * once as family doors and once as studios. Nothing moves but the size
+         * of the door. If the floor still answers the same number, it is
+         * counting doors it cannot use.
+         */
+        FamilyModel spacious = new FamilyModel();
+        spacious.rebuild(crowd, mix);
+        FamilyModel studiosOnly = new FamilyModel();
+        studiosOnly.rebuild(crowd, mix);
+
+        int doors = (int) Math.ceil(spacious.totalHouseholds());
+        int[] asFamily  = new int[7];
+        int[] asStudios = new int[7];
+        asFamily[6]  = doors;                  // six-person homes: anybody fits
+        asStudios[2] = doors;                  // studios: no household with a child
+
+        // The whole path, both valves, exactly as Game runs it - a fixture that
+        // calls half of it is testing half of it.
+        spacious.squeezeUnplaced(spacious.house(asFamily));
+        studiosOnly.squeezeUnplaced(studiosOnly.house(asStudios));
+
+        double roomyFloor  = spacious.minimumHomesTolerable();
+        double studioFloor = studiosOnly.minimumHomesTolerable();
+
+        System.out.printf("   %,d doors as family homes: floor %,.0f;"
+                + " the same %,d as studios: floor %,.0f%n",
+                doors, roomyFloor, doors, studioFloor);
+
+        assertTrue("the same doors as studios are a HIGHER floor, not the same one",
+                studioFloor > roomyFloor + 1e-9);
+
+        /*
+         * ...and the floor is only worth raising if it damps something. Taken
+         * BETWEEN the two floors, where the answer has to differ: the city of
+         * family doors still has room to crowd into and the city of studios is
+         * already past the point it can place anybody else.
+         */
+        int between = (int) ((roomyFloor + studioFloor) / 2);
+        System.out.printf("   at %,d doors: family city %.2f, studio city %.2f%n",
+                between, mig.crowdingFactor(between, spacious),
+                mig.crowdingFactor(between, studiosOnly));
+
+        check("a city of studios is past its floor there and takes nobody",
+                mig.crowdingFactor(between, studiosOnly), 0, 1e-9);
+        assertTrue("...where the same households behind family doors still have room",
+                mig.crowdingFactor(between, spacious) > 0);
+
+        /*
+         * AND THE WALL ITSELF, asked of the placement rather than of the
+         * arithmetic - see Migration.crowdingFactor(). A city that could not
+         * place somebody last month takes nobody this month, whatever the
+         * household totals say about how much room it has.
+         */
+        FamilyModel overfull = new FamilyModel();
+        overfull.rebuild(crowd, mix);
+        // Game's own sequence, both passes: place, run the valves on what would
+        // not go, then place again and note whoever still has nowhere.
+        int[] tooFewStudios = new int[7];
+        tooFewStudios[2] = doors / 8;
+        overfull.squeezeUnplaced(overfull.house(tooFewStudios));
+        overfull.noteUnplaced(overfull.house(tooFewStudios));
+        assertTrue("fixture: too few doors, and studios at that, really does leave"
+                + " somebody nowhere",
+                overfull.getStillUnplaced() > 0);
+        check("a city that left somebody nowhere last month takes nobody now",
+                mig.crowdingFactor((int) Math.ceil(overfull.totalHouseholds()), overfull),
+                0, 1e-9);
+
         /*
          * JERUS'S RULE: "if a city is full but has jobs, they'll still move in."
          *

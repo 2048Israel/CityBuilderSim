@@ -74,6 +74,14 @@ public final class SectorBooks {
             double repaid,
             double fromTheCity,     // subsidy paid into the sector's own books
             /**
+             * What its creditors wrote off this month: the overdraft a
+             * restructure forgave. Cash that arrived from nobody inside the
+             * city, so it has to be its own line or unexplained() holds it -
+             * which it did, for one run, the first time a sector went bankrupt.
+             * See BusinessDebtManager.restructure().
+             */
+            double forgiven,
+            /**
              * What the bank paid this sector for the money in its till.
              *
              * A CASH-FLOW LINE AND NOT AN INCOME ONE, which is a compromise and
@@ -109,7 +117,22 @@ public final class SectorBooks {
             double rate,
             double leverage,
             double writtenOff,
-            boolean blocked) {
+            boolean blocked,
+
+            /* ------------------------ and its money abroad ------------------------ */
+            /**
+             * What it holds abroad, in the city's money at the rate it was
+             * last valued at - a balance-sheet line beside cash, since
+             * 2026-09-10. See OutwardInvestment. At the END of the record
+             * rather than beside cash so nothing that reads the record by
+             * position has to move; Gson matches a save by name, so an older
+             * save reads zero here, which is what that city held abroad.
+             */
+            double foreignAssets,
+            /** Sent abroad this month, net: positive went, negative came home. A cash-flow line. */
+            double investedAbroad,
+            /** What the world paid it this month, rolled into what it holds there. NOT a cash-flow line: it never reaches the till. */
+            double foreignInterest) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -117,7 +140,7 @@ public final class SectorBooks {
         }
 
         public double totalAssets() {
-            return cash + inventory + land + buildings;
+            return cash + inventory + land + buildings + foreignAssets;
         }
 
         /** Everything that is not payroll, inputs or utilities. */
@@ -136,7 +159,8 @@ public final class SectorBooks {
          */
         public double unexplained() {
             return cash - (openingCash + netIncome
-                    + borrowed - repaid + fromTheCity + depositInterest
+                    + borrowed - repaid + fromTheCity + forgiven + depositInterest
+                    - investedAbroad
                     - spentOnBuildings);
         }
 
@@ -149,8 +173,9 @@ public final class SectorBooks {
             return new SectorMonth(sector, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, false);
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, false,
+                    0, 0, 0);
         }
 
         public boolean isEmpty() {
@@ -333,11 +358,10 @@ public final class SectorBooks {
                 propertyTax = h.getReportPropertyTaxExpense();
                 operating = revenue - inputs - payroll;
                 preTax = h.getNetIncome();
-                // NOT A ROUNDING. EconomyManager.getTaxIncome() adds up retail,
-                // real estate, industry, heavy industry and mining, and stops.
-                // The builders pay property tax like everybody else and no
-                // profit tax at all - see the note on their books.
-                tax = 0;
+                // Since 2026-09-10 the builders pay profit tax like the other
+                // five - the Policy screen had been offering a lever for it
+                // that collected nothing. See ConstructionHandler.getTaxIncome().
+                tax = h.getReportProfitTax();
                 sheet = h.getBalanceSheet();
             }
         }
@@ -354,12 +378,18 @@ public final class SectorBooks {
                 credit.getLentThisMonth(key),
                 credit.getRepaidThisMonth(key),
                 game.getSubsidyPaid(sector),
+                economy.getOverdraftForgivenThisMonth(key),
                 economy.getDepositInterestPaid(key),
                 game.getInvestedThisMonth(key),
                 economy.getSectorSalesTax(sector),
                 credit.getRate(key), credit.getLeverage(key),
                 credit.getWrittenOffThisMonth(key),
-                credit.isBorrowingBlocked(key));
+                credit.isBorrowingBlocked(key),
+                economy.getForeignAssets(key),
+                economy.getOutwardInvestment() == null ? 0
+                        : economy.getOutwardInvestment().getMovedThisMonth(key),
+                economy.getOutwardInvestment() == null ? 0
+                        : economy.getOutwardInvestment().getInterestThisMonth(key));
     }
 
     /* ===================================================================

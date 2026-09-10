@@ -389,6 +389,17 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ bank HotMoneyIn", g.getBank().getHotMoneyIn(), Scope.FINANCIAL);
         /*
+         * THE SECTORS' OWN MONEY, ABROAD AND BACK. The outflow is a financial
+         * debit like a stranger's money leaving; the coupon it earns is
+         * income, like the coupon the city pays. Both move inside this
+         * window, which hot money does not - see OutwardInvestment.takeMonth().
+         */
+        in += credit.apply("+ sectors BroughtHome", g.getOutwardInvestment().getBroughtHomeThisMonth(), Scope.FINANCIAL);
+        // Earned abroad and rolled there: an income credit and a financial
+        // debit of the same size, and no cash in any pool. Declared both ways
+        // so the balance of payments reads what a rolled coupon is.
+        in += credit.apply("+ sectors ForeignInterest", g.getOutwardInvestment().getInterestThisMonth(), Scope.INCOME);
+        /*
          * The treasury selling reserves. Foreign money out, local money in - the
          * cash arrives in the city's pool from outside it, so it is declared.
          *
@@ -409,7 +420,14 @@ public final class MoneyAudit {
          * wholesale funders, who are outside the city, so the money the city
          * keeps and will not repay arrives here. See Bank.resolveIfFailed().
          */
-        in += credit.apply("+ bank ResolutionLoss", g.getBank().getResolutionLoss(), Scope.VALUATION);
+        in += credit.apply("+ bank ResolutionLoss", g.getBank().getResolutionLossThisMonth(), Scope.VALUATION);
+        /*
+         * A bankrupt sector's creditors absorbing its overdraft, the same
+         * way. The bills were paid with money the sector did not have; the
+         * restructure admits it and somebody outside eats it. See
+         * EconomyManager.settleInsolvency().
+         */
+        in += credit.apply("+ sectors OverdraftForgiven", g.getEconomyManager().getOverdraftForgiven(), Scope.VALUATION);
 
         in += credit.apply("+ bank InterestEarned", g.getBank().getInterestEarned()
                 - g.getBank().getInternalInterest(), Scope.DOMESTIC);
@@ -528,6 +546,8 @@ public final class MoneyAudit {
         // took it off the stock again the moment the month closed.
         out += debit.apply("- bank HotMoneyOut",
                 g.getBank().getHotMoneyOut(), Scope.FINANCIAL);
+        out += debit.apply("- sectors InvestedAbroad", g.getOutwardInvestment().getInvestedAbroadThisMonth(), Scope.FINANCIAL);
+        out += debit.apply("- sectors ForeignInterestReinvested", g.getOutwardInvestment().getInterestThisMonth(), Scope.FINANCIAL);
         out += debit.apply("- treasury BoughtReserves",
                 g.getForeignAccounts().getBoughtThisMonth(), Scope.RESERVE);
         /*

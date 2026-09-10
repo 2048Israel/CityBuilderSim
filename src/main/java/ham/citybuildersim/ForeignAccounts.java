@@ -283,10 +283,33 @@ public class ForeignAccounts {
          */
         if (monthsOfHistory < SETTLING_MONTHS) return 0;
 
-        double volume = exportsTrailing + importsTrailing;
+        /*
+         * ON THE OVERALL BALANCE, NOT THE TRADE BALANCE (2026-09-10).
+         *
+         * This was the current account over the trade volume, which is the
+         * whole pressure on a currency only in a city where nothing else
+         * crosses the border. Money crosses it: a foreign bond the treasury
+         * sells, a foreign shareholder's capital, and - the reason this
+         * changed - the sectors' own savings going abroad for the world's
+         * rate (OutwardInvestment). A surplus that is recycled into foreign
+         * assets is not a surplus of demand for the currency; it is a
+         * surplus met by an outflow, and the rate has to see both halves or
+         * it appreciates on a demand that is not there. Measured before
+         * this: every steel economy in the game appreciated at ten percent
+         * a year until its exporters were dead, because nothing it earned
+         * abroad ever went back.
+         *
+         * The reserve transactions stay out, as before: the vault absorbs
+         * pressure through absorption(), which is the same idea from the
+         * other side, and counting them here as well would take it twice.
+         * The volume grows by the gross of what crossed, so a month of pure
+         * capital flow with no trade reads as a full push and not as a
+         * division by nothing.
+         */
+        double volume = exportsTrailing + importsTrailing + financialGrossTrailing;
         if (volume <= minTrade) return 0;
 
-        double raw = -currentTrailing / volume;
+        double raw = -(currentTrailing + financialTrailing) / volume;
         raw = Math.max(-1, Math.min(1, raw));
         if (Math.abs(raw) < DEAD_BAND) return 0;
         return raw - Math.signum(raw) * DEAD_BAND;
@@ -539,6 +562,13 @@ public class ForeignAccounts {
     /* Trailing means, for anything the rate is decided on. See pressure(). */
     private double exportsTrailing;
     private double currentTrailing;
+    /**
+     * The financial account, trailing, and the gross of it - what crossed in
+     * either direction - so the pressure can be struck on the OVERALL balance
+     * over everything that crossed. Since 2026-09-10; see pressure().
+     */
+    private double financialTrailing;
+    private double financialGrossTrailing;
 
     /*
      * SINCE FOUNDING. Cheap to keep, and the only way to say anything about a
@@ -585,6 +615,8 @@ public class ForeignAccounts {
     /** ...and the trailing figures the rate is decided on. */
     public double monthlyExports()       { return exportsTrailing; }
     public double monthlyCurrentAccount(){ return currentTrailing; }
+    /** The financial account, trailing: positive is money coming in. See pressure(). */
+    public double monthlyFinancialAccount(){ return financialTrailing; }
 
     /**
      * Takes the month off the audit that has just been struck.
@@ -653,6 +685,9 @@ public class ForeignAccounts {
         importsTrailing = (importsTrailing * weight + tradeImports()) / (weight + 1);
         exportsTrailing = (exportsTrailing * weight + exports) / (weight + 1);
         currentTrailing = (currentTrailing * weight + currentAccount()) / (weight + 1);
+        financialTrailing = (financialTrailing * weight + month.financialAccount()) / (weight + 1);
+        financialGrossTrailing = (financialGrossTrailing * weight
+                + Math.abs(month.financialIn) + Math.abs(month.financialOut)) / (weight + 1);
         monthsOfHistory++;
     }
 
@@ -944,7 +979,14 @@ public class ForeignAccounts {
                  * is the right reading of a save written when the two were one
                  * number and only the balance behaviour was ever real.
                  */
-                reserves };
+                reserves,
+                /*
+                 * The financial account's two trailing figures, slots 20 and
+                 * 21, since the pressure was struck on the overall balance.
+                 * Absent from an older save: both start at zero and settle
+                 * within a year, as the current one always did.
+                 */
+                financialTrailing, financialGrossTrailing };
     }
 
     public void restore(double[] saved) {
@@ -977,6 +1019,10 @@ public class ForeignAccounts {
         if (saved.length > 17) lifetimeIntervention = saved[17];
         if (saved.length > 18) parity = saved[18] > 0 ? saved[18] : OPENING_PARITY;
         if (saved.length > 19) reserves = Math.max(0, saved[19]);
+        if (saved.length > 21) {
+            financialTrailing = saved[20];
+            financialGrossTrailing = Math.max(0, saved[21]);
+        }
     }
 
     public void reset() {
@@ -987,6 +1033,7 @@ public class ForeignAccounts {
         forgiven = 0;
         exportsTrailing = 0;
         currentTrailing = 0;
+        financialTrailing = financialGrossTrailing = 0;
         lifetimeExports = lifetimeImports = lifetimeInterest = lifetimeFinancial = 0;
         lastValuation = 0;
         importsTrailing = 0;
@@ -1045,6 +1092,8 @@ public class ForeignAccounts {
         exportsTrailing *= scale;
         importsTrailing *= scale;
         currentTrailing *= scale;
+        financialTrailing *= scale;
+        financialGrossTrailing *= scale;
 
         lifetimeExports   *= scale;
         lifetimeImports   *= scale;

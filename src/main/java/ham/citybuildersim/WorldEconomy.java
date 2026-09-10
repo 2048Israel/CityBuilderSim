@@ -194,6 +194,7 @@ public class WorldEconomy {
         double onTrend = Math.pow(1 + TREND_INFLATION, monthsRun / 12.0);
         priceLevel += (onTrend - priceLevel) * TREND_PULL;
         if (priceLevel < 1e-6) priceLevel = 1e-6;
+        recordLevel();
     }
 
     /** Where the trend says the world's prices should be by now. */
@@ -204,13 +205,90 @@ public class WorldEconomy {
     /** What the world's basket costs now against what it cost at founding. */
     public double getPriceLevel() { return priceLevel; }
 
-    /** What it is rising at, annually. */
+    /**
+     * The HEADLINE rate: what the band is doing this month.
+     *
+     * Not what the level is doing. The pull toward trend below is applied to
+     * the level and not to this rate, so over a long run the two say different
+     * things: across 4,000 months this read 3.3% a year on average while the
+     * level rose from 1.0 to 1.84, which is 0.18% a year. The game's own
+     * summary line printed both on the same line for weeks - "prices 1.841
+     * since founding, inflating at 3.5%/yr" - and nobody put them together.
+     * Fine for the screen, where the player is told what the world's prices
+     * are doing right now. Wrong for anything that compounds it: see
+     * realisedInflation().
+     */
     public double getInflation() { return annualInflation; }
+
+    /**
+     * What the world's prices ACTUALLY did over the last twelve months, from
+     * the level itself.
+     *
+     * THE CURRENCY WAS DRIFTING ON THE HEADLINE. ForeignAccounts moves the
+     * rate by (local inflation - world inflation) every month, and Game was
+     * handing it getInflation() for the world's half - a rate the level does
+     * not follow. With local inflation near zero and "world inflation" reading
+     * 3.3%, the currency appreciated about 3.2% a year, for ever, against a
+     * world whose prices were not actually rising. Only the pull toward parity
+     * resisted it, and the equilibrium sat 55% below purchasing-power parity
+     * for the whole of a mature run.
+     *
+     * That fell entirely on the two sectors that earn in world money and pay
+     * in local money. Their selling price was flat in dollars - steel $853 a
+     * tonne at month 50 and $847 at month 4,000 - and their wage bill per tonne
+     * in dollars nearly doubled, purely through the conversion. Heavy Industry
+     * went from 28% of months at a loss to 60%, Mining from 55% to 96%, and it
+     * was taken for a wage-price loop. It was a currency measured with two
+     * instruments that disagreed.
+     *
+     * Measured with this passed instead: the rate ends 33% off parity instead
+     * of 55%, and Heavy Industry does not borrow a cent in 4,000 months.
+     *
+     * A thirteen-month ring on the level, carried in the save. On a save from
+     * before the ring existed it is back-cast from the headline, which is the
+     * old answer for one year and the right one after that.
+     */
+    public double realisedInflation() {
+        double yearAgo = levels[(head + 1) % LEVEL_RING];
+        if (yearAgo <= 0) return annualInflation;
+        return priceLevel / yearAgo - 1;
+    }
+
+    private static final int LEVEL_RING = 13;
+    /** The level at the end of each of the last thirteen months; head is the newest. */
+    private final double[] levels = new double[LEVEL_RING];
+    private int head;
+
+    // A fresh world has a year of history at its opening rate, so the first
+    // twelve months read the headline rather than zero. Runs after the fields
+    // above it, which is why it sits below them.
+    { backcastLevels(); }
+
+    private void recordLevel() {
+        head = (head + 1) % LEVEL_RING;
+        levels[head] = priceLevel;
+    }
+
+    /** Fills the ring as if the headline rate had held for a year. */
+    private void backcastLevels() {
+        double monthly = Math.pow(1 + annualInflation, 1.0 / 12);
+        for (int back = 0; back < LEVEL_RING; back++) {
+            levels[(head - back + LEVEL_RING) % LEVEL_RING] = priceLevel / Math.pow(monthly, back);
+        }
+    }
 
     /* -------------------------------- carrying -------------------------------- */
 
     public double[] toSaveArray() {
-        return new double[] { priceLevel, annualInflation, monthsRun };
+        double[] out = new double[3 + LEVEL_RING];
+        out[0] = priceLevel;
+        out[1] = annualInflation;
+        out[2] = monthsRun;
+        // Oldest first, so restore() can replay them in order.
+        for (int back = LEVEL_RING - 1; back >= 0; back--) {
+            out[3 + (LEVEL_RING - 1 - back)] = levels[(head - back + LEVEL_RING) % LEVEL_RING];
+        }
+        return out;
     }
 
     public void restore(double[] saved) {
@@ -219,6 +297,12 @@ public class WorldEconomy {
         annualInflation = saved[1];
         // The trend is measured from months run, which no other state implies.
         if (saved.length > 2) monthsRun = (int) Math.round(saved[2]);
+        if (saved.length >= 3 + LEVEL_RING) {
+            head = LEVEL_RING - 1;
+            System.arraycopy(saved, 3, levels, 0, LEVEL_RING);
+        } else {
+            backcastLevels();
+        }
     }
 
     public void reset() {
@@ -226,5 +310,8 @@ public class WorldEconomy {
         annualInflation = OPENING_INFLATION;
         monthsRun = 0;
         pinned = false;
+        head = 0;
+        java.util.Arrays.fill(levels, 0);
+        backcastLevels();
     }
 }

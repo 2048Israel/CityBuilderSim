@@ -89,7 +89,21 @@ public class InboxCheck {
          * Bounded, so a city that never has anything to say fails loudly rather
          * than hanging - which would itself be worth knowing.
          */
+        /*
+         * AND GIVEN SOMETHING TO SAY (2026-09-10). The paragraph above records
+         * the first time this fixture's condition arrived by accident and was
+         * measured by luck; the material repricing moved the construction
+         * sector again and the empty city went 120 months without a word. So
+         * the city is given a problem that cannot go away on its own: it owns
+         * exactly the ground it stands on, and the first business that wants
+         * to build finds nowhere to do it. "Your businesses have nowhere to
+         * build" is one of the four things the inbox exists to say, and it
+         * stays true until the player buys land, which nobody here will.
+         * Which condition arrives is not the claim; that living raises what is
+         * true is - and section 4 below needs one that STAYS true.
+         */
         quietly(() -> {
+            city.getLandManager().setOwnedSqFt(city.getLandManager().getAllocatedSqFt());
             for (int m = 0; m < 120 && city.getInbox().size() == 0; m++) {
                 city.simulateMonths(1);
             }
@@ -185,6 +199,9 @@ public class InboxCheck {
          */
         Game standing = new Game(files);
         quietly(standing::newGame);
+        // The same problem as section 2, for the same reason: it stays true.
+        quietly(() -> standing.getLandManager().setOwnedSqFt(
+                standing.getLandManager().getAllocatedSqFt()));
 
         java.util.Map<String, Integer> liveSince = new java.util.HashMap<>();
         int refreshes = 0, reRaised = 0, liveMonths = 0;

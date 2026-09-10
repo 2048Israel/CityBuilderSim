@@ -636,6 +636,29 @@ public class Migration {
         double comfortable = families.totalHouseholds();
         if (comfortable <= 0) return 1;               // nobody here yet
 
+        /*
+         * ASKED OF THE PLACEMENT, NOT RE-DERIVED FROM IT.
+         *
+         * Everything below is arithmetic on household counts, and it was exact
+         * for as long as one door was as good as another. Since homes got
+         * SIZES it cannot be: whether a given set of households fits a given
+         * set of doors is a packing question, and no formula over totals
+         * answers it. A city with a studio for every household is at
+         * one-home-each by the count below and returns 1 - room to spare -
+         * while every family in it has nowhere to go.
+         *
+         * The floor term handles the APPROACH, damping arrivals as the doors
+         * that can help run short. This handles the wall. FamilyModel has
+         * already run house() and the squeeze and knows the answer as a fact
+         * rather than an estimate: if anybody was left with nowhere after both
+         * valves, the city is full, whatever the totals say.
+         *
+         * One month behind, because migration is settled before the month's
+         * placement - which is the correct direction for a damper: a city that
+         * could not place people last month stops taking them this month.
+         */
+        if (families.getStillUnplaced() > 0) return 0;
+
         double floor = families.minimumHomesTolerable();
         if (homes >= comfortable) return 1;
         if (homes <= floor) return 0;

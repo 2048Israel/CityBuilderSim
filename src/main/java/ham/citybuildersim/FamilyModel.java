@@ -307,8 +307,66 @@ public class FamilyModel {
     public double minimumHomesTolerable() {
         double singles = totalOf(FamilyStructure.SINGLE_ADULT);
         double afterSharing = totalHouseholds() - singles * .8;
-        return Math.max(0, afterSharing / 2);
+        double floor = Math.max(0, afterSharing / 2);
+        return floor + doorsThatCannotHelp();
     }
+
+    /**
+     * Doors the city has that the households who need one cannot enter.
+     *
+     * THE VALVE ARITHMETIC ABOVE COUNTS HOUSEHOLDS AND THE CITY COUNTS DOORS,
+     * and those were the same question until 2026-09-07, when a home got a
+     * SIZE and a studio got the one hard no in the model: a household with a
+     * dependant cannot go in it, however empty it is. The floor was never told.
+     *
+     * So a city with eighty studio doors and sixty family doors reported a
+     * floor as though all hundred and forty could take anybody, migration
+     * damped against that figure, and families kept arriving to a city whose
+     * only spare rooms were ones they were not allowed in. Measured: 10.552
+     * households with nowhere at all across months 25-35, in a city that the
+     * floor said had room.
+     *
+     * IT WAS INVISIBLE UNTIL SOMETHING BUILT A STUDIO. No city ever did -
+     * CommercialHandler.targetFor() explains why - so for three days every run
+     * had studioDoors = 0, this term was identically zero, and the bug sat
+     * behind a branch nothing opened. The fix to the rent opened it on the
+     * first run.
+     *
+     * What this adds is the shortfall in FAMILY doors specifically: households
+     * that need one, crowded as far as squeeze() allows, against the doors
+     * that will take them. Every unit of that shortfall is a door the city
+     * owns and cannot use, so the floor rises by it and arrivals stop at the
+     * point somebody would actually be sleeping outside - which is what the
+     * floor is for. Studio households are not counted the same way, because a
+     * single adult CAN take a family door when the studios run out and
+     * house() really does let them; the no runs one way only.
+     *
+     * Zero before house() has ever been called, which is the old behaviour and
+     * the right one: with no door census there is nothing to say.
+     */
+    private double doorsThatCannotHelp() {
+        if (lastHomesBySize == null) return 0;
+
+        double needFamilyDoor = 0;
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (needsFamilyDoor(shape)) needFamilyDoor += totalOf(shape);
+        }
+        // Doubling is the only valve open to them - a household with a child
+        // cannot be dissolved into a flatshare.
+        double after = needFamilyDoor / 2;
+
+        double familyDoors = 0;
+        for (int size = STUDIO_MAX_SIZE + 1; size < lastHomesBySize.length; size++) {
+            familyDoors += lastHomesBySize[size];
+        }
+        return Math.max(0, after - familyDoors);
+    }
+
+    /**
+     * The door census house() was last handed. Kept only so the crowding floor
+     * can tell a studio from a family door - see doorsThatCannotHelp().
+     */
+    private int[] lastHomesBySize;
 
     /**
      * Crowds households until they fit the homes available.
@@ -526,6 +584,7 @@ public class FamilyModel {
         refusedByStudio = 0;
 
         if (homesBySize == null || homesBySize.length < 2) return totalHouseholds();
+        lastHomesBySize = homesBySize.clone();
 
         double[] free = new double[homesBySize.length];
         for (int s = 1; s < homesBySize.length; s++) free[s] = homesBySize[s];
@@ -871,7 +930,7 @@ public class FamilyModel {
      * months to settle back to its real numbers.
      */
     public double[] toSaveArray() {
-        double[] out = new double[households.length * PayTier.values().length + 4];
+        double[] out = new double[households.length * PayTier.values().length + 5];
         int i = 0;
         for (double[] row : households) {
             for (double v : row) out[i++] = v;
@@ -887,7 +946,25 @@ public class FamilyModel {
          * thousand empty flats and ten thousand doubled-up families at once.
          */
         out[i++] = crowdedHouseholds;
-        out[i] = refusedByStudio;
+        out[i++] = refusedByStudio;
+        /*
+         * ...and the residual, appended 2026-09-10, because it stopped being a
+         * report and became an input.
+         *
+         * stillUnplaced is what BOTH VALVES failed to place, which is a
+         * two-pass figure: match by size, run the valves on what would not go,
+         * match again. The load path deliberately runs ONE pass on the
+         * already-squeezed matrix, and for as long as nothing read the number
+         * back that was fine - it is a screen figure and the two passes agree
+         * to within a household.
+         *
+         * Since Migration.crowdingFactor() asks it whether the city is full,
+         * "to within a household" is a live city and a reloaded one taking
+         * different numbers of arrivals, and SaveFileCheck measured it: $5.26
+         * apart after a single month. A flow cannot be reconstructed from the
+         * state a month ended in - eighth sighting - so it is carried.
+         */
+        out[i] = stillUnplaced;
         return out;
     }
 
@@ -903,19 +980,44 @@ public class FamilyModel {
      */
     public void restore(double[] saved) {
         int base = households.length * PayTier.values().length + 2;
-        if (saved == null || (saved.length != base && saved.length != base + 2)) {
+        if (saved == null || (saved.length != base && saved.length != base + 2
+                && saved.length != base + 3)) {
             return;   // refused whole, per the standing rule on state arrays
         }
+        carriedUnplaced = -1;
         int i = 0;
         for (double[] row : households) {
             for (int t = 0; t < row.length; t++) row[t] = saved[i++];
         }
         unhoused = saved[i++];
         doubledUp = saved[i++];
-        if (saved.length == base + 2) {
+        if (saved.length >= base + 2) {
             crowdedHouseholds = saved[i++];
-            refusedByStudio   = saved[i];
+            refusedByStudio   = saved[i++];
         }
+        if (saved.length == base + 3) {
+            carriedUnplaced = Math.max(0, saved[i]);
+        }
+    }
+
+    /**
+     * What the save said was left with nowhere, or -1 on a save from before it
+     * was carried. See adoptCarriedUnplaced().
+     */
+    private double carriedUnplaced = -1;
+
+    /**
+     * The saved residual wins over the load path's one-pass re-derivation.
+     *
+     * Game re-runs house() after a restore so rentWeight and the two segment
+     * weights are live - that pass has to happen and it sets stillUnplaced as
+     * a side effect, from ONE pass where the live figure came from two. This
+     * puts the carried figure back over the top of it. A save written before
+     * 2026-09-10 carries nothing and keeps the re-derived value, which is the
+     * behaviour those saves already had.
+     */
+    public void adoptCarriedUnplaced() {
+        if (carriedUnplaced >= 0) stillUnplaced = carriedUnplaced;
     }
 
     public void reset() {

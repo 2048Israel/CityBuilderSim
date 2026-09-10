@@ -621,6 +621,30 @@ public class LandMarket {
     /** Smallest parcel the office is currently willing to sell, in blocks. */
     public double getMinBlocks() { return minBlocks; }
 
+    /*
+     * THE OFFICE'S PRICES ARE STATE, and the listing above did not carry them.
+     * update() re-strikes them each month from the stock and the land the
+     * city holds, and the load path deliberately does not run update() - so
+     * until 2026-09-10 a reloaded city read the FOUNDING seeds for a month:
+     * the ground price 0.11274 -> 0.00070 (the BASE_PRICE_PER_SQ_FT literal,
+     * 160x too cheap) on the Land Office and in the build screen's "buying N
+     * blocks costs roughly X", and minBlocks 15 -> 1. Worse, the margin the
+     * screen reports is the city's own price LESS this one, and the city's
+     * price IS restored - so the margin flipped sign on load, from selling
+     * below cost to a comfortable profit. Carried now, beside the listing
+     * rather than inside it, so the listing's own format need not move.
+     */
+    public double[] getPriceState() {
+        return new double[] { marketPricePerSqFt, salePricePerSqFt, minBlocks };
+    }
+
+    public void restorePriceState(double[] state) {
+        if (state == null || state.length < 3) return;
+        if (state[0] > 0) marketPricePerSqFt = state[0];
+        if (state[1] > 0) salePricePerSqFt = state[1];
+        if (state[2] > 0) minBlocks = state[2];
+    }
+
     public void reset() {
         listing.clear();
         nextId = 1;

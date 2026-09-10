@@ -49,6 +49,12 @@ public class InfrastructureCheck {
                 && shops.getReportStoreInventory() == shops.getStoreInventory();
     }
 
+    /** How many convenience stores give this much coverage - the fixture's shape, not a count. */
+    static int shopsFor(Game g, double coverage) {
+        BuildingsTemplate shop = template(g, "Convenience Store");
+        return (int) Math.max(1, Math.ceil(coverage / shop.getCoverage()));
+    }
+
     static BuildingsTemplate template(Game game, String name) {
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (t.getName().equals(name)) return t;
@@ -158,7 +164,17 @@ public class InfrastructureCheck {
          * it belongs to section 5 below rather than here.
          */
         city.buildStack(template(city, "House"), 40, false);
-        city.buildStack(template(city, "Convenience Store"), 3, false);
+        /*
+         * SIZED FROM THE TEMPLATE. This fixture's whole second half is a city
+         * whose shops are the bottleneck the roads have to feed, and it opened
+         * with "3 stores" when a store covered 120 people. The retail
+         * rebalance of 2026-09-10 made a store cover 480, so three of them fed
+         * the grown city with or without roads and the delivered-share
+         * assertion below compared 93% against 84% instead of 89% against 35%.
+         * The number that matters is 360 of coverage for a thousand people;
+         * the count is derived from it.
+         */
+        city.buildStack(template(city, "Convenience Store"), shopsFor(city, 360), false);
         city.simulateMonths(6);
 
         System.out.printf("   a starter city: %.0f of %.0f used%n",
@@ -171,7 +187,18 @@ public class InfrastructureCheck {
         /* ================= 5. growth jams it ================= */
         System.out.println("\n--- growth is what breaks it ---");
 
+        /*
+         * GROWN UNTIL IT JAMS. "260 houses" jammed the network two and a half
+         * times over when a food plant loaded the roads by 200 and the advisor
+         * built several; at a fifth of the size (2026-09-10) the same 260
+         * houses loaded it 491 against 400, throughput 73%, and every
+         * assertion below about a congested city was being made of one that
+         * was merely busy. The fixture's premise is the load, so the lorries
+         * the plants used to put on the road come from six builders' yards at
+         * 90 apiece instead - a building whose load did not move.
+         */
         city.buildStack(template(city, "House"), 260, false);
+        city.buildStack(template(city, "Construction Depot"), 6, false);
         city.simulateMonths(30);
 
         InfrastructureManager net = city.getInfrastructureManager();
@@ -433,7 +460,7 @@ public class InfrastructureCheck {
         Game jammed = new Game(files);
         jammed.run();
         jammed.buildStack(template(jammed, "House"), 300, false);
-        jammed.buildStack(template(jammed, "Convenience Store"), 6, false);
+        jammed.buildStack(template(jammed, "Convenience Store"), shopsFor(jammed, 720), false);
         jammed.simulateMonths(40);
 
         /*

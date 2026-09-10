@@ -61,9 +61,12 @@ public class InvestCheck {
          */
         double housePoints = house.getConstructionPoints();
         check("house at 100 pts/mo", bi.leadTime(house, 1, 100), housePoints / 100.0);
-        // Food plant: 3500 points at 100/month
-        check("food plant at 100 pts/mo", bi.leadTime(plant, 1, 100), 35);
-        check("food plant at 1300 pts/mo", bi.leadTime(plant, 1, 1300), 3500 / 1300.0);
+        // Asked of the template, for the same reason as the house above: the
+        // plant went to a fifth of its size on 2026-09-10 and "3500 points"
+        // stopped being true.
+        double plantPoints = plant.getConstructionPoints();
+        check("food plant at 100 pts/mo", bi.leadTime(plant, 1, 100), plantPoints / 100.0);
+        check("food plant at 1300 pts/mo", bi.leadTime(plant, 1, 1300), plantPoints / 1300.0);
         assertTrue("no construction capacity -> unbuildable",
                 bi.leadTime(plant, 1, 0) == Double.MAX_VALUE);
 
@@ -382,6 +385,57 @@ public class InvestCheck {
                 house.getCashCost() * 4
                         + house.getConstructionMaterials() * 4 * bm.getConstructionMaterialPrice()
                         + 8000 * 4 * .003);
+
+        /* ==================== 13. distress ==================== */
+        System.out.println("\n--- distress: a firm that cannot pay sheds plant it is using ---");
+
+        /*
+         * planRetirement() sells capacity a sector is not USING, and has
+         * nothing to say to one using all of it and losing money on every
+         * unit. Heavy Industry and Mining had no retirement call at all and
+         * ended every long run at -$8bn and -$13bn of cash, paying wages for
+         * 1,400 months after the ore ran out. The distress rule is the other
+         * half: overdrawn after the credit desk's turn, two years of losses,
+         * and the biggest holding goes at the gradual rate whatever is spare.
+         */
+        BuildingManager dbm = new BuildingManager();
+        dbm.initializeTemplates();
+        EconomyManager dem = new EconomyManager(dbm);
+        BusinessInvestment distressed = new BusinessInvestment(dbm, dem);
+        BuildingsTemplate mine = dbm.getTemplateByName("Iron Mine");
+        BuildingsTemplate bankBranch = dbm.getTemplateByName("Commercial Bank");
+        BuildingsTemplate shop = dbm.getTemplateByName("Convenience Store");
+        dbm.addStack(mine, 8, true);
+        dbm.addStack(bankBranch, 20, true);
+        dbm.addStack(shop, 4, true);
+        String mining = BusinessDebtManager.MINING;
+        String retail = BusinessDebtManager.RETAIL;
+
+        assertTrue("a solvent sector is left alone however long it has lost",
+                !distressed.planDistressRetirement(mining, BuildingType.MINING, 1_000, 0).build);
+        for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS - 1; i++) {
+            distressed.recordSectorResult(mining, -1);
+        }
+        assertTrue("...and an overdrawn one gets its two years first",
+                !distressed.planDistressRetirement(mining, BuildingType.MINING, -1_000, 0).build);
+        distressed.recordSectorResult(mining, -1);
+        BusinessInvestment.Decision dd = distressed.planDistressRetirement(mining, BuildingType.MINING, -1_000, 0);
+        assertTrue("after two years overdrawn it sheds, with nothing spare at all", dd.build);
+        assertTrue("...its biggest holding", dd.build && dd.template == mine);
+        check("...at the gradual rate, not all at once", dd.build ? dd.quantity : -1,
+                (int) Math.ceil(8 * BusinessInvestment.MAX_RETIREMENT_FRACTION));
+        assertTrue("...and not while it is still building",
+                !distressed.planDistressRetirement(mining, BuildingType.MINING, -1_000, 1).build);
+
+        // The Commercial Bank is a COMMERCIAL building with no coverage. The
+        // first run of this rule had a distressed Retail sector scrap all
+        // twenty branches, being the biggest holding in the category.
+        for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS; i++) {
+            distressed.recordSectorResult(retail, -1);
+        }
+        BusinessInvestment.Decision r = distressed.planDistressRetirement(retail, BuildingType.COMMERCIAL, -1_000, 0);
+        assertTrue("a distressed retailer sells shops", r.build && r.template == shop);
+        assertTrue("...and never the city's bank", !(r.build && r.template == bankBranch));
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

@@ -286,6 +286,22 @@ public class CapitalFlowCheck {
             city.buildStack(template(city, "Textile Mill"), 2, false);
             city.buildStack(template(city, "Paved Road"), 30, false);
             city.buildStack(template(city, "Commercial Bank"), 3, false);
+            /*
+             * THE FIXTURE HAS TO CAUSE THE CONDITION. Nineteenth sighting, and
+             * the cleanest yet. Hot money comes for a carry: the city's rate
+             * over the world's. A city that never touches the policy dial
+             * prices its own paper from floorRate() = policy - 2%, which with
+             * the default 3% policy is 1% against a world paying 2% - so the
+             * spread is structurally ZERO, by a full point, before anything
+             * else happens. This fixture never set the dial, and its assertion
+             * "hot money actually arrives" was decided by whether two months
+             * of bank-strain premium happened to spike the city's rate: it
+             * passed on one buildings.json and failed on another, on a
+             * power-plant capacity number. The threshold is policy > 4%; the
+             * city is put well past it, and the spread is asserted as well as
+             * the arrival, so the reason it passes is the reason it names.
+             */
+            city.getDebtManager().setPolicyRate(.06);
             for (int m = 0; m < 180; m++) {
                 city.simulateMonths(1);
                 double r = city.getLastMoneyAudit().relative();
@@ -296,10 +312,14 @@ public class CapitalFlowCheck {
         }
 
         CapitalFlows flows = city.getCapitalFlows();
-        out.printf("   fifteen years: $%,.0f in, $%,.0f out, peak $%,.0f,"
-                + " %d stop(s); worst residual %.1e%n",
+        out.printf("   fifteen years at a 6%% dial: $%,.0f in, $%,.0f out, peak $%,.0f"
+                + " on a peak spread of %.2f points, %d stop(s); worst residual %.1e%n",
                 flows.getLifetimeArrived(), flows.getLifetimeDeparted(),
-                flows.getPeakStock(), flows.getStopsSuffered(), worst);
+                flows.getPeakStock(), flows.getPeakSpread() * 100,
+                flows.getStopsSuffered(), worst);
+
+        assertTrue("fixture: the city actually offered a carry over the world",
+                flows.getPeakSpread() > 0.005);
 
         /*
          * COUNT HOW OFTEN IT ACTUALLY FIRES - K1 in the design queue, earned by
@@ -307,8 +327,10 @@ public class CapitalFlowCheck {
          * months. A harness proves the code does what it was told; it never
          * proves the situation it was told about happens.
          */
-        assertTrue("hot money actually arrives in a real city",
+        assertTrue("hot money actually arrives in a real city that offers a carry",
                 flows.getLifetimeArrived() > 0);
+        assertTrue("...in real money, not a rounding error",
+                flows.getPeakStock() > 1000);
         assertTrue("...and the books balance every month it does",
                 Math.abs(worst) < 1e-9);
 
@@ -349,8 +371,107 @@ public class CapitalFlowCheck {
         close("...with the same months left to run",
                 carried.stopMonthsLeft(), mid.stopMonthsLeft(), 0);
 
+        /* ======== 8. and the city's own money goes the other way ======== */
+        out.println("\n--- and the city's own money goes the other way ---");
+
+        /*
+         * THE MIRROR (2026-09-10). Seven sections above are a stranger's money
+         * coming for a spread; this is the sectors' own going for one. See
+         * OutwardInvestment for why a surplus economy needs it. Every claim is
+         * CAUSED: the till is filled by hand, the bank's rate is handed in,
+         * the borrower is given its loan directly.
+         */
+        Path outRoot = Files.createTempDirectory("outward");
+        Game rich = new Game(new GameFiles(outRoot.resolve("data"), outRoot.resolve("no-legacy")));
+        System.setOut(quiet);
+        try { rich.run(); } finally { System.setOut(out); }
+        EconomyManager econ = rich.getEconomyManager();
+        OutwardInvestment abroad = rich.getOutwardInvestment();
+        String con = BusinessDebtManager.CONSTRUCTION;
+        String ind = BusinessDebtManager.INDUSTRY;
+
+        econ.setSectorCash(con, 1_000_000);          // a billion, idle
+        econ.setSectorCash(ind, 500_000);            // half a billion, and a loan
+        econ.getBusinessDebtManager().setAssets(ind, 2_000_000);
+        econ.getBusinessDebtManager().issueLoan(ind, 100_000, 1);
+        assertTrue("fixture: the borrower really owes something",
+                econ.getBusinessDebtManager().getPrincipal(ind) > 0);
+
+        // the bank pays nothing, the world pays two percent, for five years
+        for (int m = 0; m < 60; m++) abroad.takeMonth(0, DebtManager.WORLD_BASE_RATE, 1.0, econ);
+
+        double wealth = econ.getSectorCash(con) + abroad.localValue(con);
+        out.printf("   after five years at a 2-point spread: US$%,.0fk abroad of $%,.0fk, target %.0f%%%n",
+                abroad.getUsd(con), wealth, abroad.getTargetShare() * 100);
+        assertTrue("idle money goes abroad for the world's rate", abroad.getUsd(con) > 0);
+        assertTrue("...most of it, at this spread",
+                abroad.localValue(con) / wealth > .5);
+        assertTrue("...and not all of it - working capital stays",
+                econ.getSectorCash(con) > 0
+                        && abroad.localValue(con) / wealth <= OutwardInvestment.MAX_SHARE + 1e-9);
+        assertTrue("the coupon rolls where it is earned, so the wealth grew",
+                wealth > 1_000_000 && abroad.getInterestThisMonth(con) > 0);
+        close("...and nothing of it landed in the till",
+                econ.getSectorCash(con) + abroad.getLifetimeOut() - abroad.getLifetimeHome(), 1_000_000, .005);
+        close("a sector with a loan keeps its money home", abroad.getUsd(ind), 0, 1e-9);
+
+        // ...and the bank starts paying three percent: it comes home
+        double wasAbroad = abroad.getUsd(con);
+        for (int m = 0; m < 24; m++) abroad.takeMonth(.03, DebtManager.WORLD_BASE_RATE, 1.0, econ);
+        out.printf("   two years after the bank pays 3%%: US$%,.0fk abroad, from US$%,.0fk%n",
+                abroad.getUsd(con), wasAbroad);
+        assertTrue("it comes home when the bank pays better", abroad.getUsd(con) < wasAbroad * .1);
+        close("...to nothing, in the end", abroad.getTargetShare(), 0, 1e-9);
+
+        /*
+         * AND THE CURRENCY SEES IT. A surplus the sectors recycle abroad is
+         * not a surplus of demand for the currency. Same trade, with and
+         * without the outflow, on a ForeignAccounts told nothing else.
+         */
+        ForeignAccounts unrecycled = new ForeignAccounts();
+        ForeignAccounts recycled = new ForeignAccounts();
+        for (int m = 0; m < 60; m++) {
+            unrecycled.takeMonth(bop(4_000, 2_000, 0), 6_000);
+            recycled.takeMonth(bop(4_000, 2_000, 2_000), 6_000);
+        }
+        out.printf("   pressure on a $2,000k surplus: %+.2f unrecycled, %+.2f recycled abroad%n",
+                unrecycled.pressure(), recycled.pressure());
+        assertTrue("fixture: the surplus alone would strengthen the currency",
+                unrecycled.pressure() < 0);
+        close("a surplus sent abroad pushes the currency nowhere", recycled.pressure(), 0, 1e-9);
+
+        /*
+         * AND A LIVE CITY CONSERVES IT. The move is inside the audited window;
+         * if it were not, this is the assertion that would say so.
+         */
+        econ.setSectorCash(con, 1_000_000);
+        rich.getBank().setDepositRate(0);
+        double worstResidual = 0;
+        System.setOut(quiet);
+        try {
+            for (int m = 0; m < 24; m++) {
+                rich.simulateMonths(1);
+                worstResidual = Math.max(worstResidual, Math.abs(rich.getLastMoneyAudit().relative()));
+            }
+        } finally {
+            System.setOut(out);
+        }
+        out.printf("   two years live: US$%,.0fk abroad, worst residual %.2e%n",
+                abroad.totalUsd(), worstResidual);
+        assertTrue("a live city sends money abroad on its own", abroad.totalUsd() > 0);
+        assertTrue("...and every month of it is conserved", worstResidual < 1e-9);
+
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** A month at the city's edge: goods in and out, and money the sectors sent abroad. */
+    static MoneyAudit.Result bop(double exports, double imports, double investedAbroad) {
+        double[] f = new double[10];
+        f[0] = exports;
+        f[1] = imports;
+        f[5] = investedAbroad;
+        return new MoneyAudit.Result(0, 0, 0, exports, imports + investedAbroad, 0, "", f);
     }
 
     static BuildingsTemplate template(Game game, String name) {

@@ -174,8 +174,17 @@ public class ForeignCheck {
         MoneyAudit.Result last = city.getLastMoneyAudit();
         assertTrue("household flows are counted, but not as trade",
                 last.domesticOut() > 0);
-        assertTrue("...and they are the larger half, as they must be",
-                last.domesticOut() > last.foreignOut());
+        /*
+         * ...THAN THE IMPORTS, which is the claim the paragraph above makes.
+         * This compared payroll with everything foreign, and everything
+         * foreign now includes the sectors' own money going abroad for the
+         * world's rate (OutwardInvestment, 2026-09-10) - a financial flow
+         * that a small city with a large treasury can move faster than it
+         * pays wages, and is right to. Wages are not imports; that is what
+         * is asserted, against the imports.
+         */
+        assertTrue("...and they are larger than the imports, as they must be",
+                last.domesticOut() > last.tradeOut);
 
         /* ================= 3. across a reload ================= */
         out.println("\n--- and it survives a reload ---");
@@ -655,8 +664,33 @@ public class ForeignCheck {
          * measures the revaluation and nothing else. That is a real effect and
          * ForeignDebtCheck is where it belongs; it is not an elasticity.
          */
-        assertTrue("a weaker currency sells more abroad than it buys",
-                (lifeExpWeak - lifeImpWeak) > (lifeExpPar - lifeImpPar));
+        /*
+         * AND IN THE WORLD'S MONEY, NOT THE CITY'S (2026-09-10).
+         *
+         * This city is a price-taker at both ends - ore, steel, food and,
+         * since the material unit was repriced, its building materials are
+         * all priced abroad in dollars - so the only thing a devaluation can
+         * change is VOLUMES, and volumes are what the balance in dollars
+         * measures. The balance in local money measures volumes times the
+         * rate, and this fixture's import side is a fixed public-works
+         * programme: a power plant, a water plant and forty roads, about
+         * $900M of material that gets bought whatever it costs. Forty percent
+         * dearer, in local money, is forty percent more import bill, and no
+         * elasticity in the world moves an order the fixture placed on
+         * month one. Measured: 1,047,035k out at parity against 1,483,908k
+         * weaker (x1.42), against 25,926k and 166,424k of exports.
+         *
+         * In dollars the same figures are $1,047M against $1,060M out - the
+         * weaker city built a little more - and $26M against $119M in. The
+         * balance improves by $80M, and it is the exports doing it, which is
+         * the claim.
+         */
+        double usdBalancePar  = (lifeExpPar - lifeImpPar) / 1.00;
+        double usdBalanceWeak = (lifeExpWeak - lifeImpWeak) / 1.40;
+        out.printf("   in dollars: balance $%,.0fk at parity, $%,.0fk 40%% weaker%n",
+                usdBalancePar, usdBalanceWeak);
+        assertTrue("a weaker currency sells more abroad than it buys, in the world's money",
+                usdBalanceWeak > usdBalancePar);
         assertTrue("...and it is the exports doing it", lifeExpWeak > lifeExpPar);
 
         /*

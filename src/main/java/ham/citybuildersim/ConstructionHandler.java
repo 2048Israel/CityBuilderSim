@@ -30,6 +30,25 @@ public class ConstructionHandler {
     private double materialsInventory;
     private double materialsPrice;
     private int materialsConsumed;
+    /**
+     * What the month's imported material COST, in money, handed in by Game.
+     *
+     * THE EXPENSE USED TO BE STRUCK FROM THE YARD (2026-09-10): (consumed -
+     * inventory) x price, where inventory was the yard AFTER the month's
+     * draws and consumed had been zeroed by updateConstructionHandler() on
+     * the way to the strike. Measured over a 4,000-month playtest: builders'
+     * materials expense $0, against $2.75B of material the national accounts
+     * had recorded as imported. Every build was billed for its imports and
+     * the sector never paid for one, which is why construction ended every
+     * long run cash-rich and needing no credit, and why the balance of
+     * payments never saw a unit of material cross the border.
+     *
+     * Game knows the shortfall at the moment of each draw - the yard's stock
+     * before the order, not after - and the price it was charged at, and
+     * accumulates the bill as it goes. That figure is the expense. The
+     * inventory and consumption fields stay for the screen.
+     */
+    private double materialsImportBill;
             
     
     private double construction;
@@ -102,7 +121,9 @@ public class ConstructionHandler {
     
     public void updateConstructionHandler(){
         calculateExpenses();
-        materialsConsumed=0;
+        // materialsConsumed is no longer zeroed here. Game hands it in once a
+        // tick and owns the count; zeroing it on the second updateServices()
+        // pass left the screen's "Used" line reading 0 at every month end.
     }
 
     /**
@@ -214,8 +235,34 @@ public class ConstructionHandler {
     void bankMonth(double salesTaxRemitted) {
         rSalesTax = salesTaxRemitted;
         netIncome -= rSalesTax;
-        cash += netIncome;
+        // Net of the profit tax, at the rate set before the statement ran -
+        // the same line every other business banks on. See taxRate.
+        rProfitTax = getTaxIncome(taxRate);
+        cash += netIncome - rProfitTax;
     }
+
+    /*
+     * THE PROFIT TAX, since 2026-09-10. Construction paid property tax and,
+     * since 2026-09-09, sales tax, and no profit tax at all: getTaxIncome()
+     * in EconomyManager summed five sectors and stopped, SectorBooks hard-coded
+     * its tax line to zero with a comment saying so, and the Policy screen
+     * offered the player a Profit lever for it with a live "now -> then"
+     * preview that promised 163-330 a month and delivered nothing. Jerus's
+     * call: it pays, like the other five. Floored at zero - a loss earns no
+     * refund - and struck on the net income the month actually banked.
+     */
+    private double taxRate;
+    private double rProfitTax;
+
+    public void setTaxRate(double rate) { this.taxRate = rate; }
+    public double getTaxRate()          { return taxRate; }
+
+    /** Income tax on what it made this month, floored at zero. */
+    public double getTaxIncome(double rate) {
+        return Math.max(netIncome * rate, 0);
+    }
+
+    public double getReportProfitTax() { return rProfitTax; }
 
     private double rRevenue, rWageExpense, rMaterialsExpense, rInterestExpense, rPropertyTaxExpense;
     public double getReportRevenue()            { return rRevenue; }
@@ -283,9 +330,52 @@ public class ConstructionHandler {
     }
 
     public void bill(double amount, double points){
+        bill(amount, points, 0);
+    }
+
+    /**
+     * Takes an order: the whole price into the order book, to be earned as
+     * the work is delivered - except the material that had to be bought in,
+     * which is earned whole at the next strike (see materialsPending).
+     *
+     * WHY THE MATERIALS ARE NOT DEFERRED (2026-09-10). An order's imported
+     * material is bought and paid for the month the order is placed - the
+     * bill lands on this sector's statement that month, see
+     * materialsImportBill - while the buyer's money for it sat in the order
+     * book, released a few percent a month as the sites advanced. The
+     * sector paid a $500M import out of cash it would not be handed for two
+     * years, went to the bank for the difference, and the bank wrote it
+     * off: measured in BankCheck's books fixture the month the import bill
+     * started being charged at all, as a $64.6M write-down on a $108M book
+     * that took the bank's whole equity in month 31.
+     *
+     * The material is delivered to the site the month it is bought, and a
+     * contractor bills material on delivery. So the bought-in part of the
+     * price is revenue in the statement that carries the order, against the
+     * import it pays for, and only the WORK is deferred over the points. The yard's
+     * own material is free to buyer and builder alike and appears in
+     * neither figure.
+     *
+     * @param materialsBoughtIn the import cost inside `amount`
+     */
+    public void bill(double amount, double points, double materialsBoughtIn){
         unearnedRevenue += amount;
         backlogPoints += points;
+        materialsPending += Math.max(0, Math.min(amount, materialsBoughtIn));
     }
+
+    /**
+     * The bought-in material of orders taken since the last strike, still
+     * sitting in the order book. It is earned at the NEXT strike, not the
+     * moment of the order, because the order book is a money pool the audit
+     * counts and `revenue` is not: recognised at the order, the money was in
+     * neither place until the month closed, and MoneyAudit reported it as
+     * not conserved in 530 of 4,000 months. Moving it at the strike keeps
+     * it in the book until the same tick that books the import it pays for.
+     */
+    private double materialsPending;
+
+    public double getMaterialsPending() { return materialsPending; }
 
     /**
      * Recognise the month's work.
@@ -293,6 +383,15 @@ public class ConstructionHandler {
      * @param pointsDelivered construction points actually completed this month
      */
     public void recogniseWork(double pointsDelivered){
+
+        // Material delivered to site since the last strike is earned first,
+        // whole, whatever the crews did - see materialsPending.
+        if (materialsPending > 0) {
+            double take = Math.min(materialsPending, unearnedRevenue);
+            revenue += take;
+            unearnedRevenue -= take;
+            materialsPending = 0;
+        }
 
         if (backlogPoints <= 0 || pointsDelivered <= 0) {
             utilisation = 0;
@@ -333,9 +432,22 @@ public class ConstructionHandler {
      * load is a business whose solvency test is meaningless.
      */
     public void restoreOrderBook(double cash, double unearnedRevenue, double backlogPoints) {
+        restoreOrderBook(cash, unearnedRevenue, backlogPoints, 0);
+    }
+
+    /** ...and the material delivered since the last strike, still in the book. */
+    public void restoreOrderBook(double cash, double unearnedRevenue, double backlogPoints,
+                                 double materialsPending) {
         this.cash = cash;
         this.unearnedRevenue = unearnedRevenue;
         this.backlogPoints = backlogPoints;
+        this.materialsPending = Math.max(0, materialsPending);
+    }
+
+    /** The struck month back, so next month's income reads the same after a load. */
+    public void restoreStatement(double netIncome, double profitTax) {
+        this.netIncome = netIncome;
+        this.rProfitTax = profitTax;
     }
 
     public double getUnearnedRevenue()  { return unearnedRevenue; }
@@ -431,6 +543,10 @@ public class ConstructionHandler {
     public void setMaterialsConsumed(int consumed){
         this.materialsConsumed = consumed;
     }
+    public void setMaterialsImportBill(double bill){
+        this.materialsImportBill = Double.isFinite(bill) ? Math.max(0, bill) : 0;
+    }
+    public double getMaterialsImportBill()  { return materialsImportBill; }
     //updaters
     public void updateJobFillRate(double[] fillRate) {
 
@@ -485,11 +601,10 @@ public class ConstructionHandler {
         // jobs are staffed; this is about whether the staff have anything to do.
         wageExp *= Math.max(IDLE_PAYROLL_FLOOR, utilisation);
 
-        if (materialsInventory < materialsConsumed) {
-            materialsExp = (materialsConsumed - materialsInventory) * materialsPrice;
-        } else {
-            materialsExp = 0;
-        }
+        // What the imports cost, at the price they were charged at - see the
+        // field. The yard's own material is free to the builder and to the
+        // buyer alike, so it is the shortfall that costs, and only that.
+        materialsExp = materialsImportBill;
 
         expenses = wageExp + materialsExp;
     }
@@ -549,12 +664,14 @@ public class ConstructionHandler {
     public void redenominate(double scale) {
         cash *= scale;
         unearnedRevenue *= scale;
+        materialsPending *= scale;
         revenue *= scale;
         netIncome *= scale;
         materialsPrice *= scale;
         expenses *= scale;
         wageExp *= scale;
         materialsExp *= scale;
+        materialsImportBill *= scale;
         interestExpense *= scale;
         propertyTaxExpense *= scale;
         maintenanceExpense *= scale;
@@ -572,6 +689,7 @@ public class ConstructionHandler {
         rMaintenanceExpense *= scale;
         rMaintenanceRevenue *= scale;
         rSalesTax *= scale;
+        rProfitTax *= scale;
     }
 
 }

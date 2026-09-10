@@ -183,6 +183,30 @@ public class IndustrialHandler {
     private int productsImportedCopy = 0;
     private double importCost = .9;
 
+    /**
+     * What the world pays for the city's food, as a share of what it charges
+     * the city for its own: the import price less the wedge - freight, the
+     * middlemen, the buyer's margin - that sits between an export price and
+     * an import price everywhere. Measured at 0.9 of the LOCAL price (the old
+     * dump's basis, which is the import price whenever the shelf is at its
+     * ceiling), a city's food industry ended a 4,000-month run holding $72bn
+     * against $5.6bn for its shops: the world was paying nearly its own
+     * selling price for unlimited quantities. A wedge of this size is what
+     * keeps exporting a decent business rather than the only one.
+     */
+    public static final double EXPORT_PRICE_FRACTION = .6;
+
+    /** What one exported unit fetches: the world's price, less the wedge. */
+    private double exportPricePerUnit() {
+        return importPrice * EXPORT_PRICE_FRACTION;
+    }
+
+    /** The world's price for food, in the city's money - set beside the local price each month. */
+    private double importPrice;
+
+    public void setImportPrice(double price) { this.importPrice = Math.max(0, price); }
+    public double getImportPrice()           { return importPrice; }
+
     /** Above this share of warehouse capacity industry clears stock even at a loss. */
     private static final double DUMP_THRESHOLD = .8;
 
@@ -503,10 +527,105 @@ public class IndustrialHandler {
      *
      * The output is a local now. The field means one thing all month.
      */
+    /**
+     * How many months of the shops' demand the mills will hold in stock before
+     * they idle. Two: enough to ride a bad month without a shortage, not enough
+     * to set the price by flooding.
+     */
+    public static final double STOCK_MONTHS = 2;
+
+    /**
+     * What the shops will want this month - min(coverage, population), handed
+     * in by EconomyManager. NOT foodDemand, which is what they bought LAST
+     * month: a throttle driven off last month's purchases deadlocks, because
+     * zero output makes zero purchases makes zero output. Population does not
+     * depend on what the mill did.
+     */
+    private int plannedDemand;
+
+    public void setPlannedDemand(int units) { this.plannedDemand = Math.max(0, units); }
+
+    /** Nameplate output the plant chose not to make this month, for the screen. */
+    private double idledThisMonth;
+
+    /**
+     * What the mills will actually make this month: nameplate at today's
+     * operating rate, or what brings the stock to STOCK_MONTHS of demand,
+     * whichever is less. THE FIGURE THE MARKET IS PRICED ON. FoodMarket was
+     * handed getMonthlyOutput() - the nameplate - for one run after the
+     * throttle went in, and priced seven idling plants' 40,000 units against
+     * 7,400 of demand: the price sat on its floor, the mills withheld, the
+     * shops imported, and the investment planner read the imports as unmet
+     * demand and built an eighth plant. A market is priced on what comes to
+     * it, not on what could.
+     */
+    public double getPlannedOutput() {
+        double output = getMonthlyOutput();
+        double targetStock = plannedDemand > 0
+                ? plannedDemand * STOCK_MONTHS
+                : foodCapacity * DUMP_THRESHOLD;
+        return Math.max(0, Math.min(output, targetStock - foodInventory));
+    }
+
+    /**
+     * Nameplate the city cannot eat, made for export instead - if the export
+     * price clears the marginal cost of running the line, which is the energy
+     * and water and nothing else (the staff are paid either way).
+     *
+     * The old export was a dump: stock above the warehouse's threshold,
+     * shipped at a discount, out of the shed. No long run ever recorded a unit
+     * of it, because the shed never got that full while the mills were busy
+     * withholding. This is the honest version - a plant with spare capacity
+     * and a world price is an exporter - and it is what gives a devaluation
+     * something to work on. Priced as the dump was, at the local price less
+     * the shipping discount, so the two halves agree.
+     */
+    public double getExportBoundOutput() {
+        double spare = Math.max(0, getMonthlyOutput() - getPlannedOutput());
+        if (spare <= 0) return 0;
+        return exportPricePerUnit() >= getMarginalCostPerUnit() ? spare : 0;
+    }
+
+    /** Units made this month straight for the ship. Decided by the statement, made by produceFood(). */
+    private int exportBoundThisMonth;
+
+    public int getExportBoundThisMonth() { return exportBoundThisMonth; }
+
+    public double getIdledThisMonth() { return idledThisMonth; }
+
     public void produceFood(){
 
         double output = foodProduction
                 * getOperatingRate();
+
+        /*
+         * THE PLANT IDLES RATHER THAN FLOOD ITS OWN WAREHOUSE.
+         *
+         * Until 2026-09-10 this ran at nameplate every month whatever the
+         * shops wanted and whatever was already in the shed. FoodMarket prices
+         * local food as import price x demand / supply, with the stock in
+         * supply - so a plant bigger than the city's appetite sat with its
+         * warehouse pinned at the dump threshold for ever and SET ITS OWN
+         * PRICE by the surplus: local food at 36% of the import ceiling, on the
+         * hard 25% floor for the first 2,600 months, revenue $381k against a
+         * $696k payroll, in every month of every run ever recorded. At the
+         * import price the same units would have cleared +$368k. The cost base
+         * was fine; the price was the constraint, and the plant was the one
+         * setting it.
+         *
+         * A firm does not make what it cannot sell. Output stops at what
+         * brings the stock to STOCK_MONTHS of demand; the staff are still paid
+         * (jobs come with the plant, not with the shift), so idling costs the
+         * mill nothing it was not already paying and earns it the price it was
+         * throwing away. With no shops at all to plan against - month one -
+         * it fills the shed to the dump line and stops there.
+         */
+        double planned = getPlannedOutput();
+        // The export-bound share was struck by the statement and leaves from
+        // the line; what is idled is whatever neither the city nor the world
+        // will take.
+        idledThisMonth = Math.max(0, output - planned - exportBoundThisMonth);
+        output = planned;
 
         // Cast written out rather than left to the compound assignment. The
         // value is the same - foodInventory is a whole number, so truncating
@@ -549,7 +668,20 @@ public class IndustrialHandler {
          * back before measuring the change, so the loss shows up where it
          * belongs - on the balance sheet - and not as output the city never made.
          */
-        int capped = Math.min(foodInventory, foodCapacity);
+        /*
+         * ...BUT NEVER WHAT HAS ALREADY BEEN SOLD. The statement ran before
+         * this and struck productsSold and the export dump against the stock
+         * as it stood; updateFinalIndustrialHandler() takes them out AFTER
+         * this. So units the shops have already paid for are still sitting in
+         * this figure, and a clamp that does not know that destroys them and
+         * then lets them be deducted anyway. Found the first time a distressed
+         * mill scrapped its last plant mid-month: capacity went to zero, the
+         * clamp emptied the warehouse, the month's sales came out of an empty
+         * warehouse, and the stock read -18,625 - with the money audit off by
+         * exactly that much food.
+         */
+        int committed = Math.min(foodInventory, productsSoldCopy + productsImportedCopy);
+        int capped = Math.max(Math.min(foodInventory, foodCapacity), committed);
         inventoryWrittenOff = Math.max(0, foodInventory - capped);
         foodInventory = capped;
     }
@@ -863,17 +995,34 @@ public class IndustrialHandler {
         productsImportedCopy = exported;
 
         /*
+         * ...AND WHAT THE PLANT MAKES FOR ABROAD DIRECTLY. Since the mills
+         * learned to idle rather than flood their own market, nameplate above
+         * the city's appetite is spare - and a plant whose payroll is fixed
+         * runs that spare for export whenever the export price clears the
+         * energy it costs to run, which it always does. Decided here, in the
+         * statement, so the revenue is banked in the month it is earned;
+         * shipped by produceFood() straight from the line, never through the
+         * warehouse, so it moves neither the stock nor the price at home.
+         * See getExportBoundOutput().
+         */
+        int direct = (int) Math.floor(getExportBoundOutput());
+        exportBoundThisMonth = direct;
+
+        /*
          * The discounted excess LEAVES THE CITY, so it is an export and the
          * national accounts have to be told. Without this the food vanishes from
          * the measure: inventory falls by the whole shipment as negative
          * investment with nothing added back, so a mill clearing its warehouse
          * abroad reads as the city producing less.
          */
-        foodExportRevenue = exported * foodPrice * importCost;
+        // The dump from the shed still goes at the local price less its
+        // discount, as it always did; what is made for the ship goes at the
+        // world's price less the wedge. See EXPORT_PRICE_FRACTION.
+        foodExportRevenue = exported * foodPrice * importCost
+                + direct * exportPricePerUnit();
 
-        double averageSellPrice = productsSold * foodPrice
-                + exported * foodPrice * importCost;
-        productsSold += exported;
+        double averageSellPrice = productsSold * foodPrice + foodExportRevenue;
+        productsSold += exported + direct;
 
         if (productsSold != 0) {
             averageSellPrice /= productsSold;
@@ -883,8 +1032,20 @@ public class IndustrialHandler {
         rAverageSellPrice = averageSellPrice;
         rGrossRevenue = productsSold * averageSellPrice;
 
-        // The stores' cheque, not units x today's price - see localSalesValue.
-        if (!Double.isNaN(localSalesValue) && productsSoldCopy > 0) {
+        /*
+         * The stores' cheque, not units x today's price - see localSalesValue.
+         *
+         * BOOKED WHENEVER THERE IS ONE, not only in a month the mill also
+         * sold something. The cheque is for LAST month's units; this month's
+         * productsSold has nothing to say about whether it exists. The first
+         * version gated it on productsSoldCopy > 0, which held in steady state
+         * and failed the first time a mill sold its stock and then scrapped
+         * its last plant: the shops' payment for that final month sat in the
+         * "cheque in the post" pool, the mill's next statement found nothing
+         * sold THIS month and never cashed it, and the money audit was off by
+         * exactly the cheque - $37.08 at month 11 of the playtest's founding.
+         */
+        if (!Double.isNaN(localSalesValue) && (localSalesValue > 0 || productsSoldCopy > 0)) {
             rGrossRevenue = localSalesValue + foodExportRevenue;
             rAverageSellPrice = productsSold > 0 ? rGrossRevenue / productsSold : 0;
         }
@@ -1172,6 +1333,7 @@ public class IndustrialHandler {
         foodPrice *= scale;
         localSalesValue *= scale;
         foodExportRevenue *= scale;
+        importPrice *= scale;
         interestExpense *= scale;
         propertyTaxExpense *= scale;
         maintenanceExpense *= scale;

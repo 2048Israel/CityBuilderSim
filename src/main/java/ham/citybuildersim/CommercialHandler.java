@@ -110,6 +110,17 @@ public class CommercialHandler {
     private int pLocalImport;
     private int pGlobalImport;
     private double pTaxRate;
+    /**
+     * Real estate's own profit rate. ONE RATE WAS TAXING TWO SECTORS: both
+     * lines of the tax were struck at pTaxRate, which EconomyManager set from
+     * RETAIL alone - so the Policy screen's Real Estate profit lever moved the
+     * rate it displayed and not a dollar of tax (measured: +30 points, tax
+     * byte-identical), and the Retail lever silently taxed real estate too.
+     * PolicySector's own doc warns the two "live inside CommercialHandler" and
+     * "are separate sectors everywhere else"; this was the place that did not
+     * honour it.
+     */
+    private double pRealEstateTaxRate;
     private double rNetIncome;
     private double rGrossRevenue;
     private double rImportTax;
@@ -844,6 +855,46 @@ public class CommercialHandler {
     public double getStructurePerCapacity() { return structurePerCapacity; }
     public double getLandPerCapacity()      { return landPerCapacity; }
 
+    /* ===================================================================
+       WHAT A NEW UNIT COSTS, PER SEGMENT
+
+       The pair above is the cheapest residential building in the city, full
+       stop, and it was the required return for BOTH markets. A studio and a
+       three-bed are not the same good - that is the whole reason the segments
+       exist - and they do not cost the same to supply either. Measured on
+       Jerus's month-1124 city:
+
+           Low-Rise Apartments   $68,986 a head
+           House                 $83,275 a head
+           Studio Apartments     $90,973 a head
+
+       A studio really is the dearest housing per person, in this game and in
+       the world: it puts a kitchen and a bathroom behind every door instead of
+       behind every three. So pricing the studio market off the low-rise's cost
+       asked the studio to recover $90,973 out of a rent struck on $68,986, and
+       it could not: it scored 0.00489 against the low-rise's 0.00644 and was
+       strictly dominated at every land price. That city had 1,847 households
+       wanting a studio, 0 studio doors, and no mechanism that could ever
+       produce one.
+
+       So each segment is priced off the cheapest building THAT SEGMENT can
+       actually supply. Zero means the city has no template for that segment,
+       and the blended figure stands in - which is what the two fields above
+       now are.
+       =================================================================== */
+
+    private double studioCostPerCapacity;
+    private double familyCostPerCapacity;
+
+    public void setSegmentHousingCosts(double studioPerCapacity,
+                                       double familyPerCapacity) {
+        this.studioCostPerCapacity = Math.max(0, studioPerCapacity);
+        this.familyCostPerCapacity = Math.max(0, familyPerCapacity);
+    }
+
+    public double getStudioCostPerCapacity() { return studioCostPerCapacity; }
+    public double getFamilyCostPerCapacity() { return familyCostPerCapacity; }
+
     /**
      * What the standing stock costs to hold this month, per person of capacity.
      *
@@ -908,6 +959,20 @@ public class CommercialHandler {
     public double rentRequired() {
         double full = structurePerCapacity + landPerCapacity;
         if (full <= 0) return marginalHousingCost * LANDLORD_YIELD / 12;
+        return full * LANDLORD_YIELD / 12;
+    }
+
+    /**
+     * The same required return, on the cheapest home THIS segment can supply.
+     *
+     * Falls back to the blended figure when the city has no template for the
+     * segment at all - a founding city with one House in the catalogue has no
+     * studio cost to speak of, and inventing one would price a market that
+     * cannot be built into.
+     */
+    public double rentRequired(boolean family) {
+        double full = family ? familyCostPerCapacity : studioCostPerCapacity;
+        if (full <= 0) return rentRequired();
         return full * LANDLORD_YIELD / 12;
     }
 
@@ -1046,29 +1111,96 @@ public class CommercialHandler {
      * TWO RENTS, above.
      */
     public double rentTarget() {
-        return targetFor(familyPressure());
+        return targetFor(familyPressure(), true);
     }
 
-    /** Where the studio price is heading. Same floor, its own scarcity. */
+    /** Where the studio price is heading. Its own cost, its own scarcity. */
     public double studioRentTarget() {
-        return targetFor(studioPressure());
+        return targetFor(studioPressure(), false);
     }
 
     /**
-     * One segment's target, given how tight that segment is.
+     * One segment's target: what its own next building costs, times how tight
+     * that segment is, lifted so the COMPANY still covers its carry.
      *
-     * BOTH SEGMENTS SHARE THE FLOOR. The break-even is a portfolio number -
-     * one company, one interest bill, one tax bill - and there is no honest
-     * way to say which of its buildings the debt is against. What differs
-     * between them is what the market will bear, which is the multiple.
+     * THE FLOOR IS A PORTFOLIO NUMBER AND IT IS NOT A FLOOR ON A LEG, which
+     * is the correction of 2026-09-10 and is worth stating carefully, because
+     * the previous version had the first half of it right.
+     *
+     * rentBreakEven() is one company's carry over the capacity it owns: one
+     * interest bill, one tax bill, one maintenance bill, and no honest way to
+     * say which building any of it is against. That much was and is true. What
+     * followed from it was `max(breakEven, required x multiple)` applied to
+     * each segment separately - and in a mature city that quietly turned off
+     * the price system.
+     *
+     * Watch it happen. A city that has been building for ninety years carries
+     * debt on stock put up when land was cheap, so its break-even sits ABOVE
+     * the required return on anything it could build today. Measured on
+     * Jerus's month-1124 save: break-even $445 a head, required $333. The max
+     * therefore returned $445 for the family market and $445 for the studio
+     * market and would have returned $445 for a third and a fourth - the same
+     * rent for every building in the city, whatever it cost to put up. Rent
+     * had stopped being a price and become a constant, and the only thing left
+     * discriminating between buildings was cost per head, so the city built
+     * the cheapest one it had and nothing else, for ever. 138 low-rise blocks,
+     * 96 houses, 0 studios, 1,847 households wanting a studio.
+     *
+     * A shortfall against the carry is a shortfall for the WHOLE portfolio, so
+     * it is made up on the whole portfolio: strike each leg on its own costs
+     * and its own scarcity, blend them at the weights actually being billed,
+     * and if that blend falls short of the carry, lift both legs by the ratio
+     * that closes it. The company still cannot lose money on what it owns -
+     * the 32-people-for-240-months bug that rentBreakEven() was written for
+     * stays fixed - but the two legs keep the distance their costs put between
+     * them, and the cheaper market subsidises the dearer one exactly as one
+     * company's rent roll actually does.
+     *
+     * On the same save this prices the family leg at $445 (unchanged, since it
+     * is nearly the whole of the blend) and the studio leg at $700, which
+     * takes the studio from strictly dominated to the best building in the
+     * city - which, with 1,847 households wanting one and none in existence,
+     * is what a price is supposed to say.
      */
-    private double targetFor(double pressure) {
-        double required = rentRequired();
+    private double targetFor(double pressure, boolean family) {
+        double required = rentRequired(family);
         double breakEven = rentBreakEven();
         if (required <= 0) {
             return breakEven > 0 ? breakEven : rentPrice;
         }
-        return Math.max(breakEven, required * scarcityMultipleOf(pressure));
+        return required * scarcityMultipleOf(pressure) * carryLift();
+    }
+
+    /**
+     * How far short of the carry the two legs come, struck on their own costs.
+     *
+     * One number, applied to both, so the RATIO between the segments is left
+     * alone - the whole point of striking them separately. Never below one: a
+     * portfolio already covering its carry is not asked to charge more, and
+     * scarcity is what takes rent above cost, not the mortgage.
+     *
+     * Weighted by what is actually BILLED, not by capacity - studioRentWeight
+     * and familyRentWeight are the person-equivalents behind let doors, which
+     * is the same basis rentRevenue() collects on. A segment with no stock
+     * has weight zero and therefore no vote on the lift, which is correct:
+     * it is contributing nothing to the carry either.
+     */
+    private double carryLift() {
+        double breakEven = rentBreakEven();
+        if (breakEven <= 0) return 1;
+
+        double studioWeight = Math.max(0, this.studioRentWeight);
+        double familyWeight = Math.max(0, this.familyRentWeight);
+        double weight = studioWeight + familyWeight;
+        if (weight <= 0) return 1;
+
+        double blend = (studioWeight * rentRequired(false)
+                              * scarcityMultipleOf(studioPressure())
+                      + familyWeight * rentRequired(true)
+                              * scarcityMultipleOf(familyPressure())) / weight;
+
+        if (blend <= 0) return 1;
+        return Math.max(1, breakEven / blend);
     }
 
     /**
@@ -1134,6 +1266,27 @@ public class CommercialHandler {
     }
 
     /**
+     * Where that average is heading - the two targets at the billed weights.
+     *
+     * THE FIGURE THE BREAK-EVEN IS AN INVARIANT ON, and the reason it needs a
+     * name of its own. Since targetFor() strikes each leg on its own costs and
+     * makes the carry up across the portfolio, EITHER LEG MAY SIT BELOW THE
+     * CARRY - a glutted studio market really should rent under the company's
+     * average cost rather than stand empty, and be made up on the tight one,
+     * which is what a landlord with two products does. What must never happen
+     * is the BLEND going under, because that is the company paying to house
+     * people. HousingCheck asserts on this and not on the legs.
+     */
+    public double blendedRentTarget() {
+        double studioWeight = Math.max(0, studioRentWeight);
+        double familyWeight = Math.max(0, familyRentWeight);
+        double weight = studioWeight + familyWeight;
+        if (weight <= 0) return getRentTarget();
+        return (studioWeight * studioRentTarget()
+              + familyWeight * rentTarget()) / weight;
+    }
+
+    /**
      * Every price and balance this handler owns, in the new unit.
      *
      * @param scale what to multiply by - a hundredth for a hundred-to-one reform
@@ -1157,6 +1310,14 @@ public class CommercialHandler {
         // do not move; the two per-capacity COSTS are money and do.
         structurePerCapacity *= scale;
         landPerCapacity      *= scale;
+        // ...and the two SEGMENT costs, set in the same breath by
+        // repriceHousingCosts() and missed here until 2026-09-10. A sweep of
+        // every public getter on a city and its 100:1 twin found exactly three
+        // that came out neither scaled nor unchanged - rentTarget(),
+        // studioRentTarget() and blendedRentTarget(), all 60x too high in the
+        // reform month - and this pair was why. Seventeenth in the family.
+        studioCostPerCapacity *= scale;
+        familyCostPerCapacity *= scale;
         pricePerWatt      *= scale;
         pricePerWaterUnit *= scale;
         realEstatePropertyTax   *= scale;
@@ -1403,6 +1564,12 @@ public class CommercialHandler {
      */
     public double getBusinessTaxIncome(double taxRate){
         pTaxRate = taxRate;
+        return rTotalTax;
+    }
+
+    public double getBusinessTaxIncome(double retailRate, double realEstateRate){
+        pTaxRate = retailRate;
+        pRealEstateTaxRate = realEstateRate;
         return rTotalTax;
     }
 
@@ -1683,6 +1850,18 @@ public class CommercialHandler {
     public int getLastMonthSales(){
         return lastMonthSales;
     }
+
+    /**
+     * Put back on load. LAST MONTH'S SALES ARE THE DEMAND SIGNAL - restockTarget()
+     * plans the shelf off them and getExpectedPurchase() prices the food market
+     * off that - and they were not carried, so a loaded city planned its shelf
+     * off the headcount fallback and told the mills a different demand from the
+     * one the saved city had told them. Invisible while the market was priced
+     * on the mills' nameplate, which swamped the signal; the moment it was
+     * priced on what the mills actually bring (2026-09-10), a reloaded city's
+     * food price read 0.050 against 0.201 on the city it was saved from.
+     */
+    public void setLastMonthSales(int units) { this.lastMonthSales = Math.max(0, units); }
     public double getImportPrice(){
         return importPrice;
     }
@@ -1776,7 +1955,15 @@ public class CommercialHandler {
      * Mirrors IndustrialHandler.setTaxRate(), and is called from the same place
      * in the month.
      */
-    public void setTaxRate(double taxRate) { this.pTaxRate = taxRate; }
+    public void setTaxRate(double taxRate) { setTaxRates(taxRate, taxRate); }
+
+    /** Retail's rate and real estate's, which are two dials on the Policy screen. */
+    public void setTaxRates(double retailRate, double realEstateRate) {
+        this.pTaxRate = retailRate;
+        this.pRealEstateTaxRate = realEstateRate;
+    }
+
+    public double getRealEstateTaxRate() { return pRealEstateTaxRate; }
 
     public double getRetailPropertyTax()     { return retailPropertyTax; }
     public double getRealEstatePropertyTax() { return realEstatePropertyTax; }
@@ -2284,7 +2471,7 @@ public class CommercialHandler {
         // see getBusinessTaxIncome(), which now returns this figure instead of
         // computing a second one of its own.
         rRetailTax = Math.max(rRetailNetIncome * pTaxRate, 0);
-        rRealEstateTax = Math.max(rRealEstateNetIncome * pTaxRate, 0);
+        rRealEstateTax = Math.max(rRealEstateNetIncome * pRealEstateTaxRate, 0);
         rTotalTax = rRetailTax + rRealEstateTax;
 
         rNetIncome = rTotalNetIncome;

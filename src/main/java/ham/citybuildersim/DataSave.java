@@ -223,6 +223,8 @@ public class DataSave {
      * they were saving up for.
      * ---------------------------------------------------------------------- */
     private double[] landListing;
+    /** The office's struck prices and minimum lot - see LandMarket.getPriceState(). */
+    private double[] landMarketPrices;
     private int ironDeposits;
     private double ironReserveTonnes;
 
@@ -277,6 +279,15 @@ public class DataSave {
     private java.util.Map<String, Double> writeOffTotals;
 
     /*
+     * The rest of the borrower's record: how many times each sector has been
+     * written down, and how many months of borrowing ban it has left. Null on
+     * a save from before 2026-09-10, which restores as a clean record - what
+     * those cities were already reading, wrongly, on every load.
+     */
+    private java.util.Map<String, Integer> restructureCounts;
+    private java.util.Map<String, Integer> blockedMonths;
+
+    /*
      * Construction's books: cash, and the order book that percentage-of-
      * completion revenue is recognised against. Without the backlog a loaded
      * city books zero construction output until the queue would have emptied.
@@ -284,6 +295,8 @@ public class DataSave {
     private double constructionCash;
     private double constructionUnearnedRevenue;
     private double constructionBacklogPoints;
+    /** Bought-in material of orders taken since the last strike, still in the book. Absent: zero. */
+    private double constructionMaterialsPending;
     private int constructionMaterials;
     private int storeInventory;
     private int industryFoodInventory;
@@ -463,6 +476,11 @@ public class DataSave {
         this.constructionMaterials = constructionMaterials;
     }
     
+    /** The shops' sales last month - the demand signal. See CommercialHandler.setLastMonthSales(). */
+    private int storeLastMonthSales;
+    public void setStoreLastMonthSales(int units) { this.storeLastMonthSales = units; }
+    public int getStoreLastMonthSales()           { return storeLastMonthSales; }
+
     public void setStoreInventory(int storeInventory){
         this.storeInventory = storeInventory;
     }
@@ -675,11 +693,18 @@ public class DataSave {
     }
 
     public double[] getLandListing()        { return landListing; }
+    public void setLandMarketPrices(double[] state) { this.landMarketPrices = state; }
+    public double[] getLandMarketPrices()   { return landMarketPrices; }
     public int getIronDeposits()            { return ironDeposits; }
     public double getIronReserveTonnes()    { return ironReserveTonnes; }
 
     public void setIronLocalPrice(double price) { this.ironLocalPrice = price; }
     public double getIronLocalPrice()           { return ironLocalPrice; }
+
+    /** The food market's traded price, carried for the same reason as the ore's. */
+    private double foodLocalPrice;
+    public void setFoodLocalPrice(double price) { this.foodLocalPrice = price; }
+    public double getFoodLocalPrice()           { return foodLocalPrice; }
 
     public void setMiningCash(double cash)      { this.miningCash = cash; }
     public double getMiningCash()               { return miningCash; }
@@ -708,6 +733,19 @@ public class DataSave {
      * families are all suddenly solvent.
      */
     private double[] householdBalance;
+
+    /**
+     * The same stock, per CELL of the family matrix - one shape at one tier -
+     * since 2026-09-10, when the households became objects (Household,
+     * HouseholdBalance). Named cell by cell, so a shape added to the enum
+     * cannot read one cell's money into another's; a key this build has no
+     * cell for is skipped. The row array above is still written, as the sum
+     * of the cells, for a build from before them - which is why neither array
+     * moved SAVE_FORMAT. A save without this seeds every cell of a row with
+     * the row's position.
+     */
+    private String[] householdCellKeys;
+    private double[] householdCells;
 
     /**
      * The bank's cash.
@@ -740,6 +778,13 @@ public class DataSave {
 
     public void setHouseholdBalance(double[] state) { this.householdBalance = state; }
     public double[] getHouseholdBalance()           { return householdBalance; }
+
+    public void setHouseholdCells(String[] keys, double[] state) {
+        this.householdCellKeys = keys;
+        this.householdCells = state;
+    }
+    public String[] getHouseholdCellKeys() { return householdCellKeys; }
+    public double[] getHouseholdCells()    { return householdCells; }
 
     public void setBankCash(double cash) { this.bankCash = cash; }
     public double getBankCash()          { return bankCash; }
@@ -816,6 +861,65 @@ public class DataSave {
     public double[] getCapitalFlows()           { return capitalFlows; }
 
     /**
+     * The city's own savings abroad, per sector. See OutwardInvestment.
+     * Absent from a save written before 2026-09-10: Gson leaves the field
+     * null, restore() refuses it, and the city starts with nothing abroad -
+     * which is what every such city had.
+     */
+    private double[] outwardInvestment;
+
+    public void setOutwardInvestment(double[] state) { this.outwardInvestment = state; }
+    public double[] getOutwardInvestment()           { return outwardInvestment; }
+
+    /**
+     * How often the bank has failed, what its creditors ate, and whether it is
+     * frozen right now.
+     *
+     * Not derivable from the sheet - see Bank.solvencyToSave(). Null on a save
+     * written before 2026-09-10, which restores as a bank with no record, which
+     * is the state those saves already loaded in.
+     *
+     * NOT a SAVE_FORMAT change: Gson leaves an absent field alone.
+     */
+    private double[] bankSolvency;
+
+    public void setBankSolvency(double[] state) { this.bankSolvency = state; }
+    public double[] getBankSolvency()           { return bankSolvency; }
+
+    /**
+     * Doors that were lived in when the month's housing pass ran.
+     *
+     * A MID-MONTH FACT, and therefore not derivable from the stock the month
+     * ended with. CommercialHandler.setOccupiedHomes() clamps what the family
+     * model needs against the homes that existed AT THAT MOMENT, deliberately -
+     * a landlord cannot let a flat that has not been built yet. Buildings then
+     * finish later in the same month, so the load path, re-deriving it against
+     * the final stock, clamps against a bigger number and gets a bigger answer.
+     *
+     * Measured by HousingCheck on a tight city: 1.614 doors let on the reloaded
+     * city against the 1.000 the saved one had. Null on a save from before
+     * 2026-09-10, which keeps the re-derived figure those saves already loaded.
+     */
+    private double[] housingOccupancy;
+
+    public void setHousingOccupancy(double[] state) { this.housingOccupancy = state; }
+    public double[] getHousingOccupancy()           { return housingOccupancy; }
+
+    /**
+     * The bank's last CLOSED month: payroll, upkeep, interest earned, book.
+     *
+     * Read by the investment advisor when it asks whether another branch would
+     * pay for itself, which it asks in the gap between a month opening and
+     * anything moving through it - so the live fields are all zero there. See
+     * Bank.closeMonth(). Null on an older save, which leaves the advisor with
+     * nothing to judge on for one month, exactly as before this existed.
+     */
+    private double[] bankLastMonth;
+
+    public void setBankLastMonth(double[] state) { this.bankLastMonth = state; }
+    public double[] getBankLastMonth()           { return bankLastMonth; }
+
+    /**
      * The price basket, its weights, and a year of readings.
      *
      * The index itself could be restruck from today's prices. The YEAR OF
@@ -839,6 +943,22 @@ public class DataSave {
 
     public void setWorldEconomy(double[] state) { this.worldEconomy = state; }
     public double[] getWorldEconomy()           { return worldEconomy; }
+
+    /*
+     * THE RATE THE MONTH WAS TRADED AT, as EconomyManager holds it: the foreign
+     * rate times the world's price level, struck at the top of the month and
+     * fanned out to the food market and the building manager. Until 2026-09-10
+     * the load path restored the rate into DebtManager - "load-path parity,
+     * for the third time" - and never into EconomyManager, so a loaded city
+     * held the founding 1.0 until the next tick: every import price at its
+     * founding value, the balance sheet repricing every building on it, and
+     * the next month's GDP 6.8% low. Zero on an older save; Game falls back to
+     * recomputing the product, which is within a third of a percent.
+     */
+    private double tradedExchangeRate;
+
+    public void setTradedExchangeRate(double rate) { this.tradedExchangeRate = rate; }
+    public double getTradedExchangeRate()          { return tradedExchangeRate; }
 
     /**
      * The currency's unit and how many reforms it has been through.
@@ -1136,6 +1256,13 @@ public class DataSave {
     private java.util.List<Integer> populationTrend;
     private double cityCapitalSpending;
     private double monthlyMaterialImports;
+    /**
+     * The same imports in money, at the price each was charged at - the
+     * builders' materials expense and the accounts' import line. Absent from
+     * a save written before 2026-09-10; Game rebuilds it from the count at the
+     * old unit for that one month. See Game.monthlyMaterialImportBill.
+     */
+    private double monthlyMaterialImportBill;
     private int materialsConsumed;
 
     public void setSectorLossMonths(java.util.Map<String, Integer> m){ this.sectorLossMonths = m; }
@@ -1165,6 +1292,8 @@ public class DataSave {
     public double getCityMaintenancePaid(){ return cityMaintenancePaid; }
     public void setMonthlyMaterialImports(double v){ this.monthlyMaterialImports = v; }
     public double getMonthlyMaterialImports(){ return monthlyMaterialImports; }
+    public void setMonthlyMaterialImportBill(double v){ this.monthlyMaterialImportBill = v; }
+    public double getMonthlyMaterialImportBill(){ return monthlyMaterialImportBill; }
     public void setMaterialsConsumed(int v){ this.materialsConsumed = v; }
     public int getMaterialsConsumed(){ return materialsConsumed; }
 
@@ -1199,14 +1328,46 @@ public class DataSave {
     }
     public java.util.Map<String, Double> getWriteOffTotals() { return writeOffTotals; }
 
+    public void setRestructureCounts(java.util.Map<String, Integer> counts) {
+        this.restructureCounts = counts;
+    }
+    public java.util.Map<String, Integer> getRestructureCounts() { return restructureCounts; }
+
+    public void setBlockedMonths(java.util.Map<String, Integer> months) {
+        this.blockedMonths = months;
+    }
+    public java.util.Map<String, Integer> getBlockedMonths() { return blockedMonths; }
+
     public void setNationalAccounts(double[] state) { this.nationalAccounts = state; }
     public double[] getNationalAccounts()           { return nationalAccounts; }
 
     public void setConstructionBooks(double cash, double unearned, double backlog) {
+        setConstructionBooks(cash, unearned, backlog, 0);
+    }
+    public void setConstructionBooks(double cash, double unearned, double backlog, double pending) {
         this.constructionCash = cash;
         this.constructionUnearnedRevenue = unearned;
         this.constructionBacklogPoints = backlog;
+        this.constructionMaterialsPending = pending;
     }
+    public double getConstructionMaterialsPending() { return constructionMaterialsPending; }
+
+    /*
+     * The builders' struck month: net income and the profit tax on it. The
+     * load path refreshes the other five sectors' statements and not this
+     * one, which never mattered until 2026-09-10, when the profit tax made the
+     * figure feed next month's income - and a reloaded city read it as zero.
+     * Zero on an older save, which is what those cities were already reading.
+     */
+    private double constructionNetIncome;
+    private double constructionProfitTax;
+
+    public void setConstructionStatement(double netIncome, double profitTax) {
+        this.constructionNetIncome = netIncome;
+        this.constructionProfitTax = profitTax;
+    }
+    public double getConstructionNetIncome() { return constructionNetIncome; }
+    public double getConstructionProfitTax() { return constructionProfitTax; }
     public double getConstructionCash()            { return constructionCash; }
     public double getConstructionUnearnedRevenue() { return constructionUnearnedRevenue; }
     public double getConstructionBacklogPoints()   { return constructionBacklogPoints; }

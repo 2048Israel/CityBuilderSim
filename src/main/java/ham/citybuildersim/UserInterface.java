@@ -14483,7 +14483,7 @@ public class UserInterface extends Application {
         column.getChildren().add(grid);
 
         /* --------------- and the cell somebody has clicked on --------------- */
-        VBox opened = openStatement(hh, families);
+        VBox opened = openStatement(hh, bal, families);
         if (opened != null) column.getChildren().add(opened);
 
         /*
@@ -14511,7 +14511,7 @@ public class UserInterface extends Application {
             column.getChildren().add(statementNote(retiredLeft >= 0
                     ? "Enough to cover a home and the shopping."
                     : "Not enough to cover a home and the shopping."));
-            column.getChildren().add(retiredGrid(hh, families));
+            column.getChildren().add(retiredGrid(hh, bal, families));
         }
 
         /* ======================= THE CITY'S OWN MONTH ======================= */
@@ -14563,6 +14563,22 @@ public class UserInterface extends Application {
                 bal.totalDebt() > 0 ? Palette.BAD : null));
         column.getChildren().add(statementLine("Interest on it",
                 tightMoney(toDollars(-bal.totalInterest()), false)));
+
+        // Every cell keeps its own books, so this can be said by household
+        // rather than by tier: who the bank has stopped lending to, and who
+        // has been discharged and is waiting out the year.
+        double cutOff = 0, lockedOut = 0;
+        for (Household c : bal.cells()) {
+            if (c.isLockedOut()) lockedOut += c.households();
+            else if (c.isCutOff()) cutOff += c.households();
+        }
+        if (cutOff + lockedOut >= .5) {
+            column.getChildren().add(statementNote(String.format(
+                    "%s households are at their credit ceiling and %s have been discharged"
+                    + " and cannot borrow. Click a cell above to see which.",
+                    formatter.format(Math.round(cutOff)),
+                    formatter.format(Math.round(lockedOut)))));
+        }
         column.getChildren().add(statementLine("Income per resident",
                 tightMoney(toDollars(hh.getIncomePerResident()), false)));
         column.getChildren().add(statementLine("An average filled job pays",
@@ -14759,7 +14775,8 @@ public class UserInterface extends Application {
      * figures behind a cell can be read without losing the grid that made you
      * curious about it.
      */
-    private VBox openStatement(HouseholdAccounts hh, FamilyModel families) {
+    private VBox openStatement(HouseholdAccounts hh, HouseholdBalance bal,
+                               FamilyModel families) {
 
         if (openCell.isEmpty() || families == null) return null;
 
@@ -14816,20 +14833,61 @@ public class UserInterface extends Application {
         panel.getChildren().add(bar);
         panel.getChildren().add(flowKey());
 
+        /*
+         * ...AND WHAT THIS HOUSEHOLD HAS, which is its own since 2026-09-10.
+         * The month above is a flow the books derive; the position below is
+         * the cell's own ledger - what one of these households has put by,
+         * what it owes, and whether the bank is still lending to it. The
+         * figures that used to be the tier's, given to every shape in it.
+         */
+        Household own = bal.cell(shape, tier);
+        if (own.households() >= .5) {
+            Label has = new Label("What one of them has");
+            has.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL)
+                    + " -fx-padding: 10 0 2 0;");
+            panel.getChildren().add(has);
+            panel.getChildren().add(statementLine("Put by",
+                    tightMoney(toDollars(own.savings()), false),
+                    own.savings() > 0 ? Palette.GOOD : null));
+            panel.getChildren().add(statementLine("Owed to lenders",
+                    tightMoney(toDollars(-own.debt()), false),
+                    own.debt() > 0 ? Palette.BAD : null));
+            if (own.debt() > 0) {
+                panel.getChildren().add(statementLine(
+                        String.format("Interest at %.1f%%", own.rate() * 100),
+                        tightMoney(toDollars(-own.interest()), false)));
+            }
+            if (own.isLockedOut()) {
+                panel.getChildren().add(statementNote(String.format(
+                        "Discharged: the bank will not lend to them for another %d month%s.",
+                        own.lockout(), own.lockout() == 1 ? "" : "s")));
+            } else if (own.isCutOff()) {
+                panel.getChildren().add(statementNote(
+                        "At the credit ceiling: what they cannot fund, they go without."));
+            } else if (own.isGoingShort()) {
+                panel.getChildren().add(statementNote(
+                        "Buying less than they want this month."));
+            }
+        }
+
         VBox holder = new VBox(panel);
         holder.setStyle("-fx-padding: 4 0 10 0;");
         return holder;
     }
 
     /** The retired, who have their own household shapes and no pay tier. */
-    private VBox retiredGrid(HouseholdAccounts hh, FamilyModel families) {
+    private VBox retiredGrid(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families) {
 
         javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
         grid.setHgap(10);
         grid.setVgap(2);
 
-        String[] heads = {"household", "homes", "income", "rent", "fees", "shops", "left"};
-        double[] widths = {SHAPE_COL, 56, 70, 64, 60, 66, 70};
+        // The last two are the household's own position, not the month: what
+        // one of them has put by and owes. A senior alone on one pension and
+        // a senior couple on two are different cells since 2026-09-10, and
+        // the difference is mostly here.
+        String[] heads = {"household", "homes", "income", "rent", "fees", "shops", "left", "put by", "owed"};
+        double[] widths = {SHAPE_COL, 56, 70, 64, 60, 66, 70, 70, 70};
         for (int c = 0; c < heads.length; c++) {
             javafx.scene.layout.ColumnConstraints spec =
                     new javafx.scene.layout.ColumnConstraints(widths[c]);
@@ -14861,6 +14919,24 @@ public class UserInterface extends Application {
                     Palette.SIZE_CAPTION, true), 5, line);
             grid.add(gridCell(tightMoney(left, false),
                     left < 0 ? Palette.BAD : Palette.GOOD, Palette.SIZE_CAPTION, true), 6, line);
+            Household own = bal.cell(shape);
+            grid.add(gridCell(tightMoney(toDollars(own.savings()), false),
+                    own.savings() > 0 ? Palette.GOOD : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 7, line);
+            Label owed = gridCell(tightMoney(toDollars(-own.debt()), false),
+                    own.debt() > 0 ? Palette.BAD : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true);
+            if (own.isLockedOut() || own.isCutOff()) {
+                Tooltip tip = new Tooltip(own.isLockedOut()
+                        ? "Discharged: the bank will not lend to them for another "
+                                + own.lockout() + " months."
+                        : "At the credit ceiling: what they cannot fund, they go without.");
+                tip.setShowDelay(Duration.millis(300));
+                Tooltip.install(owed, tip);
+                owed.setStyle(owed.getStyle() + " -fx-border-color: " + Palette.ALERT_EDGE
+                        + "; -fx-border-width: 0 0 2 0;");
+            }
+            grid.add(owed, 8, line);
             line++;
         }
         if (line == 1) return new VBox();

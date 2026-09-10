@@ -1,5 +1,9 @@
 package ham.citybuildersim;
 
+import java.util.function.Consumer;
+import java.util.function.ToDoubleBiFunction;
+import java.util.function.ToDoubleFunction;
+
 /**
  * The households' balance sheet: what they have saved, what they owe, and what
  * happens in the month they cannot cover the shop.
@@ -32,24 +36,38 @@ package ham.citybuildersim;
  *
  * Debt before hunger and repayment before saving are both deliberate: they are
  * what a household actually does, and each is the direction that makes the
- * failure arrive slowly enough for the player to see it coming.
+ * failure arrive slowly enough for the player to see it coming. The waterfall
+ * itself lives in Household.settle(); this class decides what each household
+ * is handed and adds up what they did.
  *
- * ==================== PER HOUSEHOLD, NOT PER ROW ====================
+ * ==================== SIXTY-EIGHT CELLS, NOT SEVEN ROWS ====================
+ *
+ * Jerus, 2026-09-10: "I need it per household and pay tier type."
+ *
+ * Until then the stocks were kept per pay tier - seven rows - and the header
+ * here argued that the shape could not carry a stock because FamilyModel
+ * rebuilds every household from scratch each month: "a stock attached to
+ * 'unskilled couple with a teen' would be a stock of nothing, handed to a
+ * different set of people every month." The tier survived; the shape did not.
+ *
+ * It does now, because the money follows the people. Every cell of the family
+ * matrix is a Household object with its own savings, debt and credit line, and
+ * when the monthly rebuild moves households between cells - a child ages into
+ * a teen, five singles take a flatshare, a worker retires - their money moves
+ * with them. See followThePeople(). What used to be seven rows of arrays is
+ * sixty-eight objects this class holds, sums and strikes; the row getters the
+ * screens read are sums of the cells, and the tier is a view rather than the
+ * unit.
+ *
+ * ==================== PER HOUSEHOLD, NOT PER CELL ====================
  *
  * The stocks are kept PER HOUSEHOLD, which is the one decision here worth
- * arguing about. A row total would be diluted every month the city grew: a
+ * arguing about. A cell total would be diluted every month the city grew: a
  * hundred arrivals would halve the average family's savings without anybody
- * spending a penny, and the screen would show a city getting poorer for growing.
- * Per household, a newcomer arrives with what a household like theirs has, which
- * is both truer and the only version whose figure means anything on a screen.
- *
- * Jerus asked for the stocks per pay tier AND per family shape. Per tier is what
- * exists here, because FamilyModel rebuilds every household from scratch each
- * month - "nobody keeps the family they had last month" - so a stock attached to
- * "unskilled couple with a teen" would be a stock of nothing, handed to a
- * different set of people every month. The tier survives; the shape does not.
- * The screen still SHOWS both, by giving every shape in a tier that tier's
- * per-household position.
+ * spending a penny, and the screen would show a city getting poorer for
+ * growing. Per household, a newcomer arrives with what a household like theirs
+ * has, which is both truer and the only version whose figure means anything on
+ * a screen.
  *
  * ==================== WHAT IT IS NOT ====================
  *
@@ -143,11 +161,15 @@ public class HouseholdBalance {
        nothing in the model ever closed it out.
 
        Now it closes: the debt is written off against the bank, the savings go
-       with it, the tier cannot borrow for a year, and some of them leave. All
-       three parts matter. Without the lockout a broke tier cycles straight back
+       with it, the cell cannot borrow for a year, and some of them leave. All
+       three parts matter. Without the lockout a broke cell cycles straight back
        into debt and the bank bleeds on a loop; without the emigration poverty
        costs the city nothing; and without the write-off the money vanishes
        instead of landing on somebody, which is the whole reason the bank exists.
+
+       PER CELL, since the cells exist: an unskilled large family at its ceiling
+       discharges while the unskilled single adult next door keeps its credit
+       line, where before the whole tier was locked out together.
        ===================================================================== */
 
     /**
@@ -160,7 +182,7 @@ public class HouseholdBalance {
      */
     public static final double BANKRUPT_AT_MONTHS = CREDIT_LIMIT_MONTHS * .98;
 
-    /** Share of a stuck tier that goes under in a month. A trickle, not a purge. */
+    /** Share of a stuck cell that goes under in a month. A trickle, not a purge. */
     public static final double BANKRUPT_RATE = .04;
 
     /** Months a discharged household cannot borrow. */
@@ -169,45 +191,110 @@ public class HouseholdBalance {
     /** ...and the share of them who give up on the city entirely. */
     public static final double LEAVE_ON_BANKRUPTCY = .25;
 
-    private final int[] lockout = new int[ROWS];
-    private final double[] lastBankrupt = new double[ROWS];
-    private double lastWrittenOff;
-    private double lastLeaving;
-
-    /* ------------------------------ the position ------------------------------ */
-
-    /** Per household of that row, in the game's thousands. */
-    private final double[] savings = new double[ROWS];
-    private final double[] debt    = new double[ROWS];
-
-    /* --------------------- last month's working, for the screen --------------------- */
-
-    private final double[] lastAfterFixed = new double[ROWS];
-    private final double[] lastInterest   = new double[ROWS];
-    private final double[] lastDrawn      = new double[ROWS];
+    /* ------------------------------- the cells ------------------------------- */
 
     /**
-     * What the household needed and could neither pay for, draw down, nor
-     * borrow - because it is at its credit ceiling or locked out after a
-     * discharge.
-     *
-     * Not a debt and not a loss: it is spending that did not happen. Kept
-     * because it is the only figure that distinguishes a family that is merely
-     * poor from one the bank has stopped lending to.
+     * Every meaningful cell of the family matrix, in one fixed order: the
+     * working shapes by declaration, each across the six tiers, then the two
+     * retired shapes. Sixty-eight. Looked up by shape and tier through
+     * `index`, and by name through key() on the save path.
      */
-    private final double[] lastUnfunded   = new double[ROWS];
-    private final double[] lastBorrowed   = new double[ROWS];
-    private final double[] lastRepaid     = new double[ROWS];
-    private final double[] lastSaved      = new double[ROWS];
-    private final double[] lastWant       = new double[ROWS];
-    private final double[] lastPlanned    = new double[ROWS];
-    private final double[] lastRate       = new double[ROWS];
-    private final double[] lastSubsistence = new double[ROWS];
-    private final double[] lastHouseholds = new double[ROWS];
+    private final Household[] cells;
+    private final int[][] index =
+            new int[FamilyStructure.values().length][PayTier.values().length];
+    private final java.util.List<Household> view;
+
+    /* ------------------------------- the month ------------------------------- */
+
+    private double lastWrittenOff;
+    private double lastLeaving;
+    private double lastTakenAway;
+    private double lastDepositInterest;
+    private double lastDelivered = 1;
     private double plannedSpend;
     private double hungryPeople;
     private double totalPeople;
-    private boolean opened;
+
+    public HouseholdBalance() {
+        java.util.List<Household> built = new java.util.ArrayList<>();
+        for (int[] row : index) java.util.Arrays.fill(row, -1);
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (shape.isRetired()) continue;
+            for (PayTier tier : PayTier.values()) {
+                index[shape.ordinal()][tier.ordinal()] = built.size();
+                built.add(new WorkingHousehold(shape, tier));
+            }
+        }
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (!shape.isRetired()) continue;
+            // The retired sit at tier index 0 in FamilyModel's matrix; the
+            // same convention here, so one lookup serves both.
+            index[shape.ordinal()][0] = built.size();
+            built.add(new RetiredHousehold(shape));
+        }
+        cells = built.toArray(new Household[0]);
+        view = java.util.Collections.unmodifiableList(java.util.Arrays.asList(cells));
+    }
+
+    /* =====================================================================
+       EVERY HOUSEHOLD, OR ONE OF THEM
+
+       "That way it's a lot easier to sum everything up, or modify across all."
+       These are the sum and the modify.
+       ===================================================================== */
+
+    /** The cell for this shape at this tier. For a retired shape the tier is ignored. */
+    public Household cell(FamilyStructure shape, PayTier tier) {
+        int i = index[shape.ordinal()][shape.isRetired() ? 0 : tier.ordinal()];
+        return cells[i];
+    }
+
+    /** The cell for a retired shape, which has no tier. */
+    public Household cell(FamilyStructure shape) {
+        if (!shape.isRetired()) {
+            throw new IllegalArgumentException(shape + " needs a tier");
+        }
+        return cells[index[shape.ordinal()][0]];
+    }
+
+    /** Every cell, in the fixed order. Read-only. */
+    public java.util.List<Household> cells() { return view; }
+
+    public int cellCount() { return cells.length; }
+
+    public void forEach(Consumer<Household> action) {
+        for (Household c : cells) action.accept(c);
+    }
+
+    /** Adds a figure up across every cell. */
+    public double sum(ToDoubleFunction<Household> figure) {
+        double total = 0;
+        for (Household c : cells) total += figure.applyAsDouble(c);
+        return total;
+    }
+
+    /** ...or across one row: a tier's cells, or the retired. */
+    public double sumRow(int row, ToDoubleFunction<Household> figure) {
+        double total = 0;
+        for (Household c : cells) if (c.row() == row) total += figure.applyAsDouble(c);
+        return total;
+    }
+
+    /** Households in the row: the denominator of every per-household row figure. */
+    public double rowHouseholds(int row) {
+        return sumRow(row, Household::households);
+    }
+
+    /** A row total, per household of the row. Zero for an empty row. */
+    private double perHousehold(int row, ToDoubleFunction<Household> perCell) {
+        double homes = rowHouseholds(row);
+        if (homes <= 0) return 0;
+        double total = 0;
+        for (Household c : cells) {
+            if (c.row() == row) total += perCell.applyAsDouble(c) * c.households;
+        }
+        return total / homes;
+    }
 
     /* =====================================================================
        THE MONTH
@@ -215,28 +302,39 @@ public class HouseholdBalance {
        Settles the month that just ran, then plans the next one. Both here,
        because the plan IS the settlement's other half: what a household can
        spend next month is exactly what this month left it holding.
+
+       WHAT IT IS HANDED. The census is who lives here now, by cell -
+       FamilyModel.get, with the retired at tier index 0 by that class's
+       convention. The money comes as ROW totals, straight off the books
+       HouseholdAccounts keeps: the tier's take-home, its fees, what it
+       actually spent in the shops. Split here, by the one rule that makes the
+       sum of the cells the row exactly - income by grown-ups, fees by people,
+       the shop by who planned to spend - so nothing on the city's books is
+       re-derived and every figure on the tier row is the sum of the cells
+       under it.
        ===================================================================== */
 
     /**
-     * @param households        homes in each row
-     * @param people            residents in each row
-     * @param disposable        row total of wages + pensions - tax - contributions
-     * @param rentPerHousehold  what one let home pays, the same for all of them
-     * @param fees              row total of healthcare fees and tuition
-     * @param actualShopping    row total actually spent in the shops this month
-     * @param foodPricePerHead  one person's monthly basket at today's shelf price
-     * @param riskFreeAnnual    the city's own borrowing rate, which the lender prices off
+     * @param census           households in each cell, as FamilyModel::get
+     * @param rowDisposable    row total of wages + pensions - tax - contributions
+     * @param rentPerHousehold what one let home pays, the same for all of them
+     * @param rowFees          row total of healthcare fees and tuition
+     * @param rowShopping      row total actually spent in the shops this month
+     * @param foodPricePerHead one person's monthly basket at today's shelf price
+     * @param riskFreeAnnual   the city's own borrowing rate, which the lender prices off
+     * @param supplyRatio      the share of what was planned that the shops had
      */
-    public void advanceMonth(double[] households, double[] people,
-                             double[] disposable, double rentPerHousehold,
-                             double[] fees, double[] actualShopping,
+    public void advanceMonth(ToDoubleBiFunction<FamilyStructure, PayTier> census,
+                             double[] rowDisposable, double rentPerHousehold,
+                             double[] rowFees, double[] rowShopping,
                              double foodPricePerHead, double riskFreeAnnual,
                              double supplyRatio) {
 
-        if (households == null || households.length != ROWS
-                || people == null || people.length != ROWS) {
+        if (census == null || rowDisposable == null || rowDisposable.length != ROWS) {
             return;   // refused whole, per the standing rule on state arrays
         }
+
+        double[] fresh = takeCensus(census);
 
         /*
          * HUNGER, BEFORE ANYTHING IS OVERWRITTEN.
@@ -252,173 +350,246 @@ public class HouseholdBalance {
         totalPeople = 0;
         lastWrittenOff = 0;
         lastLeaving = 0;
+        lastTakenAway = 0;
         double delivered = Math.max(0, Math.min(1, supplyRatio));
         lastDelivered = delivered;
-        for (int r = 0; r < ROWS; r++) {
-            totalPeople += people[r];
-            double ate = lastPlanned[r] * delivered;
-            if (lastSubsistence[r] > 0 && ate < lastSubsistence[r]) {
-                hungryPeople += people[r] * (1 - ate / lastSubsistence[r]);
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            double people = fresh[i] * c.size();
+            totalPeople += people;
+            double ate = c.planned * delivered;
+            if (c.subsistence > 0 && ate < c.subsistence) {
+                hungryPeople += people * (1 - ate / c.subsistence);
             }
         }
 
+        /*
+         * WHO DID THE SHOPPING, decided before the plan is overwritten.
+         *
+         * The shops sold against last month's plan, and the row's takings are
+         * split across its cells by the same plan - a cell that could not
+         * afford to shop is a cell that bought less, not one that ran a
+         * deficit. With no plan yet (the founding month) the split follows
+         * people, which is what the model did before there was a budget.
+         */
+        double[] shopWeight = new double[cells.length];
+        double[] rowShopWeight = new double[ROWS];
+        boolean[] rowHasPlan = new boolean[ROWS];
+        for (Household c : cells) {
+            if (c.planned * c.households > 0) rowHasPlan[c.row()] = true;
+        }
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            shopWeight[i] = rowHasPlan[c.row()] ? c.planned * c.households : fresh[i] * c.size();
+            rowShopWeight[c.row()] += shopWeight[i];
+        }
+
+        /* ---- what each cell is handed, per household ---- */
+        double[] disposablePer = splitIncome(fresh, rowDisposable);
+        double[] feesPer = splitByPeople(fresh, rowFees);
+        double[] buffer = new double[cells.length];
+        for (int i = 0; i < cells.length; i++) {
+            buffer[i] = Math.max(0, disposablePer[i]) * OPENING_BUFFER_MONTHS;
+        }
+
+        /* ---- the stock belongs to the people, not to the cells ---- */
+        followThePeople(fresh, buffer);
+
+        /* ---- and every household's month ---- */
         plannedSpend = 0;
-
-        for (int r = 0; r < ROWS; r++) {
-            double homes = households[r];
-            double previousHomes = lastHouseholds[r];
-            lastHouseholds[r] = homes;
-
-            /* ---------- THE STOCK BELONGS TO THE PEOPLE, NOT TO THE DOORS ----------
-             *
-             * savings[] and debt[] are PER HOUSEHOLD, and the city total is that
-             * figure times however many households the row holds. So when the
-             * row grew, the newcomers silently arrived owing the row's average
-             * debt - money the bank had never lent anybody. The bank's book grew
-             * by $4.53 in a month in which it made no loans at all, and that is
-             * how this was found: its balance sheet said equity had moved by
-             * more than the month's profit.
-             *
-             * GROWTH DILUTES. A family that has just moved in owes nothing, so
-             * the same total is spread over more households and the average
-             * falls. Nothing is created.
-             *
-             * SHRINKAGE DOES NOT. A family that leaves takes its debt with it -
-             * out of the city, out of reach - so the per-household figure stands
-             * and the total falls by what went with them. That is a real loss to
-             * whoever lent it, and it is handed to the bank as a write-off
-             * below rather than quietly evaporating, which is what it used to do.
-             */
-            if (previousHomes > 0 && homes > previousHomes) {
-                debt[r] *= previousHomes / homes;
-
-                /*
-                 * ...but they do NOT arrive penniless. A household moving in
-                 * brings what a household has - the same opening buffer a
-                 * founding one gets - so the row's savings are the old total
-                 * plus what the newcomers carried, spread over all of them.
-                 *
-                 * Diluting savings the way debt is diluted was tried and is
-                 * wrong: a growing row's savings fall towards zero, every
-                 * family in it is suddenly broke, and consumption collapses.
-                 * InfrastructureCheck caught it as the city that built roads
-                 * producing a fourteenth of the GDP of the city that did not.
-                 */
-                double arriving = homes - previousHomes;
-                double brought = Math.max(0, disposable[r] / homes) * OPENING_BUFFER_MONTHS;
-                savings[r] = (savings[r] * previousHomes + arriving * brought) / homes;
-            } else if (previousHomes > homes && homes > 0) {
-                lastWrittenOff += debt[r] * (previousHomes - homes);
-            }
-
-            if (homes < .5) {
-                savings[r] = 0;
-                debt[r] = 0;
-                clearRow(r);
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c.households < .5) {
+                // Too few to strike - the position stands, carried for the
+                // month the cell fills, and the working is blank.
+                c.clearWorking();
                 continue;
             }
+            double spentPer = rowShopping == null || rowShopWeight[c.row()] <= 0 ? 0
+                    : rowShopping[c.row()] * shopWeight[i] / rowShopWeight[c.row()] / c.households;
 
-            double disposablePer = disposable[r] / homes;
-            double sizePer = people[r] / homes;
+            c.settle(disposablePer[i], rentPerHousehold, feesPer[i], spentPer,
+                    foodPricePerHead, riskFreeAnnual);
 
-            /*
-             * A founding city's households are not destitute on day one. Also
-             * catches a row that has just come into existence - the city's first
-             * College household should open with what a College household has,
-             * not with nothing.
-             */
-            if (!opened || (savings[r] == 0 && debt[r] == 0)) {
-                savings[r] = Math.max(0, disposablePer) * OPENING_BUFFER_MONTHS;
-            }
+            lastWrittenOff += c.discharge();
+            lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
 
-            /* ---------------- what the lender charges this one ---------------- */
-            double owedMonths = disposablePer > 0 ? debt[r] / disposablePer : 0;
-            double annual = Math.min(MAX_RATE,
-                    Math.max(0, riskFreeAnnual) + BASE_SPREAD + RISK_SLOPE * owedMonths);
-            lastRate[r] = annual;
-            double interestPer = debt[r] * annual / 12;
-
-            /* ---------------- the bills, in order ---------------- */
-            double feesPer = fees == null ? 0 : fees[r] / homes;
-            double afterFixed = disposablePer - rentPerHousehold - feesPer - interestPer;
-            lastAfterFixed[r] = afterFixed;
-            lastInterest[r] = interestPer;
-
-            /* ---------------- settle what they actually spent ---------------- */
-            double subsistence = sizePer * foodPricePerHead;
-            lastSubsistence[r] = subsistence;
-            double spentPer = actualShopping == null ? 0 : actualShopping[r] / homes;
-            double gap = spentPer - afterFixed;
-
-            double drawn = 0, borrowed = 0, repaid = 0, banked = 0, unfunded = 0;
-            if (gap > 0) {
-                drawn = Math.min(gap, Math.max(0, savings[r]));
-                savings[r] -= drawn;
-
-                /*
-                 * ...AND THE LIMIT BINDS HERE TOO, NOT ONLY IN THE PLAN.
-                 *
-                 * The credit ceiling and the lockout used to live in planRow()
-                 * alone, which capped what a household set out to spend and
-                 * capped nothing about what it ended up owing. Two things went
-                 * wrong with that, and BankCheck caught both: a household short
-                 * of the rent every month borrowed the shortfall for ever, so
-                 * its debt compounded past six months of income to twenty and
-                 * kept going; and a household discharged last month was lent to
-                 * again the next one, which is not a bankruptcy but a subsidy.
-                 *
-                 * A cap in the plan and no cap in the settlement is the same
-                 * mistake as a quote that disagrees with the booking.
-                 *
-                 * What is refused is simply not funded. It is not a debt and it
-                 * is not a loss to anybody: the household went without, which is
-                 * what next month's plan already says will happen and what the
-                 * hunger measure already reads. No money is created or
-                 * destroyed, because households sit outside the audited pools.
-                 */
-                double room = lockout[r] > 0 ? 0
-                        : Math.max(0, CREDIT_LIMIT_MONTHS * Math.max(0, disposablePer) - debt[r]);
-                borrowed = Math.min(gap - drawn, room);
-                unfunded = (gap - drawn) - borrowed;
-                debt[r] += borrowed;
-            } else {
-                double surplus = -gap;
-                repaid = Math.min(surplus, debt[r]);
-                debt[r] -= repaid;
-                banked = surplus - repaid;
-                savings[r] += banked;
-            }
-            lastDrawn[r] = drawn;
-            lastUnfunded[r] = unfunded;
-            lastBorrowed[r] = borrowed;
-            lastRepaid[r] = repaid;
-            lastSaved[r] = banked;
-
-            /* ---------------- and whoever cannot carry it any more ---------------- */
-            lastBankrupt[r] = 0;
-            if (lockout[r] > 0) lockout[r]--;
-
-            boolean atTheCeiling = disposablePer > 0
-                    && debt[r] >= BANKRUPT_AT_MONTHS * disposablePer;
-            boolean cannotEat = afterFixed < subsistence;
-
-            if (atTheCeiling && cannotEat) {
-                double going = homes * BANKRUPT_RATE;
-                lastBankrupt[r] = going;
-
-                // The debt dies with the household's position, not with the
-                // household: the per-household figures are averages, so a share
-                // of them discharging is that share off the average.
-                lastWrittenOff += debt[r] * going;
-                debt[r] *= (1 - BANKRUPT_RATE);
-                savings[r] *= (1 - BANKRUPT_RATE);
-                lockout[r] = LOCKOUT_MONTHS;
-                lastLeaving += going * LEAVE_ON_BANKRUPTCY;
-            }
-
-            planRow(r, disposablePer, afterFixed, subsistence, homes);
+            plannedSpend += c.plan() * c.households;
         }
-        opened = true;
+    }
+
+    /** Who lives in each cell now, in cell order. */
+    private double[] takeCensus(ToDoubleBiFunction<FamilyStructure, PayTier> census) {
+        double[] fresh = new double[cells.length];
+        PayTier retiredSlot = PayTier.values()[0];
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            fresh[i] = Math.max(0, census.applyAsDouble(c.shape(),
+                    c.isRetired() ? retiredSlot : c.tier()));
+        }
+        return fresh;
+    }
+
+    /**
+     * A row's take-home, per household of each of its cells.
+     *
+     * By grown-ups: the tier's wage bill divided among its earners, the
+     * pension bill among its pensioners. A couple takes home twice a single
+     * adult's pay at the same tier, which is most of why the two can afford
+     * such different lives - and it is the same arithmetic
+     * HouseholdAccounts.statementFor() shows the player, so the cell's books
+     * and the screen's statement agree.
+     */
+    private double[] splitIncome(double[] fresh, double[] rowTotal) {
+        double[] rowWeight = new double[ROWS];
+        for (int i = 0; i < cells.length; i++) {
+            rowWeight[cells[i].row()] += fresh[i] * cells[i].grownUps();
+        }
+        double[] per = new double[cells.length];
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            per[i] = rowWeight[c.row()] > 0
+                    ? rowTotal[c.row()] * c.grownUps() / rowWeight[c.row()] : 0;
+        }
+        return per;
+    }
+
+    /** A row's fees, per household of each of its cells, by the people in them. */
+    private double[] splitByPeople(double[] fresh, double[] rowTotal) {
+        double[] per = new double[cells.length];
+        if (rowTotal == null) return per;
+        double[] rowWeight = new double[ROWS];
+        for (int i = 0; i < cells.length; i++) {
+            rowWeight[cells[i].row()] += fresh[i] * cells[i].size();
+        }
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            per[i] = rowWeight[c.row()] > 0
+                    ? rowTotal[c.row()] * c.size() / rowWeight[c.row()] : 0;
+        }
+        return per;
+    }
+
+    /* =====================================================================
+       THE STOCK BELONGS TO THE PEOPLE, NOT TO THE CELLS
+
+       FamilyModel re-allocates every household from the pyramid and the job
+       mix each month, so a cell's count moves for reasons that have nothing
+       to do with anybody arriving or leaving: a child turns thirteen and a
+       COUPLE_CHILD becomes a COUPLE_TEEN; five single adults take a flatshare;
+       a job mix that shifts a point moves a point of every shape up a tier; a
+       worker turns sixty-five. The people in those households are the same
+       people with the same money, and a ledger that let a cell's stock
+       evaporate every time its count fell would be a ledger of nothing - which
+       is exactly why the stocks used to be kept per tier.
+
+       So when a cell loses households, what they had goes into a pool: their
+       savings and their debt, at the cell's own average. The cells that gained
+       households draw on it. Within the tier first - a family's child ageing
+       is the commonest move by far and it never crosses a tier - and then
+       across the city, for the retirements and the job changes. Only what no
+       cell claims has actually left the city, and only a gain no pool covers
+       is a genuine arrival:
+
+           left the city   savings gone with them; debt written off to the bank,
+                           which is a real loss to whoever lent it
+           arrived         no debt, and the same opening buffer a founding
+                           household gets - people who move somewhere new have,
+                           by revealed preference, been able to afford to
+
+       Which is what the old per-row rule did at the row's edge, now done at
+       the city's edge, with everything inside it conserved.
+
+       WEIGHTED BY GROWN-UPS, not by households. Five singles becoming one
+       flatshare is five households lost and one gained; counted by household
+       four of them would have "left the city" and the flatshare would inherit
+       a fifth of their money. Counted by the adults in them it is five for
+       five, and the flatshare carries five wallets. A couple splitting is two
+       for two; a child arriving brings nothing and takes nothing; one of a
+       senior couple dying leaves half the position to the survivor and takes
+       the other half out - because that is who carries the money.
+       ===================================================================== */
+
+    /**
+     * Moves the stock with the people, then sets every cell's count.
+     *
+     * @param fresh  households in each cell now
+     * @param buffer what a newly arrived household of each cell brings
+     */
+    private void followThePeople(double[] fresh, double[] buffer) {
+        int n = cells.length;
+        double[] delta = new double[n];
+        double[] rowLoss = new double[ROWS];
+        double[] rowGain = new double[ROWS];
+        double[] rowPoolSavings = new double[ROWS];
+        double[] rowPoolDebt = new double[ROWS];
+
+        for (int i = 0; i < n; i++) {
+            Household c = cells[i];
+            delta[i] = fresh[i] - c.households;
+            double weight = Math.abs(delta[i]) * c.grownUps();
+            if (delta[i] < 0) {
+                rowLoss[c.row()] += weight;
+                rowPoolSavings[c.row()] += c.savings * -delta[i];
+                rowPoolDebt[c.row()] += c.debt * -delta[i];
+            } else if (delta[i] > 0) {
+                rowGain[c.row()] += weight;
+            }
+        }
+
+        /* ---- within each row first ---- */
+        double[] rowMoved = new double[ROWS];
+        double cityPoolSavings = 0, cityPoolDebt = 0, cityLoss = 0, cityGain = 0;
+        for (int r = 0; r < ROWS; r++) {
+            double moved = Math.min(rowLoss[r], rowGain[r]);
+            rowMoved[r] = moved;
+            if (rowLoss[r] > 0) {
+                double kept = moved / rowLoss[r];
+                cityPoolSavings += rowPoolSavings[r] * (1 - kept);
+                cityPoolDebt += rowPoolDebt[r] * (1 - kept);
+                rowPoolSavings[r] *= kept;
+                rowPoolDebt[r] *= kept;
+                cityLoss += rowLoss[r] - moved;
+            }
+            cityGain += rowGain[r] - moved;
+        }
+
+        /* ---- then across the city ---- */
+        double cityMoved = Math.min(cityLoss, cityGain);
+        double cityKept = cityLoss > 0 ? cityMoved / cityLoss : 0;
+        lastTakenAway += cityPoolSavings * (1 - cityKept);
+        lastWrittenOff += cityPoolDebt * (1 - cityKept);
+        cityPoolSavings *= cityKept;
+        cityPoolDebt *= cityKept;
+        double cityShare = cityGain > 0 ? cityMoved / cityGain : 0;
+
+        /* ---- and hand it out ---- */
+        for (int i = 0; i < n; i++) {
+            Household c = cells[i];
+            if (delta[i] > 0 && c.grownUps() > 0) {
+                int r = c.row();
+                double weight = delta[i] * c.grownUps();
+                double fromRow = rowGain[r] > 0 ? weight * rowMoved[r] / rowGain[r] : 0;
+                double rest = weight - fromRow;
+                double fromCity = rest * cityShare;
+                double newcomers = (rest - fromCity) / c.grownUps();
+
+                double receivedSavings =
+                        (rowMoved[r] > 0 ? rowPoolSavings[r] * fromRow / rowMoved[r] : 0)
+                        + (cityMoved > 0 ? cityPoolSavings * fromCity / cityMoved : 0);
+                double receivedDebt =
+                        (rowMoved[r] > 0 ? rowPoolDebt[r] * fromRow / rowMoved[r] : 0)
+                        + (cityMoved > 0 ? cityPoolDebt * fromCity / cityMoved : 0);
+
+                c.savings = (c.savings * c.households + receivedSavings
+                        + newcomers * buffer[i]) / fresh[i];
+                c.debt = (c.debt * c.households + receivedDebt) / fresh[i];
+            }
+            // A cell that lost households keeps its average: the ones who
+            // stayed have what they had.
+            c.households = fresh[i];
+            if (fresh[i] <= 0) c.clearAll();
+        }
     }
 
     /* ------------------------- what the bank is owed ------------------------- */
@@ -426,11 +597,24 @@ public class HouseholdBalance {
     /** Written off this month, which is the bank's loss. */
     public double getWrittenOff()      { return lastWrittenOff; }
 
+    /** Savings that left the city with the households that left. Not a loss to anybody here. */
+    public double getTakenAway()       { return lastTakenAway; }
+
     /** Households discharged this month, and the share of them leaving the city. */
-    public double getBankrupt(int row) { return lastBankrupt[row]; }
+    public double getBankrupt(int row) { return sumRow(row, Household::bankrupt); }
     public double getLeavingCity()     { return lastLeaving; }
-    public boolean isLockedOut(int row){ return lockout[row] > 0; }
-    public int getLockout(int row)     { return lockout[row]; }
+
+    /** True when any cell of the row the bank has stopped lending to is still locked out. */
+    public boolean isLockedOut(int row){ return getLockout(row) > 0; }
+
+    /** The longest lockout standing in the row. */
+    public int getLockout(int row) {
+        int longest = 0;
+        for (Household c : cells) {
+            if (c.row() == row && c.households >= .5) longest = Math.max(longest, c.lockout);
+        }
+        return longest;
+    }
 
     /** Everything the households owe the bank. */
     public double bookOwed() { return totalDebt(); }
@@ -448,69 +632,30 @@ public class HouseholdBalance {
      * has been bitten by rebuilding a flow instead of re-striking it.
      *
      * Calling advanceMonth() here instead would settle a month that has already
-     * been settled - a second draw on the same savings.
+     * been settled - a second draw on the same savings - and would move the
+     * stock with a census the save was not struck against.
      */
-    public void planOnly(double[] households, double[] people,
-                         double[] disposable, double rentPerHousehold,
-                         double[] fees, double foodPricePerHead, double riskFreeAnnual) {
+    public void planOnly(ToDoubleBiFunction<FamilyStructure, PayTier> census,
+                         double[] rowDisposable, double rentPerHousehold,
+                         double[] rowFees, double foodPricePerHead, double riskFreeAnnual) {
 
-        if (households == null || households.length != ROWS
-                || people == null || people.length != ROWS) {
+        if (census == null || rowDisposable == null || rowDisposable.length != ROWS) {
             return;
         }
 
+        double[] fresh = takeCensus(census);
+        double[] disposablePer = splitIncome(fresh, rowDisposable);
+        double[] feesPer = splitByPeople(fresh, rowFees);
+
         plannedSpend = 0;
-        for (int r = 0; r < ROWS; r++) {
-            double homes = households[r];
-            lastHouseholds[r] = homes;
-            if (homes < .5) { clearRow(r); continue; }
-
-            double disposablePer = disposable[r] / homes;
-            double sizePer = people[r] / homes;
-
-            double owedMonths = disposablePer > 0 ? debt[r] / disposablePer : 0;
-            double annual = Math.min(MAX_RATE,
-                    Math.max(0, riskFreeAnnual) + BASE_SPREAD + RISK_SLOPE * owedMonths);
-            lastRate[r] = annual;
-            double interestPer = debt[r] * annual / 12;
-            lastInterest[r] = interestPer;
-
-            double feesPer = fees == null ? 0 : fees[r] / homes;
-            double afterFixed = disposablePer - rentPerHousehold - feesPer - interestPer;
-            lastAfterFixed[r] = afterFixed;
-
-            double subsistence = sizePer * foodPricePerHead;
-            lastSubsistence[r] = subsistence;
-
-            planRow(r, disposablePer, afterFixed, subsistence, homes);
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            c.households = fresh[i];
+            if (c.households < .5) { c.clearWorking(); continue; }
+            c.restrike(disposablePer[i], rentPerHousehold, feesPer[i],
+                    foodPricePerHead, riskFreeAnnual);
+            plannedSpend += c.plan() * c.households;
         }
-        opened = true;
-    }
-
-    /** What one row can afford next month. One definition, both paths. */
-    private void planRow(int r, double disposablePer, double afterFixed,
-                         double subsistence, double homes) {
-
-        double wantPer = subsistence
-                + MARGINAL_PROPENSITY * Math.max(0, afterFixed - subsistence);
-
-        // A discharged household is not lent to again for a year. Which is the
-        // teeth in the bankruptcy: they go straight from borrowing to eating
-        // less, and the hunger shows up on the health service the same month.
-        double room = lockout[r] > 0 ? 0
-                : Math.max(0, CREDIT_LIMIT_MONTHS * Math.max(0, disposablePer) - debt[r]);
-        double spendable = Math.max(0, afterFixed) + savings[r] + room;
-
-        lastWant[r] = wantPer;
-        lastPlanned[r] = Math.min(wantPer, spendable);
-        plannedSpend += lastPlanned[r] * homes;
-    }
-
-    private void clearRow(int r) {
-        lastAfterFixed[r] = 0; lastInterest[r] = 0; lastDrawn[r] = 0; lastUnfunded[r] = 0;
-        lastBorrowed[r] = 0;  lastRepaid[r] = 0;   lastSaved[r] = 0;
-        lastWant[r] = 0;      lastPlanned[r] = 0;  lastRate[r] = 0;
-        lastSubsistence[r] = 0;
     }
 
     /* ------------------------------- reading ------------------------------- */
@@ -519,14 +664,10 @@ public class HouseholdBalance {
     public double getSpendingCapacity() { return plannedSpend; }
 
     /** What they would spend if money were no object - the demand behind the cap. */
-    public double getWantedSpend() {
-        double sum = 0;
-        for (int r = 0; r < ROWS; r++) sum += lastWant[r] * lastHouseholds[r];
-        return sum;
-    }
+    public double getWantedSpend() { return sum(Household::totalWant); }
 
-    /** One basket a head: what going short is measured against. */
-    public double getSubsistence(int row) { return lastSubsistence[row]; }
+    /** One basket a head, per household of the row: what going short is measured against. */
+    public double getSubsistence(int row) { return perHousehold(row, Household::subsistence); }
 
     /**
      * The share of each row's planned spend, for splitting what retail actually
@@ -539,10 +680,12 @@ public class HouseholdBalance {
     public double[] plannedShare() {
         double[] out = new double[ROWS];
         double total = 0;
-        for (int r = 0; r < ROWS; r++) total += lastPlanned[r] * lastHouseholds[r];
-        for (int r = 0; r < ROWS; r++) {
-            out[r] = total > 0 ? lastPlanned[r] * lastHouseholds[r] / total : 0;
+        for (Household c : cells) {
+            out[c.row()] += c.totalPlanned();
+            total += c.totalPlanned();
         }
+        if (total > 0) for (int r = 0; r < ROWS; r++) out[r] /= total;
+        else java.util.Arrays.fill(out, 0);
         return out;
     }
 
@@ -564,7 +707,6 @@ public class HouseholdBalance {
      */
     public double getDeliveredShare() { return lastDelivered; }
 
-    private double lastDelivered = 1;
     /**
      * Interest the bank paid on what these households have saved.
      *
@@ -580,139 +722,113 @@ public class HouseholdBalance {
         if (total <= 0) return;
         double base = totalSavings();
         if (base <= 0) return;
-        for (int r = 0; r < ROWS; r++) {
-            if (savings[r] <= 0 || lastHouseholds[r] <= 0) continue;
-            double share = savings[r] * lastHouseholds[r] / base;
-            savings[r] += total * share / lastHouseholds[r];
+        for (Household c : cells) {
+            if (c.savings <= 0 || c.households <= 0) continue;
+            double share = c.totalSavings() / base;
+            c.savings += total * share / c.households;
         }
         lastDepositInterest = total;
     }
 
-    private double lastDepositInterest;
-
     /** What the bank paid the city's savers this month. */
     public double getDepositInterest() { return lastDepositInterest; }
 
-    public double getSavings(int row)        { return savings[row]; }
+    /* ---- the row, per household of it: what the screens and the fixtures read ---- */
+
+    public double getSavings(int row)        { return perHousehold(row, Household::savings); }
 
     /** Households this row was struck for - the multiplier on every per-row figure. */
-    public double getHouseholds(int row)     { return lastHouseholds[row]; }
-    public double getDebt(int row)           { return debt[row]; }
-    public double getAfterFixed(int row)     { return lastAfterFixed[row]; }
-    public double getInterest(int row)       { return lastInterest[row]; }
-    public double getDrawn(int row)          { return lastDrawn[row]; }
+    public double getHouseholds(int row)     { return rowHouseholds(row); }
+    public double getDebt(int row)           { return perHousehold(row, Household::debt); }
+    public double getAfterFixed(int row)     { return perHousehold(row, Household::afterFixed); }
+    public double getInterest(int row)       { return perHousehold(row, Household::interest); }
+    public double getDrawn(int row)          { return perHousehold(row, Household::drawn); }
 
-    /** What this row wanted, could not fund, and did not get. See lastUnfunded. */
-    public double getUnfunded(int row)       { return lastUnfunded[row]; }
+    /** What this row wanted, could not fund, and did not get. See Household.unfunded. */
+    public double getUnfunded(int row)       { return perHousehold(row, Household::unfunded); }
 
-    /** True when the bank has stopped lending to this row - ceiling or lockout. */
-    public boolean isCutOff(int row)         { return lastUnfunded[row] > 0; }
-    public double getBorrowed(int row)       { return lastBorrowed[row]; }
-    public double getRepaid(int row)         { return lastRepaid[row]; }
-    public double getBanked(int row)         { return lastSaved[row]; }
-    public double getWant(int row)           { return lastWant[row]; }
-    public double getPlanned(int row)        { return lastPlanned[row]; }
-    public double getRate(int row)           { return lastRate[row]; }
+    /** True when the bank has stopped lending to any cell of this row - ceiling or lockout. */
+    public boolean isCutOff(int row) {
+        for (Household c : cells) if (c.row() == row && c.isCutOff()) return true;
+        return false;
+    }
+    public double getBorrowed(int row)       { return perHousehold(row, Household::borrowed); }
+    public double getRepaid(int row)         { return perHousehold(row, Household::repaid); }
+    public double getBanked(int row)         { return perHousehold(row, Household::banked); }
+    public double getWant(int row)           { return perHousehold(row, Household::want); }
+    public double getPlanned(int row)        { return perHousehold(row, Household::planned); }
+    public double getRate(int row)           { return perHousehold(row, Household::rate); }
 
     /** True when this row is buying less food than it wants. */
     public boolean isGoingShort(int row) {
-        return lastWant[row] > 0 && lastPlanned[row] < lastWant[row] - 1e-9;
+        double want = sumRow(row, Household::totalWant);
+        return want > 0 && sumRow(row, Household::totalPlanned) < want - 1e-9;
     }
 
     /** City totals, for the headline lines on the screen. */
-    public double totalSavings() {
-        double sum = 0;
-        for (int r = 0; r < ROWS; r++) sum += savings[r] * lastHouseholds[r];
-        return sum;
-    }
-
-    public double totalDebt() {
-        double sum = 0;
-        for (int r = 0; r < ROWS; r++) sum += debt[r] * lastHouseholds[r];
-        return sum;
-    }
-
-    public double totalInterest() {
-        double sum = 0;
-        for (int r = 0; r < ROWS; r++) sum += lastInterest[r] * lastHouseholds[r];
-        return sum;
-    }
+    public double totalSavings()  { return sum(Household::totalSavings); }
+    public double totalDebt()     { return sum(Household::totalDebt); }
+    public double totalInterest() { return sum(Household::totalInterest); }
 
     /** New lending to families this month - the bank's money out the door. */
-    public double totalBorrowed() {
-        double sum = 0;
-        for (int r = 0; r < ROWS; r++) sum += lastBorrowed[r] * lastHouseholds[r];
-        return sum;
-    }
+    public double totalBorrowed() { return sum(Household::totalBorrowed); }
 
     /** ...and what came back. */
-    public double totalRepaid() {
-        double sum = 0;
-        for (int r = 0; r < ROWS; r++) sum += lastRepaid[r] * lastHouseholds[r];
-        return sum;
-    }
+    public double totalRepaid()   { return sum(Household::totalRepaid); }
+
+    /** What every household in the city has, less what it owes. */
+    public double totalNetWorth() { return totalSavings() - totalDebt(); }
 
     /* ------------------------------- saving -------------------------------
      *
      * A STOCK, so it has to be carried. Savings and debt are the two things on
      * this screen that are not derived from the month - rebuilding them from
      * the state a month ended in is exactly the reconstruction this codebase
-     * has been caught by six times. The last-month working is NOT saved: it is
-     * a flow, it is recomputed on the first tick, and carrying it would be
-     * carrying an answer nobody would re-ask.
+     * has been caught by six times. Most of the last-month working is NOT
+     * saved: it is a flow, it is recomputed on the first tick, and carrying it
+     * would be carrying an answer nobody would re-ask.
+     *
+     * TWO ARRAYS. The cells are the state now and go under their own key,
+     * named cell by cell (see cellKeys()), so a shape added to the enum or
+     * moved within it cannot read one cell's money into another's. The row
+     * array is still written, as the SUM of the cells, for one reason: a build
+     * from before the cells reads it and restores the rows it knows, so an old
+     * build opening a new save loses nothing it can hold. A new build opening
+     * an old save seeds every cell of a row with the row's position - see
+     * restore(). Neither direction moves SAVE_FORMAT.
      */
 
+    /** The row array an older build reads: ROWS*8+3, per household of the row. */
     public double[] toSaveArray() {
         double[] out = new double[ROWS * 8 + 3];
-        System.arraycopy(savings, 0, out, 0, ROWS);
-        System.arraycopy(debt, 0, out, ROWS, ROWS);
-        // The lockout is a countdown, which is a STOCK: a tier discharged last
-        // month is eleven months from borrowing again, and a save that forgot
-        // it would hand that tier a fresh line of credit on load.
-        for (int r = 0; r < ROWS; r++) out[ROWS * 2 + r] = lockout[r];
-        /*
-         * ...AND THE HOUSEHOLD COUNTS THE STOCKS ARE PER, appended 2026-09-09.
-         *
-         * savings[] and debt[] are PER HOUSEHOLD. totalSavings(), totalDebt()
-         * and totalInterest() all multiply them by lastHouseholds[], so that
-         * array is not last month's working at all - it is the denominator of
-         * three stocks, and the note above about flows not being carried does
-         * not cover it.
-         *
-         * Unsaved, the city's whole stock of household money read differently
-         * for one month after every load: measured at $1.29M against $966k, a
-         * third out, because the rebuild re-strikes the rows against a month
-         * that has not happened yet. Nothing had ever noticed, because nothing
-         * read the total until the bank did - it prices its funding off the
-         * deposits, so the error came out as a wrong bank profit, a wrong bank
-         * tax and $13 of treasury a month later, which is what SaveFileCheck
-         * caught.
-         */
-        for (int r = 0; r < ROWS; r++) out[ROWS * 3 + r] = lastHouseholds[r];
-
-        /*
-         * ...AND THE WORKING THE NEXT MONTH IS READ AGAINST.
-         *
-         * The note at the top of this block says the working is a flow and is
-         * recomputed on the first tick, and that is true of the arithmetic. It
-         * is not true of what READS it: the shops size their month against
-         * getSpendingCapacity() and getWantedSpend(), the advisor sizes its
-         * investment against the same two, and the screens draw all four - all
-         * of them before the tick that would recompute them.
-         *
-         * A reloaded city therefore planned its twelfth month against a
-         * rebuilt eleventh: wanted spend $162,770 against the $204,190 it
-         * actually had, so it bought different buildings, allocated different
-         * land, and came out 1.3% adrift on the land price and $13 adrift on a
-         * $690.7M treasury a month later. Small, and it compounds - which is
-         * the whole argument this codebase keeps making for carrying rather
-         * than recomputing.
-         */
         for (int r = 0; r < ROWS; r++) {
-            out[ROWS * 4 + r] = lastWant[r];
-            out[ROWS * 5 + r] = lastPlanned[r];
-            out[ROWS * 6 + r] = lastInterest[r];
-            out[ROWS * 7 + r] = lastSubsistence[r];
+            out[r]            = getSavings(r);
+            out[ROWS + r]     = getDebt(r);
+            // The lockout is a countdown, which is a STOCK: a tier discharged
+            // last month is eleven months from borrowing again, and a save
+            // that forgot it would hand that tier a fresh line of credit.
+            out[ROWS * 2 + r] = getLockout(r);
+            /*
+             * ...AND THE HOUSEHOLD COUNTS THE STOCKS ARE PER. The per-household
+             * figures times this array are the city's whole stock of household
+             * money, and unsaved it read a third out for one month after every
+             * load - $1.29M against $966k - which came out as a wrong bank
+             * profit, a wrong bank tax and $13 of treasury a month later. What
+             * SaveFileCheck caught.
+             */
+            out[ROWS * 3 + r] = rowHouseholds(r);
+            /*
+             * ...AND THE WORKING THE NEXT MONTH IS READ AGAINST. The shops size
+             * their month against getSpendingCapacity() and getWantedSpend(),
+             * the advisor against the same two, all before the tick that would
+             * recompute them; a reloaded city planned its twelfth month against
+             * a rebuilt eleventh and came out $13 adrift on a $690.7M treasury.
+             * Small, and it compounds.
+             */
+            out[ROWS * 4 + r] = getWant(r);
+            out[ROWS * 5 + r] = getPlanned(r);
+            out[ROWS * 6 + r] = getInterest(r);
+            out[ROWS * 7 + r] = getSubsistence(r);
         }
         out[ROWS * 8]     = plannedSpend;
         out[ROWS * 8 + 1] = hungryPeople;
@@ -720,74 +836,141 @@ public class HouseholdBalance {
         return out;
     }
 
+    /** Figures carried per cell, in the order toCellSaveArray() writes them. */
+    public static final int CELL_SLOTS = 8;
+
+    /** The name of every cell, in the order toCellSaveArray() writes them. */
+    public String[] cellKeys() {
+        String[] keys = new String[cells.length];
+        for (int i = 0; i < cells.length; i++) keys[i] = cells[i].key();
+        return keys;
+    }
+
+    /** CELL_SLOTS per cell, in cellKeys() order, then the three city figures. */
+    public double[] toCellSaveArray() {
+        double[] out = new double[cells.length * CELL_SLOTS + 3];
+        int i = 0;
+        for (Household c : cells) {
+            out[i++] = c.savings;
+            out[i++] = c.debt;
+            out[i++] = c.lockout;
+            out[i++] = c.households;
+            out[i++] = c.want;
+            out[i++] = c.planned;
+            out[i++] = c.interest;
+            out[i++] = c.subsistence;
+        }
+        out[i++] = plannedSpend;
+        out[i++] = hungryPeople;
+        out[i]   = totalPeople;
+        return out;
+    }
+
     /**
-     * @param saved ROWS*8+3 from this build, or ROWS*3 from one before the
-     *              household counts and the working were appended. A short
-     *              array restores what it carries and leaves the rest to the
-     *              rebuild, which is exactly the state those saves loaded in
-     *              anyway - and far better than refusing the savings and the
-     *              debt whole to gain a denominator.
+     * Puts the cells back, by name.
+     *
+     * A key this build has no cell for is skipped - a shape that no longer
+     * exists - and a cell the save does not name keeps whatever restore() put
+     * in it from the rows, which for a save from this build is nothing: an
+     * empty cell, filled by the first census as an arrival. Refused whole when
+     * the array is not the keys' length.
+     *
+     * @return false if nothing was restored
      */
-    public void restore(double[] saved) {
+    public boolean restoreCells(String[] keys, double[] saved) {
+        if (keys == null || saved == null || saved.length != keys.length * CELL_SLOTS + 3) {
+            return false;
+        }
+        java.util.Map<String, Household> byKey = new java.util.HashMap<>();
+        for (Household c : cells) byKey.put(c.key(), c);
+
+        int i = 0;
+        for (String key : keys) {
+            Household c = byKey.get(key);
+            if (c == null) { i += CELL_SLOTS; continue; }
+            c.savings     = saved[i++];
+            c.debt        = saved[i++];
+            c.lockout     = (int) Math.round(saved[i++]);
+            c.households  = saved[i++];
+            c.want        = saved[i++];
+            c.planned     = saved[i++];
+            c.interest    = saved[i++];
+            c.subsistence = saved[i++];
+        }
+        plannedSpend = saved[i++];
+        hungryPeople = saved[i++];
+        totalPeople  = saved[i];
+        return true;
+    }
+
+    /**
+     * Puts a ROW array back, seeding every cell of the row with the row's
+     * position: the save from a build that kept the stocks per tier.
+     *
+     * @param saved  ROWS*8+3 from a build with the row working, or ROWS*3 from
+     *               one before the household counts and the working were
+     *               appended. A short array restores what it carries and
+     *               leaves the rest to the rebuild.
+     * @param census the household counts to seed the cells with, or null to
+     *               leave them empty for the plan to fill - see Game's load
+     *               path, which restores once before the family model is back
+     *               and once after.
+     */
+    public void restore(double[] saved, ToDoubleBiFunction<FamilyStructure, PayTier> census) {
         if (saved == null) return;
         boolean current = saved.length == ROWS * 8 + 3;
         if (!current && saved.length != ROWS * 3) {
             return;   // refused whole
         }
-        System.arraycopy(saved, 0, savings, 0, ROWS);
-        System.arraycopy(saved, ROWS, debt, 0, ROWS);
-        for (int r = 0; r < ROWS; r++) lockout[r] = (int) Math.round(saved[ROWS * 2 + r]);
+        double[] fresh = census == null ? new double[cells.length] : takeCensus(census);
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            int r = c.row();
+            c.savings = saved[r];
+            c.debt = saved[ROWS + r];
+            c.lockout = (int) Math.round(saved[ROWS * 2 + r]);
+            c.households = fresh[i];
+            if (current) {
+                c.want        = saved[ROWS * 4 + r];
+                c.planned     = saved[ROWS * 5 + r];
+                c.interest    = saved[ROWS * 6 + r];
+                c.subsistence = saved[ROWS * 7 + r];
+            }
+        }
         if (current) {
-            System.arraycopy(saved, ROWS * 3, lastHouseholds, 0, ROWS);
-            System.arraycopy(saved, ROWS * 4, lastWant, 0, ROWS);
-            System.arraycopy(saved, ROWS * 5, lastPlanned, 0, ROWS);
-            System.arraycopy(saved, ROWS * 6, lastInterest, 0, ROWS);
-            System.arraycopy(saved, ROWS * 7, lastSubsistence, 0, ROWS);
             plannedSpend = saved[ROWS * 8];
             hungryPeople = saved[ROWS * 8 + 1];
             totalPeople  = saved[ROWS * 8 + 2];
         }
-        opened = true;
     }
 
+    /** The row array alone, with no census: the cells wait for the plan to count them. */
+    public void restore(double[] saved) { restore(saved, null); }
+
     public void reset() {
-        java.util.Arrays.fill(savings, 0);
-        java.util.Arrays.fill(debt, 0);
-        java.util.Arrays.fill(lockout, 0);
-        java.util.Arrays.fill(lastBankrupt, 0);
+        for (Household c : cells) c.clearAll();
         lastWrittenOff = 0;
         lastLeaving = 0;
-        for (int r = 0; r < ROWS; r++) { clearRow(r); lastHouseholds[r] = 0; }
+        lastTakenAway = 0;
+        lastDepositInterest = 0;
+        lastDelivered = 1;
         plannedSpend = 0;
         hungryPeople = 0;
         totalPeople = 0;
-        opened = false;
     }
 
     /**
      * The households' stocks and this month's working, in the new unit.
      *
-     * lastRate is an interest rate and lastBankrupt, lastHouseholds and the
-     * headcounts are people; none of those move. lastDelivered is a share.
+     * Rates, lockouts, household counts and headcounts do not move; the
+     * delivered share is a share.
      */
     public void redenominate(double scale) {
         lastWrittenOff *= scale;
-        plannedSpend   *= scale;
+        lastTakenAway *= scale;
+        plannedSpend *= scale;
         lastDepositInterest *= scale;
-        for (int r = 0; r < ROWS; r++) {
-            savings[r]         *= scale;
-            debt[r]            *= scale;
-            lastAfterFixed[r]  *= scale;
-            lastInterest[r]    *= scale;
-            lastDrawn[r]       *= scale;
-            lastUnfunded[r]    *= scale;
-            lastBorrowed[r]    *= scale;
-            lastRepaid[r]      *= scale;
-            lastSaved[r]       *= scale;
-            lastWant[r]        *= scale;
-            lastPlanned[r]     *= scale;
-            lastSubsistence[r] *= scale;
-        }
+        forEach(c -> c.redenominate(scale));
     }
 
 }

@@ -838,7 +838,18 @@ public class SaveFileCheck {
                 {"Textile Mill", "4"}, {"Iron Mine", "2"}, {"Steel Foundry", "2"},
                 {"Commercial Bank", "1"}, {"Elementary School", "3"},
                 {"Walk-in Clinic", "3"}, {"Paved Road", "20"} }) {
-            full.buildStack(template(full, order[0]), Integer.parseInt(order[1]), false);
+            /*
+             * STANDING ON MONTH ONE since 2026-09-10. Queued, this list is a
+             * 437,000-point backlog behind two power plants, and what that
+             * backlog does is the interesting part of a different test: the
+             * builders expand into it, the landlord borrows against it, and
+             * when the material import bill started being charged the bank
+             * had failed three times by month 122 and paid its savers
+             * nothing for ever after. This section is about what a SAVE
+             * carries, and a city with one of everything standing is the
+             * fixture it always meant to be.
+             */
+            full.buildStack(template(full, order[0]), Integer.parseInt(order[1]), true);
         }
         for (PolicySector sector : PolicySector.values()) full.setAutoSubsidised(sector, true);
 

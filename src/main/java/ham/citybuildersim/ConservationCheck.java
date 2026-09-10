@@ -79,6 +79,20 @@ public class ConservationCheck {
             b.addStack(b.getTemplateByName("Construction Depot"), 3, true);
             b.addStack(b.getTemplateByName("Coal Power Plant"), 2, true);
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            /*
+             * THE FIXTURE HAS TO KEEP THE PLANTS IT IS MEASURING. Three food
+             * plants for twelve hundred people is a sector losing money on
+             * every unit, and since 2026-09-10 a sector that does so sells its
+             * capacity: at a buildable plant size the spare-capacity rule
+             * thins three plants to one, and the distress rule takes the last
+             * one two years later - so a 36-month conservation law measured
+             * at month 120 read "made 0, sold 0" against a warehouse that no
+             * longer existed. Twentieth sighting. The city protects the
+             * sector, as a player can from the Policy tab, so the loss the
+             * fixture's own shape creates is covered rather than acted on and
+             * the law is measured against a warehouse that is still there.
+             */
+            g.setAutoSubsidised(PolicySector.INDUSTRY, true);
             g.simulateMonths(months);
         } finally { System.setOut(out); }
         return g;

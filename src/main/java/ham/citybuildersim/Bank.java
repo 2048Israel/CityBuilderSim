@@ -100,8 +100,18 @@ public class Bank {
     /** Equity a bank must hold against its risk-weighted book. */
     public static final double CAPITAL_RATIO = .08;
 
-    /** How much of a city's savings one branch can gather. */
-    public static final double DEPOSITS_PER_BRANCH = 60_000;
+    /**
+     * How much of a city's savings one branch can gather.
+     *
+     * $253M, which is US deposits over US branches - about $18tn across roughly
+     * 71,000 of them. It was $60M, and the four-fold gap was one half of a
+     * measured problem: over 1,202 months the bank's PAYROLL came to 180% of
+     * every dollar of interest it ever earned. A real bank's whole non-interest
+     * expense is 55-65% of revenue. See the note on the Commercial Bank's
+     * staffing in BuildingManager for the other half and for the third anchor
+     * that reconciles them.
+     */
+    public static final double DEPOSITS_PER_BRANCH = 250_000;
 
     /** The same, in today's money - reformed with every other figure. */
     private double depositsPerBranch = DEPOSITS_PER_BRANCH;
@@ -118,6 +128,11 @@ public class Bank {
      * At the ratio above, one branch's capital supports about $400M of
      * risk-weighted lending - the figure the old invented cap used, arrived at
      * this time rather than asserted.
+     *
+     * CHECKED AGAINST THE WORLD 2026-09-10 and left alone, which is worth
+     * recording because the two constants either side of it both moved: US
+     * banks hold about $2.2tn of equity across roughly 71,000 branches, which
+     * is $31M each. This says $32M. It was already right.
      */
     public static final double PAID_IN_PER_BRANCH = 32_000;
 
@@ -298,7 +313,7 @@ public class Bank {
         hotMoneyOut = 0;
         bailoutReceived = 0;
         foundingSettlement = 0;
-        resolutionLoss = 0;
+        resolutionLossThisMonth = 0;
         // What the shareholders had before the month happened, so the statement
         // can show the movement rather than only the closing figure.
         openingEquity = equity();
@@ -480,12 +495,73 @@ public class Bank {
      * that remembers the city owes it some.
      */
     private boolean inResolution;
-    private double resolutionLoss;
     private int failures;
 
+    /*
+     * ONE FIELD WAS BEING ASKED TO BE A FLOW AND A STOCK. resolutionLoss was
+     * zeroed in startMonth() because MoneyAudit needs this month's boundary
+     * crossing, and it was saved, displayed and documented as "the money its
+     * creditors ate" across the city's life. So the Bank tab printed "Times it
+     * has failed: 308" beside "Its creditors absorbed: $0" in 3,693 of 4,001
+     * months, and the save carried whatever the save month happened to hold.
+     * The true lifetime figure was $22.65bn - six times the $3.76bn of city
+     * capital the summary did report. Two fields now, one per question.
+     */
+    private double resolutionLossThisMonth;
+    private double resolutionLossLifetime;
+
     public boolean isInsolvent()      { return inResolution || equity() < 0; }
-    public double getResolutionLoss() { return resolutionLoss; }
+    /** Over the city's life. What the panel and the save want. */
+    public double getResolutionLoss() { return resolutionLossLifetime; }
+    /** This month only. What the audit wants. */
+    public double getResolutionLossThisMonth() { return resolutionLossThisMonth; }
     public int getFailures()          { return failures; }
+
+    /**
+     * How far above the required ratio a rescued bank comes out.
+     *
+     * A bank lifted out of resolution at EXACTLY the required ratio has no
+     * buffer at all, and re-fails on the next dollar of payroll - and each of
+     * those months was counted as a fresh failure. The log showed unbroken
+     * runs of monthly "failures" with no write-off in any of them, eighteen in
+     * a row at one point; of 308 events in a 4,000-month run only 79 were not
+     * preceded by a failing month. A real resolution puts a bank back above
+     * the line, not on it. Recapitalising to this multiple of the minimum
+     * took failures 308 -> 26 and months starting frozen 326 -> 0.
+     */
+    public static final double RESOLUTION_EXIT_BUFFER = 1.5;
+
+    /**
+     * The solvency record, for the save.
+     *
+     * CARRIED RATHER THAN REBUILT, and the reason is the whole of a bug this
+     * class was hiding. `failures` counts the times this bank went under across
+     * the city's life; `resolutionLoss` is the money its creditors ate doing so,
+     * and MoneyAudit already credits that figure as a real crossing of the audit
+     * boundary. Neither can be recomputed from the balance sheet a month ended
+     * with, because resolveIfFailed() deliberately leaves that sheet at zero -
+     * a bank that has failed six times and a bank that has never failed look
+     * identical the instant the loss is absorbed.
+     *
+     * So every save was reading a clean bank. The count reset to 0, the loss to
+     * $0, and `inResolution` to false - which un-froze a frozen bank's lending
+     * on load and made the audit's boundary figure disagree with itself by the
+     * whole of the loss. Found when a 1,124-month city was asked how often its
+     * bank had gone under and answered "never" while running a negative profit.
+     *
+     * Null on an older save, which restores as no-op - those cities had no
+     * record to lose, which is exactly what they will now report.
+     */
+    public double[] solvencyToSave() {
+        return new double[]{ failures, resolutionLossLifetime, inResolution ? 1 : 0 };
+    }
+
+    public void restoreSolvency(double[] state) {
+        if (state == null || state.length < 3) return;
+        failures               = (int) state[0];
+        resolutionLossLifetime = state[1];
+        inResolution           = state[2] != 0;
+    }
 
     /**
      * The bank fails, and its creditors take the loss.
@@ -507,7 +583,8 @@ public class Bank {
         double shortfall = -equity();
         if (shortfall > 0) {
             cash += shortfall;
-            resolutionLoss += shortfall;
+            resolutionLossThisMonth += shortfall;
+            resolutionLossLifetime  += shortfall;
             if (!inResolution) failures++;
             inResolution = true;
             return;
@@ -522,15 +599,49 @@ public class Bank {
          * nothing, and ordered 2,190 branches trying to fix a problem it had
          * already fixed. The bailout is the fast way out, not the only one.
          */
-        if (inResolution && equity() >= getWeightedBook() * CAPITAL_RATIO - 1e-9) {
+        if (inResolution && equity() >= resolutionExitEquity() - 1e-9) {
             inResolution = false;
         }
     }
 
-    /** What it would take to put the bank back at its required ratio. */
+    /**
+     * The equity at which the freeze lifts, however the bank gets there.
+     *
+     * The required ratio times RESOLUTION_EXIT_BUFFER, and the SAME number
+     * recapitalisationNeeded() asks the city for, so a bailout sized by the
+     * one is exactly enough for the other. The first version lifted the freeze
+     * at the bare ratio and asked the city for the bare ratio, which is a bank
+     * with zero buffer - see RESOLUTION_EXIT_BUFFER.
+     */
+    public double resolutionExitEquity() {
+        double byBook = getWeightedBook() * CAPITAL_RATIO * RESOLUTION_EXIT_BUFFER;
+        /*
+         * ...AND NEVER LESS THAN ONE BRANCH'S CAPITAL. The ratio is struck on
+         * the book, so a bank that has lost its book along with its equity
+         * needs, by the ratio, nothing at all - and a bank with nothing lends
+         * nothing, so it never gets a book, so it never needs anything. A
+         * deadlock, and it was the end state of every long run that had ever
+         * been recorded: "equity $0k against a book of $0k", two branches,
+         * $66bn of deposits, not a dollar lent, and a treasury holding $45bn
+         * that was never asked. The floor is what one branch is capitalised
+         * with when it opens, because an institution with less than that is
+         * not one.
+         */
+        double floor = branches > 0 ? PAID_IN_PER_BRANCH : 0;
+        return Math.max(byBook, floor);
+    }
+
+    /**
+     * What it would take to put the bank back on its feet, with a buffer.
+     *
+     * Zero for a bank that is standing and adequately capitalised, whatever
+     * its size; the branch floor above applies only once it has failed.
+     */
     public double recapitalisationNeeded() {
-        double required = getWeightedBook() * CAPITAL_RATIO;
-        return Math.max(0, required - equity());
+        if (!inResolution && equity() > 0) {
+            return Math.max(0, getWeightedBook() * CAPITAL_RATIO * RESOLUTION_EXIT_BUFFER - equity());
+        }
+        return Math.max(0, resolutionExitEquity() - equity());
     }
 
     /**
@@ -1350,7 +1461,46 @@ public class Bank {
     public double getProfitLastMonth() { return profitLastMonth; }
 
     /** Called at the end of the month, once the profit is final. */
-    public void closeMonth() { profitLastMonth = profitBeforeTax(); }
+    public void closeMonth() {
+        profitLastMonth = profitBeforeTax();
+        lastPayroll  = payroll;
+        lastUpkeep   = upkeep;
+        lastInterest = interestEarned;
+        lastBook     = getBook();
+    }
+
+    /* ---------------------- LAST MONTH, KEPT ON PURPOSE ----------------------
+     *
+     * startMonth() zeroes every flow above, and the investment advisor asks its
+     * questions BETWEEN the two - after the month has opened and before anything
+     * has moved through it. So a branch decision reading `payroll` or
+     * `interestEarned` reads zero, every time, in every month.
+     *
+     * That is the standing rule of this codebase turned on its own author: a
+     * flow cannot be read from the state a month STARTED in either. The first
+     * two versions of branchWouldPayForItself() were written against the live
+     * fields and were silently inert - four thousand months of a playtest came
+     * back byte-identical twice, which is what a test that never fires looks
+     * like.
+     *
+     * These four are last month's, struck when the month closed and therefore
+     * final. Carried in the save for the same reason profitLastMonth is: the
+     * advisor's answer would otherwise differ between a live city and a
+     * reloaded one for a month.
+     * ------------------------------------------------------------------------ */
+    private double lastPayroll, lastUpkeep, lastInterest, lastBook;
+
+    public double[] lastMonthToSave() {
+        return new double[]{ lastPayroll, lastUpkeep, lastInterest, lastBook };
+    }
+
+    public void restoreLastMonth(double[] state) {
+        if (state == null || state.length < 4) return;
+        lastPayroll  = state[0];
+        lastUpkeep   = state[1];
+        lastInterest = state[2];
+        lastBook     = state[3];
+    }
 
     /** Restored from the save, so next month taxes the right figure. */
     public void setProfitLastMonth(double value) { this.profitLastMonth = value; }
@@ -1453,7 +1603,74 @@ public class Bank {
         if (inResolution) return false;
         if (bookAnotherBranchWouldCarry() <= 0) return false;
         if (branches <= 0) return getWeightedBook() > 0;
+        if (!branchWouldPayForItself()) return false;
         return strain() > BUILD_AT_STRAIN;
+    }
+
+    /**
+     * Whether the counter earns more than it costs to keep open.
+     *
+     * THE TEST THAT WAS MISSING, and its absence was the third reason this bank
+     * kept failing. The two above ask whether a branch would RELIEVE anything;
+     * neither asks whether it is worth having.
+     *
+     * That mattered because of how capacityWith() works, which is correct and
+     * is also a trap. Opening a branch is an equity injection - PAID_IN_PER_BRANCH
+     * of capital, which at CAPITAL_RATIO supports about $400M of lending - so
+     * while CAPITAL is what binds, one more branch always raises capacity and
+     * bookAnotherBranchWouldCarry() is always positive. A bank that is losing
+     * money is short of capital by definition, so it always wants another
+     * branch, and every branch it opens brings a wage bill it is already unable
+     * to cover. The city recapitalises its bank one building at a time and the
+     * hole gets deeper with each one.
+     *
+     * Measured: 1,049 branches by month 4,000, holding $124bn of deposits
+     * against a $7.6bn book - $10,553 of book per branch where one branch's
+     * capital supports $400,000 of it, and $510 of equity left per branch out
+     * of the $32,000 each put in. It had burned 98% of its capital and gone on
+     * building.
+     *
+     * A REAL BANK SHORT OF CAPITAL RAISES CAPITAL; it does not open branches.
+     * There is nothing to invent for the test - the bank already knows what its
+     * book yields, what it passes to savers, and what a counter costs, because
+     * all three are on this month's income statement.
+     */
+    public boolean branchWouldPayForItself() {
+        if (branches <= 0) return true;          // the first one is a different question
+
+        double runningCost = (lastPayroll + lastUpkeep) / branches;
+        if (runningCost <= 0) return true;       // nothing known to cost yet
+
+        double book = lastBook;
+        if (book <= 0) return false;
+
+        double monthlyYield = lastInterest / book;
+        double keptMargin = monthlyYield * (1 - DEPOSIT_PASS_THROUGH);
+
+        /*
+         * ON WHAT A BRANCH ACTUALLY CARRIES, not on what one more is worth.
+         *
+         * The first version of this asked bookAnotherBranchWouldCarry() and was
+         * a test that could never fail: that figure is the CAPACITY a branch
+         * unlocks - about $320M once the 80% strain allowance is taken - and
+         * $320M of book at any plausible margin dwarfs one branch's wages by a
+         * factor of eight. It passed every month of a four-thousand-month run
+         * and changed not one number in it.
+         *
+         * The capacity is not the book. Over that same run the bank's branches
+         * carried $10,553 of book EACH, against the $400,000 their capital was
+         * supposed to support - because the capital that arrived with each
+         * branch was written off long before it could be lent. Asking what a
+         * branch is entitled to carry, in a bank that has never once managed
+         * it, is asking the wrong question in the confident direction.
+         *
+         * So: the branches standing carry this much book apiece, another will
+         * carry about the same, and the question is whether that pays a
+         * counter's wages. Self-correcting in both directions - a bank whose
+         * book per branch recovers starts wanting branches again.
+         */
+        double bookPerBranch = book / branches;
+        return bookPerBranch * keptMargin > runningCost;
     }
 
     /**
@@ -1576,7 +1793,8 @@ public class Bank {
         openingEquity     *= scale;
         hotMoneyIn        *= scale;
         hotMoneyOut       *= scale;
-        resolutionLoss    *= scale;
+        resolutionLossThisMonth *= scale;
+        resolutionLossLifetime  *= scale;
         capitalInjected   *= scale;
         capitalFromHome   *= scale;
         bailoutReceived   *= scale;
