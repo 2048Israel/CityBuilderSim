@@ -838,6 +838,24 @@ public class HouseholdCheck {
          * THE SAVE CARRIES THE CELLS, BY NAME, and a row-only save from the
          * build before them seeds every cell of the row.
          */
+        /*
+         * AND THE SHARES FOLLOW THE PEOPLE TOO - the same pool, the same
+         * weights, since the register went in the same evening. Fifty large
+         * families hold ten shares of Retail each and become fifty couples
+         * with a teen: the shares move with them.
+         */
+        int retail = Equity.indexOf(BusinessDebtManager.RETAIL);
+        big.shares[retail] = 10;
+        double sharesBefore = street.sharesHeld(retail);
+        block[large][U] = 0;
+        block[FamilyStructure.COUPLE_TEEN.ordinal()][U] = 100;
+        shop[U] = 0;
+        street.advanceMonth(blockCensus, wage, .70, noFees, shop, .25, .05, 1);
+        check("the shares move with the people, like the savings",
+                street.cell(FamilyStructure.COUPLE_TEEN, PayTier.UNSKILLED).shares(retail), 10);
+        check("...and none left the city", street.sharesHeld(retail), sharesBefore);
+        check("...nor were taken away", street.getSharesTakenAway(retail), 0);
+
         HouseholdBalance copy = new HouseholdBalance();
         assertTrue("the cells restore by name",
                 copy.restoreCells(street.cellKeys(), street.toCellSaveArray()));
@@ -846,9 +864,21 @@ public class HouseholdCheck {
             Household a = street.cells().get(i), b = copy.cells().get(i);
             if (Math.abs(a.savings() - b.savings()) > 1e-12 || Math.abs(a.debt() - b.debt()) > 1e-12
                     || a.lockout() != b.lockout() || Math.abs(a.households() - b.households()) > 1e-12
-                    || Math.abs(a.planned() - b.planned()) > 1e-12) everyCell = false;
+                    || Math.abs(a.planned() - b.planned()) > 1e-12
+                    || Math.abs(a.shares(retail) - b.shares(retail)) > 1e-12) everyCell = false;
         }
-        assertTrue("...every cell, to the cent", everyCell);
+        assertTrue("...every cell, to the cent, shares included", everyCell);
+        // The morning's save, eight a cell and no shares, still restores.
+        double[] morning = new double[street.cellCount() * HouseholdBalance.CELL_SLOTS_BEFORE_SHARES + 3];
+        double[] full = street.toCellSaveArray();
+        for (int i = 0, j = 0; i < street.cellCount(); i++) {
+            for (int k = 0; k < HouseholdBalance.CELL_SLOTS_BEFORE_SHARES; k++) morning[j++] = full[i * HouseholdBalance.CELL_SLOTS + k];
+        }
+        System.arraycopy(full, full.length - 3, morning, morning.length - 3, 3);
+        HouseholdBalance older = new HouseholdBalance();
+        assertTrue("a save from before the shares restores", older.restoreCells(street.cellKeys(), morning));
+        check("...with the savings", older.totalSavings(), street.totalSavings());
+        check("...and no shares", older.sharesHeld(retail), 0);
         check("...and the city's stock with them", copy.totalSavings(), street.totalSavings());
         assertTrue("a save with a key this build does not know is refused whole",
                 !copy.restoreCells(new String[] {"NOBODY"}, new double[] {1, 2}));

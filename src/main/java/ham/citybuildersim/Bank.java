@@ -309,6 +309,7 @@ public class Bank {
         depositInterestToForeign = 0;
         capitalInjected = 0;
         capitalFromHome = 0;
+        dividendsPaid = 0;
         hotMoneyIn = 0;
         hotMoneyOut = 0;
         bailoutReceived = 0;
@@ -706,12 +707,50 @@ public class Bank {
      * is the entire question.
      */
     public void injectCapital(double amount) {
+        /*
+         * ALL OF IT FROM ABROAD, since 2026-09-10 (evening). The curve above
+         * used to split this by how much the city had on deposit, and the
+         * "home" half was money no household ever paid - a declaration, not a
+         * transaction. The register sells the shares now (Equity, through
+         * Game.capitaliseBank()): what the households buy arrives by the
+         * two-argument form below out of their own savings, and what they do
+         * not buy is the world's. This form is for a fixture standing up a
+         * bank with no city round it.
+         */
+        injectCapital(0, amount);
+    }
+
+    /**
+     * Shareholders' money, put in as capital, and whose: the households'
+     * part came out of their savings through the register, the rest from
+     * the world. Both land in equity; the balance of payments reads only the
+     * second.
+     */
+    public void injectCapital(double fromHome, double fromAbroad) {
+        double amount = Math.max(0, fromHome) + Math.max(0, fromAbroad);
         if (amount <= 0) return;
         cash += amount;
-        double home = amount * domesticCapitalShare();
-        capitalFromHome += home;
-        capitalInjected += amount - home;
+        capitalFromHome += Math.max(0, fromHome);
+        capitalInjected += Math.max(0, fromAbroad);
     }
+
+    /**
+     * Pays the owners. Cash out, equity down by the same, and its own line on
+     * the statement so the equity movement still articulates - see
+     * BankCheck's "equity moves by the month's profit and by nothing else".
+     *
+     * @param amount decided by the register and the till; nothing is checked here
+     */
+    public void payDividend(double amount) {
+        if (amount <= 0) return;
+        cash -= amount;
+        dividendsPaid += amount;
+    }
+
+    private double dividendsPaid;
+
+    /** What it paid its shareholders this month. */
+    public double getDividendsPaid() { return dividendsPaid; }
 
     /**
      * The same money, from the TREASURY rather than from shareholders.
@@ -777,17 +816,22 @@ public class Bank {
     public double getBailoutReceived() { return bailoutReceived; }
 
     /**
-     * Opens whatever branches have been built since last month, and takes the
-     * shareholders' capital for them.
+     * Opens whatever branches have been built since last month, and says what
+     * capital they need.
      *
      * Counted rather than watched for, so a city that builds three at once is
-     * capitalised for three. Money from OUTSIDE the city, and declared.
+     * capitalised for three. The capital itself is NOT taken here since
+     * 2026-09-10 (evening): it is sold as shares by the register, to the
+     * city's households first and the world for the rest, and arrives by
+     * injectCapital(home, abroad). See Game.capitaliseBank().
+     *
+     * @return the paid-in capital the new branches want, zero if none opened
      */
-    public void openBranches(double nowStanding) {
+    public double openBranches(double nowStanding) {
         double opened = Math.max(0, nowStanding - branchesCapitalised);
         boolean founding = branchesCapitalised <= 0 && opened > 0;
         branchesCapitalised = Math.max(branchesCapitalised, nowStanding);
-        if (opened <= 0) return;
+        if (opened <= 0) return 0;
 
         /*
          * THE CITY'S FIRST BANK STARTS WITH A CLEAN SET OF BOOKS.
@@ -816,7 +860,7 @@ public class Bank {
             cash = opening;
         }
 
-        injectCapital(opened * paidInPerBranch);
+        return opened * paidInPerBranch;
     }
 
     private double branchesCapitalised;
@@ -1797,6 +1841,7 @@ public class Bank {
         resolutionLossLifetime  *= scale;
         capitalInjected   *= scale;
         capitalFromHome   *= scale;
+        dividendsPaid     *= scale;
         bailoutReceived   *= scale;
         foundingSettlement *= scale;
         depositInterestToHouseholds *= scale;

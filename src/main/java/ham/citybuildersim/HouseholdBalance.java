@@ -351,6 +351,8 @@ public class HouseholdBalance {
         lastWrittenOff = 0;
         lastLeaving = 0;
         lastTakenAway = 0;
+        java.util.Arrays.fill(lastSharesTakenAway, 0);
+        for (Household c : cells) c.dividends = 0;
         double delivered = Math.max(0, Math.min(1, supplyRatio));
         lastDelivered = delivered;
         for (int i = 0; i < cells.length; i++) {
@@ -510,28 +512,84 @@ public class HouseholdBalance {
        the other half out - because that is who carries the money.
        ===================================================================== */
 
+    /** One stock a household carries, for followThePeople() to move. */
+    private interface Stock {
+        double get(Household c);
+        void set(Household c, double perHousehold);
+    }
+
     /**
-     * Moves the stock with the people, then sets every cell's count.
+     * Moves every stock with the people, then sets every cell's count.
+     *
+     * Savings, debt, and the shares in each company - the same pool, the same
+     * weights, one at a time. Adding a stock is adding it to the list below;
+     * the arithmetic does not know what it is moving.
      *
      * @param fresh  households in each cell now
-     * @param buffer what a newly arrived household of each cell brings
+     * @param buffer what a newly arrived household of each cell brings, in savings
      */
     private void followThePeople(double[] fresh, double[] buffer) {
+        java.util.List<Stock> stocks = new java.util.ArrayList<>();
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.savings; }
+            public void set(Household c, double v) { c.savings = v; }
+        });
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.debt; }
+            public void set(Household c, double v) { c.debt = v; }
+        });
+        for (int k = 0; k < Equity.COMPANIES.length; k++) {
+            final int company = k;
+            stocks.add(new Stock() {
+                public double get(Household c) { return c.shares[company]; }
+                public void set(Household c, double v) { c.shares[company] = v; }
+            });
+        }
+
         int n = cells.length;
         double[] delta = new double[n];
+        for (int i = 0; i < n; i++) delta[i] = fresh[i] - cells[i].households;
+
+        double[] left = new double[stocks.size()];
+        for (int k = 0; k < stocks.size(); k++) {
+            left[k] = moveStock(stocks.get(k), fresh, delta, k == 0 ? buffer : null);
+        }
+        // What nobody claimed has left the city: the savings with them, the
+        // debt on the bank, the shares to wherever they went - held abroad
+        // from now on, as far as the register is concerned.
+        lastTakenAway += left[0];
+        lastWrittenOff += left[1];
+        for (int k = 0; k < Equity.COMPANIES.length; k++) lastSharesTakenAway[k] = left[2 + k];
+
+        for (int i = 0; i < n; i++) {
+            // A cell that lost households keeps its average: the ones who
+            // stayed have what they had.
+            cells[i].households = fresh[i];
+            if (fresh[i] <= 0) cells[i].clearAll();
+        }
+    }
+
+    /**
+     * One stock through the pool: released by the cells that shrank at their
+     * own average, claimed by the cells that grew - within the row first, then
+     * across the city - and what nobody claimed returned.
+     *
+     * @param arrival what a household nobody released brings of this stock,
+     *                per cell, or null for nothing
+     * @return the total of this stock that left the city
+     */
+    private double moveStock(Stock stock, double[] fresh, double[] delta, double[] arrival) {
+        int n = cells.length;
         double[] rowLoss = new double[ROWS];
         double[] rowGain = new double[ROWS];
-        double[] rowPoolSavings = new double[ROWS];
-        double[] rowPoolDebt = new double[ROWS];
+        double[] rowPool = new double[ROWS];
 
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
-            delta[i] = fresh[i] - c.households;
             double weight = Math.abs(delta[i]) * c.grownUps();
             if (delta[i] < 0) {
                 rowLoss[c.row()] += weight;
-                rowPoolSavings[c.row()] += c.savings * -delta[i];
-                rowPoolDebt[c.row()] += c.debt * -delta[i];
+                rowPool[c.row()] += stock.get(c) * -delta[i];
             } else if (delta[i] > 0) {
                 rowGain[c.row()] += weight;
             }
@@ -539,16 +597,14 @@ public class HouseholdBalance {
 
         /* ---- within each row first ---- */
         double[] rowMoved = new double[ROWS];
-        double cityPoolSavings = 0, cityPoolDebt = 0, cityLoss = 0, cityGain = 0;
+        double cityPool = 0, cityLoss = 0, cityGain = 0;
         for (int r = 0; r < ROWS; r++) {
             double moved = Math.min(rowLoss[r], rowGain[r]);
             rowMoved[r] = moved;
             if (rowLoss[r] > 0) {
                 double kept = moved / rowLoss[r];
-                cityPoolSavings += rowPoolSavings[r] * (1 - kept);
-                cityPoolDebt += rowPoolDebt[r] * (1 - kept);
-                rowPoolSavings[r] *= kept;
-                rowPoolDebt[r] *= kept;
+                cityPool += rowPool[r] * (1 - kept);
+                rowPool[r] *= kept;
                 cityLoss += rowLoss[r] - moved;
             }
             cityGain += rowGain[r] - moved;
@@ -557,40 +613,33 @@ public class HouseholdBalance {
         /* ---- then across the city ---- */
         double cityMoved = Math.min(cityLoss, cityGain);
         double cityKept = cityLoss > 0 ? cityMoved / cityLoss : 0;
-        lastTakenAway += cityPoolSavings * (1 - cityKept);
-        lastWrittenOff += cityPoolDebt * (1 - cityKept);
-        cityPoolSavings *= cityKept;
-        cityPoolDebt *= cityKept;
+        double gone = cityPool * (1 - cityKept);
+        cityPool *= cityKept;
         double cityShare = cityGain > 0 ? cityMoved / cityGain : 0;
 
         /* ---- and hand it out ---- */
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
-            if (delta[i] > 0 && c.grownUps() > 0) {
-                int r = c.row();
-                double weight = delta[i] * c.grownUps();
-                double fromRow = rowGain[r] > 0 ? weight * rowMoved[r] / rowGain[r] : 0;
-                double rest = weight - fromRow;
-                double fromCity = rest * cityShare;
-                double newcomers = (rest - fromCity) / c.grownUps();
+            if (delta[i] <= 0 || c.grownUps() <= 0) continue;
+            int r = c.row();
+            double weight = delta[i] * c.grownUps();
+            double fromRow = rowGain[r] > 0 ? weight * rowMoved[r] / rowGain[r] : 0;
+            double rest = weight - fromRow;
+            double fromCity = rest * cityShare;
+            double newcomers = (rest - fromCity) / c.grownUps();
 
-                double receivedSavings =
-                        (rowMoved[r] > 0 ? rowPoolSavings[r] * fromRow / rowMoved[r] : 0)
-                        + (cityMoved > 0 ? cityPoolSavings * fromCity / cityMoved : 0);
-                double receivedDebt =
-                        (rowMoved[r] > 0 ? rowPoolDebt[r] * fromRow / rowMoved[r] : 0)
-                        + (cityMoved > 0 ? cityPoolDebt * fromCity / cityMoved : 0);
+            double received = (rowMoved[r] > 0 ? rowPool[r] * fromRow / rowMoved[r] : 0)
+                    + (cityMoved > 0 ? cityPool * fromCity / cityMoved : 0);
+            double brought = arrival == null ? 0 : newcomers * arrival[i];
 
-                c.savings = (c.savings * c.households + receivedSavings
-                        + newcomers * buffer[i]) / fresh[i];
-                c.debt = (c.debt * c.households + receivedDebt) / fresh[i];
-            }
-            // A cell that lost households keeps its average: the ones who
-            // stayed have what they had.
-            c.households = fresh[i];
-            if (fresh[i] <= 0) c.clearAll();
+            stock.set(c, (stock.get(c) * c.households + received + brought) / fresh[i]);
         }
+        return gone;
     }
+
+    /** Shares of each company that left the city with their holders this month. */
+    private final double[] lastSharesTakenAway = new double[Equity.COMPANIES.length];
+    public double getSharesTakenAway(int company) { return lastSharesTakenAway[company]; }
 
     /* ------------------------- what the bank is owed ------------------------- */
 
@@ -733,6 +782,120 @@ public class HouseholdBalance {
     /** What the bank paid the city's savers this month. */
     public double getDepositInterest() { return lastDepositInterest; }
 
+    /* =====================================================================
+       THE OFFER
+
+       Jerus: "each household type gets the offer and based on their situation
+       and their cash available they accept or decline, or put how much."
+
+       The situation: no debt, not locked out, not going short, and savings
+       past a cushion. The cash available: what is past the cushion. Every
+       household uses the same rule - one cushion, one fraction, the retired
+       included - which was Jerus's call against a keener rich; the rich still
+       buy more because they have more past the cushion.
+       ===================================================================== */
+
+    /** Months of take-home a household keeps in the bank before it buys a share. */
+    public static final double SHARE_CUSHION_MONTHS = 3;
+
+    /** The share of what is past the cushion it puts into one offering. */
+    public static final double SHARE_OF_EXCESS = .30;
+
+    /**
+     * Puts an offering to every household, and takes up what they will buy.
+     *
+     * Pro rata when they would buy more than is offered, so a small offering
+     * is not taken entirely by whichever cell the loop reached first. Savings
+     * go down by what was paid and the shares go up by what it bought; net
+     * worth does not move.
+     *
+     * @param company  Equity.COMPANIES index
+     * @param offered  the money the company is asking for
+     * @param price    per share
+     * @return the money taken up
+     */
+    public double subscribe(int company, double offered, double price) {
+        if (offered <= 0 || !(price > 0)) return 0;
+
+        double[] want = new double[cells.length];
+        double total = 0;
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c.households < .5 || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            double excess = c.savings - cushion;
+            if (excess <= 0) continue;
+            want[i] = excess * SHARE_OF_EXCESS * c.households;
+            total += want[i];
+        }
+        if (total <= 0) return 0;
+
+        double scale = Math.min(1, offered / total);
+        double taken = 0;
+        for (int i = 0; i < cells.length; i++) {
+            if (want[i] <= 0) continue;
+            Household c = cells[i];
+            double paidPer = want[i] * scale / c.households;
+            c.savings -= paidPer;
+            c.shares[company] += paidPer / price;
+            taken += paidPer * c.households;
+        }
+        return taken;
+    }
+
+    /**
+     * Hands out a company's founding shares to the people who founded it.
+     *
+     * A company's first offering finds equity already on its books - the
+     * stores and homes the founding endowment built - and owned by nobody.
+     * Somebody has to own it or the first buyer is handed it for free, so it
+     * goes to the city's households, by grown-ups: the founders own what
+     * they founded. Nothing is paid; net worth rises by what was always
+     * theirs and was never written down. See Equity.offer().
+     */
+    public void grantFounders(int company, double shares) {
+        if (!(shares > 0)) return;
+        double weight = 0;
+        for (Household c : cells) if (c.households >= .5) weight += c.households * c.grownUps();
+        if (weight <= 0) return;
+        for (Household c : cells) {
+            if (c.households < .5) continue;
+            c.shares[company] += shares * c.grownUps() / weight;
+        }
+    }
+
+    /**
+     * Pays every household its dividend, straight into its savings.
+     *
+     * @return what the city's households received in total
+     */
+    public double creditDividend(int company, double perShare) {
+        if (!(perShare > 0)) return 0;
+        double paid = 0;
+        for (Household c : cells) {
+            if (c.households <= 0 || c.shares[company] <= 0) continue;
+            double each = c.shares[company] * perShare;
+            c.savings += each;
+            c.dividends += each;
+            paid += each * c.households;
+        }
+        return paid;
+    }
+
+    /** Shares of this company the city's households hold between them. */
+    public double sharesHeld(int company) {
+        double total = 0;
+        for (Household c : cells) total += c.shares[company] * c.households;
+        return total;
+    }
+
+    /** What the households were paid in dividends this month. */
+    public double totalDividends() {
+        double total = 0;
+        for (Household c : cells) total += c.dividends * c.households;
+        return total;
+    }
+
     /* ---- the row, per household of it: what the screens and the fixtures read ---- */
 
     public double getSavings(int row)        { return perHousehold(row, Household::savings); }
@@ -836,8 +999,11 @@ public class HouseholdBalance {
         return out;
     }
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them. */
-    public static final int CELL_SLOTS = 8;
+    /** Figures carried per cell before the shares were appended (2026-09-10, evening). */
+    public static final int CELL_SLOTS_BEFORE_SHARES = 8;
+
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, then a share count per company. */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public String[] cellKeys() {
@@ -859,6 +1025,7 @@ public class HouseholdBalance {
             out[i++] = c.planned;
             out[i++] = c.interest;
             out[i++] = c.subsistence;
+            for (double held : c.shares) out[i++] = held;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -878,7 +1045,13 @@ public class HouseholdBalance {
      * @return false if nothing was restored
      */
     public boolean restoreCells(String[] keys, double[] saved) {
-        if (keys == null || saved == null || saved.length != keys.length * CELL_SLOTS + 3) {
+        if (keys == null || saved == null || keys.length == 0) return false;
+        // Eight a cell from the morning the cells went in, or eight plus a
+        // share count per company from the evening. Either length restores
+        // what it carries; a save without shares has households that own none.
+        int slots = (saved.length - 3) / keys.length;
+        if (saved.length != keys.length * slots + 3
+                || (slots != CELL_SLOTS && slots != CELL_SLOTS_BEFORE_SHARES)) {
             return false;
         }
         java.util.Map<String, Household> byKey = new java.util.HashMap<>();
@@ -887,7 +1060,7 @@ public class HouseholdBalance {
         int i = 0;
         for (String key : keys) {
             Household c = byKey.get(key);
-            if (c == null) { i += CELL_SLOTS; continue; }
+            if (c == null) { i += slots; continue; }
             c.savings     = saved[i++];
             c.debt        = saved[i++];
             c.lockout     = (int) Math.round(saved[i++]);
@@ -896,6 +1069,10 @@ public class HouseholdBalance {
             c.planned     = saved[i++];
             c.interest    = saved[i++];
             c.subsistence = saved[i++];
+            java.util.Arrays.fill(c.shares, 0);
+            if (slots == CELL_SLOTS) {
+                for (int k = 0; k < c.shares.length; k++) c.shares[k] = saved[i++];
+            }
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];
@@ -949,6 +1126,7 @@ public class HouseholdBalance {
 
     public void reset() {
         for (Household c : cells) c.clearAll();
+        java.util.Arrays.fill(lastSharesTakenAway, 0);
         lastWrittenOff = 0;
         lastLeaving = 0;
         lastTakenAway = 0;

@@ -1127,6 +1127,17 @@ public class LongPlaytest {
                 back.getOutwardInvestment().getLastRate(), g.getOutwardInvestment().getLastRate());
         same(month, "...and the financial account the rate is priced on",
                 back.getForeignAccounts().monthlyFinancialAccount(), g.getForeignAccounts().monthlyFinancialAccount());
+        // The register: every company's shares in issue and abroad, and the
+        // households' own count of what they hold - three stocks nothing can
+        // re-derive from the month a save was taken in.
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            same(month, Equity.COMPANIES[c] + "'s shares in issue across a save",
+                    back.getEquity().getShares(c), g.getEquity().getShares(c));
+            same(month, "...and held abroad",
+                    back.getEquity().getForeignShares(c), g.getEquity().getForeignShares(c));
+            same(month, "...and held by the households",
+                    back.getHouseholdBalance().sharesHeld(c), g.getHouseholdBalance().sharesHeld(c));
+        }
 
         /*
          * PRICES THAT ARE CACHES. Each of these is struck once a month and
@@ -1537,6 +1548,17 @@ public class LongPlaytest {
                 abroad.totalUsd(), String.format("$%,.0fk", abroad.totalLocalValue()),
                 abroad.getTargetShare() * 100, abroad.getSpread() * 100,
                 abroad.getLifetimeOut(), abroad.getLifetimeHome(), abroad.getLifetimeInterest(), abroad.getPeakUsd());
+        Equity owners = g.getEquity();
+        StringBuilder held = new StringBuilder();
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (owners.getShares(c) <= 0) continue;
+            held.append(String.format("%s %.0f%% abroad, ", Equity.COMPANIES[c], owners.foreignShare(c) * 100));
+        }
+        out.printf("  the owners: raised $%,.0fk at home and $%,.0fk abroad in %d offerings;"
+                + " paid $%,.0fk of dividends to the households and $%,.0fk abroad; %s%n",
+                owners.getLifetimeRaisedHome(), owners.getLifetimeRaisedAbroad(), owners.getOfferings(),
+                owners.getLifetimeDividendsHome(), owners.getLifetimeDividendsAbroad(),
+                held.length() > 0 ? held.substring(0, held.length() - 2) : "nobody owns anything");
         out.printf("  the record: $%,.0fk cumulative balance since founding;"
                 + " net position $%,.0fk (%s)%n",
                 fx.getCumulativeBalance(), fx.netForeignPosition(),

@@ -861,7 +861,11 @@ public class BankCheck {
                  */
                 double explained = kept.getNetIncome()
                         + kept.getCapitalInjected() + kept.getCapitalFromHome()
-                        + kept.getBailoutReceived() + kept.getFoundingSettlement();
+                        + kept.getBailoutReceived() + kept.getFoundingSettlement()
+                        // ...and by the dividend it paid its owners, since
+                        // 2026-09-10 (evening): cash out, equity down, and
+                        // its own line - see Bank.payDividend().
+                        - kept.getDividendsPaid();
                 if (Math.abs(moved - explained) > Math.abs(worstArticulation)) {
                     worstArticulation = moved - explained;
                     worstMonth = books.getMonth();

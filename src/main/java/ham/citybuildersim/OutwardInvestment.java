@@ -91,6 +91,9 @@ public class OutwardInvestment {
     /** This month's move, per sector, in local money: positive went abroad, negative came home. */
     private final Map<String, Double> moved = new LinkedHashMap<>();
 
+    /** Brought home on demand earlier this month, per sector, in local money. Folded into `moved` at takeMonth(). */
+    private final Map<String, Double> recalled = new LinkedHashMap<>();
+
     /** This month's income from abroad, per sector, in local money, rolled where it was earned. */
     private final Map<String, Double> interest = new LinkedHashMap<>();
 
@@ -188,12 +191,42 @@ public class OutwardInvestment {
                 usd.put(sector, held);
                 if (move > 0) lifetimeOut += move; else lifetimeHome -= move;
             }
-            moved.put(sector, move);
+            // ...plus what was called home earlier in the month, before the
+            // month's own move: a recall is a move home like any other.
+            moved.put(sector, move - recalled.getOrDefault(sector, 0.0));
+            recalled.put(sector, 0.0);
             lifetimeInterest += earnedUsd * rate;
         }
 
         double total = totalUsd();
         if (total > peakUsd) peakUsd = total;
+    }
+
+    /**
+     * Brings money home because it is needed now - to build, or to pay the
+     * owners - rather than because the bank pays more.
+     *
+     * Before this a sector holding ninety percent of its wealth abroad would
+     * borrow to build, because the investor reads the till and the till was
+     * empty: the war chest defeated itself. Sold at the rate the stock was
+     * last valued at, which is this month's rate once takeMonth() has run and
+     * last month's before it; the difference is the valuation line's, not a
+     * flow's. A financial inflow, declared through getBroughtHomeThisMonth().
+     *
+     * @param local how much is wanted, in the city's money
+     * @return how much came, which is less when less is held
+     */
+    public double recall(String sector, double local, EconomyManager economy) {
+        if (!(local > 0) || economy == null || !(lastRate > 0)) return 0;
+        double held = usd.getOrDefault(sector, 0.0);
+        double available = held * lastRate;
+        double home = Math.min(local, available);
+        if (home <= 0) return 0;
+        usd.put(sector, held - home / lastRate);
+        economy.setSectorCash(sector, economy.getSectorCash(sector) + home);
+        recalled.merge(sector, home, Double::sum);
+        lifetimeHome += home;
+        return home;
     }
 
     /* --------------------------------- reading --------------------------------- */

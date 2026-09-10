@@ -872,6 +872,19 @@ public class DataSave {
     public double[] getOutwardInvestment()           { return outwardInvestment; }
 
     /**
+     * The share register, company by company, named. See Equity. Absent from
+     * a save written before 2026-09-10 (evening): nobody owned anything, and
+     * the companies list on the first month back exactly as a founding city
+     * would.
+     */
+    private String[] equityKeys;
+    private double[] equity;
+
+    public void setEquity(String[] keys, double[] state) { this.equityKeys = keys; this.equity = state; }
+    public String[] getEquityKeys() { return equityKeys; }
+    public double[] getEquity()     { return equity; }
+
+    /**
      * How often the bank has failed, what its creditors ate, and whether it is
      * frozen right now.
      *

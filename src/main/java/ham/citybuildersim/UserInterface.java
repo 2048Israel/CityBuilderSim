@@ -6960,9 +6960,13 @@ public class UserInterface extends Application {
         column.getChildren().add(statementLine("Capital put in",
                 putIn > 0 ? "+" + moneyFull(putIn) : "$0",
                 putIn > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
+        if (bank.getDividendsPaid() > 0) {
+            column.getChildren().add(statementLine("Paid to its shareholders",
+                    "−" + moneyFull(bank.getDividendsPaid()), Palette.WARN));
+        }
 
         double moved = bank.equity() - bank.getOpeningEquity();
-        double gap = moved - bank.getNetIncome() - putIn;
+        double gap = moved - bank.getNetIncome() - putIn + bank.getDividendsPaid();
         if (Math.abs(gap) > .005) {
             column.getChildren().add(statementLine("Not accounted for",
                     (gap >= 0 ? "+" : "−") + moneyFull(Math.abs(gap)), Palette.BAD));
@@ -6970,6 +6974,8 @@ public class UserInterface extends Application {
         column.getChildren().add(statementTotal("At the end of it",
                 moneyFull(bank.equity()),
                 bank.isInsolvent() ? Palette.BAD : Palette.TEXT_HEAD));
+
+        ownersBlock(column, Equity.BANK, bank.equity(), bank.getNetIncome());
 
         if (Math.abs(gap) > .005) {
             column.getChildren().add(alert("Something moved the book without telling the bank",
@@ -10999,6 +11005,54 @@ public class UserInterface extends Application {
         column.getChildren().add(statementNote(
                 "Buildings are at what they cost to put up — cash plus materials at the "
                 + "price of the day. Nothing here depreciates."));
+
+        ownersBlock(column, Equity.indexOf(sector.creditName()), now.equity(), now.netIncome());
+    }
+
+    /**
+     * Who owns a company, what a share is worth, and what it pays.
+     *
+     * Since 2026-09-10 (evening) every sector and the bank is a company with
+     * shareholders - the city's households first, the world for what they
+     * did not buy. See Equity. Shown as shares of the company rather than
+     * counts of shares, because a company that has sold shares at book when
+     * its book was small has millions of them and the count says nothing.
+     */
+    private void ownersBlock(VBox column, int company, double bookEquity, double netIncome) {
+        Equity register = game.getEquity();
+        if (company < 0 || register.getShares(company) <= 0) return;
+
+        column.getChildren().add(statementHead("Its owners"));
+        double abroad = register.foreignShare(company);
+        column.getChildren().add(statementLine("Held by the city's households",
+                String.format("%.0f%%", (1 - abroad) * 100),
+                abroad < .5 ? Palette.GOOD : null));
+        column.getChildren().add(statementLine("Held abroad",
+                String.format("%.0f%%", abroad * 100),
+                abroad > .5 ? Palette.WARN : null));
+        column.getChildren().add(statementLine("A share is worth, on the books",
+                tightMoney(toDollars(register.bookPerShare(company, bookEquity)), false)));
+        column.getChildren().add(statementLine("Last sold at",
+                tightMoney(toDollars(register.getLastPrice(company)), false)));
+        double paid = register.getDividendThisMonth(company);
+        column.getChildren().add(statementLine("Dividend this month",
+                tightMoney(toDollars(paid), false), paid > 0 ? Palette.GOOD : null));
+        String regime = switch (register.getRegime(company)) {
+            case NEW -> "new: every plan is part shares, no record yet";
+            case GOOD -> "a good year: it raises ahead of its plans";
+            case NORMAL -> "a normal year: it borrows for its plans";
+            case BAD -> "a bad year: it does not go to the market";
+        };
+        column.getChildren().add(statementNote(String.format(
+                "%s. It wants %.0f%% of its balance sheet as equity and pays out %.0f%% of a"
+                + " profitable month. Raised %s from the households and %s abroad since founding;"
+                + " paid them %s and %s.",
+                regime.substring(0, 1).toUpperCase() + regime.substring(1),
+                register.getTargetEquityShare(company) * 100, Equity.PAYOUT * 100,
+                tightMoney(toDollars(register.getLifetimeRaisedHome(company))),
+                tightMoney(toDollars(register.getLifetimeRaisedAbroad(company))),
+                tightMoney(toDollars(register.getLifetimeDividendsHome(company))),
+                tightMoney(toDollars(register.getLifetimeDividendsAbroad(company))))));
     }
 
     /* ---------------------------- CASH AND CREDIT ---------------------------- */
@@ -11051,6 +11105,28 @@ public class UserInterface extends Application {
         if (now.depositInterest() != 0 || then.depositInterest() != 0) {
             column.getChildren().add(bookLine("Interest on its bank balance",
                     now.depositInterest(), then.depositInterest(), known, Palette.GOOD));
+        }
+        // The four lines the reconciliation had and the screen did not,
+        // until 2026-09-10 (evening): what its creditors forgave, what it
+        // moved abroad or brought home, what its owners put in, and what it
+        // paid them. Without them "Not accounted for" stayed at zero while
+        // the lines on the screen did not add up to the cash at the end.
+        if (now.forgiven() != 0 || then.forgiven() != 0) {
+            column.getChildren().add(bookLine("Forgiven by its creditors",
+                    now.forgiven(), then.forgiven(), known, Palette.WARN));
+        }
+        if (now.investedAbroad() != 0 || then.investedAbroad() != 0) {
+            column.getChildren().add(bookLine(
+                    now.investedAbroad() >= 0 ? "Sent abroad for the world's rate" : "Brought home from abroad",
+                    -now.investedAbroad(), -then.investedAbroad(), known, null));
+        }
+        if (now.equityRaised() != 0 || then.equityRaised() != 0) {
+            column.getChildren().add(bookLine("Raised from its shareholders",
+                    now.equityRaised(), then.equityRaised(), known, Palette.ACCENT));
+        }
+        if (now.dividendsPaid() != 0 || then.dividendsPaid() != 0) {
+            column.getChildren().add(bookLine("Paid to its shareholders",
+                    -now.dividendsPaid(), -then.dividendsPaid(), known, null));
         }
 
         double gap = now.unexplained();
@@ -14563,6 +14639,11 @@ public class UserInterface extends Application {
                 bal.totalDebt() > 0 ? Palette.BAD : null));
         column.getChildren().add(statementLine("Interest on it",
                 tightMoney(toDollars(-bal.totalInterest()), false)));
+        double dividends = bal.totalDividends();
+        if (dividends > 0 || game.getEquity().getLifetimeDividendsHome() > 0) {
+            column.getChildren().add(statementLine("Dividends this month",
+                    tightMoney(toDollars(dividends), false), dividends > 0 ? Palette.GOOD : null));
+        }
 
         // Every cell keeps its own books, so this can be said by household
         // rather than by tier: who the bank has stopped lending to, and who
@@ -14856,6 +14937,32 @@ public class UserInterface extends Application {
                 panel.getChildren().add(statementLine(
                         String.format("Interest at %.1f%%", own.rate() * 100),
                         tightMoney(toDollars(-own.interest()), false)));
+            }
+            /*
+             * ...AND WHAT IT OWNS. Shares in the city's companies, since
+             * 2026-09-10 (evening) - bought at offerings out of what was past
+             * the cushion, or held since the founding. Valued at book, the
+             * only price there is until there is an exchange.
+             */
+            Equity register = game.getEquity();
+            double worth = 0;
+            StringBuilder holdings = new StringBuilder();
+            for (int c = 0; c < Equity.COMPANIES.length; c++) {
+                if (own.shares(c) <= 0 || register.getShares(c) <= 0) continue;
+                double stake = own.shares(c) / register.getShares(c);
+                double book = c == Equity.BANK ? game.getBank().equity()
+                        : game.getSectorBooks().get(PolicySector.byCreditName(Equity.COMPANIES[c])).equity();
+                worth += stake * Math.max(0, book);
+                if (holdings.length() > 0) holdings.append(", ");
+                holdings.append(String.format("%s %.3f%%", Equity.COMPANIES[c], stake * 100));
+            }
+            if (holdings.length() > 0) {
+                panel.getChildren().add(statementLine("Shares, at book",
+                        tightMoney(toDollars(worth), false), Palette.GOOD));
+                panel.getChildren().add(statementLine("Dividends this month",
+                        tightMoney(toDollars(own.dividends()), false),
+                        own.dividends() > 0 ? Palette.GOOD : null));
+                panel.getChildren().add(statementNote("Owns " + holdings + "."));
             }
             if (own.isLockedOut()) {
                 panel.getChildren().add(statementNote(String.format(

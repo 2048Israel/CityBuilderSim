@@ -400,6 +400,17 @@ public final class MoneyAudit {
         // so the balance of payments reads what a rolled coupon is.
         in += credit.apply("+ sectors ForeignInterest", g.getOutwardInvestment().getInterestThisMonth(), Scope.INCOME);
         /*
+         * THE OWNERS' MONEY, COMING IN. Shares sold to the city's households
+         * are money arriving from outside the audited pools but inside the
+         * country - like the shop's takings, and declared the same way; shares
+         * sold to the world are a financial inflow with nothing owed on them
+         * but a dividend, which is what equity is. See Equity.offer(). The
+         * bank's own capital is on the two lines above it; these are the
+         * sectors'.
+         */
+        in += credit.apply("+ equity SubscribedByHouseholds", g.getEquity().getRaisedHomeThisMonth() - g.getEquity().getRaisedHomeThisMonth(Equity.BANK), Scope.DOMESTIC);
+        in += credit.apply("+ equity SubscribedAbroad", g.getEquity().getRaisedAbroadThisMonth() - g.getEquity().getRaisedAbroadThisMonth(Equity.BANK), Scope.FINANCIAL);
+        /*
          * The treasury selling reserves. Foreign money out, local money in - the
          * cash arrives in the city's pool from outside it, so it is declared.
          *
@@ -548,6 +559,15 @@ public final class MoneyAudit {
                 g.getBank().getHotMoneyOut(), Scope.FINANCIAL);
         out += debit.apply("- sectors InvestedAbroad", g.getOutwardInvestment().getInvestedAbroadThisMonth(), Scope.FINANCIAL);
         out += debit.apply("- sectors ForeignInterestReinvested", g.getOutwardInvestment().getInterestThisMonth(), Scope.FINANCIAL);
+        /*
+         * ...AND GOING OUT. A dividend to a household leaves the pools the
+         * way a wage does; a dividend to a shareholder abroad is income paid
+         * to the world, like the coupon on a foreign bond, and lands on the
+         * income account where the currency can feel it. Both companies'
+         * kinds - the sectors' and the bank's - because both tills are pools.
+         */
+        out += debit.apply("- equity DividendsToHouseholds", g.getEquity().getDividendHomeThisMonth(), Scope.DOMESTIC);
+        out += debit.apply("- equity DividendsAbroad", g.getEquity().getDividendAbroadThisMonth(), Scope.INCOME);
         out += debit.apply("- treasury BoughtReserves",
                 g.getForeignAccounts().getBoughtThisMonth(), Scope.RESERVE);
         /*

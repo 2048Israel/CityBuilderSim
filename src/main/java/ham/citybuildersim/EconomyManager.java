@@ -606,6 +606,30 @@ public class EconomyManager {
     public void setOutwardInvestment(OutwardInvestment outward) { this.outward = outward; }
     public OutwardInvestment getOutwardInvestment() { return outward; }
 
+    /**
+     * The share register. Game runs the offerings and pays the dividends;
+     * this holds the two cash-flow lines each sector's books read them off,
+     * cleared at the top of the month by clearEquityFlows().
+     */
+    private Equity equity;
+    public void setEquity(Equity equity) { this.equity = equity; }
+    public Equity getEquity() { return equity; }
+
+    private final java.util.Map<String, Double> equityRaised = new java.util.LinkedHashMap<>();
+    private final java.util.Map<String, Double> dividendsPaid = new java.util.LinkedHashMap<>();
+
+    public void clearEquityFlows() { equityRaised.clear(); dividendsPaid.clear(); }
+    public void recordEquityRaised(String sector, double amount) {
+        if (sector == null || !(amount > 0)) return;
+        equityRaised.merge(sector, amount, Double::sum);
+    }
+    public void recordDividendPaid(String sector, double amount) {
+        if (sector == null || !(amount > 0)) return;
+        dividendsPaid.merge(sector, amount, Double::sum);
+    }
+    public double getEquityRaised(String sector)  { return equityRaised.getOrDefault(sector, 0.0); }
+    public double getDividendsPaid(String sector) { return dividendsPaid.getOrDefault(sector, 0.0); }
+
     /** What one sector holds abroad, in the city's money at the rate it was last valued at. */
     public double getForeignAssets(String sector) {
         return outward == null ? 0 : outward.localValue(sector);

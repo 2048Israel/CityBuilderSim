@@ -185,6 +185,7 @@ public class Game {
         // ServicesManager with the other municipal services.
         economyManager.setConstructionHandler(servicesManager.getConstructionHandler());
         economyManager.setOutwardInvestment(outward);
+        economyManager.setEquity(equity);
         
         simulationEngine = new SimulationEngine(
                 economyManager,
@@ -208,6 +209,7 @@ public class Game {
         foreign.reset();
         hotMoney.reset();
         outward.reset();
+        equity.reset();
         priceIndex.reset();
         world.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
@@ -1178,6 +1180,61 @@ public class Game {
     }
 
     /**
+     * Sells the bank's paid-in capital as shares.
+     *
+     * The households first, out of their savings, the world for the rest -
+     * "specially the bank, they need equity to avoid rough start". A founding
+     * branch is bought on prospects; a later one on the bank's record, and a
+     * bank the world will not fund opens its branch under-capitalised, which
+     * is what a bank nobody will fund is.
+     */
+    private void capitaliseBank(double wanted) {
+        if (wanted <= 0) return;
+        double before = equity.getRaisedHomeThisMonth(Equity.BANK);
+        double beforeAbroad = equity.getRaisedAbroadThisMonth(Equity.BANK);
+        equity.offer(Equity.BANK, wanted, Math.max(0, bank.equity()),
+                householdBalance, DebtManager.WORLD_BASE_RATE);
+        bank.injectCapital(equity.getRaisedHomeThisMonth(Equity.BANK) - before,
+                equity.getRaisedAbroadThisMonth(Equity.BANK) - beforeAbroad);
+    }
+
+    /**
+     * Pays every company's owners on its last closed month.
+     *
+     * A fixed share of a positive net income - Jerus: "net income, not cash,
+     * and only if it's positive" - from the till, and from what the company
+     * holds abroad when the till is short. Nothing is borrowed for it, and a
+     * bank short of capital pays nothing. The households' part lands in their
+     * savings this month; the world's leaves on the income account.
+     */
+    private void payDividends() {
+        // Whoever left this month took their shares with them.
+        equity.followEmigrants(householdBalance);
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            double paid;
+            if (c == Equity.BANK) {
+                double due = bank.isInsolvent() || bank.recapitalisationNeeded() > 0 ? 0
+                        : equity.dividendDue(c, bank.getProfitLastMonth());
+                paid = Math.min(due, Math.max(0, bank.getCash()));
+                if (paid > 0) bank.payDividend(paid);
+            } else {
+                String sector = Equity.COMPANIES[c];
+                SectorBooks.SectorMonth m = sectorBooks.get(PolicySector.byCreditName(sector));
+                double due = equity.dividendDue(c, m.netIncome());
+                if (due <= 0) continue;
+                double till = economyManager.getSectorCash(sector);
+                if (till < due) till += outward.recall(sector, due - till, economyManager);
+                paid = Math.min(due, Math.max(0, till));
+                if (paid > 0) {
+                    economyManager.setSectorCash(sector, till - paid);
+                    economyManager.recordDividendPaid(sector, paid);
+                }
+            }
+            if (paid > 0) equity.payDividend(c, paid, householdBalance);
+        }
+    }
+
+    /**
      * Re-reads the bank off the city it is banking.
      *
      * STRUCK AT THE END OF THE MONTH, once, on both paths, and that placement
@@ -1693,9 +1750,41 @@ public class Game {
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
 
         double rate = credit.getRate(decision.sector);
-        double cash = payer.getCash();
         double perUnitProfit = businessInvestment.estimatedMonthlyProfit(
                 decision.sector, decision.template);
+
+        /*
+         * THE OWNERS FIRST, since 2026-09-10 (evening). Before a sector reads
+         * its till and borrows the rest, it asks the register whether this is
+         * a plan it should sell shares for - every plan while it is new, the
+         * horizon's worth in a good year, nothing in a bad one - and puts the
+         * offering to the households, then the world. What is raised is in
+         * the till by the time the cash-then-debt split below runs; what is
+         * not is borrowed as it always was. See Equity.raiseFor().
+         *
+         * And what the sector holds ABROAD comes home before it borrows a
+         * cent: a war chest parked at the world's rate was invisible to this
+         * method, which read the till and borrowed against an empty one.
+         */
+        int company = Equity.indexOf(decision.sector);
+        if (company >= 0) {
+            SectorBooks.SectorMonth books = sectorBooks.get(PolicySector.byCreditName(decision.sector));
+            double planCost = businessInvestment.getCostOf(decision.template, decision.quantity);
+            double ask = equity.raiseFor(company, books.totalAssets(), books.equity(), planCost);
+            if (ask > 0) {
+                double raised = equity.offer(company, ask, books.equity(),
+                        householdBalance, DebtManager.WORLD_BASE_RATE);
+                if (raised > 0) {
+                    economyManager.setSectorCash(decision.sector,
+                            economyManager.getSectorCash(decision.sector) + raised);
+                    economyManager.recordEquityRaised(decision.sector, raised);
+                }
+            }
+            double short_ = planCost - payer.getCash();
+            if (short_ > 0) outward.recall(decision.sector, short_, economyManager);
+        }
+
+        double cash = payer.getCash();
 
         // A banned sector can still build what its own cash covers; it cannot
         // borrow the difference. Said here, in the same words the People and
@@ -3116,6 +3205,10 @@ public class Game {
         month++;
         monthsSinceAutosave++;
 
+        // The register's month: nothing offered, nothing paid, until it is.
+        equity.startMonth();
+        economyManager.clearEquityFlows();
+
         if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {
             autosave("month " + month);
         }
@@ -3241,7 +3334,7 @@ public class Game {
          * bank with no capacity can never earn any, so without this a first
          * branch could never begin lending.
          */
-        bank.openBranches(buildingManager.countByName("Commercial Bank"));
+        capitaliseBank(bank.openBranches(buildingManager.countByName("Commercial Bank")));
 
         /*
          * WHAT THE WORLD WOULD PAY TO PARK HERE, handed to the bank as a
@@ -3318,6 +3411,13 @@ public class Game {
          * Result, and a flow priced at the rate it moves is the rule this file
          * has been caught breaking before. See OutwardInvestment.
          */
+        /*
+         * ...AND THE OWNERS ARE PAID, before the sectors decide where to keep
+         * what is left. On the last closed month's result, from the till,
+         * and from abroad if the till is short. See payDividends().
+         */
+        payDividends();
+
         outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
                 foreign.getRate(), economyManager);
 
@@ -4482,6 +4582,14 @@ public class Game {
      */
     private final OutwardInvestment outward = new OutwardInvestment();
 
+    /**
+     * Who owns the city's companies. See Equity: the households hold their
+     * shares per cell, the world the rest; offerings run inside consider()
+     * and capitaliseBank(), dividends in payDividends().
+     */
+    private final Equity equity = new Equity();
+    public Equity getEquity() { return equity; }
+
     public OutwardInvestment getOutwardInvestment() { return outward; }
 
     /**
@@ -4714,6 +4822,20 @@ public class Game {
         // city, not by whichever screen the player comes back to.
         inbox.takeMonth(this);
         sectorBooks.takeMonth(this);
+
+        /*
+         * ...and the register reads each company's closed month, which is
+         * what its next offering will be judged on: profitable or not, steady
+         * or not, building or not. The bank's month closed in closeMonth().
+         */
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (c == Equity.BANK) {
+                equity.recordMonth(c, bank.getProfitLastMonth(), 0);
+            } else {
+                SectorBooks.SectorMonth m = sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[c]));
+                equity.recordMonth(c, m.netIncome(), m.spentOnBuildings());
+            }
+        }
     }
 
     public Inbox getInbox() { return inbox; }
@@ -4844,6 +4966,7 @@ public class Game {
         dataSave.setForeignStanding(debtManager.foreignStandingToSave());
         dataSave.setCapitalFlows(hotMoney.toSaveArray());
         dataSave.setOutwardInvestment(outward.toSaveArray());
+        dataSave.setEquity(equity.keys(), equity.toSaveArray());
         dataSave.setPriceIndex(priceIndex.toSaveArray());
         dataSave.setWorldEconomy(world.toSaveArray());
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
@@ -5938,6 +6061,8 @@ public class Game {
             bank.setForeignDeposits(hotMoney.getStock());
             // Absent from an older save: a city that never invested abroad.
             outward.restore(loaded.getOutwardInvestment());
+            // ...or whose companies had no owners yet.
+            equity.restore(loaded.getEquityKeys(), loaded.getEquity());
             labourMarket.setCostOfLiving(loaded.getCostOfLiving());
             economyManager.getCommercialHandler().setStoreSellPrice(loaded.getStoreSellPrice());
             // Zero means a save written before rent became a lagged price; the
@@ -6833,6 +6958,9 @@ public class Game {
         foreign.redenominate(scale);
         hotMoney.redenominate(scale);
         outward.redenominate(scale);
+        equity.redenominate(scale);
+        // The last closed month is what the next dividend is paid on.
+        sectorBooks.redenominate(scale);
         priceIndex.redenominate(scale);
         householdBalance.redenominate(scale);
         households.redenominate(scale);

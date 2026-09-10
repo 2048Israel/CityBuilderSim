@@ -340,6 +340,17 @@ public final class GameVersion {
      *     books that show no foreign line - which is exactly what that city
      *     had, because the mechanic did not exist when it was saved.
      * --------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------
+     * NOT 21 EITHER: the households' cells and the share register
+     * (2026-09-10, evening). Two new keys (householdCellKeys/householdCells,
+     * equityKeys/equity), both named entry by entry so a shape or a company
+     * added later cannot read one's figures into another's; the household
+     * row array still written as the sum of the cells for an older build;
+     * two fields appended to SectorBooks' month record (equityRaised,
+     * dividendsPaid) which Gson matches by name. All absent-safe: an older
+     * save loads with its rows seeded into the cells and nobody owning
+     * anything, which is what that city had.
+     * --------------------------------------------------------------------- */
     public static final int SAVE_FORMAT = 20;
 
     /** What a unit of construction material cost through save format 19, in thousands. */

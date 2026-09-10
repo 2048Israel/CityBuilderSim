@@ -49,10 +49,11 @@ package ham.citybuildersim;
  *
  * ==================== ADDING A STOCK ====================
  *
- * A future stock - shares, savings held abroad, a pension pot - is a field
- * here, a line in redenominate(), a slot in HouseholdBalance's cell save array,
- * and a term in followThePeople() so it moves with the people. Four places,
- * all of them named, none of them in a screen.
+ * A future stock - savings held abroad, a pension pot - is a field here, a
+ * line in redenominate(), a slot in HouseholdBalance's cell save array, and
+ * an entry in followThePeople()'s list so it moves with the people. Four
+ * places, all of them named, none of them in a screen. The shares in the
+ * city's companies were the first to go in that way, the same evening.
  */
 public abstract class Household {
 
@@ -74,6 +75,21 @@ public abstract class Household {
 
     /** Months this cell cannot borrow, after a discharge. A countdown, so a stock. */
     int lockout;
+
+    /**
+     * Shares held in each of the city's companies, per household of the cell,
+     * indexed as Equity.COMPANIES. A STOCK like the savings - carried, saved,
+     * pooled when households change shape - and the first one added on the
+     * terms the class header sets out. Jerus: "each household needs a number
+     * of shares owned per company."
+     *
+     * A count, not money: it does not move in a reform, and what it is worth
+     * is the company's book divided by its shares, which Equity keeps.
+     */
+    final double[] shares = new double[Equity.COMPANIES.length];
+
+    /** What the shares paid this month, per household. Credited to savings. */
+    double dividends;
 
     /**
      * Households this cell was last struck for - the multiplier on every
@@ -155,6 +171,13 @@ public abstract class Household {
     public double savings()     { return savings; }
     public double debt()        { return debt; }
     public int    lockout()     { return lockout; }
+
+    /** Shares held in this company, per household. */
+    public double shares(int company) { return shares[company]; }
+    public double totalShares(int company) { return shares[company] * households; }
+
+    /** This month's dividends, per household. */
+    public double dividends()   { return dividends; }
     public boolean isLockedOut(){ return lockout > 0; }
     public double disposable()  { return disposable; }
     public double afterFixed()  { return afterFixed; }
@@ -318,18 +341,19 @@ public abstract class Household {
     void clearWorking() {
         disposable = 0; afterFixed = 0; interest = 0; drawn = 0; unfunded = 0;
         borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; rate = 0;
-        subsistence = 0; bankrupt = 0;
+        subsistence = 0; bankrupt = 0; dividends = 0;
     }
 
     /** The cell is empty: no position either. */
     void clearAll() {
         savings = 0; debt = 0; lockout = 0; households = 0;
+        java.util.Arrays.fill(shares, 0);
         clearWorking();
     }
 
-    /** Everything in money, in the new unit. Rates, counts and months do not move. */
+    /** Everything in money, in the new unit. Rates, counts, months and SHARES do not move. */
     void redenominate(double scale) {
-        savings *= scale;  debt *= scale;
+        savings *= scale;  debt *= scale;  dividends *= scale;
         disposable *= scale;  afterFixed *= scale;  interest *= scale;
         drawn *= scale;  unfunded *= scale;  borrowed *= scale;  repaid *= scale;
         banked *= scale;  want *= scale;  planned *= scale;  subsistence *= scale;

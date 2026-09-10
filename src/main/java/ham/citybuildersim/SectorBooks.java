@@ -132,7 +132,13 @@ public final class SectorBooks {
             /** Sent abroad this month, net: positive went, negative came home. A cash-flow line. */
             double investedAbroad,
             /** What the world paid it this month, rolled into what it holds there. NOT a cash-flow line: it never reaches the till. */
-            double foreignInterest) {
+            double foreignInterest,
+
+            /* ------------------------ and its owners ------------------------ */
+            /** Sold in shares this month, to the households and the world: a cash-flow line in. Since 2026-09-10 (evening); see Equity. */
+            double equityRaised,
+            /** Paid to its shareholders this month: a cash-flow line out. */
+            double dividendsPaid) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -161,6 +167,7 @@ public final class SectorBooks {
             return cash - (openingCash + netIncome
                     + borrowed - repaid + fromTheCity + forgiven + depositInterest
                     - investedAbroad
+                    + equityRaised - dividendsPaid
                     - spentOnBuildings);
         }
 
@@ -175,7 +182,8 @@ public final class SectorBooks {
                     0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, false,
-                    0, 0, 0);
+                    0, 0, 0,
+                    0, 0);
         }
 
         public boolean isEmpty() {
@@ -389,7 +397,9 @@ public final class SectorBooks {
                 economy.getOutwardInvestment() == null ? 0
                         : economy.getOutwardInvestment().getMovedThisMonth(key),
                 economy.getOutwardInvestment() == null ? 0
-                        : economy.getOutwardInvestment().getInterestThisMonth(key));
+                        : economy.getOutwardInvestment().getInterestThisMonth(key),
+                economy.getEquityRaised(key),
+                economy.getDividendsPaid(key));
     }
 
     /* ===================================================================
@@ -430,5 +440,36 @@ public final class SectorBooks {
                 before.put(m.sector(), m);
             }
         }
+    }
+
+    /* ===================================================================
+       A REFORM
+
+       The two months are in the money they were struck in, and until the
+       register read them that was a screen's problem for one month. The
+       dividend is paid on the last closed month's net income, so a record
+       left in the old money paid a hundred times the dividend the morning
+       after a reform - DenominationCheck read the shops' till at zero. Every
+       money field moves; the rate, the leverage and the flag do not.
+       =================================================================== */
+
+    public void redenominate(double scale) {
+        for (Map.Entry<String, SectorMonth> e : now.entrySet()) e.setValue(scaled(e.getValue(), scale));
+        for (Map.Entry<String, SectorMonth> e : before.entrySet()) e.setValue(scaled(e.getValue(), scale));
+        for (Map.Entry<String, Double> e : lastCash.entrySet()) e.setValue(e.getValue() * scale);
+    }
+
+    private static SectorMonth scaled(SectorMonth m, double s) {
+        if (m == null) return null;
+        return new SectorMonth(m.sector(), m.month(),
+                m.revenue() * s, m.inputs() * s, m.payroll() * s, m.electricity() * s, m.water() * s,
+                m.operatingIncome() * s, m.interest() * s, m.propertyTax() * s, m.preTaxIncome() * s,
+                m.tax() * s, m.netIncome() * s,
+                m.cash() * s, m.inventory() * s, m.land() * s, m.buildings() * s, m.bondsPayable() * s,
+                m.openingCash() * s, m.borrowed() * s, m.repaid() * s, m.fromTheCity() * s,
+                m.forgiven() * s, m.depositInterest() * s, m.spentOnBuildings() * s, m.salesTaxPaid() * s,
+                m.rate(), m.leverage(), m.writtenOff() * s, m.blocked(),
+                m.foreignAssets() * s, m.investedAbroad() * s, m.foreignInterest() * s,
+                m.equityRaised() * s, m.dividendsPaid() * s);
     }
 }
