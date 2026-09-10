@@ -138,7 +138,9 @@ public final class SectorBooks {
             /** Sold in shares this month, to the households and the world: a cash-flow line in. Since 2026-09-10 (evening); see Equity. */
             double equityRaised,
             /** Paid to its shareholders this month: a cash-flow line out. */
-            double dividendsPaid) {
+            double dividendsPaid,
+            /** Spent buying back and cancelling its own shares this month: a cash-flow line out. Since the exchange. */
+            double sharesBoughtBack) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -167,7 +169,7 @@ public final class SectorBooks {
             return cash - (openingCash + netIncome
                     + borrowed - repaid + fromTheCity + forgiven + depositInterest
                     - investedAbroad
-                    + equityRaised - dividendsPaid
+                    + equityRaised - dividendsPaid - sharesBoughtBack
                     - spentOnBuildings);
         }
 
@@ -183,7 +185,7 @@ public final class SectorBooks {
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, false,
                     0, 0, 0,
-                    0, 0);
+                    0, 0, 0);
         }
 
         public boolean isEmpty() {
@@ -399,7 +401,8 @@ public final class SectorBooks {
                 economy.getOutwardInvestment() == null ? 0
                         : economy.getOutwardInvestment().getInterestThisMonth(key),
                 economy.getEquityRaised(key),
-                economy.getDividendsPaid(key));
+                economy.getDividendsPaid(key),
+                economy.getSharesBoughtBack(key));
     }
 
     /* ===================================================================
@@ -470,6 +473,6 @@ public final class SectorBooks {
                 m.forgiven() * s, m.depositInterest() * s, m.spentOnBuildings() * s, m.salesTaxPaid() * s,
                 m.rate(), m.leverage(), m.writtenOff() * s, m.blocked(),
                 m.foreignAssets() * s, m.investedAbroad() * s, m.foreignInterest() * s,
-                m.equityRaised() * s, m.dividendsPaid() * s);
+                m.equityRaised() * s, m.dividendsPaid() * s, m.sharesBoughtBack() * s);
     }
 }

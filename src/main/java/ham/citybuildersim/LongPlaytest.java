@@ -282,6 +282,23 @@ public class LongPlaytest {
                 tills, oi.totalUsd(), oi.totalLocalValue(), oi.getTargetShare() * 100,
                 g.getBank().depositRate() * 100, DebtManager.WORLD_BASE_RATE * 100,
                 g.getPopulationManager().getPopulation(), g.getEconomyManager().getMonthGdp());
+            Exchange ex = g.getExchange();
+            out.printf("   desk: sold abroad %,.0f bought abroad %,.0f (emigrants %,.0f) | buybacks to hh %,.0f abroad %,.0f special %,.0f | dividends hh %,.0f abroad %,.0f | sent abroad %,.0f home %,.0f | hh saved %,.0f abroad US$%,.0f (sent %,.0f home %,.0f) divs %,.0f sold %,.0f | securities %,.0f%n",
+                ex.getSoldAbroad(), ex.getBoughtFromAbroad(), ex.getEmigrantsPaid(), ex.getBuybackToHouseholds(), ex.getBuybackAbroad(), ex.getSpecialDividend(),
+                g.getEquity().getDividendHomeThisMonth(), g.getEquity().getDividendAbroadThisMonth(),
+                oi.getInvestedAbroadThisMonth(), oi.getBroughtHomeThisMonth(),
+                g.getHouseholdBalance().totalSavings(), g.getHouseholdBalance().totalAbroadUsd(), g.getHouseholdBalance().getSentAbroad(), g.getHouseholdBalance().getBroughtHome(),
+                g.getHouseholdBalance().totalDividends(), g.getHouseholdBalance().totalSold(), g.getBank().getSecurities());
+            StringBuilder co = new StringBuilder("   companies:");
+            for (int c = 0; c < Equity.COMPANIES.length; c++) {
+                SectorBooks.SectorMonth sm = c == Equity.BANK ? null : g.getSectorBooks().get(PolicySector.byCreditName(Equity.COMPANIES[c]));
+                co.append(String.format(" %s %s sh %,.1f eq/assets %.2f tgt %.2f mid %.3f fair %.3f yield %.1f%% abroad %.0f%% bought back %,.0f |",
+                    Equity.COMPANIES[c].substring(0, 3), g.getEquity().getRegime(c), g.getEquity().getShares(c),
+                    sm == null ? 0 : (sm.totalAssets() > 0 ? sm.equity() / sm.totalAssets() : 0), g.getEquity().getTargetEquityShare(c),
+                    ex.mid(c), ex.fair(c), ex.yieldAt(g.getEquity(), c, ex.ask(c)) * 100, g.getEquity().foreignShare(c) * 100,
+                    g.getEquity().getLifetimeBoughtBack(c)));
+            }
+            out.println(co);
         }
         /*
          * -Dplaytest.cells=true: the households going short, cell by cell,
@@ -1011,6 +1028,13 @@ public class LongPlaytest {
             if (needed > 0 && g.getCash() > 0) {
                 double put = g.recapitaliseBank(Math.min(needed, g.getCash() * .25));
                 if (put > 0) lifetimeBailouts += put;
+                if (put > 0 && Boolean.getBoolean("playtest.fx")) {
+                    Bank b = g.getBank();
+                    out.printf("   bank m%-4d put %,.0f (%s) | equity now %,.0f, weighted book %,.0f, loans %,.0f, securities %,.0f | month: net income %,.0f trading %,.0f write-offs %,.0f dividend %,.0f | failed %d times, lifetime %,.0f%n",
+                        g.getMonth(), put, b.getFailures() > failuresSeen ? "FAILED" : "topped up", b.equity(), b.getWeightedBook(), b.getBook(), b.getSecurities(),
+                        b.getNetIncome(), b.getTradingIncome(), b.getWriteOffs(), b.getDividendsPaid(), b.getFailures(), lifetimeBailouts);
+                    failuresSeen = b.getFailures();
+                }
             }
 
             if (g.getMonth() == before) {
@@ -1137,7 +1161,21 @@ public class LongPlaytest {
                     back.getEquity().getForeignShares(c), g.getEquity().getForeignShares(c));
             same(month, "...and held by the households",
                     back.getHouseholdBalance().sharesHeld(c), g.getHouseholdBalance().sharesHeld(c));
+            // The exchange: the desk's inventory, the quote it closed at and
+            // the demand it still carries - the next month trades at them.
+            same(month, "...and on the desk",
+                    back.getEquity().getDealerShares(c), g.getEquity().getDealerShares(c));
+            same(month, "...and its quote",
+                    back.getExchange().mid(c), g.getExchange().mid(c));
+            same(month, "...and the demand its quote carries",
+                    back.getExchange().getDemand(c), g.getExchange().getDemand(c));
+            same(month, "...and its split factor",
+                    back.getExchange().getSplitFactor(c), g.getExchange().getSplitFactor(c));
         }
+        same(month, "the bank's securities at the mark across a save",
+                back.getBank().getSecurities(), g.getBank().getSecurities());
+        same(month, "what the households hold abroad across a save",
+                back.getHouseholdBalance().totalAbroadUsd(), g.getHouseholdBalance().totalAbroadUsd());
 
         /*
          * PRICES THAT ARE CACHES. Each of these is struck once a month and
@@ -1182,6 +1220,7 @@ public class LongPlaytest {
 
     static double lifetimeWriteOffs;
     static double lifetimeBailouts;
+    static int failuresSeen;
     static double lifetimeHouseholdWriteOffs;
 
     public static void main(String[] args) throws Exception {
@@ -1548,6 +1587,11 @@ public class LongPlaytest {
                 abroad.totalUsd(), String.format("$%,.0fk", abroad.totalLocalValue()),
                 abroad.getTargetShare() * 100, abroad.getSpread() * 100,
                 abroad.getLifetimeOut(), abroad.getLifetimeHome(), abroad.getLifetimeInterest(), abroad.getPeakUsd());
+        HouseholdBalance savers = g.getHouseholdBalance();
+        out.printf("  abroad, the households' own: US$%,.0fk ($%,.0fk at today's rate) against $%,.0fk saved at home;"
+                + " this month sent $%,.0fk, brought home $%,.0fk, earned $%,.0fk there%n",
+                savers.totalAbroadUsd(), savers.totalAbroadValue(), savers.totalSavings(),
+                savers.getSentAbroad(), savers.getBroughtHome(), savers.getForeignInterest());
         Equity owners = g.getEquity();
         StringBuilder held = new StringBuilder();
         for (int c = 0; c < Equity.COMPANIES.length; c++) {

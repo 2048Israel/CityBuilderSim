@@ -195,6 +195,29 @@ public class HistorySave {
     private List<Integer> constructionCapacity = new ArrayList<>();
     private List<Double> landUse = new ArrayList<>();
 
+    /* --------------------------- the market ---------------------------
+
+       Jerus, 2026-09-11: "add a history of the stock price for each company,
+       both in each industry, and in the reports rail." One series per
+       company, by the register's name, from the month it lists - so a
+       company listed in month 40 has a series 40 shorter than the axis, and
+       aligned() pads the front with "we were not counting", which is the
+       truth. Two of them: what the desk quoted, and what the register said
+       a share was worth, because the distance between the two is the thing
+       a shareholder watches.
+
+       PER FOUNDING SHARE, not per share. A share splits a hundred for one
+       when it gets dear, and a chart of the raw quote would fall a
+       hundredfold in the month nothing happened to anybody's wealth. See
+       Exchange.midPerFoundingShare(). Money, so a reform scales it.
+       ------------------------------------------------------------------ */
+    private Map<String, List<Double>> sharePrice = new LinkedHashMap<>();
+    private Map<String, List<Double>> shareValue = new LinkedHashMap<>();
+
+    /** The series name the screens ask for, per company. */
+    public static String priceKey(String company) { return "sharePrice:" + company; }
+    public static String valueKey(String company) { return "shareValue:" + company; }
+
     /* ==================================================================
        RECORDING
        ================================================================== */
@@ -314,6 +337,18 @@ public class HistorySave {
         /* ----------------------- what runs out ----------------------- */
         constructionCapacity.add(game.getBuildingManager().getTotalConstructionCapacity());
         landUse.add(round4(game.getLandManager().getUtilisation()));
+
+        /* ------------------------- the market ------------------------- */
+        Equity register = game.getEquity();
+        Exchange exchange = game.getExchange();
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (register.getShares(c) <= 0) continue;   // not listed: not counting
+            String company = Equity.COMPANIES[c];
+            sharePrice.computeIfAbsent(company, k -> new ArrayList<>())
+                    .add(round4(exchange.midPerFoundingShare(c)));
+            shareValue.computeIfAbsent(company, k -> new ArrayList<>())
+                    .add(round4(exchange.fairPerFoundingShare(c)));
+        }
     }
 
     /**
@@ -422,6 +457,17 @@ public class HistorySave {
 
         constructionCapacity = copy(loaded.constructionCapacity);
         landUse = copy(loaded.landUse);
+
+        sharePrice = copyMap(loaded.sharePrice);
+        shareValue = copyMap(loaded.shareValue);
+    }
+
+    /** A map of series, copied list by list, and never null - see copy(). */
+    private static Map<String, List<Double>> copyMap(Map<String, List<Double>> from) {
+        Map<String, List<Double>> out = new LinkedHashMap<>();
+        if (from == null) return out;
+        for (Map.Entry<String, List<Double>> e : from.entrySet()) out.put(e.getKey(), copy(e.getValue()));
+        return out;
     }
 
     /**
@@ -557,6 +603,14 @@ public class HistorySave {
 
         map.put("constructionCapacity", constructionCapacity);
         map.put("landUse", landUse);
+
+        // Every company that has ever been listed, by the register's name.
+        if (sharePrice != null) {
+            for (Map.Entry<String, List<Double>> e : sharePrice.entrySet()) map.put(priceKey(e.getKey()), e.getValue());
+        }
+        if (shareValue != null) {
+            for (Map.Entry<String, List<Double>> e : shareValue.entrySet()) map.put(valueKey(e.getKey()), e.getValue());
+        }
         return map;
     }
 
@@ -603,6 +657,10 @@ public class HistorySave {
                 taxWage, taxProperty, taxSales, taxBusiness, taxIndustrial,
                 contributions, pensionBill, healthBill,
                 rentPrice);
+
+        // A share's price is money; how many shares there are is not.
+        if (sharePrice != null) for (List<Double> s : sharePrice.values()) scaleAll(scale, s);
+        if (shareValue != null) for (List<Double> s : shareValue.values()) scaleAll(scale, s);
     }
 
     @SafeVarargs

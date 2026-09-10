@@ -4754,7 +4754,7 @@ public class UserInterface extends Application {
                 (fx.tradeBalance() >= 0 ? "+" : "−")
                         + money(Math.abs(fx.tradeBalance())),
                 fx.tradeBalance() >= 0 ? Palette.GOOD : Palette.BAD));
-        column.getChildren().add(statementLine("Interest paid abroad",
+        column.getChildren().add(statementLine("Paid abroad in interest and dividends, net",
                 signedTight(fx.getForeignInterest(), true),
                 fx.getForeignInterest() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
         column.getChildren().add(statementTotal("CURRENT ACCOUNT",
@@ -4799,6 +4799,38 @@ public class UserInterface extends Application {
             column.getChildren().add(statementNote(
                     "What foreign creditors gave up on. It improves the position and it is "
                     + "not a dollar earned, so it is below the line and out of the river."));
+        }
+
+        /*
+         * WHAT THE CITY HOLDS ABROAD, AND WHAT THE WORLD HOLDS HERE. The
+         * stocks the flows above add up to: the sectors' paper (since the
+         * outward batch), the households' (since the exchange), and the
+         * city's shares in foreign hands at the desk's quote. The rough shape
+         * of an international investment position.
+         */
+        OutwardInvestment sectorsAbroad = game.getOutwardInvestment();
+        HouseholdBalance savers = game.getHouseholdBalance();
+        Equity register = game.getEquity();
+        Exchange exchange = game.getExchange();
+        double sharesAbroad = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            sharesAbroad += register.getForeignShares(c) * (exchange.isOpen() ? exchange.mid(c) : register.getLastPrice(c));
+        }
+        if (sectorsAbroad.totalUsd() > 0 || savers.totalAbroadUsd() > 0 || sharesAbroad > 0) {
+            column.getChildren().add(statementHead("What the city holds abroad, and what the world holds here"));
+            column.getChildren().add(statementLine("The businesses' paper abroad",
+                    money(sectorsAbroad.totalLocalValue())
+                            + " (US" + money(sectorsAbroad.totalUsd()) + ")", Palette.GOOD));
+            column.getChildren().add(statementLine("The households' paper abroad",
+                    money(savers.totalAbroadValue())
+                            + " (US" + money(savers.totalAbroadUsd()) + ")", Palette.GOOD));
+            column.getChildren().add(statementLine("The city's shares in foreign hands",
+                    "−" + money(sharesAbroad), sharesAbroad > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+            column.getChildren().add(statementNote(
+                    "Idle money buys the world's paper when the world pays more than the bank, and "
+                    + "comes home when the bank pays more or its owner needs it - the businesses' "
+                    + "tills and the households' savings by the same rule. The coupon is rolled where "
+                    + "it is earned; it reaches the currency only when the money comes home."));
         }
 
         /* ---------------------------- and the treasury ---------------------------- */
@@ -5517,7 +5549,7 @@ public class UserInterface extends Application {
                 moneyFull(fx.getLifetimeExports()), Palette.GOOD));
         column.getChildren().add(statementLine("Bought abroad",
                 signed(fx.getLifetimeImports(), true), Palette.WARN));
-        column.getChildren().add(statementLine("Interest paid abroad",
+        column.getChildren().add(statementLine("Paid abroad in interest and dividends, net",
                 signed(fx.getLifetimeInterest(), true),
                 fx.getLifetimeInterest() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
         column.getChildren().add(statementLine("Capital taken",
@@ -6875,6 +6907,51 @@ public class UserInterface extends Application {
         column.getChildren().add(statementLine("Loans that died",
                 "−" + moneyFull(bank.getWriteOffs()),
                 bank.getWriteOffs() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
+        /*
+         * THE TRADING DESK, since the exchange (2026-09-11). The bank makes
+         * the market in the city's shares; what that made or lost this month
+         * - the spread it earned, the dividends on what it holds, and the
+         * change in what its inventory is marked at - is income beside the
+         * interest. Opened to show the desk's own book. See Exchange.
+         */
+        VBox desk = new VBox(0);
+        Exchange exchange = game.getExchange();
+        Equity register = game.getEquity();
+        desk.getChildren().add(statementLine("Sold to the households",
+                moneyFull(exchange.getSoldToHouseholds()), Palette.TEXT_MUTED));
+        desk.getChildren().add(statementLine("Sold abroad",
+                moneyFull(exchange.getSoldAbroad()), Palette.TEXT_MUTED));
+        desk.getChildren().add(statementLine("Bought from the households",
+                "−" + moneyFull(exchange.getBoughtFromHouseholds()), Palette.TEXT_MUTED));
+        desk.getChildren().add(statementLine("Bought from abroad",
+                "−" + moneyFull(exchange.getBoughtFromAbroad()), Palette.TEXT_MUTED));
+        if (exchange.getEmigrantsPaid() > 0) {
+            desk.getChildren().add(statementLine("...of which from families leaving the city",
+                    moneyFull(exchange.getEmigrantsPaid()), Palette.TEXT_MUTED));
+        }
+        desk.getChildren().add(statementLine("Dividends on what it holds",
+                moneyFull(register.getDividendDeskThisMonth()), Palette.TEXT_MUTED));
+        desk.getChildren().add(statementLine("Tendered into buybacks",
+                moneyFull(exchange.getBuybackToDesk()), Palette.TEXT_MUTED));
+        desk.getChildren().add(statementLine("What it holds, at the mark",
+                moneyFull(bank.getSecurities()), Palette.TEXT_MUTED));
+        StringBuilder positions = new StringBuilder();
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            double held = register.getDealerShares(c);
+            if (held <= 0 || register.getShares(c) <= 0) continue;
+            if (positions.length() > 0) positions.append(", ");
+            positions.append(String.format("%s %.1f%% of the company at %s",
+                    Equity.COMPANIES[c], held / register.getShares(c) * 100,
+                    tightMoney(toDollars(exchange.mark(c)), false)));
+        }
+        desk.getChildren().add(statementNote(positions.length() == 0
+                ? "The desk holds nothing. It quotes every company round what the register says a share is"
+                  + " worth, buys what comes and sells what it has - never what it does not."
+                : "On the desk: " + positions + ". Carried at the quote or the register's value, whichever"
+                  + " is lower - the desk does not mark its own book up on a quote nobody has paid yet."));
+        column.getChildren().add(statementDisclosure("The trading desk",
+                (bank.getTradingIncome() >= 0 ? "" : "−") + moneyFull(Math.abs(bank.getTradingIncome())),
+                desk, "what it did"));
         column.getChildren().add(statementLine("Staff and premises",
                 "−" + moneyFull(bank.operatingExpenses()), Palette.WARN));
         column.getChildren().add(statementTotal("PROFIT BEFORE TAX",
@@ -6918,8 +6995,10 @@ public class UserInterface extends Application {
 
         column.getChildren().add(statementLine("Cash reserves",
                 moneyFull(bank.cashReserves())));
-        column.getChildren().add(statementLine("Loans and securities",
+        column.getChildren().add(statementLine("Loans",
                 moneyFull(bank.getBook())));
+        column.getChildren().add(statementLine("Shares on the trading desk, at the mark",
+                moneyFull(Math.max(0, bank.getSecurities()))));
         column.getChildren().add(statementTotal("TOTAL ASSETS",
                 moneyFull(bank.totalAssets()), Palette.TEXT_HEAD));
 
@@ -6964,9 +7043,21 @@ public class UserInterface extends Application {
             column.getChildren().add(statementLine("Paid to its shareholders",
                     "−" + moneyFull(bank.getDividendsPaid()), Palette.WARN));
         }
+        /*
+         * A FAILED BANK'S MONTH: its creditors absorb the shortfall, which
+         * lifts the equity back to nothing - see Bank.resolveIfFailed(). Not
+         * income and not capital, so it has its own line; without one, every
+         * month in resolution printed the whole loss as "Not accounted for"
+         * and raised the alarm below it. Seen on the PC, 2026-09-11.
+         */
+        double absorbed = bank.getResolutionLossThisMonth();
+        if (absorbed > 0) {
+            column.getChildren().add(statementLine("Absorbed by its creditors",
+                    "+" + moneyFull(absorbed), Palette.BAD));
+        }
 
         double moved = bank.equity() - bank.getOpeningEquity();
-        double gap = moved - bank.getNetIncome() - putIn + bank.getDividendsPaid();
+        double gap = moved - bank.getNetIncome() - putIn + bank.getDividendsPaid() - absorbed;
         if (Math.abs(gap) > .005) {
             column.getChildren().add(statementLine("Not accounted for",
                     (gap >= 0 ? "+" : "−") + moneyFull(Math.abs(gap)), Palette.BAD));
@@ -10968,9 +11059,11 @@ public class UserInterface extends Application {
          * the accumulated result of every month this business has traded.
          */
         column.getChildren().add(statementNote(
-                "Equity is not subscribed capital — nobody bought shares in this city's "
-                + "businesses. It is what is left when the lenders are paid off, which "
-                + "makes it the accumulated result of every month the sector has traded."));
+                "Owners' equity is what is left when the lenders are paid off: what the "
+                + "founders started with, what its shareholders have subscribed since, and "
+                + "every month's result — less what was paid out to them and what was "
+                + "bought back. Who holds it, and what the market makes of it, is under "
+                + "Its owners below."));
 
         if (now.equity() < 0) {
             column.getChildren().add(alert("It is worth less than it owes", String.format(
@@ -11023,20 +11116,70 @@ public class UserInterface extends Application {
         if (company < 0 || register.getShares(company) <= 0) return;
 
         column.getChildren().add(statementHead("Its owners"));
+        Exchange market = game.getExchange();
         double abroad = register.foreignShare(company);
+        double onDesk = register.getShares(company) > 0 ? Math.max(0, register.getDealerShares(company)) / register.getShares(company) : 0;
         column.getChildren().add(statementLine("Held by the city's households",
-                String.format("%.0f%%", (1 - abroad) * 100),
+                String.format("%.0f%%", Math.max(0, 1 - abroad - onDesk) * 100),
                 abroad < .5 ? Palette.GOOD : null));
         column.getChildren().add(statementLine("Held abroad",
                 String.format("%.0f%%", abroad * 100),
                 abroad > .5 ? Palette.WARN : null));
+        if (onDesk > 0 && company != Equity.BANK) {
+            column.getChildren().add(statementLine("On the bank's trading desk",
+                    String.format("%.0f%%", onDesk * 100)));
+        }
         column.getChildren().add(statementLine("A share is worth, on the books",
                 tightMoney(toDollars(register.bookPerShare(company, bookEquity)), false)));
-        column.getChildren().add(statementLine("Last sold at",
-                tightMoney(toDollars(register.getLastPrice(company)), false)));
+        /*
+         * THE MARKET, since the exchange (2026-09-11). The desk's quote, the
+         * yield at it and what the whole company is worth at it - the three
+         * figures a shareholder reads before the book.
+         */
+        if (market.isOpen()) {
+            double mid = market.mid(company);
+            boolean dear = mid > market.fair(company) * (1 + Exchange.BUYBACK_TOLERANCE);
+            boolean cheap = mid < market.fair(company) * (1 - Exchange.BUYBACK_TOLERANCE);
+            column.getChildren().add(statementLine("The desk quotes it at",
+                    tightMoney(toDollars(mid), false), dear ? Palette.WARN : cheap ? Palette.GOOD : null));
+            column.getChildren().add(statementLine("...which yields, on the last year's dividend",
+                    String.format("%.1f%%", market.yieldAt(register, company, market.ask(company)) * 100)));
+            column.getChildren().add(statementLine("...and values the company at",
+                    tightMoney(toDollars(market.marketCap(register, company)))));
+        } else {
+            column.getChildren().add(statementLine("Last sold at",
+                    tightMoney(toDollars(register.getLastPrice(company)), false)));
+            column.getChildren().add(statementNote("No market: the bank has no capital to make one."));
+        }
         double paid = register.getDividendThisMonth(company);
         column.getChildren().add(statementLine("Dividend this month",
                 tightMoney(toDollars(paid), false), paid > 0 ? Palette.GOOD : null));
+        double special = market.getSpecialDividend(company);
+        if (special > 0) {
+            column.getChildren().add(statementLine("...of which a special dividend",
+                    tightMoney(toDollars(special), false), Palette.GOOD));
+        }
+        double retired = register.getBoughtBackThisMonth(company);
+        if (retired > 0 && register.getShares(company) + retired > 0) {
+            column.getChildren().add(statementLine("Bought back and retired this month",
+                    String.format("%.2f%% of the company", retired / (register.getShares(company) + retired) * 100)));
+        }
+        double split = market.getSplit(company);
+        if (split > 1) {
+            column.getChildren().add(statementNote(String.format("Split %,.0f for one this month: every holder's count by %,.0f, the price by the inverse.", split, split)));
+        } else if (split > 0) {
+            column.getChildren().add(statementNote(String.format("Consolidated one for %,.0f this month: every holder's count by the inverse, the price by %,.0f.", 1 / split, 1 / split)));
+        }
+
+        /*
+         * WHAT A SHARE HAS BEEN WORTH, since 2026-09-11 - Jerus: "a history
+         * of the stock price for each company, both in each industry, and in
+         * the reports rail." The desk's quote and the register's reckoning,
+         * per founding share so a split is not a cliff, from the month the
+         * company listed. The same series the Reports tab draws; this is the
+         * one company's, on its own page.
+         */
+        sharePriceChart(column, company);
         String regime = switch (register.getRegime(company)) {
             case NEW -> "new: every plan is part shares, no record yet";
             case GOOD -> "a good year: it raises ahead of its plans";
@@ -11053,6 +11196,35 @@ public class UserInterface extends Application {
                 tightMoney(toDollars(register.getLifetimeRaisedAbroad(company))),
                 tightMoney(toDollars(register.getLifetimeDividendsHome(company))),
                 tightMoney(toDollars(register.getLifetimeDividendsAbroad(company))))));
+    }
+
+    /**
+     * One company's share price over the city's life: the quote against
+     * what the register says a share is worth, both per founding share.
+     */
+    private void sharePriceChart(VBox column, int company) {
+        HistorySave h = game.getHistorySave();
+        String name = Equity.COMPANIES[company];
+        double[] price = h.aligned(HistorySave.priceKey(name));
+        double[] worth = h.aligned(HistorySave.valueKey(name));
+        boolean any = false;
+        for (double v : price) if (!Double.isNaN(v)) { any = true; break; }
+        if (!any) return;
+        column.getChildren().add(statementHead("What a share has been worth"));
+        column.getChildren().add(trendChart(
+                new String[] {"The desk's quote", "What the register reckons"},
+                new double[][] {price, worth},
+                new String[] {Palette.ACCENT, Palette.RAMP_REST}));
+        double factor = game.getExchange().getSplitFactor(company);
+        column.getChildren().add(statementNote(
+                "Per founding share: a split moves every holder's count and the price "
+                + "together, so the line does not"
+                + (Math.abs(factor - 1) > 1e-9
+                        ? String.format(" — one founding share is %s shares today.",
+                                factor >= 1 ? String.format("%,.0f", factor) : String.format("%.4f", factor))
+                        : ".")
+                + " Where the quote sits above what the register reckons, buyers the desk "
+                + "could not fill have lifted it; below, the desk is long and finding them."));
     }
 
     /* ---------------------------- CASH AND CREDIT ---------------------------- */
@@ -11363,7 +11535,7 @@ public class UserInterface extends Application {
         CommercialHandler h = game.getEconomyManager().getCommercialHandler();
 
         column.getChildren().add(statementHead("The shops"));
-        column.getChildren().add(statementLine("Stores standing",
+        column.getChildren().add(statementLine("People the shops can serve",
                 people(h.getReportStoreCoverage())));
         column.getChildren().add(statementLine("Staffed",
                 String.format("%.0f%%", h.getAverageStoreFill() * 100),
@@ -14941,10 +15113,12 @@ public class UserInterface extends Application {
             /*
              * ...AND WHAT IT OWNS. Shares in the city's companies, since
              * 2026-09-10 (evening) - bought at offerings out of what was past
-             * the cushion, or held since the founding. Valued at book, the
-             * only price there is until there is an exchange.
+             * the cushion, or held since the founding. At the desk's quote
+             * since there is an exchange (2026-09-11), at book when the bank
+             * is dead and there is none.
              */
             Equity register = game.getEquity();
+            Exchange exchange = game.getExchange();
             double worth = 0;
             StringBuilder holdings = new StringBuilder();
             for (int c = 0; c < Equity.COMPANIES.length; c++) {
@@ -14952,17 +15126,36 @@ public class UserInterface extends Application {
                 double stake = own.shares(c) / register.getShares(c);
                 double book = c == Equity.BANK ? game.getBank().equity()
                         : game.getSectorBooks().get(PolicySector.byCreditName(Equity.COMPANIES[c])).equity();
-                worth += stake * Math.max(0, book);
+                worth += exchange.isOpen() ? own.shares(c) * exchange.mid(c) : stake * Math.max(0, book);
                 if (holdings.length() > 0) holdings.append(", ");
                 holdings.append(String.format("%s %.3f%%", Equity.COMPANIES[c], stake * 100));
             }
             if (holdings.length() > 0) {
-                panel.getChildren().add(statementLine("Shares, at book",
+                panel.getChildren().add(statementLine(exchange.isOpen() ? "Shares, at the market" : "Shares, at book",
                         tightMoney(toDollars(worth), false), Palette.GOOD));
                 panel.getChildren().add(statementLine("Dividends this month",
                         tightMoney(toDollars(own.dividends()), false),
                         own.dividends() > 0 ? Palette.GOOD : null));
+                if (own.sold() > 0) {
+                    panel.getChildren().add(statementLine("Sold to cover the month",
+                            tightMoney(toDollars(own.sold()), false), Palette.WARN));
+                }
                 panel.getChildren().add(statementNote("Owns " + holdings + "."));
+            }
+            /*
+             * ...AND WHAT IT KEEPS ABROAD: the world's paper, bought when the
+             * world paid more than the bank. See HouseholdBalance.investAbroad().
+             */
+            if (own.abroad() > 0) {
+                double rate = bal.getExchangeRate();
+                panel.getChildren().add(statementLine("Kept abroad",
+                        tightMoney(toDollars(own.abroadValue(rate)), false)
+                                + " (US" + tightMoney(toDollars(own.abroad()), false) + ")",
+                        Palette.GOOD));
+                if (own.broughtHome() > 0) {
+                    panel.getChildren().add(statementLine("...brought home this month",
+                            tightMoney(toDollars(own.broughtHome()), false)));
+                }
             }
             if (own.isLockedOut()) {
                 panel.getChildren().add(statementNote(String.format(
@@ -17318,7 +17511,7 @@ public class UserInterface extends Application {
      */
     private record Trace(String key, String label, String group, String unit) { }
 
-    private static final Trace[] TRACES = {
+    private static final Trace[] TRACES = withTheMarket(new Trace[] {
         new Trace("gdp",            "GDP",                "MONEY",      "money"),
         new Trace("gdpPerCapita",   "GDP per capita (yr)","MONEY",      "money"),
         new Trace("cash",           "Treasury",           "MONEY",      "money"),
@@ -17416,7 +17609,23 @@ public class UserInterface extends Application {
 
         new Trace("constructionCapacity", "Builders",     "THROUGHPUT", "count"),
         new Trace("landUse",        "Land in use",        "THROUGHPUT", "percent"),
-    };
+    });
+
+    /**
+     * ...and a share price per company, one trace each, generated off the
+     * register's own list so a company added there is graphed here without
+     * anybody remembering to. THE MARKET is the last group on the screen,
+     * and its unit is a founding share - see HistorySave's market block.
+     */
+    private static Trace[] withTheMarket(Trace[] fixed) {
+        Trace[] all = java.util.Arrays.copyOf(fixed, fixed.length + Equity.COMPANIES.length);
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            String company = Equity.COMPANIES[c];
+            all[fixed.length + c] = new Trace(HistorySave.priceKey(company),
+                    company + " shares", "THE MARKET", "share");
+        }
+        return all;
+    }
 
     /** Eight, then it wraps - and the legend swatch uses the same list. */
     private static final String[] TRACE_COLOURS = {
@@ -17477,7 +17686,16 @@ public class UserInterface extends Application {
                 new String[] {"exportsAbroad", "importsAbroad", "currentAccount"}),
         new Preset("Can people live here", "wages against rent, school and room",
                 new String[] {"averageWage", "rentPrice", "vacancy", "schoolCoverage"}),
+        new Preset("The market", "what a founding share of each company is worth",
+                marketKeys()),
     };
+
+    /** Every company's share price, for the market preset. */
+    private static String[] marketKeys() {
+        String[] keys = new String[Equity.COMPANIES.length];
+        for (int c = 0; c < keys.length; c++) keys[c] = HistorySave.priceKey(Equity.COMPANIES[c]);
+        return keys;
+    }
 
     private void showHistoryMenu() {
         clearMenu("showHistoryMenu", () -> showHistoryMenu());
@@ -17849,6 +18067,7 @@ public class UserInterface extends Application {
             case "land"      -> "dollars a square foot";
             case "unitprice" -> "dollars a unit";
             case "rent"      -> "dollars a head a month";
+            case "share"     -> "dollars a founding share";
             default          -> unit;
         };
     }
@@ -17863,7 +18082,7 @@ public class UserInterface extends Application {
      */
     private static double plotScale(String unit, double v) {
         return switch (unit) {
-            case "money", "usd", "land", "unitprice", "rent" -> v * 1000;
+            case "money", "usd", "land", "unitprice", "rent", "share" -> v * 1000;
             case "percent" -> v * 100;
             default        -> v;
         };
@@ -18213,6 +18432,9 @@ public class UserInterface extends Application {
              * figure a player recognises: about $82 a head a month.
              */
             case "rent":      return String.format("$%.2f", v * 1000);
+            // A share's price, kept in thousands like every price here, and
+            // per FOUNDING share so a split is not a cliff on the chart.
+            case "share":     return tightMoney(v * 1000, false);
             default:          return formatter.format(Math.round(v));
         }
     }

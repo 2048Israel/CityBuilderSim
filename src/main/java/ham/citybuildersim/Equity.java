@@ -154,6 +154,7 @@ public class Equity {
         final String name;
         double shares;          // in issue
         double foreignShares;   // of those, held abroad
+        double dealerShares;    // ...and held by the bank's trading desk (never its own: those are cancelled)
         double lastPrice = FOUNDING_PRICE;
         final double[] income = new double[RECORD_MONTHS];   // net income, a ring
         final double[] spent  = new double[RECORD_MONTHS];   // on buildings, a ring
@@ -163,18 +164,22 @@ public class Equity {
         int offerings;
 
         // this month
-        double offered, raisedHome, raisedAbroad, dividendHome, dividendAbroad;
+        double offered, raisedHome, raisedAbroad, dividendHome, dividendDesk, dividendAbroad;
+        double boughtBackThisMonth, lifetimeBoughtBack;
         Regime regime = Regime.NEW;
         double targetShare = NEW_EQUITY_SHARE;
 
         Listing(String name) { this.name = name; }
 
-        double domesticShares() { return shares - foreignShares; }
+        /** Held by the city's households: what is neither abroad nor on the desk. */
+        double domesticShares() { return shares - foreignShares - dealerShares; }
         double raised()   { return raisedHome + raisedAbroad; }
         double dividend() { return dividendHome + dividendAbroad; }
 
         void clearMonth() {
-            offered = 0; raisedHome = 0; raisedAbroad = 0; dividendHome = 0; dividendAbroad = 0;
+            offered = 0; raisedHome = 0; raisedAbroad = 0;
+            dividendHome = 0; dividendDesk = 0; dividendAbroad = 0;
+            boughtBackThisMonth = 0;
         }
 
         double trailingIncome() {
@@ -331,6 +336,16 @@ public class Equity {
      */
     public double offer(int company, double amount, double bookEquity,
                         HouseholdBalance households, double worldRate) {
+        return offer(company, amount, bookEquity, households, worldRate, 0);
+    }
+
+    /**
+     * @param marketPrice what the exchange quotes a share at, or zero when
+     *                    there is no market: a listed company sells new shares
+     *                    at the market, not at the register's reckoning
+     */
+    public double offer(int company, double amount, double bookEquity,
+                        HouseholdBalance households, double worldRate, double marketPrice) {
         Listing l = listings[company];
         if (amount <= 0) return 0;
 
@@ -349,7 +364,7 @@ public class Equity {
             l.shares += founders;
         }
 
-        double price = priceOf(l, bookEquity, worldRate);
+        double price = marketPrice > 0 && l.shares > 0 ? marketPrice : priceOf(l, bookEquity, worldRate);
         l.offered += amount;
         l.offerings++;
 
@@ -403,6 +418,28 @@ public class Equity {
                 / (Math.max(0, worldRate) + FOREIGN_PREMIUM);
         double value = Math.max(bookEquity, earningsValue);
         return value > 0 ? value / l.shares : l.lastPrice;
+    }
+
+    /**
+     * Lists a company that has equity and no owners: the founders' shares
+     * are issued against its book, as the first offering would have done.
+     *
+     * "Every company lists on day one" - and a company that never went to
+     * the market never did. Construction ran for four thousand months with
+     * $20M in the till, no shares, no dividend and no buyback, because its
+     * plans were always cash; Retail in the playtest city the same. Called
+     * every month, it lists them the month they first have a book.
+     *
+     * @return true if it was listed now
+     */
+    public boolean listIfUnlisted(int company, double bookEquity, HouseholdBalance households) {
+        Listing l = listings[company];
+        if (l.shares > 0 || !(bookEquity > 0) || households == null) return false;
+        double founders = bookEquity / FOUNDING_PRICE;
+        households.grantFounders(company, founders);
+        l.shares += founders;
+        l.lastPrice = FOUNDING_PRICE;
+        return true;
     }
 
     /** What one share is worth on the books today. */
@@ -462,12 +499,125 @@ public class Equity {
 
         double perShare = paid / l.shares;
         double home = households == null ? 0 : households.creditDividend(company, perShare);
-        double abroad = Math.max(0, paid - home);
+        // The desk is paid on what it holds - and PAYS on what it is short,
+        // like any short seller: the holders of the shares it sold and does
+        // not have are paid in full, and the difference is the desk's.
+        double desk = l.dealerShares * perShare;
+        double abroad = Math.max(0, paid - home - desk);
         l.dividendHome += home;
+        l.dividendDesk += desk;
         l.dividendAbroad += abroad;
         l.lifetimeDividendsHome += home;
         l.lifetimeDividendsAbroad += abroad;
         return abroad;
+    }
+
+    /** What the bank's trading desk was paid on its inventory this month. */
+    public double getDividendDeskThisMonth(int company) { return listings[company].dividendDesk; }
+    public double getDividendDeskThisMonth() { double s = 0; for (Listing l : listings) s += l.dividendDesk; return s; }
+
+    /* =====================================================================
+       THE DESK
+
+       The exchange moves shares between the three holders through the bank's
+       trading desk, and the register keeps the count so the identity
+       "in issue = households + desk + abroad" lives in one place. See
+       Exchange. The bank's OWN shares never sit on the desk: bought, they
+       are cancelled; sold, they are issued - which is what treasury stock is.
+       ===================================================================== */
+
+    /** Shares the desk holds; negative when it has sold what it did not have. */
+    public double getDealerShares(int company) { return listings[company].dealerShares; }
+
+    /** Shares in the owners' hands: in issue less what the desk is long. */
+    public double getOutstanding(int company) {
+        Listing l = listings[company];
+        return l.shares - Math.max(0, l.dealerShares);
+    }
+
+    /** The desk buys from the city's households (whose cells the caller has already debited). */
+    void deskBuysFromHouseholds(int company, double n) {
+        if (n <= 0) return;
+        Listing l = listings[company];
+        if (company == BANK) { l.shares -= n; return; }
+        l.dealerShares += n;
+    }
+
+    /** ...and sells to them. */
+    void deskSellsToHouseholds(int company, double n) {
+        if (n <= 0) return;
+        Listing l = listings[company];
+        if (company == BANK) { l.shares += n; return; }
+        l.dealerShares -= n;
+    }
+
+    void deskBuysFromAbroad(int company, double n) {
+        if (n <= 0) return;
+        Listing l = listings[company];
+        l.foreignShares = Math.max(0, l.foreignShares - n);
+        if (company == BANK) { l.shares -= n; return; }
+        l.dealerShares += n;
+    }
+
+    void deskSellsAbroad(int company, double n) {
+        if (n <= 0) return;
+        Listing l = listings[company];
+        l.foreignShares += n;
+        if (company == BANK) { l.shares += n; return; }
+        l.dealerShares -= n;
+    }
+
+    /**
+     * A company buys back and cancels shares from every holder pro rata - a
+     * tender at one price. The caller has already paid each holder.
+     *
+     * @param fromHouseholds shares the households tendered (their cells already debited)
+     * @param fromDesk       shares the desk tendered
+     * @param fromAbroad     shares the world tendered
+     */
+    void cancel(int company, double fromHouseholds, double fromDesk, double fromAbroad) {
+        Listing l = listings[company];
+        double n = Math.max(0, fromHouseholds) + Math.max(0, fromDesk) + Math.max(0, fromAbroad);
+        if (n <= 0) return;
+        l.foreignShares = Math.max(0, l.foreignShares - Math.max(0, fromAbroad));
+        l.dealerShares -= Math.max(0, fromDesk);
+        l.shares = Math.max(0, l.shares - n);
+        l.boughtBackThisMonth += n;
+        l.lifetimeBoughtBack += n;
+    }
+
+    /**
+     * A split (k > 1) or a consolidation (k < 1): every count by k, the
+     * last price by its inverse. The households' and the desk's counts are
+     * the exchange's to move alongside (see Exchange.splitWhatNeedsIt).
+     */
+    void split(int company, double k) {
+        if (!(k > 0) || k == 1) return;
+        Listing l = listings[company];
+        l.shares *= k;
+        l.foreignShares *= k;
+        l.dealerShares *= k;
+        l.lastPrice /= k;
+        l.boughtBackThisMonth *= k;
+        l.lifetimeBoughtBack *= k;
+    }
+
+    public double getBoughtBackThisMonth(int company) { return listings[company].boughtBackThisMonth; }
+    public double getLifetimeBoughtBack(int company)  { return listings[company].lifetimeBoughtBack; }
+
+    /**
+     * What a share is worth on the register's own reckoning: book or
+     * capitalised earnings, whichever is more, over the shares in issue. The
+     * exchange quotes around this; an offering with no market sells at it.
+     */
+    public double fairValue(int company, double bookEquity, double worldRate) {
+        return priceOf(listings[company], bookEquity, worldRate);
+    }
+
+    /** Dividend a share would pay over a year on the last twelve months' record. */
+    public double dividendPerShareAnnual(int company) {
+        Listing l = listings[company];
+        return l.shares > 0 ? PAYOUT * Math.max(0, l.trailingIncome()) / l.shares : 0;
     }
 
     /* ------------------------------- reading ------------------------------- */
@@ -519,7 +669,10 @@ public class Equity {
      * below; the rings first, then the position, then the lifetime figures.
      */
 
-    public static final int SLOTS = RECORD_MONTHS * 2 + 10;
+    /** Slots a company before the desk (2026-09-10, night). */
+    public static final int SLOTS_BEFORE_DESK = RECORD_MONTHS * 2 + 10;
+
+    public static final int SLOTS = SLOTS_BEFORE_DESK + 2;
 
     public String[] keys() { return COMPANIES.clone(); }
 
@@ -539,17 +692,21 @@ public class Equity {
             out[i++] = l.lifetimeDividendsHome;
             out[i++] = l.lifetimeDividendsAbroad;
             out[i++] = l.targetShare;
+            out[i++] = l.dealerShares;
+            out[i++] = l.lifetimeBoughtBack;
         }
         return out;
     }
 
     /** @return false if nothing was restored: a null, or an array not the keys' length */
     public boolean restore(String[] keys, double[] saved) {
-        if (keys == null || saved == null || saved.length != keys.length * SLOTS) return false;
+        if (keys == null || saved == null || keys.length == 0) return false;
+        int slots = saved.length / keys.length;
+        if (saved.length != keys.length * slots || (slots != SLOTS && slots != SLOTS_BEFORE_DESK)) return false;
         int i = 0;
         for (String key : keys) {
             int c = indexOf(key);
-            if (c < 0) { i += SLOTS; continue; }
+            if (c < 0) { i += slots; continue; }
             Listing l = listings[c];
             for (int k = 0; k < RECORD_MONTHS; k++) l.income[k] = saved[i++];
             for (int k = 0; k < RECORD_MONTHS; k++) l.spent[k] = saved[i++];
@@ -563,6 +720,12 @@ public class Equity {
             l.lifetimeDividendsHome   = saved[i++];
             l.lifetimeDividendsAbroad = saved[i++];
             l.targetShare   = saved[i++];
+            l.dealerShares = 0;
+            l.lifetimeBoughtBack = 0;
+            if (slots == SLOTS) {
+                l.dealerShares      = saved[i++];
+                l.lifetimeBoughtBack = saved[i++];
+            }
             l.regime = regimeOf(l);
         }
         return true;
@@ -583,7 +746,7 @@ public class Equity {
             l.lifetimeRaisedHome *= scale;      l.lifetimeRaisedAbroad *= scale;
             l.lifetimeDividendsHome *= scale;   l.lifetimeDividendsAbroad *= scale;
             l.offered *= scale;  l.raisedHome *= scale;  l.raisedAbroad *= scale;
-            l.dividendHome *= scale;  l.dividendAbroad *= scale;
+            l.dividendHome *= scale;  l.dividendDesk *= scale;  l.dividendAbroad *= scale;
         }
     }
 }

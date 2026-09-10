@@ -351,6 +351,23 @@ public final class GameVersion {
      * save loads with its rows seeded into the cells and nobody owning
      * anything, which is what that city had.
      * --------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------
+     * NOR THIS: the exchange and the households' dollars abroad (2026-09-11).
+     * One new key (exchange: the quote, fair value and the unfilled demand
+     * per company, by the register's names, then the lifetime volume), two
+     * slots appended to the register's per-company block (the desk's
+     * inventory and its dividend), one slot appended to each household
+     * cell's block (dollars abroad), a field on SectorBooks' month record
+     * (sharesBoughtBack). Every one of them is read by name or by a length
+     * the reader recognises, and every older length restores what it
+     * carries: the evening's save loads with the desk empty, the quote at
+     * fair value and nobody holding a dollar abroad, which is what that
+     * city had. Later the same day: a fourth slot per company in the
+     * exchange's block (the split factor - three a company still restores,
+     * with one share then being one share now), and two maps of series in
+     * the graph history (a share price and a share value per company, by
+     * name), which Gson leaves empty on a history written before them.
+     * --------------------------------------------------------------------- */
     public static final int SAVE_FORMAT = 20;
 
     /** What a unit of construction material cost through save format 19, in thousands. */

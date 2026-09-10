@@ -400,6 +400,18 @@ public final class MoneyAudit {
         // so the balance of payments reads what a rolled coupon is.
         in += credit.apply("+ sectors ForeignInterest", g.getOutwardInvestment().getInterestThisMonth(), Scope.INCOME);
         /*
+         * THE HOUSEHOLDS' PAPER ABROAD, since 2026-09-11. The households are
+         * outside the pools, so every one of their foreign flows is a pair
+         * that cancels here and reads on the balance of payments: what came
+         * home is a financial inflow into their savings (domestic, out of
+         * nobody's pool); what went abroad is a financial outflow out of
+         * their savings; the coupon is income rolled abroad, like the
+         * sectors'. See HouseholdBalance.investAbroad().
+         */
+        in += credit.apply("+ households BroughtHome", g.getHouseholdBalance().getBroughtHome(), Scope.FINANCIAL);
+        in += credit.apply("+ households SavedFromAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.DOMESTIC);
+        in += credit.apply("+ households ForeignInterest", g.getHouseholdBalance().getForeignInterest(), Scope.INCOME);
+        /*
          * THE OWNERS' MONEY, COMING IN. Shares sold to the city's households
          * are money arriving from outside the audited pools but inside the
          * country - like the shop's takings, and declared the same way; shares
@@ -410,6 +422,14 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ equity SubscribedByHouseholds", g.getEquity().getRaisedHomeThisMonth() - g.getEquity().getRaisedHomeThisMonth(Equity.BANK), Scope.DOMESTIC);
         in += credit.apply("+ equity SubscribedAbroad", g.getEquity().getRaisedAbroadThisMonth() - g.getEquity().getRaisedAbroadThisMonth(Equity.BANK), Scope.FINANCIAL);
+        /*
+         * THE TRADING DESK. Every trade on the exchange is with the bank, so
+         * every one is cash into or out of the bank's pool: a household
+         * buying is money arriving from outside the pools, the world buying
+         * is a financial inflow. See Exchange.
+         */
+        in += credit.apply("+ desk SharesSoldToHouseholds", g.getExchange().getSoldToHouseholds(), Scope.DOMESTIC);
+        in += credit.apply("+ desk SharesSoldAbroad", g.getExchange().getSoldAbroad(), Scope.FINANCIAL);
         /*
          * The treasury selling reserves. Foreign money out, local money in - the
          * cash arrives in the city's pool from outside it, so it is declared.
@@ -559,6 +579,10 @@ public final class MoneyAudit {
                 g.getBank().getHotMoneyOut(), Scope.FINANCIAL);
         out += debit.apply("- sectors InvestedAbroad", g.getOutwardInvestment().getInvestedAbroadThisMonth(), Scope.FINANCIAL);
         out += debit.apply("- sectors ForeignInterestReinvested", g.getOutwardInvestment().getInterestThisMonth(), Scope.FINANCIAL);
+        // The households' three, the other way round. See the credits.
+        out += debit.apply("- households InvestedAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.FINANCIAL);
+        out += debit.apply("- households BroughtHomeSaved", g.getHouseholdBalance().getBroughtHome(), Scope.DOMESTIC);
+        out += debit.apply("- households ForeignInterestReinvested", g.getHouseholdBalance().getForeignInterest(), Scope.FINANCIAL);
         /*
          * ...AND GOING OUT. A dividend to a household leaves the pools the
          * way a wage does; a dividend to a shareholder abroad is income paid
@@ -568,6 +592,14 @@ public final class MoneyAudit {
          */
         out += debit.apply("- equity DividendsToHouseholds", g.getEquity().getDividendHomeThisMonth(), Scope.DOMESTIC);
         out += debit.apply("- equity DividendsAbroad", g.getEquity().getDividendAbroadThisMonth(), Scope.INCOME);
+        // ...and the desk buying: from a household, cash out of the pools;
+        // from the world (an emigrant on the way out included), a financial
+        // outflow. A company's tender pays its holders the same two ways; the
+        // desk's own tendered shares are a pool paying a pool.
+        out += debit.apply("- desk SharesBoughtFromHouseholds", g.getExchange().getBoughtFromHouseholds(), Scope.DOMESTIC);
+        out += debit.apply("- desk SharesBoughtFromAbroad", g.getExchange().getBoughtFromAbroad(), Scope.FINANCIAL);
+        out += debit.apply("- equity BuybackToHouseholds", g.getExchange().getBuybackToHouseholds(), Scope.DOMESTIC);
+        out += debit.apply("- equity BuybackAbroad", g.getExchange().getBuybackAbroad(), Scope.FINANCIAL);
         out += debit.apply("- treasury BoughtReserves",
                 g.getForeignAccounts().getBoughtThisMonth(), Scope.RESERVE);
         /*

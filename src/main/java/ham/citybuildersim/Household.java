@@ -92,6 +92,24 @@ public abstract class Household {
     double dividends;
 
     /**
+     * DOLLARS held abroad by one of these households: the world's paper,
+     * bought with savings past the cushion when the world pays more than the
+     * bank, sold when the bank pays more or the household needs the money. A
+     * STOCK, on the class header's terms - and the second added on them. The
+     * same rule the sectors follow (OutwardInvestment), for the same reason:
+     * the exchange returns the companies' hoard to the people who own them,
+     * and a city whose surplus sits in a bank paying nothing appreciates
+     * until its exporters are dead. See HouseholdBalance.investAbroad().
+     *
+     * In dollars, so a reform does not touch it; what it is worth at home is
+     * the dollars at the month's rate.
+     */
+    double abroad;
+
+    /** This month's, per household, in local money: sent abroad, brought home, and earned there (rolled, not paid home). */
+    double sentAbroad, broughtHome, foreignInterest;
+
+    /**
      * Households this cell was last struck for - the multiplier on every
      * per-household figure, and the count the next month's census is compared
      * against to see who moved.
@@ -120,6 +138,15 @@ public abstract class Household {
 
     /** Households of this cell discharged this month - a count, not money. */
     double bankrupt;
+
+    /** Shares sold this month to cover the shop, per household, in cash. */
+    double sold;
+
+    /** Somewhere a household short of money can sell shares before it borrows. See Exchange. */
+    interface Liquidity {
+        /** @return cash raised, per household of the cell */
+        double sell(Household cell, double needPer);
+    }
 
     protected Household(FamilyStructure shape) {
         this.shape = shape;
@@ -178,6 +205,17 @@ public abstract class Household {
 
     /** This month's dividends, per household. */
     public double dividends()   { return dividends; }
+
+    /** Dollars held abroad, per household. */
+    public double abroad()      { return abroad; }
+    /** ...worth this much at home, per household, at a rate. */
+    public double abroadValue(double localPerUsd) { return abroad * localPerUsd; }
+    public double sentAbroad()  { return sentAbroad; }
+    public double broughtHome() { return broughtHome; }
+    public double foreignInterest() { return foreignInterest; }
+
+    /** Shares sold this month to cover the shop, per household, in cash. */
+    public double sold()        { return sold; }
     public boolean isLockedOut(){ return lockout > 0; }
     public double disposable()  { return disposable; }
     public double afterFixed()  { return afterFixed; }
@@ -201,6 +239,7 @@ public abstract class Household {
 
     /** The cell's totals: the per-household figure times the households. */
     public double totalSavings()  { return savings * households; }
+    public double totalAbroad()   { return abroad * households; }
     public double totalDebt()     { return debt * households; }
     public double totalInterest() { return interest * households; }
     public double totalBorrowed() { return borrowed * households; }
@@ -232,6 +271,16 @@ public abstract class Household {
      */
     void settle(double disposablePer, double rentPerHome, double feesPer,
                 double spentPer, double foodPricePerHead, double riskFreeAnnual) {
+        settle(disposablePer, rentPerHome, feesPer, spentPer, foodPricePerHead, riskFreeAnnual, null, 0);
+    }
+
+    /**
+     * @param market      where shares can be sold before credit is drawn, or null for nowhere
+     * @param localPerUsd the month's exchange rate, for the paper held abroad; zero when there is no world
+     */
+    void settle(double disposablePer, double rentPerHome, double feesPer,
+                double spentPer, double foodPricePerHead, double riskFreeAnnual,
+                Liquidity market, double localPerUsd) {
 
         disposable = disposablePer;
 
@@ -249,10 +298,36 @@ public abstract class Household {
         /* ---------------- settle what they actually spent ---------------- */
         double gap = spentPer - afterFixed;
 
-        drawn = 0; borrowed = 0; repaid = 0; banked = 0; unfunded = 0;
+        drawn = 0; borrowed = 0; repaid = 0; banked = 0; unfunded = 0; sold = 0;
+        sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
         if (gap > 0) {
             drawn = Math.min(gap, Math.max(0, savings));
             savings -= drawn;
+            double still = gap - drawn;
+
+            /*
+             * THEN THE PAPER ABROAD, which is liquid: sold at the month's rate
+             * for exactly what is still short. A financial inflow, declared
+             * through HouseholdBalance.getBroughtHome().
+             */
+            if (still > 0 && abroad > 0 && localPerUsd > 0) {
+                double home = Math.min(still, abroad * localPerUsd);
+                abroad -= home / localPerUsd;
+                if (abroad < 1e-15) abroad = 0;
+                broughtHome = home;
+                still -= home;
+            }
+
+            /*
+             * THEN THE SHARES, since the exchange (2026-09-10, night): savings,
+             * then shares, then credit, then going without. Sold at the bid
+             * to the bank's desk for exactly what is still short, or for
+             * everything held if that is less.
+             */
+            if (still > 0 && market != null) {
+                sold = market.sell(this, still);
+                still -= sold;
+            }
 
             /*
              * THE LIMIT BINDS HERE TOO, NOT ONLY IN THE PLAN. What is refused
@@ -261,8 +336,8 @@ public abstract class Household {
              * says and what the hunger measure already reads.
              */
             double room = creditRoom(disposablePer);
-            borrowed = Math.min(gap - drawn, room);
-            unfunded = (gap - drawn) - borrowed;
+            borrowed = Math.min(still, room);
+            unfunded = still - borrowed;
             debt += borrowed;
         } else {
             double surplus = -gap;
@@ -341,22 +416,24 @@ public abstract class Household {
     void clearWorking() {
         disposable = 0; afterFixed = 0; interest = 0; drawn = 0; unfunded = 0;
         borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; rate = 0;
-        subsistence = 0; bankrupt = 0; dividends = 0;
+        subsistence = 0; bankrupt = 0; dividends = 0; sold = 0;
+        sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
     }
 
     /** The cell is empty: no position either. */
     void clearAll() {
-        savings = 0; debt = 0; lockout = 0; households = 0;
+        savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0;
         java.util.Arrays.fill(shares, 0);
         clearWorking();
     }
 
-    /** Everything in money, in the new unit. Rates, counts, months and SHARES do not move. */
+    /** Everything in money, in the new unit. Rates, counts, months, SHARES and DOLLARS do not move. */
     void redenominate(double scale) {
-        savings *= scale;  debt *= scale;  dividends *= scale;
+        savings *= scale;  debt *= scale;  dividends *= scale;  sold *= scale;
         disposable *= scale;  afterFixed *= scale;  interest *= scale;
         drawn *= scale;  unfunded *= scale;  borrowed *= scale;  repaid *= scale;
         banked *= scale;  want *= scale;  planned *= scale;  subsistence *= scale;
+        sentAbroad *= scale;  broughtHome *= scale;  foreignInterest *= scale;
     }
 
     @Override

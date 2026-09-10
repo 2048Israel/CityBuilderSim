@@ -884,6 +884,11 @@ public class DataSave {
     public String[] getEquityKeys() { return equityKeys; }
     public double[] getEquity()     { return equity; }
 
+    /** The exchange's quotes, company by company, named. See Exchange. Absent before 2026-09-10 (night). */
+    private double[] exchange;
+    public void setExchange(double[] state) { this.exchange = state; }
+    public double[] getExchange()           { return exchange; }
+
     /**
      * How often the bank has failed, what its creditors ate, and whether it is
      * frozen right now.

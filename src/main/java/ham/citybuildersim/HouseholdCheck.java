@@ -846,7 +846,9 @@ public class HouseholdCheck {
          */
         int retail = Equity.indexOf(BusinessDebtManager.RETAIL);
         big.shares[retail] = 10;
+        big.abroad = 3;   // ...and US$3k of the world's paper each, since the next day
         double sharesBefore = street.sharesHeld(retail);
+        double abroadBefore = street.totalAbroadUsd();
         block[large][U] = 0;
         block[FamilyStructure.COUPLE_TEEN.ordinal()][U] = 100;
         shop[U] = 0;
@@ -855,6 +857,10 @@ public class HouseholdCheck {
                 street.cell(FamilyStructure.COUPLE_TEEN, PayTier.UNSKILLED).shares(retail), 10);
         check("...and none left the city", street.sharesHeld(retail), sharesBefore);
         check("...nor were taken away", street.getSharesTakenAway(retail), 0);
+        check("the dollars abroad move with them too",
+                street.cell(FamilyStructure.COUPLE_TEEN, PayTier.UNSKILLED).abroad(), 3);
+        check("...all of them", street.totalAbroadUsd(), abroadBefore);
+        check("...and none left with anybody", street.getAbroadTakenAway(), 0);
 
         HouseholdBalance copy = new HouseholdBalance();
         assertTrue("the cells restore by name",
@@ -865,9 +871,21 @@ public class HouseholdCheck {
             if (Math.abs(a.savings() - b.savings()) > 1e-12 || Math.abs(a.debt() - b.debt()) > 1e-12
                     || a.lockout() != b.lockout() || Math.abs(a.households() - b.households()) > 1e-12
                     || Math.abs(a.planned() - b.planned()) > 1e-12
-                    || Math.abs(a.shares(retail) - b.shares(retail)) > 1e-12) everyCell = false;
+                    || Math.abs(a.shares(retail) - b.shares(retail)) > 1e-12
+                    || Math.abs(a.abroad() - b.abroad()) > 1e-12) everyCell = false;
         }
-        assertTrue("...every cell, to the cent, shares included", everyCell);
+        assertTrue("...every cell, to the cent, shares and dollars included", everyCell);
+        // The evening's save, the eight and the shares but no dollars, restores too.
+        double[] evening = new double[street.cellCount() * HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD + 3];
+        double[] whole = street.toCellSaveArray();
+        for (int i = 0, j = 0; i < street.cellCount(); i++) {
+            for (int k = 0; k < HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD; k++) evening[j++] = whole[i * HouseholdBalance.CELL_SLOTS + k];
+        }
+        System.arraycopy(whole, whole.length - 3, evening, evening.length - 3, 3);
+        HouseholdBalance lastNight = new HouseholdBalance();
+        assertTrue("a save from before the dollars abroad restores", lastNight.restoreCells(street.cellKeys(), evening));
+        check("...with the shares", lastNight.sharesHeld(retail), street.sharesHeld(retail));
+        check("...and no dollars", lastNight.totalAbroadUsd(), 0);
         // The morning's save, eight a cell and no shares, still restores.
         double[] morning = new double[street.cellCount() * HouseholdBalance.CELL_SLOTS_BEFORE_SHARES + 3];
         double[] full = street.toCellSaveArray();

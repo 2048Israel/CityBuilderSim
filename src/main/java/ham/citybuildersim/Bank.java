@@ -310,6 +310,7 @@ public class Bank {
         capitalInjected = 0;
         capitalFromHome = 0;
         dividendsPaid = 0;
+        tradingIncome = 0;
         hotMoneyIn = 0;
         hotMoneyOut = 0;
         bailoutReceived = 0;
@@ -333,8 +334,69 @@ public class Bank {
      * has them a long way apart - which is the entire point of the change.
      */
     public double getWeightedBook() {
-        return sectorWeighted + cityWeighted + householdWeighted;
+        return sectorWeighted + cityWeighted + householdWeighted
+                + Math.abs(securities) * RISK_EQUITY;
     }
+
+    /* =====================================================================
+       THE TRADING DESK
+
+       Jerus, 2026-09-10 (night): "liquidity, that's going to be an issue, we
+       need to solve it realistically via bank something, right?" Right. The
+       bank makes the market in the city's shares - see Exchange - and what
+       that leaves on its balance sheet is here: an inventory of shares at
+       the price it quotes, an asset like the loan book and a riskier one, and
+       a trading result that is income like the interest. A bank that holds
+       the city's shares through a crash loses money the way a bank does;
+       that is the business it was asked for.
+       ===================================================================== */
+
+    /** What a dollar of shares on the desk weighs against capital. Dearer than a loan. */
+    public static final double RISK_EQUITY = 1.50;
+
+    /** The desk's inventory, at the exchange's mark. Signed: negative when short. */
+    private double securities;
+
+    /**
+     * The trading result so far this month: cash from what it sold less cash
+     * for what it bought, plus the change in what it holds at the mark, plus
+     * the dividends its inventory was paid. Exactly the amount its equity
+     * moved by on the desk's account, so the articulation holds.
+     */
+    private double tradingIncome;
+
+    /** The exchange re-marks the inventory. The change is income; the level is an asset. */
+    public void markSecurities(double value) {
+        tradingIncome += value - securities;
+        securities = value;
+    }
+
+    /** The desk paid cash for shares. The shares are on the mark; the cash has gone. */
+    public void deskPays(double cash) {
+        if (cash <= 0) return;
+        this.cash -= cash;
+        tradingIncome -= cash;
+    }
+
+    /** ...and was paid for shares it sold. */
+    public void deskReceives(double cash) {
+        if (cash <= 0) return;
+        this.cash += cash;
+        tradingIncome += cash;
+    }
+
+    /** Dividends on the inventory: income, and cash. Negative when the desk is short and owes them. */
+    public void receiveDividend(double amount) {
+        if (amount == 0) return;
+        this.cash += amount;
+        tradingIncome += amount;
+    }
+
+    /** The load path puts the mark back without calling it income. */
+    public void restoreSecurities(double value) { securities = value; }
+
+    public double getSecurities()    { return securities; }
+    public double getTradingIncome() { return tradingIncome; }
 
     /** How much lighter the weighting makes the book. 0 when nothing is lent. */
     public double weightingRelief() {
@@ -1403,8 +1465,11 @@ public class Bank {
     /** Cash it is actually sitting on. Zero while it is net borrowed. */
     public double cashReserves() { return Math.max(0, cash); }
 
-    /** Total assets: the loan book, plus whatever cash it has not lent. */
-    public double totalAssets() { return cashReserves() + getBook(); }
+    /** Total assets: the loan book, whatever cash it has not lent, and what the desk holds. */
+    public double totalAssets() { return cashReserves() + getBook() + Math.max(0, securities); }
+
+    /** ...and a desk that is short owes the shares: a liability at the mark. */
+    public double shortSecurities() { return Math.max(0, -securities); }
 
     /** Total liabilities: what it owes, in its two tranches. */
     /**
@@ -1427,7 +1492,7 @@ public class Bank {
      * BankCheck's "equity moves by net income and capital and nothing else",
      * which is the third distinct bug that assertion has found.
      */
-    public double totalLiabilities() { return borrowings() + Math.max(0, foreignDeposits); }
+    public double totalLiabilities() { return borrowings() + Math.max(0, foreignDeposits) + shortSecurities(); }
 
     /**
      * The residual - and, once the two above are written out, simply the book
@@ -1458,8 +1523,11 @@ public class Bank {
     /** ...less the tellers and the lights. */
     public double operatingExpenses() { return payroll + upkeep; }
 
+    /** ...plus what the desk made or lost. */
+    public double afterTrading()    { return afterLosses() + tradingIncome; }
+
     /** What it made before the city took its share. */
-    public double profitBeforeTax() { return afterLosses() - operatingExpenses(); }
+    public double profitBeforeTax() { return afterTrading() - operatingExpenses(); }
 
     /* --------------------------------- tax --------------------------------- */
 
@@ -1842,6 +1910,8 @@ public class Bank {
         capitalInjected   *= scale;
         capitalFromHome   *= scale;
         dividendsPaid     *= scale;
+        securities        *= scale;
+        tradingIncome     *= scale;
         bailoutReceived   *= scale;
         foundingSettlement *= scale;
         depositInterestToHouseholds *= scale;

@@ -618,7 +618,14 @@ public class EconomyManager {
     private final java.util.Map<String, Double> equityRaised = new java.util.LinkedHashMap<>();
     private final java.util.Map<String, Double> dividendsPaid = new java.util.LinkedHashMap<>();
 
-    public void clearEquityFlows() { equityRaised.clear(); dividendsPaid.clear(); }
+    private final java.util.Map<String, Double> sharesBoughtBack = new java.util.LinkedHashMap<>();
+
+    public void clearEquityFlows() { equityRaised.clear(); dividendsPaid.clear(); sharesBoughtBack.clear(); }
+    public void recordSharesBoughtBack(String sector, double amount) {
+        if (sector == null || !(amount > 0)) return;
+        sharesBoughtBack.merge(sector, amount, Double::sum);
+    }
+    public double getSharesBoughtBack(String sector) { return sharesBoughtBack.getOrDefault(sector, 0.0); }
     public void recordEquityRaised(String sector, double amount) {
         if (sector == null || !(amount > 0)) return;
         equityRaised.merge(sector, amount, Double::sum);

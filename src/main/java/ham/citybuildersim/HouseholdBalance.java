@@ -351,6 +351,7 @@ public class HouseholdBalance {
         lastWrittenOff = 0;
         lastLeaving = 0;
         lastTakenAway = 0;
+        lastAbroadTakenAway = 0;
         java.util.Arrays.fill(lastSharesTakenAway, 0);
         for (Household c : cells) c.dividends = 0;
         double delivered = Math.max(0, Math.min(1, supplyRatio));
@@ -411,7 +412,7 @@ public class HouseholdBalance {
                     : rowShopping[c.row()] * shopWeight[i] / rowShopWeight[c.row()] / c.households;
 
             c.settle(disposablePer[i], rentPerHousehold, feesPer[i], spentPer,
-                    foodPricePerHead, riskFreeAnnual);
+                    foodPricePerHead, riskFreeAnnual, liquidity, localPerUsd);
 
             lastWrittenOff += c.discharge();
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
@@ -545,6 +546,10 @@ public class HouseholdBalance {
                 public void set(Household c, double v) { c.shares[company] = v; }
             });
         }
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.abroad; }
+            public void set(Household c, double v) { c.abroad = v; }
+        });
 
         int n = cells.length;
         double[] delta = new double[n];
@@ -560,6 +565,9 @@ public class HouseholdBalance {
         lastTakenAway += left[0];
         lastWrittenOff += left[1];
         for (int k = 0; k < Equity.COMPANIES.length; k++) lastSharesTakenAway[k] = left[2 + k];
+        // ...and the dollars they held abroad go with them: already abroad,
+        // so nothing crosses the border - a stock that changes hands.
+        lastAbroadTakenAway = left[2 + Equity.COMPANIES.length];
 
         for (int i = 0; i < n; i++) {
             // A cell that lost households keeps its average: the ones who
@@ -640,6 +648,267 @@ public class HouseholdBalance {
     /** Shares of each company that left the city with their holders this month. */
     private final double[] lastSharesTakenAway = new double[Equity.COMPANIES.length];
     public double getSharesTakenAway(int company) { return lastSharesTakenAway[company]; }
+
+    /* =====================================================================
+       THE MARKET
+
+       Where a household's shares can be sold and bought. Set by Game once
+       the exchange exists; null in a fixture with no market, in which case
+       the waterfall goes from savings straight to credit as it did before.
+       ===================================================================== */
+
+    private Exchange exchange;
+    private Equity register;
+    private Bank bank;
+    private Household.Liquidity liquidity;
+
+    public void setMarket(Exchange exchange, Equity register, Bank bank) {
+        this.exchange = exchange;
+        this.register = register;
+        this.bank = bank;
+        this.liquidity = exchange == null || register == null || bank == null ? null
+                : (cell, needPer) -> exchange.sellForHousehold(register, bank, cell, needPer);
+    }
+
+    /**
+     * The households buy shares of one company on the exchange, each cell
+     * with money past its cushion putting a share of the excess in, pro rata
+     * when the desk cannot sell them all they want.
+     *
+     * @param fraction of the excess each household puts in
+     * @param capacity the most cash the desk will take for shares this month
+     * @return cash spent in total
+     */
+    public double buyShares(Exchange exchange, Equity register, Bank bank, int company,
+                            double fraction, double capacity) {
+        if (exchange == null || capacity <= 0 || fraction <= 0) return 0;
+        double[] want = new double[cells.length];
+        double total = 0;
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c.households < .5 || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            if (excess <= 0) continue;
+            want[i] = excess * fraction * c.households;
+            total += want[i];
+        }
+        if (total <= 0) return 0;
+        double scale = Math.min(1, capacity / total);
+        double spent = 0;
+        for (int i = 0; i < cells.length; i++) {
+            if (want[i] <= 0) continue;
+            Household c = cells[i];
+            double cash = want[i] * scale;
+            double shares = exchange.deskSellsToHouseholds(register, bank, company, cash);
+            if (shares <= 0) continue;
+            c.savings -= cash / c.households;
+            c.shares[company] += shares / c.households;
+            spent += cash;
+        }
+        return spent;
+    }
+
+    /**
+     * The same, across several companies in order of preference: each cell's
+     * month's money goes into the first while the desk can sell it, then the
+     * next. What no company could take stays in savings.
+     *
+     * @param companies register indices, best first
+     * @param capacity  the most cash the desk will take for each, same order
+     * @return cash spent in total
+     */
+    public double buyShares(Exchange exchange, Equity register, Bank bank, int[] companies,
+                            double fraction, double[] capacity) {
+        if (exchange == null || fraction <= 0 || companies.length == 0) return 0;
+        double[] left = new double[cells.length];
+        double total = 0;
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c.households < .5 || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            if (excess <= 0) continue;
+            left[i] = excess * fraction * c.households;
+            total += left[i];
+        }
+        double spent = 0;
+        for (int k = 0; k < companies.length && total > 0; k++) {
+            if (capacity[k] <= 0) continue;
+            double scale = Math.min(1, capacity[k] / total);
+            int company = companies[k];
+            for (int i = 0; i < cells.length; i++) {
+                if (left[i] <= 0) continue;
+                Household c = cells[i];
+                double cash = left[i] * scale;
+                double shares = exchange.deskSellsToHouseholds(register, bank, company, cash);
+                if (shares <= 0) continue;
+                c.savings -= cash / c.households;
+                c.shares[company] += shares / c.households;
+                left[i] -= cash;
+                total -= cash;
+                spent += cash;
+            }
+        }
+        return spent;
+    }
+
+    /** A split or consolidation: every household's count of the company by the factor. */
+    public void splitShares(int company, double k) {
+        if (!(k > 0) || k == 1) return;
+        for (Household c : cells) c.shares[company] *= k;
+        lastSharesTakenAway[company] *= k;
+    }
+
+    /** What the households would put into shares this month, in cash, before the desk says how much it can sell. */
+    public double sharesWanted(double fraction) {
+        double total = 0;
+        for (Household c : cells) {
+            if (c.households < .5 || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            if (excess > 0) total += excess * fraction * c.households;
+        }
+        return total;
+    }
+
+    /**
+     * A company's tender: every household sells this share of what it holds
+     * of the company, at this price, into its savings.
+     *
+     * @return cash the households received
+     */
+    public double tenderShares(int company, double fraction, double price) {
+        if (!(fraction > 0) || !(price > 0)) return 0;
+        double paid = 0;
+        for (Household c : cells) {
+            if (c.households <= 0 || c.shares[company] <= 0) continue;
+            double sell = c.shares[company] * Math.min(1, fraction);
+            c.shares[company] -= sell;
+            c.savings += sell * price;
+            paid += sell * price * c.households;
+        }
+        return paid;
+    }
+
+    /** What the households' shares are worth at the exchange's quote, or at book with no exchange. */
+    public double marketValueOfShares() {
+        if (exchange == null || register == null) return 0;
+        return exchange.marketValueOfHouseholds(register, this);
+    }
+
+    /** What the households raised this month selling shares to cover the shop. */
+    public double totalSold() {
+        double total = 0;
+        for (Household c : cells) total += c.sold * c.households;
+        return total;
+    }
+
+    /* =====================================================================
+       THE WORLD'S PAPER
+
+       The households' savings follow the sectors' rule (OutwardInvestment):
+       money at a counter paying nothing, while the world pays two percent,
+       buys the world's paper, and comes home when the bank pays better or
+       the household needs it. The same dials, deliberately - one rule for
+       idle money, wherever it sits.
+
+       WHY, measured: the exchange returned the sectors' hoard to the
+       households - $16-28bn of dividends and buybacks a run - and the
+       households kept it at the bank, so the surplus the sectors had been
+       recycling abroad sat at home, and the currency did what it does with a
+       surplus nobody recycles: eight seeds went from 10% off parity to 31%
+       past it, exports halved, unemployment 11% -> 18%. The money changed
+       hands and lost its door. This is the door.
+       ===================================================================== */
+
+    /** Local currency per dollar, this month: what the paper abroad is worth here. Set by Game before the strike. */
+    private double localPerUsd = ForeignAccounts.OPENING_RATE;
+
+    public void setExchangeRate(double localPerUsd) {
+        if (localPerUsd > 0) this.localPerUsd = localPerUsd;
+    }
+
+    public double getExchangeRate() { return localPerUsd; }
+
+    /** Dollars the households that left this month took with them. Nothing crosses the border. */
+    private double lastAbroadTakenAway;
+
+    /**
+     * Every household decides where to keep its idle money: what is past the
+     * cushion goes abroad towards the target share, a little a month; what
+     * is abroad comes home when the target falls. A household in debt, locked
+     * out or going short holds nothing abroad. The coupon is rolled where it
+     * is earned. Called once a month, after the shares have traded and before
+     * the audit strikes.
+     *
+     * @param depositRate what the bank pays savers, annual
+     * @param worldRate   what the world pays, annual
+     * @param rate        local currency per dollar, this month
+     */
+    public void investAbroad(double depositRate, double worldRate, double rate) {
+        if (!(rate > 0)) return;
+        localPerUsd = rate;
+        double spread = Math.max(0, worldRate - Math.max(0, depositRate));
+        double targetShare = Math.min(OutwardInvestment.MAX_SHARE, spread * OutwardInvestment.APPETITE);
+        for (Household c : cells) {
+            if (c.households < .5) continue;
+
+            // The income first, rolled where it is earned - see OutwardInvestment.
+            double earnedUsd = c.abroad * Math.max(0, worldRate) / 12;
+            c.abroad += earnedUsd;
+            c.foreignInterest = earnedUsd * rate;
+
+            double held = c.abroad * rate;
+            boolean eligible = c.debt <= 0 && c.lockout <= 0 && !c.isGoingShort();
+            double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            double spare = c.savings - cushion;
+            double target = eligible && spare + held > 0 ? (spare + held) * targetShare : 0;
+            double gap = target - held;
+            double move;
+            if (gap > 0) {
+                move = Math.min(gap * OutwardInvestment.OUT_SPEED, Math.max(0, spare));
+            } else {
+                move = Math.max(gap * OutwardInvestment.HOME_SPEED, -held);
+            }
+            if (Math.abs(move) < 1e-12) continue;
+            c.savings -= move;
+            c.abroad += move / rate;
+            if (c.abroad < 1e-15) c.abroad = 0;
+            if (move > 0) c.sentAbroad += move; else c.broughtHome += -move;
+        }
+    }
+
+    /** Dollars every household holds abroad. */
+    public double totalAbroadUsd() {
+        double total = 0;
+        for (Household c : cells) total += c.abroad * c.households;
+        return total;
+    }
+
+    /** ...worth this much at home, at the month's rate. */
+    public double totalAbroadValue() { return totalAbroadUsd() * localPerUsd; }
+
+    /** Sent abroad this month, all households, local money. For MoneyAudit. */
+    public double getSentAbroad() {
+        double total = 0;
+        for (Household c : cells) total += c.sentAbroad * c.households;
+        return total;
+    }
+
+    /** Brought home this month - to keep to the target or to eat - all households, local money. For MoneyAudit. */
+    public double getBroughtHome() {
+        double total = 0;
+        for (Household c : cells) total += c.broughtHome * c.households;
+        return total;
+    }
+
+    /** What the world paid the households this month, rolled abroad. For MoneyAudit, twice. */
+    public double getForeignInterest() {
+        double total = 0;
+        for (Household c : cells) total += c.foreignInterest * c.households;
+        return total;
+    }
+
+    /** Dollars that left with the households that left this month. */
+    public double getAbroadTakenAway() { return lastAbroadTakenAway; }
 
     /* ------------------------- what the bank is owed ------------------------- */
 
@@ -1002,8 +1271,11 @@ public class HouseholdBalance {
     /** Figures carried per cell before the shares were appended (2026-09-10, evening). */
     public static final int CELL_SLOTS_BEFORE_SHARES = 8;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, then a share count per company. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length;
+    /** ...and before the dollars abroad were (2026-09-11). */
+    public static final int CELL_SLOTS_BEFORE_ABROAD = CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length;
+
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad. */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_ABROAD + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public String[] cellKeys() {
@@ -1026,6 +1298,7 @@ public class HouseholdBalance {
             out[i++] = c.interest;
             out[i++] = c.subsistence;
             for (double held : c.shares) out[i++] = held;
+            out[i++] = c.abroad;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -1046,12 +1319,15 @@ public class HouseholdBalance {
      */
     public boolean restoreCells(String[] keys, double[] saved) {
         if (keys == null || saved == null || keys.length == 0) return false;
-        // Eight a cell from the morning the cells went in, or eight plus a
-        // share count per company from the evening. Either length restores
-        // what it carries; a save without shares has households that own none.
+        // Eight a cell from the morning the cells went in, eight plus a share
+        // count per company from the evening, or those plus the dollars abroad
+        // from the next day. Any of the three restores what it carries; a save
+        // without shares has households that own none, one without the
+        // dollars has households that hold none.
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != CELL_SLOTS && slots != CELL_SLOTS_BEFORE_SHARES)) {
+                || (slots != CELL_SLOTS && slots != CELL_SLOTS_BEFORE_ABROAD
+                    && slots != CELL_SLOTS_BEFORE_SHARES)) {
             return false;
         }
         java.util.Map<String, Household> byKey = new java.util.HashMap<>();
@@ -1070,9 +1346,11 @@ public class HouseholdBalance {
             c.interest    = saved[i++];
             c.subsistence = saved[i++];
             java.util.Arrays.fill(c.shares, 0);
-            if (slots == CELL_SLOTS) {
+            c.abroad = 0;
+            if (slots >= CELL_SLOTS_BEFORE_ABROAD) {
                 for (int k = 0; k < c.shares.length; k++) c.shares[k] = saved[i++];
             }
+            if (slots >= CELL_SLOTS) c.abroad = Math.max(0, saved[i++]);
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];
@@ -1130,6 +1408,7 @@ public class HouseholdBalance {
         lastWrittenOff = 0;
         lastLeaving = 0;
         lastTakenAway = 0;
+        lastAbroadTakenAway = 0;
         lastDepositInterest = 0;
         lastDelivered = 1;
         plannedSpend = 0;
@@ -1146,6 +1425,7 @@ public class HouseholdBalance {
     public void redenominate(double scale) {
         lastWrittenOff *= scale;
         lastTakenAway *= scale;
+        localPerUsd *= scale;
         plannedSpend *= scale;
         lastDepositInterest *= scale;
         forEach(c -> c.redenominate(scale));

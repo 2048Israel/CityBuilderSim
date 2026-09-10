@@ -87,10 +87,25 @@ public class HistoryCheck {
         System.out.println("  series kept: " + series.size());
         assertTrue("there are more than the original eight", series.size() > 8);
 
+        int market = 0;
         for (Map.Entry<String, List<? extends Number>> e : series.entrySet()) {
+            boolean shares = e.getKey().startsWith("sharePrice:") || e.getKey().startsWith("shareValue:");
+            if (shares) {
+                // A company's price runs from the month it LISTED to the end
+                // of the axis: never longer, never a month short at the end.
+                market++;
+                assertTrue("  " + e.getKey() + " runs from its listing to the end",
+                        e.getValue().size() >= 1 && e.getValue().size() <= h.months());
+                continue;
+            }
             assertTrue("  " + e.getKey() + " has a value for every month",
                     e.getValue().size() == h.months());
         }
+        assertTrue("the companies' share prices are among them", market > 0);
+        double[] bankPrice = h.aligned(HistorySave.priceKey(Equity.COMPANIES[Equity.BANK]));
+        boolean priced = bankPrice.length > 0 && !Double.isNaN(bankPrice[bankPrice.length - 1])
+                && bankPrice[bankPrice.length - 1] > 0;
+        assertTrue("  the bank, listed at the founding, has a price in the last month", priced);
 
         /*
          * AND THEY ARE NOT ALL ZERO.
@@ -132,7 +147,11 @@ public class HistoryCheck {
             double[] after = back.aligned(key);
             boolean same = before.length == after.length;
             for (int i = 0; same && i < before.length; i++) {
-                same = Math.abs(before[i] - after[i]) < 1e-9;
+                // A month nobody was counting is NaN on both sides, and NaN
+                // is not within anything of NaN: a company's share price
+                // starts the month it lists, and the months before are that.
+                same = (Double.isNaN(before[i]) && Double.isNaN(after[i]))
+                        || Math.abs(before[i] - after[i]) < 1e-9;
             }
             if (!same) {
                 System.out.println("  MISMATCH in " + key

@@ -186,6 +186,7 @@ public class Game {
         economyManager.setConstructionHandler(servicesManager.getConstructionHandler());
         economyManager.setOutwardInvestment(outward);
         economyManager.setEquity(equity);
+        householdBalance.setMarket(exchange, equity, bank);
         
         simulationEngine = new SimulationEngine(
                 economyManager,
@@ -210,6 +211,7 @@ public class Game {
         hotMoney.reset();
         outward.reset();
         equity.reset();
+        exchange.reset();
         priceIndex.reset();
         world.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
@@ -1120,6 +1122,9 @@ public class Game {
          * households are.
          */
         if (accrue) {
+            // At the month's rate, for a household that sells its paper
+            // abroad to eat - see Household.settle().
+            householdBalance.setExchangeRate(foreign.getRate());
             householdBalance.advanceMonth(families::get, disposable,
                     households.rentPerHousehold(), fees, actualShopping,
                     shops.getStoreSellPrice(), debtManager.getRate(),
@@ -1193,7 +1198,8 @@ public class Game {
         double before = equity.getRaisedHomeThisMonth(Equity.BANK);
         double beforeAbroad = equity.getRaisedAbroadThisMonth(Equity.BANK);
         equity.offer(Equity.BANK, wanted, Math.max(0, bank.equity()),
-                householdBalance, DebtManager.WORLD_BASE_RATE);
+                householdBalance, DebtManager.WORLD_BASE_RATE,
+                exchange.isOpen() ? exchange.mid(Equity.BANK) : 0);
         bank.injectCapital(equity.getRaisedHomeThisMonth(Equity.BANK) - before,
                 equity.getRaisedAbroadThisMonth(Equity.BANK) - beforeAbroad);
     }
@@ -1208,6 +1214,12 @@ public class Game {
      * savings this month; the world's leaves on the income account.
      */
     private void payDividends() {
+        // A company with a book and no owners is listed: the founders' shares.
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            double book = c == Equity.BANK ? bank.equity()
+                    : sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[c])).equity();
+            equity.listIfUnlisted(c, book, householdBalance);
+        }
         // Whoever left this month took their shares with them.
         equity.followEmigrants(householdBalance);
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
@@ -1230,7 +1242,67 @@ public class Game {
                     economyManager.recordDividendPaid(sector, paid);
                 }
             }
-            if (paid > 0) equity.payDividend(c, paid, householdBalance);
+            if (paid > 0) {
+                double deskBefore = equity.getDividendDeskThisMonth(c);
+                equity.payDividend(c, paid, householdBalance);
+                // The desk's inventory is paid like any holder: into the bank.
+                bank.receiveDividend(equity.getDividendDeskThisMonth(c) - deskBefore);
+            }
+        }
+    }
+
+    /**
+     * The exchange's month: the desk quotes, the leavers, the world, the
+     * households and the companies trade, and the bank carries what is left
+     * at the closing mark. After the dividends, so the yields are this
+     * month's, and before the sectors move their money abroad, so a buyback
+     * is paid from the till before the till is emptied.
+     */
+    private void tradeShares() {
+        double[] book = new double[Equity.COMPANIES.length];
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            book[c] = c == Equity.BANK ? bank.equity()
+                    : sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[c])).equity();
+        }
+        exchange.takeMonth(equity, householdBalance, bank, new Exchange.Companies() {
+            @Override public double cashAvailable(int company, double wanted) {
+                String sector = Equity.COMPANIES[company];
+                double till = economyManager.getSectorCash(sector);
+                if (till < wanted) till += outward.recall(sector, wanted - till, economyManager);
+                return till;
+            }
+            @Override public void payBuyback(int company, double cash) {
+                String sector = Equity.COMPANIES[company];
+                economyManager.setSectorCash(sector, economyManager.getSectorCash(sector) - cash);
+                economyManager.recordSharesBoughtBack(sector, cash);
+            }
+            @Override public void paySpecialDividend(int company, double cash) {
+                String sector = Equity.COMPANIES[company];
+                economyManager.setSectorCash(sector, economyManager.getSectorCash(sector) - cash);
+                economyManager.recordDividendPaid(sector, cash);
+            }
+            @Override public double assets(int company) {
+                return sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[company])).totalAssets();
+            }
+            @Override public double equity(int company) {
+                return sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[company])).equity();
+            }
+            @Override public double monthlyOperatingCost(int company) {
+                return sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[company])).operatingCost();
+            }
+            @Override public boolean bankFlush() {
+                // Twice what it must hold, and nothing owed to a regulator:
+                // only then does it buy its own shares back.
+                return !bank.isInsolvent() && bank.recapitalisationNeeded() <= 0
+                        && bank.capitalRatio() >= 2 * Bank.CAPITAL_RATIO
+                        && equity.getRegime(Equity.BANK) != Equity.Regime.BAD
+                        && equity.getRegime(Equity.BANK) != Equity.Regime.NEW;
+            }
+        }, book, DebtManager.WORLD_BASE_RATE, bank.depositRate());
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            double k = exchange.getSplit(c);
+            if (k > 1) GameLog.note(String.format("%s split its shares %,.0f for one.", Equity.COMPANIES[c], k));
+            else if (k > 0) GameLog.note(String.format("%s consolidated its shares one for %,.0f.", Equity.COMPANIES[c], 1 / k));
         }
     }
 
@@ -1771,9 +1843,12 @@ public class Game {
             SectorBooks.SectorMonth books = sectorBooks.get(PolicySector.byCreditName(decision.sector));
             double planCost = businessInvestment.getCostOf(decision.template, decision.quantity);
             double ask = equity.raiseFor(company, books.totalAssets(), books.equity(), planCost);
+            // ...and not at a quote under what the shares are worth: then it borrows.
+            if (ask > 0 && !exchange.quoteSupportsIssue(company)) ask = 0;
             if (ask > 0) {
                 double raised = equity.offer(company, ask, books.equity(),
-                        householdBalance, DebtManager.WORLD_BASE_RATE);
+                        householdBalance, DebtManager.WORLD_BASE_RATE,
+                        exchange.isOpen() ? exchange.mid(company) : 0);
                 if (raised > 0) {
                     economyManager.setSectorCash(decision.sector,
                             economyManager.getSectorCash(decision.sector) + raised);
@@ -3207,6 +3282,7 @@ public class Game {
 
         // The register's month: nothing offered, nothing paid, until it is.
         equity.startMonth();
+        exchange.startMonth();
         economyManager.clearEquityFlows();
 
         if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {
@@ -3417,9 +3493,13 @@ public class Game {
          * and from abroad if the till is short. See payDividends().
          */
         payDividends();
+        tradeShares();
 
         outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
                 foreign.getRate(), economyManager);
+        // ...and the households, by the same rule, with what the owners were
+        // just paid. See HouseholdBalance.investAbroad().
+        householdBalance.investAbroad(bank.depositRate(), DebtManager.WORLD_BASE_RATE, foreign.getRate());
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
 
@@ -4590,6 +4670,10 @@ public class Game {
     private final Equity equity = new Equity();
     public Equity getEquity() { return equity; }
 
+    /** Where the shares change hands, with the bank as the dealer. See Exchange. */
+    private final Exchange exchange = new Exchange();
+    public Exchange getExchange() { return exchange; }
+
     public OutwardInvestment getOutwardInvestment() { return outward; }
 
     /**
@@ -4967,6 +5051,7 @@ public class Game {
         dataSave.setCapitalFlows(hotMoney.toSaveArray());
         dataSave.setOutwardInvestment(outward.toSaveArray());
         dataSave.setEquity(equity.keys(), equity.toSaveArray());
+        dataSave.setExchange(exchange.toSaveArray());
         dataSave.setPriceIndex(priceIndex.toSaveArray());
         dataSave.setWorldEconomy(world.toSaveArray());
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
@@ -6063,6 +6148,11 @@ public class Game {
             outward.restore(loaded.getOutwardInvestment());
             // ...or whose companies had no owners yet.
             equity.restore(loaded.getEquityKeys(), loaded.getEquity());
+            // ...or no market. The desk's mark is put back from the quote and
+            // the inventory, without calling the difference income.
+            exchange.restore(loaded.getEquityKeys(), loaded.getExchange());
+            bank.restoreSecurities(exchange.markToMarket(equity));
+            exchange.reopen(bank.equity());
             labourMarket.setCostOfLiving(loaded.getCostOfLiving());
             economyManager.getCommercialHandler().setStoreSellPrice(loaded.getStoreSellPrice());
             // Zero means a save written before rent became a lagged price; the
@@ -6781,6 +6871,7 @@ public class Game {
             householdBalance.restore(restoredFlows.getHouseholdBalance(), families::get);
             householdBalance.restoreCells(restoredFlows.getHouseholdCellKeys(),
                     restoredFlows.getHouseholdCells());
+            householdBalance.setExchangeRate(foreign.getRate());
 
             /*
              * ...and the households' placement, for the third time and the same
@@ -6959,6 +7050,7 @@ public class Game {
         hotMoney.redenominate(scale);
         outward.redenominate(scale);
         equity.redenominate(scale);
+        exchange.redenominate(scale);
         // The last closed month is what the next dividend is paid on.
         sectorBooks.redenominate(scale);
         priceIndex.redenominate(scale);
