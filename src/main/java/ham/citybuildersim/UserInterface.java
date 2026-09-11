@@ -1996,9 +1996,7 @@ public class UserInterface extends Application {
         column.getChildren().add(statementHead("Who is waiting"));
 
         boolean anyone = false;
-        String[] sectors = {Sectors.REAL_ESTATE, Sectors.RETAIL,
-                Sectors.INDUSTRY, Sectors.CONSTRUCTION};
-        for (String sector : sectors) {
+        for (String sector : Sectors.KEYS) {
             String last = game.getLastInvestment(sector);
             if (last != null && last.contains("no land")) {
                 column.getChildren().add(statementLine(sector,
