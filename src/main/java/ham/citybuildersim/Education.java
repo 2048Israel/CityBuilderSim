@@ -212,6 +212,16 @@ public class Education {
     private double upkeep;
 
     /**
+     * Adults who came out of a course this month, every course counted once:
+     * the gross flow out of the student body, where graduates[] is the net
+     * movement between bands. HouseholdBalance needs the gross figure - a
+     * college that takes in as many as it lets out has a student body that
+     * never changes size, and the graduates still leave it with their loans.
+     * Saved, because the families read it the month after it happens.
+     */
+    private double finished;
+
+    /**
      * Everyone the city has ever put through school, by band.
      *
      * A STOCK, and the only number here that a save has to carry for its own
@@ -282,6 +292,7 @@ public class Education {
 
         java.util.Arrays.fill(graduates, 0);
         java.util.Arrays.fill(licences, 0);
+        finished = 0;
         java.util.Arrays.fill(enrolled, 0);
         tuitionCollected = 0;
         citySubsidyPaid = 0;
@@ -303,6 +314,8 @@ public class Education {
             for (int k = 0; k + 1 < queue.length; k++) queue[k] = queue[k + 1] * keep;
             if (queue.length > 0) queue[queue.length - 1] = 0;
             if (finishing <= 0) continue;
+            // Counted by the rule refreshStudying() counts the body by.
+            if (type.requires() != null) finished += finishing;
             if (type.isProfessional()) {
                 licences[type.licenses().ordinal()] += finishing;
             } else if (type.produces() != null) {
@@ -679,6 +692,9 @@ public class Education {
 
     public double[] getEverGraduated() { return everGraduated; }
 
+    /** Adults who finished a course this month - the gross flow out of getStudying(). */
+    public double getFinished() { return finished; }
+
     /* ===================================================================
        WHAT THE SCREEN NEEDS TO EXPLAIN AN EMPTY SCHOOL
 
@@ -762,7 +778,7 @@ public class Education {
     public double[] getState() {
         int size = everGraduated.length + 1;
         for (double[] queue : inFlight) size += queue.length;
-        size += MONTH_FIELDS + coverage.length + enrolled.length;
+        size += MONTH_FIELDS + coverage.length + enrolled.length + 1;
         double[] out = new double[size];
         int i = 0;
         out[i++] = tuitionSubsidy;
@@ -790,6 +806,9 @@ public class Education {
         out[i++] = tuitionCollected;
         for (double v : coverage) out[i++] = v;
         for (double v : enrolled) out[i++] = v;
+        // ...and who finished, appended 2026-09-11: the students' loans leave
+        // with them the month after. See HouseholdBalance.setGraduates().
+        out[i++] = finished;
         return out;
     }
 
@@ -807,6 +826,7 @@ public class Education {
         java.util.Arrays.fill(studying, 0);
 
         payroll = 0; upkeep = 0; citySubsidyPaid = 0; tuitionCollected = 0;
+        finished = 0;
         java.util.Arrays.fill(coverage, 0);
         java.util.Arrays.fill(enrolled, 0);
 
@@ -814,9 +834,10 @@ public class Education {
         int fullForm = shortForm;
         for (double[] queue : inFlight) fullForm += queue.length;
         int withMonth = fullForm + MONTH_FIELDS + coverage.length + enrolled.length;
+        int withFinished = withMonth + 1;
 
         if (saved == null || (saved.length != shortForm && saved.length != fullForm
-                && saved.length != withMonth)) {
+                && saved.length != withMonth && saved.length != withFinished)) {
             tuitionSubsidy = DEFAULT_SUBSIDY;
             java.util.Arrays.fill(everGraduated, 0);
             return;
@@ -827,7 +848,7 @@ public class Education {
         if (saved.length >= fullForm) {
             for (double[] queue : inFlight) for (int k = 0; k < queue.length; k++) queue[k] = saved[i++];
         }
-        if (saved.length == withMonth) {
+        if (saved.length >= withMonth) {
             payroll = saved[i++];
             upkeep = saved[i++];
             citySubsidyPaid = saved[i++];
@@ -835,6 +856,7 @@ public class Education {
             for (int k = 0; k < coverage.length; k++) coverage[k] = saved[i++];
             for (int k = 0; k < enrolled.length; k++) enrolled[k] = saved[i++];
         }
+        if (saved.length == withFinished) finished = Math.max(0, saved[i]);
         refreshStudying();
     }
 

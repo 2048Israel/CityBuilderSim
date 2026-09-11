@@ -251,17 +251,16 @@ public class Healthcare {
      */
     public static final double CHILDCARE_SWING = 40;
 
-    /**
-     * Teenagers and adults, on general care.
+    /*
+     * TEENAGERS AND ADULTS HAVE NO SWING OF THEIR OWN, since 2026-09-11.
      *
-     * New, and Jerus's call. General care already earns its keep through the
-     * sick rate, so this is a second effect from one lever - but a city where
-     * hospitals do not affect whether adults live is a strange city, and three
-     * is deliberately modest beside childcare's forty: it takes the adult band
-     * from 0.45%/yr to 1.35% untreated and 0.15% served. Medicine saves far
-     * more infants than it saves thirty-year-olds.
+     * General care used to multiply their death rate three-fold either way -
+     * 0.45%/yr to 1.35% untreated and 0.15% served. Jerus's call when sickness
+     * started to kill: "sickness replaces it". A hospital keeps an adult alive
+     * by curing them before they have been sick two months, and it does that
+     * through Sickness.recovery(), so the swing would have counted the same
+     * lives twice. Their care factor is 1 at every coverage.
      */
-    public static final double GENERAL_SWING = 3.0;
 
     /**
      * Seniors, and it stays gentle.
@@ -299,7 +298,8 @@ public class Healthcare {
 
         if (CareType.CHILDCARE.servedBy(band)) return swing(CHILDCARE_SWING, childcareCoverage);
         if (band == AgeBand.SENIOR)            return swing(SENIOR_SWING, seniorCoverage);
-        return swing(GENERAL_SWING, generalCoverage);
+        // General care saves teenagers and adults through Sickness, not here.
+        return 1;
     }
 
     /** The two-argument form, for callers that only care about the extremes. */

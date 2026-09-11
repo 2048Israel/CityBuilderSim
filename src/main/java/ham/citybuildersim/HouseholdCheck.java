@@ -618,8 +618,10 @@ public class HouseholdCheck {
         double[] bought = new double[R];
         cellsBal.advanceMonth(who, pay, .50, noFees, bought, .20, .05, 1);
 
-        assertTrue("sixty-eight cells: eleven working shapes by six tiers, and two retired",
-                cellsBal.cellCount() == 11 * 6 + 2);
+        // Since 2026-09-11: and seven outside the families - the out of work in
+        // three situations, the students, and the orphans of three bands.
+        assertTrue("seventy-five cells: eleven working shapes by six tiers, two retired, seven outside the families",
+                cellsBal.cellCount() == 11 * 6 + 2 + 3 + 1 + 3);
         Household one = cellsBal.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
         Household two = cellsBal.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household six = cellsBal.cell(FamilyStructure.LARGE_FAMILY, PayTier.UNSKILLED);

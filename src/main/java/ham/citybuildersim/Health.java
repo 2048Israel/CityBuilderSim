@@ -10,6 +10,10 @@ import java.util.Random;
  * first of the month as it did on the last of the previous one, and their names
  * are still on the payroll. What changes is how much work gets done.
  *
+ * (Since 2026-09-11 people who STAY sick die - but of Sickness, which reads
+ * this rate and remembers how long each band's sick have been ill. This class
+ * still only says how many.)
+ *
  * SO IT IS A FOURTH UTILISATION RATIO, alongside energy, water and roads, and
  * that is the whole design. Those three already exist, already multiply into
  * output, already get carried across a save as a basis, and are already
@@ -194,6 +198,16 @@ public class Health {
      */
     public void advanceMonth(double generalCareCapacity, double population, int month,
                              double unburied, double hungry) {
+        advanceMonth(generalCareCapacity, population, month, unburied, hungry, 0);
+    }
+
+    /**
+     * @param unhousedShare the share of the city with no home - the unhoused and
+     *                      the orphans - who get sick UNHOUSED_SICKNESS times as
+     *                      often. Jerus: "and also get sick faster if unhoused".
+     */
+    public void advanceMonth(double generalCareCapacity, double population, int month,
+                             double unburied, double hungry, double unhousedShare) {
 
         coverage = coverageOf(generalCareCapacity, population);
         baselineRate = WELL_SERVED_RATE
@@ -228,9 +242,22 @@ public class Health {
         hungerRate = Math.min(MAX_HUNGER_SICKNESS,
                 Math.max(0, Math.min(1, hungry)) * HUNGER_WEIGHT);
 
+        /*
+         * THE UNHOUSED (2026-09-11). The city's sick rate is one figure, so a
+         * group that gets sick faster enters as its share of the city times
+         * the extra sickness it carries over the baseline everybody has.
+         */
+        unhousedRate = Math.max(0, Math.min(1, unhousedShare)) * baselineRate
+                * (Unemployment.UNHOUSED_SICKNESS - 1);
+
         sickRate = Math.min(MAX_SICK_RATE,
-                baselineRate + outbreakSeverity + unburiedRate + hungerRate);
+                baselineRate + outbreakSeverity + unburiedRate + hungerRate + unhousedRate);
     }
+
+    private double unhousedRate;
+
+    /** What the unhoused and the orphans are adding on top. Zero in a city that houses everybody. */
+    public double getUnhousedRate() { return unhousedRate; }
 
     /**
      * Share of the people general care has to serve that it has room for.
@@ -298,7 +325,9 @@ public class Health {
              * points against a reported 3.7, and the General care screen printed
              * the gap as "Not accounted for" until the next month closed it.
              */
-            hungerRate
+            hungerRate,
+            // ...and the unhoused, appended 2026-09-11, for the same reason.
+            unhousedRate
         };
     }
 
@@ -323,7 +352,7 @@ public class Health {
          * month puts it right. Anything that is neither length is still refused
          * whole, because that is a save this build cannot read.
          */
-        if (state == null || state.length < 6 || state.length > 7) return false;
+        if (state == null || state.length < 6 || state.length > 8) return false;
 
         outbreakSeverity = state[0];
         outbreakStarted  = (int) state[1];
@@ -332,6 +361,7 @@ public class Health {
         baselineRate     = state[4];
         unburiedRate     = state[5];
         hungerRate       = state.length > 6 ? state[6] : 0;
+        unhousedRate     = state.length > 7 ? state[7] : 0;
         return true;
     }
 

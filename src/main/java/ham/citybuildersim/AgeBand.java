@@ -10,9 +10,9 @@ package ham.citybuildersim;
 public enum AgeBand {
 
     BABY   ("Babies",   0,   6, .0010),
-    CHILD  ("Children", 6,  13, .00015),
-    TEEN   ("Teens",   13,  18, .0004),
-    ADULT  ("Adults",  18,  70, .0045),
+    CHILD  ("Children", 6,  13, .000075),
+    TEEN   ("Teens",   13,  18, .0002),
+    ADULT  ("Adults",  18,  70, .00225),
     SENIOR ("Seniors", 70, 120, .0450);
 
     private final String label;
@@ -78,14 +78,22 @@ public enum AgeBand {
 
          Babies   0.10%  - almost all of it in the first year; a five-year-old
                            is one of the safest people alive
-         Children 0.015% - the safest band there is
-         Teens    0.04%  - accidents, and it ticks up from the child rate
-         Adults   0.45%  - averaged over a FIFTY-TWO year span, from about
-                           0.08% at twenty to about 1.5% at sixty-nine
+         Children 0.0075% - the safest band there is
+         Teens    0.02%  - accidents, and it ticks up from the child rate
+         Adults   0.225% - averaged over a FIFTY-TWO year span
          Seniors  4.5%   - on top of the 2%/yr that ages out at 120, giving a
                            total outflow of 6.5% and therefore an average of
                            about fifteen more years at seventy, which is what
                            life expectancy at seventy actually is
+
+       HALVED FOR CHILDREN, TEENS AND ADULTS on 2026-09-11, Jerus's call - every
+       band but babies and seniors - from 0.015%, 0.04% and 0.45%, the
+       life-table figures.
+       What these three bands used to lose to illness they lose now through
+       Sickness, which kills whoever stays sick past two months: a city that
+       cures its sick gets back below the life table, a city that does not goes
+       well above it. So the numbers here are the deaths that are nobody's
+       fault, not the whole of a band's mortality.
 
        WHY THE ADULT NUMBER LOOKS LOW AND IS NOT. It is a single figure for
        everyone from eighteen to sixty-nine, and the real curve across that span

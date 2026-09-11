@@ -200,12 +200,17 @@ public class Game {
         buildLog = new BuildLog();
         cohorts = new PopulationCohorts();
         families = new FamilyModel();
+        families.rememberHouseholds(true);   // see FamilyModel: THE HOUSEHOLDS REMEMBER
         migration = new Migration();
         labourMarket = new LabourMarket();
         education = new Education();
         skipReport = new TimeSkipReport();
         households = new HouseholdAccounts();
         householdBalance.reset();
+        unemployment.reset();
+        sickness.reset();
+        lastOrphanDeaths = 0; lastUnhousedDeaths = 0;
+        studentLoansLent = 0; studentLoansRepaid = 0; studentLoansWrittenOff = 0;
         bank.reset();
         foreign.reset();
         hotMoney.reset();
@@ -949,7 +954,7 @@ public class Game {
         double schoolFees = education.getFees();
 
         /* ---- the rows, needed by the balance sheet and the split alike ---- */
-        int rowCount = HouseholdAccounts.RETIRED + 1;
+        int rowCount = Household.ROWS;
         double[] rowPeople = new double[rowCount];
         double[] rowHomes  = new double[rowCount];
         for (PayTier t : PayTier.values()) {
@@ -958,6 +963,15 @@ public class Game {
         }
         rowPeople[HouseholdAccounts.RETIRED] = families.retiredPeople();
         rowHomes[HouseholdAccounts.RETIRED]  = families.retiredHouseholds();
+        // ...and the people outside the families, one to a household.
+        rowPeople[HouseholdAccounts.UNEMPLOYED] = unemployment.getPool();
+        rowHomes[HouseholdAccounts.UNEMPLOYED]  = unemployment.getPool();
+        rowPeople[HouseholdAccounts.STUDENTS]   = families.getSeekers(FamilyModel.Seeker.STUDENT);
+        rowHomes[HouseholdAccounts.STUDENTS]    = families.getSeekers(FamilyModel.Seeker.STUDENT);
+        rowPeople[HouseholdAccounts.ORPHANS]    = families.getOrphansTotal();
+        rowHomes[HouseholdAccounts.ORPHANS]     = families.getOrphansTotal();
+        households.setOutsideMoney(economyManager.getEiPremiums(),
+                economyManager.getEiBenefits(), economyManager.getStudentGrants());
 
         double interestPaid = householdBalance.totalInterest();
         households.setPensionPerSenior(tax.pensionPerSenior());
@@ -1006,8 +1020,9 @@ public class Game {
             interestPerRow[r] = householdBalance.getInterest(r) * rowHomes[r];
         }
 
+        double[] doors = rowDoors();
         households.updateByTier(wagePerTier, taxPerTier, rowPeople, rowHomes,
-                householdBalance.plannedShare(), interestPerRow);
+                householdBalance.plannedShare(), interestPerRow, doors);
 
         /* =================== AND THE BALANCE SHEET ===================
          *
@@ -1079,7 +1094,7 @@ public class Game {
              * "not struck yet" to the plan the load path exists to re-strike.
              */
             households.updateByTier(wagePerTier, taxPerTier, rowPeople, rowHomes,
-                    householdBalance.plannedShare(), interestPerRow);
+                    householdBalance.plannedShare(), interestPerRow, doors);
         }
 
         shops.setSpendingCapacity(householdBalance.getSpendingCapacity());
@@ -1100,6 +1115,20 @@ public class Game {
             bank.takeFromHouseholds(householdBalance.totalRepaid(),
                     householdBalance.totalInterest());
             bank.writeOff(householdBalance.getWrittenOff());
+
+            /*
+             * THE PEOPLE OUTSIDE THE FAMILIES' MONTH, on the city's side.
+             * Who could not pay their rent is moved at the demographics; the
+             * students' loans leave the treasury and the graduates' repayments
+             * come back, the month they are struck, as the bank's do. What a
+             * graduate who left the city still owed is the treasury's loss - its
+             * book, not its cash.
+             */
+            unemployment.noteEvicted(householdBalance.getEvicted());
+            studentLoansLent = householdBalance.totalStudentBorrowed();
+            studentLoansRepaid = householdBalance.totalStudentRepaid();
+            studentLoansWrittenOff = householdBalance.getStudentDebtTakenAway();
+            cash += studentLoansRepaid - studentLoansLent;
         }
     }
 
@@ -4091,7 +4120,14 @@ public class Game {
        ===================================================================== */
 
     private PopulationCohorts cohorts = new PopulationCohorts();
-    private FamilyModel families = new FamilyModel();
+    private FamilyModel families = rememberingFamilies();
+
+    /** The game's families keep what still fits from month to month; a bare model does not. */
+    private static FamilyModel rememberingFamilies() {
+        FamilyModel f = new FamilyModel();
+        f.rememberHouseholds(true);
+        return f;
+    }
     private Migration migration = new Migration();
 
     /**
@@ -4200,20 +4236,70 @@ public class Game {
          * BOTH ENDS OF A LIFE, and now the beginning of one too.
          *
          * Childcare swings infant mortality forty-fold and doubles the birth
-         * rate; general care swings the adult band three-fold; senior care moves
-         * the seniors' gently. Today's rates are what a HALF-served city gets, so
-         * building care does better than the game has ever done and building none
-         * does very much worse. The multipliers and the reasoning live in
-         * Healthcare.
+         * rate; senior care moves the seniors' gently. Today's rates are what a
+         * HALF-served city gets, so building care does better than the game has
+         * ever done and building none does very much worse. The multipliers and
+         * the reasoning live in Healthcare. General care keeps teenagers and
+         * adults alive through Sickness instead, below.
          */
         double[] mortalityFactors = Healthcare.mortalityFactors(
                 childcareCoverage, generalCoverage, seniorCoverage);
-        cohorts.advanceMonth(mortalityFactors, Healthcare.birthFactor(childcareCoverage));
+
+        /*
+         * THE UNHOUSED AND THE ORPHANS DIE SOONER (2026-09-11). The pyramid
+         * has no sub-groups, so each enters its band's factor as its share of
+         * the band, from last month's count: the unhoused at
+         * Unemployment.UNHOUSED_MORTALITY times the band's rate, the orphans at
+         * the rate their band has with no care at all - nobody is caring for
+         * them. Jerus: "yes they get sick and die for now."
+         */
+        double[] unhousedByBand = families.unhousedPeopleByBand();
+        unhousedByBand[AgeBand.ADULT.ordinal()] += unemployment.getUnhoused();
+        double[] orphansByBand = new double[AgeBand.values().length];
+        double[] inBand = new double[AgeBand.values().length];
+        for (AgeBand b : AgeBand.values()) {
+            orphansByBand[b.ordinal()] = families.getOrphans(b);
+            inBand[b.ordinal()] = cohorts.get(b);
+        }
+        double[] careFactors = mortalityFactors;
+        mortalityFactors = Unemployment.blendMortality(mortalityFactors,
+                Healthcare.mortalityFactors(0, 0, 0), inBand, unhousedByBand, orphansByBand);
+
+        /*
+         * ...AND THE PEOPLE WHO STAYED SICK (2026-09-11). Whoever has been sick
+         * for more than two months dies at their age's monthly chance, from the
+         * ring as last month left it. A city with no ring yet - a new one, or a
+         * save from before - gets one at the steady state for the rate it has,
+         * or nobody could die of sickness for two months. See Sickness.
+         */
+        if (!sickness.isSeeded()) {
+            sickness.seed(health.getSickRate(), generalCoverage, childcareCoverage, seniorCoverage);
+        }
+        double[] illness = sickness.deathRates();
+        cohorts.advanceMonth(mortalityFactors, illness, Healthcare.birthFactor(childcareCoverage));
+        sickness.setLastDeaths(cohorts.getIllnessDeaths());
+        // Who among them were orphans, and who had no home - for the running
+        // totals on the graphs. See Unemployment.attributeDeaths().
+        double[] dyingByBand = new double[AgeBand.values().length];
+        for (AgeBand b : AgeBand.values()) dyingByBand[b.ordinal()] = cohorts.getDying(b);
+        double[] outsideDead = Unemployment.attributeDeaths(careFactors,
+                Healthcare.mortalityFactors(0, 0, 0), inBand, unhousedByBand, orphansByBand,
+                dyingByBand, cohorts.getIllnessDeaths());
+        lastOrphanDeaths = outsideDead[0];
+        lastUnhousedDeaths = outsideDead[1];
+
+        /*
+         * ...AND THE EVICTED WHO GIVE UP ON THE CITY LEAVE. Before the
+         * workforce is read, so they are not counted as looking for work in a
+         * city they have left. Adults only - see PopulationCohorts.leave().
+         */
+        cohorts.leave(AgeBand.ADULT, unemployment.takeEvicted());
         // Kept for the skills step below: the graduates die at the rate the
         // adults do, and that rate depends on the clinics.
         lastAdultMortality = AgeBand.monthlyFromAnnual(
                 AgeBand.ADULT.getAnnualMortality()
-                        * Math.max(0, mortalityFactors[AgeBand.ADULT.ordinal()]));
+                        * Math.max(0, mortalityFactors[AgeBand.ADULT.ordinal()]))
+                + illness[AgeBand.ADULT.ordinal()];
 
         /*
          * Who works this month: the adults who were already living here, read
@@ -4278,7 +4364,37 @@ public class Game {
             jobsByTier[PayTier.of(type).ordinal()] += posts[i] * fillRate[i];
         }
 
-        families.rebuild(cohorts, jobsByTier);
+        /*
+         * WHO IS OUT OF WORK, AND WHO THEY WERE. The pool is the labour
+         * market's; Unemployment works out who is in it - on EI, past it,
+         * evicted - from the month's flows. Then the families are built from
+         * the adults who WORK, and the out of work and the students are told
+         * to the housing match as households of their own.
+         */
+        double[] postsByTier = new double[PayTier.values().length];
+        double[] wageByTier = new double[PayTier.values().length];
+        double[] staffedWage = populationManager.getStaffedWagePerTier();
+        for (JobType type : JobType.values()) {
+            postsByTier[PayTier.of(type).ordinal()] += posts[type.ordinal()];
+        }
+        for (int t = 0; t < wageByTier.length; t++) {
+            wageByTier[t] = jobsByTier[t] > 0 && staffedWage != null && t < staffedWage.length
+                    ? staffedWage[t] / jobsByTier[t] : 0;
+        }
+        double outOfWork = populationManager.getUnemployed();
+        double studying = populationManager.getStudyingTotal();
+        unemployment.advanceMonth(outOfWork, jobsByTier, postsByTier, wageByTier,
+                unskilledWage(), lastAdultMortality,
+                economyManager.getTaxPolicy().getEiBenefitRate());
+        // The month's adult arrivals look for work next month.
+        unemployment.noteArrivals(migration.getLastArrivals() * cohorts.share(AgeBand.ADULT));
+
+        families.rebuild(cohorts, jobsByTier, outOfWork + studying);
+        families.setSeekers(unemployment.getHoused(), studying);
+        // The student body above is last month's education step, and so are
+        // the ones who finished: they leave it with their loans at this
+        // month's census. See HouseholdBalance.setGraduates().
+        householdBalance.setGraduates(education.getFinished());
 
         // One household, one home - and if there are not enough homes, they
         // crowd rather than sleep outside. See FamilyModel.squeeze().
@@ -4320,6 +4436,14 @@ public class Game {
          * live on the payslip it has already had.
          */
         families.shareByAffordability(households.livingAlonePressure(families));
+        // ...and the people outside the families, with their own kind.
+        families.shareSeekersByAffordability(households.seekerPressure(new double[] {
+                unemployment.getHoused(), families.getSeekers(FamilyModel.Seeker.STUDENT) }));
+
+        // What EI and the grants cost the treasury this month, before the cash moves.
+        economyManager.setOutsidePayments(unemployment.getBenefitsPaid(),
+                families.getSeekers(FamilyModel.Seeker.STUDENT)
+                        * economyManager.getTaxPolicy().getStudentGrantShare() * unskilledWage());
 
         /*
          * 6. WHO IS TOO ILL TO WORK.
@@ -4403,7 +4527,27 @@ public class Game {
                 healthcare.getUnburied(),
                 // The last step of the household waterfall, arriving as a health
                 // problem: savings gone, credit gone, so they eat less.
-                householdBalance.getHungerRate());
+                householdBalance.getHungerRate(),
+                // ...and the people with no home, who get sick faster.
+                unhousedShareOfCity());
+
+        /*
+         * 8. And how long they have been sick. The ring turns on this month's
+         *    rate: the dead come out, general care cures its share, the rest are
+         *    a month longer, and whoever fell ill this month joins. Next month's
+         *    deaths are struck from what this leaves.
+         */
+        sickness.advanceMonth(health.getSickRate(), generalCoverage,
+                childcareCoverage, seniorCoverage);
+    }
+
+    /** The share of the city with no home: the unhoused, and the orphans. */
+    public double unhousedShareOfCity() {
+        double people = cohorts.total();
+        if (people <= 0) return 0;
+        double without = families.getOrphansTotal() + unemployment.getUnhoused();
+        for (double v : families.unhousedPeopleByBand()) without += v;
+        return Math.min(1, without / people);
     }
 
     /**
@@ -4495,6 +4639,85 @@ public class Game {
      * is saved. See HouseholdBalance.
      */
     private final HouseholdBalance householdBalance = new HouseholdBalance();
+
+    /*
+     * THE PEOPLE OUTSIDE THE FAMILIES (2026-09-11). Jerus: "a new household
+     * structure called unemployed... or unhoused... and they will have their
+     * own cashflow and stuff." The out of work, the students and the orphans
+     * have books of their own in the balance; this is what tells the balance
+     * how many are in each, and what share of a door's rent each pays. See
+     * claude/the-people-the-books-left-out.md.
+     */
+    private final Unemployment unemployment = new Unemployment();
+    public Unemployment getUnemployment() { return unemployment; }
+
+    /** Who has been sick how long, and who it kills. See Sickness. */
+    private final Sickness sickness = new Sickness();
+    public Sickness getSickness() { return sickness; }
+
+    /** Last month's dead who were orphans, and who had no home. See Unemployment.attributeDeaths(). */
+    private double lastOrphanDeaths, lastUnhousedDeaths;
+    public double getLastOrphanDeaths()   { return lastOrphanDeaths; }
+    public double getLastUnhousedDeaths() { return lastUnhousedDeaths; }
+
+    {
+        householdBalance.setOutsideCensus(this::outsideHouseholds);
+        householdBalance.setRentShares(this::rentShareOf);
+    }
+
+    /** How many households are in a cell the family matrix does not hold. */
+    private double outsideHouseholds(Household c) {
+        if (c instanceof UnemployedHousehold u) {
+            switch (u.status()) {
+                case ON_EI:    return unemployment.onEi();
+                case OFF_EI:   return unemployment.getOffEi();
+                case UNHOUSED: return unemployment.getUnhoused();
+                default:       return 0;
+            }
+        }
+        if (families == null) return 0;
+        if (c instanceof StudentHousehold) return families.getSeekers(FamilyModel.Seeker.STUDENT);
+        if (c instanceof OrphanHousehold o) return families.getOrphans(o.band());
+        return 0;
+    }
+
+    /** The share of a door's rent one household of a cell pays: see HouseholdBalance.setRentShares(). */
+    private double rentShareOf(Household c) {
+        if (families == null) return 1;
+        if (c instanceof UnemployedHousehold u) {
+            return u.status() == UnemployedHousehold.Status.UNHOUSED ? 0
+                    : families.seekerDoorShare(FamilyModel.Seeker.UNEMPLOYED);
+        }
+        if (c instanceof StudentHousehold) return families.seekerDoorShare(FamilyModel.Seeker.STUDENT);
+        if (c instanceof OrphanHousehold) return 0;
+        if (c.shape() != null) return 1 - families.unhousedShareOf(c.shape());
+        return 1;
+    }
+
+    /** The doors each row of the household books pays rent on. See HouseholdAccounts.rowDoors. */
+    private double[] rowDoors() {
+        double[] doors = new double[Household.ROWS];
+        PayTier retiredSlot = PayTier.values()[0];
+        for (Household c : householdBalance.cells()) {
+            double n = c.shape() == null ? outsideHouseholds(c)
+                    : families.get(c.shape(), c.isRetired() ? retiredSlot : c.tier());
+            doors[c.row()] += n * rentShareOf(c);
+        }
+        return doors;
+    }
+
+    /** Student loans the treasury lent and was repaid this month, and wrote off with graduates who left. */
+    private double studentLoansLent, studentLoansRepaid, studentLoansWrittenOff;
+    public double getStudentLoansLent()       { return studentLoansLent; }
+    public double getStudentLoansRepaid()     { return studentLoansRepaid; }
+    public double getStudentLoansWrittenOff() { return studentLoansWrittenOff; }
+
+    /** What an unskilled post pays a month, today: EI's cap and the grant are struck against it. */
+    private double unskilledWage() {
+        double[] wages = populationManager.getWagesPerType();
+        return wages != null && wages.length > JobType.NO_DIPLOMA.ordinal()
+                ? wages[JobType.NO_DIPLOMA.ordinal()] : PayTier.UNSKILLED.getMonthlyWage();
+    }
 
     /**
      * The city's commercial bank - every loan in it, and every default.
@@ -4923,6 +5146,8 @@ public class Game {
         dataSave.setCohorts(cohorts.toSaveArray());
         dataSave.setFamilies(families.toSaveArray());
         dataSave.setMigration(migration.toSaveArray());
+        dataSave.setUnemployment(unemployment.toSaveArray());
+        dataSave.setSickness(sickness.getState());
         dataSave.setHealth(health.getState());
         dataSave.setHealthcare(healthcare.getState());
         dataSave.setLabour(labourMarket.state());
@@ -5590,6 +5815,10 @@ public class Game {
             families.studioRentWeight(), families.familyRentWeight());
     businessInvestment.setFamilies(families);
     economyManager.setSeniors(cohorts.get(AgeBand.SENIOR));
+    // The month's EI and grant bills, as the save struck them - see advanceDemographics().
+    economyManager.setOutsidePayments(unemployment.getBenefitsPaid(),
+            families.getSeekers(FamilyModel.Seeker.STUDENT)
+                    * economyManager.getTaxPolicy().getStudentGrantShare() * unskilledWage());
     economyManager.setTotalJobs(populationManager.getTotalJobs());
     economyManager.setTotalWage(populationManager.getTotalWage());
 
@@ -6318,6 +6547,8 @@ public class Game {
             cohorts.restore(restoredFlows.getCohorts());
             families.restore(restoredFlows.getFamilies());
             migration.restore(restoredFlows.getMigration());
+            unemployment.restore(restoredFlows.getUnemployment());
+            sickness.restore(restoredFlows.getSickness());
             health.restore(restoredFlows.getHealth());
             healthcare.restore(restoredFlows.getHealthcare());
 
@@ -6716,6 +6947,8 @@ public class Game {
         priceIndex.redenominate(scale);
         householdBalance.redenominate(scale);
         households.redenominate(scale);
+        unemployment.redenominate(scale);
+        studentLoansLent *= scale;  studentLoansRepaid *= scale;  studentLoansWrittenOff *= scale;
         labourMarket.redenominate(scale);
         populationManager.redenominate(scale);
         migration.redenominate(scale);

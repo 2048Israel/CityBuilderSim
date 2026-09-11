@@ -191,6 +191,58 @@ public class HistorySave {
     private List<Double> licences = new ArrayList<>();
     private List<Double> unburied = new ArrayList<>();
 
+    /* ---------------------- outside the families ----------------------
+
+       2026-09-11. The out of work on EI and past it, everybody with no home,
+       the orphans, the month's evictions, and what EI, the premium, the
+       grants and the student loans came to. Jerus: "the more graphs the
+       juicier".
+       ------------------------------------------------------------------ */
+    private List<Double> outOfWorkOnEi = new ArrayList<>();
+    private List<Double> outOfWorkOffEi = new ArrayList<>();
+    private List<Double> unhoused = new ArrayList<>();
+    private List<Double> orphans = new ArrayList<>();
+    private List<Double> evicted = new ArrayList<>();
+    private List<Double> eiPaid = new ArrayList<>();
+    private List<Double> eiPremiums = new ArrayList<>();
+    private List<Double> studentGrants = new ArrayList<>();
+    private List<Double> studentLoansOwed = new ArrayList<>();
+
+    /* ------------------------------------------------------------------
+       THE LONG SICK, 2026-09-11. How many have been sick more than two
+       months, how many died of it, and what share of the sick got better.
+       ------------------------------------------------------------------ */
+    private List<Double> sickPastTwoMonths = new ArrayList<>();
+    private List<Double> diedOfIllness = new ArrayList<>();
+    private List<Double> sickRecovery = new ArrayList<>();
+
+    /* ------------------------------------------------------------------
+       THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many
+       households of each type the city has, now that the builder keeps what
+       still fits from month to month. One series per shape, keyed by the
+       shape's name so a shape added later starts its own series rather than
+       reading another's - the same reason the market's series are a map.
+       Counted after the housing valves: what the landlords see.
+       ------------------------------------------------------------------ */
+    private Map<String, List<Double>> householdsByShape = new LinkedHashMap<>();
+
+    /* ------------------------------------------------------------------
+       WHO DIED, 2026-09-11. The month's dead by age band, and how many of
+       them were orphans or had no home (Unemployment.attributeDeaths()).
+       Monthly, like every flow here: the running totals Jerus asked for are
+       derived on the way to the screen, so they cannot drift from these.
+       ------------------------------------------------------------------ */
+    private List<Double> deathsBabies = new ArrayList<>();
+    private List<Double> deathsChildren = new ArrayList<>();
+    private List<Double> deathsTeens = new ArrayList<>();
+    private List<Double> deathsAdults = new ArrayList<>();
+    private List<Double> deathsSeniors = new ArrayList<>();
+    private List<Double> deathsOrphans = new ArrayList<>();
+    private List<Double> deathsUnhoused = new ArrayList<>();
+
+    /** The series name the screens ask for, per household shape. */
+    public static String householdKey(FamilyStructure shape) { return "households:" + shape.name(); }
+
     /* ------------------------- what runs out ------------------------- */
     private List<Integer> constructionCapacity = new ArrayList<>();
     private List<Double> landUse = new ArrayList<>();
@@ -334,6 +386,36 @@ public class HistorySave {
         licences.add(round2(sum(schools.getLicences())));
         unburied.add(round2(game.getHealthcare().getUnburied()));
 
+        /* ------------------- outside the families ------------------- */
+        Unemployment pool = game.getUnemployment();
+        FamilyModel families = game.getFamilies();
+        outOfWorkOnEi.add(round2(pool.onEi()));
+        outOfWorkOffEi.add(round2(pool.getOffEi()));
+        double noDoor = pool.getUnhoused();
+        for (double v : families.unhousedPeopleByBand()) noDoor += v;
+        unhoused.add(round2(noDoor));
+        orphans.add(round2(families.getOrphansTotal()));
+        evicted.add(round2(game.getHouseholdBalance().getEvicted()));
+        eiPaid.add(round2(accounts.getEiBenefits()));
+        eiPremiums.add(round2(accounts.getEiPremiums()));
+        studentGrants.add(round2(accounts.getStudentGrants()));
+        studentLoansOwed.add(round2(game.getHouseholdBalance().totalStudentDebt()));
+        Sickness sickness = game.getSickness();
+        sickPastTwoMonths.add(round2(sickness.peoplePastTwoMonths(pyramid)));
+        diedOfIllness.add(round2(sickness.getLastDeaths()));
+        sickRecovery.add(round4(sickness.getLastRecovery()));
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            householdsByShape.computeIfAbsent(shape.name(), k -> new ArrayList<>())
+                    .add(round2(families.totalOf(shape)));
+        }
+        deathsBabies.add(round2(pyramid.getDeaths(AgeBand.BABY)));
+        deathsChildren.add(round2(pyramid.getDeaths(AgeBand.CHILD)));
+        deathsTeens.add(round2(pyramid.getDeaths(AgeBand.TEEN)));
+        deathsAdults.add(round2(pyramid.getDeaths(AgeBand.ADULT)));
+        deathsSeniors.add(round2(pyramid.getDeaths(AgeBand.SENIOR)));
+        deathsOrphans.add(round2(game.getLastOrphanDeaths()));
+        deathsUnhoused.add(round2(game.getLastUnhousedDeaths()));
+
         /* ----------------------- what runs out ----------------------- */
         constructionCapacity.add(game.getBuildingManager().getTotalConstructionCapacity());
         landUse.add(round4(game.getLandManager().getUtilisation()));
@@ -455,6 +537,27 @@ public class HistorySave {
         licences = copy(loaded.licences);
         unburied = copy(loaded.unburied);
 
+        outOfWorkOnEi = copy(loaded.outOfWorkOnEi);
+        outOfWorkOffEi = copy(loaded.outOfWorkOffEi);
+        unhoused = copy(loaded.unhoused);
+        orphans = copy(loaded.orphans);
+        evicted = copy(loaded.evicted);
+        eiPaid = copy(loaded.eiPaid);
+        eiPremiums = copy(loaded.eiPremiums);
+        studentGrants = copy(loaded.studentGrants);
+        studentLoansOwed = copy(loaded.studentLoansOwed);
+        sickPastTwoMonths = copy(loaded.sickPastTwoMonths);
+        diedOfIllness = copy(loaded.diedOfIllness);
+        sickRecovery = copy(loaded.sickRecovery);
+        householdsByShape = copyMap(loaded.householdsByShape);
+        deathsBabies = copy(loaded.deathsBabies);
+        deathsChildren = copy(loaded.deathsChildren);
+        deathsTeens = copy(loaded.deathsTeens);
+        deathsAdults = copy(loaded.deathsAdults);
+        deathsSeniors = copy(loaded.deathsSeniors);
+        deathsOrphans = copy(loaded.deathsOrphans);
+        deathsUnhoused = copy(loaded.deathsUnhoused);
+
         constructionCapacity = copy(loaded.constructionCapacity);
         landUse = copy(loaded.landUse);
 
@@ -531,6 +634,28 @@ public class HistorySave {
         return out;
     }
 
+    /**
+     * A monthly series summed from its first recorded month, for the running
+     * totals of the dead. The months before a series was recorded stay NaN -
+     * not zero, for aligned()'s reason - and a NaN gap after it began carries
+     * the total forward rather than breaking the line.
+     */
+    public static double[] runningTotal(double[] monthly) {
+        double[] out = new double[monthly.length];
+        double sum = 0;
+        boolean started = false;
+        for (int i = 0; i < monthly.length; i++) {
+            if (Double.isNaN(monthly[i])) {
+                out[i] = started ? sum : Double.NaN;
+                continue;
+            }
+            started = true;
+            sum += monthly[i];
+            out[i] = sum;
+        }
+        return out;
+    }
+
     /** Every stored series, by the name the screen asks for. */
     public Map<String, List<? extends Number>> seriesByName() {
         Map<String, List<? extends Number>> map = new LinkedHashMap<>();
@@ -601,6 +726,31 @@ public class HistorySave {
         map.put("licences", licences);
         map.put("unburied", unburied);
 
+        map.put("outOfWorkOnEi", outOfWorkOnEi);
+        map.put("outOfWorkOffEi", outOfWorkOffEi);
+        map.put("unhoused", unhoused);
+        map.put("orphans", orphans);
+        map.put("evicted", evicted);
+        map.put("eiPaid", eiPaid);
+        map.put("eiPremiums", eiPremiums);
+        map.put("studentGrants", studentGrants);
+        map.put("studentLoansOwed", studentLoansOwed);
+        map.put("sickPastTwoMonths", sickPastTwoMonths);
+        map.put("diedOfIllness", diedOfIllness);
+        map.put("sickRecovery", sickRecovery);
+        map.put("deathsBabies", deathsBabies);
+        map.put("deathsChildren", deathsChildren);
+        map.put("deathsTeens", deathsTeens);
+        map.put("deathsAdults", deathsAdults);
+        map.put("deathsSeniors", deathsSeniors);
+        map.put("deathsOrphans", deathsOrphans);
+        map.put("deathsUnhoused", deathsUnhoused);
+        if (householdsByShape != null) {
+            for (Map.Entry<String, List<Double>> e : householdsByShape.entrySet()) {
+                map.put("households:" + e.getKey(), e.getValue());
+            }
+        }
+
         map.put("constructionCapacity", constructionCapacity);
         map.put("landUse", landUse);
 
@@ -656,7 +806,8 @@ public class HistorySave {
                 householdSavings,
                 taxWage, taxProperty, taxSales, taxBusiness, taxIndustrial,
                 contributions, pensionBill, healthBill,
-                rentPrice);
+                rentPrice,
+                eiPaid, eiPremiums, studentGrants, studentLoansOwed);
 
         // A share's price is money; how many shares there are is not.
         if (sharePrice != null) for (List<Double> s : sharePrice.values()) scaleAll(scale, s);

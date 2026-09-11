@@ -340,6 +340,10 @@ public final class MoneyAudit {
         }
         in += credit.apply("+ e WageTax", e.getWageTax(), Scope.DOMESTIC);
         in += credit.apply("+ e Contributions", e.getContributions(), Scope.DOMESTIC);
+        // The EI premium, off the same payslips, and the student loans the
+        // graduates repaid - households are outside the pools (2026-09-11).
+        in += credit.apply("+ e EiPremiums", e.getEiPremiums(), Scope.DOMESTIC);
+        in += credit.apply("+ treasury StudentLoansRepaid", g.getStudentLoansRepaid(), Scope.DOMESTIC);
         in += credit.apply("+ care Fees", care.getFees(), Scope.DOMESTIC);
         in += credit.apply("+ schools Fees", schools.getFees(), Scope.DOMESTIC);
         // The world: every sector's exports, at the price the statement sold them for.
@@ -603,6 +607,10 @@ public final class MoneyAudit {
         // Education.getGrossCost() was charging the same phantom on the other
         // side. Both are gone. See Education.getGrossCost() for the whole of it.
         out += debit.apply("- e PensionsPaid", e.getPensionsPaid(), Scope.DOMESTIC);
+        // ...EI to the out of work, grants and loans to the students.
+        out += debit.apply("- e EiBenefits", e.getEiBenefits(), Scope.DOMESTIC);
+        out += debit.apply("- e StudentGrants", e.getStudentGrants(), Scope.DOMESTIC);
+        out += debit.apply("- treasury StudentLoansLent", g.getStudentLoansLent(), Scope.DOMESTIC);
         out += debit.apply("- care Upkeep", care.getUpkeep(), Scope.DOMESTIC);
         out += debit.apply("- schools Upkeep", schools.getUpkeep(), Scope.DOMESTIC);
 

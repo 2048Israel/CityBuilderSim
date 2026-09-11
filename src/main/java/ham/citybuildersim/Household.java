@@ -60,6 +60,31 @@ public abstract class Household {
     /** The row the retired sum into, after the six tiers. Same index as HouseholdAccounts.RETIRED. */
     public static final int RETIRED_ROW = PayTier.values().length;
 
+    /*
+     * THE ROWS OUTSIDE THE FAMILY MATRIX (2026-09-11). Jerus: "a new household
+     * structure called unemployed... they will have their own cashflow and
+     * stuff" - and the students and the orphans with them. Each is a row of
+     * its own after the retired, and each is a subclass of this one, so the
+     * city can still sum or change every household at once.
+     */
+    /** The out of work: on EI, off it, and those who have lost their home. */
+    public static final int UNEMPLOYED_ROW = RETIRED_ROW + 1;
+    /** Full-time students, living on a grant, their savings and a student loan. */
+    public static final int STUDENT_ROW = RETIRED_ROW + 2;
+    /** Children no family holds, by band. Jerus: "the orphan section". */
+    public static final int ORPHAN_ROW = RETIRED_ROW + 3;
+    /** Every row: the six tiers, the retired, and the three above. */
+    public static final int ROWS = RETIRED_ROW + 4;
+
+    /**
+     * How long a graduate takes to repay a student loan, in months: nine and
+     * a half years, the Canada Student Loan standard term (Alberta Student
+     * Aid's repayment page; the six-month grace is not modelled). Interest
+     * free, as Canada loans have been since April 2023.
+     */
+    public static final double STUDENT_LOAN_MONTHS = 114;
+
+    /** The family shape, or null for a household that is not one: the unemployed, a student, an orphan. */
     protected final FamilyStructure shape;
 
     /* ------------------------------ the position ------------------------------
@@ -75,6 +100,13 @@ public abstract class Household {
 
     /** Months this cell cannot borrow, after a discharge. A countdown, so a stock. */
     int lockout;
+
+    /**
+     * What one of these households owes the treasury on student loans. A
+     * STOCK on the header's terms: borrowed while studying, carried into a
+     * family when they graduate, repaid out of wages there. Interest free.
+     */
+    double studentDebt;
 
     /**
      * Shares held in each of the city's companies, per household of the cell,
@@ -142,6 +174,15 @@ public abstract class Household {
     /** Shares sold this month to cover the shop, per household, in cash. */
     double sold;
 
+    /** Student loan drawn this month, and repaid, per household. */
+    double studentBorrowed, studentRepaid;
+
+    /** Households of this cell that lost their home this month - a count, not money. */
+    double evicted;
+
+    /** What one of these households paid of a door's rent this month: 1 alone, a fifth sharing, 0 with no door. */
+    double rentShare = 1;
+
     /** Somewhere a household short of money can sell shares before it borrows. See Exchange. */
     interface Liquidity {
         /** @return cash raised, per household of the cell */
@@ -174,6 +215,23 @@ public abstract class Household {
      */
     public abstract int grownUps();
 
+    /**
+     * Who in the household the row's INCOME is split by. The grown-ups, for a
+     * family or a pensioner; for the out of work, only those still on EI -
+     * the EI bill is theirs, and nobody past the twelfth month shares it.
+     */
+    public double earningWeight() { return grownUps(); }
+
+    /** True for a cell whose households lose their home when they cannot pay for it. */
+    public boolean canBeEvicted() { return false; }
+
+    /**
+     * The row whose people this cell's people most often ARE, for the money to
+     * follow them: its own row, for everybody but the out of work. See
+     * HouseholdBalance.followThePeople().
+     */
+    public int stockGroup() { return row(); }
+
     /* ------------------------------ reading ------------------------------ */
 
     public FamilyStructure shape() { return shape; }
@@ -192,7 +250,14 @@ public abstract class Household {
     }
 
     public double households() { return households; }
-    public double people()     { return households * shape.size(); }
+    public double people()     { return households * size(); }
+
+    public double studentDebt()     { return studentDebt; }
+    public double studentBorrowed() { return studentBorrowed; }
+    public double studentRepaid()   { return studentRepaid; }
+    public double totalStudentDebt(){ return studentDebt * households; }
+    public double evicted()         { return evicted; }
+    public double rentShare()       { return rentShare; }
 
     /** Per household. */
     public double savings()     { return savings; }
@@ -292,14 +357,17 @@ public abstract class Household {
         interest = debt * rate / 12;
 
         /* ---------------- the bills, in order ---------------- */
-        afterFixed = disposablePer - rentPerHome - feesPer - interest;
-        subsistence = shape.size() * foodPricePerHead;
+        studentRepaid = Math.min(studentDebt, studentRepayment());
+        afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid;
+        subsistence = size() * foodPricePerHead;
 
         /* ---------------- settle what they actually spent ---------------- */
         double gap = spentPer - afterFixed;
 
         drawn = 0; borrowed = 0; repaid = 0; banked = 0; unfunded = 0; sold = 0;
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
+        studentBorrowed = 0; evicted = 0;
+        studentDebt -= studentRepaid;
         if (gap > 0) {
             drawn = Math.min(gap, Math.max(0, savings));
             savings -= drawn;
@@ -335,10 +403,7 @@ public abstract class Household {
              * household went without, which is what next month's plan already
              * says and what the hunger measure already reads.
              */
-            double room = creditRoom(disposablePer);
-            borrowed = Math.min(still, room);
-            unfunded = still - borrowed;
-            debt += borrowed;
+            unfunded = still - fundShortfall(still, disposablePer);
         } else {
             double surplus = -gap;
             repaid = Math.min(surplus, debt);
@@ -356,7 +421,7 @@ public abstract class Household {
     double plan() {
         want = subsistence
                 + HouseholdBalance.MARGINAL_PROPENSITY * Math.max(0, afterFixed - subsistence);
-        double spendable = Math.max(0, afterFixed) + savings + creditRoom(disposable);
+        double spendable = Math.max(0, afterFixed) + savings + planningRoom();
         planned = Math.min(want, spendable);
         return planned;
     }
@@ -370,9 +435,30 @@ public abstract class Household {
                 Math.max(0, riskFreeAnnual) + HouseholdBalance.BASE_SPREAD
                         + HouseholdBalance.RISK_SLOPE * owedMonths);
         interest = debt * rate / 12;
-        afterFixed = disposablePer - rentPerHome - feesPer - interest;
-        subsistence = shape.size() * foodPricePerHead;
+        studentRepaid = Math.min(studentDebt, studentRepayment());
+        afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid;
+        subsistence = size() * foodPricePerHead;
     }
+
+    /**
+     * What is still short after savings, the paper abroad and the shares:
+     * the revolving credit line, up to its ceiling. A student's is a student
+     * loan instead, which never runs out - see StudentHousehold.
+     *
+     * @return what was funded
+     */
+    protected double fundShortfall(double still, double disposablePer) {
+        double room = creditRoom(disposablePer);
+        borrowed = Math.min(still, room);
+        debt += borrowed;
+        return borrowed;
+    }
+
+    /** What the plan may count on borrowing. The credit room, for everyone but a student. */
+    protected double planningRoom() { return creditRoom(disposable); }
+
+    /** The month's student-loan repayment, per household. Nothing, except in a working family. */
+    protected double studentRepayment() { return 0; }
 
     /** What the bank will still lend one of these: the ceiling less what is owed, or nothing. */
     double creditRoom(double disposablePer) {
@@ -394,8 +480,16 @@ public abstract class Household {
         bankrupt = 0;
         if (lockout > 0) lockout--;
 
+        /*
+         * A HOUSEHOLD WITH NO INCOME AND A DEBT IS AT ITS CEILING (2026-09-11).
+         * Until the out of work had books of their own nobody had no income,
+         * so the guard was disposable > 0; somebody whose EI has run out and
+         * who still owes the bank from the job they had can never borrow again
+         * and never repay, and without this they would owe it for ever.
+         */
         boolean atTheCeiling = disposable > 0
-                && debt >= HouseholdBalance.BANKRUPT_AT_MONTHS * disposable;
+                ? debt >= HouseholdBalance.BANKRUPT_AT_MONTHS * disposable
+                : debt > 0;
         boolean cannotEat = afterFixed < subsistence;
         if (!(atTheCeiling && cannotEat)) return 0;
 
@@ -418,11 +512,12 @@ public abstract class Household {
         borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; rate = 0;
         subsistence = 0; bankrupt = 0; dividends = 0; sold = 0;
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
+        studentBorrowed = 0; studentRepaid = 0; evicted = 0;
     }
 
     /** The cell is empty: no position either. */
     void clearAll() {
-        savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0;
+        savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0; studentDebt = 0;
         java.util.Arrays.fill(shares, 0);
         clearWorking();
     }
@@ -434,6 +529,7 @@ public abstract class Household {
         drawn *= scale;  unfunded *= scale;  borrowed *= scale;  repaid *= scale;
         banked *= scale;  want *= scale;  planned *= scale;  subsistence *= scale;
         sentAbroad *= scale;  broughtHome *= scale;  foreignInterest *= scale;
+        studentDebt *= scale;  studentBorrowed *= scale;  studentRepaid *= scale;
     }
 
     @Override

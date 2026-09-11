@@ -79,8 +79,14 @@ import java.util.function.ToDoubleFunction;
  */
 public class HouseholdBalance {
 
-    /** One row per pay tier, plus the retired - the same shape as HouseholdAccounts. */
-    public static final int ROWS = PayTier.values().length + 1;
+    /**
+     * One row per pay tier, the retired, and since 2026-09-11 the out of work,
+     * the students and the orphans - the same shape as HouseholdAccounts.
+     */
+    public static final int ROWS = Household.ROWS;
+
+    /** The rows before the people outside the families had books: the six tiers and the retired. */
+    public static final int ROWS_BEFORE_OUTSIDE = Household.RETIRED_ROW + 1;
 
     /* ------------------------------- the dials ------------------------------- */
 
@@ -203,12 +209,42 @@ public class HouseholdBalance {
     private final int[][] index =
             new int[FamilyStructure.values().length][PayTier.values().length];
     private final java.util.List<Household> view;
+    private final int[] unemployedIndex = new int[UnemployedHousehold.Status.values().length];
+    private int studentIndex;
+    private final int[] orphanIndex = new int[AgeBand.values().length];
+
+    /**
+     * How many households are in each cell the family matrix does not hold -
+     * the out of work, the students, the orphans. Set by Game off Unemployment,
+     * the students and FamilyModel; nobody in them by default, so a fixture
+     * that never sets it has the city it always had.
+     */
+    private ToDoubleFunction<Household> outsideCensus = c -> 0;
+
+    public void setOutsideCensus(ToDoubleFunction<Household> census) {
+        this.outsideCensus = census == null ? c -> 0 : census;
+    }
+
+    /**
+     * The share of a door's rent one household of a cell pays: 1 alone in its
+     * own home, a fifth sharing, half doubled up, none with no door. Set by
+     * Game off the housing match; everybody pays a whole door by default.
+     */
+    private ToDoubleFunction<Household> rentShares = c -> 1;
+
+    public void setRentShares(ToDoubleFunction<Household> shares) {
+        this.rentShares = shares == null ? c -> 1 : shares;
+    }
 
     /* ------------------------------- the month ------------------------------- */
 
     private double lastWrittenOff;
     private double lastLeaving;
+    private double lastEvicted;
+    private double lastStudentDebtTakenAway;
     private double lastTakenAway;
+    private double graduating;
+    private double lastGraduated;
     private double lastDepositInterest;
     private double lastDelivered = 1;
     private double plannedSpend;
@@ -231,6 +267,19 @@ public class HouseholdBalance {
             // same convention here, so one lookup serves both.
             index[shape.ordinal()][0] = built.size();
             built.add(new RetiredHousehold(shape));
+        }
+        // The people outside the families, after them, so every family cell
+        // keeps its place. See Household's rows.
+        for (UnemployedHousehold.Status s : UnemployedHousehold.Status.values()) {
+            unemployedIndex[s.ordinal()] = built.size();
+            built.add(new UnemployedHousehold(s));
+        }
+        studentIndex = built.size();
+        built.add(new StudentHousehold());
+        java.util.Arrays.fill(orphanIndex, -1);
+        for (AgeBand b : new AgeBand[] { AgeBand.BABY, AgeBand.CHILD, AgeBand.TEEN }) {
+            orphanIndex[b.ordinal()] = built.size();
+            built.add(new OrphanHousehold(b));
         }
         cells = built.toArray(new Household[0]);
         view = java.util.Collections.unmodifiableList(java.util.Arrays.asList(cells));
@@ -255,6 +304,20 @@ public class HouseholdBalance {
             throw new IllegalArgumentException(shape + " needs a tier");
         }
         return cells[index[shape.ordinal()][0]];
+    }
+
+    /** The out-of-work cell in this situation. */
+    public UnemployedHousehold unemployed(UnemployedHousehold.Status status) {
+        return (UnemployedHousehold) cells[unemployedIndex[status.ordinal()]];
+    }
+
+    /** The students' cell. */
+    public StudentHousehold students() { return (StudentHousehold) cells[studentIndex]; }
+
+    /** The orphans of a child band, or null for a band that has none. */
+    public OrphanHousehold orphans(AgeBand band) {
+        int i = orphanIndex[band.ordinal()];
+        return i < 0 ? null : (OrphanHousehold) cells[i];
     }
 
     /** Every cell, in the fixed order. Read-only. */
@@ -330,6 +393,9 @@ public class HouseholdBalance {
                              double foodPricePerHead, double riskFreeAnnual,
                              double supplyRatio) {
 
+        rowDisposable = padRows(rowDisposable);
+        rowFees = padRows(rowFees);
+        rowShopping = padRows(rowShopping);
         if (census == null || rowDisposable == null || rowDisposable.length != ROWS) {
             return;   // refused whole, per the standing rule on state arrays
         }
@@ -350,6 +416,7 @@ public class HouseholdBalance {
         totalPeople = 0;
         lastWrittenOff = 0;
         lastLeaving = 0;
+        lastEvicted = 0;
         lastTakenAway = 0;
         lastAbroadTakenAway = 0;
         java.util.Arrays.fill(lastSharesTakenAway, 0);
@@ -411,8 +478,24 @@ public class HouseholdBalance {
             double spentPer = rowShopping == null || rowShopWeight[c.row()] <= 0 ? 0
                     : rowShopping[c.row()] * shopWeight[i] / rowShopWeight[c.row()] / c.households;
 
-            c.settle(disposablePer[i], rentPerHousehold, feesPer[i], spentPer,
+            c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
+            double rentDue = rentPerHousehold * c.rentShare;
+            c.settle(disposablePer[i], rentDue, feesPer[i], spentPer,
                     foodPricePerHead, riskFreeAnnual, liquidity, localPerUsd);
+
+            /*
+             * EVICTION (2026-09-11). Jerus: once EI is over and the savings are
+             * gone, a share leaves and the rest are unhoused. The cells are
+             * averages, so the share of the fixed bills nobody could fund is
+             * the share of the households who could not pay them - a level
+             * struck from the month, not a rate typed in. Unemployment moves
+             * them next month.
+             */
+            if (c.canBeEvicted() && c.unfunded > 0 && rentDue > 0) {
+                double bills = rentDue + feesPer[i] + c.interest;
+                c.evicted = c.households * Math.min(1, c.unfunded / bills);
+                lastEvicted += c.evicted;
+            }
 
             lastWrittenOff += c.discharge();
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
@@ -421,14 +504,26 @@ public class HouseholdBalance {
         }
     }
 
+    /**
+     * A seven-row array - the tiers and the retired, from a caller written
+     * before the people outside the families had rows - padded with empty
+     * rows. Nobody is in them unless the outside census says so.
+     */
+    private static double[] padRows(double[] rows) {
+        if (rows == null || rows.length != ROWS_BEFORE_OUTSIDE) return rows;
+        return java.util.Arrays.copyOf(rows, ROWS);
+    }
+
     /** Who lives in each cell now, in cell order. */
     private double[] takeCensus(ToDoubleBiFunction<FamilyStructure, PayTier> census) {
         double[] fresh = new double[cells.length];
         PayTier retiredSlot = PayTier.values()[0];
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            fresh[i] = Math.max(0, census.applyAsDouble(c.shape(),
-                    c.isRetired() ? retiredSlot : c.tier()));
+            fresh[i] = c.shape() == null
+                    ? Math.max(0, outsideCensus.applyAsDouble(c))
+                    : Math.max(0, census.applyAsDouble(c.shape(),
+                            c.isRetired() ? retiredSlot : c.tier()));
         }
         return fresh;
     }
@@ -446,13 +541,13 @@ public class HouseholdBalance {
     private double[] splitIncome(double[] fresh, double[] rowTotal) {
         double[] rowWeight = new double[ROWS];
         for (int i = 0; i < cells.length; i++) {
-            rowWeight[cells[i].row()] += fresh[i] * cells[i].grownUps();
+            rowWeight[cells[i].row()] += fresh[i] * cells[i].earningWeight();
         }
         double[] per = new double[cells.length];
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
             per[i] = rowWeight[c.row()] > 0
-                    ? rowTotal[c.row()] * c.grownUps() / rowWeight[c.row()] : 0;
+                    ? rowTotal[c.row()] * c.earningWeight() / rowWeight[c.row()] : 0;
         }
         return per;
     }
@@ -550,14 +645,22 @@ public class HouseholdBalance {
             public double get(Household c) { return c.abroad; }
             public void set(Household c, double v) { c.abroad = v; }
         });
+        // The student loan follows the graduate into a family - and out of
+        // the city with one who leaves, which the treasury writes off.
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.studentDebt; }
+            public void set(Household c, double v) { c.studentDebt = v; }
+        });
 
         int n = cells.length;
-        double[] delta = new double[n];
-        for (int i = 0; i < n; i++) delta[i] = fresh[i] - cells[i].households;
+        double[] before = new double[n];
+        for (int i = 0; i < n; i++) before[i] = cells[i].households;
+        double[] beforeLoans = carryGraduatesLoans(before);
 
         double[] left = new double[stocks.size()];
         for (int k = 0; k < stocks.size(); k++) {
-            left[k] = moveStock(stocks.get(k), fresh, delta, k == 0 ? buffer : null);
+            boolean loans = k == stocks.size() - 1;
+            left[k] = moveStock(stocks.get(k), fresh, loans ? beforeLoans : before, k == 0 ? buffer : null);
         }
         // What nobody claimed has left the city: the savings with them, the
         // debt on the bank, the shares to wherever they went - held abroad
@@ -568,6 +671,7 @@ public class HouseholdBalance {
         // ...and the dollars they held abroad go with them: already abroad,
         // so nothing crosses the border - a stock that changes hands.
         lastAbroadTakenAway = left[2 + Equity.COMPANIES.length];
+        lastStudentDebtTakenAway = left[3 + Equity.COMPANIES.length];
 
         for (int i = 0; i < n; i++) {
             // A cell that lost households keeps its average: the ones who
@@ -578,28 +682,77 @@ public class HouseholdBalance {
     }
 
     /**
+     * The graduates' student loans, handed to the working families before the
+     * census moves anything. See setGraduates().
+     *
+     * Straight to the families, by grown-ups, and not through the pool: the
+     * pool is anonymous, and in a college that takes in as many as it lets out
+     * the only household claiming what the graduates released would be the
+     * freshers. Only the loan goes this way. Their savings and everything else
+     * still move on the net change, as every other household's do.
+     *
+     * @param before every cell's households coming into the month
+     * @return the same, less the graduates on the students cell - the loans
+     *         the census still has to move are carried by the ones who stayed
+     */
+    private double[] carryGraduatesLoans(double[] before) {
+        double[] out = before.clone();
+        lastGraduated = 0;
+        double leaving = graduating;
+        graduating = 0;
+        Household s = students();
+        if (s == null || leaving <= 0 || s.households <= 0) return out;
+
+        double weight = 0;
+        for (Household c : cells) {
+            if (c instanceof WorkingHousehold && c.households > 0) weight += c.households * c.grownUps();
+        }
+        if (weight <= 0) return out;            // nobody working to carry it: it stays with the students
+
+        double graduates = Math.min(leaving, s.households);
+        double carried = s.studentDebt * graduates;
+        for (Household c : cells) {
+            if (c instanceof WorkingHousehold && c.households > 0) {
+                c.studentDebt += carried * c.grownUps() / weight;
+            }
+        }
+        for (int i = 0; i < cells.length; i++) {
+            if (cells[i] == s) out[i] = s.households - graduates;
+        }
+        lastGraduated = graduates;
+        return out;
+    }
+
+    /**
      * One stock through the pool: released by the cells that shrank at their
      * own average, claimed by the cells that grew - within the row first, then
      * across the city - and what nobody claimed returned.
      *
+     * @param before  the households each cell's stock was carried by coming in:
+     *                the cell's count, except where some already left with it
+     *                (the graduates and their loans - see carryGraduatesLoans())
      * @param arrival what a household nobody released brings of this stock,
      *                per cell, or null for nothing
      * @return the total of this stock that left the city
      */
-    private double moveStock(Stock stock, double[] fresh, double[] delta, double[] arrival) {
+    private double moveStock(Stock stock, double[] fresh, double[] before, double[] arrival) {
         int n = cells.length;
         double[] rowLoss = new double[ROWS];
         double[] rowGain = new double[ROWS];
         double[] rowPool = new double[ROWS];
 
+        // Matched within the cell's stock group first - its own row, except for
+        // the out of work, who move with the unskilled tier. See Household.stockGroup().
+        double[] delta = new double[n];
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
+            delta[i] = fresh[i] - before[i];
             double weight = Math.abs(delta[i]) * c.grownUps();
             if (delta[i] < 0) {
-                rowLoss[c.row()] += weight;
-                rowPool[c.row()] += stock.get(c) * -delta[i];
+                rowLoss[c.stockGroup()] += weight;
+                rowPool[c.stockGroup()] += stock.get(c) * -delta[i];
             } else if (delta[i] > 0) {
-                rowGain[c.row()] += weight;
+                rowGain[c.stockGroup()] += weight;
             }
         }
 
@@ -629,7 +782,7 @@ public class HouseholdBalance {
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
             if (delta[i] <= 0 || c.grownUps() <= 0) continue;
-            int r = c.row();
+            int r = c.stockGroup();
             double weight = delta[i] * c.grownUps();
             double fromRow = rowGain[r] > 0 ? weight * rowMoved[r] / rowGain[r] : 0;
             double rest = weight - fromRow;
@@ -640,7 +793,7 @@ public class HouseholdBalance {
                     + (cityMoved > 0 ? cityPool * fromCity / cityMoved : 0);
             double brought = arrival == null ? 0 : newcomers * arrival[i];
 
-            stock.set(c, (stock.get(c) * c.households + received + brought) / fresh[i]);
+            stock.set(c, (stock.get(c) * before[i] + received + brought) / fresh[i]);
         }
         return gone;
     }
@@ -910,6 +1063,47 @@ public class HouseholdBalance {
     /** Dollars that left with the households that left this month. */
     public double getAbroadTakenAway() { return lastAbroadTakenAway; }
 
+    /* ------------------------ the people outside the families ------------------------ */
+
+    /** Out-of-work households that lost their home this month. Unemployment moves them. */
+    public double getEvicted() { return lastEvicted; }
+
+    /** Student loans drawn this month, all students - the treasury's money out. */
+    public double totalStudentBorrowed() { return sum(c -> c.studentBorrowed * c.households); }
+
+    /** ...and repaid by graduates, the treasury's money back. */
+    public double totalStudentRepaid()   { return sum(c -> c.studentRepaid * c.households); }
+
+    /** What every household owes the treasury in student loans. */
+    public double totalStudentDebt()     { return sum(Household::totalStudentDebt); }
+
+    /** Student loans that left the city with graduates who left. The treasury's loss. */
+    public double getStudentDebtTakenAway() { return lastStudentDebtTakenAway; }
+
+    /**
+     * THE GRADUATES LEAVE THE STUDENT BODY WITH THEIR LOANS.
+     *
+     * followThePeople() moves money on the NET change in each cell, which is
+     * right for a family whose child turned thirteen and wrong for a college.
+     * A college that takes in forty a month and lets forty out has a student
+     * body that never changes size, so on the net rule nothing ever left it:
+     * measured on OutsideCheck's college city, 7,530 lent over fifteen years
+     * and 1 repaid, because the loans never reached a household that repays.
+     *
+     * So the loans take the GROSS flow: each month the ones who finished carry
+     * their share of the students' loans to the working families, who repay a
+     * 114th a month, and the census moves only what is left - the loans of
+     * the students who stayed - on the net change as before.
+     *
+     * @param people who finished a course, and so left the students cell,
+     *               since the census it was struck against. Used once, by the
+     *               next advanceMonth().
+     */
+    public void setGraduates(double people) { graduating = Math.max(0, people); }
+
+    /** Students who left the student body with what they carried, at the last month's census. */
+    public double getLastGraduated() { return lastGraduated; }
+
     /* ------------------------- what the bank is owed ------------------------- */
 
     /** Written off this month, which is the bank's loss. */
@@ -957,6 +1151,8 @@ public class HouseholdBalance {
                          double[] rowDisposable, double rentPerHousehold,
                          double[] rowFees, double foodPricePerHead, double riskFreeAnnual) {
 
+        rowDisposable = padRows(rowDisposable);
+        rowFees = padRows(rowFees);
         if (census == null || rowDisposable == null || rowDisposable.length != ROWS) {
             return;
         }
@@ -970,7 +1166,8 @@ public class HouseholdBalance {
             Household c = cells[i];
             c.households = fresh[i];
             if (c.households < .5) { c.clearWorking(); continue; }
-            c.restrike(disposablePer[i], rentPerHousehold, feesPer[i],
+            c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
+            c.restrike(disposablePer[i], rentPerHousehold * c.rentShare, feesPer[i],
                     foodPricePerHead, riskFreeAnnual);
             plannedSpend += c.plan() * c.households;
         }
@@ -1274,8 +1471,11 @@ public class HouseholdBalance {
     /** ...and before the dollars abroad were (2026-09-11). */
     public static final int CELL_SLOTS_BEFORE_ABROAD = CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_ABROAD + 1;
+    /** ...and before the student loans were (2026-09-11, afternoon). */
+    public static final int CELL_SLOTS_BEFORE_STUDENT_DEBT = CELL_SLOTS_BEFORE_ABROAD + 1;
+
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan. */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_STUDENT_DEBT + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public String[] cellKeys() {
@@ -1299,6 +1499,7 @@ public class HouseholdBalance {
             out[i++] = c.subsistence;
             for (double held : c.shares) out[i++] = held;
             out[i++] = c.abroad;
+            out[i++] = c.studentDebt;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -1326,8 +1527,8 @@ public class HouseholdBalance {
         // dollars has households that hold none.
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != CELL_SLOTS && slots != CELL_SLOTS_BEFORE_ABROAD
-                    && slots != CELL_SLOTS_BEFORE_SHARES)) {
+                || (slots != CELL_SLOTS && slots != CELL_SLOTS_BEFORE_STUDENT_DEBT
+                    && slots != CELL_SLOTS_BEFORE_ABROAD && slots != CELL_SLOTS_BEFORE_SHARES)) {
             return false;
         }
         java.util.Map<String, Household> byKey = new java.util.HashMap<>();
@@ -1347,10 +1548,12 @@ public class HouseholdBalance {
             c.subsistence = saved[i++];
             java.util.Arrays.fill(c.shares, 0);
             c.abroad = 0;
+            c.studentDebt = 0;
             if (slots >= CELL_SLOTS_BEFORE_ABROAD) {
                 for (int k = 0; k < c.shares.length; k++) c.shares[k] = saved[i++];
             }
-            if (slots >= CELL_SLOTS) c.abroad = Math.max(0, saved[i++]);
+            if (slots >= CELL_SLOTS_BEFORE_STUDENT_DEBT) c.abroad = Math.max(0, saved[i++]);
+            if (slots >= CELL_SLOTS) c.studentDebt = Math.max(0, saved[i++]);
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];
@@ -1373,29 +1576,39 @@ public class HouseholdBalance {
      */
     public void restore(double[] saved, ToDoubleBiFunction<FamilyStructure, PayTier> census) {
         if (saved == null) return;
-        boolean current = saved.length == ROWS * 8 + 3;
-        if (!current && saved.length != ROWS * 3) {
-            return;   // refused whole
-        }
+        /*
+         * THE ROW ARRAY FROM TODAY'S BUILD, OR FROM ONE BEFORE THE PEOPLE
+         * OUTSIDE THE FAMILIES had rows (seven: the tiers and the retired).
+         * A seven-row array restores the rows it knows; the new rows wait for
+         * the census, as arrivals.
+         */
+        int rows;
+        boolean current;
+        if (saved.length == ROWS * 8 + 3)                     { rows = ROWS; current = true; }
+        else if (saved.length == ROWS * 3)                    { rows = ROWS; current = false; }
+        else if (saved.length == ROWS_BEFORE_OUTSIDE * 8 + 3) { rows = ROWS_BEFORE_OUTSIDE; current = true; }
+        else if (saved.length == ROWS_BEFORE_OUTSIDE * 3)     { rows = ROWS_BEFORE_OUTSIDE; current = false; }
+        else return;   // refused whole
         double[] fresh = census == null ? new double[cells.length] : takeCensus(census);
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
             int r = c.row();
-            c.savings = saved[r];
-            c.debt = saved[ROWS + r];
-            c.lockout = (int) Math.round(saved[ROWS * 2 + r]);
             c.households = fresh[i];
+            if (r >= rows) continue;
+            c.savings = saved[r];
+            c.debt = saved[rows + r];
+            c.lockout = (int) Math.round(saved[rows * 2 + r]);
             if (current) {
-                c.want        = saved[ROWS * 4 + r];
-                c.planned     = saved[ROWS * 5 + r];
-                c.interest    = saved[ROWS * 6 + r];
-                c.subsistence = saved[ROWS * 7 + r];
+                c.want        = saved[rows * 4 + r];
+                c.planned     = saved[rows * 5 + r];
+                c.interest    = saved[rows * 6 + r];
+                c.subsistence = saved[rows * 7 + r];
             }
         }
         if (current) {
-            plannedSpend = saved[ROWS * 8];
-            hungryPeople = saved[ROWS * 8 + 1];
-            totalPeople  = saved[ROWS * 8 + 2];
+            plannedSpend = saved[rows * 8];
+            hungryPeople = saved[rows * 8 + 1];
+            totalPeople  = saved[rows * 8 + 2];
         }
     }
 
@@ -1407,7 +1620,11 @@ public class HouseholdBalance {
         java.util.Arrays.fill(lastSharesTakenAway, 0);
         lastWrittenOff = 0;
         lastLeaving = 0;
+        lastEvicted = 0;
+        lastStudentDebtTakenAway = 0;
         lastTakenAway = 0;
+        graduating = 0;
+        lastGraduated = 0;
         lastAbroadTakenAway = 0;
         lastDepositInterest = 0;
         lastDelivered = 1;
@@ -1425,6 +1642,7 @@ public class HouseholdBalance {
     public void redenominate(double scale) {
         lastWrittenOff *= scale;
         lastTakenAway *= scale;
+        lastStudentDebtTakenAway *= scale;
         localPerUsd *= scale;
         plannedSpend *= scale;
         lastDepositInterest *= scale;

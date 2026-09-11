@@ -30,4 +30,10 @@ public class WorkingHousehold extends Household {
     @Override public int row()           { return tier.ordinal(); }
     @Override public boolean isRetired() { return false; }
     @Override public int grownUps()      { return shape.earners(); }
+
+    /**
+     * A graduate's student loan, repaid out of the family's wages over nine
+     * and a half years. Interest free. See Household.STUDENT_LOAN_MONTHS.
+     */
+    @Override protected double studentRepayment() { return studentDebt / STUDENT_LOAN_MONTHS; }
 }

@@ -61,6 +61,221 @@ public class FamilyModel {
     /** Adults left over with no household, which should be zero. */
     private double unhoused;
 
+    /* =====================================================================
+       THE HOUSEHOLDS REMEMBER (2026-09-11)
+
+       Jerus: "that way when the model rebuilds it has a reference to try and
+       keep but still allow change." Until this, rebuild() built every
+       household from nothing every month: the same pyramid and the same jobs
+       gave the same families, but nothing a family had been last month
+       counted, and the money pool moved wallets between shapes that nobody
+       had left.
+
+       Now the builder keeps what still fits. Last month's formed households
+       - by shape and pay tier, BEFORE the housing valves turned singles into
+       flatshares and doubled families up, because those are answers to this
+       month's doors and payslips - are re-placed first, less the share that
+       re-forms on its own; any shape the pyramid no longer has the people
+       for shrinks by the shortfall; and only the people left over are built
+       by the old rule. The pay tiers are then refitted to the jobs, which the
+       books require. Jerus's calls: keep what still fits, 1% a month, every
+       cell. See claude/the-households-remember.md.
+
+       OFF IN A BARE MODEL. Game switches it on. A FamilyModel a harness builds
+       rebuilds from nothing, exactly as the population and housing fixtures
+       were written against.
+       ===================================================================== */
+
+    /** The share of households that re-form on their own each month. Jerus: 1%. */
+    public static final double REFORMING_EACH_MONTH = .01;
+
+    private boolean remembers;
+    private final double[][] formed =
+            new double[FamilyStructure.values().length][PayTier.values().length];
+    private boolean haveFormed;
+    private double lastKept, lastReformed, lastNoLongerFit, lastNew;
+
+    /** Switches the memory on; Game does, a bare model does not. */
+    public void rememberHouseholds(boolean on) { remembers = on; }
+    public boolean remembersHouseholds()       { return remembers; }
+
+    /** Whether there is a record to keep from - false in a new city and a save from before. */
+    public boolean hasRecord() { return haveFormed; }
+
+    /** What the builder formed last month, before the valves. The reference. */
+    public double getFormed(FamilyStructure shape, PayTier tier) {
+        return formed[shape.ordinal()][tier.ordinal()];
+    }
+
+    /** Households kept from last month's record this month. */
+    public double getLastKept()        { return lastKept; }
+    /** Households that re-formed on their own, at REFORMING_EACH_MONTH. */
+    public double getLastReformed()    { return lastReformed; }
+    /** Households the pyramid no longer had the people for: a death, a child grown, a lost job. */
+    public double getLastNoLongerFit() { return lastNoLongerFit; }
+    /** Households the builder formed from the people left over. */
+    public double getLastNew()         { return lastNew; }
+
+    /* =====================================================================
+       THE PEOPLE OUTSIDE THE FAMILIES (2026-09-11)
+
+       Jerus: "we are to add a new household structure called unemployed...
+       these will just sum up by age." Every adult used to be put in a family
+       at the tier mix of the filled jobs, so the out-of-work shared a
+       tier's wages. Now the families are built from the adults who WORK, and
+       the rest - the unemployed and the full-time students - are handed to
+       the balance as households of their own (UnemployedHousehold,
+       StudentHousehold). This class still decides where they LIVE: they are
+       one-adult households looking for a door, they share five to a home
+       with their own kind when priced out or when doors run short, and what
+       no valve can place has no home.
+
+       AND THE CHILDREN THE BUILDER LEAVES OUT. The half-of-what's-possible
+       throttle takes a half share of each shape in turn, and only three
+       shapes hold a baby and three a teen, so about one child in seven is in
+       no household in every city - at full employment, at the equilibrium
+       pyramid. Jerus, shown it: "they're the orphans." They are counted
+       here, by band, and handed to the balance as OrphanHousehold.
+       ===================================================================== */
+
+    /** Adults this month's families were NOT built from: the out of work and the students. */
+    private double outsideAdults;
+
+    /** Children no family holds, by band. Babies, children and teens; the adult slots stay zero. */
+    private final double[] orphans = new double[AgeBand.values().length];
+
+    /** The groups of one-adult households the matrix does not hold but the housing match does. */
+    public enum Seeker {
+        UNEMPLOYED("Out of work"), STUDENT("Students");
+        private final String label;
+        Seeker(String label) { this.label = label; }
+        public String label() { return label; }
+    }
+
+    private static final int SEEKERS = Seeker.values().length;
+
+    /** One-adult households of each group looking for a door this month. */
+    private final double[] seekers = new double[SEEKERS];
+
+    /** ...of whom this many live five to a home, with their own kind only. People, not homes. */
+    private final double[] seekersSharing = new double[SEEKERS];
+
+    /** ...and this many doubled up two to a door, with their own kind only. People. */
+    private final double[] seekersDoubled = new double[SEEKERS];
+
+    /** ...and this many with no door at all after both valves. People. */
+    private final double[] seekersUnhoused = new double[SEEKERS];
+
+    /** What the last match left unplaced, by group, before the valves. People. */
+    private final double[] seekersUnplaced = new double[SEEKERS];
+
+    /** ...the same, in the households the match counts - a flatshare is one. */
+    private final double[] seekersUnplacedHomes = new double[SEEKERS];
+
+    /** Households of each shape the final match and the doubling valve could not place. */
+    private final double[] unhousedByShape = new double[FamilyStructure.values().length];
+
+    /** Households of each shape the last match left unplaced. */
+    private final double[] unplacedByShape = new double[FamilyStructure.values().length];
+
+    /** Adults outside the families this month. */
+    public double getOutsideAdults() { return outsideAdults; }
+
+    /** Children of this band in no household. Zero for adults and seniors. */
+    public double getOrphans(AgeBand band) { return orphans[band.ordinal()]; }
+
+    public double getOrphansTotal() {
+        double sum = 0;
+        for (double v : orphans) sum += v;
+        return sum;
+    }
+
+    /**
+     * Tells the match who else wants a door this month, before house().
+     *
+     * @param unemployedHoused out-of-work adults who still have a home to keep
+     *                         - the evicted are not looking, they cannot pay
+     * @param students         full-time students
+     */
+    public void setSeekers(double unemployedHoused, double students) {
+        seekers[Seeker.UNEMPLOYED.ordinal()] = Math.max(0, unemployedHoused);
+        seekers[Seeker.STUDENT.ordinal()] = Math.max(0, students);
+        java.util.Arrays.fill(seekersSharing, 0);
+        java.util.Arrays.fill(seekersDoubled, 0);
+        java.util.Arrays.fill(seekersUnhoused, 0);
+        java.util.Arrays.fill(seekersUnplaced, 0);
+    }
+
+    public double getSeekers(Seeker g)         { return seekers[g.ordinal()]; }
+    public double getSeekersSharing(Seeker g)  { return seekersSharing[g.ordinal()]; }
+    public double getSeekersDoubled(Seeker g)  { return seekersDoubled[g.ordinal()]; }
+    public double getSeekersUnhoused(Seeker g) { return seekersUnhoused[g.ordinal()]; }
+
+    /** A group's households as doors see them: one each alone, a fifth each sharing. */
+    private double seekerHouseholds(int g) {
+        double sharing = Math.min(seekers[g], seekersSharing[g]);
+        return (seekers[g] - sharing) + sharing / 5;
+    }
+
+    /**
+     * What one household of the group pays of a door's rent: all of it alone,
+     * a fifth sharing, half doubled up, none with no door. The rent the
+     * landlords are paid does not move - this only says who pays it.
+     */
+    public double seekerDoorShare(Seeker g) {
+        int i = g.ordinal();
+        if (seekers[i] <= 0) return 1;
+        // The doors the group is actually behind, over the group: a door each
+        // alone (a host and the one doubled up with them split it), a fifth
+        // sharing, none outside. The cell is an average, so is this.
+        return seekerDoors(i) / seekers[i];
+    }
+
+    /** Doors a group is behind: alone, and a fifth of one for each sharer. */
+    private double seekerDoors(int g) {
+        double sharing = Math.min(seekers[g], seekersSharing[g]);
+        double alone = Math.max(0, seekers[g] - sharing - seekersDoubled[g] - seekersUnhoused[g]);
+        return alone + sharing / 5;
+    }
+
+    /** Every household that wants a door: the family matrix, and the seekers outside it. */
+    public double householdsSeekingDoors() {
+        double total = totalHouseholds();
+        for (int g = 0; g < SEEKERS; g++) total += seekerHouseholds(g);
+        return total;
+    }
+
+    /** The share of a group with no door. */
+    public double seekerUnhousedShare(Seeker g) {
+        int i = g.ordinal();
+        return seekers[i] > 0 ? Math.min(1, seekersUnhoused[i] / seekers[i]) : 0;
+    }
+
+    /** Households of this shape with no door after both valves. */
+    public double getUnhoused(FamilyStructure shape) { return unhousedByShape[shape.ordinal()]; }
+
+    /** The share of a shape's households with no door; they pay no rent. */
+    public double unhousedShareOf(FamilyStructure shape) {
+        double n = totalOf(shape);
+        return n > 0 ? Math.min(1, unhousedByShape[shape.ordinal()] / n) : 0;
+    }
+
+    /**
+     * People with no door, by band: the families both valves failed, and the
+     * seekers their own kind's valves failed. The evicted are not here - they
+     * are not looking for a door; see Unemployment.
+     */
+    public double[] unhousedPeopleByBand() {
+        double[] out = new double[AgeBand.values().length];
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            double n = unhousedByShape[shape.ordinal()];
+            if (n <= 0) continue;
+            for (AgeBand b : AgeBand.values()) out[b.ordinal()] += n * shape.membersOf(b);
+        }
+        for (int g = 0; g < SEEKERS; g++) out[AgeBand.ADULT.ordinal()] += seekersUnhoused[g];
+        return out;
+    }
+
     /* ----------------------------- reading ----------------------------- */
 
     public double get(FamilyStructure shape, PayTier tier) {
@@ -161,28 +376,79 @@ public class FamilyModel {
      * @param jobsByTier how many filled jobs sit in each pay tier
      */
     public void rebuild(PopulationCohorts cohorts, double[] jobsByTier) {
+        rebuild(cohorts, jobsByTier, 0);
+    }
+
+    /**
+     * @param outsideAdults adults the families are NOT built from: the
+     *                      unemployed and the full-time students, who are
+     *                      households of their own since 2026-09-11
+     */
+    public void rebuild(PopulationCohorts cohorts, double[] jobsByTier, double outsideAdults) {
 
         for (double[] row : households) java.util.Arrays.fill(row, 0);
         unhoused = 0;
         doubledUp = 0;
         pricedOutShares = 0;
         stillUnplaced = 0;
+        java.util.Arrays.fill(orphans, 0);
+        java.util.Arrays.fill(unhousedByShape, 0);
+        java.util.Arrays.fill(unplacedByShape, 0);
 
         double babies   = cohorts.get(AgeBand.BABY);
         double children = cohorts.get(AgeBand.CHILD);
         double teens    = cohorts.get(AgeBand.TEEN);
-        double adults   = cohorts.get(AgeBand.ADULT);
+        double allAdults = cohorts.get(AgeBand.ADULT);
+        this.outsideAdults = Math.max(0, Math.min(allAdults, outsideAdults));
+        // THE FAMILIES ARE THE PEOPLE WHO WORK, and their dependants. See the
+        // note on the people outside the families, above.
+        double adults   = allAdults - this.outsideAdults;
         double seniors  = cohorts.get(AgeBand.SENIOR);
 
+        boolean keep = remembers && haveFormed;
+        lastKept = 0; lastReformed = 0; lastNoLongerFit = 0; lastNew = 0;
+
         if (adults <= 0 && seniors <= 0) {
+            orphans[AgeBand.BABY.ordinal()]  = Math.max(0, babies);
+            orphans[AgeBand.CHILD.ordinal()] = Math.max(0, children);
+            orphans[AgeBand.TEEN.ordinal()]  = Math.max(0, teens);
+            if (keep) {
+                double had = 0;
+                for (double[] row : formed) for (double v : row) had += v;
+                lastReformed = had * REFORMING_EACH_MONTH;
+                lastNoLongerFit = had - lastReformed;
+            }
+            recordFormed();
             return;
         }
 
         /* ---- 1. seniors, who compete for nothing ---- */
-        double seniorCouples = seniors * .55 / 2;
-        double seniorSingles = seniors - seniorCouples * 2;
-        households[FamilyStructure.SENIOR_COUPLE.ordinal()][0] = seniorCouples;
-        households[FamilyStructure.SENIOR_ALONE.ordinal()][0]  = Math.max(0, seniorSingles);
+        /*
+         * KEPT FIRST, when there is a record: last month's couples and seniors
+         * alone, less the share that re-forms, as far as there are seniors for
+         * them. A death leaves too few, and both shrink by the shortfall; the
+         * survivors go back with everybody else who is left over.
+         */
+        double keptCouples = 0, keptAlone = 0;
+        if (keep) {
+            double hadCouples = formed[FamilyStructure.SENIOR_COUPLE.ordinal()][0];
+            double hadAlone   = formed[FamilyStructure.SENIOR_ALONE.ordinal()][0];
+            keptCouples = hadCouples * (1 - REFORMING_EACH_MONTH);
+            keptAlone   = hadAlone * (1 - REFORMING_EACH_MONTH);
+            double need = 2 * keptCouples + keptAlone;
+            double fits = need > seniors && need > 0 ? Math.max(0, seniors) / need : 1;
+            lastReformed += (hadCouples + hadAlone) * REFORMING_EACH_MONTH;
+            lastNoLongerFit += (keptCouples + keptAlone) * (1 - fits);
+            keptCouples *= fits;
+            keptAlone *= fits;
+            lastKept += keptCouples + keptAlone;
+        }
+        double leftSeniors = Math.max(0, seniors - 2 * keptCouples - keptAlone);
+        double seniorCouples = leftSeniors * .55 / 2;
+        double seniorSingles = leftSeniors - seniorCouples * 2;
+        lastNew += seniorCouples + Math.max(0, seniorSingles);
+        households[FamilyStructure.SENIOR_COUPLE.ordinal()][0] = keptCouples + seniorCouples;
+        households[FamilyStructure.SENIOR_ALONE.ordinal()][0]  = keptAlone + Math.max(0, seniorSingles);
 
         /*
          * ---- 2. what share of adults sits in each tier ----
@@ -211,6 +477,59 @@ public class FamilyModel {
         double[] remaining = { babies, children, teens, adults };
 
         FamilyStructure[] order = formableShapes();
+
+        /*
+         * ---- 2b. last month's working households, kept ----
+         *
+         * Every cell less the share that re-forms. Then the people check: a
+         * band the kept households need more of than the pyramid has - the
+         * babies who turned six, the adults who lost their jobs and left the
+         * families - shrinks every shape that needs it by the shortfall, and a
+         * shape short of two bands shrinks by the worse. That is always
+         * enough: each band's need falls to at most what exists. What it
+         * frees goes back to the pool below.
+         */
+        double keptBefore = 0;
+        if (keep) {
+            double[][] kept = new double[FamilyStructure.values().length][PayTier.values().length];
+            double[] need = new double[remaining.length];
+            for (FamilyStructure shape : order) {
+                for (PayTier tier : PayTier.values()) {
+                    double had = formed[shape.ordinal()][tier.ordinal()];
+                    lastReformed += had * REFORMING_EACH_MONTH;
+                    kept[shape.ordinal()][tier.ordinal()] = had * (1 - REFORMING_EACH_MONTH);
+                    keptBefore += kept[shape.ordinal()][tier.ordinal()];
+                }
+                double count = 0;
+                for (double v : kept[shape.ordinal()]) count += v;
+                for (int b = 0; b < remaining.length; b++) need[b] += count * shape.membersOf(AgeBand.values()[b]);
+            }
+            double[] fits = new double[remaining.length];
+            for (int b = 0; b < remaining.length; b++) {
+                fits[b] = need[b] > remaining[b] && need[b] > 0 ? Math.max(0, remaining[b]) / need[b] : 1;
+            }
+            double keptAfter = 0;
+            for (FamilyStructure shape : order) {
+                double f = 1;
+                for (int b = 0; b < remaining.length; b++) {
+                    if (shape.membersOf(AgeBand.values()[b]) > 0) f = Math.min(f, fits[b]);
+                }
+                double count = 0;
+                for (PayTier tier : PayTier.values()) {
+                    double v = kept[shape.ordinal()][tier.ordinal()] * f;
+                    households[shape.ordinal()][tier.ordinal()] += v;
+                    count += v;
+                }
+                keptAfter += count;
+                for (int b = 0; b < remaining.length; b++) {
+                    remaining[b] -= count * shape.membersOf(AgeBand.values()[b]);
+                }
+            }
+            for (int b = 0; b < remaining.length; b++) remaining[b] = Math.max(0, remaining[b]);
+            lastNoLongerFit += keptBefore - keptAfter;
+            lastKept += keptAfter;
+            keptBefore = keptAfter;
+        }
 
         for (int i = 0; i < order.length; i++) {
             FamilyStructure shape = order[i];
@@ -241,8 +560,104 @@ public class FamilyModel {
             place(shape, take, tierShare, remaining);
         }
 
+        if (keep) {
+            double working = 0;
+            for (FamilyStructure shape : order) for (double v : households[shape.ordinal()]) working += v;
+            lastNew += Math.max(0, working - keptBefore);
+            fitTiers(order, tierShare);
+        } else {
+            // The seniors were counted where they were formed.
+            for (FamilyStructure shape : order) for (double v : households[shape.ordinal()]) lastNew += v;
+        }
+
         /* ---- 4. whoever is left over ---- */
         unhoused = Math.max(0, remaining[AgeBand.ADULT.ordinal()]);
+
+        /*
+         * ---- 5. and the children nobody took: the orphan section ----
+         *
+         * Jerus: "they dont even get ei, and its named the orphan section,
+         * yes they get sick and die for now." The builder is left as it is;
+         * what it leaves is who they are.
+         */
+        orphans[AgeBand.BABY.ordinal()]  = Math.max(0, remaining[AgeBand.BABY.ordinal()]);
+        orphans[AgeBand.CHILD.ordinal()] = Math.max(0, remaining[AgeBand.CHILD.ordinal()]);
+        orphans[AgeBand.TEEN.ordinal()]  = Math.max(0, remaining[AgeBand.TEEN.ordinal()]);
+
+        recordFormed();
+    }
+
+    /** What this month's builder formed, before the valves: next month's reference. */
+    private void recordFormed() {
+        for (int s = 0; s < households.length; s++) {
+            System.arraycopy(households[s], 0, formed[s], 0, households[s].length);
+        }
+        haveFormed = true;
+    }
+
+    /**
+     * THE PAY TIERS FOLLOW THE JOBS, and each shape keeps its total.
+     *
+     * The books split each tier's wage bill over that tier's households, so
+     * the households in a tier have to be the jobs' mix of all of them -
+     * today's builder does that by construction, splitting every shape by the
+     * same mix. A kept household cannot stay in a tier whose jobs went, so the
+     * matrix is refitted: iterative proportional fitting, the columns to the
+     * jobs' mix and the rows back to each shape's total, seeded by the kept
+     * pattern - which is what decides WHICH shapes move when the jobs do.
+     *
+     * A tier with jobs and nobody in it is seeded with the city's shape mix;
+     * a shape that finds every one of its tiers emptied is seeded with the
+     * jobs' mix. Both are the fresh builder's answer for a cell with no past.
+     */
+    private void fitTiers(FamilyStructure[] shapes, double[] tierShare) {
+        int tiers = PayTier.values().length;
+        double[] row = new double[shapes.length];
+        double total = 0;
+        for (int s = 0; s < shapes.length; s++) {
+            for (double v : households[shapes[s].ordinal()]) row[s] += v;
+            total += row[s];
+        }
+        if (total <= 0) return;
+        double[] target = new double[tiers];
+        for (int t = 0; t < tiers; t++) target[t] = total * tierShare[t];
+
+        for (int t = 0; t < tiers; t++) {
+            double col = 0;
+            for (FamilyStructure shape : shapes) col += households[shape.ordinal()][t];
+            if (col <= 0 && target[t] > 0) {
+                for (int s = 0; s < shapes.length; s++) {
+                    households[shapes[s].ordinal()][t] = row[s] / total * target[t];
+                }
+            }
+        }
+
+        for (int pass = 0; pass < 500; pass++) {
+            for (int t = 0; t < tiers; t++) {
+                double col = 0;
+                for (FamilyStructure shape : shapes) col += households[shape.ordinal()][t];
+                double f = col > 0 ? target[t] / col : 0;
+                for (FamilyStructure shape : shapes) households[shape.ordinal()][t] *= f;
+            }
+            double worst = 0;
+            for (int s = 0; s < shapes.length; s++) {
+                double[] cells = households[shapes[s].ordinal()];
+                double sum = 0;
+                for (double v : cells) sum += v;
+                if (sum <= 0) {
+                    for (int t = 0; t < tiers; t++) cells[t] = row[s] * tierShare[t];
+                } else {
+                    double f = row[s] / sum;
+                    for (int t = 0; t < tiers; t++) cells[t] *= f;
+                }
+            }
+            for (int t = 0; t < tiers; t++) {
+                double col = 0;
+                for (FamilyStructure shape : shapes) col += households[shape.ordinal()][t];
+                worst = Math.max(worst, Math.abs(col - target[t]));
+            }
+            if (worst <= 1e-9 * Math.max(1, total)) break;
+        }
     }
 
     /* =====================================================================
@@ -271,7 +686,12 @@ public class FamilyModel {
 
     private double doubledUp;
 
-    public double getDoubledUpHouseholds() { return doubledUp; }
+    /** Households with no door of their own, living in somebody else's: the families', and the seekers' with their own kind. */
+    public double getDoubledUpHouseholds() {
+        double total = doubledUp;
+        for (double v : seekersDoubled) total += v;
+        return total;
+    }
 
     public double getSharedHouseholds() {
         return totalOf(FamilyStructure.SHARED_ADULTS);
@@ -279,7 +699,11 @@ public class FamilyModel {
 
     /** Homes actually occupied, counting doubled-up households as one home. */
     public double homesNeeded() {
-        return Math.max(0, totalHouseholds() - doubledUp);
+        double seekerHomes = 0;
+        for (int g = 0; g < SEEKERS; g++) {
+            seekerHomes += seekerHouseholds(g) - seekersDoubled[g];
+        }
+        return Math.max(0, totalHouseholds() + seekerHomes - doubledUp);
     }
 
     /**
@@ -305,8 +729,14 @@ public class FamilyModel {
      * out of the total, so the answer is the same either way.
      */
     public double minimumHomesTolerable() {
-        double singles = totalOf(FamilyStructure.SINGLE_ADULT);
-        double afterSharing = totalHouseholds() - singles * .8;
+        // The seekers crowd the same way the singles do - with their own kind.
+        double seekerHomes = 0, seekerAlone = 0;
+        for (int g = 0; g < SEEKERS; g++) {
+            seekerHomes += seekerHouseholds(g);
+            seekerAlone += seekers[g] - Math.min(seekers[g], seekersSharing[g]);
+        }
+        double singles = totalOf(FamilyStructure.SINGLE_ADULT) + seekerAlone;
+        double afterSharing = totalHouseholds() + seekerHomes - singles * .8;
         double floor = Math.max(0, afterSharing / 2);
         return floor + doorsThatCannotHelp();
     }
@@ -448,12 +878,13 @@ public class FamilyModel {
     /** The largest unit that counts as a studio. The studio rule's own number. */
     public static final int STUDIO_MAX_SIZE = 2;
 
-    /** Households that could live in a studio: adults only, one or two of them. */
+    /** Households that could live in a studio: adults only, one or two of them - the seekers outside the families among them. */
     public double studioSeekers() {
         double total = 0;
         for (FamilyStructure shape : FamilyStructure.values()) {
             if (!needsFamilyDoor(shape)) total += totalOf(shape);
         }
+        for (int g = 0; g < SEEKERS; g++) total += seekerHouseholds(g);
         return total;
     }
 
@@ -483,6 +914,7 @@ public class FamilyModel {
         for (FamilyStructure shape : FamilyStructure.values()) {
             if (needsFamilyDoor(shape) == family) total += totalOf(shape) * shape.size();
         }
+        if (!family) for (double v : seekers) total += v;
         return total;
     }
 
@@ -595,10 +1027,33 @@ public class FamilyModel {
         java.util.Arrays.sort(order, (x, y) -> Integer.compare(y.size(), x.size()));
 
         double unplaced = 0;
+        java.util.Arrays.fill(unplacedByShape, 0);
+        java.util.Arrays.fill(seekersUnplaced, 0);
+        java.util.Arrays.fill(seekersUnplacedHomes, 0);
 
         for (FamilyStructure shape : order) {
-            double need = totalOf(shape);
+            double own = totalOf(shape);
+
+            /*
+             * THE SEEKERS QUEUE WITH THE SHAPE THEY LOOK LIKE. An out-of-work
+             * adult or a student living alone is a one-adult household, the
+             * same door as a single adult who works, so they are matched in
+             * the same pass, pro rata - a landlord lets the flat, not the
+             * payslip. Five of them sharing are matched with the working
+             * flatshares, one door between five.
+             */
+            double[] extra = new double[SEEKERS];
+            double extraTotal = 0;
+            for (int g = 0; g < SEEKERS; g++) {
+                double sharing = Math.min(seekers[g], seekersSharing[g]);
+                if (shape == FamilyStructure.SINGLE_ADULT) extra[g] = seekers[g] - sharing;
+                else if (shape == FamilyStructure.SHARED_ADULTS) extra[g] = sharing / 5;
+                extraTotal += extra[g];
+            }
+
+            double need = own + extraTotal;
             if (need <= 0) continue;
+            double asked = need;
 
             boolean hasDependants = shape.dependants() > 0;
 
@@ -653,6 +1108,16 @@ public class FamilyModel {
                     refusedByStudio += Math.min(need, studiosFree);
                 }
                 unplaced += need;
+
+                // Who it was that went without, pro rata over the pass.
+                unplacedByShape[shape.ordinal()] = need * own / asked;
+                for (int g = 0; g < SEEKERS; g++) {
+                    if (extra[g] <= 0) continue;
+                    double households = need * extra[g] / asked;
+                    seekersUnplacedHomes[g] += households;
+                    seekersUnplaced[g] += shape == FamilyStructure.SHARED_ADULTS
+                            ? households * 5 : households;
+                }
             }
         }
         return unplaced;
@@ -692,6 +1157,26 @@ public class FamilyModel {
 
         doubledUp = 0;
         stillUnplaced = 0;
+        java.util.Arrays.fill(seekersDoubled, 0);
+        java.util.Arrays.fill(seekersUnhoused, 0);
+        if (excess <= 0) return;
+
+        /*
+         * EACH WITH ITS OWN KIND. Jerus: "only employed can double up with
+         * employed, unemployed can double up with unemployed." So the excess
+         * is split by who it was, and each group's valve works on its own.
+         * The families' excess is what the match left of the matrix; the
+         * seekers' is theirs.
+         */
+        double seekersExcess = 0;
+        for (int g = 0; g < SEEKERS; g++) {
+            if (seekersUnplaced[g] <= 0) continue;
+            double alone = Math.max(0, seekers[g] - Math.min(seekers[g], seekersSharing[g]));
+            double shares = Math.min(seekersUnplaced[g] / 4, alone / 5);
+            if (shares > 0) seekersSharing[g] += shares * 5;
+            seekersExcess += seekersUnplacedHomes[g];
+        }
+        excess = Math.max(0, excess - seekersExcess);
         if (excess <= 0) return;
 
         /* ---- valve one: singles move in together, five to a home ---- */
@@ -756,7 +1241,29 @@ public class FamilyModel {
      * Doubling up needs no door of its own, so it absorbs whatever is left.
      */
     public void noteUnplaced(double left) {
-        if (left <= 0) { stillUnplaced = 0; return; }
+        java.util.Arrays.fill(unhousedByShape, 0);
+        java.util.Arrays.fill(seekersDoubled, 0);
+        java.util.Arrays.fill(seekersUnhoused, 0);
+
+        /*
+         * THE SEEKERS FIRST, EACH WITH ITS OWN KIND: two to a door, up to half
+         * the group - the families' ceiling - and whoever is past that has no
+         * door. What they were is taken off what the matrix has to absorb.
+         */
+        double seekersLeft = 0, seekersStill = 0;
+        for (int g = 0; g < SEEKERS; g++) {
+            double unplacedPeople = seekersUnplaced[g];
+            if (unplacedPeople <= 0) continue;
+            seekersLeft += seekersUnplacedHomes[g];
+            double ceiling = seekers[g] / 2;
+            double absorbed = Math.min(unplacedPeople, ceiling);
+            seekersDoubled[g] = absorbed;
+            seekersUnhoused[g] = Math.max(0, unplacedPeople - absorbed);
+            seekersStill += seekersUnhoused[g];
+        }
+        left = Math.max(0, left - seekersLeft);
+
+        if (left <= 0) { stillUnplaced = seekersStill; return; }
 
         /*
          * DOUBLING UP NEEDS NO DOOR OF ITS OWN, which is what makes it the last
@@ -787,7 +1294,17 @@ public class FamilyModel {
         double room = Math.max(0, ceiling - doubledUp);
         double absorbed = Math.min(left, room);
         doubledUp += absorbed;
-        stillUnplaced = Math.max(0, left - absorbed);
+        double matrixStill = Math.max(0, left - absorbed);
+        stillUnplaced = matrixStill + seekersStill;
+
+        // Who has no door, by shape, pro rata over what the last match left.
+        double unplacedTotal = 0;
+        for (double v : unplacedByShape) unplacedTotal += v;
+        if (matrixStill > 0 && unplacedTotal > 0) {
+            for (int s = 0; s < unhousedByShape.length; s++) {
+                unhousedByShape[s] = matrixStill * unplacedByShape[s] / unplacedTotal;
+            }
+        }
     }
 
     /* =====================================================================
@@ -844,6 +1361,23 @@ public class FamilyModel {
             households[singles][t] -= moving;
             households[shared][t]  += moving / 5;
             pricedOutShares += moving / 5;
+        }
+    }
+
+    /**
+     * The seekers' own affordability valve: the share of each group living
+     * alone who share five to a home rather than go short. The same level,
+     * the same ceiling, as shareByAffordability() - and with their own kind.
+     *
+     * @param pressure by Seeker, 0-1: how badly one of them cannot afford a
+     *                 door and a basket on what they live on
+     */
+    public void shareSeekersByAffordability(double[] pressure) {
+        if (pressure == null || pressure.length != SEEKERS) return;
+        for (int g = 0; g < SEEKERS; g++) {
+            double share = Math.max(0, Math.min(MAX_SHARING, pressure[g]));
+            double housed = Math.max(0, seekers[g] - seekersUnhoused[g] - seekersDoubled[g]);
+            seekersSharing[g] = Math.max(Math.min(seekersSharing[g], housed), housed * share);
         }
     }
 
@@ -929,8 +1463,17 @@ public class FamilyModel {
      * codebase has been caught by that gap before - a reloaded save took several
      * months to settle back to its real numbers.
      */
+    /** What the people outside the families add to the save: see toSaveArray(). */
+    private static final int OUTSIDE_SLOTS =
+            1 + AgeBand.values().length + 4 * Seeker.values().length + FamilyStructure.values().length;
+
+    /** ...and what the households remember: the formed matrix, whether there is one, the month's four counts. */
+    private static final int MEMORY_SLOTS =
+            FamilyStructure.values().length * PayTier.values().length + 1 + 4;
+
     public double[] toSaveArray() {
-        double[] out = new double[households.length * PayTier.values().length + 5];
+        double[] out = new double[households.length * PayTier.values().length + 5 + OUTSIDE_SLOTS
+                + MEMORY_SLOTS];
         int i = 0;
         for (double[] row : households) {
             for (double v : row) out[i++] = v;
@@ -964,7 +1507,35 @@ public class FamilyModel {
          * apart after a single month. A flow cannot be reconstructed from the
          * state a month ended in - eighth sighting - so it is carried.
          */
-        out[i] = stillUnplaced;
+        out[i++] = stillUnplaced;
+        /*
+         * ...AND THE PEOPLE OUTSIDE THE FAMILIES, appended 2026-09-11. Derived
+         * every month like the matrix, and carried for the matrix's reason:
+         * the first frame of a reloaded city shows the orphans and the
+         * seekers the save was struck against, and the seekers' door shares
+         * are what the next month's rent is split by.
+         */
+        out[i++] = outsideAdults;
+        for (double v : orphans) out[i++] = v;
+        for (int g = 0; g < SEEKERS; g++) {
+            out[i++] = seekers[g];
+            out[i++] = seekersSharing[g];
+            out[i++] = seekersDoubled[g];
+            out[i++] = seekersUnhoused[g];
+        }
+        for (double v : unhousedByShape) out[i++] = v;
+        /*
+         * ...AND WHAT THE HOUSEHOLDS REMEMBER, appended 2026-09-11. Not
+         * derived: last month's formed households are the reference the next
+         * rebuild keeps from, and a city that forgot them on a load would be
+         * rebuilt from nothing the month after.
+         */
+        for (double[] cells : formed) for (double v : cells) out[i++] = v;
+        out[i++] = haveFormed ? 1 : 0;
+        out[i++] = lastKept;
+        out[i++] = lastReformed;
+        out[i++] = lastNoLongerFit;
+        out[i++] = lastNew;
         return out;
     }
 
@@ -981,7 +1552,8 @@ public class FamilyModel {
     public void restore(double[] saved) {
         int base = households.length * PayTier.values().length + 2;
         if (saved == null || (saved.length != base && saved.length != base + 2
-                && saved.length != base + 3)) {
+                && saved.length != base + 3 && saved.length != base + 3 + OUTSIDE_SLOTS
+                && saved.length != base + 3 + OUTSIDE_SLOTS + MEMORY_SLOTS)) {
             return;   // refused whole, per the standing rule on state arrays
         }
         carriedUnplaced = -1;
@@ -995,8 +1567,37 @@ public class FamilyModel {
             crowdedHouseholds = saved[i++];
             refusedByStudio   = saved[i++];
         }
-        if (saved.length == base + 3) {
-            carriedUnplaced = Math.max(0, saved[i]);
+        if (saved.length >= base + 3) {
+            carriedUnplaced = Math.max(0, saved[i++]);
+        }
+        outsideAdults = 0;
+        java.util.Arrays.fill(orphans, 0);
+        java.util.Arrays.fill(seekers, 0);
+        java.util.Arrays.fill(seekersSharing, 0);
+        java.util.Arrays.fill(seekersDoubled, 0);
+        java.util.Arrays.fill(seekersUnhoused, 0);
+        java.util.Arrays.fill(unhousedByShape, 0);
+        for (double[] cells : formed) java.util.Arrays.fill(cells, 0);
+        haveFormed = false;
+        lastKept = 0; lastReformed = 0; lastNoLongerFit = 0; lastNew = 0;
+        if (saved.length >= base + 3 + OUTSIDE_SLOTS) {
+            outsideAdults = saved[i++];
+            for (int b = 0; b < orphans.length; b++) orphans[b] = saved[i++];
+            for (int g = 0; g < SEEKERS; g++) {
+                seekers[g] = saved[i++];
+                seekersSharing[g] = saved[i++];
+                seekersDoubled[g] = saved[i++];
+                seekersUnhoused[g] = saved[i++];
+            }
+            for (int s = 0; s < unhousedByShape.length; s++) unhousedByShape[s] = saved[i++];
+        }
+        if (saved.length == base + 3 + OUTSIDE_SLOTS + MEMORY_SLOTS) {
+            for (double[] cells : formed) for (int t = 0; t < cells.length; t++) cells[t] = Math.max(0, saved[i++]);
+            haveFormed = saved[i++] > .5;
+            lastKept = saved[i++];
+            lastReformed = saved[i++];
+            lastNoLongerFit = saved[i++];
+            lastNew = saved[i];
         }
     }
 
@@ -1024,5 +1625,18 @@ public class FamilyModel {
         for (double[] row : households) java.util.Arrays.fill(row, 0);
         unhoused = 0;
         doubledUp = 0;
+        outsideAdults = 0;
+        java.util.Arrays.fill(orphans, 0);
+        java.util.Arrays.fill(seekers, 0);
+        java.util.Arrays.fill(seekersSharing, 0);
+        java.util.Arrays.fill(seekersDoubled, 0);
+        java.util.Arrays.fill(seekersUnhoused, 0);
+        java.util.Arrays.fill(seekersUnplaced, 0);
+        java.util.Arrays.fill(seekersUnplacedHomes, 0);
+        java.util.Arrays.fill(unhousedByShape, 0);
+        java.util.Arrays.fill(unplacedByShape, 0);
+        for (double[] cells : formed) java.util.Arrays.fill(cells, 0);
+        haveFormed = false;
+        lastKept = 0; lastReformed = 0; lastNoLongerFit = 0; lastNew = 0;
     }
 }

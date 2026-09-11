@@ -92,11 +92,25 @@ public class HealthCheck {
                 Healthcare.foundingCapacity(CareType.BURIAL), 1e-9);
         check("...but nobody founds a city with a crematorium",
                 bm.getCareCapacity(CareType.CREMATION), 0, 1e-9);
-        assertTrue("the endowment is sized off the pyramid's own shares",
+        /*
+         * Asserted as the rule, not as an ordering. It used to read "senior
+         * care is smaller than childcare", which was only ever the shape of the
+         * pyramid: halving adult mortality (2026-09-11) let more adults reach
+         * seventy, the equilibrium's seniors passed its children, and the
+         * assertion failed with the endowment still sized exactly as intended.
+         */
+        check("the childcare endowment is the pyramid's own share of the founding city",
+                Healthcare.foundingCapacity(CareType.CHILDCARE),
+                Healthcare.FOUNDING_CITY * (PopulationCohorts.equilibriumShare(AgeBand.BABY)
+                        + PopulationCohorts.equilibriumShare(AgeBand.CHILD)), 1e-9);
+        check("...and senior care's",
+                Healthcare.foundingCapacity(CareType.SENIOR),
+                Healthcare.FOUNDING_CITY * PopulationCohorts.equilibriumShare(AgeBand.SENIOR), 1e-9);
+        assertTrue("...both less than general care, which serves everybody",
                 Healthcare.foundingCapacity(CareType.CHILDCARE)
                         < Healthcare.foundingCapacity(CareType.GENERAL)
                 && Healthcare.foundingCapacity(CareType.SENIOR)
-                        < Healthcare.foundingCapacity(CareType.CHILDCARE));
+                        < Healthcare.foundingCapacity(CareType.GENERAL));
         System.out.printf("  founded for %,d people: %,.0f general, %,.0f childcare,"
                 + " %,.0f senior, %,.0f plots%n",
                 Healthcare.FOUNDING_CITY,
@@ -512,20 +526,28 @@ public class HealthCheck {
                 Healthcare.CHILDCARE_SWING, 1e-9);
         check("childcare for everybody", Healthcare.mortalityFactor(AgeBand.BABY, 1, .5, 0),
                 1 / Healthcare.CHILDCARE_SWING, 1e-9);
-        check("no general care at all", Healthcare.mortalityFactor(AgeBand.ADULT, 0, 0, 0),
-                Healthcare.GENERAL_SWING, 1e-9);
+        /*
+         * General care has no swing of its own on adults since 2026-09-11 -
+         * Jerus: sickness replaces it. It keeps them alive by curing them before
+         * they have been sick two months (SicknessCheck), so their factor here
+         * is 1 whatever the coverage. Asserted at both ends so a swing that came
+         * back would show.
+         */
+        check("no general care at all leaves the adults' rate alone",
+                Healthcare.mortalityFactor(AgeBand.ADULT, 0, 0, 0), 1, 1e-9);
+        check("...and so does general care for everybody",
+                Healthcare.mortalityFactor(AgeBand.ADULT, .5, 1, .5), 1, 1e-9);
+        check("...and the teenagers' the same",
+                Healthcare.mortalityFactor(AgeBand.TEEN, .5, 0, .5), 1, 1e-9);
         check("no senior care at all", Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, 0),
                 Healthcare.SENIOR_SWING, 1e-9);
 
-        // Drastic for children, real for adults, gentle for seniors - Jerus's
-        // ordering, asserted as an ordering rather than as three literals.
-        System.out.printf("  swings: children %.0fx, adults %.1fx, seniors %.2fx%n",
-                Healthcare.CHILDCARE_SWING, Healthcare.GENERAL_SWING,
-                Healthcare.SENIOR_SWING);
+        // Drastic for children, gentle for seniors - Jerus's ordering, asserted
+        // as an ordering rather than as two literals.
+        System.out.printf("  swings: children %.0fx, seniors %.2fx%n",
+                Healthcare.CHILDCARE_SWING, Healthcare.SENIOR_SWING);
         assertTrue("children are the drastic ones",
-                Healthcare.CHILDCARE_SWING > Healthcare.GENERAL_SWING * 5);
-        assertTrue("...adults come next",
-                Healthcare.GENERAL_SWING > Healthcare.SENIOR_SWING);
+                Healthcare.CHILDCARE_SWING > Healthcare.SENIOR_SWING * 5);
         assertTrue("...and seniors are the gentlest",
                 Healthcare.SENIOR_SWING > 1);
 
@@ -533,9 +555,6 @@ public class HealthCheck {
         check("general care does not also treat babies",
                 Healthcare.mortalityFactor(AgeBand.BABY, .5, 0, .5), 1, 1e-9);
         check("...nor seniors", Healthcare.mortalityFactor(AgeBand.SENIOR, .5, 0, .5), 1, 1e-9);
-        check("but it does treat adults now",
-                Healthcare.mortalityFactor(AgeBand.ADULT, .5, 1, .5),
-                1 / Healthcare.GENERAL_SWING, 1e-9);
 
         // Even the worst end cannot empty a band in a month.
         for (AgeBand b : AgeBand.values()) {

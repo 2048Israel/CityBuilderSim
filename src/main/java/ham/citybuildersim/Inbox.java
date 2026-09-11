@@ -296,6 +296,16 @@ public class Inbox {
             lines.add(String.format("Only %.0f%% of the city can see a doctor, so %.0f%% of every",
                     generalCover * 100, health.getBaselineRate() * 100));
             lines.add("month's work is not done. Clinics and hospitals fix it.");
+            // The long sick (2026-09-11): the same shortfall now kills.
+            Sickness sickness = game.getSickness();
+            double longSick = sickness.peoplePastTwoMonths(cohorts);
+            if (longSick >= 1) {
+                lines.add(String.format("%,.0f people have been ill for more than two months, and",
+                        longSick));
+                lines.add(String.format("%,.0f died of it last month. Only %.0f%% of the sick get",
+                        sickness.getLastDeaths(), Sickness.recovery(generalCover) * 100));
+                lines.add("better each month here.");
+            }
             lines.add("");
         }
 

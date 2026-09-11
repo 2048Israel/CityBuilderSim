@@ -67,6 +67,30 @@ public class HouseholdAccounts {
     private double contributions;
     private double pensions;
 
+    /*
+     * THE PEOPLE OUTSIDE THE FAMILIES (2026-09-11): the EI premium off every
+     * wage, the EI benefit to the out of work, and the grant to the students.
+     * Two flows in opposite directions again, and kept apart for the reason
+     * the pension lines are.
+     */
+    private double eiPremiums;
+    private double eiBenefits;
+    private double studentGrants;
+
+    /**
+     * The month's EI and grants, from the same figures the treasury books -
+     * set before update() or refresh(), which leave them as they are.
+     */
+    public void setOutsideMoney(double eiPremiums, double eiBenefits, double studentGrants) {
+        this.eiPremiums = Math.max(0, eiPremiums);
+        this.eiBenefits = Math.max(0, eiBenefits);
+        this.studentGrants = Math.max(0, studentGrants);
+    }
+
+    public double getEiPremiums()    { return eiPremiums; }
+    public double getEiBenefits()    { return eiBenefits; }
+    public double getStudentGrants() { return studentGrants; }
+
     /**
      * What the people paid the healthcare service this month.
      *
@@ -204,7 +228,7 @@ public class HouseholdAccounts {
      * line; a worker's is this line minus a seventeenth.
      */
     public double getDisposableIncome() {
-        return wages - wageTax - contributions + pensions;
+        return wages - wageTax - contributions - eiPremiums + pensions + eiBenefits + studentGrants;
     }
 
     /**
@@ -302,7 +326,15 @@ public class HouseholdAccounts {
 
     /** Index of the retired row, which sits after the six tiers. */
     public static final int RETIRED = PayTier.values().length;
-    private static final int ROWS = PayTier.values().length + 1;
+
+    /** The out of work, the students and the orphans, after the retired - Household's rows. */
+    public static final int UNEMPLOYED = Household.UNEMPLOYED_ROW;
+    public static final int STUDENTS = Household.STUDENT_ROW;
+    public static final int ORPHANS = Household.ORPHAN_ROW;
+    private static final int ROWS = Household.ROWS;
+
+    /** The rows a save from before 2026-09-11 carries: the tiers and the retired. */
+    private static final int ROWS_BEFORE_OUTSIDE = RETIRED + 1;
 
     private final double[] rowWages     = new double[ROWS];
     private final double[] rowTax       = new double[ROWS];
@@ -315,6 +347,15 @@ public class HouseholdAccounts {
     private final double[] rowHealthcare    = new double[ROWS];
     private final double[] rowTuition       = new double[ROWS];
     private final double[] rowInterest      = new double[ROWS];
+    private final double[] rowEiPremiums    = new double[ROWS];
+    /**
+     * Doors each row's households pay for: one a household, a fifth sharing,
+     * none with no home. What the rent is split by since 2026-09-11; the
+     * household count itself is rowHouseholds.
+     */
+    private final double[] rowDoors         = new double[ROWS];
+    /** EI to the out of work, grants to the students. */
+    private final double[] rowBenefits      = new double[ROWS];
 
     /**
      * Splits the month across the tiers.
@@ -355,6 +396,18 @@ public class HouseholdAccounts {
     public void updateByTier(double[] wagesPerTier, double[] taxPerTier,
                              double[] peoplePerRow, double[] housePerRow,
                              double[] spendShare, double[] interestPerRow) {
+        updateByTier(wagesPerTier, taxPerTier, peoplePerRow, housePerRow, spendShare,
+                interestPerRow, null);
+    }
+
+    /**
+     * @param doorsPerRow the doors each row pays rent on - see rowDoors - or
+     *                    null for one door a household, as before
+     */
+    public void updateByTier(double[] wagesPerTier, double[] taxPerTier,
+                             double[] peoplePerRow, double[] housePerRow,
+                             double[] spendShare, double[] interestPerRow,
+                             double[] doorsPerRow) {
 
         java.util.Arrays.fill(rowWages, 0);
         java.util.Arrays.fill(rowTax, 0);
@@ -367,6 +420,24 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowHealthcare, 0);
         java.util.Arrays.fill(rowTuition, 0);
         java.util.Arrays.fill(rowInterest, 0);
+        java.util.Arrays.fill(rowEiPremiums, 0);
+        java.util.Arrays.fill(rowBenefits, 0);
+        java.util.Arrays.fill(rowDoors, 0);
+
+        // A caller from before the people outside the families had rows hands
+        // seven; the three new rows are empty for it.
+        if (peoplePerRow != null && peoplePerRow.length == ROWS_BEFORE_OUTSIDE) {
+            peoplePerRow = java.util.Arrays.copyOf(peoplePerRow, ROWS);
+        }
+        if (housePerRow != null && housePerRow.length == ROWS_BEFORE_OUTSIDE) {
+            housePerRow = java.util.Arrays.copyOf(housePerRow, ROWS);
+        }
+        if (interestPerRow != null && interestPerRow.length == ROWS_BEFORE_OUTSIDE) {
+            interestPerRow = java.util.Arrays.copyOf(interestPerRow, ROWS);
+        }
+        if (spendShare != null && spendShare.length == ROWS_BEFORE_OUTSIDE) {
+            spendShare = java.util.Arrays.copyOf(spendShare, ROWS);
+        }
 
         if (peoplePerRow == null || peoplePerRow.length != ROWS
                 || housePerRow == null || housePerRow.length != ROWS) {
@@ -375,8 +446,16 @@ public class HouseholdAccounts {
 
         double heads = 0;
         for (double n : peoplePerRow) heads += n;
+        // The orphans are served and charged nothing - nobody can pay for
+        // them - so the fees fall on the people who can, as they did before
+        // the orphans were counted (2026-09-11).
+        double payingHeads = heads - Math.max(0, peoplePerRow[ORPHANS]);
+        for (int r = 0; r < ROWS; r++) {
+            rowDoors[r] = doorsPerRow != null && r < doorsPerRow.length
+                    ? Math.max(0, doorsPerRow[r]) : housePerRow[r];
+        }
         double doors = 0;
-        for (double n : housePerRow) doors += n;
+        for (double n : rowDoors) doors += n;
 
         for (int r = 0; r < ROWS; r++) {
             rowPeople[r] = peoplePerRow[r];
@@ -388,7 +467,7 @@ public class HouseholdAccounts {
             }
 
             double share = heads > 0 ? peoplePerRow[r] / heads : 0;
-            double doorShare = doors > 0 ? housePerRow[r] / doors : 0;
+            double doorShare = doors > 0 ? rowDoors[r] / doors : 0;
             rowRent[r] = rent * doorShare;
 
             /*
@@ -404,10 +483,16 @@ public class HouseholdAccounts {
             rowShopping[r] = shopping * (spendShare != null && r < spendShare.length
                     ? spendShare[r] : share);
 
-            // Fees follow people. Healthcare is charged per person served and
-            // tuition per student - the model has no per-tier student count, so
-            // headcount is the honest approximation rather than an invented one.
-            rowTuition[r] = tuition * share;
+            /*
+             * TUITION IS THE STUDENTS' (2026-09-11). Jerus: "students pay it".
+             * It used to follow headcount, because the model had no per-tier
+             * student count to be exact with; the students are a row now, so
+             * the whole bill is theirs. A caller that hands no student row
+             * keeps the old split.
+             */
+            rowTuition[r] = peoplePerRow[STUDENTS] > 0
+                    ? (r == STUDENTS ? tuition : 0)
+                    : tuition * share;
             rowInterest[r] = interestPerRow != null && r < interestPerRow.length
                     ? interestPerRow[r] : 0;
 
@@ -421,7 +506,8 @@ public class HouseholdAccounts {
              * to be exact WITH, and inventing one would be an estimate wearing
              * a fact's clothes.
              */
-            rowHealthcare[r] = healthcare * share;
+            rowHealthcare[r] = r == ORPHANS || payingHeads <= 0 ? 0
+                    : healthcare * peoplePerRow[r] / payingHeads;
         }
 
         /*
@@ -435,8 +521,13 @@ public class HouseholdAccounts {
         for (int r = 0; r < ROWS; r++) {
             rowContributions[r] = totalWages > 0
                     ? contributions * (rowWages[r] / totalWages) : 0;
+            // The EI premium is a slice off the same payslip.
+            rowEiPremiums[r] = totalWages > 0
+                    ? eiPremiums * (rowWages[r] / totalWages) : 0;
         }
         rowPensions[RETIRED] = pensions;
+        rowBenefits[UNEMPLOYED] = eiBenefits;
+        rowBenefits[STUDENTS] = studentGrants;
     }
 
     /* =====================================================================
@@ -460,12 +551,15 @@ public class HouseholdAccounts {
                             double income, double tax, double rent,
                             double fees, double shopping, double left) { }
 
-    /** Rent one let home pays, whoever lives in it. */
+    /** Rent one let home pays, whoever lives in it. Per DOOR since 2026-09-11 - see rowDoors. */
     public double rentPerHousehold() {
         double doors = 0;
-        for (double n : rowHouseholds) doors += n;
+        for (double n : rowDoors) doors += n;
+        if (doors <= 0) for (double n : rowHouseholds) doors += n;
         return doors > 0 ? rent / doors : 0;
     }
+
+    public double getRowDoors(int row) { return rowDoors[row]; }
 
     /**
      * How badly a single adult in each tier cannot afford to live alone, 0-1.
@@ -536,6 +630,29 @@ public class HouseholdAccounts {
      * @param families the household mix, for how many of these there are and
      *                 how many earners the tier is splitting its wages between
      */
+    /**
+     * How badly one of each group living outside the families cannot afford a
+     * door of their own, 0-1 - livingAlonePressure()'s arithmetic on what they
+     * live on: EI for the out of work (nothing past the twelfth month), the
+     * grant for the students.
+     *
+     * @param households the group's households, in Seeker order
+     */
+    public double[] seekerPressure(double[] households) {
+        FamilyModel.Seeker[] groups = FamilyModel.Seeker.values();
+        double[] out = new double[groups.length];
+        double costOfLivingAlone = rentPerHousehold() + shoppingPerHead() + feesPerHead();
+        if (costOfLivingAlone <= 0 || households == null) return out;
+        for (FamilyModel.Seeker g : groups) {
+            int i = g.ordinal();
+            if (i >= households.length || households[i] <= 0) continue;
+            int row = g == FamilyModel.Seeker.UNEMPLOYED ? UNEMPLOYED : STUDENTS;
+            double takeHome = getRowDisposable(row) / households[i];
+            out[i] = Math.max(0, Math.min(1, (costOfLivingAlone - takeHome) / costOfLivingAlone));
+        }
+        return out;
+    }
+
     public Statement statementFor(FamilyModel families, FamilyStructure shape, PayTier tier) {
         double homes = families == null ? 0 : families.get(shape, tier);
         double people = shape.size();
@@ -608,7 +725,7 @@ public class HouseholdAccounts {
        when the report has thirty of them.
        ===================================================================== */
     public double[] getStatementState() {
-        double[] out = new double[12 + ROWS * 11];
+        double[] out = new double[STATE_SCALARS + ROWS * STATE_ROWS];
         int i = 0;
         out[i++] = wages;         out[i++] = wageTax;
         out[i++] = rent;          out[i++] = shopping;
@@ -616,14 +733,19 @@ public class HouseholdAccounts {
         out[i++] = healthcare;    out[i++] = tuition;
         out[i++] = interest;
         out[i++] = population;    out[i++] = workforce;   out[i++] = jobsFilled;
+        out[i++] = eiPremiums;    out[i++] = eiBenefits;  out[i++] = studentGrants;
         for (double[] row : new double[][] {
                 rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
-                rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest }) {
+                rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
+                rowEiPremiums, rowBenefits, rowDoors }) {
             System.arraycopy(row, 0, out, i, ROWS);
             i += ROWS;
         }
         return out;
     }
+
+    /** Scalars and row arrays in the statement's state since 2026-09-11. */
+    private static final int STATE_SCALARS = 15, STATE_ROWS = 14;
 
     /**
      * Puts a saved statement back, exactly as it was written.
@@ -632,7 +754,16 @@ public class HouseholdAccounts {
      *         nothing was changed and the caller keeps the rebuilt one
      */
     public boolean restoreStatement(double[] in) {
-        if (in == null || in.length != 12 + ROWS * 11) return false;
+        /*
+         * TODAY'S SHAPE, OR THE ONE FROM BEFORE THE PEOPLE OUTSIDE THE FAMILIES
+         * (twelve scalars, eleven arrays of seven rows). The older one restores
+         * what it carries; the EI, the grants and the three new rows are zero,
+         * which is the month those saves were struck in.
+         */
+        boolean current = in != null && in.length == STATE_SCALARS + ROWS * STATE_ROWS;
+        boolean older = in != null && in.length == 12 + ROWS_BEFORE_OUTSIDE * 11;
+        if (!current && !older) return false;
+        int rows = current ? ROWS : ROWS_BEFORE_OUTSIDE;
         int i = 0;
         wages = in[i++];         wageTax = in[i++];
         rent = in[i++];          shopping = in[i++];
@@ -642,11 +773,23 @@ public class HouseholdAccounts {
         population = (int) Math.round(in[i++]);
         workforce  = (int) Math.round(in[i++]);
         jobsFilled = (int) Math.round(in[i++]);
-        for (double[] row : new double[][] {
-                rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
-                rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest }) {
-            System.arraycopy(in, i, row, 0, ROWS);
-            i += ROWS;
+        eiPremiums = 0; eiBenefits = 0; studentGrants = 0;
+        if (current) {
+            eiPremiums = in[i++]; eiBenefits = in[i++]; studentGrants = in[i++];
+        }
+        double[][] arrays = current
+                ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
+                        rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
+                        rowEiPremiums, rowBenefits, rowDoors }
+                : new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
+                        rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest };
+        java.util.Arrays.fill(rowEiPremiums, 0);
+        java.util.Arrays.fill(rowBenefits, 0);
+        java.util.Arrays.fill(rowDoors, 0);
+        for (double[] row : arrays) {
+            java.util.Arrays.fill(row, 0);
+            System.arraycopy(in, i, row, 0, rows);
+            i += rows;
         }
         return true;
     }
@@ -656,9 +799,13 @@ public class HouseholdAccounts {
     public double getRowHealthcare(int row)    { return rowHealthcare[row]; }
     public double getRowTuition(int row)       { return rowTuition[row]; }
     public double getRowInterest(int row)      { return rowInterest[row]; }
+    public double getRowEiPremiums(int row)    { return rowEiPremiums[row]; }
+    /** EI for the out of work, the grant for the students; zero for every other row. */
+    public double getRowBenefits(int row)      { return rowBenefits[row]; }
 
     public double getRowDisposable(int row) {
-        return rowWages[row] - rowTax[row] - rowContributions[row] + rowPensions[row];
+        return rowWages[row] - rowTax[row] - rowContributions[row] - rowEiPremiums[row]
+                + rowPensions[row] + rowBenefits[row];
     }
 
     public double getRowSpending(int row) {
@@ -677,7 +824,11 @@ public class HouseholdAccounts {
     }
 
     public String getRowLabel(int row) {
-        return row == RETIRED ? "Retired (no earner)" : PayTier.values()[row].getLabel();
+        if (row == RETIRED)    return "Retired (no earner)";
+        if (row == UNEMPLOYED) return "Out of work";
+        if (row == STUDENTS)   return "Full-time students";
+        if (row == ORPHANS)    return "Orphans";
+        return PayTier.values()[row].getLabel();
     }
 
     public void reset() {
@@ -687,6 +838,9 @@ public class HouseholdAccounts {
         shopping = 0;
         contributions = 0;
         pensions = 0;
+        eiPremiums = 0;
+        eiBenefits = 0;
+        studentGrants = 0;
         healthcare = 0;
         population = 0;
         workforce = 0;
@@ -703,6 +857,9 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowHealthcare, 0);
         java.util.Arrays.fill(rowTuition, 0);
         java.util.Arrays.fill(rowInterest, 0);
+        java.util.Arrays.fill(rowEiPremiums, 0);
+        java.util.Arrays.fill(rowBenefits, 0);
+        java.util.Arrays.fill(rowDoors, 0);
         tuition = 0;
         interest = 0;
     }
@@ -711,6 +868,7 @@ public class HouseholdAccounts {
     public void redenominate(double scale) {
         wages *= scale;  wageTax *= scale;  rent *= scale;  shopping *= scale;
         contributions *= scale;  pensions *= scale;
+        eiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
         healthcare *= scale;  tuition *= scale;  interest *= scale;
         cumulativeSaving *= scale;
         pensionPerSenior *= scale;
@@ -719,6 +877,7 @@ public class HouseholdAccounts {
             rowShopping[r] *= scale;  rowContributions[r] *= scale;
             rowPensions[r] *= scale;  rowHealthcare[r] *= scale;
             rowTuition[r] *= scale;  rowInterest[r] *= scale;
+            rowEiPremiums[r] *= scale;  rowBenefits[r] *= scale;
         }
     }
 

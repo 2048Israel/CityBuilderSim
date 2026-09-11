@@ -66,6 +66,10 @@ public class PopulationCohorts {
     private double lastMigration;
     private final double[] lastPromoted = new double[AgeBand.values().length];
     private final double[] lastDeathsByBand = new double[AgeBand.values().length];
+    /** ...of which sickness: the share of each band's deaths its extra rate carried. */
+    private final double[] lastIllnessDeathsByBand = new double[AgeBand.values().length];
+    /** ...and of which the band's mortality at all, as opposed to ageing out of the top at 120. */
+    private final double[] lastDyingByBand = new double[AgeBand.values().length];
 
     public PopulationCohorts() { }
 
@@ -77,6 +81,11 @@ public class PopulationCohorts {
     public double getLastMigration()  { return lastMigration; }
     public double getPromoted(AgeBand b) { return lastPromoted[b.ordinal()]; }
     public double getDeaths(AgeBand b)   { return lastDeathsByBand[b.ordinal()]; }
+    /** Last month's deaths in a band that sickness caused. See Sickness. */
+    public double getIllnessDeaths(AgeBand b) { return lastIllnessDeathsByBand[b.ordinal()]; }
+    public double[] getIllnessDeaths()   { return lastIllnessDeathsByBand.clone(); }
+    /** Last month's deaths in a band from its mortality - everything but the seniors who aged out at 120. */
+    public double getDying(AgeBand b)    { return lastDyingByBand[b.ordinal()]; }
 
     public double total() {
         double sum = 0;
@@ -164,13 +173,34 @@ public class PopulationCohorts {
      *                    Healthcare.birthFactor().
      */
     public void advanceMonth(double[] mortalityFactor, double birthFactor) {
+        advanceMonth(mortalityFactor, null, birthFactor);
+    }
+
+    /**
+     * The same month, with the people who stayed sick dying as well.
+     *
+     * @param illness each band's extra MONTHLY chance of dying from sickness,
+     *                in band order - Sickness.deathRates() - or null for none.
+     *                Added to the band's base rate after care has scaled it,
+     *                off the same opening balance, so ageing, ordinary deaths
+     *                and sickness deaths stay competing risks. Monthly and not
+     *                annual because the ring already works a month at a time;
+     *                re-compounding it would be converting a rate that was
+     *                never annual. Capped with the rest at
+     *                AgeBand.MAX_MONTHLY_MORTALITY.
+     */
+    public void advanceMonth(double[] mortalityFactor, double[] illness, double birthFactor) {
 
         double[] factor = (mortalityFactor != null
                 && mortalityFactor.length == AgeBand.values().length)
                 ? mortalityFactor : null;
+        double[] sick = (illness != null && illness.length == AgeBand.values().length)
+                ? illness : null;
 
         java.util.Arrays.fill(lastPromoted, 0);
         java.util.Arrays.fill(lastDeathsByBand, 0);
+        java.util.Arrays.fill(lastIllnessDeathsByBand, 0);
+        java.util.Arrays.fill(lastDyingByBand, 0);
         lastBirths = 0;
         lastDeaths = 0;
         lastMigration = 0;
@@ -197,6 +227,11 @@ public class PopulationCohorts {
             double rate = factor == null
                     ? b.monthlyMortality()
                     : AgeBand.monthlyFromAnnual(b.getAnnualMortality() * Math.max(0, factor[i]));
+            double ill = sick == null ? 0 : Math.max(0, sick[i]);
+            double both = Math.min(AgeBand.MAX_MONTHLY_MORTALITY, rate + ill);
+            // The cap scales both parts alike, so sickness keeps its share of the dead.
+            double illShare = rate + ill > 0 ? ill / (rate + ill) : 0;
+            rate = both;
 
             double dying  = opening * rate;
             double ageing = opening * b.monthlyOutflowRate();
@@ -215,6 +250,8 @@ public class PopulationCohorts {
             band[i] -= (dying + ageing);
             lastPromoted[i] = ageing;
             lastDeathsByBand[i] = dying;
+            lastDyingByBand[i] = dying;
+            lastIllnessDeathsByBand[i] = dying * illShare;
             lastDeaths += dying;
 
             AgeBand next = b.next();
@@ -266,6 +303,23 @@ public class PopulationCohorts {
         for (int i = 0; i < band.length; i++) {
             band[i] = Math.max(0, band[i] + netArrivals * (band[i] / t));
         }
+    }
+
+    /**
+     * People of one band leaving the city on their own account - not the
+     * proportional migration above. The evicted who give up on the city are
+     * adults, and taking them out of every band would have sent babies away
+     * for their parents' rent (2026-09-11).
+     *
+     * @return how many actually left: no more than the band holds
+     */
+    public double leave(AgeBand of, double people) {
+        if (!(people > 0)) return 0;
+        int i = of.ordinal();
+        double gone = Math.min(people, band[i]);
+        band[i] -= gone;
+        lastMigration -= gone;
+        return gone;
     }
 
     /**
@@ -385,6 +439,8 @@ public class PopulationCohorts {
         java.util.Arrays.fill(band, 0);
         java.util.Arrays.fill(lastPromoted, 0);
         java.util.Arrays.fill(lastDeathsByBand, 0);
+        java.util.Arrays.fill(lastIllnessDeathsByBand, 0);
+        java.util.Arrays.fill(lastDyingByBand, 0);
         lastBirths = 0;
         lastDeaths = 0;
     }

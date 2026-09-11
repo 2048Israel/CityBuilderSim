@@ -738,12 +738,28 @@ public class PopulationManager {
      * payroll from the live one; one definition, and it cannot happen again.
      */
     public int getUnemployed(){
-        return Math.max(0, workforce - getJobsFilled());
+        return (int) Math.max(0, Math.round(getLabourForce() - getJobsFilled()));
+    }
+
+    /**
+     * Adults who could take a post this month: the workforce less the
+     * full-time students.
+     *
+     * WHY, 2026-09-11. getUnemployed() was `workforce - getJobsFilled()`, and
+     * workforceByBand() takes the students off the supply while `workforce`
+     * never did - so every full-time student was counted as out of work, on
+     * the People screen and in the playtest's rate. Found designing the
+     * unemployed households: a student is not looking for work (Jerus,
+     * 2026-09-06), and since 2026-09-11 a student is a household of their own.
+     */
+    public double getLabourForce() {
+        return Math.max(0, workforce - getStudyingTotal());
     }
 
     /** Unemployed as a share of everyone who could work, 0-1. */
     public double getUnemploymentRate(){
-        return workforce > 0 ? getUnemployed() / (double) workforce : 0;
+        double force = getLabourForce();
+        return force > 0 ? getUnemployed() / force : 0;
     }
     
     public int[] getJobs(){

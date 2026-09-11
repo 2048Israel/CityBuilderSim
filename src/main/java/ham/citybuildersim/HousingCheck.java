@@ -119,7 +119,9 @@ public class HousingCheck {
             }
 
             /* ------------- 2. every household is accounted for ------------- */
-            double households = fam.totalHouseholds();
+            // Every household that wants a door - since 2026-09-11 the out of
+            // work and the students outside the family matrix too.
+            double households = fam.householdsSeekingDoors();
             double doubled = fam.getDoubledUpHouseholds();
             near("housed plus doubled up is every household", month,
                     fam.homesNeeded() + doubled, households);
@@ -271,8 +273,15 @@ public class HousingCheck {
              * than asserted, because which of the two a screen WANTS is a
              * labelling question, not an arithmetic one.
              */
+            /*
+             * THE PAYERS ARE DOORS PAID FOR SINCE 2026-09-11, not households:
+             * an out-of-work adult five to a home pays a fifth, a household
+             * with no home pays nothing, an orphan nothing. The identity is
+             * the same one - the bill over the people who pay it - counted the
+             * way the bill is now split.
+             */
             double payers = 0;
-            for (int r = 0; r < homes.getRowCount(); r++) payers += homes.getRowHouseholds(r);
+            for (int r = 0; r < homes.getRowCount(); r++) payers += homes.getRowDoors(r);
             if (payers > .5) {
                 near("...and the per-household figure is that over the payers", month,
                         homes.rentPerHousehold() * payers, billed);
@@ -519,7 +528,8 @@ public class HousingCheck {
         System.out.println("\n--- a single adult takes a four-person flat when that is all there is ---");
 
         FamilyModel match = game.getFamilies();
-        double allHouseholds = match.totalHouseholds();
+        // The seekers outside the family matrix are matched too (2026-09-11).
+        double allHouseholds = match.householdsSeekingDoors();
 
         // Doors of size four and nothing else, and more of them than there are
         // households - so nothing can be left out for want of room.
@@ -549,6 +559,10 @@ public class HousingCheck {
         double tooBigForFour = 0;
         for (FamilyStructure shape : FamilyStructure.values()) {
             if (shape.size() > 4) tooBigForFour += match.totalOf(shape);
+        }
+        // ...and the out of work and the students sharing five to a home.
+        for (FamilyModel.Seeker g : FamilyModel.Seeker.values()) {
+            tooBigForFour += Math.min(match.getSeekers(g), match.getSeekersSharing(g)) / 5;
         }
         near("...and the only crowding is households too big for the flat",
                 game.getMonth(), match.getCrowdedHouseholds(), tooBigForFour);

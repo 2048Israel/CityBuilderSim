@@ -112,6 +112,46 @@ public class TaxPolicy {
         pensionReplacement = Math.max(0, Math.min(MAX_REPLACEMENT, share));
     }
 
+    /* =====================================================================
+       EMPLOYMENT INSURANCE AND THE STUDENT GRANT, AS THREE MORE DIALS
+       (2026-09-11)
+
+       Jerus: EI "like CPP" - a premium off every wage into the treasury,
+       pay-as-you-go, and a policy dial. The same shape as the pension's two:
+       what the workers pay, and what the out of work draw. And the grant a
+       full-time student is paid, beside them, because it is the same kind of
+       promise. Defaults are the real 2026 figures; see Unemployment and
+       StudentHousehold.
+       ===================================================================== */
+
+    private double eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
+    private double eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
+
+    /**
+     * The Canada Student Grant, $525 a month of study (2026-27), as a share of
+     * the $3,460 unskilled median the ladder is anchored on - so it moves with
+     * the wage it was measured against and with a currency reform.
+     */
+    public static final double DEFAULT_STUDENT_GRANT_SHARE = 525.0 / 3_460;
+    private double studentGrantShare = DEFAULT_STUDENT_GRANT_SHARE;
+
+    /** A premium past a tenth of a wage is a second income tax. */
+    public static final double MAX_EI_PREMIUM = .10;
+
+    /** EI that replaces more than the wage pays people to stay out of work. */
+    public static final double MAX_EI_BENEFIT = 1.00;
+
+    /** A grant of more than an unskilled wage is a wage. */
+    public static final double MAX_STUDENT_GRANT = 1.00;
+
+    public double getEiPremiumRate()     { return eiPremiumRate; }
+    public double getEiBenefitRate()     { return eiBenefitRate; }
+    public double getStudentGrantShare() { return studentGrantShare; }
+
+    public void setEiPremiumRate(double rate)     { eiPremiumRate = clamp(rate, MAX_EI_PREMIUM); }
+    public void setEiBenefitRate(double share)    { eiBenefitRate = clamp(share, MAX_EI_BENEFIT); }
+    public void setStudentGrantShare(double share){ studentGrantShare = clamp(share, MAX_STUDENT_GRANT); }
+
     /** What one pensioner receives a month, at the rate currently set. */
     /**
      * A pension, in TODAY's money.
@@ -349,13 +389,17 @@ public class TaxPolicy {
 
         int bands = WageBand.values().length;
 
-        double[] state = new double[4 + bands];
+        double[] state = new double[4 + bands + 3];
         int i = 0;
         state[i++] = incomeTaxRate;
         state[i++] = propertyTaxRate;
         state[i++] = contributionRate;
         state[i++] = pensionReplacement;
         for (int b = 0; b < bands; b++) state[i++] = wageOffset[b];
+        // The three dials of 2026-09-11, on the end.
+        state[i++] = eiPremiumRate;
+        state[i++] = eiBenefitRate;
+        state[i]   = studentGrantShare;
         return state;
     }
 
@@ -363,7 +407,10 @@ public class TaxPolicy {
     public boolean restorePolicyState(double[] state) {
 
         int bands = WageBand.values().length;
-        if (state == null || state.length != 4 + bands) return false;
+        // With the EI and grant dials, or a save from before them - which keeps
+        // the defaults for the three, as the city it was had them.
+        boolean current = state != null && state.length == 4 + bands + 3;
+        if (state == null || (!current && state.length != 4 + bands)) return false;
 
         int i = 0;
         setIncomeTaxRate(state[i++]);
@@ -371,6 +418,14 @@ public class TaxPolicy {
         setContributionRate(state[i++]);
         setPensionReplacement(state[i++]);
         for (WageBand b : WageBand.values()) setWageOffset(b, state[i++]);
+        eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
+        eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
+        studentGrantShare = DEFAULT_STUDENT_GRANT_SHARE;
+        if (current) {
+            setEiPremiumRate(state[i++]);
+            setEiBenefitRate(state[i++]);
+            setStudentGrantShare(state[i]);
+        }
         return true;
     }
 
@@ -416,6 +471,9 @@ public class TaxPolicy {
         propertyTaxRate = DEFAULT_PROPERTY_TAX;
         contributionRate = SocialSecurity.DEFAULT_CONTRIBUTION_RATE;
         pensionReplacement = SocialSecurity.DEFAULT_PENSION_REPLACEMENT;
+        eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
+        eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
+        studentGrantShare = DEFAULT_STUDENT_GRANT_SHARE;
         java.util.Arrays.fill(wageOffset, 0);
         profitOffset.clear();
         salesOffset.clear();

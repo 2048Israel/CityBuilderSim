@@ -930,6 +930,25 @@ public class DataSave {
     private double[] migration;
 
     /**
+     * The people out of work: the EI claims by the month they began, who is
+     * past EI, who has been evicted, and the month the flows were struck
+     * against (2026-09-11). STOCKS - a claim eleven months old is one month
+     * from ending, and a city that forgot it would hand everybody a fresh
+     * year. Null in a save from before, which Unemployment takes as its first
+     * month.
+     */
+    private double[] unemployment;
+
+    /**
+     * Who has been sick how long: five rings of thirteen monthly shares, the
+     * last month's deaths from sickness by band, the recovery and whether the
+     * ring has been seeded (2026-09-11). A STOCK - somebody two months sick is
+     * a month from being able to die of it. Null in a save from before, which
+     * Sickness seeds at its steady state on the first month back.
+     */
+    private double[] sickness;
+
+    /**
      * The month's sickness: the outbreak still decaying, and the rate the
      * sectors were throttled by.
      *
@@ -1017,6 +1036,10 @@ public class DataSave {
     public double[] getFamilies()       { return families; }
     public void setMigration(double[] a){ this.migration = a; }
     public double[] getMigration()      { return migration; }
+    public void setUnemployment(double[] a) { this.unemployment = a; }
+    public double[] getUnemployment()       { return unemployment; }
+    public void setSickness(double[] a)     { this.sickness = a; }
+    public double[] getSickness()           { return sickness; }
     public void setHealth(double[] a)   { this.health = a; }
     public double[] getHealth()         { return health; }
     public void setHealthcare(double[] a){ this.healthcare = a; }

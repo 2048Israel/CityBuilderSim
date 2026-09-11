@@ -781,11 +781,34 @@ public class EconomyManager {
         totalWageTax = taxPolicy.wageTaxOn(staffedWagePerType, null);
         // Pension contributions, taken off the same staffed wage bill. Revenue, and NOT a tax.
         totalContributions = SocialSecurity.contributionsOn(totalWage, taxPolicy.getContributionRate());
+        // ...and the EI premium, off the same bill, the same way (2026-09-11).
+        totalEiPremiums = Math.max(0, totalWage) * taxPolicy.getEiPremiumRate();
         // Property tax and sales tax are NOT recomputed here: the sectors
         // were billed them and bore them, and the city collects the figure
         // the businesses paid.
         return profit + totalWageTax + salesTax + totalPropertyTax
-                + totalContributions + healthcareFees + educationFees + totalBankTax;
+                + totalContributions + totalEiPremiums + healthcareFees + educationFees + totalBankTax;
+    }
+
+    /* ------------------- EI and the student grant (2026-09-11) ------------------- */
+
+    private double totalEiPremiums;
+    private double eiBenefits;
+    private double studentGrants;
+
+    /** The month's EI bill and grant bill, set by Game off Unemployment and the students before the cash moves. */
+    public void setOutsidePayments(double eiBenefits, double studentGrants) {
+        this.eiBenefits = Math.max(0, eiBenefits);
+        this.studentGrants = Math.max(0, studentGrants);
+    }
+
+    public double getEiPremiums()    { return totalEiPremiums; }
+    public double getEiBenefits()    { return eiBenefits; }
+    public double getStudentGrants() { return studentGrants; }
+
+    /** What the premiums cover of the EI bill. 1 when nobody is drawing it. */
+    public double getEiCoverage() {
+        return eiBenefits > 0 ? totalEiPremiums / eiBenefits : 1;
     }
 
     /* ----------------------------- the services ----------------------------- */
@@ -829,7 +852,7 @@ public class EconomyManager {
 
     /** What the city pays out this month. */
     public double getExpenses() {
-        return interest + getPensionsPaid() + healthcareBill + educationBill;
+        return interest + getPensionsPaid() + eiBenefits + studentGrants + healthcareBill + educationBill;
     }
 
     /** The interest alone, which is the only part of getExpenses() that is CARRIED. */
@@ -904,6 +927,7 @@ public class EconomyManager {
                 healthcareFees, healthcareBill,
                 educationFees, educationBill,
                 subsidiesPaid);
+        nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants);
 
         GDP = nationalAccounts.getGdp();
     }
@@ -924,6 +948,7 @@ public class EconomyManager {
                 healthcareFees, healthcareBill,
                 educationFees, educationBill,
                 subsidiesPaid);
+        nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants);
     }
 
     public double getLastFoodUnits() { return nationalAccounts.getLastFoodUnits(); }
@@ -1111,6 +1136,7 @@ public class EconomyManager {
         educationBill  *= scale;   educationFees  *= scale;
         subsidiesPaid  *= scale;
         totalContributions *= scale;
+        totalEiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
         exchangeRate *= scale;
         pricePerWatt *= scale;
         pricePerWaterUnit *= scale;

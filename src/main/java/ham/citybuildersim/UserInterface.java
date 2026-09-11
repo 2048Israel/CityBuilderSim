@@ -2295,7 +2295,7 @@ public class UserInterface extends Application {
             {"The two rates", "By wage band", "By sector"};
     private static final String[] POLICY_WAGE_PAGES    = {"The floor"};
     private static final String[] POLICY_MONEY_PAGES   = {"The policy rate", "Currency reform"};
-    private static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Tuition", "Subsidies"};
+    private static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Tuition", "Subsidies"};
 
     /**
      * The one lever that has been moved and not yet applied.
@@ -2423,7 +2423,9 @@ public class UserInterface extends Application {
     private double promisesCost() {
         EconomyManager em = game.getEconomyManager();
         return em.getPensionShortfall() + game.getEducation().getSubsidy()
-                + game.getTotalSubsidyPaid();
+                + game.getTotalSubsidyPaid()
+                // EI past its premiums, and the students' grants (2026-09-11)
+                + Math.max(0, em.getEiBenefits() - em.getEiPremiums()) + em.getStudentGrants();
     }
 
     private int pinnedBands() {
@@ -2669,9 +2671,10 @@ public class UserInterface extends Application {
             }
             case "Promises" -> {
                 switch (policyPage) {
-                    case "Tuition"   -> tuitionPage(column);
-                    case "Subsidies" -> subsidyPage(column);
-                    default          -> pensionPage(column);
+                    case "Tuition"     -> tuitionPage(column);
+                    case "Subsidies"   -> subsidyPage(column);
+                    case "Out of work" -> outOfWorkPage(column);
+                    default            -> pensionPage(column);
                 }
             }
             default -> {
@@ -3969,6 +3972,123 @@ public class UserInterface extends Application {
             column.getChildren().add(applyBar(
                     String.format("Set the city's share to %.0f%%", want * 100),
                     () -> schools.setTuitionSubsidy(want)));
+        }
+    }
+
+    /* =====================================================================
+       PROMISES - the out of work and the students (2026-09-11)
+
+       THREE DIALS, AND THE FIRST TWO ARE THE PENSION'S SHAPE AGAIN. Jerus:
+       EI "like CPP" - a premium off every wage, a benefit to whoever lost a
+       job, and the treasury carrying the gap. The third is the grant a
+       full-time student is paid, here because it is the same kind of promise
+       and because the students live outside the families beside the out of
+       work. Defaults are the real 2026 figures: 1.63%, 55%, $525.
+       ===================================================================== */
+
+    private void outOfWorkPage(VBox column) {
+        EconomyManager em = game.getEconomyManager();
+        TaxPolicy policy = em.getTaxPolicy();
+        Unemployment u = game.getUnemployment();
+        FamilyModel families = game.getFamilies();
+
+        double premium = policy.getEiPremiumRate();
+        double benefit = policy.getEiBenefitRate();
+        double grantShare = policy.getStudentGrantShare();
+        double collected = em.getEiPremiums();
+        double paid = em.getEiBenefits();
+        double grants = em.getStudentGrants();
+        double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
+        double grantEach = students > 0 ? grants / students : 0;
+
+        column.getChildren().add(statementHead("The three dials"));
+        column.getChildren().add(statementLine("Workers pay for EI",
+                String.format("%.2f%% of every wage", premium * 100), Palette.WARN));
+        column.getChildren().add(statementLine("EI replaces",
+                String.format("%.0f%% of the wage they lost, for twelve months", benefit * 100),
+                Palette.GOOD));
+        column.getChildren().add(statementLine("A student is granted",
+                String.format("%.0f%% of an unskilled wage a month", grantShare * 100), Palette.GOOD));
+
+        column.getChildren().add(statementHead("What it costs the city"));
+        column.getChildren().add(statementLine("Premiums collected", money(collected), Palette.GOOD));
+        column.getChildren().add(statementLine("EI paid to " + people(u.onEi()) + " claimants",
+                signedTight(paid, true), Palette.WARN));
+        column.getChildren().add(statementLine("Grants paid to " + people(students) + " students",
+                signedTight(grants, true), Palette.WARN));
+        column.getChildren().add(statementTotal("Out of the treasury",
+                signedTight(paid + grants - collected, true),
+                collected >= paid + grants ? Palette.GOOD : Palette.WARN));
+        column.getChildren().add(statementNote(
+                "EI only pays the first twelve months, so a long bust costs less in EI than "
+                + "a short one and more in everything else. Student loans are not on this "
+                + "line: they are lent, and graduates pay them back."));
+
+        /* ---- the premium ---- */
+        column.getChildren().add(statementHead("What workers pay for EI"));
+        column.getChildren().add(leverHead(String.format("%.2f%%", premium * 100),
+                "Off every wage in the city, beside the pension contribution."));
+        column.getChildren().add(stageSlider("eiPremium", premium,
+                0, TaxPolicy.MAX_EI_PREMIUM, .0005, UserInterface::pct2));
+        if (isStaged("eiPremium")) {
+            double want = staged("eiPremium", premium);
+            double then = premium > 0 ? collected * want / premium : 0;
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("Workers pay",
+                    String.format("%.2f%%", premium * 100), String.format("%.2f%%", want * 100),
+                    want >= premium ? Palette.WARN : Palette.GOOD));
+            column.getChildren().add(wouldBe("Collected a month", money(collected), money(then), Palette.GOOD));
+            column.getChildren().add(wouldTotal("Out of the treasury",
+                    signedTight(paid + grants - collected, true), signedTight(paid + grants - then, true),
+                    then >= collected ? Palette.GOOD : Palette.BAD));
+            column.getChildren().add(previewCaveat("Against last month's payroll."));
+            column.getChildren().add(applyBar(String.format("Set the EI premium to %.2f%%", want * 100),
+                    () -> policy.setEiPremiumRate(want)));
+        }
+
+        /* ---- the benefit ---- */
+        column.getChildren().add(statementHead("What EI replaces"));
+        column.getChildren().add(leverHead(String.format("%.0f%%", benefit * 100),
+                "Of the wage a claimant lost, up to the insured maximum of "
+                + moneyFull(u.getInsuredCap()) + " a month."));
+        column.getChildren().add(stageSlider("eiBenefit", benefit,
+                0, TaxPolicy.MAX_EI_BENEFIT, .01, r -> String.format("%.0f%%", r * 100)));
+        if (isStaged("eiBenefit")) {
+            double want = staged("eiBenefit", benefit);
+            double then = benefit > 0 ? paid * want / benefit : 0;
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("EI replaces",
+                    String.format("%.0f%%", benefit * 100), String.format("%.0f%%", want * 100),
+                    want >= benefit ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(wouldBe("Paid a month", money(paid), money(then), Palette.WARN));
+            column.getChildren().add(wouldTotal("Out of the treasury",
+                    signedTight(paid + grants - collected, true), signedTight(then + grants - collected, true),
+                    then <= paid ? Palette.GOOD : Palette.BAD));
+            column.getChildren().add(previewCaveat("Against today's claimants."));
+            column.getChildren().add(applyBar(String.format("Set EI to %.0f%%", want * 100),
+                    () -> policy.setEiBenefitRate(want)));
+        }
+
+        /* ---- the grant ---- */
+        column.getChildren().add(statementHead("What a student is granted"));
+        column.getChildren().add(leverHead(String.format("%.0f%%", grantShare * 100),
+                "Of an unskilled wage, a month, to every full-time student"
+                + (grantEach > 0 ? " - " + moneyFull(grantEach) + " each now." : ".")
+                + " What it does not cover, a student loan does."));
+        column.getChildren().add(stageSlider("grant", grantShare,
+                0, TaxPolicy.MAX_STUDENT_GRANT, .01, r -> String.format("%.0f%%", r * 100)));
+        if (isStaged("grant")) {
+            double want = staged("grant", grantShare);
+            double then = grantShare > 0 ? grants * want / grantShare : 0;
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("Granted", String.format("%.0f%%", grantShare * 100),
+                    String.format("%.0f%%", want * 100), want >= grantShare ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(wouldBe("Paid a month", money(grants), money(then), Palette.WARN));
+            column.getChildren().add(previewCaveat(
+                    "Against today's students. A smaller grant is a bigger student loan, repaid "
+                    + "out of wages for nine and a half years."));
+            column.getChildren().add(applyBar(String.format("Set the grant to %.0f%%", want * 100),
+                    () -> policy.setStudentGrantShare(want)));
         }
     }
 
@@ -10028,23 +10148,27 @@ public class UserInterface extends Application {
                 out.add(String.format("Looks after %s children a month when fully staffed.",
                         formatter.format(cap)));
                 out.add(String.format("Childcare is the strongest lever in the game:"
-                        + " full coverage cuts infant deaths by a factor of %.0f and"
-                        + " doubles the birth rate.", Healthcare.CHILDCARE_SWING));
+                        + " full coverage cuts infant deaths by a factor of %.0f,"
+                        + " doubles the birth rate, and stops babies falling ill twice"
+                        + " as often as everybody else.", Healthcare.CHILDCARE_SWING));
                 break;
 
             case GENERAL:
                 out.add(String.format("Treats %s people a month when fully staffed.",
                         formatter.format(cap)));
-                out.add(String.format("General care sets how much of the workforce is off"
-                        + " sick - %.0f%% with none, %.0f%% with enough - and cuts adult"
-                        + " deaths.",
-                        Health.UNTREATED_RATE * 100, Health.WELL_SERVED_RATE * 100));
+                out.add(String.format("General care sets how much of the city is off"
+                        + " sick - %.0f%% with none, %.0f%% with enough - and how fast the"
+                        + " sick get better: %.0f%% a month with none, %.0f%% with enough."
+                        + " Anyone ill for more than two months can die of it.",
+                        Health.UNTREATED_RATE * 100, Health.WELL_SERVED_RATE * 100,
+                        Sickness.RECOVERY_UNTREATED * 100, Sickness.RECOVERY_SERVED * 100));
                 break;
 
             case SENIOR:
                 out.add(String.format("Cares for %s seniors a month when fully staffed.",
                         formatter.format(cap)));
-                out.add(String.format("Cuts senior deaths, and full coverage draws %.0f%%"
+                out.add(String.format("Cuts senior deaths, stops seniors falling ill twice"
+                        + " as often as everybody else, and full coverage draws %.0f%%"
                         + " more people to the city.", Migration.SENIOR_CARE_PULL * 100));
                 break;
 
@@ -10286,8 +10410,8 @@ public class UserInterface extends Application {
                 return String.format("Full coverage cuts infant deaths to 1/%.0f and doubles"
                         + " the birth rate.", Healthcare.CHILDCARE_SWING);
             case GENERAL:
-                return String.format("Sets how much of the workforce is off sick (%.0f%% to"
-                        + " %.0f%%) and cuts adult deaths.",
+                return String.format("Sets how much of the city is off sick (%.0f%% to"
+                        + " %.0f%%) and how fast the sick get better - the long sick can die.",
                         Health.UNTREATED_RATE * 100, Health.WELL_SERVED_RATE * 100);
             case SENIOR:
                 return String.format("Cuts senior deaths, and draws up to %.0f%% more people"
@@ -11858,9 +11982,30 @@ public class UserInterface extends Application {
         /* ------------------------- what it buys ------------------------- */
         column.getChildren().add(subHead("What this coverage buys"));
         if (care == CareType.GENERAL) {
-            column.getChildren().add(statementLine("Adult deaths",
-                    String.format("x%.2f", Healthcare.mortalityFactor(
-                            AgeBand.ADULT, .5, cover, .5))));
+            /*
+             * THE LONG SICK (2026-09-11). General care no longer scales the
+             * adults' death rate; it saves them by curing them before they have
+             * been ill two months. So what it buys is the recovery, and the
+             * people it has not reached yet.
+             */
+            Sickness sickness = game.getSickness();
+            column.getChildren().add(statementLine("The sick who get better",
+                    String.format("%.0f%% a month", Sickness.recovery(cover) * 100)));
+            column.getChildren().add(statementNote(String.format(
+                    "%.0f%% with no general care, %.0f%% with everybody covered.",
+                    Sickness.RECOVERY_UNTREATED * 100, Sickness.RECOVERY_SERVED * 100)));
+            double longSick = sickness.peoplePastTwoMonths(cohorts);
+            column.getChildren().add(statementLine("Sick more than two months",
+                    people(longSick), longSick >= 1 ? Palette.WARN : null));
+            column.getChildren().add(statementLine("Died of it last month",
+                    flowText(sickness.getLastDeaths()),
+                    sickness.getLastDeaths() >= .5 ? Palette.BAD : null));
+            column.getChildren().add(statementNote(String.format(
+                    "Anyone ill for more than two months can die of it: %.0f%% a month for babies"
+                    + " and seniors, %.0f%% for adults, %.0f%% for children and teenagers.",
+                    Sickness.deathChance(AgeBand.BABY) * 100,
+                    Sickness.deathChance(AgeBand.ADULT) * 100,
+                    Sickness.deathChance(AgeBand.CHILD) * 100)));
             column.getChildren().add(statementLine("The sick rate",
                     String.format("%.1f%%", health.getSickRate() * 100)));
             column.getChildren().add(statementNote(String.format(
@@ -11891,6 +12036,11 @@ public class UserInterface extends Application {
                             ? String.format("%.1f pts", health.getHungerRate() * 100)
                             : "none",
                     health.getHungerRate() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
+            column.getChildren().add(statementLine("No home",
+                    health.getUnhousedRate() > 0
+                            ? String.format("%.1f pts", health.getUnhousedRate() * 100)
+                            : "none",
+                    health.getUnhousedRate() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
             /*
              * AND WHATEVER IS LEFT OVER, said out loud.
              *
@@ -11901,7 +12051,8 @@ public class UserInterface extends Application {
              * Health's save array became visible in the first place.
              */
             double named = health.getBaselineRate() + health.getOutbreakSeverity()
-                         + health.getUnburiedRate() + health.getHungerRate();
+                         + health.getUnburiedRate() + health.getHungerRate()
+                         + health.getUnhousedRate();
             double gap = health.getSickRate() - named;
             if (Math.abs(gap) > .0005) {
                 column.getChildren().add(statementLine(
@@ -11935,6 +12086,12 @@ public class UserInterface extends Application {
             column.getChildren().add(statementNote(
                     "The largest single effect in the health model — an uncovered city "
                     + "loses babies at many times the rate a covered one does."));
+            column.getChildren().add(statementLine("How often babies fall ill",
+                    String.format("x%.2f the city", 1 + Sickness.EXTRA_SICKNESS * (1 - cover))));
+            column.getChildren().add(statementNote(
+                    "Babies get sick twice as often as everybody else with no childcare, and no "
+                    + "more often with enough of it — and a baby ill for more than two months "
+                    + "can die of it."));
             column.getChildren().add(statementLine("Births",
                     String.format("x%.2f", Healthcare.birthFactor(cover))));
             column.getChildren().add(statementNote(
@@ -11943,6 +12100,8 @@ public class UserInterface extends Application {
             column.getChildren().add(statementLine("Senior deaths",
                     String.format("x%.2f", Healthcare.mortalityFactor(
                             AgeBand.SENIOR, 0, .5, cover))));
+            column.getChildren().add(statementLine("How often seniors fall ill",
+                    String.format("x%.2f the city", 1 + Sickness.EXTRA_SICKNESS * (1 - cover))));
             column.getChildren().add(statementLine("Draw on newcomers",
                     String.format("+%.0f%%", (Migration.seniorCarePull(cover) - 1) * 100),
                     Migration.seniorCarePull(cover) > 1 ? Palette.GOOD : null));
@@ -13268,6 +13427,24 @@ public class UserInterface extends Application {
                 "+" + flowText(cohorts.getLastBirths()), Palette.GOOD));
         column.getChildren().add(statementLine("Died",
                 "-" + flowText(cohorts.getLastDeaths()), Palette.TEXT_BODY));
+        /*
+         * ...AND HOW MANY OF THEM STAYED SICK (2026-09-11). Anybody ill for
+         * more than two months can die of it, at their age's chance. By band,
+         * because the youngest and the oldest are the ones it takes.
+         */
+        Sickness sickness = game.getSickness();
+        column.getChildren().add(statementLine("...of illness they did not get over",
+                "-" + flowText(sickness.getLastDeaths()),
+                sickness.getLastDeaths() >= .5 ? Palette.BAD : Palette.TEXT_BODY));
+        StringBuilder byAge = new StringBuilder();
+        for (AgeBand b : AgeBand.values()) {
+            if (byAge.length() > 0) byAge.append("  ·  ");
+            byAge.append(b.getLabel().toLowerCase()).append(' ')
+                 .append(flowText(sickness.getLastDeaths(b)));
+        }
+        column.getChildren().add(statementNote(String.format(
+                "%s. %s have been ill for more than two months.",
+                byAge, people(sickness.peoplePastTwoMonths(cohorts)))));
 
         /* ------------------------- WHO MOVED IN -------------------------
          *
@@ -13434,9 +13611,15 @@ public class UserInterface extends Application {
                 "%s staffed beds for %s people.",
                 people(bm.getStaffedCareCapacity(CareType.GENERAL, staffing)),
                 people(total))));
-        column.getChildren().add(statementLine("...which also buys",
-                String.format("adult deaths x%.2f", Healthcare.mortalityFactor(
-                        AgeBand.ADULT, .5, health.getCoverage(), .5))));
+        column.getChildren().add(statementLine("...which also cures",
+                String.format("%.0f%% of the sick a month",
+                        Sickness.recovery(health.getCoverage()) * 100)));
+        column.getChildren().add(statementLine("Sick more than two months",
+                people(sickness.peoplePastTwoMonths(cohorts)),
+                sickness.peoplePastTwoMonths(cohorts) >= 1 ? Palette.WARN : null));
+        column.getChildren().add(statementLine("Died of illness last month",
+                flowText(sickness.getLastDeaths()),
+                sickness.getLastDeaths() >= .5 ? Palette.BAD : null));
 
         String illness;
         String illnessTone;
@@ -13495,11 +13678,13 @@ public class UserInterface extends Application {
             column.getChildren().add(statementNote(String.format("%s places for %s  ·  %s",
                     people(beds), people(served),
                     type == CareType.CHILDCARE
-                        ? String.format("infant deaths x%.3f, births x%.2f",
+                        ? String.format("infant deaths x%.3f, illness x%.2f, births x%.2f",
                                 Healthcare.mortalityFactor(AgeBand.BABY, cover, .5, 0),
+                                1 + Sickness.EXTRA_SICKNESS * (1 - cover),
                                 Healthcare.birthFactor(cover))
-                        : String.format("senior deaths x%.2f, +%.0f%% draw",
+                        : String.format("senior deaths x%.2f, illness x%.2f, +%.0f%% draw",
                                 Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, cover),
+                                1 + Sickness.EXTRA_SICKNESS * (1 - cover),
                                 (Migration.seniorCarePull(cover) - 1) * 100))));
         }
 
@@ -13622,6 +13807,26 @@ public class UserInterface extends Application {
         column.getChildren().add(statementNote(
                 "Seniors carry no tier — they have no earner — so their row sits under the "
                 + "first column by convention rather than by wage."));
+        /*
+         * THE HOUSEHOLDS REMEMBER (2026-09-11). The builder keeps last month's
+         * households as far as the people are still there for them, so the
+         * month's change is four numbers: kept, re-formed on their own, no
+         * longer fitting, and formed new from the people left over.
+         */
+        if (families.hasRecord()) {
+            column.getChildren().add(statementLine("Kept from last month",
+                    people(families.getLastKept())));
+            column.getChildren().add(statementNote(String.format(
+                    "%s re-formed on their own (%.0f%% a month)  ·  %s no longer fitted — "
+                    + "a child grown, a death, a job lost  ·  %s formed from the people left over.",
+                    people(families.getLastReformed()),
+                    FamilyModel.REFORMING_EACH_MONTH * 100,
+                    people(families.getLastNoLongerFit()),
+                    people(families.getLastNew()))));
+        }
+
+        /* ======================= OUTSIDE THE FAMILIES (2026-09-11) ======================= */
+        outsideBlock(column);
 
         /* ============================= THE LABOUR MARKET ============================= */
         column.getChildren().add(statementHead("Work"));
@@ -13991,6 +14196,137 @@ public class UserInterface extends Application {
      * the poor ones" off one screen and "and here is what that costs them" off
      * the other.
      */
+    /* =====================================================================
+       THE PEOPLE OUTSIDE THE FAMILIES (2026-09-11)
+
+       Jerus: "a new household structure called unemployed... these will just
+       sum up by age the unemployed, or unhoused". The families are built from
+       the adults who work; this is everybody else, by age - which is the
+       table - and then what moved through the pool this month and what EI
+       cost. See claude/the-people-the-books-left-out.md.
+       ===================================================================== */
+    private void outsideBlock(VBox column) {
+        Unemployment u = game.getUnemployment();
+        FamilyModel families = game.getFamilies();
+        EconomyManager em = game.getEconomyManager();
+
+        double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
+        double[] noDoor = families.unhousedPeopleByBand();
+        noDoor[AgeBand.ADULT.ordinal()] += u.getUnhoused();
+        double unhoused = 0;
+        for (double v : noDoor) unhoused += v;
+        double orphans = families.getOrphansTotal();
+
+        column.getChildren().add(statementHead("Outside the families"));
+        column.getChildren().add(outsideTable(u, families, noDoor));
+        column.getChildren().add(statementNote(
+                "Families are built from the adults who work, and their children. Everybody "
+                + "else is here, by age: the out of work and the students keep their own "
+                + "books, the unhoused have no home, and the orphans are the children no "
+                + "family took."));
+
+        /* ---- the out of work ---- */
+        column.getChildren().add(statementLine("Out of work", people(u.getPool())));
+        column.getChildren().add(statementLine("   on EI", people(u.onEi()),
+                u.onEi() >= .5 ? Palette.GOOD : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("   EI run out", people(u.getOffEi()),
+                u.getOffEi() >= .5 ? Palette.WARN : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("   lost their home", people(u.getUnhoused()),
+                u.getUnhoused() >= .5 ? Palette.BAD : Palette.TEXT_SPENT));
+
+        VBox flows = new VBox(1);
+        flows.setStyle("-fx-padding: 2 0 8 14;");
+        flows.getChildren().add(statementLine("Jobs that disappeared", flowText(u.getJobsLost()),
+                u.getJobsLost() >= .5 ? Palette.WARN : Palette.TEXT_SPENT));
+        flows.getChildren().add(statementLine("Arrived and found no work", flowText(u.getArrivalsUnhired())));
+        flows.getChildren().add(statementLine("Came of age, or finished school, with no post",
+                flowText(u.getEntrants())));
+        flows.getChildren().add(statementLine("Hired out of the pool", flowText(u.getLocalHires()),
+                u.getLocalHires() >= .5 ? Palette.GOOD : Palette.TEXT_SPENT));
+        flows.getChildren().add(statementLine("Reached the end of their EI", flowText(u.getDroppedOffEi())));
+        flows.getChildren().add(statementLine("Lost their home", flowText(u.getNewlyUnhoused()),
+                u.getNewlyUnhoused() >= .05 ? Palette.BAD : Palette.TEXT_SPENT));
+        flows.getChildren().add(statementLine("Gave up and left the city", flowText(u.getLeftWhenBroke())));
+        flows.getChildren().add(statementNote(
+                "Only jobs that actually close put somebody on EI; an arrival who finds no "
+                + "work is on it too. It lasts twelve months. Past that they live on what "
+                + "they saved and what the bank will lend, and when both are gone and the "
+                + "rent is not paid, a quarter leave and the rest lose their home."));
+        column.getChildren().add(statementDisclosure("Through the pool this month",
+                flowText(u.getJobsLost() + u.getArrivalsUnhired() + u.getEntrants()) + " in",
+                flows, "how?"));
+
+        /* ---- EI ---- */
+        double premiums = em.getEiPremiums();
+        double paid = u.getBenefitsPaid();
+        column.getChildren().add(statementLine("EI paid this month", money(paid),
+                paid > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+        if (u.onEi() >= .5) {
+            column.getChildren().add(statementLine("   per claimant", moneyFull(u.getBenefitPerClaimant())));
+        }
+        column.getChildren().add(statementLine(String.format("Premiums at %.2f%% of wages",
+                        em.getTaxPolicy().getEiPremiumRate() * 100),
+                money(premiums), Palette.GOOD));
+        column.getChildren().add(statementNote(paid <= 0
+                ? "Nobody is drawing EI, so the premiums are all revenue."
+                : premiums >= paid
+                        ? "The premiums cover what EI pays out; the rest is revenue."
+                        : String.format("The premiums cover %.0f%% of it. The rest is general "
+                                + "revenue - a bust costs the treasury twice, in EI and in "
+                                + "the premiums on the wages that went.", premiums / paid * 100)));
+
+        /* ---- the students, the unhoused, the orphans ---- */
+        column.getChildren().add(statementLine("Full-time students", people(students)));
+        column.getChildren().add(statementLine("No home", people(unhoused),
+                unhoused >= .5 ? Palette.BAD : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("Orphans", people(orphans),
+                orphans >= .5 ? Palette.BAD : Palette.TEXT_SPENT));
+        if (orphans >= .5 || unhoused >= .5) {
+            column.getChildren().add(sentence(
+                    "Nobody feeds or cares for the orphans: they go hungry, get sick and die "
+                    + "far faster than other children. The unhoused get sick and die faster "
+                    + "too. Both are in the sick rate and in the deaths above.",
+                    Palette.BAD_TEXT));
+        }
+    }
+
+    /** Everybody outside the families, by age. A dot where nobody is. */
+    private javafx.scene.layout.GridPane outsideTable(Unemployment u, FamilyModel families,
+                                                     double[] noDoor) {
+        javafx.scene.layout.GridPane table = grid(
+                new double[] {SHAPE_COL, 76, 70, 70, 70, 70}, rightAfterFirst(6));
+        gridHead(table, "age", "out of work", "students", "no home", "orphans", "total");
+
+        double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
+        double[] sum = new double[5];
+        int line = 1;
+        for (AgeBand band : AgeBand.values()) {
+            int b = band.ordinal();
+            double out = band == AgeBand.ADULT ? u.getPool() : 0;
+            double study = band == AgeBand.ADULT ? students : 0;
+            double home = noDoor[b];
+            double orphan = families.getOrphans(band);
+            // The out of work who lost their home are in both columns; the total counts them once.
+            double total = out + study + orphan
+                    + home - (band == AgeBand.ADULT ? Math.min(home, u.getUnhoused()) : 0);
+            double[] row = { out, study, home, orphan, total };
+            table.add(gridCell(band.getLabel().toLowerCase(), Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, false), 0, line);
+            for (int c = 0; c < row.length; c++) {
+                String tone = row[c] < .5 ? Palette.TEXT_SPENT
+                        : c == 2 || c == 3 ? Palette.BAD_SOFT : Palette.TEXT_BODY;
+                table.add(gridCell(cell(row[c]), tone, Palette.SIZE_CAPTION, true), c + 1, line);
+                sum[c] += row[c];
+            }
+            line++;
+        }
+        table.add(gridCell("everybody", Palette.TEXT_HEAD, Palette.SIZE_CAPTION, false), 0, line);
+        for (int c = 0; c < sum.length; c++) {
+            table.add(gridCell(cell(sum[c]), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), c + 1, line);
+        }
+        return table;
+    }
+
     private javafx.scene.layout.GridPane shapeMatrix(FamilyModel families) {
 
         int columns = PayTier.values().length + 2;
@@ -14461,6 +14797,17 @@ public class UserInterface extends Application {
             column.getChildren().add(retiredGrid(hh, bal, families));
         }
 
+        /* ---------------- and the people outside the families (2026-09-11) ---------------- */
+        VBox outside = outsideGrid(bal);
+        if (!outside.getChildren().isEmpty()) {
+            column.getChildren().add(statementHead("And outside the families"));
+            column.getChildren().add(statementNote(
+                    "The out of work live on EI for twelve months, then on what they saved and "
+                    + "what the bank will lend. The students live on a grant, their savings and "
+                    + "a student loan that never runs out. The orphans have nothing."));
+            column.getChildren().add(outside);
+        }
+
         /* ======================= THE CITY'S OWN MONTH ======================= */
         column.getChildren().add(statementHead("The city's month"));
         column.getChildren().add(statementLine("Wages earned",
@@ -14474,6 +14821,15 @@ public class UserInterface extends Application {
                 tightMoney(toDollars(-hh.getContributions()), false), Palette.WARN));
         column.getChildren().add(statementLine("Pensions received",
                 tightMoney(toDollars(hh.getPensions()), false), "#8ed4ff"));
+        // EI and the grants (2026-09-11): off the same payslips, and in to the out of work and the students.
+        column.getChildren().add(statementLine(
+                String.format("EI premiums at %.2f%%",
+                        game.getEconomyManager().getTaxPolicy().getEiPremiumRate() * 100),
+                tightMoney(toDollars(-hh.getEiPremiums()), false), Palette.WARN));
+        column.getChildren().add(statementLine("EI received",
+                tightMoney(toDollars(hh.getEiBenefits()), false), "#8ed4ff"));
+        column.getChildren().add(statementLine("Student grants received",
+                tightMoney(toDollars(hh.getStudentGrants()), false), "#8ed4ff"));
         column.getChildren().add(statementTotal("Take-home",
                 tightMoney(toDollars(hh.getDisposableIncome()), false), null));
         column.getChildren().add(statementLine("Rent to landlords",
@@ -14875,6 +15231,72 @@ public class UserInterface extends Application {
     }
 
     /** The retired, who have their own household shapes and no pay tier. */
+    /**
+     * The ledgers outside the family matrix, one row a cell: what came in, what
+     * the bills left, what they spent, and what one of them has and owes -
+     * student loans on their own column, because the treasury holds them.
+     */
+    private VBox outsideGrid(HouseholdBalance bal) {
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10);
+        grid.setVgap(2);
+        String[] heads = {"household", "homes", "income", "after bills", "shops", "put by", "owed", "student loan"};
+        double[] widths = {SHAPE_COL, 56, 70, 76, 66, 70, 70, 80};
+        for (int c = 0; c < heads.length; c++) {
+            javafx.scene.layout.ColumnConstraints spec =
+                    new javafx.scene.layout.ColumnConstraints(widths[c]);
+            spec.setHalignment(c == 0 ? javafx.geometry.HPos.LEFT : javafx.geometry.HPos.RIGHT);
+            grid.getColumnConstraints().add(spec);
+            grid.add(gridCell(heads[c], Palette.TEXT_LABEL, Palette.SIZE_CAPTION, c != 0), c, 0);
+        }
+        java.util.List<Household> rows = new java.util.ArrayList<>();
+        for (UnemployedHousehold.Status s : UnemployedHousehold.Status.values()) rows.add(bal.unemployed(s));
+        rows.add(bal.students());
+        for (AgeBand b : AgeBand.values()) if (bal.orphans(b) != null) rows.add(bal.orphans(b));
+
+        int line = 1;
+        for (Household own : rows) {
+            if (own.households() < .5) continue;
+            double after = toDollars(own.afterFixed());
+            boolean trouble = own.isCutOff() || own.isGoingShort();
+            grid.add(gridCell(own.label(), trouble ? Palette.BAD_SOFT : Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, false), 0, line);
+            grid.add(gridCell(shortNumber(own.households()), Palette.TEXT_LABEL,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            grid.add(gridCell(tightMoney(toDollars(own.disposable()), false),
+                    own.disposable() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
+                    Palette.SIZE_CAPTION, true), 2, line);
+            grid.add(gridCell(tightMoney(after, false), after < 0 ? Palette.BAD : Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, true), 3, line);
+            grid.add(gridCell(tightMoney(toDollars(-own.planned()), false), Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 4, line);
+            grid.add(gridCell(tightMoney(toDollars(own.savings()), false),
+                    own.savings() > 0 ? Palette.GOOD : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 5, line);
+            Label owed = gridCell(tightMoney(toDollars(-own.debt()), false),
+                    own.debt() > 0 ? Palette.BAD : Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true);
+            if (own.isLockedOut() || own.isCutOff()) {
+                Tooltip tip = new Tooltip(own.isLockedOut()
+                        ? "Discharged: the bank will not lend to them for another "
+                                + own.lockout() + " months."
+                        : "Nothing left to borrow: what they cannot fund, they go without.");
+                tip.setShowDelay(Duration.millis(300));
+                Tooltip.install(owed, tip);
+                owed.setStyle(owed.getStyle() + " -fx-border-color: " + Palette.ALERT_EDGE
+                        + "; -fx-border-width: 0 0 2 0;");
+            }
+            grid.add(owed, 6, line);
+            grid.add(gridCell(tightMoney(toDollars(-own.studentDebt()), false),
+                    own.studentDebt() > 0 ? Palette.WARN : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 7, line);
+            line++;
+        }
+        if (line == 1) return new VBox();
+        VBox box = new VBox(grid);
+        box.setStyle("-fx-padding: 4 0 8 0;");
+        return box;
+    }
+
     private VBox retiredGrid(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families) {
 
         javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
@@ -16299,7 +16721,7 @@ public class UserInterface extends Application {
 
     private static java.util.List<String> revenueNames() {
         return java.util.List.of("Business tax", "Sales tax", "Wage tax",
-                "Property tax", "Pension contributions", "Utility income",
+                "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold");
     }
 
@@ -16310,6 +16732,7 @@ public class UserInterface extends Application {
                 na.getTaxWage(),
                 na.getPropertyTax(),
                 na.getContributions(),
+                na.getEiPremiums(),
                 na.getUtilityIncome(),
                 na.getHealthFees(),
                 na.getEducationFees(),
@@ -16317,7 +16740,7 @@ public class UserInterface extends Application {
     }
 
     private static java.util.List<String> spendingNames() {
-        return java.util.List.of("Pensions", "Healthcare", "Education",
+        return java.util.List.of("Pensions", "EI", "Student grants", "Healthcare", "Education",
                 "Buildings", "Repairs", "Land bought", "Debt interest");
     }
 
@@ -16335,6 +16758,8 @@ public class UserInterface extends Application {
     private java.util.List<Double> spendingAmounts(EconomyManager em, NationalAccounts na) {
         return java.util.List.of(
                 na.getPensions(),
+                na.getEiBenefits(),
+                na.getStudentGrants(),
                 na.getHealthSpending(),
                 na.getEducationSpending(),
                 na.getCapitalSpending(),
@@ -17195,7 +17620,7 @@ public class UserInterface extends Application {
      */
     private record Trace(String key, String label, String group, String unit) { }
 
-    private static final Trace[] TRACES = withTheMarket(new Trace[] {
+    private static final Trace[] TRACES = withTheHouseholds(withTheMarket(new Trace[] {
         new Trace("gdp",            "GDP",                "MONEY",      "money"),
         new Trace("gdpPerCapita",   "GDP per capita (yr)","MONEY",      "money"),
         new Trace("cash",           "Treasury",           "MONEY",      "money"),
@@ -17217,15 +17642,28 @@ public class UserInterface extends Application {
         new Trace("unemployment",   "Unemployment",       "PEOPLE",     "percent"),
         new Trace("births",         "Births",             "PEOPLE",     "count"),
         new Trace("deaths",         "Deaths",             "PEOPLE",     "count"),
+        new Trace("diedOfIllness",  "Died of illness",    "PEOPLE",     "count"),
+        new Trace("sickPastTwoMonths","Sick past two months","PEOPLE",  "count"),
         new Trace("arrivals",       "Arrivals",           "PEOPLE",     "count"),
         new Trace("departures",     "Departures",         "PEOPLE",     "count"),
         new Trace("netMigration",   "Net migration",      "PEOPLE",     "count"),
         new Trace("naturalIncrease","Births - deaths",    "PEOPLE",     "count"),
 
+        /* The running totals of who has died (2026-09-11) - derived, see historyValues(). */
+        new Trace("cumulative:deaths",         "Died since founding", "THE DEAD", "count"),
+        new Trace("cumulative:deathsBabies",   "Babies",              "THE DEAD", "count"),
+        new Trace("cumulative:deathsChildren", "Children",            "THE DEAD", "count"),
+        new Trace("cumulative:deathsTeens",    "Teens",               "THE DEAD", "count"),
+        new Trace("cumulative:deathsAdults",   "Adults",              "THE DEAD", "count"),
+        new Trace("cumulative:deathsSeniors",  "Seniors",             "THE DEAD", "count"),
+        new Trace("cumulative:deathsOrphans",  "Orphans",             "THE DEAD", "count"),
+        new Trace("cumulative:deathsUnhoused", "With no home",        "THE DEAD", "count"),
+
         new Trace("energyRatio",    "Power supplied",     "THROUGHPUT", "percent"),
         new Trace("waterRatio",     "Water supplied",     "THROUGHPUT", "percent"),
         new Trace("roadRatio",      "Road throughput",    "THROUGHPUT", "percent"),
         new Trace("sickRate",       "Off sick",           "THROUGHPUT", "percent"),
+        new Trace("sickRecovery",   "Sick who got better", "THROUGHPUT", "percent"),
         new Trace("careCoverage",   "Health coverage",    "THROUGHPUT", "percent"),
 
         new Trace("landPrice",      "Land",               "PRICES",     "land"),
@@ -17293,7 +17731,18 @@ public class UserInterface extends Application {
 
         new Trace("constructionCapacity", "Builders",     "THROUGHPUT", "count"),
         new Trace("landUse",        "Land in use",        "THROUGHPUT", "percent"),
-    });
+
+        // The people outside the families (2026-09-11).
+        new Trace("outOfWorkOnEi",  "Out of work, on EI", "OUTSIDE THE FAMILIES", "count"),
+        new Trace("outOfWorkOffEi", "Out of work, EI run out", "OUTSIDE THE FAMILIES", "count"),
+        new Trace("unhoused",       "No home",            "OUTSIDE THE FAMILIES", "count"),
+        new Trace("orphans",        "Orphans",            "OUTSIDE THE FAMILIES", "count"),
+        new Trace("evicted",        "Lost their home",    "OUTSIDE THE FAMILIES", "count"),
+        new Trace("eiPaid",         "EI paid",            "OUTSIDE THE FAMILIES", "money"),
+        new Trace("eiPremiums",     "EI premiums",        "OUTSIDE THE FAMILIES", "money"),
+        new Trace("studentGrants",  "Student grants",     "OUTSIDE THE FAMILIES", "money"),
+        new Trace("studentLoansOwed","Student loans owed","OUTSIDE THE FAMILIES", "money"),
+    }));
 
     /**
      * ...and a share price per company, one trace each, generated off the
@@ -17301,6 +17750,17 @@ public class UserInterface extends Application {
      * anybody remembering to. THE MARKET is the last group on the screen,
      * and its unit is a founding share - see HistorySave's market block.
      */
+    /** One series per household shape, appended after the market. See HistorySave.householdKey(). */
+    private static Trace[] withTheHouseholds(Trace[] fixed) {
+        FamilyStructure[] shapes = FamilyStructure.values();
+        Trace[] all = java.util.Arrays.copyOf(fixed, fixed.length + shapes.length);
+        for (int s = 0; s < shapes.length; s++) {
+            all[fixed.length + s] = new Trace(HistorySave.householdKey(shapes[s]),
+                    shapes[s].getLabel(), "HOUSEHOLDS", "count");
+        }
+        return all;
+    }
+
     private static Trace[] withTheMarket(Trace[] fixed) {
         Trace[] all = java.util.Arrays.copyOf(fixed, fixed.length + Equity.COMPANIES.length);
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
@@ -17372,6 +17832,16 @@ public class UserInterface extends Application {
                 new String[] {"averageWage", "rentPrice", "vacancy", "schoolCoverage"}),
         new Preset("The market", "what a founding share of each company is worth",
                 marketKeys()),
+        new Preset("Outside the families", "the out of work, the unhoused and the orphans",
+                new String[] {"outOfWorkOnEi", "outOfWorkOffEi", "unhoused", "orphans"}),
+        new Preset("Who has died", "the running totals, since the city began",
+                new String[] {"cumulative:deathsBabies", "cumulative:deathsAdults",
+                              "cumulative:deathsSeniors", "cumulative:deathsOrphans"}),
+        new Preset("The households", "how many of each kind of household the city holds",
+                new String[] {HistorySave.householdKey(FamilyStructure.SINGLE_ADULT),
+                              HistorySave.householdKey(FamilyStructure.COUPLE),
+                              HistorySave.householdKey(FamilyStructure.COUPLE_TWO_CHILDREN),
+                              HistorySave.householdKey(FamilyStructure.SENIOR_ALONE)}),
     };
 
     /** Every company's share price, for the market preset. */
@@ -18024,6 +18494,24 @@ public class UserInterface extends Application {
                 return out;
             }
             case "netMigration":    return minus(h.aligned("arrivals"), h.aligned("departures"));
+
+            /*
+             * THE RUNNING TOTALS OF THE DEAD (2026-09-11). Jerus: "track how
+             * many of each category have died cumulative over time". Summed
+             * here from the monthly series rather than stored, like everything
+             * derived. The total runs from the founding; a band's series began
+             * when it was first recorded, so its line starts there, at zero,
+             * and is not drawn across months nobody was counting.
+             */
+            case "cumulative:deaths":
+            case "cumulative:deathsBabies":
+            case "cumulative:deathsChildren":
+            case "cumulative:deathsTeens":
+            case "cumulative:deathsAdults":
+            case "cumulative:deathsSeniors":
+            case "cumulative:deathsOrphans":
+            case "cumulative:deathsUnhoused":
+                return HistorySave.runningTotal(h.aligned(key.substring("cumulative:".length())));
             case "naturalIncrease": return minus(h.aligned("births"), h.aligned("deaths"));
 
             /*

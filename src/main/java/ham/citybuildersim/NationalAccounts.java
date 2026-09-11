@@ -469,6 +469,21 @@ public class NationalAccounts {
     private double contributions;
     private double pensions;
 
+    /** EI premiums in; EI benefits and student grants out. See Unemployment. Set beside updateGovernment(). */
+    private double eiPremiums;
+    private double eiBenefits;
+    private double studentGrants;
+
+    public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants) {
+        this.eiPremiums = eiPremiums;
+        this.eiBenefits = eiBenefits;
+        this.studentGrants = studentGrants;
+    }
+
+    public double getEiPremiums()    { return eiPremiums; }
+    public double getEiBenefits()    { return eiBenefits; }
+    public double getStudentGrants() { return studentGrants; }
+
     /** Patient and funeral fees in, the health service's bill out. See Healthcare. */
     private double healthFees;
     private double healthSpending;
@@ -515,11 +530,16 @@ public class NationalAccounts {
             contributions, pensions,
             healthFees, healthSpending,
             educationFees, educationSpending,
-            subsidies };
+            subsidies,
+            eiPremiums, eiBenefits, studentGrants };
     }
 
     void restoreGovernment(double[] saved) {
-        if (saved == null || saved.length != 17) return;
+        // Twenty since EI and the grants; seventeen from a save before them.
+        if (saved == null || (saved.length != 17 && saved.length != 20)) return;
+        eiPremiums = saved.length == 20 ? saved[17] : 0;
+        eiBenefits = saved.length == 20 ? saved[18] : 0;
+        studentGrants = saved.length == 20 ? saved[19] : 0;
         taxBusiness = saved[0];   taxIndustrial = saved[1];
         taxSales = saved[2];      taxWage = saved[3];
         utilityIncome = saved[4]; landSales = saved[5];
@@ -627,7 +647,7 @@ public class NationalAccounts {
     public double getTotalRevenue() {
         return taxBusiness + taxIndustrial + taxSales + taxWage
                 + utilityIncome + landSales + propertyTax + contributions
-                + healthFees + educationFees;
+                + eiPremiums + healthFees + educationFees;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -636,6 +656,7 @@ public class NationalAccounts {
 
     public double getTotalExpenses() {
         return interestExpense + capitalSpending + landPurchases + pensions
+                + eiBenefits + studentGrants
                 + healthSpending + educationSpending + subsidies;
     }
 
@@ -696,6 +717,7 @@ public class NationalAccounts {
          */
         for (int i = 0; i < history.size(); i++) history.set(i, history.get(i) * scale);
         contributions *= scale;  pensions *= scale;
+        eiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         subsidies *= scale;

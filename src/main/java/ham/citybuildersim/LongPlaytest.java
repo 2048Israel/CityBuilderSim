@@ -135,6 +135,9 @@ public class LongPlaytest {
      */
     static double worstUnemployment = 0;
     static double lastUnemployment = 0;
+    // The people outside the families, over the run (2026-09-11).
+    static double totalEvicted = 0, totalLeftBroke = 0, worstUnhoused = 0, worstOrphans = 0;
+    static int worstUnhousedMonth = 0;
 
     static int monthsAnyTierDeclining = 0;
     static int monthsPeopleLeft = 0;
@@ -146,6 +149,13 @@ public class LongPlaytest {
     static int monthsInOutbreak = 0;
     static boolean wasInOutbreak = false;
     static double worstSickRate = 0;
+    /** The long sick (2026-09-11): who died of staying sick, by band, and the most ever ill past two months. */
+    static final double[] illnessDeathsByBand = new double[AgeBand.values().length];
+    /** Everyone who died, by band, and the orphans and the unhoused among them (2026-09-11). */
+    static final double[] deathsByBandRun = new double[AgeBand.values().length];
+    static double orphanDeathsRun = 0, unhousedDeathsRun = 0;
+    static double allDeaths = 0, worstLongSick = 0;
+    static int worstLongSickMonth = 0;
     static double lastSickRate = 0;
     static double workLostToIllness = 0;
     static int monthsObserved = 0;
@@ -265,6 +275,15 @@ public class LongPlaytest {
 
         lastUnemployment = p.getUnemploymentRate();
         if (lastUnemployment > worstUnemployment) worstUnemployment = lastUnemployment;
+        {
+            Unemployment pool = g.getUnemployment();
+            totalEvicted += g.getHouseholdBalance().getEvicted();
+            totalLeftBroke += pool.getLeftWhenBroke();
+            double noDoor = pool.getUnhoused();
+            for (double v : g.getFamilies().unhousedPeopleByBand()) noDoor += v;
+            if (noDoor > worstUnhoused) { worstUnhoused = noDoor; worstUnhousedMonth = g.getMonth(); }
+            worstOrphans = Math.max(worstOrphans, g.getFamilies().getOrphansTotal());
+        }
 
         monthsObserved++;
         /*
@@ -300,6 +319,24 @@ public class LongPlaytest {
                 sb.append(String.format(" %s cash %,.0f debt %,.0f assets %,.0f wo %,.0f restr %d ban %d |", s.key().substring(0, 4), s.getCash(), cr.getPrincipal(s.key()), cr.getAssets(s.key()), cr.getWrittenOffThisMonth(s.key()), cr.getRestructureCount(s.key()), cr.getBlockedMonths(s.key())));
             }
             out.println(sb);
+            {
+                // The people outside the families, and the shops that feed them (2026-09-11).
+                PopulationManager pm = g.getPopulationManager();
+                Unemployment u = g.getUnemployment();
+                FamilyModel fm = g.getFamilies();
+                ham.citybuildersim.sectors.Retail shop = g.getSectors().retail();
+                out.printf("   PEOPLE m%-4d pop %,d wf %,d lf %,.0f filled %,d pool %,.0f onEI %,.0f offEI %,.0f unhoused %,.0f orphans %,.0f | hh %,.0f unplaced %,.1f doubled %,.1f seekers %,.0f share %,.0f | shop cov %,d want %,d dem %,d sold %,d pantry %,.0f op %.2f health %.2f supply %.2f cap %,.0f wantSpend %,.0f price %.3f | hunger %.1f%% sick %.1f%% | jobsLost %,.0f open %,.0f hires %,.0f arrUnhired %,.0f entrants %,.0f exits %,.0f EI %,.0f%n",
+                        g.getMonth(), pm.getPopulation(), pm.getWorkforce(), pm.getLabourForce(), pm.getJobsFilled(),
+                        u.getPool(), u.onEi(), u.getOffEi(), u.getUnhoused(), fm.getOrphansTotal(),
+                        fm.totalHouseholds(), fm.getStillUnplaced(), fm.getDoubledUpHouseholds(),
+                        fm.getSeekers(FamilyModel.Seeker.UNEMPLOYED), fm.getSeekersSharing(FamilyModel.Seeker.UNEMPLOYED),
+                        shop.getStoreCoverage(), shop.getWantedDemand(), shop.getDemand(), shop.getProductsSold(),
+                        shop.getPantry(Good.FOOD), shop.getOperatingRate(), shop.getHealthRatio(), shop.getSupplyRatio(),
+                        shop.getSpendingCapacity(), shop.getWantedSpend(), shop.getStoreSellPrice(),
+                        g.getHouseholdBalance().getHungerRate() * 100, g.getHealth().getSickRate() * 100,
+                        u.getJobsLost(), u.getOpenings(), u.getLocalHires(), u.getArrivalsUnhired(), u.getEntrants(), u.getOtherExits(),
+                        u.getBenefitsPaid());
+            }
             StringBuilder bl = new StringBuilder(String.format("   BUILT m%-4d", g.getMonth()));
             for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
                 int q = g.getBuildingManager().getQuantity(t.getId());
@@ -374,6 +411,14 @@ public class LongPlaytest {
         lastSickRate = health.getSickRate();
         if (lastSickRate > worstSickRate) worstSickRate = lastSickRate;
         workLostToIllness += lastSickRate;
+        Sickness sickness = g.getSickness();
+        for (AgeBand band : AgeBand.values()) illnessDeathsByBand[band.ordinal()] += sickness.getLastDeaths(band);
+        for (AgeBand band : AgeBand.values()) deathsByBandRun[band.ordinal()] += g.getCohorts().getDeaths(band);
+        orphanDeathsRun += g.getLastOrphanDeaths();
+        unhousedDeathsRun += g.getLastUnhousedDeaths();
+        allDeaths += g.getCohorts().getLastDeaths();
+        double longSick = sickness.peoplePastTwoMonths(g.getCohorts());
+        if (longSick > worstLongSick) { worstLongSick = longSick; worstLongSickMonth = g.getMonth(); }
         if (health.isOutbreak()) {
             monthsInOutbreak++;
             if (!wasInOutbreak) outbreaks++;
@@ -1250,6 +1295,12 @@ public class LongPlaytest {
                 back.getBank().getSecurities(), g.getBank().getSecurities());
         same(month, "what the households hold abroad across a save",
                 back.getHouseholdBalance().totalAbroadUsd(), g.getHouseholdBalance().totalAbroadUsd());
+        // The long sick (2026-09-11): the ring is a stock, and so is who it killed last month.
+        double[] ringNow = back.getSickness().getState(), ringWas = g.getSickness().getState();
+        for (int i = 0; i < ringWas.length; i++) {
+            same(month, "the sick ring across a save (slot " + i + ")",
+                    i < ringNow.length ? ringNow[i] * 1e4 : Double.NaN, ringWas[i] * 1e4);
+        }
 
         /*
          * PRICES THAT ARE CACHES. Each of these is struck once a month and
@@ -1484,6 +1535,31 @@ public class LongPlaytest {
                 totalArrivals, totalDepartures);
         out.printf("  unemployment: %.1f%% at the end, worst %.1f%%%n",
                 lastUnemployment * 100, worstUnemployment * 100);
+        {
+            // The people outside the families (2026-09-11).
+            Unemployment u = g.getUnemployment();
+            FamilyModel f = g.getFamilies();
+            double unhousedFamilies = 0;
+            for (double v : f.unhousedPeopleByBand()) unhousedFamilies += v;
+            out.printf("  outside the families: on EI %,.0f  off EI %,.0f  unhoused %,.0f (evicted %,.0f)"
+                    + "  students %,.0f  orphans %,.0f%n",
+                    u.onEi(), u.getOffEi(), unhousedFamilies + u.getUnhoused(), u.getUnhoused(),
+                    f.getSeekers(FamilyModel.Seeker.STUDENT), f.getOrphansTotal());
+            out.printf("  over the run: %,.0f evicted, %,.0f of them left the city; most with no home %,.0f (month %d); most orphans %,.0f%n",
+                    totalEvicted, totalLeftBroke, worstUnhoused, worstUnhousedMonth, worstOrphans);
+            out.printf("  EI: $%,.0fk paid last month, $%,.0fk of premiums; grants $%,.0fk;"
+                    + " student loans owed $%,.0fk%n",
+                    g.getEconomyManager().getEiBenefits(), g.getEconomyManager().getEiPremiums(),
+                    g.getEconomyManager().getStudentGrants(), g.getHouseholdBalance().totalStudentDebt());
+            HouseholdBalance hb = g.getHouseholdBalance();
+            Household poorest = hb.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+            out.printf("  what one of them has: on EI $%,.1fk saved $%,.1fk owed | EI run out $%,.1fk / $%,.1fk"
+                    + " | lost their home $%,.1fk / $%,.1fk | unskilled single $%,.1fk / $%,.1fk%n",
+                    hb.unemployed(UnemployedHousehold.Status.ON_EI).savings(), hb.unemployed(UnemployedHousehold.Status.ON_EI).debt(),
+                    hb.unemployed(UnemployedHousehold.Status.OFF_EI).savings(), hb.unemployed(UnemployedHousehold.Status.OFF_EI).debt(),
+                    hb.unemployed(UnemployedHousehold.Status.UNHOUSED).savings(), hb.unemployed(UnemployedHousehold.Status.UNHOUSED).debt(),
+                    poorest.savings(), poorest.debt());
+        }
         out.printf("  months with a pay tier in decline: %d   months anybody left: %d%n",
                 monthsAnyTierDeclining, monthsPeopleLeft);
         out.printf("  off sick: %.1f%% at the end, worst %.1f%%, %.1f%% averaged over the run%n",
@@ -1491,6 +1567,24 @@ public class LongPlaytest {
                 monthsObserved > 0 ? workLostToIllness / monthsObserved * 100 : 0);
         out.printf("  outbreaks: %d, ill for %d months of %d%n",
                 outbreaks, monthsInOutbreak, monthsObserved);
+        {
+            Sickness sick = g.getSickness();
+            double illTotal = 0;
+            for (double v : illnessDeathsByBand) illTotal += v;
+            out.printf("  the long sick: %,.0f ill more than two months at the end (worst %,.0f, month %d),"
+                    + " %.1f died of it last month, recovery %.0f%%%n",
+                    sick.peoplePastTwoMonths(g.getCohorts()), worstLongSick, worstLongSickMonth,
+                    sick.getLastDeaths(), sick.getLastRecovery() * 100);
+            out.printf("  died of illness over the run: %,.0f of %,.0f deaths (%.1f%%) - babies %,.0f"
+                    + "  children %,.0f  teens %,.0f  adults %,.0f  seniors %,.0f%n",
+                    illTotal, allDeaths, allDeaths > 0 ? illTotal / allDeaths * 100 : 0,
+                    illnessDeathsByBand[0], illnessDeathsByBand[1], illnessDeathsByBand[2],
+                    illnessDeathsByBand[3], illnessDeathsByBand[4]);
+            out.printf("  everyone who died over the run: babies %,.0f  children %,.0f  teens %,.0f  adults %,.0f"
+                    + "  seniors %,.0f  - of whom orphans %,.0f and with no home %,.0f%n",
+                    deathsByBandRun[0], deathsByBandRun[1], deathsByBandRun[2], deathsByBandRun[3],
+                    deathsByBandRun[4], orphanDeathsRun, unhousedDeathsRun);
+        }
 
         /*
          * The health service, which in this run is a service the advisor never
