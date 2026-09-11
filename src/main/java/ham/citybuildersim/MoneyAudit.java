@@ -234,45 +234,40 @@ public final class MoneyAudit {
         double apply(String label, double amount, Scope scope);
     }
 
-    static final String[] POOL_NAMES = {
-        "city", "retail", "real estate", "industry", "heavy industry", "mining",
-        "construction", "order book", "cheque in the post", "bank"
-    };
+    /**
+     * The pools, by name: the city, every sector in the registry's order, the
+     * builders' order book, the bank. SINCE THE SECTOR TEMPLATE (2026-09-11)
+     * the sectors come from Sectors.KEYS rather than a literal, and the
+     * "cheque in the post" pool is gone with the lag that needed it - a
+     * trade is booked on both sides in the same strike now.
+     */
+    static final String[] POOL_NAMES = poolNames();
+
+    private static String[] poolNames() {
+        String[] names = new String[Sectors.KEYS.length + 3];
+        names[0] = "city";
+        for (int i = 0; i < Sectors.KEYS.length; i++) names[1 + i] = Sectors.KEYS[i].toLowerCase();
+        names[Sectors.KEYS.length + 1] = "order book";
+        names[Sectors.KEYS.length + 2] = "bank";
+        return names;
+    }
 
     /** The pools, in POOL_NAMES order. */
     public static double[] pools(Game g) {
-        EconomyManager e = g.getEconomyManager();
-        ConstructionHandler c = g.getServicesManager().getConstructionHandler();
-        return new double[] {
-            g.getCash(),
-            e.getSectorCash(BusinessDebtManager.RETAIL),
-            e.getSectorCash(BusinessDebtManager.REAL_ESTATE),
-            e.getSectorCash(BusinessDebtManager.INDUSTRY),
-            e.getSectorCash(BusinessDebtManager.HEAVY_INDUSTRY),
-            e.getSectorCash(BusinessDebtManager.MINING),
-            c.getCash(),
-            c.getUnearnedRevenue(),
-            /*
-             * The stores' payment for local food. Retail's statement charges it
-             * this month; the mills' statement books it NEXT month (the demand
-             * signal is a month behind by design - see
-             * EconomyManager.startOfMontEconUpdate). Between the two it is a
-             * cheque in the post, and it belongs to the mills.
-             */
-            e.getCommercialHandler().getReportLocalPurchaseValue(),
-            /*
-             * THE BANK, since 2026-09-07. It holds the city's lending, so a
-             * loan to a sector or to the treasury is now an internal transfer
-             * that cancels rather than money arriving from outside and interest
-             * vanishing into it - a strictly better identity than the one it
-             * replaces, where both ends were nowhere.
-             *
-             * Households are still OUTSIDE, as they have always been, so what
-             * the bank lends a family is a real outflow and what it gets back
-             * is a real inflow. Those two lines are declared below.
-             */
-            g.getBank().getCash()
-        };
+        Sectors sectors = g.getSectors();
+        double[] pools = new double[POOL_NAMES.length];
+        int i = 0;
+        pools[i++] = g.getCash();
+        for (Sector s : sectors.all()) pools[i++] = s.getCash();
+        pools[i++] = sectors.construction().getOrderBookForAudit();
+        /*
+         * THE BANK, since 2026-09-07. It holds the city's lending, so a loan
+         * to a sector or to the treasury is an internal transfer that cancels
+         * rather than money arriving from outside. Households are still
+         * OUTSIDE, so what the bank lends a family is a real outflow.
+         */
+        pools[i++] = g.getBank().getCash();
+        return pools;
     }
 
     /** Every dollar the city and its businesses hold, plus the builder's order book. */
@@ -331,29 +326,26 @@ public final class MoneyAudit {
             return amount;
         };
         EconomyManager e = g.getEconomyManager();
-        CommercialHandler retail = e.getCommercialHandler();
-        IndustrialHandler food = e.getIndustrialHandler();
-        HeavyIndustryHandler mills = e.getHeavyIndustryHandler();
-        MiningHandler mines = e.getMiningHandler();
-        ConstructionHandler builders = g.getServicesManager().getConstructionHandler();
+        Sectors sectors = g.getSectors();
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
-        BusinessDebtManager lender = e.getBusinessDebtManager();
         Healthcare care = g.getHealthcare();
         Education schools = g.getEducation();
 
         double in = 0;
         // Households: what they spend in the shops and on rent, and what the
-        // city takes off their pay and charges them at the door.
-        in += credit.apply("+ retail GrossRevenue", retail.getGrossRevenue(), Scope.DOMESTIC);
-        in += credit.apply("+ retail RentIncome", retail.getReportRentIncome(), Scope.DOMESTIC);
+        // city takes off their pay and charges them at the door. Every
+        // sector's sales to households, as its statement booked them.
+        for (Sector s : sectors.all()) {
+            in += credit.apply("+ " + s.key() + " SalesToHouseholds", s.statement().salesToHouseholds, Scope.DOMESTIC);
+        }
         in += credit.apply("+ e WageTax", e.getWageTax(), Scope.DOMESTIC);
         in += credit.apply("+ e Contributions", e.getContributions(), Scope.DOMESTIC);
         in += credit.apply("+ care Fees", care.getFees(), Scope.DOMESTIC);
         in += credit.apply("+ schools Fees", schools.getFees(), Scope.DOMESTIC);
-        // The world: exports, at the price the statement sold them for.
-        in += credit.apply("+ food FoodExportRevenue", food.getFoodExportRevenue(), Scope.TRADE);
-        in += credit.apply("+ mills Revenue", mills.getReportRevenue(), Scope.TRADE);
-        in += credit.apply("+ mines OreExported * mines ExportPr", mines.getReportOreExported() * mines.getReportExportPrice(), Scope.TRADE);
+        // The world: every sector's exports, at the price the statement sold them for.
+        for (Sector s : sectors.all()) {
+            in += credit.apply("+ " + s.key() + " Exports", s.statement().exports, Scope.TRADE);
+        }
         /*
          * THE LENDER IS INSIDE THE CITY NOW.
          *
@@ -460,8 +452,11 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ sectors OverdraftForgiven", g.getEconomyManager().getOverdraftForgiven(), Scope.VALUATION);
 
+        // What the households paid it: everything earned less the internal
+        // transfers and less the placements, which are declared on their own
+        // line below as income from abroad.
         in += credit.apply("+ bank InterestEarned", g.getBank().getInterestEarned()
-                - g.getBank().getInternalInterest(), Scope.DOMESTIC);
+                - g.getBank().getInternalInterest() - g.getBank().getPlacementIncome(), Scope.DOMESTIC);
 
         /*
          * DOLLARS BORROWED ABROAD, which is the one kind of city borrowing that
@@ -479,14 +474,12 @@ public final class MoneyAudit {
 
         double out = 0;
         // Payrolls, as each statement charged them.
-        out += debit.apply("- retail Payroll", retail.getReportPayroll(), Scope.DOMESTIC);
+        for (Sector s : sectors.all()) {
+            out += debit.apply("- " + s.key() + " Payroll", s.statement().payroll, Scope.DOMESTIC);
+        }
         /*
-         * The bank's tellers, which used to be inside the line above.
-         *
-         * Wages leave the audited system whoever pays them, so moving them from
-         * the shops' payroll to the bank's changes which pool they come out of
-         * and nothing else about the identity - which is exactly why it was safe
-         * to move. Declared separately so the two can be read apart.
+         * The bank's tellers. Wages leave the audited system whoever pays
+         * them; declared separately so the two can be read apart.
          */
         out += debit.apply("- bank Payroll", g.getBank().getPayroll(), Scope.DOMESTIC);
         /*
@@ -509,21 +502,13 @@ public final class MoneyAudit {
          */
         out += debit.apply("- bank DepositInterest (households)", g.getBank().getDepositInterestToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- bank DepositInterest (abroad)", g.getBank().getDepositInterestToForeign(), Scope.INCOME);
-        out += debit.apply("- food Payroll", food.getReportPayroll(), Scope.DOMESTIC);
-        out += debit.apply("- mills Payroll", mills.getReportPayroll(), Scope.DOMESTIC);
-        out += debit.apply("- mines Payroll", mines.getReportPayroll(), Scope.DOMESTIC);
-        out += debit.apply("- builders WageExpense", builders.getReportWageExpense(), Scope.DOMESTIC);
         out += debit.apply("- utilities UtilityPayroll", utilities.getUtilityPayroll(), Scope.DOMESTIC);
         out += debit.apply("- care Payroll", care.getPayroll(), Scope.DOMESTIC);
         out += debit.apply("- schools Payroll", schools.getPayroll(), Scope.DOMESTIC);
-        // Imports.
-        out += debit.apply("- retail ImportPurchaseValue", retail.getReportImportPurchaseValue(), Scope.TRADE);
-        // The mill's input bill less the ore it bought locally, at the price
-        // the mine's statement sold it for. If the two statements disagree on
-        // that price the difference lands in the residual, which is right.
-        out += debit.apply("- mills ScrapImported", Math.max(0, mills.getReportInputCost()
-                - mills.getReportLocalOreUsed() * mines.getReportLocalPrice()), Scope.TRADE);
-        out += debit.apply("- builders MaterialsExpense", builders.getReportMaterialsExpense(), Scope.TRADE);
+        // Imports: every sector's purchases from the world, as its statement booked them.
+        for (Sector s : sectors.all()) {
+            out += debit.apply("- " + s.key() + " Imports", s.statement().imports, Scope.TRADE);
+        }
         // Lending to a family crosses the city's edge; lending to a sector or
         // to the treasury no longer does - see the pools above.
         out += debit.apply("- bank LentToHouseholds", g.getBank().getLentToHouseholds(), Scope.DOMESTIC);
@@ -550,6 +535,10 @@ public final class MoneyAudit {
                 g.getBank().fundingCostAbroad(), Scope.INCOME);
         out += debit.apply("- bank FundingCost (at home)",
                 g.getBank().fundingCostAtHome(), Scope.DOMESTIC);
+        // ...and the mirror: what its idle reserves earned abroad. See
+        // Bank.placementIncome. Income, for the same reason the coupon is.
+        in += credit.apply("+ bank Placements (abroad)",
+                g.getBank().getPlacementIncome(), Scope.INCOME);
 
         /*
          * ...AND WHAT IT COSTS TO OWE THEM.
@@ -602,15 +591,6 @@ public final class MoneyAudit {
         out += debit.apply("- equity BuybackAbroad", g.getExchange().getBuybackAbroad(), Scope.FINANCIAL);
         out += debit.apply("- treasury BoughtReserves",
                 g.getForeignAccounts().getBoughtThisMonth(), Scope.RESERVE);
-        /*
-         * The bank's OWN staff and upkeep are not here, and that is deliberate
-         * rather than missing. It is a COMMERCIAL building, so its jobs land in
-         * the commercial sector's payroll and its upkeep in the commercial
-         * sector's costs, exactly like a grocery store's - the shops are paying
-         * the tellers. Wrong in an org chart, right in the books, and giving
-         * the bank its own building category to fix it is a bigger change than
-         * it earns today.
-         */
         // What the city pays the outside world: pensions, and the upkeep of its
         // own services.
         //
@@ -628,21 +608,20 @@ public final class MoneyAudit {
 
         // Suspect internal pairs, for the detail only. A flow that should
         // cancel and does not is where a residual lives.
-        note.accept("chk profit tax collected (city)", e.getBusinessTax() + e.getIndustrialTax() + e.getHeavyIndustryTax());
+        note.accept("chk profit tax collected (city)", e.getBusinessTax() + e.getIndustrialTax());
         note.accept("chk VAT collected (city)", e.getSalesTax());
         note.accept("chk property tax collected", e.getTotalPropertyTax());
-        note.accept("chk retail local purchase (net)", retail.getReportLocalPurchaseValue());
-        note.accept("chk retail inventory cost paid", retail.getReportInventoryCost());
-        note.accept("chk industry local revenue", food.getGrossRevenue() - food.getFoodExportRevenue());
+        double localSales = 0, localPurchases = 0, bills = 0;
+        for (Sector s : sectors.all()) {
+            localSales += s.statement().localSales - s.statement().salesToHouseholds;
+            localPurchases += s.statement().localPurchases;
+            bills += s.statement().electricity + s.statement().water;
+        }
+        note.accept("chk sectors sold to sectors", localSales);
+        note.accept("chk sectors bought from sectors", localPurchases);
         note.accept("chk utility revenue", utilities.getUtilityRevenue());
-        note.accept("chk sector utility bills", retail.getReportElectricityCost() + retail.getReportWaterCost()
-                + food.getReportElectricityCost() + food.getReportWaterCost()
-                + mills.getReportElectricityCost() + mills.getReportWaterCost()
-                + mines.getReportElectricityCost() + mines.getReportWaterCost());
-        note.accept("chk mills ore bought locally", mills.getReportLocalOreUsed() * mines.getReportLocalPrice());
-        note.accept("chk mines ore sold locally", mines.getReportOreSoldLocally() * mines.getReportLocalPrice());
-        note.accept("chk construction revenue banked", builders.getReportRevenue());
-        note.accept("chk construction subsidy", builders.getSubsidyThisMonth());
+        note.accept("chk sector utility bills", bills);
+        note.accept("chk construction revenue banked", sectors.construction().statement().revenue);
         note.accept("chk land sold to sectors", g.getLandManager().getLandSalesThisMonth());
 
         double[] poolsAfter = pools(g);

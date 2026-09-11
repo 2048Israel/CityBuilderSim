@@ -166,7 +166,7 @@ public class LongPlaytest {
         finite(month, "monthly GDP", e.getMonthGdp());
         finite(month, "annual GDP", e.getNationalAccounts().getAnnualGdp());
         finite(month, "total wage", p.getTotalWage());
-        finite(month, "food price", e.getIndustrialHandler().getFoodPrice());
+        finite(month, "food price", g.getMarkets().get(Good.FOOD).getLocalPrice());
         finite(month, "materials price", b.getConstructionMaterialPrice());
         finite(month, "land price", l.getPricePerSqFt());
 
@@ -205,12 +205,12 @@ public class LongPlaytest {
             NationalAccounts na = e.getNationalAccounts();
             flag(month, "negative monthly GDP", String.format(
                     "%.2f  (C %.0f  Iconstr %.0f  Istock %.0f  G %.0f  NX %.0f)"
-                    + "  Ifood %.0f  Imatl %.0f  Iwip %.0f",
+                    + "  Ifood %.0f  Imatl %.0f  | imports food %.0f matl %.0f raw %.0f exports %.0f",
                     e.getMonthGdp(), na.getConsumption(),
                     na.getInvestmentConstruction(), na.getInvestmentInventories(),
                     na.getGovernment(), na.getNetExports(),
                     na.getInventoryFood(), na.getInventoryMaterials(),
-                    na.getInventoryWorkInProgress()));
+                    na.getImportsFood(), na.getImportsMaterials(), na.getImportsRawMaterial(), na.getExports()));
         }
         if (e.getNationalAccounts().getAnnualGdp() < 0) {
             flag(month, "negative annual GDP",
@@ -272,10 +272,59 @@ public class LongPlaytest {
          * instrument that found the surplus with nowhere to go; kept because
          * the next currency question will want it again.
          */
+        /*
+         * -Dplaytest.bank=true: the bank's month and the seventh sector's,
+         * yearly. The instrument that found the materials plant taking the
+         * bank down thirteen times a run (2026-09-11).
+         */
+        int traceFrom = Integer.getInteger("playtest.bankfrom", -1), traceTo = Integer.getInteger("playtest.bankto", -1);
+        boolean inTrace = traceFrom >= 0 && g.getMonth() >= traceFrom && g.getMonth() <= traceTo;
+        if (inTrace) {
+            Sector mat = g.getSectors().byKey(System.getProperty("playtest.sector", Sectors.MATERIALS));
+            Sector.Statement st = mat.statement();
+            SectorBooks.SectorMonth bm = g.getSectorBooks().get(mat.key());
+            BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+            out.printf("MATm%-4d cash %,.0f debt %,.0f assets %,.0f | rev %,.0f inp %,.0f pay %,.0f int %,.0f ptax %,.0f mnt %,.0f vat %,.0f pre %,.0f | flows: open %,.0f net %,.0f borrowed %,.0f repaid %,.0f city %,.0f forgiven %,.0f abroad %,.0f eq %,.0f div %,.0f bb %,.0f spent %,.0f unexpl %,.0f | plants %d/%d stock %,.0f sold %,.0f exp %,.0f | restr %d ban %d insolvent %s | mkt want %,.0f loc %,.0f imp %,.0f trend %,.0f yard %d price %.2f | bank eq %,.0f wo %,.0f resl %,.0f fails %d trading %,.0f securities %,.0f net %,.0f | %s%n",
+                g.getMonth(), mat.getCash(), cr.getPrincipal(mat.key()), cr.getAssets(mat.key()), st.revenue, st.inputs, st.payroll, st.interest, st.propertyTax, st.maintenance, st.salesTax, st.preTaxIncome,
+                bm.openingCash(), bm.netIncome(), bm.borrowed(), bm.repaid(), bm.fromTheCity(), bm.forgiven(), bm.investedAbroad(), bm.equityRaised(), bm.dividendsPaid(), bm.sharesBoughtBack(), bm.spentOnBuildings(), bm.unexplained(),
+                g.getBuildingManager().getQuantity(g.getBuildingManager().getTemplateByName("Construction Materials Plant").getId()), g.getBuildingManager().getUnderConstructionBySector(mat.key()),
+                mat.getStock(Good.MATERIALS), mat.output(Good.MATERIALS).soldLocal, mat.output(Good.MATERIALS).exported,
+                cr.getRestructureCount(mat.key()), cr.getBlockedMonths(mat.key()), cr.isInsolvent(mat.key()),
+                g.getMarkets().get(Good.MATERIALS).getDemand(), g.getMarkets().get(Good.MATERIALS).getLocalFilled(), g.getMarkets().get(Good.MATERIALS).getImported(),
+                g.getMarkets().get(Good.MATERIALS).getDemandTrend(), g.getBuildingManager().getConstructionMaterials(), g.getMarkets().get(Good.MATERIALS).getLocalPrice(),
+                g.getBank().equity(), g.getBank().getWriteOffs(), g.getBank().getResolutionLossThisMonth(), g.getBank().getFailures(),
+                g.getBank().getTradingIncome(), g.getBank().getSecurities(), g.getBank().getNetIncome(),
+                g.getLastInvestment(mat.key()));
+            StringBuilder sb = new StringBuilder(String.format("   CREDIT m%-4d", g.getMonth()));
+            for (Sector s : g.getSectors().all()) {
+                sb.append(String.format(" %s cash %,.0f debt %,.0f assets %,.0f wo %,.0f restr %d ban %d |", s.key().substring(0, 4), s.getCash(), cr.getPrincipal(s.key()), cr.getAssets(s.key()), cr.getWrittenOffThisMonth(s.key()), cr.getRestructureCount(s.key()), cr.getBlockedMonths(s.key())));
+            }
+            out.println(sb);
+            StringBuilder bl = new StringBuilder(String.format("   BUILT m%-4d", g.getMonth()));
+            for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+                int q = g.getBuildingManager().getQuantity(t.getId());
+                if (q > 0) bl.append(' ').append(t.getName()).append('=').append(q);
+            }
+            out.println(bl);
+        }
+        if (Boolean.getBoolean("playtest.bank") && g.getMonth() % 12 == 0) {
+            Bank bk = g.getBank();
+            Sector mat = g.getSectors().materials();
+            BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+            out.printf("BANK m%-4d eq %,.0f cash %,.0f dep %,.0f book %,.0f (sect %,.0f city %,.0f hh %,.0f) | earned %,.0f depInt %,.0f funding %,.0f writeoffs %,.0f payroll %,.0f tax %,.0f net %,.0f | depRate %.2f%% strain %.2f fails %d | MAT cash %,.0f debt %,.0f assets %,.0f pre %,.0f plants %d/%d stock %,.0f demand %,.0f trend %,.0f price %.2f restr %d ban %d | %s%n",
+                g.getMonth(), bk.equity(), bk.getCash(), bk.getDeposits(), bk.getBook(), bk.getSectorBook(), bk.getCityBook(), bk.getHouseholdBook(),
+                bk.getInterestEarned(), bk.depositInterest(), bk.getFundingCost(), bk.getWriteOffs(), bk.getPayroll(), bk.getTaxPaid(), bk.getNetIncome(),
+                bk.depositRate() * 100, Math.min(99, bk.strain()), bk.getFailures(),
+                mat.getCash(), cr.getPrincipal(mat.key()), cr.getAssets(mat.key()), mat.getNetIncome(),
+                g.getBuildingManager().getQuantity(g.getBuildingManager().getTemplateByName("Construction Materials Plant").getId()),
+                g.getBuildingManager().getUnderConstructionBySector(mat.key()), mat.getStock(Good.MATERIALS),
+                g.getMarkets().get(Good.MATERIALS).getDemand(), g.getMarkets().get(Good.MATERIALS).getDemandTrend(), g.getMarkets().get(Good.MATERIALS).getLocalPrice(),
+                cr.getRestructureCount(mat.key()), cr.getBlockedMonths(mat.key()), g.getLastInvestment(mat.key()));
+        }
         if (Boolean.getBoolean("playtest.fx") && g.getMonth() % 12 == 0) {
             ForeignAccounts fa = g.getForeignAccounts(); OutwardInvestment oi = g.getOutwardInvestment();
             double tills = 0;
-            for (String s : BusinessDebtManager.SECTORS) tills += Math.max(0, g.getEconomyManager().getSectorCash(s));
+            for (String s : Sectors.KEYS) tills += Math.max(0, g.getEconomyManager().getSectorCash(s));
             out.printf("FX m%-4d rate %.3f parity %.3f pressure %+.2f openness %.2f | current %,.0f financial %,.0f | tills %,.0f abroad US$%,.0f ($%,.0f) share %.0f%% | deposit %.2f%% world %.2f%% | pop %d GDP %,.0f%n",
                 g.getMonth(), fa.getRate(), fa.getParity(), fa.getLastPressure(), fa.getOpenness(),
                 fa.monthlyCurrentAccount(), fa.monthlyFinancialAccount(),
@@ -291,7 +340,7 @@ public class LongPlaytest {
                 g.getHouseholdBalance().totalDividends(), g.getHouseholdBalance().totalSold(), g.getBank().getSecurities());
             StringBuilder co = new StringBuilder("   companies:");
             for (int c = 0; c < Equity.COMPANIES.length; c++) {
-                SectorBooks.SectorMonth sm = c == Equity.BANK ? null : g.getSectorBooks().get(PolicySector.byCreditName(Equity.COMPANIES[c]));
+                SectorBooks.SectorMonth sm = c == Equity.BANK ? null : g.getSectorBooks().get(Equity.COMPANIES[c]);
                 co.append(String.format(" %s %s sh %,.1f eq/assets %.2f tgt %.2f mid %.3f fair %.3f yield %.1f%% abroad %.0f%% bought back %,.0f |",
                     Equity.COMPANIES[c].substring(0, 3), g.getEquity().getRegime(c), g.getEquity().getShares(c),
                     sm == null ? 0 : (sm.totalAssets() > 0 ? sm.equity() / sm.totalAssets() : 0), g.getEquity().getTargetEquityShare(c),
@@ -343,12 +392,16 @@ public class LongPlaytest {
         }
 
         // Backlog item 7: getStoreIncome() sells without capping at stock.
-        if (e.getStoreInventory() < 0) {
-            flag(month, "negative store inventory", "" + e.getStoreInventory());
-        }
-
-        if (e.getIndustryFoodInventory() < 0) {
-            flag(month, "negative food inventory", "" + e.getIndustryFoodInventory());
+        // Every sector's every stock and pantry, since the sector template.
+        for (Sector s : g.getSectors().all()) {
+            for (Good good : Good.values()) {
+                if (s.getStock(good) < -1e-9) {
+                    flag(month, "negative stock", s.key() + " " + good + " " + s.getStock(good));
+                }
+                if (s.getPantry(good) < -1e-9) {
+                    flag(month, "negative pantry", s.key() + " " + good + " " + s.getPantry(good));
+                }
+            }
         }
 
         // Land committed can never exceed land owned; the difference is what a
@@ -388,7 +441,7 @@ public class LongPlaytest {
             }
         }
 
-        for (String sector : BusinessDebtManager.SECTORS) {
+        for (String sector : Sectors.KEYS) {
             BusinessDebtManager credit = e.getBusinessDebtManager();
             double principal = credit.getPrincipal(sector);
             finite(month, "business debt (" + sector + ")", principal);
@@ -410,38 +463,49 @@ public class LongPlaytest {
          * the name of the field is the whole job; a save that throws is not a
          * degraded save, it is no save at all.
          */
-        finite(month, "SAVE: construction cash",
-                g.getServicesManager().getConstructionHandler().getCash());
         finite(month, "SAVE: construction unearned revenue",
-                g.getServicesManager().getConstructionHandler().getUnearnedRevenue());
+                g.getSectors().construction().getUnearnedRevenue());
         finite(month, "SAVE: construction backlog",
-                g.getServicesManager().getConstructionHandler().getBacklogPoints());
-        finite(month, "SAVE: commercial cash", e.getCommercialHandler().getCommercialCash());
-        finite(month, "SAVE: real estate cash", e.getCommercialHandler().getRealEstateCash());
-        finite(month, "SAVE: industrial cash", e.getIndustrialCash());
-        finite(month, "SAVE: heavy industry cash", e.getHeavyIndustryHandler().getCash());
+                g.getSectors().construction().getBacklogPoints());
+        // Every sector, whole, the way the save carries it.
+        for (Sector s : g.getSectors().all()) {
+            String k = "SAVE: " + s.key() + " ";
+            finite(month, k + "cash", s.getCash());
+            finite(month, k + "interest", s.getInterestExpense());
+            finite(month, k + "property tax", s.getPropertyTaxExpense());
+            finite(month, k + "maintenance", s.getMaintenanceExpense());
+            for (Good good : Good.values()) {
+                finite(month, k + "stock " + good, s.getStock(good));
+                finite(month, k + "pantry " + good, s.getPantry(good));
+            }
+            Sector.Statement st = s.statement();
+            finite(month, k + "revenue", st.revenue);
+            finite(month, k + "inputs", st.inputs);
+            finite(month, k + "payroll", st.payroll);
+            finite(month, k + "sales tax", st.salesTax);
+            finite(month, k + "net income", st.netIncome);
+            finite(month, k + "pending revenue", s.pending().revenue());
+            finite(month, k + "pending purchases", s.pending().purchases());
+            for (java.util.Map.Entry<String, Double> x : s.toState().extras.entrySet()) {
+                finite(month, k + x.getKey(), x.getValue());
+            }
+        }
+        for (GoodsMarket m : g.getMarkets().all()) {
+            String k = "SAVE: market " + m.good() + " ";
+            finite(month, k + "price", m.getLocalPrice());
+            finite(month, k + "demand", m.getDemand());
+            finite(month, k + "supply", m.getSupply());
+        }
         finite(month, "SAVE: household savings", g.getHouseholds().getCumulativeSaving());
         finite(month, "SAVE: land owned", l.getOwnedSqFt());
         finite(month, "SAVE: land price", l.getPricePerSqFt());
         finite(month, "SAVE: property tax charged", e.getTotalPropertyTax());
         finite(month, "SAVE: accrued city interest", e.getExpenses());
-        finite(month, "SAVE: retail cost of goods", e.getRetailCostOfGoods());
-        finite(month, "SAVE: retail fill basis", e.getRetailFillBasis());
-        finite(month, "SAVE: retail import tax", e.getRetailImportTax());
-        finite(month, "SAVE: industry demand", e.getIndustryDemand());
 
-        finiteArray(month, "SAVE: property tax charges", e.getPropertyTaxCharges());
-        finiteArray(month, "SAVE: interest charges", e.getInterestCharges());
         finiteArray(month, "SAVE: national accounts", e.getNationalAccountsState());
-        finiteArray(month, "SAVE: commercial report", e.getCommercialReportState());
-        finiteArray(month, "SAVE: industrial report", e.getIndustrialReportState());
-        finiteArray(month, "SAVE: heavy industry report", e.getHeavyIndustryReportState());
-        finiteArray(month, "SAVE: mining report", e.getMiningReportState());
         finiteArray(month, "SAVE: land listing", l.getMarket().getListingState());
 
-        finite(month, "ore price", e.getIronMarket().getLocalPrice());
         finite(month, "iron reserves", l.getIronReserveTonnes());
-        finite(month, "mining cash", e.getMiningHandler().getCash());
 
         if (l.getIronReserveTonnes() < 0) {
             flag(month, "negative iron reserves", "" + l.getIronReserveTonnes());
@@ -455,10 +519,13 @@ public class LongPlaytest {
                     "" + l.getListing().size());
         }
 
-        double ore = e.getIronMarket().getLocalPrice();
-        if (ore < e.getIronMarket().getExportPrice() - 1e-9
-                || ore > e.getIronMarket().getScrapPrice() + 1e-9) {
-            flag(month, "ore price outside its band", "" + ore);
+        // Every band-priced good stays inside its band.
+        for (GoodsMarket m : g.getMarkets().all()) {
+            if (m.good().pricing() != Good.Pricing.BAND) continue;
+            double price = m.getLocalPrice();
+            if (price < m.floor() - 1e-9 || price > m.ceiling() + 1e-9) {
+                flag(month, m.good() + " price outside its band", "" + price);
+            }
         }
     }
 
@@ -575,8 +642,8 @@ public class LongPlaytest {
            cost a whole playtest the last time this file was rewritten.
            ================================================================ */
 
-        if (!g.isAutoSubsidised(PolicySector.CONSTRUCTION)) {
-            g.setAutoSubsidised(PolicySector.CONSTRUCTION, true);
+        if (!g.isAutoSubsidised(Sectors.CONSTRUCTION)) {
+            g.setAutoSubsidised(Sectors.CONSTRUCTION, true);
         }
 
         /*
@@ -720,14 +787,16 @@ public class LongPlaytest {
                     gdp * (wantedCapacity - capacity) / wantedCapacity * GROWTH_DISCOUNT);
         }
         /*
-         * A unit of material was repriced 9x on 2026-09-10 and the counts
-         * with it, so the yard the advisor wants is a ninth of the count it
-         * used to want - the same value of stock per resident as before.
+         * NO MATERIALS PLANT FROM THE TREASURY (2026-09-11). The advisor used
+         * to buy one whenever the yard ran short of a stock per resident,
+         * which was the city stocking its own works yard. The plant is the
+         * seventh sector's now, and since the crews draw material as they
+         * build the yard is short in every month anything is being built -
+         * so the rule bought four plants a run for a private sector that
+         * was building its own, and the sector, handed plant it had not
+         * planned for, defaulted on the ones it had. A player may still
+         * gift one from the build screen; the advisor lets the market do it.
          */
-        if (b.getConstructionMaterials() < population * .0056) {
-            addThrottle(moves, g, "Construction Materials Plant", "materials plant",
-                    gdp * .05 * GROWTH_DISCOUNT);
-        }
 
         /* --- food the city grows rather than buys --- */
         /*
@@ -774,7 +843,7 @@ public class LongPlaytest {
          * player would read: what one of these would clear, at the price
          * and the staffing the mines actually get.
          */
-        if (land.hasUnminedDeposit(g.minesCommitted()) && wouldPay(g, "Iron Mine", BusinessDebtManager.MINING)) {
+        if (land.hasUnminedDeposit(g.minesCommitted()) && wouldPay(g, "Iron Mine", Sectors.MINING)) {
             addThrottle(moves, g, "Iron Mine", "mine", gdp * .05);
         }
 
@@ -784,7 +853,7 @@ public class LongPlaytest {
             double jobGain = perHead * idle * GROWTH_DISCOUNT;
             // Same test as the mine: 72 foundries went up in one run for the
             // jobs alone, into a market that could not pay for the steel.
-            if (wouldPay(g, "Steel Foundry", BusinessDebtManager.HEAVY_INDUSTRY)) {
+            if (wouldPay(g, "Steel Foundry", Sectors.HEAVY_INDUSTRY)) {
                 addThrottle(moves, g, "Steel Foundry", "foundry", jobGain);
             }
             addThrottle(moves, g, "Textile Mill", "mill", jobGain);
@@ -1076,7 +1145,7 @@ public class LongPlaytest {
         int pop = g.getPopulationManager().getPopulation();
         int workforce = g.getPopulationManager().getWorkforce();
         double gdp = g.getEconomyManager().getMonthGdp();
-        double retail = g.getEconomyManager().getCommercialHandler().getGrossRevenue();
+        double retail = g.getSectors().retail().statement().revenue;
         double interest = g.getEconomyManager().getExpenses();
         int month = g.getMonth();
 
@@ -1097,7 +1166,7 @@ public class LongPlaytest {
         same(month, "next-month income across a save", back.getIncome(), income);
         same(month, "monthly GDP across a save", back.getEconomyManager().getMonthGdp(), gdp);
         same(month, "retail revenue across a save",
-                back.getEconomyManager().getCommercialHandler().getGrossRevenue(), retail);
+                back.getSectors().retail().statement().revenue, retail);
         same(month, "accrued city interest across a save",
                 back.getEconomyManager().getExpenses(), interest);
 
@@ -1113,14 +1182,19 @@ public class LongPlaytest {
         same(month, "  ...utility income",
                 back.getServicesManager().getServiceNetIncome(),
                 g.getServicesManager().getServiceNetIncome());
-        same(month, "  ...mining net income",
-                now.getMiningHandler().getReportNetIncome(),
-                was.getMiningHandler().getReportNetIncome());
-        same(month, "  ...heavy industry net income",
-                now.getHeavyIndustryHandler().getReportNetIncome(),
-                was.getHeavyIndustryHandler().getReportNetIncome());
-        same(month, "  ...ore price",
-                now.getIronMarket().getLocalPrice(), was.getIronMarket().getLocalPrice());
+        for (Sector s : g.getSectors().all()) {
+            Sector t = back.getSectors().byKey(s.key());
+            same(month, "  ..." + s.key() + " net income", t.getNetIncome(), s.getNetIncome());
+            same(month, "  ..." + s.key() + " cash", t.getCash(), s.getCash());
+            same(month, "  ..." + s.key() + " month in progress", t.pending().revenue(), s.pending().revenue());
+            for (Good good : Good.values()) {
+                same(month, "  ..." + s.key() + " " + good + " stock", t.getStock(good), s.getStock(good));
+            }
+        }
+        for (GoodsMarket m : g.getMarkets().all()) {
+            same(month, "  ..." + m.good() + " price",
+                    back.getMarkets().get(m.good()).getLocalPrice(), m.getLocalPrice());
+        }
 
         /*
          * THE BORROWER'S RECORD. The loans were always restored; the count of
@@ -1131,7 +1205,7 @@ public class LongPlaytest {
          */
         BusinessDebtManager creditWas = was.getBusinessDebtManager();
         BusinessDebtManager creditNow = now.getBusinessDebtManager();
-        for (String sector : BusinessDebtManager.SECTORS) {
+        for (String sector : Sectors.KEYS) {
             if (creditNow.getRestructureCount(sector) != creditWas.getRestructureCount(sector)) {
                 flag(month, "a sector's DEFAULT RECORD did not survive the save",
                         sector + ": " + creditWas.getRestructureCount(sector)
@@ -1490,9 +1564,9 @@ public class LongPlaytest {
                         ? -fx.monthlyCurrentAccount()
                                 / (fx.monthlyExports() + fx.monthlyImports()) : 0);
         out.printf("  shelf price %.4f, food import price %.4f, local food %.4f%n",
-                g.getEconomyManager().getCommercialHandler().getStoreSellPrice(),
-                g.getEconomyManager().getFoodMarket().getImportPrice(),
-                g.getEconomyManager().getFoodMarket().getLocalPrice());
+                g.getSectors().retail().getStoreSellPrice(),
+                g.getMarkets().get(Good.FOOD).importPrice(),
+                g.getMarkets().get(Good.FOOD).getLocalPrice());
         out.printf("  the currency: %.3f local per USD (pressure %+.2f, openness %.2f,"
                 + " cover %s), wages lifted %.1f%%%n",
                 fx.getRate(), fx.getLastPressure(), fx.getOpenness(),
@@ -1529,8 +1603,8 @@ public class LongPlaytest {
                 + " inflation %+.1f%%/yr; shelf carries a %.2fx scarcity mark-up%n",
                 px.getIndex(), px.getFoodWeight() * 100, px.getRentWeight() * 100,
                 px.inflation() * 100,
-                g.getEconomyManager().getCommercialHandler().getScarcityMultiple());
-        CommercialHandler rentCh = g.getEconomyManager().getCommercialHandler();
+                g.getSectors().retail().getScarcityMultiple());
+        ham.citybuildersim.sectors.RealEstate rentCh = g.getSectors().realEstate();
         out.printf("  rent: family %s / studio %s per person of capacity"
                 + " - break-even %s, required return %s%n",
                 String.format("%.4f", rentCh.getRentPrice()),
@@ -1551,7 +1625,7 @@ public class LongPlaytest {
                 String.format("%.2f", rentCh.getLandPerCapacity()),
                 String.format("%.3f", g.getBuildingManager().getConstructionMaterialPrice()),
                 String.format("%.6f", g.getLandManager().getPricePerSqFt()),
-                String.format("%,.0f", rentCh.getReportPropertyMaintenance()));
+                String.format("%,.0f", rentCh.statement().maintenance));
         out.printf("  wages lifted %.1f%%, the floor is worth %s a month in today's money%n",
                 (g.getLabourMarket().getCostOfLiving() - 1) * 100,
                 String.format("%.3f", g.getLabourMarket().cashMinimumWage()));
@@ -1632,7 +1706,7 @@ public class LongPlaytest {
         out.println("  credit by sector (cash / assets / owes / rate / write-downs / ban left / loss streak):");
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
         java.util.Map<String, Integer> streaks = g.getBusinessInvestment().getLossMonthsState();
-        for (String sector : BusinessDebtManager.SECTORS) {
+        for (String sector : Sectors.KEYS) {
             out.printf("    %-15s $%,14.0fk  $%,14.0fk  $%,12.0fk  %5.2f%%  %3d  %4d mo  %5d mo%n",
                     sector,
                     g.getEconomyManager().getSectorCash(sector),
@@ -1679,9 +1753,9 @@ public class LongPlaytest {
     static String creditEra(Game g) {
         BusinessDebtManager c = g.getEconomyManager().getBusinessDebtManager();
         StringBuilder b = new StringBuilder(String.format("       credit  "));
-        String[] tags = { "Ret", "RE", "Ind", "Con", "HI", "Min" };
-        for (int i = 0; i < BusinessDebtManager.SECTORS.length; i++) {
-            String sec = BusinessDebtManager.SECTORS[i];
+        String[] tags = { "Ret", "RE", "Ind", "Con", "HI", "Min", "Mat" };
+        for (int i = 0; i < Sectors.KEYS.length; i++) {
+            String sec = Sectors.KEYS[i];
             b.append(String.format("%s %s/%d/%d  ", tags[i],
                     money(g.getEconomyManager().getSectorCash(sec)),
                     c.getRestructureCount(sec), c.getBlockedMonths(sec)));
@@ -1717,7 +1791,7 @@ public class LongPlaytest {
                 money(e.getBusinessDebtManager().getTotalPrincipal()),
                 g.getLandManager().getUtilisation() * 100,
                 g.minesCommitted(), g.getLandManager().getIronDeposits(),
-                e.getIronMarket().getLocalPrice());
+                g.getMarkets().get(Good.IRON).getLocalPrice());
     }
 
     static String money(double v) {

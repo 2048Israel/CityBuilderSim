@@ -81,22 +81,22 @@ public class MonetaryCheck {
         /* ================= 2. prices ration ================= */
         out.println("\n--- and a shortage is priced ---");
 
-        CommercialHandler full = new CommercialHandler();
+        ham.citybuildersim.sectors.Retail full = new ham.citybuildersim.sectors.Retail();
         full.repriceShelf(100, .20, 0, .20, 100, 100);
         close("shelves that meet demand charge cost-plus",
                 full.getScarcityMultiple(), 1.0, 1e-9);
 
-        CommercialHandler shortage = new CommercialHandler();
+        ham.citybuildersim.sectors.Retail shortage = new ham.citybuildersim.sectors.Retail();
         shortage.repriceShelf(100, .20, 0, .20, 100, 0);
         out.printf("   nothing delivered: a %.2fx mark-up%n", shortage.getScarcityMultiple());
         close("a total shortage charges the ceiling",
-                shortage.getScarcityMultiple(), CommercialHandler.MAX_SCARCITY_MULTIPLE, 1e-9);
+                shortage.getScarcityMultiple(), ham.citybuildersim.sectors.Retail.MAX_SCARCITY_MULTIPLE, 1e-9);
 
-        CommercialHandler half = new CommercialHandler();
+        ham.citybuildersim.sectors.Retail half = new ham.citybuildersim.sectors.Retail();
         half.repriceShelf(100, .20, 0, .20, 100, 50);
         assertTrue("...and half a shortage is between the two",
                 half.getScarcityMultiple() > 1
-                        && half.getScarcityMultiple() < CommercialHandler.MAX_SCARCITY_MULTIPLE);
+                        && half.getScarcityMultiple() < ham.citybuildersim.sectors.Retail.MAX_SCARCITY_MULTIPLE);
 
         /* ================= 3. the world is a real place ================= */
         out.println("\n--- and the world has its own inflation ---");

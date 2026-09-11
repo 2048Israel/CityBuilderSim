@@ -299,7 +299,7 @@ public final class GameFiles {
     /** Loadable: something is there, and it can be read. */
     public boolean slotIsLoadable(int slot) {
         SaveHeader header = readHeader(slot);
-        return header != null && !header.isFromNewerBuild();
+        return header != null && header.isReadableHere();
     }
 
     /* ------------------------------- writing ------------------------------- */

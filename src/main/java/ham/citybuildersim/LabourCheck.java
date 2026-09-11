@@ -350,10 +350,10 @@ public class LabourCheck {
          *      identity the price is actually built from.
          * ------------------------------------------------------------------ */
         System.out.println("\n--- rent is a market, not a wage formula ---");
-        CommercialHandler rents = back.getEconomyManager().getCommercialHandler();
+        ham.citybuildersim.sectors.RealEstate rents = back.getSectors().realEstate();
         double rentBefore = rents.getRentPrice();
         close("a reloaded city charges the rent it was charging",
-                rentBefore, lived.getEconomyManager().getCommercialHandler().getRentPrice(), 1e-9);
+                rentBefore, lived.getSectors().realEstate().getRentPrice(), 1e-9);
 
         assertTrue("fixture: the city has a housing cost to price against",
                 rents.getMarginalHousingCost() > 0);
@@ -379,7 +379,7 @@ public class LabourCheck {
          * The old formula would have put rent at rentFor(unskilledNow) THIS
          * MONTH. It is nowhere near it, and that gap is the mechanic.
          */
-        double wouldHaveBeen = CommercialHandler.rentFor(unskilledNow);
+        double wouldHaveBeen = ham.citybuildersim.sectors.RealEstate.rentFor(unskilledNow);
         System.out.printf("   rent %.6f; the old formula would say %.6f%n",
                 rents.getRentPrice(), wouldHaveBeen);
         assertTrue("doubling the minimum wage does not double rent",

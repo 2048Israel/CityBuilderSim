@@ -6,17 +6,14 @@ import java.util.Map;
 /**
  * A month of books for every business in the city, and last month's too.
  *
- * WHY THIS EXISTS AT ALL. Six sectors keep their own figures in five different
- * handlers, in five different shapes: the mines report a revenue and a payroll,
- * commercial reports two businesses out of one object, construction reports
- * unearned revenue nobody else has. Every screen that wanted to compare them
- * had to know all five, and none of them could show LAST month at all, because
- * a handler holds this month and nothing else.
- *
- * So: one shape, read once a month, kept for two months. What the sector
- * screens draw is this, not the handlers - which means every sector's income
- * statement has the same lines in the same order whether or not the handler
- * behind it happens to have a getter for them.
+ * WHY THIS EXISTS AT ALL. Six sectors used to keep their own figures in five
+ * different handlers, in five different shapes, and none of them could show
+ * LAST month at all. So: one shape, read once a month, kept for two months.
+ * What the sector screens draw is this. Since the sector template
+ * (2026-09-11) every sector strikes its statement in this shape itself - see
+ * Sector.Statement - and this class adds the flows the city recorded
+ * against its name (credit, subsidy, the owners, the money abroad) and keeps
+ * the comparative column.
  *
  * NOTHING HERE FEEDS BACK. This class reads the model and is read by screens.
  * No handler asks it a question, no decision depends on it, and deleting it
@@ -140,7 +137,18 @@ public final class SectorBooks {
             /** Paid to its shareholders this month: a cash-flow line out. */
             double dividendsPaid,
             /** Spent buying back and cancelling its own shares this month: a cash-flow line out. Since the exchange. */
-            double sharesBoughtBack) {
+            double sharesBoughtBack,
+
+            /* ------------------------ and what it cost to stand ------------------------ */
+            /**
+             * Repairs on its own buildings - the order it placed with the
+             * builders. ITS OWN LINE since the sector template (2026-09-11):
+             * every handler used to fold it into `inputs`, and Retail folded
+             * property tax in as well, so no two sectors' operating-income
+             * lines meant the same thing. `inputs` is goods bought now, for
+             * everyone, and this is the repairs, for everyone.
+             */
+            double maintenance) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -151,9 +159,9 @@ public final class SectorBooks {
             return cash + inventory + land + buildings + foreignAssets;
         }
 
-        /** Everything that is not payroll, inputs or utilities. */
+        /** Everything above operating income: goods bought, payroll, utilities, repairs. */
         public double operatingCost() {
-            return inputs + payroll + electricity + water;
+            return inputs + payroll + electricity + water + maintenance;
         }
 
         /**
@@ -185,7 +193,8 @@ public final class SectorBooks {
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, false,
                     0, 0, 0,
-                    0, 0, 0);
+                    0, 0, 0,
+                    0);
         }
 
         public boolean isEmpty() {
@@ -203,14 +212,15 @@ public final class SectorBooks {
     /** Closing cash from the month just recorded, which is next month's opening. */
     private final Map<String, Double> lastCash = new LinkedHashMap<>();
 
-    public SectorMonth get(PolicySector sector) {
-        return now.getOrDefault(sector.creditName(),
-                SectorMonth.none(sector.creditName()));
+    public SectorMonth get(Sector sector)      { return get(sector.key()); }
+    public SectorMonth previous(Sector sector) { return previous(sector.key()); }
+
+    public SectorMonth get(String key) {
+        return now.getOrDefault(key, SectorMonth.none(key));
     }
 
-    public SectorMonth previous(PolicySector sector) {
-        return before.getOrDefault(sector.creditName(),
-                SectorMonth.none(sector.creditName()));
+    public SectorMonth previous(String key) {
+        return before.getOrDefault(key, SectorMonth.none(key));
     }
 
     public boolean hasComparatives() {
@@ -239,151 +249,41 @@ public final class SectorBooks {
         before.putAll(now);
         now.clear();
 
-        for (PolicySector sector : PolicySector.values()) {
+        for (Sector sector : game.getSectors().all()) {
             SectorMonth month = read(game, sector);
-            now.put(sector.creditName(), month);
-            lastCash.put(sector.creditName(), month.cash());
+            now.put(sector.key(), month);
+            lastCash.put(sector.key(), month.cash());
         }
     }
 
     /**
-     * One sector's figures, gathered from whichever handler holds them.
+     * One sector's figures, off the statement it struck this month and the
+     * flows the city recorded against its name.
      *
-     * THE FIVE-WAY SWITCH IS THE POINT. It exists once, here, so that no screen
-     * ever has to know that Retail and Real Estate come out of the same object
-     * or that construction keeps its wage bill under a different name.
+     * THE SIX-WAY SWITCH IS GONE (2026-09-11). It existed so that no screen
+     * ever had to know that Retail and Real Estate came out of the same
+     * object or that construction kept its wage bill under a different
+     * name; the template struck every sector's statement in one shape, so
+     * there is nothing left to normalise.
      */
-    private SectorMonth read(Game game, PolicySector sector) {
+    private SectorMonth read(Game game, Sector sector) {
 
         EconomyManager economy = game.getEconomyManager();
         BusinessDebtManager credit = economy.getBusinessDebtManager();
-        String key = sector.creditName();
+        String key = sector.key();
+        Sector.Statement st = sector.statement();
+        BalanceSheet sheet = sector.getBalanceSheet();
 
         double opening = lastCash.getOrDefault(key, 0.0);
 
-        BalanceSheet sheet;
-        double revenue, inputs, payroll, power, water;
-        double operating, interest, propertyTax, preTax, tax;
-
-        switch (sector) {
-
-            /*
-             * TWO BUSINESSES OUT OF ONE OBJECT. CommercialHandler runs the
-             * shops and the landlords side by side and keeps two of everything
-             * - two cash reserves, two interest bills, two tax figures - which
-             * is why they are two sectors here and one row on the old screen.
-             */
-            case RETAIL -> {
-                CommercialHandler h = economy.getCommercialHandler();
-                revenue = h.getGrossRevenue();
-                inputs = h.getReportInventoryCost() + h.getReportRetailMaintenance();
-                payroll = h.getReportPayroll();
-                power = h.getReportElectricityCost();
-                water = h.getReportWaterCost();
-                interest = h.getReportRetailInterest();
-                propertyTax = h.getReportRetailPropertyTax();
-                operating = revenue - inputs - payroll - power - water;
-                preTax = h.getReportRetailNetIncome();
-                tax = h.getReportRetailTax();
-                sheet = h.getRetailBalanceSheet();
-            }
-
-            case REAL_ESTATE -> {
-                CommercialHandler h = economy.getCommercialHandler();
-                revenue = h.getReportRentIncome();
-                inputs = h.getReportPropertyMaintenance();
-                payroll = 0;
-                power = 0;
-                water = 0;
-                interest = h.getReportRealEstateInterest();
-                propertyTax = h.getReportPropertyTaxExpense();
-                operating = revenue - inputs;
-                preTax = h.getReportRealEstateNetIncome();
-                tax = h.getReportRealEstateTax();
-                sheet = h.getRealEstateBalanceSheet();
-            }
-
-            case INDUSTRY -> {
-                IndustrialHandler h = economy.getIndustrialHandler();
-                revenue = h.getGrossRevenue();
-                inputs = h.getReportMaintenanceExpense();
-                payroll = h.getReportPayroll();
-                power = h.getReportElectricityCost();
-                water = h.getReportWaterCost();
-                interest = h.getReportInterestExpense();
-                propertyTax = h.getReportPropertyTaxExpense();
-                operating = h.getReportOperatingIncome();
-                // The handler's own figure, not a re-derivation of it. This was
-                // `operating - interest - propertyTax`, which was the same
-                // number until the statement grew a sales tax line and then
-                // silently was not. See MiningHandler.getReportPropertyTaxExpense().
-                preTax = h.getNetIncome();
-                tax = h.getReportTaxIncome();
-                sheet = h.getBalanceSheet();
-            }
-
-            case HEAVY_INDUSTRY -> {
-                HeavyIndustryHandler h = economy.getHeavyIndustryHandler();
-                revenue = h.getReportRevenue();
-                inputs = h.getReportInputCost() + h.getReportMaintenanceExpense();
-                payroll = h.getReportPayroll();
-                power = h.getReportElectricityCost();
-                water = h.getReportWaterCost();
-                interest = h.getReportInterestExpense();
-                propertyTax = h.getReportPropertyTaxExpense();
-                operating = h.getReportOperatingIncome();
-                preTax = h.getReportNetIncome();
-                tax = h.getTaxIncome(h.getTaxRate());
-                sheet = h.getBalanceSheet();
-            }
-
-            case MINING -> {
-                MiningHandler h = economy.getMiningHandler();
-                revenue = h.getReportRevenue();
-                inputs = h.getReportMaintenanceExpense();
-                payroll = h.getReportPayroll();
-                power = h.getReportElectricityCost();
-                water = h.getReportWaterCost();
-                interest = h.getReportInterestExpense();
-                operating = revenue - h.getReportOperatingCost();
-                preTax = h.getReportNetIncome();
-                // It has a getter now. This used to come out of the identity
-                // net = operating - interest - property tax, which stopped being
-                // true the moment the sales tax joined the statement - and a
-                // derived line does not fail when that happens, it just quietly
-                // becomes the sum of everything nobody named.
-                propertyTax = h.getReportPropertyTaxExpense();
-                tax = h.getTaxIncome(h.getTaxRate());
-                sheet = h.getBalanceSheet();
-            }
-
-            default -> {   // CONSTRUCTION
-                ConstructionHandler h = game.getServicesManager().getConstructionHandler();
-                revenue = h.getReportRevenue();
-                inputs = h.getReportMaterialsExpense() + h.getReportMaintenanceExpense();
-                payroll = h.getReportWageExpense();
-                power = 0;
-                water = 0;
-                interest = h.getReportInterestExpense();
-                propertyTax = h.getReportPropertyTaxExpense();
-                operating = revenue - inputs - payroll;
-                preTax = h.getNetIncome();
-                // Since 2026-09-10 the builders pay profit tax like the other
-                // five - the Policy screen had been offering a lever for it
-                // that collected nothing. See ConstructionHandler.getTaxIncome().
-                tax = h.getReportProfitTax();
-                sheet = h.getBalanceSheet();
-            }
-        }
-
         return new SectorMonth(key, game.getMonth(),
-                revenue, inputs, payroll, power, water,
-                operating, interest, propertyTax, preTax, tax, preTax - tax,
-                sheet == null ? 0 : sheet.getCash(),
-                sheet == null ? 0 : sheet.getInventory(),
-                sheet == null ? 0 : sheet.getLand(),
-                sheet == null ? 0 : sheet.getBuildings(),
-                sheet == null ? 0 : sheet.getBondsPayable(),
+                st.revenue, st.inputs, st.payroll, st.electricity, st.water,
+                st.operatingIncome, st.interest, st.propertyTax, st.preTaxIncome, st.profitTax, st.netIncome,
+                sheet.getCash(),
+                sheet.getInventory(),
+                sheet.getLand(),
+                sheet.getBuildings(),
+                sheet.getBondsPayable(),
                 opening,
                 credit.getLentThisMonth(key),
                 credit.getRepaidThisMonth(key),
@@ -391,7 +291,7 @@ public final class SectorBooks {
                 economy.getOverdraftForgivenThisMonth(key),
                 economy.getDepositInterestPaid(key),
                 game.getInvestedThisMonth(key),
-                economy.getSectorSalesTax(sector),
+                st.salesTax,
                 credit.getRate(key), credit.getLeverage(key),
                 credit.getWrittenOffThisMonth(key),
                 credit.isBorrowingBlocked(key),
@@ -402,7 +302,8 @@ public final class SectorBooks {
                         : economy.getOutwardInvestment().getInterestThisMonth(key),
                 economy.getEquityRaised(key),
                 economy.getDividendsPaid(key),
-                economy.getSharesBoughtBack(key));
+                economy.getSharesBoughtBack(key),
+                st.maintenance);
     }
 
     /* ===================================================================
@@ -473,6 +374,7 @@ public final class SectorBooks {
                 m.forgiven() * s, m.depositInterest() * s, m.spentOnBuildings() * s, m.salesTaxPaid() * s,
                 m.rate(), m.leverage(), m.writtenOff() * s, m.blocked(),
                 m.foreignAssets() * s, m.investedAbroad() * s, m.foreignInterest() * s,
-                m.equityRaised() * s, m.dividendsPaid() * s, m.sharesBoughtBack() * s);
+                m.equityRaised() * s, m.dividendsPaid() * s, m.sharesBoughtBack() * s,
+                m.maintenance() * s);
     }
 }

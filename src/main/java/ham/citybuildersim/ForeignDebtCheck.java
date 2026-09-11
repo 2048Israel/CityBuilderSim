@@ -181,8 +181,20 @@ public class ForeignDebtCheck {
              * simply A CITY WITH DEBT ON ITS BOOKS at the moment the rate is
              * read, and the debt market is the honest way to give it one.
              */
-            city.issueEmergencyDebt(city.getCash() * 2, Game.EMERGENCY_NOTE_MONTHS);
-            city.simulateMonths(1);
+            /*
+             * ...AND ENOUGH OF IT. The quote is a spread on debt over output
+             * and over revenue, so "twice the treasury" is however many
+             * points that happens to be against this city's GDP - and the
+             * accounts stopped booking build contracts as output on
+             * 2026-09-11 (see NationalAccounts), which moved it. The section
+             * needs a city whose own paper costs more than the world's; it
+             * borrows until it does, within reason.
+             */
+            for (int k = 0; k < 6; k++) {
+                city.issueEmergencyDebt(city.getCash() * 2, Game.EMERGENCY_NOTE_MONTHS);
+                city.simulateMonths(1);
+                if (city.getDebtManager().getRate() > city.getDebtManager().foreignRate()) break;
+            }
         } finally {
             System.setOut(out);
         }

@@ -1,6 +1,18 @@
 package ham.citybuildersim;
 
-/** Verifies the food industry's income statement and balance sheet. Not part of the game. */
+/**
+ * Verifies a sector's income statement and balance sheet, off the template.
+ * Not part of the game.
+ *
+ * REWRITTEN FOR THE SECTOR TEMPLATE (2026-09-11). This used to drive an
+ * IndustrialHandler by hand - setFoodDemand, setFoodPrice, computeMonthlyReport
+ * - and read its report lines back. There is no handler now: a sector's month
+ * is a LEDGER of trades struck into a STATEMENT at the top of the next month
+ * (see Sector.strike and Sector.bank), and the only way revenue gets onto a
+ * statement is a Trade in the ledger. So the fixture books the trades a month
+ * of selling would have produced and checks the statement is their sum, the
+ * bills' sum, and nothing else.
+ */
 public class BooksCheck {
 
     static int fails = 0;
@@ -28,13 +40,15 @@ public class BooksCheck {
         double[] fullFill = new double[11];
         java.util.Arrays.fill(fullFill, 1.0);
 
-        IndustrialHandler ih = new IndustrialHandler();
-        ih.setIndustrialCash(5000);
-        ih.setBaseFoodProduction(6000);
-        ih.setFoodCapacity(18000);
-        ih.setFoodInventory(12000);
-        ih.setFoodDemand(4000);
-        ih.setFoodPrice(.09);
+        // A bare sector off the template, wired to a market so its stock can
+        // be valued, and to no buildings at all: the posts are given by hand.
+        Markets markets = new Markets();
+        markets.setExchangeRate(1);
+        Sector ih = new ham.citybuildersim.sectors.FoodIndustry();
+        ih.attach(null, markets);
+        ih.setCash(5000);
+        ih.setStock(Good.FOOD, 12000);
+        markets.get(Good.FOOD).setLocalPrice(.09);
         ih.setEnergyRatio(1);
         ih.setWaterRatio(1);
         ih.setPricePerWatt(.01);
@@ -42,23 +56,23 @@ public class BooksCheck {
         ih.setPricePerWaterUnit(.05);
         ih.setWaterConsumption(150);
         ih.updateJobFillRate(fullFill);
-        ih.updateIndustrialWages(wages, jobs);
+        ih.updateWages(wages, jobs);
 
         double taxRate = .15;
-        ih.getIndustrialTaxIncome(taxRate);   // sets pTaxRate
+        ih.setTaxRate(taxRate);
+
         /*
-         * The shops want 4,000 a month and the shed holds three months of it,
-         * so the mill has no domestic room and its whole nameplate is spare -
-         * and since 2026-09-10 spare nameplate is made for export at the local
-         * price less the shipping discount, whenever that clears the energy
-         * it costs. The statement's revenue is BOTH halves, and the fixture
-         * asks for both rather than reading a figure that stopped being true.
+         * The month's trades: the shops took 4,000 at the local price, and
+         * the spare nameplate went abroad at the world's export price. Both
+         * halves are revenue; the export is what the VAT zero-rates.
          */
-        ih.setPlannedDemand(4000);
-        ih.setImportPrice(.10);
-        ih.computeMonthlyReport();
-        double expectedExport   = ih.getExportBoundOutput() * .10 * IndustrialHandler.EXPORT_PRICE_FRACTION;
-        assertTrue("fixture: the mill really is exporting its spare nameplate", expectedExport > 0);
+        double exportPrice = markets.get(Good.FOOD).exportPrice();
+        assertTrue("fixture: the world pays something for food", exportPrice > 0);
+        ih.bookSale(new Trade(Good.FOOD, ih.key(), Sectors.RETAIL, 4000, .09));
+        ih.bookSale(new Trade(Good.FOOD, ih.key(), Trade.WORLD, 1500, exportPrice));
+        double expectedExport = 1500 * exportPrice;
+
+        ih.strike();
 
         /* ===================== income statement ===================== */
         double expectedPayroll  = 140 * .800 + 120 * 1.500 + 10 * 4.000;   // 332
@@ -68,52 +82,68 @@ public class BooksCheck {
         double expectedOpCost   = expectedPayroll + expectedElec + expectedWater;
         double expectedOpIncome = expectedRevenue - expectedOpCost;
 
+        Sector.Statement s = ih.statement();
         System.out.println("--- income statement ---");
-        check("revenue", ih.getGrossRevenue(), expectedRevenue);
-        check("payroll", ih.getReportPayroll(), expectedPayroll);
-        check("electricity", ih.getReportElectricityCost(), expectedElec);
-        check("water", ih.getReportWaterCost(), expectedWater);
-        check("total operating expenses", ih.getReportOperatingCost(), expectedOpCost);
-        check("operating income", ih.getNetIncome(), expectedOpIncome);
-        check("tax", ih.getReportTaxIncome(), expectedOpIncome * taxRate);
+        check("revenue", s.revenue, expectedRevenue);
+        check("...of which local", s.localSales, 4000 * .09);
+        check("...and exported", s.exports, expectedExport);
+        check("payroll", s.payroll, expectedPayroll);
+        check("electricity", s.electricity, expectedElec);
+        check("water", s.water, expectedWater);
+        check("total operating expenses", s.payroll + s.electricity + s.water + s.maintenance + s.inputs, expectedOpCost);
+        check("operating income", s.operatingIncome, expectedOpIncome);
+        check("tax", s.profitTax, expectedOpIncome * taxRate);
+        check("units sold, in the ledger", ih.pending().unitsSold.get(Good.FOOD), 5500);
 
         // A loss-making month must show no tax and no phantom credit - the city
         // collects Math.max(income * rate, 0), so the statement has to agree.
-        // Nobody buying at home AND a world price under the cost of running the
-        // line, so nothing is made for abroad either - the export gate is the
-        // marginal cost, and this is the side of it where the mill idles.
-        ih.setFoodDemand(0);
-        ih.setImportPrice(.001);
-        ih.computeMonthlyReport();
-        check("fixture: a world price under the line's running cost exports nothing",
-                ih.getExportBoundOutput(), 0);
-        check("loss-making month: no revenue", ih.getGrossRevenue(), 0);
-        if (ih.getNetIncome() >= 0) { fails++; System.out.println("FAIL: expected a loss"); }
-        check("loss-making month: tax is zero", ih.getReportTaxIncome(), 0);
+        Sector idle = new ham.citybuildersim.sectors.FoodIndustry();
+        idle.attach(null, markets);
+        idle.setCash(5000);
+        idle.setEnergyRatio(1);
+        idle.setWaterRatio(1);
+        idle.setPricePerWatt(.01);
+        idle.setElectricityConsumption(120);
+        idle.updateJobFillRate(fullFill);
+        idle.updateWages(wages, jobs);
+        idle.setTaxRate(taxRate);
+        idle.strike();
+        check("loss-making month: no revenue", idle.statement().revenue, 0);
+        if (idle.getNetIncome() >= 0) { fails++; System.out.println("FAIL: expected a loss"); }
+        check("loss-making month: tax is zero", idle.statement().profitTax, 0);
         check("loss-making month: no phantom credit",
-                ih.getReportNetIncomeAfterTax(), ih.getNetIncome());
-        ih.setFoodDemand(4000);
-        ih.setImportPrice(.10);
-        ih.computeMonthlyReport();
-        check("net income after tax", ih.getReportNetIncomeAfterTax(),
+                idle.statement().netIncome, idle.getNetIncome());
+
+        check("net income after tax", s.netIncome,
                 expectedOpIncome - expectedOpIncome * taxRate);
 
+        /* ===================== the sales tax lands on the statement ===================== */
+        // Struck, then banked: the VAT is computed FROM the statement and then
+        // belongs ON it, so the profit tax is re-struck net of it and the cash
+        // moves once. See EconomyManager.settleSalesTax().
+        double vat = 12;
+        ih.bank(vat);
+        check("sales tax on the statement", s.salesTax, vat);
+        check("pre-tax income is net of it", s.preTaxIncome, expectedOpIncome - vat);
+        check("...and so is the profit tax", s.profitTax, (expectedOpIncome - vat) * taxRate);
+        check("cash moved by the after-tax figure", ih.getCash(),
+                5000 + (expectedOpIncome - vat) * (1 - taxRate));
+        check("the ledger is cleared for the new month", ih.pending().revenue(), 0);
+
         /* ===================== balance sheet ===================== */
-        ih.setBuildingsValue(9500);   // one Food Processing Plant: 3500 cash + 3000 materials @ $2
-        ih.setLandValue(0);
-        ih.setBondsPayable(0);
+        ih.setBalanceSheetInputs(0, 9500, 0);   // one Food Processing Plant at cost, no land, no loans
 
         BalanceSheet bs = ih.getBalanceSheet();
+        double cashNow = ih.getCash();
 
         System.out.println("\n--- balance sheet ---");
-        check("cash", bs.getCash(), 5000);
-        check("inventory units", bs.getInventoryUnits(), 12000);
+        check("cash", bs.getCash(), cashNow);
         check("inventory at market", bs.getInventory(), 12000 * .09);
-        check("total current assets", bs.getCurrentAssets(), 5000 + 12000 * .09);
+        check("total current assets", bs.getCurrentAssets(), cashNow + 12000 * .09);
         check("land (placeholder)", bs.getLand(), 0);
         check("buildings at cost", bs.getBuildings(), 9500);
         check("total non-current assets", bs.getNonCurrentAssets(), 9500);
-        check("total assets", bs.getTotalAssets(), 5000 + 12000 * .09 + 9500);
+        check("total assets", bs.getTotalAssets(), cashNow + 12000 * .09 + 9500);
         check("total liabilities", bs.getTotalLiabilities(), 0);
         check("equity (plug)", bs.getEquity(), bs.getTotalAssets());
 
@@ -123,20 +153,20 @@ public class BooksCheck {
 
         /* ============ the sheet must move with the market price ============ */
         // Inventory is held at market, so a price collapse shrinks the business.
-        ih.setFoodPrice(.05);
+        markets.get(Good.FOOD).setLocalPrice(.05);
         BalanceSheet cheap = ih.getBalanceSheet();
         System.out.println("\n--- price collapse .09 -> .05 ---");
         check("inventory revalued", cheap.getInventory(), 12000 * .05);
-        check("total assets fell", cheap.getTotalAssets(), 5000 + 12000 * .05 + 9500);
+        check("total assets fell", cheap.getTotalAssets(), cashNow + 12000 * .05 + 9500);
         check("still balances", cheap.getTotalAssets(), cheap.getTotalLiabilitiesAndEquity());
         if (cheap.getTotalAssets() >= bs.getTotalAssets()) {
             fails++;
             System.out.println("FAIL: assets should shrink when the price falls");
         }
-        ih.setFoodPrice(.09);
+        markets.get(Good.FOOD).setLocalPrice(.09);
 
         /* ============ ratios must not blow up on an empty business ============ */
-        IndustrialHandler empty = new IndustrialHandler();
+        Sector empty = new ham.citybuildersim.sectors.FoodIndustry();
         BalanceSheet none = empty.getBalanceSheet();
         System.out.println("\n--- empty business ---");
         check("total assets", none.getTotalAssets(), 0);
@@ -170,52 +200,40 @@ public class BooksCheck {
         System.out.println("\n--- book value from templates ---");
         check("industrial book value",
                 bm.getBookValueByCategory(BuildingType.INDUSTRIAL), expectedBook);
+        check("...and the same figure by sector",
+                bm.getBookValueBySector(Sectors.INDUSTRY), expectedBook);
         // cashCost alone would badly understate it - that is why the helper exists
-        double cashOnly = 2 * 3500 + 1200;
+        double cashOnly = 2 * plant.getCashCost() + mill.getCashCost();
         System.out.printf("   cashCost alone would have been %.0f, i.e. %.0f%% of true cost%n",
                 cashOnly, cashOnly / expectedBook * 100);
 
         /* ============ the tax is paid once, by the business ============ */
         System.out.println("\n--- the profit tax comes out of the business ---");
-        IndustrialHandler t = new IndustrialHandler();
-        t.setIndustrialCash(1000);
-        t.setFoodInventory(1000);
-        t.setFoodDemand(1000);
-        t.setFoodPrice(.10);
+        Sector t = new ham.citybuildersim.sectors.FoodIndustry();
+        t.setCash(1000);
+        t.bookSale(new Trade(Good.FOOD, t.key(), Sectors.RETAIL, 1000, .10));   // revenue 100
         t.setEnergyRatio(1);
         t.setWaterRatio(1);
         t.updateJobFillRate(fullFill);
-        t.updateIndustrialWages(new double[11], new int[11]);
-        /*
-         * The statement runs BEFORE the city reads its tax, and that ordering is
-         * now load-bearing rather than incidental.
-         *
-         * getIndustrialTaxIncome() used to recompute the whole month from the
-         * live fields, so it gave an answer whenever it was called. It reads the
-         * report now - the city collects exactly the figure the business
-         * deducted - which is the correction property tax needed for the same
-         * reason, and which stopped a reloaded city from collecting 0 where the
-         * live one collected $89,347. The real game has always called them in
-         * this order; only this fixture did not.
-         */
+        t.updateWages(new double[11], new int[11]);
         t.setTaxRate(taxRate);
         // Two calls, because the month is struck and then banked - the sales
         // tax is computed FROM the statement and then belongs ON it, so the
         // cash cannot move until the ledger has answered. There is no ledger in
         // this fixture, so it answers zero. See EconomyManager.settleSalesTax().
-        t.calculateIndustrialResults();
-        t.bankMonth(0);
-        double cityTax = t.getIndustrialTaxIncome(taxRate);
+        t.strike();
+        t.bank(0);
+        double cityTax = t.getProfitTax();
 
         // Until 2026-09-06 this asserted the OPPOSITE - that the business
         // banked the pre-tax figure while the city also collected the tax -
         // under the heading "surfaced, not fixed". MoneyAudit measured it as
         // the largest source of money from nowhere in the game, and Jerus
         // decided: deduct it. The same $15 now exists in one place.
-        check("business banked the AFTER-tax profit", t.getIndustrialCash(), 1000 + 100 - 100 * taxRate);
+        check("business banked the AFTER-tax profit", t.getCash(), 1000 + 100 - 100 * taxRate);
         check("city collected exactly the tax it deducted", cityTax, 100 * taxRate);
         check("...and the statement's after-tax line is what was banked",
-                t.getReportNetIncomeAfterTax(), 100 - 100 * taxRate);
+                t.statement().netIncome, 100 - 100 * taxRate);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

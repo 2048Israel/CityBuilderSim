@@ -37,16 +37,16 @@ public class InfrastructureCheck {
     }
 
     /**
-     * True once the month's report describes the same city the month ended in.
+     * True once the month in progress reads the same as the month last struck.
      *
-     * Population and store stock are read into the statement at the start of a
-     * month and moved by the month itself; while they are still moving, a save
-     * cannot be expected to reproduce the report exactly, for reasons that have
-     * nothing to do with roads.
+     * A growing city's shops sell more this month than the statement says
+     * they sold last month; while that is still moving, a save that rebuilt
+     * the statement rather than carrying it would drift, for reasons that
+     * have nothing to do with roads. Since the sector template the statement
+     * and the ledger are both carried, and this is the test of that.
      */
-    static boolean steady(CommercialHandler shops) {
-        return shops.getReportPopulation() == shops.getPopulation()
-                && shops.getReportStoreInventory() == shops.getStoreInventory();
+    static boolean steady(ham.citybuildersim.sectors.Retail shops) {
+        return Math.abs(shops.statement().revenue - shops.pending().revenue()) < 1e-9;
     }
 
     /** How many convenience stores give this much coverage - the fixture's shape, not a count. */
@@ -230,7 +230,7 @@ public class InfrastructureCheck {
          * ratio is rather than to assume it is 1.
          */
         double undiscounted = city.getBuildingManager().getTotalConstructionCapacity()
-                * city.getServicesManager().getConstructionHandler().getAverageFill()
+                * city.getSectors().construction().getAverageFill()
                 * city.getHealth().getWorkRatio();
         assertTrue("the builders are slowed by it too",
                 city.getConstructionOutput() < undiscounted);
@@ -239,7 +239,7 @@ public class InfrastructureCheck {
                 Math.round(undiscounted * city.getRoadRatio()));
 
         assertTrue("the shops feel it",
-                city.getEconomyManager().getCommercialHandler().getRoadRatio() < 1);
+                city.getSectors().retail().getRoadRatio() < 1);
 
         /* ================= 6. building a road fixes it ================= */
         System.out.println("\n--- and building a road fixes it ---");
@@ -404,10 +404,8 @@ public class InfrastructureCheck {
            one this section is about, and unlike consumption it cannot be
            satisfied by charging more for less.
            ------------------------------------------------------------------- */
-        double deliveredWith = withRoads.getEconomyManager()
-                .getCommercialHandler().getDeliveredShare();
-        double deliveredWithout = without.getEconomyManager()
-                .getCommercialHandler().getDeliveredShare();
+        double deliveredWith = withRoads.getSectors().retail().getDeliveredShare();
+        double deliveredWithout = without.getSectors().retail().getDeliveredShare();
         System.out.printf("   and the shelves: %.0f%% of what customers came for"
                 + " against %.0f%%%n", deliveredWith * 100, deliveredWithout * 100);
         assertTrue("...and its shops can actually be supplied",
@@ -478,7 +476,7 @@ public class InfrastructureCheck {
          * one worth testing: if any figure below is rebuilt rather than
          * restored, a growing city is where it shows.
          */
-        CommercialHandler shops = jammed.getEconomyManager().getCommercialHandler();
+        ham.citybuildersim.sectors.Retail shops = jammed.getSectors().retail();
 
         assertTrue("the test city is still growing, which is the hard case",
                 !steady(shops));
@@ -487,9 +485,9 @@ public class InfrastructureCheck {
 
         double incomeBefore = jammed.getIncome();
         double ratioBefore = jammed.getRoadRatio();
-        double basisBefore = jammed.getEconomyManager().getRoadRatioBasis();
-        double grossBefore = jammed.getEconomyManager()
-                .getCommercialHandler().getGrossRevenue();
+        double basisBefore = shops.getRoadRatio();
+        double grossBefore = shops.statement().revenue;
+        double pendingBefore = shops.pending().revenue();
 
         assertTrue("saved", jammed.saveGame(1, "gridlock").ok);
 
@@ -506,12 +504,17 @@ public class InfrastructureCheck {
 
         // The one that caught a real bug: the ratio the month was TRADED at is
         // not the ratio the city ends the month showing, and recomputing the
-        // report from the latter reports revenue nobody earned.
-        close("the ratio the month was traded at came back",
-                reloaded.getEconomyManager().getRoadRatioBasis(), basisBefore);
+        // report from the latter reports revenue nobody earned. Since the
+        // sector template the statement is CARRIED, and so is the ledger of
+        // the month in progress - so both come back as they were.
+        close("the ratio the sectors were handed came back",
+                reloaded.getSectors().retail().getRoadRatio(), basisBefore);
         close("...so retail revenue is unchanged",
-                reloaded.getEconomyManager().getCommercialHandler().getGrossRevenue(),
+                reloaded.getSectors().retail().statement().revenue,
                 grossBefore);
+        close("...and so is the month in progress",
+                reloaded.getSectors().retail().pending().revenue(),
+                pendingBefore);
         /*
          * Exact, on a growing city, with the roads jammed.
          *
@@ -526,8 +529,8 @@ public class InfrastructureCheck {
         close("...and so is next month's income", reloaded.getIncome(), incomeBefore);
 
         close("...and the industrial statement, which was the last to drift",
-                reloaded.getEconomyManager().getIndustrialHandler().getGrossRevenue(),
-                jammed.getEconomyManager().getIndustrialHandler().getGrossRevenue());
+                reloaded.getSectors().industry().statement().revenue,
+                jammed.getSectors().industry().statement().revenue);
 
         assertTrue("the basis is NOT just the current ratio, or this proved nothing",
                 Math.abs(basisBefore - 1) > 1e-9);

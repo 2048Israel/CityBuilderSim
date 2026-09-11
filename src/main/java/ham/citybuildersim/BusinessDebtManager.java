@@ -50,16 +50,29 @@ import java.util.Map;
  */
 public class BusinessDebtManager {
 
-    public static final String RETAIL = "Retail";
-    public static final String REAL_ESTATE = "Real Estate";
-    public static final String INDUSTRY = "Industry";
-    public static final String CONSTRUCTION = "Construction";
-    public static final String HEAVY_INDUSTRY = "Heavy Industry";
-    public static final String MINING = "Mining";
+    /**
+     * Every set of books that can borrow, by name, in the registry's order.
+     *
+     * Was a static list of six string constants that half the codebase
+     * imported by name; since the sector template (2026-09-11) the names
+     * come from Sectors and are handed in by EconomyManager. A harness that
+     * builds this class on its own gets the same seven the game has, so
+     * nothing it asks about a sector by name comes back empty.
+     */
+    private String[] SECTORS = Sectors.KEYS.clone();
 
-    /** Every set of books that can borrow. Add a sector here and it just works. */
-    public static final String[] SECTORS =
-            { RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING };
+    /** The registry's names, in its order. Re-seeds every per-sector map for a name it has not seen. */
+    public void setSectors(String[] keys) {
+        if (keys == null || keys.length == 0) return;
+        SECTORS = keys.clone();
+        for (String sector : SECTORS) {
+            assets.putIfAbsent(sector, 0.0);
+            rates.putIfAbsent(sector, MIN_SPREAD);
+            maturedPrincipal.putIfAbsent(sector, 0.0);
+        }
+    }
+
+    public String[] sectors() { return SECTORS.clone(); }
 
     /** Floor over the government rate. Nobody borrows at sovereign. */
     private static final double MIN_SPREAD = .01;

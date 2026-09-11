@@ -387,8 +387,8 @@ public class CapitalFlowCheck {
         try { rich.run(); } finally { System.setOut(out); }
         EconomyManager econ = rich.getEconomyManager();
         OutwardInvestment abroad = rich.getOutwardInvestment();
-        String con = BusinessDebtManager.CONSTRUCTION;
-        String ind = BusinessDebtManager.INDUSTRY;
+        String con = Sectors.CONSTRUCTION;
+        String ind = Sectors.INDUSTRY;
 
         econ.setSectorCash(con, 1_000_000);          // a billion, idle
         econ.setSectorCash(ind, 500_000);            // half a billion, and a loan

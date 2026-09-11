@@ -540,7 +540,7 @@ public class FamilyModel {
     public double getRefusedByStudio()  { return refusedByStudio; }
 
     /** What one let home of this size bills, whoever is in it. */
-    static double rentWeightOf(int unitSize) {
+    public static double rentWeightOf(int unitSize) {
         return Math.max(0, unitSize);
     }
 

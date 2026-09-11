@@ -139,8 +139,10 @@ public class BuildingManager {
          * family building now, and it costs like one.
          */
         BuildingsTemplate house = new BuildingsTemplate("House", BuildingType.RESIDENTIAL);
+        house.setSector("Real Estate");
         house.setCapacity(6);
         house.setDwellings(1);
+        house.makes(Good.HOUSING, 1);
         house.setCashCost(266);
         house.setConstructionPoints(10);
         house.setConstructionMaterials(10);
@@ -212,7 +214,9 @@ public class BuildingManager {
          *
          * See claude/reading-the-numbers.md.
          */
+        studioApartments.setSector("Real Estate");
         studioApartments.setCapacity(160);
+        studioApartments.makes(Good.HOUSING, 80);
         studioApartments.setDwellings(80);
         studioApartments.setCashCost(8628);
         studioApartments.setConstructionPoints(680);
@@ -237,7 +241,9 @@ public class BuildingManager {
          * and a studio has to be the cheapest ground in the game or the whole
          * point of a tiny flat is gone.
          */
+        lowRiseApartments.setSector("Real Estate");
         lowRiseApartments.setCapacity(252);
+        lowRiseApartments.makes(Good.HOUSING, 63);
         lowRiseApartments.setDwellings(63);
         lowRiseApartments.setCashCost(10196);
         lowRiseApartments.setConstructionPoints(2400);
@@ -537,8 +543,11 @@ public class BuildingManager {
 
         // Commercial Buildings
         BuildingsTemplate convienceStore = new BuildingsTemplate("Convenience Store", BuildingType.COMMERCIAL);
+        convienceStore.setSector("Retail");
         convienceStore.setCoverage(480);
-        convienceStore.setCapacity(1400);
+        convienceStore.setStock(1400);
+        convienceStore.makes(Good.GROCERIES, 480);
+        convienceStore.uses(Good.FOOD, 480);
         convienceStore.setCashCost(442);
         convienceStore.setConstructionPoints(120);
         convienceStore.setConstructionMaterials(17);
@@ -552,8 +561,11 @@ public class BuildingManager {
         templates.add(convienceStore);
 
         BuildingsTemplate smallGroceryStore = new BuildingsTemplate("Small Grocery Store", BuildingType.COMMERCIAL);
+        smallGroceryStore.setSector("Retail");
         smallGroceryStore.setCoverage(1600);
-        smallGroceryStore.setCapacity(7000);
+        smallGroceryStore.setStock(7000);
+        smallGroceryStore.makes(Good.GROCERIES, 1600);
+        smallGroceryStore.uses(Good.FOOD, 1600);
         smallGroceryStore.setCashCost(3478);
         smallGroceryStore.setConstructionPoints(800);
         smallGroceryStore.setConstructionMaterials(128);
@@ -632,11 +644,12 @@ public class BuildingManager {
            plant, two and three quarters for the mill.
            ===================================================================== */
         BuildingsTemplate texttileMill = new BuildingsTemplate("Textile Mill", BuildingType.INDUSTRIAL);
-        texttileMill.setCapacity(15000);
+        texttileMill.setSector("Industry");
+        texttileMill.setStock(15000);
         texttileMill.setCashCost(18717);
         texttileMill.setConstructionPoints(1800);
         texttileMill.setConstructionMaterials(347);
-        texttileMill.setProduction1(5500);
+        texttileMill.makes(Good.FOOD, 5500);
         texttileMill.setElectricityConsumption(40);
         texttileMill.setWaterConsumption(60);
         texttileMill.setLandSqFt(80000);
@@ -662,11 +675,12 @@ public class BuildingManager {
            scale for later, not a reason to keep a plant nobody can build.
            ===================================================================== */
         BuildingsTemplate foodProcessingPlant = new BuildingsTemplate("Food Processing Plant", BuildingType.INDUSTRIAL);
-        foodProcessingPlant.setCapacity(18000);
+        foodProcessingPlant.setSector("Industry");
+        foodProcessingPlant.setStock(18000);
         foodProcessingPlant.setCashCost(8994);
         foodProcessingPlant.setConstructionPoints(700);
         foodProcessingPlant.setConstructionMaterials(166);
-        foodProcessingPlant.setProduction1(6000);
+        foodProcessingPlant.makes(Good.FOOD, 6000);
         foodProcessingPlant.setElectricityConsumption(24);
         foodProcessingPlant.setWaterConsumption(30);
         foodProcessingPlant.setLandSqFt(40000);
@@ -703,11 +717,12 @@ public class BuildingManager {
            balance of payments - the 400 comes back with them.
            ===================================================================== */
         BuildingsTemplate constructionMaterialsPlant = new BuildingsTemplate("Construction Materials Plant", BuildingType.CONSTRUCTION);
-        constructionMaterialsPlant.setCapacity(5);
+        constructionMaterialsPlant.setSector("Materials");
+        constructionMaterialsPlant.setStock(480);
         constructionMaterialsPlant.setCashCost(44904);
         constructionMaterialsPlant.setConstructionPoints(9000);
         constructionMaterialsPlant.setConstructionMaterials(831);
-        constructionMaterialsPlant.setProduction2(160);
+        constructionMaterialsPlant.makes(Good.MATERIALS, 160);
         constructionMaterialsPlant.setElectricityConsumption(200);
         constructionMaterialsPlant.setWaterConsumption(80);
         constructionMaterialsPlant.setLandSqFt(300000);
@@ -719,11 +734,11 @@ public class BuildingManager {
         templates.add(constructionMaterialsPlant);
 
         BuildingsTemplate constructionDepot = new BuildingsTemplate("Construction Depot", BuildingType.CONSTRUCTION);
-        constructionDepot.setCapacity(5);
+        constructionDepot.setSector("Construction");
         constructionDepot.setCashCost(1482);
         constructionDepot.setConstructionPoints(400);
         constructionDepot.setConstructionMaterials(55);
-        constructionDepot.setProduction1(400);
+        constructionDepot.makes(Good.BUILDING_WORK, 400);
         constructionDepot.setElectricityConsumption(25);
         constructionDepot.setWaterConsumption(3);
         constructionDepot.setLandSqFt(60000);
@@ -865,10 +880,9 @@ public class BuildingManager {
                 .setCashCost(22471)
                 .setConstructionPoints(1400)
                 .setConstructionMaterials(416)
-                .setProduction1(1200)               // tonnes of steel a month
-                .setProduction2(1320)               // tonnes of scrap that takes
-                .setProductionModifier1(0.847)         // export price per tonne
-                .setProductionModifier2(0.41)         // scrap price per tonne
+                .setSector("Heavy Industry")
+                .makes(Good.STEEL, 1200)            // tonnes of steel a month
+                .uses(Good.IRON, 1320)              // tonnes of ore or scrap that takes
                 .setElectricityConsumption(750)
                 .setWaterConsumption(65)
                 .setLandSqFt(90000)
@@ -884,10 +898,9 @@ public class BuildingManager {
                 .setCashCost(89864)
                 .setConstructionPoints(9000)
                 .setConstructionMaterials(1664)
-                .setProduction1(6000)
-                .setProduction2(6600)
-                .setProductionModifier1(0.847)
-                .setProductionModifier2(0.41)
+                .setSector("Heavy Industry")
+                .makes(Good.STEEL, 6000)
+                .uses(Good.IRON, 6600)
                 // An arc furnace is the largest single electrical load a city
                 // this size can build. That is the point of it as a mechanic.
                 .setElectricityConsumption(3700)
@@ -1084,8 +1097,8 @@ public class BuildingManager {
                 .setCashCost(7286)
                 .setConstructionPoints(1600)
                 .setConstructionMaterials(135)
-                .setProduction1(2500)           // tonnes of ore a month
-                .setProductionModifier1(0.14)    // export price per tonne - THE FLOOR
+                .setSector("Mining")
+                .makes(Good.IRON, 2500)         // tonnes of ore a month
                 .setElectricityConsumption(2000)
                 .setWaterConsumption(150)
                 .setLandSqFt(400000)
@@ -1416,12 +1429,9 @@ public class BuildingManager {
             return;
         }
 
-        int materialCost = 0;
-        if(!noConstruction) materialCost = template.getConstructionMaterials() * quantity;
-        
-
-        // Always handle materials immediately
-        handleConstructionMaterials(materialCost);
+        // The materials are the caller's business since the sector template:
+        // Game.drawMaterials() takes them from the yard, the plant and the
+        // world before the order reaches here. See Markets.draw().
 
         for (BuildingsStacks stack : stacks) {
             if (stack.getName().equals(template.getName())) {
@@ -1505,11 +1515,15 @@ public class BuildingManager {
     public java.util.List<Completion> advanceConstruction(int constructionOutput) {
 
         java.util.List<Completion> finished = new java.util.ArrayList<>();
+        materialsDue = 0;
+        revenueDue = 0;
 
         if (getUnderConstruction() != 0) {
             double outputPerStack = (double) constructionOutput / getUnderConstruction();
             for (BuildingsStacks stack : stacks) {
                 stack.advanceConstruction(outputPerStack);
+                materialsDue += stack.getMaterialsDue();
+                revenueDue += stack.getRevenueDue();
                 if (stack.getLastFinished() > 0) {
                     finished.add(new Completion(
                             stack.getBuilding().getName(), stack.getLastFinished()));
@@ -1521,6 +1535,29 @@ public class BuildingManager {
         }
 
         return finished;
+    }
+
+    /**
+     * Units of material this month's building work drew on, summed over the
+     * sites by advanceConstruction() - the builders' purchase for the month,
+     * which Game.drawSiteMaterials() takes from the yard, the plant and the
+     * world. Read once; the next month's advance sets it again.
+     */
+    private double materialsDue;
+
+    public double takeMaterialsDue() {
+        double d = materialsDue;
+        materialsDue = 0;
+        return d;
+    }
+
+    /** ...and what the same work earned of the builders' contracts. See BuildingsStacks.contractValue. */
+    private double revenueDue;
+
+    public double takeRevenueDue() {
+        double d = revenueDue;
+        revenueDue = 0;
+        return d;
     }
 
     /** One building type and how many of it opened this month. */
@@ -1840,8 +1877,9 @@ public class BuildingManager {
         return getTotalByCategoryInteger(BuildingType.COMMERCIAL, BuildingsTemplate::getCoverage);
     }
 
+    /** Shelf room across the shops, in units. The stores' `stock` field since the sector template. */
     public int getTotalStoreCapacity() {
-        return getTotalByCategoryInteger(BuildingType.COMMERCIAL, BuildingsTemplate::getCapacity);
+        return (int) totalBySector("Retail", BuildingsTemplate::getStock);
     }
 
     /**
@@ -1893,7 +1931,7 @@ public class BuildingManager {
         // implicit int += double narrowing. Casting explicitly here to keep that
         // same truncating behavior rather than silently changing it to round.
         return BASE_CONSTRUCTION
-                + getTotalByCategoryInteger(BuildingType.CONSTRUCTION, t -> (int) t.getProduction1());
+                + (int) totalBySector("Construction", t -> t.makes(Good.BUILDING_WORK));
     }
 
     /**
@@ -1901,9 +1939,14 @@ public class BuildingManager {
      *
      * @return Construction Materials production
      */
+    /**
+     * THE YARD'S OWN OUTPUT, and only that, since the sector template. The
+     * Construction Materials Plant sells what it makes on the materials
+     * market now (see sectors.Materials); the public works yard still turns
+     * out its BASE_MATERIALS a month for free, drawn first by every order.
+     */
     public int getConstructionMaterialsProduction() {
-        return BASE_MATERIALS
-                + getTotalByCategoryInteger(BuildingType.CONSTRUCTION, t -> (int) t.getProduction2());
+        return BASE_MATERIALS;
     }
 
     /*
@@ -1918,13 +1961,110 @@ public class BuildingManager {
     
      */
     public int getFoodProduction() {
-        // NOTE: "food" here really just means production1 across all INDUSTRIAL
-        // buildings, not a food-specific category — same truncating cast as above.
-        return getTotalByCategoryInteger(BuildingType.INDUSTRIAL, t -> (int) t.getProduction1());
+        return (int) totalBySector("Industry", t -> t.makes(Good.FOOD));
     }
 
     public int getFoodCapacity() {
-        return getTotalByCategoryInteger(BuildingType.INDUSTRIAL, BuildingsTemplate::getCapacity);
+        return (int) totalBySector("Industry", BuildingsTemplate::getStock);
+    }
+
+    /* =====================================================================
+       BY SECTOR (2026-09-11, the sector template)
+
+       The same sums as the category ones below, keyed by the owning sector's
+       name rather than the menu group. A Sector reads everything about its
+       own buildings through these - capacity, posts, land, book value, sites
+       - and nothing else in the game has to know which buildings are whose.
+       ===================================================================== */
+
+    /** Finished buildings only: quantity times the getter, over the sector's stacks. */
+    public double totalBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector)) continue;
+            total += stack.getQuantity() * getter.applyAsDouble(t);
+        }
+        return total;
+    }
+
+    /** Buildings on site only - what is coming. */
+    public double underConstructionBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector)) continue;
+            total += stack.getUnderConstruction() * getter.applyAsDouble(t);
+        }
+        return total;
+    }
+
+    /** Orders on site for a sector, in buildings. */
+    public int getUnderConstructionBySector(String sector) {
+        int total = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getSector().equals(sector)) total += stack.getUnderConstruction();
+        }
+        return total;
+    }
+
+    /** The posts a sector's finished buildings offer, per tier. */
+    public int[] getJobArrayBySector(String sector) {
+        int[] out = new int[JobType.values().length];
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector)) continue;
+            for (JobType j : JobType.values()) out[j.ordinal()] += stack.getQuantity() * t.getJobs(j);
+        }
+        return out;
+    }
+
+    /** Square feet a sector holds, standing and on site - the plot is occupied the day it is bought. */
+    public double getLandSqFtBySector(String sector) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector)) continue;
+            total += t.getLandSqFt() * (stack.getQuantity() + stack.getUnderConstruction());
+        }
+        return total;
+    }
+
+    /** Finished and unfinished together, at cash plus materials at market - what the sector's buildings are worth. */
+    public double getBuildingsValueBySector(String sector) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector)) continue;
+            total += (stack.getQuantity() + stack.getUnderConstruction())
+                    * (t.getCashCost() + t.getConstructionMaterials() * materialsCost);
+        }
+        return total;
+    }
+
+    /** People a sector's buildings hold, sites included. See getCapacityInPortfolio. */
+    public int getCapacityInPortfolioBySector(String sector) {
+        int total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector)) continue;
+            total += (stack.getQuantity() + stack.getUnderConstruction()) * t.getCapacity();
+        }
+        return total;
+    }
+
+    /** Every template a sector may build. */
+    public List<BuildingsTemplate> getTemplatesBySector(String sector) {
+        List<BuildingsTemplate> out = new ArrayList<>();
+        for (BuildingsTemplate t : templates) if (t.getSector().equals(sector)) out.add(t);
+        return out;
+    }
+
+    /** Every sector name any template answers to, for the catalogue check. */
+    public java.util.Set<String> sectorsNamed() {
+        java.util.Set<String> out = new java.util.LinkedHashSet<>();
+        for (BuildingsTemplate t : templates) if (t.isOwnedBySector()) out.add(t.getSector());
+        return out;
     }
 
     /*
@@ -2260,6 +2400,12 @@ public class BuildingManager {
                 t -> t.getCashCost() + t.getConstructionMaterials() * materialsCost);
     }
 
+    /** The same, for the buildings one sector owns - finished ones only. */
+    public double getBookValueBySector(String sector) {
+        return totalBySector(sector,
+                t -> t.getCashCost() + t.getConstructionMaterials() * materialsCost);
+    }
+
     /**
      * What a category has PAID FOR and not yet got: buildings on site, at the
      * same valuation the finished ones carry.
@@ -2497,6 +2643,61 @@ public class BuildingManager {
         return out;
     }
 
+    /** Material the sites still have to draw, by template id. See BuildingsStacks.materialsOwed. */
+    public double[] getMaterialsOwedById() {
+        double[] out = new double[getMaxTemplateId() + 1];
+        for (BuildingsStacks stack : stacks) {
+            int id = stack.getBuilding().getId();
+            if (id >= 0 && id < out.length) {
+                out[id] = stack.getMaterialsOwed();
+            }
+        }
+        return out;
+    }
+
+    /** Material delivered to a template's sites from the yard: off what they owe. See Game.deliverYardToSites. */
+    public void deliverToSites(BuildingsTemplate template, double units) {
+        BuildingsStacks stack = getStack(template);
+        if (stack != null) stack.deliverMaterials(units);
+    }
+
+    /** The builders' price for an order, on the stack it was placed on. See BuildingsStacks.contractValue. */
+    public void bookContract(BuildingsTemplate template, double amount) {
+        BuildingsStacks stack = getStack(template);
+        if (stack != null) stack.bookContract(amount);
+    }
+
+    /** One order book, spread over the sites by the points they still owe. For a save from before the book was kept per stack. */
+    public void spreadContracts(double unearned) {
+        if (unearned <= 0) return;
+        double owed = getRemainingConstructionPoints();
+        if (owed <= 0) return;
+        for (BuildingsStacks stack : stacks) {
+            double points = stack.getUnderConstruction() * (double) stack.getBuilding().getConstructionPoints()
+                    - stack.getConstructionProgress();
+            if (points > 0) stack.setContractValue(unearned * points / owed);
+        }
+    }
+
+    /** The builders' contracts still on site, by template id. */
+    public double[] getContractValueById() {
+        double[] out = new double[getMaxTemplateId() + 1];
+        for (BuildingsStacks stack : stacks) {
+            int id = stack.getBuilding().getId();
+            if (id >= 0 && id < out.length) {
+                out[id] = stack.getContractValue();
+            }
+        }
+        return out;
+    }
+
+    /** ...and in total, for the screens. */
+    public double getMaterialsOwed() {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) total += stack.getMaterialsOwed();
+        return total;
+    }
+
     /**
      * Puts a template's in-progress work back onto its stack.
      *
@@ -2505,11 +2706,13 @@ public class BuildingManager {
      * recognises would hide a real problem. Returns false in that case instead.
      */
     public boolean restoreConstruction(int templateId, int underConstruction,
-                                       double progress) {
+                                       double progress, double materialsOwed, double contractValue) {
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getId() == templateId) {
                 stack.setUnderConstruction(underConstruction);
                 stack.setConstructionProgress(progress);
+                stack.setMaterialsOwed(materialsOwed);
+                stack.setContractValue(contractValue);
                 return true;
             }
         }
@@ -2570,20 +2773,20 @@ public class BuildingManager {
      * the caller's, and a quote is a quote.
      */
     public void handleConstructionMaterials(int required) {
+        takeFromYard(required);
+    }
 
-        if (constructionMaterials >= required) {
-            constructionMaterials -= required;
-            return;
-        }
-
-        int shortage = required - constructionMaterials;
-        constructionMaterials = 0;
-
-        System.out.println(
-                "Construction Materials Imported: "
-                + formatter.format(shortage)
-                + " Cost: $" + formatter.format(shortage * materialsCost)
-        );
+    /**
+     * Takes what the yard has, up to what was asked. The rest is the
+     * caller's to find - from the materials plant or the world, through
+     * Markets.draw() - and the caller bills whoever is building.
+     *
+     * @return units actually taken from the yard
+     */
+    public int takeFromYard(int required) {
+        int taken = Math.max(0, Math.min(required, constructionMaterials));
+        constructionMaterials -= taken;
+        return taken;
     }
 
     public BuildingsStacks getStack(BuildingsTemplate template) {
@@ -2617,6 +2820,7 @@ public class BuildingManager {
         for (BuildingsTemplate t : templates) {
             if (t != null) t.redenominate(scale);
         }
+        for (BuildingsStacks s : stacks) s.redenominate(scale);
         materialsCost *= scale;
     }
 

@@ -204,8 +204,54 @@ public class BuildingCatalog {
         readCare(o, template, name);
         readJobs(o, template, name);
         readTeaches(o, template, name);
+        readSector(o, template, name);
 
         return template;
+    }
+
+    /**
+     * Who owns it and what it makes - see BuildingsTemplate's note.
+     *
+     *     "sector": "Heavy Industry",
+     *     "makes":  { "STEEL": 1200 },
+     *     "uses":   { "IRON": 1320 },
+     *     "stock":  18000
+     *
+     * An unknown good is reported and that line ignored, like an unknown job
+     * type: a typo should cost the line, not the building. An owner that no
+     * sector answers to is reported too, because a plant nobody runs makes
+     * nothing and the player would be looking for why.
+     */
+    private void readSector(JsonObject o, BuildingsTemplate template, String name) {
+
+        template.setSector(string(o, "sector"));
+        template.setStock(number(o, "stock"));
+
+        if (o.has("makes") && o.get("makes").isJsonObject()) {
+            JsonObject makes = o.getAsJsonObject("makes");
+            for (String key : makes.keySet()) {
+                Good g = Good.byName(key);
+                if (g == null) {
+                    System.out.println(FILE_NAME + ": \"" + name + "\" makes unknown good \""
+                            + key + "\"; that line ignored.");
+                    continue;
+                }
+                template.makes(g, number(makes, key));
+            }
+        }
+
+        if (o.has("uses") && o.get("uses").isJsonObject()) {
+            JsonObject uses = o.getAsJsonObject("uses");
+            for (String key : uses.keySet()) {
+                Good g = Good.byName(key);
+                if (g == null) {
+                    System.out.println(FILE_NAME + ": \"" + name + "\" uses unknown good \""
+                            + key + "\"; that line ignored.");
+                    continue;
+                }
+                template.uses(g, number(uses, key));
+            }
+        }
     }
 
     /**

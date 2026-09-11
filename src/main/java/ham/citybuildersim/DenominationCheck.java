@@ -66,8 +66,8 @@ public class DenominationCheck {
                 plain.getForeignAccounts().getRate() / factor, band);
         relative("the same treasury", lopped.getCash(), plain.getCash() / factor, band);
         relative("the same shops' till",
-                lopped.getEconomyManager().getCommercialHandler().getCommercialCash(),
-                plain.getEconomyManager().getCommercialHandler().getCommercialCash() / factor,
+                lopped.getSectors().retail().getCash(),
+                plain.getSectors().retail().getCash() / factor,
                 band);
         relative("the same city debt", lopped.getDebtManager().getAllPrincipal(),
                 plain.getDebtManager().getAllPrincipal() / factor, band);
@@ -292,7 +292,36 @@ public class DenominationCheck {
         sameCity(plain, lopped, factor, 1e-6);
 
         out.println("\n--- ...and the same city a decade later ---");
-        quietly(() -> { plain.simulateMonths(88); lopped.simulateMonths(88); });
+        /*
+         * -Ddenom.trace=true: month by month, with the sectors' state at the
+         * first month the two banks part. The instrument that found the
+         * resolution floor read in the founding unit (Bank.resolutionExitEquity).
+         */
+        if (Boolean.getBoolean("denom.trace")) {
+            for (int m = 0; m < 88; m++) {
+                quietly(() -> { plain.simulateMonths(1); lopped.simulateMonths(1); });
+                double a = plain.getBank().equity(), b = lopped.getBank().equity() * factor;
+                double ca = plain.getCash(), cb = lopped.getCash() * factor;
+                int pa = plain.getPopulationManager().getPopulation(), pb = lopped.getPopulationManager().getPopulation();
+                out.printf("   m%d bank %.6f vs %.6f | cash %.6f vs %.6f | pop %d vs %d | matOwed %.3f vs %.3f | bankCash %.6f vs %.6f%n", plain.getMonth(), a, b, ca, cb, pa, pb,
+                        plain.getBuildingManager().getMaterialsOwed(), lopped.getBuildingManager().getMaterialsOwed(),
+                        plain.getBank().getCash(), lopped.getBank().getCash() * factor);
+                if (Math.abs(a - b) > 1e-3 * Math.max(1, Math.abs(a))) {
+                    for (String s : Sectors.KEYS) {
+                        out.printf("      %s debt %.3f vs %.3f cash %.3f vs %.3f | %s || %s%n", s,
+                                plain.getEconomyManager().getBusinessDebtManager().getPrincipal(s), lopped.getEconomyManager().getBusinessDebtManager().getPrincipal(s) * factor,
+                                plain.getEconomyManager().getSectorCash(s), lopped.getEconomyManager().getSectorCash(s) * factor,
+                                plain.getLastInvestment(s), lopped.getLastInvestment(s));
+                    }
+                    out.printf("      bank branches %.0f vs %.0f | city debt %.3f vs %.3f | bank book %.3f vs %.3f | securities %.3f vs %.3f%n",
+                            plain.getBank().getBranches(), lopped.getBank().getBranches(), plain.getDebtManager().getAllPrincipal(), lopped.getDebtManager().getAllPrincipal() * factor,
+                            plain.getBank().getBook(), lopped.getBank().getBook() * factor, plain.getBank().getSecurities(), lopped.getBank().getSecurities() * factor);
+                    break;
+                }
+            }
+        } else {
+            quietly(() -> { plain.simulateMonths(88); lopped.simulateMonths(88); });
+        }
 
         out.printf("   plain  pop %,d  GDP %,.2f  rent %.6f  index %.4f%n",
                 plain.getPopulationManager().getPopulation(),
@@ -371,11 +400,11 @@ public class DenominationCheck {
     }
 
     static double shelf(Game g) {
-        return g.getEconomyManager().getCommercialHandler().getStoreSellPrice();
+        return g.getSectors().retail().getStoreSellPrice();
     }
 
     static double rent(Game g) {
-        return g.getEconomyManager().getCommercialHandler().getRentPrice();
+        return g.getSectors().realEstate().getRentPrice();
     }
 
     static double cost(Game g, String name) {

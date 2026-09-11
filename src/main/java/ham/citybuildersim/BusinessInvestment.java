@@ -6,37 +6,36 @@ import java.util.List;
 /**
  * Capacity planning for the private sector.
  *
- * Each month every business looks at the demand it can see, forecasts where that
- * demand will be by the time a new building could actually open, and expands if
- * the extra capacity would pay for itself. This is the ordinary operations
- * question - how much capacity do I need, and when do I have to start building
- * it - rather than anything clever.
+ * Each month every business looks at the demand it can see, forecasts where
+ * that demand will be by the time a new building could actually open, and
+ * expands if the extra capacity would pay for itself. This is the ordinary
+ * operations question - how much capacity do I need, and when do I have to
+ * start building it - rather than anything clever.
  *
  * THREE PIECES
  *
  *   1. DEMAND. Each sector measures a different thing, and getting this right
- *      matters more than the forecast does:
- *
- *        Real estate looks at JOBS, not population. Population is
- *        min(housing, jobs * 2.25), so when housing is the binding constraint
- *        the population stops growing - and a real estate company that watched
- *        population would conclude demand had stopped exactly when it was the
- *        one causing the shortage. Latent demand is what the job market could
- *        support.
- *
- *        Retail looks at customers against store coverage.
- *        Industry looks at what the stores want to buy against what it can make.
+ *      matters more than the forecast does. Real estate looks at JOBS, not
+ *      population - population is min(housing, jobs x 2.25), so a landlord
+ *      that watched population would conclude demand had stopped exactly
+ *      when it was the one causing the shortage. Retail looks at customers
+ *      against store coverage. A maker looks at what its market wants
+ *      against what it can make.
  *
  *   2. LEAD TIME. A building takes constructionPoints / cityOutput months to
- *      finish. Forecasting to today is useless when the thing opens in a year,
- *      so demand is projected to completion plus a planning horizon.
+ *      finish, so demand is projected to completion plus a planning horizon.
  *
  *   3. THE BRAKE. Businesses here borrow freely, so something has to stop a
- *      loss-making expansion spiral. The rule is that a project must service
- *      its own debt: estimated monthly profit from the new capacity has to beat
- *      the monthly interest on the money borrowed to build it. That is a
- *      business test rather than a credit limit, which is the honest place for
- *      it - the lender is willing, the business shouldn't be.
+ *      loss-making expansion spiral: a project must service its own debt.
+ *      That is a business test rather than a credit limit, which is the
+ *      honest place for it - the lender is willing, the business shouldn't be.
+ *
+ * SINCE THE SECTOR TEMPLATE (2026-09-11) this class is the shared
+ * arithmetic and the two generic rules - the maker's expansion and the two
+ * ways to shrink. Each sector's own decision is Sector.plan(); the landlords,
+ * the shops, the builders, the mills and the mines override it, and a
+ * sector that is a factory does not. The bank's branch has its own planner
+ * here because the bank is not a sector.
  */
 public class BusinessInvestment {
 
@@ -57,20 +56,13 @@ public class BusinessInvestment {
 
     /**
      * The largest order a sector will place, expressed as months of the city's
-     * whole construction output.
-     *
-     * An order still has to be deliverable. Sizing purely to the demand gap
-     * would have real estate ordering six hundred houses the moment jobs ran
-     * ahead of housing, which would then monopolise the construction queue for
-     * decades and starve every other sector - including the power station the
-     * player is trying to build.
+     * whole construction output. An order still has to be deliverable: sizing
+     * purely to the demand gap would have real estate ordering six hundred
+     * houses and monopolising the queue for decades.
      */
     public static final double MAX_ORDER_MONTHS = 12;
 
-    /**
-     * Months of construction backlog above which the construction sector builds
-     * itself more capacity.
-     */
+    /** Months of construction backlog above which the builders build themselves more capacity. */
     public static final double BACKLOG_MONTHS_BEFORE_EXPANDING = 9;
 
     private final BuildingManager buildingManager;
@@ -100,23 +92,18 @@ public class BusinessInvestment {
         public final boolean build;
 
         /**
-         * True when the ONLY thing stopping this was nowhere to put it.
-         *
-         * Carried as a flag rather than left for the caller to recognise in the
-         * reason text: land is the one refusal the player can personally clear,
-         * by annexing, and the warning banner has to be able to tell it apart
-         * from "demand is already met" without matching on prose that anyone is
-         * free to reword.
+         * True when the ONLY thing stopping this was nowhere to put it - the
+         * one refusal the player can personally clear, by annexing.
          */
         public final boolean landBlocked;
 
-        Decision(String sector, BuildingsTemplate template, int quantity,
-                 String reason, boolean build) {
+        public Decision(String sector, BuildingsTemplate template, int quantity,
+                        String reason, boolean build) {
             this(sector, template, quantity, reason, build, false);
         }
 
-        Decision(String sector, BuildingsTemplate template, int quantity,
-                 String reason, boolean build, boolean landBlocked) {
+        public Decision(String sector, BuildingsTemplate template, int quantity,
+                        String reason, boolean build, boolean landBlocked) {
             this.sector = sector;
             this.template = template;
             this.quantity = quantity;
@@ -125,12 +112,12 @@ public class BusinessInvestment {
             this.landBlocked = landBlocked;
         }
 
-        static Decision no(String sector, String reason) {
+        public static Decision no(String sector, String reason) {
             return new Decision(sector, null, 0, reason, false);
         }
 
         /** Wanted to build, had nowhere to put it. */
-        static Decision noLand(String sector, String reason) {
+        public static Decision noLand(String sector, String reason) {
             return new Decision(sector, null, 0, reason, false, true);
         }
     }
@@ -149,125 +136,69 @@ public class BusinessInvestment {
     }
 
     /**
-     * Average monthly population change over the window.
-     *
-     * Deliberately reads zero while housing is capped out, which is correct:
-     * the trend is what has actually been happening. Real estate does not use
-     * this - it uses latent job demand - precisely so a housing shortage does
-     * not read as an absence of demand.
+     * Average monthly population change over the window. Reads zero while
+     * housing is capped out, which is correct: the trend is what has
+     * actually been happening.
      */
     public double getPopulationGrowth() {
-        if (populationHistory.size() < 2) {
-            return 0;
-        }
+        if (populationHistory.size() < 2) return 0;
         int first = populationHistory.get(0);
         int last = populationHistory.get(populationHistory.size() - 1);
         return (last - first) / (double) (populationHistory.size() - 1);
     }
 
     /**
-     * The most people this city could physically hold once everything already
-     * on site is finished.
-     *
-     * WHY A TREND NEEDS A CEILING. Population is min(housing, jobs * 2.25) and
-     * it has no inertia at all - it is recomputed from scratch every month, so
-     * the moment a block of flats opens, it fills. That means a STEP in housing
-     * reads as a RATE in a twelve-month trend window, and anything extrapolating
-     * that trend is extrapolating a one-off.
-     *
-     * Measured, in a city handed 500 houses at once: population went 0 to 2,100
-     * in eight months, the trend read +350 a month, and retail forecast its way
-     * to 35,320 units of store coverage for 2,100 people - seventeen times what
-     * anyone could shop in, since demand is min(coverage, population). It was
-     * still delivering that order twenty months after the trend had gone to
-     * zero. The load put roads at 71% and throttled the city's only foundry,
-     * which is how a retail forecast ended up being measured as a steel margin.
-     *
-     * Real estate is already exempt from this trap - it reads latent job demand
-     * precisely so it is not "reading its own echo". This is the same discipline
-     * for everyone else: forecast whatever the trend says, but never past what
-     * the city could actually house. A shop cannot serve a customer who has
-     * nowhere to live.
-     *
-     * HOUSING ONLY, DELIBERATELY, AND NOT ALSO THE JOB CEILING. The other half
-     * of the population formula is jobs * 2.25, and capping against that too
-     * looks more complete until you notice who is being capped: retail and
-     * industry EMPLOY people, so a ceiling that includes jobs is a ceiling those
-     * sectors move by building. Capping them with it makes them throttle
-     * themselves - the same echo real estate was exempted from, pointed the
-     * other way. Measured over four land seeds it cost about 4% of final
-     * population against capping on housing alone, for no gain anywhere.
-     *
-     * Housing is the honest ceiling here precisely because it is the one neither
-     * sector controls. Homes under construction count, on the same reasoning
-     * that lets real estate see jobs under construction: they are committed and
-     * they will be standing before the shop opens.
+     * The most people this city could physically hold once everything on
+     * site is finished. A trend needs a ceiling: population has no inertia,
+     * so a step in housing reads as a rate in a twelve-month window, and
+     * retail once forecast its way to seventeen times the coverage anyone
+     * could shop in. Housing only, deliberately - the job ceiling is one the
+     * employing sectors move by building, and capping them with it makes
+     * them throttle themselves.
      */
-    private double reachablePopulation() {
+    public double reachablePopulation() {
         return buildingManager.getTotalHouseCapacity()
                 + buildingManager.getHouseCapacityUnderConstruction();
     }
 
     /** Months before a building of this size would actually open. */
     public double leadTime(BuildingsTemplate template, int quantity, double cityConstructionOutput) {
-        if (cityConstructionOutput <= 0) {
-            return Double.MAX_VALUE;
-        }
+        if (cityConstructionOutput <= 0) return Double.MAX_VALUE;
         return (template.getConstructionPoints() * (double) quantity) / cityConstructionOutput;
     }
 
     /**
      * How many of a building to order: enough to close the gap, but no more
      * than the city's builders could deliver in MAX_ORDER_MONTHS, and never
-     * more plots than the city has land to sell.
-     *
-     * Slow construction never cancels an order - it is floored at one, because
-     * a sector that has decided it is short should place an order even when the
-     * builders are backed up, or the shortage simply persists and it re-decides
-     * the same thing every month forever.
-     *
-     * Land is the exception, and the only thing here that can return zero. A
-     * business with nowhere to build is not building, however badly it wants
-     * to, and the callers turn that zero into a visible refusal naming land as
-     * the reason rather than a silent nothing.
+     * more plots than the city has land to sell. Floored at one, because a
+     * sector that has decided it is short should place an order even when
+     * the builders are backed up. Land is the exception and the only thing
+     * that can return zero.
      */
-    private int orderSize(double shortfall, double capacityPerUnit,
-                          BuildingsTemplate template, double cityConstructionOutput) {
+    public int orderSize(double shortfall, double capacityPerUnit,
+                         BuildingsTemplate template, double cityConstructionOutput) {
 
-        int needed = (capacityPerUnit > 0)
-                ? (int) Math.ceil(shortfall / capacityPerUnit)
-                : 1;
+        int needed = (capacityPerUnit > 0) ? (int) Math.ceil(shortfall / capacityPerUnit) : 1;
 
         double points = template.getConstructionPoints();
         int deliverable = Integer.MAX_VALUE;
-
         if (points > 0 && cityConstructionOutput > 0) {
-            deliverable = (int) Math.floor(
-                    (cityConstructionOutput * MAX_ORDER_MONTHS) / points);
+            deliverable = (int) Math.floor((cityConstructionOutput * MAX_ORDER_MONTHS) / points);
         }
 
         int size = Math.max(1, Math.min(needed, deliverable));
-
         return Math.min(size, plotsAvailableFor(template));
     }
 
     /** How many of these the city currently has room for. */
-    private int plotsAvailableFor(BuildingsTemplate template) {
+    public int plotsAvailableFor(BuildingsTemplate template) {
         double land = template.getLandSqFt();
-        if (land <= 0) {
-            return Integer.MAX_VALUE;   // takes no space, needs no plot
-        }
+        if (land <= 0) return Integer.MAX_VALUE;
         return (int) Math.floor(landAvailable / land);
     }
 
-    /**
-     * Why a sector could not build, when land is what stopped it.
-     *
-     * Worth spelling the numbers out: a land shortage is something the player
-     * caused by not annexing, and can fix by annexing, so the sector screen
-     * should say exactly how short the city is rather than "not building".
-     */
-    private String landReason(BuildingsTemplate template) {
+    /** Why a sector could not build, when land is what stopped it - with the numbers, because the player can fix this one. */
+    public String landReason(BuildingsTemplate template) {
         return String.format("no land - needs %,.0f sq ft, %,.0f free",
                 template.getLandSqFt(), landAvailable);
     }
@@ -275,26 +206,14 @@ public class BusinessInvestment {
     /* =====================================================================
        RETIREMENT
 
-       The mirror of the three planners below, and the mechanic the game was
-       missing. Everything here could grow and nothing could shrink, so a sector
-       that had built capacity it no longer needed carried it - and its payroll,
-       and now its property tax - forever, borrowing to pay for it. Construction
-       was the case that made it obvious: $91,753 of debt became $506,045 across
-       two hundred months in which it built nothing at all.
-
-       A firm in that position sells what it is not using. So:
-
-         1. It must be LOSING MONEY, and have been for a while. One bad month is
-            weather; RETIREMENT_LOSS_MONTHS in a row is a business decision.
-         2. It must have capacity it is genuinely not using, by a wide margin -
-            RETIREMENT_SLACK, deliberately far looser than the 5% headroom that
-            triggers building, so a firm never scraps and rebuilds the same
-            capacity in alternate months.
-         3. It must not be building something. Nobody demolishes and expands at
-            the same time.
-
-       And the hard limit: it can never scrap capacity that is IN USE. Empty
-       housing can go; housing with people in it cannot, whatever the books say.
+       Everything here could grow and nothing could shrink, so a sector that
+       had built capacity it no longer needed carried it - and its payroll,
+       and its property tax - forever, borrowing to pay for it. A firm in that
+       position sells what it is not using: it must be LOSING MONEY and have
+       been for a while, it must have capacity it is genuinely not using by a
+       wide margin, and it must not be building something. It can never
+       scrap capacity that is IN USE - empty housing can go; housing with
+       people in it cannot, whatever the books say.
        ===================================================================== */
 
     /** Consecutive loss-making months before a sector starts selling capacity. */
@@ -308,14 +227,9 @@ public class BusinessInvestment {
 
     /**
      * Months of losses before a sector that is overdrawn and refused credit
-     * starts liquidating plant it is actually using. Longer than
-     * RETIREMENT_LOSS_MONTHS on purpose: shedding SPARE capacity after six bad
-     * months is a cheap decision, and liquidating a working plant is not. A
-     * new plant in a small city loses money for its first year or two while
-     * the city grows into it - the playtest's founding food plant, built on
-     * credit at month 3, is under water from month 4 - and a rule that
-     * liquidated it at six months killed every founding plant the advisor
-     * ever built. Two years is the runway a firm burns before it is wound up.
+     * starts liquidating plant it is actually using. Two years: the runway a
+     * firm burns before it is wound up, and the time a founding plant needs
+     * for the city to grow into it.
      */
     public static final int DISTRESS_LOSS_MONTHS = 24;
 
@@ -328,28 +242,28 @@ public class BusinessInvestment {
         }
     }
 
-    /* =====================================================================
-       THE TWO HISTORIES, CARRIED
+    /**
+     * A sector that has just opened something starts its count again.
+     *
+     * The months a plant is on site are months of interest with no revenue,
+     * and they counted: the seventh sector's first plant took six months to
+     * build, arrived with six months of losses already on the clock, was
+     * sold back the month it opened for being "capacity nobody uses" - it
+     * had made one month of material - and the sector, with a loan and no
+     * plant, was written down the month after. Measured, in the first city
+     * that ever built one. A firm that has just expanded is given the six
+     * months it asked for; what it does with them is its own affair.
+     */
+    public void noteOpened(String sector) {
+        if (sector != null) lossMonths.put(sector, 0);
+    }
 
-       Both of these are things that HAPPENED, not things that are - and neither
-       can be read off the balances a month ended in. That is the standing rule
-       in this codebase and these two were simply missed.
-
-       lossMonths is the sharper of the pair. planRetirement() will not scrap
-       capacity until a sector has lost money six months running, so a save that
-       forgot the streak meant reloading RESET THE CLOCK - and a player who
-       reloads every few months would never have a single building retired. A
-       save-scumming exploit hiding inside a forgotten field.
-
-       populationHistory is milder: a city growing forty a month came back
-       forecasting flat, so retail and food under-ordered until the twelve-month
-       window refilled.
-
-       Saved as a map and a list rather than flattened into arrays, because Gson
-       carries both natively and the map's keys are sector NAMES - flattening
-       would pin them to an ordinal and quietly re-key every streak the day
-       somebody reorders PolicySector.
-       ===================================================================== */
+    /*
+     * THE TWO HISTORIES, CARRIED. Both are things that HAPPENED and cannot be
+     * read off the balances a month ended in. lossMonths is the sharper: a
+     * save that forgot the streak reset the clock, a save-scumming exploit
+     * hiding inside a forgotten field. Saved as a map keyed by sector NAME.
+     */
 
     public java.util.Map<String, Integer> getLossMonthsState() {
         return new java.util.HashMap<>(lossMonths);
@@ -367,12 +281,8 @@ public class BusinessInvestment {
     public void restorePopulationHistory(java.util.List<Integer> saved) {
         populationHistory.clear();
         if (saved == null) return;
-        for (Integer p : saved) {
-            if (p != null) populationHistory.add(p);
-        }
-        while (populationHistory.size() > TREND_WINDOW) {
-            populationHistory.remove(0);
-        }
+        for (Integer p : saved) if (p != null) populationHistory.add(p);
+        while (populationHistory.size() > TREND_WINDOW) populationHistory.remove(0);
     }
 
     public int getLossMonths(String sector) {
@@ -382,57 +292,40 @@ public class BusinessInvestment {
     /**
      * Whether a sector should sell capacity, and how much.
      *
-     * @param demand      what is actually being used - customers served, people
-     *                    housed, units sold, construction points wanted
-     * @param capacity    what the sector could serve if everything ran
-     * @param unitsOf     capacity one building of the chosen type provides
-     * @return a Decision whose quantity is buildings to scrap; build is false
-     *         and reason says why not when nothing should go
+     * @param demand   what is actually being used - customers served, people
+     *                 housed, units wanted, construction points queued
+     * @param capacity what the sector could serve if everything ran
+     * @return a Decision whose quantity is buildings to scrap; build is
+     *         false and reason says why not when nothing should go
      */
-    public Decision planRetirement(String sector, BuildingType category,
-                                   double demand, double capacity,
-                                   int ordersInFlight) {
+    public Decision planRetirement(Sector sector, double demand, double capacity, int ordersInFlight) {
 
-        if (ordersInFlight > 0) {
-            return Decision.no(sector, "building, not shrinking");
-        }
+        String key = sector.key();
+        if (ordersInFlight > 0) return Decision.no(key, "building, not shrinking");
 
-        int losses = getLossMonths(sector);
+        int losses = getLossMonths(key);
         if (losses < RETIREMENT_LOSS_MONTHS) {
-            return Decision.no(sector,
-                    losses == 0 ? "profitable" : losses + " months of losses");
+            return Decision.no(key, losses == 0 ? "profitable" : losses + " months of losses");
         }
 
         if (capacity <= demand * (1 + RETIREMENT_SLACK)) {
-            return Decision.no(sector, "losing money, but nothing spare to sell");
+            return Decision.no(key, "losing money, but nothing spare to sell");
         }
 
         /*
-         * Find the biggest holding in the category - the thing there is most of
-         * is the thing to thin out, and it keeps the choice predictable.
-         *
-         * HOUSING IS THE EXCEPTION, and it had to become one. "Most of" counts
-         * BUILDINGS, and a House is one door while a studio block is eighty, so
-         * the biggest holding in a city of 16,960 studio doors and 3,123 houses
-         * is the houses - by a factor of fifteen. Measured over 240 months: the
-         * advisor demolished family doors every month it lost money, while
-         * building studios every month it did not, until family pressure stood
-         * at 3.19 households per door against 0.47 in the studios. It was
-         * shedding the only thing the city was short of.
-         *
-         * So a residential holding is only sheddable if ITS OWN segment has
-         * doors to spare. See FamilyModel's TWO SEGMENTS.
+         * The biggest holding - the thing there is most of is the thing to
+         * thin out, and it keeps the choice predictable. Housing is the
+         * exception and had to become one: "most of" counts BUILDINGS, and a
+         * House is one door while a studio block is eighty, so a landlord
+         * once demolished family doors every month it lost money while
+         * building studios every month it did not. A holding is only
+         * sheddable if the sector says so - see Sector.mayRetire().
          */
         BuildingsTemplate worst = null;
         int mostHeld = 0;
-
-        for (BuildingsTemplate template : buildingManager.getTemplatesByCategory(
-                java.util.EnumSet.of(category))) {
-
-            if (category == BuildingType.RESIDENTIAL && !hasDoorsToSpare(template)) {
-                continue;
-            }
-
+        boolean refused = false;
+        for (BuildingsTemplate template : buildingManager.getTemplatesBySector(key)) {
+            if (!sector.mayRetire(template)) { refused = true; continue; }
             int held = buildingManager.getQuantity(template.getId());
             if (held > mostHeld) {
                 mostHeld = held;
@@ -440,22 +333,12 @@ public class BusinessInvestment {
             }
         }
 
-        if (worst == null && category == BuildingType.RESIDENTIAL) {
-            return Decision.no(sector,
-                    "losing money, but every door it owns is wanted");
-        }
+        if (worst == null) return Decision.no(key, sector.noRetirementReason(false));
 
-        if (worst == null) {
-            return Decision.no(sector, "nothing left to sell");
-        }
+        double unitsEach = sector.unitsOf(worst);
+        if (unitsEach <= 0) return Decision.no(key, "nothing measurable to sell");
 
-        double unitsEach = capacityOf(worst, category);
-        if (unitsEach <= 0) {
-            return Decision.no(sector, "nothing measurable to sell");
-        }
-
-        // Never cut into what is being used. The target is demand plus the
-        // normal headroom, and the floor is whatever demand needs right now.
+        // Never cut into what is being used.
         double keepAtLeast = Math.max(demand * (1 + TARGET_HEADROOM), demand);
         double sheddable = capacity - keepAtLeast;
 
@@ -464,10 +347,12 @@ public class BusinessInvestment {
         int quantity = Math.max(0, Math.min(wanted, Math.min(gradual, mostHeld)));
 
         if (quantity <= 0) {
-            return Decision.no(sector, "losing money, but nothing spare to sell");
+            return Decision.no(key, refused && mostHeld == 0
+                    ? sector.noRetirementReason(false)
+                    : "losing money, but nothing spare to sell");
         }
 
-        return new Decision(sector, worst, quantity,
+        return new Decision(key, worst, quantity,
                 String.format("%d months of losses, %,.0f capacity against %,.0f used",
                         losses, capacity, demand),
                 true);
@@ -475,67 +360,34 @@ public class BusinessInvestment {
 
     /**
      * Whether a sector that cannot pay its way and cannot borrow should shed
-     * capacity anyway, and how much. THE RULE FOR A FIRM IN DISTRESS.
-     *
-     * planRetirement() above sells capacity a sector is not USING. It has
-     * nothing to say to a sector that is using all of it and losing money on
-     * every unit - and until 2026-09-10 neither did anything else. Heavy
-     * Industry and Mining had no retirement call at all, and Industry's could
-     * not shed its single plant, so the three of them ended a 4,000-month run
-     * at -$2.0bn, -$8.2bn and -$13.3bn of cash, owed to nobody, at no interest,
-     * with 1,740 mining wages still being paid 1,400 months after the ore ran
-     * out. A firm with no money and no lender does not keep paying wages; it
-     * lays people off, and here the jobs come with the plant.
-     *
-     * So: six months of losses, a negative balance AFTER the credit desk has
-     * had its turn (which is what says the desk refused - coverShortfall()
-     * lends up to its ceiling or not at all), and the biggest holding goes at
-     * the normal gradual rate whether or not anything is spare. It keeps going
-     * until the sector stops losing money or has nothing left - and a sector
-     * with nothing left is Game's business, see sector bankruptcy.
-     *
-     * The housing guard holds here too: an occupied home is never scrapped out
-     * from under anyone, so a distressed landlord can only shed empty doors.
+     * capacity anyway. THE RULE FOR A FIRM IN DISTRESS: the spare-capacity
+     * rule has nothing to say to a sector using all of its plant and losing
+     * money on every unit, and until 2026-09-10 neither did anything else -
+     * three sectors ended a 4,000-month run at billions of negative cash,
+     * owed to nobody, with mining wages still paid 1,400 months after the
+     * ore ran out. A firm with no money and no lender lays people off, and
+     * here the jobs come with the plant.
      *
      * @param cash the sector's balance after this month's credit settled
      */
-    public Decision planDistressRetirement(String sector, BuildingType category,
-                                           double cash, int ordersInFlight) {
+    public Decision planDistressRetirement(Sector sector, double cash, int ordersInFlight) {
 
-        if (ordersInFlight > 0) {
-            return Decision.no(sector, "building, not shrinking");
-        }
+        String key = sector.key();
+        if (ordersInFlight > 0) return Decision.no(key, "building, not shrinking");
 
-        int losses = getLossMonths(sector);
+        int losses = getLossMonths(key);
         if (losses < DISTRESS_LOSS_MONTHS) {
-            return Decision.no(sector,
-                    losses == 0 ? "profitable" : losses + " months of losses");
+            return Decision.no(key, losses == 0 ? "profitable" : losses + " months of losses");
         }
 
-        if (cash >= 0) {
-            return Decision.no(sector, "losing money, but still solvent");
-        }
+        if (cash >= 0) return Decision.no(key, "losing money, but still solvent");
 
         BuildingsTemplate worst = null;
         int mostHeld = 0;
-
-        for (BuildingsTemplate template : buildingManager.getTemplatesByCategory(
-                java.util.EnumSet.of(category))) {
-
-            if (category == BuildingType.RESIDENTIAL && !hasDoorsToSpare(template)) {
-                continue;
-            }
-            // Only plant that contributes to the sector's own measure. The
-            // Commercial Bank is a COMMERCIAL building with no coverage, and
-            // the first run of this rule had a distressed RETAIL sector scrap
-            // the city's entire branch network - the biggest holding in the
-            // category - because nothing said it was not a shop.
-            // planRetirement() refuses the same buildings one step later,
-            // through unitsEach; this refuses them at the door.
-            if (capacityOf(template, category) <= 0) {
-                continue;
-            }
-
+        for (BuildingsTemplate template : buildingManager.getTemplatesBySector(key)) {
+            if (!sector.mayRetire(template)) continue;
+            // Only plant that contributes to the sector's own measure.
+            if (sector.unitsOf(template) <= 0) continue;
             int held = buildingManager.getQuantity(template.getId());
             if (held > mostHeld) {
                 mostHeld = held;
@@ -543,436 +395,146 @@ public class BusinessInvestment {
             }
         }
 
-        if (worst == null) {
-            return Decision.no(sector, category == BuildingType.RESIDENTIAL
-                    ? "overdrawn, but every door it owns is wanted"
-                    : "overdrawn, and nothing left to sell");
-        }
+        if (worst == null) return Decision.no(key, sector.noRetirementReason(true));
 
         int quantity = Math.min(mostHeld,
                 Math.max(1, (int) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION)));
 
-        return new Decision(sector, worst, quantity,
-                String.format("%d months of losses, $%,.0fk overdrawn and no lender",
-                        losses, -cash),
-                true);
-    }
-
-    /** What one of these contributes to the measure its sector is judged on. */
-    private double capacityOf(BuildingsTemplate template, BuildingType category) {
-        switch (category) {
-            case RESIDENTIAL: return template.getCapacity();
-            case COMMERCIAL:  return template.getCoverage();
-            default:          return template.getProduction1();
-        }
-    }
-
-    /* =====================================================================
-       THE THREE SECTORS
-       ===================================================================== */
-
-    public Decision planRealEstate(int totalJobs, int housingCapacity,
-                                   double rentPrice, double cityConstructionOutput,
-                                   int ordersInFlight) {
-
-        String sector = BusinessDebtManager.REAL_ESTATE;
-
-        if (ordersInFlight >= MAX_CONCURRENT_ORDERS) {
-            return Decision.no(sector, "already building");
-        }
-
-        CommercialHandler ch = economyManager.getCommercialHandler();
-
-        /*
-         * Population is min(housing, jobs * 2.25), so housing demand IS the job
-         * market - and the job market a block of flats will open into is not the
-         * one standing when it is ordered.
-         *
-         * WHY THE JOBS ON SITE COUNT TOO. Real estate used to size against
-         * totalJobs alone, which is the number of posts that exist right now. A
-         * mill going up next door is a thousand jobs the developer can already
-         * see, and it will be staffed long before the flats are finished. Reading
-         * only today's posts means reading a figure that is out of date by the
-         * whole lead time of your own project, and it under-builds every time the
-         * city is growing - which is every time it matters. Observed in play: a
-         * city sat at 100% fill with zero vacancies and housing exactly equal to
-         * population, growing only as fast as the last building happened to land.
-         *
-         * JOBS ON SITE AND NOTHING MORE SPECULATIVE. Retail projects population
-         * forward on a trend; housing deliberately does not. A trend in
-         * population is a poor signal here because population is CAPPED by
-         * housing - so when housing is the binding constraint, the trend measures
-         * what real estate itself has already built and building against it
-         * would be reading its own echo. Jobs under construction are different:
-         * they are committed, funded and visible, and they are exactly the
-         * demand this housing will open into.
-         */
-        int jobsComing = buildingManager.getJobsUnderConstruction();
-
-        double latentDemand = (totalJobs + jobsComing) * 2.25;
-        double headShortfall = latentDemand - housingCapacity * (1 + TARGET_HEADROOM);
-
-        /* -------------------------------------------------------------------
-         * TWO REASONS TO BUILD, AND HEADS IS ONLY ONE OF THEM.
-         *
-         * This used to stop here if the city had room for everyone, counted in
-         * HEADS. A city can have room for everyone and still have nowhere for a
-         * family to live: measured on slot 7, 15,270 households needed a door
-         * of size three or more, 5,107 existed, and about 25,000 studios stood
-         * empty. Head capacity said the city was comfortable. Ten thousand
-         * families were doubled up.
-         *
-         * So a shortage of family doors is its own reason to build, and it is
-         * a reason that does not go away by building more studios - which is
-         * exactly the trap the old gate walked into, because a studio block is
-         * the cheapest heads per dollar in the game.
-         * ------------------------------------------------------------------- */
-        double familyShortfall = doorShortfall(ch, true);
-
-        if (headShortfall <= 0 && familyShortfall <= 0) {
-            return Decision.no(sector, String.format(
-                    "housing ahead of jobs (%d now, %d coming)", totalJobs, jobsComing));
-        }
-
-        BuildingsTemplate best = null;
-        double bestScore = 0, bestDoors = 0;
-        String blocked = null;
-
-        for (BuildingsTemplate t : buildingManager.getTemplatesByCategory(
-                java.util.EnumSet.of(BuildingType.RESIDENTIAL))) {
-
-            if (t.getCapacity() <= 0) continue;
-
-            /*
-             * WHAT IT WOULD ACTUALLY LET, not what it holds.
-             *
-             * The old line was `capacity * rentPrice` - the rent a block would
-             * collect if it were full - which is a fact about the building and
-             * not about the city it is going into. It made a studio block worth
-             * eighty rents in a city of families who are not allowed to live in
-             * one, and since a studio is also the cheapest capacity per dollar,
-             * the studio won every month for ever. That is the whole of how a
-             * city ends up with 25,000 spare studios.
-             */
-            double doors = fillableDoors(ch, t, headShortfall);
-            if (doors <= 0) {
-                blocked = "nobody the city has could live in one";
-                continue;
-            }
-
-            double price = priceForSegment(ch, t);
-
-            /* -----------------------------------------------------------------
-             * TWO QUESTIONS, AND THEY ARE NOT THE SAME QUESTION.
-             *
-             * WHETHER to build is asked at FULL OCCUPANCY: a block let out
-             * pays this much, and if that does not cover what the block costs
-             * to hold then no version of it is worth putting up. Jerus: "theyll
-             * rent at zero profit, but they wont build more if new rent is zero
-             * profit."
-             *
-             * WHICH to build is asked on the doors the city would actually put
-             * somebody in - a studio block is worth eighty rents in a city of
-             * single adults and nothing in a city of families, which is the
-             * whole of why there are three residential templates.
-             *
-             * Asking BOTH on fillable doors was a mistake worth recording: a
-             * city one household short of comfortable fills a fraction of a
-             * door, so every template failed the hurdle by two orders of
-             * magnitude and the city stopped building housing entirely - six
-             * homes and forty-seven residents at month 240. A shortage measured
-             * in doors is the right way to CHOOSE and the wrong way to JUDGE.
-             * ----------------------------------------------------------------- */
-            double hurdle = economyManager.housingBuildHurdle(t);
-            if (hurdle > 0 && t.getCapacity() * price < hurdle) {
-                blocked = String.format("rent does not cover a new %s", t.getName());
-                continue;
-            }
-
-            double income = doors * FamilyModel.rentWeightOf(t.homeSize()) * price;
-
-            double cost = totalCostOf(t, 1);
-            if (cost <= 0) continue;
-
-            double score = income / cost;
-            if (score > bestScore) {
-                bestScore = score;
-                best = t;
-                bestDoors = doors;
-            }
-        }
-
-        if (best == null) {
-            return Decision.no(sector,
-                    blocked != null ? blocked : "nothing worth building");
-        }
-
-        /*
-         * SIZED ON WHICHEVER SHORTAGE IS THE BIGGER. A city short of heads
-         * sizes on heads; a city with heads to spare and no family doors sizes
-         * on the doors it is short, converted to the capacity they carry.
-         */
-        double byHeads = latentDemand - housingCapacity;
-        double byDoors = bestDoors * FamilyModel.rentWeightOf(best.homeSize());
-        int quantity = orderSize(Math.max(byHeads, byDoors),
-                best.getCapacity(), best, cityConstructionOutput);
-
-        if (quantity <= 0) {
-            return Decision.noLand(sector, landReason(best));
-        }
-
-        return new Decision(sector, best, quantity,
-                familyShortfall > 0 && headShortfall <= 0
-                        ? String.format("%,.0f households need a door a child is allowed in",
-                                familyShortfall)
-                        : String.format("%,.0f unhoused demand against %,d units",
-                                byHeads, housingCapacity),
+        return new Decision(key, worst, quantity,
+                String.format("%d months of losses, $%,.0fk overdrawn and no lender", losses, -cash),
                 true);
     }
 
     /* =====================================================================
-       THE TWO SEGMENTS, FROM THE ADVISOR'S SIDE
+       THE MAKER'S RULE - the default Sector.plan()
 
-       Doors of size one and two can take an adults-only household of one or
-       two and nobody else; doors of size three and up can take anyone. See
-       FamilyModel's TWO SEGMENTS note, which is where the rule lives.
+       IndustrialHandler's planner, generalised: demand for the good against
+       capacity and pipeline, the price against cost, the best template by
+       income over cost, the order sized to the gap.
        ===================================================================== */
 
-    /**
-     * Whether the segment this residential template belongs to has spare doors.
-     *
-     * The one thing standing between "the company is losing money" and "the
-     * company demolishes the houses the city is short of". A glut in one
-     * segment says nothing about the other, which is the entire reason the two
-     * are counted apart.
-     */
-    private boolean hasDoorsToSpare(BuildingsTemplate template) {
-        CommercialHandler ch = economyManager.getCommercialHandler();
-        if (ch == null) return true;   // nothing to read: behave as before
-        boolean family = template.homeSize() > FamilyModel.STUDIO_MAX_SIZE;
-        return doorShortfall(ch, family) < 0;
-    }
+    public Decision planMaker(Sector sector, Game game) {
 
-    /**
-     * The head shortage planRealEstate() would see if it were asked right now.
-     *
-     * estimatedMonthlyProfit() is called from the credit check rather than
-     * from the planner, so it does not have the planner's local figures - but
-     * it must value a building the same way or the lender and the buyer are
-     * looking at two different buildings. Recomputed from the same two inputs
-     * rather than cached, because a cached one would be a figure about a
-     * different month.
-     */
-    private double latentHeadShortfall() {
-        int standing = 0;
-        for (int n : buildingManager.getTotalJobs()) standing += n;
-        double latent = (standing + buildingManager.getJobsUnderConstruction()) * 2.25;
-        return latent - buildingManager.getTotalHouseCapacity() * (1 + TARGET_HEADROOM);
-    }
+        String key = sector.key();
+        Good good = sector.planningGood();
+        if (good == null || !good.traded()) return Decision.no(key, "nothing to plan for");
 
-    /** Households in one segment with no door of their own, or fewer than none. */
-    private double doorShortfall(CommercialHandler ch, boolean family) {
-        if (ch == null) return 0;
-        return family
-                ? ch.getFamilySeekers() - ch.getFamilyHomes()
-                : ch.getStudioSeekers() - ch.getStudioHomes();
-    }
-
-    /**
-     * How many of this template's doors the city would actually put somebody in.
-     *
-     * A studio can only ever take a studio-seeker. A family unit takes a family
-     * first and then, if there are studio-seekers still short, one of those -
-     * which is what really happens in the model, because house() lets a single
-     * adult into a house once the studios have run out.
-     *
-     * Capped at what the building HAS, so a city short of ten thousand doors
-     * does not value a single block as if it solved the whole shortage.
-     *
-     * PLUS THE PEOPLE WHO HAVE NOT ARRIVED YET, and it does not work without
-     * them. Today's shortfall is a count of households that already live here,
-     * and a city whose jobs are about to double has none of them yet - so
-     * every template scored zero, nothing was ever built, and the city sat at
-     * five residents and no homes for four decades. The heads the job market
-     * is short are split between the segments in the proportion the city's
-     * OWN households take, because arrivals look like the place they arrive
-     * at, and then divided by the size of this unit to turn heads into doors.
-     */
-    private double fillableDoors(CommercialHandler ch, BuildingsTemplate t,
-                                 double headShortfall) {
-
-        int units = t.getDwellings() > 0
-                ? t.getDwellings()
-                : Math.max(1, t.getCapacity() / 4);
-
-        boolean family = t.homeSize() > FamilyModel.STUDIO_MAX_SIZE;
-
-        double studioNeeded = doorsNeeded(ch, false, headShortfall);
-
-        if (!family) {
-            return Math.min(units, studioNeeded);
+        if (buildingManager.getUnderConstructionBySector(key) >= MAX_CONCURRENT_ORDERS) {
+            return Decision.no(key, "already building");
         }
-        return Math.min(units, doorsNeeded(ch, true, headShortfall) + studioNeeded);
-    }
 
-    /**
-     * Doors one segment is short: households here with nowhere, plus the ones
-     * the job market is about to bring.
-     *
-     * HEADS BECOME DOORS AT THE SEGMENT'S OWN HOUSEHOLD SIZE, and that is the
-     * whole of this method. The first version divided the coming heads by the
-     * size of the UNIT, which is a different thing entirely and quietly said
-     * that a hundred arriving residents need fifty studios or seventeen
-     * six-person houses. A studio does not hold two arbitrary people; it holds
-     * one adults-only household, and there are only ever as many of those as
-     * the city's household mix says. Measured with the unit-size version:
-     * studio doors went 1,840 -> 10,000 -> 24,480 over twenty-four months
-     * while family doors froze at 5,863 and family pressure climbed to 1.68.
-     * The old bug in new clothes.
-     */
-    private double doorsNeeded(CommercialHandler ch, boolean family,
-                               double headShortfall) {
+        GoodsMarket market = economyManager.getMarkets().get(good);
+        double price = market.getLocalPrice();
+        double costPerUnit = knownCost(sector.getCostPerUnit(good));
+        double output = game.getConstructionOutput();
 
         /*
-         * THE SHORTFALL IS SIGNED, and that is the half that was missing.
-         *
-         * A segment with spare doors reads as a NEGATIVE shortfall, and the
-         * demand that has not arrived yet has to be netted against it - the
-         * arrivals will move into the empty flats that are already standing.
-         * Flooring the shortfall at zero first threw that away: a city with
-         * thirteen thousand spare studios still scored a new studio block on
-         * the arrivals alone, so it kept building them. Measured: 24,480
-         * studio doors at 0.47 households per door beside 5,863 family doors
-         * at 1.68, in the same city, in the same month.
+         * WHAT IS ALREADY COMING COUNTS AS SUPPLY. Without the pipeline the
+         * sector orders for the same shortage every month until the first
+         * plant opens, and the price makes that fatal: supply at twice
+         * demand halves the price, the sector goes under water, the plants
+         * retire, the shortage returns, and it starts again.
          */
-        double here = doorShortfall(ch, family);
-        if (headShortfall <= 0 || ch == null) return Math.max(0, here);
+        double currentOutput = sector.getCapacity(good) + sector.getPipeline(good);
 
-        double heads = ch.getStudioSeekerHeads() + ch.getFamilySeekerHeads();
-        double share = heads > 0
-                ? (family ? ch.getFamilySeekerHeads() : ch.getStudioSeekerHeads()) / heads
-                : .5;   // a city with no households yet: split it evenly
-
-        double coming = headShortfall * share
-                / Math.max(1, ch.averageHouseholdSize(family));
-
-        return Math.max(0, here + coming);
-    }
-
-    /** The price the segment this template belongs to is charging. */
-    private double priceForSegment(CommercialHandler ch, BuildingsTemplate t) {
-        if (ch == null) return 0;
-        return t.homeSize() <= FamilyModel.STUDIO_MAX_SIZE
-                ? ch.getStudioRentPrice()
-                : ch.getRentPrice();
-    }
-
-    /**
-     * Whether to open another bank branch.
-     *
-     * ITS OWN PLANNER, AND THAT IS THE POINT. A branch first lived inside
-     * planRetail() as an early return, which meant that in every month the city
-     * wanted one the shop planner never ran at all - and since a young city
-     * with any debt and no bank wants one from month one, and cannot service
-     * the loan for it until it has some trade, retail simply stopped building.
-     * Measured over four thousand months: two houses, and a city stuck at 20%
-     * unemployment with families sleeping nowhere. A decision that can block
-     * every other decision in its sector is not a decision, it is a deadlock.
-     *
-     * So it is asked separately and answered separately. It is still the RETAIL
-     * sector's money - a bank is a commercial building and its jobs and upkeep
-     * land in commercial's books, which is stated in MoneyAudit - but it no
-     * longer spends retail's one decision a month.
-     *
-     * Built on the STRAIN and slightly ahead of the premium rather than once the
-     * bill has arrived: a branch takes months to put up, so an advisor that
-     * waited for the premium would pay it for the whole of the lead time every
-     * time. See Bank.BUILD_AT_STRAIN. A city comfortably inside its own deposits
-     * does not fire this.
-     *
-     * FINANCED LIKE EVERYTHING ELSE, too. The first version required the sector
-     * to hold the whole cost in cash, which meant the city that needed a branch
-     * most - one whose credit had gone dear - was the one that could not have
-     * one. consider() borrows the difference when the building services its own
-     * debt, and estimatedMonthlyProfit() now prices a branch so it can.
-     */
-    public Decision planBank() {
-
-        String sector = BusinessDebtManager.RETAIL;
-
-        if (bank == null) return Decision.no(sector, "no bank");
+        // No point adding capacity to sell below cost.
+        if (costPerUnit > 0 && price <= costPerUnit) return Decision.no(key, "price below cost");
 
         /*
-         * "Already building" asked about BANKS, not about commerce.
+         * DEMAND is what the market wanted last month, and what the city
+         * actually consumed - local units taken plus what was imported to
+         * make up the difference - is a floor on it. A projection can be
+         * wrong; last month's consumption happened.
          *
-         * The category-wide guard every other planner uses is right for shops,
-         * which compete with each other for the same customers. It is wrong
-         * here: a grocery store going up somewhere in the city is not a reason
-         * to leave the whole city unbanked, and because a busy city almost
-         * always has some commercial site open, that guard alone kept a city
-         * with $5.8B of loans from ever ordering the one building that would
-         * have made them cheaper.
+         * THE WORLD IS NOT DEMAND. The first draft of this rule let a maker
+         * whose good the world buys count the export price as a reason to
+         * build - "a good exportable above cost is never ahead of demand" -
+         * and the first probe city built FIFTY-ONE food plants in three
+         * years, every one of them shipping its whole nameplate abroad at
+         * the floor and every one of them losing money on the property tax
+         * and the repairs the per-unit cost does not carry. Exporting spare
+         * nameplate is what a plant does with a slack month (see
+         * Sector.getExportBoundOutput); it is not what a plant is built for.
+         * A sector that IS a price-taking exporter - the mines, the mills -
+         * overrides plan() and says so.
          */
-        if (buildingManager.underConstructionByName("Commercial Bank") > 0) {
-            return Decision.no(sector, "a branch is already going up");
-        }
-        if (!bank.wantsBranch()) {
-            return Decision.no(sector, bank.getBranches() <= 0
-                    ? "nobody is borrowing yet"
-                    : String.format("the bank is %.0f%% lent out - room enough",
-                            bank.strain() * 100));
-        }
-
-        BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
-        if (branch == null) return Decision.no(sector, "no branch to build");
-
-        return new Decision(sector, branch, 1, bank.getBranches() <= 0
-                ? "nowhere in the city to bank - credit is at the punitive rate"
-                : String.format("the bank is %.0f%% lent out - opening a branch",
-                        bank.strain() * 100),
-                true);
-    }
-
-    public Decision planRetail(int population, int storeCoverage,
-                               double cityConstructionOutput, int ordersInFlight) {
-
-        String sector = BusinessDebtManager.RETAIL;
-
-        if (ordersInFlight >= MAX_CONCURRENT_ORDERS) {
-            return Decision.no(sector, "already building");
-        }
-
-        CommercialHandler ch = economyManager.getCommercialHandler();
+        /*
+         * ...AND SMOOTHED OVER A YEAR, since the first probe. Material is
+         * drawn on order, so the founding month's two hundred houses read as
+         * three thousand units a month of demand, the seventh sector ordered
+         * a $60M plant against it, and the plant sat on site for five years
+         * behind those very houses while the sector borrowed its interest.
+         * See GoodsMarket.getDemandTrend(): a year's average of the larger
+         * of what was wanted and what was taken.
+         *
+         * AND NEVER MORE THAN THIS MONTH. A year's average carries a burst
+         * for a year: the same city's first plant, once built, read a
+         * trend of two hundred a month off one month of twelve hundred, and
+         * ordered a second plant while the current month wanted twenty-nine.
+         * A maker expands when demand is high AND has been high; either
+         * alone is a burst or a memory of one.
+         */
+        double demand = forecast(sector, market);
 
         BuildingsTemplate best = null;
         double bestScore = 0;
         double demandAtOpening = 0;
 
-        for (BuildingsTemplate t : buildingManager.getTemplatesByCategory(
-                java.util.EnumSet.of(BuildingType.COMMERCIAL))) {
+        /*
+         * THE FORECAST IS CAPPED BY WHERE THE PEOPLE COULD LIVE, exactly as
+         * retail's is (see Retail.plan and reachablePopulation()): a young
+         * city's trend is a step read as a rate, and a lead time with no
+         * builders behind it is infinite. The first probe city, at month
+         * three, with its works yard not yet staffed, forecast "Infinity
+         * units a month against 0 made" and ordered two hundred and
+         * ninety-eight food plants - every plot it owned. The demand a
+         * maker plans against can grow by at most the ratio of the people
+         * the city could house to the people it has.
+         */
+        double pop = populationHistory.isEmpty() ? 0 : populationHistory.get(populationHistory.size() - 1);
+        double growthCap = pop > 0 ? Math.max(1, reachablePopulation() / pop) : 1;
 
-            if (t.getCoverage() <= 0) continue;
+        for (BuildingsTemplate t : buildingManager.getTemplatesBySector(key)) {
+            if (t.makes(good) <= 0) continue;
 
-            double months = leadTime(t, 1, cityConstructionOutput) + PLANNING_HORIZON;
-
-            // Capped at what the city could actually house - see
-            // reachablePopulation(). Without the cap a plateaued city forecasts
-            // its way to seventeen times the coverage anyone can shop in.
-            double projected = Math.min(
-                    population + getPopulationGrowth() * months,
-                    Math.max(population, reachablePopulation()));
-
-            if (projected <= storeCoverage * (1 + TARGET_HEADROOM)) {
-                continue;
+            /*
+             * A FIRST PLANT HAS TO HAVE SOMETHING TO DO. A sector with nothing
+             * running would build against any demand at all - one unit a
+             * month clears "ahead of zero" - and a materials plant is 160
+             * units, 250 staff and $60M. It was built for a city drawing
+             * thirty a month and lost money every month it stood. Each
+             * sector says what share of a plant's nameplate the city has to
+             * be taking before its first one is worth sinking; the default is
+             * none, which is what the food industry has always done.
+             */
+            if (currentOutput <= 0 && demand < t.makes(good) * sector.firstPlantUtilisation()) {
+                return Decision.no(key, String.format("%,.0f %s/mo is not enough for a first %s",
+                        demand, good.unit() + "s", t.getName()));
             }
 
-            // Gross margin on a full store: every covered customer buys a unit a
-            // month at the retail price, bought in at the market price.
-            double margin = ch.getStoreSellPrice() - ch.getFoodPrice();
-            double monthlyIncome = t.getCoverage() * margin;
+            double lead = leadTime(t, 1, output);
+            if (lead == Double.MAX_VALUE) return Decision.no(key, "nobody to build it");
+            /*
+             * AND NOT A PLANT THE BUILDERS COULD NOT FINISH INSIDE A YEAR.
+             * A materials plant is 9,000 points; a founding city's works
+             * yard does four hundred a month with a queue in front of it.
+             * The sector would pay interest on the whole price for two
+             * years before it earned a cent, and it did - it was written
+             * down in year four with the plant still on site. The builders
+             * expand off their own backlog (see sectors.Construction), and
+             * the city grows into the plant.
+             */
+            if (lead > MAX_ORDER_MONTHS) {
+                return Decision.no(key, String.format("%s would take %.0f months to build", t.getName(), lead));
+            }
+            double months = lead + PLANNING_HORIZON;
+            double projected = demand * Math.min(growthCap, Math.max(1, 1 + growthShare() * months));
 
+            if (projected <= currentOutput * (1 + TARGET_HEADROOM)) continue;
+
+            double monthlyIncome = sector.estimatedMonthlyProfit(t, this);
             double cost = totalCostOf(t, 1);
-            if (cost <= 0) continue;
+            if (cost <= 0 || monthlyIncome <= 0) continue;
 
             double score = monthlyIncome / cost;
             if (score > bestScore) {
@@ -982,369 +544,153 @@ public class BusinessInvestment {
             }
         }
 
-        if (best == null) {
-            return Decision.no(sector, "coverage ahead of demand");
-        }
+        if (best == null) return Decision.no(key, "output ahead of demand");
 
-        int quantity = orderSize(demandAtOpening - storeCoverage,
-                best.getCoverage(), best, cityConstructionOutput);
-
-        if (quantity <= 0) {
-            return Decision.noLand(sector, landReason(best));
-        }
-
-        return new Decision(sector, best, quantity,
-                String.format("%,.0f customers forecast against %,d covered",
-                        demandAtOpening, storeCoverage),
-                true);
-    }
-
-    public Decision planIndustry(int population, int storeCoverage,
-                                 double currentOutput, double cityConstructionOutput,
-                                 int ordersInFlight) {
-        return planIndustry(population, storeCoverage, currentOutput,
-                cityConstructionOutput, ordersInFlight, 0);
-    }
-
-    /**
-     * @param importedUnits what the shops had to buy abroad last month.
-     *
-     * DEMAND THIS SECTOR DID NOT SERVE, BY DEFINITION - and leaving it out was
-     * a real hole rather than a refinement. The projection below is built from
-     * customers and from a population trend, and in a city whose population is
-     * falling it can come out BELOW what the city is actually eating. Measured:
-     * a city importing 1,700 units of food a month, every month, while the
-     * advisor declined to build with the words "output ahead of demand" and a
-     * POSITIVE profit estimate on the building it was declining.
-     *
-     * That single line is why a devaluation could not make a city industrialise.
-     * Import substitution is the entire adjustment mechanism a currency is
-     * supposed to have - imports get dear, so you make it yourself - and the
-     * private sector could not see the imports.
-     *
-     * What it left instead was adjustment by CONTRACTION: the city shrank until
-     * it no longer needed what it could not afford. Measured over fifteen years,
-     * a shocked city and an unshocked one both reached zero imports the same
-     * way, by losing 40% of their people.
-     */
-    public Decision planIndustry(int population, int storeCoverage,
-                                 double currentOutput, double cityConstructionOutput,
-                                 int ordersInFlight, double importedUnits) {
-
-        String sector = BusinessDebtManager.INDUSTRY;
-
-        if (ordersInFlight >= MAX_CONCURRENT_ORDERS) {
-            return Decision.no(sector, "already building");
-        }
-
-        IndustrialHandler ih = economyManager.getIndustrialHandler();
-        FoodMarket market = economyManager.getFoodMarket();
-
-        double costPerUnit = costPerUnit(ih);
-        double price = market.getLocalPrice();
-
+        int quantity = orderSize(demandAtOpening - currentOutput, best.makes(good), best, output);
+        if (quantity <= 0) return Decision.noLand(key, landReason(best));
         /*
-         * WHAT IS ALREADY COMING COUNTS AS SUPPLY.
-         *
-         * Everything below asks "does the city make enough", and without this it
-         * asks it of the plants that are FINISHED while ignoring the ones its
-         * own previous answer put on site. So it orders for the same shortage
-         * every month until the first of them opens.
-         *
-         * The price makes that fatal rather than merely wasteful.
-         * FoodMarket prices on demand/supply, so supply at twice demand halves
-         * the local price - from $0.200 to $0.100 against a cost of $0.162.
-         * Overbuild by a factor of two and the whole sector is under water, the
-         * plants retire, the shortage returns, and it starts again. Measured at
-         * 1 -> 3 -> 4 -> 2 -> 1 plants over fifteen years, with the city
-         * importing throughout.
+         * A FIRST PLANT IS ONE PLANT. A sector with nothing running has no
+         * month of its own to size an order by; the first long run's
+         * seventh sector opened with three at once against a burst, and
+         * sold all three back inside a year. It builds one, runs it, and
+         * comes back for more with a record.
          */
-        double pipeline = buildingManager.productionUnderConstruction(BuildingType.INDUSTRIAL);
-        currentOutput += pipeline;
+        if (currentOutput <= 0) quantity = 1;
 
-        // No point adding capacity to sell below cost - that is the same test
-        // industry already applies when deciding whether to release stock.
-        if (costPerUnit > 0 && price <= costPerUnit) {
-            return Decision.no(sector, "price below cost");
-        }
-
-        BuildingsTemplate best = null;
-        double bestScore = 0;
-        double demandAtOpening = 0;
-
-        for (BuildingsTemplate t : buildingManager.getTemplatesByCategory(
-                java.util.EnumSet.of(BuildingType.INDUSTRIAL))) {
-
-            if (t.getProduction1() <= 0) continue;
-
-            double months = leadTime(t, 1, cityConstructionOutput) + PLANNING_HORIZON;
-
-            // The stores buy roughly one unit per covered customer per month, so
-            // demand tracks whichever of coverage and population is smaller.
-            double projectedCustomers = Math.min(storeCoverage,
-                    Math.min(population + getPopulationGrowth() * months,
-                             Math.max(population, reachablePopulation())));
-
-            /*
-             * WHAT THE CITY ACTUALLY ATE is a floor on demand, and it is
-             * OBSERVED rather than forecast: local output plus whatever the
-             * shops imported to make up the difference. A projection can be
-             * wrong; last month's consumption happened.
-             */
-            /*
-             * ...AND IT IS WHAT WAS SOLD, NOT WHAT COULD HAVE BEEN MADE. The
-             * first version added the imports to currentOutput - the
-             * NAMEPLATE - so any import at all put "consumption" above
-             * capacity and the test below passed, however many plants stood
-             * idle. Measured after the mills learned to idle: nine plants for
-             * 10,500 units of demand, an eleventh ordered, payroll 1,658
-             * against 1,170 of revenue at the import ceiling. What the city
-             * ate is the local units the shops actually took plus what they
-             * imported; a plant that made nothing fed nobody.
-             */
-            double consumed = ih.getProductsSoldCopy() + Math.max(0, importedUnits);
-            if (Math.max(projectedCustomers, consumed) <= currentOutput * (1 + TARGET_HEADROOM)) {
-                continue;
-            }
-
-            double margin = price - costPerUnit;
-            double monthlyIncome = t.getProduction1() * margin;
-
-            double cost = totalCostOf(t, 1);
-            if (cost <= 0) continue;
-
-            double score = monthlyIncome / cost;
-            if (score > bestScore) {
-                bestScore = score;
-                best = t;
-                demandAtOpening = projectedCustomers;
-            }
-        }
-
-        if (best == null) {
-            return Decision.no(sector, "output ahead of demand");
-        }
-
-        int quantity = orderSize(demandAtOpening - currentOutput,
-                best.getProduction1(), best, cityConstructionOutput);
-
-        if (quantity <= 0) {
-            return Decision.noLand(sector, landReason(best));
-        }
-
-        return new Decision(sector, best, quantity,
+        double pipeline = sector.getPipeline(good);
+        return new Decision(key, best, quantity,
                 pipeline > 0
-                        ? String.format("%,.0f units/mo forecast against %,.0f made and %,.0f coming",
-                                demandAtOpening, currentOutput - pipeline, pipeline)
-                        : String.format("%,.0f units/mo forecast against %,.0f made",
-                                demandAtOpening, currentOutput),
+                        ? String.format("%,.0f %s/mo forecast against %,.0f made and %,.0f coming",
+                                demandAtOpening, good.unit() + "s", currentOutput - pipeline, pipeline)
+                        : String.format("%,.0f %s/mo forecast against %,.0f made",
+                                demandAtOpening, good.unit() + "s", currentOutput),
                 true);
     }
 
     /**
-     * The construction sector's own capacity planning.
-     *
-     * Everyone else's lead times are its output, so when the queue gets long it
-     * is the constraint on the whole city. Before it earned revenue there was
-     * nothing it could have paid for expansion with; now there is.
-     *
-     * Measured as months of backlog rather than demand, because construction's
-     * demand IS the backlog - the work already ordered and not yet done.
+     * The demand a maker plans against: the smaller of the trend and this
+     * month (high AND been high - see planMaker), and no more than the
+     * sector can see on its customers' books over the months the trend
+     * looks back (Good.planningMonths - and WILL stay high, for a sector
+     * whose customers order ahead; see Sector.visibleDemandOver). One
+     * figure for the planner and the profit estimate both, since 2026-09-11:
+     * the estimate used to price a plant's whole nameplate at home against
+     * the raw trend while the planner had already halved it, and the
+     * seventh sector built on the estimate.
      */
-    public Decision planConstruction(double remainingPoints, double cityConstructionOutput,
-                                     int ordersInFlight) {
+    public double forecast(Sector sector, GoodsMarket market) {
+        double read = Math.min(market.getDemandTrend(),
+                Math.max(market.getDemand(), market.getLocalFilled() + market.getImported()));
+        return Math.min(read, sector.visibleDemandOver(market.good().planningMonths(), economyManager));
+    }
 
-        String sector = BusinessDebtManager.CONSTRUCTION;
+    /** The population trend as a share a month, for projecting a good's demand forward. */
+    private double growthShare() {
+        double pop = populationHistory.isEmpty() ? 0 : populationHistory.get(populationHistory.size() - 1);
+        return pop > 0 ? getPopulationGrowth() / pop : 0;
+    }
 
-        if (ordersInFlight >= MAX_CONCURRENT_ORDERS) {
-            return Decision.no(sector, "already building");
+    /**
+     * A break-even that a sector with nothing running cannot state. Producing
+     * nothing returns MAX_VALUE, which would block the city's FIRST plant
+     * forever; with no output there is no cost basis yet, so that case is
+     * no known cost rather than an impossible one.
+     */
+    private static double knownCost(double raw) {
+        return (raw == Double.MAX_VALUE || raw < 0 || !Double.isFinite(raw)) ? 0 : raw;
+    }
+
+    /**
+     * What one of a maker's templates would clear a month: every good it
+     * makes, at the price it would actually get for it, less the inputs it
+     * uses at theirs, at the rate the sector's plants actually run, less
+     * what the building costs to run. Net of the plant's own payroll, power
+     * and water - the interest test is struck on the margin, and a gross
+     * figure said a mine earned $672k a month when it earned $276k.
+     *
+     * WHAT IT WOULD ACTUALLY GET, since 2026-09-11: the city's own take of
+     * the good, over what the sector already makes, at the local price -
+     * and the rest of the nameplate abroad, at the export price, if the
+     * world buys it. The first draft priced the whole nameplate at the
+     * local price, and a materials plant in a city drawing sixty units a
+     * month was forecast to sell a hundred and sixty of them at home; it
+     * sold sixty, exported the rest at a floor under its payroll, and was
+     * written down twenty-three times in one run. A mine is unchanged by
+     * this: it sells every tonne abroad and the local price of ore with no
+     * mills to buy it IS the export price.
+     */
+    public double estimatedMakerProfit(Sector sector, BuildingsTemplate t) {
+        Markets markets = economyManager.getMarkets();
+        double gross = 0;
+        for (java.util.Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+            Good g = e.getKey();
+            if (!g.traded()) continue;
+            GoodsMarket m = markets.get(g);
+            double units = e.getValue();
+            double room = Math.max(0, forecast(sector, m) - sector.getCapacity(g) - sector.getPipeline(g));
+            double atHome = Math.min(units, room);
+            double abroad = g.exportable() ? units - atHome : 0;
+            gross += atHome * m.getLocalPrice() + abroad * Math.max(0, m.exportPrice());
         }
-
-        double backlogMonths = (cityConstructionOutput > 0)
-                ? remainingPoints / cityConstructionOutput
-                : Double.MAX_VALUE;
-
-        if (backlogMonths < BACKLOG_MONTHS_BEFORE_EXPANDING) {
-            return Decision.no(sector,
-                    String.format("%.1f months of work queued", backlogMonths));
+        double inputs = 0;
+        for (java.util.Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+            Good g = e.getKey();
+            if (!g.traded()) continue;
+            inputs += e.getValue() * markets.get(g).getLocalPrice();
         }
+        return (gross - inputs) * operatingRateOf(sector.getOperatingRate())
+                - runningCostOf(t) - standingCostOf(sector, t);
+    }
 
-        // Only the depot adds construction output; the materials plant makes
-        // materials, which is a different bottleneck and not this decision.
-        BuildingsTemplate best = null;
-        double bestScore = 0;
-
-        for (BuildingsTemplate t : buildingManager.getTemplatesByCategory(
-                java.util.EnumSet.of(BuildingType.CONSTRUCTION))) {
-
-            if (t.getProduction1() <= 0) continue;
-
-            double cost = totalCostOf(t, 1);
-            if (cost <= 0) continue;
-
-            double score = t.getProduction1() / cost;
-            if (score > bestScore) {
-                bestScore = score;
-                best = t;
-            }
-        }
-
-        if (best == null) {
-            return Decision.no(sector, "nothing that adds capacity");
-        }
-
-        // Construction is not exempt from land. A city that has run out cannot
-        // expand its builders either, which is the trap worth having: the way
-        // out of a construction bottleneck runs through the land the player
-        // has not bought.
-        if (plotsAvailableFor(best) < 1) {
-            return Decision.noLand(sector, landReason(best));
-        }
-
-        return new Decision(sector, best, 1,
-                String.format("%.1f months of work queued", backlogMonths),
-                true);
+    /**
+     * What a building costs its owner just for standing: the repairs and
+     * the property tax, at today's prices and the sector's own rate. Not
+     * in runningCostOf() because the bank's branch is priced there too and
+     * the bank pays its repairs a different way; every sector's plant pays
+     * these two on its statement whatever it makes.
+     */
+    public double standingCostOf(Sector sector, BuildingsTemplate t) {
+        double materialPrice = Math.max(0, buildingManager.getConstructionMaterialPrice());
+        double structure = t.getCashCost() + t.getConstructionMaterials() * materialPrice;
+        double repairs = structure * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
+        double assessed = structure + t.getLandSqFt() * Math.max(0, economyManager.getLandPricePerSqFt());
+        double tax = assessed * economyManager.getTaxPolicy().effectiveMonthlyPropertyRate(sector);
+        return repairs + tax;
     }
 
     /* =====================================================================
-       THE TWO SECTORS NOBODY USED TO BUILD
-
-       Heavy industry has existed since the steel pass and the investment
-       engine has never once considered it - only housing, retail, industry
-       and construction were ever planned. That was defensible while a mill
-       cleared a quarter of a percent a month: there was nothing to invest in.
-       With local ore there is, and a sector nobody can invest in is a sector
-       that only ever grows when the player builds it by hand.
+       THE BANK'S BRANCH - not a sector, so its planner lives here
        ===================================================================== */
 
     /**
-     * Whether to build another steel mill.
-     *
-     * The signal is the ore price. A mill's margin is the gap between what
-     * steel sells for and what its raw material costs, and that second number
-     * now moves: cheap local ore makes mills worth building, dear ore or none at
-     * all leaves them exactly as marginal as they have always been.
-     *
-     * @param oreDemand what the existing mills already want, in tonnes
-     * @param oreSupply what the mines can lift, in tonnes
+     * Whether to open another bank branch. ITS OWN PLANNER: a branch first
+     * lived inside the shops' decision as an early return, and a young city
+     * that wanted one and could not afford it simply stopped building shops.
+     * It is still RETAIL's money - a bank is a commercial building - but it
+     * no longer spends retail's one decision a month. Built on the STRAIN
+     * and slightly ahead of the premium, see Bank.BUILD_AT_STRAIN.
      */
-    public Decision planHeavyIndustry(double oreDemand, double oreSupply,
-                                      double cityConstructionOutput, int ordersInFlight) {
+    public Decision planBank() {
 
-        String sector = BusinessDebtManager.HEAVY_INDUSTRY;
+        String sector = economyManager.getSectors().retail().key();
 
-        if (ordersInFlight >= MAX_CONCURRENT_ORDERS) {
-            return Decision.no(sector, "already building");
+        if (bank == null) return Decision.no(sector, "no bank");
+
+        if (buildingManager.underConstructionByName("Commercial Bank") > 0) {
+            return Decision.no(sector, "a branch is already going up");
+        }
+        if (!bank.wantsBranch()) {
+            return Decision.no(sector, bank.getBranches() <= 0
+                    ? "nobody is borrowing yet"
+                    : String.format("the bank is %.0f%% lent out - room enough", bank.strain() * 100));
         }
 
-        /*
-         * Only build into ore that exists.
-         *
-         * A mill can always fall back on imported scrap, so nothing stops it
-         * being built - but on scrap alone it earns almost nothing, and a
-         * sector that expands on a business case it does not have is the
-         * borrowing spiral this whole file was written to end. Requiring spare
-         * local ore also gives the two sectors an order: mines first, mills
-         * after, which is the cluster the ore market was designed to reward.
-         */
-        double spareOre = oreSupply - oreDemand;
-        if (spareOre <= 0) {
-            return Decision.no(sector, "no spare local ore to smelt");
-        }
+        BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
+        if (branch == null) return Decision.no(sector, "no branch to build");
 
-        BuildingsTemplate best = null;
-        double bestScore = 0;
-
-        for (BuildingsTemplate t : buildingManager.getTemplatesByCategory(
-                java.util.EnumSet.of(BuildingType.HEAVY_INDUSTRY))) {
-
-            if (t.getProduction1() <= 0 || t.getProduction2() <= 0) continue;
-
-            // No point building a mill twice the size of the ore available.
-            if (t.getProduction2() > spareOre) continue;
-
-            double cost = totalCostOf(t, 1);
-            if (cost <= 0) continue;
-
-            double score = estimatedMonthlyProfit(sector, t) / cost;
-            if (score > bestScore) {
-                bestScore = score;
-                best = t;
-            }
-        }
-
-        if (best == null) {
-            return Decision.no(sector,
-                    String.format("%,.0f t of spare ore, nothing worth smelting it", spareOre));
-        }
-
-        if (plotsAvailableFor(best) < 1) {
-            return Decision.noLand(sector, landReason(best));
-        }
-
-        return new Decision(sector, best, 1,
-                String.format("%,.0f tonnes of local ore going begging", spareOre),
-                true);
-    }
-
-    /**
-     * Whether to open another iron mine.
-     *
-     * Unlike every other sector, this one can be refused by geology. A mine
-     * needs ground with ore under it, and that is the city's to buy - so the
-     * private sector expanding into mining depends on the player having gone
-     * and bought a deposit. That is the intended coupling: land is the one
-     * input only the city controls, and now it gates an industry.
-     *
-     * @param unminedDeposits deposits the city owns that have no mine on them
-     * @param reserveTonnes   ore still in the ground across all of them
-     */
-    public Decision planMining(int unminedDeposits, double reserveTonnes,
-                               double cityConstructionOutput, int ordersInFlight) {
-
-        String sector = BusinessDebtManager.MINING;
-
-        if (ordersInFlight >= MAX_CONCURRENT_ORDERS) {
-            return Decision.no(sector, "already building");
-        }
-
-        if (unminedDeposits <= 0) {
-            return Decision.no(sector, "no deposit to dig");
-        }
-
-        if (reserveTonnes <= 0) {
-            return Decision.no(sector, "the ore is worked out");
-        }
-
-        BuildingsTemplate best = null;
-        double bestScore = 0;
-
-        for (BuildingsTemplate t : buildingManager.getTemplatesByCategory(
-                java.util.EnumSet.of(BuildingType.MINING))) {
-
-            if (t.getProduction1() <= 0) continue;
-
-            double cost = totalCostOf(t, 1);
-            if (cost <= 0) continue;
-
-            double score = estimatedMonthlyProfit(sector, t) / cost;
-            if (score > bestScore) {
-                bestScore = score;
-                best = t;
-            }
-        }
-
-        if (best == null) {
-            return Decision.no(sector, "nothing worth sinking");
-        }
-
-        if (plotsAvailableFor(best) < 1) {
-            return Decision.noLand(sector, landReason(best));
-        }
-
-        return new Decision(sector, best, 1,
-                String.format("%d deposit(s) unworked, %,.0fk tonnes in the ground",
-                        unminedDeposits, reserveTonnes / 1000),
+        return new Decision(sector, branch, 1, bank.getBranches() <= 0
+                ? "nowhere in the city to bank - credit is at the punitive rate"
+                : String.format("the bank is %.0f%% lent out - opening a branch", bank.strain() * 100),
                 true);
     }
 
@@ -1353,290 +699,95 @@ public class BusinessInvestment {
        ===================================================================== */
 
     /**
-     * Whether a project can carry the debt it needs.
-     *
-     * Businesses here borrow freely, so nothing on the credit side stops a
-     * sector expanding into insolvency. This does: if the new capacity cannot
-     * out-earn the interest on the money that built it, by a margin, the
-     * business declines the project even though the lender would fund it.
+     * Whether a project can carry the debt it needs: if the new capacity
+     * cannot out-earn the interest on the money that built it, by a margin,
+     * the business declines the project even though the lender would fund it.
      */
     public boolean servicesItsOwnDebt(double estimatedMonthlyProfit,
                                       double amountBorrowed, double annualRate) {
-
-        if (amountBorrowed <= 0) {
-            return true;   // paid from cash, nothing to service
-        }
-
+        if (amountBorrowed <= 0) return true;
         double monthlyInterest = amountBorrowed * annualRate / 12;
-
         return estimatedMonthlyProfit >= monthlyInterest * PROFIT_OVER_INTEREST;
     }
 
-    /**
-     * Rough monthly profit a finished building would add. Gross of payroll and
-     * utilities, which is deliberate - this is a screening number, and the real
-     * income statement is what actually settles it a month later.
-     */
-    /**
-     * The household mix, so a residential building can be priced on who would
-     * actually live in it. Set by Game once the families are rebuilt; null
-     * before the first month, which falls back to the old capacity figure.
-     */
+    /** The household mix, so a residential building can be priced on who would actually live in it. */
     private FamilyModel families;
     public void setFamilies(FamilyModel families) { this.families = families; }
+    public FamilyModel families() { return families; }
 
     /** The bank, so the advisor can see when credit has got dear. */
     private Bank bank;
     public void setBank(Bank bank) { this.bank = bank; }
 
-    /**
-     * What one of these would cost to staff, at what the city pays today.
-     *
-     * The fallback for the FIRST of anything, where there is no running building
-     * to read the real figure off.
-     */
-    private double wageBillFor(BuildingsTemplate t) {
+    /** What one of these would cost to staff, at what the city pays today. */
+    public double wageBillFor(BuildingsTemplate t) {
         double bill = 0;
-        double[] wages = economyManager.getStoreWageRates();
+        double[] wages = economyManager.getWageRates();
         if (wages == null) return 0;
         for (JobType job : JobType.values()) {
-            if (job.ordinal() < wages.length) {
-                bill += wages[job.ordinal()] * t.getJobs(job);
-            }
+            if (job.ordinal() < wages.length) bill += wages[job.ordinal()] * t.getJobs(job);
         }
         return bill;
     }
 
+    /**
+     * Rough monthly profit a finished building would add - the screening
+     * number the interest test is struck on. The bank's branch is priced
+     * here, on the book it would carry net of its staff; every other
+     * building is priced by its sector.
+     */
     public double estimatedMonthlyProfit(String sector, BuildingsTemplate t) {
 
-        CommercialHandler ch = economyManager.getCommercialHandler();
-
-        if (BusinessDebtManager.REAL_ESTATE.equals(sector)) {
-            /*
-             * WHAT THE CITY'S HOUSEHOLDS WOULD PAY FOR IT, not what it would
-             * collect if it were full.
-             *
-             * capacity x rentPrice is a number about the building. It says a
-             * studio block is worth eighty rents whether or not a single person
-             * in the city wants one - which is how the advisor came to keep
-             * offering studios to cities full of families, losing on price
-             * every time, and how backlog I1 came to read as "strictly
-             * dominated at every land price" when the real fault was pricing a
-             * flat nobody there could live in.
-             *
-             * marginalRentWeight() prices it on the biggest household that is
-             * currently crowded or homeless and could actually take the unit -
-             * so a studio is worth a lot in a city of single adults and nothing
-             * in a city of families, which is the whole point of having three
-             * residential buildings.
-             */
-            int units = t.getDwellings() > 0
-                    ? t.getDwellings()
-                    : Math.max(1, t.getCapacity() / 4);
-            /*
-             * THE SAME VALUATION planRealEstate() uses, and it has to be: this
-             * is what decides whether the sector may BORROW for the building,
-             * and a lender working from a different number than the buyer is
-             * how a sector ends up funding what it did not want. Doors the
-             * city would actually fill, at the price of the segment they are
-             * in - see fillableDoors() and priceForSegment().
-             *
-             * marginalRentWeight() is still the fallback for a caller with no
-             * family model attached, where the old nameplate figure is the
-             * only thing available.
-             */
-            if (families == null) {
-                return t.getCapacity() * ch.getRentPrice();
-            }
-            double doors = Math.min(units, fillableDoors(ch, t, latentHeadShortfall()));
-            if (doors <= 0) {
-                doors = units * (families.marginalRentWeight(t.homeSize()) > 0 ? 1 : 0);
-            }
-            return doors * FamilyModel.rentWeightOf(t.homeSize()) * priceForSegment(ch, t);
-        }
-
-        /*
-         * A BANK BRANCH, WHICH SELLS NOTHING.
-         *
-         * Checked before the sector cases and not inside one, because a branch
-         * is a commercial building whose business has nothing to do with
-         * shopping. Every estimate below prices a building by what it sells,
-         * and a bank sells nothing - so this returned zero, servicesItsOwnDebt()
-         * refused every borrowed dollar, and a branch could only ever be built
-         * out of cash the sector happened to be sitting on. Which is precisely
-         * the city least likely to have any: credit has gone dear.
-         *
-         * What it earns is the interest on the book it takes onto the bank's own
-         * account - see Bank.bookAnotherBranchWouldCarry(). Zero when the bank
-         * is comfortably inside itself, so this does not turn into an advisor
-         * that builds banks a city has no use for.
-         */
         if (bank != null && t != null && "Commercial Bank".equals(t.getName())) {
             double carried = bank.bookAnotherBranchWouldCarry();
             double annual = economyManager.getBusinessDebtManager().getRate(sector);
             double interest = carried * Math.max(0, annual) / 12;
-
-            /*
-             * NET OF THE STAFF, which is the half this used to be missing.
-             *
-             * A branch's interest income is not its profit - it has to be run,
-             * and until the bank had an income statement nobody could see that
-             * the running cost was several times the income. The advisor was
-             * happily building branches that lost money every month because the
-             * only number it was shown was the revenue.
-             *
-             * Priced off what the city is actually paying a bank's staff, so a
-             * city with expensive labour needs a bigger book to justify one.
-             */
-            double staff = economyManager.getCommercialHandler().getReportBankPayroll();
+            // NET OF THE STAFF: a branch's interest income is not its profit.
+            double staff = economyManager.getBankPayroll();
             double perBranch = bank.getBranches() > 0 ? staff / bank.getBranches() : staff;
             if (perBranch <= 0) perBranch = wageBillFor(t);
             return interest - perBranch;
         }
 
-        if (BusinessDebtManager.RETAIL.equals(sector)) {
-            return t.getCoverage() * (ch.getStoreSellPrice() - ch.getFoodPrice());
-        }
-
-        if (BusinessDebtManager.INDUSTRY.equals(sector)) {
-            IndustrialHandler ih = economyManager.getIndustrialHandler();
-            double margin = economyManager.getFoodMarket().getLocalPrice() - costPerUnit(ih);
-            return t.getProduction1() * margin;
-        }
-
-        if (BusinessDebtManager.CONSTRUCTION.equals(sector)) {
-            // A depot's extra output is billable work. Valued at the materials
-            // price as a rough per-point rate - construction bills the whole
-            // build cost, of which materials are the larger part.
-            return t.getProduction1() * buildingManager.getConstructionMaterialPrice();
-        }
-
-        if (BusinessDebtManager.HEAVY_INDUSTRY.equals(sector)) {
-            /*
-             * Steel out at its export price, raw material in at whatever the ore
-             * market is charging. That gap IS the business - it is why a mill is
-             * worth building next to a mine and not worth building alone.
-             *
-             * THREE THINGS THIS GOT WRONG, all in the mill's favour (2026-09-10).
-             * Traced on a run that built eight foundries in a city of 2,200 and
-             * wrote the sector down four times:
-             *
-             *   - productionModifier1 is a DOLLAR price and the ore price is a
-             *     local one. HeavyIndustryHandler converts the steel; this did
-             *     not, so with the currency at half of parity the screen read
-             *     steel at twice what the mill would be paid for it.
-             *   - it read nameplate. The eight foundries were running at 52%
-             *     for want of workers, and the ninth would have too - the
-             *     sector's own operating rate is what a new plant will run at.
-             *   - it was gross of payroll, on the argument (above) that a
-             *     shop's wages are small beside its turnover. A foundry's are a
-             *     fifth of its gross margin, and the interest test is struck on
-             *     the margin.
-             *
-             * Net of the plant's own running costs, at the rate the sector's
-             * plants actually run, in the city's money - the same three
-             * corrections the mine got, for the same reason: the number feeds
-             * servicesItsOwnDebt(), which is the brake.
-             */
-            HeavyIndustryHandler hh = economyManager.getHeavyIndustryHandler();
-            double orePrice = economyManager.getIronMarket().getLocalPrice();
-            double steel = t.getProduction1() * t.getProductionModifier1()
-                    * Math.max(0, economyManager.getExchangeRate());
-            double margin = steel - t.getProduction2() * orePrice;
-            return margin * operatingRateOf(hh.getOperatingRate()) - runningCostOf(t);
-        }
-
-        if (BusinessDebtManager.MINING.equals(sector)) {
-            /*
-             * The one sector where the gross figure is not a screening number,
-             * it is a fantasy.
-             *
-             * Everywhere else above, gross-of-payroll is a defensible shortcut:
-             * a shop's wages are small beside its turnover, so ranking projects
-             * on revenue ranks them roughly right. A mine is the opposite shape.
-             * It employs 376 people - more than a food plant and a foundry put
-             * together - and its payroll is about three quarters of what it
-             * sells. Gross said a mine earned $672k a month when it earned $276k,
-             * and that number also feeds servicesItsOwnDebt(), which is supposed
-             * to be the brake.
-             *
-             * Priced at the local rate rather than the export floor, still: a
-             * mine gets built where mills want the ore, and where they do not,
-             * the price is already at the floor and this reads the floor.
-             */
-            double revenue = t.getProduction1()
-                    * economyManager.getIronMarket().getLocalPrice();
-            // ...at the rate the sector's mines actually run, see the mill above.
-            MiningHandler mh = economyManager.getMiningHandler();
-            return revenue * operatingRateOf(mh.getOperatingRate()) - runningCostOf(t);
-        }
-
-        return 0;
+        Sector s = economyManager.getSectors().byKey(sector);
+        return s == null || t == null ? 0 : s.estimatedMonthlyProfit(t, this);
     }
 
     /**
      * A sector's operating rate as a planning figure: what it is, unless the
-     * sector has nothing running yet, in which case a plant that does not exist
-     * runs at nameplate on paper. The handlers default to 1 with no buildings,
-     * so this is a guard against a stray zero, not a policy.
+     * sector has nothing running yet, in which case a plant that does not
+     * exist runs at nameplate on paper.
      */
-    private static double operatingRateOf(double rate) {
+    public static double operatingRateOf(double rate) {
         return (Double.isFinite(rate) && rate > 0) ? Math.min(1, rate) : 1;
     }
 
     /**
-     * Wages, power and water for a building that does not exist yet.
-     *
-     * Read off the template and the current schedule rather than off a sector's
+     * Wages, power and water for a building that does not exist yet, read
+     * off the template and the current schedule rather than off a sector's
      * income statement, because the first mine in a city has no sector to read.
      */
-    private double runningCostOf(BuildingsTemplate t) {
-
+    public double runningCostOf(BuildingsTemplate t) {
         double[] rates = economyManager.getWageRates();
-
         double payroll = 0;
         for (JobType type : JobType.values()) {
             int slot = type.ordinal();
-            if (slot < rates.length) {
-                payroll += t.getJobs(type) * rates[slot];
-            }
+            if (slot < rates.length) payroll += t.getJobs(type) * rates[slot];
         }
-
         return payroll
                 + t.getElectricityConsumption() * economyManager.getPricePerWatt()
                 + t.getWaterConsumption() * economyManager.getPricePerWaterUnit();
     }
 
     /**
-     * Industry's break-even cost, computed live.
-     *
-     * NOT getReportCostPerUnit(), which is only assigned inside offerToMarket()
-     * - so before the first trade of a game it reads zero, and every plant looks
-     * infinitely profitable. Producing nothing returns MAX_VALUE, which would
-     * block the city's FIRST food plant forever; with no output there is no cost
-     * basis yet, so that case is treated as no known cost rather than an
-     * impossible one.
-     */
-    private double costPerUnit(IndustrialHandler ih) {
-        double raw = ih.getCostPerUnit();
-        if (raw == Double.MAX_VALUE || raw < 0) {
-            return 0;
-        }
-        return raw;
-    }
-
-    /**
-     * Cash price of a building, matching what Game.calculateTotalCost() charges:
-     * the cash cost plus any materials that have to be bought in at market.
+     * Cash price of a building, matching what Game charges: the cash cost
+     * plus any materials that have to be bought beyond the city's yard, at
+     * the market price, plus the land.
      */
     private double totalCostOf(BuildingsTemplate t, int quantity) {
         double stock = buildingManager.getConstructionMaterials();
         double required = t.getConstructionMaterials() * (double) quantity;
         double shortfall = Math.max(required - stock, 0);
-
-        // Land is part of what a project costs now, so it feeds the payback
-        // score and the debt-service test like any other outlay. A city that
-        // prices its land high genuinely makes expansion less worthwhile.
         return t.getCashCost() * quantity
                 + shortfall * buildingManager.getConstructionMaterialPrice()
                 + t.getLandSqFt() * quantity * landPricePerSqFt;

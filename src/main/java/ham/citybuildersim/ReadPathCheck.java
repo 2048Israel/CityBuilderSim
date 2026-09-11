@@ -71,10 +71,11 @@ public class ReadPathCheck {
     static void readEverything(Game g) {
 
         EconomyManager e = g.getEconomyManager();
-        CommercialHandler c = e.getCommercialHandler();
-        IndustrialHandler ih = e.getIndustrialHandler();
-        HeavyIndustryHandler hh = e.getHeavyIndustryHandler();
-        MiningHandler mh = e.getMiningHandler();
+        ham.citybuildersim.sectors.Retail c = g.getSectors().retail();
+        ham.citybuildersim.sectors.RealEstate re = g.getSectors().realEstate();
+        Sector ih = g.getSectors().industry();
+        Sector hh = g.getSectors().heavyIndustry();
+        ham.citybuildersim.sectors.Mining mh = g.getSectors().mining();
         ServicesManager s = g.getServicesManager();
 
         // the treasury's own read - the one that was mutating
@@ -93,44 +94,74 @@ public class ReadPathCheck {
          */
 
         // each sector's tax line, read on its own the way the panels do
-        c.getBusinessTaxIncome(e.getTaxRate());
-        c.getRentIncome();
-        ih.getIndustrialTaxIncome(e.getTaxRate());
-        hh.getTaxIncome(e.getTaxRate());
-        mh.getTaxIncome(e.getTaxRate());
+        for (Sector sec : g.getSectors().all()) {
+            sec.getProfitTax();
+            sec.getNetIncome();
+            sec.statement();
+            sec.getBalanceSheet();
+            sec.getInventoryValue();
+            sec.getPayroll();
+            sec.getOperatingRate();
+            for (Good good : Good.values()) {
+                sec.getStock(good);
+                sec.getPantry(good);
+                sec.getCapacity(good);
+                sec.getPlannedOutput(good);
+                sec.getCostPerUnit(good);
+                sec.getMarginalCostPerUnit(good);
+                sec.output(good);
+                sec.input(good);
+            }
+            // the operations page, which is what the sector screen draws
+            sec.operations(g);
+            e.getAssessedValue(sec);
+            e.getMaintenanceCharge(sec.key());
+            g.isAutoSubsidised(sec);
+            g.getSubsidyPaid(sec);
+        }
+        re.getRentIncome();
+        re.rentBreakEven();
+        re.blendedRentTarget();
+        re.housingPressure();
 
-        // the statements themselves
-        c.printCommercialInfo();
-        ih.printIndustrialInfo();
+        // the statements themselves, as text
+        g.getSectorBooks();
 
-        // the balance sheets and the aggregates behind the info panels
-        e.getCommercialCash();
-        e.getRealEstateCash();
-        e.getIndustrialCash();
-        e.getStoreInventory();
-        e.getIndustryFoodInventory();
+        // the aggregates behind the info panels
         c.getLastMonthSales();
-        c.neededInventory();
-        c.getExpectedPurchase();
-        ih.getGrossRevenue();
+        c.getStoreInventory();
+        c.getStoreSellPrice();
+        c.getFoodPrice();
+        c.getSupplyRatio();
+        ih.statement();
         ih.getNetIncome();
         hh.getNetIncome();
         mh.getNetIncome();
         mh.getPotentialOutput();
+        g.getSectors().totalCash();
 
         // services, roads and construction
         s.getEnergyRatio();
         s.getWaterRatio();
         s.getRoadRatio();
         s.getServiceNetIncome();
-        s.getConstructionHandler().getAverageFill();
+        g.getSectors().construction().getAverageFill();
         g.getConstructionOutput();
+        g.quoteBuild(template(g, "House"), 1);
 
-        // land and ore
+        // land, ore and every market
         g.getLandManager().getAvailableSqFt();
         g.getLandManager().getPricePerSqFt();
         g.getLandListing();
-        e.getIronMarket().getLocalPrice();
+        for (GoodsMarket m : g.getMarkets().all()) {
+            m.getLocalPrice();
+            m.getDemand();
+            m.getSupply();
+            m.getPriceIndex();
+            m.isShortage();
+            m.floor();
+            m.ceiling();
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -179,10 +210,10 @@ public class ReadPathCheck {
 
         EconomyManager econ = g.getEconomyManager();
         assertTrue("every sector is actually trading",
-                econ.getCommercialHandler().getGrossRevenue() > 0
-                        && econ.getIndustrialHandler().getGrossRevenue() > 0
-                        && econ.getHeavyIndustryHandler().getReportNetIncome() != 0
-                        && econ.getMiningHandler().getReportNetIncome() != 0);
+                g.getSectors().retail().statement().revenue > 0
+                        && g.getSectors().industry().statement().revenue > 0
+                        && g.getSectors().heavyIndustry().getNetIncome() != 0
+                        && g.getSectors().mining().getNetIncome() != 0);
 
         /* ============ the FIRST read, which is the hard one ============ */
         out.println("\n--- the first read after the month ends ---");
@@ -202,14 +233,15 @@ public class ReadPathCheck {
          * out of the month, with the city not yet asked a single question.
          */
         Map<String, Double> untouched = new LinkedHashMap<>();
-        CommercialHandler ch = econ.getCommercialHandler();
+        ham.citybuildersim.sectors.Retail ch = g.getSectors().retail();
         untouched.put("retail.productsSold", (double) ch.getProductsSold());
         untouched.put("retail.inventory", (double) ch.getStoreInventory());
-        untouched.put("retail.reportSold", (double) ch.getReportProductsSold());
-        untouched.put("retail.grossRevenue", ch.getGrossRevenue());
-        untouched.put("retail.cash", econ.getCommercialCash());
-        untouched.put("industry.inventory", (double) econ.getIndustryFoodInventory());
-        untouched.put("industry.cash", econ.getIndustrialCash());
+        untouched.put("retail.reportSold", (double) ch.getLastMonthSales());
+        untouched.put("retail.grossRevenue", ch.statement().revenue);
+        untouched.put("retail.pending", ch.pending().revenue());
+        untouched.put("retail.cash", ch.getCash());
+        untouched.put("industry.inventory", g.getSectors().industry().getStock(Good.FOOD));
+        untouched.put("industry.cash", g.getSectors().industry().getCash());
         untouched.put("cash", g.getCash());
 
         System.setOut(quiet);
@@ -221,11 +253,12 @@ public class ReadPathCheck {
             double now = switch (entry.getKey()) {
                 case "retail.productsSold" -> ch.getProductsSold();
                 case "retail.inventory"    -> ch.getStoreInventory();
-                case "retail.reportSold"   -> ch.getReportProductsSold();
-                case "retail.grossRevenue" -> ch.getGrossRevenue();
-                case "retail.cash"         -> econ.getCommercialCash();
-                case "industry.inventory"  -> econ.getIndustryFoodInventory();
-                case "industry.cash"       -> econ.getIndustrialCash();
+                case "retail.reportSold"   -> ch.getLastMonthSales();
+                case "retail.grossRevenue" -> ch.statement().revenue;
+                case "retail.pending"      -> ch.pending().revenue();
+                case "retail.cash"         -> ch.getCash();
+                case "industry.inventory"  -> g.getSectors().industry().getStock(Good.FOOD);
+                case "industry.cash"       -> g.getSectors().industry().getCash();
                 default                    -> g.getCash();
             };
             if (Math.abs(now - entry.getValue()) > 1e-9) {
@@ -246,13 +279,14 @@ public class ReadPathCheck {
          * earlier by the same broken call.
          *
          * So state the property directly instead of inferring it from movement.
-         * The live productsSold and the statement's rProductsSold are written
-         * by one line in computeMonthlyReport(); if they ever disagree,
+         * The units sold and the units in the month's ledger are written by
+         * one Trade in Retail.sellOwnPriced(); if they ever disagree,
          * something else has written to one of them, and the shops are billing
          * for a different quantity than they are shipping.
          */
-        assertTrue("the live sale figure IS the one on the statement",
-                ch.getProductsSold() == ch.getReportProductsSold());
+        assertTrue("the live sale figure IS the one in the ledger",
+                Math.abs(ch.getProductsSold()
+                        - ch.pending().unitsSold.getOrDefault(Good.GROCERIES, 0.0)) < 1e-9);
 
         /* ================ read it, and read it again ================ */
         out.println("\n--- fifty passes over every screen in the game ---");
@@ -284,66 +318,76 @@ public class ReadPathCheck {
         /* ============ and the specific one item 7 was about ============ */
         out.println("\n--- the shops sell what the statement says they sold ---");
 
-        CommercialHandler c = econ.getCommercialHandler();
-
-        int shelfBefore = c.getStoreInventory();
-        int onTheStatement = c.getReportProductsSold();
+        ham.citybuildersim.sectors.Retail c = g.getSectors().retail();
 
         /*
-         * The tax path first, then the REAL sale.
+         * The shelf, across one real month.
          *
-         * The first version of this passed getReportProductsSold() straight into
-         * sellInventory() and was therefore vacuous - it proved the report
-         * equals itself. The bug lives in the gap between the statement's figure
-         * and the live productsSold field that updateCommercialHandler() hands
-         * to sellInventory(), so the sale has to go through the same call the
-         * month does.
+         * The old version drove the shops' own sale-and-restock call twenty
+         * times over between tax reads, because the bug it caught lived in a
+         * report field the tax path was assigning. There is no such field
+         * now: the sale is a Trade, the restock is the market's fill, and
+         * both land on the same shelf in Markets.clearMonth(). So the law is
+         * asserted across a month: what was on the shelf, less what the
+         * ledger says was sold, plus what the market delivered, is what is
+         * on the shelf now.
          */
+        int shelfBefore = c.getStoreInventory();
         System.setOut(quiet);
         for (int i = 0; i < 20; i++) {
             econ.getTaxIncome();                 // the path that used to assign
         }
-        c.updateCommercialHandler();             // sells, then restocks
+        g.simulateMonths(1);
         System.setOut(out);
 
-        int restocked = c.getReportLocalImports() + c.getReportGlobalImports();
-        assertTrue("the shelf fell by exactly the units on the income statement",
-                c.getStoreInventory() == shelfBefore - onTheStatement + restocked);
-        out.printf("   %,d on the shelf, %,d sold, %,d restocked, %,d left%n",
-                shelfBefore, onTheStatement, restocked, c.getStoreInventory());
+        double sold = c.pending().unitsSold.getOrDefault(Good.GROCERIES, 0.0);
+        Sector.Input food = c.input(Good.FOOD);
+        double restocked = food.boughtLocal + food.imported;
+        assertTrue("the shelf fell by exactly the units in the ledger, plus the restock",
+                Math.abs(c.getPantry(Good.FOOD) - (shelfBefore - sold + restocked)) < 1e-6);
+        out.printf("   %,d on the shelf, %,.0f sold, %,.0f restocked, %,d left%n",
+                shelfBefore, sold, restocked, c.getStoreInventory());
 
         assertTrue("...and the statement never sold more than was in stock",
-                onTheStatement <= shelfBefore);
+                sold <= shelfBefore + 1e-9);
         assertTrue("...and the shelf never goes negative",
                 c.getStoreInventory() >= 0);
 
         /* ============ the tax the city takes is the tax it shows ============ */
         out.println("\n--- and the treasury agrees with the screen ---");
 
-        System.setOut(quiet);
-        double collected = c.getBusinessTaxIncome(econ.getTaxRate());
-        System.setOut(out);
-
-        double shown = c.getReportTotalTax();
+        // Every sector's own deducted figure, plus the bank's, against the
+        // two lines the treasury screen prints them on.
+        double collected = econ.getBankTax();
+        for (Sector sec : g.getSectors().all()) collected += sec.getProfitTax();
+        double shown = econ.getBusinessTax() + econ.getIndustrialTax();
         assertTrue("business tax collected == business tax printed",
                 Math.abs(collected - shown) < 1e-9);
         out.printf("   collected $%,.2fk, printed $%,.2fk%n", collected, shown);
 
-        assertTrue("...and it is the two companies taxed separately, not netted",
-                Math.abs(shown - (c.getReportRetailTax() + c.getReportRealEstateTax())) < 1e-9);
+        assertTrue("...and it is the companies taxed separately, not netted",
+                Math.abs(econ.getHeavyIndustryTax()
+                        - (g.getSectors().heavyIndustry().getProfitTax()
+                        + g.getSectors().mining().getProfitTax())) < 1e-9);
 
         /* ============ a rate change reaches the treasury at once ============ */
         out.println("\n--- changing the rate is not a month late ---");
 
+        // The two commercial companies together, as the old commercial
+        // statement printed them. Retail alone would not do: the city rate
+        // is also the VAT rate, so doubling it halves the shops' profit
+        // before the profit tax is struck, and the shops' profit tax alone
+        // barely moves. The landlords' rent is VAT-exempt, so theirs doubles.
+        Sector landlords = g.getSectors().realEstate();
         double lowRate = econ.getTaxRate();
-        double lowTake = c.getReportTotalTax();
+        double lowTake = c.getProfitTax() + landlords.getProfitTax();
 
         System.setOut(quiet);
         econ.getTaxPolicy().setIncomeTaxRate(lowRate * 2);
         g.simulateMonths(1);
         System.setOut(out);
 
-        double highTake = econ.getCommercialHandler().getReportTotalTax();
+        double highTake = c.getProfitTax() + landlords.getProfitTax();
         out.printf("   at %.0f%%: $%,.2fk    at %.0f%%: $%,.2fk%n",
                 lowRate * 100, lowTake, lowRate * 200, highTake);
         assertTrue("doubling the rate moves the very next month's commercial tax",

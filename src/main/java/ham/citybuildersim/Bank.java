@@ -249,6 +249,33 @@ public class Bank {
     private double lentToHouseholds;
     private double repaidByHouseholds;
     private double fundingCost;
+
+    /**
+     * WHAT THE VAULT EARNS WHILE NOBODY IS BORROWING (2026-09-11).
+     *
+     * A bank with money it has not lent does not keep it in a drawer; it
+     * places it - overnight, in bills, abroad - at the risk-free rate, and
+     * that is most of what a bank in a town with nothing to finance lives
+     * on. This one kept it in a drawer. Its cash position is symmetric by
+     * design - negative is borrowing, deposits first and the market for the
+     * rest, and the market tranche is charged for (fundToCover) - but the
+     * positive side earned nothing, so a bank whose borrowers had all repaid
+     * paid its tellers out of its capital until there was none.
+     *
+     * Measured on the playtest's first city once the landlords stopped
+     * over-borrowing (the sector template): the book fell to nothing for
+     * nineteen centuries, the bank drained from $330M of equity to $195M on
+     * payroll alone, and the first sector that then borrowed and defaulted
+     * - the mines, $420M written down - took it under, twice, and it never
+     * fully stood up again. Before the template the same bank had been
+     * carried by a landlord borrowing a billion; that was fortune, not a
+     * rule, and the rule is this: idle reserves are placed at the world's
+     * base rate. The mirror of the wholesale funding line, and declared to
+     * the audit the same way - income from abroad, the way a foreign
+     * coupon is income to it.
+     */
+    private double placementIncome;
+    public static final double PLACEMENT_RATE = DebtManager.WORLD_BASE_RATE;
     private double openingEquity;
 
     /* ------------------------------- the month ------------------------------- */
@@ -304,6 +331,7 @@ public class Bank {
         lentToHouseholds = 0;
         repaidByHouseholds = 0;
         fundingCost = 0;
+        placementIncome = 0;
         depositInterestToHouseholds = 0;
         depositInterestToSectors = 0;
         depositInterestToForeign = 0;
@@ -690,7 +718,12 @@ public class Bank {
          * with when it opens, because an institution with less than that is
          * not one.
          */
-        double floor = branches > 0 ? PAID_IN_PER_BRANCH : 0;
+        // In today's money - the constant is the founding unit's, and a
+        // reformed city's bank read the unreformed floor here, a hundred
+        // times what one of its branches is capitalised with, and never left
+        // resolution. Found by DenominationCheck on 2026-09-11, the day the
+        // bank first earned its way back (see placementIncome).
+        double floor = branches > 0 ? paidInPerBranch : 0;
         return Math.max(byBook, floor);
     }
 
@@ -1223,6 +1256,12 @@ public class Bank {
         fundingRate = Math.max(0, riskFreeAnnual) + FUNDING_SPREAD + FUNDING_STRETCH * reachNow;
         fundingCost = wholesaleNow * fundingRate / 12;
 
+        // ...and the other side of the same position: what is not lent is
+        // placed. Struck here, banked with the funding below, and counted as
+        // interest income - the savers' share is a share of this too.
+        placementIncome = cashReserves() * PLACEMENT_RATE / 12;
+        interestEarned += placementIncome;
+
         /*
          * ...AND THEN THE DEPOSITORS, out of what is left.
          *
@@ -1280,8 +1319,9 @@ public class Bank {
         // Only the market tranche is charged for. The deposits are the city's
         // own money and cost the bank nothing to use beyond what it pays for
         // them - which is the whole advantage of having somewhere for people to
-        // save. Struck above, banked here.
+        // save. Struck above, banked here - and the placements with it.
         cash -= fundingCost;
+        cash += placementIncome;
     }
 
     /* =====================================================================
@@ -1439,6 +1479,8 @@ public class Bank {
     public double getLastBidUpGain()   { return lastBidUpGain; }
 
     public double getFundingCost() { return fundingCost; }
+    /** What the idle reserves earned abroad this month. See placementIncome. */
+    public double getPlacementIncome() { return placementIncome; }
 
     /* =========================== THE THREE STATEMENTS ===========================
      *
@@ -1902,6 +1944,7 @@ public class Bank {
         lentToHouseholds  *= scale;
         repaidByHouseholds *= scale;
         fundingCost       *= scale;
+        placementIncome   *= scale;
         openingEquity     *= scale;
         hotMoneyIn        *= scale;
         hotMoneyOut       *= scale;

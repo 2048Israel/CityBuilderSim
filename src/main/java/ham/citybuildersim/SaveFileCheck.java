@@ -414,7 +414,7 @@ public class SaveFileCheck {
          * now tested in both of its two real positions instead - up when nothing
          * is protecting the crews, and down the moment something is.
          */
-        warned.setAutoSubsidised(PolicySector.CONSTRUCTION, false);
+        warned.setAutoSubsidised(Sectors.CONSTRUCTION, false);
         warned.restoreConstructionShedding(warned.getMonth(), 900);
 
         boolean warningUp = warned.isConstructionShedding();
@@ -433,15 +433,15 @@ public class SaveFileCheck {
         assertEquals("...and the capacity it has sold since",
                 stillWarned.getConstructionShedPoints(), shedPoints);
         assertEquals("...and it is still unprotected",
-                stillWarned.isAutoSubsidised(PolicySector.CONSTRUCTION) ? 1 : 0, 0);
+                stillWarned.isAutoSubsidised(Sectors.CONSTRUCTION) ? 1 : 0, 0);
         assertEquals("...so the player is still being warned",
                 stillWarned.isConstructionShedding(), warningUp);
 
         // ...and protecting the sector is what actually answers the warning.
-        stillWarned.setAutoSubsidised(PolicySector.CONSTRUCTION, true);
+        stillWarned.setAutoSubsidised(Sectors.CONSTRUCTION, true);
         assertTrue("protecting construction takes the warning down",
                 !stillWarned.isConstructionShedding());
-        stillWarned.setAutoSubsidised(PolicySector.CONSTRUCTION, false);
+        stillWarned.setAutoSubsidised(Sectors.CONSTRUCTION, false);
 
         // Acknowledging it has to stick too, or the banner comes back on reload
         // for a player who has already said no.
@@ -494,21 +494,26 @@ public class SaveFileCheck {
         // real estate reporting income statements with no property-tax expense
         // line at all, which made them look more profitable than they were and
         // pushed the city's business tax up with them.
-        CommercialHandler beforeShops = city.getEconomyManager().getCommercialHandler();
-        CommercialHandler afterShops = reloaded.getEconomyManager().getCommercialHandler();
+        Sector beforeShops = city.getSectors().retail();
+        Sector afterShops = reloaded.getSectors().retail();
+        Sector beforeLandlords = city.getSectors().realEstate();
+        Sector afterLandlords = reloaded.getSectors().realEstate();
 
         assertTrue("the city actually charges retail something",
-                beforeShops.getRetailPropertyTax() > 0);
+                beforeShops.getPropertyTaxExpense() > 0);
         assertEquals("retail's property tax expense came back",
-                Math.round(afterShops.getRetailPropertyTax() * 10000),
-                Math.round(beforeShops.getRetailPropertyTax() * 10000));
+                Math.round(afterShops.getPropertyTaxExpense() * 10000),
+                Math.round(beforeShops.getPropertyTaxExpense() * 10000));
         assertEquals("real estate's did too",
-                Math.round(afterShops.getRealEstatePropertyTax() * 10000),
-                Math.round(beforeShops.getRealEstatePropertyTax() * 10000));
+                Math.round(afterLandlords.getPropertyTaxExpense() * 10000),
+                Math.round(beforeLandlords.getPropertyTaxExpense() * 10000));
+        assertEquals("...and the line on the statement with it",
+                Math.round(afterShops.statement().propertyTax * 10000),
+                Math.round(beforeShops.statement().propertyTax * 10000));
 
         // And the parts add up to the whole the city collected.
-        double parts = afterShops.getRetailPropertyTax()
-                + afterShops.getRealEstatePropertyTax();
+        double parts = 0;
+        for (Sector s : reloaded.getSectors().all()) parts += s.getPropertyTaxExpense();
         assertTrue("the sector charges are part of the city's total",
                 parts > 0 && parts <= reloaded.getEconomyManager().getTotalPropertyTax() + 0.01);
 
@@ -550,13 +555,14 @@ public class SaveFileCheck {
          * nothing. So that is what it asks: goods exist, they reached the
          * shops, and the taxes being compared are real money.
          */
-        System.out.printf("   food stock %d, shop stock %d, taxes $%.2f%n",
-                e1.getIndustryFoodInventory(), e1.getStoreInventory(), e1.getTaxIncome());
+        System.out.printf("   food stock %.0f, shop stock %d, taxes $%.2f%n",
+                city.getSectors().industry().getStock(Good.FOOD),
+                city.getSectors().retail().getStoreInventory(), e1.getTaxIncome());
 
         assertTrue("the mills have actually produced something",
-                e1.getIndustryFoodInventory() > 0);
+                city.getSectors().industry().getStock(Good.FOOD) > 0);
         assertTrue("...and it reached the shops",
-                e1.getStoreInventory() > 0);
+                city.getSectors().retail().getStoreInventory() > 0);
         assertTrue("...so the figures compared below are not all zero",
                 e1.getTaxIncome() > 0);
 
@@ -566,8 +572,11 @@ public class SaveFileCheck {
         assertEquals("wage tax", Math.round(e2.getWageTax() * 10000),
                 Math.round(e1.getWageTax() * 10000));
         assertEquals("retail cost of goods",
-                Math.round(e2.getRetailCostOfGoods() * 10000),
-                Math.round(e1.getRetailCostOfGoods() * 10000));
+                Math.round(reloaded.getSectors().retail().statement().inputs * 10000),
+                Math.round(city.getSectors().retail().statement().inputs * 10000));
+        assertEquals("...and the month in progress",
+                Math.round(reloaded.getSectors().retail().pending().purchases() * 10000),
+                Math.round(city.getSectors().retail().pending().purchases() * 10000));
 
         /*
          * Exact, to four decimal places.
@@ -590,8 +599,8 @@ public class SaveFileCheck {
                 Math.round(e1.getMonthGdp() * 10000));
 
         // The order book, which is what makes the GDP line above hold.
-        ConstructionHandler b1 = city.getServicesManager().getConstructionHandler();
-        ConstructionHandler b2 = reloaded.getServicesManager().getConstructionHandler();
+        ham.citybuildersim.sectors.Construction b1 = city.getSectors().construction();
+        ham.citybuildersim.sectors.Construction b2 = reloaded.getSectors().construction();
         assertEquals("construction backlog", Math.round(b2.getBacklogPoints() * 10000),
                 Math.round(b1.getBacklogPoints() * 10000));
         assertEquals("construction unearned revenue",
@@ -693,22 +702,23 @@ public class SaveFileCheck {
         growing.simulateMonths(1);
 
         PopulationManager gp = growing.getPopulationManager();
-        CommercialHandler gc = growing.getEconomyManager().getCommercialHandler();
+        ham.citybuildersim.sectors.Retail gc = growing.getSectors().retail();
 
         // The city has to be genuinely mid-stride, or this proves nothing. Both
         // of these are the specific things that were being re-derived.
         assertTrue("the city really is still growing",
                 gp.getWorkforce() != (int) (gp.getPopulation() * .5));
-        assertTrue("...and its statement describes a smaller city than it is now",
-                gc.getReportPopulation() != gc.getPopulation());
+        assertTrue("...and its statement describes a smaller month than the one in progress",
+                Math.abs(gc.statement().revenue - gc.pending().revenue()) > 1e-9);
 
         EconomyManager ge = growing.getEconomyManager();
         double gIncome = growing.getIncome();
         int gWorkforce = gp.getWorkforce();
         double gWageTax = ge.getWageTax();
         double gSalesTax = ge.getSalesTax();
-        double gRetail = gc.getGrossRevenue();
-        double gIndustry = ge.getIndustrialHandler().getGrossRevenue();
+        double gRetail = gc.statement().revenue;
+        double gRetailPending = gc.pending().revenue();
+        double gIndustry = growing.getSectors().industry().statement().revenue;
         double gGdp = ge.getMonthGdp();
 
         assertTrue("saved mid-growth", growing.saveGame(1, "still moving").ok);
@@ -724,10 +734,13 @@ public class SaveFileCheck {
         assertEquals("wage tax", Math.round(me.getWageTax() * 10000),
                 Math.round(gWageTax * 10000));
         assertEquals("retail gross revenue",
-                Math.round(me.getCommercialHandler().getGrossRevenue() * 10000),
+                Math.round(moved.getSectors().retail().statement().revenue * 10000),
                 Math.round(gRetail * 10000));
+        assertEquals("...and the month the shops are in",
+                Math.round(moved.getSectors().retail().pending().revenue() * 10000),
+                Math.round(gRetailPending * 10000));
         assertEquals("industrial gross revenue",
-                Math.round(me.getIndustrialHandler().getGrossRevenue() * 10000),
+                Math.round(moved.getSectors().industry().statement().revenue * 10000),
                 Math.round(gIndustry * 10000));
         assertEquals("sales tax", Math.round(me.getSalesTax() * 10000),
                 Math.round(gSalesTax * 10000));
@@ -851,7 +864,7 @@ public class SaveFileCheck {
              */
             full.buildStack(template(full, order[0]), Integer.parseInt(order[1]), true);
         }
-        for (PolicySector sector : PolicySector.values()) full.setAutoSubsidised(sector, true);
+        for (String sector : Sectors.KEYS) full.setAutoSubsidised(sector, true);
 
         /*
          * AND SOMEBODY HAS TO BE HUNGRY, WHICH NOW TAKES DOING.
@@ -917,10 +930,18 @@ public class SaveFileCheck {
          * ladder, once for the building costs and once for the endowment. A
          * loop that waits for the state is the only version of this fixture
          * that survives somebody moving a price.
+         *
+         * AND FOR THE DIAL TO PAY, since the crews started drawing material
+         * as they build (2026-09-11): the subsidy is this month's figure,
+         * and the sector that used to run a loss in the month the loop
+         * stopped was construction, buying an order's whole material the
+         * day it was placed. It no longer does; some sector still loses
+         * money in some month, and the loop waits for that month.
          */
         for (int extra = 0; extra < 240
                 && (full.getBank().depositRate() <= 0
-                    || full.getHealth().getHungerRate() <= 0); extra++) {
+                    || full.getHealth().getHungerRate() <= 0
+                    || full.getTotalSubsidyPaid() <= 0); extra++) {
             full.simulateMonths(1);
         }
 

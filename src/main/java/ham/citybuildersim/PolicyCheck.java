@@ -54,7 +54,7 @@ public class PolicyCheck {
         for (WageBand b : WageBand.values()) {
             if (Math.abs(p.effectiveWageRate(b) - .20) > 1e-9) allCity = false;
         }
-        for (PolicySector s : PolicySector.values()) {
+        for (String s : Sectors.KEYS) {
             if (Math.abs(p.effectiveProfitRate(s) - .20) > 1e-9) allCity = false;
             if (Math.abs(p.effectiveSalesRate(s) - .20) > 1e-9) allCity = false;
             if (Math.abs(p.effectivePropertyRate(s) - .02) > 1e-9) allCity = false;
@@ -135,14 +135,14 @@ public class PolicyCheck {
         SalesTaxLedger vat = new SalesTaxLedger();
 
         // A chain: mine sells 100 of ore, mill turns it into 300 of steel.
-        vat.recordSales(PolicySector.MINING, 100);
-        vat.recordSales(PolicySector.HEAVY_INDUSTRY, 300);
-        vat.recordInputTax(PolicySector.HEAVY_INDUSTRY, 100 * .10);
+        vat.recordSales(Sectors.MINING, 100);
+        vat.recordSales(Sectors.HEAVY_INDUSTRY, 300);
+        vat.recordInputTax(Sectors.HEAVY_INDUSTRY, 100 * .10);
 
         double collected = vat.settle(flat);
 
-        check("the mine remits on its ore",        vat.getNet(PolicySector.MINING), 10);
-        check("the mill remits on its margin only", vat.getNet(PolicySector.HEAVY_INDUSTRY), 20);
+        check("the mine remits on its ore",        vat.getNet(Sectors.MINING), 10);
+        check("the mill remits on its margin only", vat.getNet(Sectors.HEAVY_INDUSTRY), 20);
         check("so the city collects 10% of the FINAL value, not of both stages",
                 collected, 30);
 
@@ -155,26 +155,26 @@ public class PolicyCheck {
         System.out.println("\n--- zero-rated exports ---");
 
         SalesTaxLedger exporting = new SalesTaxLedger();
-        exporting.recordExport(PolicySector.MINING, 500);
-        exporting.recordInputTax(PolicySector.MINING, 12);
+        exporting.recordExport(Sectors.MINING, 500);
+        exporting.recordInputTax(Sectors.MINING, 12);
 
         double owed = exporting.settle(flat);
         check("nothing is charged on what leaves the city",
-                exporting.getPayable(PolicySector.MINING), 0);
+                exporting.getPayable(Sectors.MINING), 0);
         check("...but the credits behind it still stand",
-                exporting.getCredit(PolicySector.MINING), 12);
+                exporting.getCredit(Sectors.MINING), 12);
         check("so a pure exporter is owed money", owed, -12);
         assertTrue("...and the ledger says so rather than flooring at zero",
-                exporting.isInRefund(PolicySector.MINING));
+                exporting.isInRefund(Sectors.MINING));
         check("the zero-rated sales are still recorded",
-                exporting.getZeroRated(PolicySector.MINING), 500);
+                exporting.getZeroRated(Sectors.MINING), 500);
 
         /* ============ 6. imports carry the tax in, and out again ============ */
         System.out.println("\n--- imports are taxed and credited ---");
 
         SalesTaxLedger importing = new SalesTaxLedger();
-        importing.chargeImport(PolicySector.RETAIL, 200, flat);
-        importing.recordSales(PolicySector.RETAIL, 200);      // resold at cost
+        importing.chargeImport(Sectors.RETAIL, 200, flat);
+        importing.recordSales(Sectors.RETAIL, 200);      // resold at cost
 
         importing.settle(flat);
         /*
@@ -188,15 +188,15 @@ public class PolicyCheck {
          * meant to net against was a purchase markup paid to nobody.
          */
         check("an importer reselling at cost remits the tax on its sale",
-                importing.getNet(PolicySector.RETAIL), 20);
+                importing.getNet(Sectors.RETAIL), 20);
 
         SalesTaxLedger local = new SalesTaxLedger();
-        local.recordSales(PolicySector.INDUSTRY, 200);                 // the supplier's sale
-        local.recordInputTax(PolicySector.RETAIL, 200 * .10);          // the reseller's credit
-        local.recordSales(PolicySector.RETAIL, 200);                   // resold at cost
+        local.recordSales(Sectors.INDUSTRY, 200);                 // the supplier's sale
+        local.recordInputTax(Sectors.RETAIL, 200 * .10);          // the reseller's credit
+        local.recordSales(Sectors.RETAIL, 200);                   // resold at cost
         double localChain = local.settle(flat);
         check("...which is what the local chain remits on the same goods",
-                localChain, importing.getNet(PolicySector.RETAIL));
+                localChain, importing.getNet(Sectors.RETAIL));
         assertTrue("...so importing carries no advantage over buying locally",
                 Math.abs(localChain - importing.settle(flat)) < 1e-9);
 
@@ -236,21 +236,21 @@ public class PolicyCheck {
         double monthlyLoss = -800;
 
         // Unprotected: the loss reaches the counter untouched.
-        city.setAutoSubsidised(PolicySector.MINING, false);
+        city.setAutoSubsidised(Sectors.MINING, false);
         for (int month = 0; month < 8; month++) {
-            double covered = city.subsidiseForTest(PolicySector.MINING, monthlyLoss);
-            counter.recordSectorResult(BusinessDebtManager.MINING, monthlyLoss + covered);
+            double covered = city.subsidiseForTest(Sectors.MINING, monthlyLoss);
+            counter.recordSectorResult(Sectors.MINING, monthlyLoss + covered);
         }
-        int unprotected = counter.getLossMonths(BusinessDebtManager.MINING);
+        int unprotected = counter.getLossMonths(Sectors.MINING);
 
         // Protected: the city covers it first, so what the counter sees is zero.
-        city.setAutoSubsidised(PolicySector.MINING, true);
+        city.setAutoSubsidised(Sectors.MINING, true);
         double cashBefore = city.getCash();
         for (int month = 0; month < 8; month++) {
-            double covered = city.subsidiseForTest(PolicySector.MINING, monthlyLoss);
-            counter.recordSectorResult(BusinessDebtManager.MINING, monthlyLoss + covered);
+            double covered = city.subsidiseForTest(Sectors.MINING, monthlyLoss);
+            counter.recordSectorResult(Sectors.MINING, monthlyLoss + covered);
         }
-        int protectedRun = counter.getLossMonths(BusinessDebtManager.MINING);
+        int protectedRun = counter.getLossMonths(Sectors.MINING);
         double spent = cashBefore - city.getCash();
 
         System.out.printf("   eight months of $%,.0f losses: counter reached %d unprotected, "
@@ -265,7 +265,7 @@ public class PolicyCheck {
         /* ============ 8. the money goes somewhere ============ */
         System.out.println("\n--- the subsidy is a transfer, not a printing press ---");
 
-        ConstructionHandler construction = city.getServicesManager().getConstructionHandler();
+        Sector construction = city.getSectors().construction();
 
         double cityCash = city.getCash();
         double sectorCash = construction.getCash();
@@ -273,7 +273,7 @@ public class PolicyCheck {
 
         // Drive one month of support by hand, so the two sides can be compared
         // without a month of trading moving everything else.
-        city.setAutoSubsidised(PolicySector.CONSTRUCTION, true);
+        city.setAutoSubsidised(Sectors.CONSTRUCTION, true);
         double paid = payOneSubsidy(city, construction, loss);
 
         check("the city paid the whole loss", paid, 50);
@@ -287,11 +287,11 @@ public class PolicyCheck {
         before.setIncomeTaxRate(.28);
         before.setPropertyTaxRate(.035);
         before.setWageOffset(WageBand.COLLEGE, -.04);
-        before.setProfitOffset(PolicySector.MINING, -.06);
-        before.setSalesOffset(PolicySector.RETAIL, .03);
-        before.setPropertyOffset(PolicySector.HEAVY_INDUSTRY, -.005);
-        city.setAutoSubsidised(PolicySector.MINING, true);
-        city.setAutoSubsidised(PolicySector.RETAIL, true);
+        before.setProfitOffset(Sectors.MINING, -.06);
+        before.setSalesOffset(Sectors.RETAIL, .03);
+        before.setPropertyOffset(Sectors.HEAVY_INDUSTRY, -.005);
+        city.setAutoSubsidised(Sectors.MINING, true);
+        city.setAutoSubsidised(Sectors.RETAIL, true);
 
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
         boolean saved;
@@ -314,15 +314,15 @@ public class PolicyCheck {
         check("city income rate",  after.getIncomeTaxRate(), .28);
         check("city property rate", after.getPropertyTaxRate(), .035);
         check("a wage offset",     after.getWageOffset(WageBand.COLLEGE), -.04);
-        check("a profit offset",   after.getProfitOffset(PolicySector.MINING), -.06);
-        check("a sales offset",    after.getSalesOffset(PolicySector.RETAIL), .03);
-        check("a property offset", after.getPropertyOffset(PolicySector.HEAVY_INDUSTRY), -.005);
+        check("a profit offset",   after.getProfitOffset(Sectors.MINING), -.06);
+        check("a sales offset",    after.getSalesOffset(Sectors.RETAIL), .03);
+        check("a property offset", after.getPropertyOffset(Sectors.HEAVY_INDUSTRY), -.005);
         assertTrue("a protected sector is still protected",
-                reloaded.isAutoSubsidised(PolicySector.MINING));
+                reloaded.isAutoSubsidised(Sectors.MINING));
         assertTrue("...and so is the other one",
-                reloaded.isAutoSubsidised(PolicySector.RETAIL));
+                reloaded.isAutoSubsidised(Sectors.RETAIL));
         assertTrue("...and an unprotected one is still unprotected",
-                !reloaded.isAutoSubsidised(PolicySector.INDUSTRY));
+                !reloaded.isAutoSubsidised(Sectors.INDUSTRY));
 
         // A save that predates all of this must load as the defaults rather than
         // being refused - the shape check is the only thing standing between an
@@ -345,9 +345,9 @@ public class PolicyCheck {
      * Reaches through Game's own path rather than reimplementing it - a helper
      * that did its own arithmetic would agree with itself and prove nothing.
      */
-    static double payOneSubsidy(Game city, ConstructionHandler handler, double loss) {
+    static double payOneSubsidy(Game city, Sector handler, double loss) {
         double cityBefore = city.getCash();
-        city.subsidiseForTest(PolicySector.CONSTRUCTION, loss);
+        city.subsidiseForTest(Sectors.CONSTRUCTION, loss);
         return cityBefore - city.getCash();
     }
 }

@@ -137,23 +137,28 @@ public class NationalAccounts {
     private double lastFoodUnits;
     private double lastMaterialUnits;
 
-    /**
-     * Construction ordered and not yet delivered, in contract dollars.
+    /*
+     * WORK IN HAND IS NOT AN INVENTORY TERM ANY MORE (2026-09-11).
      *
-     * A value rather than a volume, and legitimately so: a contract is struck
-     * once and never repriced, so a change in it is always a change in real work
-     * in hand. Measuring whole unfinished BUILDINGS instead does not work - the
-     * materials leave in a lump when the last unit completes, while the revenue
-     * that replaces them accrues smoothly, so a finishing batch booked a large
-     * negative for no change in activity.
+     * There was a third term: construction ordered and not yet delivered, at
+     * contract value, counted as stock the month the order was placed and
+     * run down as the work was recognised. It existed to cancel an import
+     * that landed months before the output it paid for - the builders bought
+     * an order's whole material the day it was placed - and it did that, at
+     * the price of booking the whole contract as output on the order day
+     * and nothing net over the years of building. The crews draw material
+     * as they build now (see BuildingsStacks.materialsOwed), so the import
+     * and the work it goes into land in the same month, and the honest
+     * account is the plain one: the work put in place is investment, the
+     * material bought abroad for it is an import, and the difference is
+     * what the city's builders added. A contract on the books is a promise,
+     * not production.
      */
-    private double lastWorkInProgress;
 
-    /* The three parts of the inventory term, kept so a diagnostic can say which
+    /* The two parts of the inventory term, kept so a diagnostic can say which
        one moved rather than leaving the reader to infer it from the total. */
     private double invFood;
     private double invMaterials;
-    private double invWorkInProgress;
 
     /**
      * Whether last month's stock is actually known.
@@ -194,13 +199,12 @@ public class NationalAccounts {
                         double investmentConstruction, double investmentInventories,
                         double government, double importsFood, double importsMaterials,
                         double importsRawMaterial, double exports,
-                        double lastMaterialUnits, double lastWorkInProgress,
+                        double lastMaterialUnits,
                         boolean baselineKnown) {
 
         this.gdp = gdp;
         this.lastFoodUnits = lastFoodUnits;
         this.lastMaterialUnits = lastMaterialUnits;
-        this.lastWorkInProgress = lastWorkInProgress;
         this.inventoryBaselineKnown = baselineKnown;
 
         // The components too, not just the total. They are what the national
@@ -220,12 +224,9 @@ public class NationalAccounts {
 
     public double getLastFoodUnits()     { return lastFoodUnits; }
     public double getLastMaterialUnits() { return lastMaterialUnits; }
-    public double getLastWorkInProgress() { return lastWorkInProgress; }
     public double getInvFood() { return invFood; }
-    public double getInvWip()  { return invWorkInProgress; }
     public double getInventoryFood()         { return invFood; }
     public double getInventoryMaterials()    { return invMaterials; }
-    public double getInventoryWorkInProgress(){ return invWorkInProgress; }
     public boolean isBaselineKnown()     { return inventoryBaselineKnown; }
 
     /**
@@ -240,7 +241,6 @@ public class NationalAccounts {
                        double constructionWorkDone,
                        double foodUnits, double foodStockWrittenOff, double foodPrice,
                        double materialUnits, double materialPrice,
-                       double workInProgress,
                        double governmentServices,
                        double foodImports, double materialImports,
                        double rawMaterialImports, double exportRevenue) {
@@ -266,26 +266,27 @@ public class NationalAccounts {
              * book a demolition as a month of negative output.
              */
             invFood = ((foodUnits + foodStockWrittenOff) - lastFoodUnits) * foodPrice;
-            invWorkInProgress = workInProgress - lastWorkInProgress;
 
             /*
-             * The materials yard is deliberately NOT a third term.
-             *
-             * Work in progress is measured at CONTRACT value, and a contract
-             * already embodies the materials the job will consume. Counting the
-             * yard as well subtracts the same brick twice: once when the order
-             * capitalises it into the contract, and again when the yard actually
-             * hands it over - which can be months later, leaving an unmatched
-             * negative in between. Observed as Imatl -1,340 against Iconstr
-             * +1,163 in a month with no trade at all.
+             * THE MATERIALS PLANT'S WAREHOUSE IS THE THIRD TERM, and the city's
+             * yard is not, since the sector template (2026-09-11).
              *
              * The yard is an intermediate input whose value is captured in the
-             * contracts it serves, so it stays out of the measure and the
-             * parameters below are kept only to make that choice explicit.
+             * contracts it serves: work in progress is measured at CONTRACT
+             * value, and a contract already embodies the materials the job
+             * will consume, so counting the yard as well subtracted the same
+             * brick twice - observed as Imatl -1,340 against Iconstr +1,163 in
+             * a month with no trade at all. The yard stays out.
+             *
+             * The plant's stock is different in kind: it is output MADE and not
+             * yet sold, exactly as a mill's warehouse of food is. Building it
+             * up is production; the sale to the builders moves it into a
+             * contract and nets to zero. So `materialUnits` is the makers'
+             * stock and it is measured like food.
              */
-            invMaterials = 0;
+            invMaterials = (materialUnits - lastMaterialUnits) * materialPrice;
 
-            investmentInventories = invFood + invWorkInProgress;
+            investmentInventories = invFood + invMaterials;
         } else {
             investmentInventories = 0;
             inventoryBaselineKnown = true;
@@ -293,7 +294,6 @@ public class NationalAccounts {
 
         lastFoodUnits = foodUnits;
         lastMaterialUnits = materialUnits;
-        lastWorkInProgress = workInProgress;
 
         government = governmentServices;
 
@@ -659,7 +659,6 @@ public class NationalAccounts {
         history.clear();
         lastFoodUnits = 0;
         lastMaterialUnits = 0;
-        lastWorkInProgress = 0;
         inventoryBaselineKnown = true;   // an empty warehouse is a real baseline
         gdp = 0;
     }
@@ -668,13 +667,11 @@ public class NationalAccounts {
      * The month's national accounts, in the new unit.
      *
      * lastFoodUnits and lastMaterialUnits are UNITS - loaves and bricks - and
-     * do not move. lastWorkInProgress looks like their sibling and is not: work
-     * in progress is measured at CONTRACT VALUE, which is money. Leaving it
-     * unscaled was the single worst bug in this whole change and it hid behind
-     * the naming: the next month measured the change in stock as this month's
-     * value against last month's, one of them a hundred times the other, and
-     * booked the difference as production. GDP came out at -958,009 against
-     * +18.43. The two cities never recovered.
+     * do not move. (Work in progress, while it was a term here, was measured
+     * at CONTRACT VALUE, which is money, and leaving it unscaled was the
+     * single worst bug in this whole change: GDP came out at -958,009 against
+     * +18.43, and the two cities never recovered. Every money field below is
+     * scaled for that reason.)
      */
     public void redenominate(double scale) {
         consumptionGoods *= scale;  consumptionHousing *= scale;
@@ -687,8 +684,7 @@ public class NationalAccounts {
         utilityIncome *= scale;  landSales *= scale;
         propertyTax *= scale;  interestExpense *= scale;
         capitalSpending *= scale;  landPurchases *= scale;
-        invFood *= scale;  invMaterials *= scale;  invWorkInProgress *= scale;
-        lastWorkInProgress *= scale;
+        invFood *= scale;  invMaterials *= scale;
 
         /*
          * ...AND THE ROLLING HISTORY, which is ten years of GDP and is what

@@ -280,9 +280,9 @@ public class HistorySave {
         careCoverage.add(round4(game.getHealth().getCoverage()));
 
         landPrice.add(Math.round(game.getLandManager().getAcquisitionCostPerSqFt() * 1e6) / 1e6);
-        foodPrice.add(round4(economy.getIndustrialHandler().getFoodPrice()));
+        foodPrice.add(round4(game.getMarkets().get(Good.FOOD).getLocalPrice()));
         materialsPrice.add(round4(game.getBuildingManager().getConstructionMaterialPrice()));
-        orePrice.add(round4(game.getIronMarket().getExportPrice()));
+        orePrice.add(round4(game.getMarkets().get(Good.IRON).exportPrice()));
 
         /* ------------------------- the edge ------------------------- */
         ForeignAccounts abroad = game.getForeignAccounts();
@@ -324,7 +324,7 @@ public class HistorySave {
         healthBill.add(round2(game.getHealthcare().getNetCost()));
 
         /* ------------------------- housing ------------------------- */
-        rentPrice.add(round2(economy.getCommercialHandler().getRentPrice()));
+        rentPrice.add(round2(game.getSectors().realEstate().getRentPrice()));
         homes.add(game.getBuildingManager().getTotalHomes());
         households.add(round2(game.getFamilies().totalHouseholds()));
 

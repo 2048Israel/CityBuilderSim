@@ -1270,6 +1270,9 @@ public class UserInterface extends Application {
         if (header.isFromNewerBuild()) {
             return "From a newer version (" + header.getGameVersion() + ")";
         }
+        if (header.isFromBeforeSectors()) {
+            return "From before the sector redesign (" + header.getGameVersion() + ") - cannot be loaded";
+        }
 
         String when = java.time.Instant.ofEpochMilli(header.getSavedAt())
                 .atZone(java.time.ZoneId.systemDefault())
@@ -1993,8 +1996,8 @@ public class UserInterface extends Application {
         column.getChildren().add(statementHead("Who is waiting"));
 
         boolean anyone = false;
-        String[] sectors = {BusinessDebtManager.REAL_ESTATE, BusinessDebtManager.RETAIL,
-                BusinessDebtManager.INDUSTRY, BusinessDebtManager.CONSTRUCTION};
+        String[] sectors = {Sectors.REAL_ESTATE, Sectors.RETAIL,
+                Sectors.INDUSTRY, Sectors.CONSTRUCTION};
         for (String sector : sectors) {
             String last = game.getLastInvestment(sector);
             if (last != null && last.contains("no land")) {
@@ -2491,7 +2494,7 @@ public class UserInterface extends Application {
 
         /* ---------------------------- who is shut out ---------------------------- */
         BusinessDebtManager credit = em.getBusinessDebtManager();
-        for (String sector : BusinessDebtManager.SECTORS) {
+        for (String sector : Sectors.KEYS) {
             if (credit.isBorrowingBlocked(sector)) {
                 out.add(new String[] {Palette.BAD, sector + " cannot borrow",
                         credit.getBlockedMonths(sector) + " more months of it. A sector in "
@@ -2535,7 +2538,7 @@ public class UserInterface extends Application {
 
         /* ------------------------------ subsidies ------------------------------ */
         int protectedCount = 0;
-        for (PolicySector sector : PolicySector.values()) {
+        for (Sector sector : game.getSectors().all()) {
             if (game.isAutoSubsidised(sector)) protectedCount++;
         }
         if (protectedCount > 0 && game.getTotalSubsidyPaid() > 0) {
@@ -2941,8 +2944,8 @@ public class UserInterface extends Application {
         gridHead(assess, "", "assessed", "at today's rate");
         int line = 1;
         double billing = 0;
-        for (PolicySector sector : PolicySector.values()) {
-            double value = em.getAssessedValue(sector.category());
+        for (Sector sector : game.getSectors().all()) {
+            double value = em.getAssessedValue(sector);
             if (value <= 0) continue;
             double bill = value * policy.effectiveMonthlyPropertyRate(sector);
             billing += bill;
@@ -3003,7 +3006,7 @@ public class UserInterface extends Application {
     private double profitFactor(TaxPolicy policy, double from, double to) {
         SectorBooks books = game.getSectorBooks();
         double before = 0, after = 0;
-        for (PolicySector s : PolicySector.values()) {
+        for (Sector s : game.getSectors().all()) {
             SectorBooks.SectorMonth m = books.get(s);
             if (m == null) continue;
             double bearing = Math.max(0, m.preTaxIncome());
@@ -3020,8 +3023,8 @@ public class UserInterface extends Application {
     private double salesFactor(TaxPolicy policy, double from, double to) {
         SalesTaxLedger vat = game.getEconomyManager().getSalesTaxLedger();
         double before = 0, after = 0;
-        for (PolicySector s : PolicySector.values()) {
-            double sold = vat.getTaxableSales(s);
+        for (Sector s : game.getSectors().all()) {
+            double sold = vat.getTaxableSales(s.key());
             if (sold <= 0) continue;
             before += sold * clampRate(from + policy.getSalesOffset(s),
                     TaxPolicy.MAX_INCOME_TAX);
@@ -3083,8 +3086,8 @@ public class UserInterface extends Application {
     /** Every sector's property tax at a proposed city rate. */
     private double propertyTaxAt(TaxPolicy policy, EconomyManager em, double annual) {
         double total = 0;
-        for (PolicySector sector : PolicySector.values()) {
-            double value = em.getAssessedValue(sector.category());
+        for (Sector sector : game.getSectors().all()) {
+            double value = em.getAssessedValue(sector);
             if (value <= 0) continue;
             total += value * clampRate(annual + policy.getPropertyOffset(sector),
                     TaxPolicy.MAX_PROPERTY_TAX) / 12;
@@ -3207,7 +3210,7 @@ public class UserInterface extends Application {
         double base = policy.getIncomeTaxRate();
         double prop = policy.getPropertyTaxRate();
 
-        column.getChildren().add(statementHead("Six sectors, three moves each"));
+        column.getChildren().add(statementHead("Every sector, three moves each"));
         column.getChildren().add(statementNote(
                 "Profit and sales move off the city's income tax of " + pct(base)
                 + "; property moves off its property rate of "
@@ -3216,12 +3219,12 @@ public class UserInterface extends Application {
                 + "it bought - so a sector that only assembles somebody else's parts pays "
                 + "on the assembly."));
 
-        for (PolicySector sector : PolicySector.values()) {
+        for (Sector sector : game.getSectors().all()) {
 
             SectorBooks.SectorMonth month = books.get(sector);
             double bearing = month == null ? 0 : Math.max(0, month.preTaxIncome());
             double profitPaid = month == null ? 0 : month.tax();
-            double assessed = em.getAssessedValue(sector.category());
+            double assessed = em.getAssessedValue(sector);
 
             Label head = new Label(sector.label().toUpperCase());
             head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT)
@@ -3229,7 +3232,7 @@ public class UserInterface extends Application {
             column.getChildren().add(head);
 
             /* ------------------------------- profit ------------------------------- */
-            String pKey = "profit:" + sector.name();
+            String pKey = "profit:" + sector.key();
             double pOff = policy.getProfitOffset(sector);
             double pWant = staged(pKey, pOff);
             column.getChildren().add(bandLever("Profit", pts(pOff),
@@ -3260,15 +3263,15 @@ public class UserInterface extends Application {
             }
 
             /* -------------------------------- sales -------------------------------- */
-            String sKey = "sales:" + sector.name();
+            String sKey = "sales:" + sector.key();
             double sOff = policy.getSalesOffset(sector);
             double sWant = staged(sKey, sOff);
-            double sold = vat.getTaxableSales(sector);
-            double net = vat.getNet(sector);
+            double sold = vat.getTaxableSales(sector.key());
+            double net = vat.getNet(sector.key());
             column.getChildren().add(bandLever("Sales", pts(sOff),
                     pct2(policy.effectiveSalesRate(sector)),
                     sold > 0 ? money(net) + " net, on " + money(sold) + " of taxable sales"
-                             : vat.isInRefund(sector)
+                             : vat.isInRefund(sector.key())
                                      ? "in refund - its credits exceed what it owes"
                                      : "it sold nothing taxable last month",
                     sOff));
@@ -3295,7 +3298,7 @@ public class UserInterface extends Application {
             }
 
             /* ------------------------------- property ------------------------------- */
-            String rKey = "prop:" + sector.name();
+            String rKey = "prop:" + sector.key();
             double rOff = policy.getPropertyOffset(sector);
             double rWant = staged(rKey, rOff);
             double bill = assessed * policy.effectiveMonthlyPropertyRate(sector);
@@ -3602,7 +3605,8 @@ public class UserInterface extends Application {
     private void currencyReformPage(VBox column) {
 
         Denomination unit = game.getDenomination();
-        CommercialHandler shops = game.getEconomyManager().getCommercialHandler();
+        ham.citybuildersim.sectors.Retail shops = game.getSectors().retail();
+        ham.citybuildersim.sectors.RealEstate landlords = game.getSectors().realEstate();
         LabourMarket labour = game.getLabourMarket();
         ForeignAccounts fx = game.getForeignAccounts();
 
@@ -3656,8 +3660,8 @@ public class UserInterface extends Application {
                 unitPrice(shops.getStoreSellPrice()),
                 unitPrice(shops.getStoreSellPrice() / factor), Palette.TEXT_HEAD));
         column.getChildren().add(wouldBe("Rent, per person housed",
-                unitPrice(shops.getRentPrice()),
-                unitPrice(shops.getRentPrice() / factor), Palette.TEXT_HEAD));
+                unitPrice(landlords.getRentPrice()),
+                unitPrice(landlords.getRentPrice() / factor), Palette.TEXT_HEAD));
         column.getChildren().add(wouldBe("The minimum wage",
                 unitPrice(labour.cashMinimumWage()),
                 unitPrice(labour.cashMinimumWage() / factor), Palette.TEXT_HEAD));
@@ -3995,11 +3999,11 @@ public class UserInterface extends Application {
                 + "takes - and goes overdrawn if it must, which costs interest.",
                 Palette.TEXT_BODY));
 
-        for (PolicySector sector : PolicySector.values()) {
+        for (Sector sector : game.getSectors().all()) {
 
             boolean on = game.isAutoSubsidised(sector);
             double paid = game.getSubsidyPaid(sector);
-            boolean blocked = credit.isBorrowingBlocked(sector.creditName());
+            boolean blocked = credit.isBorrowingBlocked(sector.key());
 
             Label name = new Label(sector.label());
             name.setStyle(Palette.words(Palette.SIZE_BODY,
@@ -5488,17 +5492,24 @@ public class UserInterface extends Application {
                 new double[] {186, 130, 122, 108}, rightAfterFirst(4));
         gridHead(t, "", "world price", "at this rate", "which way");
 
-        IronMarket ore = game.getIronMarket();
         WorldEconomy world = game.getWorldEconomy();
 
+        // Every good the world trades with the city, both ways where it does.
         int line = 1;
-        line = priceRow(t, line, "Iron ore, exported", ore.getExportPrice(),
-                fx.getRate(), true);
-        line = priceRow(t, line, "Scrap, imported",
-                em.getHeavyIndustryHandler().getScrapPricePerTonne(), fx.getRate(), false);
-        line = priceRow(t, line, "Building materials",
-                game.getBuildingManager().getConstructionMaterialPrice(),
-                fx.getRate(), false);
+        for (GoodsMarket m : game.getMarkets().all()) {
+            Good g = m.good();
+            // The world's price today is the constant times the world's own
+            // price level; the market's rate carries both that and the currency.
+            double level = world == null ? 1 : world.getPriceLevel();
+            if (g.exportable()) {
+                line = priceRow(t, line, g.label() + ", exported",
+                        g.worldExportPrice() * level, fx.getRate(), true);
+            }
+            if (g.importable()) {
+                line = priceRow(t, line, (g == Good.IRON ? "Scrap" : g.label()) + ", imported",
+                        g.worldImportPrice() * level, fx.getRate(), false);
+            }
+        }
         column.getChildren().add(t);
 
         if (world != null) {
@@ -6582,7 +6593,7 @@ public class UserInterface extends Application {
         gridHead(t, "", "owed", "rate", "leverage", "loans");
 
         int line = 1;
-        for (String name : BusinessDebtManager.SECTORS) {
+        for (String name : Sectors.KEYS) {
             double owed = credit.getPrincipal(name);
             if (owed <= 0 && !credit.isBorrowingBlocked(name)) continue;
 
@@ -6657,7 +6668,7 @@ public class UserInterface extends Application {
         gridHead(t, "", "this month", "in total", "restructured", "status");
 
         int line = 1;
-        for (String name : BusinessDebtManager.SECTORS) {
+        for (String name : Sectors.KEYS) {
             double month = credit.getWrittenOffThisMonth(name);
             double total = credit.getWrittenOffTotal(name);
             boolean blocked = credit.isBorrowingBlocked(name);
@@ -9844,41 +9855,71 @@ public class UserInterface extends Application {
     List<String> whatItDoes(BuildingsTemplate t) {
         List<String> out = new ArrayList<>();
 
-        switch (t.getCategory()) {
-
-            case RESIDENTIAL:
-                out.add(String.format("%s %s for up to %s residents.",
-                        formatter.format(Math.max(t.getDwellings(), 1)),
-                        t.getDwellings() == 1 ? "home" : "homes",
-                        formatter.format(t.getCapacity())));
-                break;
-
-            case COMMERCIAL:
-                // capacity is shelf stock (CommercialHandler.storeCapacity);
-                // coverage is what it actually sells in a month.
-                out.add(String.format("Sells %s units a month and holds %s"
-                        + " units of stock on the shelves.",
-                        formatter.format(t.getCoverage()),
-                        formatter.format(t.getCapacity())));
-                break;
-
-            case INDUSTRIAL:
-                out.add(String.format("Produces %s units a month and warehouses %s.",
-                        formatter.format(t.getProduction1()),
-                        formatter.format(t.getCapacity())));
-                break;
-
-            case CONSTRUCTION:
-                if (t.getProduction1() > 0) {
+        /*
+         * A SECTOR'S BUILDING SAYS WHAT IT MAKES AND USES, off the template's
+         * own goods (2026-09-11, the sector template): the same two maps the
+         * simulation reads, priced at today's market. That replaced five
+         * category branches each reading production1 as a different thing.
+         * The homes are the exception - a home "makes" housing, and nobody
+         * needs telling that.
+         */
+        if (t.getCategory() == BuildingType.RESIDENTIAL) {
+            out.add(String.format("%s %s for up to %s residents.",
+                    formatter.format(Math.max(t.getDwellings(), 1)),
+                    t.getDwellings() == 1 ? "home" : "homes",
+                    formatter.format(t.getCapacity())));
+            return out;
+        }
+        if (t.isOwnedBySector() && !t.goodsMade().isEmpty()) {
+            for (java.util.Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+                Good g = e.getKey();
+                if (g == Good.GROCERIES) {
+                    // capacity is shelf stock; coverage is what it sells in a month.
+                    out.add(String.format("Sells %s units a month and holds %s"
+                            + " units of stock on the shelves.",
+                            formatter.format(t.getCoverage()),
+                            formatter.format(t.getStock())));
+                } else if (g == Good.BUILDING_WORK) {
                     out.add(String.format("Adds %s construction points a month - the rate"
                             + " everything in the city goes up at.",
-                            formatter.format(t.getProduction1())));
+                            formatter.format(e.getValue())));
+                } else if (g.traded()) {
+                    double price = game.getMarkets().get(g).getLocalPrice();
+                    String made = String.format("Makes %s %ss of %s a month",
+                            formatter.format(e.getValue()), g.unit(), g.label().toLowerCase());
+                    if (price > 0) made += String.format(", worth %s at today's price of %s a %s",
+                            money(e.getValue() * price), unitPrice(price), g.unit());
+                    out.add(made + (t.getStock() > 0
+                            ? String.format(", and warehouses %s.", formatter.format(t.getStock()))
+                            : "."));
                 }
-                if (t.getProduction2() > 0) {
-                    out.add(String.format("Produces %s construction materials a month, so"
-                            + " they need not be imported.",
-                            formatter.format(t.getProduction2())));
-                }
+            }
+            for (java.util.Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+                Good g = e.getKey();
+                if (!g.traded()) continue;
+                double price = game.getMarkets().get(g).getLocalPrice();
+                out.add(String.format("Uses %s %ss of %s a month%s, bought on the market"
+                        + " or imported.",
+                        formatter.format(e.getValue()), g.unit(), g.label().toLowerCase(),
+                        price > 0 ? " - " + money(e.getValue() * price) + " at today's price" : ""));
+            }
+            if (t.getCategory() == BuildingType.MINING) {
+                out.add("Needs a land parcel with iron under it - cash and space alone"
+                        + " will not put one up.");
+            }
+            return out;
+        }
+
+        switch (t.getCategory()) {
+
+            case COMMERCIAL:
+                // The one commercial building no sector owns: the bank's counters.
+                out.add(String.format("A branch of the city's bank. Gathers up to %s of "
+                        + "deposits and brings %s of shareholders' capital with it, which "
+                        + "is what lets the bank lend.",
+                        money(Bank.DEPOSITS_PER_BRANCH), money(Bank.PAID_IN_PER_BRANCH)));
+                out.add("Every borrower in the city pays a premium while the bank is "
+                        + "stretched; a branch is what relieves it.");
                 break;
 
             case ELECTRICITY:
@@ -9917,37 +9958,6 @@ public class UserInterface extends Application {
                             formatter.format(Math.round(
                                     t.getConstructionPoints() * 1000.0 / t.getCapacity()))));
                 }
-                break;
-            }
-
-            case MINING: {
-                /*
-                 * TODAY'S EXPORT PRICE, not the one written on the template.
-                 * productionModifier1 is where the mine's price STARTS; the iron
-                 * market is what it sells at now, and quoting the template would
-                 * hand the player a revenue figure the mine has not earned since
-                 * the market last moved.
-                 */
-                double ship = game.getIronMarket().getExportPrice();
-                out.add(String.format("Mines %s tonnes of ore a month, worth %s at"
-                        + " today's export price of %s a tonne.",
-                        formatter.format(t.getProduction1()),
-                        money(t.getProduction1() * ship), unitPrice(ship)));
-                out.add("Needs a land parcel with iron under it - cash and space alone"
-                        + " will not put one up.");
-                break;
-            }
-
-            case HEAVY_INDUSTRY: {
-                double revenue = t.getProduction1() * t.getProductionModifier1();
-                double ore     = t.getProduction2() * t.getProductionModifier2();
-                out.add(String.format("Turns %s tonnes of ore into %s tonnes of steel a"
-                        + " month.",
-                        formatter.format(t.getProduction2()),
-                        formatter.format(t.getProduction1())));
-                out.add(String.format("At full throughput that is %s of steel against"
-                        + " %s of ore - a margin of %s a month before wages.",
-                        money(revenue), money(ore), money(revenue - ore)));
                 break;
             }
 
@@ -10571,14 +10581,14 @@ public class UserInterface extends Application {
        ===================================================================== */
 
     /** Which sector's books are open, or null for the list. */
-    private PolicySector openSector = null;
+    private Sector openSector = null;
     private String sectorPage = "Operations";
 
     private static final String[] SECTOR_PAGES =
             {"Operations", "Income", "Balance sheet", "Cash & debt", "Investors"};
 
     /** Open one business's books from somewhere else in the game. */
-    private void openSectorBooks(PolicySector sector, String page) {
+    private void openSectorBooks(Sector sector, String page) {
         openSector = sector;
         sectorPage = page;
         innerScrollAt.remove("showSectorMenu:body");
@@ -10617,7 +10627,7 @@ public class UserInterface extends Application {
 
         double total = 0;
         double totalBefore = 0;
-        for (PolicySector sector : PolicySector.values()) {
+        for (Sector sector : game.getSectors().all()) {
             SectorBooks.SectorMonth now = books.get(sector);
             SectorBooks.SectorMonth then = books.previous(sector);
             total += now.netIncome();
@@ -10625,7 +10635,7 @@ public class UserInterface extends Application {
             column.getChildren().add(sectorCard(sector, now, then));
         }
 
-        column.getChildren().add(statementTotal("All six together",
+        column.getChildren().add(statementTotal("All " + numberWord(game.getSectors().size()) + " together",
                 tightMoney(toDollars(total)) + "/mo",
                 total < 0 ? Palette.BAD : Palette.GOOD));
         if (Math.abs(totalBefore) > 0) {
@@ -10646,7 +10656,7 @@ public class UserInterface extends Application {
      * read - every one of these is a number nobody has an intuition for, and
      * "down a third" is a fact anybody can act on.
      */
-    private HBox sectorCard(PolicySector sector,
+    private HBox sectorCard(Sector sector,
                             SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
 
         Label name = new Label(sector.label());
@@ -10695,16 +10705,19 @@ public class UserInterface extends Application {
         return row;
     }
 
-    /** What the business actually does, in four words. */
-    private static String sectorBlurb(PolicySector sector) {
-        return switch (sector) {
-            case RETAIL         -> "the shops, and the bank's counters";
-            case REAL_ESTATE    -> "the landlords — every rent in the city";
-            case INDUSTRY       -> "food, and everything the shops sell";
-            case CONSTRUCTION   -> "the builders — they bill the city per job";
-            case HEAVY_INDUSTRY -> "steel, out of ore and scrap";
-            case MINING         -> "iron ore, sold here and abroad";
-        };
+    /** What the business actually does, in a few words - the sector's own first sentence. */
+    private static String sectorBlurb(Sector sector) {
+        String blurb = sector.blurb();
+        if (blurb == null || blurb.isBlank()) return sector.label();
+        int stop = blurb.indexOf('.');
+        String first = stop > 0 ? blurb.substring(0, stop) : blurb;
+        return first.length() > 72 ? first.substring(0, 69) + "..." : first;
+    }
+
+    /** "six", "seven" - for the total line, which names the count. */
+    private static String numberWord(int n) {
+        String[] words = { "no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
+        return n >= 0 && n < words.length ? words[n] : String.valueOf(n);
     }
 
     /* =====================================================================
@@ -10713,7 +10726,7 @@ public class UserInterface extends Application {
 
     private void drawSectorScreen() {
 
-        PolicySector sector = openSector;
+        Sector sector = openSector;
         SectorBooks books = game.getSectorBooks();
         SectorBooks.SectorMonth now = books.get(sector);
         SectorBooks.SectorMonth then = books.previous(sector);
@@ -10760,7 +10773,7 @@ public class UserInterface extends Application {
         rootMenu.getChildren().addAll(title, vitals, strip, scrolled(column, 250), back);
     }
 
-    private HBox sectorVitals(PolicySector sector,
+    private HBox sectorVitals(Sector sector,
                               SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
 
         double move = now.netIncome() - then.netIncome();
@@ -10781,12 +10794,12 @@ public class UserInterface extends Application {
                         now.cash() < 0 ? "overdrawn — it is borrowing" : "in its own account",
                         now.cash() < 0 ? Palette.BAD : Palette.TEXT_HEAD),
                 limitCell("OWES", tightMoney(toDollars(now.bondsPayable())),
-                        credit.isBorrowingBlocked(sector.creditName())
+                        credit.isBorrowingBlocked(sector.key())
                                 ? "cannot borrow — " + credit.getBlockedMonths(
-                                        sector.creditName()) + " months left"
+                                        sector.key()) + " months left"
                                 : String.format("at %.2f%%, leverage %.2f",
                                         now.rate() * 100, now.leverage()),
-                        credit.isBorrowingBlocked(sector.creditName()) ? Palette.BAD
+                        credit.isBorrowingBlocked(sector.key()) ? Palette.BAD
                                 : now.leverage() > .6 ? Palette.WARN : Palette.TEXT_HEAD));
     }
 
@@ -10908,18 +10921,12 @@ public class UserInterface extends Application {
 
     /* -------------------------- THE INCOME STATEMENT -------------------------- */
 
-    /** What this sector's direct cost is actually called. */
-    private static String inputLabel(PolicySector sector) {
-        return switch (sector) {
-            case RETAIL         -> "Stock bought to sell";
-            case REAL_ESTATE    -> "Maintenance";
-            case HEAVY_INDUSTRY -> "Ore and scrap";
-            case CONSTRUCTION   -> "Materials";
-            default             -> "Cost of sales";
-        };
+    /** What this sector's direct cost is actually called - the sector says. */
+    private static String inputLabel(Sector sector) {
+        return sector.inputLabel();
     }
 
-    private void incomePage(VBox column, PolicySector sector,
+    private void incomePage(VBox column, Sector sector,
                             SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
 
         boolean known = !then.isEmpty();
@@ -10945,6 +10952,10 @@ public class UserInterface extends Application {
         if (now.water() != 0 || then.water() != 0) {
             column.getChildren().add(bookLine("Water",
                     -now.water(), -then.water(), known, null));
+        }
+        if (now.maintenance() != 0 || then.maintenance() != 0) {
+            column.getChildren().add(bookLine("Repairs",
+                    -now.maintenance(), -then.maintenance(), known, null));
         }
 
         column.getChildren().add(bookTotal("Operating income",
@@ -11006,18 +11017,11 @@ public class UserInterface extends Application {
                     + "what zero-rating an export means, and the city pays it."));
         }
 
-        if (sector == PolicySector.CONSTRUCTION) {
-            column.getChildren().add(statementNote(
-                    "The builders pay no profit tax in this model. EconomyManager collects "
-                    + "from retail, real estate, industry, heavy industry and mining, and "
-                    + "stops — construction pays property tax like everybody else and "
-                    + "nothing on what it earns."));
-        }
     }
 
     /* --------------------------- THE BALANCE SHEET --------------------------- */
 
-    private void balancePage(VBox column, PolicySector sector,
+    private void balancePage(VBox column, Sector sector,
                              SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
 
         boolean known = !then.isEmpty();
@@ -11099,7 +11103,7 @@ public class UserInterface extends Application {
                 "Buildings are at what they cost to put up — cash plus materials at the "
                 + "price of the day. Nothing here depreciates."));
 
-        ownersBlock(column, Equity.indexOf(sector.creditName()), now.equity(), now.netIncome());
+        ownersBlock(column, Equity.indexOf(sector.key()), now.equity(), now.netIncome());
     }
 
     /**
@@ -11229,12 +11233,12 @@ public class UserInterface extends Application {
 
     /* ---------------------------- CASH AND CREDIT ---------------------------- */
 
-    private void cashAndDebtPage(VBox column, PolicySector sector,
+    private void cashAndDebtPage(VBox column, Sector sector,
                                  SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
 
         boolean known = !then.isEmpty();
         BusinessDebtManager credit = game.getEconomyManager().getBusinessDebtManager();
-        String key = sector.creditName();
+        String key = sector.key();
 
         /*
          * A REAL RECONCILIATION, not a plausible-looking list.
@@ -11384,12 +11388,12 @@ public class UserInterface extends Application {
      * interest, nobody builds while the ground is full, and a sector that loses
      * money for long enough starts selling its buildings back.
      * -------------------------------------------------------------------- */
-    private void investorPage(VBox column, PolicySector sector,
+    private void investorPage(VBox column, Sector sector,
                               SectorBooks.SectorMonth now) {
 
         BusinessInvestment plans = game.getBusinessInvestment();
         BusinessDebtManager credit = game.getEconomyManager().getBusinessDebtManager();
-        String key = sector.creditName();
+        String key = sector.key();
 
         /* ------------------------- what it decided ------------------------- */
         column.getChildren().add(statementHead("What it decided this month"));
@@ -11406,7 +11410,7 @@ public class UserInterface extends Application {
                         : declined ? Palette.BAD
                         : holding ? Palette.TEXT_MUTED : Palette.GOOD));
 
-        if (sector == PolicySector.RETAIL) {
+        if (sector == game.getSectors().retail()) {
             String bank = game.getLastInvestment("Bank");
             if (bank != null && !bank.isEmpty()) {
                 column.getChildren().add(subHead("And its bank branches, separately"));
@@ -11500,7 +11504,7 @@ public class UserInterface extends Application {
                     + "close."));
         }
 
-        if (sector == PolicySector.CONSTRUCTION) {
+        if (sector == game.getSectors().construction()) {
             column.getChildren().add(statementNote(String.format(
                     "The builders are the exception: they expand off their order book "
                     + "rather than off population, and only once it is more than %.0f "
@@ -11515,340 +11519,36 @@ public class UserInterface extends Application {
 
     /* ----------------------------- WHAT IT DOES -----------------------------
      *
-     * The one page that cannot be written once for six sectors: a mine is
-     * measured in tonnes and a shop in customers, and flattening that into a
-     * shared shape would lose the only thing on the page worth reading.
+     * The one page that used to be written six times over: a mine is
+     * measured in tonnes and a shop in customers, and the old six methods
+     * each read their own handler. SINCE THE SECTOR TEMPLATE (2026-09-11)
+     * the sector writes its own page - Sector.operations(Game) returns the
+     * lines, as data, and this draws them. A seventh sector is a seventh
+     * page for free, and the screen and the console printer read the same
+     * lines, so they cannot disagree.
      * -------------------------------------------------------------------- */
-    private void operationsPage(VBox column, PolicySector sector) {
-        switch (sector) {
-            case RETAIL         -> retailOperations(column);
-            case REAL_ESTATE    -> realEstateOperations(column);
-            case INDUSTRY       -> industryOperations(column);
-            case HEAVY_INDUSTRY -> heavyOperations(column);
-            case MINING         -> miningOperations(column);
-            default             -> constructionOperations(column);
+    private void operationsPage(VBox column, Sector sector) {
+        for (Sector.Line line : sector.operations(game)) {
+            switch (line.kind()) {
+                case HEAD -> column.getChildren().add(statementHead(line.label()));
+                case NOTE -> column.getChildren().add(statementNote(line.label()));
+                default -> column.getChildren().add(statementLine(line.label(), line.value(),
+                        toneColour(line.tone())));
+            }
         }
     }
 
-    private void retailOperations(VBox column) {
-
-        CommercialHandler h = game.getEconomyManager().getCommercialHandler();
-
-        column.getChildren().add(statementHead("The shops"));
-        column.getChildren().add(statementLine("People the shops can serve",
-                people(h.getReportStoreCoverage())));
-        column.getChildren().add(statementLine("Staffed",
-                String.format("%.0f%%", h.getAverageStoreFill() * 100),
-                h.getAverageStoreFill() < .9 ? Palette.WARN : null));
-        column.getChildren().add(statementLine("Shelf price",
-                cash(h.getReportSellPrice())));
-        column.getChildren().add(statementLine("Units sold", people(h.getProductsSold())));
-        column.getChildren().add(statementLine("On the shelf", people(h.getStoreInventory())));
-
-        column.getChildren().add(statementHead("What people wanted"));
-        column.getChildren().add(statementLine("Wanted to buy",
-                people(h.getWantedDemand())));
-        column.getChildren().add(statementLine("Could not afford it",
-                people(h.getUnaffordableDemand()),
-                h.getUnaffordableDemand() > 0 ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementLine("Delivered",
-                String.format("%.0f%%", h.getDeliveredShare() * 100),
-                h.getDeliveredShare() < .95 ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementNote(
-                "Households spend what they have left after rent and fees. A shop that "
-                + "cannot sell is as often a wage problem as a stock problem — the "
-                + "household screen is where that argument is settled."));
-
-        if (h.getScarcityMultiple() > 1.01) {
-            column.getChildren().add(statementLine("Scarcity mark-up",
-                    String.format("%.2fx", h.getScarcityMultiple()), Palette.WARN));
-            column.getChildren().add(statementNote(
-                    "Empty shelves put the price up. It comes back down as stock returns."));
-        }
-
-        column.getChildren().add(statementHead("What it paid for stock"));
-        column.getChildren().add(statementLine("Bought locally",
-                tightMoney(toDollars(h.getReportLocalPurchaseValue()), false)));
-        column.getChildren().add(statementLine("Imported",
-                tightMoney(toDollars(h.getReportImportPurchaseValue()), false)));
-        column.getChildren().add(statementLine("Import tax on that",
-                tightMoney(toDollars(h.getImportTax()), false),
-                h.getImportTax() > 0 ? Palette.WARN : null));
-    }
-
-    private void realEstateOperations(VBox column) {
-
-        CommercialHandler h = game.getEconomyManager().getCommercialHandler();
-
-        column.getChildren().add(statementHead("The doors"));
-        column.getChildren().add(statementLine("Homes owned", people(h.getHomes())));
-        column.getChildren().add(statementLine("Let", people(h.getOccupiedHomes())));
-        column.getChildren().add(statementLine("Standing empty",
-                people(Math.max(0, h.getHomes() - h.getOccupiedHomes())),
-                h.getHomes() - h.getOccupiedHomes() > 0 ? Palette.WARN : Palette.GOOD));
-
-        /*
-         * WHICH RENT THIS IS.
-         *
-         * The model holds one rent price, per person of capacity, and the
-         * household screens print a different number - what one let home pays,
-         * which is this times the beds behind the door. They are the same money
-         * in two units and they cannot disagree, but for a whole session they
-         * looked like a contradiction because neither screen said which unit it
-         * was in. So this screen names its unit in the heading and then does the
-         * conversion out loud, and the household figure it lands on is the one
-         * the other screen shows.
-         */
-        /*
-         * Read from the households' own ledger, NOT recomputed here. The whole
-         * point of the line is that the two screens agree, and two derivations
-         * of one number is exactly how they stopped agreeing in the first place.
-         */
-        double perDoor = game.getHouseholds().rentPerHousehold();
-        double beds = h.getRentPrice() > 0 ? perDoor / h.getRentPrice() : 0;
-
-        column.getChildren().add(statementHead("Family homes, per person of capacity"));
-        column.getChildren().add(statementLine("Charged now", cash(h.getRentPrice())));
-        column.getChildren().add(statementLine("Heading for", cash(h.getRentTarget()),
-                h.getRentTarget() > h.getRentPrice() ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementLine("Households per door",
-                String.format("%.2f", h.familyPressure()),
-                h.familyPressure() > 1.2 ? Palette.BAD
-                        : h.familyPressure() > 1 ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementNote(
-                "Rent moves toward its target a fraction of the gap a month rather than "
-                + "jumping — leases do not all end in the same week. So a rent that is "
-                + "about to rise is visible here months before it is felt."));
-
-        /* -----------------------------------------------------------------
-         * THE SECOND MARKET, and it has to be on screen or the split is
-         * invisible. A door a child is not allowed in is a different product
-         * with its own scarcity and its own price - a city can be desperate
-         * for family homes while its studios stand empty, and one blended
-         * number said that city was comfortable.
-         * ----------------------------------------------------------------- */
-        column.getChildren().add(statementHead("Studios and one-beds"));
-        column.getChildren().add(statementLine("Charged now", cash(h.getStudioRentPrice())));
-        column.getChildren().add(statementLine("Heading for", cash(h.getStudioRentTarget()),
-                h.getStudioRentTarget() > h.getStudioRentPrice()
-                        ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementLine("Households per door",
-                String.format("%.2f", h.studioPressure()),
-                h.studioPressure() > 1.2 ? Palette.BAD
-                        : h.studioPressure() > 1 ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementLine("Doors",
-                people(h.getStudioHomes()) + " against "
-                        + people(h.getFamilyHomes()) + " family"));
-        column.getChildren().add(statementNote(
-                "Nobody with a child may live in a studio, so the two are priced as two "
-                + "markets. If the family figure is high and this one is low, the city is "
-                + "not short of housing — it is short of the right shape of it, and "
-                + "building more studios will not touch it."));
-
-        column.getChildren().add(statementLine(
-                beds > 0 ? String.format("What one let home pays, billed for %.1f", beds)
-                         : "What one let home pays",
-                perDoor > 0 ? cash(perDoor) : "not struck yet",
-                perDoor > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
-        column.getChildren().add(statementNote(
-                "The price above is per head of capacity, not per front door. This line is "
-                + "the same money over the other denominator, read from the households' own "
-                + "ledger — it is the rent figure the Population screens print."
-                + (perDoor > 0 ? "" : " It is struck when a month closes, so it reads nothing"
-                        + " until you press Next Month.")));
-        column.getChildren().add(statementHead("What sets the price"));
-        column.getChildren().add(statementLine("The cost of the next home",
-                cash(h.getStructurePerCapacity() + h.getLandPerCapacity())));
-        column.getChildren().add(statementNote(String.format(
-                "Per person of capacity: %s of building and %s of ground. What it would "
-                + "cost to put up one more, which is what a balanced market pays for. "
-                + "Cheap land and cheap materials are a rent policy.",
-                cash(h.getStructurePerCapacity()), cash(h.getLandPerCapacity()))));
-        column.getChildren().add(statementLine("They will not go below",
-                cash(h.rentBreakEven()), Palette.TEXT_MUTED));
-        column.getChildren().add(statementNote(
-                "Repairs, property tax and interest on what the company already owes, "
-                + "over every head its buildings hold — what the standing stock costs "
-                + "to hold whether anyone is in it or not. Rent can be pushed down to "
-                + "this by a glut and no further: below it the landlords are paying to "
-                + "house people. An empty home still costs this, which is why building "
-                + "doors nobody wants is not free."));
-    }
-
-    private void industryOperations(VBox column) {
-
-        IndustrialHandler h = game.getEconomyManager().getIndustrialHandler();
-
-        column.getChildren().add(statementHead("The plants"));
-        column.getChildren().add(statementLine("Could make",
-                people(h.getReportBaseProduction()) + " units"));
-        column.getChildren().add(statementLine("Actually made",
-                people(h.getReportActualProduction()) + " units",
-                h.getOperatingRate() < .9 ? Palette.WARN : null));
-        column.getChildren().add(statementLine("Running at",
-                String.format("%.0f%%", h.getOperatingRate() * 100),
-                h.getOperatingRate() < .5 ? Palette.BAD
-                        : h.getOperatingRate() < .9 ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementNote(String.format(
-                "Staffed %.0f%%, power %.0f%%, water %.0f%%, roads %.0f%% — output is cut "
-                + "by whichever of those is thinnest.",
-                h.getReportAverageFill() * 100, h.getReportEnergyRatio() * 100,
-                h.getReportWaterRatio() * 100, h.getReportRoadRatio() * 100)));
-
-        column.getChildren().add(statementHead("The market"));
-        column.getChildren().add(statementLine("Sold", people(h.getReportUnitsSold()) + " units"));
-        column.getChildren().add(statementLine("At", cash(h.getReportSellPrice())));
-        column.getChildren().add(statementLine("Cost to make one",
-                cash(h.getReportCostPerUnit()),
-                h.getReportCostPerUnit() > h.getReportSellPrice() ? Palette.BAD : null));
-        column.getChildren().add(statementLine("In the warehouse",
-                people(h.getReportFoodInventory()) + " units"));
-        if (h.getReportWithheld() > 0) {
-            column.getChildren().add(statementLine("Held back",
-                    people(h.getReportWithheld()) + " units", Palette.WARN));
-            column.getChildren().add(statementNote(
-                    "It will not sell below what the unit cost to make. Stock it refuses "
-                    + "to shift at today's price sits in the warehouse instead."));
-        }
-        if (h.getInventoryWrittenOff() > 0) {
-            column.getChildren().add(statementLine("Spoiled",
-                    people(h.getInventoryWrittenOff()) + " units", Palette.BAD));
-        }
-        if (h.getFoodExportRevenue() > 0) {
-            column.getChildren().add(statementLine("Exported",
-                    tightMoney(toDollars(h.getFoodExportRevenue()), false), Palette.GOOD));
-        }
-    }
-
-    private void heavyOperations(VBox column) {
-
-        HeavyIndustryHandler h = game.getEconomyManager().getHeavyIndustryHandler();
-        IronMarket ore = game.getIronMarket();
-
-        column.getChildren().add(statementHead("The mills"));
-        column.getChildren().add(statementLine("Capacity",
-                people(h.getOutputCapacity()) + " tonnes"));
-        column.getChildren().add(statementLine("Made",
-                people(h.getReportOutput()) + " tonnes"));
-        column.getChildren().add(statementLine("Running at",
-                String.format("%.0f%%", h.getReportOperatingRate() * 100),
-                h.getReportOperatingRate() < .5 ? Palette.BAD
-                        : h.getReportOperatingRate() < .9 ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementLine("Staffed",
-                String.format("%.0f%%", h.getAverageFill() * 100),
-                h.getAverageFill() < .9 ? Palette.WARN : null));
-
-        column.getChildren().add(statementHead("What it feeds on"));
-        column.getChildren().add(statementLine("Ore wanted",
-                people(h.getOreDemand()) + " tonnes"));
-        column.getChildren().add(statementLine("Taken from the city's mines",
-                people(h.getReportLocalOreUsed()) + " tonnes",
-                h.getReportLocalOreUsed() > 0 ? Palette.GOOD : Palette.WARN));
-        column.getChildren().add(statementLine("Scrap imported instead",
-                people(h.getReportScrapImported()) + " tonnes",
-                h.getReportScrapImported() > 0 ? Palette.WARN : null));
-        column.getChildren().add(statementNote(String.format(
-                "Local ore is $%.2f a tonne and imported scrap is $%.2f. A city with mines "
-                + "and no mills exports its ore; a city with mills and no mines imports "
-                + "its scrap. Both work, and one of them keeps the margin here.",
-                toDollars(ore.getLocalPrice()), toDollars(h.getScrapPricePerTonne()))));
-
-        column.getChildren().add(statementHead("The spread"));
-        column.getChildren().add(statementLine("Steel sells for",
-                cash(h.getExportPrice())));
-        column.getChildren().add(statementLine("Conversion margin",
-                cash(h.getConversionMargin()),
-                h.getConversionMargin() <= 0 ? Palette.BAD : Palette.GOOD));
-        column.getChildren().add(statementNote(
-                "What a tonne of steel fetches over what the ore in it cost. Everything "
-                + "else on the income statement comes out of that difference."));
-    }
-
-    private void miningOperations(VBox column) {
-
-        MiningHandler h = game.getEconomyManager().getMiningHandler();
-        IronMarket ore = game.getIronMarket();
-        LandManager land = game.getLandManager();
-
-        column.getChildren().add(statementHead("The mines"));
-        column.getChildren().add(statementLine("Capacity",
-                people(h.getReportCapacity()) + " tonnes"));
-        column.getChildren().add(statementLine("Lifted",
-                people(h.getReportOreLifted()) + " tonnes"));
-        column.getChildren().add(statementLine("Running at",
-                String.format("%.0f%%", h.getReportOperatingRate() * 100),
-                h.getReportOperatingRate() < .5 ? Palette.BAD
-                        : h.getReportOperatingRate() < .9 ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementLine("Staffed",
-                String.format("%.0f%%", h.getAverageFill() * 100),
-                h.getAverageFill() < .9 ? Palette.WARN : null));
-
-        column.getChildren().add(statementHead("Where it goes"));
-        column.getChildren().add(statementLine("To the city's mills",
-                people(h.getReportOreSoldLocally()) + " tonnes"));
-        column.getChildren().add(statementLine("Exported",
-                people(h.getReportOreExported()) + " tonnes"));
-        column.getChildren().add(statementLine("Local price",
-                cash(h.getReportLocalPrice())));
-        column.getChildren().add(statementLine("Export price",
-                cash(h.getReportExportPrice())));
-        column.getChildren().add(statementNote(
-                "A mine will not sell at home below what it could export for, so the local "
-                + "price is a floor rather than a bargain. Where it settles inside the band "
-                + "decides whether the mines or the mills take the gain."));
-
-        column.getChildren().add(statementHead("What is under the ground"));
-        column.getChildren().add(statementLine("Deposits found",
-                people(land.getIronDeposits())));
-        column.getChildren().add(statementLine("Being worked",
-                people(game.minesCommitted()),
-                game.minesCommitted() < land.getIronDeposits() ? Palette.WARN : Palette.GOOD));
-        if (game.minesCommitted() < land.getIronDeposits()) {
-            column.getChildren().add(statementNote(
-                    "There is ore under this city that nothing is digging."));
-        }
-    }
-
-    private void constructionOperations(VBox column) {
-
-        ConstructionHandler h = game.getServicesManager().getConstructionHandler();
-
-        column.getChildren().add(statementHead("The crews"));
-        column.getChildren().add(statementLine("Output",
-                people(h.getConstructionOutput()) + " pts a month"));
-        column.getChildren().add(statementLine("Busy",
-                String.format("%.0f%%", h.getUtilisation() * 100),
-                h.getUtilisation() > .95 ? Palette.WARN
-                        : h.getUtilisation() < .3 ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementLine("Staffed",
-                String.format("%.0f%%", h.getAverageFill() * 100),
-                h.getAverageFill() < .9 ? Palette.WARN : null));
-        column.getChildren().add(statementLine("Order book",
-                people(h.getBacklogPoints()) + " pts",
-                h.getBacklogPoints() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
-
-        column.getChildren().add(statementHead("Materials"));
-        column.getChildren().add(statementLine("Made", people(h.getMaterialsProduction())));
-        column.getChildren().add(statementLine("Used", people(h.getMaterialsConsumed())));
-        column.getChildren().add(statementLine("In the yard",
-                people(h.getMaterialsInventory())));
-        column.getChildren().add(statementLine("Price each",
-                cash(h.getMaterialsPrice())));
-
-        column.getChildren().add(statementHead("How it bills"));
-        column.getChildren().add(statementLine("Billed but not yet earned",
-                tightMoney(toDollars(h.getUnearnedRevenue()), false)));
-        column.getChildren().add(statementNote(
-                "Every build order is invoiced up front and recognised as the work is "
-                + "done, which is why this business can hold cash it has not earned. It is "
-                + "the only sector in the city with a liability of that shape."));
-        if (h.getSubsidyThisMonth() > 0) {
-            column.getChildren().add(statementLine("Subsidy this month",
-                    tightMoney(toDollars(h.getSubsidyThisMonth()), false), Palette.ACCENT));
-            column.getChildren().add(statementNote(
-                    "You are keeping crews alive that the order book would not. Set on the "
-                    + "policy screen."));
-        }
+    /** The palette colour a sector's line asked for, or none. */
+    private static String toneColour(Sector.Line.Tone tone) {
+        if (tone == null) return null;
+        return switch (tone) {
+            case GOOD  -> Palette.GOOD;
+            case WARN  -> Palette.WARN;
+            case BAD   -> Palette.BAD;
+            case MUTED -> Palette.TEXT_SPENT;
+            case HEAD  -> Palette.TEXT_HEAD;
+            default    -> null;
+        };
     }
 
     /* =====================================================================
@@ -13332,8 +13032,9 @@ public class UserInterface extends Application {
          * They are not, and now the model says so. This is the real charge,
          * from the same per-category maintenance the whole city pays.
          */
-        double roadUpkeep = game.getEconomyManager()
-                .getMaintenanceCharge(BuildingType.INFRASTRUCTURE);
+        double roadUpkeep = game.getEconomyManager().maintenanceBillFor(
+                BuildingType.INFRASTRUCTURE,
+                Math.max(0, game.getBuildingManager().getConstructionMaterialPrice()));
 
         /*
          * A BUSINESS, unlike the two above it. The utilities sell what they
@@ -15125,7 +14826,7 @@ public class UserInterface extends Application {
                 if (own.shares(c) <= 0 || register.getShares(c) <= 0) continue;
                 double stake = own.shares(c) / register.getShares(c);
                 double book = c == Equity.BANK ? game.getBank().equity()
-                        : game.getSectorBooks().get(PolicySector.byCreditName(Equity.COMPANIES[c])).equity();
+                        : game.getSectorBooks().get(Equity.COMPANIES[c]).equity();
                 worth += exchange.isOpen() ? own.shares(c) * exchange.mid(c) : stake * Math.max(0, book);
                 if (holdings.length() > 0) holdings.append(", ");
                 holdings.append(String.format("%s %.3f%%", Equity.COMPANIES[c], stake * 100));
@@ -16787,20 +16488,21 @@ public class UserInterface extends Application {
 
     /* --------------------------- WHO PAYS WHAT --------------------------- */
 
-    /** Business tax, by the six companies that pay it. */
+    /** Business tax, by the companies that pay it - every sector, and the bank. */
     private VBox businessTaxDetail(double total) {
         SectorBooks books = game.getSectorBooks();
         TaxPolicy policy = game.getEconomyManager().getTaxPolicy();
         VBox box = new VBox(0);
-        for (PolicySector sector : PolicySector.values()) {
+        for (Sector sector : game.getSectors().all()) {
             box.getChildren().add(payerRow(sector.label(),
                     books.get(sector).tax(), total,
                     String.format("%.1f%%", policy.effectiveProfitRate(sector) * 100)));
         }
+        box.getChildren().add(payerRow("Bank", game.getEconomyManager().getBankTax(), total,
+                String.format("%.1f%%", policy.getIncomeTaxRate() * 100)));
         box.getChildren().add(statementNote(
                 "Charged on each company's own profit and never refunded on a loss, so a "
-                + "sector that lost money this month simply paid nothing. The builders are "
-                + "not taxed on profit at all."));
+                + "sector that lost money this month simply paid nothing."));
         return box;
     }
 
@@ -16809,7 +16511,7 @@ public class UserInterface extends Application {
         EconomyManager em = game.getEconomyManager();
         TaxPolicy policy = em.getTaxPolicy();
         VBox box = new VBox(0);
-        for (PolicySector sector : PolicySector.values()) {
+        for (Sector sector : game.getSectors().all()) {
             box.getChildren().add(payerRow(sector.label(),
                     em.getSectorSalesTax(sector), total,
                     String.format("%.1f%%", policy.effectiveSalesRate(sector) * 100)));
@@ -16854,19 +16556,15 @@ public class UserInterface extends Application {
         return box;
     }
 
-    /** Property tax, by the kind of building it is assessed on. */
+    /** Property tax, by the sector it is assessed on. */
     private VBox propertyTaxDetail(double total) {
         EconomyManager em = game.getEconomyManager();
         TaxPolicy policy = em.getTaxPolicy();
         VBox box = new VBox(0);
-        for (BuildingType type : new BuildingType[]{
-                BuildingType.COMMERCIAL, BuildingType.RESIDENTIAL, BuildingType.INDUSTRIAL,
-                BuildingType.HEAVY_INDUSTRY, BuildingType.MINING, BuildingType.CONSTRUCTION}) {
-            PolicySector owner = PolicySector.byCategory(type);
-            box.getChildren().add(payerRow(propertyLabel(type),
-                    em.getPropertyTaxFor(type), total,
-                    owner == null ? "—" : String.format("%.2f%%",
-                            policy.effectivePropertyRate(owner) * 100)));
+        for (Sector sector : game.getSectors().all()) {
+            box.getChildren().add(payerRow(sector.label(),
+                    em.getPropertyTaxFor(sector), total,
+                    String.format("%.2f%%", policy.effectivePropertyRate(sector) * 100)));
         }
         box.getChildren().add(statementNote(
                 "Assessed on land plus buildings at what that sector's own balance sheet "
@@ -16874,18 +16572,6 @@ public class UserInterface extends Application {
                 + "city's own buildings are exempt: taxing them would move money from one "
                 + "pocket to the other and make the utilities look worse for nothing."));
         return box;
-    }
-
-    private static String propertyLabel(BuildingType type) {
-        return switch (type) {
-            case COMMERCIAL     -> "Shops";
-            case RESIDENTIAL    -> "Housing";
-            case INDUSTRIAL     -> "Food plants";
-            case HEAVY_INDUSTRY -> "Steel mills";
-            case MINING         -> "Mines";
-            case CONSTRUCTION   -> "Builders' yards";
-            default             -> type.name();
-        };
     }
 
     /** Healthcare fees, by the kind of care that charged them. */
@@ -19542,7 +19228,7 @@ public class UserInterface extends Application {
         switch (notice.getKey()) {
             case "shedding":
                 game.acknowledgeConstructionShedding();
-                openSectorBooks(PolicySector.CONSTRUCTION, "Investors");
+                openSectorBooks(game.getSectors().construction(), "Investors");
                 break;
             case "landlock":
                 game.acknowledgeLandLock();
@@ -20360,9 +20046,9 @@ public class UserInterface extends Application {
                         statLine("Materials", String.format("%,d",
                                 game.getConstructionMaterials())),
                         statLine("Store stock", String.format("%,d",
-                                economy.getStoreInventory())),
-                        statLine("Food stock", String.format("%,d",
-                                economy.getIndustryFoodInventory())))));
+                                game.getSectors().retail().getStoreInventory())),
+                        statLine("Food stock", String.format("%,.0f",
+                                game.getSectors().industry().getStock(Good.FOOD))))));
 
         /* ================= LAND ================= */
         double landUsed = land.getUtilisation();
@@ -20388,14 +20074,16 @@ public class UserInterface extends Application {
                                 land.getPricePerSqFt() * 1000)))));
 
         /* ================= SECTOR CASH ================= */
-        double sectorCash = economy.getCommercialCash() + economy.getRealEstateCash()
-                + economy.getIndustrialCash();
+        double sectorCash = game.getSectors().totalCash();
         body.getChildren().add(panelSection("sectors", "SECTORS", money(sectorCash), null,
-                () -> panelBody(
-                        statLine("Retail", money(economy.getCommercialCash())),
-                        statLine("Real estate", money(economy.getRealEstateCash())),
-                        statLine("Industry", money(economy.getIndustrialCash())),
-                        statLine("Utilities", money(economy.getUtilityIncome())))));
+                () -> {
+                    VBox b = panelBody();
+                    for (Sector s : game.getSectors().all()) {
+                        b.getChildren().add(statLine(s.label(), money(s.getCash())));
+                    }
+                    b.getChildren().add(statLine("Utilities", money(economy.getUtilityIncome())));
+                    return b;
+                }));
 
         /* =============================================================
            BUILDINGS, and this is where the folding pays for itself.

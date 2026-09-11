@@ -112,7 +112,7 @@ public class OutwardInvestment {
     private double peakUsd;
 
     public OutwardInvestment() {
-        for (String s : BusinessDebtManager.SECTORS) {
+        for (String s : Sectors.KEYS) {
             usd.put(s, 0.0);
             moved.put(s, 0.0);
             interest.put(s, 0.0);
@@ -144,7 +144,7 @@ public class OutwardInvestment {
 
         BusinessDebtManager credit = economy.getBusinessDebtManager();
 
-        for (String sector : BusinessDebtManager.SECTORS) {
+        for (String sector : Sectors.KEYS) {
 
             double held = usd.getOrDefault(sector, 0.0);
             double cash = economy.getSectorCash(sector);
@@ -288,7 +288,7 @@ public class OutwardInvestment {
      * a city that has never invested abroad, which is what every such city was.
      */
     public double[] toSaveArray() {
-        String[] sectors = BusinessDebtManager.SECTORS;
+        String[] sectors = Sectors.KEYS;
         double[] out = new double[7 + 3 * sectors.length];
         out[0] = lastRate;
         out[1] = lifetimeOut;
@@ -306,7 +306,7 @@ public class OutwardInvestment {
     }
 
     public void restore(double[] saved) {
-        String[] sectors = BusinessDebtManager.SECTORS;
+        String[] sectors = Sectors.KEYS;
         if (saved == null || saved.length < 7 + 3 * sectors.length) return;   // refused whole
         lastRate = saved[0] > 0 ? saved[0] : ForeignAccounts.OPENING_RATE;
         lifetimeOut = saved[1];
@@ -323,7 +323,7 @@ public class OutwardInvestment {
     }
 
     public void reset() {
-        for (String s : BusinessDebtManager.SECTORS) {
+        for (String s : Sectors.KEYS) {
             usd.put(s, 0.0);
             moved.put(s, 0.0);
             interest.put(s, 0.0);
@@ -343,7 +343,7 @@ public class OutwardInvestment {
         lifetimeOut *= scale;
         lifetimeHome *= scale;
         lifetimeInterest *= scale;
-        for (String s : BusinessDebtManager.SECTORS) {
+        for (String s : Sectors.KEYS) {
             moved.put(s, moved.getOrDefault(s, 0.0) * scale);
             interest.put(s, interest.getOrDefault(s, 0.0) * scale);
         }

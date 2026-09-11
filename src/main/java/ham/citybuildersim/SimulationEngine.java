@@ -40,8 +40,8 @@ public class SimulationEngine {
          * while the sector still billed for a full month. One definition now.
          *
          * Both discounts are a month stale, deliberately. The fill rate is
-         * whatever ConstructionHandler last computed, since this month's
-         * updateServices() has not run yet, and the road ratio is the network as
+         * whatever the construction sector last computed, since this month's
+         * wages have not been refreshed yet, and the road ratio is the network as
          * it stood while the crews were working. Reordering to make either
          * current would change *when* a newly finished building starts counting
          * toward population and the economy, which is a much larger behavioural
@@ -60,8 +60,15 @@ public class SimulationEngine {
          * startOfMonthUpdate(), so the sites advance by exactly the work the
          * sector is paid for. See Game.getBuildingOutput().
          */
-        game.recordCompletions(
-                buildingManager.advanceConstruction(game.getBuildingOutput()));
+        int siteOutput = game.getBuildingOutput();
+        game.recordCompletions(buildingManager.advanceConstruction(siteOutput));
+        // ...and the material that work drew on, bought now, and the work
+        // itself recognised on the same figure the sites advanced by. The
+        // plant's sale, the builders' purchase and the builders' revenue are
+        // all booked into this month's ledger and struck at the top of the
+        // next. See Game.drawSiteMaterials() and recogniseSiteWork().
+        game.drawSiteMaterials(buildingManager.takeMaterialsDue());
+        game.recogniseSiteWork(buildingManager.takeRevenueDue(), siteOutput);
 
         // Roads, before anything reads them. Capacity and load are both pure
         // functions of what is standing, and what is standing just changed:
@@ -130,16 +137,14 @@ public class SimulationEngine {
         economyManager.setMarginalHousingCost(game.marginalHousingCost());
 
         economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR));
-        economyManager.updateStoreWages(
-                populationManager.getWagesPerType(),
-                buildingManager.getJobArrayPerCategory(BuildingType.COMMERCIAL),
-                buildingManager.getJobArrayByName("Commercial Bank"));
-        economyManager.updateIndustrialWages(populationManager.getWagesPerType());
+        // The fill first: every sector's payroll is discounted by it, so it
+        // has to be current before the wages are set. One call for all seven
+        // sectors since the sector template (2026-09-11); the bank's posts
+        // ride along because it is the one payroll outside the registry.
         economyManager.updateJobFillRate(populationManager.getJobFillRate());
-        // After updateJobFillRate: the mills' payroll is discounted by the fill,
-        // so the fill has to be current before their wages are set.
-        economyManager.updateHeavyIndustryWages(populationManager.getWagesPerType());
-        economyManager.updateMiningWages(populationManager.getWagesPerType());
+        economyManager.updateWages(
+                populationManager.getWagesPerType(),
+                buildingManager.getJobArrayByName("Commercial Bank"));
         economyManager.setTotalWage(populationManager.getTotalWage());
 
         // The split behind that total. The wage tax is banded, so a single
@@ -166,11 +171,6 @@ public class SimulationEngine {
         // water demand the ratio is computed against
         servicesManager.setPopulation(populationManager.getPopulation());
         servicesManager.updateServices();
-        servicesManager.updateFromGame(servicesManager.getConstructionHandler()::setMaterialsInventory, buildingManager.getConstructionMaterials());//must finish
-        servicesManager.updateFromGame(servicesManager.getConstructionHandler()::setMaterialsPrice, buildingManager.getConstructionMaterialPrice());
-        servicesManager.updateFromGameInt(servicesManager.getConstructionHandler()::setMaterialsConsumed,game.materialsConsumed);
-       
-    
     }
 
 }

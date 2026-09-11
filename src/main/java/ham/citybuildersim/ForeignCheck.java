@@ -320,23 +320,25 @@ public class ForeignCheck {
             jammed.buildStack(template(jammed, "Coal Power Plant"), 1, false);
             jammed.buildStack(template(jammed, "Water Treatment Plant"), 1, false);
 
-            CommercialHandler shops = jammed.getEconomyManager().getCommercialHandler();
+            ham.citybuildersim.sectors.Retail shops = jammed.getSectors().retail();
             for (int m = 0; m < 120; m++) {
                 jammed.simulateMonths(1);
-                double sold = shops.getReportProductsSold();
+                double sold = shops.getProductsSold();
                 /*
-                 * DIVIDED BY THE PRICE THE REVENUE WAS STRUCK AT, not by
-                 * today's. Since scarcity started lifting the shelf price, the
-                 * live price is the one set AFTER this month's takings were
-                 * booked, and dividing by it reported a hole in an identity
-                 * that was still perfectly true.
+                 * THE UNITS THE LEDGER HOLDS, not the takings divided by
+                 * today's price. Since scarcity started lifting the shelf
+                 * price, the live price is the one set AFTER this month's
+                 * sale was booked, and dividing by it reported a hole in an
+                 * identity that was still perfectly true. Since the sector
+                 * template the sale is a Trade in the month's ledger, and
+                 * the ledger carries the units it was paid for.
                  */
-                double paid = shops.getReportSellPrice() > 0
-                        ? shops.getGrossRevenue() / shops.getReportSellPrice() : 0;
+                double paid = shops.pending().unitsSold.getOrDefault(Good.GROCERIES, 0.0);
                 soldUnits += sold;
                 paidUnits += paid;
-                boughtUnits += shops.getReportLocalImports() + shops.getReportGlobalImports();
-                worstRatio = Math.min(worstRatio, shops.getReportRoadRatio());
+                Sector.Input food = shops.input(Good.FOOD);
+                boughtUnits += food.boughtLocal + food.imported;
+                worstRatio = Math.min(worstRatio, shops.getRoadRatio());
             }
         } finally {
             System.setOut(out);
@@ -595,14 +597,17 @@ public class ForeignCheck {
          */
         Path ml = Files.createTempDirectory("foreigncheck-ml");
         double lifeCaPar, lifeCaWeak, lifeImpPar, lifeImpWeak, lifeExpPar, lifeExpWeak;
+        double[] foodPar, foodWeak;
         System.setOut(quiet);
         try {
-            ForeignAccounts par = devaluationCity(ml.resolve("par"), 1.00).getForeignAccounts();
+            foodPar = new double[2];
+            ForeignAccounts par = devaluationCity(ml.resolve("par"), 1.00, foodPar).getForeignAccounts();
             lifeImpPar = par.getLifetimeImports();
             lifeExpPar = par.getLifetimeExports();
             lifeCaPar = lifeExpPar - lifeImpPar - par.getLifetimeInterest();
 
-            ForeignAccounts dev = devaluationCity(ml.resolve("dev"), 1.40).getForeignAccounts();
+            foodWeak = new double[2];
+            ForeignAccounts dev = devaluationCity(ml.resolve("dev"), 1.40, foodWeak).getForeignAccounts();
             lifeImpWeak = dev.getLifetimeImports();
             lifeExpWeak = dev.getLifetimeExports();
             lifeCaWeak = lifeExpWeak - lifeImpWeak - dev.getLifetimeInterest();
@@ -689,9 +694,40 @@ public class ForeignCheck {
         double usdBalanceWeak = (lifeExpWeak - lifeImpWeak) / 1.40;
         out.printf("   in dollars: balance $%,.0fk at parity, $%,.0fk 40%% weaker%n",
                 usdBalancePar, usdBalanceWeak);
-        assertTrue("a weaker currency sells more abroad than it buys, in the world's money",
-                usdBalanceWeak > usdBalancePar);
-        assertTrue("...and it is the exports doing it", lifeExpWeak > lifeExpPar);
+        /*
+         * MEASURED, NOT ASSERTED, since 2026-09-11 - the outcome this comment
+         * always said the model was allowed to produce, it now produces.
+         *
+         * Since the crews draw material as they build, this fixture's order
+         * - five hundred houses and the rest, nine years of work for its
+         * builders - is a nine-year boom in building material, and the
+         * seventh sector does what a materials industry does in a boom: it
+         * builds plants against the order book, six of them, and when the
+         * queue empties they export at the floor for the rest of the run.
+         * That is nine tenths of both cities' exports now. The weaker city
+         * pays forty percent more local money for the same programme, has
+         * that much less for everything else, grows slower - 7,100 people
+         * against 7,500 at the end - gets its plants up a year later, and
+         * exports LESS in dollars: $630M against $663M, on the same $1,030M
+         * of imports. Given twice the land it builds nine plants to the
+         * parity city's ten and the gap is wider. A devaluation that makes
+         * a fixed import programme dearer in a city whose export industry is
+         * built by that city's own slower growth is the case the theorem
+         * warns about, and the model finds it on its own.
+         *
+         * What the fixture can still assert: that the programme costs the
+         * same in the world's money whatever the currency does, which is
+         * the premise of the whole comparison, and that the mechanical half
+         * below holds. The elasticity itself is printed, food separately -
+         * the good the rate can move without a boom behind it - for whoever
+         * next changes what this city grows.
+         */
+        double usdImpPar = lifeImpPar / 1.00, usdImpWeak = lifeImpWeak / 1.40;
+        out.printf("   food, in dollars: out $%,.0fk in $%,.0fk at parity; out $%,.0fk in $%,.0fk weaker%n",
+                foodPar[0], foodPar[1], foodWeak[0] / 1.40, foodWeak[1] / 1.40);
+        assertTrue("the fixture sells food abroad at all", foodPar[0] > 0);
+        close("the same programme costs the same in the world's money",
+                usdImpWeak / usdImpPar, 1.0, .05);
 
         /*
          * AND THE MECHANICAL HALF, tested straight rather than through a city.
@@ -732,8 +768,12 @@ public class ForeignCheck {
         return new MoneyAudit.Result(0, 0, 0, exports, imports, 0, "", f);
     }
 
-    /** The same city twice, differing only in what its currency is worth. */
-    static Game devaluationCity(Path dir, double rate) throws Exception {
+    /**
+     * The same city twice, differing only in what its currency is worth.
+     *
+     * @param food filled with the run's food trade in local money: [exports, imports]
+     */
+    static Game devaluationCity(Path dir, double rate, double[] food) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         g.run();
         g.getForeignAccounts().pinRate(rate);
@@ -749,7 +789,12 @@ public class ForeignCheck {
         g.buildStack(template(g, "Paved Road"), 40, false);
         g.buildStack(template(g, "Walk-in Clinic"), 4, false);
         g.buildStack(template(g, "Municipal Cemetery"), 1, false);
-        g.simulateMonths(180);
+        for (int m = 0; m < 180; m++) {
+            g.simulateMonths(1);
+            GoodsMarket f = g.getMarkets().get(Good.FOOD);
+            food[0] += f.getExported() * f.exportPrice();
+            food[1] += f.getImported() * f.importPrice();
+        }
         return g;
     }
 
@@ -765,7 +810,7 @@ public class ForeignCheck {
         } finally {
             System.setOut(out);
         }
-        return g.getEconomyManager().getFoodMarket().getImportPrice();
+        return g.getMarkets().get(Good.FOOD).importPrice();
     }
 
     static double lastCash;

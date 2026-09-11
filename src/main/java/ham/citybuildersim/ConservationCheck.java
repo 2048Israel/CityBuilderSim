@@ -92,7 +92,7 @@ public class ConservationCheck {
              * fixture's own shape creates is covered rather than acted on and
              * the law is measured against a warehouse that is still there.
              */
-            g.setAutoSubsidised(PolicySector.INDUSTRY, true);
+            g.setAutoSubsidised(Sectors.INDUSTRY, true);
             g.simulateMonths(months);
         } finally { System.setOut(out); }
         return g;
@@ -105,7 +105,7 @@ public class ConservationCheck {
 
         Game g = city(root, "main", 120);
         EconomyManager em = g.getEconomyManager();
-        IndustrialHandler ih = em.getIndustrialHandler();
+        Sector ih = g.getSectors().industry();
         UtilitiesHandler uh = g.getServicesManager().getUtilitiesHandler();
 
         /* ============ 1. FOOD ============ */
@@ -128,7 +128,7 @@ public class ConservationCheck {
         int lowStock = Integer.MAX_VALUE, highStock = Integer.MIN_VALUE;
 
         for (int m = 0; m < 36; m++) {
-            int opening = ih.getFoodInventory();
+            double opening = ih.getStock(Good.FOOD);
             System.setOut(quiet);
             try { g.simulateMonths(1); } finally { System.setOut(out); }
 
@@ -139,25 +139,32 @@ public class ConservationCheck {
              * line used to read the report, so the law could only ever be
              * asserted to within a unit. Sickness moves every month and pushed
              * the gap to 1.06, which read as a leak and was a mis-measurement.
+             *
+             * Since the sector template (2026-09-11) the month's figures are
+             * the sector's own Output record for the good. The export-bound
+             * share leaves FROM THE LINE and never passes through the shed -
+             * see Sector.produceStock - so it is counted but is not a term in
+             * the warehouse's law.
              */
-            double made = ih.getProducedThisMonth();
-            int spoiled = ih.getInventoryWrittenOff();
-            int sold = ih.getProductsSoldCopy();
-            int exported = ih.getProductsImportedCopy();
+            Sector.Output o = ih.output(Good.FOOD);
+            double made = o.produced;
+            double spoiled = o.writtenOff;
+            double sold = o.soldLocal;
+            double exported = o.exported;
 
             totalMade += made;
             totalSpoiled += spoiled;
             totalSold += sold;
             totalExported += exported;
 
-            lowStock = Math.min(lowStock, ih.getFoodInventory());
-            highStock = Math.max(highStock, ih.getFoodInventory());
+            lowStock = Math.min(lowStock, (int) Math.round(ih.getStock(Good.FOOD)));
+            highStock = Math.max(highStock, (int) Math.round(ih.getStock(Good.FOOD)));
 
-            double expected = opening + made - spoiled - sold - exported;
-            double gap = Math.abs(expected - ih.getFoodInventory());
+            double expected = opening + made - spoiled - sold;
+            double gap = Math.abs(expected - ih.getStock(Good.FOOD));
             if (gap > worstGap) { worstGap = gap; worstMonth = m; }
-            // No slack at all now: both sides are the integers that moved.
-            if (gap > 1e-9) conserved = false;
+            // Doubles now, so a few ulps of slack on a five-figure stock.
+            if (gap > 1e-6) conserved = false;
         }
 
         System.out.printf("   over 36 months: made %,.0f  sold %,.0f  exported %,.0f"
@@ -191,10 +198,8 @@ public class ConservationCheck {
         System.out.printf("   city draws %,.0f W, of which %,.0f W is invoiced to somebody%n",
                 uh.getConsumption(), billedDraw);
 
-        double charged = em.getCommercialHandler().getReportElectricityCost()
-                + ih.getReportElectricityCost()
-                + em.getHeavyIndustryHandler().getReportElectricityCost()
-                + em.getMiningHandler().getReportElectricityCost();
+        double charged = 0;
+        for (Sector s : g.getSectors().all()) charged += s.statement().electricity;
 
         check("the utility's revenue is exactly what the sectors were charged",
                 uh.getElectricityRevenue(), charged, .0001);
@@ -212,9 +217,8 @@ public class ConservationCheck {
         /* ============ 3. WATER ============ */
         System.out.println("\n--- water: the same law, which it already obeyed ---");
 
-        double waterCharged = em.getCommercialHandler().getReportWaterCost()
-                + ih.getReportWaterCost()
-                + em.getHeavyIndustryHandler().getReportWaterCost();
+        double waterCharged = 0;
+        for (Sector s : g.getSectors().all()) waterCharged += s.statement().water;
 
         check("the water utility's revenue is what the sectors were charged",
                 uh.getWaterRevenue(), waterCharged, .0001);
@@ -308,6 +312,11 @@ public class ConservationCheck {
         System.setOut(quiet);
         try {
             BuildingManager b = mined.getBuildingManager();
+            // ...over ore. A mine over a worked-out deposit is spare plant and
+            // is sold within the year since 2026-09-11 (sectors.Mining), and
+            // a sold mine has no payroll to survive a load. The fixture wants
+            // a WORKING mine, so it gets a deposit to work.
+            mined.getLandManager().restoreIron(3, 50_000_000);
             b.addStack(b.getTemplateByName("Iron Mine"), 3, true);
             mined.simulateMonths(30);
             mined.saveGame(1, "mined");
@@ -318,8 +327,8 @@ public class ConservationCheck {
         System.setOut(quiet);
         try { minedBack.loadGameSave(1); } finally { System.setOut(out); }
 
-        double livePayroll = mined.getEconomyManager().getMiningHandler().getPayroll();
-        double backPayroll = minedBack.getEconomyManager().getMiningHandler().getPayroll();
+        double livePayroll = mined.getSectors().mining().getPayroll();
+        double backPayroll = minedBack.getSectors().mining().getPayroll();
         System.out.printf("   mining payroll: live $%.4f, reloaded $%.4f%n",
                 livePayroll, backPayroll);
         assertTrue("the mine has a payroll at all after a load", backPayroll > 0);

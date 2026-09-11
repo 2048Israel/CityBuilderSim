@@ -119,7 +119,7 @@ public class HouseholdCheck {
         // What households pay out IS consumption in the national accounts. If
         // these two ever diverge, one of them is wrong.
         NationalAccounts na = new NationalAccounts();
-        na.update(400, 300, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);   // 400 retail, 300 rent
+        na.update(400, 300, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);   // 400 retail, 300 rent
 
         HouseholdAccounts paired = new HouseholdAccounts();
         paired.update(1000, 150,
@@ -240,7 +240,7 @@ public class HouseholdCheck {
          * RENT FOLLOWS FRONT DOORS, THE SHOP FOLLOWS HEADS, and the two must not
          * be the same rule - which they were until 2026-09-07.
          *
-         * CommercialHandler.getRentIncome() charges every let home the same
+         * ham.citybuildersim.sectors.RealEstate.getRentIncome() charges every let home the same
          * figure whoever is in it, because that is what a landlord charges for:
          * the flat. Splitting it by headcount instead billed a family of five
          * five times what it billed a single adult in the identical flat, so
@@ -354,15 +354,15 @@ public class HouseholdCheck {
          * dwelling, and therefore costs at least the reference rent.
          */
         assertTrue("a House is at least the home the rent target is struck against",
-                house.getCapacity() >= CommercialHandler.REFERENCE_HOME_CAPACITY);
+                house.getCapacity() >= ham.citybuildersim.sectors.RealEstate.REFERENCE_HOME_CAPACITY);
         assertTrue("...and it is the biggest home in the game",
                 house.homeSize() >= rentBm.getTemplateByName("Low-Rise Apartments").homeSize()
                         && house.homeSize() >= rentBm.getTemplateByName("Studio Apartments").homeSize());
         assertTrue("...so it costs more than the reference home does",
-                house.getCapacity() * 1.0 / CommercialHandler.REFERENCE_HOME_CAPACITY > 1);
+                house.getCapacity() * 1.0 / ham.citybuildersim.sectors.RealEstate.REFERENCE_HOME_CAPACITY > 1);
         check("...in a single dwelling", house.getDwellings(), 1);
 
-        CommercialHandler rentCh = new CommercialHandler();
+        ham.citybuildersim.sectors.RealEstate rentCh = new ham.citybuildersim.sectors.RealEstate();
         rentCh.setHousehold(1600);      // 400 houses of four
         rentCh.setHomes(400);
         rentCh.setPopulation(1218);
@@ -377,9 +377,9 @@ public class HouseholdCheck {
         System.out.printf("   one home costs $%.0f; two unskilled wages are $%.0f%n",
                 homeRent * 1000, coupleIncome * 1000);
         check("a working couple pays the burden the price was set for",
-                homeRent / coupleIncome, CommercialHandler.TARGET_RENT_BURDEN);
+                homeRent / coupleIncome, ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN);
         assertTrue("...and a family of six pays exactly the same, not three times it",
-                Math.abs(homeRent / coupleIncome - CommercialHandler.TARGET_RENT_BURDEN) < 1e-9);
+                Math.abs(homeRent / coupleIncome - ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN) < 1e-9);
 
         /*
          * EMPTY HOMES EARN NOTHING, and this is the assertion that caught a
@@ -844,7 +844,7 @@ public class HouseholdCheck {
          * families hold ten shares of Retail each and become fifty couples
          * with a teen: the shares move with them.
          */
-        int retail = Equity.indexOf(BusinessDebtManager.RETAIL);
+        int retail = Equity.indexOf(Sectors.RETAIL);
         big.shares[retail] = 10;
         big.abroad = 3;   // ...and US$3k of the world's paper each, since the next day
         double sharesBefore = street.sharesHeld(retail);

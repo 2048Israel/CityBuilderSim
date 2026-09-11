@@ -78,6 +78,17 @@ public class BalanceSheet {
         return this;
     }
 
+    /**
+     * Stock already valued - a sector holding several goods sums them itself.
+     * Units and unit price read zero afterwards; the value is the figure.
+     */
+    public BalanceSheet setInventoryValue(double value) {
+        this.inventoryUnits = 0;
+        this.inventoryUnitPrice = 0;
+        this.inventory = Math.max(0, value);
+        return this;
+    }
+
     public BalanceSheet setLand(double land) {
         this.land = land;
         return this;

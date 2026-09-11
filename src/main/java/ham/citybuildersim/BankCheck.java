@@ -113,7 +113,10 @@ public class BankCheck {
         marginGone.refresh(1, 1_000_000, 0, 0, 0, 0);
         marginGone.injectCapital(1_000_000);
         marginGone.startMonth();
-        marginGone.lend(500_000);            // borrowed to lend: wholesale funding to pay for
+        // Lent past its capital: wholesale funding to pay for, and no idle
+        // reserves earning a placement (see Bank.placementIncome) - the
+        // margin is gone in both directions.
+        marginGone.lend(1_500_000);
         marginGone.fundToCover(.10);
         assertTrue("a bank whose margin is gone pays its savers nothing",
                 marginGone.depositInterest() <= 1e-9);
@@ -125,8 +128,12 @@ public class BankCheck {
         earner.startMonth();
         earner.takeInterest(1_000);
         earner.fundToCover(.10);
+        // What it earned is the loan interest AND the placement on the capital
+        // it has not lent, since 2026-09-11 - the bank's own figure, not 1,000.
+        assertTrue("fixture: the idle capital earned a placement",
+                earner.getPlacementIncome() > 0);
         close("...and one that earned pays the baseline share of what it earned",
-                earner.depositInterest(), 1_000 * Bank.DEPOSIT_PASS_THROUGH, 1e-9);
+                earner.depositInterest(), earner.getInterestEarned() * Bank.DEPOSIT_PASS_THROUGH, 1e-9);
         assertTrue("...which is a rate on the whole deposit book, derived not set",
                 earner.depositRate() > 0);
         close("...and that rate is the payout over the deposits",
@@ -165,7 +172,7 @@ public class BankCheck {
         assertTrue("a bank that is lent out bids above its baseline for deposits",
                 hungry.depositInterest() > baselinePay + 1e-9);
         assertTrue("...and never past the interest it earned",
-                hungry.depositInterest() <= earned + 1e-9);
+                hungry.depositInterest() <= hungry.getInterestEarned() + 1e-9);
 
         /*
          * ...AND IT DOES NOT BID WHEN THE MONEY WOULD BE NO USE. Same bank,
@@ -751,7 +758,7 @@ public class BankCheck {
              * version gave it the money and not the land, and the advisor
              * decided correctly every month and was refused by the ground.
              */
-            trading.getEconomyManager().setSectorCash(BusinessDebtManager.RETAIL, 250_000);
+            trading.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000);
             trading.getLandManager().setOwnedSqFt(8_000_000);
             trading.simulateMonths(60);
             builtWhenAffordable = trading.getBuildingManager().countByName("Commercial Bank");
@@ -830,8 +837,8 @@ public class BankCheck {
             books.buildStack(template(books, "Coal Power Plant"), 1, true);
             books.buildStack(template(books, "Water Treatment Plant"), 1, true);
             books.simulateMonths(24);
-            books.getEconomyManager().setSectorCash(BusinessDebtManager.RETAIL, 250_000);
-            books.getEconomyManager().setSectorCash(BusinessDebtManager.INDUSTRY, -20_000);
+            books.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000);
+            books.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000);
 
             Bank kept = books.getBank();
             for (int m = 0; m < 120; m++) {
@@ -900,7 +907,7 @@ public class BankCheck {
          * business in the city paying no profit tax.
          */
         double bankRate = books.getEconomyManager().getTaxPolicy()
-                .effectiveProfitRate(PolicySector.RETAIL);
+                .effectiveProfitRate(Sectors.RETAIL);
         out.printf("   taxed at %.1f%% on last month's $%,.2fk of profit: $%,.2fk%n",
                 bankRate * 100, shown.getProfitLastMonth(), shown.getTaxPaid());
 

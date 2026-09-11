@@ -129,20 +129,22 @@ public class WaterCheck {
 
         /* ================= 6. the ratio throttles output ================= */
         System.out.println("\n--- throttle ---");
-        IndustrialHandler ih = new IndustrialHandler();
-        ih.setBaseFoodProduction(1000);
+        // A bare sector off the template: its operating rate is the product
+        // of the four ratios and the fill, and every unit it makes is
+        // nameplate times that rate - see Sector.getOperatingRate().
+        Sector ih = new ham.citybuildersim.sectors.FoodIndustry();
         ih.updateJobFillRate(fullFill);
-        ih.updateIndustrialWages(wages(), new int[11]); // no jobs -> fill defaults to 1
+        ih.updateWages(wages(), new int[11]); // no jobs -> fill defaults to 1
         ih.setEnergyRatio(1);
         ih.setWaterRatio(1);
-        check("industrial output at full water", ih.getMonthlyOutput(), 1000);
+        check("industrial output at full water", 1000 * ih.getOperatingRate(), 1000);
         ih.setWaterRatio(.5);
-        check("industrial output at half water", ih.getMonthlyOutput(), 500);
+        check("industrial output at half water", 1000 * ih.getOperatingRate(), 500);
 
         /* ================= 7. billing is symmetric with power ================= */
         // Commercial and industrial pay for the water their buildings draw.
         System.out.println("\n--- billing ---");
-        CommercialHandler cm = new CommercialHandler();
+        Sector cm = new ham.citybuildersim.sectors.Retail();
         cm.setPricePerWaterUnit(.05);
         cm.setWaterConsumption(30);              // 5 grocery stores
         cm.setWaterRatio(1);

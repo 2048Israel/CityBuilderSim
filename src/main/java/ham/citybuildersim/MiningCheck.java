@@ -69,37 +69,44 @@ public class MiningCheck {
         /* ================= 1. the band ================= */
         out.println("--- the price band ---");
 
-        IronMarket market = new IronMarket();
+        // The ore market is one GoodsMarket now (2026-09-11, the sector
+        // template): the same band IronMarket struck, generalised to every
+        // good. The ceiling is the import price - what a mill pays for
+        // scrap - and the floor is the export price a mine gets shipping out.
+        GoodsMarket market = new GoodsMarket(Good.IRON);
 
-        assertTrue("the mills' scrap price is the ceiling", market.getScrapPrice() > 0);
+        assertTrue("the mills' scrap price is the ceiling", market.ceiling() > 0);
         assertTrue("the mines' export price is the floor",
-                market.getExportPrice() > 0 && market.getExportPrice() < market.getScrapPrice());
+                market.floor() > 0 && market.floor() < market.ceiling());
+        close("...and they are the world's two prices for ore",
+                market.ceiling() - market.floor(),
+                Good.IRON.worldImportPrice() - Good.IRON.worldExportPrice());
         out.printf("   the band runs $%.0f to $%.0f%n",
-                market.getExportPrice() * 1000, market.getScrapPrice() * 1000);
+                market.floor() * 1000, market.ceiling() * 1000);
 
         // Nobody mining: the mills are where they always were, buying scrap.
-        market.updatePrice(0, 5000);
+        market.strike(0, 0, 5000);
         close("no mines - price sits at the scrap ceiling",
-                market.getLocalPrice(), market.getScrapPrice());
+                market.getLocalPrice(), market.ceiling());
 
         // Mining hard, nobody buying: the mines export, and will not go below it.
-        market.updatePrice(5000, 0);
+        market.strike(5000, 0, 0);
         close("no mills - price sits at the export floor",
-                market.getLocalPrice(), market.getExportPrice());
+                market.getLocalPrice(), market.floor());
 
         // The one that caught a real design error: demand/supply clamped to 1
         // put a matched pair at the ceiling, so the mine took everything and
         // the mill gained nothing at all.
-        market.updatePrice(5000, 5000);
+        market.strike(5000, 0, 5000);
         close("supply meets demand - the middle of the band",
                 market.getLocalPrice(),
-                (market.getScrapPrice() + market.getExportPrice()) / 2);
+                (market.ceiling() + market.floor()) / 2);
 
-        market.updatePrice(15000, 5000);
+        market.strike(15000, 0, 5000);
         assertTrue("three times the ore that is wanted - down near the floor",
                 market.getPriceIndex() < .3);
 
-        market.updatePrice(5000, 15000);
+        market.strike(5000, 0, 15000);
         assertTrue("three times the demand - up near the ceiling",
                 market.getPriceIndex() > .7);
 
@@ -107,7 +114,7 @@ public class MiningCheck {
         double previous = 1;
         boolean falling = true;
         for (int supply = 500; supply <= 40000; supply += 500) {
-            market.updatePrice(supply, 5000);
+            market.strike(supply, 0, 5000);
             if (market.getPriceIndex() > previous + 1e-12) falling = false;
             previous = market.getPriceIndex();
         }
@@ -117,13 +124,18 @@ public class MiningCheck {
         // trade with the rest of the world.
         boolean insideBand = true;
         for (int supply = 0; supply <= 20000; supply += 250) {
-            market.updatePrice(supply, 5000);
-            if (market.getLocalPrice() < market.getExportPrice() - 1e-9
-                    || market.getLocalPrice() > market.getScrapPrice() + 1e-9) {
+            market.strike(supply, 0, 5000);
+            if (market.getLocalPrice() < market.floor() - 1e-9
+                    || market.getLocalPrice() > market.ceiling() + 1e-9) {
                 insideBand = false;
             }
         }
         assertTrue("the price never leaves the band", insideBand);
+
+        // ...and a stockpile is supply too, a sixth of it a month.
+        market.strike(0, 30000, 5000);
+        close("a warehouse counts as a sixth of itself a month",
+                market.getLocalPrice(), (market.ceiling() + market.floor()) / 2);
 
         /* ================= 2. a mine needs ground with ore in it ================= */
         out.println("\n--- a mine needs a deposit ---");
@@ -139,24 +151,22 @@ public class MiningCheck {
         BuildingsTemplate mine = template(city, "Iron Mine");
 
         /*
-         * The band's two ends are BUILDING DATA, and this is where that gets
-         * checked, because it is not obvious and it wastes an afternoon when
-         * forgotten. Setting exportPrice or scrapPrice on IronMarket looks like
-         * it works and is silently overwritten the next month:
-         * EconomyManager.updateMining() re-reads the floor off the mine's
-         * productionModifier1 and priceIronMarket() re-reads the ceiling off
-         * the mills' own scrap cost. A whole sweep of the band once came back
-         * with thirteen identical rows because of it.
+         * The band's two ends are WORLD PRICES, in the city's money, and
+         * this is where that gets checked, because it is not obvious and it
+         * wastes an afternoon when forgotten. They used to be building data
+         * - the mine's productionModifier1 and the foundry's
+         * productionModifier2 - and setting either on the market looked like
+         * it worked and was silently overwritten the next month. Since the
+         * sector template they live on Good.IRON, once, and the market
+         * multiplies by the exchange rate it was last handed.
          */
-        IronMarket live = city.getEconomyManager().getIronMarket();
-        close("the floor IS the mine's export price",
-                live.getExportPrice(), mine.getProductionModifier1());
-        // Against the TEMPLATE, not the running handler: with no foundry
-        // standing the handler's scrap price is 0, and priceIronMarket()
-        // deliberately declines to move the ceiling to zero on that basis.
-        BuildingsTemplate foundry = template(city, "Steel Foundry");
+        GoodsMarket live = city.getMarkets().get(Good.IRON);
+        close("the floor IS the world's price for the city's ore",
+                live.floor(), Good.IRON.worldExportPrice() * live.getExchangeRate());
         close("the ceiling IS what the mills pay for scrap",
-                live.getScrapPrice(), foundry.getProductionModifier2());
+                live.ceiling(), Good.IRON.worldImportPrice() * live.getExchangeRate());
+        assertTrue("...and the mine's own template no longer carries a price of its own",
+                mine.makes(Good.IRON) > 0);
 
         assertTrue("the Iron Mine is its own category",
                 mine.getCategory() == BuildingType.MINING);
@@ -271,7 +281,7 @@ public class MiningCheck {
         assertTrue("a foundry makes an electric-arc mill's margin on scrap",
                 marginWithout > 20 && marginWithout < 36);
         assertTrue("...and it is paying the scrap ceiling to do it",
-                Math.abs(without[2] - template(city, "Steel Foundry").getProductionModifier2()) < 1e-6);
+                Math.abs(without[2] - Good.IRON.worldImportPrice()) < 1e-6);
 
         /*
          * REBANDED 2026-09-09, from 25-36%, and the reason is a model change
@@ -302,7 +312,10 @@ public class MiningCheck {
          * So the worst case is put to the books directly: every tonne exported,
          * at the floor, with no local buyer at any price.
          */
-        MiningHandler worstCase = new MiningHandler();
+        // A bare mining sector off the template, with one mine standing and
+        // a market to ship into. The month is walked by hand the way
+        // Markets.clearMonth walks it: lift, offer, nobody buys, ship the
+        // rest abroad, strike.
         double[] rates = new double[11];
         rates[0] = .800; rates[1] = 1.500; rates[4] = 4.000;
         int[] crew = new int[11];
@@ -313,24 +326,37 @@ public class MiningCheck {
         double[] fullFill = new double[11];
         java.util.Arrays.fill(fullFill, 1.0);
 
-        double floor = mine.getProductionModifier1();
-        worstCase.setCapacityTonnes(mine.getProduction1());
-        worstCase.setLocalPrice(floor);
-        worstCase.setExportPrice(floor);
+        BuildingManager oneMine = new BuildingManager();
+        oneMine.initializeTemplates();
+        oneMine.addStack(oneMine.getTemplateByName("Iron Mine"), 1, true);
+        Markets bareMarkets = new Markets();
+        bareMarkets.setExchangeRate(1);
+        GoodsMarket ore = bareMarkets.get(Good.IRON);
+        Sector worstCase = new ham.citybuildersim.sectors.Mining();
+        worstCase.attach(oneMine, bareMarkets);
+
+        double floor = ore.floor();
+        double tonnes = mine.makes(Good.IRON);
         worstCase.setElectricityConsumption(mine.getElectricityConsumption());
         worstCase.setWaterConsumption(mine.getWaterConsumption());
         worstCase.setPricePerWatt(.01);
         worstCase.setPricePerWaterUnit(.05);
         worstCase.updateJobFillRate(fullFill);
         worstCase.updateWages(rates, crew);
-        worstCase.settle(mine.getProduction1(), 0);      // nobody local wants any
-        worstCase.computeMonthlyReport();
 
-        double exportOnly = worstCase.getReportNetIncome();
-        double perTonne = worstCase.getReportOperatingCost() / mine.getProduction1();
+        ore.strike(tonnes, 0, 0);                        // nobody local wants any
+        worstCase.produceFlow(Good.IRON);
+        worstCase.offer(Good.IRON, ore.getLocalPrice());
+        worstCase.shipUnsoldFlow(Good.IRON, ore);        // every tonne abroad, at the floor
+        worstCase.strike();
+
+        Sector.Statement w = worstCase.statement();
+        double exportOnly = w.preTaxIncome;
+        double perTonne = (w.payroll + w.electricity + w.water + w.maintenance + w.inputs) / tonnes;
+        close("fixture: every tonne left at the floor", w.exports, tonnes * floor);
 
         out.printf("   %,.0f t/month at the $%.0f floor%n",
-                mine.getProduction1(), floor * 1000);
+                tonnes, floor * 1000);
         out.printf("   costs $%.0f a tonne to lift, sells for $%.0f%n",
                 perTonne * 1000, floor * 1000);
         out.printf("   net $%,.2fk a month on a $%,.0fk building%n",
@@ -343,11 +369,15 @@ public class MiningCheck {
         assertTrue("...comfortably, not marginally",
                 exportOnly / mine.getCashCost() > .02);
 
-        // And the co-location reward: the same mine, with a buyer next door.
-        worstCase.setLocalPrice(with[2]);
-        worstCase.settle(mine.getProduction1(), 1320);
-        worstCase.computeMonthlyReport();
-        double withBuyer = worstCase.getReportNetIncome();
+        // And the co-location reward: the same mine, with a buyer next door
+        // taking a foundry's month at the price the mining city traded at.
+        worstCase.bank(0);
+        worstCase.produceFlow(Good.IRON);
+        worstCase.offer(Good.IRON, with[2]);
+        worstCase.bookSale(ore.record(worstCase.key(), Sectors.HEAVY_INDUSTRY, 1320, with[2]));
+        worstCase.shipUnsoldFlow(Good.IRON, ore);
+        worstCase.strike();
+        double withBuyer = worstCase.statement().preTaxIncome;
 
         out.printf("   with one mill next door: $%,.2fk a month%n", withBuyer);
         assertTrue("a mill next door is worth more to a mine than exporting",
@@ -503,7 +533,7 @@ public class MiningCheck {
 
             game.simulateMonths(36);
 
-            HeavyIndustryHandler mills = game.getEconomyManager().getHeavyIndustryHandler();
+            Sector mills = game.getSectors().heavyIndustry();
 
             /*
              * Per foundry, counted off what is STANDING.
@@ -517,9 +547,9 @@ public class MiningCheck {
                     .getQuantity(template(game, "Steel Foundry").getId()));
 
             return new double[]{
-                mills.getReportNetIncome() / standing,
-                mills.getReportRevenue() / standing,
-                game.getEconomyManager().getIronMarket().getLocalPrice()
+                mills.statement().preTaxIncome / standing,
+                mills.statement().revenue / standing,
+                game.getMarkets().get(Good.IRON).getLocalPrice()
             };
 
         } finally {

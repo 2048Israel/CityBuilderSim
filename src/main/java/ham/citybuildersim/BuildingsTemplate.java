@@ -93,9 +93,85 @@ public class BuildingsTemplate {
     private EducationType teaches = EducationType.NONE;
 
     private int id;
- 
- 
-    
+
+    /* =====================================================================
+       WHO OWNS IT, AND WHAT IT MAKES (2026-09-11, the sector template).
+
+       A building belongs to one sector by the sector's saved name - "Industry",
+       "Mining" - or to nobody, which is the city (roads, schools, the two
+       plants) or the bank (by name). The category above stays as the
+       build-menu group and the band the property tax is assessed on; it
+       stopped being the owner the day there could be a thousand owners.
+
+       What it makes and what it uses are in UNITS of a good a month, per
+       building, at nameplate: a Steel Foundry makes 1,200 tonnes of STEEL and
+       uses 1,320 tonnes of IRON. The price of a tonne is a fact about steel,
+       not about the foundry, and lives on the Good - which is why
+       production1/2 and their modifiers are gone from every sector building
+       and kept only for the utilities, whose kilowatts are not a good anybody
+       trades.
+
+       `stock` is the room it has for what it holds - the plant's warehouse,
+       the shop's shelf - in units.
+       ===================================================================== */
+    private String sector = "";
+    private final java.util.Map<Good, Double> makes = new java.util.EnumMap<>(Good.class);
+    private final java.util.Map<Good, Double> uses = new java.util.EnumMap<>(Good.class);
+    private double stock;
+
+    public BuildingsTemplate setSector(String sector) {
+        this.sector = sector == null ? "" : sector;
+        return this;
+    }
+
+    public BuildingsTemplate makes(Good good, double unitsAMonth) {
+        if (good != null && unitsAMonth > 0) makes.put(good, unitsAMonth);
+        return this;
+    }
+
+    public BuildingsTemplate uses(Good good, double unitsAMonth) {
+        if (good != null && unitsAMonth > 0) uses.put(good, unitsAMonth);
+        return this;
+    }
+
+    public BuildingsTemplate setStock(double units) {
+        this.stock = Math.max(0, units);
+        return this;
+    }
+
+    /** The owning sector's key, or "" for a building nobody in the private sector owns. */
+    public String getSector() { return sector; }
+
+    public boolean isOwnedBySector() { return !sector.isEmpty(); }
+
+    /**
+     * Whether a building's power and water are invoiced to anybody: the
+     * business buildings a sector owns. A home is not - the tenants are not
+     * charged for utilities in this model and the landlords never were - and
+     * neither is anything the city or the bank owns. See
+     * EconomyManager.setElectricityConsumption().
+     */
+    public static boolean isBilledForUtilities(BuildingsTemplate t) {
+        return t != null && t.isOwnedBySector() && t.getCategory() != BuildingType.RESIDENTIAL;
+    }
+
+    /** Units of a good this building makes a month at nameplate. Zero for a good it does not make. */
+    public double makes(Good good) { return makes.getOrDefault(good, 0.0); }
+
+    /** Units of a good this building uses a month at nameplate. */
+    public double uses(Good good) { return uses.getOrDefault(good, 0.0); }
+
+    public java.util.Map<Good, Double> goodsMade() { return java.util.Collections.unmodifiableMap(makes); }
+    public java.util.Map<Good, Double> goodsUsed() { return java.util.Collections.unmodifiableMap(uses); }
+
+    /** Room for what it holds, in units. */
+    public double getStock() { return stock; }
+
+    /** The same, asked per good: a building has one warehouse and it holds whatever the building holds. */
+    public double stocks(Good good) { return stock; }
+
+
+
     //enums
     int[] jobsByEducation = new int[JobType.values().length];
     private BuildingType category;

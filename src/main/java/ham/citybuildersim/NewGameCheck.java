@@ -46,9 +46,10 @@ public class NewGameCheck {
         Map<String, Double> m = new LinkedHashMap<>();
         EconomyManager e = g.getEconomyManager();
         PopulationManager p = g.getPopulationManager();
-        CommercialHandler c = e.getCommercialHandler();
+        ham.citybuildersim.sectors.Retail c = g.getSectors().retail();
+        ham.citybuildersim.sectors.RealEstate re = g.getSectors().realEstate();
         ServicesManager s = g.getServicesManager();
-        ConstructionHandler build = s.getConstructionHandler();
+        ham.citybuildersim.sectors.Construction build = g.getSectors().construction();
         BuildingManager b = g.getBuildingManager();
         NationalAccounts na = e.getNationalAccounts();
 
@@ -68,30 +69,39 @@ public class NewGameCheck {
         m.put("salesTax", e.getSalesTax());
         m.put("propertyTax", e.getTotalPropertyTax());
         m.put("monthGdp", e.getMonthGdp());
-        m.put("storeInventory", (double) e.getStoreInventory());
-        m.put("industryInventory", (double) e.getIndustryFoodInventory());
-        m.put("commercialCash", e.getCommercialCash());
-        m.put("realEstateCash", e.getRealEstateCash());
-        m.put("industrialCash", e.getIndustrialCash());
-        m.put("heavyCash", e.getHeavyIndustryHandler().getCash());
+        // Every sector, whole: its cash, its stocks, its pantry, its statement.
+        for (Sector sec : g.getSectors().all()) {
+            String k = sec.key() + ".";
+            m.put(k + "cash", sec.getCash());
+            for (Good good : Good.values()) {
+                if (sec.getStock(good) != 0)  m.put(k + "stock." + good.name(), sec.getStock(good));
+                if (sec.getPantry(good) != 0) m.put(k + "pantry." + good.name(), sec.getPantry(good));
+            }
+            Sector.Statement st = sec.statement();
+            m.put(k + "revenue", st.revenue);
+            m.put(k + "inputs", st.inputs);
+            m.put(k + "netIncome", st.netIncome);
+            m.put(k + "tax", st.profitTax);
+            m.put(k + "salesTax", st.salesTax);
+            m.put(k + "propertyTax", st.propertyTax);
+            m.put(k + "interest", st.interest);
+            m.put(k + "pendingRevenue", sec.pending().revenue());
+            m.put(k + "pendingPurchases", sec.pending().purchases());
+        }
+        for (GoodsMarket mk : g.getMarkets().all()) {
+            m.put("market." + mk.good().name() + ".price", mk.getLocalPrice());
+            m.put("market." + mk.good().name() + ".demand", mk.getDemand());
+        }
 
         m.put("retail.capacity", (double) c.getStoreCapacity());
         m.put("retail.coverage", (double) c.getStoreCoverage());
         m.put("retail.inventory", (double) c.getStoreInventory());
-        // The live field, not the report's copy. It is what sellInventory() is
-        // handed, and it is what backlog item 7 was rewriting from the tax path.
         m.put("retail.productsSold", (double) c.getProductsSold());
-        m.put("retail.reportSold", (double) c.getReportProductsSold());
-        m.put("retail.costOfGoods", c.getStoreInventoryCost());
-        m.put("retail.localImports", (double) c.getReportLocalImports());
-        m.put("retail.globalImports", (double) c.getReportGlobalImports());
-        m.put("retail.propertyTax", c.getRetailPropertyTax());
-        m.put("realEstate.propertyTax", c.getRealEstatePropertyTax());
-        m.put("retail.interest", c.getRetailInterestExpense());
-        m.put("retail.storeIncome", c.getReportRetailNetIncome());
-        m.put("retail.tax", c.getReportRetailTax());
-        m.put("realEstate.tax", c.getReportRealEstateTax());
-        m.put("retail.rent", c.getRentIncome());
+        m.put("retail.lastMonthSales", (double) c.getLastMonthSales());
+        m.put("retail.shelfPrice", c.getStoreSellPrice());
+        m.put("realEstate.rent", re.getRentIncome());
+        m.put("realEstate.rentPrice", re.getRentPrice());
+        m.put("realEstate.studioRentPrice", re.getStudioRentPrice());
 
         m.put("build.cash", build.getCash());
         m.put("build.backlog", build.getBacklogPoints());

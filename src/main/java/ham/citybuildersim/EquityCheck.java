@@ -65,8 +65,8 @@ public class EquityCheck {
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
 
-        int RETAIL = Equity.indexOf(BusinessDebtManager.RETAIL);
-        int INDUSTRY = Equity.indexOf(BusinessDebtManager.INDUSTRY);
+        int RETAIL = Equity.indexOf(Sectors.RETAIL);
+        int INDUSTRY = Equity.indexOf(Sectors.INDUSTRY);
 
         /* ================= 1. the households first, then the world ================= */
         out.println("--- an offering goes to the households first, and the world takes the rest ---");
@@ -294,9 +294,25 @@ public class EquityCheck {
             close("...and every dollar of it arrived as capital, home or abroad",
                     register.getLifetimeRaisedHome(Equity.BANK) + register.getLifetimeRaisedAbroad(Equity.BANK),
                     Bank.PAID_IN_PER_BRANCH, 1e-6);
-            assertTrue("the founders own the founding stores",
-                    city.getHouseholdBalance().sharesHeld(RETAIL) > 0
-                    && register.foreignShare(RETAIL) < .5);
+            /*
+             * THERE ARE NO FOUNDING STORES ANY MORE. This asserted that the
+             * households held Retail shares two months in, and they did -
+             * $9.5M of them, granted as founders against a book that was
+             * the BANK's premises: a Commercial Bank is a COMMERCIAL
+             * building, and until the sector template (2026-09-11) every
+             * commercial building was on Retail's balance sheet. The branch
+             * is nobody's building now (sector ""), Retail founds with
+             * nothing, and its first shares go to whoever pays for them -
+             * which, in a city two months old with no savings, is the world.
+             * The founders' rule itself is tested in section 6 above. What
+             * is asserted here is that Retail is listed, and that the
+             * shares that exist are owned by somebody.
+             */
+            assertTrue("retail is listed once it has a book",
+                    register.getShares(RETAIL) > 0);
+            close("...and every share of it is held, at home or abroad",
+                    register.getDomesticShares(RETAIL) + register.getForeignShares(RETAIL),
+                    register.getShares(RETAIL), 1e-6);
             System.setOut(quiet);
             for (int m = 0; m < 240; m++) {
                 city.simulateMonths(1);

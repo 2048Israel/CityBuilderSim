@@ -20,7 +20,7 @@ public enum BuildingType {
      * Separate from INDUSTRIAL because that category feeds the food market and
      * prices off its own cost base; a second industry sharing that cost pool
      * would change what a loaf of bread appears to cost. See
-     * HeavyIndustryHandler.
+     * sectors.HeavyIndustry.
      */
     HEAVY_INDUSTRY,
 
@@ -46,7 +46,7 @@ public enum BuildingType {
      * had a lower input cost - invisible, and no decision in it. Separate books
      * mean the ore clears on a market between two sectors that need each other,
      * which is the first thing in this economy that rewards building two
-     * different things near each other. See MiningHandler.
+     * different things near each other. See sectors.Mining.
      *
      * On the END, like INFRASTRUCTURE and for the same reason: the saved
      * per-sector tax and interest arrays are indexed by ordinal().

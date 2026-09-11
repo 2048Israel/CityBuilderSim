@@ -17,19 +17,23 @@
   "For INFRASTRUCTURE, capacity is the road capacity the building provides;",
   "the city starts with 400 of it for free. Traffic flows freely up to 90% of",
   "capacity and then degrades, so headroom is what matters, not the raw total.",
-  "production1 / production2 mean different things per category - food or goods for",
-  "INDUSTRIAL, construction points for CONSTRUCTION (production2 is materials),",
-  "watts for ELECTRICITY, water units for WATER.",
-  "For MINING: production1 is tonnes of ore lifted a month and productionModifier1",
-  "is the export price per tonne - what a mine gets when no local mill wants it.",
-  "Ore sold to local mills clears on the iron market instead, between that export",
-  "floor and the mills' imported-scrap price. A mine also needs a DEPOSIT: buy a",
-  "land parcel with iron under it, and one deposit supports one mine.",
-  "For HEAVY_INDUSTRY: production1 is tonnes of product made a month, production2",
-  "is tonnes of raw material that takes, productionModifier1 is the export price",
-  "per tonne and productionModifier2 the import price. Everything is bought and",
-  "sold abroad, so those two prices are the whole business - the gap between",
-  "them has to cover wages, power and water, and it deliberately barely does.",
+  "WHO OWNS IT, AND WHAT IT MAKES. 'sector' is the owning business by its saved name -",
+  "Retail, Real Estate, Industry, Construction, Heavy Industry, Mining, Materials - and",
+  "a building with no sector is the city's (roads, plants, schools, clinics) or the",
+  "bank's. 'makes' and 'uses' are units of a GOOD a month per building at nameplate:",
+  "  \"makes\": { \"STEEL\": 1200 }, \"uses\": { \"IRON\": 1320 }",
+  "Goods are FOOD (a person-month of food), IRON (tonnes; imported scrap stands in),",
+  "STEEL (tonnes, all exported), MATERIALS (a unit of building material), GROCERIES",
+  "(food on a shelf, sold to households), HOUSING (homes), BUILDING_WORK (points).",
+  "Prices are on the goods, not here: the world charges and pays a fixed price for",
+  "each, and the city's markets clear between the two. 'stock' is the room a",
+  "building has for what it holds - a plant's warehouse, a shop's shelf - in units.",
+  "For a store, 'coverage' is people it can serve a month and it makes that many",
+  "GROCERIES out of that much FOOD. For a home, 'makes' HOUSING is its dwellings.",
+  "A mine also needs a DEPOSIT: buy a land parcel with iron under it, and one",
+  "deposit supports one mine.",
+  "production1 / production2 survive only for the utilities: watts for ELECTRICITY,",
+  "water units for WATER.",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -52,6 +56,7 @@
    "id": 0,
    "name": "House",
    "category": "RESIDENTIAL",
+   "sector": "Real Estate",
    "capacity": 6,
    "dwellings": 1,
    "cashCost": 266,
@@ -60,12 +65,16 @@
    "electricity": 1,
    "water": 0.2,
    "land": 8000,
-   "roadLoad": 2
+   "roadLoad": 2,
+   "makes": {
+    "HOUSING": 1
+   }
   },
   {
    "id": 1,
    "name": "Studio Apartments",
    "category": "RESIDENTIAL",
+   "sector": "Real Estate",
    "capacity": 160,
    "dwellings": 80,
    "cashCost": 8628,
@@ -74,12 +83,16 @@
    "electricity": 8,
    "water": 2,
    "land": 25000,
-   "roadLoad": 35
+   "roadLoad": 35,
+   "makes": {
+    "HOUSING": 80
+   }
   },
   {
    "id": 6,
    "name": "Low-Rise Apartments",
    "category": "RESIDENTIAL",
+   "sector": "Real Estate",
    "capacity": 252,
    "dwellings": 63,
    "cashCost": 10196,
@@ -88,14 +101,17 @@
    "electricity": 25,
    "water": 6,
    "land": 60000,
-   "roadLoad": 100
+   "roadLoad": 100,
+   "makes": {
+    "HOUSING": 63
+   }
   },
   {
    "id": 2,
    "name": "Convenience Store",
    "category": "COMMERCIAL",
+   "sector": "Retail",
    "coverage": 480,
-   "capacity": 1400,
    "cashCost": 442,
    "constructionPoints": 120,
    "constructionMaterials": 17,
@@ -106,14 +122,21 @@
     "DIPLOMA": 3
    },
    "land": 5000,
-   "roadLoad": 10
+   "roadLoad": 10,
+   "makes": {
+    "GROCERIES": 480
+   },
+   "uses": {
+    "FOOD": 480
+   },
+   "stock": 1400
   },
   {
    "id": 5,
    "name": "Small Grocery Store",
    "category": "COMMERCIAL",
+   "sector": "Retail",
    "coverage": 1600,
-   "capacity": 7000,
    "cashCost": 3478,
    "constructionPoints": 800,
    "constructionMaterials": 128,
@@ -125,17 +148,23 @@
     "COLLEGE_BUSINESS": 2
    },
    "land": 40000,
-   "roadLoad": 55
+   "roadLoad": 55,
+   "makes": {
+    "GROCERIES": 1600
+   },
+   "uses": {
+    "FOOD": 1600
+   },
+   "stock": 7000
   },
   {
    "id": 3,
    "name": "Textile Mill",
    "category": "INDUSTRIAL",
-   "capacity": 15000,
+   "sector": "Industry",
    "cashCost": 18717,
    "constructionPoints": 1800,
    "constructionMaterials": 347,
-   "production1": 5500,
    "electricity": 40,
    "water": 60,
    "jobs": {
@@ -143,17 +172,20 @@
     "DIPLOMA": 20
    },
    "land": 80000,
-   "roadLoad": 40
+   "roadLoad": 40,
+   "makes": {
+    "FOOD": 5500
+   },
+   "stock": 15000
   },
   {
    "id": 7,
    "name": "Food Processing Plant",
    "category": "INDUSTRIAL",
-   "capacity": 18000,
+   "sector": "Industry",
    "cashCost": 8994,
    "constructionPoints": 700,
    "constructionMaterials": 166,
-   "production1": 6000,
    "electricity": 24,
    "water": 30,
    "jobs": {
@@ -162,17 +194,20 @@
     "COLLEGE_ENGINEERING": 2
    },
    "land": 40000,
-   "roadLoad": 40
+   "roadLoad": 40,
+   "makes": {
+    "FOOD": 6000
+   },
+   "stock": 18000
   },
   {
    "id": 8,
    "name": "Construction Materials Plant",
    "category": "CONSTRUCTION",
-   "capacity": 5,
+   "sector": "Materials",
    "cashCost": 44904,
    "constructionPoints": 9000,
    "constructionMaterials": 831,
-   "production2": 160,
    "electricity": 200,
    "water": 80,
    "jobs": {
@@ -181,17 +216,20 @@
     "COLLEGE_ENGINEERING": 10
    },
    "land": 300000,
-   "roadLoad": 350
+   "roadLoad": 350,
+   "makes": {
+    "MATERIALS": 160
+   },
+   "stock": 480
   },
   {
    "id": 4,
    "name": "Construction Depot",
    "category": "CONSTRUCTION",
-   "capacity": 5,
+   "sector": "Construction",
    "cashCost": 1482,
    "constructionPoints": 400,
    "constructionMaterials": 55,
-   "production1": 400,
    "electricity": 25,
    "water": 3,
    "jobs": {
@@ -199,7 +237,10 @@
     "DIPLOMA": 15
    },
    "land": 60000,
-   "roadLoad": 90
+   "roadLoad": 90,
+   "makes": {
+    "BUILDING_WORK": 400
+   }
   },
   {
    "id": 9,
@@ -242,13 +283,10 @@
    "id": 11,
    "name": "Steel Foundry",
    "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
    "cashCost": 22471,
    "constructionPoints": 1400,
    "constructionMaterials": 416,
-   "production1": 1200,
-   "production2": 1320,
-   "productionModifier1": 0.847,
-   "productionModifier2": 0.41,
    "electricity": 750,
    "water": 65,
    "jobs": {
@@ -257,19 +295,22 @@
     "COLLEGE_ENGINEERING": 4
    },
    "land": 90000,
-   "roadLoad": 110
+   "roadLoad": 110,
+   "makes": {
+    "STEEL": 1200
+   },
+   "uses": {
+    "IRON": 1320
+   }
   },
   {
    "id": 12,
    "name": "Steel Mini-Mill",
    "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
    "cashCost": 89864,
    "constructionPoints": 9000,
    "constructionMaterials": 1664,
-   "production1": 6000,
-   "production2": 6600,
-   "productionModifier1": 0.847,
-   "productionModifier2": 0.41,
    "electricity": 3700,
    "water": 320,
    "jobs": {
@@ -279,7 +320,13 @@
     "UNIV_SCIENCE": 3
    },
    "land": 400000,
-   "roadLoad": 500
+   "roadLoad": 500,
+   "makes": {
+    "STEEL": 6000
+   },
+   "uses": {
+    "IRON": 6600
+   }
   },
   {
    "id": 10,
@@ -343,11 +390,10 @@
    "id": 14,
    "name": "Iron Mine",
    "category": "MINING",
+   "sector": "Mining",
    "cashCost": 7286,
    "constructionPoints": 1600,
    "constructionMaterials": 135,
-   "production1": 2500,
-   "productionModifier1": 0.14,
    "electricity": 2000,
    "water": 150,
    "jobs": {
@@ -356,7 +402,10 @@
     "COLLEGE_ENGINEERING": 3
    },
    "land": 400000,
-   "roadLoad": 420
+   "roadLoad": 420,
+   "makes": {
+    "IRON": 2500
+   }
   },
   {
    "id": 15,

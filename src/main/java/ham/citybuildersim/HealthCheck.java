@@ -311,22 +311,34 @@ public class HealthCheck {
                 wellEcon.getHealthRatio() * 100);
         assertTrue("a city with no clinics is already ill", wellEcon.getHealthRatio() < 1);
 
+        /*
+         * SINCE THE SECTOR TEMPLATE (2026-09-11) there is no report to
+         * recompute: the shops' revenue is the sale they book at the bottom
+         * of the month, off their pantry, at their shelf price, throttled by
+         * the operating rate. So the sale is run by hand, twice, on the same
+         * shelf - the pantry is put back between the two so the second run
+         * sees what the first did - and the units it hands over are what is
+         * compared. The ledger it leaves behind is not read by anything
+         * after this section.
+         */
+        ham.citybuildersim.sectors.Retail shops = well.getSectors().retail();
+        double shelf = shops.getPantry(Good.FOOD);
         wellEcon.setHealthRatio(1);
-        wellEcon.getCommercialHandler().computeMonthlyReport();
-        wellEcon.getIndustrialHandler().computeMonthlyReport();
+        shops.sellOwnPriced(well.getMarkets(), well);
 
         double workforceBefore = wellPop.getWorkforce();
         double populationBefore = wellPop.getPopulation();
         double wageBillBefore = wellPop.getTotalWage();
-        double payrollBefore = wellEcon.getCommercialHandler().getReportPayroll();
-        double revenueBefore = wellEcon.getCommercialHandler().getGrossRevenue();
-        double millRateBefore = wellEcon.getIndustrialHandler().getOperatingRate();
+        double payrollBefore = shops.getPayroll();
+        double soldBefore = shops.getProductsSold();
+        double millRateBefore = well.getSectors().industry().getOperatingRate();
         double buildBefore = well.getConstructionOutput();
+        assertTrue("fixture: the shops sold something at full health", soldBefore > 0);
 
         double sickness = .20;
         wellEcon.setHealthRatio(1 - sickness);
-        wellEcon.getCommercialHandler().computeMonthlyReport();
-        wellEcon.getIndustrialHandler().computeMonthlyReport();
+        shops.setPantry(Good.FOOD, shelf);
+        shops.sellOwnPriced(well.getMarkets(), well);
 
         System.out.printf("  a city of %.0f with %.0f working, told %.0f%% of them are ill%n",
                 populationBefore, workforceBefore, sickness * 100);
@@ -335,7 +347,7 @@ public class HealthCheck {
         check("the population is unchanged", wellPop.getPopulation(), populationBefore, 1e-9);
         check("the wage bill is unchanged", wellPop.getTotalWage(), wageBillBefore, 1e-9);
         check("the employer still pays the full payroll",
-                wellEcon.getCommercialHandler().getReportPayroll(), payrollBefore, 1e-9);
+                shops.getPayroll(), payrollBefore, 1e-9);
 
         /*
          * WITHIN A UNIT, because units are whole things.
@@ -350,12 +362,12 @@ public class HealthCheck {
          * the shops handed over every basket and were paid for four fifths of
          * them. See CommercialHandler.computeMonthlyReport().
          */
-        check("...and the shops' revenue falls by exactly the sick rate",
-                wellEcon.getCommercialHandler().getGrossRevenue(),
-                revenueBefore * (1 - sickness),
-                wellEcon.getCommercialHandler().getStoreSellPrice());
+        check("...and the shops hand over fewer baskets by exactly the sick rate",
+                shops.getProductsSold(),
+                soldBefore * (1 - sickness),
+                1);
         check("the mills run slower by the same share",
-                wellEcon.getIndustrialHandler().getOperatingRate(),
+                well.getSectors().industry().getOperatingRate(),
                 millRateBefore * (1 - sickness), 1e-9);
 
         /*
@@ -434,9 +446,13 @@ public class HealthCheck {
         check("and the sectors were told about it on the load path",
                 back.getEconomyManager().getHealthRatio(),
                 city.getEconomyManager().getHealthRatio(), 1e-9);
-        check("...including the basis its statements were written against",
-                back.getEconomyManager().getHealthRatioBasis(),
-                city.getEconomyManager().getHealthRatioBasis(), 1e-9);
+        // The basis its statements were written against went with the
+        // sector template: a statement is struck from the ledger of trades,
+        // and the ratio the trades were throttled by is the ratio in force
+        // when the market cleared - carried in the sectors' own state.
+        check("...including the statement it struck under it",
+                back.getSectors().retail().statement().revenue,
+                city.getSectors().retail().statement().revenue, 1e-9);
 
         /* ================= 6. an unstaffed hospital treats nobody ================= */
         System.out.println("\n--- staffing ---");

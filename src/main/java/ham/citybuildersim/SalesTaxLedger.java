@@ -1,151 +1,109 @@
 package ham.citybuildersim;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * The month's sales tax, as tax payable less input tax credits.
  *
  * WHY THIS REPLACED A ONE-LINE SALES TAX
  *
  * calculateSalesTax() was three lines: food-plant revenue, store revenue, and
- * the retail import tax, each times the one city rate. Two things were wrong
- * with it, and they pulled in opposite directions.
+ * the retail import tax, each times the one city rate. It taxed the same food
+ * TWICE - once when the plant sold it and again when the store did - and it
+ * never touched Heavy Industry or Mining at all, so steel and ore moved
+ * through the economy untaxed while a loaf of bread was charged at every
+ * step.
  *
- * It taxed the same food TWICE - once when the plant sold it and again when the
- * store did - so a longer supply chain cost more tax for no more consumption.
- * And it never touched Heavy Industry or Mining at all: their gross revenue was
- * simply absent from the sum, so steel and ore moved through the economy
- * untaxed while a loaf of bread was charged at every step.
+ * Jerus's fix, in his words: "just like real life... it's taxed, all of it,
+ * just that there is tax credits - if you bought stuff with 3k tax then what
+ * you sell has a 3k tax credit, basically the HST receivable and payable
+ * thing." So every sector charges tax on what it sells and claims back the
+ * tax embedded in what it bought. The city collects the difference, which is
+ * the tax on the VALUE THE SECTOR ADDED.
  *
- * Jerus's fix, in his words: "just like real life... it's taxed, all of it, just
- * that there is tax credits - if you bought stuff with 3k tax then what you sell
- * has a 3k tax credit, basically the HST receivable and payable thing."
+ * ONE DELIBERATE DEPARTURE FROM REAL HST: the rate follows the PRODUCER, not
+ * the product, so every per-sector dial is a real lever. A sector buying at a
+ * high rate and selling at a low one can show a NEGATIVE net remittance;
+ * that is a refund, it is correct, and the ledger does not floor it.
  *
- * So: every sector charges tax on what it sells and claims back the tax embedded
- * in what it bought. The city collects the difference, which is the tax on the
- * VALUE THE SECTOR ADDED. Add the chain up and the total is the tax on final
- * consumption, however many hands the goods passed through.
+ * EXPORTS ARE ZERO-RATED, and the credits behind them stay claimable. IMPORTS
+ * ARE TAXED AND CREDITABLE, so a sector cannot undercut a local supplier by
+ * buying from outside. THE CITY IS EXEMPT, and so is residential rent (see
+ * Good.taxExempt()).
  *
- * ONE DELIBERATE DEPARTURE FROM REAL HST
- *
- * Under a real VAT the rate follows the PRODUCT, so intermediate rates cancel
- * exactly and only the last sale before a final consumer sets what the city
- * collects. That would make five of the six per-sector dials cosmetic. Jerus
- * chose the other way: the rate follows the PRODUCER, so a sector's own rate
- * applies to the margin it adds and every dial is a real lever. Cutting Mining's
- * rate genuinely makes ore cheaper to produce.
- *
- * The consequence to know: because payable and credit can be struck at different
- * rates, a sector buying at a high rate and selling at a low one can show a
- * NEGATIVE net remittance. That is a refund, it is correct, and the ledger does
- * not floor it - flooring would quietly turn a rate cut into a partial one.
- *
- * EXPORTS ARE ZERO-RATED. Nothing is charged on ore leaving the city, and the
- * credits behind it are still claimable, so an exporter can end the month owed
- * money. That is what zero-rating means and it is why it is a genuine incentive
- * to export rather than a bookkeeping nicety.
- *
- * IMPORTS ARE TAXED AND CREDITABLE, so a sector cannot undercut a local supplier
- * simply by buying from outside the city.
- *
- * THE CITY IS EXEMPT. It charges nothing on what it supplies and claims nothing
- * on what it buys. Real governments do pay VAT; this one does not, because the
- * alternative is the treasury paying itself and both halves appearing in the
- * books - and money-from-nowhere through exactly that kind of round trip is the
- * bug this codebase keeps rediscovering.
+ * SINCE THE SECTOR TEMPLATE (2026-09-11) the ledger is STRUCK FROM THE
+ * TRADES rather than written by hand per sector - see
+ * EconomyManager.settleSalesTax(): a sale to a local buyer at the seller's
+ * rate, an export zero-rated, a purchase credited at the supplier's rate, an
+ * import charged at the buyer's. Keyed by the sector's name, so a seventh
+ * sector is a seventh row and nothing here changes.
  */
 public class SalesTaxLedger {
 
-    private final int sectors = PolicySector.values().length;
+    private final Map<String, double[]> rows = new LinkedHashMap<>();
 
-    private final double[] taxableSales  = new double[sectors];
-    /**
-     * Tax charged on imports, at the buyer's rate. The comment on chargeImport()
-     * always said an import was "charged on the way in and credited"; until
-     * 2026-09-06 only the credit was ever recorded, so every import was a pure
-     * refund from the treasury - and the charge it was meant to net against
-     * was paid by retail as a purchase markup, to nobody. Both halves live in
-     * the ledger now.
-     */
-    private final double[] importTax     = new double[sectors];
-    private final double[] zeroRated     = new double[sectors];
-    private final double[] creditedInput = new double[sectors];
-
-    private final double[] payable = new double[sectors];
-    private final double[] credit  = new double[sectors];
+    /* slots in a row */
+    private static final int TAXABLE_SALES = 0, IMPORT_TAX = 1, ZERO_RATED = 2,
+            CREDITED_INPUT = 3, PAYABLE = 4, CREDIT = 5, SLOTS = 6;
 
     private double totalRemitted;
+
+    private double[] row(String sector) {
+        return rows.computeIfAbsent(sector, k -> new double[SLOTS]);
+    }
 
     /* ==================================================================
        WHAT HAPPENED THIS MONTH
        ================================================================== */
 
     /** Sales to anyone inside the city. Charged at the seller's own rate. */
-    public void recordSales(PolicySector sector, double revenue) {
+    public void recordSales(String sector, double revenue) {
         if (sector == null || revenue <= 0) return;
-        taxableSales[sector.ordinal()] += revenue;
+        row(sector)[TAXABLE_SALES] += revenue;
     }
 
     /**
      * Sales out of the city. Charged nothing, and they do not cost the seller
-     * its credits - that is the whole of what zero-rating means.
-     *
-     * Tracked separately rather than just ignored, because a screen that cannot
-     * say "this much of your revenue was zero-rated" makes a refund look like a
-     * bug.
+     * its credits. Tracked so a screen can say "this much of your revenue was
+     * zero-rated" and a refund does not look like a bug.
      */
-    public void recordExport(PolicySector sector, double revenue) {
+    public void recordExport(String sector, double revenue) {
         if (sector == null || revenue <= 0) return;
-        zeroRated[sector.ordinal()] += revenue;
+        row(sector)[ZERO_RATED] += revenue;
     }
 
     /**
-     * Tax the sector actually PAID on its inputs, recoverable in full.
-     *
-     * Takes the tax, not the purchase. The credit has to be what the supplier
-     * charged - at the SUPPLIER's rate - or the chain stops adding up: a buyer
-     * claiming back more than the seller remitted is the city refunding tax it
-     * never collected.
+     * Tax the sector actually PAID on its inputs, recoverable in full. Takes
+     * the tax, not the purchase: the credit has to be what the supplier
+     * charged - at the SUPPLIER's rate - or the city refunds tax it never
+     * collected.
      */
-    public void recordInputTax(PolicySector sector, double taxPaid) {
+    public void recordInputTax(String sector, double taxPaid) {
         if (sector == null || taxPaid <= 0) return;
-        creditedInput[sector.ordinal()] += taxPaid;
+        row(sector)[CREDITED_INPUT] += taxPaid;
     }
 
     /**
-     * Tax on goods bought from outside the city, at the BUYER's rate.
-     *
-     * An import has no local supplier to have charged anything, so the buyer is
-     * charged on the way in and credits the same amount. That nets to zero for a
-     * sector that resells locally, which is the point - the tax lands on the
-     * final sale either way, and importing carries no advantage over buying from
-     * a local supplier.
+     * Tax on goods bought from outside the city, at the BUYER's rate: charged
+     * on the way in and credited, which nets to zero for a sector that
+     * resells locally - the tax lands on the final sale either way.
      */
-    public double chargeImport(PolicySector sector, double landedCost, TaxPolicy policy) {
+    public double chargeImport(String sector, double landedCost, TaxPolicy policy) {
         if (sector == null || landedCost <= 0) return 0;
         double tax = landedCost * policy.effectiveSalesRate(sector);
-        importTax[sector.ordinal()]     += tax;   // charged on the way in...
-        creditedInput[sector.ordinal()] += tax;   // ...and creditable, so it nets to zero
+        row(sector)[IMPORT_TAX] += tax;
+        row(sector)[CREDITED_INPUT] += tax;
         return tax;
     }
 
-    /**
-     * The sector in the biggest refund position this month, or null if none is.
-     *
-     * The city's total sales tax is allowed to go negative and deliberately not
-     * floored - under the producer-rate design a sector buying at a high rate
-     * and selling at a low one genuinely is owed money, and flooring would
-     * quietly turn a rate cut into a partial one.
-     *
-     * But a negative figure with no explanation reads as a bug, and it was one
-     * once: retail claimed its input credit on a TAX-INCLUSIVE cost and
-     * over-claimed by exactly the rate, which was enough on its own to make the
-     * whole city's sales tax negative. So the screen names whoever is in refund,
-     * and the next time this happens it will be answerable at a glance instead
-     * of by an audit.
-     */
-    public PolicySector deepestRefund() {
-        PolicySector worst = null;
+    /** The sector in the biggest refund position this month, or null if none is. */
+    public String deepestRefund() {
+        String worst = null;
         double deepest = 0;
-        for (PolicySector sector : PolicySector.values()) {
+        for (String sector : rows.keySet()) {
             double net = getNet(sector);
             if (net < deepest) {
                 deepest = net;
@@ -159,113 +117,99 @@ public class SalesTaxLedger {
        WHAT IT COMES TO
        ================================================================== */
 
-    /**
-     * Strikes the month's tax. Call once, after every sector has reported.
-     *
-     * @return what the city collects in total, which may be less than any one
-     *         sector's payable if another is in a refund position
-     */
+    /** Strikes the month's tax. Call once, after every sector has reported. */
     public double settle(TaxPolicy policy) {
-
         totalRemitted = 0;
-
-        for (PolicySector s : PolicySector.values()) {
-            int i = s.ordinal();
-
-            // Zero-rated sales are charged nothing. They are still SALES, so
+        for (Map.Entry<String, double[]> e : rows.entrySet()) {
+            double[] r = e.getValue();
+            // Zero-rated sales are charged nothing; they are still sales, so
             // they do not reduce the credit behind them.
-            payable[i] = taxableSales[i] * policy.effectiveSalesRate(s) + importTax[i];
-            credit[i]  = creditedInput[i];
-
-            totalRemitted += payable[i] - credit[i];
+            r[PAYABLE] = r[TAXABLE_SALES] * policy.effectiveSalesRate(e.getKey()) + r[IMPORT_TAX];
+            r[CREDIT] = r[CREDITED_INPUT];
+            totalRemitted += r[PAYABLE] - r[CREDIT];
         }
         return totalRemitted;
     }
 
-    public double getTotalRemitted()               { return totalRemitted; }
-    public double getPayable(PolicySector s)       { return payable[s.ordinal()]; }
-    public double getCredit(PolicySector s)        { return credit[s.ordinal()]; }
-    public double getNet(PolicySector s)           { return payable[s.ordinal()] - credit[s.ordinal()]; }
-    public double getTaxableSales(PolicySector s)  { return taxableSales[s.ordinal()]; }
-    public double getZeroRated(PolicySector s)     { return zeroRated[s.ordinal()]; }
+    public double getTotalRemitted()             { return totalRemitted; }
+    public double getPayable(String s)           { return has(s) ? rows.get(s)[PAYABLE] : 0; }
+    public double getCredit(String s)            { return has(s) ? rows.get(s)[CREDIT] : 0; }
+    public double getNet(String s)               { return getPayable(s) - getCredit(s); }
+    public double getTaxableSales(String s)      { return has(s) ? rows.get(s)[TAXABLE_SALES] : 0; }
+    public double getZeroRated(String s)         { return has(s) ? rows.get(s)[ZERO_RATED] : 0; }
+    public double getImportTax(String s)         { return has(s) ? rows.get(s)[IMPORT_TAX] : 0; }
+
+    private boolean has(String s) { return s != null && rows.containsKey(s); }
 
     /** True when the city owes this sector rather than the other way round. */
-    public boolean isInRefund(PolicySector s) {
-        return getNet(s) < 0;
-    }
+    public boolean isInRefund(String s) { return getNet(s) < 0; }
 
     /**
-     * Clears the month.
-     *
-     * Everything here is a FLOW - it describes a period, not a balance - so it
-     * has to be zeroed at the start of each month and carried in the save rather
-     * than recomputed on load. Nothing about the state a month ended in can tell
-     * you what was bought and sold during it.
+     * Clears the month. Everything here is a FLOW - it describes a period,
+     * not a balance - so it is zeroed at the start of each month and carried
+     * in the save rather than recomputed on load.
      */
     public void startMonth() {
-        java.util.Arrays.fill(taxableSales, 0);
-        java.util.Arrays.fill(importTax, 0);
-        java.util.Arrays.fill(zeroRated, 0);
-        java.util.Arrays.fill(creditedInput, 0);
-        java.util.Arrays.fill(payable, 0);
-        java.util.Arrays.fill(credit, 0);
+        rows.clear();
         totalRemitted = 0;
     }
 
     /* ------------------------- save and restore ------------------------- */
 
-    public double[] getLedgerState() {
-        double[] state = new double[1 + sectors * 6];
-        int i = 0;
-        state[i++] = totalRemitted;
-        for (int s = 0; s < sectors; s++) state[i++] = taxableSales[s];
-        for (int s = 0; s < sectors; s++) state[i++] = zeroRated[s];
-        for (int s = 0; s < sectors; s++) state[i++] = creditedInput[s];
-        for (int s = 0; s < sectors; s++) state[i++] = payable[s];
-        for (int s = 0; s < sectors; s++) state[i++] = credit[s];
-        for (int s = 0; s < sectors; s++) state[i++] = importTax[s];
-        return state;
+    /** One sector's row, as the save carries it. */
+    public static final class Row {
+        public String sector;
+        public double taxableSales, importTax, zeroRated, creditedInput, payable, credit;
     }
 
-    /**
-     * @return false if the array is not this build's shape; nothing is changed.
-     * The shape from before importTax existed (format 17 and earlier) is
-     * accepted with the import charges read as zero - that month's ledger was
-     * struck without them, so that IS what it collected.
-     */
-    public boolean restoreLedgerState(double[] state) {
+    public static final class State {
+        public double totalRemitted;
+        public List<Row> rows = new ArrayList<>();
+    }
 
-        if (state == null) return false;
-        boolean withImports = state.length == 1 + sectors * 6;
-        if (!withImports && state.length != 1 + sectors * 5) return false;
+    public State toState() {
+        State s = new State();
+        s.totalRemitted = totalRemitted;
+        for (Map.Entry<String, double[]> e : rows.entrySet()) {
+            double[] r = e.getValue();
+            Row row = new Row();
+            row.sector = e.getKey();
+            row.taxableSales = r[TAXABLE_SALES];
+            row.importTax = r[IMPORT_TAX];
+            row.zeroRated = r[ZERO_RATED];
+            row.creditedInput = r[CREDITED_INPUT];
+            row.payable = r[PAYABLE];
+            row.credit = r[CREDIT];
+            s.rows.add(row);
+        }
+        return s;
+    }
 
-        int i = 0;
-        totalRemitted = state[i++];
-        for (int s = 0; s < sectors; s++) taxableSales[s]  = state[i++];
-        for (int s = 0; s < sectors; s++) zeroRated[s]     = state[i++];
-        for (int s = 0; s < sectors; s++) creditedInput[s] = state[i++];
-        for (int s = 0; s < sectors; s++) payable[s]       = state[i++];
-        for (int s = 0; s < sectors; s++) credit[s]        = state[i++];
-        java.util.Arrays.fill(importTax, 0);
-        if (withImports) {
-            for (int s = 0; s < sectors; s++) importTax[s] = state[i++];
+    /** @return false when there is nothing to restore; nothing is changed. */
+    public boolean restore(State s) {
+        if (s == null) return false;
+        rows.clear();
+        totalRemitted = s.totalRemitted;
+        if (s.rows != null) for (Row row : s.rows) {
+            if (row == null || row.sector == null) continue;
+            double[] r = row(row.sector);
+            r[TAXABLE_SALES] = row.taxableSales;
+            r[IMPORT_TAX] = row.importTax;
+            r[ZERO_RATED] = row.zeroRated;
+            r[CREDITED_INPUT] = row.creditedInput;
+            r[PAYABLE] = row.payable;
+            r[CREDIT] = row.credit;
         }
         return true;
     }
 
-    public void reset() {
-        startMonth();
-    }
+    public void reset() { startMonth(); }
 
     /** The month's VAT working, in the new unit. */
     public void redenominate(double scale) {
-        for (int i = 0; i < sectors; i++) {
-            taxableSales[i]  *= scale;
-            importTax[i]     *= scale;
-            zeroRated[i]     *= scale;
-            creditedInput[i] *= scale;
-            payable[i]       *= scale;
+        for (double[] r : rows.values()) {
+            for (int i = 0; i < SLOTS; i++) r[i] *= scale;
         }
+        totalRemitted *= scale;
     }
-
 }

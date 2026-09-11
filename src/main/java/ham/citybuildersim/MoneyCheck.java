@@ -113,7 +113,7 @@ public class MoneyCheck {
         // Every tax dial up, so the sectors are taxed on everything they do.
         TaxPolicy policy = s.getEconomyManager().getTaxPolicy();
         policy.setIncomeTaxRate(.35);
-        for (PolicySector sector : PolicySector.values()) {
+        for (String sector : Sectors.KEYS) {
             policy.setProfitOffset(sector, .25);
             policy.setSalesOffset(sector, .10);
         }
@@ -127,10 +127,10 @@ public class MoneyCheck {
 
         // Bankrupt retail by hand and let the restructure and its ban run.
         BusinessDebtManager credit = s.getEconomyManager().getBusinessDebtManager();
-        credit.issueLoan(BusinessDebtManager.RETAIL, 5_000_000, s.getMonth());
-        s.getEconomyManager().setSectorCash(BusinessDebtManager.RETAIL,
-                s.getEconomyManager().getSectorCash(BusinessDebtManager.RETAIL) + 5_000_000);
-        credit.setAssets(BusinessDebtManager.RETAIL, -1);
+        credit.issueLoan(Sectors.RETAIL, 5_000_000, s.getMonth());
+        s.getEconomyManager().setSectorCash(Sectors.RETAIL,
+                s.getEconomyManager().getSectorCash(Sectors.RETAIL) + 5_000_000);
+        credit.setAssets(Sectors.RETAIL, -1);
 
         worst = play("through a restructure, 60 months", s, 60, verbose);
         assertTrue("a restructure moves no cash the audit cannot see",

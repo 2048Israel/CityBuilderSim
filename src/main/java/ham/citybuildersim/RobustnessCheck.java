@@ -168,16 +168,40 @@ public class RobustnessCheck {
          * by checking in an old file, so it keeps testing the current loader
          * against the current save rather than against a fossil.
          */
+        /*
+         * ...AND SINCE THE SECTOR TEMPLATE (2026-09-11) "older" STOPS AT 21.
+         * Jerus: "clean break." A save from before the sectors carries five
+         * handlers' arrays and nothing this build can read a sector out of,
+         * so it is refused with a sentence rather than loaded as a city with
+         * seven empty businesses. That direction is tested first, below;
+         * the older-but-readable case is a format-21 file with the optional
+         * fields stripped, which is what a save from an earlier build of
+         * this era looks like.
+         */
+        com.google.gson.JsonObject before =
+                com.google.gson.JsonParser.parseString(good).getAsJsonObject();
+        before.addProperty("saveFormat", GameVersion.FIRST_SECTOR_FORMAT - 1);
+        Files.writeString(files.saveFile(9), before.toString());
+
+        assertTrue("a save from before the sectors reads as a file", !files.slotIsEmpty(9));
+        assertTrue("...its header parses fine", files.readHeader(9) != null);
+        assertTrue("...and it says so", files.readHeader(9).isFromBeforeSectors());
+        assertTrue("...but it is not loadable", !files.slotIsLoadable(9));
+        Game fossil = new Game(files);
+        fossil.loadGameSave(9);
+        assertTrue("and the loader refuses it with a reason", fossil.getLoadFailure() != null
+                && fossil.getLoadFailure().contains("sector"));
+        assertEquals("nothing applied", fossil.getMonth(), 1);
+
         com.google.gson.JsonObject old4 =
                 com.google.gson.JsonParser.parseString(good).getAsJsonObject();
 
         for (String field : new String[] {
-                "workforce", "commercialReport", "industrialReport",
-                "heavyIndustryReport", "energyRatioBasis", "waterRatioBasis",
-                "roadRatioBasis", "hasRatioBasis" }) {
+                "workforce", "subsidyPaid", "householdStatement", "restructureCounts",
+                "blockedMonths", "landMarketPrices", "notices", "outwardInvestment" }) {
             old4.remove(field);
         }
-        old4.addProperty("saveFormat", 4);
+        old4.addProperty("saveFormat", GameVersion.FIRST_SECTOR_FORMAT);
 
         Files.writeString(files.saveFile(7), old4.toString());
 
@@ -275,7 +299,7 @@ public class RobustnessCheck {
         flagged.getLandManager().setOwnedSqFt(4_000_000);
 
         BuildingsTemplate house = template(flagged, "House");
-        ConstructionHandler crew = flagged.getServicesManager().getConstructionHandler();
+        ham.citybuildersim.sectors.Construction crew = flagged.getSectors().construction();
 
         int standingBefore = flagged.getBuildingManager().getQuantity(house.getId());
         double crewBacklogBefore = crew.getBacklogPoints();

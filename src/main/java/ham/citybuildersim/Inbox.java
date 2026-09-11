@@ -198,7 +198,7 @@ public class Inbox {
         if (!game.isConstructionShedding()) return lines;
 
         double capacity = game.getBuildingManager().getTotalConstructionCapacity();
-        boolean covered = game.isAutoSubsidised(PolicySector.CONSTRUCTION);
+        boolean covered = game.isAutoSubsidised(game.getSectors().construction());
         double lost = game.getConstructionShedPoints();
 
         lines.add(String.format("Construction sold %,.0f points of capacity - it has no", lost));

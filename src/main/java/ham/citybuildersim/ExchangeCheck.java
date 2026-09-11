@@ -94,8 +94,8 @@ public class ExchangeCheck {
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
 
-        int RETAIL = Equity.indexOf(BusinessDebtManager.RETAIL);
-        int INDUSTRY = Equity.indexOf(BusinessDebtManager.INDUSTRY);
+        int RETAIL = Equity.indexOf(Sectors.RETAIL);
+        int INDUSTRY = Equity.indexOf(Sectors.INDUSTRY);
         double[] book = new double[N];
 
         /* ================= 1. the quote ================= */

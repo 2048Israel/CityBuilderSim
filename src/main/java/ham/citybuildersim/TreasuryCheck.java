@@ -125,7 +125,7 @@ public class TreasuryCheck {
 
         Game funded = new Game(GameFiles.scratch("treasury-subsidy"));
         funded.newGame();
-        for (PolicySector sector : PolicySector.values()) {
+        for (String sector : Sectors.KEYS) {
             funded.setAutoSubsidised(sector, true);
         }
 

@@ -64,6 +64,10 @@ public class DataSave {
      */
     private double[] constructionProgressById;
     private int[] underConstructionById;
+    /** Material the sites still have to draw, by id. Absent on a save from before the crews drew as they built. */
+    private double[] materialsOwedById;
+    /** The builders' contract still on each template's sites, by id. Absent on a save from before the book was kept per stack. */
+    private double[] contractValueById;
 
     /*
      * The property tax the city CHARGED this month, rather than a figure
@@ -102,117 +106,28 @@ public class DataSave {
     private double cityInterestAccrued;
 
     /*
-     * And the same figure split by sector, indexed by BuildingType ordinal.
-     *
-     * Saved rather than recomputed on load, which is not obvious: property tax
-     * is charged early in the month and buildings finish construction after
-     * that, so by the time a save is taken the assessed value has moved on.
-     * Recomputing from the saved building stock billed retail 4.35 against the
-     * 2.95 it actually paid. The charge is a fact about a month, not a function
-     * of the state that month ended in.
+     * EVERY SECTOR, WHOLE, BY NAME - and every market's price (2026-09-11,
+     * the sector template). Its cash, its stocks, the month in progress, the
+     * month last struck, the three bills of the month, and whatever state is
+     * its own. This replaced five differently-shaped report arrays, two
+     * arrays indexed by BuildingType.ordinal(), and a dozen loose fields
+     * (commercialCash, industryFoodInventory, retailFillBasis...) carried
+     * one by one. See SectorState and Markets.State.
      */
-    private double[] propertyTaxCharges;
+    private java.util.List<SectorState> sectors;
+    private java.util.List<Markets.State> markets;
 
-    /*
-     * The month's trading. Flows, not balances - and nothing can rederive a flow
-     * from the balance a month ended on, which is the whole reason these exist.
-     *
-     * retailCostOfGoods is set by buyInventory() and never recomputed, so
-     * without it a loaded city priced its shops with no cost of goods at all.
-     * The two industry counts reconstruct the stock the mills traded FROM:
-     * updateFinalIndustrialHandler() subtracts both from foodInventory after the
-     * statement is written, so the saved inventory is the closing balance and
-     * the statement was against the opening one.
-     */
-    /*
-     * What each sector's borrowing cost it, by BuildingType ordinal. Priced off
-     * the balance sheet as it stood when the month ran; re-pricing it from the
-     * sheet the month ended on gives a different number.
-     */
-    private double[] interestCharges;
+    public void setSectors(java.util.List<SectorState> s)   { this.sectors = s; }
+    public java.util.List<SectorState> getSectors()         { return sectors; }
+    public void setMarkets(java.util.List<Markets.State> m) { this.markets = m; }
+    public java.util.List<Markets.State> getMarkets()       { return markets; }
 
-    private double retailCostOfGoods;
-    /*
-     * The two halves of that cost, before the supplier's tax. Carried for the
-     * same reason as the gross beside them: buyInventory() sets them during the
-     * month and nothing can re-derive the local/imported split from the closing
-     * shelves. Without them a reloaded city credits its input tax on stock it
-     * did not buy.
-     */
-    private double retailLocalPurchase;
-    private double retailImportPurchase;
-    private int retailLocalImports;
-    private int retailGlobalImports;
-    private double retailFillBasis;
-    private double retailImportTax;
-    private double industryDemand;
-    /**
-     * Dollars the stores paid the mills last month. A flag rather than NaN for
-     * "not carried", because Gson refuses to write NaN and the save would fail.
-     */
-    private double industryLocalSalesValue;
-    private boolean hasIndustryLocalSalesValue;
-    public double getIndustryLocalSalesValue() {
-        return hasIndustryLocalSalesValue ? industryLocalSalesValue : Double.NaN;
-    }
-    public void setIndustryLocalSalesValue(double value) {
-        if (Double.isNaN(value)) { hasIndustryLocalSalesValue = false; industryLocalSalesValue = 0; }
-        else { hasIndustryLocalSalesValue = true; industryLocalSalesValue = value; }
-    }
-    private int industryUnitsSold;
-    private int industryUnitsImported;
-    private boolean hasMonthFlows;
-
-    /*
-     * The utilisation the month's income statements were written against.
-     *
-     * A flow, not a balance, exactly like the figures above: the statements run
-     * at the start of a month off last month's ratios, and the month then moves
-     * them. Recomputing from the state the save was taken in prices the month at
-     * ratios it was never traded at - which is invisible while every ratio is 1
-     * and obvious the moment roads make one of them routinely less.
-     *
-     * Absent from saves written before roads existed; hasRatioBasis says so, and
-     * the load falls back to recomputing, which is what those saves did anyway.
-     */
-    private double energyRatioBasis = 1;
-    private double waterRatioBasis = 1;
-    private double roadRatioBasis = 1;
-
-    /**
-     * The sick rate the statements were written against.
-     *
-     * No presence flag of its own, and it does not need one: a save from before
-     * sickness existed reads 1, which is exactly what that city was running at.
-     * The other three needed hasRatioBasis because their honest default was
-     * "unknown, go and ask the live game"; this one's honest default is "nobody
-     * was ill".
-     */
-    private double healthRatioBasis = 1;
-    private boolean hasRatioBasis;
-
-    /*
-     * The month's income statements, as the sectors actually wrote them.
-     *
-     * The end of the road the four fields above are on. Every one of them is an
-     * INPUT to a statement, carried so the statement could be rebuilt - and
-     * each one carried revealed another input underneath it. These three arrays
-     * are the statements themselves, so there is nothing left to rebuild.
-     *
-     * Positional, and refused whole rather than padded if the shape does not
-     * match this build. See CommercialHandler.getReportState().
-     */
     /**
      * The workforce the month was worked by - see
      * PopulationManager.restoreWorkforce(). -1 means a save from before this
      * was carried, where the load recomputes as it always did.
      */
     private int workforce = -1;
-
-    private double[] commercialReport;
-    private double[] industrialReport;
-    private double[] heavyIndustryReport;
-    private double[] miningReport;
 
     /* ------------------------- land, ore and the retainer -------------------
      *
@@ -228,10 +143,6 @@ public class DataSave {
     private int ironDeposits;
     private double ironReserveTonnes;
 
-    /** The ore price the month traded at. A flow, like every other price here. */
-    private double ironLocalPrice;
-
-    private double miningCash;
     private double constructionSubsidy;
 
     /* ------------------------- the shedding warning -------------------------
@@ -287,19 +198,8 @@ public class DataSave {
     private java.util.Map<String, Integer> restructureCounts;
     private java.util.Map<String, Integer> blockedMonths;
 
-    /*
-     * Construction's books: cash, and the order book that percentage-of-
-     * completion revenue is recognised against. Without the backlog a loaded
-     * city books zero construction output until the queue would have emptied.
-     */
-    private double constructionCash;
-    private double constructionUnearnedRevenue;
-    private double constructionBacklogPoints;
-    /** Bought-in material of orders taken since the last strike, still in the book. Absent: zero. */
-    private double constructionMaterialsPending;
+    /** The city's own yard, in units. */
     private int constructionMaterials;
-    private int storeInventory;
-    private int industryFoodInventory;
     private int population;
     
     /*
@@ -335,13 +235,6 @@ public class DataSave {
     private boolean graphs = true;
     
     
-    //business stuff
-    //cash
-    private double industrialCash;
-    private double commercialCash;
-    private double realEstateCash;
-    private double heavyIndustryCash;
-
     /**
      * What the residents have not spent, since the city was founded.
      *
@@ -419,9 +312,6 @@ public class DataSave {
     public int getSaveFormat()     { return saveFormat; }
     public long getSavedAt()       { return savedAt; }
 
-    public void setHeavyIndustryCash(double cash) { this.heavyIndustryCash = cash; }
-    public double getHeavyIndustryCash()          { return heavyIndustryCash; }
-
     public void setHouseholdSavings(double value)  { this.householdSavings = value; }
     public double getHouseholdSavings()            { return householdSavings; }
 
@@ -476,17 +366,6 @@ public class DataSave {
         this.constructionMaterials = constructionMaterials;
     }
     
-    /** The shops' sales last month - the demand signal. See CommercialHandler.setLastMonthSales(). */
-    private int storeLastMonthSales;
-    public void setStoreLastMonthSales(int units) { this.storeLastMonthSales = units; }
-    public int getStoreLastMonthSales()           { return storeLastMonthSales; }
-
-    public void setStoreInventory(int storeInventory){
-        this.storeInventory = storeInventory;
-    }
-    public void setIndustryFoodInventory(int foodInventory){
-        this.industryFoodInventory = foodInventory;
-    }
     public void setPopulation(int population){
         this.population = population;
     }
@@ -510,17 +389,6 @@ public class DataSave {
         this.graphs = graphs;
     }
 
-    public void setIndustrialCash(double industrialCash) {
-        this.industrialCash = industrialCash;
-    }
-
-    public void setCommercialCash(double commercialCash) {
-        this.commercialCash = commercialCash;
-    }
-
-    public void setRealEstateCash(double realEstateCash) {
-        this.realEstateCash = realEstateCash;
-    }
     
 
     /**
@@ -609,10 +477,15 @@ public class DataSave {
   
     /* ------------------------- construction, by id ------------------------- */
 
-    public void setConstructionById(int[] underConstruction, double[] progress) {
+    public void setConstructionById(int[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue) {
         this.underConstructionById = underConstruction;
         this.constructionProgressById = progress;
+        this.materialsOwedById = materialsOwed;
+        this.contractValueById = contractValue;
     }
+
+    /** False on a save that kept one order book for the whole city. */
+    public boolean hasContractsById() { return contractValueById != null; }
 
     /** False for a save written before the format changed. */
     public boolean hasConstructionById() {
@@ -637,6 +510,21 @@ public class DataSave {
                 ? 0 : constructionProgressById[templateId];
     }
 
+    public double getContractValueById(int templateId) {
+        return (contractValueById == null
+                || templateId < 0
+                || templateId >= contractValueById.length)
+                ? 0 : contractValueById[templateId];
+    }
+
+    /** Zero on a save that has no record: its orders drew their material the day they were placed. */
+    public double getMaterialsOwedById(int templateId) {
+        return (materialsOwedById == null
+                || templateId < 0
+                || templateId >= materialsOwedById.length)
+                ? 0 : materialsOwedById[templateId];
+    }
+
     /* ------------------------ charged, not derived ------------------------ */
 
     public void setPropertyTaxCharged(double value) { this.propertyTaxCharged = value; }
@@ -645,46 +533,10 @@ public class DataSave {
     public void setCityInterestAccrued(double value) { this.cityInterestAccrued = value; }
     public double getCityInterestAccrued()           { return cityInterestAccrued; }
 
-    public void setPropertyTaxCharges(double[] charges) { this.propertyTaxCharges = charges; }
-    public double[] getPropertyTaxCharges()             { return propertyTaxCharges; }
-
-    public void setInterestCharges(double[] charges) { this.interestCharges = charges; }
-    public double[] getInterestCharges()             { return interestCharges; }
-
-    public void setMonthFlows(double retailCostOfGoods, int retailLocal, int retailGlobal,
-                              double retailFillBasis, double retailImportTax,
-                              double demand, int sold, int imported) {
-        this.retailCostOfGoods = retailCostOfGoods;
-        this.retailLocalImports = retailLocal;
-        this.retailGlobalImports = retailGlobal;
-        this.retailFillBasis = retailFillBasis;
-        this.retailImportTax = retailImportTax;
-        this.industryDemand = demand;
-        this.industryUnitsSold = sold;
-        this.industryUnitsImported = imported;
-        this.hasMonthFlows = true;
-    }
-
-    public void setRatioBasis(double energy, double water, double road, double health) {
-        this.energyRatioBasis = energy;
-        this.waterRatioBasis = water;
-        this.roadRatioBasis = road;
-        this.healthRatioBasis = health;
-        this.hasRatioBasis = true;
-    }
-
     public void setWorkforce(int workforce) { this.workforce = workforce; }
 
     /** -1 when the save predates this field. */
     public int getWorkforce()               { return workforce; }
-
-    public void setReportState(double[] commercial, double[] industrial,
-                               double[] heavy, double[] mining) {
-        this.commercialReport = commercial;
-        this.industrialReport = industrial;
-        this.heavyIndustryReport = heavy;
-        this.miningReport = mining;
-    }
 
     public void setLandState(double[] listing, int deposits, double reserveTonnes) {
         this.landListing = listing;
@@ -697,17 +549,6 @@ public class DataSave {
     public double[] getLandMarketPrices()   { return landMarketPrices; }
     public int getIronDeposits()            { return ironDeposits; }
     public double getIronReserveTonnes()    { return ironReserveTonnes; }
-
-    public void setIronLocalPrice(double price) { this.ironLocalPrice = price; }
-    public double getIronLocalPrice()           { return ironLocalPrice; }
-
-    /** The food market's traded price, carried for the same reason as the ore's. */
-    private double foodLocalPrice;
-    public void setFoodLocalPrice(double price) { this.foodLocalPrice = price; }
-    public double getFoodLocalPrice()           { return foodLocalPrice; }
-
-    public void setMiningCash(double cash)      { this.miningCash = cash; }
-    public double getMiningCash()               { return miningCash; }
 
     public void setConstructionSubsidy(double amount) { this.constructionSubsidy = amount; }
     public double getConstructionSubsidy()            { return constructionSubsidy; }
@@ -768,10 +609,19 @@ public class DataSave {
      * recomputing it on load bills a different month's housing.
      */
     private double rentWeight;
-    private double retailCapacity;
-    private double retailWant;
-    private boolean[] autoSubsidy;
-    private double[] salesTaxLedger;
+
+    /** The protected sectors, by name, and the month's VAT ledger by name. Since the sector template. */
+    private java.util.List<String> subsidisedSectors;
+    private SalesTaxLedger.State salesTax;
+    /** Every sector's three tax offsets, by name. See TaxPolicy.getSectorOffsets(). */
+    private java.util.List<TaxPolicy.SectorOffsets> sectorOffsets;
+
+    public void setSubsidisedSectors(java.util.List<String> keys) { this.subsidisedSectors = keys; }
+    public java.util.List<String> getSubsidisedSectors()          { return subsidisedSectors; }
+    public void setSalesTax(SalesTaxLedger.State state)           { this.salesTax = state; }
+    public SalesTaxLedger.State getSalesTax()                     { return salesTax; }
+    public void setSectorOffsets(java.util.List<TaxPolicy.SectorOffsets> o) { this.sectorOffsets = o; }
+    public java.util.List<TaxPolicy.SectorOffsets> getSectorOffsets()       { return sectorOffsets; }
 
     public void setTaxPolicyState(double[] state)  { this.taxPolicyState = state; }
     public double[] getTaxPolicyState()            { return taxPolicyState; }
@@ -1012,46 +862,7 @@ public class DataSave {
     public double getCostOfLiving()       { return costOfLiving <= 0 ? 1 : costOfLiving; }
 
     /**
-     * What the shops are charging.
-     *
-     * A STOCK for the same reason the cost of living is: it is the accumulation
-     * of every month's drift towards what stock cost, and the current invoice
-     * alone cannot reproduce it.
-     */
-    private double storeSellPrice = .3;
-
-    /**
-     * The rent the city was charging when the save was taken.
-     *
-     * SAVED BECAUSE IT IS LAGGED. Rent used to be re-derived from the wage
-     * array on every load and so needed no carrying; since 2026-09-07 it walks
-     * a twelfth of the way to its target each month, and a price halfway to
-     * somewhere cannot be reconstructed from the state a month ended in. A
-     * reloaded city would have snapped to its target and lost a year of lease
-     * stickiness, every load, invisibly.
-     */
-    private double rentPrice;
-
-    public void setRentPrice(double v) { this.rentPrice = v; }
-    public double getRentPrice()       { return rentPrice; }
-
-    /**
-     * The studio market's own price, added 2026-09-09 with the segment split.
-     *
-     * Absent from every older save, where it deserialises to zero - and zero
-     * is the signal the load path uses to leave the studio price alone rather
-     * than to charge nothing. See Game's load of it.
-     */
-    private double studioRentPrice;
-
-    public void setStudioRentPrice(double v) { this.studioRentPrice = v; }
-    public double getStudioRentPrice()       { return studioRentPrice; }
-
-    public void setStoreSellPrice(double v) { this.storeSellPrice = v; }
-    public double getStoreSellPrice()       { return storeSellPrice <= 0 ? .3 : storeSellPrice; }
-
-    /**
-     * ...and the tax the city actually took off it this month.
+     * The tax the city actually took off the bank this month.
      *
      * The same rule as propertyTaxCharged above: the month's tax figures are
      * CARRIED, not recomputed, because the city has to report the figure the
@@ -1090,58 +901,12 @@ public class DataSave {
     public void setRentWeightStudio(double weight) { this.rentWeightStudio = weight; }
     public double getRentWeightStudio()            { return rentWeightStudio; }
 
-    /**
-     * The cap the shops sold under, and the demand behind it.
-     *
-     * Carried for the same reason as the rent weight: the reconstruction
-     * re-runs the retail report, and without these it re-runs it with no
-     * budget constraint at all - so a reloaded city sold what a headcount
-     * wanted rather than what its households could pay for.
-     */
-    public void setRetailCapacity(double v) { this.retailCapacity = v; }
-    public double getRetailCapacity()       { return retailCapacity; }
-    public void setRetailWant(double v)     { this.retailWant = v; }
-    public double getRetailWant()           { return retailWant; }
-
-    public void setAutoSubsidy(boolean[] on)       { this.autoSubsidy = on; }
-    public boolean[] getAutoSubsidy()              { return autoSubsidy; }
-
-    public void setSalesTaxLedger(double[] state)  { this.salesTaxLedger = state; }
-    public double[] getSalesTaxLedger()            { return salesTaxLedger; }
-
     public void setConstructionShedding(int month, double points) {
         this.constructionShedMonth = month;
         this.constructionShedPoints = points;
     }
     public int getConstructionShedMonth()     { return constructionShedMonth; }
     public double getConstructionShedPoints() { return constructionShedPoints; }
-
-    public double[] getMiningReport()        { return miningReport; }
-    public double[] getCommercialReport()    { return commercialReport; }
-    public double[] getIndustrialReport()    { return industrialReport; }
-    public double[] getHeavyIndustryReport() { return heavyIndustryReport; }
-
-    /** False for a save written before roads, whose ratios were all 1 anyway. */
-    public boolean hasRatioBasis()          { return hasRatioBasis; }
-    public double getEnergyRatioBasis()     { return energyRatioBasis; }
-    public double getWaterRatioBasis()      { return waterRatioBasis; }
-    public double getRoadRatioBasis()       { return roadRatioBasis; }
-    public double getHealthRatioBasis()     { return healthRatioBasis; }
-
-    /** False for a save written before flows were carried. */
-    public boolean hasMonthFlows()          { return hasMonthFlows; }
-    public double getRetailCostOfGoods()    { return retailCostOfGoods; }
-    public void setRetailLocalPurchase(double v){ this.retailLocalPurchase = v; }
-    public double getRetailLocalPurchase()      { return retailLocalPurchase; }
-    public void setRetailImportPurchase(double v){ this.retailImportPurchase = v; }
-    public double getRetailImportPurchase()      { return retailImportPurchase; }
-    public int getRetailLocalImports()      { return retailLocalImports; }
-    public int getRetailGlobalImports()     { return retailGlobalImports; }
-    public double getRetailFillBasis()      { return retailFillBasis; }
-    public double getRetailImportTax()      { return retailImportTax; }
-    public double getIndustryDemand()       { return industryDemand; }
-    public int getIndustryUnitsSold()       { return industryUnitsSold; }
-    public int getIndustryUnitsImported()   { return industryUnitsImported; }
 
     public void setDemolitions(java.util.List<DemolitionLog.Entry> entries) {
         this.demolitions = entries;
@@ -1321,9 +1086,9 @@ public class DataSave {
      * A flow the load path cannot re-derive - see Game.paySubsidyIfOwed(). Null
      * on an older save, which restores as the zeros those cities showed anyway.
      */
-    private double[] subsidyPaid;
-    public void setSubsidyPaid(double[] v){ this.subsidyPaid = v; }
-    public double[] getSubsidyPaid(){ return subsidyPaid; }
+    private java.util.Map<String, Double> subsidyPaid;
+    public void setSubsidyPaid(java.util.Map<String, Double> v){ this.subsidyPaid = v; }
+    public java.util.Map<String, Double> getSubsidyPaid(){ return subsidyPaid; }
 
     /**
      * The residents' month: twelve scalars and eleven per-tier arrays.
@@ -1358,37 +1123,6 @@ public class DataSave {
 
     public void setNationalAccounts(double[] state) { this.nationalAccounts = state; }
     public double[] getNationalAccounts()           { return nationalAccounts; }
-
-    public void setConstructionBooks(double cash, double unearned, double backlog) {
-        setConstructionBooks(cash, unearned, backlog, 0);
-    }
-    public void setConstructionBooks(double cash, double unearned, double backlog, double pending) {
-        this.constructionCash = cash;
-        this.constructionUnearnedRevenue = unearned;
-        this.constructionBacklogPoints = backlog;
-        this.constructionMaterialsPending = pending;
-    }
-    public double getConstructionMaterialsPending() { return constructionMaterialsPending; }
-
-    /*
-     * The builders' struck month: net income and the profit tax on it. The
-     * load path refreshes the other five sectors' statements and not this
-     * one, which never mattered until 2026-09-10, when the profit tax made the
-     * figure feed next month's income - and a reloaded city read it as zero.
-     * Zero on an older save, which is what those cities were already reading.
-     */
-    private double constructionNetIncome;
-    private double constructionProfitTax;
-
-    public void setConstructionStatement(double netIncome, double profitTax) {
-        this.constructionNetIncome = netIncome;
-        this.constructionProfitTax = profitTax;
-    }
-    public double getConstructionNetIncome() { return constructionNetIncome; }
-    public double getConstructionProfitTax() { return constructionProfitTax; }
-    public double getConstructionCash()            { return constructionCash; }
-    public double getConstructionUnearnedRevenue() { return constructionUnearnedRevenue; }
-    public double getConstructionBacklogPoints()   { return constructionBacklogPoints; }
 
     //getters
     /*
@@ -1445,13 +1179,6 @@ public class DataSave {
         return constructionMaterials;
     }
     
-    public int getStoreInventory(){
-        return storeInventory;
-    }
-    
-    public int getIndustryFoodInventory(){
-        return industryFoodInventory;
-    }
     public int getPopulation(){
         return population;
     }
@@ -1463,18 +1190,5 @@ public class DataSave {
     }
     public boolean getGraphs(){
         return graphs;
-    }
-    
-    public double getIndustrialCash() {
-        return industrialCash;
-    }
-
-    public double getCommercialCash() {
-        return commercialCash;
-    }
-
-    
-    public double getRealEstateCash() {
-        return realEstateCash;
     }
 }

@@ -9,7 +9,6 @@ public class ServicesManager {
     private final BuildingManager buildingManager;
 
     private final UtilitiesHandler utilitiesHandler;
-    private final ConstructionHandler constructionHandler;
     private final InfrastructureManager infrastructureManager;
 
     // universal
@@ -21,14 +20,9 @@ public class ServicesManager {
     private final int[] electricityJobs = new int[11];
     private final int[] waterJobs = new int[11];
 
-    // construction labor
-    private final double[] constructionWages = new double[11];
-    private final int[] constructionJobs = new int[11];
-
     public ServicesManager(BuildingManager buildingManager) {
         this.buildingManager = buildingManager;
         utilitiesHandler = new UtilitiesHandler();
-        constructionHandler = new ConstructionHandler();
         infrastructureManager = new InfrastructureManager();
     }
 
@@ -72,51 +66,29 @@ public class ServicesManager {
                 utilitiesHandler::setBuildingWaterDraw,
                 BuildingsTemplate::getWaterConsumption);
 
-        // ...but only businesses are invoiced for it. Residents and the city's
-        // own buildings draw water nobody is billed for.
+        // ...but only businesses are invoiced for it. Residents, the homes
+        // they live in, the city's own buildings and the bank draw water
+        // nobody is billed for.
         //
-        // Heavy industry belongs here because HeavyIndustryHandler charges
-        // itself for water on its own income statement. Leaving it out would
-        // mean a mill paying a water bill the utility never books - money
-        // leaving the economy with no one receiving it, which is the exact
-        // shape of bug this file has already been fixed for once.
-        /*
-         * The same for power, and for the same reason. Four categories are
-         * invoiced for electricity - the two above plus mining, which bills
-         * itself on its own income statement. Everything else in the city draws
-         * power nobody pays for, and until this existed the utility booked
-         * revenue on all of it.
-         */
+        // SINCE THE SECTOR TEMPLATE (2026-09-11) the paying customer is
+        // exactly the business building a sector owns: every sector's
+        // statement charges the power and water of its own buildings, the
+        // homes excepted (see BuildingsTemplate.isBilledForUtilities). That
+        // replaced a hand-kept list of four categories, which had at one
+        // point left 73% of the city's power billed to nobody while the
+        // utility booked revenue on all of it - money from nowhere. The
+        // utility's REVENUE is read off the statements themselves (see
+        // UtilitiesHandler.setBilledRevenue); these two draws are what the
+        // utilities screen shows as "invoiced to somebody".
         utilitiesHandler.setBilledElectricityDraw(
-                buildingManager.getTotalByCategoryDouble(
-                        BuildingType.COMMERCIAL, BuildingsTemplate::getElectricityConsumption)
-                + buildingManager.getTotalByCategoryDouble(
-                        BuildingType.INDUSTRIAL, BuildingsTemplate::getElectricityConsumption)
-                + buildingManager.getTotalByCategoryDouble(
-                        BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getElectricityConsumption)
-                + buildingManager.getTotalByCategoryDouble(
-                        BuildingType.MINING, BuildingsTemplate::getElectricityConsumption));
+                buildingManager.getTotalDouble(
+                        t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getElectricityConsumption() : 0));
 
         utilitiesHandler.setBilledWaterDraw(
-                buildingManager.getTotalByCategoryDouble(
-                        BuildingType.COMMERCIAL, BuildingsTemplate::getWaterConsumption)
-                + buildingManager.getTotalByCategoryDouble(
-                        BuildingType.INDUSTRIAL, BuildingsTemplate::getWaterConsumption)
-                + buildingManager.getTotalByCategoryDouble(
-                        BuildingType.HEAVY_INDUSTRY, BuildingsTemplate::getWaterConsumption));
+                buildingManager.getTotalDouble(
+                        t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getWaterConsumption() : 0));
 
         updateInfrastructure();
-
-        // construction
-        updateByCategoryHandlerDouble(
-                BuildingType.CONSTRUCTION,
-                constructionHandler::setConstructionProduction,
-                BuildingsTemplate::getProduction1);
-
-        updateByCategoryHandlerDouble(
-                BuildingType.CONSTRUCTION,
-                constructionHandler::setConstructionMaterialsProduction,
-                BuildingsTemplate::getProduction2);
     }
 
     /**
@@ -162,16 +134,11 @@ public class ServicesManager {
     private void updateLabor() {
 
         utilitiesHandler.updateJobFillRate(fillRate);
-        constructionHandler.updateJobFillRate(fillRate);
-
         utilitiesHandler.updateUtilitiyWages(utilityWages, electricityJobs, waterJobs);
-        constructionHandler.updateWages(constructionWages, constructionJobs);
     }
 
     private void updateHandlers() {
-
         utilitiesHandler.updateUtilitiesHandler();
-        constructionHandler.updateConstructionHandler();
     }
 
     // ===============================
@@ -180,12 +147,12 @@ public class ServicesManager {
 
     // NOTE: this used to be named updateIndustrialWages() - a copy-paste of
     // EconomyManager's method name that had nothing to do with what this does.
-    // It applies the general per-job-tier wage rate array to this manager's
-    // own sectors (ELECTRICITY and CONSTRUCTION jobs), not BuildingType.INDUSTRIAL.
+    // It applies the general per-job-tier wage rate array to the utilities'
+    // jobs. Construction left here for the sector template (2026-09-11): it
+    // is a Sector now, paid through EconomyManager like the other six.
     public void updateServiceWages(double[] wages) {
 
         copyArray(wages, utilityWages);
-        copyArray(wages, constructionWages);
 
         // ELECTRICITY and WATER are staffed out of the same utility payroll and
         // share averageUtilityFill, but are tracked separately so the report can
@@ -199,11 +166,6 @@ public class ServicesManager {
                 buildingManager.getJobArrayPerCategory(BuildingType.WATER),
                 waterJobs
         );
-
-        copyArray(
-                buildingManager.getJobArrayPerCategory(BuildingType.CONSTRUCTION),
-                constructionJobs
-        );
     }
 
     public void updateJobFillRate(double[] fillRate) {
@@ -213,10 +175,6 @@ public class ServicesManager {
     // ===============================
     // GETTERS
     // ===============================
-
-    public ConstructionHandler getConstructionHandler() {
-        return constructionHandler;
-    }
 
     public UtilitiesHandler getUtilitiesHandler() {
         return utilitiesHandler;
@@ -278,10 +236,6 @@ public class ServicesManager {
 
     public void printUtilityInfo() {
         utilitiesHandler.printUtilitiesInfo();
-    }
-
-    public void printConstructionInfo() {
-        constructionHandler.printConstructionInfo();
     }
 
     // ===============================

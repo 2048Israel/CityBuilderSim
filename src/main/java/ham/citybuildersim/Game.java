@@ -68,7 +68,8 @@ public class Game {
     int materialsConsumed =0;
     
     //construction UI logic
-    double totalMaterialsImported = 0;
+    /** The last order's material, in units - drawn by the crews as they build. A receipt field. */
+    double receiptMaterials = 0;
     double totalBuildingCost = 0;
     private boolean hasNewReceipt = false;
     String lastBuildingName;
@@ -180,10 +181,9 @@ public class Game {
         debtManager = new DebtManager();
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
 
-        // The economy needs to reach construction's books: it is a business with
-        // cash, credit and an income statement now, but it lives under
-        // ServicesManager with the other municipal services.
-        economyManager.setConstructionHandler(servicesManager.getConstructionHandler());
+        // Every sector gets a handle on the city, for the few hooks that need
+        // more than the buildings and the markets - the mines and the ground.
+        economyManager.getSectors().attachGame(this);
         economyManager.setOutwardInvestment(outward);
         economyManager.setEquity(equity);
         householdBalance.setMarket(exchange, equity, bank);
@@ -258,7 +258,7 @@ public class Game {
         this.jobs = new int[JobType.values().length];
 
         this.materialsConsumed = 0;
-        this.totalMaterialsImported = 0;
+        this.receiptMaterials = 0;
         this.totalBuildingCost = 0;
         this.hasNewReceipt = false;
         this.lastBuildingName = null;
@@ -289,8 +289,8 @@ public class Game {
         // Policy is the player's, so a new city starts with none of it: no
         // sector protected, no offsets, both rates at their defaults. Leaving
         // any of these behind is the leak New Game has produced twice already.
-        java.util.Arrays.fill(autoSubsidy, false);
-        java.util.Arrays.fill(subsidyPaid, 0);
+        autoSubsidy.clear();
+        subsidyPaid.clear();
         economyManager.getTaxPolicy().reset();
         economyManager.getSalesTaxLedger().reset();
         this.constructionShedMonth = -1;
@@ -602,26 +602,31 @@ public class Game {
        whether to keep paying.
        ==================================================================== */
 
-    private final boolean[] autoSubsidy = new boolean[PolicySector.values().length];
-    private final double[] subsidyPaid = new double[PolicySector.values().length];
+    /** Keyed by the sector's name since the sector template - a seventh sector is a seventh key. */
+    private final java.util.Map<String, Boolean> autoSubsidy = new java.util.LinkedHashMap<>();
+    private final java.util.Map<String, Double> subsidyPaid = new java.util.LinkedHashMap<>();
 
-    public boolean isAutoSubsidised(PolicySector sector){
-        return autoSubsidy[sector.ordinal()];
-    }
+    public boolean isAutoSubsidised(Sector sector){ return isAutoSubsidised(sector.key()); }
+    public boolean isAutoSubsidised(String key)   { return autoSubsidy.getOrDefault(key, false); }
 
-    public void setAutoSubsidised(PolicySector sector, boolean on){
-        autoSubsidy[sector.ordinal()] = on;
-    }
+    public void setAutoSubsidised(Sector sector, boolean on){ setAutoSubsidised(sector.key(), on); }
+    public void setAutoSubsidised(String key, boolean on)   { if (key != null) autoSubsidy.put(key, on); }
 
     /** What this sector was paid this month. Zero when it did not need it. */
-    public double getSubsidyPaid(PolicySector sector){
-        return subsidyPaid[sector.ordinal()];
-    }
+    public double getSubsidyPaid(Sector sector){ return getSubsidyPaid(sector.key()); }
+    public double getSubsidyPaid(String key)   { return subsidyPaid.getOrDefault(key, 0.0); }
 
     public double getTotalSubsidyPaid(){
         double total = 0;
-        for (double d : subsidyPaid) total += d;
+        for (double d : subsidyPaid.values()) total += d;
         return total;
+    }
+
+    /** The protected sectors, by name, for the save. */
+    public java.util.List<String> getSubsidisedSectors() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (java.util.Map.Entry<String, Boolean> e : autoSubsidy.entrySet()) if (e.getValue()) out.add(e.getKey());
+        return out;
     }
 
     /**
@@ -637,8 +642,11 @@ public class Game {
      * than reproducing it, because a test helper that does its own arithmetic
      * agrees with itself and proves nothing about the code that ships.
      */
-    double subsidiseForTest(PolicySector sector, double netIncome){
+    double subsidiseForTest(Sector sector, double netIncome){
         return paySubsidyIfOwed(sector, netIncome);
+    }
+    double subsidiseForTest(String key, double netIncome){
+        return paySubsidyIfOwed(getSectors().byKey(key), netIncome);
     }
 
     /**
@@ -654,56 +662,22 @@ public class Game {
         this.cash = amount;
     }
 
-    private double paySubsidyIfOwed(PolicySector sector, double netIncome){
+    private double paySubsidyIfOwed(Sector sector, double netIncome){
 
-        subsidyPaid[sector.ordinal()] = 0;
+        subsidyPaid.put(sector.key(), 0.0);
 
-        if (!autoSubsidy[sector.ordinal()] || netIncome >= 0) {
+        if (!isAutoSubsidised(sector) || netIncome >= 0) {
             return 0;
         }
 
         double owed = -netIncome;
 
         cash -= owed;                       // overdrawn if it must be
-        creditSectorCash(sector, owed);
-        subsidyPaid[sector.ordinal()] = owed;
+        // A plain add: nothing here may compute an amount, or the money the
+        // city spent and the money the sector received could differ.
+        sector.addCash(owed);
+        subsidyPaid.put(sector.key(), owed);
         return owed;
-    }
-
-    /**
-     * Moves cash into a sector's own books.
-     *
-     * The six sectors keep cash in five different places - Retail and Real
-     * Estate share CommercialHandler - so this switch is the one place that has
-     * to know which. Every branch is a plain add: nothing here may compute an
-     * amount, or the money the city spent and the money the sector received
-     * could differ, which is precisely the money-from-nowhere this codebase has
-     * produced before.
-     */
-    private void creditSectorCash(PolicySector sector, double amount){
-
-        CommercialHandler ch = economyManager.getCommercialHandler();
-
-        switch (sector) {
-            case RETAIL -> ch.setCommercialCash(ch.getCommercialCash() + amount);
-            case REAL_ESTATE -> ch.setRealEstateCash(ch.getRealEstateCash() + amount);
-            case INDUSTRY -> {
-                IndustrialHandler ih = economyManager.getIndustrialHandler();
-                ih.setIndustrialCash(ih.getIndustrialCash() + amount);
-            }
-            case CONSTRUCTION -> {
-                ConstructionHandler c = servicesManager.getConstructionHandler();
-                c.setCash(c.getCash() + amount);
-            }
-            case HEAVY_INDUSTRY -> {
-                HeavyIndustryHandler h = economyManager.getHeavyIndustryHandler();
-                h.setCash(h.getCash() + amount);
-            }
-            case MINING -> {
-                MiningHandler m = economyManager.getMiningHandler();
-                m.setCash(m.getCash() + amount);
-            }
-        }
     }
 
     /**
@@ -730,8 +704,8 @@ public class Game {
      * sector's side that capacity is spoken for, and every rule downstream keeps
      * working untouched.
      */
-    private double protectedConstructionCapacity(){
-        return isAutoSubsidised(PolicySector.CONSTRUCTION)
+    public double protectedConstructionCapacity(){
+        return isAutoSubsidised(getSectors().construction())
                 ? buildingManager.getTotalConstructionCapacity()
                 : 0;
     }
@@ -761,12 +735,14 @@ public class Game {
     }
 
     /** The ore market, for the mining screen. */
-    public IronMarket getIronMarket(){
-        return economyManager.getIronMarket();
+    /** Every sector, in the registry's order. */
+    public Sectors getSectors(){
+        return economyManager.getSectors();
     }
 
-    public MiningHandler getMiningHandler(){
-        return economyManager.getMiningHandler();
+    /** Every goods market. */
+    public Markets getMarkets(){
+        return economyManager.getMarkets();
     }
 
     /** The road network itself, for the infrastructure screen. */
@@ -858,87 +834,31 @@ public class Game {
          */
         bank.writeOff(lastWriteOff);
 
-        double constructionOutput = getConstructionOutput();
-        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
-        CommercialHandler ch = economyManager.getCommercialHandler();
-        IndustrialHandler ih = economyManager.getIndustrialHandler();
-
-        // Refreshed before each sector, not once for all four: consider() builds
-        // immediately, so real estate taking the last of the land has to be
-        // visible to retail when retail plans a moment later. Reading it once
-        // would have the later sectors planning against land that is already
-        // spoken for, and then failing silently inside buildFor().
-        refreshLand();
-        consider(businessInvestment.planRealEstate(
-                populationManager.getTotalJobs(),
-                getHouseholdCapacity(),
-                ch.getRentPrice(),
-                constructionOutput,
-                buildingManager.getUnderConstructionByCategory(BuildingType.RESIDENTIAL)),
-                sectorInvestor(BusinessDebtManager.REAL_ESTATE));
-
-        refreshLand();
         /*
-         * The bank first, and separately - see BusinessInvestment.planBank().
-         * Retail's money, retail's investor, but not retail's one decision:
-         * asked here so that wanting a branch cannot stop the city building
-         * shops for the years it takes to afford one.
-         */
-        consider(businessInvestment.planBank(),
-                sectorInvestor(BusinessDebtManager.RETAIL), "Bank");
-
-        consider(businessInvestment.planRetail(
-                populationManager.getPopulation(),
-                buildingManager.getTotalStoreCoverage(),
-                constructionOutput,
-                buildingManager.getUnderConstructionByCategory(BuildingType.COMMERCIAL)),
-                sectorInvestor(BusinessDebtManager.RETAIL));
-
-        refreshLand();
-        consider(businessInvestment.planIndustry(
-                populationManager.getPopulation(),
-                buildingManager.getTotalStoreCoverage(),
-                ih.getMonthlyOutput(),
-                constructionOutput,
-                buildingManager.getUnderConstructionByCategory(BuildingType.INDUSTRIAL),
-                // The shops' import bill is this sector's missed sales.
-                ch.getReportGlobalImports()),
-                sectorInvestor(BusinessDebtManager.INDUSTRY));
-
-        /*
-         * Mines before mills, because a mill's business case is the ore.
+         * EVERY SECTOR IN THE REGISTRY'S ORDER, each asked its own question.
          *
-         * planHeavyIndustry() refuses to build into ore that does not exist, so
-         * running it first would have it decline every month and the cluster
-         * would never start. This ordering is the whole reason the two sectors
-         * can bootstrap each other: the city buys a deposit, a mine opens on it,
-         * the spare ore shows up as a reason to smelt, and a mill follows.
+         * Land is refreshed before each, not once for all: consider() builds
+         * immediately, so real estate taking the last of the land has to be
+         * visible to retail when retail plans a moment later.
+         *
+         * The bank first and separately - see BusinessInvestment.planBank():
+         * retail's money, retail's investor, but not retail's one decision,
+         * so that wanting a branch cannot stop the city building shops.
+         *
+         * The order of the six is the order the handlers were asked in, and
+         * it carried two dependencies worth keeping: mines before mills,
+         * because a mill's business case is the ore; and construction last,
+         * because it reads the queue everyone else just added to. Both hold
+         * in Sectors.KEYS.
          */
-        IronMarket ore = economyManager.getIronMarket();
-
         refreshLand();
-        consider(businessInvestment.planMining(
-                landManager.getIronDeposits() - minesCommitted(),
-                landManager.getIronReserveTonnes(),
-                constructionOutput,
-                buildingManager.getUnderConstructionByCategory(BuildingType.MINING)),
-                sectorInvestor(BusinessDebtManager.MINING));
+        consider(businessInvestment.planBank(),
+                sectorInvestor(getSectors().retail().key()), "Bank");
 
-        refreshLand();
-        consider(businessInvestment.planHeavyIndustry(
-                economyManager.getHeavyIndustryHandler().getOreDemand(),
-                economyManager.getMiningHandler().getPotentialOutput(),
-                constructionOutput,
-                buildingManager.getUnderConstructionByCategory(BuildingType.HEAVY_INDUSTRY)),
-                sectorInvestor(BusinessDebtManager.HEAVY_INDUSTRY));
-
-        // Construction last: it reads the queue everyone else just added to.
-        refreshLand();
-        consider(businessInvestment.planConstruction(
-                buildingManager.getRemainingConstructionPoints(),
-                constructionOutput,
-                buildingManager.getUnderConstructionByCategory(BuildingType.CONSTRUCTION)),
-                sectorInvestor(BusinessDebtManager.CONSTRUCTION));
+        for (Sector sector : getSectors().all()) {
+            refreshLand();
+            consider(sector.plan(businessInvestment, this), sectorInvestor(sector.key()));
+        }
     }
 
     /**
@@ -1056,9 +976,8 @@ public class Game {
          *
          * One source, both paths, and it is the one that took the money.
          */
-        CommercialHandler shopsAndFlats = economyManager.getCommercialHandler();
-        double rentPaid = shopsAndFlats.getReportRentIncome();
-        double retailSales = shopsAndFlats.getGrossRevenue();
+        double rentPaid = getSectors().realEstate().statement().salesToHouseholds;
+        double retailSales = getSectors().retail().statement().salesToHouseholds;
 
         if (accrue) {
             households.update(
@@ -1111,7 +1030,7 @@ public class Game {
             fees[r] = households.getRowHealthcare(r) + households.getRowTuition(r);
             actualShopping[r] = households.getRowShopping(r);
         }
-        CommercialHandler shops = economyManager.getCommercialHandler();
+        ham.citybuildersim.sectors.Retail shops = getSectors().retail();
 
         /*
          * PER CELL, since 2026-09-10. The balance is handed the census - who
@@ -1217,7 +1136,7 @@ public class Game {
         // A company with a book and no owners is listed: the founders' shares.
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double book = c == Equity.BANK ? bank.equity()
-                    : sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[c])).equity();
+                    : sectorBooks.get(Equity.COMPANIES[c]).equity();
             equity.listIfUnlisted(c, book, householdBalance);
         }
         // Whoever left this month took their shares with them.
@@ -1231,7 +1150,7 @@ public class Game {
                 if (paid > 0) bank.payDividend(paid);
             } else {
                 String sector = Equity.COMPANIES[c];
-                SectorBooks.SectorMonth m = sectorBooks.get(PolicySector.byCreditName(sector));
+                SectorBooks.SectorMonth m = sectorBooks.get(sector);
                 double due = equity.dividendDue(c, m.netIncome());
                 if (due <= 0) continue;
                 double till = economyManager.getSectorCash(sector);
@@ -1262,7 +1181,7 @@ public class Game {
         double[] book = new double[Equity.COMPANIES.length];
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             book[c] = c == Equity.BANK ? bank.equity()
-                    : sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[c])).equity();
+                    : sectorBooks.get(Equity.COMPANIES[c]).equity();
         }
         exchange.takeMonth(equity, householdBalance, bank, new Exchange.Companies() {
             @Override public double cashAvailable(int company, double wanted) {
@@ -1282,13 +1201,13 @@ public class Game {
                 economyManager.recordDividendPaid(sector, cash);
             }
             @Override public double assets(int company) {
-                return sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[company])).totalAssets();
+                return sectorBooks.get(Equity.COMPANIES[company]).totalAssets();
             }
             @Override public double equity(int company) {
-                return sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[company])).equity();
+                return sectorBooks.get(Equity.COMPANIES[company]).equity();
             }
             @Override public double monthlyOperatingCost(int company) {
-                return sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[company])).operatingCost();
+                return sectorBooks.get(Equity.COMPANIES[company]).operatingCost();
             }
             @Override public boolean bankFlush() {
                 // Twice what it must hold, and nothing owed to a regulator:
@@ -1340,7 +1259,7 @@ public class Game {
          * see Bank.fundToCover().
          */
         double sectorCash = 0;
-        for (String s : BusinessDebtManager.SECTORS) {
+        for (String s : Sectors.KEYS) {
             sectorCash += Math.max(0, economyManager.getSectorCash(s));
         }
         bank.refresh(
@@ -1468,13 +1387,6 @@ public class Game {
        ======================================================================= */
     private void runRetirement(){
 
-        CommercialHandler ch = economyManager.getCommercialHandler();
-        IndustrialHandler ih = economyManager.getIndustrialHandler();
-        ConstructionHandler construction = servicesManager.getConstructionHandler();
-
-        int population = populationManager.getPopulation();
-        int storeCoverage = buildingManager.getTotalStoreCoverage();
-
         /*
          * Standing policy first: a sector the city has undertaken to protect is
          * brought up to break-even BEFORE the loss counter sees the month, which
@@ -1482,109 +1394,36 @@ public class Game {
          * start selling its capacity, so a subsidy that arrives after the count
          * protects nothing.
          */
-        double[] net = {
-            ch.getReportRetailNetIncome(),
-            ch.getReportRealEstateNetIncome(),
-            ih.getNetIncome(),
-            construction.getNetIncome(),
-            economyManager.getHeavyIndustryHandler().getNetIncome(),
-            economyManager.getMiningHandler().getNetIncome()
-        };
-
-        for (PolicySector sector : PolicySector.values()) {
-            double covered = paySubsidyIfOwed(sector, net[sector.ordinal()]);
-            businessInvestment.recordSectorResult(sector.creditName(),
-                    net[sector.ordinal()] + covered);
+        for (Sector sector : getSectors().all()) {
+            double net = sector.getNetIncome();
+            double covered = paySubsidyIfOwed(sector, net);
+            businessInvestment.recordSectorResult(sector.key(), net + covered);
         }
 
-        // Housing: demand is people actually living in it. Empty units can go;
-        // occupied ones can never be scrapped out from under anyone.
-        int shed = retire(businessInvestment.planRetirement(
-                BusinessDebtManager.REAL_ESTATE, BuildingType.RESIDENTIAL,
-                population, getHouseholdCapacity(),
-                buildingManager.getUnderConstructionByCategory(BuildingType.RESIDENTIAL)),
-                sectorInvestor(BusinessDebtManager.REAL_ESTATE));
-        if (shed == 0) distress(BusinessDebtManager.REAL_ESTATE, BuildingType.RESIDENTIAL);
-
-        shed = retire(businessInvestment.planRetirement(
-                BusinessDebtManager.RETAIL, BuildingType.COMMERCIAL,
-                population, storeCoverage,
-                buildingManager.getUnderConstructionByCategory(BuildingType.COMMERCIAL)),
-                sectorInvestor(BusinessDebtManager.RETAIL));
-        if (shed == 0) distress(BusinessDebtManager.RETAIL, BuildingType.COMMERCIAL);
-
         /*
-         * Both of these pass NOMINAL capacity, not this month's actual output.
-         *
-         * planRetirement() works out how many buildings to scrap by dividing
-         * spare capacity by what one building provides, and what one building
-         * provides is its nameplate figure - a depot is 400 points whatever the
-         * fill rate. Handing it the fill-rate-discounted output instead
-         * compared two different units and systematically under-shed: a city at
-         * an 11% fill rate had 324 points of "capacity" against a 400-point
-         * depot, so the division came out at zero and ten idle depots were
-         * never sold, however much money construction was losing.
-         *
-         * Staffing decides how much a firm PRODUCES. It does not change how
-         * much plant the firm owns, which is what it is deciding whether to
-         * keep.
+         * The spare-capacity rule, for every sector that has a measure for it
+         * - the landlords against people housed, the shops against people
+         * served, the mills against what the shops can serve, the builders
+         * against their queue - and the distress rule for everyone, which is
+         * the only rule a price-taking exporter has. Both pass NOMINAL
+         * capacity, not this month's output: staffing decides how much a
+         * firm PRODUCES, not how much plant it owns.
          */
-        shed = retire(businessInvestment.planRetirement(
-                BusinessDebtManager.INDUSTRY, BuildingType.INDUSTRIAL,
-                Math.min(storeCoverage, population),
-                buildingManager.getFoodProduction(),
-                buildingManager.getUnderConstructionByCategory(BuildingType.INDUSTRIAL)),
-                sectorInvestor(BusinessDebtManager.INDUSTRY));
-        if (shed == 0) distress(BusinessDebtManager.INDUSTRY, BuildingType.INDUSTRIAL);
-
-        // Construction's demand is the queue: work ordered and not yet done,
-        // capped at what its plant could deliver in a month. An empty queue
-        // means every depot it owns is spare.
-        double capacity = buildingManager.getTotalConstructionCapacity();
-        double workAvailable = Math.min(
-                buildingManager.getRemainingConstructionPoints(), capacity);
-
-        /*
-         * A subsidised depot has a customer: the city.
-         *
-         * Rather than bolting a floor onto planRetirement(), the subsidy simply
-         * counts as demand - which is what it is. The city is paying to keep
-         * those crews available, so from the sector's side that capacity is
-         * spoken for, and every rule downstream (the headroom, the gradual
-         * shedding, the loss counter) keeps working untouched.
-         */
-        double demand = Math.max(workAvailable, protectedConstructionCapacity());
-
-        shed = retire(businessInvestment.planRetirement(
-                BusinessDebtManager.CONSTRUCTION, BuildingType.CONSTRUCTION,
-                demand, capacity,
-                buildingManager.getUnderConstructionByCategory(BuildingType.CONSTRUCTION)),
-                sectorInvestor(BusinessDebtManager.CONSTRUCTION));
-        if (shed == 0) distress(BusinessDebtManager.CONSTRUCTION, BuildingType.CONSTRUCTION);
-
-        /*
-         * THE TWO SECTORS THAT COULD NOT SHRINK. Until 2026-09-10 there was no
-         * call here for either - four planRetirement() calls, four sectors -
-         * and the two without one were the two that ended every long run
-         * ruined. A price-taking exporter always sells what it makes, so the
-         * spare-capacity rule above has nothing to measure for it; what it has
-         * is the distress rule, which asks only whether it can pay its way.
-         */
-        distress(BusinessDebtManager.HEAVY_INDUSTRY, BuildingType.HEAVY_INDUSTRY);
-        distress(BusinessDebtManager.MINING, BuildingType.MINING);
-    }
-
-    /**
-     * The fallback for a sector the spare-capacity rule would not touch: if it
-     * is overdrawn after the credit desk has had its turn, it sheds anyway.
-     * See BusinessInvestment.planDistressRetirement().
-     */
-    private void distress(String sector, BuildingType category) {
-        retire(businessInvestment.planDistressRetirement(
-                sector, category,
-                economyManager.getSectorCash(sector),
-                buildingManager.getUnderConstructionByCategory(category)),
-                sectorInvestor(sector));
+        for (Sector sector : getSectors().all()) {
+            int orders = buildingManager.getUnderConstructionBySector(sector.key());
+            int shed = 0;
+            double[] measure = sector.retirementDemandAndCapacity(this);
+            if (measure != null) {
+                shed = retire(businessInvestment.planRetirement(
+                        sector, measure[0], measure[1], orders),
+                        sectorInvestor(sector.key()));
+            }
+            if (shed == 0) {
+                retire(businessInvestment.planDistressRetirement(
+                        sector, sector.getCash(), orders),
+                        sectorInvestor(sector.key()));
+            }
+        }
     }
 
     /**
@@ -1645,9 +1484,9 @@ public class Game {
          * Recorded rather than popped up, because it happens inside a skip. The
          * UI decides when to say it.
          */
-        if (BusinessDebtManager.CONSTRUCTION.equals(decision.sector)) {
+        if (getSectors().construction().key().equals(decision.sector)) {
             constructionShedMonth = month;
-            constructionShedPoints += decision.template.getProduction1() * scrapped;
+            constructionShedPoints += decision.template.makes(Good.BUILDING_WORK) * scrapped;
         }
         return scrapped;
     }
@@ -1840,7 +1679,7 @@ public class Game {
          */
         int company = Equity.indexOf(decision.sector);
         if (company >= 0) {
-            SectorBooks.SectorMonth books = sectorBooks.get(PolicySector.byCreditName(decision.sector));
+            SectorBooks.SectorMonth books = sectorBooks.get(decision.sector);
             double planCost = businessInvestment.getCostOf(decision.template, decision.quantity);
             double ask = equity.raiseFor(company, books.totalAssets(), books.equity(), planCost);
             // ...and not at a quote under what the shares are worth: then it borrows.
@@ -1995,7 +1834,7 @@ public class Game {
      * third of a month's work.
      */
     public int getConstructionOutput(){
-        double constructionFillRate = servicesManager.getConstructionHandler().getAverageFill();
+        double constructionFillRate = getSectors().construction().getAverageFill();
         double roadRatio = servicesManager.getRoadRatio();
 
         /*
@@ -2024,9 +1863,9 @@ public class Game {
      * than a house without anybody having to write that down anywhere.
      */
     public double getHousingMaintenancePoints(){
-        return buildingManager.getTotalByCategoryDouble(
-                BuildingType.RESIDENTIAL, BuildingsTemplate::getConstructionPoints)
-                * CommercialHandler.MAINTENANCE_PER_YEAR / 12;
+        return buildingManager.totalBySector(getSectors().realEstate().key(),
+                BuildingsTemplate::getConstructionPoints)
+                * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
     }
 
     /**
@@ -2041,11 +1880,7 @@ public class Game {
      * saved, nothing to go stale.
      */
     public double getMaintenancePoints(){
-        double points = 0;
-        for (BuildingType category : BuildingType.values()) {
-            points += economyManager.maintenancePointsFor(category);
-        }
-        return points;
+        return economyManager.maintenancePointsTotal();
     }
 
     /**
@@ -2113,8 +1948,7 @@ public class Game {
      */
     private void chargeBuildingMaintenance(){
 
-        ConstructionHandler builders = servicesManager.getConstructionHandler();
-        if (builders == null) return;
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
 
         double price = Math.max(0, buildingManager.getConstructionMaterialPrice());
 
@@ -2138,14 +1972,7 @@ public class Game {
          * The shortfall is worked out BEFORE the call because the call does
          * not report it, and monthlyMaterialImports has to know.
          */
-        int wanted = (int) Math.round(economyManager.getMaintenanceMaterialsTotal());
-        if (wanted > 0) {
-            int shortfall = Math.max(0, wanted - buildingManager.getConstructionMaterials());
-            buildingManager.handleConstructionMaterials(wanted);
-            materialsConsumed += wanted;
-            monthlyMaterialImports += shortfall;
-            monthlyMaterialImportBill += shortfall * price;
-        }
+        drawMaterials(economyManager.getMaintenanceMaterialsTotal(), true);
 
         /*
          * AND THE CITY SETTLES ITS OWN. Roads, schools, hospitals and the two
@@ -2164,6 +1991,9 @@ public class Game {
             cityMaintenancePaid = 0;
         }
 
+        // ...AND THE BANK ITS BRANCHES, out of its own cash, with its payroll.
+        bankMaintenanceDue = economyManager.getBankMaintenanceBill();
+
         builders.receiveMaintenance(bill);
     }
 
@@ -2177,6 +2007,9 @@ public class Game {
     private double cityMaintenancePaid;
 
     public double getCityMaintenancePaid() { return cityMaintenancePaid; }
+
+    /** The bank's repair bill for its branches this month, charged with its running costs. */
+    private double bankMaintenanceDue;
 
     public int getConstructionMaterials(){
         int constructionMaterials = buildingManager.getConstructionMaterials();
@@ -2345,7 +2178,12 @@ public class Game {
         public final int quantity;
         public final double sticker;
         public final double materialsNeeded;
+        /** What the city's own yard covers, free. */
         public final double materialsInStock;
+        /** What the materials plant sells the order, at the market price. Since the sector template. */
+        public final double materialsFromPlant;
+        public final double plantPrice;
+        public final double plantCost;
         public final double materialsImported;
         public final double materialsPrice;
         public final double importCost;
@@ -2356,33 +2194,126 @@ public class Game {
         public final double months;
 
         BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
-                   double materialsPrice, double landNeeded, double landFree, double output,
-                   double points) {
+                   Markets.Draw boughtIn, double plantPrice, double materialsPrice,
+                   double landNeeded, double landFree, double output, double points) {
             this.quantity = quantity;
             this.sticker = sticker;
             this.materialsNeeded = materialsNeeded;
-            this.materialsInStock = materialsInStock;
-            this.materialsImported = Math.max(materialsNeeded - materialsInStock, 0);
+            this.materialsInStock = Math.min(materialsNeeded, materialsInStock);
+            this.materialsFromPlant = boughtIn.local();
+            this.plantPrice = plantPrice;
+            this.plantCost = boughtIn.localCost();
+            this.materialsImported = boughtIn.imported();
             this.materialsPrice = materialsPrice;
-            this.importCost = materialsImported * materialsPrice;
-            this.total = sticker + importCost;
+            this.importCost = boughtIn.importCost();
+            this.total = sticker + plantCost + importCost;
             this.landNeeded = landNeeded;
             this.landFree = landFree;
             this.months = output > 0 ? points / output : Double.NaN;
         }
+
+        /** What had to be bought beyond the yard - the plant's and the world's together. */
+        public double boughtInCost() { return plantCost + importCost; }
     }
 
+    /**
+     * THE INVOICE. The material is priced as if drawn today - the yard's
+     * share free, the plant's at the market, the rest imported - and that is
+     * what the order is charged. The crews then draw it month by month as
+     * they build (see drawSiteMaterials()), at whatever it costs then; the
+     * builders carry the difference, as a fixed-price contractor does.
+     */
     public BuildQuote quoteBuild(BuildingsTemplate selected, int quantity) {
+        double needed = selected.constructionMaterials * (double) quantity;
+        double yard = buildingManager.getConstructionMaterials();
+        double beyondYard = Math.max(0, needed - yard);
+        Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, beyondYard, getSectors());
         return new BuildQuote(
                 quantity,
                 selected.getCashCost() * quantity,
-                selected.constructionMaterials * (double) quantity,
-                buildingManager.getConstructionMaterials(),
+                needed,
+                yard,
+                boughtIn,
+                getMarkets().get(Good.MATERIALS).getLocalPrice(),
                 buildingManager.getConstructionMaterialPrice(),
                 selected.getLandSqFt() * (double) quantity,
                 landManager.getAvailableSqFt(),
                 getConstructionOutput(),
                 selected.getConstructionPoints() * (double) quantity);
+    }
+
+    /**
+     * Takes material for the month's building work or a repair: the city's
+     * yard first, for free; then the materials plant, at the market price;
+     * then the world. THE BUILDERS BUY IT - every draw is the construction
+     * sector's purchase, booked in its ledger, credited at the plant's rate
+     * or charged at its own, and billed on to whoever ordered the building
+     * inside the order price. See Markets.draw().
+     *
+     * AS THE WORK IS DONE, since 2026-09-11 - not the day the order is
+     * placed. See BuildingsStacks.materialsOwed for what the order-day draw
+     * did to the materials market, and drawSiteMaterials() below.
+     *
+     * @param yardFirst whether the city's yard is drawn before the market. A
+     *                  repair's is; the sites' monthly draw is NOT - the yard
+     *                  was delivered to the sites the day the order was placed
+     *                  (see deliverYardToSites), because the quote priced it
+     *                  as free and a yard promised to every order in turn was
+     *                  promised several times over: measured, an order quoted
+     *                  against a full yard, the yard drawn down by the orders
+     *                  ahead of it, and the builders importing $4M of material
+     *                  a month against $266k of work.
+     * @return what the part beyond the yard came to
+     */
+    private Markets.Draw drawMaterials(double units, boolean yardFirst) {
+        int wanted = (int) Math.round(units);
+        if (wanted <= 0) return new Markets.Draw(0, 0, 0, 0, 0);
+        int fromYard = yardFirst ? buildingManager.takeFromYard(wanted) : 0;
+        double beyondYard = wanted - fromYard;
+        Markets.Draw d = getMarkets().draw(Good.MATERIALS, getSectors().construction(), null,
+                beyondYard, getSectors());
+        materialsConsumed += wanted;
+        monthlyMaterialImports += d.imported();
+        monthlyMaterialImportBill += d.importCost();
+        return d;
+    }
+
+    /**
+     * The month's draw for the sites: what the work the crews just delivered
+     * was owed in material, summed by BuildingManager.advanceConstruction()
+     * over every stack in proportion to the points it advanced. Called by
+     * SimulationEngine right after the sites advance, so the plant's sale
+     * and the builders' purchase land in the month the work did, and the
+     * market's next strike counts the draw as that month's demand - a
+     * builder's demand for material is now the rate it builds at, which is
+     * the figure a materials plant can be sized to.
+     */
+    public void drawSiteMaterials(double units) {
+        if (units > 0) drawMaterials(units, false);
+    }
+
+    /**
+     * The yard's share of a new order, delivered to the sites the day it is
+     * placed - the units the quote priced as free (see quoteBuild), taken
+     * off what the sites still owe so the monthly draws buy only the rest.
+     */
+    private void deliverYardToSites(BuildingsTemplate template, double needed) {
+        int fromYard = buildingManager.takeFromYard((int) Math.round(needed));
+        if (fromYard <= 0) return;
+        buildingManager.deliverToSites(template, fromYard);
+        materialsConsumed += fromYard;
+    }
+
+    /**
+     * ...and the work those sites delivered is recognised in the same breath,
+     * into the same ledger. The BUILDING output, not the gross: the crews
+     * that spent part of the month on repairs did not spend it on sites - see
+     * getBuildingOutput(). The statement struck at the top of next month
+     * then carries the month's work and the month's material together, and
+     * the payroll is scaled by the month's own utilisation.
+     */
+    public void recogniseSiteWork(double earned, double pointsDelivered) {
+        getSectors().construction().recogniseWork(earned, pointsDelivered);
     }
     /**
      * @param noConstruction put the buildings up immediately instead of queueing
@@ -2420,20 +2351,15 @@ public class Game {
          * The materials figure is still needed separately for the receipt and
          * the import count, so it stays - but the money comes from one place.
          */
-        double materialsPrice = buildingManager.getConstructionMaterialPrice();
-        double currentMaterials = buildingManager.getConstructionMaterials();
-        double totalMaterialsRequired = noConstruction
-                ? 0
-                : selected.constructionMaterials * quantity;
-
-        double neededMaterials = Math.max(totalMaterialsRequired - currentMaterials, 0);
+        BuildQuote quote = quoteBuild(selected, quantity);
+        double totalMaterialsRequired = noConstruction ? 0 : quote.materialsNeeded;
 
         double totalCost = noConstruction
                 ? selected.getCashCost() * quantity
-                : calculateTotalCost(selected, quantity);
+                : quote.total;
 
         // 2. Set stats for the UI Receipt
-        this.totalMaterialsImported = neededMaterials;
+        this.receiptMaterials = totalMaterialsRequired;
         this.totalBuildingCost = totalCost;
 
         // 3. The Check
@@ -2458,14 +2384,19 @@ public class Game {
             lastBuildingName = buildingManager.getName(selected);
             lastBuildQuantity = quantity;
 
+            // The order. The yard's share goes to the sites now, free, as the
+            // quote priced it; the rest is drawn by the crews as they build -
+            // see drawSiteMaterials() - at whatever it costs then, and the
+            // builders carry the difference, as a contractor does.
             buildingManager.addStack(selected, quantity, noConstruction);
-            materialsConsumed += totalMaterialsRequired;
+            if (!noConstruction) {
+                deliverYardToSites(selected, totalMaterialsRequired);
+                buildingManager.bookContract(selected, totalCost);
+            }
 
             // 4. Subtract everything at once
             cash -= totalCost;
             cityCapitalSpending += totalCost;
-            monthlyMaterialImports += neededMaterials;
-            monthlyMaterialImportBill += neededMaterials * materialsPrice;
 
             // ...and it lands somewhere now. The construction sector did the
             // work; this is what it gets paid for doing it - recognised as the
@@ -2476,11 +2407,10 @@ public class Game {
             // delivered, and recogniseWork() would never have the points to
             // earn it back.
             if (!noConstruction) {
-                // The bought-in material is earned on delivery, which is now;
-                // the work over the points. See ConstructionHandler.bill().
-                servicesManager.getConstructionHandler().bill(totalCost,
-                        selected.getConstructionPoints() * (double) quantity,
-                        neededMaterials * materialsPrice);
+                // Earned as the work is delivered, material included - the
+                // crews buy it as they go. See sectors.Construction.bill().
+                getSectors().construction().bill(totalCost,
+                        selected.getConstructionPoints() * (double) quantity);
             }
 
             System.out.println(quantity + " " + selected.getName()
@@ -2547,11 +2477,7 @@ public class Game {
      */
     public boolean buildFor(Investor payer, BuildingsTemplate template, int quantity) {
 
-        double materialsPrice = buildingManager.getConstructionMaterialPrice();
-        double currentMaterials = buildingManager.getConstructionMaterials();
-        double totalMaterialsRequired = template.getConstructionMaterials() * quantity;
-
-        double neededMaterials = Math.max(totalMaterialsRequired - currentMaterials, 0);
+        BuildQuote quote = quoteBuild(template, quantity);
 
         double landNeeded = template.getLandSqFt() * quantity;
 
@@ -2567,9 +2493,7 @@ public class Game {
         // private build the player actually receives.
         double landPrice = landManager.priceFor(landNeeded);
 
-        double totalCost = template.getCashCost() * quantity
-                + neededMaterials * materialsPrice
-                + landPrice;
+        double totalCost = quote.total + landPrice;
 
         double shortfall = totalCost - payer.getCash();
 
@@ -2588,15 +2512,14 @@ public class Game {
         cash += landPrice;
 
         buildingManager.addStack(template, quantity, false);
-        materialsConsumed += totalMaterialsRequired;
-        monthlyMaterialImports += neededMaterials;
-        monthlyMaterialImportBill += neededMaterials * materialsPrice;
+        deliverYardToSites(template, quote.materialsNeeded);
+        buildingManager.bookContract(template, totalCost - landPrice);
 
         // Construction is paid for the building work only - the land was the
-        // city's, not theirs to be paid for.
-        servicesManager.getConstructionHandler().bill(totalCost - landPrice,
-                template.getConstructionPoints() * (double) quantity,
-                neededMaterials * materialsPrice);
+        // city's, not theirs to be paid for. The material beyond the yard is
+        // drawn as the crews build, see drawSiteMaterials().
+        getSectors().construction().bill(totalCost - landPrice,
+                template.getConstructionPoints() * (double) quantity);
 
         return true;
     }
@@ -2648,8 +2571,9 @@ public class Game {
         return template.getLandSqFt() * (double) quantity;
     }
 
+    /** Units of material the last order will draw, for the receipt. */
     public double getMaterialsUsed(){
-        return totalMaterialsImported;
+        return receiptMaterials;
     }
     public double getTotalBuildingCost(){
         return totalBuildingCost;
@@ -3211,20 +3135,22 @@ public class Game {
         populationManager.printPopulationInfo();
     }
     
-    private void printCommercialInfo(){
-        economyManager.printCommercialInfo();
-    }
-    
-    private void printIndustrialInfo(){
-        economyManager.printIndustrialInfo();
+    /** Every sector's operations page, as text - the same lines the screen draws. */
+    private void printSectorInfo(){
+        for (Sector s : getSectors().all()) {
+            System.out.println("=== " + s.key() + " ===");
+            for (Sector.Line line : s.operations(this)) {
+                switch (line.kind()) {
+                    case HEAD -> System.out.println("-- " + line.label());
+                    case NOTE -> System.out.println("   " + line.label());
+                    default   -> System.out.printf("   %-40s %s%n", line.label(), line.value());
+                }
+            }
+        }
     }
     
     private void printUtilityInfo(){
         servicesManager.printUtilityInfo();
-    }
-    
-    private void printConstructionInfo(){
-        servicesManager.printConstructionInfo();
     }
     
     private void printCityStats(){
@@ -3333,15 +3259,15 @@ public class Game {
          * See Bank.chargeTax() for why arrears is the only ordering that keeps
          * the money in one channel.
          *
-         * At the RETAIL rate: a Commercial Bank is a commercial building, its
-         * property tax already goes through that category, and its jobs already
-         * sit in that sector's headcount. If it ever wants a dial of its own,
-         * the seam is a new PolicySector - which would resize the tax policy's
-         * offset arrays and the save that carries them, so it is deliberately
-         * not done for free here.
+         * At the RETAIL rate: a Commercial Bank is a commercial building and
+         * its counters are retail's money. Since the sector template the
+         * policy's offsets are a map by name, so a dial of its own would be
+         * one more key rather than a resized array - but the bank is not a
+         * Sector (it has no goods and its own books), and giving it a policy
+         * row without a Sector behind it is a decision for another day.
          */
         economyManager.setBankTax(bank.chargeTax(
-                economyManager.getTaxPolicy().effectiveProfitRate(PolicySector.RETAIL)));
+                economyManager.getTaxPolicy().effectiveProfitRate(getSectors().retail())));
         cityDebtRaisedForBank = cityDebtRaisedThisMonth;
         cityDiscountForBank = cityDiscountThisMonth;
 
@@ -3375,13 +3301,9 @@ public class Game {
          */
         bank.takeDiscount(cityDiscountForBank);
 
-        bank.takeInterest(interestDue
-                + economyManager.getCommercialHandler().getReportRetailInterest()
-                + economyManager.getCommercialHandler().getReportRealEstateInterest()
-                + economyManager.getIndustrialHandler().getReportInterestExpense()
-                + economyManager.getHeavyIndustryHandler().getReportInterestExpense()
-                + economyManager.getMiningHandler().getReportInterestExpense()
-                + servicesManager.getConstructionHandler().getReportInterestExpense());
+        double sectorInterestPaid = 0;
+        for (Sector s : getSectors().all()) sectorInterestPaid += s.statement().interest;
+        bank.takeInterest(interestDue + sectorInterestPaid);
 
         refreshBank();
 
@@ -3402,7 +3324,8 @@ public class Game {
          * statements with an operating-expense line on them. The wages are
          * carved out in CommercialHandler and charged here.
          */
-        bank.payRunning(economyManager.getCommercialHandler().getReportBankPayroll(), 0);
+        bank.payRunning(economyManager.getBankPayroll(), bankMaintenanceDue);
+        bankMaintenanceDue = 0;
 
         /*
          * Capital for whatever branches opened this month. Shareholders' money,
@@ -3463,11 +3386,11 @@ public class Game {
         economyManager.clearDepositInterest();
         if (sectorInterest > 0) {
             double totalSectorCash = 0;
-            for (String s : BusinessDebtManager.SECTORS) {
+            for (String s : Sectors.KEYS) {
                 totalSectorCash += Math.max(0, economyManager.getSectorCash(s));
             }
             if (totalSectorCash > 0) {
-                for (String s : BusinessDebtManager.SECTORS) {
+                for (String s : Sectors.KEYS) {
                     double held = Math.max(0, economyManager.getSectorCash(s));
                     if (held <= 0) continue;
                     double share = sectorInterest * held / totalSectorCash;
@@ -3576,7 +3499,7 @@ public class Game {
          * simultaneous equation.
          */
         priceIndex.takeMonth(
-                economyManager.getCommercialHandler().getStoreSellPrice(),
+                getSectors().retail().getStoreSellPrice(),
                 /*
                  * The AVERAGE actually paid, not the family price. Rent is
                  * two prices now and the cost of living is what households
@@ -3584,9 +3507,9 @@ public class Game {
                  * used before the split: the two prices open equal, so the
                  * average opens on the same number the base was struck at.
                  */
-                economyManager.getCommercialHandler().getAverageRentPaid(),
-                economyManager.getCommercialHandler().getGrossRevenue(),
-                economyManager.getCommercialHandler().getReportRentIncome());
+                getSectors().realEstate().getAverageRentPaid(),
+                getSectors().retail().statement().salesToHouseholds,
+                getSectors().realEstate().statement().salesToHouseholds);
 
         /* =================================================================
            AND THE MONEY THAT IS HERE BECAUSE THE RATE IS GOOD.
@@ -3730,90 +3653,42 @@ public class Game {
         // it is an expense on one of them and revenue on the other.
         chargeBuildingMaintenance();
 
-        // Recognise the month's construction work before construction's income
-        // statement runs, so the revenue and the payroll describe the same month.
-        //
-        // The BUILDING output, not the gross: the crews that spent part of the
-        // month on repairs did not spend it on sites. See getBuildingOutput().
-        ConstructionHandler construction = servicesManager.getConstructionHandler();
-        construction.recogniseWork(getBuildingOutput());
+        /*
+         * THE MONTH'S BUILDING WORK, AS THE STATEMENT WILL CARRY IT. The work
+         * is recognised where the sites advance and the crews draw their
+         * material - SimulationEngine, in the middle of the tick, see
+         * drawSiteMaterials() - so the figure here is last month's, booked
+         * into last month's ledger beside last month's material purchase,
+         * and struck a few lines below into the same statement. Until
+         * 2026-09-11 it was recognised HERE, at the top, one strike ahead of
+         * the material that went into it: the accounts read this month's work
+         * against last month's import and a city building steadily read
+         * negative in the month a job finished. Same tick for both now.
+         */
+        ham.citybuildersim.sectors.Construction construction = getSectors().construction();
+        double constructionWorkDone = construction.getRecognisedThisMonth();
 
         /*
-         * The fixed construction retainer used to be paid here.
-         *
-         * RETIRED. It was a dollar figure the player picked once, so it went
-         * stale the moment the sector grew - five re-settings in a single
-         * playtest - and it protected a SLICE of capacity rather than the
-         * sector. The per-sector standing policy in runRetirement() replaces it
-         * and covers construction like any other sector: it self-scales, because
-         * it is measured against the loss rather than against a number.
-         *
-         * The field survives only to carry old saves across; loadGame() turns a
-         * non-zero retainer into the toggle and then leaves it alone.
+         * EVERY SECTOR'S STATEMENT, STRUCK AND BANKED, and the month's VAT
+         * settled from the same figures between the two halves. One loop,
+         * one order for everyone - see EconomyManager.strikeSectors() and
+         * Sector.strike(). This was five hand-listed report calls and a
+         * hand-written ledger.
          */
-
-        // Grab the recognised figure before updateConstructionReport() banks the
-        // month and clears it - that value IS this month's investment.
-        double constructionWorkDone = construction.getRevenue();
-
-        /*
-         * What the builders' imports cost this month, handed over before the
-         * strike so the statement carries it. The same window the national
-         * accounts read a few lines down, and the same figure: the shortfall
-         * at each draw, at the price it was charged at. See
-         * ConstructionHandler.materialsImportBill for what this replaced.
-         */
-        construction.setMaterialsImportBill(monthlyMaterialImportBill);
-
-        economyManager.updateCommercialReport();
-        economyManager.updateIndustrialReport();
-        economyManager.updateHeavyIndustryReport();
-        economyManager.updateMiningReport();
-        economyManager.updateConstructionReport();
-
-        // The month's VAT, struck once, after every sector has reported and
-        // before anything reads the tax total. See settleSalesTax().
-        economyManager.settleSalesTax();
+        economyManager.strikeSectors();
 
         economyManager.updateNationalAccounts(
                 constructionWorkDone,
                 /*
                  * GOVERNMENT CONSUMPTION, and healthcare is most of it now.
-                 *
-                 * This was the utility payroll alone, so a city that staffed a
-                 * 996-person Regional Medical Centre added nothing whatever to
-                 * measured output - while every real national accounts adds
-                 * government healthcare to GDP at exactly what it costs to
-                 * provide, because there is no market price to value it at.
-                 * The gross cost is the right figure: what the city buys is the
-                 * wages and the running of the buildings, and the fees are a
-                 * transfer from households, not a second lot of output.
+                 * Every real national accounts adds government healthcare to
+                 * GDP at exactly what it costs to provide, because there is
+                 * no market price to value it at. The gross cost is the right
+                 * figure: the fees are a transfer from households, not a
+                 * second lot of output.
                  */
                 servicesManager.getUtilitiesHandler().getUtilityPayroll()
                         + healthcare.getGrossCost(),
-                /*
-                 * The bill as it was charged, not the count times today's
-                 * price: an order placed last month was priced at last month's
-                 * rate, and this is the same figure the builders' statement
-                 * carries, so the two accounts agree to the dollar.
-                 */
-                monthlyMaterialImportBill,
-                /*
-                 * The yard AND the materials already embedded in unfinished
-                 * buildings. Both are stock the city has bought and not yet
-                 * turned into output - and the second is much the larger, because
-                 * an order's materials are imported in full up front and consumed
-                 * into the backlog immediately rather than sitting in the yard.
-                 * Counting only the yard left the import unmatched, which is the
-                 * whole of why GDP went negative on a big build.
-                 */
-                buildingManager.getConstructionMaterials(),
-                buildingManager.getConstructionMaterialPrice(),
-                // Work in hand: contracts placed and not yet delivered. The
-                // materials for a whole order are imported the moment it is
-                // placed, so without this the import lands months before the
-                // output it pays for and a big build reads as negative.
-                construction.getUnearnedRevenue(),
                 // The full interest bill, foreign coupons included - the
                 // government's books should show what it paid, not only the
                 // part its own bank collected. See payForeignInterest().
@@ -3862,8 +3737,6 @@ public class Game {
         runPrivateInvestment();
 
         printStartOfMonth();
-        updateConstruction();
-        economyManager.startOfMontEconUpdate();
     }
     private void printStartOfMonth() {
         System.out.println("\n================================================================================================================================================================");
@@ -3873,10 +3746,8 @@ public class Game {
         if(reports){
             printPopulationInfo();
             economyManager.printWageTaxInfo();
-            printCommercialInfo();
-            printIndustrialInfo();
+            printSectorInfo();
             printUtilityInfo();
-            printConstructionInfo();
             debtManager.printDebtInfo(month);
         }
         printCityStats();
@@ -4112,12 +3983,9 @@ public class Game {
                 economyManager.getSectorWaterCharges());
         economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
         tempCash += servicesManager.getServiceNetIncome();
-        economyManager.finalEconUpdate();
-
-        // The ore, after the rest of the month. Lifting it needs the ground,
-        // which EconomyManager has no business knowing about - LandManager owns
-        // the reserves and decides how much was actually there.
-        economyManager.mineIron(landManager);
+        // Every market clears and every maker produces - see Markets.clearMonth().
+        // The mines ask the ground through their own hook; see sectors.Mining.
+        economyManager.finalEconUpdate(this);
 
         servicesManager.updateServices();
         economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
@@ -4148,15 +4016,6 @@ public class Game {
     private void updateConstructionCost(){
         buildingManager.finalUpdateBuildings();
         
-    }
-    private void updateConstruction() {
-        // NOTE: this used to call buildingManager.advanceConstruction() here too,
-        // duplicating the call that SimulationEngine.simulateMonth() makes right
-        // after this method runs (both in the same nextMonth() cycle) - so every
-        // month's construction capacity was being applied twice, making buildings
-        // finish roughly 2x faster than their construction points implied.
-        // Removed; SimulationEngine.simulateMonth() is now the single source of
-        // truth for advancing construction each month.
     }
     /**
      * Recounts the jobs the city's buildings offer. Does not touch population.
@@ -4439,7 +4298,7 @@ public class Game {
         // What the landlords can bill, off the match rather than off an
         // average, and split by which segment the door was in. See
         // CommercialHandler.getRentIncome() and FamilyModel's TWO SEGMENTS.
-        economyManager.getCommercialHandler().setRentWeight(
+        getSectors().realEstate().setRentWeight(
                 families.studioRentWeight(), families.familyRentWeight());
 
         // And the advisor prices a new home on who would move into it.
@@ -4608,6 +4467,9 @@ public class Game {
         if (finished == null) return;
         for (BuildingManager.Completion done : finished) {
             buildLog.record(done.building, done.quantity, month);
+            // ...and the owner's loss clock starts again - see BusinessInvestment.noteOpened().
+            BuildingsTemplate t = buildingManager.getTemplateByName(done.building);
+            if (t != null && t.isOwnedBySector()) businessInvestment.noteOpened(t.getSector());
         }
     }
 
@@ -4730,9 +4592,10 @@ public class Game {
     /**
      * Construction materials bought in from outside this month, in units.
      *
-     * NOT totalMaterialsImported, which is a receipt field for the build screen:
-     * it is assigned on a build order and never cleared, so it holds the last
-     * order's figure forever. Subtracting that as imports charged the city
+     * NOT the receipt field for the build screen (receiptMaterials, once the
+     * imports of the last order): that one is assigned on a build order and
+     * never cleared, so it holds the last order's figure forever. Subtracting
+     * that as imports charged the city
      * $1,240 of imports every month of a two-hundred-month stretch in which
      * nothing was built at all, and dragged GDP to -$468 on a city whose shops
      * were turning over $773.
@@ -4916,7 +4779,7 @@ public class Game {
             if (c == Equity.BANK) {
                 equity.recordMonth(c, bank.getProfitLastMonth(), 0);
             } else {
-                SectorBooks.SectorMonth m = sectorBooks.get(PolicySector.byCreditName(Equity.COMPANIES[c]));
+                SectorBooks.SectorMonth m = sectorBooks.get(Equity.COMPANIES[c]);
                 equity.recordMonth(c, m.netIncome(), m.spentOnBuildings());
             }
         }
@@ -4982,7 +4845,9 @@ public class Game {
         // made before this change are no worse off than they were.
         dataSave.setConstructionById(
                 buildingManager.getUnderConstructionById(),
-                buildingManager.getConstructionProgressById());
+                buildingManager.getConstructionProgressById(),
+                buildingManager.getMaterialsOwedById(),
+                buildingManager.getContractValueById());
 
         // Charged during the month rather than derived from state, so nothing
         // can recompute it on load. Without this the freshly loaded city showed
@@ -4996,45 +4861,22 @@ public class Game {
         // interest and the load path feeds it straight back to setInterest().
         // Saving the whole expense line double-counted pensions on load.
         dataSave.setCityInterestAccrued(economyManager.getInterestAccrued());
-        dataSave.setPropertyTaxCharges(economyManager.getPropertyTaxCharges());
-        dataSave.setInterestCharges(economyManager.getInterestCharges());
 
-        // The month's flows. Balances alone cannot reconstruct a month's
-        // income statement - see DataSave for which ones and why.
-        // The local/imported split behind that cost. Set beside it because it
-        // is the same fact about the same month.
-        dataSave.setRetailLocalPurchase(economyManager.getRetailLocalPurchase());
-        dataSave.setRetailImportPurchase(economyManager.getRetailImportPurchase());
-
-        dataSave.setMonthFlows(
-                economyManager.getRetailCostOfGoods(),
-                economyManager.getRetailLocalImports(),
-                economyManager.getRetailGlobalImports(),
-                economyManager.getRetailFillBasis(),
-                economyManager.getRetailImportTax(),
-                economyManager.getIndustryDemand(),
-                economyManager.getIndustryUnitsSold(),
-                economyManager.getIndustryUnitsImported());
-        dataSave.setIndustryLocalSalesValue(economyManager.getIndustryLocalSalesValue());
-
-        // The utilisation those statements were written against - see DataSave.
-        dataSave.setRatioBasis(
-                economyManager.getEnergyRatioBasis(),
-                economyManager.getWaterRatioBasis(),
-                economyManager.getRoadRatioBasis(),
-                economyManager.getHealthRatioBasis());
-
-        // ...and the statements themselves, which is what makes the line above
-        // a fallback rather than the fix. See CommercialHandler.getReportState().
-        dataSave.setReportState(
-                economyManager.getCommercialReportState(),
-                economyManager.getIndustrialReportState(),
-                economyManager.getHeavyIndustryReportState(),
-                economyManager.getMiningReportState());
+        /*
+         * EVERY SECTOR, WHOLE, BY NAME (2026-09-11, the sector template): its
+         * cash, its stocks, the month in progress, the month last struck, and
+         * whatever state is its own - the shops' shelf price, the landlords'
+         * rents, the builders' order book. And every market's price. This
+         * replaced five differently-shaped report arrays, two arrays indexed
+         * by BuildingType.ordinal(), and a dozen loose fields. See SectorState.
+         */
+        dataSave.setSectors(economyManager.getSectorStates());
+        dataSave.setMarkets(economyManager.getMarketStates());
 
         // Policy: the rates, every offset, the protected sectors, and the
         // month's VAT ledger.
         dataSave.setTaxPolicyState(economyManager.getTaxPolicy().getPolicyState());
+        dataSave.setSectorOffsets(economyManager.getTaxPolicy().getSectorOffsets());
         dataSave.setHouseholdBalance(householdBalance.toSaveArray());
         dataSave.setHouseholdCells(householdBalance.cellKeys(),
                 householdBalance.toCellSaveArray());
@@ -5045,7 +4887,7 @@ public class Game {
         dataSave.setBankSolvency(bank.solvencyToSave());
         dataSave.setBankLastMonth(bank.lastMonthToSave());
         dataSave.setHousingOccupancy(new double[]{
-                economyManager.getCommercialHandler().getOccupiedHomes() });
+                getSectors().realEstate().getOccupiedHomes() });
         dataSave.setForeignAccounts(foreign.toSaveArray());
         dataSave.setForeignStanding(debtManager.foreignStandingToSave());
         dataSave.setCapitalFlows(hotMoney.toSaveArray());
@@ -5057,18 +4899,12 @@ public class Game {
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setPolicyRate(debtManager.getPolicyRate());
         dataSave.setCostOfLiving(labourMarket.getCostOfLiving());
-        dataSave.setStoreSellPrice(economyManager.getCommercialHandler().getStoreSellPrice());
-        dataSave.setRentPrice(economyManager.getCommercialHandler().getRentPrice());
-        dataSave.setStudioRentPrice(
-                economyManager.getCommercialHandler().getStudioRentPrice());
         dataSave.setDenomination(denomination.toSaveArray());
         dataSave.setBankTaxCharged(economyManager.getBankTax());
         dataSave.setRentWeight(families.rentWeight());
         dataSave.setRentWeightStudio(families.studioRentWeight());
-        dataSave.setRetailCapacity(economyManager.getCommercialHandler().getSpendingCapacity());
-        dataSave.setRetailWant(economyManager.getCommercialHandler().getWantedSpend());
-        dataSave.setAutoSubsidy(autoSubsidy.clone());
-        dataSave.setSalesTaxLedger(economyManager.getSalesTaxLedger().getLedgerState());
+        dataSave.setSubsidisedSectors(getSubsidisedSectors());
+        dataSave.setSalesTax(economyManager.getSalesTaxState());
 
         // The land office's window, the ore under the city, and the retainer.
         dataSave.setLandState(
@@ -5076,9 +4912,6 @@ public class Game {
                 landManager.getIronDeposits(),
                 landManager.getIronReserveTonnes());
         dataSave.setLandMarketPrices(landManager.getMarket().getPriceState());
-        dataSave.setIronLocalPrice(economyManager.getIronLocalPrice());
-        dataSave.setFoodLocalPrice(economyManager.getFoodLocalPrice());
-        dataSave.setMiningCash(economyManager.getMiningCash());
         dataSave.setConstructionSubsidy(constructionSubsidy);
         dataSave.setConstructionShedding(constructionShedMonth, constructionShedPoints);
 
@@ -5106,7 +4939,7 @@ public class Game {
         dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
         dataSave.setCityMaintenancePaid(cityMaintenancePaid);
-        dataSave.setSubsidyPaid(subsidyPaid.clone());
+        dataSave.setSubsidyPaid(new java.util.LinkedHashMap<>(subsidyPaid));
         dataSave.setHouseholdStatement(households.getStatementState());
         dataSave.setMonthlyMaterialImports(monthlyMaterialImports);
         dataSave.setMonthlyMaterialImportBill(monthlyMaterialImportBill);
@@ -5118,26 +4951,13 @@ public class Game {
         dataSave.setBlockedMonths(
                 economyManager.getBusinessDebtManager().getBlockedMonthsAll());
 
-        ConstructionHandler builders = servicesManager.getConstructionHandler();
-        dataSave.setConstructionBooks(builders.getCash(),
-                builders.getUnearnedRevenue(), builders.getBacklogPoints(),
-                builders.getMaterialsPending());
-        dataSave.setConstructionStatement(builders.getNetIncome(), builders.getReportProfitTax());
         dataSave.setConstructionMaterials(buildingManager.getConstructionMaterials());
-        dataSave.setStoreInventory(economyManager.getStoreInventory());
-        dataSave.setStoreLastMonthSales(economyManager.getCommercialHandler().getLastMonthSales());
-        dataSave.setIndustryFoodInventory(economyManager.getIndustryFoodInventory());
         dataSave.setPopulation(populationManager.getPopulation());
 
         // Not derivable from the population beside it: the month was worked by
         // the people who lived here when it started. See
         // PopulationManager.restoreWorkforce().
         dataSave.setWorkforce(populationManager.getWorkforceForSave());
-        dataSave.setCommercialCash(economyManager.getCommercialCash());
-        dataSave.setRealEstateCash(economyManager.getRealEstateCash());
-        dataSave.setIndustrialCash(economyManager.getIndustrialCash());
-        dataSave.setHeavyIndustryCash(
-                economyManager.getHeavyIndustryHandler().getCash());
         dataSave.setHouseholdSavings(households.getCumulativeSaving());
         // NOTE: reports/graphs settings were never saved at all - they'd silently
         // reset to their true/true defaults on every load.
@@ -5766,7 +5586,7 @@ public class Game {
         double studio = Math.max(0, Math.min(carriedStudioWeight, carriedRentWeight));
         families.setRentWeight(studio, carriedRentWeight - studio);
     }
-    economyManager.getCommercialHandler().setRentWeight(
+    getSectors().realEstate().setRentWeight(
             families.studioRentWeight(), families.familyRentWeight());
     businessInvestment.setFamilies(families);
     economyManager.setSeniors(cohorts.get(AgeBand.SENIOR));
@@ -5802,31 +5622,15 @@ public class Game {
      */
     economyManager.setHealthcare(healthcare.getGrossCost(), healthcare.getFees());
 
-    economyManager.updateIndustrialWages(populationManager.getWagesPerType());
-    economyManager.updateStoreWages(
-            populationManager.getWagesPerType(),
-            buildingManager.getJobArrayPerCategory(BuildingType.COMMERCIAL),
-            buildingManager.getJobArrayByName("Commercial Bank")
-    );
-
-    economyManager.updateJobFillRate(populationManager.getJobFillRate());
-    economyManager.updateHeavyIndustryWages(populationManager.getWagesPerType());
-
     /*
-     * MINING'S WAGES, which this path had never set.
-     *
-     * Its only call site was SimulationEngine.updateEconomy, so after a load the
-     * mine's wage array was all zeros - and startOfMonthUpdate() runs
-     * updateMiningReport() BEFORE simulateMonth() gets a chance to fill it in.
-     * So the first month after any reload the mine booked its full revenue
-     * against a payroll of zero, banked the inflated net income to its own cash,
-     * and the city collected profit tax on money nobody earned.
-     *
-     * The three sibling sectors were all here already; mining was simply
-     * forgotten. That is the shape of this whole class of bug - not a wrong
-     * calculation, a missing call on one of two paths that have to agree.
+     * EVERY SECTOR'S WAGES, in one call - the same call the monthly path
+     * makes. Mining's were once forgotten here and the mine booked a month
+     * of revenue against a payroll of zero; a registry loop cannot forget
+     * one.
      */
-    economyManager.updateMiningWages(populationManager.getWagesPerType());
+    economyManager.updateJobFillRate(populationManager.getJobFillRate());
+    economyManager.updateWages(populationManager.getWagesPerType(),
+            buildingManager.getJobArrayByName("Commercial Bank"));
 
     economyManager.updateEcon();
 
@@ -5835,45 +5639,20 @@ public class Game {
     economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
     economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
 
-    // refreshEconPrices(), NOT finalEconUpdate() - the latter PRODUCES food,
-    // moves inventory and has the shops trade. Calling it here ran a month of
+    // refreshEconPrices(), NOT finalEconUpdate() - the latter clears every
+    // market and has every maker produce. Calling it here ran a month of
     // the economy with the calendar standing still. See its note in EconomyManager.
     economyManager.refreshEconPrices();
 
     // Price business credit off the restored balance sheets so a freshly loaded
-    // save shows real rates and interest rather than zeroes.
+    // save shows real rates and interest rather than zeroes. THE STATEMENTS
+    // ARE NOT RECOMPUTED: every sector's struck month came out of the save
+    // whole (see SectorState), and a statement is a fact about a month, not
+    // a function of the state the month ended in.
     economyManager.updateBusinessCredit(debtManager.getRate());
 
-    // Recompute the commercial report from the restored state so a freshly loaded
-    // save shows real numbers on the sector screen before the first month is
-    // simulated. computeMonthlyReport() deliberately does NOT accumulate
-    // commercialCash/realEstateCash - those were already restored from the save,
-    // and banking another month here would drift them.
-    //
-    // NOTE: this must run LAST. It was originally placed right after updateEcon(),
-    // where averageStoreFill is still 0 - and since both gross revenue and payroll
-    // are multiplied by it, a freshly loaded game reported $0 revenue on a city
-    // that was plainly selling 169 units. finalEconUpdate() is also what populates
-    // the import counts and electricity draw that the expense lines need.
-    economyManager.refreshCommercialReport();
-    economyManager.refreshIndustrialReport();
-    economyManager.refreshHeavyIndustryReport();
-    economyManager.refreshMiningReport();
-
-    // GDP reads commercialHandler.getNetIncome(), so it has to come after the
-    // refresh above to see this month's figure rather than a stale one.
     priceTheDebtMarket();
     debtManager.updateInterest();
-
-    // Was only done by the second rebuild pass in loadGameSave(). It has to
-    // happen somewhere, and this is the one rebuild there is now.
-    ConstructionHandler construction = servicesManager.getConstructionHandler();
-    servicesManager.updateFromGame(construction::setMaterialsInventory,
-            buildingManager.getConstructionMaterials());
-    servicesManager.updateFromGame(construction::setMaterialsPrice,
-            buildingManager.getConstructionMaterialPrice());
-    servicesManager.updateFromGameInt(construction::setMaterialsConsumed, materialsConsumed);
-    construction.setMaterialsImportBill(monthlyMaterialImportBill);
 
     /* ---------------- the three the monthly path sets and this did not ----------------
      *
@@ -5964,15 +5743,7 @@ public class Game {
          */
         double restoredPropertyTax = 0;
         double restoredCityInterest = 0;
-        double[] restoredPropertyTaxCharges = null;
         DataSave restoredFlows = null;
-        double[] restoredInterestCharges = null;
-
-        // The ore price the month traded at. Restored AFTER the rebuild, which
-        // re-prices the market from current supply and demand and would
-        // otherwise overwrite it - the same trap the interest charges sit in.
-        double restoredOrePrice = 0;
-        double restoredFoodPrice = 0;
 
         try {
             Path path = gameFiles.saveFile(slot);
@@ -6003,6 +5774,21 @@ public class Game {
              * loads looking fine and is missing whatever that build added -
              * and the player finds out later, having played on top of it.
              */
+            /*
+             * ...AND FROM BEFORE THE SECTOR TEMPLATE. Jerus: "clean break".
+             * A save older than format 21 carries five handlers' arrays and
+             * nothing this build can read a sector out of, so it is refused
+             * with a message that says why rather than loaded as a city with
+             * seven empty businesses.
+             */
+            if (GameVersion.isFromBeforeSectors(loaded.getSaveFormat())) {
+                System.out.println(GameFiles.slotLabel(slot)
+                        + " was written before the sector template (save format "
+                        + loaded.getSaveFormat() + "; this build reads from "
+                        + GameVersion.FIRST_SECTOR_FORMAT + "). Not loaded.");
+                loadFailure = "This save is from before the sector redesign and cannot be loaded.";
+                return;
+            }
             if (GameVersion.isFromNewerBuild(loaded.getSaveFormat())) {
                 System.out.println(GameFiles.slotLabel(slot)
                         + " was written by a newer version of the game ("
@@ -6024,27 +5810,9 @@ public class Game {
             // Load simple fields
             this.cash = loaded.getCash();
             this.month = loaded.getMonth();
-            /*
-             * THE YARD IS IN UNITS, AND THE UNIT CHANGED (save format 20).
-             *
-             * A unit of construction material was $2,000 through format 19
-             * and is $18,000 now, with every template's count re-derived to
-             * match. The yard's stock is a count of those units, so a
-             * format-19 yard read as it stands is nine times the material it
-             * was: 2,000 units that were $4M of aggregate become $36M of it,
-             * and the next order the city places is free. It is read at what
-             * it was WORTH instead - the count in old units times the old
-             * price, divided by the new one. See GameVersion.
-             */
-            int yard = loaded.getConstructionMaterials();
-            if (loaded.getSaveFormat() < 20) {
-                yard = (int) Math.round(yard * GameVersion.MATERIALS_UNIT_BEFORE_20
-                        / BuildingManager.MATERIALS_WORLD_PRICE);
-            }
-            buildingManager.setConstructionMaterials(yard);
-            economyManager.setStoreInventory(loaded.getStoreInventory());
-            economyManager.getCommercialHandler().setLastMonthSales(loaded.getStoreLastMonthSales());
-            economyManager.setIndustryFoodInventory(loaded.getIndustryFoodInventory());
+            // The yard, in units. One unit has been $18,000 since format 20,
+            // and every save this build reads is 21 or later.
+            buildingManager.setConstructionMaterials(loaded.getConstructionMaterials());
             populationManager.setPopulation(loaded.getPopulation());
             this.population = loaded.getPopulation();
 
@@ -6074,6 +5842,7 @@ public class Game {
              * everything, which is exactly what that save meant.
              */
             economyManager.getTaxPolicy().restorePolicyState(loaded.getTaxPolicyState());
+            economyManager.getTaxPolicy().restoreSectorOffsets(loaded.getSectorOffsets());
 
             // Format 18 and earlier carry nothing here, and a null restores as a
             // no-op - which leaves a founding city's opening buffer, the same
@@ -6154,20 +5923,15 @@ public class Game {
             bank.restoreSecurities(exchange.markToMarket(equity));
             exchange.reopen(bank.equity());
             labourMarket.setCostOfLiving(loaded.getCostOfLiving());
-            economyManager.getCommercialHandler().setStoreSellPrice(loaded.getStoreSellPrice());
-            // Zero means a save written before rent became a lagged price; the
-            // setter refuses it and the founding value stands, which is the
-            // right answer for a city that was charging the formula anyway.
-            economyManager.getCommercialHandler().setRentPrice(loaded.getRentPrice());
+
             /*
-             * A save from before the split carries no studio price and comes
-             * back as zero, which setStudioRentPrice() refuses - so the
-             * studio market opens at whatever the constructor put there and
-             * walks to its own target within a lease. Restoring a zero would
-             * hand every studio tenant a free flat for a year.
+             * EVERY SECTOR, WHOLE, and every market's price. Before the
+             * rebuild, which prices credit off the restored balance sheets;
+             * the struck statements come back with them and are NOT
+             * recomputed. See SectorState.
              */
-            economyManager.getCommercialHandler()
-                    .setStudioRentPrice(loaded.getStudioRentPrice());
+            economyManager.restoreSectorStates(loaded.getSectors());
+            economyManager.restoreMarketStates(loaded.getMarkets());
 
             /*
              * THE UNIT, AND THEN THE CONSTANTS THAT DEPEND ON IT.
@@ -6185,7 +5949,7 @@ public class Game {
             double unit = denomination.getUnit();
             if (unit != 1) {
                 buildingManager.seedConstants(unit);
-                economyManager.getCommercialHandler().seedConstants(unit);
+                getSectors().retail().seedConstants(unit);
                 labourMarket.seedConstants(unit);
                 bank.seedConstants(unit);
                 landManager.seedConstants(unit);
@@ -6198,34 +5962,19 @@ public class Game {
             carriedRentWeight = loaded.getRentWeight();
             carriedStudioWeight = loaded.getRentWeightStudio();
 
-            /*
-             * Before rebuildSimulationState() re-runs the retail report, or it
-             * runs it with no budget constraint and the shops sell what a
-             * headcount wanted - which is the model as it stood before the
-             * constraint existed, for exactly one month after every load.
-             */
-            carriedRetailCapacity = loaded.getRetailCapacity();
-            carriedRetailWant = loaded.getRetailWant();
+            // The shops' budget constraint came back inside the Retail sector's
+            // own state; it is re-applied after the rebuild below all the same,
+            // because the rebuild re-strikes the households' plan.
+            carriedRetailCapacity = getSectors().retail().getSpendingCapacity();
+            carriedRetailWant = getSectors().retail().getWantedSpend();
 
-            boolean[] savedSubsidy = loaded.getAutoSubsidy();
-            if (savedSubsidy != null && savedSubsidy.length == autoSubsidy.length) {
-                System.arraycopy(savedSubsidy, 0, autoSubsidy, 0, autoSubsidy.length);
+            autoSubsidy.clear();
+            if (loaded.getSubsidisedSectors() != null) {
+                for (String key : loaded.getSubsidisedSectors()) setAutoSubsidised(key, true);
             }
 
-            economyManager.restoreSalesTaxLedger(loaded.getSalesTaxLedger());
-            economyManager.setMiningCash(loaded.getMiningCash());
-            restoredOrePrice = loaded.getIronLocalPrice();
-            restoredFoodPrice = loaded.getFoodLocalPrice();
-            /*
-             * A save from before the standing policy existed. A city that was
-             * paying a retainer had decided its builders were worth keeping, so
-             * that decision is carried across as the toggle rather than dropped
-             * - the retainer itself no longer does anything.
-             */
+            economyManager.restoreSalesTaxState(loaded.getSalesTax());
             this.constructionSubsidy = Math.max(0, loaded.getConstructionSubsidy());
-            if (this.constructionSubsidy > 0) {
-                setAutoSubsidised(PolicySector.CONSTRUCTION, true);
-            }
 
             // The warning, restored with the crisis that caused it. A save from
             // before this was carried decodes to -1, which isConstructionShedding()
@@ -6241,11 +5990,6 @@ public class Game {
             // that call, so putting it right afterwards fixes the number and
             // leaves everything derived from it wrong.
             pendingWorkforce = loaded.getWorkforce();
-            economyManager.setCommercialCash(loaded.getCommercialCash());
-            economyManager.setRealEstateCash(loaded.getRealEstateCash());
-            economyManager.setIndustrialCash(loaded.getIndustrialCash());
-            economyManager.getHeavyIndustryHandler()
-                    .setCash(loaded.getHeavyIndustryCash());
             households.setCumulativeSaving(loaded.getHouseholdSavings());
             this.reports = loaded.getReports();
             this.graphs = loaded.getGraphs();
@@ -6297,8 +6041,17 @@ public class Game {
 
                 if (building > 0 || loaded.getConstructionProgressById(id) > 0) {
                     buildingManager.restoreConstruction(id, building,
-                            loaded.getConstructionProgressById(id));
+                            loaded.getConstructionProgressById(id),
+                            loaded.getMaterialsOwedById(id),
+                            loaded.getContractValueById(id));
                 }
+            }
+
+            // A save that kept one order book for the whole city: spread it
+            // over the sites by the work still owed, which is the rate the
+            // old book earned it at. See BuildingsStacks.contractValue.
+            if (!loaded.hasContractsById()) {
+                buildingManager.spreadContracts(getSectors().construction().getUnearnedRevenue());
             }
 
             //Load construction progress
@@ -6390,9 +6143,7 @@ public class Game {
 
             restoredPropertyTax = loaded.getPropertyTaxCharged();
             restoredCityInterest = loaded.getCityInterestAccrued();
-            restoredPropertyTaxCharges = loaded.getPropertyTaxCharges();
-            restoredFlows = loaded.hasMonthFlows() ? loaded : null;
-            restoredInterestCharges = loaded.getInterestCharges();
+            restoredFlows = loaded;
             
 
             // Load debts manually
@@ -6530,21 +6281,13 @@ public class Game {
          */
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
 
-        if (restoredPropertyTaxCharges != null) {
-            economyManager.restorePropertyTaxCharges(restoredPropertyTaxCharges);
-        } else {
-            /*
-             * A save from before the charges were recorded. Recomputing is a
-             * month stale - property tax is charged early in the month and
-             * buildings finish after it, so the assessed value has moved on -
-             * but a stale figure beats every sector reporting no property-tax
-             * expense at all, which is what these saves did before.
-             */
-            economyManager.chargePropertyTax();
-            if (restoredPropertyTax > 0) {
-                economyManager.setTotalPropertyTax(restoredPropertyTax);
-            }
-        }
+        /*
+         * The property tax each sector was charged came back inside its own
+         * state (SectorState carries the three bills of the month); the
+         * city's total is carried on its own line, because the two are the
+         * same fact struck in two places and the treasury reads this one.
+         */
+        economyManager.setTotalPropertyTax(restoredPropertyTax);
 
         /*
          * The city's own accrued interest, which nothing was restoring at all.
@@ -6616,32 +6359,11 @@ public class Game {
              * a protected sector being supported by nothing at all until the
              * next month ticked.
              */
-            double[] paid = restoredFlows.getSubsidyPaid();
-            if (paid != null && paid.length == subsidyPaid.length) {
-                System.arraycopy(paid, 0, subsidyPaid, 0, subsidyPaid.length);
-            }
+            subsidyPaid.clear();
+            if (restoredFlows.getSubsidyPaid() != null) subsidyPaid.putAll(restoredFlows.getSubsidyPaid());
             monthlyMaterialImports = restoredFlows.getMonthlyMaterialImports();
             monthlyMaterialImportBill = restoredFlows.getMonthlyMaterialImportBill();
             materialsConsumed = restoredFlows.getMaterialsConsumed();
-            /*
-             * Both counts are units too, and both feed one month's figures -
-             * the import line on the Trade screen and the materials line on
-             * the construction report. Same conversion as the yard, for the
-             * same reason. The bill is money and needs none; a save from
-             * before it existed carries no bill, and the count at the old
-             * price is what that month's accounts were struck from.
-             */
-            if (restoredFlows.getSaveFormat() < 20) {
-                double k = GameVersion.MATERIALS_UNIT_BEFORE_20
-                        / BuildingManager.MATERIALS_WORLD_PRICE;
-                if (monthlyMaterialImportBill <= 0) {
-                    monthlyMaterialImportBill = monthlyMaterialImports
-                            * GameVersion.MATERIALS_UNIT_BEFORE_20
-                            * Math.max(0, economyManager.getExchangeRate());
-                }
-                monthlyMaterialImports *= k;
-                materialsConsumed = (int) Math.round(materialsConsumed * k);
-            }
         }
 
         rebuildSimulationState();
@@ -6654,8 +6376,8 @@ public class Game {
          * constraint amplifies the difference. Carried whole, applied after.
          */
         if (carriedRetailCapacity > 0 || carriedRetailWant > 0) {
-            economyManager.getCommercialHandler().setSpendingCapacity(carriedRetailCapacity);
-            economyManager.getCommercialHandler().setWantedSpend(carriedRetailWant);
+            getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
+            getSectors().retail().setWantedSpend(carriedRetailWant);
         }
         if (carriedRentWeight > 0) {
             // Both halves, and the family one by subtraction so the two always
@@ -6663,8 +6385,7 @@ public class Game {
             // other restore site.
             double studio = Math.max(0, Math.min(carriedStudioWeight, carriedRentWeight));
             families.setRentWeight(studio, carriedRentWeight - studio);
-            economyManager.getCommercialHandler()
-                    .setRentWeight(studio, carriedRentWeight - studio);
+            getSectors().realEstate().setRentWeight(studio, carriedRentWeight - studio);
         }
 
         /*
@@ -6717,45 +6438,7 @@ public class Game {
             populationManager.inferBandShareFromJobs();
         }
 
-        /*
-         * After the rebuild, because the rebuild recomputes every sector report
-         * from current state - which is precisely the thing that cannot see last
-         * month's trading. Restoring first would just be overwritten.
-         */
-        // Same reason as the flows below: rebuildSimulationState() re-prices
-        // business credit off the restored balance sheets, so this has to land
-        // after it or it is simply overwritten.
-        if (restoredInterestCharges != null) {
-            economyManager.restoreInterestCharges(restoredInterestCharges);
-        }
-
         if (restoredFlows != null) {
-            economyManager.restoreRetailPurchases(
-                    restoredFlows.getRetailLocalPurchase(),
-                    restoredFlows.getRetailImportPurchase());
-            economyManager.restoreMonthFlows(
-                    restoredFlows.getRetailCostOfGoods(),
-                    restoredFlows.getRetailLocalImports(),
-                    restoredFlows.getRetailGlobalImports(),
-                    restoredFlows.getRetailFillBasis(),
-                    restoredFlows.getRetailImportTax(),
-                    restoredFlows.getIndustryDemand(),
-                    restoredFlows.getIndustryLocalSalesValue(),
-                    restoredFlows.getIndustryUnitsSold(),
-                    restoredFlows.getIndustryUnitsImported(),
-                    // A save from before roads carries no basis. Falling back to
-                    // what the city looks like now is exactly what those saves
-                    // used to do, and their ratios were 1, so it costs nothing.
-                    restoredFlows.hasRatioBasis()
-                            ? restoredFlows.getEnergyRatioBasis() : getEnergyRatio(),
-                    restoredFlows.hasRatioBasis()
-                            ? restoredFlows.getWaterRatioBasis() : getWaterRatio(),
-                    restoredFlows.hasRatioBasis()
-                            ? restoredFlows.getRoadRatioBasis() : getRoadRatio(),
-                    // Sickness needs no hasRatioBasis test: a save from before
-                    // it carries 1, and 1 is what those cities ran at.
-                    restoredFlows.getHealthRatioBasis());
-
             economyManager.restoreNationalAccounts(restoredFlows.getNationalAccounts());
 
             demolitionLog.restore(restoredFlows.getDemolitions());
@@ -6768,37 +6451,16 @@ public class Game {
                     restoredFlows.getRestructureCounts(),
                     restoredFlows.getBlockedMonths());
 
-            servicesManager.getConstructionHandler().restoreOrderBook(
-                    restoredFlows.getConstructionCash(),
-                    restoredFlows.getConstructionUnearnedRevenue(),
-                    restoredFlows.getConstructionBacklogPoints(),
-                    restoredFlows.getConstructionMaterialsPending());
-            servicesManager.getConstructionHandler().restoreStatement(
-                    restoredFlows.getConstructionNetIncome(),
-                    restoredFlows.getConstructionProfitTax());
-
             /*
-             * Last, and it has to be last.
-             *
-             * Everything above rebuilds the sectors' statements from restored
-             * inputs - restoreMonthFlows() recomputes all three of them - and
-             * this puts the statements the save was actually taken with back
-             * over the top. Move it earlier and it is simply overwritten, which
-             * is the same trap restoreInterestCharges() above is sitting in.
-             *
-             * The recompute above is not wasted work: it sets the handlers'
-             * non-report state (imports, demand, units sold, the inventory cost)
-             * which the next month reads, and it is the fallback when a save
-             * carries no statements or ones of a different shape.
+             * THE BILLS OF THE MONTH, BACK OVER THE REBUILD. Every sector's
+             * interest, property tax and maintenance came out of the save
+             * inside its own state, and rebuildSimulationState() has just
+             * re-priced credit off the restored sheets, which is a different
+             * answer from the one the month was struck at - $7.30 against
+             * $4.87 on a city that had just ordered two depots. Re-derivation
+             * is not restoration when the thing being derived is a flow.
              */
-            economyManager.restoreIronMarket(restoredOrePrice);
-            economyManager.restoreFoodMarket(restoredFoodPrice);
-
-            economyManager.restoreReportState(
-                    restoredFlows.getCommercialReport(),
-                    restoredFlows.getIndustrialReport(),
-                    restoredFlows.getHeavyIndustryReport(),
-                    restoredFlows.getMiningReport());
+            economyManager.restoreSectorBills(restoredFlows.getSectors());
 
             // And the utility's bill, which is read off those statements, has
             // to be re-struck now that they are the carried ones rather than
@@ -6832,10 +6494,8 @@ public class Game {
              */
             refreshHouseholdAccounts();
             if (carriedRetailCapacity > 0 || carriedRetailWant > 0) {
-                economyManager.getCommercialHandler()
-                        .setSpendingCapacity(carriedRetailCapacity);
-                economyManager.getCommercialHandler()
-                        .setWantedSpend(carriedRetailWant);
+                getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
+                getSectors().retail().setWantedSpend(carriedRetailWant);
             }
 
             /*
@@ -7067,10 +6727,6 @@ public class Game {
         if (servicesManager != null && servicesManager.getUtilitiesHandler() != null) {
             servicesManager.getUtilitiesHandler().redenominate(scale);
         }
-        // NOT the construction handler: ServicesManager owns it and
-        // EconomyManager holds the same object (Game wires them together at
-        // startup), so economyManager.redenominate() has already scaled it.
-        // Scaling it here would halve the builders' cash twice.
         if (historySave != null) historySave.redenominate(scale);
 
         /*

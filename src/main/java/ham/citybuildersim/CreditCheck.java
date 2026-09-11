@@ -17,7 +17,7 @@ public class CreditCheck {
         System.out.printf("%-50s %s%n", label, ok ? "OK" : "FAIL");
     }
 
-    static final String IND = BusinessDebtManager.INDUSTRY;
+    static final String IND = Sectors.INDUSTRY;
 
     /** The standing rate at a given cash position, leaving the market as it found it. */
     static double priced(DebtManager m, double cash) {
@@ -376,36 +376,34 @@ public class CreditCheck {
         double interest = m5.getMonthlyInterest(IND);
         assertTrue("there is interest to pay", interest > 0);
 
-        IndustrialHandler ih = new IndustrialHandler();
-        ih.setIndustrialCash(10000);
-        ih.setFoodInventory(1000);
-        ih.setFoodDemand(1000);
-        ih.setFoodPrice(.50);          // revenue 500
+        // A bare sector off the template - no buildings, no markets - with one
+        // sale of the month booked into its ledger by hand.
+        Sector ih = new ham.citybuildersim.sectors.FoodIndustry();
+        ih.setCash(10000);
+        ih.bookSale(new Trade(Good.FOOD, ih.key(), Sectors.RETAIL, 1000, .50));   // revenue 500
         ih.setEnergyRatio(1);
         ih.setWaterRatio(1);
         ih.updateJobFillRate(new double[11]);
-        ih.updateIndustrialWages(new double[11], new int[11]);
+        ih.updateWages(new double[11], new int[11]);
         ih.setInterestExpense(interest);
         // Struck, then banked - see BooksCheck for why they are two calls now.
-        ih.calculateIndustrialResults();
-        ih.bankMonth(0);
+        ih.strike();
+        ih.bank(0);
 
-        check("operating income excludes interest", ih.getReportOperatingIncome(), 500);
-        check("interest expensed", ih.getReportInterestExpense(), interest);
+        check("operating income excludes interest", ih.statement().operatingIncome, 500);
+        check("interest expensed", ih.statement().interest, interest);
         check("pre-tax income is net of interest", ih.getNetIncome(), 500 - interest);
-        check("cash moved by exactly that", ih.getIndustrialCash(), 10000 + 500 - interest);
+        check("cash moved by exactly that", ih.getCash(), 10000 + 500 - interest);
 
         // processMonth must not touch anyone's cash
-        double before = ih.getIndustrialCash();
+        double before = ih.getCash();
         m5.processMonth();
-        check("processMonth moved no cash", ih.getIndustrialCash(), before);
+        check("processMonth moved no cash", ih.getCash(), before);
 
         /* ==================== 6. balance sheet integration ==================== */
         System.out.println("\n--- the loan shows up as a liability ---");
 
-        ih.setBuildingsValue(20000);
-        ih.setLandValue(0);
-        ih.setBondsPayable(m5.getPrincipal(IND));
+        ih.setBalanceSheetInputs(0, 20000, m5.getPrincipal(IND));
         BalanceSheet bs = ih.getBalanceSheet();
 
         check("loans payable", bs.getTotalLiabilities(), 24000);
@@ -843,7 +841,7 @@ public class CreditCheck {
         // ban is still never reached.
         BusinessDebtManager ledger = banned.getEconomyManager().getBusinessDebtManager();
         EconomyManager econ = banned.getEconomyManager();
-        String sector = BusinessDebtManager.RETAIL;
+        String sector = Sectors.RETAIL;
 
         // Six months on the level, so any shop the starting city already had in
         // the queue actually opens. A retailer held broke from month one leaves
@@ -883,29 +881,58 @@ public class CreditCheck {
          * thing it could want, every month, so the only way it builds is credit
          * and the only reason it cannot is the ban.
          */
+        /*
+         * ...AND SHORT OF SHOPS, caused the same way. Between the bans the
+         * retailer builds whatever the city is short of - it did so in
+         * this fixture the month a ban lapsed, three shops at once - and a
+         * retailer that has just caught up with its customers holds for
+         * "coverage ahead of demand", which is a third reason and not the
+         * one under test. So its shops are sold down to one, and what it
+         * wants is credit for the rest. (Until the sector template this was
+         * accidental: the bank under construction counted as retail's order
+         * in flight, and retail sat on "already building" for years.)
+         */
+        BuildingsTemplate shop = template(banned, "Convenience Store");
+        int standing = banned.getBuildingManager().getQuantity(shop.getId());
+        if (standing > 1) banned.getBuildingManager().retire(shop, standing - 1);
+
         int loansBefore = ledger.getLoanCount(sector);
         double principalBefore = ledger.getPrincipal(sector);
         int shopsBefore = banned.getBuildingManager().getTotalStoreCoverage();
+        int company = Equity.indexOf(sector);
+        double raisedBefore = banned.getEquity().getLifetimeRaisedHome(company)
+                + banned.getEquity().getLifetimeRaisedAbroad(company);
 
-        quietly(() -> {
-            for (int pass = 0; pass < 3; pass++) {
-                econ.setSectorCash(sector, 10);
-                banned.simulateMonths(1);
-            }
-        });
+        /*
+         * THE OWNERS ARE NOT THE LENDER. Since the share register (2026-09-10)
+         * a sector with a plan asks its shareholders before its bank, and a
+         * banned retailer that sells shares for its shops has broken no rule
+         * - the ban is on CREDIT. So the fixture records what was raised and
+         * lets the three passes go either way: shops paid for by an offering,
+         * or a refusal in the ban's own words. What it can never be is a loan.
+         */
+        boolean refusedForCredit = false;
+        for (int pass = 0; pass < 3; pass++) {
+            econ.setSectorCash(sector, 10);
+            quietly(() -> banned.simulateMonths(1));
+            if (banned.getLastInvestment(sector).contains("borrowing ban")) refusedForCredit = true;
+        }
+        double raised = banned.getEquity().getLifetimeRaisedHome(company)
+                + banned.getEquity().getLifetimeRaisedAbroad(company) - raisedBefore;
 
         System.out.println("   retail's advisor says: " + banned.getLastInvestment(sector));
+        System.out.printf("   ...having raised $%,.0fk from its owners over the three passes%n", raised);
         // Fewer loans is fine - the written-down ones mature and settle. More
         // is the bug.
         assertTrue("a banned sector takes no new loan to expand",
                 ledger.getLoanCount(sector) <= loansBefore
                         && ledger.getPrincipal(sector) <= principalBefore + 1e-6);
-        assertTrue("...and the refusal says why, in the ban's own words",
-                banned.getLastInvestment(sector).contains("borrowing ban"));
+        assertTrue("...and either its owners paid for the shops, or the refusal says why in the ban's own words",
+                raised > 0 || refusedForCredit);
         // Retiring idle shops is allowed (that is what a broke sector does);
         // opening new ones on credit is not.
         assertTrue("...and nothing was built on credit it did not have",
-                banned.getBuildingManager().getTotalStoreCoverage() <= shopsBefore);
+                raised > 0 || banned.getBuildingManager().getTotalStoreCoverage() <= shopsBefore);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

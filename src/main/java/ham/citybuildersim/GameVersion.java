@@ -368,10 +368,42 @@ public final class GameVersion {
      * the graph history (a share price and a share value per company, by
      * name), which Gson leaves empty on a history written before them.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 20;
+    /* ---------------------------------------------------------------------
+     * 21  THE SECTOR TEMPLATE (2026-09-11), and the first CLEAN BREAK.
+     *
+     *     Every sector is one class over one template now (see Sector and
+     *     Sectors), every good it trades is a market (Good, GoodsMarket,
+     *     Markets), and a save carries each sector whole, by name - its
+     *     cash, its stocks, the month in progress, the month last struck,
+     *     the three bills of the month, and whatever state is its own
+     *     (SectorState) - plus every market's price and stock (Markets.State),
+     *     the VAT ledger by sector name, the policy offsets by sector name,
+     *     the protected sectors by name and what each was paid.
+     *
+     *     What went: five differently-shaped report arrays, three arrays
+     *     indexed by BuildingType.ordinal(), the construction books' four
+     *     loose fields, the retail flows, the ratio basis, the rent and
+     *     shelf prices carried one by one. None of that has a reader any
+     *     more, and there is nothing in a format-20 save this build can
+     *     make a sector out of.
+     *
+     *     SO THIS IS THE ONE FORMAT OLDER SAVES DO NOT CROSS. Jerus, asked:
+     *     "clean break." Every format before this walked forward - a missing
+     *     field read as the blank that city already had. A format-20 city
+     *     read here would load with seven empty businesses and a yard, which
+     *     is not that city and not a blank either. So Game refuses it with a
+     *     sentence that says why (isFromBeforeSectors), the same way it
+     *     refuses a save from a newer build. Upward is as before: a
+     *     format-20 build refuses a 21.
+     *
+     *     Also with this format: the construction-material unit settled at
+     *     $18,000 for good (MATERIALS_UNIT_BEFORE_20 is gone with the
+     *     format-19 reader), and the seventh sector, Materials.
+     * --------------------------------------------------------------------- */
+    public static final int SAVE_FORMAT = 21;
 
-    /** What a unit of construction material cost through save format 19, in thousands. */
-    public static final double MATERIALS_UNIT_BEFORE_20 = 2;
+    /** The first format a sector can be read out of. Nothing older loads. */
+    public static final int FIRST_SECTOR_FORMAT = 21;
 
     public static final String NAME = "CityBuilderSim";
 
@@ -390,5 +422,14 @@ public final class GameVersion {
      */
     public static boolean isFromNewerBuild(int saveFormat) {
         return saveFormat > SAVE_FORMAT;
+    }
+
+    /**
+     * True when a save predates the sector template and so carries nothing
+     * this build can read a sector out of. The one older direction that is
+     * refused - see format 21 above.
+     */
+    public static boolean isFromBeforeSectors(int saveFormat) {
+        return saveFormat < FIRST_SECTOR_FORMAT;
     }
 }

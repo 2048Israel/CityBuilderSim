@@ -44,12 +44,12 @@ public class SectorBooksCheck {
     /** Everything here is in thousands, so a tenth of a cent is plenty. */
     static final double TOLERANCE = 1e-6;
 
-    static void near(String what, PolicySector sector, int month,
+    static void near(String what, String sector, int month,
                      double actual, double expected) {
         if (Math.abs(actual - expected) <= TOLERANCE) return;
         if (fails < 12) {
             System.out.printf("  FAIL  %-14s %-16s month %3d: %,.6f, expected %,.6f%n",
-                    sector.creditName(), what, month, actual, expected);
+                    sector, what, month, actual, expected);
         }
         fails++;
     }
@@ -68,7 +68,7 @@ public class SectorBooksCheck {
             game.toggleNextMonth();
             months++;
 
-            for (PolicySector sector : PolicySector.values()) {
+            for (String sector : Sectors.KEYS) {
 
                 SectorBooks.SectorMonth m = books.get(sector);
                 if (m.isEmpty()) continue;
@@ -100,7 +100,7 @@ public class SectorBooksCheck {
                  */
                 if (m.tax() < -TOLERANCE) {
                     System.out.printf("  FAIL  %-14s negative tax in month %d: %,.6f%n",
-                            sector.creditName(), m.month(), m.tax());
+                            sector, m.month(), m.tax());
                     fails++;
                 }
             }
@@ -116,17 +116,17 @@ public class SectorBooksCheck {
            =================================================================== */
         System.out.println("\nSaving and reloading...");
 
-        SectorBooks.SectorMonth beforeSave = books.get(PolicySector.RETAIL);
+        SectorBooks.SectorMonth beforeSave = books.get(Sectors.RETAIL);
         game.saveGame(1);
 
         Game reloaded = new Game(game.getGameFiles());
         reloaded.loadGame(1);
         SectorBooks.SectorMonth afterLoad =
-                reloaded.getSectorBooks().get(PolicySector.RETAIL);
+                reloaded.getSectorBooks().get(Sectors.RETAIL);
 
-        near("survives a save", PolicySector.RETAIL, beforeSave.month(),
+        near("survives a save", Sectors.RETAIL, beforeSave.month(),
                 afterLoad.netIncome(), beforeSave.netIncome());
-        near("...and its cash", PolicySector.RETAIL, beforeSave.month(),
+        near("...and its cash", Sectors.RETAIL, beforeSave.month(),
                 afterLoad.cash(), beforeSave.cash());
         if (afterLoad.month() != beforeSave.month()) {
             System.out.printf("  FAIL  reloaded month %d, saved month %d%n",
@@ -140,8 +140,8 @@ public class SectorBooksCheck {
 
         /* ---------------------- and the month after ---------------------- */
         reloaded.toggleNextMonth();
-        SectorBooks.SectorMonth next = reloaded.getSectorBooks().get(PolicySector.RETAIL);
-        near("cash flow across a reload", PolicySector.RETAIL, next.month(),
+        SectorBooks.SectorMonth next = reloaded.getSectorBooks().get(Sectors.RETAIL);
+        near("cash flow across a reload", Sectors.RETAIL, next.month(),
                 next.unexplained(), 0);
 
         System.out.printf("%n%,d statements over %,d months: %s%n",

@@ -143,9 +143,19 @@ public class TaxPolicy {
     }
 
     private final double[] wageOffset     = new double[WageBand.values().length];
-    private final double[] profitOffset   = new double[PolicySector.values().length];
-    private final double[] salesOffset    = new double[PolicySector.values().length];
-    private final double[] propertyOffset = new double[PolicySector.values().length];
+
+    /*
+     * THE SECTOR OFFSETS, KEYED BY THE SECTOR'S NAME (2026-09-11, the sector
+     * template). They were three arrays indexed by PolicySector.ordinal(),
+     * which was the cleanest registry-conversion candidate in the codebase
+     * and the one that would have re-keyed every player's policy the day a
+     * seventh sector was inserted anywhere but the end. A name is a name.
+     * An unset sector reads zero, which is the city rate - the same default
+     * the arrays had.
+     */
+    private final java.util.Map<String, Double> profitOffset   = new java.util.LinkedHashMap<>();
+    private final java.util.Map<String, Double> salesOffset    = new java.util.LinkedHashMap<>();
+    private final java.util.Map<String, Double> propertyOffset = new java.util.LinkedHashMap<>();
 
     /* ==================================================================
        THE CITY RATES
@@ -178,27 +188,35 @@ public class TaxPolicy {
        OFFSETS
        ================================================================== */
 
-    public double getWageOffset(WageBand band)          { return wageOffset[band.ordinal()]; }
-    public double getProfitOffset(PolicySector s)       { return profitOffset[s.ordinal()]; }
-    public double getSalesOffset(PolicySector s)        { return salesOffset[s.ordinal()]; }
-    public double getPropertyOffset(PolicySector s)     { return propertyOffset[s.ordinal()]; }
+    public double getWageOffset(WageBand band)     { return wageOffset[band.ordinal()]; }
+    public double getProfitOffset(String sector)   { return profitOffset.getOrDefault(sector, 0.0); }
+    public double getSalesOffset(String sector)    { return salesOffset.getOrDefault(sector, 0.0); }
+    public double getPropertyOffset(String sector) { return propertyOffset.getOrDefault(sector, 0.0); }
+
+    public double getProfitOffset(Sector s)   { return getProfitOffset(s.key()); }
+    public double getSalesOffset(Sector s)    { return getSalesOffset(s.key()); }
+    public double getPropertyOffset(Sector s) { return getPropertyOffset(s.key()); }
 
     public void setWageOffset(WageBand band, double points) {
         wageOffset[band.ordinal()] = clampOffset(points);
     }
 
-    public void setProfitOffset(PolicySector s, double points) {
-        profitOffset[s.ordinal()] = clampOffset(points);
+    public void setProfitOffset(String sector, double points) {
+        if (sector != null) profitOffset.put(sector, clampOffset(points));
     }
 
-    public void setSalesOffset(PolicySector s, double points) {
-        salesOffset[s.ordinal()] = clampOffset(points);
+    public void setSalesOffset(String sector, double points) {
+        if (sector != null) salesOffset.put(sector, clampOffset(points));
     }
 
     /** In ANNUAL points, matching the rate it offsets. */
-    public void setPropertyOffset(PolicySector s, double points) {
-        propertyOffset[s.ordinal()] = clampOffset(points);
+    public void setPropertyOffset(String sector, double points) {
+        if (sector != null) propertyOffset.put(sector, clampOffset(points));
     }
+
+    public void setProfitOffset(Sector s, double points)   { setProfitOffset(s.key(), points); }
+    public void setSalesOffset(Sector s, double points)    { setSalesOffset(s.key(), points); }
+    public void setPropertyOffset(Sector s, double points) { setPropertyOffset(s.key(), points); }
 
     /* ==================================================================
        EFFECTIVE RATES - the only numbers anything is ever charged at
@@ -210,24 +228,29 @@ public class TaxPolicy {
     }
 
     /** What this sector's profit is taxed at. */
-    public double effectiveProfitRate(PolicySector sector) {
-        return clamp(incomeTaxRate + profitOffset[sector.ordinal()], MAX_INCOME_TAX);
+    public double effectiveProfitRate(String sector) {
+        return clamp(incomeTaxRate + getProfitOffset(sector), MAX_INCOME_TAX);
     }
 
     /** What this sector charges on the value it adds. See SalesTaxLedger. */
-    public double effectiveSalesRate(PolicySector sector) {
-        return clamp(incomeTaxRate + salesOffset[sector.ordinal()], MAX_INCOME_TAX);
+    public double effectiveSalesRate(String sector) {
+        return clamp(incomeTaxRate + getSalesOffset(sector), MAX_INCOME_TAX);
     }
 
     /** ANNUAL property tax rate for this sector. */
-    public double effectivePropertyRate(PolicySector sector) {
-        return clamp(propertyTaxRate + propertyOffset[sector.ordinal()], MAX_PROPERTY_TAX);
+    public double effectivePropertyRate(String sector) {
+        return clamp(propertyTaxRate + getPropertyOffset(sector), MAX_PROPERTY_TAX);
     }
 
     /** ...and the monthly one, which is what is actually billed. */
-    public double effectiveMonthlyPropertyRate(PolicySector sector) {
+    public double effectiveMonthlyPropertyRate(String sector) {
         return effectivePropertyRate(sector) / 12;
     }
+
+    public double effectiveProfitRate(Sector s)          { return effectiveProfitRate(s.key()); }
+    public double effectiveSalesRate(Sector s)           { return effectiveSalesRate(s.key()); }
+    public double effectivePropertyRate(Sector s)        { return effectivePropertyRate(s.key()); }
+    public double effectiveMonthlyPropertyRate(Sector s) { return effectiveMonthlyPropertyRate(s.key()); }
 
     /**
      * What one month's property tax comes to on a given assessed value.
@@ -243,7 +266,7 @@ public class TaxPolicy {
     }
 
     /** One month's property tax at this sector's own rate. */
-    public double propertyTaxOn(double assessedValue, PolicySector sector) {
+    public double propertyTaxOn(double assessedValue, String sector) {
         if (assessedValue <= 0 || sector == null) {
             return propertyTaxOn(assessedValue);
         }
@@ -317,28 +340,22 @@ public class TaxPolicy {
        ================================================================== */
 
     /**
-     * Every offset as one array, city rates first.
-     *
-     * ORDER IS THE FORMAT and new fields go on the END - the same rule the
-     * report state carries. Restored whole or not at all.
+     * The city rates and the wage-band offsets as one array, city rates
+     * first. ORDER IS THE FORMAT and new fields go on the END. The sector
+     * offsets are NOT in here any more: they are keyed by name and saved as
+     * their own list - see getSectorOffsets().
      */
     public double[] getPolicyState() {
 
         int bands = WageBand.values().length;
-        int sectors = PolicySector.values().length;
 
-        double[] state = new double[4 + bands + sectors * 3];
+        double[] state = new double[4 + bands];
         int i = 0;
         state[i++] = incomeTaxRate;
         state[i++] = propertyTaxRate;
         state[i++] = contributionRate;
         state[i++] = pensionReplacement;
-
-        for (int b = 0; b < bands; b++)   state[i++] = wageOffset[b];
-        for (int s = 0; s < sectors; s++) state[i++] = profitOffset[s];
-        for (int s = 0; s < sectors; s++) state[i++] = salesOffset[s];
-        for (int s = 0; s < sectors; s++) state[i++] = propertyOffset[s];
-
+        for (int b = 0; b < bands; b++) state[i++] = wageOffset[b];
         return state;
     }
 
@@ -346,24 +363,52 @@ public class TaxPolicy {
     public boolean restorePolicyState(double[] state) {
 
         int bands = WageBand.values().length;
-        int sectors = PolicySector.values().length;
-
-        if (state == null || state.length != 4 + bands + sectors * 3) {
-            return false;
-        }
+        if (state == null || state.length != 4 + bands) return false;
 
         int i = 0;
         setIncomeTaxRate(state[i++]);
         setPropertyTaxRate(state[i++]);
         setContributionRate(state[i++]);
         setPensionReplacement(state[i++]);
-
-        for (WageBand b : WageBand.values())     setWageOffset(b, state[i++]);
-        for (PolicySector s : PolicySector.values()) setProfitOffset(s, state[i++]);
-        for (PolicySector s : PolicySector.values()) setSalesOffset(s, state[i++]);
-        for (PolicySector s : PolicySector.values()) setPropertyOffset(s, state[i++]);
-
+        for (WageBand b : WageBand.values()) setWageOffset(b, state[i++]);
         return true;
+    }
+
+    /** One sector's three offsets, as the save carries them. */
+    public static final class SectorOffsets {
+        public String sector;
+        public double profit, sales, property;
+    }
+
+    public java.util.List<SectorOffsets> getSectorOffsets() {
+        java.util.Set<String> keys = new java.util.LinkedHashSet<>();
+        keys.addAll(profitOffset.keySet());
+        keys.addAll(salesOffset.keySet());
+        keys.addAll(propertyOffset.keySet());
+        java.util.List<SectorOffsets> out = new java.util.ArrayList<>();
+        for (String k : keys) {
+            SectorOffsets o = new SectorOffsets();
+            o.sector = k;
+            o.profit = getProfitOffset(k);
+            o.sales = getSalesOffset(k);
+            o.property = getPropertyOffset(k);
+            out.add(o);
+        }
+        return out;
+    }
+
+    /** A sector the build does not have keeps its row - harmless, and it comes back if the sector does. */
+    public void restoreSectorOffsets(java.util.List<SectorOffsets> saved) {
+        profitOffset.clear();
+        salesOffset.clear();
+        propertyOffset.clear();
+        if (saved == null) return;
+        for (SectorOffsets o : saved) {
+            if (o == null || o.sector == null) continue;
+            setProfitOffset(o.sector, o.profit);
+            setSalesOffset(o.sector, o.sales);
+            setPropertyOffset(o.sector, o.property);
+        }
     }
 
     public void reset() {
@@ -372,9 +417,9 @@ public class TaxPolicy {
         contributionRate = SocialSecurity.DEFAULT_CONTRIBUTION_RATE;
         pensionReplacement = SocialSecurity.DEFAULT_PENSION_REPLACEMENT;
         java.util.Arrays.fill(wageOffset, 0);
-        java.util.Arrays.fill(profitOffset, 0);
-        java.util.Arrays.fill(salesOffset, 0);
-        java.util.Arrays.fill(propertyOffset, 0);
+        profitOffset.clear();
+        salesOffset.clear();
+        propertyOffset.clear();
     }
 
     private double clamp(double rate, double max) {

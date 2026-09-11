@@ -92,11 +92,11 @@ package ham.citybuildersim;
  */
 public class Equity {
 
-    /** The companies, in register order: the six sectors, then the bank. */
+    /** The companies, in register order: every sector in the registry's order, then the bank. */
     public static final String[] COMPANIES;
     public static final int BANK;
     static {
-        String[] sectors = BusinessDebtManager.SECTORS;
+        String[] sectors = Sectors.KEYS;
         COMPANIES = new String[sectors.length + 1];
         System.arraycopy(sectors, 0, COMPANIES, 0, sectors.length);
         COMPANIES[sectors.length] = "Bank";
@@ -217,6 +217,19 @@ public class Equity {
      */
     public void recordMonth(int company, double netIncome, double spentOnBuildings) {
         Listing l = listings[company];
+        /*
+         * A COMPANY THAT HAS NOT STARTED HAS NO RECORD. The seventh sector is
+         * registered from month one like the other six but owns nothing
+         * until the city can use a plant, and every one of those months was
+         * being filed as a month of zero income: by the time it had a plan
+         * it had a BAD record - twelve months, none profitable - and the
+         * register's answer to its first offering was to raise nothing. So
+         * the first plant ever built was financed entirely by the bank, and
+         * when it failed the bank went with it. A company with no shares,
+         * nothing earned and nothing spent has not traded; its twelve months
+         * start with its first month of doing something.
+         */
+        if (l.shares <= 0 && netIncome == 0 && spentOnBuildings <= 0) return;
         int slot = l.months % RECORD_MONTHS;
         l.income[slot] = netIncome;
         l.spent[slot] = Math.max(0, spentOnBuildings);

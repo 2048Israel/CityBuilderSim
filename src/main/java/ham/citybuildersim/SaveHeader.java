@@ -46,4 +46,14 @@ public class SaveHeader {
     public boolean isFromNewerBuild() {
         return GameVersion.isFromNewerBuild(saveFormat);
     }
+
+    /** True when this file predates the sector template - the one older shape that is refused. */
+    public boolean isFromBeforeSectors() {
+        return GameVersion.isFromBeforeSectors(saveFormat);
+    }
+
+    /** Loadable by this build: neither from a newer one nor from before the sectors. */
+    public boolean isReadableHere() {
+        return !isFromNewerBuild() && !isFromBeforeSectors();
+    }
 }

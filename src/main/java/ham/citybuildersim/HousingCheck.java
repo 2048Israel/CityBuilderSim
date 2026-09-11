@@ -90,7 +90,7 @@ public class HousingCheck {
             int month = game.getMonth();
 
             FamilyModel fam = game.getFamilies();
-            CommercialHandler shops = game.getEconomyManager().getCommercialHandler();
+            ham.citybuildersim.sectors.RealEstate shops = game.getSectors().realEstate();
             BuildingManager built = game.getBuildingManager();
             HouseholdAccounts homes = game.getHouseholds();
 
@@ -144,7 +144,11 @@ public class HousingCheck {
                     fam.getRefusedByStudio(), doubled + fam.getStillUnplaced() + TOLERANCE);
 
             /* ------------- 3. rent paid is rent received ------------- */
-            double billed = shops.getReportRentIncome();
+            // The landlords' STATEMENT, since the sector template: the rent is
+            // sold at the bottom of the month and struck at the top of the
+            // next, which is when the households pay it - see Game's household
+            // month, which reads the same line.
+            double billed = shops.statement().salesToHouseholds;
             near("the households paid what the landlords billed", month,
                     homes.getRent(), billed);
 
@@ -233,29 +237,25 @@ public class HousingCheck {
              * The invariant is unchanged; the sum is wider. Every payer's own
              * struck figure, added up, against what the builders booked.
              */
-            ConstructionHandler crew =
-                    game.getServicesManager().getConstructionHandler();
+            ham.citybuildersim.sectors.Construction crew = game.getSectors().construction();
             EconomyManager econ = game.getEconomyManager();
 
-            double paidByEveryone =
-                      shops.getReportPropertyMaintenance()
-                    + shops.getReportRetailMaintenance()
-                    + econ.getIndustrialHandler().getReportMaintenanceExpense()
-                    + econ.getHeavyIndustryHandler().getReportMaintenanceExpense()
-                    + econ.getMiningHandler().getReportMaintenanceExpense()
-                    + crew.getReportMaintenanceExpense()
-                    + game.getCityMaintenancePaid();
+            // Every sector's struck figure - the builders' own included, for
+            // the depots they keep up - plus the bank's branches and the
+            // treasury's share.
+            double paidByEveryone = game.getCityMaintenancePaid() + econ.getBankMaintenanceBill();
+            for (Sector sec : game.getSectors().all()) paidByEveryone += sec.statement().maintenance;
 
             near("what the city paid for repairs is what the builders were paid",
-                    month, paidByEveryone, crew.getReportMaintenanceRevenue());
+                    month, paidByEveryone, crew.getRepairsThisMonth());
 
             /*
              * ...and the landlords' share is still separable, because the Real
              * estate screen prints it on its own.
              */
             near("and the landlords' share is the residential charge",
-                    month, shops.getReportPropertyMaintenance(),
-                    econ.getMaintenanceCharge(BuildingType.RESIDENTIAL));
+                    month, shops.statement().maintenance,
+                    econ.getMaintenanceCharge(Sectors.REAL_ESTATE));
 
             /*
              * And the figure the Household screen prints is the same money over
@@ -349,7 +349,7 @@ public class HousingCheck {
         studios.simulateMonths(150);
 
         FamilyModel sf = studios.getFamilies();
-        CommercialHandler ss = studios.getEconomyManager().getCommercialHandler();
+        ham.citybuildersim.sectors.RealEstate ss = studios.getSectors().realEstate();
         double sEmpty = ss.getHomes() - ss.getOccupiedHomes();
         System.out.printf("   %,d studios, %,.0f let, %,.0f standing empty; "
                 + "%,.0f households doubled up, %,.0f of them refused by a studio%n",
@@ -459,9 +459,9 @@ public class HousingCheck {
         double savedRefused  = before.getRefusedByStudio();
         double savedCrowded  = before.getCrowdedHouseholds();
         double savedRent     = game.getHouseholds().getRent();
-        double savedLet      = game.getEconomyManager().getCommercialHandler().getOccupiedHomes();
-        double savedStudioRent = game.getEconomyManager().getCommercialHandler().getStudioRentPrice();
-        double savedFamilyRent = game.getEconomyManager().getCommercialHandler().getRentPrice();
+        double savedLet      = game.getSectors().realEstate().getOccupiedHomes();
+        double savedStudioRent = game.getSectors().realEstate().getStudioRentPrice();
+        double savedFamilyRent = game.getSectors().realEstate().getRentPrice();
 
         assertTrue("fixture: this city really does have households doubled up",
                 savedDoubled > 0);
@@ -482,19 +482,19 @@ public class HousingCheck {
         near("the rent the households paid", game.getMonth(),
                 back.getHouseholds().getRent(), savedRent);
         near("the homes the landlords let", game.getMonth(),
-                back.getEconomyManager().getCommercialHandler().getOccupiedHomes(), savedLet);
+                back.getSectors().realEstate().getOccupiedHomes(), savedLet);
         near("...and the studio market's own price", game.getMonth(),
-                back.getEconomyManager().getCommercialHandler().getStudioRentPrice(),
+                back.getSectors().realEstate().getStudioRentPrice(),
                 savedStudioRent);
         near("...and the family one's", game.getMonth(),
-                back.getEconomyManager().getCommercialHandler().getRentPrice(),
+                back.getSectors().realEstate().getRentPrice(),
                 savedFamilyRent);
 
         /* ---- and the first month back still balances, which is the real test ---- */
         back.toggleNextMonth();
-        CommercialHandler s2 = back.getEconomyManager().getCommercialHandler();
+        ham.citybuildersim.sectors.RealEstate s2 = back.getSectors().realEstate();
         near("the month after a reload still balances", back.getMonth(),
-                back.getHouseholds().getRent(), s2.getReportRentIncome());
+                back.getHouseholds().getRent(), s2.statement().salesToHouseholds);
 
         /* ===================================================================
            4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT.

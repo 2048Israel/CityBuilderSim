@@ -280,8 +280,8 @@ public class Migration {
      */
     public static double affordabilityPull(double rentBurden) {
         if (!(rentBurden > 0)) return 1;            // no households yet, or no rent
-        double excess = (rentBurden - CommercialHandler.TARGET_RENT_BURDEN)
-                / CommercialHandler.TARGET_RENT_BURDEN;
+        double excess = (rentBurden - ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN)
+                / ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN;
         if (excess <= 0) return 1;
         return 1 / (1 + PRICED_OUT_WEIGHT * excess);
     }
