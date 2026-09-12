@@ -73,8 +73,16 @@ public abstract class Household {
     public static final int STUDENT_ROW = RETIRED_ROW + 2;
     /** Children no family holds, by band. Jerus: "the orphan section". */
     public static final int ORPHAN_ROW = RETIRED_ROW + 3;
-    /** Every row: the six tiers, the retired, and the three above. */
-    public static final int ROWS = RETIRED_ROW + 4;
+    /**
+     * Adults serving a sentence (2026-09-11). Jerus: "yes that means another
+     * population category, only adults can go to jail." Their money is held
+     * in this row's ledger while they are inside. See PrisonerHousehold.
+     */
+    public static final int PRISON_ROW = RETIRED_ROW + 4;
+    /** Every row: the six tiers, the retired, and the four above. */
+    public static final int ROWS = RETIRED_ROW + 5;
+    /** The rows a save from before the prisons carries. */
+    public static final int ROWS_BEFORE_PRISON = ROWS - 1;
 
     /**
      * How long a graduate takes to repay a student loan, in months: nine and
@@ -232,6 +240,26 @@ public abstract class Household {
      */
     public int stockGroup() { return row(); }
 
+    /**
+     * Baskets of food one of these households has to buy: one a head, for
+     * everybody but a prisoner, whom the city feeds (the prisons' upkeep).
+     * What going short is measured against - see subsistence.
+     */
+    protected double baskets() { return size(); }
+
+    /**
+     * True when the debt is frozen: no interest charged, nothing discharged,
+     * nothing borrowed. A prisoner's - Jerus's call on the prisoners' ledger.
+     */
+    protected boolean debtFrozen() { return false; }
+
+    /**
+     * True when the household decides what to do with its savings - shares,
+     * paper abroad, an offering. False for a prisoner, whose money is held in
+     * the ledger until they come out.
+     */
+    public boolean canInvest() { return true; }
+
     /* ------------------------------ reading ------------------------------ */
 
     public FamilyStructure shape() { return shape; }
@@ -351,7 +379,7 @@ public abstract class Household {
 
         /* ---------------- what the lender charges this one ---------------- */
         double owedMonths = disposablePer > 0 ? debt / disposablePer : 0;
-        rate = Math.min(HouseholdBalance.MAX_RATE,
+        rate = debtFrozen() ? 0 : Math.min(HouseholdBalance.MAX_RATE,
                 Math.max(0, riskFreeAnnual) + HouseholdBalance.BASE_SPREAD
                         + HouseholdBalance.RISK_SLOPE * owedMonths);
         interest = debt * rate / 12;
@@ -359,7 +387,7 @@ public abstract class Household {
         /* ---------------- the bills, in order ---------------- */
         studentRepaid = Math.min(studentDebt, studentRepayment());
         afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid;
-        subsistence = size() * foodPricePerHead;
+        subsistence = baskets() * foodPricePerHead;
 
         /* ---------------- settle what they actually spent ---------------- */
         double gap = spentPer - afterFixed;
@@ -431,13 +459,13 @@ public abstract class Household {
                   double foodPricePerHead, double riskFreeAnnual) {
         disposable = disposablePer;
         double owedMonths = disposablePer > 0 ? debt / disposablePer : 0;
-        rate = Math.min(HouseholdBalance.MAX_RATE,
+        rate = debtFrozen() ? 0 : Math.min(HouseholdBalance.MAX_RATE,
                 Math.max(0, riskFreeAnnual) + HouseholdBalance.BASE_SPREAD
                         + HouseholdBalance.RISK_SLOPE * owedMonths);
         interest = debt * rate / 12;
         studentRepaid = Math.min(studentDebt, studentRepayment());
         afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid;
-        subsistence = size() * foodPricePerHead;
+        subsistence = baskets() * foodPricePerHead;
     }
 
     /**
@@ -479,6 +507,7 @@ public abstract class Household {
     double discharge() {
         bankrupt = 0;
         if (lockout > 0) lockout--;
+        if (debtFrozen()) return 0;
 
         /*
          * A HOUSEHOLD WITH NO INCOME AND A DEBT IS AT ITS CEILING (2026-09-11).

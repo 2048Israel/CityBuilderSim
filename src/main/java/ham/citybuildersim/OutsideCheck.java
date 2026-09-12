@@ -442,7 +442,11 @@ public class OutsideCheck {
                     {"Low-Rise Apartments", "120"}, {"General Hospital", "3"}, {"Small Grocery Store", "14"},
                     {"Coal Power Plant", "4"}, {"Water Treatment Plant", "4"}, {"Paved Road", "60"},
                     {"Construction Depot", "6"}, {"Elementary School", "14"}, {"Middle School", "14"},
-                    {"High School", "10"}, {"Community College", "6"}, {"University", "3"}};
+                    {"High School", "10"}, {"Community College", "6"}, {"University", "3"},
+                    // Policed since the prisons (2026-09-11): with none, the
+                    // thefts hand the students enough to never need a loan,
+                    // and this fixture is about the loans.
+                    {"Police Station", "1"}};
                 for (String[] b : plan) g.buildStack(t(g, b[0]), Integer.parseInt(b[1]), true);
                 g.getEducation().setTuitionSubsidy(.8);
                 for (int m = 0; m < 180; m++) {

@@ -484,6 +484,11 @@ public class NationalAccounts {
     public double getEiBenefits()    { return eiBenefits; }
     public double getStudentGrants() { return studentGrants; }
 
+    /** The police and the prisons: payroll and upkeep. Set beside updateGovernment(), like the EI lines. See Crime. */
+    private double safetySpending;
+    public void setSafetySpending(double spending) { this.safetySpending = spending; }
+    public double getSafetySpending() { return safetySpending; }
+
     /** Patient and funeral fees in, the health service's bill out. See Healthcare. */
     private double healthFees;
     private double healthSpending;
@@ -531,15 +536,19 @@ public class NationalAccounts {
             healthFees, healthSpending,
             educationFees, educationSpending,
             subsidies,
-            eiPremiums, eiBenefits, studentGrants };
+            eiPremiums, eiBenefits, studentGrants,
+            // ...and the police and the prisons, appended 2026-09-11.
+            safetySpending };
     }
 
     void restoreGovernment(double[] saved) {
-        // Twenty since EI and the grants; seventeen from a save before them.
-        if (saved == null || (saved.length != 17 && saved.length != 20)) return;
-        eiPremiums = saved.length == 20 ? saved[17] : 0;
-        eiBenefits = saved.length == 20 ? saved[18] : 0;
-        studentGrants = saved.length == 20 ? saved[19] : 0;
+        // Twenty-one since the police; twenty since EI and the grants;
+        // seventeen from a save before them.
+        if (saved == null || (saved.length != 17 && saved.length != 20 && saved.length != 21)) return;
+        eiPremiums = saved.length >= 20 ? saved[17] : 0;
+        eiBenefits = saved.length >= 20 ? saved[18] : 0;
+        studentGrants = saved.length >= 20 ? saved[19] : 0;
+        safetySpending = saved.length >= 21 ? saved[20] : 0;
         taxBusiness = saved[0];   taxIndustrial = saved[1];
         taxSales = saved[2];      taxWage = saved[3];
         utilityIncome = saved[4]; landSales = saved[5];
@@ -657,7 +666,7 @@ public class NationalAccounts {
     public double getTotalExpenses() {
         return interestExpense + capitalSpending + landPurchases + pensions
                 + eiBenefits + studentGrants
-                + healthSpending + educationSpending + subsidies;
+                + healthSpending + educationSpending + safetySpending + subsidies;
     }
 
     /** Surplus or deficit - what actually moves the city's cash this month. */
@@ -720,6 +729,7 @@ public class NationalAccounts {
         eiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
+        safetySpending *= scale;
         subsidies *= scale;
     }
 

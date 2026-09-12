@@ -156,6 +156,10 @@ public class LongPlaytest {
     static double orphanDeathsRun = 0, unhousedDeathsRun = 0;
     static double allDeaths = 0, worstLongSick = 0;
     static int worstLongSickMonth = 0;
+    /** Crime (2026-09-11): the rate against Canada's summed for the mean, the worst, and what it did over the run. */
+    static double crimeVsSum = 0, worstCrimeVs = 0, coverageSum = 0, killedRun = 0, stolenRun = 0;
+    static double caughtRun = 0, notHeldRun = 0, worstPrisoners = 0, crimeMonths = 0;
+    static int worstCrimeMonth = 0;
     static double lastSickRate = 0;
     static double workLostToIllness = 0;
     static int monthsObserved = 0;
@@ -419,6 +423,16 @@ public class LongPlaytest {
         allDeaths += g.getCohorts().getLastDeaths();
         double longSick = sickness.peoplePastTwoMonths(g.getCohorts());
         if (longSick > worstLongSick) { worstLongSick = longSick; worstLongSickMonth = g.getMonth(); }
+        Crime crime = g.getCrime();
+        crimeMonths++;
+        crimeVsSum += crime.getRateVsCanada();
+        coverageSum += crime.getCoverage();
+        if (crime.getRateVsCanada() > worstCrimeVs) { worstCrimeVs = crime.getRateVsCanada(); worstCrimeMonth = g.getMonth(); }
+        killedRun += g.getCohorts().getKilled(AgeBand.ADULT);
+        stolenRun += crime.getStolen();
+        caughtRun += crime.getCaught();
+        notHeldRun += crime.getNotHeld();
+        worstPrisoners = Math.max(worstPrisoners, crime.prisoners());
         if (health.isOutbreak()) {
             monthsInOutbreak++;
             if (!wasInOutbreak) outbreaks++;
@@ -801,6 +815,47 @@ public class LongPlaytest {
             addThrottle(moves, g, "Crematorium", "crematorium", buryGain);
         }
 
+        /*
+         * --- crime, and the police and the cells for it (2026-09-11) ---
+         *
+         * What crime costs a month: what is stolen, the work the injured do not
+         * do, and the output of the people who do not come - the size the
+         * crime pull takes off the city. A police station is bought when what
+         * it would take off that is more than the station costs to run, which
+         * is the rule a player would use; and the cells when the police are
+         * catching people with nowhere to put them, sized to what they catch.
+         */
+        Crime crime = g.getCrime();
+        if (crime.getCrimes() > 0 && crime.getPopulation() > 0) {
+            double crimeCost = crime.getStolen() + gdp * crime.getInjuredShare()
+                    + gdp * (1 - Migration.crimePull(crime.getRateVsCanada()));
+            for (String police : new String[] {"Police Station", "Police Headquarters"}) {
+                BuildingsTemplate t = template(g, police);
+                if (t == null || crime.getCoverage() >= 1) continue;
+                double after = Crime.coverageOf(crime.getOfficers() + t.getCapacity(),
+                        crime.getPopulation());
+                double saved = crimeCost * (1 - crime.crimesAt(after) / crime.getCrimes());
+                if (saved > runningCost(g, t)) {
+                    // As many as full coverage needs and no more: past it, a
+                    // station takes nothing off. Ordered by the gap in
+                    // officers, not by the share of output crime is costing -
+                    // which ordered six stations for a city of sixteen
+                    // thousand that needed one.
+                    double short_ = crime.getPopulation() * Crime.FULL_OFFICERS_PER_100K / 100_000.0
+                            - crime.getOfficers();
+                    int needed = (int) Math.max(1, Math.ceil(short_ / t.getCapacity()));
+                    addThrottle(moves, g, police, "police", saved, (needed - .5) / 25.0);
+                }
+            }
+            // A quarter of a jail's worth of people with nowhere to go, before a
+            // $360M building: a town that catches one a month sends them to the county.
+            double cellsWanted = crime.getNotHeld() * Crime.SENTENCE_MONTHS;
+            if (cellsWanted >= 75) {
+                String prison = cellsWanted >= 300 ? "Penitentiary" : "Jail";
+                addThrottle(moves, g, prison, "prison", crimeCost);
+            }
+        }
+
         /* --- somewhere to live, and somewhere to shop --- */
         double homesShort = population - b.getTotalHouseCapacity();
         if (homesShort > -4) {
@@ -966,6 +1021,17 @@ public class LongPlaytest {
         int quantity = (int) Math.max(1, Math.min(25, Math.ceil(gap * 25)));
         moves.add(new Move(label, lost * (1 - moves.size() * 1e-6),
                 () -> build(g, name, quantity)));
+    }
+
+    /** What one of these costs the city a month to run, fully staffed at today's wages. */
+    static double runningCost(Game g, BuildingsTemplate t) {
+        double[] wages = g.getPopulationManager().getWagesPerType();
+        double pay = 0;
+        for (JobType job : JobType.values()) {
+            int n = t.getJobs(job);
+            if (n > 0 && wages != null && job.ordinal() < wages.length) pay += n * wages[job.ordinal()];
+        }
+        return pay + t.getUpkeep();
     }
 
     /** Whether one of these would clear its own running costs, on the private sector's screen. */
@@ -1584,6 +1650,26 @@ public class LongPlaytest {
                     + "  seniors %,.0f  - of whom orphans %,.0f and with no home %,.0f%n",
                     deathsByBandRun[0], deathsByBandRun[1], deathsByBandRun[2], deathsByBandRun[3],
                     deathsByBandRun[4], orphanDeathsRun, unhousedDeathsRun);
+        }
+        {
+            Crime crime = g.getCrime();
+            out.printf("  crime: %.2fx Canada's at the end (%,.0f a year per 100k), mean %.2fx, worst %.2fx in month %d;"
+                    + " police coverage %.0f%% at the end, mean %.0f%%%n",
+                    crime.getRateVsCanada(), crime.getRatePer100k(),
+                    crimeMonths > 0 ? crimeVsSum / crimeMonths : 0, worstCrimeVs, worstCrimeMonth,
+                    crime.getCoverage() * 100, crimeMonths > 0 ? coverageSum / crimeMonths * 100 : 0);
+            out.printf("  the reasons at the end: no home %.0f  past EI %.0f  short %.0f  on EI %.0f  crowded %.0f"
+                    + "  no reason %.0f  too few police %.0f crimes a month%n",
+                    crime.getCrimes(Crime.Cause.NO_HOME), crime.getCrimes(Crime.Cause.PAST_EI),
+                    crime.getCrimes(Crime.Cause.SHORT_OF_MONEY), crime.getCrimes(Crime.Cause.ON_EI),
+                    crime.getCrimes(Crime.Cause.CROWDED), crime.getCrimes(Crime.Cause.NO_CAUSE),
+                    crime.getCrimes(Crime.Cause.FEW_POLICE));
+            out.printf("  prisons: %,.0f inside at the end (worst %,.0f, %,.0f per 100k), %,.0f caught over the run,"
+                    + " %,.0f of them not held; killed %,.0f; stolen $%,.0f; police stations %d, HQs %d, jails %d,"
+                    + " penitentiaries %d%n",
+                    crime.prisoners(), worstPrisoners, crime.getPrisonersPer100k(), caughtRun, notHeldRun,
+                    killedRun, stolenRun * 1000, qty(g, "Police Station"), qty(g, "Police Headquarters"),
+                    qty(g, "Jail"), qty(g, "Penitentiary"));
         }
 
         /*

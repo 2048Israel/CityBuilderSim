@@ -949,6 +949,16 @@ public class DataSave {
     private double[] sickness;
 
     /**
+     * Crime and the prisons (2026-09-11): six monthly cohorts of prisoners,
+     * the month as it was struck - the rate next month's migration reads, the
+     * killings next month's pyramid reads - and the running totals. The
+     * prisoners are a STOCK: somebody five months in is a month from release.
+     * Null in a save from before, which Crime takes as a city with nobody
+     * inside and no crime yet.
+     */
+    private double[] crime;
+
+    /**
      * The month's sickness: the outbreak still decaying, and the rate the
      * sectors were throttled by.
      *
@@ -1040,6 +1050,8 @@ public class DataSave {
     public double[] getUnemployment()       { return unemployment; }
     public void setSickness(double[] a)     { this.sickness = a; }
     public double[] getSickness()           { return sickness; }
+    public void setCrime(double[] a)        { this.crime = a; }
+    public double[] getCrime()              { return crime; }
     public void setHealth(double[] a)   { this.health = a; }
     public double[] getHealth()         { return health; }
     public void setHealthcare(double[] a){ this.healthcare = a; }

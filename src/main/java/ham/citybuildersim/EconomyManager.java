@@ -436,7 +436,7 @@ public class EconomyManager {
      */
     private static final BuildingType[] CITY_MAINTAINED = {
         BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE,
-        BuildingType.HEALTHCARE,  BuildingType.EDUCATION
+        BuildingType.HEALTHCARE,  BuildingType.EDUCATION, BuildingType.SAFETY
     };
 
     private double maintenanceBillTotal;
@@ -689,7 +689,15 @@ public class EconomyManager {
     private final Map<String, Double> dividendsPaid = new LinkedHashMap<>();
     private final Map<String, Double> sharesBoughtBack = new LinkedHashMap<>();
 
-    public void clearEquityFlows() { equityRaised.clear(); dividendsPaid.clear(); sharesBoughtBack.clear(); }
+    public void clearEquityFlows() { equityRaised.clear(); dividendsPaid.clear(); sharesBoughtBack.clear(); stolen.clear(); }
+
+    /** Taken from each sector's till by thieves this month. See Crime. Cleared with the equity flows, at the top of the month. */
+    private final Map<String, Double> stolen = new LinkedHashMap<>();
+    public void recordStolen(String sector, double amount) {
+        if (sector == null || !(amount > 0)) return;
+        stolen.merge(sector, amount, Double::sum);
+    }
+    public double getStolen(String sector) { return stolen.getOrDefault(sector, 0.0); }
     public void recordSharesBoughtBack(String sector, double amount) {
         if (sector == null || !(amount > 0)) return;
         sharesBoughtBack.merge(sector, amount, Double::sum);
@@ -831,6 +839,14 @@ public class EconomyManager {
     public double getEducationFees() { return educationFees; }
     public double getEducationNet()  { return educationBill - educationFees; }
 
+    /**
+     * What the police and the prisons cost this month: payroll and upkeep, no
+     * fees - nobody pays to be policed or jailed. See Crime.
+     */
+    private double safetyBill;
+    public void setSafety(double grossCost) { this.safetyBill = Math.max(0, grossCost); }
+    public double getSafetyBill() { return safetyBill; }
+
     /** What the city paid this month to hold protected sectors at break-even. Reporting only; the cash already left. */
     private double subsidiesPaid;
     public void setSubsidiesPaid(double v) { this.subsidiesPaid = Math.max(0, v); }
@@ -852,7 +868,8 @@ public class EconomyManager {
 
     /** What the city pays out this month. */
     public double getExpenses() {
-        return interest + getPensionsPaid() + eiBenefits + studentGrants + healthcareBill + educationBill;
+        return interest + getPensionsPaid() + eiBenefits + studentGrants + healthcareBill + educationBill
+                + safetyBill;
     }
 
     /** The interest alone, which is the only part of getExpenses() that is CARRIED. */
@@ -928,6 +945,7 @@ public class EconomyManager {
                 educationFees, educationBill,
                 subsidiesPaid);
         nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants);
+        nationalAccounts.setSafetySpending(safetyBill);
 
         GDP = nationalAccounts.getGdp();
     }
@@ -949,6 +967,7 @@ public class EconomyManager {
                 educationFees, educationBill,
                 subsidiesPaid);
         nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants);
+        nationalAccounts.setSafetySpending(safetyBill);
     }
 
     public double getLastFoodUnits() { return nationalAccounts.getLastFoodUnits(); }
@@ -1134,6 +1153,7 @@ public class EconomyManager {
         marginalHousingCost *= scale;
         healthcareBill *= scale;   healthcareFees *= scale;
         educationBill  *= scale;   educationFees  *= scale;
+        safetyBill     *= scale;
         subsidiesPaid  *= scale;
         totalContributions *= scale;
         totalEiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;

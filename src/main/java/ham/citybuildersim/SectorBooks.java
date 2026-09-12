@@ -148,7 +148,18 @@ public final class SectorBooks {
              * lines meant the same thing. `inputs` is goods bought now, for
              * everyone, and this is the repairs, for everyone.
              */
-            double maintenance) {
+            double maintenance,
+
+            /* ------------------------ and what was stolen from it ------------------------ */
+            /**
+             * Taken from its till by thieves this month: a cash-flow line out,
+             * since the police (2026-09-11). It reaches the cash through no
+             * statement - a theft is not a cost of doing business anybody
+             * booked - so without its own line unexplained() would hold it. At
+             * the end of the record for the reason foreignAssets is: an older
+             * save reads zero here, which is what was stolen from that city.
+             */
+            double stolen) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -178,7 +189,7 @@ public final class SectorBooks {
                     + borrowed - repaid + fromTheCity + forgiven + depositInterest
                     - investedAbroad
                     + equityRaised - dividendsPaid - sharesBoughtBack
-                    - spentOnBuildings);
+                    - spentOnBuildings - stolen);
         }
 
         public double margin() {
@@ -194,7 +205,7 @@ public final class SectorBooks {
                     0, 0, 0, false,
                     0, 0, 0,
                     0, 0, 0,
-                    0);
+                    0, 0);
         }
 
         public boolean isEmpty() {
@@ -303,7 +314,8 @@ public final class SectorBooks {
                 economy.getEquityRaised(key),
                 economy.getDividendsPaid(key),
                 economy.getSharesBoughtBack(key),
-                st.maintenance);
+                st.maintenance,
+                economy.getStolen(key));
     }
 
     /* ===================================================================
@@ -375,6 +387,6 @@ public final class SectorBooks {
                 m.rate(), m.leverage(), m.writtenOff() * s, m.blocked(),
                 m.foreignAssets() * s, m.investedAbroad() * s, m.foreignInterest() * s,
                 m.equityRaised() * s, m.dividendsPaid() * s, m.sharesBoughtBack() * s,
-                m.maintenance() * s);
+                m.maintenance() * s, m.stolen() * s);
     }
 }

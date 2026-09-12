@@ -509,6 +509,7 @@ public final class MoneyAudit {
         out += debit.apply("- utilities UtilityPayroll", utilities.getUtilityPayroll(), Scope.DOMESTIC);
         out += debit.apply("- care Payroll", care.getPayroll(), Scope.DOMESTIC);
         out += debit.apply("- schools Payroll", schools.getPayroll(), Scope.DOMESTIC);
+        out += debit.apply("- safety Payroll", g.getCrime().getPayroll(), Scope.DOMESTIC);
         // Imports: every sector's purchases from the world, as its statement booked them.
         for (Sector s : sectors.all()) {
             out += debit.apply("- " + s.key() + " Imports", s.statement().imports, Scope.TRADE);
@@ -613,6 +614,11 @@ public final class MoneyAudit {
         out += debit.apply("- treasury StudentLoansLent", g.getStudentLoansLent(), Scope.DOMESTIC);
         out += debit.apply("- care Upkeep", care.getUpkeep(), Scope.DOMESTIC);
         out += debit.apply("- schools Upkeep", schools.getUpkeep(), Scope.DOMESTIC);
+        out += debit.apply("- safety Upkeep", g.getCrime().getUpkeep(), Scope.DOMESTIC);
+        // What thieves took from the tills, to the offenders' households -
+        // out of the pools like a wage. What they took from households never
+        // entered them. See Crime.
+        out += debit.apply("- crime StolenFromBusinesses", g.getCrime().getStolenFromBusinesses(), Scope.DOMESTIC);
 
         // Suspect internal pairs, for the detail only. A flow that should
         // cancel and does not is where a residual lives.

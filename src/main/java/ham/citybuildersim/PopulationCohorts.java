@@ -70,6 +70,8 @@ public class PopulationCohorts {
     private final double[] lastIllnessDeathsByBand = new double[AgeBand.values().length];
     /** ...and of which the band's mortality at all, as opposed to ageing out of the top at 120. */
     private final double[] lastDyingByBand = new double[AgeBand.values().length];
+    /** ...and of which violence: the killed. See Crime. */
+    private final double[] lastKilledByBand = new double[AgeBand.values().length];
 
     public PopulationCohorts() { }
 
@@ -86,6 +88,9 @@ public class PopulationCohorts {
     public double[] getIllnessDeaths()   { return lastIllnessDeathsByBand.clone(); }
     /** Last month's deaths in a band from its mortality - everything but the seniors who aged out at 120. */
     public double getDying(AgeBand b)    { return lastDyingByBand[b.ordinal()]; }
+    /** Last month's deaths in a band that were killings. See Crime. */
+    public double getKilled(AgeBand b)   { return lastKilledByBand[b.ordinal()]; }
+    public double[] getKilled()          { return lastKilledByBand.clone(); }
 
     public double total() {
         double sum = 0;
@@ -190,17 +195,34 @@ public class PopulationCohorts {
      *                AgeBand.MAX_MONTHLY_MORTALITY.
      */
     public void advanceMonth(double[] mortalityFactor, double[] illness, double birthFactor) {
+        advanceMonth(mortalityFactor, illness, null, birthFactor);
+    }
+
+    /**
+     * ...and the people violence killed (2026-09-11).
+     *
+     * @param violence each band's MONTHLY chance of being killed, in band
+     *                 order, or null for none - Crime's killings over the
+     *                 adults, last month's. The same competing risk as
+     *                 sickness, off the same opening balance, capped with the
+     *                 rest.
+     */
+    public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence,
+                             double birthFactor) {
 
         double[] factor = (mortalityFactor != null
                 && mortalityFactor.length == AgeBand.values().length)
                 ? mortalityFactor : null;
         double[] sick = (illness != null && illness.length == AgeBand.values().length)
                 ? illness : null;
+        double[] killing = (violence != null && violence.length == AgeBand.values().length)
+                ? violence : null;
 
         java.util.Arrays.fill(lastPromoted, 0);
         java.util.Arrays.fill(lastDeathsByBand, 0);
         java.util.Arrays.fill(lastIllnessDeathsByBand, 0);
         java.util.Arrays.fill(lastDyingByBand, 0);
+        java.util.Arrays.fill(lastKilledByBand, 0);
         lastBirths = 0;
         lastDeaths = 0;
         lastMigration = 0;
@@ -228,9 +250,12 @@ public class PopulationCohorts {
                     ? b.monthlyMortality()
                     : AgeBand.monthlyFromAnnual(b.getAnnualMortality() * Math.max(0, factor[i]));
             double ill = sick == null ? 0 : Math.max(0, sick[i]);
-            double both = Math.min(AgeBand.MAX_MONTHLY_MORTALITY, rate + ill);
-            // The cap scales both parts alike, so sickness keeps its share of the dead.
-            double illShare = rate + ill > 0 ? ill / (rate + ill) : 0;
+            double kill = killing == null ? 0 : Math.max(0, killing[i]);
+            double all = rate + ill + kill;
+            double both = Math.min(AgeBand.MAX_MONTHLY_MORTALITY, all);
+            // The cap scales every part alike, so sickness and violence keep their shares of the dead.
+            double illShare = all > 0 ? ill / all : 0;
+            double killShare = all > 0 ? kill / all : 0;
             rate = both;
 
             double dying  = opening * rate;
@@ -252,6 +277,7 @@ public class PopulationCohorts {
             lastDeathsByBand[i] = dying;
             lastDyingByBand[i] = dying;
             lastIllnessDeathsByBand[i] = dying * illShare;
+            lastKilledByBand[i] = dying * killShare;
             lastDeaths += dying;
 
             AgeBand next = b.next();
@@ -441,6 +467,7 @@ public class PopulationCohorts {
         java.util.Arrays.fill(lastDeathsByBand, 0);
         java.util.Arrays.fill(lastIllnessDeathsByBand, 0);
         java.util.Arrays.fill(lastDyingByBand, 0);
+        java.util.Arrays.fill(lastKilledByBand, 0);
         lastBirths = 0;
         lastDeaths = 0;
     }

@@ -208,6 +208,18 @@ public class Health {
      */
     public void advanceMonth(double generalCareCapacity, double population, int month,
                              double unburied, double hungry, double unhousedShare) {
+        advanceMonth(generalCareCapacity, population, month, unburied, hungry, unhousedShare, 0);
+    }
+
+    /**
+     * @param injured the share of the city off work with an injury from a
+     *                violent crime - Crime.getInjuredShare(). Jerus: violence
+     *                is "injuries and deaths". Straight onto the rate: an
+     *                injury is time off, whatever the clinics can do about it.
+     */
+    public void advanceMonth(double generalCareCapacity, double population, int month,
+                             double unburied, double hungry, double unhousedShare,
+                             double injured) {
 
         coverage = coverageOf(generalCareCapacity, population);
         baselineRate = WELL_SERVED_RATE
@@ -250,11 +262,18 @@ public class Health {
         unhousedRate = Math.max(0, Math.min(1, unhousedShare)) * baselineRate
                 * (Unemployment.UNHOUSED_SICKNESS - 1);
 
+        injuryRate = Math.max(0, Math.min(1, injured));
+
         sickRate = Math.min(MAX_SICK_RATE,
-                baselineRate + outbreakSeverity + unburiedRate + hungerRate + unhousedRate);
+                baselineRate + outbreakSeverity + unburiedRate + hungerRate + unhousedRate
+                        + injuryRate);
     }
 
     private double unhousedRate;
+
+    /** What violent crime is adding on top: the injured, off work. See Crime. */
+    private double injuryRate;
+    public double getInjuryRate() { return injuryRate; }
 
     /** What the unhoused and the orphans are adding on top. Zero in a city that houses everybody. */
     public double getUnhousedRate() { return unhousedRate; }
@@ -327,7 +346,9 @@ public class Health {
              */
             hungerRate,
             // ...and the unhoused, appended 2026-09-11, for the same reason.
-            unhousedRate
+            unhousedRate,
+            // ...and the injured, the same night.
+            injuryRate
         };
     }
 
@@ -352,7 +373,7 @@ public class Health {
          * month puts it right. Anything that is neither length is still refused
          * whole, because that is a save this build cannot read.
          */
-        if (state == null || state.length < 6 || state.length > 8) return false;
+        if (state == null || state.length < 6 || state.length > 9) return false;
 
         outbreakSeverity = state[0];
         outbreakStarted  = (int) state[1];
@@ -362,6 +383,7 @@ public class Health {
         unburiedRate     = state[5];
         hungerRate       = state.length > 6 ? state[6] : 0;
         unhousedRate     = state.length > 7 ? state[7] : 0;
+        injuryRate       = state.length > 8 ? state[8] : 0;
         return true;
     }
 

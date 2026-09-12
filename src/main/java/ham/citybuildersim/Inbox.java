@@ -80,6 +80,12 @@ public class Inbox {
                 "The city is not looking after its people",
                 health);
 
+        List<String> crime = crimeBody(game);
+        take(game, month, "crime",
+                !crime.isEmpty(),
+                "Crime is running above Canada's",
+                crime);
+
         cull(month);
     }
 
@@ -271,6 +277,46 @@ public class Inbox {
      * city has nothing to answer for, which is the common case in a city that
      * has built its clinics and its cemetery.
      */
+    /**
+     * Crime at one and a half times Canada's rate or worse, or people the
+     * police caught with no cell to hold them (2026-09-11). The reasons come
+     * first, because they are the only thing that removes it - the police
+     * second, and the cells third.
+     */
+    private static List<String> crimeBody(Game game) {
+        Crime crime = game.getCrime();
+        List<String> lines = new ArrayList<>();
+        boolean high = crime.getRateVsCanada() >= 1.5;
+        boolean unheld = crime.getNotHeld() >= 1;
+        if (!high && !unheld) return lines;
+
+        if (high) {
+            lines.add(String.format("%,.0f crimes a year per 100,000 people - %.1f times Canada's.",
+                    crime.getRatePer100k(), crime.getRateVsCanada()));
+            Crime.Cause top = null;
+            for (Crime.Cause c : Crime.Cause.values()) {
+                if (c == Crime.Cause.NO_CAUSE) continue;
+                if (top == null || crime.getCrimes(c) > crime.getCrimes(top)) top = c;
+            }
+            if (top != null && crime.getPressure() > 0) {
+                lines.add(String.format("The biggest reason is %s: %.0f%% of it.",
+                        top.label().toLowerCase(), 100 * crime.getCrimes(top) / Math.max(1e-9, crime.getCrimes())));
+            }
+            lines.add(String.format("Police cover %.0f%% of the city. Full coverage would take 90%% off",
+                    crime.getCoverage() * 100));
+            lines.add("the rest - never all of it. Only work, homes and money remove the reasons.");
+            lines.add(String.format("%.1f people were killed last month; %s was stolen.",
+                    crime.getKilled(), String.format("$%,.0f", crime.getStolen() * 1000)));
+            lines.add("");
+        }
+        if (unheld) {
+            lines.add(String.format("%,.0f people the police caught had no cell to go to, so they are",
+                    crime.getNotHeld()));
+            lines.add("still on the street. A jail or a penitentiary holds them.");
+        }
+        return lines;
+    }
+
     private static List<String> healthcareBody(Game game) {
 
         Health health = game.getHealth();

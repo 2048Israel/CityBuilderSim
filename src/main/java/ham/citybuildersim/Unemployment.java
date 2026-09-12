@@ -215,6 +215,62 @@ public class Unemployment {
         return leftWhenBroke;
     }
 
+    /**
+     * Out of the pool and into prison, before the month's flows are struck
+     * (2026-09-11). Jerus: offenders come "from the groups that cause it", so
+     * they are taken from each group in proportion to its people times its
+     * weight in Crime - the evicted at 5, those past EI at 4, claimants at 2 -
+     * rather than evenly. The labour market takes them off the supply the same
+     * month (PopulationManager.setImprisoned()), so the pool the flows are
+     * struck against is already short by them and the residual does not take
+     * them a second time.
+     *
+     * The released come back the other way without a call: the supply grows
+     * by them, and whoever the pool gains that the named flows do not explain
+     * joins it with no claim - which is Jerus's "out of work, like anyone".
+     *
+     * @return how many were actually taken, no more than the pool holds
+     */
+    public double imprison(double adults) {
+        lastImprisoned = 0;
+        if (!(adults > 0)) return 0;
+        double on = onEi();
+        double wOn = on * Crime.Cause.ON_EI.weight();
+        double wOff = offEi * Crime.Cause.PAST_EI.weight();
+        double wOut = unhoused * Crime.Cause.NO_HOME.weight();
+        double weighted = wOn + wOff + wOut;
+        if (weighted <= 0) return 0;
+        double take = Math.min(adults, getPool());
+
+        // In proportion, and whatever a group could not give is asked of the
+        // rest - a small pool can be emptied, but never past empty.
+        double fromOn = Math.min(on, take * wOn / weighted);
+        double fromOff = Math.min(offEi, take * wOff / weighted);
+        double fromOut = Math.min(unhoused, take * wOut / weighted);
+        double short_ = take - fromOn - fromOff - fromOut;
+        if (short_ > 1e-12) {
+            double more = Math.min(offEi - fromOff, short_);
+            fromOff += more; short_ -= more;
+            more = Math.min(unhoused - fromOut, short_);
+            fromOut += more; short_ -= more;
+            more = Math.min(on - fromOn, short_);
+            fromOn += more;
+        }
+        if (on > 0) {
+            double k = Math.max(0, 1 - fromOn / on);
+            for (int m = 0; m < EI_MONTHS; m++) cohortPeople[m] *= k;
+        }
+        offEi -= fromOff;
+        unhoused -= fromOut;
+        lastImprisoned = fromOn + fromOff + fromOut;
+        return lastImprisoned;
+    }
+
+    private double lastImprisoned;
+
+    /** Taken from the pool into prison this month. */
+    public double getImprisoned() { return lastImprisoned; }
+
     /** Adults who arrived this month; they look for work next month. */
     public void noteArrivals(double adults) {
         arrivalsLooking = Math.max(0, adults);
@@ -502,6 +558,7 @@ public class Unemployment {
         jobsLost = 0; openings = 0; localHires = 0; arrivalHires = 0; arrivalsUnhired = 0;
         entrants = 0; otherExits = 0; dropped = 0; leftWhenBroke = 0; evictedMoved = 0;
         deaths = 0; agedOut = 0; benefitsPaid = 0; insuredCap = 0;
+        lastImprisoned = 0;
     }
 
     /** Wages and the bill in the new unit. People do not move. */

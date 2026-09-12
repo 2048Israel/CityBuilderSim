@@ -1700,6 +1700,7 @@ public class UserInterface extends Application {
             new BuildCategory("Infrastructure", EnumSet.of(BuildingType.INFRASTRUCTURE)),
             new BuildCategory("Healthcare",     EnumSet.of(BuildingType.HEALTHCARE)),
             new BuildCategory("Education",      EnumSet.of(BuildingType.EDUCATION)),
+            new BuildCategory("Safety",         EnumSet.of(BuildingType.SAFETY)),
         };
     }
 
@@ -3487,11 +3488,21 @@ public class UserInterface extends Application {
         WorldEconomy world = game.getWorldEconomy();
 
         double rate = market.getPolicyRate();
-        // Game.nextMonth() strikes this into ForeignAccounts, so the stored
-        // field reads zero on a freshly loaded city until a month has ticked.
-        // It is a pure function of the dial this page owns, so work it out here
-        // rather than showing a stale zero on the one screen that sets it.
-        double over = rate - DebtManager.WORLD_BASE_RATE;
+        double cityRate = market.getRate();
+        /*
+         * AGAINST WHAT THE CITY ACTUALLY PAYS, not against the dial (2026-09-12).
+         *
+         * This read `rate - WORLD_BASE_RATE` and sat two lines under "The city
+         * itself borrows at 1.00%", so the page said the city paid a point over
+         * the world's 2% while its own paper was quoted a point under it. The
+         * carry trade reads the city's rate and the bank's deposit rate, not the
+         * dial (see Game.nextMonth and CapitalFlows), so this is the difference
+         * money actually follows.
+         *
+         * Worked out here rather than read off ForeignAccounts because that
+         * field reads zero on a freshly loaded city until a month has ticked.
+         */
+        double over = cityRate - DebtManager.WORLD_BASE_RATE;
         double want = staged("policy", rate);
         double inflation = px.inflation();
         double advised = market.advisedPolicyRate(inflation);
@@ -3501,6 +3512,13 @@ public class UserInterface extends Application {
                 "The one number under every other rate in the city. Raising it supports "
                 + "the currency and makes every borrower pay more - that is not a side "
                 + "effect, it is the same act."));
+        column.getChildren().add(statementNote(String.format(
+                "This is the DIAL, not what anybody is charged. The city's own paper is "
+                + "priced from it: %.0f points under when the city owes nothing, and up to "
+                + "%.0f points over when it owes too much against its output and its taxes. "
+                + "The Finances tab takes that apart.",
+                DebtManager.CITY_DISCOUNT * 100,
+                (2 * DebtManager.maxSpreadPerMeasure() - DebtManager.CITY_DISCOUNT) * 100)));
 
         column.getChildren().add(statementLine("What the rule would set",
                 pct2(advised), Math.abs(advised - rate) >= .01
@@ -3519,7 +3537,10 @@ public class UserInterface extends Application {
 
         column.getChildren().add(statementHead("What it is costing"));
         column.getChildren().add(statementLine("The city itself borrows at",
-                pct2(market.getRate()), Palette.TEXT_HEAD));
+                pct2(cityRate), Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine(String.format(
+                "...the dial less %.0f points, plus what it owes", DebtManager.CITY_DISCOUNT * 100),
+                pct2(market.floorRate()) + " floor", Palette.TEXT_MUTED));
         column.getChildren().add(statementLine("Savers are paid",
                 pct2(bank.depositRate()), Palette.GOOD));
         column.getChildren().add(statementLine("The world's own rate",
@@ -3580,7 +3601,7 @@ public class UserInterface extends Application {
             column.getChildren().add(wouldTotal("Over the world's rate",
                     String.format("%+.2f pts", over * 100),
                     String.format("%+.2f pts",
-                            (want - DebtManager.WORLD_BASE_RATE) * 100),
+                            (cityThen - DebtManager.WORLD_BASE_RATE) * 100),
                     want >= rate ? Palette.ACCENT : Palette.WARN));
             column.getChildren().add(statementNote(
                     "This does not reprice a single bond the city has already sold - every "
@@ -8511,7 +8532,8 @@ public class UserInterface extends Application {
 
         int line = 1;
         line = rateRow(t, line, "The floor everybody pays", floor,
-                "the policy rate");
+                String.format("%s dial, less %.0f", pct2(ledger.getPolicyRate()),
+                        DebtManager.CITY_DISCOUNT * 100));
         line = rateRow(t, line, "Debt against a year of output", gdpPart,
                 gdpPart <= 0 ? "nothing owed" : "grow, or owe less");
         line = rateRow(t, line, "Debt against a year of tax", revPart,
@@ -8523,6 +8545,18 @@ public class UserInterface extends Application {
         column.getChildren().add(statementTotal("What the market quotes",
                 String.format("%.2f%%", total * 100),
                 ledger.atCeiling() ? Palette.BAD : Palette.ACCENT));
+        /*
+         * WHY THE POLICY SCREEN SAYS SOMETHING ELSE (2026-09-12). Jerus, seeing
+         * 3% on one screen and 1% on the other: one is the dial and the other is
+         * what the market quotes THIS city, and the floor sits under the dial.
+         * Said here rather than left to be worked out.
+         */
+        column.getChildren().add(statementNote(String.format(
+                "The Policy tab's %s is the dial the city's central bank sets; this is what "
+                + "the market quotes the city on top of it. The floor is that dial less %.0f "
+                + "points - a city with nothing outstanding is the best credit there is - and "
+                + "everything below it is the city's own record.",
+                pct2(ledger.getPolicyRate()), DebtManager.CITY_DISCOUNT * 100)));
 
         /* --------------------- how far each measure has run --------------------- */
         column.getChildren().add(statementHead("How much each measure has left to say"));
@@ -10123,8 +10157,48 @@ public class UserInterface extends Application {
                 break;
             }
 
+            case SAFETY:
+                out.addAll(whatSafetyItGives(t));
+                break;
+
             default:
                 break;
+        }
+        return out;
+    }
+
+    /**
+     * The police and the prisons (2026-09-11). What the card has to say is the
+     * one thing a player would get wrong: police cut crime a great deal and
+     * never to nothing, and a cell is only worth building if the police are
+     * catching people. See Crime.
+     */
+    List<String> whatSafetyItGives(BuildingsTemplate t) {
+        List<String> out = new ArrayList<>();
+        Crime crime = game.getCrime();
+        double cap = t.getCapacity();
+        if (t.getSafety() == SafetyType.POLICE) {
+            double fullFor = cap * 100_000.0 / Crime.FULL_OFFICERS_PER_100K;
+            out.add(String.format("%s officers when fully staffed: full coverage for %s people,"
+                    + " Canada's level for %s.", formatter.format(cap),
+                    formatter.format(Math.round(fullFor)), formatter.format(Math.round(2 * fullFor))));
+            out.add("Full coverage takes 90% off the crime the city's reasons make - never all"
+                    + " of it. The reasons are the out of work, the unhoused, the crowded and"
+                    + " the households short of money; only fixing those removes it.");
+            out.add(String.format("Police catch people: %.1f%% of crimes end in a six-month"
+                    + " sentence at full coverage, none with no police. Somebody has to hold them.",
+                    100 * Crime.CAUGHT_AT_FULL));
+            out.add(String.format("The city is at %.0f%% coverage now, with %s crimes a year per"
+                    + " 100,000 people (%.1fx Canada's).", 100 * crime.getCoverage(),
+                    formatter.format(Math.round(crime.getRatePer100k())), crime.getRateVsCanada()));
+        } else if (t.getSafety() == SafetyType.PRISON) {
+            out.add(String.format("%s cells when fully staffed; a cell holds one prisoner for"
+                    + " the six months of a sentence.", formatter.format(cap)));
+            out.add("A prisoner is out of work and out of the shops; the city feeds and houses"
+                    + " them, and their savings wait for them. When they come out they look"
+                    + " for work like anyone.");
+            out.add(String.format("Anybody the police catch with no cell free is caught but not"
+                    + " held - %s last month.", formatter.format(Math.round(crime.getNotHeld()))));
         }
         return out;
     }
@@ -11715,6 +11789,8 @@ public class UserInterface extends Application {
                                   "Professions", "Books"}),
             new ServiceArea("Utilities",
                     new String[] {"Power", "Water", "Roads", "Books"}),
+            new ServiceArea("Safety",
+                    new String[] {"Crime", "Police", "Prisons", "Books"}),
         };
     }
 
@@ -11751,6 +11827,7 @@ public class UserInterface extends Application {
         switch (serviceArea) {
             case "Education" -> educationPage(column);
             case "Utilities" -> utilityPage(column);
+            case "Safety"    -> safetyPage(column);
             default          -> healthPage(column);
         }
 
@@ -11845,6 +11922,7 @@ public class UserInterface extends Application {
         return switch (serviceArea) {
             case "Education" -> educationVitals();
             case "Utilities" -> utilityVitals();
+            case "Safety"    -> safetyVitals();
             default          -> healthVitals();
         };
     }
@@ -11859,6 +11937,263 @@ public class UserInterface extends Application {
         bar.setMaxWidth(Region.USE_PREF_SIZE);
         bar.setStyle("-fx-padding: 8 6 8 6;" + Palette.block(Palette.PANEL));
         return bar;
+    }
+
+    /* =====================================================================
+       SAFETY (2026-09-11)
+
+       Crime, the police and the prisons. The page a player opens to ask why
+       there is crime has to answer with the reasons first, because the reasons
+       are the only thing that removes it - Jerus: "if there is a reason for
+       crime there is no way to actually remove it without changing the
+       underlying reason." The police come second, as what they take off, and
+       the prisons third, as whether the people the police catch can be held.
+       ===================================================================== */
+
+    private static String crimeTone(double vsCanada) {
+        return vsCanada > 1.5 ? Palette.BAD : vsCanada > 1 ? Palette.WARN : Palette.GOOD;
+    }
+
+    private HBox safetyVitals() {
+        Crime crime = game.getCrime();
+        double vs = crime.getRateVsCanada();
+        return vitalsBar(
+                limitCell("CRIME", people(crime.getRatePer100k()),
+                        String.format("a year per 100,000 — %.1fx Canada's", vs), crimeTone(vs)),
+                limitCell("POLICE COVER", String.format("%.0f%%", crime.getCoverage() * 100),
+                        people(crime.getOfficers()) + " officers on shift",
+                        crime.getCoverage() < .25 ? Palette.BAD
+                                : crime.getCoverage() < .5 ? Palette.WARN : Palette.GOOD),
+                limitCell("IN PRISON", people(crime.prisoners()),
+                        crime.getNotHeld() >= .5
+                                ? people(crime.getNotHeld()) + " caught and not held"
+                                : "every one caught was held",
+                        crime.getNotHeld() >= .5 ? Palette.WARN : Palette.TEXT_HEAD),
+                limitCell("THE BILL", tightMoney(toDollars(-crime.getGrossCost())) + "/mo",
+                        "police and prisons, no fees", Palette.TEXT_HEAD));
+    }
+
+    private void safetyPage(VBox column) {
+        switch (servicePage) {
+            case "Police"  -> policePage(column);
+            case "Prisons" -> prisonsPage(column);
+            case "Books"   -> safetyBooksPage(column);
+            default        -> crimePage(column);
+        }
+    }
+
+    /** Where the crime comes from, and what it did. */
+    private void crimePage(VBox column) {
+        Crime crime = game.getCrime();
+
+        column.getChildren().add(statementHead("Crime this month"));
+        column.getChildren().add(statementLine("Crimes",
+                people(crime.getCrimes()), null));
+        column.getChildren().add(statementLine("...a year per 100,000 people",
+                people(crime.getRatePer100k()), crimeTone(crime.getRateVsCanada())));
+        column.getChildren().add(statementLine("Canada's",
+                people(Crime.CANADA_CRIMES_PER_100K), Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(String.format(
+                "This city is at %.2f times Canada's rate. Above it, fewer people move here and"
+                + " some leave.", crime.getRateVsCanada())));
+
+        /* ------------------------------ where it comes from ------------------------------ */
+        column.getChildren().add(subHead("Where it comes from"));
+        javafx.scene.layout.GridPane from = grid(
+                new double[] {170, 80, 64, 80}, rightAfterFirst(4));
+        gridHead(from, "reason", "adults", "weight", "crimes");
+        int line = 1;
+        for (Crime.Cause cause : Crime.Cause.values()) {
+            double crimes = crime.getCrimes(cause);
+            double adults = cause.isGroup()
+                    ? crime.getPressure(cause) / cause.weight()
+                    : crime.getAdultsAtLiberty();
+            double weight = cause.isGroup() ? cause.weight()
+                    : cause.weight() * (1 - crime.getCoverage());
+            if (adults < .5 && crimes < .05) continue;
+            from.add(gridCell(cause.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+            from.add(gridCell(people(adults), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, line);
+            from.add(gridCell(String.format("%.2f", weight), Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 2, line);
+            from.add(gridCell(String.format("%,.1f", crimes),
+                    cause == Crime.Cause.NO_CAUSE ? Palette.TEXT_MUTED : Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, true), 3, line);
+            line++;
+        }
+        column.getChildren().add(from);
+        column.getChildren().add(statementNote(
+                "Every adult at liberty is counted once, at the heaviest reason they have. The"
+                + " last line is not a group: it is every adult, tempted by the police the city"
+                + " does not have. Police take a share off all of it; only work, homes and money"
+                + " take the reasons away."));
+
+        /* ------------------------------ what it did ------------------------------ */
+        column.getChildren().add(statementHead("What it did"));
+        column.getChildren().add(statementLine("Violent",
+                String.format("%,.1f", crime.getViolent()), null));
+        column.getChildren().add(statementLine("...injured, off work",
+                String.format("%.2f%% of the city", crime.getInjuredShare() * 100), null));
+        column.getChildren().add(statementLine("...killed",
+                String.format("%,.2f", crime.getKilled()),
+                crime.getKilled() >= .5 ? Palette.BAD : null));
+        column.getChildren().add(statementLine("Property",
+                String.format("%,.1f", crime.getProperty()), null));
+        column.getChildren().add(bookRow("...stolen from households",
+                -crime.getStolenFromHouseholds(), Palette.WARN));
+        column.getChildren().add(bookRow("...stolen from businesses",
+                -crime.getStolenFromBusinesses(), Palette.WARN));
+        column.getChildren().add(statementNote(
+                "What is stolen goes to the offenders' households. The killings are next"
+                + " month's deaths among the adults; the injured are on this month's sick rate."));
+
+        column.getChildren().add(subHead("Since the city was founded"));
+        column.getChildren().add(statementLine("Crimes", people(crime.getEverCrimes()), null));
+        column.getChildren().add(statementLine("Killed", people(crime.getEverKilled()), null));
+        column.getChildren().add(bookRow("Stolen", -crime.getEverStolen(), null));
+    }
+
+    /** What the police are doing, and what more of them would. */
+    private void policePage(VBox column) {
+        Crime crime = game.getCrime();
+        BuildingManager bm = game.getBuildingManager();
+        double population = crime.getPopulation();
+        double full = population * Crime.FULL_OFFICERS_PER_100K / 100_000.0;
+
+        column.getChildren().add(statementHead("The police"));
+        column.getChildren().add(statementLine("Officers the buildings hold",
+                people(bm.getSafetyCapacity(SafetyType.POLICE)), null));
+        column.getChildren().add(statementLine("...on shift, with the staff the city has",
+                people(crime.getOfficers()), null));
+        column.getChildren().add(statementLine("Full coverage for this city",
+                people(full), Palette.TEXT_MUTED));
+        column.getChildren().add(statementTotal("Coverage",
+                String.format("%.0f%%", crime.getCoverage() * 100),
+                crime.getCoverage() < .25 ? Palette.BAD
+                        : crime.getCoverage() < .5 ? Palette.WARN : Palette.GOOD));
+        column.getChildren().add(statementNote(String.format(
+                "%s officers per 100,000 people. Canada has %s; full coverage is twice that.",
+                people(crime.getOfficersPer100k()), people(Crime.CANADA_OFFICERS_PER_100K))));
+        if (SafetyType.POLICE.foundingCapacity() > 0) {
+            column.getChildren().add(statementNote(String.format(
+                    "The first %s officers are the constabulary the city was founded with,"
+                    + " enough for %s people.", String.format("%.1f", SafetyType.POLICE.foundingCapacity()),
+                    people(Healthcare.FOUNDING_CITY))));
+        }
+
+        column.getChildren().add(statementHead("What they do"));
+        double without = crime.crimesWithoutPolice();
+        column.getChildren().add(statementLine("Crimes with no police at all",
+                String.format("%,.1f", without), null));
+        column.getChildren().add(statementLine("Crimes with these police",
+                String.format("%,.1f", crime.getCrimes()), null));
+        column.getChildren().add(statementTotal("Taken off",
+                without > 0 ? String.format("%.0f%%", 100 * (1 - crime.getCrimes() / without)) : "—",
+                Palette.GOOD));
+        column.getChildren().add(statementLine("Caught and sentenced",
+                String.format("%,.1f  (%.1f%% of crimes)", crime.getCaught(),
+                        100 * Crime.caughtShare(crime.getCoverage())), null));
+
+        BuildingsTemplate station = bm.getTemplateByName("Police Station");
+        if (station != null && population > 0) {
+            double more = Crime.coverageOf(crime.getOfficers() + station.getCapacity(), population);
+            column.getChildren().add(subHead("One more police station"));
+            column.getChildren().add(statementLine("Coverage",
+                    String.format("%.0f%%  →  %.0f%%", crime.getCoverage() * 100, more * 100), null));
+            column.getChildren().add(statementLine("Crimes a month",
+                    String.format("%,.1f  →  %,.1f", crime.getCrimes(), crime.crimesAt(more)), null));
+            column.getChildren().add(statementNote(
+                    "Past full coverage another station adds nothing: the rest of the crime is"
+                    + " the city's reasons."));
+        }
+    }
+
+    /** Who is inside, and whether the city can hold who the police catch. */
+    private void prisonsPage(VBox column) {
+        Crime crime = game.getCrime();
+        BuildingManager bm = game.getBuildingManager();
+
+        column.getChildren().add(statementHead("The prisons"));
+        column.getChildren().add(statementLine("Cells the buildings hold",
+                people(bm.getSafetyCapacity(SafetyType.PRISON)), null));
+        column.getChildren().add(statementLine("...staffed",
+                people(crime.getCells()), null));
+        column.getChildren().add(statementTotal("In prison",
+                people(crime.prisoners()), null));
+        column.getChildren().add(statementNote(String.format(
+                "%s per 100,000 people. Canada holds about 127.",
+                people(crime.getPrisonersPer100k()))));
+
+        column.getChildren().add(statementHead("This month"));
+        column.getChildren().add(statementLine("Caught", String.format("%,.1f", crime.getCaught()), null));
+        column.getChildren().add(statementLine("...sent down", String.format("%,.1f", crime.getAdmitted()), null));
+        column.getChildren().add(statementLine("...caught and not held",
+                String.format("%,.1f", crime.getNotHeld()),
+                crime.getNotHeld() >= .5 ? Palette.WARN : null));
+        column.getChildren().add(statementLine("Released, sentence served",
+                String.format("%,.1f", crime.getReleased()), null));
+        if (crime.getReleasedEarly() > 0.05) {
+            column.getChildren().add(statementLine("Released early, no staffed cell",
+                    String.format("%,.1f", crime.getReleasedEarly()), Palette.WARN));
+        }
+        column.getChildren().add(statementNote(
+                "Anybody caught with no staffed cell free stays on the street and keeps"
+                + " offending. The released go looking for work like anyone."));
+
+        column.getChildren().add(subHead("By months served"));
+        javafx.scene.layout.GridPane ring = grid(new double[] {120, 90}, rightAfterFirst(2));
+        gridHead(ring, "month", "prisoners");
+        for (int m = 0; m < Crime.SENTENCE_MONTHS; m++) {
+            ring.add(gridCell(m == 0 ? "went in this month" : "month " + (m + 1),
+                    Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, m + 1);
+            ring.add(gridCell(String.format("%,.1f", crime.cohort(m)),
+                    Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, m + 1);
+        }
+        column.getChildren().add(ring);
+
+        PrisonerHousehold ledger = game.getHouseholdBalance().prisoners();
+        column.getChildren().add(statementHead("The prisoners' ledger"));
+        column.getChildren().add(bookRow("Savings held", ledger.totalSavings(), null));
+        column.getChildren().add(bookRow("Debt, frozen", -ledger.totalDebt(), null));
+        column.getChildren().add(statementNote(
+                "A prisoner's money waits for them: no interest runs on the debt, nothing is"
+                + " invested, and it goes back out with them."));
+    }
+
+    /** What it costs. */
+    private void safetyBooksPage(VBox column) {
+        Crime crime = game.getCrime();
+        BuildingManager bm = game.getBuildingManager();
+        double[] wages = game.getPopulationManager().getWagesPerType();
+        double[] staffing = game.getPopulationManager().getJobFillRate();
+
+        column.getChildren().add(statementHead("What it costs"));
+        double policePay = bm.getSafetyPayroll(SafetyType.POLICE, wages, staffing);
+        double policeKeep = bm.getSafetyUpkeep(SafetyType.POLICE);
+        double prisonPay = bm.getSafetyPayroll(SafetyType.PRISON, wages, staffing);
+        double prisonKeep = bm.getSafetyUpkeep(SafetyType.PRISON);
+        column.getChildren().add(bookRow("Police wages", -policePay, Palette.WARN));
+        column.getChildren().add(bookRow("Police buildings", -policeKeep, Palette.WARN));
+        column.getChildren().add(bookRow("Prison wages", -prisonPay, Palette.WARN));
+        column.getChildren().add(bookRow("Prison upkeep, food included", -prisonKeep, Palette.WARN));
+        column.getChildren().add(statementTotal("Cost to the city",
+                tightMoney(toDollars(-crime.getGrossCost()), false), Palette.BAD));
+        if (crime.getOfficers() > 0) {
+            column.getChildren().add(statementNote(String.format(
+                    "%s an officer on shift a year, and %s a prisoner a year.",
+                    tightMoney(toDollars((policePay + policeKeep) * 12
+                            / Math.max(1, crime.getOfficers() - SafetyType.POLICE.foundingCapacity())), false),
+                    crime.prisoners() >= .5
+                            ? tightMoney(toDollars((prisonPay + prisonKeep) * 12 / crime.prisoners()), false)
+                            : "nothing")));
+        }
+
+        column.getChildren().add(statementHead("What crime cost the city's people"));
+        column.getChildren().add(bookRow("Stolen from households", -crime.getStolenFromHouseholds(), null));
+        column.getChildren().add(bookRow("Stolen from businesses", -crime.getStolenFromBusinesses(), null));
+        column.getChildren().add(bookRow("...handed to the offenders' households", crime.getStolen(), null));
+        column.getChildren().add(statementNote(
+                "A theft moves money; it does not destroy it. What the businesses lose shows on"
+                + " their cash flow as its own line."));
     }
 
     /* =====================================================================
@@ -12041,6 +12376,12 @@ public class UserInterface extends Application {
                             ? String.format("%.1f pts", health.getUnhousedRate() * 100)
                             : "none",
                     health.getUnhousedRate() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
+            // ...and the injured, since the police (2026-09-11).
+            column.getChildren().add(statementLine("Hurt by violent crime",
+                    health.getInjuryRate() > 0
+                            ? String.format("%.2f pts", health.getInjuryRate() * 100)
+                            : "none",
+                    health.getInjuryRate() > .0005 ? Palette.WARN : Palette.TEXT_SPENT));
             /*
              * AND WHATEVER IS LEFT OVER, said out loud.
              *
@@ -12052,7 +12393,7 @@ public class UserInterface extends Application {
              */
             double named = health.getBaselineRate() + health.getOutbreakSeverity()
                          + health.getUnburiedRate() + health.getHungerRate()
-                         + health.getUnhousedRate();
+                         + health.getUnhousedRate() + health.getInjuryRate();
             double gap = health.getSickRate() - named;
             if (Math.abs(gap) > .0005) {
                 column.getChildren().add(statementLine(
@@ -13445,6 +13786,12 @@ public class UserInterface extends Application {
         column.getChildren().add(statementNote(String.format(
                 "%s. %s have been ill for more than two months.",
                 byAge, people(sickness.peoplePastTwoMonths(cohorts)))));
+        // ...and the killed (2026-09-11), all of them adults. See Crime.
+        double killed = cohorts.getKilled(AgeBand.ADULT);
+        column.getChildren().add(statementLine("...killed",
+                "-" + flowText(killed), killed >= .5 ? Palette.BAD : Palette.TEXT_BODY));
+        column.getChildren().add(statementLine("In prison",
+                people(game.getCrime().prisoners()), Palette.TEXT_BODY));
 
         /* ------------------------- WHO MOVED IN -------------------------
          *
@@ -14281,6 +14628,9 @@ public class UserInterface extends Application {
                 unhoused >= .5 ? Palette.BAD : Palette.TEXT_SPENT));
         column.getChildren().add(statementLine("Orphans", people(orphans),
                 orphans >= .5 ? Palette.BAD : Palette.TEXT_SPENT));
+        // ...and the prisoners, since 2026-09-11 (night). See Crime.
+        column.getChildren().add(statementLine("In prison", people(game.getCrime().prisoners()),
+                game.getCrime().prisoners() >= .5 ? Palette.WARN : Palette.TEXT_SPENT));
         if (orphans >= .5 || unhoused >= .5) {
             column.getChildren().add(sentence(
                     "Nobody feeds or cares for the orphans: they go hungry, get sick and die "
@@ -14294,11 +14644,12 @@ public class UserInterface extends Application {
     private javafx.scene.layout.GridPane outsideTable(Unemployment u, FamilyModel families,
                                                      double[] noDoor) {
         javafx.scene.layout.GridPane table = grid(
-                new double[] {SHAPE_COL, 76, 70, 70, 70, 70}, rightAfterFirst(6));
-        gridHead(table, "age", "out of work", "students", "no home", "orphans", "total");
+                new double[] {SHAPE_COL, 76, 70, 70, 70, 70, 70}, rightAfterFirst(7));
+        gridHead(table, "age", "out of work", "students", "no home", "orphans", "in prison", "total");
 
         double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
-        double[] sum = new double[5];
+        double prisoners = game.getCrime().prisoners();
+        double[] sum = new double[6];
         int line = 1;
         for (AgeBand band : AgeBand.values()) {
             int b = band.ordinal();
@@ -14306,10 +14657,11 @@ public class UserInterface extends Application {
             double study = band == AgeBand.ADULT ? students : 0;
             double home = noDoor[b];
             double orphan = families.getOrphans(band);
+            double inside = band == AgeBand.ADULT ? prisoners : 0;
             // The out of work who lost their home are in both columns; the total counts them once.
-            double total = out + study + orphan
+            double total = out + study + orphan + inside
                     + home - (band == AgeBand.ADULT ? Math.min(home, u.getUnhoused()) : 0);
-            double[] row = { out, study, home, orphan, total };
+            double[] row = { out, study, home, orphan, inside, total };
             table.add(gridCell(band.getLabel().toLowerCase(), Palette.TEXT_BODY,
                     Palette.SIZE_CAPTION, false), 0, line);
             for (int c = 0; c < row.length; c++) {
@@ -16741,7 +17093,7 @@ public class UserInterface extends Application {
 
     private static java.util.List<String> spendingNames() {
         return java.util.List.of("Pensions", "EI", "Student grants", "Healthcare", "Education",
-                "Buildings", "Repairs", "Land bought", "Debt interest");
+                "Police and prisons", "Buildings", "Repairs", "Land bought", "Debt interest");
     }
 
     /*
@@ -16762,6 +17114,7 @@ public class UserInterface extends Application {
                 na.getStudentGrants(),
                 na.getHealthSpending(),
                 na.getEducationSpending(),
+                na.getSafetySpending(),
                 na.getCapitalSpending(),
                 game.getCityMaintenancePaid(),
                 na.getLandPurchases(),
@@ -17620,7 +17973,7 @@ public class UserInterface extends Application {
      */
     private record Trace(String key, String label, String group, String unit) { }
 
-    private static final Trace[] TRACES = withTheHouseholds(withTheMarket(new Trace[] {
+    private static final Trace[] TRACES = withTheCrime(withTheHouseholds(withTheMarket(new Trace[] {
         new Trace("gdp",            "GDP",                "MONEY",      "money"),
         new Trace("gdpPerCapita",   "GDP per capita (yr)","MONEY",      "money"),
         new Trace("cash",           "Treasury",           "MONEY",      "money"),
@@ -17658,6 +18011,16 @@ public class UserInterface extends Application {
         new Trace("cumulative:deathsSeniors",  "Seniors",             "THE DEAD", "count"),
         new Trace("cumulative:deathsOrphans",  "Orphans",             "THE DEAD", "count"),
         new Trace("cumulative:deathsUnhoused", "With no home",        "THE DEAD", "count"),
+        new Trace("cumulative:deathsKilled",   "Killed",              "THE DEAD", "count"),
+
+        /* Crime, the police and the prisons (2026-09-11). Each reason's crimes are added below. */
+        new Trace("crimeRate",      "Crime a year /100k", "CRIME",      "count"),
+        new Trace("policeCoverage", "Police coverage",    "CRIME",      "percent"),
+        new Trace("prisoners",      "In prison",          "CRIME",      "count"),
+        new Trace("caughtNotHeld",  "Caught, not held",   "CRIME",      "count"),
+        new Trace("deathsKilled",   "Killed",             "CRIME",      "count"),
+        new Trace("stolen",         "Stolen",             "CRIME",      "money"),
+        new Trace("safetyBill",     "Police and prisons", "CRIME",      "money"),
 
         new Trace("energyRatio",    "Power supplied",     "THROUGHPUT", "percent"),
         new Trace("waterRatio",     "Water supplied",     "THROUGHPUT", "percent"),
@@ -17742,7 +18105,7 @@ public class UserInterface extends Application {
         new Trace("eiPremiums",     "EI premiums",        "OUTSIDE THE FAMILIES", "money"),
         new Trace("studentGrants",  "Student grants",     "OUTSIDE THE FAMILIES", "money"),
         new Trace("studentLoansOwed","Student loans owed","OUTSIDE THE FAMILIES", "money"),
-    }));
+    })));
 
     /**
      * ...and a share price per company, one trace each, generated off the
@@ -17751,6 +18114,16 @@ public class UserInterface extends Application {
      * and its unit is a founding share - see HistorySave's market block.
      */
     /** One series per household shape, appended after the market. See HistorySave.householdKey(). */
+    private static Trace[] withTheCrime(Trace[] fixed) {
+        Crime.Cause[] causes = Crime.Cause.values();
+        Trace[] all = java.util.Arrays.copyOf(fixed, fixed.length + causes.length);
+        for (int c = 0; c < causes.length; c++) {
+            all[fixed.length + c] = new Trace(HistorySave.crimeKey(causes[c]),
+                    "Crime: " + causes[c].label().toLowerCase(), "CRIME", "count");
+        }
+        return all;
+    }
+
     private static Trace[] withTheHouseholds(Trace[] fixed) {
         FamilyStructure[] shapes = FamilyStructure.values();
         Trace[] all = java.util.Arrays.copyOf(fixed, fixed.length + shapes.length);
@@ -17837,6 +18210,13 @@ public class UserInterface extends Application {
         new Preset("Who has died", "the running totals, since the city began",
                 new String[] {"cumulative:deathsBabies", "cumulative:deathsAdults",
                               "cumulative:deathsSeniors", "cumulative:deathsOrphans"}),
+        new Preset("Crime", "how much, why, and whether the city can hold who it catches",
+                new String[] {"crimeRate", "policeCoverage", "prisoners", "caughtNotHeld"}),
+        new Preset("Why there is crime", "each reason's crimes a month",
+                new String[] {HistorySave.crimeKey(Crime.Cause.PAST_EI),
+                              HistorySave.crimeKey(Crime.Cause.SHORT_OF_MONEY),
+                              HistorySave.crimeKey(Crime.Cause.CROWDED),
+                              HistorySave.crimeKey(Crime.Cause.FEW_POLICE)}),
         new Preset("The households", "how many of each kind of household the city holds",
                 new String[] {HistorySave.householdKey(FamilyStructure.SINGLE_ADULT),
                               HistorySave.householdKey(FamilyStructure.COUPLE),
@@ -18511,6 +18891,7 @@ public class UserInterface extends Application {
             case "cumulative:deathsSeniors":
             case "cumulative:deathsOrphans":
             case "cumulative:deathsUnhoused":
+            case "cumulative:deathsKilled":
                 return HistorySave.runningTotal(h.aligned(key.substring("cumulative:".length())));
             case "naturalIncrease": return minus(h.aligned("births"), h.aligned("deaths"));
 
@@ -19229,7 +19610,7 @@ public class UserInterface extends Application {
     /** Every section key, so open-all does not have to be kept in step by hand. */
     private static final String[] PANEL_SECTIONS = {
         "econ", "bank", "trade", "tax", "labour", "school",
-        "people", "health", "res", "land", "sectors", "built"
+        "people", "health", "safety", "res", "land", "sectors", "built"
     };
 
     /** A caption inside an open section - a sub-heading, or a note. */
@@ -20508,6 +20889,36 @@ public class UserInterface extends Application {
                                         service.getPlotsUsed()))));
                     }
                     b.getChildren().add(statLine("Health bill", money(service.getNetCost())));
+                    return b;
+                }));
+
+        /* ================= SAFETY (2026-09-11) ================= */
+        Crime crime = game.getCrime();
+        double crimeVs = crime.getRateVsCanada();
+        body.getChildren().add(panelSection("safety", "SAFETY",
+                String.format("%.1fx crime", crimeVs),
+                crimeVs > 1.5 ? PANEL_BAD : crimeVs > 1 ? PANEL_WARN : PANEL_GOOD,
+                () -> {
+                    VBox b = panelBody(
+                            statLine("Crime /100k/yr", formatter.format(Math.round(crime.getRatePer100k()))),
+                            statLine("Police cover", String.format("%.0f%%", crime.getCoverage() * 100),
+                                    crime.getCoverage() < .25 ? PANEL_BAD
+                                            : crime.getCoverage() < .5 ? PANEL_WARN : null),
+                            statLine("In prison", formatter.format(Math.round(crime.prisoners()))),
+                            statLine("Not held", formatter.format(Math.round(crime.getNotHeld())),
+                                    crime.getNotHeld() >= .5 ? PANEL_WARN : null),
+                            statLine("Killed", String.format("%.1f", crime.getKilled())),
+                            statLine("Stolen", money(crime.getStolen())));
+                    // The biggest reason, named: the only thing that removes it.
+                    Crime.Cause top = null;
+                    for (Crime.Cause c : Crime.Cause.values()) {
+                        if (c == Crime.Cause.NO_CAUSE) continue;
+                        if (top == null || crime.getCrimes(c) > crime.getCrimes(top)) top = c;
+                    }
+                    if (top != null && crime.getCrimes(top) > 0) {
+                        b.getChildren().add(panelNote("most of it: " + top.label().toLowerCase()));
+                    }
+                    b.getChildren().add(statLine("Safety bill", money(crime.getGrossCost())));
                     return b;
                 }));
 

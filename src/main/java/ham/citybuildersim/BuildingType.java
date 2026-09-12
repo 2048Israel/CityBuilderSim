@@ -90,6 +90,24 @@ public enum BuildingType {
      * ON THE END, for the third time and the same reason: ordinal() is a saved
      * key. The slot after this one is SAFETY.
      */
-    EDUCATION
+    EDUCATION,
+
+    /**
+     * Police stations, police headquarters, jails and penitentiaries.
+     *
+     * Jerus, 2026-09-11: "crime is a function of unemployment, and tight or
+     * under households, we need police, and also prison". The police deter and
+     * catch; the prisons hold whoever is caught. Neither removes a reason for
+     * crime - "if there is a reason for crime there is no way to actually
+     * remove it without changing the underlying reason" - which is why this
+     * category is the fourth thing the city builds for itself and not the
+     * answer to the other three.
+     *
+     * City-built and city-paid, like healthcare and education. See Crime and
+     * SafetyType.
+     *
+     * ON THE END, for the fourth time: ordinal() is a saved key.
+     */
+    SAFETY
 
 }

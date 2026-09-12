@@ -212,6 +212,7 @@ public class HouseholdBalance {
     private final int[] unemployedIndex = new int[UnemployedHousehold.Status.values().length];
     private int studentIndex;
     private final int[] orphanIndex = new int[AgeBand.values().length];
+    private int prisonerIndex;
 
     /**
      * How many households are in each cell the family matrix does not hold -
@@ -281,6 +282,9 @@ public class HouseholdBalance {
             orphanIndex[b.ordinal()] = built.size();
             built.add(new OrphanHousehold(b));
         }
+        // ...and the prisoners' ledger, last, so every cell before it keeps its place.
+        prisonerIndex = built.size();
+        built.add(new PrisonerHousehold());
         cells = built.toArray(new Household[0]);
         view = java.util.Collections.unmodifiableList(java.util.Arrays.asList(cells));
     }
@@ -319,6 +323,9 @@ public class HouseholdBalance {
         int i = orphanIndex[band.ordinal()];
         return i < 0 ? null : (OrphanHousehold) cells[i];
     }
+
+    /** The prisoners' ledger. */
+    public PrisonerHousehold prisoners() { return (PrisonerHousehold) cells[prisonerIndex]; }
 
     /** Every cell, in the fixed order. Read-only. */
     public java.util.List<Household> cells() { return view; }
@@ -510,7 +517,8 @@ public class HouseholdBalance {
      * rows. Nobody is in them unless the outside census says so.
      */
     private static double[] padRows(double[] rows) {
-        if (rows == null || rows.length != ROWS_BEFORE_OUTSIDE) return rows;
+        if (rows == null || (rows.length != ROWS_BEFORE_OUTSIDE
+                && rows.length != Household.ROWS_BEFORE_PRISON)) return rows;
         return java.util.Arrays.copyOf(rows, ROWS);
     }
 
@@ -839,7 +847,7 @@ public class HouseholdBalance {
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.households < .5 || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
             double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             if (excess <= 0) continue;
             want[i] = excess * fraction * c.households;
@@ -877,7 +885,7 @@ public class HouseholdBalance {
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.households < .5 || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
             double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             if (excess <= 0) continue;
             left[i] = excess * fraction * c.households;
@@ -915,7 +923,7 @@ public class HouseholdBalance {
     public double sharesWanted(double fraction) {
         double total = 0;
         for (Household c : cells) {
-            if (c.households < .5 || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
             double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             if (excess > 0) total += excess * fraction * c.households;
         }
@@ -1008,6 +1016,9 @@ public class HouseholdBalance {
             double earnedUsd = c.abroad * Math.max(0, worldRate) / 12;
             c.abroad += earnedUsd;
             c.foreignInterest = earnedUsd * rate;
+
+            // A prisoner's money is held where it is. See PrisonerHousehold.
+            if (!c.canInvest()) continue;
 
             double held = c.abroad * rate;
             boolean eligible = c.debt <= 0 && c.lockout <= 0 && !c.isGoingShort();
@@ -1245,6 +1256,63 @@ public class HouseholdBalance {
         lastDepositInterest = total;
     }
 
+    /* =====================================================================
+       THEFT (2026-09-11)
+
+       Jerus: crime is "theft, people leaving, violence", and the stolen money
+       "goes to the offenders". Two halves, both here because both are cells'
+       savings: what is taken, from every household in proportion to what it
+       has saved, and what the offenders' households are handed, in proportion
+       to how much of the crime is theirs. Every dollar stays on the books - a
+       theft moves money, it does not destroy it. See Crime.
+       ===================================================================== */
+
+    /**
+     * Takes up to `total` from the households' savings, each cell in
+     * proportion to what it has saved. A prisoner's savings are held in the
+     * ledger and are not there to take.
+     *
+     * @return what was actually taken, which is less than asked when the city
+     *         has less saved than that
+     */
+    public double takeFromSavings(double total) {
+        if (!(total > 0)) return 0;
+        double base = 0;
+        for (Household c : cells) {
+            if (!c.canInvest() || c.households <= 0 || c.savings <= 0) continue;
+            base += c.savings * c.households;
+        }
+        if (base <= 0) return 0;
+        double taken = Math.min(total, base);
+        double share = taken / base;
+        for (Household c : cells) {
+            if (!c.canInvest() || c.households <= 0 || c.savings <= 0) continue;
+            c.savings -= c.savings * share;
+        }
+        return taken;
+    }
+
+    /**
+     * Credits `total` to the cells in proportion to a weight per cell, in the
+     * cells' order - what the offenders' households took home.
+     *
+     * @return what was credited: all of it, or nothing if no cell has weight
+     */
+    public double creditByWeight(double total, double[] weight) {
+        if (!(total > 0) || weight == null || weight.length != cells.length) return 0;
+        double sum = 0;
+        for (int i = 0; i < cells.length; i++) {
+            if (cells[i].households > 0 && weight[i] > 0) sum += weight[i];
+        }
+        if (sum <= 0) return 0;
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c.households <= 0 || !(weight[i] > 0)) continue;
+            c.savings += total * weight[i] / sum / c.households;
+        }
+        return total;
+    }
+
     /** What the bank paid the city's savers this month. */
     public double getDepositInterest() { return lastDepositInterest; }
 
@@ -1287,7 +1355,7 @@ public class HouseholdBalance {
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.households < .5 || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double excess = c.savings - cushion;
             if (excess <= 0) continue;
@@ -1584,8 +1652,12 @@ public class HouseholdBalance {
          */
         int rows;
         boolean current;
+        int beforePrison = Household.ROWS_BEFORE_PRISON;
         if (saved.length == ROWS * 8 + 3)                     { rows = ROWS; current = true; }
         else if (saved.length == ROWS * 3)                    { rows = ROWS; current = false; }
+        // ...or from the day before the prisons, with no prisoners' row.
+        else if (saved.length == beforePrison * 8 + 3)        { rows = beforePrison; current = true; }
+        else if (saved.length == beforePrison * 3)            { rows = beforePrison; current = false; }
         else if (saved.length == ROWS_BEFORE_OUTSIDE * 8 + 3) { rows = ROWS_BEFORE_OUTSIDE; current = true; }
         else if (saved.length == ROWS_BEFORE_OUTSIDE * 3)     { rows = ROWS_BEFORE_OUTSIDE; current = false; }
         else return;   // refused whole

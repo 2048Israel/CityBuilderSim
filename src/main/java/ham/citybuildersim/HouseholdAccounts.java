@@ -331,6 +331,8 @@ public class HouseholdAccounts {
     public static final int UNEMPLOYED = Household.UNEMPLOYED_ROW;
     public static final int STUDENTS = Household.STUDENT_ROW;
     public static final int ORPHANS = Household.ORPHAN_ROW;
+    /** ...and the prisoners, since 2026-09-11 (night). */
+    public static final int PRISONERS = Household.PRISON_ROW;
     private static final int ROWS = Household.ROWS;
 
     /** The rows a save from before 2026-09-11 carries: the tiers and the retired. */
@@ -425,19 +427,12 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowDoors, 0);
 
         // A caller from before the people outside the families had rows hands
-        // seven; the three new rows are empty for it.
-        if (peoplePerRow != null && peoplePerRow.length == ROWS_BEFORE_OUTSIDE) {
-            peoplePerRow = java.util.Arrays.copyOf(peoplePerRow, ROWS);
-        }
-        if (housePerRow != null && housePerRow.length == ROWS_BEFORE_OUTSIDE) {
-            housePerRow = java.util.Arrays.copyOf(housePerRow, ROWS);
-        }
-        if (interestPerRow != null && interestPerRow.length == ROWS_BEFORE_OUTSIDE) {
-            interestPerRow = java.util.Arrays.copyOf(interestPerRow, ROWS);
-        }
-        if (spendShare != null && spendShare.length == ROWS_BEFORE_OUTSIDE) {
-            spendShare = java.util.Arrays.copyOf(spendShare, ROWS);
-        }
+        // seven, and one from before the prisons ten; the missing rows are
+        // empty for it.
+        peoplePerRow = padOlder(peoplePerRow);
+        housePerRow = padOlder(housePerRow);
+        interestPerRow = padOlder(interestPerRow);
+        spendShare = padOlder(spendShare);
 
         if (peoplePerRow == null || peoplePerRow.length != ROWS
                 || housePerRow == null || housePerRow.length != ROWS) {
@@ -448,8 +443,10 @@ public class HouseholdAccounts {
         for (double n : peoplePerRow) heads += n;
         // The orphans are served and charged nothing - nobody can pay for
         // them - so the fees fall on the people who can, as they did before
-        // the orphans were counted (2026-09-11).
-        double payingHeads = heads - Math.max(0, peoplePerRow[ORPHANS]);
+        // the orphans were counted (2026-09-11). Nor are the prisoners: the
+        // prison treats them, on its own upkeep.
+        double payingHeads = heads - Math.max(0, peoplePerRow[ORPHANS])
+                - Math.max(0, peoplePerRow[PRISONERS]);
         for (int r = 0; r < ROWS; r++) {
             rowDoors[r] = doorsPerRow != null && r < doorsPerRow.length
                     ? Math.max(0, doorsPerRow[r]) : housePerRow[r];
@@ -506,7 +503,7 @@ public class HouseholdAccounts {
              * to be exact WITH, and inventing one would be an estimate wearing
              * a fact's clothes.
              */
-            rowHealthcare[r] = r == ORPHANS || payingHeads <= 0 ? 0
+            rowHealthcare[r] = r == ORPHANS || r == PRISONERS || payingHeads <= 0 ? 0
                     : healthcare * peoplePerRow[r] / payingHeads;
         }
 
@@ -760,10 +757,13 @@ public class HouseholdAccounts {
          * what it carries; the EI, the grants and the three new rows are zero,
          * which is the month those saves were struck in.
          */
-        boolean current = in != null && in.length == STATE_SCALARS + ROWS * STATE_ROWS;
+        // ...or the day's shape before the prisoners had a row: the same arrays, one row short.
+        boolean beforePrison = in != null
+                && in.length == STATE_SCALARS + Household.ROWS_BEFORE_PRISON * STATE_ROWS;
         boolean older = in != null && in.length == 12 + ROWS_BEFORE_OUTSIDE * 11;
+        boolean current = in != null && (in.length == STATE_SCALARS + ROWS * STATE_ROWS || beforePrison);
         if (!current && !older) return false;
-        int rows = current ? ROWS : ROWS_BEFORE_OUTSIDE;
+        int rows = beforePrison ? Household.ROWS_BEFORE_PRISON : current ? ROWS : ROWS_BEFORE_OUTSIDE;
         int i = 0;
         wages = in[i++];         wageTax = in[i++];
         rent = in[i++];          shopping = in[i++];
@@ -792,6 +792,15 @@ public class HouseholdAccounts {
             i += rows;
         }
         return true;
+    }
+
+    /** A row array from an older caller, padded to today's rows; anything else as it came. */
+    private static double[] padOlder(double[] rows) {
+        if (rows == null) return null;
+        if (rows.length == ROWS_BEFORE_OUTSIDE || rows.length == Household.ROWS_BEFORE_PRISON) {
+            return java.util.Arrays.copyOf(rows, ROWS);
+        }
+        return rows;
     }
 
     public double getRowContributions(int row) { return rowContributions[row]; }
@@ -828,6 +837,7 @@ public class HouseholdAccounts {
         if (row == UNEMPLOYED) return "Out of work";
         if (row == STUDENTS)   return "Full-time students";
         if (row == ORPHANS)    return "Orphans";
+        if (row == PRISONERS)  return "In prison";
         return PayTier.values()[row].getLabel();
     }
 

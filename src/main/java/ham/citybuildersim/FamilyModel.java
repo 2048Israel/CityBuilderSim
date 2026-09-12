@@ -697,6 +697,32 @@ public class FamilyModel {
         return totalOf(FamilyStructure.SHARED_ADULTS);
     }
 
+    /** The families' own doubled-up households - guests in somebody else's home - without the seekers'. */
+    public double getDoubledUpFamilies() { return doubledUp; }
+
+    /**
+     * The share of the families' households living crowded because of
+     * doubling up: every guest and the host they moved in with. Two to a
+     * door, so twice the guests over every household, at most all of them.
+     * For Crime, which counts the crowded (2026-09-11).
+     */
+    public double doubledUpShare() {
+        double homes = totalHouseholds();
+        return homes > 0 ? Math.min(1, 2 * doubledUp / homes) : 0;
+    }
+
+    /**
+     * The share of a seeker group WITH a door who are crowded: five to a home
+     * with their own kind, or two to a door - guest and host alike.
+     */
+    public double seekerCrowdedShare(Seeker g) {
+        int i = g.ordinal();
+        double housed = seekers[i] - seekersUnhoused[i];
+        if (!(housed > 0)) return 0;
+        double sharing = Math.min(seekers[i], seekersSharing[i]);
+        return Math.min(1, (sharing + 2 * seekersDoubled[i]) / housed);
+    }
+
     /** Homes actually occupied, counting doubled-up households as one home. */
     public double homesNeeded() {
         double seekerHomes = 0;

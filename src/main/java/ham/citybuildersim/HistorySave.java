@@ -240,6 +240,25 @@ public class HistorySave {
     private List<Double> deathsOrphans = new ArrayList<>();
     private List<Double> deathsUnhoused = new ArrayList<>();
 
+    /* ------------------------------------------------------------------
+       CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a
+       year per 100,000, the police coverage, who is inside and who was
+       caught with nowhere to put them, what was stolen, who was killed -
+       killed also counted with the dead - the bill, and each reason's share
+       of the crime, by the reason's saved name.
+       ------------------------------------------------------------------ */
+    private List<Double> crimeRate = new ArrayList<>();
+    private List<Double> policeCoverage = new ArrayList<>();
+    private List<Double> prisoners = new ArrayList<>();
+    private List<Double> caughtNotHeld = new ArrayList<>();
+    private List<Double> stolen = new ArrayList<>();
+    private List<Double> deathsKilled = new ArrayList<>();
+    private List<Double> safetyBill = new ArrayList<>();
+    private Map<String, List<Double>> crimeByCause = new LinkedHashMap<>();
+
+    /** The series name the screens ask for, per reason for crime. */
+    public static String crimeKey(Crime.Cause cause) { return "crime:" + cause.name(); }
+
     /** The series name the screens ask for, per household shape. */
     public static String householdKey(FamilyStructure shape) { return "households:" + shape.name(); }
 
@@ -415,6 +434,18 @@ public class HistorySave {
         deathsSeniors.add(round2(pyramid.getDeaths(AgeBand.SENIOR)));
         deathsOrphans.add(round2(game.getLastOrphanDeaths()));
         deathsUnhoused.add(round2(game.getLastUnhousedDeaths()));
+        Crime crime = game.getCrime();
+        crimeRate.add(round2(crime.getRatePer100k()));
+        policeCoverage.add(round4(crime.getCoverage()));
+        prisoners.add(round2(crime.prisoners()));
+        caughtNotHeld.add(round2(crime.getNotHeld()));
+        stolen.add(round2(crime.getStolen()));
+        deathsKilled.add(round2(pyramid.getKilled(AgeBand.ADULT)));
+        safetyBill.add(round2(crime.getGrossCost()));
+        for (Crime.Cause cause : Crime.Cause.values()) {
+            crimeByCause.computeIfAbsent(cause.name(), k -> new ArrayList<>())
+                    .add(round2(crime.getCrimes(cause)));
+        }
 
         /* ----------------------- what runs out ----------------------- */
         constructionCapacity.add(game.getBuildingManager().getTotalConstructionCapacity());
@@ -557,6 +588,14 @@ public class HistorySave {
         deathsSeniors = copy(loaded.deathsSeniors);
         deathsOrphans = copy(loaded.deathsOrphans);
         deathsUnhoused = copy(loaded.deathsUnhoused);
+        crimeRate = copy(loaded.crimeRate);
+        policeCoverage = copy(loaded.policeCoverage);
+        prisoners = copy(loaded.prisoners);
+        caughtNotHeld = copy(loaded.caughtNotHeld);
+        stolen = copy(loaded.stolen);
+        deathsKilled = copy(loaded.deathsKilled);
+        safetyBill = copy(loaded.safetyBill);
+        crimeByCause = copyMap(loaded.crimeByCause);
 
         constructionCapacity = copy(loaded.constructionCapacity);
         landUse = copy(loaded.landUse);
@@ -745,6 +784,18 @@ public class HistorySave {
         map.put("deathsSeniors", deathsSeniors);
         map.put("deathsOrphans", deathsOrphans);
         map.put("deathsUnhoused", deathsUnhoused);
+        map.put("crimeRate", crimeRate);
+        map.put("policeCoverage", policeCoverage);
+        map.put("prisoners", prisoners);
+        map.put("caughtNotHeld", caughtNotHeld);
+        map.put("stolen", stolen);
+        map.put("deathsKilled", deathsKilled);
+        map.put("safetyBill", safetyBill);
+        if (crimeByCause != null) {
+            for (Map.Entry<String, List<Double>> e : crimeByCause.entrySet()) {
+                map.put("crime:" + e.getKey(), e.getValue());
+            }
+        }
         if (householdsByShape != null) {
             for (Map.Entry<String, List<Double>> e : householdsByShape.entrySet()) {
                 map.put("households:" + e.getKey(), e.getValue());
@@ -807,7 +858,8 @@ public class HistorySave {
                 taxWage, taxProperty, taxSales, taxBusiness, taxIndustrial,
                 contributions, pensionBill, healthBill,
                 rentPrice,
-                eiPaid, eiPremiums, studentGrants, studentLoansOwed);
+                eiPaid, eiPremiums, studentGrants, studentLoansOwed,
+                stolen, safetyBill);
 
         // A share's price is money; how many shares there are is not.
         if (sharePrice != null) for (List<Double> s : sharePrice.values()) scaleAll(scale, s);

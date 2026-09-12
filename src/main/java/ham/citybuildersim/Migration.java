@@ -302,6 +302,48 @@ public class Migration {
 
     private double lastAffordabilityPull = 1;
 
+    /* =====================================================================
+       AND A CITY WITH MORE CRIME THAN IT SHOULD HAVE (2026-09-11)
+       ---------------------------------------------------------------------
+       Jerus, asked what crime does to who comes and goes: "like dear rent".
+       So the same two halves. Above Canada's rate, fewer arrive - the same
+       hyperbola as affordabilityPull(), struck on how many times Canada's
+       rate the city has - and a share of the city leaves every month in
+       proportion to the excess. At or below Canada's rate nothing moves, which
+       is what makes it safe to add to a model balanced without it.
+
+       HOW STRONG is a measurement, not the rent's: Cullen and Levitt (1999)
+       found a city loses about 1% of its people for every 10% more crime. So
+       a city at twice Canada's rate should end about a tenth smaller, and the
+       two dials are struck to do that together - the pull takes a tenth off
+       the size the city's jobs and homes support, and the push drains 0.05%
+       of it a month while the excess lasts. Set first at half the rent's
+       weight and 0.2% a month, a college town with no police lost 38% of its
+       people to 2x Canada's crime; that is not what crime does to a city.
+       ===================================================================== */
+
+    /** How much of the crime excess turns into people not coming: a tenth off at twice Canada's rate. */
+    public static final double CRIME_PULL_WEIGHT = .1;
+
+    /** The share of the city that leaves a month for each whole Canada of crime over Canada's. */
+    public static final double CRIME_DEPARTURE_RATE = .0005;
+
+    /** The multiplier crime puts on how big a city these conditions support. */
+    public static double crimePull(double rateVsCanada) {
+        double excess = rateVsCanada - 1;
+        if (!(excess > 0)) return 1;
+        return 1 / (1 + CRIME_PULL_WEIGHT * excess);
+    }
+
+    /** Crime's rate against Canada's, last month's. Carried in like the rent burden. */
+    private double crimeVsCanada;
+    public void setCrimeVsCanada(double ratio) { this.crimeVsCanada = Math.max(0, ratio); }
+
+    private double lastCrimePull = 1;
+    private double lastCrimeDepartures;
+    public double getLastCrimePull()       { return lastCrimePull; }
+    public double getLastCrimeDepartures() { return lastCrimeDepartures; }
+
     /**
      * How much of the gap closes each month.
      *
@@ -698,10 +740,12 @@ public class Migration {
 
         lastSeniorPull = seniorCarePull(seniorCoverage);
         lastAffordabilityPull = affordabilityPull(rentBurden);
+        lastCrimePull = crimePull(crimeVsCanada);
         lastTarget = (JOB_WEIGHT * jobTarget + HOME_WEIGHT * homeTarget)
-                * lastSeniorPull * lastAffordabilityPull;
+                * lastSeniorPull * lastAffordabilityPull * lastCrimePull;
         lastArrivals = 0;
         lastDepartures = 0;
+        lastCrimeDepartures = 0;
         lastCrowding = 1;
         lastDecliningShare = 0;
 
@@ -850,6 +894,21 @@ public class Migration {
             }
         }
         pushed += lastBankruptcyPush;
+
+        /*
+         * AND THE ONES CRIME DROVE OUT. On the population's band share, like the
+         * broke: nobody is choosing a better market, they are leaving a city
+         * that frightens them.
+         */
+        double crimeExcess = Math.max(0, crimeVsCanada - 1);
+        lastCrimeDepartures = Math.min(population * CRIME_DEPARTURE_RATE * crimeExcess,
+                Math.max(0, population - lastDepartures - pushed));
+        if (lastCrimeDepartures > 0) {
+            for (WageBand band : WageBand.values()) {
+                lastDepartureMix[band.ordinal()] += lastCrimeDepartures * share[band.ordinal()];
+            }
+        }
+        pushed += lastCrimeDepartures;
 
         double before = lastDepartures;
         lastDepartures = Math.min(lastDepartures + pushed, population);
@@ -1042,5 +1101,8 @@ public class Migration {
         lastDecliningShare = 0;
         lastSeniorPull = 1;
         lastResidentsPerJob = residentsPerJob(0);
+        crimeVsCanada = 0;
+        lastCrimePull = 1;
+        lastCrimeDepartures = 0;
     }
 }

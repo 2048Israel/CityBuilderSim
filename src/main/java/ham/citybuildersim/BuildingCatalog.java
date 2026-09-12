@@ -204,6 +204,7 @@ public class BuildingCatalog {
         readCare(o, template, name);
         readJobs(o, template, name);
         readTeaches(o, template, name);
+        readSafety(o, template, name);
         readSector(o, template, name);
 
         return template;
@@ -287,6 +288,20 @@ public class BuildingCatalog {
         } catch (Exception e) {
             System.out.println(FILE_NAME + ": \"" + name + "\" has unknown education type \""
                     + teaches + "\"; treated as NONE.");
+        }
+    }
+
+    /** What a safety building does - POLICE or PRISON. Absent reads as NONE; a typo is reported. */
+    private void readSafety(JsonObject o, BuildingsTemplate template, String name) {
+
+        String safety = string(o, "safety");
+        if (safety.isEmpty()) return;
+
+        try {
+            template.setSafety(SafetyType.valueOf(safety));
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" has unknown safety type \""
+                    + safety + "\"; treated as NONE.");
         }
     }
 

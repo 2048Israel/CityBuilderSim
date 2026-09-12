@@ -92,6 +92,13 @@ public class BuildingsTemplate {
      */
     private EducationType teaches = EducationType.NONE;
 
+    /**
+     * What a safety building is for - officers or cells - and NONE for
+     * everything else. The same field as `care` and `teaches`, for the same
+     * reason. See SafetyType.
+     */
+    private SafetyType safety = SafetyType.NONE;
+
     private int id;
 
     /* =====================================================================
@@ -315,6 +322,11 @@ public class BuildingsTemplate {
         return this;
     }
 
+    public BuildingsTemplate setSafety(SafetyType safety) {
+        this.safety = safety == null ? SafetyType.NONE : safety;
+        return this;
+    }
+
     public BuildingsTemplate setTeaches(EducationType teaches) {
         this.teaches = teaches == null ? EducationType.NONE : teaches;
         return this;
@@ -442,6 +454,10 @@ public class BuildingsTemplate {
 
     public CareType getCare() {
         return care;
+    }
+
+    public SafetyType getSafety() {
+        return safety;
     }
 
     public EducationType getTeaches() {

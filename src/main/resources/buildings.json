@@ -42,6 +42,11 @@
   "their capacity is measured against deaths, not against a share of the living.",
   "A healthcare building with no 'care' line treats nobody.",
   "",
+  "For SAFETY, 'safety' says what the building does: POLICE, whose 'capacity' is",
+  "sworn officers (full coverage is 360 per 100,000 people, twice Canada's level),",
+  "or PRISON, whose 'capacity' is cells, each holding one prisoner for a six-month",
+  "sentence. Both are cut by how much of the staff the city can fill.",
+  "",
   "Any field you leave out defaults to 0, so a House needs no 'coverage' line.",
   "jobs keys are JobType names: NO_DIPLOMA, DIPLOMA, COLLEGE_HEALTH,",
   "COLLEGE_BUSINESS, COLLEGE_ENGINEERING, UNIV_DOCTOR, UNIV_LAW, UNIV_FINANCE,",
@@ -50,7 +55,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 42,
+ "nextId": 46,
  "buildings": [
   {
    "id": 0,
@@ -888,6 +893,94 @@
    },
    "land": 300000,
    "roadLoad": 240
+  },
+  {
+   "id": 42,
+   "name": "Police Station",
+   "category": "SAFETY",
+   "safety": "POLICE",
+   "capacity": 120,
+   "cashCost": 27000,
+   "constructionPoints": 5000,
+   "constructionMaterials": 1000,
+   "upkeep": 260,
+   "electricity": 60,
+   "water": 6,
+   "jobs": {
+    "NO_DIPLOMA": 12,
+    "DIPLOMA": 40,
+    "COLLEGE_BUSINESS": 120
+   },
+   "land": 60000,
+   "roadLoad": 150
+  },
+  {
+   "id": 43,
+   "name": "Police Headquarters",
+   "category": "SAFETY",
+   "safety": "POLICE",
+   "capacity": 500,
+   "cashCost": 108000,
+   "constructionPoints": 22000,
+   "constructionMaterials": 4000,
+   "upkeep": 1200,
+   "electricity": 300,
+   "water": 30,
+   "jobs": {
+    "NO_DIPLOMA": 40,
+    "DIPLOMA": 170,
+    "COLLEGE_BUSINESS": 500,
+    "UNIV_LAW": 8,
+    "UNIV_SCIENCE": 20,
+    "UNIV_POLICY": 12
+   },
+   "land": 180000,
+   "roadLoad": 520
+  },
+  {
+   "id": 44,
+   "name": "Jail",
+   "category": "SAFETY",
+   "safety": "PRISON",
+   "capacity": 300,
+   "cashCost": 216000,
+   "constructionPoints": 38000,
+   "constructionMaterials": 8000,
+   "upkeep": 650,
+   "electricity": 420,
+   "water": 95,
+   "jobs": {
+    "NO_DIPLOMA": 40,
+    "DIPLOMA": 190,
+    "COLLEGE_HEALTH": 14,
+    "COLLEGE_BUSINESS": 16,
+    "UNIV_POLICY": 4
+   },
+   "land": 450000,
+   "roadLoad": 70
+  },
+  {
+   "id": 45,
+   "name": "Penitentiary",
+   "category": "SAFETY",
+   "safety": "PRISON",
+   "capacity": 600,
+   "cashCost": 360000,
+   "constructionPoints": 62000,
+   "constructionMaterials": 13333,
+   "upkeep": 1500,
+   "electricity": 900,
+   "water": 200,
+   "jobs": {
+    "NO_DIPLOMA": 90,
+    "DIPLOMA": 400,
+    "COLLEGE_HEALTH": 36,
+    "COLLEGE_BUSINESS": 44,
+    "UNIV_DOCTOR": 4,
+    "UNIV_POLICY": 16
+   },
+   "land": 1300000,
+   "roadLoad": 140
   },
   {
    "id": 40,

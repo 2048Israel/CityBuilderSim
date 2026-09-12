@@ -20,7 +20,7 @@ rem ===========================================================================
 cd /d "%~dp0"
 
 set "APPNAME=CityBuilderSim"
-set "APPVER=0.4.3"
+set "APPVER=0.4.4"
 set "JARNAME=CityBuilderSim-1.0-SNAPSHOT-executable.jar"
 set "JARPATH=target\%JARNAME%"
 

@@ -1323,6 +1323,117 @@ public class BuildingManager {
 
         templates.add(instituteOfTechnology);
 
+        /* ------------------------------ SAFETY ------------------------------
+           Police and prisons (2026-09-11). Jerus: "crime is a function of
+           unemployment, and tight or under households, we need police, and
+           also prison." See Crime for what they do; this is what they cost.
+
+           CAPACITY IS OFFICERS OR CELLS. Coverage is staffed officers against
+           Crime.FULL_OFFICERS_PER_100K a hundred thousand people - twice
+           Canada's 180 (StatCan, 2025) - so a Police Station keeps a city of
+           33,000 at full coverage and 67,000 at Canada's level. A cell holds
+           one prisoner for a six-month sentence.
+
+           OFFICERS ARE COLLEGE JOBS. The Police Foundations diploma is a
+           college programme and the game has no protective-services type, so
+           the nearest post is COLLEGE_BUSINESS; correctional officers are
+           DIPLOMA. Civilians are a third of police staff in Canada (75,107
+           officers beside about 37,000 civilians).
+
+           WHAT THEY COST. Every template totals cashCost + 18 x materials, at
+           the 60/40 split of work against material the other city buildings
+           carry:
+             Police Headquarters  $180M, Halifax's proposed HQ (2026)
+             Police Station       $45M, a divisional station a quarter its size
+             Jail                 $360M, 300 beds at Ontario's $1.2M a bed
+                                  (2,500 beds for $3bn, 2026)
+             Penitentiary         $600M, 600 beds at $1.0M, for its scale
+           and to run, payroll plus upkeep: about $74,000 a prisoner a year in
+           the jail and $85,000 in the penitentiary at full, against $67,000
+           provincial (2011-12) and $115,000 federal (2016). The upkeep is
+           what feeds them - a prisoner buys nothing in the shops.
+           ------------------------------------------------------------------ */
+
+        BuildingsTemplate policeStation = new BuildingsTemplate("Police Station", BuildingType.SAFETY)
+                .setSafety(SafetyType.POLICE)
+                .setCapacity(120)                // officers
+                .setCashCost(27000)
+                .setConstructionPoints(5000)
+                .setConstructionMaterials(1000)
+                .setUpkeep(260)
+                .setElectricityConsumption(60)
+                .setWaterConsumption(6)
+                .setJobs(JobType.NO_DIPLOMA, 12)
+                .setJobs(JobType.DIPLOMA, 40)
+                .setJobs(JobType.COLLEGE_BUSINESS, 120)
+                .setLandSqFt(60000)
+                .setRoadLoad(150)
+                .setId(42);
+
+        templates.add(policeStation);
+
+        BuildingsTemplate policeHeadquarters = new BuildingsTemplate("Police Headquarters", BuildingType.SAFETY)
+                .setSafety(SafetyType.POLICE)
+                .setCapacity(500)                // officers
+                .setCashCost(108000)
+                .setConstructionPoints(22000)
+                .setConstructionMaterials(4000)
+                .setUpkeep(1200)
+                .setElectricityConsumption(300)
+                .setWaterConsumption(30)
+                .setJobs(JobType.NO_DIPLOMA, 40)
+                .setJobs(JobType.DIPLOMA, 170)
+                .setJobs(JobType.COLLEGE_BUSINESS, 500)
+                .setJobs(JobType.UNIV_SCIENCE, 20)
+                .setJobs(JobType.UNIV_LAW, 8)
+                .setJobs(JobType.UNIV_POLICY, 12)
+                .setLandSqFt(180000)
+                .setRoadLoad(520)
+                .setId(43);
+
+        templates.add(policeHeadquarters);
+
+        BuildingsTemplate jail = new BuildingsTemplate("Jail", BuildingType.SAFETY)
+                .setSafety(SafetyType.PRISON)
+                .setCapacity(300)                // cells
+                .setCashCost(216000)
+                .setConstructionPoints(38000)
+                .setConstructionMaterials(8000)
+                .setUpkeep(650)
+                .setElectricityConsumption(420)
+                .setWaterConsumption(95)
+                .setJobs(JobType.NO_DIPLOMA, 40)
+                .setJobs(JobType.DIPLOMA, 190)
+                .setJobs(JobType.COLLEGE_HEALTH, 14)
+                .setJobs(JobType.COLLEGE_BUSINESS, 16)
+                .setJobs(JobType.UNIV_POLICY, 4)
+                .setLandSqFt(450000)
+                .setRoadLoad(70)
+                .setId(44);
+
+        templates.add(jail);
+
+        BuildingsTemplate penitentiary = new BuildingsTemplate("Penitentiary", BuildingType.SAFETY)
+                .setSafety(SafetyType.PRISON)
+                .setCapacity(600)                // cells
+                .setCashCost(360000)
+                .setConstructionPoints(62000)
+                .setConstructionMaterials(13333)
+                .setUpkeep(1500)
+                .setElectricityConsumption(900)
+                .setWaterConsumption(200)
+                .setJobs(JobType.NO_DIPLOMA, 90)
+                .setJobs(JobType.DIPLOMA, 400)
+                .setJobs(JobType.COLLEGE_HEALTH, 36)
+                .setJobs(JobType.COLLEGE_BUSINESS, 44)
+                .setJobs(JobType.UNIV_DOCTOR, 4)
+                .setJobs(JobType.UNIV_POLICY, 16)
+                .setLandSqFt(1300000)
+                .setRoadLoad(140)
+                .setId(45);
+
+        templates.add(penitentiary);
+
         /* =====================================================================
            THE BANK
 
@@ -1406,7 +1517,7 @@ public class BuildingManager {
         bank.setJobs(JobType.UNIV_LAW, 1);
         bank.setId(40);
         templates.add(bank);
-        //add more buildings; next Building ID is 42
+        //add more buildings; next Building ID is 46
     }
 
     public void finalUpdateBuildings() {
@@ -2279,6 +2390,73 @@ public class BuildingManager {
                     stack.getQuantity() * (double) t.getCapacity() * staffing;
         }
         return places;
+    }
+
+    /**
+     * Officers or cells, discounted by how much of the staff turned up.
+     *
+     * The same method as getStaffedCareCapacity() and for the same reason: a
+     * police station with nobody on shift patrols nothing, and a jail with no
+     * guards holds nobody. Per building, from its own job mix. The founding
+     * constabulary is not a building and is not discounted - see
+     * SafetyType.foundingCapacity().
+     *
+     * FINISHED ONLY. A half-built jail holds nobody.
+     */
+    public double getStaffedSafetyCapacity(SafetyType safety, double[] jobFillRate) {
+        if (safety == null || safety == SafetyType.NONE) return 0;
+        double total = safety.foundingCapacity();
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getSafety() != safety) continue;
+
+            double posts = 0, staffed = 0;
+            for (JobType job : JobType.values()) {
+                int n = t.getJobs(job);
+                if (n == 0) continue;
+                posts += n;
+                staffed += n * (jobFillRate != null && job.ordinal() < jobFillRate.length
+                        ? jobFillRate[job.ordinal()] : 1);
+            }
+            double staffing = posts > 0 ? staffed / posts : 1;
+            total += stack.getQuantity() * (double) t.getCapacity() * staffing;
+        }
+        return total;
+    }
+
+    /** ...and without the discount: what the buildings would hold, the founding constabulary included. */
+    public double getSafetyCapacity(SafetyType safety) {
+        if (safety == null || safety == SafetyType.NONE) return 0;
+        double total = safety.foundingCapacity();
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getSafety() == safety) {
+                total += stack.getQuantity() * (double) stack.getBuilding().getCapacity();
+            }
+        }
+        return total;
+    }
+
+    /** The wage bill of just the police, or just the prisons. */
+    public double getSafetyPayroll(SafetyType safety, double[] wagePerType, double[] jobFillRate) {
+        if (safety == null || safety == SafetyType.NONE || wagePerType == null) return 0;
+        double payroll = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getSafety() != safety) continue;
+            payroll += stack.getQuantity() * jobBill(t, wagePerType, jobFillRate);
+        }
+        return payroll;
+    }
+
+    /** ...and their upkeep. */
+    public double getSafetyUpkeep(SafetyType safety) {
+        if (safety == null || safety == SafetyType.NONE) return 0;
+        double upkeep = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (stack.getBuilding().getSafety() != safety) continue;
+            upkeep += stack.getBuilding().getUpkeep() * stack.getQuantity();
+        }
+        return upkeep;
     }
 
     /** Places without the staffing discount - what the buildings would seat. */

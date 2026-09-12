@@ -458,8 +458,34 @@ public class PopulationManager {
                 out[b] = Math.max(0, out[b] - studying[b]);
             }
         }
+
+        /*
+         * ...AND THE PRISONERS (2026-09-11). Out of the supply for as long as
+         * they are inside, and taken off the BOTTOM of the ladder: who goes to
+         * prison is mostly who is out of work, and who is out of work is the
+         * surplus at the bottom - see UnemployedHousehold.stockGroup(). Past
+         * the unskilled band, from the rest in proportion.
+         */
+        if (imprisoned > 0) {
+            int none = WageBand.NONE.ordinal();
+            double left = imprisoned;
+            double fromNone = Math.min(out[none], left);
+            out[none] -= fromNone;
+            left -= fromNone;
+            if (left > 0) {
+                double rest = 0;
+                for (int b = 0; b < out.length; b++) if (b != none) rest += out[b];
+                double k = rest > 0 ? Math.max(0, 1 - left / rest) : 0;
+                for (int b = 0; b < out.length; b++) if (b != none) out[b] *= k;
+            }
+        }
         return out;
     }
+
+    /** Adults serving a sentence, set from Crime each month. */
+    private double imprisoned;
+    public void setImprisoned(double adults) { this.imprisoned = Math.max(0, adults); }
+    public double getImprisoned() { return imprisoned; }
 
     /** Adults studying full time, by band, set from Education each month. */
     private double[] studying;
@@ -753,7 +779,8 @@ public class PopulationManager {
      * 2026-09-06), and since 2026-09-11 a student is a household of their own.
      */
     public double getLabourForce() {
-        return Math.max(0, workforce - getStudyingTotal());
+        // ...and less the prisoners, since 2026-09-11 (night). See workforceByBand().
+        return Math.max(0, workforce - getStudyingTotal() - imprisoned);
     }
 
     /** Unemployed as a share of everyone who could work, 0-1. */
@@ -854,6 +881,7 @@ public class PopulationManager {
         population = 0;
         totalJobs = 0;
         workforce = 0;
+        imprisoned = 0;
     }
     
     private static final NumberFormat formatter = NumberFormat.getNumberInstance(Locale.CANADA);

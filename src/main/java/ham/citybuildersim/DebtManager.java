@@ -52,6 +52,28 @@ public class DebtManager {
         baseRate = Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, rate));
     }
 
+    /**
+     * WHAT THE CITY'S OWN PAPER IS QUOTED UNDER THE POLICY RATE - and it is the
+     * one number in this file that does not describe anything real.
+     *
+     * A city with no debt is quoted the policy rate LESS this, so the Policy
+     * screen reads 3.00% and the Finances screen 1.00% on the same morning and
+     * the city borrows cheaper than its own central bank, which no borrower
+     * anywhere does. Jerus found it on the screens, 2026-09-12, and decided:
+     * "leave as is for now, much later when we will redesign it realistically
+     * aka central bank stepping in to keep it at that rate and longer durations
+     * deviating."
+     *
+     * So it stands, and it is a NAMED constant now rather than a literal in
+     * four places, because the screens have to be able to say what they are
+     * showing: the Policy page and the Finances breakdown both print it and
+     * both say it is a discount under the dial. What replaces it is a term
+     * structure - an overnight rate the central bank actually holds by
+     * operating in the market, and a spread that grows with maturity - and that
+     * is a batch of its own.
+     */
+    public static final double CITY_DISCOUNT = .02;
+
     /** Where the rate sits when nobody is leaning on it either way. */
     public static final double NEUTRAL_RATE = .03;
 
@@ -102,7 +124,7 @@ public class DebtManager {
                 inflation > INFLATION_TARGET ? "meeting" : "giving back",
                 TAYLOR_WEIGHT);
     }
-    private double currentRate = baseRate - .02;
+    private double currentRate = baseRate - CITY_DISCOUNT;
     private double GDP;
 
     /**
@@ -800,8 +822,8 @@ public class DebtManager {
      * PURE. Reads the same spreads priceAt() reads and sets nothing.
      */
     public double rateAtPolicy(double policy) {
-        double floor   = Math.max(MIN_RATE, policy - 0.02);
-        double ceiling = (policy - 0.02) + 2 * MAX_SPREAD_PER_MEASURE;
+        double floor   = Math.max(MIN_RATE, policy - CITY_DISCOUNT);
+        double ceiling = (policy - CITY_DISCOUNT) + 2 * MAX_SPREAD_PER_MEASURE;
         double rate = floor + gdpSpread() + revenueSpread();
         return Math.max(MIN_RATE, Math.min(rate, ceiling)) + bankPremium;
     }
@@ -841,14 +863,14 @@ public class DebtManager {
         return getRate() >= ceilingRate() + bankPremium - 1e-9;
     }
 
-    /** What a spotless city pays. */
+    /** What a spotless city pays: the policy rate less CITY_DISCOUNT - see its note. */
     public double floorRate() {
-        return Math.max(MIN_RATE, baseRate - 0.02);
+        return Math.max(MIN_RATE, baseRate - CITY_DISCOUNT);
     }
 
     /** What a hopeless one pays - both measures maxed out. */
     public double ceilingRate() {
-        return (baseRate - 0.02) + 2 * MAX_SPREAD_PER_MEASURE;
+        return (baseRate - CITY_DISCOUNT) + 2 * MAX_SPREAD_PER_MEASURE;
     }
 
     /**

@@ -94,6 +94,11 @@ public class BuildingDataCheck {
                 System.out.println("  FAIL " + who + ": teaches " + actual.getTeaches()
                         + " != " + expected.getTeaches());
             }
+            if (actual.getSafety() != expected.getSafety()) {
+                fails++;
+                System.out.println("  FAIL " + who + ": safety " + actual.getSafety()
+                        + " != " + expected.getSafety());
+            }
 
             int before = fails;
 
@@ -157,6 +162,25 @@ public class BuildingDataCheck {
             }
         }
         assertTrue("education declares what it teaches, nothing else does", schoolSane);
+
+        // ...and one more over. A police station filed as NONE is a perfectly
+        // valid building that happens to patrol nothing.
+        boolean safetySane = true;
+        int police = 0, prisons = 0;
+        for (BuildingsTemplate t : data) {
+            boolean safety = t.getCategory() == BuildingType.SAFETY;
+            boolean declared = t.getSafety() != SafetyType.NONE;
+            if (safety != declared) {
+                safetySane = false;
+                System.out.println("  " + t.getName() + ": category "
+                        + t.getCategory() + " with safety " + t.getSafety());
+            }
+            if (t.getSafety() == SafetyType.POLICE) police++;
+            if (t.getSafety() == SafetyType.PRISON) prisons++;
+        }
+        assertTrue("safety declares police or prison, nothing else does", safetySane);
+        // Jerus: "two of each".
+        assertTrue("two police buildings and two prisons", police == 2 && prisons == 2);
 
         /* ---------- and every profession has exactly one school ----------
 
