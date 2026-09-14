@@ -36,7 +36,7 @@ package ham.citybuildersim;
 public final class GameVersion {
 
     /** Bump on release. Build EXE.bat reads this line for APPVER. */
-    public static final String VERSION = "0.5.1";
+    public static final String VERSION = "0.5.15";
 
     /**
      * The save shape.

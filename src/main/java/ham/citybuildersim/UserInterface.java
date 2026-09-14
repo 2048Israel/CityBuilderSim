@@ -259,13 +259,31 @@ public class UserInterface extends Application {
      * but its a sticky ladder". Dragging is the natural gesture for a speed and
      * landing between two stops is not a speed anybody meant to pick.
      */
-    private static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10};
+    private static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50};
     private static final int NORMAL_SPEED = 3;              // 1x
 
     private int speedIndex = NORMAL_SPEED;
     private boolean clockRunning;
     private double monthProgress;
     private long lastFrame;
+
+    /*
+     * HOW OFTEN THE SCREEN MAY BE REBUILT WHILE TIME RUNS.
+     *
+     * The clock redraws the open screen once per frame in which a month landed,
+     * which was free at 10x: a month arrives every 500ms there, so the limit
+     * never bound. At 50x one lands every 100ms, and a heavy page - the
+     * property tax screen is a ten-row grid and ten dials - rebuilt ten times a
+     * second is a page that stutters and fights the pointer.
+     *
+     * So the SIMULATION runs free and the REDRAW is capped. 120ms is under the
+     * gap at 20x, so nothing below the top rung behaves any differently, and at
+     * 50x the screen lags the city by at most a tenth of a second - which is
+     * one frame's worth of figures on a screen advancing ten months a second.
+     */
+    private static final double REDRAW_EVERY = .12;
+    private double sinceRedraw;
+    private boolean redrawPending;
     private javafx.animation.AnimationTimer clock;
 
     /** The date line, kept so a day can be repainted without a whole redraw. */
@@ -693,6 +711,27 @@ public class UserInterface extends Application {
                  */
                 setClockRunning(!clockRunning);
                 redrawScreen.run();
+                e.consume();
+            } else if (!typing && !isGameMenu(currentScreen)
+                    && (e.getCode() == javafx.scene.input.KeyCode.LEFT
+                     || e.getCode() == javafx.scene.input.KeyCode.RIGHT)) {
+                /*
+                 * LEFT AND RIGHT ARE THE LADDER, one rung a press. Jerus: "when
+                 * you press the right and left keys the speed decreases /
+                 * increases."
+                 *
+                 * Consumed for the same reason SPACE is, and more so: an arrow
+                 * key is how JavaFX moves focus between controls and how it
+                 * drags a focused Slider. Unconsumed, a right-arrow on the
+                 * policy screen would move the speed AND the tax dial under the
+                 * pointer.
+                 */
+                int pick = Math.max(0, Math.min(SPEEDS.length - 1, speedIndex
+                        + (e.getCode() == javafx.scene.input.KeyCode.RIGHT ? 1 : -1)));
+                if (pick != speedIndex) {
+                    speedIndex = pick;
+                    redrawScreen.run();
+                }
                 e.consume();
             }
         });
@@ -16303,6 +16342,13 @@ public class UserInterface extends Application {
 
         VBox grid = affordabilityGrid(hh, bal, families);
         column.getChildren().add(grid);
+        column.getChildren().add(statementNote(
+                "Below the rule: the retired, on a pension and no wage; the out of work, on "
+                + "EI for twelve months and then on what they saved and what the bank will "
+                + "lend; students, on a grant, their savings and a student loan that never "
+                + "runs out; the orphans, who have nothing; and the prison, which feeds its "
+                + "own. None of them has a pay tier, so none of them has a row of six - what "
+                + "their one cell says is what a month leaves them against a full basket."));
 
         /* --------------- and the cell somebody has clicked on --------------- */
         VBox opened = openStatement(hh, bal, families);
@@ -16321,31 +16367,6 @@ public class UserInterface extends Application {
             revealOpened = false;
         }
 
-        /* ---------------------------- the retired ---------------------------- */
-        if (hh.getRowPeople(HouseholdAccounts.RETIRED) >= .5) {
-            column.getChildren().add(statementHead("And the retired"));
-            double retiredLeft = hh.getRowSaving(HouseholdAccounts.RETIRED);
-            column.getChildren().add(statementLine("A pension is",
-                    tightMoney(toDollars(
-                            game.getEconomyManager().getTaxPolicy().pensionPerSenior()))
-                    + " a month",
-                    retiredLeft >= 0 ? Palette.GOOD : Palette.BAD));
-            column.getChildren().add(statementNote(retiredLeft >= 0
-                    ? "Enough to cover a home and the shopping."
-                    : "Not enough to cover a home and the shopping."));
-            column.getChildren().add(retiredGrid(hh, bal, families));
-        }
-
-        /* ---------------- and the people outside the families (2026-09-11) ---------------- */
-        VBox outside = outsideGrid(bal);
-        if (!outside.getChildren().isEmpty()) {
-            column.getChildren().add(statementHead("And outside the families"));
-            column.getChildren().add(statementNote(
-                    "The out of work live on EI for twelve months, then on what they saved and "
-                    + "what the bank will lend. The students live on a grant, their savings and "
-                    + "a student loan that never runs out. The orphans have nothing."));
-            column.getChildren().add(outside);
-        }
 
         /* ======================= THE CITY'S OWN MONTH ======================= */
         column.getChildren().add(statementHead("The city's month"));
@@ -16511,6 +16532,14 @@ public class UserInterface extends Application {
             Label head = gridCell(hh.getRowLabel(t), Palette.TEXT_LABEL,
                     Palette.SIZE_CAPTION, true);
             head.setWrapText(true);
+            /*
+             * A WRAPPED LABEL ALIGNS ITS BOX, NOT ITS LINES. gridCell sets
+             * CENTER_RIGHT, which puts the label at the right of its column;
+             * the text inside it still ran left, so "Senior professional"
+             * broke over two lines flush against the column's LEFT edge and
+             * read as though it had collided with "Professional" next door.
+             */
+            head.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
             grid.add(head, t + 1, 0);
         }
 
@@ -16554,9 +16583,177 @@ public class UserInterface extends Application {
                             + "; -fx-border-width: 0 0 2 0;" : ""));
             grid.add(cell, t + 1, line);
         }
+        line++;
+
+        /*
+         * ...AND EVERYBODY WHO HAS NO PAY TIER, IN THE SAME GRID.
+         *
+         * Jerus: "the others should be in the matrix in some way, not on their
+         * own thing in the bottom." They were two more tables underneath this
+         * one, each with its own columns in its own widths, so the retired and
+         * the out of work read as a different kind of citizen from a couple
+         * with a child - which they are not. What they have not got is a PAY
+         * TIER, and a pay tier is the only thing the six columns above say.
+         *
+         * So the row keeps the shape column and gives up the tier columns: one
+         * wide cell across all six, tinted and clickable on exactly cashCell's
+         * rule, carrying how many of them there are and what a month leaves
+         * one of them.
+         */
+        line = otherRows(grid, hh, bal, families, line);
 
         VBox box = new VBox(grid);
         box.setStyle("-fx-padding: 2 0 8 0;");
+        return box;
+    }
+
+    /** A rule and a caption across the matrix: a different kind of household below. */
+    private int gridSectionRow(javafx.scene.layout.GridPane grid, String caption, int line) {
+        Label head = new Label(caption);
+        head.setMaxWidth(Double.MAX_VALUE);
+        head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL)
+                + " -fx-padding: 14 0 3 0;"
+                + " -fx-border-color: " + Palette.EDGE + " transparent transparent transparent;"
+                + " -fx-border-width: 1 0 0 0;");
+        grid.add(head, 0, line);
+        javafx.scene.layout.GridPane.setColumnSpan(head, HouseholdAccounts.RETIRED + 1);
+        return line + 1;
+    }
+
+    /**
+     * The retired, the out of work, the students, the orphans and the prison,
+     * as rows of the same matrix.
+     *
+     * Both kinds are drawn from the same two things - a Household ledger and
+     * what a month leaves it - so neither can drift from the other. The retired
+     * reach their figure through HouseholdAccounts.statementFor(), because a
+     * pension and a rent make a statement; everybody else reaches it through
+     * their own books, because they have no shape to derive one from.
+     */
+    private int otherRows(javafx.scene.layout.GridPane grid, HouseholdAccounts hh,
+                          HouseholdBalance bal, FamilyModel families, int line) {
+
+        if (bal == null) return line;
+
+        /* ------------------------------ the retired ------------------------------ */
+        boolean headed = false;
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (!shape.isRetired()) continue;
+            HouseholdAccounts.Statement s =
+                    hh.statementFor(families, shape, PayTier.values()[0]);
+            if (s.households() < .5) continue;
+            if (!headed) {
+                line = gridSectionRow(grid, "the retired · no tier, and a pension of "
+                        + tightMoney(toDollars(hh.getPensionPerSenior()), false)
+                        + " a head", line);
+                headed = true;
+            }
+            line = otherRow(grid, shape.getLabel(), bal.cell(shape),
+                    toDollars(s.left()), s.households(), line);
+        }
+
+        /* ------------------------ and outside the families ------------------------ */
+        java.util.List<Household> rest = new java.util.ArrayList<>();
+        for (UnemployedHousehold.Status st : UnemployedHousehold.Status.values()) {
+            rest.add(bal.unemployed(st));
+        }
+        rest.add(bal.students());
+        for (AgeBand b : AgeBand.values()) if (bal.orphans(b) != null) rest.add(bal.orphans(b));
+        // The prisoners kept their own books from the day they were built and
+        // no grid ever listed them. Out of the labour force, debts frozen.
+        if (bal.prisoners() != null) rest.add(bal.prisoners());
+
+        headed = false;
+        for (Household own : rest) {
+            if (own == null || own.households() < .5) continue;
+            if (!headed) {
+                line = gridSectionRow(grid,
+                        "outside the families · no tier, and no wage to have one", line);
+                headed = true;
+            }
+            /*
+             * MEASURED AGAINST A FULL BASKET rather than against what they ate.
+             * Orphans have no income, no bills and nothing put by: their month
+             * nets to exactly zero, and a column of zeroes would paint starving
+             * babies the same colour as a household that broke even. What they
+             * are short of is the FOOD.
+             */
+            line = otherRow(grid, own.label(), own,
+                    toDollars(own.afterFixed() - own.want()), own.households(), line);
+        }
+        return line;
+    }
+
+    /** One matrix row for a household with no tier: a name, then one wide cell. */
+    private int otherRow(javafx.scene.layout.GridPane grid, String label, Household own,
+                         double perHousehold, double homes, int line) {
+
+        boolean trouble = own.isCutOff() || own.isGoingShort();
+        grid.add(gridCell(label, trouble ? Palette.BAD_SOFT : Palette.TEXT_BODY,
+                Palette.SIZE_CAPTION, false), 0, line);
+
+        javafx.scene.Node cell = wideCell(own, perHousehold, homes);
+        grid.add(cell, 1, line);
+        javafx.scene.layout.GridPane.setColumnSpan(cell, HouseholdAccounts.RETIRED);
+        return line + 1;
+    }
+
+    /**
+     * cashCell's cell, one row wide: the same tint, the same ring, the same
+     * click - with the headcount inside it, because the six tier columns it
+     * spans have nothing of their own to say about this household.
+     *
+     * A ZERO IS NOT A SURPLUS. The prison feeds its own, so its basket is zero
+     * and its month nets to exactly nothing; painting that the same green as a
+     * couple banking $7,000 was the old grid's worst line. Nothing-to-say gets
+     * a grey wash and a grey figure.
+     */
+    private javafx.scene.Node wideCell(Household own, double perHousehold, double homes) {
+
+        double shown = perHousehold * (householdPerFamily ? 1 : Math.max(1, homes));
+        double base = Math.max(toDollars(own.want()),
+                Math.max(toDollars(own.disposable()), 1));
+        double severity = Math.min(1, Math.abs(perHousehold) / base);
+
+        boolean quiet = Math.abs(shown) < .005;
+        String tone = quiet ? Palette.TEXT_MUTED : shown < 0 ? Palette.BAD : Palette.GOOD;
+        String wash = quiet ? "rgba(255,255,255,0.04)"
+                : "rgba(" + (shown < 0 ? "255,107,107," : "95,214,138,")
+                        + String.format("%.2f", .08 + severity * .30) + ")";
+
+        String key = "OUT:" + own.key();
+        boolean open = key.equals(openCell);
+
+        Label many = new Label(shortNumber(homes) + " of them");
+        many.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+
+        Label figure = new Label(tightMoney(shown, !householdPerFamily));
+        figure.setStyle(Palette.figure(Palette.SIZE_CAPTION, tone));
+
+        HBox box = new HBox(8, many, gap, figure);
+        box.setAlignment(Pos.CENTER_LEFT);
+        box.setMaxWidth(Double.MAX_VALUE);
+        box.setStyle("-fx-padding: 4 6 4 6; -fx-cursor: hand;"
+                + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
+                + " -fx-background-color: " + wash + ";"
+                + (open ? " -fx-border-color: " + Palette.ACCENT
+                        + "; -fx-border-radius: " + Palette.RADIUS_TIGHT + ";" : ""));
+
+        Tooltip tip = new Tooltip(own.label()
+                + "\n" + people(own.households()) + " of them"
+                + "\nwhat a month leaves one of them, against a full basket"
+                + "\nclick for the month");
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(box, tip);
+
+        box.setOnMouseClicked(e -> {
+            openCell = open ? "" : key;
+            revealOpened = !openCell.isEmpty();
+            showHouseholdMenu();
+        });
         return box;
     }
 
@@ -16615,6 +16812,430 @@ public class UserInterface extends Application {
     }
 
     /**
+     * What a full basket would have been, what they ate, and where the
+     * difference came from.
+     *
+     * SHARED BY BOTH PANELS since the families asked for it too. Every cell in
+     * the game carries this - `want`, `planned`, `unfunded`, `drawn`,
+     * `borrowed`, `banked` - written by the month as it happened rather than
+     * derived afterwards from a shape and a tier, and until now only the
+     * families' statement was drawn at all and it did not include any of it.
+     * A household that ate its full basket out of its savings and one that ate
+     * two thirds of it looked identical.
+     */
+    private VBox basketBlock(Household cell) {
+
+        VBox block = new VBox(0);
+        double wanted = toDollars(cell.want());
+        double spent = toDollars(cell.planned());
+        if (wanted <= .5 && spent <= .5) return block;
+
+        Label head = new Label("The shopping, and how it was paid for");
+        head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL)
+                + " -fx-padding: 10 0 2 0;");
+        block.getChildren().add(head);
+
+        block.getChildren().add(statementLine("A full basket would be",
+                tightMoney(wanted, false), Palette.TEXT_MUTED));
+        block.getChildren().add(statementLine("What they actually ate",
+                tightMoney(spent, false),
+                spent < wanted - .5 ? Palette.BAD : Palette.GOOD));
+
+        double shortBy = toDollars(cell.unfunded());
+        if (shortBy > .5) {
+            block.getChildren().add(statementLine("Could not fund",
+                    tightMoney(shortBy, false), Palette.BAD));
+        }
+        if (spent < wanted - .5 && shortBy <= .5) {
+            block.getChildren().add(statementNote(
+                    "Nothing funds the difference: there is no income, nothing put by and "
+                    + "nobody to borrow from, so the basket is simply not bought."));
+        }
+
+        double drawn = toDollars(cell.drawn());
+        double borrowed = toDollars(cell.borrowed());
+        double banked = toDollars(cell.banked());
+        if (drawn > .5) {
+            block.getChildren().add(statementLine("Drawn from savings",
+                    tightMoney(drawn, false), Palette.WARN));
+        }
+        if (borrowed > .5) {
+            block.getChildren().add(statementLine("Borrowed",
+                    tightMoney(borrowed, false), Palette.BAD));
+        }
+        if (banked > .5) {
+            block.getChildren().add(statementLine("Put by",
+                    tightMoney(banked, false), Palette.GOOD));
+        }
+        return block;
+    }
+
+    /* =====================================================================
+       THE MONEY BLOCKS BOTH PANELS SHARE
+
+       Jerus: "i also want a better panel (the financial stuff) thats what i
+       mean by more detailed, i want to expand that further, its great, but
+       more."
+
+       The month was six lines and the position was four. Everything added
+       below was already in the model and had never been drawn: what the bank
+       will still lend, what was borrowed and paid off this month, what a
+       student loan has left to run, how long savings cover a shortfall, and
+       what share of a pay packet each claim on it takes.
+
+       WRITTEN ONCE AND CALLED TWICE on purpose. Two panels that have to agree
+       agree because they are the same code, not because somebody kept them in
+       step - the rule the rent-units bug taught this codebase.
+       ===================================================================== */
+
+    /** A cost, printed negative - but a cost of nothing reads "$0", never "-$0". */
+    private String costMoney(double dollars) {
+        double a = Math.abs(dollars);
+        return a < .005 ? "$0" : tightMoney(-a, false);
+    }
+
+    /** A stake, with enough decimals left on it to still say something. */
+    private static String stakePct(double share) {
+        double p = share * 100;
+        if (p >= 1)   return String.format("%.1f%%", p);
+        if (p >= .1)  return String.format("%.2f%%", p);
+        if (p >= .01) return String.format("%.3f%%", p);
+        return String.format("%.4f%%", p);
+    }
+
+    /**
+     * What part is of whole - or a dash, when there is no whole to be part of.
+     *
+     * A SHARE THAT ROUNDS TO NOTHING SAYS SO IN WORDS. 1,361 out-of-work
+     * households in a city of half a million printed "0% of the city's
+     * households", which reads as none of them rather than as very few.
+     */
+    private static String shareOf(double part, double whole) {
+        if (Math.abs(whole) < 1e-9) return "—";
+        double p = part / whole * 100;
+        if (p > 0 && p < .05) return "under 1%";
+        if (Math.abs(p) < 10)  return String.format("%.1f%%", p);
+        return String.format("%.0f%%", p);
+    }
+
+    /** A run of months, said the way a person would say it. */
+    private static String monthsRun(double months) {
+        if (!Double.isFinite(months) || months >= 600) return "longer than a lifetime";
+        if (months >= 24) return String.format("%.0f years", months / 12);
+        if (months < 1)   return "less than a month";
+        return String.format("%.0f months", months);
+    }
+
+    /** The small heading that divides a statement panel into blocks. */
+    private Label panelBlockHead(String text) {
+        Label head = new Label(text);
+        head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL)
+                + " -fx-padding: 12 0 2 0;");
+        return head;
+    }
+
+    /** How many of them there are, how big each one is, and how much of the city that is. */
+    private Label panelWho(HouseholdBalance bal, Household cell) {
+        double allHomes = 0, allPeople = 0;
+        for (Household c : bal.cells()) {
+            allHomes += c.households();
+            allPeople += c.people();
+        }
+        Label many = new Label(people(cell.households()) + " of them, "
+                + (cell.size() == 1 ? "one person each" : cell.size() + " people each")
+                + "  ·  " + shareOf(cell.households(), allHomes)
+                + " of the city's households, "
+                + shareOf(cell.people(), allPeople) + " of its people");
+        many.setWrapText(true);
+        many.setMaxWidth(STATEMENT - 28);
+        many.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
+                + " -fx-padding: 0 0 6 0;");
+        return many;
+    }
+
+    /**
+     * What one of these households HAS, what it OWES, what it OWNS and what
+     * all of that leaves it worth.
+     *
+     * The month above is a flow. This is the stock behind it, and it is the
+     * half that decides whether a bad month is survivable: a household short
+     * $400 with six months of credit left and one at the ceiling are the same
+     * red figure and completely different situations.
+     */
+    private void positionBlock(VBox panel, HouseholdBalance bal, Household own) {
+
+        panel.getChildren().add(panelBlockHead("What one of them has"));
+
+        double put = toDollars(own.savings());
+        double owe = toDollars(own.debt());
+
+        panel.getChildren().add(statementLine("Put by", tightMoney(put, false),
+                own.savings() > 0 ? Palette.GOOD : null));
+        double moved = toDollars(own.banked() - own.drawn());
+        if (Math.abs(moved) > .005) {
+            panel.getChildren().add(statementLine(
+                    moved > 0 ? "...added this month" : "...drawn down this month",
+                    tightMoney(Math.abs(moved), false),
+                    moved > 0 ? Palette.GOOD : Palette.WARN));
+        }
+
+        panel.getChildren().add(statementLine("Owed to lenders", costMoney(owe),
+                own.debt() > 0 ? Palette.BAD : null));
+        if (own.debt() > 0) {
+            panel.getChildren().add(statementLine(
+                    String.format("Interest at %.1f%% a year", own.rate() * 100),
+                    costMoney(toDollars(own.interest()))));
+        }
+        if (own.borrowed() > .005) {
+            panel.getChildren().add(statementLine("...borrowed this month",
+                    tightMoney(toDollars(own.borrowed()), false), Palette.BAD));
+        }
+        if (own.repaid() > .005) {
+            panel.getChildren().add(statementLine("...paid off this month",
+                    tightMoney(toDollars(own.repaid()), false), Palette.GOOD));
+        }
+        if (own.bankrupt() > .005) {
+            panel.getChildren().add(statementLine("...written off this month",
+                    tightMoney(toDollars(own.bankrupt()), false), Palette.BAD));
+        }
+
+        /*
+         * WHAT THE BANK WILL STILL LEND, which is the figure that decides
+         * whether a short month is survivable or is the month they stop eating.
+         * Read from Household.creditRoom - the same call the month itself
+         * makes, so the screen shows the number the model used rather than a
+         * second opinion about it.
+         */
+        double room = toDollars(own.creditRoom(own.disposable()));
+        panel.getChildren().add(statementLine("Room still to borrow",
+                own.isLockedOut() ? "none - locked out" : tightMoney(room, false),
+                own.isLockedOut() ? Palette.BAD : room > .5 ? null : Palette.WARN));
+
+        if (own.studentDebt() > 0) {
+            panel.getChildren().add(statementLine("Student loan outstanding",
+                    costMoney(toDollars(own.studentDebt())), Palette.WARN));
+            if (own.studentBorrowed() > .005) {
+                panel.getChildren().add(statementLine("...drawn this month",
+                        tightMoney(toDollars(own.studentBorrowed()), false), Palette.WARN));
+            }
+            if (own.studentRepaid() > .005) {
+                panel.getChildren().add(statementLine("...repaid this month",
+                        tightMoney(toDollars(own.studentRepaid()), false), Palette.GOOD));
+                panel.getChildren().add(statementNote("At this month's rate it has "
+                        + monthsRun(own.studentDebt() / own.studentRepaid())
+                        + " left to run."));
+            } else {
+                panel.getChildren().add(statementNote(
+                        "Nothing is coming off it: a student loan is only collected out of a wage."));
+            }
+        }
+
+        /*
+         * AND WHAT IT OWNS. Shares in the city's companies - bought at
+         * offerings out of what was past the cushion, or held since the
+         * founding. At the desk's quote while there is an exchange, at book
+         * when the bank is dead and there is none.
+         */
+        Equity register = game.getEquity();
+        Exchange exchange = game.getExchange();
+        double shareWorth = 0;
+        int held = 0;
+        StringBuilder holdings = new StringBuilder();
+        StringBuilder names = new StringBuilder();
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (own.shares(c) <= 0 || register.getShares(c) <= 0) continue;
+            double stake = own.shares(c) / register.getShares(c);
+            double book = c == Equity.BANK ? game.getBank().equity()
+                    : game.getSectorBooks().get(Equity.COMPANIES[c]).equity();
+            shareWorth += exchange.isOpen()
+                    ? own.shares(c) * exchange.mid(c) : stake * Math.max(0, book);
+            held++;
+            if (holdings.length() > 0) holdings.append(", ");
+            holdings.append(Equity.COMPANIES[c]).append(' ').append(stakePct(stake));
+            if (names.length() > 0) names.append(", ");
+            names.append(Equity.COMPANIES[c]);
+        }
+        double shares = toDollars(shareWorth);
+        if (held > 0) {
+            panel.getChildren().add(statementLine(
+                    exchange.isOpen() ? "Shares, at the market" : "Shares, at book",
+                    tightMoney(shares, false), Palette.GOOD));
+            panel.getChildren().add(statementLine("Dividends this month",
+                    tightMoney(toDollars(own.dividends()), false),
+                    own.dividends() > 0 ? Palette.GOOD : null));
+            if (own.sold() > 0) {
+                panel.getChildren().add(statementLine("Sold to cover the month",
+                        tightMoney(toDollars(own.sold()), false), Palette.WARN));
+            }
+            /*
+             * ELEVEN SECTORS AT THE SAME STAKE IS NOT ELEVEN FACTS. A household
+             * that bought at every offering owns the same sliver of everything,
+             * and the line that listed them printed that sliver eleven times -
+             * a wall of "0.0000%", which is the one thing a percentage cannot
+             * usefully carry. What it is worth is already on the line above;
+             * what this line is for is WHICH companies, so once there are more
+             * than a couple of them that is all it says.
+             */
+            panel.getChildren().add(statementNote(
+                    held >= Equity.COMPANIES.length
+                            ? "A slice of every company in the city."
+                            : held >= 3
+                                    ? "A slice of " + held + " of the city's companies: "
+                                            + names + "."
+                                    : "Owns " + holdings + "."));
+        }
+
+        /* ...AND WHAT IT KEEPS ABROAD: the world's paper, bought when the world
+         * paid more than the bank. See HouseholdBalance.investAbroad(). */
+        double away = 0;
+        if (own.abroad() > 0) {
+            away = toDollars(own.abroadValue(bal.getExchangeRate()));
+            panel.getChildren().add(statementLine("Kept abroad",
+                    tightMoney(away, false)
+                            + " (US" + tightMoney(toDollars(own.abroad()), false) + ")",
+                    Palette.GOOD));
+            if (own.sentAbroad() > 0) {
+                panel.getChildren().add(statementLine("...sent out this month",
+                        tightMoney(toDollars(own.sentAbroad()), false)));
+            }
+            if (own.broughtHome() > 0) {
+                panel.getChildren().add(statementLine("...brought home this month",
+                        tightMoney(toDollars(own.broughtHome()), false)));
+            }
+            if (own.foreignInterest() > 0) {
+                panel.getChildren().add(statementLine("...interest earned out there",
+                        tightMoney(toDollars(own.foreignInterest()), false), Palette.GOOD));
+            }
+        }
+
+        double net = put + shares + away - owe;
+        panel.getChildren().add(statementTotal("What one of them is worth",
+                tightMoney(net, false), net < 0 ? Palette.BAD : Palette.GOOD));
+
+        /*
+         * AND HOW LONG THAT LASTS, which is the question a red cell actually
+         * raises. Measured against a FULL basket, so a household eating less
+         * than it wants is counted as short by the difference rather than as
+         * having balanced its month by going hungry.
+         */
+        double shortfall = -toDollars(own.afterFixed() - own.want());
+        if (shortfall > .005) {
+            double cushion = Math.max(0, put + shares + away);
+            panel.getChildren().add(statementNote(cushion > .005
+                    ? "Short " + tightMoney(shortfall, false) + " a month, with "
+                            + monthsRun(cushion / shortfall) + " of cover behind it."
+                    : "Short " + tightMoney(shortfall, false)
+                            + " a month with nothing behind it."));
+        }
+
+        if (own.isLockedOut()) {
+            panel.getChildren().add(statementNote(String.format(
+                    "Discharged: nothing will lend to them for another %d month%s, and what "
+                    + "they cannot pay for they go without.",
+                    own.lockout(), own.lockout() == 1 ? "" : "s")));
+        } else if (own.isCutOff()) {
+            panel.getChildren().add(statementNote(
+                    "At the credit ceiling: what they cannot fund, they go without."));
+        } else if (own.isGoingShort()) {
+            panel.getChildren().add(statementNote(
+                    "Buying less than they want this month."));
+        }
+        if (own.evicted() > .5) {
+            panel.getChildren().add(statementNote(people(own.evicted())
+                    + " of them lost their home this month: the rent went unpaid, and a "
+                    + "quarter of those evicted leave the city rather than stay in it."));
+        }
+    }
+
+    /**
+     * The same month again, as shares rather than figures.
+     *
+     * Two households on very different money can be in identical trouble, and
+     * the figures do not say so - $400 left on $6,000 and $40 left on $600 read
+     * as a tenfold difference and are the same household. The percentages are
+     * the comparison the grid above cannot make.
+     */
+    private void ratioBlock(VBox panel, Household own, double income, double tax,
+                            String billsLabel, double bills, double fees,
+                            double shopping, double left) {
+
+        double takeHome = income - tax;
+        if (takeHome <= .005) return;
+
+        panel.getChildren().add(panelBlockHead("Where the money goes"));
+        if (tax > .005) {
+            panel.getChildren().add(statementLine("Tax and contributions take",
+                    shareOf(tax, income) + " of what they earn", Palette.WARN));
+        }
+        double burden = bills / takeHome;
+        panel.getChildren().add(statementLine(billsLabel,
+                shareOf(bills, takeHome) + " of take-home",
+                burden > .35 ? Palette.BAD : burden > .25 ? Palette.WARN : null));
+        if (fees > .005) {
+            panel.getChildren().add(statementLine("Fees and interest take",
+                    shareOf(fees, takeHome) + " of take-home"));
+        }
+        panel.getChildren().add(statementLine("The shopping takes",
+                shareOf(shopping, takeHome) + " of take-home"));
+        panel.getChildren().add(statementLine("They keep",
+                shareOf(left, takeHome) + " of take-home",
+                left < 0 ? Palette.BAD : Palette.GOOD));
+        if (own.debt() > 0) {
+            panel.getChildren().add(statementLine("What they owe is",
+                    monthsRun(toDollars(own.debt()) / takeHome) + " of take-home",
+                    Palette.WARN));
+        }
+    }
+
+    /**
+     * One of the people outside the families, and what a month does to them.
+     *
+     * The families' panel is built from HouseholdAccounts.statementFor(), which
+     * derives a month for a shape and a tier. These cells have no tier and no
+     * shape - what they have is their OWN ledger, which the month wrote as it
+     * happened. The retired come through here too since 2026-09-14: they have a
+     * shape and no tier, and a pension is not a wage.
+     */
+    private VBox outsideStatement(HouseholdBalance bal) {
+
+        if (bal == null) return null;
+        String want = openCell.substring(4);
+        Household cell = null;
+        for (Household c : bal.cells()) if (c.key().equals(want)) { cell = c; break; }
+        if (cell == null || cell.households() < .5) { openCell = ""; return null; }
+
+        VBox panel = new VBox(0);
+        panel.setMaxWidth(STATEMENT);
+        panel.setStyle("-fx-padding: 10 14 12 14;"
+                + Palette.block(Palette.PANEL, Palette.ACCENT));
+
+        Label who = new Label(cell.label());
+        who.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.ACCENT)
+                + " -fx-font-weight: bold;");
+        panel.getChildren().add(who);
+        panel.getChildren().add(panelWho(bal, cell));
+
+        /* ------------------------------ the month ------------------------------ */
+        double spend = toDollars(cell.disposable());
+        double after = toDollars(cell.afterFixed());
+        double bills = spend - after;
+        double ate = toDollars(cell.planned());
+
+        panel.getChildren().add(panelBlockHead("The month"));
+        panel.getChildren().add(statementLine("Money to spend",
+                tightMoney(spend, false), spend > 0 ? null : Palette.TEXT_SPENT));
+        panel.getChildren().add(statementLine("Rent, fees and interest",
+                costMoney(bills), bills > .005 ? Palette.WARN : Palette.TEXT_SPENT));
+        panel.getChildren().add(statementTotal("Left for the shopping",
+                tightMoney(after, false), after < 0 ? Palette.BAD : null));
+
+        panel.getChildren().add(basketBlock(cell));
+        positionBlock(panel, bal, cell);
+        ratioBlock(panel, cell, spend, 0, "The bills take", bills, 0, ate, after - ate);
+        return panel;
+    }
+
+    /**
      * The month of whichever cell is open, in full.
      *
      * The detail is one click from anywhere on the grid rather than seven
@@ -16625,7 +17246,17 @@ public class UserInterface extends Application {
     private VBox openStatement(HouseholdAccounts hh, HouseholdBalance bal,
                                FamilyModel families) {
 
-        if (openCell.isEmpty() || families == null) return null;
+        if (openCell.isEmpty()) return null;
+
+        /*
+         * EVERYBODY OUTSIDE THE FAMILY MATRIX GETS THE SAME PANEL - the out of
+         * work, the students, the orphans, the prison, and since 2026-09-14 the
+         * retired as well. They have their own ledgers, which are richer than
+         * anything statementFor() can derive.
+         */
+        if (openCell.startsWith("OUT:")) return outsideStatement(bal);
+
+        if (families == null) return null;
 
         String[] parts = openCell.split(":", 2);
         int tierIndex;
@@ -16644,6 +17275,7 @@ public class UserInterface extends Application {
 
         PayTier tier = PayTier.values()[tierIndex];
         HouseholdAccounts.Statement s = hh.statementFor(families, shape, tier);
+        Household own = bal.cell(shape, tier);
         double left = toDollars(s.left());
 
         VBox panel = new VBox(0);
@@ -16655,24 +17287,80 @@ public class UserInterface extends Application {
         who.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.ACCENT)
                 + " -fx-font-weight: bold;");
         panel.getChildren().add(who);
+        panel.getChildren().add(panelWho(bal, own));
 
-        Label many = new Label(String.format("%s of them, %.0f people each",
-                formatter.format(Math.round(s.households())), s.people()));
-        many.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
-                + " -fx-padding: 0 0 6 0;");
-        panel.getChildren().add(many);
+        /*
+         * WHAT COMES IN, SPLIT IN TWO. statementFor() adds a wage per earner to
+         * a pension per senior and hands back the sum; they are different money
+         * and a household with a grandparent in it is a different proposition
+         * from one without. The split is exact - the pension side is seniors
+         * times the pension, which is where the sum came from.
+         */
+        double income = toDollars(s.income());
+        double pension = shape.membersOf(AgeBand.SENIOR) * toDollars(hh.getPensionPerSenior());
+        double wages = income - pension;
 
-        panel.getChildren().addAll(
-                statementLine("Income", tightMoney(toDollars(s.income()), false)),
-                statementLine("Tax and contributions",
-                        tightMoney(toDollars(-s.tax()), false), Palette.WARN),
-                statementLine("Rent", tightMoney(toDollars(-s.rent()), false)),
-                statementLine("Fees and interest", tightMoney(toDollars(-s.fees()), false)),
-                statementLine("The shopping basket",
-                        tightMoney(toDollars(-s.shopping()), false)),
-                statementTotal(left < 0 ? "Short by" : "Left over",
-                        tightMoney(left, false),
-                        left < 0 ? Palette.BAD : Palette.GOOD));
+        panel.getChildren().add(panelBlockHead("What comes in"));
+        if (shape.earners() > 0) {
+            panel.getChildren().add(statementLine(
+                    shape.earners() == 1 ? "One wage"
+                            : shape.earners() + " wages, at " + hh.getRowLabel(tierIndex).toLowerCase(),
+                    tightMoney(wages, false)));
+        }
+        if (pension > .005) {
+            panel.getChildren().add(statementLine(
+                    shape.membersOf(AgeBand.SENIOR) == 1 ? "A pension" : "Pensions",
+                    tightMoney(pension, false), "#8ed4ff"));
+        }
+
+        /*
+         * AND WHAT COMES OFF IT, split the same way and for the same reason:
+         * the wage tax is a dial the player turns and the pension contribution
+         * is not. The share between them is this tier's own - rowTax against
+         * rowContributions - so the two lines add up to the tax the cell was
+         * actually charged rather than to a number of this screen's invention.
+         */
+        double taxAll = toDollars(s.tax());
+        double tierTax = hh.getRowTax(tierIndex);
+        double tierCont = hh.getRowContributions(tierIndex);
+        double split = tierTax + tierCont > 0 ? tierTax / (tierTax + tierCont) : 1;
+        double onWages = hh.getRowWages(tierIndex);
+
+        panel.getChildren().add(statementLine(
+                String.format("Wage tax at %.0f%%",
+                        onWages > 0 ? tierTax / onWages * 100 : 0),
+                costMoney(taxAll * split), Palette.WARN));
+        if (taxAll * (1 - split) > .005) {
+            panel.getChildren().add(statementLine(
+                    String.format("Pension contributions at %.1f%%",
+                            game.getEconomyManager().getTaxPolicy().getContributionRate() * 100),
+                    costMoney(taxAll * (1 - split)), Palette.WARN));
+        }
+        panel.getChildren().add(statementTotal("Take-home",
+                tightMoney(income - taxAll, false), null));
+
+        /*
+         * WHAT THE MONTH COSTS. The fees line was one figure covering two
+         * unlike things: a per-head charge for clinics and schools, and this
+         * tier's own interest bill. feesPerHead() times the heads is the first
+         * exactly, so whatever is left of the line is the second exactly.
+         */
+        double feesAll = toDollars(s.fees());
+        double perHead = toDollars(hh.feesPerHead()) * s.people();
+        double interest = Math.max(0, feesAll - perHead);
+
+        panel.getChildren().add(panelBlockHead("What the month costs"));
+        panel.getChildren().add(statementLine("Rent", costMoney(toDollars(s.rent()))));
+        panel.getChildren().add(statementLine("Healthcare and school fees",
+                costMoney(Math.min(perHead, feesAll))));
+        if (interest > .005) {
+            panel.getChildren().add(statementLine("Interest on what they owe",
+                    costMoney(interest), Palette.WARN));
+        }
+        panel.getChildren().add(statementLine("The shopping basket",
+                costMoney(toDollars(s.shopping()))));
+        panel.getChildren().add(statementTotal(left < 0 ? "Short by" : "Left over",
+                tightMoney(left, false), left < 0 ? Palette.BAD : Palette.GOOD));
 
         HBox bar = flowBar(toDollars(s.tax()), toDollars(s.rent()), toDollars(s.fees()),
                 toDollars(s.shopping()), left, STATEMENT - 28);
@@ -16681,229 +17369,44 @@ public class UserInterface extends Application {
         panel.getChildren().add(flowKey());
 
         /*
-         * ...AND WHAT THIS HOUSEHOLD HAS, which is its own since 2026-09-10.
-         * The month above is a flow the books derive; the position below is
-         * the cell's own ledger - what one of these households has put by,
-         * what it owes, and whether the bank is still lending to it. The
-         * figures that used to be the tier's, given to every shape in it.
+         * ...AND THE HOUSEHOLD'S OWN BOOKS, which are its own since 2026-09-10.
+         * Everything above is a flow the accounts derive; everything below is
+         * the cell's own ledger, written by the month as it happened.
          */
-        Household own = bal.cell(shape, tier);
         if (own.households() >= .5) {
-            Label has = new Label("What one of them has");
-            has.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL)
-                    + " -fx-padding: 10 0 2 0;");
-            panel.getChildren().add(has);
-            panel.getChildren().add(statementLine("Put by",
-                    tightMoney(toDollars(own.savings()), false),
-                    own.savings() > 0 ? Palette.GOOD : null));
-            panel.getChildren().add(statementLine("Owed to lenders",
-                    tightMoney(toDollars(-own.debt()), false),
-                    own.debt() > 0 ? Palette.BAD : null));
-            if (own.debt() > 0) {
-                panel.getChildren().add(statementLine(
-                        String.format("Interest at %.1f%%", own.rate() * 100),
-                        tightMoney(toDollars(-own.interest()), false)));
-            }
             /*
-             * ...AND WHAT IT OWNS. Shares in the city's companies, since
-             * 2026-09-10 (evening) - bought at offerings out of what was past
-             * the cushion, or held since the founding. At the desk's quote
-             * since there is an exchange (2026-09-11), at book when the bank
-             * is dead and there is none.
+             * AND WHERE THE TWO DISAGREE, SAY SO. The month above is DERIVED -
+             * a wage per earner off the tier's totals, a rent per door, a
+             * basket per head. The ledger below was WRITTEN, by the month, as
+             * it happened. On most cells the two land within a rounding of each
+             * other and on some they do not, and a panel that quietly showed a
+             * derived month above a written position would be inventing a
+             * household that is the top half of one and the bottom half of
+             * another.
+             *
+             * The house rule, from the reporting audit: a breakdown that
+             * silently absorbs its own gap is worse than no breakdown.
              */
-            Equity register = game.getEquity();
-            Exchange exchange = game.getExchange();
-            double worth = 0;
-            StringBuilder holdings = new StringBuilder();
-            for (int c = 0; c < Equity.COMPANIES.length; c++) {
-                if (own.shares(c) <= 0 || register.getShares(c) <= 0) continue;
-                double stake = own.shares(c) / register.getShares(c);
-                double book = c == Equity.BANK ? game.getBank().equity()
-                        : game.getSectorBooks().get(Equity.COMPANIES[c]).equity();
-                worth += exchange.isOpen() ? own.shares(c) * exchange.mid(c) : stake * Math.max(0, book);
-                if (holdings.length() > 0) holdings.append(", ");
-                holdings.append(String.format("%s %.3f%%", Equity.COMPANIES[c], stake * 100));
-            }
-            if (holdings.length() > 0) {
-                panel.getChildren().add(statementLine(exchange.isOpen() ? "Shares, at the market" : "Shares, at book",
-                        tightMoney(toDollars(worth), false), Palette.GOOD));
-                panel.getChildren().add(statementLine("Dividends this month",
-                        tightMoney(toDollars(own.dividends()), false),
-                        own.dividends() > 0 ? Palette.GOOD : null));
-                if (own.sold() > 0) {
-                    panel.getChildren().add(statementLine("Sold to cover the month",
-                            tightMoney(toDollars(own.sold()), false), Palette.WARN));
-                }
-                panel.getChildren().add(statementNote("Owns " + holdings + "."));
-            }
-            /*
-             * ...AND WHAT IT KEEPS ABROAD: the world's paper, bought when the
-             * world paid more than the bank. See HouseholdBalance.investAbroad().
-             */
-            if (own.abroad() > 0) {
-                double rate = bal.getExchangeRate();
-                panel.getChildren().add(statementLine("Kept abroad",
-                        tightMoney(toDollars(own.abroadValue(rate)), false)
-                                + " (US" + tightMoney(toDollars(own.abroad()), false) + ")",
-                        Palette.GOOD));
-                if (own.broughtHome() > 0) {
-                    panel.getChildren().add(statementLine("...brought home this month",
-                            tightMoney(toDollars(own.broughtHome()), false)));
-                }
-            }
-            if (own.isLockedOut()) {
+            double ledgerTakeHome = toDollars(own.disposable());
+            double gap = ledgerTakeHome - (income - taxAll);
+            if (Math.abs(gap) > Math.max(1, Math.abs(income - taxAll) * .01)) {
                 panel.getChildren().add(statementNote(String.format(
-                        "Discharged: the bank will not lend to them for another %d month%s.",
-                        own.lockout(), own.lockout() == 1 ? "" : "s")));
-            } else if (own.isCutOff()) {
-                panel.getChildren().add(statementNote(
-                        "At the credit ceiling: what they cannot fund, they go without."));
-            } else if (own.isGoingShort()) {
-                panel.getChildren().add(statementNote(
-                        "Buying less than they want this month."));
+                        "The books below are this household's own and they open on %s of "
+                        + "take-home, not the %s above - %s apart. The month above is derived "
+                        + "from the tier's totals; the ledger was written as the month happened.",
+                        tightMoney(ledgerTakeHome, false),
+                        tightMoney(income - taxAll, false),
+                        tightMoney(Math.abs(gap), false))));
             }
+            panel.getChildren().add(basketBlock(own));
+            positionBlock(panel, bal, own);
+            ratioBlock(panel, own, income, taxAll, "Rent takes",
+                    toDollars(s.rent()), feesAll, toDollars(s.shopping()), left);
         }
 
         VBox holder = new VBox(panel);
         holder.setStyle("-fx-padding: 4 0 10 0;");
         return holder;
-    }
-
-    /** The retired, who have their own household shapes and no pay tier. */
-    /**
-     * The ledgers outside the family matrix, one row a cell: what came in, what
-     * the bills left, what they spent, and what one of them has and owes -
-     * student loans on their own column, because the treasury holds them.
-     */
-    private VBox outsideGrid(HouseholdBalance bal) {
-        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
-        grid.setHgap(10);
-        grid.setVgap(2);
-        String[] heads = {"household", "homes", "income", "after bills", "shops", "put by", "owed", "student loan"};
-        double[] widths = {SHAPE_COL, 56, 70, 76, 66, 70, 70, 80};
-        for (int c = 0; c < heads.length; c++) {
-            javafx.scene.layout.ColumnConstraints spec =
-                    new javafx.scene.layout.ColumnConstraints(widths[c]);
-            spec.setHalignment(c == 0 ? javafx.geometry.HPos.LEFT : javafx.geometry.HPos.RIGHT);
-            grid.getColumnConstraints().add(spec);
-            grid.add(gridCell(heads[c], Palette.TEXT_LABEL, Palette.SIZE_CAPTION, c != 0), c, 0);
-        }
-        java.util.List<Household> rows = new java.util.ArrayList<>();
-        for (UnemployedHousehold.Status s : UnemployedHousehold.Status.values()) rows.add(bal.unemployed(s));
-        rows.add(bal.students());
-        for (AgeBand b : AgeBand.values()) if (bal.orphans(b) != null) rows.add(bal.orphans(b));
-
-        int line = 1;
-        for (Household own : rows) {
-            if (own.households() < .5) continue;
-            double after = toDollars(own.afterFixed());
-            boolean trouble = own.isCutOff() || own.isGoingShort();
-            grid.add(gridCell(own.label(), trouble ? Palette.BAD_SOFT : Palette.TEXT_BODY,
-                    Palette.SIZE_CAPTION, false), 0, line);
-            grid.add(gridCell(shortNumber(own.households()), Palette.TEXT_LABEL,
-                    Palette.SIZE_CAPTION, true), 1, line);
-            grid.add(gridCell(tightMoney(toDollars(own.disposable()), false),
-                    own.disposable() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
-                    Palette.SIZE_CAPTION, true), 2, line);
-            grid.add(gridCell(tightMoney(after, false), after < 0 ? Palette.BAD : Palette.TEXT_BODY,
-                    Palette.SIZE_CAPTION, true), 3, line);
-            grid.add(gridCell(tightMoney(toDollars(-own.planned()), false), Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 4, line);
-            grid.add(gridCell(tightMoney(toDollars(own.savings()), false),
-                    own.savings() > 0 ? Palette.GOOD : Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 5, line);
-            Label owed = gridCell(tightMoney(toDollars(-own.debt()), false),
-                    own.debt() > 0 ? Palette.BAD : Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true);
-            if (own.isLockedOut() || own.isCutOff()) {
-                Tooltip tip = new Tooltip(own.isLockedOut()
-                        ? "Discharged: the bank will not lend to them for another "
-                                + own.lockout() + " months."
-                        : "Nothing left to borrow: what they cannot fund, they go without.");
-                tip.setShowDelay(Duration.millis(300));
-                Tooltip.install(owed, tip);
-                owed.setStyle(owed.getStyle() + " -fx-border-color: " + Palette.ALERT_EDGE
-                        + "; -fx-border-width: 0 0 2 0;");
-            }
-            grid.add(owed, 6, line);
-            grid.add(gridCell(tightMoney(toDollars(-own.studentDebt()), false),
-                    own.studentDebt() > 0 ? Palette.WARN : Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 7, line);
-            line++;
-        }
-        if (line == 1) return new VBox();
-        VBox box = new VBox(grid);
-        box.setStyle("-fx-padding: 4 0 8 0;");
-        return box;
-    }
-
-    private VBox retiredGrid(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families) {
-
-        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
-        grid.setHgap(10);
-        grid.setVgap(2);
-
-        // The last two are the household's own position, not the month: what
-        // one of them has put by and owes. A senior alone on one pension and
-        // a senior couple on two are different cells since 2026-09-10, and
-        // the difference is mostly here.
-        String[] heads = {"household", "homes", "income", "rent", "fees", "shops", "left", "put by", "owed"};
-        double[] widths = {SHAPE_COL, 56, 70, 64, 60, 66, 70, 70, 70};
-        for (int c = 0; c < heads.length; c++) {
-            javafx.scene.layout.ColumnConstraints spec =
-                    new javafx.scene.layout.ColumnConstraints(widths[c]);
-            spec.setHalignment(c == 0 ? javafx.geometry.HPos.LEFT : javafx.geometry.HPos.RIGHT);
-            grid.getColumnConstraints().add(spec);
-            grid.add(gridCell(heads[c], Palette.TEXT_LABEL, Palette.SIZE_CAPTION, c != 0), c, 0);
-        }
-
-        int line = 1;
-        for (FamilyStructure shape : FamilyStructure.values()) {
-            if (!shape.isRetired()) continue;
-            HouseholdAccounts.Statement s =
-                    hh.statementFor(families, shape, PayTier.values()[0]);
-            if (s.households() < .5) continue;
-
-            double left = toDollars(s.left());
-            grid.add(gridCell(shape.getLabel(),
-                    left < 0 ? Palette.BAD_SOFT : Palette.TEXT_BODY,
-                    Palette.SIZE_CAPTION, false), 0, line);
-            grid.add(gridCell(shortNumber(s.households()), Palette.TEXT_LABEL,
-                    Palette.SIZE_CAPTION, true), 1, line);
-            grid.add(gridCell(tightMoney(toDollars(s.income()), false), Palette.TEXT_BODY,
-                    Palette.SIZE_CAPTION, true), 2, line);
-            grid.add(gridCell(tightMoney(toDollars(-s.rent()), false), Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 3, line);
-            grid.add(gridCell(tightMoney(toDollars(-s.fees()), false), Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 4, line);
-            grid.add(gridCell(tightMoney(toDollars(-s.shopping()), false), Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 5, line);
-            grid.add(gridCell(tightMoney(left, false),
-                    left < 0 ? Palette.BAD : Palette.GOOD, Palette.SIZE_CAPTION, true), 6, line);
-            Household own = bal.cell(shape);
-            grid.add(gridCell(tightMoney(toDollars(own.savings()), false),
-                    own.savings() > 0 ? Palette.GOOD : Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 7, line);
-            Label owed = gridCell(tightMoney(toDollars(-own.debt()), false),
-                    own.debt() > 0 ? Palette.BAD : Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true);
-            if (own.isLockedOut() || own.isCutOff()) {
-                Tooltip tip = new Tooltip(own.isLockedOut()
-                        ? "Discharged: the bank will not lend to them for another "
-                                + own.lockout() + " months."
-                        : "At the credit ceiling: what they cannot fund, they go without.");
-                tip.setShowDelay(Duration.millis(300));
-                Tooltip.install(owed, tip);
-                owed.setStyle(owed.getStyle() + " -fx-border-color: " + Palette.ALERT_EDGE
-                        + "; -fx-border-width: 0 0 2 0;");
-            }
-            grid.add(owed, 8, line);
-            line++;
-        }
-        if (line == 1) return new VBox();
-
-        VBox box = new VBox(grid);
-        box.setStyle("-fx-padding: 4 0 8 0;");
-        return box;
     }
 
     /* =====================================================================
@@ -20922,24 +21425,36 @@ public class UserInterface extends Application {
      * not feel like switching programs - minus the caret, because there is
      * nothing behind it here, and plus a destination, because there is.
      */
-    private HBox summaryRow(String heading, String value, String tone, Runnable go) {
+    /**
+     * One row of the summary: what it is, and what it reads.
+     *
+     * TWO LINES, AND THAT IS THE FIX. It was a name on the left and a figure on
+     * the right of one line, in a panel 290px wide - which was fine for "LAND"
+     * against "87% used" and is not fine for "UNIVERSITY" against "0 seats, 372
+     * would come". JavaFX does what it does to text that will not fit, and this
+     * panel has no folds, so Jerus: "alot are still '...' which is not good,
+     * specially since the player can never expand it."
+     *
+     * A truncated figure is worse than a missing one: it looks like a reading
+     * and is not one. The label takes the first line and the reading takes the
+     * whole width of the second, wrapping if it has to, so there is no string
+     * this panel can be handed that it cannot show.
+     */
+    private VBox summaryRow(String heading, String value, String tone, Runnable go) {
 
         Label name = new Label(heading);
-        name.setStyle("-fx-font-size: 10px; -fx-font-weight: bold;"
-                + " -fx-text-fill: #b0bec5;");
-
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+        name.setStyle("-fx-font-size: 9px; -fx-font-weight: bold;"
+                + " -fx-text-fill: #8fa3b0;");
 
         Label figure = new Label(value);
+        figure.setWrapText(true);
         figure.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
                 + " -fx-font-weight: bold; -fx-text-fill: "
                 + (tone == null ? PANEL_VALUE : tone) + ";");
 
-        HBox row = new HBox(5, name, gap, figure);
-        row.setAlignment(Pos.CENTER_LEFT);
+        VBox row = new VBox(-1, name, figure);
         row.setMaxWidth(Double.MAX_VALUE);
-        String rest = "-fx-padding: 5 2 5 4; -fx-cursor: hand;";
+        String rest = "-fx-padding: 4 2 5 4; -fx-cursor: hand;";
         row.setStyle(rest);
         row.setOnMouseClicked(e -> go.run());
         row.setOnMouseEntered(e -> row.setStyle(rest
@@ -21602,7 +22117,18 @@ public class UserInterface extends Application {
                 if (lastFrame == 0) { lastFrame = now; return; }
                 double dt = (now - lastFrame) / 1e9;
                 lastFrame = now;
-                if (!clockRunning || game == null || isGameMenu(currentScreen)) return;
+                sinceRedraw += dt;
+
+                if (!clockRunning || game == null || isGameMenu(currentScreen)) {
+                    // A month landed and its redraw was throttled away; the
+                    // clock has since stopped, so nothing else will draw it.
+                    if (redrawPending && game != null && !isGameMenu(currentScreen)) {
+                        redrawPending = false;
+                        sinceRedraw = 0;
+                        redrawScreen.run();
+                    }
+                    return;
+                }
 
                 /*
                  * CLAMPED, because a stalled frame is not elapsed game time.
@@ -21611,6 +22137,14 @@ public class UserInterface extends Application {
                  * that would silently run a year while the player was not
                  * looking at the screen. A quarter of a second is the most any
                  * single frame is allowed to be worth.
+                 */
+                /*
+                 * AND THE FRAME CLAMP EARNS ITS KEEP AT THE TOP OF THE LADDER.
+                 * A quarter of a second is the most any single frame is worth,
+                 * which at 50x is 2.5 months - so a dragged window or a long
+                 * collection costs a couple of months rather than a couple of
+                 * years. It was written for 10x and it is what makes 20x and
+                 * 50x safe to offer.
                  */
                 monthProgress += Math.min(dt, .25) * SPEEDS[speedIndex] / SECONDS_PER_MONTH;
 
@@ -21621,7 +22155,16 @@ public class UserInterface extends Application {
                     landed = true;
                     if (stopIfSomethingHappened()) { monthProgress = 0; break; }
                 }
-                if (landed) redrawScreen.run(); else paintDay();
+                if (landed && sinceRedraw >= REDRAW_EVERY) {
+                    sinceRedraw = 0;
+                    redrawPending = false;
+                    redrawScreen.run();
+                } else {
+                    // The day still moves every frame - it is one label's text
+                    // and it is what makes a paused-looking screen look alive.
+                    if (landed) redrawPending = true;
+                    paintDay();
+                }
             }
         };
         clock.start();
@@ -22037,99 +22580,558 @@ public class UserInterface extends Application {
      * parameters, because the alternative was a signature nobody could call
      * without checking, for a method with exactly one caller.
      */
+    /* =====================================================================
+       THE SUMMARY IS A PROBLEM LIST NOW.
+
+       Jerus: "if its near limit but not at limit, it will be yellow and it will
+       appear in the summary, the summary will only have that, and basically you
+       can click it, and it will take you to the respective location, and it
+       turns red as well, and when solved it disappears."
+
+       The six fixed rows were a dashboard in miniature - economy, tax, labour,
+       health, land, people, every month, whatever the city was doing. Of the
+       sixteen things a player can BUILD their way out of, those six could show
+       exactly one, and only as a sick rate, which is a consequence rather than
+       a cause. A city with no water, no cells and nowhere to bury its dead read
+       exactly like a city with none of those problems.
+
+       TWO HALVES, and the difference between them is whether there is a lever
+       at the end of the row:
+
+         NEEDS YOU   - a condition with a fix. Yellow near the line, red past
+                       it, gone the moment it is solved. Empty is the goal, and
+                       an empty list still names whatever is closest to a line
+                       so the panel is never a blank.
+
+         HOW THE CITY IS - the readings that have no dial of their own:
+                       unemployment, hunger, sickness, who is arriving. Always
+                       there, coloured when they are bad, and the door goes to
+                       the screen that DIAGNOSES them rather than pretending
+                       there is a lever. Jerus: "at the bottom of the summary
+                       area, is all the stuff that is symptoms."
+
+       THRESHOLDS ARE PER CONDITION, not one rule, because the same percentage
+       means different things: a city at 90% of its burial capacity is fine and
+       a city at 90% of its water is not. They are all in watchAll() in one
+       block, in the order they are read, so they can be tuned in one place.
+       ===================================================================== */
+
     /**
-     * The six that are always worth a glance, and the two that sometimes are.
+     * One thing being watched.
      *
-     * THE TEST FOR THE SIX: would you want to know this every single month, on
-     * a city that is going fine? Output, what the city collects, whether it can
-     * staff itself, whether its people are well, how much ground is left and
-     * what it costs, and which way the population is going. Everything else on
-     * the dashboard answers a question you have occasionally, which is what the
-     * dashboard is for.
-     *
-     * THE TWO THAT ARE CONDITIONAL are the quiet taxes: a strained bank adds to
-     * every rate in the city and a currency that has run from parity reprices
-     * every import, and neither is an emergency, so the red block above will
-     * never carry either. They appear when they bite and are absent otherwise,
-     * which is the same rule the alerts follow.
-     *
-     * A row goes to the tab that owns the number. In this mode there is nothing
-     * to unfold, and a row that looks clickable and does nothing is worse than
-     * one that is not clickable at all.
+     * @param level 0 fine, 1 near the line, 2 past it
+     * @param near  how close to the yellow line, 0 to 1, and only meaningful at
+     *              level 0 - it is what picks the "next to watch" line on a
+     *              city with nothing wrong.
      */
-    private void panelSummaryRows(VBox body) {
+    private record Watch(String label, String reading, int level, double near, Runnable go) { }
+
+    /** Higher is worse. */
+    private void over(java.util.List<Watch> out, String label, String reading,
+                      double value, double yellow, double red, Runnable go) {
+        int level = value >= red ? 2 : value >= yellow ? 1 : 0;
+        out.add(new Watch(label, reading, level,
+                yellow <= 0 ? 1 : Math.max(0, Math.min(1, value / yellow)), go));
+    }
+
+    /** Lower is worse. */
+    private void under(java.util.List<Watch> out, String label, String reading,
+                       double value, double yellow, double red, Runnable go) {
+        int level = value <= red ? 2 : value <= yellow ? 1 : 0;
+        out.add(new Watch(label, reading, level,
+                value <= 0 ? 1 : Math.max(0, Math.min(1, yellow / value)), go));
+    }
+
+    /** A thing that is simply true or not. */
+    private void flag(java.util.List<Watch> out, String label, String reading,
+                      boolean bad, boolean severe, Runnable go) {
+        out.add(new Watch(label, reading, bad ? (severe ? 2 : 1) : 0, bad ? 1 : 0, go));
+    }
+
+    /* =====================================================================
+       SEATS AGAINST WHO WOULD COME.
+
+       Jerus: "for university, college and all that above, how do i know? since
+       there might be 400 seats, 380 students, but if i build another uni there
+       is 800 seats and it jumps to 700 students, not full but technically it
+       was."
+
+       Exactly right, and coverage cannot answer it. For the schools above the
+       basic ladder the model sets
+       coverage = seats / everybody ELIGIBLE - every worker in the band who
+       could in principle study - so a university in a city of four thousand
+       graduates reads 10% covered whether or not a single one of them wants to
+       go. And the student body is bounded by the seats, so a full school always
+       looks full whatever the queue behind it.
+
+       THE MODEL ALREADY KNOWS THE ANSWER. Intake is
+       min(free seats, eligible x willing x ENROLMENT_RATE): the second half of
+       that min is demand with no reference to the building. Multiply it by the
+       length of the course and you have the student body this city would
+       sustain if seats were free - which is precisely the question "if I put up
+       another one, will it fill?"
+
+       So the row is TWO numbers, not a percentage: what the schools hold, and
+       what would come. Bigger second number means another building fills.
+       Smaller means the gate is not the seats - it is what a degree returns or
+       what it costs, and both of those are dials rather than buildings.
+
+       ONE ROW PER SCHOOL, because each is a different building and "higher
+       education is short" does not tell anybody what to build. In practice one
+       or two bind at a time.
+       ===================================================================== */
+    private void seatsWanted(java.util.List<Watch> out) {
+
+        Education schools = game.getEducation();
+        PopulationManager pm = game.getPopulationManager();
+        LabourMarket market = game.getLabourMarket();
+        double[] seatsBy = game.getBuildingManager()
+                .getStaffedEducationPlaces(pm.getJobFillRate());
+
+        for (EducationType type : EducationType.values()) {
+            if (type == EducationType.NONE || type.isBasic()) continue;
+
+            double wanted = schools.eligibleFor(type, pm)
+                    * schools.willingShare(type, market) * Education.ENROLMENT_RATE;
+            double couldHold = wanted * type.months();
+
+            /*
+             * A CLASS'S WORTH, or it is not a building.
+             *
+             * MEASURED: a city of 1,650 with no university has 372 people who
+             * would attend one - a real row. It also has six who would read
+             * medicine and three who would read law, and a red row saying "0
+             * seats, 3 would come" is asking the player to put up a law school
+             * for three students. The floor is what separates a shortage from a
+             * rounding error; below it a city is not failing to teach anybody,
+             * it is simply too small to have one yet.
+             */
+            if (couldHold < 25) continue;
+
+            double seats = seatsBy[type.ordinal()];
+            over(out, type.getLabel().toUpperCase(),
+                    String.format("%s seats, %s would come",
+                            people(seats), people(couldHold)),
+                    couldHold / Math.max(seats, 1), 1.05, 2,
+                    () -> handleAllBuildingMenus("Education",
+                            EnumSet.of(BuildingType.EDUCATION)));
+        }
+    }
+
+    /**
+     * One network: how much of its capacity is spoken for, and whether it is
+     * still meeting demand.
+     *
+     * @param ratio min(supply/demand, 1) - under one the city is being
+     *              throttled, and the load figure has stopped being the news.
+     */
+    private void network(java.util.List<Watch> out, String label,
+                         double demand, double supply, double ratio) {
+        if (supply <= 0) {
+            /*
+             * Nothing built. A city drawing nothing is not short of anything -
+             * a ratio of nothing over nothing reads 0.00 for power and 1.00 for
+             * water, and watching that opened every new city on a red POWER
+             * row. A city drawing something with no plant is very short indeed.
+             */
+            if (demand > 0) {
+                flag(out, label, "nothing supplying it", true, true,
+                        () -> handleAllBuildingMenus("Utilities", utilityTypes()));
+            }
+            return;
+        }
+        double load = demand / supply;
+        over(out, label, ratio < .99
+                        ? String.format("only %.0f%% supplied", ratio * 100)
+                        : String.format("%.0f%% of capacity", load * 100),
+                load, .75, 1,
+                () -> handleAllBuildingMenus("Utilities", utilityTypes()));
+    }
+
+    /**
+     * Everything with a lever, measured against its own line.
+     *
+     * Returns the whole set INCLUDING the ones that are fine, because the
+     * renderer needs the fine ones to answer "what is closest" on a healthy
+     * city. It filters; this only measures.
+     */
+    private java.util.List<Watch> watchAll() {
+
+        java.util.List<Watch> out = new java.util.ArrayList<>();
 
         EconomyManager economy = game.getEconomyManager();
-        PopulationManager people = game.getPopulationManager();
-        LabourMarket market = game.getLabourMarket();
-        Health health = game.getHealth();
+        UtilitiesHandler utilities = game.getServicesManager().getUtilitiesHandler();
+        InfrastructureManager roads = game.getInfrastructureManager();
+        Healthcare care = game.getHealthcare();
+        Education schools = game.getEducation();
+        Crime crime = game.getCrime();
+        FamilyModel families = game.getFamilies();
         LandManager land = game.getLandManager();
+        Bank bank = game.getBank();
+        PopulationCohorts cohorts = game.getCohorts();
+        double[] staffing = game.getPopulationManager().getJobFillRate();
+        int population = game.getPopulationManager().getPopulation();
+
+        /* ---------------------------- the networks ---------------------------- */
+        // A ratio under one is output being throttled somewhere in the city this
+        // month, so the yellow line sits just under one rather than at .85.
+        /*
+         * HOW FULL, NOT HOW SHORT - and that is the correction.
+         *
+         * getEnergyRatio() and getWaterRatio() are min(supply/demand, 1), so
+         * they sit at exactly 1.00 right up until the city is already being
+         * throttled. Watching them meant the row could only appear once the
+         * lights were out, which is the opposite of this panel's rule. Jerus:
+         * "water doesnt appear, it appears on the top, it should appear in the
+         * summary same as the others" - the dashboard's RESOURCES line has
+         * always counted a network "tight" at 75% of capacity, and it was the
+         * only thing in the game saying so.
+         *
+         * So the reading is the LOAD, on the same .75 that line uses, and it
+         * goes red when the ratio finally breaks - at which point the reading
+         * says what is actually being delivered instead.
+         */
+        network(out, "POWER", utilities.getConsumption(), utilities.getProduction(),
+                utilities.getEnergyRatio());
+        network(out, "WATER", utilities.getWaterConsumption(),
+                utilities.getWaterProduction(), utilities.getWaterRatio());
+
+        // Its own constants: STRAINED is .85 and free flow ends at .90.
+        double traffic = roads.getUtilisation();
+        over(out, "ROADS", String.format("%.0f%% of capacity", traffic * 100),
+                traffic, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW,
+                () -> handleAllBuildingMenus("Infrastructure",
+                        EnumSet.of(BuildingType.INFRASTRUCTURE)));
+
+        /* ------------------------------- the care ------------------------------- */
+        // General care is the one that moves the sick rate, so it is watched
+        // hardest; the other two kill at the ends of life rather than in the
+        // middle, and a young city legitimately has neither for a while.
+        double general = careCover(CareType.GENERAL, cohorts, staffing);
+        under(out, "GENERAL CARE", String.format("%.0f%% covered", general * 100),
+                general, .80, .50,
+                () -> handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
+
+        double childcare = careCover(CareType.CHILDCARE, cohorts, staffing);
+        under(out, "CHILDCARE", String.format("%.0f%% covered", childcare * 100),
+                childcare, .70, .40,
+                () -> handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
+
+        double senior = careCover(CareType.SENIOR, cohorts, staffing);
+        under(out, "SENIOR CARE", String.format("%.0f%% covered", senior * 100),
+                senior, .70, .40,
+                () -> handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
+
+        // The dead are a STOCK: a backlog does not clear itself and the plots do
+        // not come back, so this one is red the moment anybody is waiting.
+        double unburied = care.getUnburied();
+        flag(out, "THE DEAD", unburied > 0
+                        ? people(unburied) + " unburied" : "all dealt with",
+                unburied > 0, unburied > 0,
+                () -> handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
+
+        /*
+         * MEASURED: with nobody dying this returns Double.MAX_VALUE - not
+         * infinity, so isFinite() lets it through - and a founding city holds
+         * 2,500 plots, which reads as "6500 months left" for three centuries.
+         * A decade of headroom is not news; the row appears when it stops being
+         * true.
+         */
+        double plots = game.getBuildingManager().getCareCapacity(CareType.BURIAL);
+        double monthsLeft = care.monthsOfPlotsLeft(plots);
+        if (monthsLeft < 120) {
+            under(out, "BURIAL PLOTS", String.format("%.0f months left", monthsLeft),
+                    monthsLeft, 24, 6,
+                    () -> handleAllBuildingMenus("Healthcare",
+                            EnumSet.of(BuildingType.HEALTHCARE)));
+        }
+
+        /* ------------------------------ the schools ------------------------------ */
+        /*
+         * AND IT SAYS WHICH ONE.
+         *
+         * basicCoverage() IS the bottleneck's coverage - it returns
+         * coverage[basicBottleneck()], the minimum of the three rungs - so the
+         * number was already about one specific school and the row simply did
+         * not say which. Jerus: "just the schools one, it doesnt tell me
+         * which". A percentage with no building attached is a percentage you
+         * cannot act on, and the model has named it all along.
+         */
+        double basic = schools.basicCoverage();
+        if (population > 0) {
+            String thin = schools.basicBottleneck().getLabel().toLowerCase();
+            under(out, "SCHOOLS", String.format("%s %.0f%% taught", thin, basic * 100),
+                    basic, .90, .60,
+                    () -> handleAllBuildingMenus("Education",
+                            EnumSet.of(BuildingType.EDUCATION)));
+        }
+
+        /* ------------------------ and the schools above them ------------------------ */
+        seatsWanted(out);
+
+        /* ------------------------------- the police ------------------------------- */
+        double vsCanada = crime.getRateVsCanada();
+        over(out, "CRIME", String.format("%.1fx Canada's", vsCanada),
+                vsCanada, 1.2, 1.5,
+                () -> handleAllBuildingMenus("Safety", EnumSet.of(BuildingType.SAFETY)));
+
+        double unheld = crime.getNotHeld();
+        over(out, "CELLS", unheld >= 1
+                        ? people(unheld) + " caught, not held" : "enough for the caught",
+                unheld, 1, 25,
+                () -> handleAllBuildingMenus("Safety", EnumSet.of(BuildingType.SAFETY)));
+
+        /* ------------------------------- the housing ------------------------------- */
+        // Nobody at all with a door is the worst thing on this list: it is past
+        // both squeeze valves, so the model has already tried flatshares and
+        // doubling up and still has households left over.
+        double unplaced = families.getStillUnplaced();
+        over(out, "HOMES", unplaced >= .5
+                        ? people(unplaced) + " with nowhere to live" : "everybody housed",
+                unplaced, .5, 25,
+                () -> handleAllBuildingMenus("Residential",
+                        EnumSet.of(BuildingType.RESIDENTIAL)));
+
+        /* -------------------------------- the ground -------------------------------- */
+        /*
+         * GROUND THE CITY OWNS AND HAS NOT BUILT ON, which is the thing an
+         * investor needs before it can break ground.
+         *
+         * NOT isPrivateInvestmentLandLocked(), and that is a measurement rather
+         * than a preference. Probed on a founding city it goes true at month 12
+         * - with 1,974,000 sq ft still free - and is still true at month 300.
+         * Its set of blocked sectors does not appear to clear, and it carries a
+         * 24-month acknowledgement snooze that only the inbox knows how to
+         * press. A row that never goes away is a row nobody reads, and this
+         * panel's whole promise is that solving something removes it.
+         *
+         * Free ground clears the moment a plot is bought and comes back when it
+         * is built on, which is exactly the shape of the decision. A block is
+         * 100,000 sq ft.
+         */
+        double free = land.getAvailableSqFt();
+        under(out, "GROUND TO BUILD ON",
+                free > 0 ? shortNumber(free) + " sq ft free" : "none - nobody can break ground",
+                free, 100_000, 0, this::showLandMenu);
+
+        flag(out, "BUILDERS", game.isConstructionShedding()
+                        ? "being laid off" : "in work",
+                game.isConstructionShedding(), false,
+                () -> openSectorBooks(game.getSectors().construction(), "Investors"));
+
+        /* -------------------------------- the money -------------------------------- */
+        double cash = game.getCash();
+        double spending = Math.max(1, taxRaised());
+        flag(out, "TREASURY", cash < 0 ? "overdrawn" : "in hand",
+                cash < spending, cash < 0, this::showFinanceMenu);
+
+        flag(out, "THE BANK", bank.isInsolvent() ? "failed"
+                        : bank.getBranches() <= 0 ? "there is none"
+                        : bank.ratePremium() > 0
+                                ? String.format("+%.0f pts on every rate", bank.ratePremium() * 100)
+                                : "lending",
+                bank.isInsolvent() || bank.getBranches() <= 0 || bank.ratePremium() > 0,
+                bank.isInsolvent() || bank.getBranches() <= 0,
+                this::showBankMenu);
+
+        flag(out, "BORROWING", game.getDebtManager().atCeiling()
+                        ? "priced out of the market" : "the market is open",
+                game.getDebtManager().atCeiling(), true, this::showFinanceMenu);
+
+        /* -------------------------------- the promises -------------------------------- */
+        /*
+         * MEASURED: the gap grows with the pensioner count in every city, and
+         * against a young city's tax take it is a fifth of revenue by month
+         * 300 - on a city running a comfortable surplus the whole time. An
+         * unfunded promise the city is paying without noticing is not this
+         * panel's business; one it cannot pay is. So it is gated on the budget,
+         * and THE BUDGET below carries the deficit itself.
+         */
+        double gap = economy.getPensionShortfall();
+        double balanceNow = economy.getNationalAccounts().getBalance();
+        over(out, "PENSIONS", gap > 0 ? money(gap) + " short a month" : "funded",
+                balanceNow < 0 ? gap / spending : 0, .05, .20, () -> {
+                    policyArea = "Promises";
+                    policyPage = "Pensions";
+                    dropProposal();
+                    showPolicyMenu();
+                });
+
+        // MEASURED: the unskilled band sits on the floor in month one of every
+        // city and again whenever the city stalls. One band pinned is the
+        // minimum wage doing its job; three of four is the wage ladder
+        // collapsing onto it.
+        int pinned = population > 0 ? pinnedBands() : 0;
+        over(out, "WAGES", pinned > 0
+                        ? pinned + (pinned == 1 ? " band" : " bands") + " pinned to the floor"
+                        : "no band is pinned",
+                pinned, 2, 4, () -> {
+                    policyArea = "Wages";
+                    policyPage = POLICY_WAGE_PAGES[0];
+                    dropProposal();
+                    showPolicyMenu();
+                });
+
+        double balance = balanceNow;
+        over(out, "THE BUDGET", balance < 0 ? money(-balance) + " short a month" : "in surplus",
+                balance < 0 ? -balance / spending : 0, .05, .20, () -> {
+                    policyArea = "Taxes";
+                    policyPage = POLICY_HOME;
+                    dropProposal();
+                    showPolicyMenu();
+                });
+
+        return out;
+    }
+
+    /**
+     * The readings with no dial of their own.
+     *
+     * Every one of these is the RESULT of something on the list above, which is
+     * why they are separated rather than mixed in: a row that says "40% out of
+     * work" and offers no fix is a row a player learns to scroll past. The door
+     * goes to the screen that explains the cause.
+     */
+    private java.util.List<Watch> citySymptoms() {
+
+        java.util.List<Watch> out = new java.util.ArrayList<>();
+        PopulationManager people = game.getPopulationManager();
+        Health health = game.getHealth();
         PopulationCohorts pyramid = game.getCohorts();
+
+        double jobless = people.getUnemploymentRate();
+        over(out, "OUT OF WORK", String.format("%.1f%%", jobless * 100),
+                jobless, .12, .20, this::showPopulationInfoMenu);
+
+        double sick = health.getSickRate();
+        over(out, "OFF SICK", String.format("%.1f%%", sick * 100),
+                sick, .06, .12, this::showServicesStatsMenu);
+
+        double hungry = health.getHungerRate();
+        over(out, "HUNGRY", hungry > 0 ? String.format("%.1f%%", hungry * 100) : "nobody",
+                hungry, .005, .03, this::showHouseholdMenu);
+
+        double net = game.getMigration().getLastNet()
+                + pyramid.getLastBirths() - pyramid.getLastDeaths();
+        under(out, "PEOPLE", String.format("%+,.0f a month", net),
+                net, 0, -Math.max(1, people.getPopulation() * .005),
+                this::showPopulationInfoMenu);
+
+        // MEASURED: a city buys ground as it needs it, so utilisation sits at
+        // 100% for centuries with nothing wrong - it is what the city is doing,
+        // not a thing to fix. The problem it becomes is LAND, above, which
+        // fires when an investor actually cannot break ground.
+        double used = game.getLandManager().getUtilisation();
+        // Thresholds above 1 on purpose: a fraction cannot reach them, so this
+        // row never colours. It is here to be read, not to raise an alarm.
+        over(out, "GROUND USED", String.format("%.0f%% of what the city owns", used * 100),
+                used, 2, 3, this::showLandMenu);
+
+        /*
+         * AND THE CURRENCY IS A READING TOO. Measured at 38% off parity by
+         * month 300 on a city with nothing wrong, and this project established
+         * why: about 70% of the drift is the WORLD inflating rather than the
+         * city deflating, and no outflow the player can cause closes a PPP gap.
+         * See why-there-is-no-inflation.md. A red row with no fix at the end of
+         * it is a row players learn to ignore.
+         */
+        ForeignAccounts fx = game.getForeignAccounts();
+        double drift = Math.abs(fx.deviationFromParity());
+        over(out, "THE CURRENCY", fx.isPinned() ? "pinned"
+                        : String.format("%.0f%% %s than parity", drift * 100,
+                                fx.deviationFromParity() > 0 ? "weaker" : "stronger"),
+                fx.isPinned() ? 0 : drift, .25, .50, this::showForeignMenu);
+
+        /*
+         * THE SHAPE OF THE HOUSING STOCK IS A READING, NOT A LEVER.
+         *
+         * Jerus: "its a residential thing, so the business takes care of it, so
+         * it should be a symptom not a lever." He is right, and it is the rule
+         * the Build tab already draws in amber - investors put up housing on
+         * their own whenever it pays, so "too many of them are studios" is not
+         * an instruction to the player, it is a fact about what the landlords
+         * chose to build. The door goes to the screen that explains it.
+         */
+        double refused = game.getFamilies().getRefusedByStudio();
+        over(out, "TURNED AWAY", refused >= 1
+                        ? people(refused) + " need a bigger home" : "nobody",
+                refused, 1, Math.max(100, people.getPopulation() * .02),
+                this::showHouseholdMenu);
+
+        double doubled = game.getFamilies().getDoubledUpHouseholds();
+        over(out, "DOUBLED UP", doubled >= 1 ? people(doubled) + " households" : "nobody",
+                doubled, 1, Math.max(100, people.getPopulation() * .05),
+                this::showHouseholdMenu);
+
+        return out;
+    }
+
+    private void panelSummaryRows(VBox body) {
 
         VBox rows = new VBox(0);
         rows.setStyle("-fx-padding: 4 0 0 0;");
 
-        /* ------------------------------- the six ------------------------------- */
-        rows.getChildren().add(summaryRow("ECONOMY",
-                money(economy.getMonthGdp()) + "/mo", null, this::showGovernmentMenu));
+        /* ----------------------------- what needs you ----------------------------- */
+        java.util.List<Watch> all = watchAll();
+        java.util.List<Watch> biting = new java.util.ArrayList<>();
+        for (Watch w : all) if (w.level() > 0) biting.add(w);
 
-        double taxTotal = economy.getBusinessTax() + economy.getIndustrialTax()
-                + economy.getSalesTax() + economy.getWageTax();
-        rows.getChildren().add(summaryRow("TAX", money(taxTotal), null,
-                this::showGovernmentMenu));
+        // Red above yellow; inside a tier the order they were measured in, which
+        // is the order a city is actually built. A list that re-sorts itself
+        // every month is a list nobody can learn the shape of.
+        biting.sort((a, b) -> Integer.compare(b.level(), a.level()));
 
-        int totalJobs = people.getTotalJobs();
-        int unfilled = 0;
-        for (int v : people.getJobVacancy()) unfilled += v;
-        double fill = totalJobs > 0 ? (double) (totalJobs - unfilled) / totalJobs : 1;
-        rows.getChildren().add(summaryRow("LABOUR",
-                totalJobs > 0 ? String.format("%.0f%% filled", fill * 100) : "no jobs",
-                fill < .75 ? PANEL_BAD : fill < .95 ? PANEL_WARN : null,
-                this::showPopulationInfoMenu));
+        rows.getChildren().add(panelHeading(biting.isEmpty()
+                ? "NOTHING NEEDS YOU" : "NEEDS YOU"));
 
-        rows.getChildren().add(summaryRow("HEALTH",
-                String.format("%.0f%% sick", health.getSickRate() * 100),
-                health.getSickRate() > Health.WELL_SERVED_RATE * 2 ? PANEL_BAD
-                        : health.getSickRate() > Health.WELL_SERVED_RATE * 1.5 ? PANEL_WARN
-                        : PANEL_GOOD,
-                this::showServicesStatsMenu));
-
-        double used = land.getUtilisation();
-        rows.getChildren().add(summaryRow("LAND",
-                String.format("%.0f%% used  \u00b7  $%.2f/sq ft",
-                        used * 100, land.getPricePerSqFt() * 1000),
-                used >= .95 ? PANEL_BAD : used >= .85 ? PANEL_WARN : null,
-                this::showLandMenu));
-
-        rows.getChildren().add(summaryRow("PEOPLE",
-                String.format("%+,.0f/mo", game.getMigration().getLastNet()
-                        + pyramid.getLastBirths() - pyramid.getLastDeaths()),
-                null, this::showPopulationInfoMenu));
-
-        /* ------------------------- and the two, when they bite ------------------------- */
-        Bank bank = game.getBank();
-        double premium = bank.ratePremium();
-        if (premium > 0) {
-            rows.getChildren().add(summaryRow("BANK",
-                    "+" + formatter.format(premium * 100) + " pts on every rate",
-                    PANEL_BAD, this::showBankMenu));
+        if (biting.isEmpty()) {
+            Watch next = null;
+            for (Watch w : all) if (next == null || w.near() > next.near()) next = w;
+            if (next != null) {
+                rows.getChildren().add(summaryRow("NEXT TO WATCH",
+                        next.label().toLowerCase() + " · " + next.reading(),
+                        PANEL_GOOD, next.go()));
+            }
+        } else {
+            for (Watch w : biting) {
+                rows.getChildren().add(summaryRow(w.label(), w.reading(),
+                        w.level() >= 2 ? PANEL_BAD : PANEL_WARN, w.go()));
+            }
         }
 
-        ForeignAccounts fx = game.getForeignAccounts();
-        double drift = fx.deviationFromParity();
-        if (Math.abs(drift) > .15 && !fx.isPinned()) {
-            rows.getChildren().add(summaryRow("TRADE",
-                    String.format("%.0f%% %s than parity", Math.abs(drift) * 100,
-                            drift > 0 ? "weaker" : "stronger"),
-                    PANEL_WARN, this::showForeignMenu));
+        /* ------------------------------ the symptoms ------------------------------ */
+        rows.getChildren().add(panelHeading("HOW THE CITY IS"));
+        for (Watch w : citySymptoms()) {
+            rows.getChildren().add(summaryRow(w.label(), w.reading(),
+                    w.level() >= 2 ? PANEL_BAD : w.level() == 1 ? PANEL_WARN : null,
+                    w.go()));
         }
 
         body.getChildren().add(rows);
-        // "The six" would be a lie on any month the bank or the currency is
-        // biting, and this panel does not get to round its own count.
-        body.getChildren().add(panelNote(
-                "Six that are always worth a glance, plus anything currently biting. "
-                + "Click one to go there; Dashboard has the rest."));
+        body.getChildren().add(panelNote(biting.isEmpty()
+                ? "Nothing is near a limit. The readings below are what the city is "
+                  + "doing about it; Dashboard has every figure."
+                : "Everything above is near a limit or past one, and every one of them "
+                  + "has a fix. Click to go there; they leave this list when they are "
+                  + "solved."));
+    }
+
+    /** A rule and a caption, dividing the panel's two halves. */
+    private VBox panelHeading(String text) {
+
+        Label head = new Label(text);
+        head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold;"
+                + " -fx-text-fill: " + Palette.TEXT_LABEL + ";");
+
+        Region rule = new Region();
+        rule.setMinHeight(1);
+        rule.setPrefHeight(1);
+        rule.setMaxHeight(1);
+        rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
+
+        VBox box = new VBox(2, head, rule);
+        box.setStyle("-fx-padding: 10 2 4 4;");
+        return box;
     }
 
     private void panelDashboardSections(VBox body) {
