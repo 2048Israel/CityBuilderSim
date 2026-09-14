@@ -2792,11 +2792,25 @@ public class UserInterface extends Application {
        ===================================================================== */
 
     private String policyArea = null;                  // null is the landing
-    static final String POLICY_HOME   = "The two rates";
+    static final String POLICY_HOME   = "Everything";
     private String policyPage = POLICY_HOME;
 
+    /*
+     * BY WHICH TAX IT IS, not by where the modifier lives.
+     *
+     * "The two rates / By wage band / By sector" was a fact about the code:
+     * it filed a sector's profit, sales and property moves together because
+     * they were all offsets on a Sector, and it called profit, sales and wage
+     * "income tax" because they share a dial. A player asking what the city
+     * charges on a payroll had to read two of the three pages and ignore most
+     * of both.
+     *
+     * Everything reads and the four act. Jerus: "perhaps even controls to
+     * filter out what type of taxes, so perhaps putting property, and it only
+     * shows the controls to change property tax and so on."
+     */
     private static final String[] POLICY_TAX_PAGES =
-            {"The two rates", "By wage band", "By sector"};
+            {"Everything", "Profit", "Sales", "Wage", "Property"};
     private static final String[] POLICY_WAGE_PAGES    = {"The floor"};
     private static final String[] POLICY_MONEY_PAGES   = {"The policy rate", "Currency reform"};
     private static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Tuition", "Subsidies"};
@@ -2810,28 +2824,809 @@ public class UserInterface extends Application {
      * drops the first proposal, which is also why the key is a string: it names
      * the lever, down to the band or the sector.
      */
-    private String policyPending = null;
-    private double policyProposed = 0;
+    /* =====================================================================
+       THE STAGED SET.
 
-    private boolean isStaged(String key) { return key.equals(policyPending); }
+       It was ONE proposal - a key and a value - and moving a second dial threw
+       the first away. That was right while a tax page was one lever at a time;
+       it is wrong now that a page is a whole tax, because a budget is not one
+       rate moved in isolation. Jerus: "stage several and apply together".
+
+       A LinkedHashMap, so the foot bar lists them in the order they were
+       moved. Cleared on every page and area change for the same reason it
+       always was: a proposal is about the page you are looking at, and one
+       carried to another page is one nobody can see.
+       ===================================================================== */
+    private final java.util.LinkedHashMap<String, Double> policyStaged =
+            new java.util.LinkedHashMap<>();
+
+    /**
+     * Every dial DRAWN this pass, by key.
+     *
+     * The foot bar is drawn last, so by the time it needs to name a staged
+     * change and know how to apply it, the lever that owns that key has
+     * already registered itself. That is what lets the bar apply a mixed batch
+     * without a switch on the key's prefix - the dial carries its own setter,
+     * so there is exactly one place that knows how to set each rate.
+     */
+    private final java.util.LinkedHashMap<String, Lever> policyLevers =
+            new java.util.LinkedHashMap<>();
+
+    /** One dial: what it is, where it can go, how to read it, how to set it. */
+    private record Lever(String key, String name, double current,
+                         double min, double max, double step,
+                         java.util.function.DoubleFunction<String> read,
+                         java.util.function.DoubleConsumer apply) { }
+
+    private boolean isStaged(String key) { return policyStaged.containsKey(key); }
 
     private double staged(String key, double current) {
-        return isStaged(key) ? policyProposed : current;
+        Double value = policyStaged.get(key);
+        return value == null ? current : value;
     }
 
-    private void stage(String key, double value) {
-        policyPending = key;
-        policyProposed = value;
-    }
+    private void stage(String key, double value) { policyStaged.put(key, value); }
 
-    private void dropProposal() {
-        policyPending = null;
-        policyProposed = 0;
-    }
+    private void unstage(String key) { policyStaged.remove(key); }
+
+    private void dropProposal() { policyStaged.clear(); }
 
     /** TaxPolicy.clamp(), which is private there and needed here to preview it. */
     private static double clampRate(double value, double max) {
         return Math.max(0, Math.min(max, value));
+    }
+
+    /* =====================================================================
+       THE LADDER
+
+       Jerus: "i need a step ladder with 0.50% or 0.25% snapping."
+
+       A drag alone cannot land on a quarter point reliably and a pair of
+       buttons alone cannot cross sixty of them, so it is both: the bar gets
+       you across the range and snaps hard when you let go, and the two buttons
+       either side are worth exactly one step each. The reading is the truth
+       about where it is, in accent when it has moved off what the city is
+       actually charging.
+
+       THE STEP IS A QUARTER POINT, except on property, which gets a twentieth.
+       Same step, very different bite: 20.00% to 20.25% of income is a one-in-
+       eighty change in what income tax raises, while 1.00% to 1.25% of
+       assessed value is one in four. The screens say which step they are on.
+       ===================================================================== */
+
+    /** A quarter of a point - every rate that moves off the income tax. */
+    private static final double STEP_INCOME = .0025;
+
+    /** A twentieth of a point - property, where a quarter is a quarter of the tax. */
+    private static final double STEP_PROPERTY = .0005;
+
+    private static final double LADDER_READ = 118;
+
+    private VBox taxLadder(Lever lever) {
+
+        policyLevers.put(lever.key(), lever);
+
+        double at = bounded(staged(lever.key(), lever.current()), lever);
+        boolean off = moved(at, lever.current(), lever.step());
+
+        javafx.scene.control.Slider bar =
+                new javafx.scene.control.Slider(lever.min(), lever.max(), at);
+        bar.setBlockIncrement(lever.step());
+        bar.setMajorTickUnit(Math.max(lever.step(), 1e-9));
+        bar.setMinorTickCount(0);
+        bar.setSnapToTicks(true);
+        double wide = STATEMENT - LADDER_READ - 2 * 28 - 30;
+        bar.setPrefWidth(wide);
+        bar.setMaxWidth(wide);
+
+        Label reading = new Label(lever.read().apply(at));
+        reading.setPrefWidth(LADDER_READ);
+        reading.setMinWidth(LADDER_READ);
+        reading.setAlignment(Pos.CENTER_RIGHT);
+        reading.setStyle(Palette.figure(Palette.SIZE_BODY,
+                off ? Palette.ACCENT : Palette.TEXT_HEAD));
+
+        /*
+         * The reading follows the drag and the COMMIT waits for the release.
+         * Restaging on every pixel would redraw the whole screen under the
+         * pointer, which is both slow and how you lose the thing you were
+         * dragging.
+         */
+        bar.valueProperty().addListener((o, was, now) -> {
+            double v = snapped(now.doubleValue(), lever.min(), lever.step());
+            reading.setText(lever.read().apply(v));
+            reading.setStyle(Palette.figure(Palette.SIZE_BODY,
+                    moved(v, lever.current(), lever.step())
+                            ? Palette.ACCENT : Palette.TEXT_HEAD));
+        });
+        Runnable commit = () -> propose(lever, bar.getValue());
+        bar.setOnMouseReleased(e -> commit.run());
+        bar.setOnKeyReleased(e -> commit.run());
+
+        HBox row = new HBox(10,
+                stepButton("−", at - lever.step() >= lever.min() - 1e-12,
+                        () -> propose(lever, at - lever.step())),
+                bar,
+                stepButton("+", at + lever.step() <= lever.max() + 1e-12,
+                        () -> propose(lever, at + lever.step())),
+                reading);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(STATEMENT);
+
+        Label ends = new Label(lever.read().apply(lever.min())
+                + "   to   " + lever.read().apply(lever.max())
+                + "        one step is " + stepWord(lever.step())
+                + (off ? "        it is " + lever.read().apply(lever.current()) : ""));
+        ends.setStyle(Palette.words(Palette.SIZE_CAPTION,
+                off ? Palette.ACCENT : Palette.TEXT_SPENT));
+
+        VBox box = new VBox(1, row, ends);
+        box.setMaxWidth(STATEMENT);
+        box.setStyle("-fx-padding: 6 0 10 0;");
+        return box;
+    }
+
+    /**
+     * One notch, in the units the dial is read in.
+     *
+     * PADDING ZERO INLINE. The theme's .button rule carries 6 14 6 14, and on a
+     * button pinned to 28px that leaves the glyph a content box narrower than
+     * nothing - JavaFX draws an ellipsis. setPadding(EMPTY) does not fix it;
+     * only an inline style beats a stylesheet. Third time in this file.
+     */
+    private Button stepButton(String glyph, boolean live, Runnable go) {
+        Button button = new Button(glyph);
+        button.setMinSize(28, 28);
+        button.setPrefSize(28, 28);
+        button.setMaxSize(28, 28);
+        button.setDisable(!live);
+        button.setStyle("-fx-padding: 0; -fx-font-size: 14px; -fx-font-weight: bold;"
+                + " -fx-background-radius: 4; -fx-background-insets: 0;"
+                + " -fx-background-color: " + (live ? Palette.CONTROL : Palette.PANEL) + ";"
+                + " -fx-text-fill: " + (live ? Palette.TEXT_HEAD : Palette.TEXT_SPENT) + ";"
+                + (live ? " -fx-cursor: hand;" : ""));
+        button.setOnAction(e -> go.run());
+        return button;
+    }
+
+    private static String stepWord(double step) {
+        return step >= .01 ? String.format("%.0f points", step * 100)
+                           : String.format("%.2f points", step * 100);
+    }
+
+    private static double bounded(double value, Lever lever) {
+        return Math.max(lever.min(), Math.min(lever.max(), value));
+    }
+
+    /**
+     * A dial has been moved to a value.
+     *
+     * Back at what the city is actually charging, it UNSTAGES rather than
+     * staging a no-op - otherwise the foot bar would list "20.00% to 20.00%"
+     * as a pending change and the Apply button would offer to do nothing.
+     */
+    private void propose(Lever lever, double value) {
+        double v = bounded(snapped(value, lever.min(), lever.step()), lever);
+        if (moved(v, lever.current(), lever.step())) stage(lever.key(), v);
+        else unstage(lever.key());
+        showPolicyMenu();
+    }
+
+
+    /* =====================================================================
+       WHAT THE WHOLE BATCH WOULD DO
+
+       One preview for every dial on the page at once, struck the same way
+       twice - once with what the city charges and once with what has been
+       staged - so the DIFFERENCE is the answer even though neither figure is
+       last month's actual revenue. Comparing a model against an actual would
+       have made a batch that changed nothing read as a swing.
+       ===================================================================== */
+    private double taxTotalUnder(boolean proposed) {
+
+        EconomyManager em = game.getEconomyManager();
+        TaxPolicy p = em.getTaxPolicy();
+        SalesTaxLedger vat = em.getSalesTaxLedger();
+        SectorBooks books = game.getSectorBooks();
+
+        double base = proposed ? staged("income", p.getIncomeTaxRate()) : p.getIncomeTaxRate();
+        double prop = proposed ? staged("property", p.getPropertyTaxRate())
+                               : p.getPropertyTaxRate();
+        double total = 0;
+
+        for (Sector s : game.getSectors().all()) {
+
+            SectorBooks.SectorMonth m = books.get(s);
+            double bearing = m == null ? 0 : Math.max(0, m.preTaxIncome());
+            double pOff = proposed ? staged("profit:" + s.key(), p.getProfitOffset(s))
+                                   : p.getProfitOffset(s);
+            total += bearing * clampRate(base + pOff, TaxPolicy.MAX_INCOME_TAX);
+
+            // Sales moves by the RATIO, not recomputed: this sector's input
+            // credits are somebody else's rate and those have not moved.
+            double net = vat.getNet(s.key());
+            double nowRate = p.effectiveSalesRate(s);
+            double sOff = proposed ? staged("sales:" + s.key(), p.getSalesOffset(s))
+                                   : p.getSalesOffset(s);
+            double atRate = clampRate(base + sOff, TaxPolicy.MAX_INCOME_TAX);
+            total += nowRate > 1e-9 ? net * atRate / nowRate
+                                    : vat.getTaxableSales(s.key()) * atRate;
+
+            double rOff = proposed ? staged("prop:" + s.key(), p.getPropertyOffset(s))
+                                   : p.getPropertyOffset(s);
+            total += assessedUnder(em, p, s, proposed)
+                    * clampRate(prop + rOff, TaxPolicy.MAX_PROPERTY_TAX) / 12;
+        }
+
+        double[] wages = em.getStaffedWagePerType();
+        for (int i = 0; i < wages.length && i < JobType.values().length; i++) {
+            if (wages[i] <= 0) continue;
+            WageBand in = WageBand.of(JobType.values()[i]);
+            double off = proposed ? staged("wage:" + in.name(), p.getWageOffset(in))
+                                  : p.getWageOffset(in);
+            total += wages[i] * clampRate(base + off, TaxPolicy.MAX_INCOME_TAX);
+        }
+        return total;
+    }
+
+    /**
+     * What a sector is on the roll for, with a staged farmland relief applied.
+     *
+     * getAssessedValue() already nets the relief off the fields, so previewing
+     * a MOVE in it means taking the old share back out and the new one in:
+     * roll = structure + ground x (1 - relief), and ground is known.
+     */
+    private double assessedUnder(EconomyManager em, TaxPolicy p, Sector s, boolean proposed) {
+        double roll = em.getAssessedValue(s);
+        if (!proposed || !Sectors.AGRICULTURE.equals(s.key()) || !isStaged("farmland")) {
+            return roll;
+        }
+        double ground = em.landValueOf(s);
+        double now = p.getFarmlandRelief();
+        return Math.max(0, roll - ground * (1 - now) + ground * (1 - staged("farmland", now)));
+    }
+
+    /** The foot bar: everything pending, what it adds up to, and one button. */
+    private VBox stagedBar() {
+
+        VBox box = new VBox(0);
+        box.setMaxWidth(STATEMENT);
+        if (policyStaged.isEmpty()) return box;
+
+        box.getChildren().add(statementHead("What you have staged"));
+
+        int listed = 0;
+        for (java.util.Map.Entry<String, Double> entry : policyStaged.entrySet()) {
+            Lever lever = policyLevers.get(entry.getKey());
+            if (lever == null) continue;   // not on this page; cannot be described
+            box.getChildren().add(wouldBe(lever.name(),
+                    lever.read().apply(lever.current()),
+                    lever.read().apply(entry.getValue()), Palette.ACCENT));
+            listed++;
+        }
+        if (listed == 0) return new VBox();
+
+        double now = taxTotalUnder(false);
+        double then = taxTotalUnder(true);
+        box.getChildren().add(wouldTotal("Tax a month",
+                money(now), money(then), then >= now ? Palette.GOOD : Palette.WARN));
+        box.getChildren().add(statementLine("A difference of",
+                signedTight(then - now, false),
+                then >= now ? Palette.GOOD : Palette.BAD));
+        box.getChildren().add(previewCaveat(
+                "Both figures are struck the same way against this month's books - the "
+                + "profit each sector made, the value each added, the payroll each paid "
+                + "and what each is assessed at - so the DIFFERENCE is the answer even "
+                + "where neither matches last month's actual revenue to the dollar."));
+
+        final int count = listed;
+        Button go = new Button(count == 1 ? "Apply it" : "Apply all " + count);
+        go.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
+                + " -fx-background-color: " + Palette.ACCENT_FILL + "; -fx-cursor: hand;");
+        go.setOnAction(e -> { applyStaged(); showPolicyMenu(); });
+
+        Button no = new Button("Discard");
+        no.setOnAction(e -> { dropProposal(); showPolicyMenu(); });
+
+        HBox bar = new HBox(8, go, no);
+        bar.setAlignment(Pos.CENTER_LEFT);
+        bar.setMaxWidth(STATEMENT);
+        bar.setStyle("-fx-padding: 10 0 4 0;");
+        box.getChildren().add(bar);
+        return box;
+    }
+
+    /** Each staged value through its own dial's setter, then the set is empty. */
+    private void applyStaged() {
+        for (java.util.Map.Entry<String, Double> entry
+                : new java.util.ArrayList<>(policyStaged.entrySet())) {
+            Lever lever = policyLevers.get(entry.getKey());
+            if (lever != null) lever.apply().accept(entry.getValue());
+        }
+        dropProposal();
+    }
+
+    /* =====================================================================
+       THE FOUR TAXES
+
+       The area used to be split by where a modifier LIVED - "the two rates",
+       "by wage band", "by sector" - and that is a fact about the code rather
+       than about the money. It also hid the thing a player most needs to know:
+       "income tax" is not one tax, it is THREE, charged on three different
+       things, and a sector's three offsets were filed together on one row
+       whichever of them you had come to look at.
+
+       It is split by which tax it is now. Everything reads; the four act.
+       ===================================================================== */
+
+    /** Profit, sales and wage all move off the income rate, so it is on all three. */
+    private void cityRateLever(VBox column, TaxPolicy policy, String which) {
+
+        double base = policy.getIncomeTaxRate();
+        column.getChildren().add(statementHead("The city rate"));
+        column.getChildren().add(leverHead(pct2(base),
+                "One rate on what every business earns, on the value they add, and on "
+                + "every wage paid. " + which + " moves off this number rather than "
+                + "replacing it - so this dial moves the other two taxes with it."));
+        column.getChildren().add(taxLadder(new Lever("income", "The city rate", base,
+                0, TaxPolicy.MAX_INCOME_TAX, STEP_INCOME,
+                UserInterface::pct2, policy::setIncomeTaxRate)));
+    }
+
+    /* ------------------------------ EVERYTHING ------------------------------ */
+
+    private void taxOverviewPage(VBox column) {
+
+        EconomyManager em = game.getEconomyManager();
+        TaxPolicy policy = em.getTaxPolicy();
+        NationalAccounts na = em.getNationalAccounts();
+
+        double profit = na.getTaxBusiness() + na.getTaxIndustrial();
+        double sales  = na.getTaxSales();
+        double wage   = na.getTaxWage();
+        double prop   = na.getPropertyTax();
+        double all    = profit + sales + wage + prop;
+
+        column.getChildren().add(statementHead("Where the money comes from"));
+        column.getChildren().add(statementNote(
+                "Last month, by tax. Three of the four are the city rate with a move off "
+                + "it; the fourth is charged on what things are worth rather than on "
+                + "anything anybody earned."));
+
+        column.getChildren().add(taxSourceRow("Profit", profit, all,
+                pct2(policy.getIncomeTaxRate()), "on what the sectors earned", "Profit"));
+        column.getChildren().add(taxSourceRow("Sales", sales, all,
+                pct2(policy.getIncomeTaxRate()), "on the value they add", "Sales"));
+        column.getChildren().add(taxSourceRow("Wage", wage, all,
+                pct2(policy.getIncomeTaxRate()), "off every payroll in the city", "Wage"));
+        column.getChildren().add(taxSourceRow("Property", prop, all,
+                String.format("%.2f%% a year", policy.getPropertyTaxRate() * 100),
+                "on land and buildings, earning or not", "Property"));
+
+        column.getChildren().add(statementTotal("Raised last month", money(all),
+                all > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
+
+        double annual = annualGdp(na);
+        column.getChildren().add(statementLine("Which is, of everything the city made",
+                annual > 0 ? String.format("%.1f%% of GDP", all * 12 / annual * 100)
+                           : "no output to compare",
+                Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(
+                "A sector that lost money paid no profit tax at all, which is why the "
+                + "first line falls in a bad month with nobody having touched a rate."));
+
+        cityRateLever(column, policy, "Profit, sales and wage tax each");
+
+        if (isStaged("income")) {
+            double want = staged("income", policy.getIncomeTaxRate());
+            double base = policy.getIncomeTaxRate();
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("Profit tax", money(profit),
+                    money(scaled(profit, profitFactor(policy, base, want))), null));
+            column.getChildren().add(wouldBe("Sales tax", money(sales),
+                    money(scaled(sales, salesFactor(policy, base, want))), null));
+            column.getChildren().add(wouldBe("Wage tax", money(wage),
+                    money(wageTaxAtBase(policy, want)), null));
+            column.getChildren().add(statementNote(
+                    "Property is not on this list: it is charged on value rather than on "
+                    + "income, and the city rate does not reach it."));
+        }
+
+        java.util.List<String[]> flags = policyFlags();
+        if (!flags.isEmpty()) {
+            column.getChildren().add(statementHead("What is currently biting"));
+            for (String[] flag : flags) {
+                column.getChildren().add(alert(flag[1], flag[2]));
+            }
+        }
+    }
+
+    /** One tax on the overview: what it raised, its share, its rate, and a door. */
+    private HBox taxSourceRow(String name, double raised, double all,
+                              String rate, String what, String page) {
+
+        Label heading = new Label(name);
+        heading.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
+
+        Label says = new Label(what + "  ·  " + rate);
+        says.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+
+        VBox left = new VBox(0, heading, says);
+        left.setAlignment(Pos.CENTER_LEFT);
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+
+        Label big = new Label(money(raised));
+        big.setStyle(Palette.figure(Palette.SIZE_LEAD,
+                raised > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
+
+        Label share = new Label(all > 0 ? String.format("%.0f%% of the tax take", raised / all * 100)
+                                        : "nothing raised");
+        share.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+
+        VBox right = new VBox(0, big, share);
+        right.setAlignment(Pos.CENTER_RIGHT);
+
+        HBox row = new HBox(Palette.GAP, left, gap, right);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPrefWidth(STATEMENT);
+        row.setMaxWidth(STATEMENT);
+        String rest = "-fx-padding: 10 12 10 12; -fx-cursor: hand;";
+        row.setStyle(rest + Palette.block(Palette.CONTROL));
+        row.setOnMouseClicked(e -> {
+            policyPage = page;
+            dropProposal();
+            innerScrollAt.remove("showPolicyMenu:body");
+            showPolicyMenu();
+        });
+        row.setOnMouseEntered(e -> row.setStyle(rest
+                + Palette.block(Palette.RAISED, Palette.ACCENT)));
+        row.setOnMouseExited(e -> row.setStyle(rest + Palette.block(Palette.CONTROL)));
+        VBox.setMargin(row, new javafx.geometry.Insets(0, 0, 6, 0));
+        return row;
+    }
+
+    /* -------------------------------- PROFIT -------------------------------- */
+
+    private void profitTaxPage(VBox column) {
+
+        EconomyManager em = game.getEconomyManager();
+        TaxPolicy policy = em.getTaxPolicy();
+        NationalAccounts na = em.getNationalAccounts();
+        SectorBooks books = game.getSectorBooks();
+        double base = policy.getIncomeTaxRate();
+
+        column.getChildren().add(statementHead("Profit tax"));
+        column.getChildren().add(leverHead(money(na.getTaxBusiness() + na.getTaxIndustrial()),
+                "Charged on what each sector earned before tax. A sector that lost money "
+                + "pays nothing, so this is the half of the city's revenue that falls "
+                + "exactly when the city needs it most."));
+
+        cityRateLever(column, policy, "Every sector's profit rate");
+
+        column.getChildren().add(statementHead("Every sector, and its move off that"));
+
+        javafx.scene.layout.GridPane table = grid(
+                new double[] {170, 130, 120, 130}, rightAfterFirst(4));
+        gridHead(table, "", "pre-tax income", "taxed at", "paid");
+        int line = 1;
+        for (Sector sector : game.getSectors().all()) {
+            SectorBooks.SectorMonth month = books.get(sector);
+            double bearing = month == null ? 0 : Math.max(0, month.preTaxIncome());
+            table.add(gridCell(sector.label(), Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, false), 0, line);
+            table.add(gridCell(bearing > 0 ? money(bearing) : "—",
+                    bearing > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            table.add(gridCell(pct2(policy.effectiveProfitRate(sector)),
+                    Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
+            table.add(gridCell(month == null ? "—" : money(month.tax()),
+                    Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, line);
+            line++;
+        }
+        column.getChildren().add(table);
+        column.getChildren().add(statementNote(
+                "A move is in POINTS off the city rate, so a sector left at zero is taxed "
+                + "at exactly " + pct2(base) + " and follows the city rate wherever it "
+                + "goes. The offsets are capped at "
+                + String.format("%.0f", TaxPolicy.MAX_OFFSET * 100) + " points either way."));
+
+        for (Sector sector : game.getSectors().all()) {
+            SectorBooks.SectorMonth month = books.get(sector);
+            double bearing = month == null ? 0 : Math.max(0, month.preTaxIncome());
+            double offset = policy.getProfitOffset(sector);
+            final Sector s = sector;
+            String key = "profit:" + sector.key();
+            boolean touched = isStaged("income") || isStaged(key);
+            double wantBase = staged("income", base);
+            column.getChildren().add(bandLever(sector.label(), pts(offset),
+                    arrow(touched, pct2(policy.effectiveProfitRate(sector)),
+                            pct2(clampRate(wantBase + staged(key, offset),
+                                    TaxPolicy.MAX_INCOME_TAX))),
+                    bearing > 0 ? money(month.tax()) + " paid, on " + money(bearing)
+                                + " of pre-tax income"
+                                : "it made nothing to be taxed on last month",
+                    offset));
+            column.getChildren().add(taxLadder(new Lever(key,
+                    sector.label() + ", profit", offset,
+                    -TaxPolicy.MAX_OFFSET, TaxPolicy.MAX_OFFSET, STEP_INCOME,
+                    UserInterface::pts, v -> policy.setProfitOffset(s, v))));
+        }
+    }
+
+    /* --------------------------------- SALES --------------------------------- */
+
+    private void salesTaxPage(VBox column) {
+
+        EconomyManager em = game.getEconomyManager();
+        TaxPolicy policy = em.getTaxPolicy();
+        NationalAccounts na = em.getNationalAccounts();
+        SalesTaxLedger vat = em.getSalesTaxLedger();
+
+        column.getChildren().add(statementHead("Sales tax"));
+        column.getChildren().add(leverHead(money(na.getTaxSales()),
+                "Charged on VALUE ADDED - what a sector sells, less the tax it already "
+                + "paid on what it bought. A sector that only assembles somebody else's "
+                + "parts pays on the assembly, which is why this raises money from a "
+                + "chain without charging the same dollar twice."));
+
+        cityRateLever(column, policy, "Every sector's sales rate");
+
+        column.getChildren().add(statementHead("Every sector, and its move off that"));
+
+        javafx.scene.layout.GridPane table = grid(
+                new double[] {170, 130, 120, 130}, rightAfterFirst(4));
+        gridHead(table, "", "taxable sales", "charged at", "net");
+        int line = 1;
+        for (Sector sector : game.getSectors().all()) {
+            double sold = vat.getTaxableSales(sector.key());
+            table.add(gridCell(sector.label(), Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, false), 0, line);
+            table.add(gridCell(sold > 0 ? money(sold) : "—",
+                    sold > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            table.add(gridCell(pct2(policy.effectiveSalesRate(sector)),
+                    Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
+            table.add(gridCell(vat.isInRefund(sector.key()) ? "in refund"
+                            : money(vat.getNet(sector.key())),
+                    vat.isInRefund(sector.key()) ? Palette.WARN : Palette.TEXT_HEAD,
+                    Palette.SIZE_CAPTION, true), 3, line);
+            line++;
+        }
+        column.getChildren().add(table);
+        column.getChildren().add(statementNote(
+                "\"In refund\" means a sector's credits on what it bought exceed the tax "
+                + "on what it sold, so the city owes it rather than the other way round. "
+                + "That is the mechanism working, not a fault - it happens to anybody "
+                + "building stock or plant faster than they are selling."));
+
+        for (Sector sector : game.getSectors().all()) {
+            double sold = vat.getTaxableSales(sector.key());
+            double net = vat.getNet(sector.key());
+            double offset = policy.getSalesOffset(sector);
+            final Sector s = sector;
+            String key = "sales:" + sector.key();
+            boolean touched = isStaged("income") || isStaged(key);
+            double wantBase = staged("income", policy.getIncomeTaxRate());
+            column.getChildren().add(bandLever(sector.label(), pts(offset),
+                    arrow(touched, pct2(policy.effectiveSalesRate(sector)),
+                            pct2(clampRate(wantBase + staged(key, offset),
+                                    TaxPolicy.MAX_INCOME_TAX))),
+                    sold > 0 ? money(net) + " net, on " + money(sold) + " of taxable sales"
+                             : vat.isInRefund(sector.key())
+                                     ? "in refund - its credits exceed what it owes"
+                                     : "it sold nothing taxable last month",
+                    offset));
+            column.getChildren().add(taxLadder(new Lever(key,
+                    sector.label() + ", sales", offset,
+                    -TaxPolicy.MAX_OFFSET, TaxPolicy.MAX_OFFSET, STEP_INCOME,
+                    UserInterface::pts, v -> policy.setSalesOffset(s, v))));
+        }
+    }
+
+    /* ---------------------------------- WAGE ---------------------------------- */
+
+    private void wageTaxPage(VBox column) {
+
+        EconomyManager em = game.getEconomyManager();
+        TaxPolicy policy = em.getTaxPolicy();
+        NationalAccounts na = em.getNationalAccounts();
+        double base = policy.getIncomeTaxRate();
+
+        column.getChildren().add(statementHead("Wage tax"));
+        column.getChildren().add(leverHead(money(na.getTaxWage()),
+                "Taken off every payroll in the city before the household sees it. The "
+                + "jobs are grouped by the education they need, which is the only "
+                + "grouping the labour market itself uses."));
+
+        cityRateLever(column, policy, "Every band's rate");
+
+        column.getChildren().add(statementHead("The eleven jobs, in four bands"));
+
+        javafx.scene.layout.GridPane table = grid(
+                new double[] {170, 130, 120, 130}, rightAfterFirst(4));
+        gridHead(table, "", "payroll", "taxed at", "raised");
+        int line = 1;
+        for (WageBand band : WageBand.values()) {
+            double payroll = payrollIn(band);
+            table.add(gridCell(band.label(), Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, false), 0, line);
+            table.add(gridCell(payroll > 0 ? money(payroll) : "—",
+                    payroll > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            table.add(gridCell(pct2(policy.effectiveWageRate(band)),
+                    Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
+            table.add(gridCell(payroll > 0
+                            ? money(wageTaxWith(policy, null, base, 0, band)) : "—",
+                    Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, line);
+            line++;
+        }
+        column.getChildren().add(table);
+
+        /* ------------------- what a payslip actually loses ------------------- */
+        payrollBurden(column, policy, base);
+
+        for (WageBand band : WageBand.values()) {
+            double offset = policy.getWageOffset(band);
+            double payroll = payrollIn(band);
+            final WageBand b = band;
+            String key = "wage:" + band.name();
+            boolean touched = isStaged("income") || isStaged(key);
+            double wantBase = staged("income", base);
+            column.getChildren().add(bandLever(band.label(), pts(offset),
+                    arrow(touched, pct2(policy.effectiveWageRate(band)),
+                            pct2(clampRate(wantBase + staged(key, offset),
+                                    TaxPolicy.MAX_INCOME_TAX))),
+                    payroll > 0 ? money(wageTaxWith(policy, null, base, 0, band))
+                                + " a month, off " + money(payroll) + " of payroll"
+                                : "nobody in the city holds one of these jobs",
+                    offset));
+            column.getChildren().add(taxLadder(new Lever(key,
+                    band.label() + ", wage", offset,
+                    -TaxPolicy.MAX_OFFSET, TaxPolicy.MAX_OFFSET, STEP_INCOME,
+                    UserInterface::pts, v -> policy.setWageOffset(b, v))));
+        }
+    }
+
+    /**
+     * The whole charge on a payslip, which no screen has ever totalled.
+     *
+     * Wage tax is not the only thing taken off a wage - the pension
+     * contribution and the EI premium come off the same payroll, and both are
+     * set two pages away under Promises. A player tuning the wage rate was
+     * looking at one of three numbers and had no way to see the other two, let
+     * alone what they came to together.
+     *
+     * Read-only here ON PURPOSE. Promises owns those two dials; a second copy
+     * of a lever is how two screens start disagreeing about what the city
+     * charges. The door goes to the page that does own them.
+     */
+    private void payrollBurden(VBox column, TaxPolicy policy, double base) {
+
+        double pension = policy.getContributionRate();
+        double ei = policy.getEiPremiumRate();
+
+        column.getChildren().add(statementHead("What a payslip actually loses"));
+        column.getChildren().add(statementLine("Wage tax, at the city rate",
+                pct2(base), Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("Pension contribution",
+                pct2(pension), Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("EI premium",
+                pct2(ei), Palette.TEXT_SPENT));
+        column.getChildren().add(statementTotal("Off a wage in the middle band",
+                pct2(base + pension + ei),
+                base + pension + ei > .45 ? Palette.WARN : Palette.TEXT_HEAD));
+        column.getChildren().add(statementNote(
+                "Only the first is a tax and only the first is set here - the other two "
+                + "are promises the city has made and they are charged on the same "
+                + "payroll. A band with a move off the city rate pays that instead of "
+                + "the first line; the other two are flat across every band."));
+
+        Label door = new Label("Set the pension contribution and the EI premium  ›");
+        door.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT)
+                + " -fx-cursor: hand; -fx-padding: 2 0 8 0;");
+        door.setOnMouseClicked(e -> {
+            policyArea = "Promises";
+            policyPage = "Pensions";
+            dropProposal();
+            innerScrollAt.remove("showPolicyMenu:body");
+            showPolicyMenu();
+        });
+        column.getChildren().add(door);
+    }
+
+    /* -------------------------------- PROPERTY -------------------------------- */
+
+    private void propertyTaxPage(VBox column) {
+
+        EconomyManager em = game.getEconomyManager();
+        TaxPolicy policy = em.getTaxPolicy();
+        NationalAccounts na = em.getNationalAccounts();
+        double prop = policy.getPropertyTaxRate();
+
+        column.getChildren().add(statementHead("Property tax"));
+        column.getChildren().add(leverHead(String.format("%.2f%% a year", prop * 100),
+                "Charged on what land and buildings are assessed at, whether or not the "
+                + "owner earned anything. That is what makes it the steady half of the "
+                + "city's revenue and the unpopular half."));
+
+        column.getChildren().add(statementLine("Billed monthly at",
+                String.format("%.4f%% of assessed value",
+                        policy.getMonthlyPropertyTaxRate() * 100), Palette.TEXT_MUTED));
+        column.getChildren().add(statementTotal("Raised last month", money(na.getPropertyTax()),
+                na.getPropertyTax() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
+
+        column.getChildren().add(taxLadder(new Lever("property", "The property rate", prop,
+                0, TaxPolicy.MAX_PROPERTY_TAX, STEP_PROPERTY,
+                r -> String.format("%.2f%%", r * 100), policy::setPropertyTaxRate)));
+        column.getChildren().add(statementNote(
+                "A twentieth of a point a step rather than the quarter the other three "
+                + "get, because the same step is a very different change: a quarter point "
+                + "on a rate of one is a quarter of the tax."));
+
+        column.getChildren().add(statementHead("Every sector, and what it is on the roll for"));
+
+        javafx.scene.layout.GridPane assess = grid(
+                new double[] {170, 130, 120, 130}, rightAfterFirst(4));
+        gridHead(assess, "", "assessed", "a year", "billed");
+        int line = 1;
+        double billing = 0;
+        for (Sector sector : game.getSectors().all()) {
+            double value = em.getAssessedValue(sector);
+            if (value <= 0) continue;
+            double bill = value * policy.effectiveMonthlyPropertyRate(sector);
+            billing += bill;
+            assess.add(gridCell(sector.label(), Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, false), 0, line);
+            assess.add(gridCell(money(value), Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            assess.add(gridCell(String.format("%.2f%%",
+                            policy.effectivePropertyRate(sector) * 100),
+                    Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
+            assess.add(gridCell(money(bill), Palette.TEXT_HEAD,
+                    Palette.SIZE_CAPTION, true), 3, line);
+            line++;
+        }
+        column.getChildren().add(assess);
+        // The column bills at TODAY'S rate and the line above it is history, so
+        // the two differ the moment the rate is changed. Footing the column
+        // makes that a comparison rather than a contradiction.
+        column.getChildren().add(statementTotal("Which comes to at today's rate",
+                money(billing), Palette.TEXT_HEAD));
+        column.getChildren().add(statementNote(
+                "The power and water plants are the city's own and exempt. Raising what "
+                + "land sells for raises what every existing owner is assessed at, so the "
+                + "Land Office moves this line without anybody touching this rate."));
+
+        for (Sector sector : game.getSectors().all()) {
+            double assessed = em.getAssessedValue(sector);
+            double offset = policy.getPropertyOffset(sector);
+            final Sector s = sector;
+            String key = "prop:" + sector.key();
+            boolean touched = isStaged("property") || isStaged(key);
+            double wantProp = staged("property", prop);
+            column.getChildren().add(bandLever(sector.label(),
+                    String.format("%+.2f pts", offset * 100),
+                    arrow(touched,
+                            String.format("%.2f%%",
+                                    policy.effectivePropertyRate(sector) * 100),
+                            String.format("%.2f%%",
+                                    clampRate(wantProp + staged(key, offset),
+                                            TaxPolicy.MAX_PROPERTY_TAX) * 100)),
+                    assessed > 0
+                            ? money(assessed * policy.effectiveMonthlyPropertyRate(sector))
+                              + " a month, on " + money(assessed) + " assessed"
+                            : "it owns nothing the city can assess",
+                    offset));
+            column.getChildren().add(taxLadder(new Lever(key,
+                    sector.label() + ", property", offset,
+                    -TaxPolicy.MAX_PROPERTY_TAX, TaxPolicy.MAX_PROPERTY_TAX, STEP_PROPERTY,
+                    o -> String.format("%+.2f pts", o * 100),
+                    v -> policy.setPropertyOffset(s, v))));
+        }
+
+        farmlandRelief(column, game, policy, em);
     }
 
     /* =====================================================================
@@ -2868,7 +3663,7 @@ public class UserInterface extends Application {
                 money(taxRaised()),
                 String.format("%.1f%% on income · %.2f%% a year on property",
                         policy.getIncomeTaxRate() * 100, policy.getPropertyTaxRate() * 100),
-                Palette.GOOD, "Taxes", "The two rates"));
+                Palette.GOOD, "Taxes", "Everything"));
 
         column.getChildren().add(policyRow("Wages",
                 "the floor under every wage in the city, including the city's own",
@@ -3152,6 +3947,10 @@ public class UserInterface extends Application {
 
     private void drawPolicyScreen() {
 
+        // Redrawn from scratch every pass, so the register of what is on screen
+        // is too - a lever from the page before is not a lever you can apply.
+        policyLevers.clear();
+
         String[] pages = switch (policyArea) {
             case "Wages"    -> POLICY_WAGE_PAGES;
             case "Money"    -> POLICY_MONEY_PAGES;
@@ -3183,10 +3982,15 @@ public class UserInterface extends Application {
             }
             default -> {
                 switch (policyPage) {
-                    case "By wage band" -> wageBandPage(column);
-                    case "By sector"    -> sectorTaxPage(column);
-                    default             -> taxRatesPage(column);
+                    case "Profit"   -> profitTaxPage(column);
+                    case "Sales"    -> salesTaxPage(column);
+                    case "Wage"     -> wageTaxPage(column);
+                    case "Property" -> propertyTaxPage(column);
+                    default         -> taxOverviewPage(column);
                 }
+                // Every dial on the page has registered itself by now, which
+                // is what lets one bar describe and apply a mixed batch.
+                column.getChildren().add(stagedBar());
             }
         }
 
@@ -3318,6 +4122,11 @@ public class UserInterface extends Application {
 
     private VBox wouldHead() { return statementHead("What it would do"); }
 
+    /** "now  \u2192  then", or just now when nothing staged reaches this row. */
+    private static String arrow(boolean staged, String now, String then) {
+        return staged ? now + "  \u2192  " + then : now;
+    }
+
     /** One line of a preview: what it reads now, and what it would read. */
     private HBox wouldBe(String label, String before, String after, String tone) {
         return statementLine(label, before + "  →  " + after, tone);
@@ -3356,153 +4165,17 @@ public class UserInterface extends Application {
                 + "arrives in its own books rather than in this preview.");
     }
 
-    private static String pct(double rate)   { return String.format("%.1f%%", rate * 100); }
     private static String pct2(double rate)  { return String.format("%.2f%%", rate * 100); }
-    private static String pts(double points) { return String.format("%+.1f pts", points * 100); }
+    /*
+     * TWO DECIMALS SINCE THE LADDER. Every rate that moves off the income tax
+     * steps in quarter points now, and at one decimal a quarter point printed
+     * as "+0.3 pts" - a dial that lies about where it just landed.
+     */
+    private static String pts(double points) { return String.format("%+.2f pts", points * 100); }
 
     /* =====================================================================
        TAXES - the two rates
        ===================================================================== */
-
-    private void taxRatesPage(VBox column) {
-
-        EconomyManager em = game.getEconomyManager();
-        TaxPolicy policy = em.getTaxPolicy();
-        NationalAccounts na = em.getNationalAccounts();
-
-        /* ------------------------------ income tax ------------------------------ */
-        double base = policy.getIncomeTaxRate();
-        double want = staged("income", base);
-
-        double profitNow = na.getTaxBusiness() + na.getTaxIndustrial();
-        double salesNow  = na.getTaxSales();
-        double wageNow   = na.getTaxWage();
-
-        column.getChildren().add(statementHead("Income tax"));
-        column.getChildren().add(leverHead(pct(base),
-                "One rate on what every business earns, on what it adds to the value of "
-                + "what it sells, and on every wage paid in the city. The bands and the "
-                + "sectors move off this number rather than replacing it."));
-
-        column.getChildren().add(statementLine("Profit tax, from the sectors",
-                money(profitNow), profitNow > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
-        column.getChildren().add(statementLine("Sales tax, on the value they add",
-                money(salesNow), salesNow > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
-        column.getChildren().add(statementLine("Wage tax, off the payroll",
-                money(wageNow), wageNow > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
-        column.getChildren().add(statementTotal("Raised last month",
-                money(profitNow + salesNow + wageNow), Palette.TEXT_HEAD));
-        column.getChildren().add(statementNote(
-                "A sector that lost money paid no profit tax at all, which is why this "
-                + "line falls in a bad month with nobody having touched the rate."));
-
-        column.getChildren().add(stageSlider("income", base,
-                0, TaxPolicy.MAX_INCOME_TAX, .005, UserInterface::pct));
-
-        if (isStaged("income")) {
-
-            double profitThen = scaled(profitNow, profitFactor(policy, base, want));
-            double salesThen  = scaled(salesNow,  salesFactor(policy, base, want));
-            double wageThen   = wageTaxAtBase(policy, want);
-            double now  = profitNow + salesNow + wageNow;
-            double then = profitThen + salesThen + wageThen;
-
-            column.getChildren().add(wouldHead());
-            column.getChildren().add(wouldBe("The rate", pct(base), pct(want), Palette.ACCENT));
-            column.getChildren().add(wouldBe("Profit tax",
-                    money(profitNow), money(profitThen), null));
-            column.getChildren().add(wouldBe("Sales tax",
-                    money(salesNow), money(salesThen), null));
-            column.getChildren().add(wouldBe("Wage tax",
-                    money(wageNow), money(wageThen), null));
-            column.getChildren().add(wouldTotal("Raised a month",
-                    money(now), money(then), then >= now ? Palette.GOOD : Palette.WARN));
-            column.getChildren().add(statementLine("A difference of",
-                    signedTight(then - now, false),
-                    then >= now ? Palette.GOOD : Palette.BAD));
-            column.getChildren().add(previewCaveat(
-                    "The wage tax is recomputed job type by job type off the real payroll. "
-                    + "The profit and sales lines are last month's, moved by the rate."));
-            column.getChildren().add(applyBar("Set income tax to " + pct(want),
-                    () -> policy.setIncomeTaxRate(want)));
-        }
-
-        /* ----------------------------- property tax ----------------------------- */
-        double prop = policy.getPropertyTaxRate();
-        double wantProp = staged("property", prop);
-        double propNow = na.getPropertyTax();
-
-        column.getChildren().add(statementHead("Property tax"));
-        column.getChildren().add(leverHead(String.format("%.2f%% a year", prop * 100),
-                "Charged on what land and buildings are assessed at, whether or not the "
-                + "owner earned anything. That is what makes it the steady half of the "
-                + "city's revenue and the unpopular half."));
-
-        column.getChildren().add(statementLine("Billed monthly at",
-                String.format("%.4f%% of assessed value",
-                        policy.getMonthlyPropertyTaxRate() * 100), Palette.TEXT_MUTED));
-        column.getChildren().add(statementTotal("Raised last month", money(propNow),
-                propNow > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
-
-        javafx.scene.layout.GridPane assess = grid(
-                new double[] {200, 180, 180}, rightAfterFirst(3));
-        gridHead(assess, "", "assessed", "at today's rate");
-        int line = 1;
-        double billing = 0;
-        for (Sector sector : game.getSectors().all()) {
-            double value = em.getAssessedValue(sector);
-            if (value <= 0) continue;
-            double bill = value * policy.effectiveMonthlyPropertyRate(sector);
-            billing += bill;
-            assess.add(gridCell(sector.label(), Palette.TEXT_BODY,
-                    Palette.SIZE_CAPTION, false), 0, line);
-            assess.add(gridCell(money(value), Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 1, line);
-            assess.add(gridCell(money(bill),
-                    Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
-            line++;
-        }
-        column.getChildren().add(assess);
-        // The column bills at TODAY'S rate and the line above it is history, so
-        // the two differ the moment the rate is changed. Footing the column
-        // makes that a comparison rather than a contradiction.
-        column.getChildren().add(statementTotal("Which comes to", money(billing),
-                Palette.TEXT_HEAD));
-        column.getChildren().add(statementNote(
-                "The power and water plants are the city's own and exempt. Raising what "
-                + "land sells for raises what every existing owner is assessed at, so the "
-                + "Land Office moves this line without anybody touching this rate."));
-
-        column.getChildren().add(stageSlider("property", prop,
-                0, TaxPolicy.MAX_PROPERTY_TAX, .0005,
-                r -> String.format("%.2f%%", r * 100)));
-
-        if (isStaged("property")) {
-            double thenProp = propertyTaxAt(policy, em, wantProp);
-            double nowProp  = propertyTaxAt(policy, em, prop);
-            column.getChildren().add(wouldHead());
-            column.getChildren().add(wouldBe("The rate, a year",
-                    String.format("%.2f%%", prop * 100),
-                    String.format("%.2f%%", wantProp * 100), Palette.ACCENT));
-            column.getChildren().add(wouldBe("Billed monthly at",
-                    String.format("%.4f%%", prop / 12 * 100),
-                    String.format("%.4f%%", wantProp / 12 * 100), Palette.TEXT_MUTED));
-            column.getChildren().add(wouldTotal("Raised a month",
-                    money(nowProp), money(thenProp),
-                    thenProp >= nowProp ? Palette.GOOD : Palette.WARN));
-            column.getChildren().add(statementLine("A difference of",
-                    signedTight(thenProp - nowProp, false),
-                    thenProp >= nowProp ? Palette.GOOD : Palette.BAD));
-            column.getChildren().add(previewCaveat(
-                    "Exact against today's assessed values, sector by sector."));
-            column.getChildren().add(applyBar(
-                    String.format("Set property tax to %.2f%%", wantProp * 100),
-                    () -> policy.setPropertyTaxRate(wantProp)));
-        }
-
-        /* --------------------------- farmland relief --------------------------- */
-        farmlandRelief(column, game, policy, em);
-    }
 
     /**
      * The one dial that decides whether the city keeps its fields.
@@ -3552,8 +4225,9 @@ public class UserInterface extends Application {
                     + "whether a field sunk now survives the city reaching it."));
         }
 
-        column.getChildren().add(stageSlider("farmland", relief, 0, 1, .05,
-                r -> String.format("%.0f%%", r * 100)));
+        column.getChildren().add(taxLadder(new Lever("farmland", "Farmland relieved",
+                relief, 0, 1, .05, r -> String.format("%.0f%%", r * 100),
+                policy::setFarmlandRelief)));
 
         if (isStaged("farmland")) {
             double now = ground * relief * monthly;
@@ -3572,9 +4246,6 @@ public class UserInterface extends Application {
             column.getChildren().add(previewCaveat(
                     "Exact against today's land price. What it actually decides is whether "
                     + "the next field is worth sinking, which shows up years later."));
-            column.getChildren().add(applyBar(
-                    String.format("Relieve farmland by %.0f%%", want * 100),
-                    () -> policy.setFarmlandRelief(want)));
         }
     }
 
@@ -3665,88 +4336,25 @@ public class UserInterface extends Application {
         return total;
     }
 
-    /** Every sector's property tax at a proposed city rate. */
-    private double propertyTaxAt(TaxPolicy policy, EconomyManager em, double annual) {
-        double total = 0;
-        for (Sector sector : game.getSectors().all()) {
-            double value = em.getAssessedValue(sector);
-            if (value <= 0) continue;
-            total += value * clampRate(annual + policy.getPropertyOffset(sector),
-                    TaxPolicy.MAX_PROPERTY_TAX) / 12;
-        }
-        return total;
-    }
-
     /* =====================================================================
        TAXES - by wage band
        ===================================================================== */
 
-    private void wageBandPage(VBox column) {
-
-        EconomyManager em = game.getEconomyManager();
-        TaxPolicy policy = em.getTaxPolicy();
-        double base = policy.getIncomeTaxRate();
-
-        column.getChildren().add(statementHead("The eleven jobs, in four bands"));
-        column.getChildren().add(statementNote(
-                "Each band is set as a move from the city's income tax of " + pct(base)
-                + ", so a band left at zero is taxed at exactly that. The jobs are grouped "
-                + "by the education they need, which is the only grouping the labour "
-                + "market itself uses."));
-
-        double whole = wageTaxAtBase(policy, base);
-
-        for (WageBand band : WageBand.values()) {
-
-            String key = "wage:" + band.name();
-            double offset = policy.getWageOffset(band);
-            double want = staged(key, offset);
-            double payroll = payrollIn(band);
-            double raised = wageTaxWith(policy, null, base, 0, band);
-
-            column.getChildren().add(bandLever(band.label(),
-                    pts(offset), pct2(policy.effectiveWageRate(band)),
-                    payroll > 0 ? money(raised) + " a month, off " + money(payroll)
-                                + " of payroll"
-                                : "nobody in the city holds one of these jobs",
-                    offset));
-
-            column.getChildren().add(stageSlider(key, offset,
-                    -TaxPolicy.MAX_OFFSET, TaxPolicy.MAX_OFFSET, .005,
-                    UserInterface::pts));
-
-            if (isStaged(key)) {
-                double thenBand  = wageTaxWith(policy, band, base, want, band);
-                double thenWhole = wageTaxWith(policy, band, base, want, null);
-                column.getChildren().add(wouldHead());
-                column.getChildren().add(wouldBe("The move from the city rate",
-                        pts(offset), pts(want), Palette.ACCENT));
-                column.getChildren().add(wouldBe("...which taxes them at",
-                        pct2(policy.effectiveWageRate(band)),
-                        pct2(clampRate(base + want, TaxPolicy.MAX_INCOME_TAX)),
-                        Palette.TEXT_HEAD));
-                column.getChildren().add(wouldBe("Wage tax from this band",
-                        money(raised), money(thenBand), null));
-                column.getChildren().add(wouldTotal("Wage tax altogether",
-                        money(whole), money(thenWhole),
-                        thenWhole >= whole ? Palette.GOOD : Palette.WARN));
-                column.getChildren().add(previewCaveat(
-                        "Exact: the same job-by-job sum the city bills with."));
-                column.getChildren().add(applyBar(
-                        "Set " + band.label().toLowerCase() + " to " + pts(want),
-                        () -> policy.setWageOffset(band, want)));
-            }
-        }
-
-        column.getChildren().add(statementTotal("Every band together", money(whole),
-                whole > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
-        column.getChildren().add(statementNote(
-                "This is the tax the households see come off their wages, and it is the "
-                + "same figure on their own books - the wage tax was computed twice in "
-                + "two places once, and the two disagreed the moment a band was moved."));
-    }
-
     /** The heading row of one band or one sector's line: what it is, and where it sits. */
+    /**
+     * @param effective what this row is charged at - and, when something on the
+     *        page is staged that reaches it, what it WOULD be charged at,
+     *        written "20.00%  \u2192  20.25%".
+     *
+     *        The per-lever preview blocks are gone: with ten sectors on a page
+     *        and a batch staged across several of them, ten "What it would do"
+     *        sections is a page nobody can read. The move belongs on the row it
+     *        happened to, and the totals belong once, at the foot.
+     *
+     *        It also answers a question the old screens could not: stage the
+     *        CITY rate alone and every row on the page shows what that does to
+     *        it, sector by sector, without touching anything else.
+     */
     private VBox bandLever(String name, String offset, String effective,
                            String note, double signedOffset) {
 
@@ -3762,7 +4370,8 @@ public class UserInterface extends Application {
                         : signedOffset > 0 ? Palette.WARN : Palette.TEXT_SPENT));
 
         Label at = new Label(effective);
-        at.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        at.setStyle(Palette.figure(Palette.SIZE_BODY,
+                effective.contains("\u2192") ? Palette.ACCENT : Palette.TEXT_HEAD));
 
         HBox top = new HBox(Palette.GAP_LOOSE, what, gap, move, at);
         top.setAlignment(Pos.CENTER_LEFT);
@@ -3781,142 +4390,6 @@ public class UserInterface extends Application {
     /* =====================================================================
        TAXES - by sector
        ===================================================================== */
-
-    private void sectorTaxPage(VBox column) {
-
-        EconomyManager em = game.getEconomyManager();
-        TaxPolicy policy = em.getTaxPolicy();
-        SalesTaxLedger vat = em.getSalesTaxLedger();
-        SectorBooks books = game.getSectorBooks();
-
-        double base = policy.getIncomeTaxRate();
-        double prop = policy.getPropertyTaxRate();
-
-        column.getChildren().add(statementHead("Every sector, three moves each"));
-        column.getChildren().add(statementNote(
-                "Profit and sales move off the city's income tax of " + pct(base)
-                + "; property moves off its property rate of "
-                + String.format("%.2f%%", prop * 100) + " a year. Sales tax is charged on "
-                + "VALUE ADDED - what a sector sells, less the tax it already paid on what "
-                + "it bought - so a sector that only assembles somebody else's parts pays "
-                + "on the assembly."));
-
-        for (Sector sector : game.getSectors().all()) {
-
-            SectorBooks.SectorMonth month = books.get(sector);
-            double bearing = month == null ? 0 : Math.max(0, month.preTaxIncome());
-            double profitPaid = month == null ? 0 : month.tax();
-            double assessed = em.getAssessedValue(sector);
-
-            Label head = new Label(sector.label().toUpperCase());
-            head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT)
-                    + " -fx-font-weight: bold; -fx-padding: 16 0 2 0;");
-            column.getChildren().add(head);
-
-            /* ------------------------------- profit ------------------------------- */
-            String pKey = "profit:" + sector.key();
-            double pOff = policy.getProfitOffset(sector);
-            double pWant = staged(pKey, pOff);
-            column.getChildren().add(bandLever("Profit", pts(pOff),
-                    pct2(policy.effectiveProfitRate(sector)),
-                    bearing > 0 ? money(profitPaid) + " paid, on " + money(bearing)
-                                + " of pre-tax income"
-                                : "it made nothing to be taxed on last month",
-                    pOff));
-            column.getChildren().add(stageSlider(pKey, pOff,
-                    -TaxPolicy.MAX_OFFSET, TaxPolicy.MAX_OFFSET, .005,
-                    UserInterface::pts));
-            if (isStaged(pKey)) {
-                double then = bearing * clampRate(base + pWant, TaxPolicy.MAX_INCOME_TAX);
-                column.getChildren().add(wouldHead());
-                column.getChildren().add(wouldBe("The move", pts(pOff), pts(pWant),
-                        Palette.ACCENT));
-                column.getChildren().add(wouldBe("...taxed at",
-                        pct2(policy.effectiveProfitRate(sector)),
-                        pct2(clampRate(base + pWant, TaxPolicy.MAX_INCOME_TAX)),
-                        Palette.TEXT_HEAD));
-                column.getChildren().add(wouldTotal("Profit tax a month",
-                        money(profitPaid), money(then),
-                        then >= profitPaid ? Palette.GOOD : Palette.WARN));
-                column.getChildren().add(previewCaveat(
-                        "Against last month's pre-tax income for this sector."));
-                column.getChildren().add(applyBar("Set it to " + pts(pWant),
-                        () -> policy.setProfitOffset(sector, pWant)));
-            }
-
-            /* -------------------------------- sales -------------------------------- */
-            String sKey = "sales:" + sector.key();
-            double sOff = policy.getSalesOffset(sector);
-            double sWant = staged(sKey, sOff);
-            double sold = vat.getTaxableSales(sector.key());
-            double net = vat.getNet(sector.key());
-            column.getChildren().add(bandLever("Sales", pts(sOff),
-                    pct2(policy.effectiveSalesRate(sector)),
-                    sold > 0 ? money(net) + " net, on " + money(sold) + " of taxable sales"
-                             : vat.isInRefund(sector.key())
-                                     ? "in refund - its credits exceed what it owes"
-                                     : "it sold nothing taxable last month",
-                    sOff));
-            column.getChildren().add(stageSlider(sKey, sOff,
-                    -TaxPolicy.MAX_OFFSET, TaxPolicy.MAX_OFFSET, .005,
-                    UserInterface::pts));
-            if (isStaged(sKey)) {
-                double now = policy.effectiveSalesRate(sector);
-                double at = clampRate(base + sWant, TaxPolicy.MAX_INCOME_TAX);
-                double then = now > 1e-9 ? net * at / now : sold * at;
-                column.getChildren().add(wouldHead());
-                column.getChildren().add(wouldBe("The move", pts(sOff), pts(sWant),
-                        Palette.ACCENT));
-                column.getChildren().add(wouldBe("...charged at", pct2(now), pct2(at),
-                        Palette.TEXT_HEAD));
-                column.getChildren().add(wouldTotal("Net sales tax a month",
-                        money(net), money(then),
-                        then >= net ? Palette.GOOD : Palette.WARN));
-                column.getChildren().add(previewCaveat(
-                        "Moved by the rate, not recomputed: this sector's input credits "
-                        + "are somebody else's rate, and those have not moved here."));
-                column.getChildren().add(applyBar("Set it to " + pts(sWant),
-                        () -> policy.setSalesOffset(sector, sWant)));
-            }
-
-            /* ------------------------------- property ------------------------------- */
-            String rKey = "prop:" + sector.key();
-            double rOff = policy.getPropertyOffset(sector);
-            double rWant = staged(rKey, rOff);
-            double bill = assessed * policy.effectiveMonthlyPropertyRate(sector);
-            column.getChildren().add(bandLever("Property",
-                    String.format("%+.2f pts", rOff * 100),
-                    String.format("%.2f%%", policy.effectivePropertyRate(sector) * 100),
-                    assessed > 0 ? money(bill) + " a month, on " + money(assessed)
-                                 + " assessed"
-                                 : "it owns nothing the city can assess",
-                    rOff));
-            column.getChildren().add(stageSlider(rKey, rOff,
-                    -TaxPolicy.MAX_PROPERTY_TAX, TaxPolicy.MAX_PROPERTY_TAX, .0005,
-                    o -> String.format("%+.2f pts", o * 100)));
-            if (isStaged(rKey)) {
-                double then = assessed
-                        * clampRate(prop + rWant, TaxPolicy.MAX_PROPERTY_TAX) / 12;
-                column.getChildren().add(wouldHead());
-                column.getChildren().add(wouldBe("The move",
-                        String.format("%+.2f pts", rOff * 100),
-                        String.format("%+.2f pts", rWant * 100), Palette.ACCENT));
-                column.getChildren().add(wouldBe("...a year",
-                        String.format("%.2f%%", policy.effectivePropertyRate(sector) * 100),
-                        String.format("%.2f%%",
-                                clampRate(prop + rWant, TaxPolicy.MAX_PROPERTY_TAX) * 100),
-                        Palette.TEXT_HEAD));
-                column.getChildren().add(wouldTotal("Billed a month",
-                        money(bill), money(then),
-                        then >= bill ? Palette.GOOD : Palette.WARN));
-                column.getChildren().add(previewCaveat(
-                        "Exact against what this sector is assessed at today."));
-                column.getChildren().add(applyBar(
-                        String.format("Set it to %+.2f pts", rWant * 100),
-                        () -> policy.setPropertyOffset(sector, rWant)));
-            }
-        }
-    }
 
     /* =====================================================================
        WAGES - the floor
@@ -19268,6 +19741,24 @@ public class UserInterface extends Application {
             y.setTickUnit(20);
             y.setTickLabelsVisible(false);
         }
+        /*
+         * AND THE TICKS SAY WHAT THEY ARE.
+         *
+         * niceStep() fixed the STEP - 1, 2 or 5 times a power of ten, so the
+         * gridlines are numbers a reader can add up. It did nothing about the
+         * MAGNITUDE, so the budget preset drew an axis of 500,000,000 /
+         * 0 / -500,000,000 / -1,000,000,000 and the population one drew
+         * 100,000 under a chart eight hundred pixels wide. Every other money
+         * figure in the game has been abbreviated since the units pass; the one
+         * place with no room for the digits was the one still printing them.
+         *
+         * Only when the lines AGREE about their unit. With mixed units the
+         * series are normalised to 0-100 and the axis is a rank, not a
+         * quantity - "$50M" on that axis would be a lie about a number that
+         * means nothing.
+         */
+        double tickStep = 10;
+
         if (low <= high) {
             y.setAutoRanging(false);
             if (unit == null) {
@@ -19283,7 +19774,29 @@ public class UserInterface extends Application {
                 y.setLowerBound(Math.floor((low - pad) / step) * step);
                 y.setUpperBound(Math.ceil((high + pad) / step) * step);
                 y.setTickUnit(step);
+                tickStep = step;
             }
+        }
+
+        /*
+         * THE STEP DECIDES THE DECIMALS, not the value.
+         *
+         * The first cut asked each label how big it was, and a price axis came
+         * out reading "$0.00  $500.00  $1k" - three conventions on one ruler,
+         * because 0 is small, 500 is medium and 1000 is large. How fine the
+         * gridlines are is a property of the AXIS, so it is the step that is
+         * asked: a land axis stepping by $20 wants no cents and one stepping by
+         * $0.50 wants two, and every label on it agrees either way.
+         */
+        if (unit != null) {
+            final String tickUnit = unit;
+            final double step = tickStep;
+            y.setTickLabelFormatter(new javafx.util.StringConverter<Number>() {
+                @Override public String toString(Number n) {
+                    return axisTick(tickUnit, n.doubleValue(), step);
+                }
+                @Override public Number fromString(String text) { return 0; }
+            });
         }
         return chart;
     }
@@ -19296,6 +19809,75 @@ public class UserInterface extends Application {
      * the bounds outward to it costs a little empty margin and buys labels
      * somebody can hold in their head.
      */
+    /**
+     * One gridline's label: short enough to fit, honest about its unit.
+     *
+     * The value has already been through plotScale(), so money is in dollars
+     * rather than the model's thousands and a percentage is out of a hundred.
+     * That is what makes this a formatter and not a converter - it does no
+     * arithmetic on the number, only on how many characters it spends.
+     *
+     * Steps are always 1, 2 or 5 times a power of ten, so one decimal place is
+     * the most any label can need, and trim() takes the ".0" off the ones that
+     * do not need it: "$500M" rather than "$500.0M".
+     */
+    private static String axisTick(String unit, double v, double step) {
+        double a = Math.abs(v);
+        String sign = v < 0 ? "-" : "";
+        return switch (unit) {
+            case "money"     -> sign + shortCash(a);
+            // Somebody else's money, and it says so - the same rule fmtUnit
+            // follows, for the same reason.
+            case "usd"       -> sign + "US" + shortCash(a);
+            // Prices, which live in the range where the cents can be the news.
+            case "land", "unitprice", "rent", "share" -> sign + priceTick(a, step);
+            case "percent"   -> sign + trim(a) + "%";
+            case "ratio"     -> sign + trim(a) + "x";
+            // A currency needs its small moves; three places is the axis's
+            // share of fmtUnit's four.
+            case "rate"      -> sign + String.format("%.3f", a);
+            case "index"     -> sign + String.format("%.2f", a);
+            case "count"     -> sign + (a >= 1000 ? shortCount(a) : trim(a));
+            default          -> sign + trim(a);
+        };
+    }
+
+    /**
+     * A price on an axis: cents only when the gridlines are finer than a dollar.
+     *
+     * Abbreviated later than money is, because a price axis is read against the
+     * prices on the screens beside it and those say "$1,250". The threshold is
+     * the STEP again rather than the value: materials step by $5,000 and read
+     * $0 / $5k / $10k, while food steps by $500 and reads $0 / $500 / $1,000.
+     * Asking each value gave one axis both conventions at once.
+     */
+    private static String priceTick(double a, double step) {
+        if (step >= 1_000) return shortCash(a);
+        if (step < 1) return String.format("$%.2f", a);
+        return "$" + formatter.format(Math.round(a));
+    }
+
+    /** Dollars, abbreviated from a thousand up - an axis has no room for digits. */
+    private static String shortCash(double a) {
+        if (a >= 1_000_000_000) return "$" + trim(a / 1_000_000_000) + "B";
+        if (a >= 1_000_000)     return "$" + trim(a / 1_000_000) + "M";
+        if (a >= 1_000)         return "$" + trim(a / 1_000) + "k";
+        return "$" + trim(a);
+    }
+
+    /** People, homes, jobs - the same abbreviation without the dollar. */
+    private static String shortCount(double a) {
+        if (a >= 1_000_000_000) return trim(a / 1_000_000_000) + "B";
+        if (a >= 1_000_000)     return trim(a / 1_000_000) + "M";
+        return trim(a / 1_000) + "k";
+    }
+
+    /** One decimal at most, and none at all when it would read ".0". */
+    private static String trim(double a) {
+        String s = String.format("%.1f", a);
+        return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
+    }
+
     private static double niceStep(double raw) {
         if (!(raw > 0)) return 1;
         double power = Math.pow(10, Math.floor(Math.log10(raw)));

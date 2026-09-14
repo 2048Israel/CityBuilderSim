@@ -20,7 +20,27 @@ rem ===========================================================================
 cd /d "%~dp0"
 
 set "APPNAME=CityBuilderSim"
-set "APPVER=0.5.1"
+rem  THE VERSION IS READ OUT OF GameVersion.java, not written here.
+rem
+rem  It used to be typed in both places, with a comment in GameVersion asking
+rem  whoever changed one to remember the other. That is not a mechanism, it is
+rem  a hope, and it went out of step the first time it mattered: 0.5.1 in the
+rem  source, 0.5.0 stamped on the exe. One place now - the .java file - and
+rem  this pulls it from there.
+set "APPVER="
+for /f "tokens=2 delims==" %%v in ('findstr /c:"String VERSION" "src\main\java\ham\citybuildersim\GameVersion.java"') do (
+    for /f "tokens=1 delims=;" %%w in ("%%v") do set "APPVER=%%w"
+)
+set "APPVER=%APPVER: =%"
+set "APPVER=%APPVER:"=%"
+if not defined APPVER (
+    echo.
+    echo   Could not read VERSION out of GameVersion.java - stopping rather
+    echo   than stamping this build with the wrong number.
+    echo.
+    pause
+    exit /b 1
+)
 set "JARNAME=CityBuilderSim-1.0-SNAPSHOT-executable.jar"
 set "JARPATH=target\%JARNAME%"
 

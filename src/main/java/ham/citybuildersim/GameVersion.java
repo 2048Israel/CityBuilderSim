@@ -23,13 +23,19 @@ package ham.citybuildersim;
  *
  * KEEPING IT IN SYNC
  *
- * VERSION also appears in "Build EXE.bat" as APPVER, because jpackage stamps it
- * into the exe and cannot read it from here. Two places, and this is the one
- * that matters - the other only affects the file properties dialog.
+ * THIS IS THE ONLY PLACE IT IS WRITTEN (2026-09-14). "Build EXE.bat" reads the
+ * line below with findstr and sets APPVER from it, so jpackage stamps the exe
+ * with whatever is here and cannot disagree.
+ *
+ * It used to be typed in both, with a note here asking whoever changed one to
+ * remember the other. That is a hope rather than a mechanism, and it went out
+ * of step the first time it mattered - 0.5.1 in the source, 0.5.0 on the exe.
+ * The parse wants `String VERSION` to appear on exactly one line of this file
+ * and the value to be a quoted literal ending in a semicolon; keep it that way.
  */
 public final class GameVersion {
 
-    /** Bump on release. Matches APPVER in Build EXE.bat. */
+    /** Bump on release. Build EXE.bat reads this line for APPVER. */
     public static final String VERSION = "0.5.1";
 
     /**
