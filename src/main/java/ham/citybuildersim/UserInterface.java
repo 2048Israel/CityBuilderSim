@@ -603,6 +603,24 @@ public class UserInterface extends Application {
             } else if (e.getCode() == javafx.scene.input.KeyCode.F11) {
                 toggleFullScreen();
                 e.consume();
+            } else if (!typing && e.getCode() == javafx.scene.input.KeyCode.SPACE
+                    && !isGameMenu(currentScreen)) {
+                /*
+                 * SPACE IS PLAY/PAUSE, and it HAS to be consumed here.
+                 *
+                 * Space is also how JavaFX activates a focused button, and in
+                 * this game something is always focused - clicking anything at
+                 * all leaves focus on it. Without the consume, space would
+                 * toggle the clock AND press whatever was last clicked, which
+                 * on a build screen means buying a second one of something.
+                 *
+                 * Only in the city, and passed through on the menus, where
+                 * there is no clock to toggle and space activating the button
+                 * under the cursor is the behaviour a player expects.
+                 */
+                setClockRunning(!clockRunning);
+                redrawScreen.run();
+                e.consume();
             }
         });
 
@@ -1595,10 +1613,11 @@ public class UserInterface extends Application {
         column.getChildren().add(statementHead("The clock"));
         column.getChildren().add(toggleRow("Stop for anything important",
                 prefs.isPauseOnEvents(),
-                "At ten times speed a month is half a second, so a bank failing or "
-                + "a family with nowhere to sleep can go past unseen. With this on "
-                + "the clock stops and says what happened. Off, it runs until you "
-                + "stop it.",
+                "Off: the clock runs until you stop it. On: it halts when the city "
+                + "has something urgent to say - a bank failing, a family with "
+                + "nowhere to sleep - and tells you what. Worth turning on when you "
+                + "are crossing centuries at 10x and do not want to miss the month "
+                + "it went wrong.",
                 () -> {
                     prefs.setPauseOnEvents(!prefs.isPauseOnEvents());
                     prefs.save(game.getGameFiles());
@@ -18332,7 +18351,7 @@ public class UserInterface extends Application {
     private static final Trace[] TRACES = withTheCrime(withTheHouseholds(withTheMarket(new Trace[] {
         new Trace("gdp",            "GDP",                "MONEY",      "money"),
         new Trace("gdpPerCapita",   "GDP per capita (yr)","MONEY",      "money"),
-        new Trace("realGdp",        "GDP, real",          "MONEY",      "money"),
+        new Trace("realGdp",        "GDP, real (yr)",     "MONEY",      "money"),
         new Trace("cash",           "Treasury",           "MONEY",      "money"),
         new Trace("debt",           "Public debt",        "MONEY",      "money"),
         new Trace("revenue",        "Revenue",            "MONEY",      "money"),
@@ -19202,6 +19221,33 @@ public class UserInterface extends Application {
      * missing from the result rather than dividing by a zero that was never
      * recorded.
      */
+    /**
+     * A trailing total over the last `window` readings.
+     *
+     * NaN until there are enough of them, deliberately: a "year of output"
+     * drawn from seven months is not a year of output, and a line that starts
+     * low and climbs for its first year would look like growth that never
+     * happened. The same reason PriceIndex.hasRate() refuses to quote inflation
+     * before there is a year of prices.
+     *
+     * A NaN inside the window poisons that window and nothing else - the sum
+     * resumes as soon as twelve clean readings are behind it.
+     */
+    private static double[] trailingSum(double[] series, int window) {
+        double[] out = new double[series.length];
+        for (int i = 0; i < series.length; i++) {
+            if (i + 1 < window) { out[i] = Double.NaN; continue; }
+            double sum = 0;
+            boolean clean = true;
+            for (int k = i - window + 1; k <= i; k++) {
+                if (Double.isNaN(series[k])) { clean = false; break; }
+                sum += series[k];
+            }
+            out[i] = clean ? sum : Double.NaN;
+        }
+        return out;
+    }
+
     private double[] historyValues(HistorySave h, String key) {
         switch (key) {
             case "unemployment": {
@@ -19232,11 +19278,28 @@ public class UserInterface extends Application {
              */
             case "realGdp": {
                 double[] g = h.aligned("gdp"), p = h.aligned("priceIndex");
-                double[] out = new double[g.length];
-                for (int i = 0; i < out.length; i++) {
-                    out[i] = p[i] > 0 ? g[i] / p[i] : Double.NaN;
+                double[] real = new double[g.length];
+                for (int i = 0; i < real.length; i++) {
+                    real[i] = p[i] > 0 ? g[i] / p[i] : Double.NaN;
                 }
-                return out;
+                /*
+                 * A ROLLING YEAR, NOT A MONTH. Jerus, 2026-09-14: "make real
+                 * gdp a rolling figure, not the monthly snapshot."
+                 *
+                 * A single month of this city's output is mostly noise - one
+                 * mine opening, one mill shedding a shift, one month where the
+                 * shops could not deliver - and a line made of it says nothing
+                 * about whether the place is growing. Twelve months summed is
+                 * what an economy's output actually means and is the figure
+                 * every real statistics office publishes.
+                 *
+                 * Summed rather than averaged, so the number IS a year of
+                 * output and sits in the same units as anything else quoted
+                 * per year. gdpPerCapita annualises one month by multiplying by
+                 * twelve, which is the cheap version of this and is why it
+                 * jumps about; that line is left alone for now.
+                 */
+                return trailingSum(real, 12);
             }
             case "gdpPerCapita": {
                 double[] g = h.aligned("gdp"), p = h.aligned("population");

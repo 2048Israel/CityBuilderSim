@@ -64,18 +64,25 @@ public final class GamePrefs {
     /**
      * Whether the clock stops itself when something worth seeing happens.
      *
-     * ON BY DEFAULT, and the reason is arithmetic rather than taste. At ten
-     * times speed a month is half a second, so a bank failing, a sector going
-     * under or a family with nowhere to sleep is half a second of screen time
-     * in a run that may last an hour. A player who wanted to watch their city
-     * and got a summary at the end was not playing it.
+     * OFF BY DEFAULT. It shipped on, for one afternoon, on the argument that at
+     * ten times speed an event is half a second of screen time and would go
+     * unseen. Jerus, having played it: "have it so that the defualt is that the
+     * game doesnt auto pause."
      *
-     * A setting because the other half of the time it IS nagging: someone
-     * crossing four hundred months to see where the city lands does not want to
-     * be stopped nine times on the way. Jerus, 2026-09-14: "yes, but make it a
-     * setting."
+     * He is right, and the argument was backwards. A clock that stops itself is
+     * a clock the player did not ask to stop, and the first thing anyone does
+     * with a new clock is run time forward to see what happens - being halted
+     * nine times on the way reads as the game being broken, not as the game
+     * being helpful. The notices are already there for anyone who wants to
+     * know, and they wait rather than interrupt.
+     *
+     * Still a setting, because the argument for it is real once a player knows
+     * what they are watching for and is crossing centuries at 10x.
+     *
+     * A field absent from an older settings.json takes this default, which is
+     * what carries the change to anyone who has not touched the switch.
      */
-    private boolean pauseOnEvents = true;
+    private boolean pauseOnEvents = false;
 
     public boolean isPauseOnEvents()            { return pauseOnEvents; }
     public void setPauseOnEvents(boolean value) { this.pauseOnEvents = value; }
