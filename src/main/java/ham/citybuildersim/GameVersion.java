@@ -30,8 +30,12 @@ package ham.citybuildersim;
  * It used to be typed in both, with a note here asking whoever changed one to
  * remember the other. That is a hope rather than a mechanism, and it went out
  * of step the first time it mattered - 0.5.1 in the source, 0.5.0 on the exe.
- * The parse wants `String VERSION` to appear on exactly one line of this file
- * and the value to be a quoted literal ending in a semicolon; keep it that way.
+ * What the parse depends on: one line declaring the field, with a quoted
+ * literal ending in a semicolon. findstr matches on the declaration keywords
+ * through the equals sign rather than on the field name alone, which is why
+ * prose here can mention VERSION without being taken for the declaration - an
+ * earlier wording of this very comment was a second match, and survived only
+ * because it happened to carry no equals sign.
  */
 public final class GameVersion {
 
@@ -460,6 +464,25 @@ public final class GameVersion {
      *     additive slot on the end of the policy array and a format-23 save
      *     simply keeps the default, which is full relief - the behaviour that
      *     city already had, since it had no fields to tax.
+     *
+     * 25 - THE BANK'S OWN COST OF FUNDS, struck once at the close of the month
+     *     and carried, because the live path priced mid-month and the load
+     *     path priced at the end - a city reloaded from disk quoted a
+     *     different rate than the one it had just been running at. It is here
+     *     because the bank's last-month array WIDENED from four slots to six,
+     *     and an older build handed six would read past what it knows. A
+     *     format-24 save is read the other way round and is fine: the tail is
+     *     simply absent, the cost opens at zero, and for one month the floor
+     *     under every rate in the city is the minimum margin alone. The first
+     *     close of the month strikes the real figure and it never reads zero
+     *     again.
+     *
+     * 26 - THE PRICE INDEX'S HIGH AND LOW WATER-MARKS, and the month each was
+     *     set. Four doubles on the end of the index's array, so the same
+     *     widening argument applies. A format-25 city opens with both marks
+     *     sitting on today's level rather than on 1.0: its real high and low
+     *     are unknowable from that save, and claiming it had never been
+     *     anywhere else would be a made-up record rather than an empty one.
      * --------------------------------------------------------------------- */
     public static final int SAVE_FORMAT = 26;
 

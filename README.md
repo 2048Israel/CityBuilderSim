@@ -2,16 +2,16 @@
 
 A macroeconomic city simulator in Java 21 and JavaFX. You lay out a city; the
 economy underneath it is the game. An age pyramid decides the workforce, a
-labour market prices it, seven private sectors keep their own books and expand
-on their own judgement, a commercial bank funds them, a treasury borrows at a
-rate the market quotes it, and a currency floats against a world that has its
-own prices and its own inflation.
+labour market prices it, ten private sectors keep their own books and expand on
+their own judgement, a commercial bank funds them and cannot lend below what its
+own money costs it, a treasury borrows at a rate the market quotes it, and a
+currency floats against a world that has its own prices and its own inflation.
 
 Nothing in it is a headline number with a formula behind it. Every dollar that
 leaves a pool arrives in another or crosses the border in a way the audit can
 name, and a harness asserts that to the cent every month of a 333-year run.
 
-**Status:** in development, headed for Steam. Build `0.4.4`, save format `21`.
+**Status:** in development, headed for Steam. Build `0.5.15`, save format `26`.
 
 ---
 
@@ -54,12 +54,18 @@ refuses to start it without `javafx.graphics` as a *module*. A launcher class
 sidesteps the check, which is what lets the shaded jar run with JavaFX merely on
 the classpath.
 
+**Rebuild before judging a UI change.** The window title and the start screen
+both read `GameVersion.title()`, so the fastest way to tell whether you are
+looking at your own change is to check the version on screen against the source.
+A build that predates the edit by two minutes looks exactly like a change that
+did not work.
+
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **forty-four harnesses plus the
-4,002-month playtest**, which it reports as forty-five, in about eighty seconds.
-In NetBeans, right-click `AllChecks.java` → **Run File**. From a command line,
-with the project's classpath assembled:
+`AllChecks` runs the lot, one JVM each — **forty-eight harnesses plus the
+4,002-month playtest**, which it reports as forty-nine, in about two minutes. In
+NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
+the project's classpath assembled:
 
 ```
 java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
@@ -70,7 +76,9 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   `MoneyCheck` and `BankCheck` and nothing else.
 - The exit status is the number of harnesses that failed, so a build script can
   read it.
-- `BuildMenuCheck` needs JavaFX on the classpath and is skipped without it.
+- `BuildMenuCheck` needs JavaFX on the classpath and is skipped without it. It
+  is also the only harness that touches the interface at all; everything on the
+  screen beyond it is checked by opening the game.
 
 **Run `AllChecks` after a copy-back, not before.** A batch has more than once
 landed in the Java and not in `buildings.json`, and `BuildingDataCheck` exists
@@ -85,12 +93,18 @@ Three rules the harnesses are written to, and worth keeping:
 3. **Count how often a new mechanic actually fires in a real run.** Out-migration
    once shipped fully tested and fired zero times in 4,002 months.
 
+A fourth, learned the hard way: **never move a harness's premise to let a change
+through.** If a check fails because the thing it asserts is no longer true, that
+is the finding. Rewriting the assertion to match the new behaviour turns the
+suite into a record of what the code does rather than what it should do.
+
 ## `buildings.json` — the balance file
 
-Every building in the game is a row in `src/main/resources/buildings.json`:
-cash cost, construction points, materials, maintenance, capacity, footprint in
-square feet, power and water draw, road load, its job mix across the eleven job
-types, which sector owns it, and what it makes and uses.
+Every building in the game is a row in `src/main/resources/buildings.json` —
+fifty-five of them at present: cash cost, construction points, materials,
+maintenance, capacity, footprint in square feet, power and water draw, road load,
+its job mix across the eleven job types, which sector owns it, and what it makes
+and uses.
 
 `BuildingCatalog` looks in two places, in this order:
 
@@ -155,14 +169,15 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     143 files
+src/main/java/ham/citybuildersim/     157 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
     SimulationEngine.java             the order the month runs in
     UserInterface.java                every screen
+    CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the seven sector classes
+    sectors/                          the ten sector classes
     *Check.java                       the harnesses
     AllChecks.java                    the runner
     LongPlaytest.java                 4,002 months, audited every one
@@ -175,6 +190,11 @@ what it makes, what it uses, what it stocks, and any hook it overrides.
 `sectors/Mining.java` is the shortest one and the shape to copy. Before the
 template the sectors were five handlers in five shapes named by hand in about a
 hundred places; the whole point of it is that the eighth costs an afternoon.
+Three have been added since, and each did.
+
+**The order of `Sectors.KEYS` is load-bearing.** Equity's company index, the
+households' share arrays and the audit's pool list all follow it, so a new
+sector goes on the **end**, never in the middle, exactly like a `BuildingType`.
 
 **The month is a sequence, not a set.** `SimulationEngine.simulateMonth()` and
 `Game.nextMonth()` hold it, and most of the hard bugs in this project's history
@@ -184,15 +204,30 @@ month ended in**, which is why the save carries income statements, the VAT
 ledger, inventory in units, wage history, loss streaks, plots consumed, last
 month's household shapes and six months of prisoners.
 
+**The month now arrives on a clock, not on a click.** `UserInterface` runs an
+`AnimationTimer` at `SECONDS_PER_MONTH = 5.0` and a speed multiplier, paints the
+day inside the month, and calls the same `nextMonth()` the button used to. Two
+consequences for anything on screen: a panel is rebuilt while the player is
+still looking at it, so it must restore its own scroll position rather than
+assume a fresh page; and the timer keeps running while a dialog is open unless
+something pauses it.
+
 ## Versioning
 
-The version lives in exactly two places and they have to move together:
+**The version is written in one place: `GameVersion.VERSION`.** The window
+title, the start screen and every save read it through `GameVersion.title()`,
+and `Build EXE.bat` pulls it out of the source with `findstr` so jpackage stamps
+the exe with the same number and cannot disagree.
 
-- `GameVersion.VERSION` — the window title, and every save
-- `APPVER` in `Build EXE.bat` — jpackage stamps it into the exe and cannot read
-  it from the Java side
+It used to be typed in both the Java and the batch file, with a comment asking
+whoever changed one to remember the other. That is a hope rather than a
+mechanism, and it went out of step the first time it mattered — 0.5.1 in the
+source, 0.5.0 on the exe. If you change how the declaration is written, check
+the parse: it matches the keywords through the equals sign, and expects a quoted
+literal ending in a semicolon.
 
-Bump both on every release.
+`GameVersion.SAVE_FORMAT` is a separate number and moves far more rarely — see
+*Where the game keeps its files* above for when it has to.
 
 ## Documentation
 
@@ -201,7 +236,7 @@ questions with what has actually been measured about each — is kept as a
 separate living manual rather than in this file, so that a headline number
 moving does not mean editing the README:
 
-- **The manual:** https://claude.ai/code/artifact/5702a183-08f7-4004-a87b-f8518dffad19
+- **The manual:** https://claude.ai/artifact/BkBAN1RDiQTpCj79WPbpCp
   *(currently private to the author)*
 - Per-batch design notes and the running to-do list live alongside it.
 

@@ -28,7 +28,7 @@ rem  a hope, and it went out of step the first time it mattered: 0.5.1 in the
 rem  source, 0.5.0 stamped on the exe. One place now - the .java file - and
 rem  this pulls it from there.
 set "APPVER="
-for /f "tokens=2 delims==" %%v in ('findstr /c:"String VERSION" "src\main\java\ham\citybuildersim\GameVersion.java"') do (
+for /f "tokens=2 delims==" %%v in ('findstr /c:"final String VERSION =" "src\main\java\ham\citybuildersim\GameVersion.java"') do (
     for /f "tokens=1 delims=;" %%w in ("%%v") do set "APPVER=%%w"
 )
 set "APPVER=%APPVER: =%"
