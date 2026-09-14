@@ -377,6 +377,79 @@ public class UserInterface extends Application {
                 javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
         rootMenu.minHeightProperty().bind(menuScroller.heightProperty().subtract(4));
 
+        /*
+         * A FILTER ON THE SCROLLER ITSELF, so the page steps the same whether
+         * the pointer is over it or not.
+         *
+         * wheelToPage() catches what nothing else wanted, which is the pointer
+         * ANYWHERE BUT the page. Over the page the ScrollPane handles the wheel
+         * itself, with the accelerating ramp above - so the two halves of the
+         * window scrolled at different speeds and only one of them was ours. A
+         * filter runs before the control, which is the only way to get in front
+         * of a skin's own handler.
+         */
+        menuScroller.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, e -> {
+            if (e.getDeltaY() == 0) return;
+            javafx.scene.Node page = menuScroller.getContent();
+            if (page == null) return;
+            double span = pageSpan(page);
+            if (span <= 1) return;      // nothing to scroll; let it through
+            scrollPageBy(e.getDeltaY(), span);
+            e.consume();
+        });
+
+        /* =====================================================================
+           WHERE THE PAGE IS SCROLLED TO IS A FACT, NOT SOMETHING RECAPTURED.
+
+           Jerus, having watched three fixes miss: "i need it so that when
+           scrolling, it must remember exactly where youre at and stay there
+           unless you continue scrolling regardless if the month passes."
+
+           It used to read the position off the scroller at the top of
+           clearMenu and put that same number back a pulse later. Two holes in
+           that, and both of them are what he kept seeing. A ScrollPane CLAMPS
+           against content it has not laid out, so the number read back could
+           already be wrong; and a wheel turn between the read and the write was
+           simply overwritten - every month, for as long as the clock ran.
+
+           Now the player's own scrolling is the only thing that writes this
+           field, the rebuild is fenced off with settlingScroll so a clamp
+           cannot pretend to be a player, and the restore reads the field rather
+           than a number captured before the screen was thrown away. Continue
+           scrolling and the newest value is what the next month restores.
+           ===================================================================== */
+        menuScroller.vvalueProperty().addListener((o, was, now) -> {
+            /*
+             * PUT BACK AT ONCE, IN THIS PULSE - which is the whole of the
+             * glitch.
+             *
+             * The trace caught it exactly: a rebuild clamps vvalue to zero, and
+             * the settle a pulse later puts it back. One frame gets painted at
+             * the top in between, and that frame is what Jerus saw - "the
+             * system reverts back to top, but then UI kicks in and goes like
+             * no, and it reverts where you were, all very fast".
+             *
+             * Holding the page's height was meant to stop the clamp happening
+             * and does not: the trace shows minH pinned at 2115.2 and vvalue
+             * going to zero regardless. So instead of preventing it, undo it
+             * immediately - synchronously, inside the listener, before anything
+             * is rendered. The value never spends a frame wrong.
+             *
+             * correcting guards the re-entry, since setting vvalue here fires
+             * this listener again.
+             */
+            if (settlingScroll) {
+                if (!correcting && pageScrollAt > 0
+                        && Math.abs(now.doubleValue() - pageScrollAt) > 1e-9) {
+                    correcting = true;
+                    try { menuScroller.setVvalue(pageScrollAt); }
+                    finally { correcting = false; }
+                }
+            } else {
+                pageScrollAt = now.doubleValue();
+            }
+        });
+
         /* =====================================================================
            THE RAIL, AND WHY IT IS PART OF THE PANEL.
 
@@ -669,9 +742,14 @@ public class UserInterface extends Application {
            position from the last time you visited, which is not what "go to the
            top of a new screen" means.
            ================================================================= */
-        boolean sameScreen = screen.equals(currentScreen);
-        double keepAt = sameScreen && menuScroller != null
-                ? menuScroller.getVvalue() : 0;
+        boolean sameScreen = screen.equals(currentScreen) && !railJump;
+        railJump = false;
+        // Anything vvalue does from here until the settle below is the rebuild
+        // clamping, not the player.
+        settlingScroll = true;
+        if (!sameScreen) pageScrollAt = 0;
+        // The page's position is no longer read off the scroller here - see
+        // pageScrollAt, which the player alone writes.
         if (!sameScreen) innerScrollAt.clear();
         currentScreen = screen;
 
@@ -688,6 +766,43 @@ public class UserInterface extends Application {
          */
         redrawScreen = again;
 
+        /* =================================================================
+           HOLD THE PAGE'S HEIGHT WHILE IT IS REBUILT, so the position is
+           never lost and never has to be put back.
+
+           Jerus, on the glitch: "when something requires scrolling, and the
+           next month passes, the system reverts back to top, but then UI kicks
+           in and goes like no, and it reverts where you were, all very fast, so
+           you just see the screen glitch."
+
+           That is exactly what was happening, and it is one line below.
+           getChildren().clear() empties the page; rootMenu's minHeight is bound
+           to the viewport, so the page shrinks to the viewport; a ScrollPane
+           with nothing to scroll CLAMPS vvalue to zero; a frame gets painted at
+           the top; and the settle below then puts the position back. Revert,
+           repaint, revert - every month, on every screen with more content than
+           fits.
+
+           No amount of restoring it faster fixes that, because restoring is the
+           problem. So the height is PINNED to what it already was for the
+           length of the rebuild: the scrollable range does not collapse, vvalue
+           is never clamped, and the position simply never moves. The settle
+           releases it once the new content is in.
+
+           ONLY ON A REDRAW OF THE SAME SCREEN. A real screen change is supposed
+           to go to the top, and holding a short new screen at a tall old one's
+           height would leave the player looking at blank space.
+           ================================================================= */
+        boolean heldPage = false;
+        // Guarded on the scroller too: the release lives inside its block, so a
+        // hold taken without one would never come off.
+        if (sameScreen && menuScroller != null && rootMenu.getHeight() > 0) {
+            rootMenu.minHeightProperty().unbind();
+            rootMenu.setMinHeight(rootMenu.getHeight());
+            heldPage = true;
+        }
+        final boolean releasePage = heldPage;
+
         rootMenu.getChildren().clear();
         refreshCityPanel();
         refreshConstructionPanel();
@@ -698,10 +813,70 @@ public class UserInterface extends Application {
         refreshTimeControls();
 
         if (menuScroller != null) {
-            if (sameScreen) restoreScroll(menuScroller, keepAt);
-            else menuScroller.setVvalue(0);
+            if (!sameScreen) menuScroller.setVvalue(0);
+            /*
+             * LAID OUT ALWAYS, AND PUT BACK FROM THE FIELD - which is the
+             * newest thing the player did, not a number read before the screen
+             * was torn down. settlingScroll comes off at the end so the clamps
+             * this pass causes cannot be mistaken for somebody scrolling.
+             */
+            javafx.application.Platform.runLater(() -> {
+                menuScroller.applyCss();
+                menuScroller.layout();
+                if (pageScrollAt > 0) menuScroller.setVvalue(pageScrollAt);
+                /*
+                 * ...AND THE HOLD COMES OFF LAST, after the new content is in
+                 * and measured. Released any earlier and the page would shrink
+                 * to the viewport for a frame, which is the collapse this was
+                 * put in to prevent.
+                 */
+                if (releasePage) {
+                    rootMenu.minHeightProperty().bind(
+                            menuScroller.heightProperty().subtract(4));
+                }
+                settlingScroll = false;
+            });
         }
     }
+
+    /** Where the player has scrolled the page to. Written only by them. */
+    private double pageScrollAt;
+
+    /** True while a rebuild is in flight, so its clamps are not mistaken for a hand. */
+    private boolean settlingScroll;
+
+    /** Guards the re-entry when the listener corrects a clamp of its own. */
+    private boolean correcting;
+
+    /* =====================================================================
+       A WHEEL NOTCH IS WORTH THE SAME EVERY TIME
+
+       The trace, on one unbroken scroll of the healthcare list:
+
+           0.0004  0.0016  0.0048  0.0027  0.0050  0.0064  0.0091
+           0.0126  0.0141  0.0175  0.0183  0.0209  0.0596
+
+       That is JavaFX's own smooth-scroll ramp, and against a page of 2,115
+       pixels the first notch is worth about six of them. Keep turning and it
+       accelerates a hundred and fifty fold. Jerus: "the top is a magnetic, if
+       you touch it, you can seperate but it requires force lol" - and it is not
+       the top. Every gesture starts that slowly; the top is simply where a
+       gesture usually starts.
+
+       So the wheel is taken over outright. A floor under the distance, not a
+       cap: small platform deltas get raised to something a person can feel, and
+       a genuine fling still travels as far as it asked to.
+       ===================================================================== */
+
+    /**
+     * The least a single wheel event may move the page, in pixels.
+     *
+     * Seventy-two first, which Jerus called "very sensitive" - fair, since the
+     * platform was sending six-pixel deltas and that is a twelvefold lift.
+     * Forty-eight is the three lines a wheel notch conventionally means, and
+     * still eight times what a first notch was worth before.
+     */
+    private static final double WHEEL_STEP = 48;
 
     /** Which show*Menu drew what is on screen; see clearMenu. */
     private String currentScreen = "";
@@ -817,29 +992,113 @@ public class UserInterface extends Application {
      */
     private static void restoreScroll(javafx.scene.control.ScrollPane scroller, double to) {
 
-        if (to <= 0) return;
+        /*
+         * IT LAYS THE SCROLLER OUT EVEN WHEN to IS ZERO, and that is not a
+         * detail - it is the whole of the dead wheel.
+         *
+         * This used to open `if (to <= 0) return;`. So a screen arriving at the
+         * TOP - a new screen, or the same one redrawn while the player had not
+         * scrolled - got no layout pass at all, and a ScrollPane that has not
+         * been laid out against its new content does not yet know the content
+         * is taller than the viewport. Nothing to scroll, as far as it is
+         * concerned, so the wheel did nothing: not over the list, not over the
+         * bottom strip, not anywhere. wheelToPage's own `if (span <= 1) return`
+         * read the same stale measurement and agreed.
+         *
+         * Dragging the scrollbar forces the layout, which is why one drag fixed
+         * it for the rest of the session, and why it only ever bit on arrival.
+         * And it is why scrolling once made it work for ever after: from then on
+         * to was positive, so the pass below ran on every rebuild.
+         *
+         * Jerus, twice, and the second description is the one that solved it:
+         * "in the buildings menu ... you cant scroll for a few seconds then it
+         * lets you scroll", then "scroll is locked, unless you use the manual
+         * scroll then it unlocks itself" - dead everywhere, from the moment the
+         * menu opens. Everywhere ruled out event routing; from the moment it
+         * opens ruled out anything the month does.
+         */
+        /*
+         * ALL THREE, EVERY TIME, AND THE THIRD IS NOT OPTIONAL (2026-09-14).
+         *
+         * This was "fixed" on the reading that the runLater was a backstop that
+         * only needed to fire when the first two missed, because applyCss() and
+         * layout() are not free and setVvalue() a pulse late can overrule a
+         * player who has since scrolled. Both of those observations are true
+         * and the conclusion was wrong: the third attempt is doing REAL WORK in
+         * the ordinary case, not standing by.
+         *
+         * A ScrollPane clamps vvalue against its content. Attempts 1 and 2 fire
+         * while the new content is measured but NOT yet laid out, so the value
+         * they set is clamped against a height that is not the real one and
+         * lands at or near the top. The runLater's applyCss() + layout() is
+         * what gives the clamp something true to work against, and its
+         * setVvalue() is the one that sticks.
+         *
+         * Measured by shipping it: with the runLater made conditional, the
+         * build menu went to the top on every month. Jerus: "i cant scroll in
+         * the buildings menu and it goes immediately to the top when the next
+         * month passes."
+         *
+         * So it stays. The flicker it costs is real and is the lesser problem;
+         * fixing it means not needing three attempts, which means laying the
+         * content out before the value is set rather than after - a bigger
+         * change than a guard.
+         */
+        /*
+         * WHAT WE LAST PUT THERE OURSELVES, so the pass below can tell its own
+         * handiwork from the player's. NaN means we have not set anything yet.
+         */
+        final double[] ours = { Double.NaN };
 
-        javafx.geometry.Bounds view = scroller.getViewportBounds();
-        if (view != null && view.getHeight() > 0) {
-            scroller.setVvalue(to);
-        } else {
-            scroller.viewportBoundsProperty().addListener(
-                    new javafx.beans.value.ChangeListener<javafx.geometry.Bounds>() {
-                @Override
-                public void changed(
-                        javafx.beans.value.ObservableValue<? extends javafx.geometry.Bounds> o,
-                        javafx.geometry.Bounds was, javafx.geometry.Bounds now) {
-                    if (now == null || now.getHeight() <= 0) return;
-                    scroller.viewportBoundsProperty().removeListener(this);
-                    scroller.setVvalue(to);
-                }
-            });
+        if (to > 0) {
+            javafx.geometry.Bounds view = scroller.getViewportBounds();
+            if (view != null && view.getHeight() > 0) {
+                scroller.setVvalue(to);
+                ours[0] = scroller.getVvalue();
+            } else {
+                scroller.viewportBoundsProperty().addListener(
+                        new javafx.beans.value.ChangeListener<javafx.geometry.Bounds>() {
+                    @Override
+                    public void changed(
+                            javafx.beans.value.ObservableValue<? extends javafx.geometry.Bounds> o,
+                            javafx.geometry.Bounds was, javafx.geometry.Bounds now) {
+                        if (now == null || now.getHeight() <= 0) return;
+                        scroller.viewportBoundsProperty().removeListener(this);
+                        scroller.setVvalue(to);
+                        ours[0] = scroller.getVvalue();
+                    }
+                });
+            }
         }
 
+        /*
+         * THE LAYOUT ALWAYS; THE POSITION ONLY IF THE PLAYER HAS NOT MOVED IT.
+         *
+         * Reading the value back after setting it is the whole trick, because a
+         * ScrollPane CLAMPS: ask for 0.8 against content it has not laid out
+         * yet and it keeps 0.3. So `ours` is what actually landed, not what was
+         * asked for, and anything different a pulse later was somebody's hand.
+         *
+         * Without this the month clobbers the player. The clock redraws the
+         * screen every few seconds, each redraw captures the position at the
+         * TOP of clearMenu and re-applies it here a pulse later, and a wheel
+         * turn in that window is simply undone - over and over, for as long as
+         * time is running. Jerus: "say healthcare tab in the building rail, if
+         * months are playing... you cant scroll... unless you put the mouse in
+         * the scrolling thing and then it does scroll". Inside the scroll area
+         * he could hold the bar and keep winning the argument; anywhere else the
+         * wheel lost it every month.
+         *
+         * The layout stays unconditional. That half is load-bearing - see the
+         * note above on what happens to a scroller that never gets laid out.
+         */
         javafx.application.Platform.runLater(() -> {
             scroller.applyCss();
             scroller.layout();
-            scroller.setVvalue(to);
+            if (to <= 0) return;
+            boolean playerMoved = !Double.isNaN(ours[0])
+                    && Math.abs(scroller.getVvalue() - ours[0]) > 1e-6;
+            if (!playerMoved) scroller.setVvalue(to);
         });
     }
 
@@ -852,6 +1111,67 @@ public class UserInterface extends Application {
      * forwarding the event is deliberate - a copied event re-enters the same
      * bubble and comes straight back here.
      */
+    /**
+     * How far the page can travel: what the content WANTS to be, less the
+     * viewport.
+     *
+     * ASKED, NOT MEASURED, and that is the fix rather than a refinement.
+     *
+     * getBoundsInLocal() reports the last layout, and rootMenu's minHeight is
+     * BOUND to the scroller's height less four - so a page that has not been
+     * laid out against its new content reports the viewport height and this
+     * comes out at MINUS FOUR. The wheel then refused, every time, and the
+     * previous attempt at this tried to cure it by forcing a layout first.
+     * That did not work either: layout() is a no-op on a node the toolkit does
+     * not currently consider dirty, so there was no guarantee the pass ever
+     * reached rootMenu.
+     *
+     * prefHeight() needs no layout and no dirty flag. A VBox computes it from
+     * its children on the spot, which is precisely the question being asked -
+     * "is there more content here than fits" - and it is right on the first
+     * frame a screen exists.
+     *
+     * It correlated with being at the top because that is when you have just
+     * arrived, and arriving from a shorter screen is what leaves the stale
+     * reading behind. Jerus: "there is still an issue where if its at the top
+     * then it locks, and since you start at the top its locked."
+     */
+    private double pageSpan(javafx.scene.Node page) {
+
+        javafx.geometry.Bounds view = menuScroller.getViewportBounds();
+        if (view == null || view.getHeight() <= 0) return 0;
+
+        /*
+         * THE REAL HEIGHT FIRST, AND IF IT IS USABLE THAT IS THE ANSWER.
+         *
+         * The previous version took max(bounds, pref) every time, and the
+         * arithmetic below divides a wheel notch BY the span - so an inflated
+         * span makes every notch tiny. That is what the magnet was: at the top
+         * the span came out far too large, each turn moved a hair, and it took
+         * a dozen of them to get clear. Once the page had been laid out for
+         * real the two agreed and it behaved. Jerus: "the top is a magnetic, if
+         * you touch it, you can seperate but it requires force lol".
+         *
+         * The inflation comes from asking prefHeight() at a width that is not
+         * the real one - a viewport reporting zero width wraps every line of
+         * text to nothing and returns an enormous height - so the width is
+         * guarded too.
+         *
+         * Pref is now only consulted in the one case it was ever needed for:
+         * when the laid-out bounds claim there is nothing to scroll. That is
+         * the stale reading that locked the wheel, and it is the only time a
+         * second opinion is worth having.
+         */
+        double span = page.getBoundsInLocal().getHeight() - view.getHeight();
+        if (span > 1) return span;
+
+        if (page instanceof javafx.scene.layout.Region region) {
+            double width = view.getWidth() > 0 ? view.getWidth() : menuScroller.getWidth();
+            if (width > 0) return region.prefHeight(width) - view.getHeight();
+        }
+        return span;
+    }
+
     private void wheelToPage(javafx.scene.input.ScrollEvent wheel) {
 
         if (menuScroller == null || wheel.getDeltaY() == 0) return;
@@ -859,14 +1179,25 @@ public class UserInterface extends Application {
         javafx.scene.Node page = menuScroller.getContent();
         if (page == null) return;
 
-        double tall = page.getBoundsInLocal().getHeight();
-        javafx.geometry.Bounds view = menuScroller.getViewportBounds();
-        double span = view == null ? 0 : tall - view.getHeight();
-        if (span <= 1) return;   // nothing to scroll; leave the event alone
+        double span = pageSpan(page);
 
-        double at = menuScroller.getVvalue() - wheel.getDeltaY() / span;
-        menuScroller.setVvalue(Math.max(0, Math.min(1, at)));
+        if (span <= 1) return;   // genuinely nothing to scroll; leave the event alone
+
+        scrollPageBy(wheel.getDeltaY(), span);
         wheel.consume();
+    }
+
+    /**
+     * Move the page by one wheel event's worth, with a floor under it.
+     *
+     * @param deltaY the event's own distance, in pixels; positive is upward
+     * @param span   how far the page can travel, in pixels
+     */
+    private void scrollPageBy(double deltaY, double span) {
+        if (span <= 1 || deltaY == 0) return;
+        double pixels = Math.signum(deltaY) * Math.max(WHEEL_STEP, Math.abs(deltaY));
+        double at = menuScroller.getVvalue() - pixels / span;
+        menuScroller.setVvalue(Math.max(0, Math.min(1, at)));
     }
 
     /* =====================================================================
@@ -1882,7 +2213,8 @@ public class UserInterface extends Application {
      * goes to check the land price should come back to housing, not to the
      * front of the catalogue.
      */
-    private String buildCategory = "Residential";
+    static final String BUILD_HOME    = "Residential";
+    private String buildCategory = BUILD_HOME;
 
     /** The Build tab: the list, in whichever category you were last in. */
     private void showBuildMenu() {
@@ -2460,7 +2792,8 @@ public class UserInterface extends Application {
        ===================================================================== */
 
     private String policyArea = null;                  // null is the landing
-    private String policyPage = "The two rates";
+    static final String POLICY_HOME   = "The two rates";
+    private String policyPage = POLICY_HOME;
 
     private static final String[] POLICY_TAX_PAGES =
             {"The two rates", "By wage band", "By sector"};
@@ -4571,7 +4904,8 @@ public class UserInterface extends Application {
        ===================================================================== */
 
     private String tradeArea = null;                 // null is the landing
-    private String tradePage = "The picture";
+    static final String TRADE_HOME    = "The picture";
+    private String tradePage = TRADE_HOME;
 
     private static final String[] TRADE_MONTH_PAGES = {"The picture", "The two accounts"};
     private static final String[] TRADE_VAULT_PAGES = {"What is yours", "Cover", "Exchange"};
@@ -6231,7 +6565,8 @@ public class UserInterface extends Application {
        ===================================================================== */
 
     private String bankArea = null;                  // null is the landing
-    private String bankPage = "The gauge";
+    static final String BANK_HOME     = "The gauge";
+    private String bankPage = BANK_HOME;
 
     private static final String[] BANK_LEND_PAGES =
             {"The gauge", "The two limits", "Another branch"};
@@ -7981,7 +8316,8 @@ public class UserInterface extends Application {
 
     /** Which subject is open. Null is the landing page. */
     private String financeArea = null;
-    private String financePage = "Overview";
+    static final String FINANCE_HOME  = "Overview";
+    private String financePage = FINANCE_HOME;
 
     private static final String[] POSITION_PAGES =
             {"Overview", "The ladder", "Debt service", "Home & abroad", "Your rate"};
@@ -11153,7 +11489,8 @@ public class UserInterface extends Application {
 
     /** Which sector's books are open, or null for the list. */
     private Sector openSector = null;
-    private String sectorPage = "Operations";
+    static final String SECTOR_HOME   = "Operations";
+    private String sectorPage = SECTOR_HOME;
 
     private static final String[] SECTOR_PAGES =
             {"Operations", "Income", "Balance sheet", "Cash & debt", "Investors"};
@@ -12170,8 +12507,10 @@ public class UserInterface extends Application {
     }
 
     /** Which system, and which part of it - remembered like the build category. */
-    private String serviceArea = "Health";
-    private String servicePage = "General care";
+    static final String SERVICE_AREA_HOME = "Health";
+    private String serviceArea = SERVICE_AREA_HOME;
+    static final String SERVICE_HOME  = "General care";
+    private String servicePage = SERVICE_HOME;
 
     private ServiceArea currentArea() {
         for (ServiceArea area : serviceAreas()) {
@@ -20217,8 +20556,9 @@ public class UserInterface extends Application {
         String active = tabFor(currentScreen);
 
         for (Tab tab : tabs()) {
+            final Tab t = tab;
             tabRail.getChildren().add(railButton(
-                    tab.svg(), tab.name(), tab.key().equals(active), tab.go()));
+                    t.svg(), t.name(), t.key().equals(active), () -> goHome(t)));
         }
 
         // The gear sits apart from the destinations because it is not one - it
@@ -20229,6 +20569,103 @@ public class UserInterface extends Application {
         tabRail.getChildren().add(railButton(Icons.SETTINGS, "Game menu  (Esc)",
                 "showMainMenu".equals(currentScreen), this::showMainMenu));
     }
+
+    /* =====================================================================
+       THE RAIL GOES TO THE TOP OF ITS SECTION, NOT TO WHERE YOU LEFT OFF
+
+       Jerus, 2026-09-14: "for the rail system, i need it so that if you press
+       teh rail again, it takes you to that main area for that rail if you get
+       what i mean".
+
+       WHAT IT DID INSTEAD, AND WHY IT LOOKED LIKE NOTHING. Every section
+       remembers its own sub-page - openSector, sectorPage, financePage,
+       bankPage, tradePage, policyPage, servicePage, buildCategory - and its
+       entry point honours that memory. showSectorMenu() opens with
+
+           if (openSector != null) { drawSectorScreen(); return; }
+
+       so pressing Sector while the mining screen was up ran the method, took
+       the early return, and redrew the mining screen. The rail was working
+       perfectly and doing nothing, which is the worst way for a control to
+       fail: the player presses it twice, sees no change, and concludes it is
+       broken.
+
+       That memory is RIGHT for coming back from somewhere else and wrong for
+       the rail, because the rail is the one control that means "take me to the
+       top of this part of the game". Everything else - the strips across the
+       tops of these screens, the links between them - still lands wherever it
+       is pointed. See resetSection().
+       ===================================================================== */
+
+    /**
+     * Press a tab: forget where you were inside it, and land at the top.
+     *
+     * `tab.go().run()`, AND THE .run() IS THE WHOLE THING. Tab is a record, so
+     * tab.go() is the ACCESSOR - it hands back the Runnable and does not call
+     * it. The first version of this said `tab.go();`, which compiles without a
+     * murmur because discarding a return value is legal Java, and shipped a
+     * rail where every button did nothing at all. Jerus, one build later: "now
+     * i cant press anything other than the building rail button" - he was not
+     * stuck on Build, he was stuck FULL STOP, on whatever screen he happened to
+     * be on when it landed.
+     *
+     * The old line read `railButton(..., tab.go())` and was correct for the
+     * opposite reason: it was PASSING the Runnable, not calling it. Moving the
+     * call one level up turned a correct accessor into a silent no-op.
+     */
+    private void goHome(Tab tab) {
+        resetSection(tab.key());
+        railJump = true;            // clearMenu: treat this as arriving, not redrawing
+        tab.go().run();
+    }
+
+    /**
+     * A section's own idea of where you were, forgotten.
+     *
+     * TWO LAYERS, NOT ONE, and the first draft of this only cleared the second.
+     * Five of these sections have an AREA as well as a page - financeArea,
+     * bankArea, tradeArea, policyArea, serviceArea, and openSector doing the
+     * same job for Sector - and the area is what the entry point checks:
+     *
+     *     if (bankArea != null) { drawBankScreen(); return; }
+     *
+     * Resetting only bankPage would have reset which chip was lit inside an
+     * area the player was still stuck in. Four of the five use null for the
+     * landing, Services uses a named one, and Build keys off its category.
+     *
+     * Each case restores the field to the SAME constant its declaration uses,
+     * so the two cannot drift apart - a reset that said "Overview" in one place
+     * and an initialiser that said "Summary" in the other would be a bug nobody
+     * would find for months.
+     */
+    private void resetSection(String key) {
+        switch (key) {
+            case "build":      buildCategory = BUILD_HOME;   break;
+            case "sector":     openSector  = null;
+                               sectorPage  = SECTOR_HOME;    break;
+            case "finances":   financeArea = null;
+                               financePage = FINANCE_HOME;   break;
+            case "bank":       bankArea    = null;
+                               bankPage    = BANK_HOME;      break;
+            case "trade":      tradeArea   = null;
+                               tradePage   = TRADE_HOME;     break;
+            case "policy":     policyArea  = null;
+                               policyPage  = POLICY_HOME;    break;
+            case "services":   serviceArea = SERVICE_AREA_HOME;
+                               servicePage = SERVICE_HOME;   break;
+            default: break;     // land, population, government, reports hold none
+        }
+    }
+
+    /**
+     * Set for exactly one clearMenu, by goHome().
+     *
+     * The scroll-keeping rule is "the same screen redrawn keeps its position",
+     * and pressing the rail on the section you are already in IS the same
+     * screen - so without this you would reset the sub-page and then be left
+     * looking at the middle of it. Arriving from the rail is arriving.
+     */
+    private boolean railJump;
 
     /**
      * One icon on the rail.
