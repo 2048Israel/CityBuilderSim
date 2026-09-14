@@ -221,6 +221,62 @@ public class UserInterface extends Application {
     private HBox debtBar;
     private Scene scene;
 
+    /* =====================================================================
+       THE CLOCK
+
+       Jerus, 2026-09-14: "instead of being next month, make it so that its just
+       play/pause, aka every 5 seconds is a month, and you can increase it to
+       10x speed or 0.1x speed or pause, and have it show days so that you know
+       whats happening even tho everything still only updates monthly".
+
+       THE FIRST CONTINUOUS THING IN THE GAME. Every other control here is a
+       click that makes something happen and stops; this one runs on its own,
+       which means for the first time the simulation can move while the player
+       is reading a screen. That is the whole point and it is also the whole
+       risk, so two rules fall out of it:
+
+       THE MONTH IS STILL THE ONLY UNIT. The clock does not advance anything by
+       a day, because there is nothing in this game that happens in a day. It
+       accumulates a FRACTION of a month and calls the same nextMonth() the
+       button called when the fraction reaches one. Days are drawn from that
+       fraction and are read by nothing - see CityCalendar.dayOf().
+
+       AND IT IS CHEAP ENOUGH TO DO ON THE FX THREAD. Measured before building
+       it: a month costs a median of 0.5-0.8ms in a city of 100-200,000 and
+       1.5ms in a young one, against a 16ms frame. Ten times speed is a month
+       every half second, so the simulation is under one percent of the budget
+       and a background thread would be complexity bought for nothing.
+       ===================================================================== */
+
+    /** Real seconds a month takes at 1x. */
+    public static final double SECONDS_PER_MONTH = 5.0;
+
+    /**
+     * The ladder the speed slider sticks to.
+     *
+     * A slider that snaps rather than a row of buttons or a free drag - Jerus's
+     * call: "a slider that sticks if you get what i mean, aka the discrete one,
+     * but its a sticky ladder". Dragging is the natural gesture for a speed and
+     * landing between two stops is not a speed anybody meant to pick.
+     */
+    private static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10};
+    private static final int NORMAL_SPEED = 3;              // 1x
+
+    private int speedIndex = NORMAL_SPEED;
+    private boolean clockRunning;
+    private double monthProgress;
+    private long lastFrame;
+    private javafx.animation.AnimationTimer clock;
+
+    /** The date line, kept so a day can be repainted without a whole redraw. */
+    private Label dayLabel;
+
+    /** Why the clock stopped itself, shown until it is started again. */
+    private String pausedBecause;
+
+    /** The notice that last stopped it, so one condition interrupts once. */
+    private String pausedOnKey = "";
+
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
@@ -511,6 +567,7 @@ public class UserInterface extends Application {
 
         stage.setScene(scene);
         stage.show();
+        startClock();
 
         // Esc is the pause menu, from anywhere. See the gear at the foot of
         // the rail for the half of this a new player can find on their own -
@@ -828,9 +885,15 @@ public class UserInterface extends Application {
          * quietening its neighbours; making all eight bold would be the same
          * screen again, louder.
          */
-        Label date = new Label(CityCalendar.format(month));
+        /*
+         * THE DAY, which is the only thing on this bar that moves between
+         * months. Kept in a field because the clock repaints it every frame and
+         * must not rebuild the screen to do it - see paintDay().
+         */
+        Label date = new Label(CityCalendar.formatDay(month, monthProgress));
         date.setStyle("-fx-font-size: 28px; -fx-font-weight: bold;"
                 + " -fx-text-fill: #ffffff;");
+        dayLabel = date;
 
         Label counter = new Label("month " + formatter.format(month));
         counter.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
@@ -1528,6 +1591,19 @@ public class UserInterface extends Application {
         column.getChildren().add(toggleRow("Full screen", stage.isFullScreen(),
                 "No title bar and no taskbar — F11 from anywhere, at any time.",
                 this::toggleFullScreen));
+
+        column.getChildren().add(statementHead("The clock"));
+        column.getChildren().add(toggleRow("Stop for anything important",
+                prefs.isPauseOnEvents(),
+                "At ten times speed a month is half a second, so a bank failing or "
+                + "a family with nowhere to sleep can go past unseen. With this on "
+                + "the clock stops and says what happened. Off, it runs until you "
+                + "stop it.",
+                () -> {
+                    prefs.setPauseOnEvents(!prefs.isPauseOnEvents());
+                    prefs.save(game.getGameFiles());
+                    showSettingsMenu();
+                }));
 
         column.getChildren().add(statementHead("What the city prints"));
         column.getChildren().add(toggleRow("Graphs", game.isGraphsEnabled(),
@@ -18256,6 +18332,7 @@ public class UserInterface extends Application {
     private static final Trace[] TRACES = withTheCrime(withTheHouseholds(withTheMarket(new Trace[] {
         new Trace("gdp",            "GDP",                "MONEY",      "money"),
         new Trace("gdpPerCapita",   "GDP per capita (yr)","MONEY",      "money"),
+        new Trace("realGdp",        "GDP, real",          "MONEY",      "money"),
         new Trace("cash",           "Treasury",           "MONEY",      "money"),
         new Trace("debt",           "Public debt",        "MONEY",      "money"),
         new Trace("revenue",        "Revenue",            "MONEY",      "money"),
@@ -19132,6 +19209,32 @@ public class UserInterface extends Application {
                 double[] out = new double[w.length];
                 for (int i = 0; i < out.length; i++) {
                     out[i] = w[i] > 0 ? Math.max(0, (w[i] - j[i]) / w[i]) : Double.NaN;
+                }
+                return out;
+            }
+            /*
+             * REAL GDP - output with the price level divided out.
+             *
+             * Jerus, 2026-09-14: "for the graphs, i want real gdp, aka a graph
+             * that shows inflation adjusted gdp."
+             *
+             * Nominal GDP rises when the city makes more AND when the same
+             * things cost more, and those are opposite news. This is the line
+             * that tells them apart, in founding money: a city whose real GDP
+             * is flat while the nominal one climbs has not grown, it has only
+             * repriced.
+             *
+             * Divided by the INDEX rather than deflated month by month, because
+             * the index is already a ratio to the founding basket - so this
+             * comes out in the same money every other founding-money figure in
+             * the game is quoted in, and is comparable across a currency reform
+             * for the same reason the index is. See PriceIndex.redenominate().
+             */
+            case "realGdp": {
+                double[] g = h.aligned("gdp"), p = h.aligned("priceIndex");
+                double[] out = new double[g.length];
+                for (int i = 0; i < out.length; i++) {
+                    out[i] = p[i] > 0 ? g[i] / p[i] : Double.NaN;
                 }
                 return out;
             }
@@ -20402,6 +20505,92 @@ public class UserInterface extends Application {
        advance a month.
        ===================================================================== */
 
+    /**
+     * Starts the frame loop. Called once, after the stage is up.
+     *
+     * An AnimationTimer rather than a Timeline because the DAY has to move
+     * smoothly and the MONTH has to land exactly: a Timeline firing every
+     * frame would do the same job with a KeyFrame in the way, and one firing
+     * every month could not draw a day at all.
+     */
+    private void startClock() {
+        if (clock != null) return;
+        clock = new javafx.animation.AnimationTimer() {
+            @Override public void handle(long now) {
+                if (lastFrame == 0) { lastFrame = now; return; }
+                double dt = (now - lastFrame) / 1e9;
+                lastFrame = now;
+                if (!clockRunning || game == null || isGameMenu(currentScreen)) return;
+
+                /*
+                 * CLAMPED, because a stalled frame is not elapsed game time.
+                 * Dragging the window, opening a menu or a long garbage
+                 * collection can hand this a dt of several seconds, and at 10x
+                 * that would silently run a year while the player was not
+                 * looking at the screen. A quarter of a second is the most any
+                 * single frame is allowed to be worth.
+                 */
+                monthProgress += Math.min(dt, .25) * SPEEDS[speedIndex] / SECONDS_PER_MONTH;
+
+                boolean landed = false;
+                while (monthProgress >= 1) {
+                    monthProgress -= 1;
+                    game.toggleNextMonth();
+                    landed = true;
+                    if (stopIfSomethingHappened()) { monthProgress = 0; break; }
+                }
+                if (landed) redrawScreen.run(); else paintDay();
+            }
+        };
+        clock.start();
+    }
+
+    /**
+     * The day, repainted in place.
+     *
+     * Deliberately NOT a redraw. At 1x this runs sixty times a second and the
+     * month behind it has not changed, so rebuilding the screen for it would be
+     * rebuilding the same screen sixty times a second. One label's text.
+     */
+    private void paintDay() {
+        if (dayLabel == null) return;
+        dayLabel.setText(CityCalendar.formatDay(game.getMonth(), monthProgress));
+    }
+
+    /**
+     * Stops the clock when the city has something to say, if the player wants
+     * that. Returns true if it stopped.
+     *
+     * THE INBOX ALREADY DECIDES WHAT IS WORTH INTERRUPTING FOR - urgent() is
+     * "the newest unread notice whose condition still holds", and its own note
+     * says it is null most of the time by design. Re-deciding that here would
+     * be a second opinion about severity that drifts away from the first.
+     *
+     * ONE CONDITION INTERRUPTS ONCE. Keyed on the notice, so a player who
+     * presses play again is not stopped by the same bank on the same month for
+     * ever - which is what turns a useful stop into an unusable one.
+     */
+    private boolean stopIfSomethingHappened() {
+        if (prefs == null || !prefs.isPauseOnEvents()) return false;
+        Notice urgent = game.getInbox() == null ? null : game.getInbox().urgent();
+        if (urgent == null) return false;
+        String key = urgent.getKey() + "@" + urgent.getRaised();
+        if (key.equals(pausedOnKey)) return false;
+        pausedOnKey = key;
+        pausedBecause = urgent.getTitle();
+        clockRunning = false;
+        return true;
+    }
+
+    /** Play, or pause. The one control the whole game now runs on. */
+    private void setClockRunning(boolean run) {
+        clockRunning = run;
+        if (run) {
+            pausedBecause = null;
+            lastFrame = 0;          // do not bank the time spent paused
+        }
+    }
+
     private void refreshTimeControls() {
 
         if (timeControls == null) return;
@@ -20410,22 +20599,94 @@ public class UserInterface extends Application {
         showIf(incomeDome, inCity);
         timeControls.getChildren().clear();
 
-        Button skip = roundButton("▸▸", 40, "#22303c", "Simulate several months");
-        skip.setOnAction(e -> showSimulateMonthsMenu());
-
-        Button next = roundButton("▶", 56, "#2f6fa8", "Advance one month");
-        next.setOnAction(e -> {
-            game.toggleNextMonth();
-            // Back to whatever was on show, which is the whole reason clearMenu
-            // takes a redraw. Pressing this on the mining screen leaves you on
-            // the mining screen, a month later, still scrolled where you were.
+        /*
+         * ONE BUTTON NOW, where there were two.
+         *
+         * "Advance one month" and "simulate several months" both went: the
+         * first is what play/pause is, and the second is what 10x is. Jerus's
+         * call - "play/pause only" - and the corner is better for it, because
+         * three controls that all mean "time" is three ways to ask the same
+         * question.
+         */
+        Button play = roundButton(clockRunning ? "❙❙" : "▶", 56,
+                clockRunning ? "#2f6fa8" : "#3a7d44",
+                clockRunning ? "Pause" : "Play");
+        play.setOnAction(e -> {
+            setClockRunning(!clockRunning);
             redrawScreen.run();
         });
 
         timeControls.setAlignment(Pos.BOTTOM_RIGHT);
-        timeControls.getChildren().addAll(yearDial(), skip, next);
+        /*
+         * AND WHY IT STOPPED, when it stopped itself. A clock that halts with
+         * no explanation is a bug as far as the player is concerned - they did
+         * not press anything and time stopped. One line, next to the button
+         * they are about to press to start it again.
+         */
+        if (pausedBecause != null && !clockRunning) {
+            Label why = new Label(pausedBecause);
+            why.setStyle("-fx-font-size: 11px; -fx-text-fill: #ffb454;"
+                    + " -fx-background-color: #2a2118; -fx-background-radius: 3;"
+                    + " -fx-padding: 3 8 3 8;");
+            why.setMaxWidth(220);
+            why.setWrapText(true);
+            timeControls.getChildren().add(why);
+        }
+        timeControls.getChildren().addAll(yearDial(), speedSlider(), play);
 
         refreshIncomeDome();
+    }
+
+    /**
+     * The speed, as a slider that sticks to the ladder.
+     *
+     * SNAPPING IS THE WHOLE DESIGN. A free slider gives a player 7.3x, which is
+     * not a speed anybody chose and is not a speed they can describe or get
+     * back to. Snapping gives them the drag - the gesture that suits a speed -
+     * and a value that is always one of seven.
+     *
+     * The tick marks are the stops, so the ladder is visible rather than
+     * discovered, and the reading beside it is the number rather than the
+     * index: a player thinks in "5x", not in "position 5 of 7".
+     */
+    private HBox speedSlider() {
+
+        javafx.scene.control.Slider bar =
+                new javafx.scene.control.Slider(0, SPEEDS.length - 1, speedIndex);
+        bar.setMajorTickUnit(1);
+        bar.setMinorTickCount(0);
+        bar.setSnapToTicks(true);
+        bar.setShowTickMarks(true);
+        bar.setBlockIncrement(1);
+        bar.setPrefWidth(132);
+        bar.setTooltip(new Tooltip("How fast a month passes. "
+                + (int) SECONDS_PER_MONTH + " seconds a month at 1x."));
+
+        Label reading = new Label(speedLabel(speedIndex));
+        reading.setMinWidth(38);
+        reading.setAlignment(Pos.CENTER_RIGHT);
+        reading.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
+                + " -fx-font-weight: bold; -fx-text-fill: #cfd8dc;");
+
+        bar.valueProperty().addListener((o, was, now) -> {
+            int pick = (int) Math.round(now.doubleValue());
+            pick = Math.max(0, Math.min(SPEEDS.length - 1, pick));
+            speedIndex = pick;
+            reading.setText(speedLabel(pick));
+            // Snap the handle itself, so a half-dragged slider settles on a stop
+            // rather than sitting between two of them looking adjustable.
+            if (Math.abs(now.doubleValue() - pick) > 1e-9) bar.setValue(pick);
+        });
+
+        HBox box = new HBox(6, bar, reading);
+        box.setAlignment(Pos.CENTER);
+        return box;
+    }
+
+    /** "0.25x", "1x", "10x" - no trailing zeros on the round ones. */
+    private static String speedLabel(int index) {
+        double s = SPEEDS[index];
+        return (s == Math.floor(s) ? String.valueOf((int) s) : String.valueOf(s)) + "x";
     }
 
     /** The month the dial is currently showing, so it only pops when it moves. */

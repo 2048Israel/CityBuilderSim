@@ -86,6 +86,51 @@ public class CalendarCheck {
         same("month 4002 (the playtest's last)", CityCalendar.format(4002), "June 2333");
         check("4002 lands in 2333", CityCalendar.yearOf(4002), 2333);
 
+        /* ================= days, which only the clock uses =================
+         *
+         * Added 2026-09-14 with play/pause. Nothing in the simulation happens
+         * on a day - these exist so a clock running at five seconds a month has
+         * something to move between months. Presentation, and therefore exactly
+         * the kind of thing that is never checked until it prints February the
+         * 31st at somebody.
+         */
+        check("January has 31",  CityCalendar.daysIn(1),  31);
+        check("April has 30",    CityCalendar.daysIn(4),  30);
+        check("December has 31", CityCalendar.daysIn(12), 31);
+        // Month 2 is February 2000, and the epoch year is a leap year - which
+        // this check asserted 28 for on the first pass and was rightly told
+        // otherwise. The common-year February is month 14.
+        check("February 2001 has 28", CityCalendar.daysIn(14), 28);
+
+        // 2000 is a leap year (divisible by 400), 2100 is not (by 100 and not 400).
+        assertTrue("2000 was a leap year",      CityCalendar.isLeapYear(2000));
+        assertTrue("2100 is not",              !CityCalendar.isLeapYear(2100));
+        assertTrue("2400 is",                   CityCalendar.isLeapYear(2400));
+        assertTrue("2001 is not",              !CityCalendar.isLeapYear(2001));
+        check("...so month 2 has 29 days",      CityCalendar.daysIn(2), 29);
+        check("February 2100 has 28",           CityCalendar.daysIn(1 + 100 * 12 + 1), 28);
+
+        /*
+         * THE DAY NEVER LEAVES THE MONTH, at either end. The clock hands this a
+         * fraction that can sit exactly on 0 or reach 1 on the frame the month
+         * lands, and a day of 0 or 32 would be on screen for that frame.
+         */
+        check("a month opens on the first",  CityCalendar.dayOf(1, 0),     1);
+        check("...and negative is still the first", CityCalendar.dayOf(1, -0.5), 1);
+        check("half way through January",    CityCalendar.dayOf(1, 0.5),   16);
+        check("the end of January is the 31st", CityCalendar.dayOf(1, 1),  31);
+        check("...and past the end is still the 31st", CityCalendar.dayOf(1, 9), 31);
+        check("the end of February is the 29th in 2000", CityCalendar.dayOf(2, 1), 29);
+        boolean inside = true;
+        for (int m = 1; m <= 120; m++) {
+            for (int s = 0; s <= 100; s++) {
+                int d = CityCalendar.dayOf(m, s / 100.0);
+                if (d < 1 || d > CityCalendar.daysIn(m)) inside = false;
+            }
+        }
+        assertTrue("ten years of days, none of them outside their month", inside);
+        same("the date the clock prints", CityCalendar.formatDay(3, 0.5), "16 March 2000");
+
         /*
          * Month 0 and below are not reachable in play, but a corrupt save can
          * hand them over and a status bar must not be the thing that dies.

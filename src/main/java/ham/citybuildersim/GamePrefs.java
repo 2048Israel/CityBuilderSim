@@ -62,6 +62,25 @@ public final class GamePrefs {
     public void setPanelDashboard(boolean value) { this.panelDashboard = value; }
 
     /**
+     * Whether the clock stops itself when something worth seeing happens.
+     *
+     * ON BY DEFAULT, and the reason is arithmetic rather than taste. At ten
+     * times speed a month is half a second, so a bank failing, a sector going
+     * under or a family with nowhere to sleep is half a second of screen time
+     * in a run that may last an hour. A player who wanted to watch their city
+     * and got a summary at the end was not playing it.
+     *
+     * A setting because the other half of the time it IS nagging: someone
+     * crossing four hundred months to see where the city lands does not want to
+     * be stopped nine times on the way. Jerus, 2026-09-14: "yes, but make it a
+     * setting."
+     */
+    private boolean pauseOnEvents = true;
+
+    public boolean isPauseOnEvents()            { return pauseOnEvents; }
+    public void setPauseOnEvents(boolean value) { this.pauseOnEvents = value; }
+
+    /**
      * The world the NEXT city is founded into.
      *
      * A PREFERENCE RATHER THAN A SAVED FIGURE, and the one setting here that

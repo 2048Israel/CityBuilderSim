@@ -37,7 +37,59 @@ public final class CityCalendar {
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
 
+    /** Days in each month of a common year; February is corrected below. */
+    private static final int[] DAYS = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
     private CityCalendar() { }
+
+    /* =====================================================================
+       DAYS, WHICH THE SIMULATION DOES NOT HAVE AND THE CLOCK NEEDS
+
+       Jerus, 2026-09-14: "have it show days so that you know whats happening
+       even tho everything still only updates monthly".
+
+       Nothing in this game happens on a day. Every market clears, every wage is
+       paid and every loan accrues once a month, and that is the model rather
+       than a simplification to be apologised for. What a day is for is the
+       PLAYER: a clock running at five seconds a month with nothing moving in
+       between looks frozen, and a date that only ever jumps is a date nobody
+       can pace themselves against.
+
+       So this is presentation, and it is deliberately honest presentation - the
+       day is derived from how far through the month the clock has travelled and
+       is never read by anything that decides anything. Real lengths and real
+       leap years, because a February that runs to the 31st is the kind of
+       detail that makes a player stop trusting the rest of the screen.
+       ===================================================================== */
+
+    /** Whether a calendar year is a leap year, by the Gregorian rule. */
+    public static boolean isLeapYear(int year) {
+        return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+    }
+
+    /** How many days this game month actually has. */
+    public static int daysIn(int gameMonth) {
+        int m = monthOfYear(gameMonth);
+        if (m == 2 && isLeapYear(yearOf(gameMonth))) return 29;
+        return DAYS[m - 1];
+    }
+
+    /**
+     * The day of the month a given share of the way through it.
+     *
+     * @param progress 0 at the first of the month, 1 at the end of the last day
+     * @return 1 to the length of the month, never past it
+     */
+    public static int dayOf(int gameMonth, double progress) {
+        int days = daysIn(gameMonth);
+        if (!(progress > 0)) return 1;
+        return Math.max(1, Math.min(days, (int) Math.floor(progress * days) + 1));
+    }
+
+    /** "14 March 2031" - the date bar's line while the clock is running. */
+    public static String formatDay(int gameMonth, double progress) {
+        return dayOf(gameMonth, progress) + " " + monthName(gameMonth) + " " + yearOf(gameMonth);
+    }
 
     /** Months since the epoch, floored at zero. */
     private static int elapsed(int gameMonth) {
