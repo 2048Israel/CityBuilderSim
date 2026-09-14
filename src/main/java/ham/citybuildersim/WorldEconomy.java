@@ -37,12 +37,69 @@ import java.util.Random;
  */
 public class WorldEconomy {
 
-    /** The band the world's inflation wanders in. */
-    public static final double MIN_INFLATION = .01;
-    public static final double MAX_INFLATION = .08;
+    /* =====================================================================
+       THE WORLD'S PRICE LEVEL IS STATIONARY, AND THE MEAN SAYS WHERE
 
-    /** Where it starts, before it has wandered anywhere. */
-    public static final double OPENING_INFLATION = .03;
+       Nobody had written this down and it is the whole mechanism. advanceMonth()
+       compounds the level and then pulls it back toward a trend line, and
+       TREND_INFLATION is zero - so the trend line is FLAT and the level settles
+       wherever the two forces balance:
+
+           mean/12 x L  =  TREND_PULL x (L - 1)
+
+       At the old mean of 3.33% - the band was [1%, 8%] with a low bias, and
+       E[U^2] is a third - that solves to L = 1.835. Measured over a full run:
+       1.841. So the world was not inflating at all. Its price level reached
+       1.84 early in every game and sat there for three centuries, which is why
+       the headline read 3.1% while realised read 0.0%.
+
+       That mattered because parity is the city's prices over the WORLD's, and
+       the city cannot inflate: a world stuck at 1.84 is a permanent 1.84x
+       handicap that no domestic instrument can answer. Measured over sixteen
+       paired seeds, moving the mean to 1% takes the level to 1.151 - the
+       arithmetic predicts 1.16 - and the currency from 0.372 to 0.607, better
+       in SIXTEEN SEEDS OUT OF SIXTEEN. It is the first change in this whole
+       line of work that helped the exchange rate at all.
+
+       AND THE BAND IS CENTRED NOW, which is what retires LOW_BIAS. The bias
+       existed to drag a [1%, 8%] band's mean down toward its floor; a band
+       centred on the mean does not need dragging. It is also two-sided, so the
+       world sometimes DEFLATES and the city imports a price rise for once,
+       instead of every shock pointing the same way.
+       ===================================================================== */
+
+    /** What the world's inflation averages. Jerus's number, and the default. */
+    public static final double DEFAULT_MEAN_INFLATION = .01;
+
+    /** How far either side of the mean a draw can land. */
+    public static final double INFLATION_SPREAD = .03;
+
+    /** The most and least a city may be founded with. Testing room, not policy. */
+    public static final double MIN_MEAN_INFLATION = .0;
+    public static final double MAX_MEAN_INFLATION = .08;
+
+    private double meanInflation = DEFAULT_MEAN_INFLATION;
+
+    /**
+     * Sets the world a city is founded into.
+     *
+     * AT FOUNDING ONLY - Jerus: "in settings have it be adjustable but only in
+     * game start". The world a city grew up in is a fact about that city, not a
+     * preference somebody can change in year two: every price, every wage and
+     * the whole exchange rate history were struck against it. So GamePrefs
+     * carries the choice, newGame() applies it, the save carries it, and
+     * nothing moves it afterwards.
+     */
+    public void setMeanInflation(double mean) {
+        meanInflation = Math.max(MIN_MEAN_INFLATION, Math.min(MAX_MEAN_INFLATION, mean));
+        annualInflation = meanInflation;
+    }
+
+    public double getMeanInflation() { return meanInflation; }
+
+    /** The band this world's inflation wanders in: the mean, either way. */
+    public double minInflation() { return meanInflation - INFLATION_SPREAD; }
+    public double maxInflation() { return meanInflation + INFLATION_SPREAD; }
 
     /**
      * How much of last month's rate survives into this one.
@@ -102,11 +159,17 @@ public class WorldEconomy {
      * thirds of months draw under 4%; 8% needs a draw within a whisker of 1.0,
      * and so turns up about as often as a bad decade should.
      */
+    /**
+      * RETIRED 2026-09-13, kept because the reasoning is still true of the band
+      * it was written for. It dragged a [1%, 8%] draw's mean down toward the
+      * floor; the band is centred on the mean now and does not need dragging.
+      * See the block at the top of this class.
+      */
     public static final double LOW_BIAS = 2.0;
 
     private static final long SEED = 0x5F3A91C7L;
 
-    private double annualInflation = OPENING_INFLATION;
+    private double annualInflation = DEFAULT_MEAN_INFLATION;
     private double priceLevel = 1.0;
 
     /** Scrambles a month into something that does not correlate with its neighbours. */
@@ -175,11 +238,10 @@ public class WorldEconomy {
     public void advanceMonth(int month) {
         if (pinned) return;
         Random roll = new Random(scramble(SEED + month));
-        // Biased toward the bottom of the band - see LOW_BIAS. A flat draw put
-        // the average at 4.5%, which is what was compounding into the numbers
-        // Jerus objected to.
-        double draw = MIN_INFLATION + Math.pow(roll.nextDouble(), LOW_BIAS)
-                                    * (MAX_INFLATION - MIN_INFLATION);
+        // Flat, on a band centred at the mean - see LOW_BIAS, which this
+        // retired, and the block at the top of the class.
+        double draw = minInflation() + roll.nextDouble()
+                                    * (maxInflation() - minInflation());
         annualInflation = annualInflation * PERSISTENCE + draw * (1 - PERSISTENCE);
 
         priceLevel *= Math.pow(1 + annualInflation, 1.0 / 12);
@@ -280,10 +342,13 @@ public class WorldEconomy {
     /* -------------------------------- carrying -------------------------------- */
 
     public double[] toSaveArray() {
-        double[] out = new double[3 + LEVEL_RING];
+        double[] out = new double[4 + LEVEL_RING];
         out[0] = priceLevel;
         out[1] = annualInflation;
         out[2] = monthsRun;
+        // Last, so a save written before this existed still reads back: the
+        // ring is found by length and an older array simply has no slot here.
+        out[3 + LEVEL_RING] = meanInflation;
         // Oldest first, so restore() can replay them in order.
         for (int back = LEVEL_RING - 1; back >= 0; back--) {
             out[3 + (LEVEL_RING - 1 - back)] = levels[(head - back + LEVEL_RING) % LEVEL_RING];
@@ -303,11 +368,24 @@ public class WorldEconomy {
         } else {
             backcastLevels();
         }
+        /*
+         * A CITY FOUNDED BEFORE THIS EXISTED KEEPS THE WORLD IT GREW UP IN.
+         * Its whole price history was struck against a 3.33% mean, and handing
+         * it a 1% world on load would move parity under it by a factor of 1.6
+         * between one month and the next.
+         */
+        meanInflation = saved.length > 3 + LEVEL_RING
+                ? Math.max(MIN_MEAN_INFLATION,
+                           Math.min(MAX_MEAN_INFLATION, saved[3 + LEVEL_RING]))
+                : LEGACY_MEAN_INFLATION;
     }
+
+    /** The mean every city founded before 2026-09-13 grew up in. See restore(). */
+    public static final double LEGACY_MEAN_INFLATION = .0333;
 
     public void reset() {
         priceLevel = 1.0;
-        annualInflation = OPENING_INFLATION;
+        annualInflation = meanInflation;
         monthsRun = 0;
         pinned = false;
         head = 0;

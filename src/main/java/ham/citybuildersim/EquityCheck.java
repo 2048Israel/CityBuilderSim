@@ -270,7 +270,7 @@ public class EquityCheck {
         assertTrue("an array of the wrong length is refused whole",
                 !new Equity().restore(founding.keys(), new double[] {1, 2, 3}));
         HouseholdBalance cellsBack = new HouseholdBalance();
-        cellsBack.restoreCells(rich.cellKeys(), rich.toCellSaveArray());
+        cellsBack.restoreCells(rich.cellKeys(), rich.toCellSaveArray(), Equity.COMPANIES);
         close("the households' shares ride in the cell save",
                 cellsBack.sharesHeld(INDUSTRY), rich.sharesHeld(INDUSTRY), 1e-12);
 

@@ -55,7 +55,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 46,
+ "nextId": 55,
  "buildings": [
   {
    "id": 0,
@@ -181,6 +181,9 @@
    "makes": {
     "FOOD": 5500
    },
+   "uses": {
+    "CROPS": 579
+   },
    "stock": 15000
   },
   {
@@ -202,6 +205,9 @@
    "roadLoad": 40,
    "makes": {
     "FOOD": 6000
+   },
+   "uses": {
+    "CROPS": 632
    },
    "stock": 18000
   },
@@ -1002,6 +1008,214 @@
    },
    "land": 45000,
    "roadLoad": 60
+  },
+  {
+   "id": 46,
+   "name": "Contact Centre",
+   "category": "BUSINESS_SERVICES",
+   "sector": "Business Services",
+   "capacity": 300,
+   "cashCost": 16335,
+   "constructionPoints": 3240,
+   "constructionMaterials": 605,
+   "upkeep": 0,
+   "electricity": 240,
+   "water": 6,
+   "jobs": {
+    "NO_DIPLOMA": 255,
+    "DIPLOMA": 36,
+    "COLLEGE_BUSINESS": 9
+   },
+   "land": 75000,
+   "roadLoad": 240,
+   "makes": {
+    "SUPPORT_WORK": 300
+   }
+  },
+  {
+   "id": 47,
+   "name": "Shared Services Centre",
+   "category": "BUSINESS_SERVICES",
+   "sector": "Business Services",
+   "capacity": 300,
+   "cashCost": 16335,
+   "constructionPoints": 3240,
+   "constructionMaterials": 605,
+   "upkeep": 0,
+   "electricity": 240,
+   "water": 6,
+   "jobs": {
+    "DIPLOMA": 90,
+    "COLLEGE_BUSINESS": 180,
+    "UNIV_POLICY": 30
+   },
+   "land": 75000,
+   "roadLoad": 240,
+   "makes": {
+    "BACK_OFFICE_WORK": 300
+   }
+  },
+  {
+   "id": 48,
+   "name": "Engineering Services Office",
+   "category": "BUSINESS_SERVICES",
+   "sector": "Business Services",
+   "capacity": 120,
+   "cashCost": 6534,
+   "constructionPoints": 1300,
+   "constructionMaterials": 242,
+   "upkeep": 0,
+   "electricity": 96,
+   "water": 2,
+   "jobs": {
+    "DIPLOMA": 12,
+    "COLLEGE_ENGINEERING": 30,
+    "UNIV_HIGHTECH_ENG": 78
+   },
+   "land": 30000,
+   "roadLoad": 96,
+   "makes": {
+    "ENGINEERING_WORK": 120
+   },
+   "requiresLicence": "UNIV_HIGHTECH_ENG"
+  },
+  {
+   "id": 49,
+   "name": "Fabrication Shop",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Manufacturing",
+   "cashCost": 22260,
+   "constructionPoints": 2445,
+   "constructionMaterials": 530,
+   "electricity": 190,
+   "water": 18,
+   "jobs": {
+    "NO_DIPLOMA": 68,
+    "DIPLOMA": 62,
+    "COLLEGE_ENGINEERING": 5
+   },
+   "land": 480000,
+   "roadLoad": 200,
+   "makes": {
+    "FABRICATED_STEEL": 1200
+   },
+   "uses": {
+    "STEEL": 1260
+   }
+  },
+  {
+   "id": 50,
+   "name": "Machine Works",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Manufacturing",
+   "cashCost": 14580,
+   "constructionPoints": 1143,
+   "constructionMaterials": 270,
+   "electricity": 820,
+   "water": 24,
+   "jobs": {
+    "NO_DIPLOMA": 30,
+    "DIPLOMA": 105,
+    "COLLEGE_ENGINEERING": 34,
+    "UNIV_SCIENCE": 4
+   },
+   "land": 150000,
+   "roadLoad": 190,
+   "makes": {
+    "MACHINERY": 180
+   },
+   "uses": {
+    "STEEL": 261
+   }
+  },
+  {
+   "id": 51,
+   "name": "Fabrication Works",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Manufacturing",
+   "cashCost": 55690,
+   "constructionPoints": 6120,
+   "constructionMaterials": 1326,
+   "electricity": 440,
+   "water": 40,
+   "jobs": {
+    "NO_DIPLOMA": 142,
+    "DIPLOMA": 122,
+    "COLLEGE_ENGINEERING": 11,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 1150000,
+   "roadLoad": 480,
+   "makes": {
+    "FABRICATED_STEEL": 3000
+   },
+   "uses": {
+    "STEEL": 3150
+   }
+  },
+  {
+   "id": 52,
+   "name": "Mixed Farm",
+   "category": "AGRICULTURE",
+   "sector": "Agriculture",
+   "cashCost": 240,
+   "constructionPoints": 25,
+   "constructionMaterials": 4,
+   "electricity": 8,
+   "water": 30,
+   "jobs": {
+    "NO_DIPLOMA": 2,
+    "DIPLOMA": 1
+   },
+   "land": 600000,
+   "roadLoad": 8,
+   "makes": {
+    "CROPS": 125
+   },
+   "stock": 400
+  },
+  {
+   "id": 53,
+   "name": "Grain Farm",
+   "category": "AGRICULTURE",
+   "sector": "Agriculture",
+   "cashCost": 1200,
+   "constructionPoints": 100,
+   "constructionMaterials": 17,
+   "electricity": 25,
+   "water": 70,
+   "jobs": {
+    "NO_DIPLOMA": 3,
+    "DIPLOMA": 1
+   },
+   "land": 2400000,
+   "roadLoad": 18,
+   "makes": {
+    "CROPS": 500
+   },
+   "stock": 1500
+  },
+  {
+   "id": 54,
+   "name": "Greenhouse Complex",
+   "category": "AGRICULTURE",
+   "sector": "Agriculture",
+   "cashCost": 5600,
+   "constructionPoints": 410,
+   "constructionMaterials": 104,
+   "electricity": 940,
+   "water": 150,
+   "jobs": {
+    "NO_DIPLOMA": 12,
+    "DIPLOMA": 4,
+    "COLLEGE_ENGINEERING": 1
+   },
+   "land": 150000,
+   "roadLoad": 34,
+   "makes": {
+    "CROPS": 900
+   },
+   "stock": 1350
   }
  ]
 }

@@ -54,9 +54,10 @@ public class MonetaryCheck {
         out.println("--- a fixed basket, priced repeatedly ---");
 
         PriceIndex px = new PriceIndex();
-        for (int m = 0; m < PriceIndex.SETTLING_MONTHS - 1; m++) px.takeMonth(.30, .12, 60, 40);
+        int mo = 0;
+        for (int m = 0; m < PriceIndex.SETTLING_MONTHS - 1; m++) px.takeMonth(.30, .12, 60, 40, ++mo);
         assertTrue("a young city has no basket yet", !px.isBased());
-        px.takeMonth(.30, .12, 60, 40);
+        px.takeMonth(.30, .12, 60, 40, ++mo);
         assertTrue("...and a settled one does", px.isBased());
         close("the basket is what they actually spent", px.getFoodWeight(), .6, 1e-9);
         close("...and it starts at one", px.getIndex(), 1.0, 1e-9);
@@ -67,14 +68,61 @@ public class MonetaryCheck {
          * - a basket that follows the spending shows none, and tells a family
          * eating worse that nothing has happened.
          */
-        px.takeMonth(.60, .12, 1, 99);
+        int basedAt = mo;
+        px.takeMonth(.60, .12, 1, 99, ++mo);
         close("doubling food moves the index by the food weight",
                 px.getIndex(), 1.6, 1e-9);
         close("...and the weights did not move to hide it", px.getFoodWeight(), .6, 1e-9);
 
+        /* ---------------- the high and low water marks ----------------
+         *
+         * Jerus, 2026-09-14. Every price figure this project quotes is the
+         * level on the last month measured, and the level does not sit still -
+         * sixteen seeds that FINISH between 0.84 and 1.26 peak at a median of
+         * 1.62 and as high as 3.78 on the way. These two readings are the only
+         * part of that path that survives not having watched it.
+         */
+        close("the peak is the dearest month, not the last one", px.getPeak(), 1.6, 1e-9);
+        close("...and it remembers which month that was", px.getPeakMonth(), mo, 0);
+        close("the trough opens where the basket was based", px.getTrough(), 1.0, 1e-9);
+        close("...on the month it was based", px.getTroughMonth(), basedAt, 0);
+
+        // Back down: the peak must STAY, which is the whole point of a mark.
+        px.takeMonth(.15, .12, 60, 40, ++mo);
+        close("cheaper food moves the index", px.getIndex(), .7, 1e-9);
+        close("...and the peak does not come down with it", px.getPeak(), 1.6, 1e-9);
+        close("...while the trough follows it down", px.getTrough(), .7, 1e-9);
+        close("...and stamps the new month", px.getTroughMonth(), mo, 0);
+        close("the swing is peak over trough", px.swing(), 1.6 / .7, 1e-9);
+
+        /*
+         * AND THEY SURVIVE A SAVE, because they are a record rather than a
+         * derivation - nothing in the state a month ended in can reconstruct
+         * what the level was three hundred months ago.
+         */
+        PriceIndex reloaded = new PriceIndex();
+        reloaded.restore(px.toSaveArray());
+        close("the peak reloads", reloaded.getPeak(), px.getPeak(), 1e-9);
+        close("...with its month", reloaded.getPeakMonth(), px.getPeakMonth(), 0);
+        close("the trough reloads", reloaded.getTrough(), px.getTrough(), 1e-9);
+        close("...with its month", reloaded.getTroughMonth(), px.getTroughMonth(), 0);
+
+        /*
+         * A SAVE FROM BEFORE THE MARKS EXISTED has no tail, and the honest
+         * answer is today's level rather than a record it never kept. Claiming
+         * a flat history would be inventing one.
+         */
+        double[] old = java.util.Arrays.copyOf(px.toSaveArray(), 5 + PriceIndex.WINDOW);
+        PriceIndex older = new PriceIndex();
+        older.restore(old);
+        close("an older save opens both marks on where it is now",
+                older.getPeak(), older.getIndex(), 1e-9);
+        close("...both of them", older.getTrough(), older.getIndex(), 1e-9);
+
         /* AND A YEAR-ON-YEAR RATE NEEDS A YEAR. */
         PriceIndex young = new PriceIndex();
-        for (int m = 0; m < PriceIndex.SETTLING_MONTHS + 3; m++) young.takeMonth(.30, .12, 60, 40);
+        int ym = 0;
+        for (int m = 0; m < PriceIndex.SETTLING_MONTHS + 3; m++) young.takeMonth(.30, .12, 60, 40, ++ym);
         assertTrue("a rate is not quoted before there is a year of readings",
                 !young.hasRate() && young.inflation() == 0);
 
@@ -111,8 +159,8 @@ public class MonetaryCheck {
         out.printf("   two centuries: inflation ranged %.1f%%-%.1f%%, prices ended at %.2fx%n",
                 lowest * 100, highest * 100, w.getPriceLevel());
         assertTrue("it stays inside its band",
-                lowest >= WorldEconomy.MIN_INFLATION - 1e-9
-                        && highest <= WorldEconomy.MAX_INFLATION + 1e-9);
+                lowest >= w.minInflation() - 1e-9
+                        && highest <= w.maxInflation() + 1e-9);
         assertTrue("...and it actually moves around in it", highest - lowest > .01);
         assertTrue("...and the price level stays a usable number",
                 w.getPriceLevel() > .1 && w.getPriceLevel() < 100);

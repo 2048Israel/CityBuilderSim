@@ -54,6 +54,38 @@ public class BusinessInvestment {
     /** Never start a second order for a sector while one is still on site. */
     public static final int MAX_CONCURRENT_ORDERS = 1;
 
+    /* =====================================================================
+       SECTORS A FIXTURE HAS ASKED TO SIT OUT (2026-09-13)
+
+       FOR HARNESSES, AND FOR ONE REASON: a fixture that measures one chain
+       cannot have a second one growing inside it. MiningCheck's foundry
+       fixture is the case that forced this. It measures what a mine is worth
+       to a mill, and its own header already pins the exchange rate and the
+       world's price level because "both pins, or neither means anything" -
+       then the ninth sector arrived, started bidding for steel, and took the
+       steel price from its $847 export floor to $1,240 in both the mining
+       city and the control. The margin being measured moved four points and
+       the gap between the two moved seven, and neither had anything to do
+       with ore.
+
+       This is the SECOND time a new sector has walked into somebody else's
+       fixture, so it is a lever rather than a patch. A harness names the
+       sectors its question is not about; nothing in the game calls it and a
+       real city never holds anything.
+
+       IT DOES NOT STOP A SECTOR EXISTING. A held sector still books, still
+       trades, still pays its people - it simply never asks to build, which
+       leaves it at whatever the fixture put up by hand. That is what a
+       control is.
+       ===================================================================== */
+    private final java.util.Set<String> held = new java.util.LinkedHashSet<>();
+
+    /** Harnesses only: this sector will not ask to build for the rest of the run. */
+    public void holdSector(String key) { if (key != null) held.add(key); }
+
+    /** Whether a sector has been held out by a fixture. */
+    public boolean isHeld(String key) { return key != null && held.contains(key); }
+
     /**
      * The largest order a sector will place, expressed as months of the city's
      * whole construction output. An order still has to be deliverable: sizing
@@ -653,7 +685,13 @@ public class BusinessInvestment {
         double materialPrice = Math.max(0, buildingManager.getConstructionMaterialPrice());
         double structure = t.getCashCost() + t.getConstructionMaterials() * materialPrice;
         double repairs = structure * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
-        double assessed = structure + t.getLandSqFt() * Math.max(0, economyManager.getLandPricePerSqFt());
+        // The land half at whatever share of it the roll carries for this
+        // sector - one for everybody but the fields. A planner that ignored the
+        // farmland relief would refuse to sink a farm the city had just voted
+        // not to tax. See TaxPolicy.assessedLandShare.
+        double onRoll = economyManager.getTaxPolicy().assessedLandShare(sector.key());
+        double assessed = structure
+                + t.getLandSqFt() * Math.max(0, economyManager.getLandPricePerSqFt()) * onRoll;
         double tax = assessed * economyManager.getTaxPolicy().effectiveMonthlyPropertyRate(sector);
         return repairs + tax;
     }

@@ -253,6 +253,8 @@ public class MiningCheck {
                 without[2] * 1000, without[0], without[1], marginWithout);
         out.printf("   buying local ore at $%3.0f/t: $%,9.2fk on $%,.0fk  =  %5.1f%%%n",
                 with[2] * 1000, with[0], with[1], marginWith);
+        out.printf("   steel  $%.0f/t vs $%.0f/t   fabricators %.0f / %.0f   mills %.0f / %.0f%n",
+                without[3] * 1000, with[3] * 1000, without[4], with[4], without[5], with[5]);
 
         /* ===================================================================
            "BARELY BREAKS EVEN" WAS A CONSEQUENCE OF A FAKE STEEL PRICE.
@@ -435,6 +437,19 @@ public class MiningCheck {
              * margin. Both pins, or neither means anything.
              */
             game.getWorldEconomy().pin();
+            /*
+             * ...AND THE NINTH SECTOR SITS THIS ONE OUT, since 2026-09-13, for
+             * the third time the same sentence has had to be written. Steel has
+             * a domestic buyer now, and a fabricator bidding for it takes the
+             * price off the mills' export floor - which is the whole point of
+             * that sector and is measured in its own harness. Here it is a
+             * third way for the same tonne to be worth something else while
+             * this fixture is asking what a MINE is worth to a mill. Left in,
+             * it built nine thousand tonnes of capacity in thirty-six months in
+             * both cities, took steel from $847 to $1,240, and moved the gap
+             * this section asserts on by seven points.
+             */
+            game.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
 
             BuildingManager buildings = game.getBuildingManager();
             LandManager land = game.getLandManager();
@@ -549,7 +564,11 @@ public class MiningCheck {
             return new double[]{
                 mills.statement().preTaxIncome / standing,
                 mills.statement().revenue / standing,
-                game.getMarkets().get(Good.IRON).getLocalPrice()
+                game.getMarkets().get(Good.IRON).getLocalPrice(),
+                game.getMarkets().get(Good.STEEL).getLocalPrice(),
+                game.getSectors().manufacturing().getCapacity(Good.FABRICATED_STEEL)
+                        + game.getSectors().manufacturing().getCapacity(Good.MACHINERY),
+                standing
             };
 
         } finally {

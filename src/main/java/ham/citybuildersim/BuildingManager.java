@@ -650,6 +650,9 @@ public class BuildingManager {
         texttileMill.setConstructionPoints(1800);
         texttileMill.setConstructionMaterials(347);
         texttileMill.makes(Good.FOOD, 5500);
+        // 579 tonnes of crops, which is 9.50 units of food to the tonne - see
+        // Good.CROPS. The mills bought nothing at all until 2026-09-13.
+        texttileMill.uses(Good.CROPS, 579);
         texttileMill.setElectricityConsumption(40);
         texttileMill.setWaterConsumption(60);
         texttileMill.setLandSqFt(80000);
@@ -681,6 +684,7 @@ public class BuildingManager {
         foodProcessingPlant.setConstructionPoints(700);
         foodProcessingPlant.setConstructionMaterials(166);
         foodProcessingPlant.makes(Good.FOOD, 6000);
+        foodProcessingPlant.uses(Good.CROPS, 632);   // 9.49 units of food to the tonne
         foodProcessingPlant.setElectricityConsumption(24);
         foodProcessingPlant.setWaterConsumption(30);
         foodProcessingPlant.setLandSqFt(40000);
@@ -1517,7 +1521,490 @@ public class BuildingManager {
         bank.setJobs(JobType.UNIV_LAW, 1);
         bank.setId(40);
         templates.add(bank);
-        //add more buildings; next Building ID is 46
+
+        /* =====================================================================
+           BUSINESS SERVICES - THE THREE THE WORLD PAYS FOR
+
+           The first private buildings in the game whose customer is not in the
+           city. Everything else a business builds here sells to the people who
+           live here, or sells a physical good dug out of the ground under them;
+           these sell a month of somebody's work to a client somewhere else,
+           which is the only kind of job creation that does not need the city to
+           be bigger first.
+
+           Every figure is sourced except one, and the exception is named. Per
+           seat: 165 sq ft of floor (JLL's 2025 benchmark), 250 sq ft of LOT by
+           analogy with the Police Headquarters at 240 per job - the same kind
+           of building, multi-storey and mostly parking - 0.80 power units
+           (EIA CBECS: 6,900 kWh a year per office worker, so 0.79 kW
+           continuous) and 0.80 of road load, commuters with no freight. A
+           three-hundred-seat centre draws a THIRD of the Steel Foundry's 750
+           for eight times the jobs, which is this sector in one line.
+
+           Cost is $550 a square foot all-in: fit-out is $307 sourced (Cushman
+           & Wakefield 2026 Toronto, including the 22% furniture line; JLL's
+           guide agrees at $295 for medium quality) and THE SHELL IS AN ESTIMATE
+           at about $245. Every fit-out guide in existence prices the tenant
+           interior only, on a building that already stands, and no sourced
+           Canadian base-building figure could be found. That is the one number
+           here to revisit. Split 40% material at $18,000 a unit, the standing
+           convention for a building rather than a plant, and points at $8.4k of
+           all-in cost each, the median across the buildings that already carry
+           a building's 40% share.
+
+           Three hundred seats is Nova Scotia's own average: 15,693 call-centre
+           workers across 53 centres in 2007 is 296 apiece, and 3,700 across 13
+           in 1999 is 285. A hundred and twenty for the engineering office is
+           the middle of what Stantec's 32,000 staff across hundreds of offices
+           implies - an inference, not a benchmark.
+
+           No upkeep: this sector pays the same 1%-a-year maintenance every
+           other building pays, and upkeep is the city's own line.
+           ===================================================================== */
+        BuildingsTemplate contactCentre = new BuildingsTemplate("Contact Centre", BuildingType.BUSINESS_SERVICES)
+                .setCapacity(300)                   // seats
+                .setCashCost(16335)
+                .setConstructionPoints(3240)
+                .setConstructionMaterials(605)
+                .setUpkeep(0)
+                .setSector("Business Services")
+                .makes(Good.SUPPORT_WORK, 300)      // seat-months a month
+                .setElectricityConsumption(240)
+                .setWaterConsumption(6)
+                .setLandSqFt(75000)
+                .setRoadLoad(240)
+                .setJobs(JobType.NO_DIPLOMA, 255)   // agents
+                .setJobs(JobType.DIPLOMA, 36)       // team leads
+                .setJobs(JobType.COLLEGE_BUSINESS, 9)
+                .setId(46);
+
+        templates.add(contactCentre);
+
+        BuildingsTemplate sharedServices = new BuildingsTemplate("Shared Services Centre", BuildingType.BUSINESS_SERVICES)
+                .setCapacity(300)                   // seats
+                .setCashCost(16335)
+                .setConstructionPoints(3240)
+                .setConstructionMaterials(605)
+                .setUpkeep(0)
+                .setSector("Business Services")
+                .makes(Good.BACK_OFFICE_WORK, 300)
+                .setElectricityConsumption(240)
+                .setWaterConsumption(6)
+                .setLandSqFt(75000)
+                .setRoadLoad(240)
+                .setJobs(JobType.DIPLOMA, 90)
+                .setJobs(JobType.COLLEGE_BUSINESS, 180)
+                /* UNIV_POLICY, not UNIV_FINANCE, and the first draft had finance.
+                   Finance is GATED on a Business School, so thirty posts of it
+                   in an ungated building is a trap twice over: the seats can
+                   never be staffed, which drags the whole centre's fill rate,
+                   AND the licence premium takes that wage to four times the
+                   band because posts outrun holders. Measured over 333 years:
+                   payroll went to 95% of revenue and the sector went bust
+                   nineteen times. Administration, which needs no licence, is
+                   also the truer description of a shared-services back office. */
+                .setJobs(JobType.UNIV_POLICY, 30)
+                .setId(47);
+
+        templates.add(sharedServices);
+
+        /* ---------------------------------------------------------------------
+           And the one with a gate on it. Seventy-eight licensed engineers, at
+           senior professional pay, so this is also the most expensive payroll
+           in the sector - and the licence premium (posts over holders, up to
+           four times the band) bites first and hardest on a city that has no
+           Institute of Technology.
+
+           The premium alone is not enough to stop it being built, though,
+           because the investment planner costs a building at nameplate and
+           ignores the fill rate. So the licence is a hard refusal: see
+           BuildingsTemplate.requiresLicence and Game.LICENCE_COVER_TO_OPEN.
+           --------------------------------------------------------------------- */
+        BuildingsTemplate engineeringOffice = new BuildingsTemplate("Engineering Services Office", BuildingType.BUSINESS_SERVICES)
+                .setCapacity(120)                   // seats
+                .setCashCost(6534)
+                .setConstructionPoints(1300)
+                .setConstructionMaterials(242)
+                .setUpkeep(0)
+                .setSector("Business Services")
+                .makes(Good.ENGINEERING_WORK, 120)
+                .setElectricityConsumption(96)
+                .setWaterConsumption(2)
+                .setLandSqFt(30000)
+                .setRoadLoad(96)
+                .setJobs(JobType.DIPLOMA, 12)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 30)
+                .setJobs(JobType.UNIV_HIGHTECH_ENG, 78)
+                .setRequiresLicence(JobType.UNIV_HIGHTECH_ENG)
+                .setId(48);
+
+        templates.add(engineeringOffice);
+
+        /* =====================================================================
+           MANUFACTURING - WHAT THE CITY MAKES OUT OF ITS OWN STEEL
+
+           The ninth sector's three plants, and the first buildings in the game
+           that BUY a traded good another sector makes. Everything here follows
+           from two world prices and one wage schedule; nothing is a round
+           number chosen to make a plant work.
+
+           HOW TO READ THE ARITHMETIC, per plant, at founding (exchange rate 1)
+           and with steel at the 1.284 import ceiling, which is what a city with
+           no mills of its own pays:
+
+                                 sells     steel      wages    left over
+             Fabrication Shop    $2,652k    61.0%      20.4%      18.5%
+             Fabrication Works   $6,630k    61.0%      16.7%      22.2%
+             Machine Works       $1,620k    20.7%      49.1%      30.2%
+
+           Every one of those is before power, water, repairs, property tax and
+           interest, which together come to two or three points. A Steel Foundry
+           on imported scrap leaves 31% by the same measure and MiningCheck
+           calls that an electric-arc mill's margin, so the two fabrication
+           plants are DELIBERATELY thinner than an ordinary plant on imported
+           steel - and both go to 29% and 33% on local steel in the middle of
+           the band, and to 39% and 43% on steel at its export floor. That
+           spread is the mine-and-mill story one link up the chain and it is
+           what the sector is for.
+
+           THE TWO ARE BOUNDED BY DIFFERENT THINGS, which is the design and not
+           a detail - see sectors.Manufacturing. Fabrication lives and dies on
+           the steel price; the machine works lives and dies on the wage bill
+           and the currency, like a contact centre but at a machinist's wage.
+
+           WHERE THE FIGURES COME FROM
+
+           Output per head. US Census NAICS 332, fabricated metal product
+           manufacturing: $442.6bn of shipments over 1.44m employees is $307k a
+           head a year. NAICS 333, machinery: $364k. The ratio between them,
+           1.19, is the ratio between the Fabrication Shop's $19.6k a head a
+           month and what a Machine Works would bill at the same productivity -
+           and the Machine Works is set deliberately BELOW that, at $9.4k,
+           because a plant in this game buys steel and nothing else. A real
+           machine builder buys castings, motors, bearings and electronics from
+           suppliers who are somewhere else; this one has no suppliers, so it
+           employs the people who would have been at them. That is why its wage
+           bill is half of revenue where a fabricator's is a fifth, and it is
+           the honest consequence of the model rather than a thumb on it.
+
+           Payroll share. NAICS 332 payroll is 19-22% of shipments and NAICS 333
+           is about 18.5% - the Fabrication Shop's 20.4% and the Works' 16.7%
+           are those numbers. The Machine Works' 49% is not, for the reason
+           above, and it is the number to watch in a playtest.
+
+           Capital, and this is the number that was wrong first. A structural
+           fabrication shop - a clear-span bay with overhead cranes, a CNC beam
+           line, welding and blast-and-paint - is quoted at $15-25m for a
+           hundred-odd staff, and $16.0m was written down here on that basis. At
+           $16.0m a Fabrication Shop clears 3.1% of its build cost a MONTH even
+           on imported steel, which is a 37% annual return on the most expensive
+           thing an investor can buy, and the first fixture that ran with it put
+           up eleven thousand tonnes of capacity in thirty-six months in a town
+           of seven hundred houses. It was the most profitable building in the
+           game by a factor of three.
+
+           Capital at ONE TIMES ANNUAL REVENUE, and the brake is the GROUND
+           rather than the price. Jerus's call, 2026-09-13, taken against four
+           measured calibrations over sixteen seeds of 333 years each:
+
+                                median pop    smallest    price index   currency
+             no ninth sector        16,834      13,764        0.799       0.603
+             1x revenue            190,228     123,489        0.967       0.780
+             2x revenue             89,700      65,938        0.888       0.675
+             3x revenue             65,730      57,035        0.835       0.606
+
+           WHAT THAT TABLE ACTUALLY SAYS, and it is not what it was run to
+           find out: the price does not decide whether a city makes it, only
+           how big it gets. Every calibration takes off in 16 of 16. Making the
+           plants dearer does not restore the possibility of failure, it
+           COMPRESSES the outcome - at 3x every one of sixteen cities lands
+           between 57,035 and 80,003. Once a city can sell labour-embodied
+           goods to somebody who is not here, the plateau has no bite, and that
+           is the finding rather than the dial.
+
+           So the dial was set where the ECONOMY reads best: at 1x the price
+           index settles at 0.967 and the currency at 0.780, which is the
+           closest this project has come to price stability and to a currency
+           that stops appreciating - both of them standing problems with their
+           own write-ups (claude/why-there-is-no-inflation.md). A sector that
+           fixes two of those and makes the city five times bigger is worth
+           having at its strong setting.
+
+           AND THE LAND IS WHAT LIMITS IT. Jerus again: gate it on ground, so
+           the city has to choose between a factory and a neighbourhood. A
+           fabricator is the honest place for that - a shop is a clear-span bay
+           with a LAYDOWN YARD around it, twenty tonnes of beam waiting to be
+           cut and twenty more waiting for a truck, and real structural
+           fabricators sit on ten to thirty acres. At 400 sq ft a tonne a month
+           the two sheds become the most ground-hungry buildings in the game
+           per post - 3,556 and 4,167 sq ft against a Steel Foundry's 2,368 and
+           a Contact Centre's 250. The Machine Works is the opposite and is
+           meant to be: machining happens indoors, so it is DENSER than the
+           foundry at 867, and pays for that in power instead at 4.7 kW a post.
+
+           MEASURED, and the gate is a price rather than a wall: land use ends
+           at 88-91% either way, but the ground under the marginal plant costs
+           what a mature city charges for it. Median population 190,228 falls
+           to 127,651, the cost of ground per person of housing goes from 10.59
+           to 11.97 - so the tenants feel it, which is the choice being asked
+           for - and the price index holds at 0.975. Doubling the land again
+           takes the median to 86,580 and the index back down to 0.931, and
+           puts housing findings in eleven seeds instead of three: that is the
+           gate overshooting into the thing it was meant to price.
+
+                                build cost      land   imported steel   mid band
+             Fabrication Shop      $31.8m     480,000       1.55%/mo     2.41%/mo
+             Fabrication Works     $79.6m   1,150,000       1.86%/mo     2.72%/mo
+             Machine Works         $19.4m     150,000       2.51%/mo     2.81%/mo
+
+           Fabrication is still the one that wants a mill next door - the gap
+           from imported steel to local is most of a point, where the machine
+           works, whose steel is only a fifth of what it spends, barely moves.
+           That is the mine-and-mill story one link further up and the first
+           reason in this game to put three things near each other.
+
+           Split 30% material for the two sheds and 25% for the machine plant,
+           which is the plant convention rather than the building one (the Steel
+           Foundry is 25%). Points at $13.0k for the sheds and $17.0k for the
+           machine plant, between the Contact Centre's $8.4k and the Foundry's
+           $21.4k, which is where a building that is half shed and half
+           equipment belongs. The LAND is not in any of that: a lot is bought
+           at the going rate on the day the plant is ordered, and taxed every
+           month after, which is exactly why it works as the brake.
+
+           Steel in. 1.05 tonnes a tonne fabricated - real shop yield is 92-97%
+           - and 1.45 for machinery, where the swarf goes.
+
+           FILED UNDER HEAVY_INDUSTRY, not under a category of its own, and
+           that is a change from how Business Services was added. Business
+           Services got its own row because the thing a player has to
+           understand about it is the one thing it does not share with a mill.
+           A fabrication shop shares everything with a mill except the input:
+           it is heavy, it is dirty, it is on the same kind of lot, it sells to
+           the same foreign buyers, and it is the building a player is looking
+           for when they go and look at the mills. BuildingType is only the
+           build-menu group and the tax band - the property tax is struck per
+           SECTOR, not per type (TaxPolicy.effectiveMonthlyPropertyRate) - so
+           sharing the category costs nothing and puts the three plants on the
+           shelf next to the two mills that feed them.
+           ===================================================================== */
+        BuildingsTemplate fabricationShop = new BuildingsTemplate("Fabrication Shop", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(22260).setConstructionPoints(2445).setConstructionMaterials(530)
+                .setSector("Manufacturing")
+                .makes(Good.FABRICATED_STEEL, 1200).uses(Good.STEEL, 1260)
+                .setElectricityConsumption(190).setWaterConsumption(18)
+                .setLandSqFt(480000).setRoadLoad(200)
+                .setJobs(JobType.NO_DIPLOMA, 68)
+                .setJobs(JobType.DIPLOMA, 62)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 5).setId(49);
+
+        templates.add(fabricationShop);
+
+        /* ---------------------------------------------------------------------
+           The machine plant, and the one that does NOT want a yard. Eight
+           hundred and twenty kilowatts against the shop's hundred and ninety -
+           4.7 a post, where a contact centre draws 0.8 and a steel foundry
+           19.7 - because machine tools, heat treatment and compressed air run
+           all shift, and a quarter of the shop's ground per POST, because all
+           of it happens under a roof. It is the rung a city with no room left
+           can still build.
+
+           Thirty NO_DIPLOMA against a hundred and five
+           DIPLOMA and thirty-four COLLEGE_ENGINEERING, which is the whole
+           difference from the shop next door: this one wants machinists and
+           technicians, so it is the rung a city with a college can build and
+           the fabrication shop is the one it can build first.
+
+           UNIV_SCIENCE and not UNIV_HIGHTECH_ENG for the four design posts,
+           because high-tech engineering is GATED on an Institute of Technology
+           and gated posts in an ungated building is the trap the Shared
+           Services Centre paid for: the seats can never be staffed, which drags
+           the whole plant's fill rate, and the licence premium takes that wage
+           to four times the band because posts outrun holders. Measured over
+           333 years it put payroll at 95% of revenue and sent that sector bust
+           nineteen times. Applied science needs no licence, and a production
+           engineer in a machine shop is not a P.Eng. signing drawings.
+           --------------------------------------------------------------------- */
+        BuildingsTemplate machineWorks = new BuildingsTemplate("Machine Works", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(14580).setConstructionPoints(1143).setConstructionMaterials(270)
+                .setSector("Manufacturing")
+                .makes(Good.MACHINERY, 180).uses(Good.STEEL, 261)
+                .setElectricityConsumption(820).setWaterConsumption(24)
+                .setLandSqFt(150000).setRoadLoad(190)
+                .setJobs(JobType.NO_DIPLOMA, 30)
+                .setJobs(JobType.DIPLOMA, 105)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 34)
+                .setJobs(JobType.UNIV_SCIENCE, 4).setId(50);
+
+        templates.add(machineWorks);
+
+        /* ---------------------------------------------------------------------
+           And the same trade at scale. Two and a half times the shop's output
+           on two times its people, which is what a beam line and a bigger
+           crane bay buy you; the payroll share falls from 20.4% to 16.7% and
+           that is the whole of the economy of scale.
+
+           TWO HUNDRED AND SEVENTY-SIX POSTS on twenty-six acres, which makes
+           this a late-game object by arithmetic rather than by a gate: the
+           building is $79.6m and the ground under it is whatever a city that
+           has already grown charges for eleven and a half city blocks. The
+           staffing floor still does more work here than anywhere in the game
+           bar the Contact Centre - see Sector.MIN_STAFFABLE_TO_ORDER for what
+           happened the last time a three-hundred-post building could be
+           ordered into a village.
+           --------------------------------------------------------------------- */
+        BuildingsTemplate fabricationWorks = new BuildingsTemplate("Fabrication Works", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(55690).setConstructionPoints(6120).setConstructionMaterials(1326)
+                .setSector("Manufacturing")
+                .makes(Good.FABRICATED_STEEL, 3000).uses(Good.STEEL, 3150)
+                .setElectricityConsumption(440).setWaterConsumption(40)
+                .setLandSqFt(1150000).setRoadLoad(480)
+                .setJobs(JobType.NO_DIPLOMA, 142)
+                .setJobs(JobType.DIPLOMA, 122)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 11)
+                .setJobs(JobType.UNIV_SCIENCE, 1).setId(51);
+
+        templates.add(fabricationWorks);
+
+        /* =====================================================================
+           AGRICULTURE - THE GROUND UNDER THE LOAF
+
+           The tenth sector's three, and the first buildings in this game whose
+           cost is not the building. A Mixed Farm's shed and machinery come to
+           $1.19m; the twenty-four city blocks under it come to $3.1m in a young
+           city and $144m in a grown one. Everything interesting about this
+           sector is that second number.
+
+           HOW TO READ IT, per building, with crops in the middle of their band:
+
+                                 grows      posts    power    ground    a month
+             Mixed Farm            500 t        5     25 kW    55 ac    $144k
+             Grain Farm          1,200 t        8     60 kW   165 ac    $346k
+             Greenhouse Complex  2,400 t       45  2,500 kW     9 ac    $691k
+
+           FIVE PEOPLE ON FIFTY-FIVE ACRES, AND FORTY-FIVE ON NINE. That
+           contrast is the sector in one line and both halves of it are real: a
+           mixed field farm of this size in Nova Scotia is one or two full-time
+           people and some seasonal help, and a hectare of Dutch glass is about
+           one person per quarter acre, picking by hand. Five and eight are
+           already generous against the field figures; forty-five is what the
+           glass actually takes.
+
+           The first cut had eighteen and twenty-six, which was six times a real
+           farm's crew, and it is what killed the sector in its first measured
+           run - a field cannot carry an industrial payroll on a commodity
+           price. Labour is now about a seventh of what a field sells and power
+           a five-hundredth, which is Jerus's brief exactly ("labour and energy
+           cheap") and is also what farming is: roughly 9% of a Canadian farm's
+           cash costs are wages and 4% fuel and electricity. What a farm spends
+           is ground and machinery, and the game charges it for the ground
+           twice: once at the going rate when the lot is bought, and again every
+           month as property tax on what that lot would fetch.
+
+           WHICH MAKES THE SECTOR A CLOCK. At a young city's $1.30 a square foot
+           all three clear about two and a half percent of what they cost a
+           month, which is the best return on the board. At a grown city's $60:
+
+                                 early     late      and why
+             Mixed Farm          2.49%    0.074%     twenty-four blocks of ground
+             Grain Farm          2.35%    0.075%     seventy-two blocks
+             Greenhouse Complex  2.57%    0.96%      four blocks
+
+           Thirteen times, and it is the whole late game of this sector. A field
+           is the cheap way to grow food in a town and an impossible way to grow
+           it in a city; glass is the reverse. That is the Netherlands, and
+           Leamington, and every acre under plastic anybody ever put next to a
+           city instead of away from one.
+
+           WHAT A CITY CAN ACTUALLY FEED ITSELF. A city of 130,000 eats 130,000
+           units of food a month, which is 20,000 tonnes of crops at six and a
+           half units to the tonne. In fields that is forty Mixed Farms on 96
+           million square feet, against the 150 million a city that size owns -
+           so a city CANNOT grow its own dinner without giving up most of itself,
+           and the crop market has an import ceiling for exactly that reason. In
+           glass the same 20,000 tonnes is thirteen complexes on five million
+           square feet, or three percent of the city. The whole sector is that
+           comparison.
+
+           THE YIELDS ARE COMPRESSED AND THERE IS NO HONEST WAY ROUND IT. A
+           Mixed Farm grows 106 tonnes an acre a year where a real mixed farm
+           grows two to four. Every plant in this game is compressed - a Steel
+           Foundry does 1,200 tonnes a month on two acres where a real mini-mill
+           needs fifty - but heavy industry is compressed about twenty-five times
+           and this is compressed about fifty. It has to be, because agriculture
+           is a REGIONAL land use and this game's map is a city: at real
+           intensity one farm would be four hundred blocks and feed two hundred
+           people. Compressed, the decision survives - fields or houses, and how
+           much of your dinner you are willing to buy from strangers - and the
+           decision is the point.
+
+           Water is small on purpose and it is the one figure here that is not
+           what it looks like. Irrigation is most of the fresh water anybody uses
+           anywhere, but a farm takes it from a river or a well; it does not buy
+           it from the city at $5 a thousand gallons. What these three draw is
+           what they take off the mains - the yard, the dairy, the packing shed,
+           and for the greenhouse a recirculating system that really is on
+           treated water.
+           ===================================================================== */
+        BuildingsTemplate mixedFarm = new BuildingsTemplate("Mixed Farm", BuildingType.AGRICULTURE)
+                .setCashCost(240).setConstructionPoints(25).setConstructionMaterials(4)
+                .setSector("Agriculture")
+                .makes(Good.CROPS, 125).setStock(400)
+                .setElectricityConsumption(8).setWaterConsumption(30)
+                .setLandSqFt(600000).setRoadLoad(8)
+                .setJobs(JobType.NO_DIPLOMA, 2)
+                .setJobs(JobType.DIPLOMA, 1).setId(52);
+
+        templates.add(mixedFarm);
+
+        /* ---------------------------------------------------------------------
+           And the same thing at three times the size on two and a half times as
+           few people an acre, which is what a combine is for. Seventy-two city
+           blocks - by a wide margin the largest footprint in the game, past the
+           coal station's twenty - for twenty-six posts and sixty kilowatts. A
+           grain farm is the purest statement this sector makes: it is ground,
+           and almost nothing else.
+           --------------------------------------------------------------------- */
+        BuildingsTemplate grainFarm = new BuildingsTemplate("Grain Farm", BuildingType.AGRICULTURE)
+                .setCashCost(1200).setConstructionPoints(100).setConstructionMaterials(17)
+                .setSector("Agriculture")
+                .makes(Good.CROPS, 500).setStock(1500)
+                .setElectricityConsumption(25).setWaterConsumption(70)
+                .setLandSqFt(2400000).setRoadLoad(18)
+                .setJobs(JobType.NO_DIPLOMA, 3)
+                .setJobs(JobType.DIPLOMA, 1).setId(53);
+
+        templates.add(grainFarm);
+
+        /* ---------------------------------------------------------------------
+           And the one that escapes the clock. Twenty times a field's yield off
+           an acre, paid for in glass, people and electricity: $13.5m of
+           structure where a Mixed Farm is $1.2m, forty-five posts against
+           eighteen, and two and a half megawatts against twenty-five kilowatts -
+           a hundred times the power for three times the crop, which is heating
+           and lighting and is the actual trade a greenhouse makes.
+
+           Real Dutch and Ontario glass runs about $1.5m an acre to build and
+           uses roughly 400 kWh a square metre a year between heat and light.
+           Nine acres at those figures is this building.
+
+           It is never the cheap way to grow anything. It is simply the only way
+           left once the ground is worth more than the harvest, and a city that
+           has built its last field will build these instead - which is the
+           sector having a late game at all.
+           --------------------------------------------------------------------- */
+        BuildingsTemplate greenhouse = new BuildingsTemplate("Greenhouse Complex", BuildingType.AGRICULTURE)
+                .setCashCost(5600).setConstructionPoints(410).setConstructionMaterials(104)
+                .setSector("Agriculture")
+                .makes(Good.CROPS, 900).setStock(1350)
+                .setElectricityConsumption(940).setWaterConsumption(150)
+                .setLandSqFt(150000).setRoadLoad(34)
+                .setJobs(JobType.NO_DIPLOMA, 12)
+                .setJobs(JobType.DIPLOMA, 4)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 1).setId(54);
+
+        templates.add(greenhouse);
+        //add more buildings; next Building ID is 55
     }
 
     public void finalUpdateBuildings() {

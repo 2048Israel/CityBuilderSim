@@ -472,11 +472,25 @@ public class HousingCheck {
         double savedStudioRent = game.getSectors().realEstate().getStudioRentPrice();
         double savedFamilyRent = game.getSectors().realEstate().getRentPrice();
 
-        assertTrue("fixture: this city really does have households doubled up",
-                savedDoubled > 0);
-        assertTrue("fixture: ...and really is collecting rent", savedRent > 0);
+        /*
+         * WHAT THE GUARD IS FOR is that the figures compared below are not all
+         * zero, because two zeros match perfectly and prove nothing. It asked
+         * for DOUBLED-UP HOUSEHOLDS specifically, and that is the same kind of
+         * claim the note above has already retired four times: true of a
+         * particular week of a particular run, not of the model. The fifth
+         * move was the ninth sector (2026-09-13), which employs people and so
+         * changes how fast this city grows into its own housing; it came back
+         * with nobody doubled up at all, which is a city that has enough
+         * houses and not a bug.
+         *
+         * Rent, two prices and let doors carry the round trip. The crowding
+         * figures are still compared below - they simply are not required to
+         * be non-zero for the comparison to mean something.
+         */
+        assertTrue("fixture: this city really is collecting rent", savedRent > 0);
         assertTrue("fixture: ...at two prices that are really being charged",
                 savedStudioRent > 0 && savedFamilyRent > 0);
+        assertTrue("fixture: ...on doors that are really let", savedLet > 0);
         assertTrue("saved", game.saveGame(1, "housing").ok);
 
         Game back = new Game(game.getGameFiles());

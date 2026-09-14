@@ -399,8 +399,63 @@ public final class GameVersion {
      *     Also with this format: the construction-material unit settled at
      *     $18,000 for good (MATERIALS_UNIT_BEFORE_20 is gone with the
      *     format-19 reader), and the seventh sector, Materials.
+     *
+     * 22 - THE EIGHTH SECTOR: Business Services, and the three goods the world
+     *     pays for. A format-21 city loads and owns none of it, which is true
+     *     of that city.
+     *
+     *     The number is here because the eighth sector CHANGES THE SHAPE OF
+     *     THE HOUSEHOLD SAVE. Equity.COMPANIES is the sectors plus the bank,
+     *     the households' share block is as wide as that list, and every slot
+     *     after it moves: eighteen a cell meant "the whole array" at seven
+     *     sectors and means "the array before student debt" at eight.
+     *
+     *     A bump does NOT fix that on its own - older saves always load, so
+     *     nothing would have been refused. HouseholdBalance.restoreCells()
+     *     computes its widths from the company list the save was WRITTEN with
+     *     (DataSave.getEquityKeys) and maps holdings BY NAME. This number is
+     *     the record of why, not the mechanism.
+     *
+     * 23 - THE NINTH SECTOR: Manufacturing, the two goods it makes out of the
+     *     city's steel, and the import ceiling steel got the day something
+     *     here started buying it. A format-22 city loads and owns none of it,
+     *     which is true of that city.
+     *
+     *     Here for the same reason 22 is: the ninth sector CHANGES THE SHAPE
+     *     OF THE HOUSEHOLD SAVE. Equity.COMPANIES is the sectors plus the
+     *     bank, the households' share block is as wide as that list, and every
+     *     slot after it moves again - nine holdings a cell at eight sectors,
+     *     ten at nine. The mechanism is unchanged and still does the work:
+     *     restoreCells() reads its widths off the company list the save was
+     *     written with and maps holdings BY NAME, so a format-22 city loads
+     *     with its nine read into the right nine names and no Manufacturing
+     *     shares, which is exactly what that city owned.
+     *
+     *     THE STEEL PRICE IS NOT A SAVE CONCERN, though it looks like one. A
+     *     save carries the local price of every market it had and restores it
+     *     rather than recomputing it (GoodsMarket.setLocalPrice); a ceiling
+     *     changes what the NEXT strike can reach, not what the saved month
+     *     traded at.
+     *
+     * 24 - THE TENTH SECTOR: Agriculture, the crop the mills have to buy now,
+     *     and the farmland relief. A format-23 city loads and owns no fields,
+     *     which is true of that city - and its mills start buying crops from
+     *     the world the month it is loaded, because that is what a city with
+     *     no farms does.
+     *
+     *     Here for the same reason 22 and 23 are: the tenth sector CHANGES THE
+     *     SHAPE OF THE HOUSEHOLD SAVE, because Equity.COMPANIES is the sectors
+     *     plus the bank and the households' share block is as wide as that
+     *     list. Ten holdings a cell becomes eleven. The mechanism is unchanged
+     *     and still does the work: restoreCells() reads its widths off the
+     *     company list the save was written with and maps holdings BY NAME.
+     *
+     *     The farmland dial is NOT a reason for this number. It is an
+     *     additive slot on the end of the policy array and a format-23 save
+     *     simply keeps the default, which is full relief - the behaviour that
+     *     city already had, since it had no fields to tax.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 21;
+    public static final int SAVE_FORMAT = 26;
 
     /** The first format a sector can be read out of. Nothing older loads. */
     public static final int FIRST_SECTOR_FORMAT = 21;

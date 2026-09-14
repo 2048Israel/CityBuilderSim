@@ -158,6 +158,19 @@ public class LongPlaytest {
     static int worstLongSickMonth = 0;
     /** Crime (2026-09-11): the rate against Canada's summed for the mean, the worst, and what it did over the run. */
     static double crimeVsSum = 0, worstCrimeVs = 0, coverageSum = 0, killedRun = 0, stolenRun = 0;
+
+    /* -----------------------------------------------------------------------
+       A mechanic that is not counted over a real run is a mechanic nobody
+       knows fires. Business Services is a boom-and-bust by design - viable
+       near founding parity, closed once the currency appreciates - so the END
+       STATE says "0 seats" and hides eight hundred months of a working
+       sector. These are what make it visible.
+       ----------------------------------------------------------------------- */
+    static double peakSeats = 0;
+    static int peakSeatsMonth = 0;
+    static int monthsWithSeats = 0;
+    static int lastSeatMonth = 0;
+    static double serviceExportsRun = 0;
     static double caughtRun = 0, notHeldRun = 0, worstPrisoners = 0, crimeMonths = 0;
     static int worstCrimeMonth = 0;
     static double lastSickRate = 0;
@@ -201,6 +214,30 @@ public class LongPlaytest {
         MoneyAudit.Result money = g.getLastMoneyAudit();
         if (Math.abs(money.residual) > .01 && money.relative() > 1e-7) {
             flag(month, "money was not conserved", money.toString());
+        }
+
+        /* -------------------------------------------------------------------
+           AND NOTHING MOVED AFTER THE AUDIT STRUCK.
+
+           Added 2026-09-12. The residual above reconciles WITHIN a month, so
+           money that moves after the strike is invisible to it twice over -
+           missing from the flows and already in the pools next month. The two
+           errors cancel and the residual stays at $0.00, which is how hot money
+           sat outside the balance of payments for the whole life of the
+           mechanic without 4,002 audited months noticing.
+
+           Game computes it, because only Game knows where its own month ends.
+           The first version of this check compared one month's close with the
+           next month's open and flagged the PLAYER - an advisor placing a build
+           order between turns moves the treasury's cash into the builders'
+           order book, fifty-four times in one run. Between months is where the
+           game is played; after the strike is where nothing should happen.
+           ------------------------------------------------------------------- */
+        double drift = g.getPostAuditDrift();
+        if (Math.abs(drift) > .01) {
+            flag(month, "money moved after the audit struck", String.format(
+                    "$%,.2f moved once the month was already reconciled, most of it in %s ($%,.2f)",
+                    drift, g.getPostAuditDriftPool(), g.getPostAuditDriftWorst()));
         }
 
         /*
@@ -424,6 +461,12 @@ public class LongPlaytest {
         double longSick = sickness.peoplePastTwoMonths(g.getCohorts());
         if (longSick > worstLongSick) { worstLongSick = longSick; worstLongSickMonth = g.getMonth(); }
         Crime crime = g.getCrime();
+        ham.citybuildersim.sectors.BusinessServices bsm = g.getSectors().businessServices();
+        double seatsNow = bsm.getSeats();
+        if (seatsNow > peakSeats) { peakSeats = seatsNow; peakSeatsMonth = g.getMonth(); }
+        if (seatsNow > 0) { monthsWithSeats++; lastSeatMonth = g.getMonth(); }
+        serviceExportsRun += bsm.statement().exports;
+
         crimeMonths++;
         crimeVsSum += crime.getRateVsCanada();
         coverageSum += crime.getCoverage();
@@ -1449,6 +1492,18 @@ public class LongPlaytest {
             int seed = Integer.getInteger("playtest.seed", 0);
             build(g, "House", 40 + seed % 4);
             build(g, "Convenience Store", 3);
+            /*
+             * AND A FIELD, SINCE 2026-09-13. A town is founded where there is
+             * food, and since the tenth sector exists the mills the advisor
+             * builds have to buy their crops - from the world, at the ceiling,
+             * if nobody here grows any. That import bill lands on a city of
+             * four hundred people and it shows: without a field the founding
+             * transient runs four months and 2.7 households with nowhere,
+             * with one it runs a single month and 1.3. A Mixed Farm is $312k
+             * and six city blocks, which is what a founding settlement can
+             * afford and roughly what it would do.
+             */
+            build(g, "Mixed Farm", 2);
             run(g, 3 + (seed / 4) % 3);
             build(g, "House", 20 + (seed / 12) % 3);
             run(g, 4);
@@ -1672,6 +1727,73 @@ public class LongPlaytest {
                     qty(g, "Jail"), qty(g, "Penitentiary"));
         }
 
+        /* -------------------------------------------------------------------
+           BUSINESS SERVICES - and the point of printing it is the MECHANISM,
+           not the size of the city.
+
+           The eight-seed median cannot resolve a ten percent effect: the crime
+           batch established that seven hundredths of a point on the sick rate
+           ends two seeds nine percent smaller. So what has to be visible here
+           is whether the thing WORKS - does it open, does it employ the band it
+           is meant to, does the wage bill rise as it hires, does the currency
+           close it, and did the licence gate ever bind.
+           ------------------------------------------------------------------- */
+        {
+            ham.citybuildersim.sectors.BusinessServices bs = g.getSectors().businessServices();
+            double seats = bs.getSeats();
+            out.printf("  business services: %,.0f seats (%,.0f support, %,.0f back office, %,.0f engineering)"
+                    + " in %d centres, %d offices%n",
+                    seats, bs.getCapacity(Good.SUPPORT_WORK), bs.getCapacity(Good.BACK_OFFICE_WORK),
+                    bs.getCapacity(Good.ENGINEERING_WORK),
+                    qty(g, "Contact Centre") + qty(g, "Shared Services Centre"),
+                    qty(g, "Engineering Services Office"));
+            if (seats > 0) {
+                out.printf("  what the world pays a seat: support $%,.0f  back office $%,.0f  engineering $%,.0f"
+                        + " - wages take %.0f%% of it%n",
+                        bs.priceOfSeat(Good.SUPPORT_WORK) * 1000,
+                        bs.priceOfSeat(Good.BACK_OFFICE_WORK) * 1000,
+                        bs.priceOfSeat(Good.ENGINEERING_WORK) * 1000,
+                        bs.payrollShare() * 100);
+                out.printf("  its books: revenue $%,.0fk, payroll $%,.0fk, net $%,.0fk a month;"
+                        + " %d write-down(s), %d month(s) of losses%n",
+                        bs.statement().revenue, bs.statement().payroll, bs.statement().netIncome,
+                        g.getEconomyManager().getBusinessDebtManager()
+                                .getRestructureCount(Sectors.BUSINESS_SERVICES),
+                        g.getBusinessInvestment().getLossMonths(Sectors.BUSINESS_SERVICES));
+            }
+            out.printf("  over the run: %,.0f seats at the peak (month %d), seats standing for %,d months of %d,"
+                    + " last in month %,d; $%,.0fk sold abroad%n",
+                    peakSeats, peakSeatsMonth, monthsWithSeats, g.getMonth(), lastSeatMonth,
+                    serviceExportsRun);
+            out.printf("  could it staff one? contact %.0f%%  shared %.0f%%  engineering %.0f%% (it wants %.0f%%)%n",
+                    bs.staffableShare(g.getBuildingManager().getTemplateByName("Contact Centre")) * 100,
+                    bs.staffableShare(g.getBuildingManager().getTemplateByName("Shared Services Centre")) * 100,
+                    bs.staffableShare(g.getBuildingManager().getTemplateByName("Engineering Services Office")) * 100,
+                    ham.citybuildersim.sectors.BusinessServices.MIN_STAFFABLE_TO_ORDER * 100);
+            double[] sup = g.getPopulationManager().supplyByBand();
+            double[] pst = g.getPopulationManager().staffablePostsByBand();
+            StringBuilder sb = new StringBuilder("  spare workers by band:");
+            for (WageBand b : WageBand.values()) {
+                sb.append(String.format("  %s %,.0f", b.name().toLowerCase(),
+                        Math.max(0, sup[b.ordinal()] - pst[b.ordinal()])));
+            }
+            out.println(sb);
+            CapitalFlows cf = g.getCapitalFlows();
+            out.printf("  the carry trade: $%,.0fk borrowed and standing (peak $%,.0fk) on a %.2f-point spread;"
+                    + " $%,.0fk lent and $%,.0fk repaid over the run, $%,.0fk of coupons%n",
+                    cf.getCarryStock() * 1000, cf.getPeakCarryStock() * 1000,
+                    cf.getCarrySpread() * 100,
+                    cf.getLifetimeCarryBorrowed() * 1000, cf.getLifetimeCarryRepaid() * 1000,
+                    cf.getLifetimeCarryInterest() * 1000);
+            out.printf("  ...against the bank: book $%,.0fk of which carry $%,.0fk, headroom $%,.0fk%n",
+                    g.getBank().getBook() * 1000, g.getBank().getCarryBook() * 1000,
+                    g.getBank().headroom() * 1000);
+            double spare = g.getPopulationManager().spareLicences(JobType.UNIV_HIGHTECH_ENG);
+            out.printf("  engineering licences: %,.0f held, %,.0f spare, %,.0f needed to open an office%n",
+                    g.getPopulationManager().getLicensed(JobType.UNIV_HIGHTECH_ENG), spare,
+                    120 * Game.LICENCE_COVER_TO_OPEN);
+        }
+
         /*
          * The health service, which in this run is a service the advisor never
          * builds - the private sector correctly will not touch healthcare, and
@@ -1747,6 +1869,28 @@ public class LongPlaytest {
                 g.getSectors().retail().getStoreSellPrice(),
                 g.getMarkets().get(Good.FOOD).importPrice(),
                 g.getMarkets().get(Good.FOOD).getLocalPrice());
+        /*
+         * THE FOOD CHAIN, FROM THE GROUND UP (2026-09-13). Which farms are
+         * standing tells the whole story of the tenth sector: fields while the
+         * ground is cheap, glass once it is not. See sectors.Agriculture.
+         */
+        ham.citybuildersim.sectors.Agriculture fields = g.getSectors().agriculture();
+        BuildingManager bm2 = g.getBuildingManager();
+        out.printf("  the fields: %d mixed, %d grain, %d under glass on %,.0f acres"
+                + " - %.0f%% of what the city eats, crops $%.4f (floor %.4f ceiling %.4f)%n",
+                bm2.getQuantity(bm2.getTemplateByName("Mixed Farm").getId()),
+                bm2.getQuantity(bm2.getTemplateByName("Grain Farm").getId()),
+                bm2.getQuantity(bm2.getTemplateByName("Greenhouse Complex").getId()),
+                fields.getLandSqFt() / 43560,
+                fields.getSelfSufficiency(g) * 100,
+                g.getMarkets().get(Good.CROPS).getLocalPrice(),
+                g.getMarkets().get(Good.CROPS).floor(),
+                g.getMarkets().get(Good.CROPS).ceiling());
+        out.printf("  ...land tax is %.0f%% of what they sold and wages %.0f%%;"
+                + " the mills' crop bill is %.0f%% of theirs; ground is $%.2f/sqft%n",
+                fields.groundShare() * 100, fields.payrollShare() * 100,
+                g.getSectors().industry().cropShare() * 100,
+                g.getEconomyManager().getLandPricePerSqFt() * 1000);
         out.printf("  the currency: %.3f local per USD (pressure %+.2f, openness %.2f,"
                 + " cover %s), wages lifted %.1f%%%n",
                 fx.getRate(), fx.getLastPressure(), fx.getOpenness(),
@@ -1779,6 +1923,8 @@ public class LongPlaytest {
          */
         Health hh = g.getHealth();
         PriceIndex px = g.getPriceIndex();
+        out.printf("  the level has been between %.3f (m%d) and %.3f (m%d) - a %.2fx swing%n",
+                px.getTrough(), px.getTroughMonth(), px.getPeak(), px.getPeakMonth(), px.swing());
         out.printf("  prices: index %.3f since founding (%.0f%% food / %.0f%% rent),"
                 + " inflation %+.1f%%/yr; shelf carries a %.2fx scarcity mark-up%n",
                 px.getIndex(), px.getFoodWeight() * 100, px.getRentWeight() * 100,
@@ -1930,13 +2076,33 @@ public class LongPlaytest {
      * there, which is the half that was missing when a rule that liquidated
      * sectors was first measured only at month 4,000.
      */
+    /**
+     * A sector's name in three or four characters, for the checkpoint line.
+     *
+     * Derived from the key so that adding a sector cannot break it: initials
+     * for a two-word name, the first three letters otherwise. Retail -> Ret,
+     * Real Estate -> RE, Business Services -> BS.
+     */
+    static String shortTag(String key) {
+        if (key == null || key.isEmpty()) return "?";
+        String[] words = key.trim().split("\\s+");
+        if (words.length > 1) {
+            StringBuilder t = new StringBuilder();
+            for (String w : words) if (!w.isEmpty()) t.append(Character.toUpperCase(w.charAt(0)));
+            return t.toString();
+        }
+        return key.substring(0, Math.min(3, key.length()));
+    }
+
     static String creditEra(Game g) {
         BusinessDebtManager c = g.getEconomyManager().getBusinessDebtManager();
         StringBuilder b = new StringBuilder(String.format("       credit  "));
-        String[] tags = { "Ret", "RE", "Ind", "Con", "HI", "Min", "Mat" };
+        // Derived, not listed. A hand-written array of seven was indexed over
+        // Sectors.KEYS.length and hard-crashed the whole playtest the day an
+        // eighth sector was added - the one thing in the codebase that did.
         for (int i = 0; i < Sectors.KEYS.length; i++) {
             String sec = Sectors.KEYS[i];
-            b.append(String.format("%s %s/%d/%d  ", tags[i],
+            b.append(String.format("%s %s/%d/%d  ", shortTag(sec),
                     money(g.getEconomyManager().getSectorCash(sec)),
                     c.getRestructureCount(sec), c.getBlockedMonths(sec)));
         }
@@ -1955,7 +2121,8 @@ public class LongPlaytest {
         return String.format(
                 "m%-5d %-22s pop %-7d cash %-14s GDP/mo %-11s jobs %-6d "
                 + "fill %3.0f%% roads %3.0f%% power %3.0f%% water %3.0f%% "
-                + "cityDebt %-12s bizDebt %-11s land %3.0f%% mines %d/%d ore $%.2f",
+                + "cityDebt %-12s bizDebt %-11s land %3.0f%% mines %d/%d ore $%.2f fields %3.0f%% crops $%.2f"
+                + " px %.2f (%.2f-%.2f)",
                 g.getMonth(), label,
                 p.getPopulation(),
                 money(g.getCash()),
@@ -1971,7 +2138,24 @@ public class LongPlaytest {
                 money(e.getBusinessDebtManager().getTotalPrincipal()),
                 g.getLandManager().getUtilisation() * 100,
                 g.minesCommitted(), g.getLandManager().getIronDeposits(),
-                g.getMarkets().get(Good.IRON).getLocalPrice());
+                g.getMarkets().get(Good.IRON).getLocalPrice(),
+                // What share of its own dinner the city grows, and what a tonne
+                // is fetching. The tenth sector in two numbers; see Agriculture.
+                Math.min(1, g.getSectors().agriculture().getSelfSufficiency(g)) * 100,
+                g.getMarkets().get(Good.CROPS).getLocalPrice(),
+                /*
+                 * THE PRICE LEVEL, AND THE TWO IT HAS LIVED BETWEEN.
+                 *
+                 * This line carried population, cash, GDP, jobs, debt, land,
+                 * ore and crops and not the one number the whole monetary side
+                 * of the game is about - which is why nobody noticed that
+                 * cities finishing at 0.98 had spent a century near 2.0. Three
+                 * fields, and the pair in brackets is what an endpoint cannot
+                 * say. See claude/the-cities-that-empty-out.md.
+                 */
+                g.getPriceIndex().getIndex(),
+                g.getPriceIndex().getTrough(),
+                g.getPriceIndex().getPeak());
     }
 
     static String money(double v) {

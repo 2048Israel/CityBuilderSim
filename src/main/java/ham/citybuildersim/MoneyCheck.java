@@ -40,15 +40,25 @@ public class MoneyCheck {
     }
 
     /** Runs `months` and returns the worst relative residual seen, printing the worst month. */
+    /** The worst post-audit drift any month of the last play() saw. See Game.getPostAuditDrift(). */
+    static double worstDrift = 0;
+    static String worstDriftPool = "";
+
     static MoneyAudit.Result play(String label, Game g, int months, boolean verbose) {
         MoneyAudit.Result worst = MoneyAudit.Result.NONE;
         double worstRel = -1;
+        worstDrift = 0;
+        worstDriftPool = "";
         for (int i = 0; i < months; i++) {
             final Game gg = g;
             quietly(() -> gg.simulateMonths(1));
             MoneyAudit.Result r = g.getLastMoneyAudit();
             if (verbose) System.out.println("   " + r);
             if (r.relative() > worstRel) { worstRel = r.relative(); worst = r; }
+            if (Math.abs(g.getPostAuditDrift()) > Math.abs(worstDrift)) {
+                worstDrift = g.getPostAuditDrift();
+                worstDriftPool = g.getPostAuditDriftPool();
+            }
         }
         System.out.printf("   %s: worst month %s%n", label, worst);
         if (worst.relative() >= 1e-4) System.out.print(worst.detail);
@@ -135,6 +145,51 @@ public class MoneyCheck {
         worst = play("through a restructure, 60 months", s, 60, verbose);
         assertTrue("a restructure moves no cash the audit cannot see",
                 worst.relative() < 1e-4);
+
+        /* ==================================================================
+           AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.
+
+           The residual every check above asserts on reconciles WITHIN a month.
+           It is blind, by construction, to money that moves after the strike:
+           such money is missing from the flows and already in the pools by the
+           next month's opening read, the two errors cancel exactly, and the
+           residual stays at $0.00. Hot money lived in that gap for the whole
+           life of the mechanic and 4,002 audited months never said a word.
+
+           THE FIXTURE HAS TO CAUSE THE FLOW. A city whose rates sit under the
+           world's attracts no hot money at all - the playtest's does, and its
+           stock is zero for 4,002 months - so asserting this on an ordinary
+           city proves nothing whatever. The policy rate goes to the maximum
+           here, which puts the city well over the world's 2% and makes the
+           carry money actually turn up. Without that line this check passes
+           against the very bug it exists for; it was tried.
+           ================================================================== */
+        System.out.println("\n--- a city paying over the world: the money that arrives is audited ---");
+        Game hot = new Game(GameFiles.scratch("moneycheck"));
+        quietly(hot::run);
+        hot.getLandManager().setOwnedSqFt(hot.getLandManager().getOwnedSqFt() + 400_000_000L);
+        hot.buildStack(t(hot, "House"), 400, false);
+        hot.buildStack(t(hot, "Small Grocery Store"), 4, false);
+        hot.buildStack(t(hot, "Textile Mill"), 3, false);
+        hot.buildStack(t(hot, "Coal Power Plant"), 1, false);
+        hot.buildStack(t(hot, "Water Treatment Plant"), 1, false);
+        hot.buildStack(t(hot, "Paved Road"), 10, false);
+        hot.getDebtManager().setPolicyRate(DebtManager.MAX_POLICY_RATE);
+        worst = play("paying the maximum for fifteen years", hot, 180, verbose);
+        CapitalFlows flows = hot.getCapitalFlows();
+        System.out.printf("   hot money: $%,.0fk here, $%,.0fk arrived and $%,.0fk left over the run,"
+                + " on a %.2f-point spread%n",
+                flows.getStock() * 1000, flows.getLifetimeArrived() * 1000,
+                flows.getLifetimeDeparted() * 1000, flows.getSpread() * 100);
+        assertTrue("fixture: the rate actually brought money in",
+                flows.getLifetimeArrived() > 0);
+        assertTrue("...and the audit saw it cross the border",
+                worst.financialIn > 0 || worst.financialOut > 0
+                        || hot.getLastMoneyAudit().financialIn > 0);
+        assertTrue("a city conserves money with hot money flowing", worst.relative() < 1e-4);
+        System.out.printf("   worst drift after a strike: $%,.2f%s%n", worstDrift,
+                worstDriftPool.isEmpty() ? "" : " (" + worstDriftPool + ")");
+        assertTrue("...and nothing moved after the audit struck", Math.abs(worstDrift) < .01);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

@@ -618,6 +618,18 @@ public class DebtManager {
     private double bankPremium;
     public void setBankPremium(double premium) { this.bankPremium = Math.max(0, premium); }
     public double getBankPremium()             { return bankPremium; }
+
+    /**
+     * What the bank pays for the money it lends the city.
+     *
+     * Set beside the premium, from Bank.marginalCostOfFunds(), and for the
+     * opposite job. The premium is what a STRAINED bank adds; this is what any
+     * bank's money costs at all, and the city's rate may not go under it - see
+     * floorRate().
+     */
+    private double costOfFunds;
+    public void setCostOfFunds(double rate) { this.costOfFunds = Math.max(0, rate); }
+    public double getCostOfFunds()          { return costOfFunds; }
     /**
      * Total outstanding principal across every live debt.
      *
@@ -822,7 +834,8 @@ public class DebtManager {
      * PURE. Reads the same spreads priceAt() reads and sets nothing.
      */
     public double rateAtPolicy(double policy) {
-        double floor   = Math.max(MIN_RATE, policy - CITY_DISCOUNT);
+        double floor   = Math.max(MIN_RATE,
+                Math.max(policy - CITY_DISCOUNT, costOfFunds + Bank.MIN_MARGIN));
         double ceiling = (policy - CITY_DISCOUNT) + 2 * MAX_SPREAD_PER_MEASURE;
         double rate = floor + gdpSpread() + revenueSpread();
         return Math.max(MIN_RATE, Math.min(rate, ceiling)) + bankPremium;
@@ -863,9 +876,33 @@ public class DebtManager {
         return getRate() >= ceilingRate() + bankPremium - 1e-9;
     }
 
-    /** What a spotless city pays: the policy rate less CITY_DISCOUNT - see its note. */
+    /**
+     * What a spotless city pays: the policy rate less CITY_DISCOUNT - see its
+     * note - but never less than the money costs the bank that lends it.
+     *
+     * THE DISCOUNT SURVIVES; IT JUST STOPS BEING A SUBSIDY THE LENDER PAYS.
+     * CITY_DISCOUNT is two points UNDER the policy rate, and this bank funds
+     * itself at two points OVER it. The city therefore borrowed at a
+     * guaranteed four-point loss to its own bank, by construction, on every
+     * dollar the bank's deposits did not cover - and the bank has no say in
+     * how much of it to hold, because Game.refreshBank() sets cityBook to the
+     * whole of getAllPrincipal().
+     *
+     * Measured on Jerus's own save, 2026-09-13: $18.2bn of thirty-year paper
+     * issued in month 144 at 0.625% a year, 91.6% of a book yielding 1.307%
+     * against wholesale funding at 5.593%. The bank had failed eighteen times
+     * by month 354 and was three months from the nineteenth. See
+     * claude/the-bond-that-broke-the-bank.md.
+     *
+     * NOTE WHAT THIS IS NOT. It is not a re-tightening of the stress curve.
+     * FULL_STRESS_MULTIPLE stays at 150 years and MAX_SPREAD_PER_MEASURE at
+     * five points, exactly as gentle as Jerus asked for them - a city can
+     * still borrow a large multiple of its economy without being priced as
+     * distressed. What it can no longer do is borrow below cost.
+     */
     public double floorRate() {
-        return Math.max(MIN_RATE, baseRate - CITY_DISCOUNT);
+        return Math.max(MIN_RATE,
+                Math.max(baseRate - CITY_DISCOUNT, costOfFunds + Bank.MIN_MARGIN));
     }
 
     /** What a hopeless one pays - both measures maxed out. */

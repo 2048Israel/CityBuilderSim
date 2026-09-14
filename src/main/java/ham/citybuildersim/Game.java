@@ -862,6 +862,9 @@ public class Game {
                 sectorInvestor(getSectors().retail().key()), "Bank");
 
         for (Sector sector : getSectors().all()) {
+            // Held only by a harness measuring something else; see
+            // BusinessInvestment.holdSector.
+            if (businessInvestment.isHeld(sector.key())) continue;
             refreshLand();
             consider(sector.plan(businessInvestment, this), sectorInvestor(sector.key()));
         }
@@ -1326,6 +1329,11 @@ public class Game {
         }
         bank.setWeightedBook(businessWeighted, cityWeighted,
                 householdBalance.bookOwed() * Bank.RISK_HOUSEHOLD);
+
+        // ...and what foreigners have borrowed to take abroad, which is the one
+        // book with no debt object behind it. The stock in CapitalFlows is the
+        // truth and this mirrors it, so a reload rebuilds it like the rest.
+        bank.setCarryBook(hotMoney.getCarryStock());
     }
 
     /**
@@ -2461,7 +2469,40 @@ public class Game {
 
     
     
-    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, FAILED}
+    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED}
+
+    /* =======================================================================
+       HALF THE PRACTICE, BEFORE THE DOORS OPEN (2026-09-12)
+
+       An Engineering Services Office is seventy-eight licensed engineers. A
+       firm opens when it can staff the core of its practice and hires or
+       imports the rest, so the gate is half - and half rather than all because
+       the Institute of Technology graduates over eighty-four months and a gate
+       set at all seventy-eight would never open.
+
+       Measured in SPARE licences, not licences: an engineer already working at
+       the hospital is not available to this office.
+       ======================================================================= */
+    public static final double LICENCE_COVER_TO_OPEN = .5;
+
+    /** Spare licences the city holds against what this order would need staffed. */
+    public double licencesNeededFor(BuildingsTemplate template, int quantity) {
+        if (template == null || template.getRequiresLicence() == null) return 0;
+        return template.getLicensedPosts() * Math.max(1, quantity) * LICENCE_COVER_TO_OPEN;
+    }
+
+    /**
+     * Can the city staff the core of this building's practice?
+     *
+     * True for every building that needs no licence, which is forty-six of the
+     * forty-nine. See BuildingsTemplate.requiresLicence for why this is a hard
+     * refusal and not left to the licence premium.
+     */
+    public boolean hasLicencesFor(BuildingsTemplate template, int quantity) {
+        JobType licence = template == null ? null : template.getRequiresLicence();
+        if (licence == null) return true;
+        return populationManager.spareLicences(licence) >= licencesNeededFor(template, quantity);
+    }
 
     /**
      * Mines standing, being built, or already ordered.
@@ -2515,6 +2556,10 @@ public class Game {
 
         if (!hasDepositFor(template, quantity)) {
             return false;   // no ground with ore in it to sell them
+        }
+
+        if (!hasLicencesFor(template, quantity)) {
+            return false;   // nobody licensed to practise in it
         }
 
         if (!landManager.canAllocate(landNeeded)) {
@@ -2582,6 +2627,14 @@ public class Game {
         if (!hasDepositFor(template, quantity)) {
             this.hasNewReceipt = false;
             return BuildResult.NO_DEPOSIT;
+        }
+
+        // Licences before land and before money, for the same reason as ore: a
+        // firm with nobody to practise is not a funding problem, and offering a
+        // bond to fix it would be a lie about what is wrong.
+        if (!hasLicencesFor(template, quantity)) {
+            this.hasNewReceipt = false;
+            return BuildResult.NO_LICENCE;
         }
 
         if (!landManager.canAllocate(template.getLandSqFt() * quantity)) {
@@ -2694,11 +2747,35 @@ public class Game {
          * ...and the proceeds are rounded to the cent, which can still land a
          * fraction under the ask when the face lands exactly on a granule. A
          * quote that does not cover what was asked for is not a quote for it,
-         * so it buys one more granule. Each one adds at least
-         * rounding x 4.25% to the proceeds, so this cannot spin.
+         * so it buys more granules until it does.
+         *
+         * IT COULD SPIN, AND IT DID. The old body added ONE granule a turn on
+         * the argument that "each one adds at least rounding x 4.25% to the
+         * proceeds, so this cannot spin". Both halves of that are wrong once
+         * the city has real prices in it:
+         *
+         *   - netProceeds() rounds to the cent. If a granule is worth less
+         *     than about 0.24 then 4.25% of it is under a cent, the rounding
+         *     swallows the whole increment, and `received` never moves. That
+         *     is not slow convergence, it is a loop with no exit.
+         *   - and when the ask is large against the granule - which is what
+         *     inflation does to every nominal figure in the game - it is
+         *     ask/(granule x 4.25%) turns. Found when an experimental price
+         *     index first reached 37x founding and a 4,002-month playtest
+         *     stopped finishing: the JVM would not even answer a thread dump,
+         *     because a counted loop like this never reaches a safepoint.
+         *
+         * So it jumps by however many granules the shortfall needs at the
+         * worst-case yield, which lands in one or two turns, and it is hard
+         * bounded regardless. MIN_PROCEEDS_PER_FACE is the 4.25% floor the
+         * comment on faceForNetProceeds() derives: the discount is capped at
+         * 95% and the spread is 0.75%.
          */
-        while (received < requested) {
-            faceValue += rounding;
+        for (int guard = 0; received < requested && guard < 64; guard++) {
+            double shortfall = requested - received;
+            double steps = Math.max(1,
+                    Math.ceil(shortfall / (rounding * MIN_PROCEEDS_PER_FACE)));
+            faceValue += rounding * steps;
             received = netProceeds(faceValue, rate, months);
         }
 
@@ -3367,6 +3444,53 @@ public class Game {
          */
         capitaliseBank(bank.openBranches(buildingManager.countByName("Commercial Bank")));
 
+        /* =================================================================
+           AND THE MONEY THAT LEAVES BECAUSE THE RATE IS BAD.
+
+           The other half of CapitalFlows, and Jerus's diagnosis of why the
+           currency runs away: "the issue is trade surplus... aka supply v
+           demand... we later just have to add carry trade, where foreign
+           borrow from the bank and convert to usd to do stuff with it, aka
+           effectively having outflow of currency... its basically the opposite
+           of hot money."
+
+           The city ends every run as a funding currency - half a point against
+           a world base of two - with a bank holding a hundred billion of
+           deposits and a book of nothing. So a foreigner borrows local here,
+           sells it for dollars, and earns the world's rate on them. Selling the
+           local currency to do it is the outflow the surplus has never had.
+
+           WHY HERE, and not beside hot money at the bottom of the month:
+
+             - the loan must be on the bank's book BEFORE fundToCover() prices
+               what the bank's own money costs, or the funding cost is struck
+               against a balance sheet that does not exist yet
+             - the border crossing must be INSIDE the audit's window, which is
+               exactly what hot money spent its whole life outside of
+             - and refreshBank() has already run, so headroom() is net of every
+               domestic borrower this month. That is Jerus's "domestic first":
+               the carry trade gets what is left, never what somebody here
+               wanted.
+
+           The rate they pay is what any good credit pays to borrow here - the
+           risk-free plus the bank's own strain premium - through Bank's one
+           definition of it, so this and chooseDepositRate() cannot drift apart.
+           ================================================================= */
+        double carryRate = bank.lendingRate(debtManager.getRate());
+        double carryMoved = hotMoney.carryTakeMonth(
+                carryRate,
+                DebtManager.WORLD_BASE_RATE,
+                debtManager.countryPremium(),
+                bank.headroom());
+
+        if (carryMoved > 0)      bank.lendCarry(carryMoved);
+        else if (carryMoved < 0) bank.repayCarry(-carryMoved);
+        bank.takeCarryInterest(hotMoney.carryInterestOn(carryRate));
+
+        // The book just moved, so the capacity every line below reads has to be
+        // the one that includes it - strain, the premium, and what funding costs.
+        refreshBank();
+
         /*
          * WHAT THE WORLD WOULD PAY TO PARK HERE, handed to the bank as a
          * function rather than as five numbers.
@@ -3398,6 +3522,24 @@ public class Game {
         // The month is final, so the figure next month's tax is charged on is
         // final too. Carried in the save - see Bank.getProfitLastMonth().
         bank.closeMonth();
+
+        /*
+         * ...AND THE PRICE OF MONEY IS FINAL WITH IT.
+         *
+         * closeMonth() strikes what the month's funding actually cost, and
+         * every rate in the city is floored on that - so it has to reach the
+         * debt market HERE, at the close, and not wait for the top of next
+         * month. A save is taken after this line and a load re-derives from
+         * the state it wrote, so a live city that was still quoting off last
+         * month's close would be quoting something its own reload does not.
+         *
+         * Measured before this existed: the live city quoted 1.30% for a loan
+         * and the same city, reloaded from its own save a line later, quoted
+         * 1.29%. See Bank.closeMonth() and BankCheck's "...and so does what
+         * the bank is charging for money".
+         */
+        pushCostOfFundsToTheDebtMarket();
+        debtManager.updateInterest();
 
         /*
          * ...AND THE SAVERS ARE PAID.
@@ -3455,6 +3597,66 @@ public class Game {
         // ...and the households, by the same rule, with what the owners were
         // just paid. See HouseholdBalance.investAbroad().
         householdBalance.investAbroad(bank.depositRate(), DebtManager.WORLD_BASE_RATE, foreign.getRate());
+
+        /* =================================================================
+           AND THE MONEY THAT IS HERE BECAUSE THE RATE IS GOOD.
+
+           MOVED HERE 2026-09-12, and the reason is the whole point. This block
+           used to sit at the very bottom of the month, after the currency had
+           repriced, on the argument that "a carry trader reads the month that
+           closed, not the one in progress". The argument was good and the
+           position was wrong, because down there it is OUTSIDE THE AUDIT:
+
+             - bank.startMonth() zeroes hotMoneyIn and hotMoneyOut
+             - MoneyAudit.strike() reads them, and got zero every time
+             - receiveHotMoney/returnHotMoney set them, after the strike
+
+           So both directions read zero for the whole life of the mechanic, and
+           the old comment three lines below the call - "it crosses the city's
+           edge to get there, so MoneyAudit sees both directions" - was false.
+           Hot money has never reached the balance of payments, pressure(),
+           financialTrailing or financialGrossTrailing.
+
+           AND THE CASH WAS OUTSIDE EVERY WINDOW TOO. poolsBefore is re-read
+           fresh at the top of the next month, so the bank-cash move landed in
+           the gap between strike(N) and poolsBefore(N+1). The two errors
+           cancelled exactly, the residual stayed at $0.00, and 4,002 months of
+           a cent-level audit never flagged it. See MoneyAudit's note on the
+           cross-month guard that now closes that gap.
+
+           WHAT IT COSTS TO MOVE IT: the currency has not repriced yet, so the
+           panic terms - the year's depreciation and the reserves behind the
+           stock - are read as the month OPENED rather than as it closed. That
+           is still "the month that closed" in the sense the old comment meant;
+           it is just the previous one. A trader acts on the last published
+           rate, not on one that has not been struck.
+           ================================================================= */
+        double hotBefore = hotMoney.getStock();
+        hotMoney.setMonth(month);
+        hotMoney.takeMonth(
+                bank.depositRate(),
+                debtManager.getRate(),
+                DebtManager.WORLD_BASE_RATE,
+                debtManager.countryPremium(),
+                economyManager.getMonthGdp(),
+                foreign.getReserves(),
+                yearlyDepreciation(),
+                bank.isInsolvent(),
+                debtManager.getMonthsSinceForeignDefault() >= 0
+                        && debtManager.getMonthsSinceForeignDefault() < 24,
+                month);
+
+        /*
+         * THE MONEY MOVES FOR REAL, and now it moves where the audit can see
+         * it. It lands in the bank's cash, because that is what funding IS, and
+         * it crosses the city's edge to get there. A stop is the bank's cash
+         * leaving. Deposits in and cash in together, so the bank's equity does
+         * not move on a flow that is somebody else's money either way.
+         */
+        double hotMoved = hotMoney.getStock() - hotBefore;
+        if (hotMoved > 0)      bank.receiveHotMoney(hotMoved);
+        else if (hotMoved < 0) bank.returnHotMoney(-hotMoved);
+        bank.setForeignDeposits(hotMoney.getStock());
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
 
@@ -3541,40 +3743,8 @@ public class Game {
                  */
                 getSectors().realEstate().getAverageRentPaid(),
                 getSectors().retail().statement().salesToHouseholds,
-                getSectors().realEstate().statement().salesToHouseholds);
-
-        /* =================================================================
-           AND THE MONEY THAT IS HERE BECAUSE THE RATE IS GOOD.
-
-           Last, after the currency has repriced and the debt has been revalued,
-           because every input this reads is a figure the month has just
-           finished settling. A carry trader reads the month that closed, not
-           the one in progress.
-           ================================================================= */
-        double before = hotMoney.getStock();
-        hotMoney.setMonth(month);
-        hotMoney.takeMonth(
-                bank.depositRate(),
-                debtManager.getRate(),
-                DebtManager.WORLD_BASE_RATE,
-                debtManager.countryPremium(),
-                economyManager.getMonthGdp(),
-                foreign.getReserves(),
-                yearlyDepreciation(),
-                bank.isInsolvent(),
-                debtManager.getMonthsSinceForeignDefault() >= 0
-                        && debtManager.getMonthsSinceForeignDefault() < 24,
+                getSectors().realEstate().statement().salesToHouseholds,
                 month);
-
-        /*
-         * THE MONEY MOVES FOR REAL. It lands in the bank's cash, because that
-         * is what funding IS - and it crosses the city's edge to get there, so
-         * MoneyAudit sees both directions. A stop is the bank's cash leaving.
-         */
-        double moved = hotMoney.getStock() - before;
-        if (moved > 0)      bank.receiveHotMoney(moved);
-        else if (moved < 0) bank.returnHotMoney(-moved);
-        bank.setForeignDeposits(hotMoney.getStock());
 
         // A year of the rate, so next year can tell a drift from a run.
         rateHistory[month % 12] = foreign.getRate();
@@ -3583,6 +3753,59 @@ public class Game {
         takeTreasuryMonth();
 
         dataSave.setCash(cash);
+
+        /* =================================================================
+           NOTHING AFTER THE AUDIT MAY MOVE A POOL.
+
+           Added 2026-09-12. The audit reconciles WITHIN a month: pooled after
+           minus pooled before, against inflows minus outflows. So money that
+           moves after the strike is invisible to it twice over - missing from
+           the flows, and already in the pools by the time the next month reads
+           them. The two errors cancel, the residual stays at $0.00, and 4,002
+           months of a cent-level audit never notices.
+
+           That is precisely where hot money lived for the whole life of the
+           mechanic. It has been moved above the strike; this is what stops the
+           next thing from landing in the same place.
+
+           IT CANNOT BE A CROSS-MONTH CHECK, and that was the first attempt.
+           Comparing one month's close with the next month's open flags the
+           PLAYER: an advisor or a person placing a build order between turns
+           legitimately moves the treasury's cash into the builders' order book,
+           which showed up as fifty-four findings in one run. The gap between
+           months is where the game is played. The gap between the strike and
+           the bottom of this method is where nothing should happen.
+
+           Everything below the strike is bookkeeping - the balance of payments,
+           the currency, the revaluation, the price index, the treasury's own
+           record - and none of it is allowed to touch a pool.
+
+           AND IT IS THE LAST THING IN THE METHOD, which the first version was
+           not. Placed mid-tail it measured only as far as itself, and a
+           deliberate re-break of the hot-money ordering walked straight past it
+           reading $0.00 - the guard was evaded by the very bug it was written
+           for. A guard that is not last does not guard the end.
+           ================================================================= */
+        postAuditDrift = 0;
+        if (lastMoneyAudit != null && lastMoneyAudit.poolsAtClose != null) {
+            double[] nowPools = MoneyAudit.pools(this);
+            double[] atClose = lastMoneyAudit.poolsAtClose;
+            if (nowPools.length == atClose.length) {
+                double worst = 0;
+                String which = "";
+                for (int i = 0; i < nowPools.length; i++) {
+                    double moved = nowPools[i] - atClose[i];
+                    if (Math.abs(moved) > Math.abs(worst)) {
+                        worst = moved;
+                        which = MoneyAudit.POOL_NAMES[i];
+                    }
+                    postAuditDrift += moved;
+                }
+                postAuditDriftPool = which;
+                postAuditDriftWorst = worst;
+            }
+        }
+
         printEndOfTurn();
         recordMonth();
         
@@ -3669,6 +3892,14 @@ public class Game {
          * market re-prices and before the sectors are handed their bills.
          */
         debtManager.setBankPremium(bank.ratePremium());
+        /*
+         * ...AND WHAT THE MONEY COSTS AT ALL, which is a different question
+         * from how strained the lender is. A bank comfortably inside its
+         * capacity charges no premium and still pays two points over policy
+         * for every dollar its deposits do not cover. See
+         * Bank.marginalCostOfFunds().
+         */
+        pushCostOfFundsToTheDebtMarket();
         // A failed bank lends nothing. With no branches there is no bank and
         // the lending comes from outside the city, at the full premium - that
         // path stays open; it is the frozen INSTITUTION that is shut.
@@ -3855,6 +4086,14 @@ public class Game {
     private static final double UNDERWRITING_SPREAD = .0075;
 
     /**
+     * The least a dollar of face can ever bank, net of the discount and the
+     * spread. ShortTermTBill caps the discount at 95%, so this is
+     * 1 - 0.95 - 0.0075. Used to size the top-up in quoteNote() rather than
+     * discovering it a granule at a time; see the note there.
+     */
+    private static final double MIN_PROCEEDS_PER_FACE = 1 - .95 - UNDERWRITING_SPREAD;
+
+    /**
      * Taken off the proceeds at issue, never added to what is owed.
      *
      * The city borrows the face value and receives less; it does not borrow more
@@ -3964,6 +4203,20 @@ public class Game {
             case "B"   -> "Highly speculative";
             default    -> "Distressed - lenders expect not to be repaid in full";
         };
+    }
+
+    /**
+     * Hands both lenders what money costs the bank, from the one struck figure.
+     *
+     * A helper rather than two lines, because there are four call sites - the
+     * close, the top of the month, and twice on the load path - and a city that
+     * set it in three of them would quote a different rate in the fourth. That
+     * is the shape of every bug this file's comments describe.
+     */
+    private void pushCostOfFundsToTheDebtMarket() {
+        double cost = bank.marginalCostOfFunds();
+        debtManager.setCostOfFunds(cost);
+        economyManager.getBusinessDebtManager().setCostOfFunds(cost);
     }
 
     private void priceTheDebtMarket(){
@@ -5695,6 +5948,24 @@ public class Game {
 
     /** Last month's money-conservation residual. See MoneyAudit. */
     private MoneyAudit.Result lastMoneyAudit = MoneyAudit.Result.NONE;
+
+    /**
+     * How much moved after the audit struck, which must be nothing.
+     *
+     * Never saved: it is a property of the month just run, meaningless in a
+     * loaded city. See the note at the bottom of nextMonth().
+     */
+    private double postAuditDrift;
+    private String postAuditDriftPool = "";
+    private double postAuditDriftWorst;
+
+    /** Money that moved after the audit struck. Zero, or something is in the gap. */
+    public double getPostAuditDrift() { return postAuditDrift; }
+
+    /** Which pool moved most after the strike, for naming the culprit. */
+    public String getPostAuditDriftPool() { return postAuditDriftPool; }
+
+    public double getPostAuditDriftWorst() { return postAuditDriftWorst; }
     public MoneyAudit.Result getLastMoneyAudit() { return lastMoneyAudit; }
     public void InterestExpense(double amount){
         economyManager.updateInterestExpense(amount);
@@ -6286,7 +6557,7 @@ public class Game {
             // restore below to put right; a save with cells carries its own.
             householdBalance.restore(loaded.getHouseholdBalance());
             householdBalance.restoreCells(loaded.getHouseholdCellKeys(),
-                    loaded.getHouseholdCells());
+                    loaded.getHouseholdCells(), loaded.getEquityKeys());
             bank.setCash(loaded.getBankCash());
             bank.setBranchesCapitalised(loaded.getBankBranchesCapitalised());
             bank.setProfitLastMonth(loaded.getBankProfitLastMonth());
@@ -6390,6 +6661,9 @@ public class Game {
                 economyManager.getTaxPolicy().seedConstants(unit);
                 education.seedConstants(unit);
                 hotMoney.seedConstants(unit);
+                equity.seedConstants(unit);
+                exchange.seedConstants(unit);
+                outward.seedConstants(unit);
             }
             carriedRentWeight = loaded.getRentWeight();
             carriedStudioWeight = loaded.getRentWeightStudio();
@@ -6846,6 +7120,10 @@ public class Game {
          * which is why it is here rather than inside the rebuild.
          */
         debtManager.setBankPremium(bank.ratePremium());
+        // The floor moves with the premium and is restored the same way - a
+        // reload that put back one without the other would quote a different
+        // rate than the city was looking at when it saved.
+        pushCostOfFundsToTheDebtMarket();
         economyManager.getBusinessDebtManager().setRiskFreeRate(debtManager.getRate());
 
         /*
@@ -6969,7 +7247,7 @@ public class Game {
             // them is seeded from the family model, which is back by now.
             householdBalance.restore(restoredFlows.getHouseholdBalance(), families::get);
             householdBalance.restoreCells(restoredFlows.getHouseholdCellKeys(),
-                    restoredFlows.getHouseholdCells());
+                    restoredFlows.getHouseholdCells(), restoredFlows.getEquityKeys());
             householdBalance.setExchangeRate(foreign.getRate());
 
             /*
@@ -7012,6 +7290,7 @@ public class Game {
         priceTheDebtMarket();
         refreshBank();
         debtManager.setBankPremium(bank.ratePremium());
+        pushCostOfFundsToTheDebtMarket();
         debtManager.updateInterest();
     }
 
@@ -7169,6 +7448,18 @@ public class Game {
         if (servicesManager != null && servicesManager.getUtilitiesHandler() != null) {
             servicesManager.getUtilitiesHandler().redenominate(scale);
         }
+        /*
+         * ...AND THE YEAR OF THE RATE BEHIND US.
+         *
+         * rateHistory holds twelve past exchange rates and yearlyDepreciation()
+         * compares today's against the one a year old. Unscaled, a reform makes
+         * the city read a ninety-nine percent currency move that never happened,
+         * for the next twelve months - and that number is what tells hot money
+         * whether to panic and the foreign desk whether the currency is running.
+         * Found 2026-09-12 while chasing a scale divergence in the carry trade.
+         */
+        for (int i = 0; i < rateHistory.length; i++) rateHistory[i] *= scale;
+
         if (historySave != null) historySave.redenominate(scale);
 
         /*

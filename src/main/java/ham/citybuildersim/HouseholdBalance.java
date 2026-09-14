@@ -1586,18 +1586,58 @@ public class HouseholdBalance {
      *
      * @return false if nothing was restored
      */
-    public boolean restoreCells(String[] keys, double[] saved) {
+    public boolean restoreCells(String[] keys, double[] saved, String[] savedCompanies) {
         if (keys == null || saved == null || keys.length == 0) return false;
-        // Eight a cell from the morning the cells went in, eight plus a share
-        // count per company from the evening, or those plus the dollars abroad
-        // from the next day. Any of the three restores what it carries; a save
-        // without shares has households that own none, one without the
-        // dollars has households that hold none.
+        /* =====================================================================
+           THE SLOT COUNT ALONE DOES NOT SAY WHAT THE SLOTS ARE (2026-09-12)
+
+           Eight a cell from the morning the cells went in, eight plus a share
+           per company from the evening, those plus the dollars abroad from the
+           next day, and those plus the student debt. Any of them restores what
+           it carries; a save without shares has households that own none.
+
+           But the share block is as wide as Equity.COMPANIES, which is the
+           SECTORS PLUS THE BANK - so adding a sector moves every width after
+           it. Eighteen slots meant "the full array" while there were seven
+           sectors and means "the array before student debt" now there are
+           eight, and the old reading of a format-21 save would have taken its
+           eight holdings plus its dollars abroad as nine holdings, and its
+           student debt as its dollars abroad. Silent corruption of every
+           household's portfolio, with no refusal - and bumping SAVE_FORMAT
+           would not have caught it, because older saves always load.
+
+           So the widths are computed from the company list THE SAVE WAS WRITTEN
+           WITH, which the save already carries (DataSave.getEquityKeys), and
+           the holdings are mapped BY NAME rather than by position. A save from
+           before the eighth sector restores its eight holdings correctly and
+           owns none of the ninth company, which is exactly true of that city.
+           ===================================================================== */
+        int savedShares = savedCompanies == null ? Equity.COMPANIES.length : savedCompanies.length;
+        final int wasBeforeShares  = CELL_SLOTS_BEFORE_SHARES;
+        final int wasBeforeAbroad  = wasBeforeShares + savedShares;
+        final int wasBeforeStudent = wasBeforeAbroad + 1;
+        final int wasFull          = wasBeforeStudent + 1;
+
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != CELL_SLOTS && slots != CELL_SLOTS_BEFORE_STUDENT_DEBT
-                    && slots != CELL_SLOTS_BEFORE_ABROAD && slots != CELL_SLOTS_BEFORE_SHARES)) {
+                || (slots != wasFull && slots != wasBeforeStudent
+                    && slots != wasBeforeAbroad && slots != wasBeforeShares)) {
             return false;
+        }
+
+        // Where each saved holding belongs in today's register, by name. -1 is
+        // a company this build no longer lists: that holding is dropped, the
+        // same way a cell key this build has no cell for is skipped.
+        int[] shareSlot = new int[savedShares];
+        for (int k = 0; k < savedShares; k++) {
+            shareSlot[k] = -1;
+            String name = savedCompanies == null || k >= savedCompanies.length
+                    ? (k < Equity.COMPANIES.length ? Equity.COMPANIES[k] : null)
+                    : savedCompanies[k];
+            if (name == null) continue;
+            for (int c = 0; c < Equity.COMPANIES.length; c++) {
+                if (Equity.COMPANIES[c].equals(name)) { shareSlot[k] = c; break; }
+            }
         }
         java.util.Map<String, Household> byKey = new java.util.HashMap<>();
         for (Household c : cells) byKey.put(c.key(), c);
@@ -1617,11 +1657,14 @@ public class HouseholdBalance {
             java.util.Arrays.fill(c.shares, 0);
             c.abroad = 0;
             c.studentDebt = 0;
-            if (slots >= CELL_SLOTS_BEFORE_ABROAD) {
-                for (int k = 0; k < c.shares.length; k++) c.shares[k] = saved[i++];
+            if (slots >= wasBeforeAbroad) {
+                for (int k = 0; k < savedShares; k++) {
+                    double held = saved[i++];
+                    if (shareSlot[k] >= 0) c.shares[shareSlot[k]] = held;
+                }
             }
-            if (slots >= CELL_SLOTS_BEFORE_STUDENT_DEBT) c.abroad = Math.max(0, saved[i++]);
-            if (slots >= CELL_SLOTS) c.studentDebt = Math.max(0, saved[i++]);
+            if (slots >= wasBeforeStudent) c.abroad = Math.max(0, saved[i++]);
+            if (slots >= wasFull) c.studentDebt = Math.max(0, saved[i++]);
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];

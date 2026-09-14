@@ -116,6 +116,35 @@ public class Equity {
     /** A founding share: a thousand dollars, in the game's thousands. */
     public static final double FOUNDING_PRICE = 1.0;
 
+    /**
+     * The same price in TODAY's money, after any currency reform.
+     *
+     * A MONEY CONSTANT THAT A REFORM NEVER RESEEDED - found 2026-09-12, and it
+     * had been there since the exchange was built. FOUNDING_PRICE is the
+     * yardstick every share is measured against: Exchange.splitShares() takes
+     * `mid / FOUNDING_PRICE` and splits above SPLIT_AT or consolidates below
+     * one over it. Exchange.redenominate() dutifully scales mid, fair and
+     * lastMid; the yardstick they are divided by stayed at 1.0. So a city that
+     * lopped two zeroes woke up with every share reading a hundred times
+     * cheaper against founding, and the consolidation rule fired on companies
+     * that had not moved at all.
+     *
+     * DenominationCheck caught it the moment households had enough money to
+     * push share prices near the threshold - the reformed city ended 88 months
+     * later holding $23,834 of securities the unreformed one did not, and
+     * eight other figures apart with it. It would have passed unnoticed
+     * indefinitely otherwise, which is the whole argument for that harness.
+     */
+    private double foundingPrice = FOUNDING_PRICE;
+
+    /** A founding share in today's money. See foundingPrice. */
+    public double foundingPrice() { return foundingPrice; }
+
+    /** Re-seeds the yardstick at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        foundingPrice = FOUNDING_PRICE / (unit > 0 ? unit : 1);
+    }
+
     /** Months on the books before a company has a record to be judged on. */
     public static final int RECORD_MONTHS = 12;
 
@@ -372,7 +401,7 @@ public class Equity {
          * new shares buy exactly what they pay for.
          */
         if (l.shares <= 0 && bookEquity > 0 && households != null) {
-            double founders = bookEquity / FOUNDING_PRICE;
+            double founders = bookEquity / foundingPrice;
             households.grantFounders(company, founders);
             l.shares += founders;
         }
@@ -425,8 +454,8 @@ public class Equity {
      * the premium. A company with neither book nor earnings sells at the last
      * price it sold at; a company with no shares at all, at the founding one.
      */
-    private static double priceOf(Listing l, double bookEquity, double worldRate) {
-        if (l.shares <= 0) return FOUNDING_PRICE;
+    private double priceOf(Listing l, double bookEquity, double worldRate) {
+        if (l.shares <= 0) return foundingPrice;
         double earningsValue = PAYOUT * Math.max(0, l.trailingIncome())
                 / (Math.max(0, worldRate) + FOREIGN_PREMIUM);
         double value = Math.max(bookEquity, earningsValue);
@@ -448,10 +477,10 @@ public class Equity {
     public boolean listIfUnlisted(int company, double bookEquity, HouseholdBalance households) {
         Listing l = listings[company];
         if (l.shares > 0 || !(bookEquity > 0) || households == null) return false;
-        double founders = bookEquity / FOUNDING_PRICE;
+        double founders = bookEquity / foundingPrice;
         households.grantFounders(company, founders);
         l.shares += founders;
-        l.lastPrice = FOUNDING_PRICE;
+        l.lastPrice = foundingPrice;
         return true;
     }
 
@@ -753,6 +782,7 @@ public class Equity {
      * price of one, the incomes on the record and the lifetime flows do.
      */
     public void redenominate(double scale) {
+        foundingPrice *= scale;
         for (Listing l : listings) {
             for (int k = 0; k < RECORD_MONTHS; k++) { l.income[k] *= scale; l.spent[k] *= scale; }
             l.lastPrice *= scale;

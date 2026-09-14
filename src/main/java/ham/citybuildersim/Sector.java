@@ -186,6 +186,99 @@ public abstract class Sector {
         return buildings == null ? new int[11] : buildings.getJobArrayBySector(key);
     }
 
+    /* =======================================================================
+       A FIRM DOES NOT OPEN A BUILDING IT CANNOT STAFF (2026-09-12, moved
+       here from sectors.BusinessServices 2026-09-13 when the ninth sector
+       turned out to need the same two things for the same reason)
+
+       staffableShare() as a WEIGHT was not enough. A weight only decides which
+       rung wins; with nothing else competing, a building the city could half
+       staff still got ordered. And these are the biggest investor-built job
+       steps in the game - three hundred posts for a contact centre, three
+       hundred and thirty for a fabrication works, where the next largest is
+       the materials plant's two hundred and fifty - so the first one landed in
+       month 120, in a town of about twelve hundred people with five hundred
+       jobs. Three hundred seats is a SIXTY PERCENT rise in the city's
+       employment in one month.
+
+       The migration model cannot absorb that, and said so: two households with
+       nowhere to live for eight months in every seed of eight, the first
+       playtest finding this project has shipped in a while. The audit was
+       right and the building was wrong.
+
+       Eighty percent, because that is roughly what a real firm needs to see
+       before it signs a lease - it recruits the core locally and imports the
+       rest - and because it puts the first one in a city of three or four
+       thousand rather than a village. Nova Scotia's contact centres landed in
+       Halifax and Sydney for the same reason, and so did its shipyard.
+
+       ON Sector RATHER THAN ON ONE SECTOR, because the rule is not about
+       seats. It is about any building whose posts are a large step against
+       the city that would fill them, which is every building the two export
+       sectors own and will be true of the tenth as well. A sector that wants
+       it says so in its own plan(); nothing here applies it by itself.
+       ======================================================================= */
+    public static final double MIN_STAFFABLE_TO_ORDER = .80;
+
+    /**
+     * The share of a building's posts this city could actually fill today.
+     *
+     * WHY THIS EXISTS (2026-09-12, measured over eight 333-year runs). The
+     * planner's estimatedMonthlyProfit() costs a building at NAMEPLATE and
+     * ignores the fill rate - a standing open item, true in five of six
+     * sectors. It does not matter much to a mill, whose posts are mostly
+     * unskilled. It is fatal to a sector whose rungs differ ONLY in who they
+     * employ.
+     *
+     * What happened without it: the Shared Services Centre wins on profit over
+     * cost every time - same building, more revenue a seat - so every city
+     * built one, and then staffed it at 75% because it wants a hundred and
+     * eighty college graduates and the city has no college. Payroll landed at
+     * 88-94% of revenue, the sector could never afford a second building, and
+     * the CONTACT CENTRE - the unskilled rung, the one aimed at the fourteen
+     * hundred people past their EI - was never built once in eight seeds,
+     * despite being the only one the city could fill.
+     *
+     * THE MEASURE HAD TO BE SPARE PEOPLE, NOT THE CURRENT FILL RATE. The first
+     * version weighted by getJobFillRate() and changed nothing at all - byte
+     * identical over 4,002 months - because a city with four college posts and
+     * four graduates in them is filling college posts at 100%. The rate says
+     * how the posts the city ALREADY has are doing; it cannot say whether a
+     * hundred and eighty new ones could be filled. Stock against flow, which is
+     * the shape this project keeps meeting.
+     *
+     * So: supply against staffable posts, per WAGE BAND, which is what the
+     * labour market itself prices against - and per band rather than per job
+     * type because the cascade is real, a graduate who cannot find graduate
+     * work is available for diploma work, and a building should get the benefit
+     * of that exactly as the wage does.
+     */
+    public double staffableShare(BuildingsTemplate t) {
+        if (t == null || game == null) return 1;
+        PopulationManager people = game.getPopulationManager();
+        double[] supply = people.supplyByBand();
+        double[] posts  = people.staffablePostsByBand();
+        if (supply == null || posts == null) return 1;
+
+        double[] wanted = new double[WageBand.values().length];
+        double total = 0;
+        for (JobType job : JobType.values()) {
+            int n = t.getJobs(job);
+            if (n <= 0) continue;
+            wanted[WageBand.of(job).ordinal()] += n;
+            total += n;
+        }
+        if (total <= 0) return 1;
+
+        double fillable = 0;
+        for (int b = 0; b < wanted.length; b++) {
+            if (wanted[b] <= 0) continue;
+            double spare = Math.max(0, supply[b] - posts[b]);
+            fillable += Math.min(wanted[b], spare);
+        }
+        return fillable / total;
+    }
+
     /** What the staffed posts cost this month. Staffing, not sickness - the sick are paid. */
     public double getPayroll() {
         double total = 0;

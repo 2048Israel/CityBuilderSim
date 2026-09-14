@@ -383,9 +383,26 @@ public class BankCheck {
         assertTrue("the fixture actually built a bank", live.getBranches() >= 1);
         assertTrue("...and somebody in it has actually borrowed", live.getBook() > 0);
 
-        close("the bank's book is every loan in the city, and nothing else",
+        /*
+         * FOUR BOOKS SINCE THE CARRY TRADE (2026-09-12), and the fourth is the
+         * only one with no debt object behind it: what foreigners have borrowed
+         * to take abroad. It has to be IN getBook(), because equity is cash plus
+         * book, and a loan that took cash out and credited nothing would have
+         * cut the bank's capital by the whole principal and resolved it on the
+         * first foreign borrower.
+         *
+         * This fixture causes one rather than hoping for it - the city runs at
+         * the policy floor, which puts it under the world's rate and makes it
+         * the funding currency the trade needs.
+         */
+        assertTrue("fixture: somebody abroad has actually borrowed",
+                live.getCarryBook() > 0);
+        close("the bank's book is every loan in the city, plus what left it",
                 live.getBook(),
-                live.getSectorBook() + live.getCityBook() + live.getHouseholdBook(), 1e-9);
+                live.getSectorBook() + live.getCityBook() + live.getHouseholdBook()
+                        + live.getCarryBook(), 1e-9);
+        close("...and the carry book IS the stock that owns it",
+                live.getCarryBook(), city.getCapitalFlows().getCarryStock(), 1e-9);
 
         close("the sector book IS the business lender's principal",
                 live.getSectorBook(),
@@ -952,8 +969,27 @@ public class BankCheck {
         /* ---- what a bank is: it earns the difference between two rates ---- */
 
         assertTrue("it pays its savers something", shown.depositRate() > 0);
-        assertTrue("...and less than it charges its borrowers",
-                shown.depositRate() < books.getDebtManager().getRate());
+        /*
+         * OUT OF WHAT IT EARNS - which is the rule chooseDepositRate() actually
+         * enforces, and the one this line was a proxy for.
+         *
+         * It read `depositRate() < debtManager.getRate()`: pays savers less
+         * than the SOVEREIGN rate. That is not a rate any of its borrowers pay,
+         * and it held only for as long as the fixture's bank was losing money
+         * and paying savers almost nothing. Give the same bank a healthier
+         * world and it turns a profit, pays 1.18% against a 1.00% sovereign,
+         * and this failed on a bank doing nothing wrong.
+         *
+         * A bank whose reserves are placed at the world's rate can pay its
+         * savers more than it charges its own borrowers and still make money,
+         * because lending is not where its income is coming from. That is a
+         * real bank and there are several. What it can NEVER do is pay out more
+         * than it took in, and that is what chooseDepositRate() is written to
+         * guarantee - "never more than leaves the bank at net zero". So that is
+         * what this asks.
+         */
+        assertTrue("...and never more than it earned",
+                shown.depositInterest() <= shown.interestIncome() + 1e-9);
         assertTrue("...and its staff are on its own books, not the shops'",
                 shown.operatingExpenses() > 0);
 

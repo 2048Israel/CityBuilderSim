@@ -171,6 +171,62 @@ public class CapitalFlows {
     private String panicReason = "";
     private double depositShare = .5;
     private double lifetimeArrived, lifetimeDeparted;
+
+    /* =======================================================================
+       THE OTHER DIRECTION (2026-09-12)
+
+       Jerus: "the issue is trade surplus... aka supply v demand... we later
+       just have to add carry trade, where foreign borrow from the bank and
+       convert to usd to do stuff with it, aka effectively having outflow of
+       currency... its basically the opposite of hot money."
+
+       He is right, and it is the missing half of this class. Hot money brings
+       dollars IN when the city pays over the world. Nothing has ever taken
+       local currency OUT. So a city running a surplus has exactly one door and
+       it only opens inward, and the currency appreciates until every exporter
+       in it is dead - which is what the runs do, 20-30% past parity in every
+       seed.
+
+       The city ends every run as a FUNDING CURRENCY: its rate at half a point
+       against a world base of two, and nobody borrowing it. That is the yen
+       carry trade with nobody on the other side of it. Here there is somebody:
+       a foreigner borrows local from the city's bank, sells it for dollars,
+       and puts the dollars to work at the world's rate. The local currency is
+       sold to do it, which is the outflow, and bought back when the trade
+       unwinds, which is the squeeze.
+
+       SEPARATE STOCK, deliberately. arrivalsAt() reads `stock` to tell the bank
+       what a deposit rate would attract; sharing the field would silently
+       change the bank's own pricing forecast.
+
+       IT IS SELF-LIMITING THREE WAYS, with no new rule:
+         - the bound is the bank's spare book, so it cannot lend what is not there
+         - as the book fills, Bank.ratePremium() rises on strain, which raises
+           the very lending rate the spread is measured against
+         - and the spread closes, so the target falls to meet the stock
+
+       Jerus's calls: bounded by the bank's book; DOMESTIC BORROWERS FIRST, so
+       this takes only the headroom left after them; and no defaults - an unwind
+       is a currency event, not a credit one.
+       ======================================================================= */
+
+    /** At this spread or better, the world wants all the spare book there is. */
+    public static final double CARRY_FULL_SPREAD = .02;
+
+    /** ...and never quite all of it, because a bank at its limit lends to nobody. */
+    public static final double CARRY_MAX_SHARE = .90;
+
+    /** How fast the book fills, and empties. Unwinds are faster than builds. */
+    public static final double CARRY_BORROW_SPEED = .06;
+    public static final double CARRY_REPAY_SPEED  = .20;
+
+    private double carryStock;
+    private double carryTarget;
+    private double carrySpread;
+    private double carryBorrowed;      // this month, gross
+    private double carryRepaid;        // this month, gross
+    private double lifetimeCarryBorrowed, lifetimeCarryRepaid, lifetimeCarryInterest;
+    private double peakCarryStock, peakCarrySpread;
     private double peakStock, peakSpread;
     private int stopsSuffered;
 
@@ -334,6 +390,103 @@ public class CapitalFlows {
     /* --------------------------------- reading --------------------------------- */
 
     /** Foreign money currently funding the city, in local money. */
+    /* ------------------------------------------------------------------ *
+       THE CARRY TRADE'S OWN MONTH.
+
+       A separate entry point, not folded into takeMonth(), because the two
+       sit in different halves of the month on purpose. Hot money runs just
+       above the audit, on rates the month has finished settling. This runs
+       EARLIER - right after the bank's branches are capitalised and before
+       fundToCover() prices its funding - because the loan has to be on the
+       bank's book before the bank decides what its money costs, and because
+       the money crossing the border has to be inside the audit's window.
+       Folding it into takeMonth() would inherit hot money's position, which
+       is the whole bug the last batch fixed.
+
+       @param lendingRate  what a good credit pays to borrow here
+       @param worldRate    what the money earns once it is abroad
+       @param countryPremium  what a foreigner charges for owing this currency
+       @param headroom     the bank's spare book, AFTER domestic borrowers
+       @return the change in the stock: positive borrowed, negative repaid
+     * ------------------------------------------------------------------ */
+    public double carryTakeMonth(double lendingRate, double worldRate,
+                                 double countryPremium, double headroom) {
+
+        carryBorrowed = 0;
+        carryRepaid = 0;
+
+        /*
+         * The gap, from the borrower's side. They owe local and hold dollars,
+         * so what they earn is the world's rate less what the loan costs here,
+         * less what they charge themselves for the risk that this currency
+         * appreciates while they owe it. The same premium hot money demands to
+         * come in is the premium they demand to owe: a city whose currency
+         * might jump is a city nobody wants to be short of.
+         */
+        carrySpread = Math.max(0, Math.min(MAX_SPREAD,
+                worldRate - lendingRate - Math.max(0, countryPremium)));
+        if (carrySpread > peakCarrySpread) peakCarrySpread = carrySpread;
+
+        /*
+         * THE BOUND IS THE BANK'S BOOK, not the city's output - Jerus's call,
+         * and the arithmetic is why. Sized like hot money, on the spread times
+         * a few years of GDP, the target came to about $32M against a current
+         * account running $525M a month. It would have been a mechanic that
+         * exists and changes nothing, which this project has shipped before.
+         *
+         * The bank is the right bound because it is the same money: the
+         * households' hoard sits in it as deposits, against a book of almost
+         * nothing. This lends that hoard back out to the people taking it
+         * abroad. The hoard funds its own recycling.
+         */
+        double room = Math.max(0, headroom) * CARRY_MAX_SHARE;
+        double appetite = Math.min(1, carrySpread / CARRY_FULL_SPREAD);
+        carryTarget = room * appetite;
+
+        if (carryTarget > carryStock) {
+            carryBorrowed = (carryTarget - carryStock) * CARRY_BORROW_SPEED;
+        } else {
+            carryRepaid = Math.min(carryStock, (carryStock - carryTarget) * CARRY_REPAY_SPEED);
+        }
+
+        carryStock = Math.max(0, carryStock + carryBorrowed - carryRepaid);
+        if (carryStock < minStock && carryTarget <= 0) {
+            carryRepaid += carryStock;
+            carryStock = 0;
+        }
+        lifetimeCarryBorrowed += carryBorrowed;
+        lifetimeCarryRepaid   += carryRepaid;
+        if (carryStock > peakCarryStock) peakCarryStock = carryStock;
+
+        return carryBorrowed - carryRepaid;
+    }
+
+    /** What the book earns the bank this month, at the rate they borrowed at. */
+    public double carryInterestOn(double lendingRate) {
+        double due = Math.max(0, carryStock) * Math.max(0, lendingRate) / 12;
+        lifetimeCarryInterest += due;
+        return due;
+    }
+
+    public double getCarryStock()   { return carryStock; }
+    public double getCarryTarget()  { return carryTarget; }
+    public double getCarrySpread()  { return carrySpread; }
+    public double getCarryBorrowed() { return carryBorrowed; }
+    public double getCarryRepaid()   { return carryRepaid; }
+    public double getLifetimeCarryBorrowed() { return lifetimeCarryBorrowed; }
+    public double getLifetimeCarryRepaid()   { return lifetimeCarryRepaid; }
+    public double getLifetimeCarryInterest() { return lifetimeCarryInterest; }
+    public double getPeakCarryStock()  { return peakCarryStock; }
+    public double getPeakCarrySpread() { return peakCarrySpread; }
+
+    /** What the trade would want at a given spread, for a screen or a forecast. */
+    public double carryTargetAt(double lendingRate, double worldRate,
+                                double countryPremium, double headroom) {
+        double s = Math.max(0, Math.min(MAX_SPREAD,
+                worldRate - lendingRate - Math.max(0, countryPremium)));
+        return Math.max(0, headroom) * CARRY_MAX_SHARE * Math.min(1, s / CARRY_FULL_SPREAD);
+    }
+
     public double getStock() { return stock; }
 
     /** What would be here if it had all arrived. */
@@ -372,8 +525,13 @@ public class CapitalFlows {
     /* --------------------------------- carrying --------------------------------- */
 
     public double[] toSaveArray() {
+        // Appended at the end, and restore() guards every slot past the first
+        // two - so an older save reads back with no carry book, which is true
+        // of that city. No SAVE_FORMAT bump.
         return new double[] { stock, panicUntil, depositShare,
-                lifetimeArrived, lifetimeDeparted, stopsSuffered, lastMonth };
+                lifetimeArrived, lifetimeDeparted, stopsSuffered, lastMonth,
+                carryStock, lifetimeCarryBorrowed, lifetimeCarryRepaid,
+                lifetimeCarryInterest, peakCarryStock };
     }
 
     public void restore(double[] saved) {
@@ -387,6 +545,13 @@ public class CapitalFlows {
             stopsSuffered = (int) Math.round(saved[5]);
         }
         if (saved.length > 6) lastMonth = (int) Math.round(saved[6]);
+        if (saved.length > 11) {
+            carryStock = Math.max(0, saved[7]);
+            lifetimeCarryBorrowed = saved[8];
+            lifetimeCarryRepaid   = saved[9];
+            lifetimeCarryInterest = saved[10];
+            peakCarryStock        = saved[11];
+        }
     }
 
     public void reset() {
@@ -398,6 +563,9 @@ public class CapitalFlows {
         peakStock = peakSpread = 0;
         stopsSuffered = 0;
         lastMonth = 0;
+        carryStock = carryTarget = carrySpread = carryBorrowed = carryRepaid = 0;
+        lifetimeCarryBorrowed = lifetimeCarryRepaid = lifetimeCarryInterest = 0;
+        peakCarryStock = peakCarrySpread = 0;
     }
 
     /** Hot money, in the new unit. The spread is a rate and does not move. */
@@ -412,6 +580,14 @@ public class CapitalFlows {
         // ...and the floor the stock is measured against, or a reform would
         // move the threshold without moving the thing being thresholded.
         minStock *= scale;
+        carryStock   *= scale;
+        carryTarget  *= scale;
+        carryBorrowed *= scale;
+        carryRepaid   *= scale;
+        lifetimeCarryBorrowed *= scale;
+        lifetimeCarryRepaid   *= scale;
+        lifetimeCarryInterest *= scale;
+        peakCarryStock *= scale;
     }
 
 }

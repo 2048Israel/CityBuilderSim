@@ -170,6 +170,22 @@ public class Bank {
     /** ...and a family can be discharged. Revolving, so it never runs off. */
     public static final double RISK_HOUSEHOLD = 1.00;
 
+    /**
+     * A foreign carry borrower, against the risk weights above.
+     *
+     * A hundred percent, the same as a business or a household, and NOT the
+     * city's twenty. They are a good credit - a bank or a fund, borrowing a
+     * currency rather than a project - but they are not a sovereign, they are
+     * not here, and the money is gone the moment it is lent. Weighting them
+     * lower would let the book grow on capital that is not really behind it,
+     * which is the shape of every banking crisis in the record.
+     *
+     * Jerus's call is that they never default, so this weight does no
+     * loss-absorbing work today. It does capacity work: it is what stops the
+     * carry book from being free.
+     */
+    public static final double RISK_CARRY = 1.00;
+
     /** What a loan repaying tomorrow weighs against one repaying never. */
     public static final double SHORTEST_WEIGHT = .40;
 
@@ -287,6 +303,19 @@ public class Bank {
      * @param householdSavings what the families have banked
      * @param sectorCash    what the businesses are holding
      */
+    /**
+     * The fourth book: what foreigners have borrowed to take abroad.
+     *
+     * It has to be a book rather than a hole in the cash, and that is not a
+     * bookkeeping nicety. lend() is three lines - cash -= amount - and equity
+     * is cash plus book less liabilities, so lending through it would have
+     * dropped the bank's equity by the whole principal and walked it into
+     * resolveIfFailed() on the first loan. The money is gone; the CLAIM is the
+     * asset. See CapitalFlows.carryTakeMonth().
+     */
+    private double carryBook;
+    private double carryLent, carryRepaid, carryInterest;
+
     public void refresh(double branches, double householdSavings, double sectorCash,
                         double sectorBook, double cityBook, double householdBook) {
         this.branches = Math.max(0, branches);
@@ -320,6 +349,150 @@ public class Bank {
         this.householdWeighted = Math.max(0, household);
     }
 
+    /* ---------------------------------------------------------------- carry */
+
+    /**
+     * Lend to a foreigner who is about to take it abroad.
+     *
+     * Cash out, book up: the claim replaces the money, so equity does not move
+     * on the loan itself. What DOES move is the strain - the book is bigger
+     * against the same capital - and that is the feedback that closes the
+     * trade's own window, because ratePremium() raises the lending rate the
+     * carry spread is measured against.
+     */
+    public void lendCarry(double amount) {
+        if (amount <= 0) return;
+        cash -= amount;
+        carryBook += amount;
+        carryLent += amount;
+    }
+
+    /** ...and they bring it home. Book down, cash back. */
+    public void repayCarry(double amount) {
+        if (amount <= 0) return;
+        double paid = Math.min(amount, carryBook);
+        cash += paid;
+        carryBook -= paid;
+        carryRepaid += paid;
+    }
+
+    /**
+     * The coupon, which arrives from abroad.
+     *
+     * Counted in interestEarned like any other, and ALSO in its own counter,
+     * because MoneyAudit's "+ bank InterestEarned" line is DOMESTIC and this
+     * money crossed a border. The audit subtracts it there and books it as
+     * income, exactly as it already does for the bank's placements abroad.
+     */
+    public void takeCarryInterest(double amount) {
+        if (amount <= 0) return;
+        cash += amount;
+        interestEarned += amount;
+        carryInterest += amount;
+    }
+
+    /**
+     * The carry book, set from the stock that owns it.
+     *
+     * NOT saved, and it does not need to be: the bank's other three books are
+     * rebuilt every month from the debts themselves, and this one is rebuilt
+     * the same way from CapitalFlows' carry stock, which IS saved. One source
+     * of truth, and a reload cannot disagree with a played month. Exactly the
+     * pattern setForeignDeposits() already uses for hot money.
+     */
+    public void setCarryBook(double amount) { this.carryBook = Math.max(0, amount); }
+
+    public double getCarryBook()     { return carryBook; }
+    public double getCarryLent()     { return carryLent; }
+    public double getCarryRepaid()   { return carryRepaid; }
+    public double getCarryInterest() { return carryInterest; }
+
+    /** What a good credit pays to borrow here. One definition, so it cannot drift. */
+    public double lendingRate(double riskFreeAnnual) {
+        return Math.max(Math.max(0, riskFreeAnnual),
+                marginalCostOfFunds() + MIN_MARGIN) + ratePremium();
+    }
+
+    /**
+     * The least a lender takes for writing the loan at all.
+     *
+     * Not a credit spread - the borrower's own risk is priced on top of this,
+     * by whoever is lending to them. This is the operating margin under it: the
+     * point that pays for reading the file, keeping the ledger and being wrong
+     * occasionally. A best-credit borrower pays cost of funds plus this and
+     * nothing else, which is about what the best corporate names actually get.
+     */
+    public static final double MIN_MARGIN = .01;
+
+    /**
+     * WHAT THE NEXT DOLLAR OF LENDING COSTS THIS BANK TO FUND.
+     *
+     * The number the whole credit system was missing, and the reason it could
+     * not make money. Until 2026-09-13 every rate in the city was struck off
+     * the RISK-FREE rate - lendingRate() was literally `riskFree +
+     * ratePremium()`, and ratePremium() is zero whenever strain is under
+     * EASY_STRAIN. Meanwhile this bank funds itself at riskFree +
+     * FUNDING_SPREAD + FUNDING_STRETCH x reach. So a comfortable bank lent at
+     * two points BELOW what the money cost it, by construction, on every
+     * dollar its deposits did not cover.
+     *
+     * Nothing ever compared the two. fundingRate() was read in exactly one
+     * place outside this class, and that place was the screen that prints it.
+     *
+     * MEASURED over two 4,000-month runs with no city debt in them at all:
+     * a net interest margin of 1.70% and 0.71% a year against a real bank's
+     * three to four, 44% and 58% of all months at a loss, and of those losses
+     * 86% and 78% would have been profits with the funding line removed.
+     * Payroll caused 4% and 15% of them; write-offs caused under one.
+     *
+     * TWO TRANCHES, CHEAPEST FIRST, the same two fundToCover() charges for.
+     * Inside what its branches have gathered the next dollar is a saver's and
+     * costs whatever savers are being paid. Past them it is wholesale paper at
+     * the price the market quoted this bank last month.
+     *
+     * LAST MONTH'S PRICE, deliberately. fundingRate is struck at the bottom of
+     * the month, after every loan has moved; a rate quoted this morning cannot
+     * know it. A real bank prices off yesterday's funding curve for the same
+     * reason, and the standing rule applies - a flow cannot be read from the
+     * state a month started in.
+     *
+     * ZERO WITH NO BANK, and that is correct rather than a gap: a city with no
+     * branch is borrowing from strangers who have never heard of it, and
+     * ratePremium() already charges the full MAX_STRAIN_PREMIUM for that.
+     * Flooring those borrowers at a bank's cost of funds as well would price
+     * the same absence twice.
+     */
+    public double marginalCostOfFunds() { return lastCostOfFunds; }
+
+    /** What money cost this bank over the month that just closed. */
+    private double lastCostOfFunds;
+
+    /**
+     * The two tranches, blended at the weights the bank actually used them.
+     *
+     * BLENDED RATHER THAN MARGINAL, and the first version was marginal: "inside
+     * the gathered deposits the next dollar is a saver's, past them it is
+     * wholesale paper". Theoretically the better question, and a step function
+     * in practice. A bank sitting near its deposit ceiling crosses it both ways
+     * most months, so the floor under every rate in the city flipped between
+     * the deposit rate and the wholesale rate - measured across twelve
+     * consecutive months of BankCheck's fixture at 4.9%, 8.0%, 11.0%, 1.9%,
+     * 4.9%, 5.4%, 9.2%, 12.9%, 13.6%. A cost of credit that moves eleven points
+     * month to month is not a signal a player can act on, it is noise.
+     *
+     * The average cost of the money it is using has no such cliff, moves
+     * continuously as the bank reaches further into the market, and is what a
+     * bank's own income statement means by the phrase.
+     */
+    private double blendedCostOfFunds() {
+        if (branches <= 0 || inResolution) return 0;
+        double owed = borrowings();
+        if (owed <= 0) return 0;
+        double wholesale = Math.min(1, Math.max(0, wholesaleFunding() / owed));
+        return Math.max(0, depositRate) * (1 - wholesale)
+                + Math.max(0, fundingRate) * wholesale;
+    }
+
     /** Clears the month's flows. Called at the top of a month, before anything moves. */
     public void startMonth() {
         taxPaid = 0;
@@ -340,6 +513,7 @@ public class Bank {
         dividendsPaid = 0;
         tradingIncome = 0;
         hotMoneyIn = 0;
+        carryLent = carryRepaid = carryInterest = 0;
         hotMoneyOut = 0;
         bailoutReceived = 0;
         foundingSettlement = 0;
@@ -352,7 +526,17 @@ public class Bank {
     /* ------------------------------ the arithmetic ------------------------------ */
 
     /** What is owed to it. The balance-sheet figure, and what it will be repaid. */
-    public double getBook() { return sectorBook + cityBook + householdBook; }
+    /**
+     * Everything lent, carry included.
+     *
+     * The carry book HAS to be in here, and it is the difference between a
+     * working mechanic and a bank that dies on its first foreign loan.
+     * totalAssets() is cashReserves() + getBook() + securities, so a loan that
+     * took cash out and put nothing in would cut equity by the whole principal
+     * and walk the bank into resolveIfFailed(). The money is gone; the claim on
+     * the borrower is the asset that replaces it.
+     */
+    public double getBook() { return sectorBook + cityBook + householdBook + carryBook; }
 
     /**
      * The book as CAPACITY sees it: risk- and maturity-weighted.
@@ -363,6 +547,7 @@ public class Bank {
      */
     public double getWeightedBook() {
         return sectorWeighted + cityWeighted + householdWeighted
+                + carryBook * RISK_CARRY
                 + Math.abs(securities) * RISK_EQUITY;
     }
 
@@ -1616,6 +1801,24 @@ public class Bank {
 
     /** Called at the end of the month, once the profit is final. */
     public void closeMonth() {
+        /*
+         * STRUCK HERE, ONCE, AND THEN CARRIED - which is not a flourish, it is
+         * the only way the same number survives a save.
+         *
+         * The first version had Game ask the bank for this in the middle of the
+         * month, off whatever the balance sheet happened to look like at that
+         * moment. The live path asks during nextMonth(); the load path asks
+         * after every pool is back. Those are different moments, so they gave
+         * different answers, and a city reloaded from its own autosave quoted
+         * 1.35% for a loan it had quoted 1.33% for a second earlier. BankCheck
+         * caught it on the first run - the assertion is "...and so does what
+         * the bank is charging for money", and it exists for exactly this.
+         *
+         * A price that was quoted is not a figure that can be recomputed. This
+         * is the month's, final, and it is what next month prices off - the
+         * same one-month lag a real bank's funding curve has.
+         */
+        lastCostOfFunds = blendedCostOfFunds();
         profitLastMonth = profitBeforeTax();
         lastPayroll  = payroll;
         lastUpkeep   = upkeep;
@@ -1645,15 +1848,41 @@ public class Bank {
     private double lastPayroll, lastUpkeep, lastInterest, lastBook;
 
     public double[] lastMonthToSave() {
-        return new double[]{ lastPayroll, lastUpkeep, lastInterest, lastBook };
+        return new double[]{ lastPayroll, lastUpkeep, lastInterest, lastBook,
+                             fundingRate, lastCostOfFunds };
     }
 
+    /*
+     * ...AND THE TWO PRICES THE MONTH CLOSED AT, added 2026-09-13 with the
+     * cost-of-funds floor.
+     *
+     * Every rate in the city is now floored on marginalCostOfFunds(), so a save
+     * that did not carry it reloaded into a bank whose money was free. The
+     * funding rate goes with it because the Bank tab prints it and a reloaded
+     * screen should not read zero.
+     *
+     * CARRIED RATHER THAN DERIVED, which is the opposite of what the premium
+     * beside it does, and the reason is a circle. fundToCover() strikes
+     * fundingRate FROM the city's rate; the city's rate is now floored on
+     * fundingRate. In the live path a month separates the two and there is no
+     * circle - this month's rate is priced off last month's funding. On a load
+     * there is no last month to read, so re-deriving it would need the rate it
+     * is an input to. It is a price that was quoted, not a figure that can be
+     * recomputed, and it belongs in the save for the same reason lastPayroll
+     * does.
+     *
+     * An older save simply has no fifth element: the bank loads with free money
+     * for one month and corrects itself at the first closeMonth().
+     */
     public void restoreLastMonth(double[] state) {
         if (state == null || state.length < 4) return;
         lastPayroll  = state[0];
         lastUpkeep   = state[1];
         lastInterest = state[2];
         lastBook     = state[3];
+        if (state.length < 6) return;
+        fundingRate     = state[4];
+        lastCostOfFunds = state[5];
     }
 
     /** Restored from the save, so next month taxes the right figure. */
@@ -1933,8 +2162,17 @@ public class Bank {
         cityBook          *= scale;
         householdBook     *= scale;
         sectorWeighted    *= scale;
-        cityWeighted      *= scale;
-        householdWeighted *= scale;
+        cityWeighted       *= scale;
+        householdWeighted  *= scale;
+        // The carry book is re-derived from the stock by refreshBank(), so this
+        // looks redundant - and is not. DenominationCheck asserts the reform
+        // INSTANT is bit-exact, and at that instant no refresh has run yet: an
+        // unscaled book here makes equity() wrong for one moment, which is
+        // enough to move the currency and everything downstream of it.
+        carryBook          *= scale;
+        carryLent          *= scale;
+        carryRepaid        *= scale;
+        carryInterest      *= scale;
 
         interestEarned    *= scale;
         internalInterest  *= scale;

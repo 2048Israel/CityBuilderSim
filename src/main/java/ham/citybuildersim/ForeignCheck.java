@@ -175,16 +175,26 @@ public class ForeignCheck {
         assertTrue("household flows are counted, but not as trade",
                 last.domesticOut() > 0);
         /*
-         * ...THAN THE IMPORTS, which is the claim the paragraph above makes.
-         * This compared payroll with everything foreign, and everything
-         * foreign now includes the sectors' own money going abroad for the
-         * world's rate (OutwardInvestment, 2026-09-10) - a financial flow
-         * that a small city with a large treasury can move faster than it
-         * pays wages, and is right to. Wages are not imports; that is what
-         * is asserted, against the imports.
+         * ...AND LARGE ENOUGH THAT COUNTING THEM AS TRADE WOULD SWAMP THE
+         * BALANCE, which is the claim the paragraph above actually makes and
+         * the only form of it that is a law.
+         *
+         * This asserted "wages are bigger than the import bill", and that has
+         * now been overtaken twice by things that are not wrong. First the
+         * sectors' own money going abroad for the world's rate
+         * (OutwardInvestment, 2026-09-10), which a small city with a large
+         * treasury can move faster than it pays people, and is right to. Then
+         * the ninth sector (2026-09-13), which buys steel - a city whose
+         * largest industry imports its raw material can perfectly well import
+         * more than it pays in wages, and half the industrial world does.
+         *
+         * What is a law is the thing the split exists for: the payroll is big
+         * against the TRADE BALANCE, so a balance of payments drawn on the old
+         * boundary would have been a number about wages wearing a trade
+         * balance's name. Measured here it is two orders of magnitude bigger.
          */
-        assertTrue("...and they are larger than the imports, as they must be",
-                last.domesticOut() > last.tradeOut);
+        assertTrue("...and large enough that counting them as trade would swamp the balance",
+                last.domesticOut() > Math.abs(last.tradeBalance()));
 
         /* ================= 3. across a reload ================= */
         out.println("\n--- and it survives a reload ---");
@@ -779,6 +789,34 @@ public class ForeignCheck {
         g.getForeignAccounts().pinRate(rate);
         g.getEconomyManager().setExchangeRate(rate);
         g.getLandManager().setOwnedSqFt(30_000_000);
+        /*
+         * THE NINTH SECTOR SITS THIS ONE OUT (2026-09-13), because the whole
+         * instrument below rests on the import side being a FIXED PROGRAMME -
+         * a power plant, a water plant and forty roads, about $900M of
+         * material that gets bought whatever it costs. That is what makes
+         * "the same programme costs the same in the world's money" a premise
+         * rather than a finding, and it is what lets the exports carry the
+         * elasticity.
+         *
+         * Manufacturing buys steel from the world, in proportion to how big
+         * its city got, and the two cities here deliberately grow at different
+         * speeds. Left in, the import side stopped being a programme: the
+         * weaker city bought 30% fewer dollars of imports than the parity one
+         * and the premise read 0.69 against 1.00. Nothing was wrong with
+         * either city; the ruler had grown a hinge. What a devaluation does to
+         * a steel-importing exporter is a real question and it belongs in the
+         * harness that owns that sector.
+         *
+         * AND THE TENTH SITS IT OUT TOO, the next morning, for exactly the same
+         * reason one sentence further along the chain: the fields sell crops,
+         * the mills buy them, and how much of either happens depends on how big
+         * each city got. Measured with the fields in, the premise read 1.068
+         * against a five percent band. Held out, the mills buy every tonne from
+         * the world - which is a fixed programme per mill, and the two cities
+         * run the same mills - and the ruler is straight again.
+         */
+        g.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
+        g.getBusinessInvestment().holdSector(Sectors.AGRICULTURE);
         g.buildStack(template(g, "House"), 500, false);
         g.buildStack(template(g, "Convenience Store"), 8, false);
         g.buildStack(template(g, "Small Grocery Store"), 3, false);

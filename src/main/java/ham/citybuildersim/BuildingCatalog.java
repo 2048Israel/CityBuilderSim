@@ -205,6 +205,7 @@ public class BuildingCatalog {
         readJobs(o, template, name);
         readTeaches(o, template, name);
         readSafety(o, template, name);
+        readRequiresLicence(o, template, name);
         readSector(o, template, name);
 
         return template;
@@ -302,6 +303,25 @@ public class BuildingCatalog {
         } catch (Exception e) {
             System.out.println(FILE_NAME + ": \"" + name + "\" has unknown safety type \""
                     + safety + "\"; treated as NONE.");
+        }
+    }
+
+    /**
+     * The licence a building's practice is built on. Absent reads as none - which
+     * is forty-six of the forty-nine - and a typo is reported and ignored rather
+     * than thrown, because a hot-editable balance file must not be able to stop
+     * the game from starting.
+     */
+    private void readRequiresLicence(JsonObject o, BuildingsTemplate template, String name) {
+
+        String licence = string(o, "requiresLicence");
+        if (licence.isEmpty()) return;
+
+        try {
+            template.setRequiresLicence(JobType.valueOf(licence));
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" needs unknown licence \""
+                    + licence + "\"; treated as needing none.");
         }
     }
 

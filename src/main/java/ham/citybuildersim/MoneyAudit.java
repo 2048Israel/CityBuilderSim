@@ -54,6 +54,20 @@ public final class MoneyAudit {
         /** Every pool and flow by name, for chasing a residual. */
         public final String detail;
 
+        /**
+         * The pools as this month's strike found them, and as it left them.
+         *
+         * Kept so that the NEXT month can check its own opening read against
+         * this month's close. The residual above reconciles within a month and
+         * therefore cannot see money that moves in the GAP between two strikes:
+         * such money is missing from the flows and already in the pools, the
+         * two errors cancel, and the residual stays at $0.00. That is where
+         * hot money sat for the whole life of the mechanic. See the guard in
+         * LongPlaytest.checkMonth() and MoneyCheck.
+         */
+        public final double[] poolsAtOpen;
+        public final double[] poolsAtClose;
+
         /* ---- the same month, seen as a balance of payments ---- */
 
         /** Goods and services sold abroad. */
@@ -120,11 +134,19 @@ public final class MoneyAudit {
         public double domesticOut() { return outflows - foreignOut(); }
 
         Result(int month, double before, double after, double inflows, double outflows, double residual) {
-            this(month, before, after, inflows, outflows, residual, "", new double[8]);
+            this(month, before, after, inflows, outflows, residual, "", new double[8], null, null);
         }
 
         Result(int month, double before, double after, double inflows, double outflows,
                double residual, String detail, double[] foreign) {
+            this(month, before, after, inflows, outflows, residual, detail, foreign, null, null);
+        }
+
+        Result(int month, double before, double after, double inflows, double outflows,
+               double residual, String detail, double[] foreign,
+               double[] poolsAtOpen, double[] poolsAtClose) {
+            this.poolsAtOpen  = poolsAtOpen  == null ? null : poolsAtOpen.clone();
+            this.poolsAtClose = poolsAtClose == null ? null : poolsAtClose.clone();
             this.month = month;
             this.before = before;
             this.after = after;
@@ -384,6 +406,22 @@ public final class MoneyAudit {
          * credit booms. See CapitalFlows.
          */
         in += credit.apply("+ bank HotMoneyIn", g.getBank().getHotMoneyIn(), Scope.FINANCIAL);
+
+        /*
+         * THE CARRY TRADE COMING HOME. A foreigner who borrowed local and took
+         * it abroad has bought the currency back to repay - money arriving, and
+         * the squeeze that makes an unwind hurt. Financial, like hot money: it
+         * is a claim being settled, not a good being sold.
+         */
+        in += credit.apply("+ bank CarryRepaid", g.getBank().getCarryRepaid(), Scope.FINANCIAL);
+
+        /*
+         * ...and what they pay for the privilege, which is earned abroad and so
+         * is INCOME rather than domestic interest. It is inside interestEarned
+         * as well, because it is interest - so the domestic interest line below
+         * nets it out, exactly as it already nets out the bank's placements.
+         */
+        in += credit.apply("+ bank CarryInterest", g.getBank().getCarryInterest(), Scope.INCOME);
         /*
          * THE SECTORS' OWN MONEY, ABROAD AND BACK. The outflow is a financial
          * debit like a stranger's money leaving; the coupon it earns is
@@ -460,7 +498,8 @@ public final class MoneyAudit {
         // transfers and less the placements, which are declared on their own
         // line below as income from abroad.
         in += credit.apply("+ bank InterestEarned", g.getBank().getInterestEarned()
-                - g.getBank().getInternalInterest() - g.getBank().getPlacementIncome(), Scope.DOMESTIC);
+                - g.getBank().getInternalInterest() - g.getBank().getPlacementIncome()
+                - g.getBank().getCarryInterest(), Scope.DOMESTIC);
 
         /*
          * DOLLARS BORROWED ABROAD, which is the one kind of city borrowing that
@@ -571,6 +610,14 @@ public final class MoneyAudit {
         // took it off the stock again the moment the month closed.
         out += debit.apply("- bank HotMoneyOut",
                 g.getBank().getHotMoneyOut(), Scope.FINANCIAL);
+
+        /*
+         * ...and the carry trade going out. The bank hands over local currency
+         * and the borrower sells it for dollars, so the money genuinely leaves.
+         * This is the door the surplus has never had.
+         */
+        out += debit.apply("- bank CarryLent",
+                g.getBank().getCarryLent(), Scope.FINANCIAL);
         out += debit.apply("- sectors InvestedAbroad", g.getOutwardInvestment().getInvestedAbroadThisMonth(), Scope.FINANCIAL);
         out += debit.apply("- sectors ForeignInterestReinvested", g.getOutwardInvestment().getInterestThisMonth(), Scope.FINANCIAL);
         // The households' three, the other way round. See the credits.
@@ -647,6 +694,7 @@ public final class MoneyAudit {
             }
         }
         double residual = (after - before) - (in - out);
-        return new Result(g.getMonth(), before, after, in, out, residual, detail.toString(), foreign);
+        return new Result(g.getMonth(), before, after, in, out, residual, detail.toString(), foreign,
+                poolsBefore, poolsAfter);
     }
 }

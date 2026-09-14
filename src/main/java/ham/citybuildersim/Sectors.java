@@ -1,8 +1,11 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Agriculture;
+import ham.citybuildersim.sectors.BusinessServices;
 import ham.citybuildersim.sectors.Construction;
 import ham.citybuildersim.sectors.FoodIndustry;
 import ham.citybuildersim.sectors.HeavyIndustry;
+import ham.citybuildersim.sectors.Manufacturing;
 import ham.citybuildersim.sectors.Materials;
 import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.RealEstate;
@@ -29,11 +32,14 @@ import java.util.Map;
  * arrays and the audit's pool list all follow it, so a sector goes on the
  * END like a BuildingType. The first six are the six the game had, in the
  * order BusinessDebtManager.SECTORS listed them; Materials is the seventh
- * (Jerus: "a seventh sector").
+ * (Jerus: "a seventh sector"), Business Services the eighth and Manufacturing
+ * the ninth - the two whose customer is not in the city - and Agriculture the
+ * tenth, which is the only one whose cost is the ground it stands on.
  *
- * THE THREE UNUSUAL ONES have typed accessors, because the households pay
- * rent to one and buy groceries from another, and the city hands its build
- * orders to the third. Everything else reaches a sector by name.
+ * THE UNUSUAL ONES have typed accessors, because the households pay rent to
+ * one and buy groceries from another, the city hands its build orders to a
+ * third, and the two export sectors each answer a question no other sector
+ * can. Everything else reaches a sector by name.
  */
 public final class Sectors {
 
@@ -45,10 +51,12 @@ public final class Sectors {
      */
     public static final String RETAIL = "Retail", REAL_ESTATE = "Real Estate", INDUSTRY = "Industry",
             CONSTRUCTION = "Construction", HEAVY_INDUSTRY = "Heavy Industry", MINING = "Mining",
-            MATERIALS = "Materials";
+            MATERIALS = "Materials", BUSINESS_SERVICES = "Business Services",
+            MANUFACTURING = "Manufacturing", AGRICULTURE = "Agriculture";
 
     public static final String[] KEYS = {
-        RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING, MATERIALS
+        RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING, MATERIALS,
+        BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -61,6 +69,9 @@ public final class Sectors {
     private final HeavyIndustry heavyIndustry;
     private final Mining mining;
     private final Materials materials;
+    private final BusinessServices businessServices;
+    private final Manufacturing manufacturing;
+    private final Agriculture agriculture;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -70,6 +81,9 @@ public final class Sectors {
         heavyIndustry = add(new HeavyIndustry(), buildings, markets);
         mining = add(new Mining(), buildings, markets);
         materials = add(new Materials(), buildings, markets);
+        businessServices = add(new BusinessServices(), buildings, markets);
+        manufacturing = add(new Manufacturing(), buildings, markets);
+        agriculture = add(new Agriculture(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -116,6 +130,28 @@ public final class Sectors {
     public HeavyIndustry heavyIndustry() { return heavyIndustry; }
     public Mining mining()               { return mining; }
     public Materials materials()         { return materials; }
+
+    /**
+     * Typed, unlike the rest of the ordinary six, because the labour market and
+     * the playtest both want to ask it a question no other sector answers: what
+     * share of what the world pays is going out in wages. See BusinessServices.
+     */
+    public BusinessServices businessServices() { return businessServices; }
+
+    /**
+     * Typed for the same reason, and for one more: it is the only sector that
+     * BUYS a traded good another sector makes, so the mills' screen and the
+     * playtest both want to ask it what it is paying for steel. See
+     * Manufacturing.
+     */
+    public Manufacturing manufacturing() { return manufacturing; }
+
+    /**
+     * Typed, because the fields answer a question no other sector can: what
+     * share of its own dinner the city grows, and what the ground under it is
+     * costing. See Agriculture.
+     */
+    public Agriculture agriculture() { return agriculture; }
 
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {

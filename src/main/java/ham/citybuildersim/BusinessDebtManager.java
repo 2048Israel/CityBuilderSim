@@ -303,6 +303,18 @@ public class BusinessDebtManager {
         this.riskFreeRate = rate;
     }
 
+    /**
+     * What the bank pays for the money it is about to lend.
+     *
+     * Pushed in by Game each month beside the strain premium, from
+     * Bank.marginalCostOfFunds(). Held rather than reached for, for the same
+     * reason the premium is: a rate that moved half way through a quote would
+     * be a quote nobody was offered.
+     */
+    private double costOfFunds;
+    public void setCostOfFunds(double rate) { this.costOfFunds = Math.max(0, rate); }
+    public double getCostOfFunds()          { return costOfFunds; }
+
     /** Total assets from that sector's balance sheet - the denominator of leverage. */
     public void setAssets(String sector, double totalAssets) {
         assets.put(sector, totalAssets);
@@ -356,7 +368,23 @@ public class BusinessDebtManager {
         spread += DEFAULT_SURCHARGE
                 * Math.min(getRestructureCount(sector), DEFAULT_SURCHARGE_MAX_COUNT);
 
-        return riskFreeRate + spread;
+        /*
+         * ...OVER WHICHEVER IS DEARER, THE CITY'S PAPER OR THE BANK'S MONEY.
+         *
+         * A credit spread says what the BORROWER's risk is worth. It says
+         * nothing about what the money cost, and until 2026-09-13 nothing else
+         * did either: this returned riskFreeRate + spread, so a best-credit
+         * sector borrowed at the city's own rate plus one point while the bank
+         * funding the loan paid two points over policy for the dollars. The
+         * lender lost a point on its best customers and made it up nowhere.
+         *
+         * The floor is normally slack - the city's rate already carries the
+         * bank's strain premium, so a stretched bank lifts this through
+         * riskFreeRate - and it binds in exactly the case that was bleeding:
+         * a bank comfortable enough to charge no premium that is still funding
+         * itself in the market. See Bank.marginalCostOfFunds().
+         */
+        return Math.max(riskFreeRate, costOfFunds + Bank.MIN_MARGIN) + spread;
     }
 
     //getters

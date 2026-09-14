@@ -77,6 +77,66 @@ public class TaxPolicy {
     private double incomeTaxRate = DEFAULT_INCOME_TAX;
     private double propertyTaxRate = DEFAULT_PROPERTY_TAX;
 
+    /* ==================================================================
+       FARMLAND, AND WHAT IT IS ASSESSED AT (2026-09-13)
+
+       A farm is the only building in this game whose cost is the GROUND
+       rather than the structure. A Mixed Farm's shed and machinery come to
+       $1.19m; the twenty-four city blocks under it are $3.1m in a young city
+       and $144m in a grown one, and the property tax is struck on what the
+       ground would FETCH. At a grown city's land price that bill is more than
+       the field can grow on it, several times over, long before the city
+       actually reaches the fence.
+
+       THAT IS NOT A BUG, IT IS WHAT HAPPENS, and it is why almost every
+       province and state assesses farmland at USE value rather than at
+       development value - Ontario's Farm Property Class, Nova Scotia's
+       resource-property rate, California's Williamson Act, and farm-use
+       assessment in most of the United States all exist to stop a growing
+       town taxing the market gardens off its own edge.
+
+       So the player gets the same lever, with the same cost. At 0 the fields
+       are assessed like anything else, the tax exceeds the harvest, and the
+       city buys its dinner from strangers - which is a real outcome and a
+       defensible one. At 1 the ground under a farm is assessed at nothing and
+       only the barn is taxed, the fields survive the city growing round them,
+       and the city forgoes the tax on what by then is a large share of its
+       whole assessment. Jerus's call, 2026-09-13, taken against the
+       alternative of simply making an acre of wheat out-earn an acre of
+       houses, which is the opposite of the reason cities exist.
+
+       IT TOUCHES THE LAND HALF ONLY. A barn is a building and is taxed like
+       one; the relief is on the difference between what the ground is worth to
+       a developer and what it is worth to a farmer, which is exactly what the
+       real programmes relieve.
+
+       Defaults to full relief because that is what the real default is almost
+       everywhere, and because a player who never finds the dial should get the
+       behaviour a real jurisdiction has rather than the one nobody chose.
+       ================================================================== */
+    public static final double DEFAULT_FARMLAND_RELIEF = 1.0;
+
+    /** The sector whose ground the relief applies to. */
+    public static final String FARM_SECTOR = Sectors.AGRICULTURE;
+
+    private double farmlandRelief = DEFAULT_FARMLAND_RELIEF;
+
+    /** 0 assesses a field like a building lot; 1 assesses only what stands on it. */
+    public double getFarmlandRelief() { return farmlandRelief; }
+
+    public void setFarmlandRelief(double share) {
+        this.farmlandRelief = share < 0 ? 0 : Math.min(share, 1);
+    }
+
+    /**
+     * The share of a sector's LAND that is on the assessment roll. One for
+     * everybody; less for the fields, by however much the player has relieved
+     * them. See EconomyManager.getAssessedValue().
+     */
+    public double assessedLandShare(String sector) {
+        return FARM_SECTOR.equals(sector) ? 1 - farmlandRelief : 1;
+    }
+
     /* =====================================================================
        THE PENSION PROMISE, AS TWO DIALS
 
@@ -389,7 +449,7 @@ public class TaxPolicy {
 
         int bands = WageBand.values().length;
 
-        double[] state = new double[4 + bands + 3];
+        double[] state = new double[4 + bands + 3 + 1];
         int i = 0;
         state[i++] = incomeTaxRate;
         state[i++] = propertyTaxRate;
@@ -399,7 +459,11 @@ public class TaxPolicy {
         // The three dials of 2026-09-11, on the end.
         state[i++] = eiPremiumRate;
         state[i++] = eiBenefitRate;
-        state[i]   = studentGrantShare;
+        state[i++] = studentGrantShare;
+        // The farmland dial of 2026-09-13, on the end, for the same reason the
+        // three above are on the end: an older save has one fewer slot and
+        // keeps the default, which is the behaviour that city had.
+        state[i]   = farmlandRelief;
         return state;
     }
 
@@ -409,7 +473,8 @@ public class TaxPolicy {
         int bands = WageBand.values().length;
         // With the EI and grant dials, or a save from before them - which keeps
         // the defaults for the three, as the city it was had them.
-        boolean current = state != null && state.length == 4 + bands + 3;
+        boolean withFarm = state != null && state.length == 4 + bands + 3 + 1;
+        boolean current = withFarm || (state != null && state.length == 4 + bands + 3);
         if (state == null || (!current && state.length != 4 + bands)) return false;
 
         int i = 0;
@@ -421,10 +486,12 @@ public class TaxPolicy {
         eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
         eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
         studentGrantShare = DEFAULT_STUDENT_GRANT_SHARE;
+        farmlandRelief = DEFAULT_FARMLAND_RELIEF;
         if (current) {
             setEiPremiumRate(state[i++]);
             setEiBenefitRate(state[i++]);
-            setStudentGrantShare(state[i]);
+            setStudentGrantShare(state[i++]);
+            if (withFarm) setFarmlandRelief(state[i]);
         }
         return true;
     }
@@ -474,6 +541,7 @@ public class TaxPolicy {
         eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
         eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
         studentGrantShare = DEFAULT_STUDENT_GRANT_SHARE;
+        farmlandRelief = DEFAULT_FARMLAND_RELIEF;
         java.util.Arrays.fill(wageOffset, 0);
         profitOffset.clear();
         salesOffset.clear();

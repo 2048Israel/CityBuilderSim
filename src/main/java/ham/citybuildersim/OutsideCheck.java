@@ -448,7 +448,24 @@ public class OutsideCheck {
                     // and this fixture is about the loans.
                     {"Police Station", "1"}};
                 for (String[] b : plan) g.buildStack(t(g, b[0]), Integer.parseInt(b[1]), true);
-                g.getEducation().setTuitionSubsidy(.8);
+                /* THE THIRTY-NINTH SIGHTING of "a fixture has to cause the
+                   condition under test, not stand next to it" - and this
+                   fixture has now been caught twice, which is its own lesson.
+
+                   At a subsidy of .8 the students were short because the TOWN
+                   was poor, and both times something made the town richer the
+                   loans stopped: first the thefts (before there were police),
+                   now Business Services, which opens in a college town by
+                   design because a college town is where it belongs - 3,213
+                   students instead of 1,635, and every one of them self-funded.
+
+                   So the shortfall comes from the fixture's own dial now. At
+                   .15 the students carry eighty-five percent of a university
+                   course, which no plausible savings cover, and the loan path
+                   is exercised whatever the town is worth. The grant and
+                   tuition assertions below compare against figures computed
+                   from the dial, so they move with it and keep their meaning. */
+                g.getEducation().setTuitionSubsidy(.15);
                 for (int m = 0; m < 180; m++) {
                     // The households are struck at the top of the month and the
                     // schools run in the middle of it, so the census carries out

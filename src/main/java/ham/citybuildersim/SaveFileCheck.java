@@ -559,9 +559,23 @@ public class SaveFileCheck {
                 city.getSectors().industry().getStock(Good.FOOD),
                 city.getSectors().retail().getStoreInventory(), e1.getTaxIncome());
 
-        assertTrue("the mills have actually produced something",
-                city.getSectors().industry().getStock(Good.FOOD) > 0);
-        assertTrue("...and it reached the shops",
+        /*
+         * AND THE SAME MISTAKE ONE LINE DOWN, found 2026-09-13. There was a
+         * third assertion here - food in the MILLS' warehouse - and it was the
+         * same phase-of-a-cycle reading the note above retired, one shelf
+         * along. A mill that sold its month's output to the shops ends the
+         * month with an empty shed and has been trading perfectly well;
+         * measured here at food stock 0 against shop stock 1,940, every unit
+         * made had already moved. Restating it as "the mills billed somebody"
+         * was no better, because the statement is struck at the TOP of a month
+         * off the month before and a fixture can stop anywhere in that cycle.
+         *
+         * The two below are the ones that carry the section: goods reached the
+         * shops, which cannot happen unless the mills made them, and the taxes
+         * being compared are real money. Neither is a reading of where the
+         * restock happened to land.
+         */
+        assertTrue("goods reached the shops, which the mills had to make first",
                 city.getSectors().retail().getStoreInventory() > 0);
         assertTrue("...so the figures compared below are not all zero",
                 e1.getTaxIncome() > 0);
@@ -837,6 +851,19 @@ public class SaveFileCheck {
            mills, mines and the subsidy dial on, because every one of those is
            needed to make one of these readings non-zero in the first place - a
            fixture that cannot tell zero from missing proves nothing.
+
+           AND FIELDS, SINCE 2026-09-13, because "one of everything" stopped
+           being true the day the mills started buying crops. Four Textile Mills
+           want 3,400 tonnes a month and a city with no farms buys every one of
+           them from the world at the ceiling - which in a city already squeezed
+           to its income-tax ceiling with a punitive offset on every band is
+           enough to take the bank down, and a failed bank pays its savers
+           nothing for ever after. That is the SAME failure this fixture's own
+           note records from the day the material import bill started being
+           charged, from the same cause: a new cost on the sectors, in a city
+           deliberately built too poor to absorb one. Four Mixed Farms cover
+           three fifths of what the mills eat and the rest is imported, which is
+           an ordinary city rather than a broken one.
            ================================================================= */
         System.out.println("\n--- and a freshly loaded city reads what the live one reads ---");
 
@@ -848,7 +875,8 @@ public class SaveFileCheck {
         for (String[] order : new String[][] {
                 {"House", "400"}, {"Convenience Store", "2"}, {"Construction Depot", "6"},
                 {"Coal Power Plant", "2"}, {"Water Treatment Plant", "2"},
-                {"Textile Mill", "4"}, {"Iron Mine", "2"}, {"Steel Foundry", "2"},
+                {"Textile Mill", "4"}, {"Mixed Farm", "4"}, {"Iron Mine", "2"},
+                {"Steel Foundry", "2"},
                 {"Commercial Bank", "1"}, {"Elementary School", "3"},
                 {"Walk-in Clinic", "3"}, {"Paved Road", "20"} }) {
             /*
@@ -902,11 +930,45 @@ public class SaveFileCheck {
          * - and 40% of a living wage still buys a basket. The ceiling is read
          * from the constant now rather than guessed past.
          */
+        /*
+         * ...AND THE SQUEEZE GOES ON LAST, WHICH IT DID NOT UNTIL 2026-09-13.
+         *
+         * The two conditions were fighting each other and the tenth sector is
+         * what made them lose. The squeeze exists to cause HUNGER and it does;
+         * what it also does is make every sector in the city too poor to
+         * borrow, and a bank with no borrowers earns nothing, and a bank that
+         * earns nothing pays its savers nothing - chooseDepositRate() pays a
+         * share of the month's INTEREST INCOME and never more than leaves the
+         * bank at net zero. So "somebody is hungry" and "savers are being paid"
+         * were being asked of the same city at the same moment, and one of them
+         * is the other's opposite.
+         *
+         * It held anyway while the mills made food out of nothing, because a
+         * sector with no input bill stays rich through any squeeze. Give them a
+         * crop to buy and it stops holding: measured at month 391, the bank had
+         * failed once, sat on $5k of equity against a $3.1m book, and had paid
+         * nothing for two hundred months. That is the same failure this
+         * fixture's own note records from the day the material import bill
+         * started being charged, from the same cause.
+         *
+         * So each condition is caused in an order where they do not fight. The
+         * city is run healthy until the bank is profitable and paying, and only
+         * then is it squeezed - the deposit rate is set off a month's income
+         * and survives the few months it takes the shelves to empty. Both
+         * readings are transient and both are read at the save, which is all
+         * this section is about.
+         */
+        full.simulateMonths(150);
+
+        for (int extra = 0; extra < 240 && full.getBank().depositRate() <= 0; extra++) {
+            full.simulateMonths(1);
+        }
+        assertTrue("fixture: the bank opened and started paying its savers",
+                full.getBank().depositRate() > 0);
+
         TaxPolicy squeeze = full.getEconomyManager().getTaxPolicy();
         squeeze.setIncomeTaxRate(TaxPolicy.MAX_INCOME_TAX);
         for (WageBand band : WageBand.values()) squeeze.setWageOffset(band, 1);
-
-        full.simulateMonths(150);
 
         /*
          * ...AND THEN UNTIL THE BANK IS ACTUALLY OPEN.
@@ -939,9 +1001,9 @@ public class SaveFileCheck {
          * money in some month, and the loop waits for that month.
          */
         for (int extra = 0; extra < 240
-                && (full.getBank().depositRate() <= 0
-                    || full.getHealth().getHungerRate() <= 0
-                    || full.getTotalSubsidyPaid() <= 0); extra++) {
+                && (full.getHealth().getHungerRate() <= 0
+                    || full.getTotalSubsidyPaid() <= 0
+                    || full.getBank().depositRate() <= 0); extra++) {
             full.simulateMonths(1);
         }
 

@@ -106,8 +106,56 @@ public enum BuildingType {
      * City-built and city-paid, like healthcare and education. See Crime and
      * SafetyType.
      *
-     * ON THE END, for the fourth time: ordinal() is a saved key.
+     * ON THE END, for the fourth time: ordinal() is a saved key. The slot
+     * after this one is BUSINESS_SERVICES.
      */
-    SAFETY
+    SAFETY,
+
+    /**
+     * Contact centres, shared-services centres, engineering offices.
+     *
+     * The first category in the game whose buildings are PRIVATE and whose
+     * customer is FOREIGN. Everything else a business builds here sells to the
+     * city - shops to households, homes to tenants, materials to the builders -
+     * or sells a physical good dug out of the city's own ground. These sell a
+     * month of somebody's work to somebody who is not here, which is the only
+     * kind of job creation that does not need the city to be bigger first.
+     *
+     * Jerus, 2026-09-12, on why the city plateaus: every job-creating sector is
+     * either a domestic service whose demand IS the population - so it scales
+     * with people and cannot lead them - or the one ore-to-steel chain, which
+     * geology gates. Once both are saturated nobody here can pay for what
+     * another worker would produce. There are exactly three ways out: sell
+     * something to foreigners, replace an import, or have the government employ
+     * people. This is the first.
+     *
+     * Private, investor-built and taxed like any other business - it is NOT in
+     * the city-pays group with healthcare, education and safety.
+     *
+     * ON THE END, for the fifth time: ordinal() is a saved key.
+     */
+    BUSINESS_SERVICES,
+
+    /**
+     * Fields, orchards and glass. The tenth sector's, and the first category in
+     * this game whose cost is almost entirely the GROUND it stands on.
+     *
+     * Its own row rather than filed under Industrial, which is where a
+     * fabrication shop went this morning, because the thing a player has to
+     * understand about a farm is the one thing it does not share with a
+     * factory: a factory competes with housing for a LOT, and a farm competes
+     * with the whole neighbourhood. A Mixed Farm is twenty-four city blocks,
+     * against a Steel Foundry's nine tenths of one. Putting that on the same
+     * shelf would hide the only decision in it.
+     *
+     * Private, investor-built and taxed like any other business - but the rate
+     * it is taxed at is the player's, and it is the dial that decides whether
+     * the fields survive the city reaching them. See TaxPolicy.FARMLAND_RELIEF.
+     *
+     * ON THE END, for the sixth time: ordinal() is a saved key, and slipping a
+     * constant in above an existing one would hand every old save's industrial
+     * tax bill to whoever now holds that ordinal.
+     */
+    AGRICULTURE
 
 }

@@ -83,6 +83,38 @@ public class OutwardInvestment {
     /** ...and how much comes home in a month, which is faster, because it is needed. */
     public static final double HOME_SPEED = .10;
 
+    /* =======================================================================
+       THE ROUNDING FLOOR, AND WHY IT IS SEEDED (2026-09-13)
+
+       A move smaller than a thousandth of a cent is not a move; it is the
+       arithmetic's own dust, and moving it writes a trade into the balance of
+       payments for nothing. So it is swept to zero - and for two builds it was
+       swept at a FIXED 1e-9, which made it a money constant that a currency
+       reform never reseeded. That is the third one of these this project has
+       found and it is the same bug every time (see Equity.FOUNDING_PRICE and
+       Exchange.MIN_FAIR, whose note describes this exact symptom).
+
+       WHY IT MATTERS, which is not obvious from the size of it. After a
+       hundred-to-one reform every amount is a hundred times smaller, so a move
+       the plain city makes is swept away in the reformed one - and a swept
+       move is a sector that did NOT send its money abroad this month. Its
+       dollars abroad then differ for ever after, its wealth differs, next
+       month's target differs, and within a year the two cities are visibly
+       different places. Found by the ninth sector: Manufacturing generates
+       cash with no debt behind it, which is exactly the condition
+       targetShare tests, and it put three sectors on the wrong side of the
+       sweep within five months of the reform.
+       ======================================================================= */
+    public static final double MIN_MOVE = 1e-9;
+
+    /** The same floor in today's money. See MIN_MOVE. */
+    private double minMove = MIN_MOVE;
+
+    /** Re-seeds the floor at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        minMove = MIN_MOVE / (unit > 0 ? unit : 1);
+    }
+
     /* ----------------------------------- state ----------------------------------- */
 
     /** Held abroad, per sector, in the dollars it is held in. */
@@ -182,7 +214,7 @@ public class OutwardInvestment {
             } else {
                 move = Math.max(gap * HOME_SPEED, -abroad);
             }
-            if (Math.abs(move) < 1e-9) move = 0;
+            if (Math.abs(move) < minMove) move = 0;
 
             if (move != 0) {
                 economy.setSectorCash(sector, cash - move);
@@ -222,7 +254,7 @@ public class OutwardInvestment {
         double available = held * lastRate;
         double home = Math.min(local, available);
         if (home <= 0) return 0;
-        usd.put(sector, held - home / lastRate);
+        usd.put(sector, home >= available ? 0 : held - home / lastRate);
         economy.setSectorCash(sector, economy.getSectorCash(sector) + home);
         recalled.merge(sector, home, Double::sum);
         lifetimeHome += home;
@@ -339,6 +371,7 @@ public class OutwardInvestment {
      * the dollars do not.
      */
     public void redenominate(double scale) {
+        minMove *= scale;
         lastRate *= scale;
         lifetimeOut *= scale;
         lifetimeHome *= scale;

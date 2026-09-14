@@ -599,6 +599,28 @@ public class PopulationManager {
 
     public double[] getLicensedHeads() { return licensed; }
 
+    /**
+     * Licence holders the city is not already working.
+     *
+     * Holders less the posts of that type actually staffed. The allocator fills
+     * a gated post with min(posts, licences, people available), so the staffed
+     * count is jobs less vacancy - not jobs, which counts the desk nobody is
+     * sitting at, and not licences, which counts the engineer already employed.
+     *
+     * Used by the licence gate: see BuildingsTemplate.requiresLicence.
+     */
+    public double spareLicences(JobType job) {
+        if (job == null) return 0;
+        int i = job.ordinal();
+        int[] posts = getJobs();
+        int[] vacant = getJobVacancy();
+        double staffed = 0;
+        if (posts != null && i < posts.length) {
+            staffed = posts[i] - (vacant != null && i < vacant.length ? vacant[i] : 0);
+        }
+        return Math.max(0, licensed[i] - Math.max(0, staffed));
+    }
+
     public void restoreLicensed(double[] saved) {
         if (saved == null || saved.length != licensed.length) return;
         System.arraycopy(saved, 0, licensed, 0, licensed.length);

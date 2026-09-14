@@ -63,6 +63,33 @@ public class PriceIndex {
     private final double[] history = new double[WINDOW];
     private int monthsSeen;
 
+    /* ======================================================================
+       THE HIGH AND LOW WATER MARKS
+
+       Jerus, 2026-09-14, after the price index turned out to be reported
+       nowhere except at month four thousand: "something as well that stores
+       the highest price index and lowest".
+
+       WHY A CITY NEEDS THEM. Every price figure this project has ever quoted
+       is the level on the last month of the run, and the level does not sit
+       still: measured across sixteen seeds, cities that FINISH between 0.84
+       and 1.26 times founding prices peak at a median of 1.62 and as high as
+       3.78 on the way, and one seed swung +298% inside ten years. A seed that
+       ends at 0.98 spent a century near 2.0 and nothing anywhere said so.
+
+       An endpoint is one sample of a path that swings sixty percent. These two
+       numbers are the path's shape in the only two readings that survive not
+       having been there - and they are the cheapest possible instrument, being
+       two comparisons a month.
+
+       CARRIED, because they are a record and not a derivation. Nothing in the
+       state a month ended in can reconstruct what the level was in month 2,950.
+       See claude/the-cities-that-empty-out.md.
+       ====================================================================== */
+
+    private double peak = 1.0, trough = 1.0;
+    private int peakMonth, troughMonth;
+
     /**
      * Prices the basket for the month.
      *
@@ -70,9 +97,10 @@ public class PriceIndex {
      * @param rentPrice  what a home costs to rent
      * @param foodSpend  what households spent on food this month
      * @param rentSpend  what they paid in rent
+     * @param month      the city's month, so the marks can say WHEN
      */
     public void takeMonth(double shelfPrice, double rentPrice,
-                          double foodSpend, double rentSpend) {
+                          double foodSpend, double rentSpend, int month) {
 
         if (shelfPrice <= MIN_BASE || rentPrice <= MIN_BASE) return;
 
@@ -110,15 +138,42 @@ public class PriceIndex {
             rentWeight = 1 - foodWeight;
             based = true;
             index = 1.0;
+            peak = trough = 1.0;
+            peakMonth = troughMonth = month;
         }
 
         index = foodWeight * (shelfPrice / baseFood)
               + rentWeight * (rentPrice / baseRent);
 
+        /*
+         * ...and the marks, which only mean anything once the basket is based.
+         * Before that the index is a placeholder 1.0 and recording it would
+         * stamp both marks on a city that has not shopped yet.
+         */
+        if (index > peak)   { peak = index;   peakMonth = month; }
+        if (index < trough) { trough = index; troughMonth = month; }
+
         // A ring of the last thirteen readings; the oldest is a year ago.
         history[monthsSeen % WINDOW] = index;
         monthsSeen++;
     }
+
+    /** The dearest the basket has ever been, against founding. */
+    public double getPeak()      { return peak; }
+    /** ...and the month it happened. */
+    public int getPeakMonth()    { return peakMonth; }
+    /** The cheapest it has ever been. */
+    public double getTrough()    { return trough; }
+    public int getTroughMonth()  { return troughMonth; }
+
+    /**
+     * Peak over trough - how far the level has travelled, in one number.
+     *
+     * The reading that says whether an endpoint is worth quoting. A city at
+     * 1.02 that has never left 0.95-1.10 and a city at 1.02 that went to 3.78
+     * and came back are the same number and not the same place to live.
+     */
+    public double swing() { return trough > MIN_BASE ? peak / trough : 1; }
 
     /** The basket now, against the basket at founding. 1.0 is no change. */
     public double getIndex() { return index; }
@@ -151,7 +206,7 @@ public class PriceIndex {
     /* -------------------------------- carrying -------------------------------- */
 
     public double[] toSaveArray() {
-        double[] out = new double[5 + WINDOW];
+        double[] out = new double[5 + WINDOW + 4];
         out[0] = based ? 1 : 0;
         out[1] = baseFood;
         out[2] = baseRent;
@@ -161,6 +216,10 @@ public class PriceIndex {
         // and a save taken before basing restarts the settling period, which is
         // the right answer for a city that has not shopped for two years yet.
         System.arraycopy(history, 0, out, 5, WINDOW);
+        out[5 + WINDOW]     = peak;
+        out[5 + WINDOW + 1] = peakMonth;
+        out[5 + WINDOW + 2] = trough;
+        out[5 + WINDOW + 3] = troughMonth;
         return out;
     }
 
@@ -180,9 +239,27 @@ public class PriceIndex {
          * flow cannot be reconstructed from the state a month ended in.
          */
         if (monthsSeen > 0) index = history[(monthsSeen - 1) % WINDOW];
+
+        /*
+         * A save from before the marks existed has no tail. Opening them on the
+         * restored index rather than on 1.0 is the honest answer: the city's
+         * real high and low are unknowable from that save, and claiming it had
+         * never been anywhere but today's level would be a made-up record.
+         */
+        if (saved.length < 5 + WINDOW + 4) {
+            peak = trough = index;
+            peakMonth = troughMonth = 0;
+            return;
+        }
+        peak        = saved[5 + WINDOW];
+        peakMonth   = (int) Math.round(saved[5 + WINDOW + 1]);
+        trough      = saved[5 + WINDOW + 2];
+        troughMonth = (int) Math.round(saved[5 + WINDOW + 3]);
     }
 
     public void reset() {
+        peak = trough = 1.0;
+        peakMonth = troughMonth = 0;
         based = false;
         baseFood = baseRent = 0;
         foodWeight = rentWeight = .5;
@@ -203,6 +280,8 @@ public class PriceIndex {
     public void redenominate(double scale) {
         baseFood *= scale;
         baseRent *= scale;
+        // The marks are ratios like the index, and move for the same reason it
+        // does: they do not. A reform divides the basket and its base together.
     }
 
 }

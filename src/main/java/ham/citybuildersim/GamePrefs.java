@@ -61,6 +61,27 @@ public final class GamePrefs {
     public boolean isPanelDashboard()            { return panelDashboard; }
     public void setPanelDashboard(boolean value) { this.panelDashboard = value; }
 
+    /**
+     * The world the NEXT city is founded into.
+     *
+     * A PREFERENCE RATHER THAN A SAVED FIGURE, and the one setting here that
+     * does not take effect while you look at it. Jerus: "in settings have it be
+     * adjustable but only in game start." The world a city grew up in is a fact
+     * about that city - every price, wage and month of its exchange rate was
+     * struck against it - so changing this moves the next founding and nothing
+     * about the city on screen.
+     *
+     * Defaults to WorldEconomy.DEFAULT_MEAN_INFLATION. An older settings.json
+     * has no such field and Gson leaves the default in place.
+     */
+    private double worldInflation = WorldEconomy.DEFAULT_MEAN_INFLATION;
+
+    public double getWorldInflation() { return worldInflation; }
+    public void setWorldInflation(double value) {
+        this.worldInflation = Math.max(WorldEconomy.MIN_MEAN_INFLATION,
+                Math.min(WorldEconomy.MAX_MEAN_INFLATION, value));
+    }
+
     /* ===================================================================
        THE FILE
        =================================================================== */

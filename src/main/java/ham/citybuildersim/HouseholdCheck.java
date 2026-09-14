@@ -867,7 +867,7 @@ public class HouseholdCheck {
 
         HouseholdBalance copy = new HouseholdBalance();
         assertTrue("the cells restore by name",
-                copy.restoreCells(street.cellKeys(), street.toCellSaveArray()));
+                copy.restoreCells(street.cellKeys(), street.toCellSaveArray(), Equity.COMPANIES));
         boolean everyCell = true;
         for (int i = 0; i < street.cellCount(); i++) {
             Household a = street.cells().get(i), b = copy.cells().get(i);
@@ -886,7 +886,7 @@ public class HouseholdCheck {
         }
         System.arraycopy(whole, whole.length - 3, evening, evening.length - 3, 3);
         HouseholdBalance lastNight = new HouseholdBalance();
-        assertTrue("a save from before the dollars abroad restores", lastNight.restoreCells(street.cellKeys(), evening));
+        assertTrue("a save from before the dollars abroad restores", lastNight.restoreCells(street.cellKeys(), evening, Equity.COMPANIES));
         check("...with the shares", lastNight.sharesHeld(retail), street.sharesHeld(retail));
         check("...and no dollars", lastNight.totalAbroadUsd(), 0);
         // The morning's save, eight a cell and no shares, still restores.
@@ -897,12 +897,12 @@ public class HouseholdCheck {
         }
         System.arraycopy(full, full.length - 3, morning, morning.length - 3, 3);
         HouseholdBalance older = new HouseholdBalance();
-        assertTrue("a save from before the shares restores", older.restoreCells(street.cellKeys(), morning));
+        assertTrue("a save from before the shares restores", older.restoreCells(street.cellKeys(), morning, Equity.COMPANIES));
         check("...with the savings", older.totalSavings(), street.totalSavings());
         check("...and no shares", older.sharesHeld(retail), 0);
         check("...and the city's stock with them", copy.totalSavings(), street.totalSavings());
         assertTrue("a save with a key this build does not know is refused whole",
-                !copy.restoreCells(new String[] {"NOBODY"}, new double[] {1, 2}));
+                !copy.restoreCells(new String[] {"NOBODY"}, new double[] {1, 2}, Equity.COMPANIES));
 
         HouseholdBalance seeded = new HouseholdBalance();
         seeded.restore(street.toSaveArray(), blockCensus);

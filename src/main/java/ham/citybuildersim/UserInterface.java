@@ -1158,6 +1158,13 @@ public class UserInterface extends Application {
             // so the screen was drawn using pre-init/stale game state and
             // never refreshed again. Init the game first, then draw the screen.
             game.newGame();
+            /*
+             * THE WORLD IS CHOSEN HERE AND NOWHERE ELSE. newGame() rebuilds the
+             * world with its default; this is the one moment the player's
+             * setting is allowed to reach it, which is what makes it a founding
+             * choice rather than a dial. A loaded city restores its own.
+             */
+            game.getWorldEconomy().setMeanInflation(prefs.getWorldInflation());
             openCity();
         });
         /* =================================================================
@@ -1534,6 +1541,31 @@ public class UserInterface extends Application {
                 + "Full screen is kept with the game and is the same for every city "
                 + "on this machine."));
 
+        /* =================================================================
+           THE WORLD THE NEXT CITY IS FOUNDED INTO
+
+           The one setting on this screen that does not take effect while you
+           are looking at it, and it says so. A city's whole price history is
+           struck against the world it grew up in, so this moves the next
+           founding and nothing about the city on screen.
+           ================================================================= */
+        column.getChildren().add(statementHead("The world, for a new city"));
+
+        HBox worldRow = new HBox(Palette.GAP_TIGHT);
+        worldRow.setAlignment(Pos.CENTER_LEFT);
+        for (double m : new double[] { 0, .01, .02, .0333, .05 }) {
+            worldRow.getChildren().add(worldChip(m));
+        }
+        column.getChildren().add(worldRow);
+        column.getChildren().add(statementNote(String.format(
+                "How fast prices rise OUT THERE, on average. The world's own price "
+                + "level settles about %.2fx founding at this setting, and the city's "
+                + "currency is worth its own prices against that — so a faster world "
+                + "is a stronger currency here, cheaper imports, and a harder time "
+                + "selling abroad. 1%% is the default. Takes effect on the next new "
+                + "city; the one you have keeps the world it grew up in.",
+                settledLevelAt(prefs.getWorldInflation()))));
+
         column.getChildren().add(statementHead("Keys"));
         column.getChildren().add(statementLine("Esc  ·  P", "the game menu"));
         column.getChildren().add(statementLine("F11", "full screen on and off"));
@@ -1542,6 +1574,39 @@ public class UserInterface extends Application {
         back.setOnAction(e -> showMainMenu());
 
         rootMenu.getChildren().addAll(title, scrolled(column), back);
+    }
+
+    /**
+     * Where the world's price level settles at a given mean.
+     *
+     * Closed form, because the level IS a closed form: advanceMonth() compounds
+     * at the mean and pulls back toward a flat trend, so it rests where
+     * `mean/12 x L = TREND_PULL x (L - 1)`. See the block at the top of
+     * WorldEconomy - this is the same arithmetic that predicted 1.84, 1.37 and
+     * 1.15 before any of them were measured.
+     */
+    private static double settledLevelAt(double mean) {
+        double monthly = Math.pow(1 + Math.max(0, mean), 1.0 / 12) - 1;
+        double denom = WorldEconomy.TREND_PULL - monthly;
+        return denom <= 1e-9 ? 99 : WorldEconomy.TREND_PULL / denom;
+    }
+
+    /** One choice of world, shown as what it is and what it settles at. */
+    private Button worldChip(double mean) {
+        boolean on = Math.abs(prefs.getWorldInflation() - mean) < 1e-6;
+        Button b = new Button(String.format("%.2g%%", mean * 100).replace("0.0%", "0%"));
+        b.setStyle(Palette.figure(Palette.SIZE_LABEL, on ? "white" : Palette.TEXT_MUTED)
+                + " -fx-background-color: " + (on ? Palette.ACCENT : Palette.CONTROL) + ";"
+                + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
+                + " -fx-border-color: " + (on ? "transparent" : Palette.CONTROL_EDGE) + ";"
+                + " -fx-border-radius: " + Palette.RADIUS_TIGHT + ";"
+                + " -fx-min-width: 56; -fx-cursor: hand;");
+        b.setOnAction(e -> {
+            prefs.setWorldInflation(mean);
+            prefs.save(game.getGameFiles());
+            showSettingsMenu();
+        });
+        return b;
     }
 
     /**
@@ -1648,7 +1713,8 @@ public class UserInterface extends Application {
     private static EnumSet<BuildingType> investorTypes() {
         return EnumSet.of(BuildingType.RESIDENTIAL, BuildingType.COMMERCIAL,
                 BuildingType.INDUSTRIAL, BuildingType.HEAVY_INDUSTRY,
-                BuildingType.MINING, BuildingType.CONSTRUCTION);
+                BuildingType.MINING, BuildingType.CONSTRUCTION,
+                BuildingType.BUSINESS_SERVICES, BuildingType.AGRICULTURE);
     }
 
     /** True when everything in this category is something investors put up. */
@@ -1701,6 +1767,15 @@ public class UserInterface extends Application {
             new BuildCategory("Healthcare",     EnumSet.of(BuildingType.HEALTHCARE)),
             new BuildCategory("Education",      EnumSet.of(BuildingType.EDUCATION)),
             new BuildCategory("Safety",         EnumSet.of(BuildingType.SAFETY)),
+            // Its own row rather than folded into Industrial, because the thing
+            // a player needs to understand about these is the one thing they do
+            // not share with a mill: the customer is not in the city.
+            new BuildCategory("Services",       EnumSet.of(BuildingType.BUSINESS_SERVICES)),
+            // Its own row for the same reason, and a different one: what a
+            // player has to understand about a farm is that it competes with
+            // the whole neighbourhood rather than with one lot. See
+            // BuildingType.AGRICULTURE.
+            new BuildCategory("Farms",          EnumSet.of(BuildingType.AGRICULTURE)),
         };
     }
 
@@ -2996,6 +3071,83 @@ public class UserInterface extends Application {
                     String.format("Set property tax to %.2f%%", wantProp * 100),
                     () -> policy.setPropertyTaxRate(wantProp)));
         }
+
+        /* --------------------------- farmland relief --------------------------- */
+        farmlandRelief(column, game, policy, em);
+    }
+
+    /**
+     * The one dial that decides whether the city keeps its fields.
+     *
+     * A farm is the only building in the game whose cost is the GROUND rather
+     * than the structure, and the property tax is struck on what that ground
+     * would FETCH. In a young city that is nothing; in a grown one it is more
+     * than the field can possibly grow. Assessing farmland at USE value instead
+     * is what Ontario's Farm Property Class, Nova Scotia's resource rate and
+     * California's Williamson Act all do, for exactly this reason, and this is
+     * the same lever with the same cost stated in the same place.
+     *
+     * The cost is shown as money rather than as a principle, because that is
+     * the decision: this many dollars a month of tax the city is choosing not
+     * to collect, against the fields it would otherwise lose.
+     */
+    private void farmlandRelief(javafx.scene.layout.VBox column, Game game,
+                                TaxPolicy policy, EconomyManager em) {
+
+        Sector fields = game.getSectors().byKey(Sectors.AGRICULTURE);
+        if (fields == null) return;
+
+        double relief = policy.getFarmlandRelief();
+        double want = staged("farmland", relief);
+        double ground = em.landValueOf(fields);
+        double monthly = policy.effectiveMonthlyPropertyRate(Sectors.AGRICULTURE);
+
+        column.getChildren().add(statementHead("Farmland, and what it is assessed at"));
+        column.getChildren().add(leverHead(String.format("%.0f%% relieved", relief * 100),
+                "A field is worth what a developer would pay for it and grows what a "
+                + "farmer can grow on it. Tax the first and you lose the second, which is "
+                + "what happened to every market garden that was ever within a cart ride "
+                + "of a growing town. Relieving the land half is what real jurisdictions "
+                + "do; the cost is the tax you do not collect."));
+
+        column.getChildren().add(statementLine("The ground under the fields", money(ground),
+                ground > 0 ? Palette.TEXT_BODY : Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("On the roll at",
+                money(ground * (1 - relief)), Palette.TEXT_MUTED));
+        column.getChildren().add(statementTotal("Tax forgone, a month",
+                money(ground * relief * monthly),
+                relief > 0 && ground > 0 ? Palette.WARN : Palette.TEXT_MUTED));
+
+        if (ground <= 0) {
+            column.getChildren().add(statementNote(
+                    "Nothing under cultivation, so the dial costs nothing today. It decides "
+                    + "whether a field sunk now survives the city reaching it."));
+        }
+
+        column.getChildren().add(stageSlider("farmland", relief, 0, 1, .05,
+                r -> String.format("%.0f%%", r * 100)));
+
+        if (isStaged("farmland")) {
+            double now = ground * relief * monthly;
+            double then = ground * want * monthly;
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("Relieved",
+                    String.format("%.0f%%", relief * 100),
+                    String.format("%.0f%%", want * 100), Palette.ACCENT));
+            column.getChildren().add(wouldBe("Farmland on the roll",
+                    money(ground * (1 - relief)), money(ground * (1 - want)),
+                    Palette.TEXT_MUTED));
+            column.getChildren().add(wouldTotal("Raised from it a month",
+                    money(ground * (1 - relief) * monthly),
+                    money(ground * (1 - want) * monthly),
+                    then <= now ? Palette.WARN : Palette.GOOD));
+            column.getChildren().add(previewCaveat(
+                    "Exact against today's land price. What it actually decides is whether "
+                    + "the next field is worth sinking, which shows up years later."));
+            column.getChildren().add(applyBar(
+                    String.format("Relieve farmland by %.0f%%", want * 100),
+                    () -> policy.setFarmlandRelief(want)));
+        }
     }
 
     /* ------------------------- the arithmetic behind it ------------------------- */
@@ -3558,6 +3710,42 @@ public class UserInterface extends Application {
         column.getChildren().add(statementHead("Prices"));
         column.getChildren().add(statementLine("Since founding",
                 String.format("%.3f", px.getIndex()), Palette.TEXT_HEAD));
+
+        /* ------------------------- where it has been -------------------------
+         *
+         * Jerus, 2026-09-14: "something as well that stores the highest price
+         * index and lowest".
+         *
+         * TODAY'S LEVEL IS ONE SAMPLE OF A PATH THAT MOVES. Measured across
+         * sixteen four-thousand-month runs, cities that FINISH between 0.84 and
+         * 1.26 times founding prices peak at a median of 1.62 and as high as
+         * 3.78 getting there, and one swung +298% inside a decade - with
+         * nothing on any screen, in any log, saying so. A player reading 1.02
+         * has no way to tell a city that has never left 0.95-1.10 from one that
+         * went to 3.78 and came back, and those are not the same place to live.
+         *
+         * Shown only once the two marks have parted: on a young city they are
+         * both today's number and three identical lines say less than one.
+         */
+        if (px.swing() > 1.005) {
+            column.getChildren().add(statementLine("Dearest it has been",
+                    String.format("%.3f  (month %,d)", px.getPeak(), px.getPeakMonth()),
+                    px.getPeak() >= 2 ? Palette.WARN : Palette.TEXT_MUTED));
+            column.getChildren().add(statementLine("...and cheapest",
+                    String.format("%.3f  (month %,d)", px.getTrough(), px.getTroughMonth()),
+                    Palette.TEXT_MUTED));
+            column.getChildren().add(statementLine("...so the level has swung",
+                    String.format("%.2fx", px.swing()),
+                    px.swing() >= 2 ? Palette.WARN : Palette.TEXT_MUTED));
+            if (px.swing() >= 2) {
+                column.getChildren().add(statementNote(
+                        "Prices here have more than doubled and come back at some point. "
+                        + "Wages, rents and every debt in the city were struck against "
+                        + "those levels as they passed, and the people who lived through "
+                        + "it did not get that back. Today's number does not show it."));
+            }
+        }
+
         if (world != null) {
             column.getChildren().add(statementLine("The world's, likewise",
                     String.format("%.3f", world.getPriceLevel()), Palette.TEXT_MUTED));
@@ -5483,6 +5671,7 @@ public class UserInterface extends Application {
                 / Math.max(.0001, fx.getRate());
 
         double account = fx.monthlyCurrentAccount();
+        double capital = fx.monthlyFinancialAccount();
 
         column.getChildren().add(statementHead("The four forces on the rate"));
 
@@ -5514,14 +5703,41 @@ public class UserInterface extends Application {
                           + "city either earns it, borrows it, or spends the vault - "
                           + "and whichever it is, it pushes the rate weaker.");
 
+        /*
+         * THE OTHER HALF OF THE SIGNAL, AND IT WAS NOT ON THIS SCREEN. The
+         * pressure below is struck on the current account PLUS this one, and
+         * a playtest measured the two very nearly cancelling: a $1.6M monthly
+         * surplus against $1.27M going back out, for a net push of almost
+         * nothing. A player reading a huge surplus next to a pressure of zero
+         * had no line on any screen that explained it.
+         */
+        boolean still = Math.abs(capital) < .5;
+        forceLine(column, "The financial account, 12 months",
+                still ? "nothing moved" : signed(capital, false),
+                still ? Palette.TEXT_SPENT : capital < 0 ? Palette.WARN : Palette.GOOD,
+                still
+                        ? "No money is crossing the edge except for goods, so the trade "
+                          + "balance above is the whole of the imbalance."
+                        : capital < 0
+                        ? "Money leaving to be invested or lent abroad - the families' "
+                          + "savings going out for the world's rate, and foreigners "
+                          + "borrowing here to hold dollars. Every dollar of it is local "
+                          + "currency sold, which offsets a surplus one for one. A city "
+                          + "can run a permanent surplus and a flat rate at the same "
+                          + "time, and this is how."
+                        : "Money coming in to be lent or invested here. It has to be "
+                          + "bought with somebody's dollars first, so it pushes the same "
+                          + "way a surplus does.");
+
         forceLine(column, "Pressure on the rate",
                 Math.abs(pressure) < 1e-9 ? "none"
                         : String.format("%.1f%% %s", Math.abs(pressure) * 100,
                                 pressure > 0 ? "weaker" : "stronger"),
                 pressure > 0 ? Palette.BAD : pressure < 0 ? Palette.GOOD
                         : Palette.TEXT_SPENT,
-                "That imbalance as a share of everything the city trades. A big "
-                + "number on a small trade is a small push.");
+                "Both imbalances together, as a share of everything that crosses in "
+                + "either direction. A big number on a small trade is a small push - "
+                + "and a surplus financed by money going back out is no push at all.");
 
         forceLine(column, "Absorbed by the reserves",
                 String.format("%.0f%%", absorbed * 100),
@@ -6476,6 +6692,7 @@ public class UserInterface extends Application {
         line = weightRow(w, line, "The treasury", bank.getCityBook(), Bank.RISK_CITY);
         line = weightRow(w, line, "The businesses", bank.getSectorBook(), Bank.RISK_BUSINESS);
         line = weightRow(w, line, "The families", bank.getHouseholdBook(), Bank.RISK_HOUSEHOLD);
+        line = weightRow(w, line, "The carry trade", bank.getCarryBook(), Bank.RISK_CARRY);
         column.getChildren().add(w);
 
         column.getChildren().add(statementLine("Face value of the book",
@@ -6698,7 +6915,8 @@ public class UserInterface extends Application {
         double sector = bank.getSectorBook();
         double city = bank.getCityBook();
         double families = bank.getHouseholdBook();
-        double all = sector + city + families;
+        double carry = bank.getCarryBook();
+        double all = sector + city + families + carry;
 
         column.getChildren().add(statementHead("Who owes the bank money"));
 
@@ -6711,18 +6929,26 @@ public class UserInterface extends Application {
         if (sector > 0)   split.add(new Slice("The businesses", sector, Palette.LADDER[1]));
         if (city > 0)     split.add(new Slice("The treasury", city, Palette.LADDER[0]));
         if (families > 0) split.add(new Slice("The families", families, Palette.SPENDING_RAMP[2]));
+        if (carry > 0)    split.add(new Slice("The carry trade", carry, Palette.LADDER[3]));
         column.getChildren().add(stackedBar(split, STATEMENT - 40));
 
         column.getChildren().add(statementLine("The businesses", moneyFull(sector)));
         column.getChildren().add(statementLine("The treasury", moneyFull(city)));
         column.getChildren().add(statementLine("The families", moneyFull(families)));
+        column.getChildren().add(statementLine("The carry trade", moneyFull(carry)));
         column.getChildren().add(statementTotal("On the book", moneyFull(all),
                 Palette.TEXT_HEAD));
 
         column.getChildren().add(statementNote(
                 "The treasury's share is the city's own bonds — the bank is what buys them, "
                 + "which is why a bond programme takes room the shops and mills were going "
-                + "to borrow. It is also the cheapest thing on this list to hold."));
+                + "to borrow. It is also the cheapest thing on this list to hold.\n\n"
+                + "The carry trade is foreigners. When the bank lends cheaper than the "
+                + "world pays, it is worth borrowing here and holding the money abroad, "
+                + "and they do. They take what is left after everyone who lives here has "
+                + "borrowed, they pay the same rate a business does, and the currency they "
+                + "sell on the way out is what keeps a trade surplus from lifting the rate "
+                + "forever. They also leave when the gap closes."));
 
         /* -------------------------- the businesses, split -------------------------- */
         column.getChildren().add(statementHead("The businesses, one by one"));
@@ -7037,9 +7263,10 @@ public class UserInterface extends Application {
         who.getChildren().addAll(
                 payerRow("The businesses", bank.getSectorBook(), bank.getBook(), "on the book"),
                 payerRow("The treasury", bank.getCityBook(), bank.getBook(), "on the book"),
-                payerRow("The families", bank.getHouseholdBook(), bank.getBook(), "on the book"));
+                payerRow("The families", bank.getHouseholdBook(), bank.getBook(), "on the book"),
+                payerRow("The carry trade", bank.getCarryBook(), bank.getBook(), "on the book"));
         who.getChildren().add(statementNote(
-                "The books those rates are charged on. Interest is collected on all three "
+                "The books those rates are charged on. Interest is collected on all four "
                 + "at once, so it cannot be split further than this without inventing a "
                 + "figure the model does not keep."));
 
@@ -9960,6 +10187,8 @@ public class UserInterface extends Application {
             showNoLandMenu(template, quantity, menuTitle, categories);
         } else if (result == Game.BuildResult.NO_DEPOSIT) {
             showNoDepositMenu(template, quantity, menuTitle, categories);
+        } else if (result == Game.BuildResult.NO_LICENCE) {
+            showNoLicenceMenu(template, quantity, menuTitle, categories);
         }
     }
 
@@ -10553,6 +10782,56 @@ public class UserInterface extends Application {
         rootMenu.getChildren().addAll(title, explanation, reserves, toLand, back);
     }
 
+    /**
+     * Nobody licensed to practise in it.
+     *
+     * The second refusal of its kind - a mine with no deposit was the first -
+     * and the sentence that matters is the last one: this is not a money
+     * problem, so the screen must not offer a bond to fix it.
+     */
+    private void showNoLicenceMenu(BuildingsTemplate selected, int quantity,
+                                   String menuTitle, EnumSet<BuildingType> categories) {
+        clearMenu("showNoLicenceMenu", () -> showNoLicenceMenu(selected, quantity, menuTitle, categories));
+
+        JobType licence = selected.getRequiresLicence();
+        double need = game.licencesNeededFor(selected, quantity);
+        double have = game.getPopulationManager().spareLicences(licence);
+        String what = licence == null ? "licences" : jobLabel(licence);
+
+        Label title = new Label("NOBODY QUALIFIED TO WORK IN IT");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox explanation = reportSection("WHY",
+                quantity + " x " + selected.getName() + " needs "
+                        + String.format("%,.0f", Math.ceil(need)) + " " + what
+                        + " not already at work.",
+                "The city has " + String.format("%,.0f", Math.floor(have)) + " spare.",
+                "",
+                "A practice opens when it can staff its core and hire the rest.",
+                "Half the licensed posts is the bar - the other half can arrive",
+                "or graduate later.",
+                "",
+                "Two ways to get them: a school that licenses this profession,",
+                "or migration, which brings a few already qualified when the city",
+                "pays over the going rate for them.",
+                "",
+                "This is not a funding problem. A bond would not fix it.");
+
+        Button toSchools = new Button("Go to Build - Education");
+        toSchools.setOnAction(e -> {
+            buildCategory = "Education";
+            showBuildMenu();
+        });
+
+        Button toPeople = new Button("Who the city has");
+        toPeople.setOnAction(e -> showPopulationInfoMenu());
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
+
+        rootMenu.getChildren().addAll(title, explanation, toSchools, toPeople, back);
+    }
+
     private void showNoLandMenu(BuildingsTemplate selected, int quantity,
                                 String prevTitle, EnumSet<BuildingType> prevCats) {
         clearMenu("showNoLandMenu", () -> showNoLandMenu(selected, quantity, prevTitle, prevCats));
@@ -10646,6 +10925,7 @@ public class UserInterface extends Application {
             case SUCCESS    -> handleAllBuildingMenus(prevTitle, prevCats);
             case NO_LAND    -> showNoLandMenu(selected, quantity, prevTitle, prevCats);
             case NO_DEPOSIT -> showNoDepositMenu(selected, quantity, prevTitle, prevCats);
+            case NO_LICENCE -> showNoLicenceMenu(selected, quantity, prevTitle, prevCats);
             // NOT back to this screen. Re-offering a T-Bill to a city that has
             // just bought one and is still short would loop the player through
             // the same button forever, borrowing every time.

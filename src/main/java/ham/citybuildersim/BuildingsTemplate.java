@@ -99,6 +99,28 @@ public class BuildingsTemplate {
      */
     private SafetyType safety = SafetyType.NONE;
 
+    /* =======================================================================
+       A BUILDING THE CITY CANNOT STAFF SHOULD NOT BE BUILDABLE (2026-09-12)
+
+       The licence a building's practice is built on, or null for the forty-six
+       that need none. An Engineering Services Office is seventy-eight licensed
+       engineers; a city with no Institute of Technology and no engineers among
+       its arrivals cannot open one, and should be told so rather than sinking
+       ten million into a building that stands empty.
+
+       Why a hard gate and not just the price: the licence premium already
+       punishes posts over holders - up to four times the band - so an
+       understaffed office IS unprofitable. But the investment planner costs a
+       new building at nameplate capacity and ignores the fill rate (a standing
+       open item), so it would order one anyway and the office would sit there
+       paying maintenance and property tax on nothing.
+
+       This is the second instance of the rule. The first is the mine's deposit,
+       which is hard-coded on BuildingType.MINING in Game rather than declared
+       here; when somebody next touches it, it belongs in this field's shape.
+       ======================================================================= */
+    private JobType requiresLicence = null;
+
     private int id;
 
     /* =====================================================================
@@ -454,6 +476,20 @@ public class BuildingsTemplate {
 
     public CareType getCare() {
         return care;
+    }
+
+    /** The licence this building's practice needs, or null. See the field's note. */
+    public BuildingsTemplate setRequiresLicence(JobType licence) {
+        this.requiresLicence = licence;
+        return this;
+    }
+
+    /** The licence this building's practice needs, or null if it needs none. */
+    public JobType getRequiresLicence() { return requiresLicence; }
+
+    /** How many posts here need that licence - what the gate is measured against. */
+    public int getLicensedPosts() {
+        return requiresLicence == null ? 0 : getJobs(requiresLicence);
     }
 
     public SafetyType getSafety() {

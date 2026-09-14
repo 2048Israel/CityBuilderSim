@@ -166,6 +166,26 @@ public class Exchange {
     /** Equity this far past target before a company buys back, as a share of assets. */
     public static final double OVER_TARGET = .10;
 
+    /* =======================================================================
+       AND A DEAD BAND ON THE LINE ITSELF (2026-09-13)
+
+       "excess > 0" is a comparison of two large numbers whose difference is
+       near zero, and there is a step function on the other side of it: a
+       company that crosses the line by a hair does not buy back a hair's
+       worth of shares, it calls BUYBACK_CUSHION_MONTHS of operating cost home
+       from abroad (see the cashAvailable call below, which asks for the
+       cushion whatever the programme is worth) and then spends nothing. Six
+       months of payroll moves on a rounding error.
+
+       RELATIVE, so it never needs seeding: a reform divides equity and assets
+       together and leaves the ratio alone, which is the property MIN_FAIR has
+       to buy with seedConstants(). A billionth of the balance sheet is six
+       orders of magnitude above the arithmetic's own noise and far below
+       anything a person could see - on the largest company in a mature city
+       it is a few dollars a month.
+       ======================================================================= */
+    public static final double MIN_EXCESS = 1e-9;
+
     /** The most a company retires in a year, as a share of what it is worth. */
     public static final double BUYBACK_PACE = .10;
 
@@ -174,6 +194,83 @@ public class Exchange {
 
     /** A share quoted at this many times its founding price is split; at one over it, consolidated. */
     public static final double SPLIT_AT = 100;
+
+    /**
+     * The least a share may be worth before the desk treats the company as
+     * worthless.
+     *
+     * A MONEY CONSTANT, AND A REFORM NEVER RESEEDED IT - found 2026-09-12, and
+     * it is the second of its family in this class after Equity.FOUNDING_PRICE.
+     * It looks like an epsilon and it is not: deskCanBuy() computes
+     *
+     *     bookRoom = (bookLimit - bookAtFair) / fair[c]
+     *
+     * so a fair value pinned at the floor rather than at its real level makes
+     * the room the desk thinks it has WRONG BY THE RATIO OF THE TWO. After a
+     * hundred-to-one reform every price is a hundred times smaller, a company
+     * near the floor is clamped in the reformed city and not in the plain one,
+     * and the desk trades a different size on it.
+     *
+     * Measured, at month 149 of DenominationCheck's long section: every book,
+     * the created stock, both lending flows, wages, tax, the carry and hot
+     * money all bit-identical between the two cities, and the bank's trading
+     * income 2,218.71 against 2,372.09 - a seven per cent gap on one month's
+     * dealing, from one company sitting near an epsilon. It took the whole
+     * chain from there to a 1.5e-4 disagreement about the city eighty-eight
+     * months later.
+     */
+    public static final double MIN_FAIR = 1e-9;
+
+    /** The same floor in today's money. See MIN_FAIR. */
+    private double minFair = MIN_FAIR;
+
+    /* =======================================================================
+       WHAT COUNTS AS A DEALER HAVING CAPITAL (2026-09-13)
+
+       "open = bankEquity > 0" ran the whole market off the sign of a
+       difference of two large numbers, and a bank that has just been wound
+       down to zero equity does not report zero - it reports whatever is left
+       of assets minus liabilities after the arithmetic, which on a balance
+       sheet of $145M is a few hundred picodollars.
+
+       Measured, at month 125 of DenominationCheck's long section: the same
+       bank in the same month, $2.3e-10 of equity in the plain city and
+       exactly $0 in the reformed one. One of them opened its exchange and the
+       other did not - and a month with no dealer is a month where no company
+       buys back, no household buys, the world cannot sell, and every till in
+       the city ends somewhere else. Eleven assertions about the city a decade
+       later failed on it, and the cause looked for two sessions like a money
+       constant somewhere in the register, which is what a step function
+       driven by dust looks like from the outside.
+
+       A THOUSAND DOLLARS, which is one share at the founding price, because
+       the sentence the switch is trying to say is "the desk has capital to
+       take a position with" and a desk that cannot buy one share has not got
+       it. Nine orders of magnitude above the noise and nine below anything a
+       real bank in this game holds; the only months it changes are the months
+       that were being decided by rounding.
+
+       SEEDED, like MIN_FAIR, because it is money: a hundred-to-one reform
+       makes every balance a hundred times smaller and a fixed floor a hundred
+       times harder to clear. That is the third money constant of this family
+       in this file's history and the note on MIN_FAIR explains the shape.
+       ======================================================================= */
+    public static final double MIN_DEALER_EQUITY = 1.0;
+
+    /** The same floor in today's money. See MIN_DEALER_EQUITY. */
+    private double minDealerEquity = MIN_DEALER_EQUITY;
+
+    /** Re-seeds the floors at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        double u = unit > 0 ? unit : 1;
+        minFair = MIN_FAIR / u;
+        minDealerEquity = MIN_DEALER_EQUITY / u;
+    }
+
+    /** Whether the bank has capital enough to make a market at all. */
+    private boolean hasDealerCapital(double bankEquity) {
+        return bankEquity > minDealerEquity;
+    }
 
     /* ------------------------------- the book ------------------------------- */
 
@@ -247,10 +344,10 @@ public class Exchange {
      * @param bankEquity the bank's, for the position limits
      */
     public void quote(Equity register, double[] book, double bankEquity, double worldRate) {
-        open = bankEquity > 0;
+        open = hasDealerCapital(bankEquity);
         for (int c = 0; c < n; c++) {
-            if (register.getShares(c) <= 0) { fair[c] = Equity.FOUNDING_PRICE; mid[c] = fair[c]; limit[c] = 0; continue; }
-            fair[c] = Math.max(1e-9, register.fairValue(c, book[c], worldRate));
+            if (register.getShares(c) <= 0) { fair[c] = register.foundingPrice(); mid[c] = fair[c]; limit[c] = 0; continue; }
+            fair[c] = Math.max(minFair, register.fairValue(c, book[c], worldRate));
             limit[c] = open ? POSITION_LIMIT * bankEquity / fair[c] : 0;
             bookLimit = open ? BOOK_LIMIT * bankEquity : 0;
             double held = register.getDealerShares(c) - demand[c];
@@ -484,7 +581,7 @@ public class Exchange {
             double equity = companies.equity(c);
             if (assets <= 0) continue;
             double excess = equity - (register.getTargetEquityShare(c) + OVER_TARGET) * assets;
-            if (excess <= 0) continue;
+            if (excess <= assets * MIN_EXCESS) continue;
             double cushion = BUYBACK_CUSHION_MONTHS * Math.max(0, companies.monthlyOperatingCost(c));
             double worth = register.getOutstanding(c) * fair[c];
             double cap = Math.min(excess, BUYBACK_PACE / 12 * worth);
@@ -612,8 +709,8 @@ public class Exchange {
             // A company worth nothing is not consolidated into nothing: a
             // failed bank's shares were folded a million to one on a fair
             // value of zero, and "last sold at" read a million dollars.
-            if (fair[c] <= 1e-9) continue;
-            double ratio = mid[c] / Equity.FOUNDING_PRICE;
+            if (fair[c] <= minFair) continue;
+            double ratio = mid[c] / register.foundingPrice();
             if (ratio < SPLIT_AT && ratio > 1 / SPLIT_AT) continue;
             double k = Math.pow(10, Math.floor(Math.log10(ratio)));
             if (!(k > 0) || k == 1) continue;
@@ -749,7 +846,7 @@ public class Exchange {
      * market" and every owners block a quote, until the first month closed.
      */
     public void reopen(double bankEquity) {
-        open = bankEquity > 0;
+        open = hasDealerCapital(bankEquity);
     }
 
     public void reset() {
@@ -766,6 +863,8 @@ public class Exchange {
 
     /** Prices and the month's cash in the new unit; share counts do not move. */
     public void redenominate(double scale) {
+        minFair *= scale;
+        minDealerEquity *= scale;
         for (int c = 0; c < n; c++) {
             mid[c] *= scale; fair[c] *= scale; lastMid[c] *= scale;
             soldToHouseholds[c] *= scale; boughtFromHouseholds[c] *= scale;

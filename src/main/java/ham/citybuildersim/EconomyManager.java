@@ -389,9 +389,19 @@ public class EconomyManager {
     private double totalPropertyTax;
     private final Map<String, Double> propertyTaxBySector = new LinkedHashMap<>();
 
-    /** Land at today's price plus FINISHED buildings at replacement cost. Sites are not assessed. */
+    /**
+     * Land at today's price plus FINISHED buildings at replacement cost. Sites
+     * are not assessed.
+     *
+     * THE LAND HALF IS SCALED BY WHAT THE ROLL ACTUALLY CARRIES (2026-09-13),
+     * which is one for every sector but the fields. A farm's ground is worth
+     * what a developer would pay for it and grows what a farmer can grow on it,
+     * and taxing the first drives out the second long before the city reaches
+     * the fence - so the player has a dial. See TaxPolicy.assessedLandShare.
+     */
     public double getAssessedValue(Sector s) {
-        return landValueOf(s) + buildingManager.getBookValueBySector(s.key());
+        return landValueOf(s) * taxPolicy.assessedLandShare(s.key())
+                + buildingManager.getBookValueBySector(s.key());
     }
 
     /** The same for a city-owned category, which the city does not tax but a screen may want to show. */
