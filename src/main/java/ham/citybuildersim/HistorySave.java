@@ -63,6 +63,15 @@ public class HistorySave {
     /* --------------------------- people --------------------------- */
     private List<Integer> jobs = new ArrayList<>();
     private List<Integer> workforce = new ArrayList<>();
+    /**
+     * The people out of work - the labour force less the posts FILLED, the
+     * People screen's figure (PopulationManager.getUnemployed()). Recorded
+     * since 2026-09-15 because nothing else here could reproduce it: the
+     * workforce above still counts the students and the prisoners, and the
+     * jobs are posts offered rather than posts filled, so "workforce less
+     * jobs" read 14% on a city whose pool was empty.
+     */
+    private List<Integer> outOfWork = new ArrayList<>();
     private List<Integer> population = new ArrayList<>();
 
     /** The four flows that move the population, and only these four move it. */
@@ -323,6 +332,7 @@ public class HistorySave {
 
         jobs.add(people.getTotalJobs());
         workforce.add(people.getWorkforce());
+        outOfWork.add(people.getUnemployed());
         population.add(people.getPopulation());
 
         PopulationCohorts pyramid = game.getCohorts();
@@ -507,6 +517,7 @@ public class HistorySave {
 
         jobs = copy(loaded.jobs);
         workforce = copy(loaded.workforce);
+        outOfWork = copy(loaded.outOfWork);
         population = copy(loaded.population);
         births = copy(loaded.births);
         deaths = copy(loaded.deaths);
@@ -706,6 +717,7 @@ public class HistorySave {
         map.put("surplus", surplus);
         map.put("jobs", jobs);
         map.put("workforce", workforce);
+        map.put("outOfWork", outOfWork);
         map.put("population", population);
         map.put("births", births);
         map.put("deaths", deaths);
@@ -822,6 +834,7 @@ public class HistorySave {
     public List<Double> getInterestRate()  { return interestRate; }
     public List<Integer> getJobs()         { return jobs; }
     public List<Integer> getWorkforce()    { return workforce; }
+    public List<Integer> getOutOfWork()    { return outOfWork; }
     public List<Integer> getPopulation()   { return population; }
 
     /**

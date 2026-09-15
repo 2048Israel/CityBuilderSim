@@ -5688,6 +5688,25 @@ public class Game {
     public GameFiles.Result getLastSaveResult() { return lastSaveResult; }
 
     public GameFiles getGameFiles() { return gameFiles; }
+
+    /**
+     * Writes the run out as plain text, one row a year and one row a decade.
+     *
+     * Two files rather than one because they answer different questions: a
+     * 333-year run is a quarter of a megabyte a year at a time and a tenth of
+     * that by decade, and the reader who is short of room should not have to
+     * throw away the detail to get the shape.
+     *
+     * Returned rather than thrown, and in the order {year, decade}, because the
+     * screen has to say something either way - see GameFiles.Result.
+     */
+    public GameFiles.Result[] writeBooks() {
+        HistorySave book = getHistorySave();
+        return new GameFiles.Result[] {
+            gameFiles.write(gameFiles.yearBookFile(),   YearBook.years(book)),
+            gameFiles.write(gameFiles.decadeBookFile(), YearBook.decades(book))
+        };
+    }
     
     public void sendBuildingSave() {
 

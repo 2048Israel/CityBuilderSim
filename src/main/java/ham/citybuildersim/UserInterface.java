@@ -19682,8 +19682,10 @@ public class UserInterface extends Application {
 
         new Trace("population",     "Population",         "PEOPLE",     "count"),
         new Trace("workforce",      "Workforce",          "PEOPLE",     "count"),
+        new Trace("labourForce",    "Labour force",       "PEOPLE",     "count"),
         new Trace("jobs",           "Jobs",               "PEOPLE",     "count"),
         new Trace("unemployment",   "Unemployment",       "PEOPLE",     "percent"),
+        new Trace("outOfWork",      "Out of work",        "PEOPLE",     "count"),
         new Trace("births",         "Births",             "PEOPLE",     "count"),
         new Trace("deaths",         "Deaths",             "PEOPLE",     "count"),
         new Trace("diedOfIllness",  "Died of illness",    "PEOPLE",     "count"),
@@ -19995,8 +19997,42 @@ public class UserInterface extends Application {
         column.getChildren().add(historyPresets());
         column.getChildren().add(historyPickerRows());
 
+        column.getChildren().add(statementHead("Send this run to somebody", GRAPH));
+        column.getChildren().add(statementNote(
+                "Writes the whole run out as plain text - every series the history keeps, folded "
+                + "one row a year, and again one row a decade, with a list of what actually "
+                + "happened and when. Each column says whether it was added, taken at the end of "
+                + "the row or averaged, and what it means, so it can be handed to somebody - or "
+                + "something - that has never seen this city."));
+        Button books = new Button("Write the year book  \u2192");
+        books.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
+                + " -fx-background-color: " + Palette.CONFIRM + ";");
+        books.setOnAction(e -> writeTheBooks());
+        VBox.setMargin(books, new javafx.geometry.Insets(4, 0, 4, 14));
+        column.getChildren().add(books);
+        if (bookExportSaid != null) column.getChildren().add(statementNote(bookExportSaid));
+
         rootMenu.getChildren().addAll(title, lead, historyVitals(h),
                 scrolled(column, 210));
+    }
+
+    /**
+     * What the last export did, kept so it survives the redraw.
+     *
+     * The click redraws this whole screen, and so does the month turning under
+     * it, so a message held in a local would be gone before it was read.
+     */
+    private String bookExportSaid;
+
+    private void writeTheBooks() {
+        StringBuilder said = new StringBuilder();
+        for (GameFiles.Result written : game.writeBooks()) {
+            if (written.ok) said.append("Written: ").append(written.file).append('\n');
+            else said.append("Could not write ").append(written.file)
+                     .append(" - ").append(written.message()).append('\n');
+        }
+        bookExportSaid = said.toString().trim();
+        showHistoryMenu();
     }
 
     /* --------------------------------------------------------------------- */
@@ -20674,14 +20710,24 @@ public class UserInterface extends Application {
 
     private double[] historyValues(HistorySave h, String key) {
         switch (key) {
-            case "unemployment": {
-                double[] w = h.aligned("workforce"), j = h.aligned("jobs");
-                double[] out = new double[w.length];
-                for (int i = 0; i < out.length; i++) {
-                    out[i] = w[i] > 0 ? Math.max(0, (w[i] - j[i]) / w[i]) : Double.NaN;
-                }
-                return out;
-            }
+            /*
+              * THE CHART READS THE SAME DEFINITION THE YEAR BOOK DOES.
+              *
+              * This case used to be (workforce - jobs) / workforce, struck
+              * here and struck again in YearBook, and both were wrong the same
+              * way: `workforce` still carries the students and the prisoners,
+              * and `jobs` is posts OFFERED. On a slot-3 city it drew 5.5%
+              * unemployment for seventy years against out-of-work ledgers that
+              * were empty and eleven thousand posts nobody could fill - the
+              * line was the student count wearing an unemployment label.
+              *
+              * PopulationManager.getLabourForce() carries a comment saying
+              * this exact mistake was found and fixed once already, on the
+              * People screen, in September. It came back a layer up because
+              * the chart had its own copy. It does not have one now.
+              */
+            case "unemployment":    return YearBook.unemployment(h);
+            case "labourForce":     return YearBook.labourForce(h);
             /*
              * REAL GDP - output with the price level divided out.
              *
@@ -20735,14 +20781,14 @@ public class UserInterface extends Application {
                 }
                 return out;
             }
-            case "averageWage": {
-                double[] t = h.aligned("totalWage"), w = h.aligned("workforce");
-                double[] out = new double[t.length];
-                for (int i = 0; i < out.length; i++) {
-                    out[i] = w[i] > 0 ? t[i] / w[i] : Double.NaN;
-                }
-                return out;
-            }
+            /*
+              * Over the posts that are FILLED, not over the workforce - see
+              * YearBook.averageWage(). Dividing the wage bill by a workforce
+              * that carries 96,000 students who are paid nothing is how the
+              * line a player reads against rent came out low, and further out
+              * the more the city studied.
+              */
+            case "averageWage":     return YearBook.averageWage(h);
             case "netMigration":    return minus(h.aligned("arrivals"), h.aligned("departures"));
 
             /*

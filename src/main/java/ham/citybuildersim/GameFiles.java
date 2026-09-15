@@ -121,6 +121,19 @@ public final class GameFiles {
     public Path saveFile(int slot)    { return savesDirectory().resolve(stem(slot) + ".json"); }
     public Path historyFile(int slot) { return savesDirectory().resolve(stem(slot) + "-history.json"); }
 
+    /*
+     * THE YEAR BOOK AND THE DECADE BOOK
+     *
+     * Beside log.txt rather than in saves/, because they are not saves: nothing
+     * loads them and nothing is lost if they are deleted. One fixed name each,
+     * overwritten every export, so the player always knows where the file is
+     * without hunting for the newest of a pile - and the header inside names
+     * the run, the month span and the build, so a file that has been carried
+     * somewhere else still says what it is.
+     */
+    public Path yearBookFile()   { return directory.resolve("year-book.txt"); }
+    public Path decadeBookFile() { return directory.resolve("decade-book.txt"); }
+
     /**
      * Zero-padded, so the folder sorts the way a person reads it and slot 10
      * does not land between 1 and 2.
