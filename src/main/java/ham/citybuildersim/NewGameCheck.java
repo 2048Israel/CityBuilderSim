@@ -129,7 +129,7 @@ public class NewGameCheck {
         m.put("na.investmentConstruction", na.getInvestmentConstruction());
         m.put("na.investmentInventories", na.getInvestmentInventories());
         m.put("na.government", na.getGovernment());
-        m.put("na.lastFoodUnits", na.getLastFoodUnits());
+        m.put("na.lastFoodVolume", na.getLastFoodVolume());
 
         m.put("credit.principal", e.getBusinessDebtManager().getTotalPrincipal());
         m.put("credit.writtenOff", e.getBusinessDebtManager().getTotalWrittenOff());
@@ -182,8 +182,8 @@ public class NewGameCheck {
         used.run();
         used.buildStack(template(used, "House"), 200, false);
         used.buildStack(template(used, "Convenience Store"), 5, false);
-        used.buildStack(template(used, "Textile Mill"), 2, false);
-        used.buildStack(template(used, "Food Processing Plant"), 1, false);
+        used.buildStack(template(used, "Industrial Bakery"), 2, false);
+        used.buildStack(template(used, "Bakery"), 1, false);
         used.buildStack(template(used, "Construction Depot"), 4, false);
         used.buildStack(template(used, "Coal Power Plant"), 1, false);
         used.simulateMonths(120);

@@ -38,9 +38,23 @@ public final class FoodIndustry extends Sector {
 
     public FoodIndustry() {
         super("Industry", "Industry", BuildingType.INDUSTRIAL);
-        makes(Good.FOOD);
+        /*
+         * THE SECTOR'S OWN OUTPUT LIST, AND IT IS NOT THE BUILDINGS'.
+         *
+         * Markets iterates goodsMade() to decide what comes to market, so this
+         * line - not the templates - is what makes a good exist. When the ovens
+         * were repointed at BREAD on 2026-09-15 and this still said FOOD, the
+         * sector had 858,000kg of nameplate bread capacity and produced zero,
+         * while the city imported bread beside it. Nothing failed; the good was
+         * simply never offered.
+         *
+         * Two places name what a sector makes and they have to agree. The
+         * buildings say how much; this says what.
+         */
+        makes(Good.BREAD);
+        makes(Good.BAKERY);
         uses(Good.CROPS);
-        blurb("Turns crops into the food the shops sell - buying them from the "
+        blurb("Turns crops into the bread the shops sell - buying them from the "
                 + "city's own fields when there are any and from the world when "
                 + "there are not. Idles rather than flood its own warehouse, ships "
                 + "spare capacity abroad, and will not sell at home below what a "
@@ -78,6 +92,7 @@ public final class FoodIndustry extends Sector {
         if (game == null) return super.retirementDemandAndCapacity(game);
         double demand = Math.min(buildings.getTotalStoreCoverage(),
                 game.getPopulationManager().getPopulation());
-        return new double[] { demand, getCapacity(Good.FOOD) };
+        return new double[] { demand,
+                (getCapacity(Good.BREAD) + getCapacity(Good.BAKERY)) / Agriculture.BAKED_KG_A_HEAD };
     }
 }

@@ -380,7 +380,7 @@ public class CreditCheck {
         // sale of the month booked into its ledger by hand.
         Sector ih = new ham.citybuildersim.sectors.FoodIndustry();
         ih.setCash(10000);
-        ih.bookSale(new Trade(Good.FOOD, ih.key(), Sectors.RETAIL, 1000, .50));   // revenue 500
+        ih.bookSale(new Trade(Good.BREAD, ih.key(), Sectors.RETAIL, 1000, .50));   // revenue 500
         ih.setEnergyRatio(1);
         ih.setWaterRatio(1);
         ih.updateJobFillRate(new double[11]);
@@ -569,7 +569,7 @@ public class CreditCheck {
         city.run();
         city.buildStack(template(city, "House"), 200, false);
         city.buildStack(template(city, "Convenience Store"), 5, false);
-        city.buildStack(template(city, "Textile Mill"), 2, false);
+        city.buildStack(template(city, "Industrial Bakery"), 2, false);
         city.buildStack(template(city, "Construction Depot"), 4, false);
         /*
          * And a bank, because this section is about the CURVE.
@@ -834,7 +834,7 @@ public class CreditCheck {
         banned.getGovernmentInvestor().spend(-5_000_000);
         banned.getLandManager().setOwnedSqFt(200_000_000);
         banned.buildStack(template(banned, "House"), 2500, false);
-        banned.buildStack(template(banned, "Textile Mill"), 3, false);
+        banned.buildStack(template(banned, "Industrial Bakery"), 3, false);
         banned.buildStack(template(banned, "Construction Depot"), 4, false);
         banned.buildStack(template(banned, "Coal Power Plant"), 1, false);
         // ...and somewhere to put a shop, or the refusal is about land and the

@@ -103,9 +103,25 @@ public class HealthCheck {
                 Healthcare.foundingCapacity(CareType.CHILDCARE),
                 Healthcare.FOUNDING_CITY * (PopulationCohorts.equilibriumShare(AgeBand.BABY)
                         + PopulationCohorts.equilibriumShare(AgeBand.CHILD)), 1e-9);
-        check("...and senior care's",
+        /*
+         * SENIOR CARE SERVES TWO BANDS NOW, and not equally: a place per elder
+         * against 0.19 of one per senior, which is the census residency curve
+         * normalised on the elders. So the endowment is the weighted share, and
+         * this asserts it through CareType's own weights rather than repeating
+         * the numbers - a check that hard-codes 0.19 tests that nobody edited
+         * the harness.
+         */
+        double seniorShare = PopulationCohorts.equilibriumShare(AgeBand.SENIOR)
+                        * CareType.SENIOR.placesPerHead(AgeBand.SENIOR)
+                + PopulationCohorts.equilibriumShare(AgeBand.ELDER)
+                        * CareType.SENIOR.placesPerHead(AgeBand.ELDER);
+        check("...and senior care's, weighted across both retired bands",
                 Healthcare.foundingCapacity(CareType.SENIOR),
-                Healthcare.FOUNDING_CITY * PopulationCohorts.equilibriumShare(AgeBand.SENIOR), 1e-9);
+                Healthcare.FOUNDING_CITY * seniorShare, 1e-9);
+        assertTrue("an elder needs a whole place and a senior a fraction of one",
+                CareType.SENIOR.placesPerHead(AgeBand.ELDER) == 1.0
+                        && CareType.SENIOR.placesPerHead(AgeBand.SENIOR) < 1.0
+                        && CareType.SENIOR.placesPerHead(AgeBand.SENIOR) > 0);
         assertTrue("...both less than general care, which serves everybody",
                 Healthcare.foundingCapacity(CareType.CHILDCARE)
                         < Healthcare.foundingCapacity(CareType.GENERAL)
@@ -336,7 +352,16 @@ public class HealthCheck {
          * after this section.
          */
         ham.citybuildersim.sectors.Retail shops = well.getSectors().retail();
-        double shelf = shops.getPantry(Good.FOOD);
+        /*
+         * THIRTEEN PANTRIES TO PUT BACK, NOT ONE. The shelf was a single good
+         * until 2026-09-15 and this saved it with one getter. It is thirteen
+         * kilogram figures now, and restoring only one would let the second
+         * sale run against a shelf the first had already eaten twelve
+         * thirteenths of - exactly the confound the save-and-restore exists to
+         * remove.
+         */
+        java.util.Map<Good, Double> shelf = new java.util.EnumMap<>(Good.class);
+        for (Good sg : ham.citybuildersim.sectors.Retail.SHELF) shelf.put(sg, shops.getPantry(sg));
         wellEcon.setHealthRatio(1);
         shops.sellOwnPriced(well.getMarkets(), well);
 
@@ -351,7 +376,7 @@ public class HealthCheck {
 
         double sickness = .20;
         wellEcon.setHealthRatio(1 - sickness);
-        shops.setPantry(Good.FOOD, shelf);
+        for (java.util.Map.Entry<Good, Double> e : shelf.entrySet()) shops.setPantry(e.getKey(), e.getValue());
         shops.sellOwnPriced(well.getMarkets(), well);
 
         System.out.printf("  a city of %.0f with %.0f working, told %.0f%% of them are ill%n",
@@ -886,7 +911,7 @@ public class HealthCheck {
         BuildingManager b = g.getBuildingManager();
         b.addStack(b.getTemplateByName("House"), 400, true);
         b.addStack(b.getTemplateByName("Convenience Store"), 10, true);
-        b.addStack(b.getTemplateByName("Textile Mill"), 3, true);
+        b.addStack(b.getTemplateByName("Industrial Bakery"), 3, true);
         b.addStack(b.getTemplateByName("Construction Depot"), 3, true);
         b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
         b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);

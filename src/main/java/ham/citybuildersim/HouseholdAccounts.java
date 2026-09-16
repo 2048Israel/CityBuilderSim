@@ -672,7 +672,8 @@ public class HouseholdAccounts {
                         / rowWages[tier.ordinal()] : 0;
 
         double wages = shape.earners() * wagePerEarner;
-        double pension = shape.membersOf(AgeBand.SENIOR) * pensionPerSenior;
+        double pension = (shape.membersOf(AgeBand.SENIOR)
+                + shape.membersOf(AgeBand.ELDER)) * pensionPerSenior;
         double income = wages + pension;
         double tax = wages * taxRate;
         double rentDue = rentPerHousehold();

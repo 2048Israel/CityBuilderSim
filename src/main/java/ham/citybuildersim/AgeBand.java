@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 /**
- * The five ages of a resident.
+ * The six ages of a resident.
  *
  * Each band knows the span it covers, and therefore what share of it moves up
  * every month. Ages are inclusive of the first year and exclusive of the next
@@ -13,7 +13,8 @@ public enum AgeBand {
     CHILD  ("Children", 6,  13, .000075),
     TEEN   ("Teens",   13,  18, .0002),
     ADULT  ("Adults",  18,  70, .00225),
-    SENIOR ("Seniors", 70, 120, .0450);
+    SENIOR ("Seniors", 70,  85, .0290),
+    ELDER  ("Elders",  85, 120, .1277);
 
     private final String label;
     private final int fromAge;
@@ -71,6 +72,19 @@ public enum AgeBand {
         return this == ADULT;
     }
 
+    /**
+     * True for the bands past working age.
+     *
+     * Asked rather than listed, because FamilyModel places these by hand out of
+     * bands nothing else draws from, and the day a third one is added the two
+     * loops that skip them must skip it too. `this == SENIOR` in four places was
+     * how the elder band would have indexed past the end of a four-element array
+     * on its first month.
+     */
+    public boolean isRetirementAge() {
+        return this == SENIOR || this == ELDER;
+    }
+
     /* ===================================================================
        MORTALITY
 
@@ -81,10 +95,36 @@ public enum AgeBand {
          Children 0.0075% - the safest band there is
          Teens    0.02%  - accidents, and it ticks up from the child rate
          Adults   0.225% - averaged over a FIFTY-TWO year span
-         Seniors  4.5%   - on top of the 2%/yr that ages out at 120, giving a
-                           total outflow of 6.5% and therefore an average of
-                           about fifteen more years at seventy, which is what
-                           life expectancy at seventy actually is
+         Seniors  2.90%  - 70 to 85, population-weighted
+         Elders   12.77% - 85 to 120, population-weighted
+
+       THE SENIORS WERE ONE BAND OF FIFTY YEARS until 2026-09-15, at a flat
+       4.5%. Jerus: senior care asked for a place for every person over 70,
+       and in the real world about one in nine of them is in one - 2.0% of
+       74-year-olds against 29.6% of the over-85s. One band cannot hold a
+       fifteenfold gradient, and the same band could not hold a mortality
+       curve that runs from 1.4% a year at seventy to over 30% at ninety-five.
+
+       THE TWO FIGURES ARE POPULATION-WEIGHTED FROM A LIFE TABLE, not picked:
+       Canadian death rates for 2019 (OSFI Actuarial Study 22), interpolated
+       log-linearly between the published ages and extrapolated past ninety on
+       the Gompertz slope they imply - a doubling every 6.1 years - then
+       averaged over a stationary population from age seventy. The table that
+       produces gives life expectancy at 85 of 7.8 years against the 7.5 OSFI
+       publishes, which is the check that the interpolation is not inventing
+       anything.
+
+       WHAT IT DOES TO A LIFE, through this model's own two buckets: a senior
+       leaves the band at 2.90% dead plus 6.67% turned eighty-five, an elder at
+       12.77% dead plus 2.86% aged out at 120, and the two together give about
+       14.9 years left at seventy against the 15.4 the single band gave. Total
+       deaths among the over-seventies move from 6.5% a year to about 6.7%.
+
+       So the split is very nearly aggregate-preserving, which is luck worth
+       naming: the old flat 4.5% had been calibrated to land life expectancy in
+       the right place, and the real gradient happens to land it there too. It
+       means a sixteen-seed comparison across this change is reading the care
+       denominator and the household shapes rather than a step in mortality.
 
        HALVED FOR CHILDREN, TEENS AND ADULTS on 2026-09-11, Jerus's call - every
        band but babies and seniors - from 0.015%, 0.04% and 0.45%, the

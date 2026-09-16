@@ -96,7 +96,7 @@ public class ForeignCheck {
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Water Treatment Plant"), 1, false);
-            city.buildStack(template(city, "Textile Mill"), 2, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
 
             for (int m = 0; m < 180; m++) {
                 city.simulateMonths(1);
@@ -314,7 +314,7 @@ public class ForeignCheck {
         Path shelfRoot = Files.createTempDirectory("foreigncheck-shelf");
         Game jammed = new Game(new GameFiles(shelfRoot.resolve("data"), shelfRoot.resolve("no-legacy")));
 
-        double soldUnits = 0, paidUnits = 0, boughtUnits = 0;
+        double soldUnits = 0, paidUnits = 0, boughtUnits = 0, soldKg = 0;
         double worstRatio = 1;
 
         System.setOut(quiet);
@@ -346,8 +346,26 @@ public class ForeignCheck {
                 double paid = shops.pending().unitsSold.getOrDefault(Good.GROCERIES, 0.0);
                 soldUnits += sold;
                 paidUnits += paid;
-                Sector.Input food = shops.input(Good.FOOD);
-                boughtUnits += food.boughtLocal + food.imported;
+                /*
+                  * TWO UNITS, AND THE RATIO BELOW NEEDS THEM TO BE ONE.
+                  *
+                  * What the shops BUY is kilograms of thirteen goods; what
+                  * they SELL is person-months of groceries, and one of those
+                  * is fifty of the other. Comparing them straight reported a
+                  * bought/sold ratio of 60 and read as the shops importing
+                  * wildly more than they sold - which was the shelf being
+                  * weighed in kilos against a till counting customers, not a
+                  * balance-of-payments problem. So the sale is converted to
+                  * kilograms at the basket the shops were actually stocking
+                  * that month.
+                  */
+                 double basketKg = 0;
+                 for (Good fg : ham.citybuildersim.sectors.Retail.SHELF) {
+                     Sector.Input food = shops.input(fg);
+                     boughtUnits += food.boughtLocal + food.imported;
+                     basketKg += shops.kgPerHead(fg);
+                 }
+                 soldKg += sold * basketKg;
                 worstRatio = Math.min(worstRatio, shops.getRoadRatio());
             }
         } finally {
@@ -371,9 +389,10 @@ public class ForeignCheck {
          * Some accumulation is legitimate - a shelf is stock - but it is bounded
          * by the restock target, not proportional to everything sold.
          */
-        out.printf("   bought/sold ratio %.3f%n", boughtUnits / Math.max(1, soldUnits));
+        out.printf("   bought/sold ratio %.3f, both in kilograms%n",
+                boughtUnits / Math.max(1, soldKg));
         assertTrue("...so the shops are not importing to replace goods nobody bought",
-                boughtUnits <= soldUnits * 1.15);
+                boughtUnits <= soldKg * 1.15);
 
         /* ============ 5b. reserves you sell are reserves you no longer have ============ */
         out.println("\n--- and a reserve sold is a reserve gone ---");
@@ -736,6 +755,8 @@ public class ForeignCheck {
         out.printf("   food, in dollars: out $%,.0fk in $%,.0fk at parity; out $%,.0fk in $%,.0fk weaker%n",
                 foodPar[0], foodPar[1], foodWeak[0] / 1.40, foodWeak[1] / 1.40);
         assertTrue("the fixture sells food abroad at all", foodPar[0] > 0);
+        out.printf("   the programme, in dollars: $%,.0fk at parity, $%,.0fk weaker (x%.4f)%n",
+                usdImpPar, usdImpWeak, usdImpPar > 0 ? usdImpWeak / usdImpPar : 0);
         close("the same programme costs the same in the world's money",
                 usdImpWeak / usdImpPar, 1.0, .05);
 
@@ -817,22 +838,82 @@ public class ForeignCheck {
          */
         g.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
         g.getBusinessInvestment().holdSector(Sectors.AGRICULTURE);
+        /*
+         * AND THE LANDLORD SITS IT OUT, 2026-09-15, the third of these and the
+         * one that was always the largest hole in the premise.
+         *
+         * Construction imports the material for what the city builds, and most
+         * of what a city builds is HOUSES - which the landlord puts up against
+         * the household count, not against the fixture's order. So the "fixed
+         * programme" was never fixed: it was the fixture's plant and roads plus
+         * however much private housing each city happened to want, and the two
+         * cities deliberately grow at different speeds.
+         *
+         * It went unnoticed while the two counts happened to track each other.
+         * The senior band splitting on 2026-09-15 pulled them apart - the
+         * over-85s live alone far more than the under-85s, so the same people
+         * are more households, so more doors - and the premise walked out in
+         * two steps: 1.0063 on the shipped build, 1.0275 with the band split,
+         * 1.0558 once the elders drew their pension and could keep paying for
+         * a door. Measured at the third: the weaker city held 2,765 homes for
+         * 2,765 households against the parity city's 2,068 for 2,436, having
+         * built SEVEN HUNDRED more houses on two hundred fewer people, and
+         * Construction imported $924,634k against $867,630k. The gap was the
+         * whole discrepancy; no other sector moved.
+         *
+         * Held out, both cities keep the five hundred houses the fixture built
+         * them, Construction imports the programme and nothing else, and the
+         * premise reads 0.9805. The instrument is also SHARPER for it, which is
+         * how you can tell it was the right hole to close: the elasticity had
+         * been hiding inside the building, and with the building held still the
+         * weaker city exports $46,791k of food against $14,418k and imports
+         * $3,194k against $29,662k - a devaluation selling more and buying less,
+         * stated plainly, where the same two cities used to differ by three per
+         * cent on the export side and read as noise.
+         *
+         * The per-sector import line below is printed rather than asserted, so
+         * that whoever next finds this premise drifting can see in one run which
+         * sector grew the hinge instead of bisecting for it.
+         */
+        g.getBusinessInvestment().holdSector(Sectors.REAL_ESTATE);
         g.buildStack(template(g, "House"), 500, false);
         g.buildStack(template(g, "Convenience Store"), 8, false);
         g.buildStack(template(g, "Small Grocery Store"), 3, false);
         g.buildStack(template(g, "Construction Depot"), 4, false);
         g.buildStack(template(g, "Coal Power Plant"), 1, false);
         g.buildStack(template(g, "Water Treatment Plant"), 1, false);
-        g.buildStack(template(g, "Textile Mill"), 2, false);
+        g.buildStack(template(g, "Industrial Bakery"), 2, false);
         g.buildStack(template(g, "Paved Road"), 40, false);
         g.buildStack(template(g, "Walk-in Clinic"), 4, false);
         g.buildStack(template(g, "Municipal Cemetery"), 1, false);
+        double[] bySector = new double[Sectors.KEYS.length];
         for (int m = 0; m < 180; m++) {
             g.simulateMonths(1);
-            GoodsMarket f = g.getMarkets().get(Good.FOOD);
-            food[0] += f.getExported() * f.exportPrice();
-            food[1] += f.getImported() * f.importPrice();
+            /*
+             * THIRTEEN LINES WHERE THERE WAS ONE. This used to read Good.FOOD,
+             * and FOOD stopped being traded on 2026-09-15 - so the fixture
+             * measured a market nobody was in and reported that the city sold
+             * no food abroad, which was true of FOOD and false of the city.
+             * What it exports now is the bakeries' surplus; what it imports is
+             * the other eleven.
+             */
+            for (Good fg : ham.citybuildersim.sectors.Retail.SHELF) {
+                GoodsMarket f = g.getMarkets().get(fg);
+                food[0] += f.getExported() * f.exportPrice();
+                food[1] += f.getImported() * f.importPrice();
+            }
+            for (int i = 0; i < Sectors.KEYS.length; i++) {
+                bySector[i] += g.getSectors().byKey(Sectors.KEYS[i]).statement().imports;
+            }
         }
+        StringBuilder sb = new StringBuilder("   imports by sector, in dollars: ");
+        for (int i = 0; i < Sectors.KEYS.length; i++) {
+            if (bySector[i] > 1) sb.append(String.format("%s $%,.0fk  ", Sectors.KEYS[i], bySector[i] / rate));
+        }
+        out.printf("   at %.2f: pop %,d, %,d homes for %,.0f households%n", rate,
+                g.getPopulationManager().getPopulation(),
+                g.getBuildingManager().getTotalHomes(), g.getFamilies().totalHouseholds());
+        out.println(sb);
         return g;
     }
 
@@ -848,7 +929,20 @@ public class ForeignCheck {
         } finally {
             System.setOut(out);
         }
-        return g.getMarkets().get(Good.FOOD).importPrice();
+        /*
+         * What a person-month of food costs to land, at this rate: the shelf
+         * priced at the reference household's quantities. One good's price
+         * would have done the same job while FOOD existed; thirteen goods need
+         * a basket, and the reference one is the only basket that does not
+         * depend on the city that is being measured.
+         */
+        double bill = 0;
+        for (Good fg : ham.citybuildersim.sectors.Retail.SHELF) {
+            Consumption.Item it = g.getConsumption().byKey(fg.name());
+            double p = g.getMarkets().get(fg).importPrice();
+            if (it != null && p > 0) bill += it.referenceKg() * p;
+        }
+        return bill;
     }
 
     static double lastCash;

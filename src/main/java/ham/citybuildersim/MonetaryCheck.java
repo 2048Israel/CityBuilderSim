@@ -239,7 +239,7 @@ public class MonetaryCheck {
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Water Treatment Plant"), 1, false);
-            city.buildStack(template(city, "Textile Mill"), 2, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
             city.buildStack(template(city, "Paved Road"), 30, false);
             city.simulateMonths(120);
             city.getDebtManager().setPolicyRate(.075);

@@ -417,7 +417,57 @@ public class PopulationCohorts {
         return weight;
     }
 
-    /* ----------------------------- saving ----------------------------- */
+    /* ----------------------------- saving -----------------------------
+
+       THE BANDS ARE SAVED BY NAME, since 2026-09-15.
+
+       WHAT WENT WRONG WITH POSITION. This array is the population. It was
+       written as the bands in order followed by three scalars, and read back
+       by taking the width from AgeBand.values().length - which is fine right
+       up to the day somebody adds a band, and is a disaster on that day.
+
+       The sixth band was being designed (seniors split at 85) when the
+       arithmetic was worked out. With five bands the reader accepts a length
+       of 8 or 7. With six it accepts 9 or 8 - and every save ever written is
+       8. So an old city would have passed the guard as though it were "six
+       bands, births, deaths, no migration", and last month's BIRTHS would
+       have been copied into the new band, deaths read as births, migration
+       read as deaths. No exception. No refusal. Every saved city in the world
+       slightly wrong, for ever, and nothing to say so.
+
+       The permissiveness right below is what made it silent: the guard was
+       deliberately widened once so that an older save would not be refused,
+       because "this array IS the population" - and that kindness is exactly
+       what let a wrong width through.
+
+       SO THE WIDTH NOW COMES FROM THE SAVE, NOT FROM THIS BUILD. The names
+       the pyramid was written with travel beside it, the values are mapped by
+       name, and the three scalars sit after however many bands the SAVE had.
+       A file written by a five-band build stays a five-band file no matter
+       how many bands this build has. It is the same fix Equity and the
+       household cells already carry - restore(keys, state) - for the same
+       reason: the eighth, ninth and tenth sectors did not corrupt anybody's
+       shareholdings, because nothing there was positional either.
+       ------------------------------------------------------------------- */
+
+    /**
+     * The bands a save written before names existed must be read with.
+     *
+     * A LITERAL LIST, NOT AgeBand.values(). That is the whole point: this is
+     * the shape of a file already on somebody's disk, and it cannot change
+     * when this build's bands change. If a band is ever added, these five
+     * still describe every save written before it, and PopulationCheck
+     * asserts exactly that.
+     */
+    public static final String[] LEGACY_BANDS = { "BABY", "CHILD", "TEEN", "ADULT", "SENIOR" };
+
+    /** The names this build would write beside the pyramid. */
+    public static String[] saveBands() {
+        AgeBand[] all = AgeBand.values();
+        String[] names = new String[all.length];
+        for (int i = 0; i < all.length; i++) names[i] = all[i].name();
+        return names;
+    }
 
     public double[] toSaveArray() {
         double[] out = new double[band.length + 3];
@@ -428,37 +478,74 @@ public class PopulationCohorts {
         return out;
     }
 
+    /** A pyramid saved before the names travelled with it. Read as five bands. */
+    public void restore(double[] saved) {
+        restore(null, saved);
+    }
+
     /**
-     * Puts a saved pyramid back.
+     * Puts a saved pyramid back, each band found BY NAME.
+     *
+     * @param bands the names the save was written with; null or empty means a
+     *              file from before they travelled, which is always LEGACY_BANDS
+     * @param saved those bands in that order, then births, deaths and migration
      *
      * Refused whole on a length mismatch rather than padded, which is this
      * codebase's standing rule for state arrays: a pyramid read at the wrong
      * offsets is worse than no pyramid, because it looks like data.
      */
-    public void restore(double[] saved) {
+    public void restore(String[] bands, double[] saved) {
         if (saved == null) return;
 
+        String[] names = (bands == null || bands.length == 0) ? LEGACY_BANDS : bands;
+
         /*
-         * TWO LENGTHS ACCEPTED, and only these two.
+         * TWO LENGTHS ACCEPTED, and only these two - now measured against the
+         * SAVE's band count.
          *
-         * lastMigration was appended after the fact - the array carried births
+         * lastMigration was appended after the fact: the array carried births
          * and deaths but not the third flow beside them, so a reloaded People
          * screen showed the saved month's births and deaths next to a migration
-         * of zero.
-         *
-         * Refusing an older save outright, which the strict length check would
-         * have done, is far worse here than the missing figure: this array IS
-         * the population since the switch, so a refusal would hand back a city
-         * with nobody in it. Downward compatibility is not a nicety in this one.
+         * of zero. Refusing those saves outright is far worse than the missing
+         * figure, because this array IS the population.
          */
-        boolean withMigration = saved.length == band.length + 3;
-        if (!withMigration && saved.length != band.length + 2) {
+        boolean withMigration = saved.length == names.length + 3;
+        if (!withMigration && saved.length != names.length + 2) {
             return;   // any other shape is refused whole, per the standing rule
         }
-        System.arraycopy(saved, 0, band, 0, band.length);
-        lastBirths = saved[band.length];
-        lastDeaths = saved[band.length + 1];
-        lastMigration = withMigration ? saved[band.length + 2] : 0;
+
+        /*
+         * CLEARED FIRST, so a band the save has never heard of holds nobody
+         * rather than whatever was in this object before.
+         *
+         * A band in the SAVE that this build does not know is dropped on the
+         * floor, deliberately: those people cannot be put anywhere honest, and
+         * GameVersion.SAVE_FORMAT already refuses a save from a newer build,
+         * so this is the second lock on a door that should not open.
+         *
+         * WHEN A BAND IS ADDED, note that an old city's people are all in the
+         * band they were saved in - splitting SENIOR at 85 leaves every one of
+         * them in SENIOR and none in the new band, and they age across over the
+         * following years. Whether that is the wanted behaviour or whether the
+         * old headcount should be divided between the two at load is a decision
+         * for the batch that adds the band, not something to be settled quietly
+         * here.
+         */
+        java.util.Arrays.fill(band, 0);
+        for (int i = 0; i < names.length; i++) {
+            AgeBand target = bandNamed(names[i]);
+            if (target != null) band[target.ordinal()] = saved[i];
+        }
+        lastBirths    = saved[names.length];
+        lastDeaths    = saved[names.length + 1];
+        lastMigration = withMigration ? saved[names.length + 2] : 0;
+    }
+
+    /** The band of that name, or null if this build has no such band. */
+    private static AgeBand bandNamed(String name) {
+        if (name == null) return null;
+        for (AgeBand b : AgeBand.values()) if (b.name().equals(name)) return b;
+        return null;
     }
 
     public void reset() {

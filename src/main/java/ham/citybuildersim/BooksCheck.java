@@ -47,8 +47,8 @@ public class BooksCheck {
         Sector ih = new ham.citybuildersim.sectors.FoodIndustry();
         ih.attach(null, markets);
         ih.setCash(5000);
-        ih.setStock(Good.FOOD, 12000);
-        markets.get(Good.FOOD).setLocalPrice(.09);
+        ih.setStock(Good.BREAD, 12000);
+        markets.get(Good.BREAD).setLocalPrice(.09);
         ih.setEnergyRatio(1);
         ih.setWaterRatio(1);
         ih.setPricePerWatt(.01);
@@ -66,10 +66,10 @@ public class BooksCheck {
          * the spare nameplate went abroad at the world's export price. Both
          * halves are revenue; the export is what the VAT zero-rates.
          */
-        double exportPrice = markets.get(Good.FOOD).exportPrice();
+        double exportPrice = markets.get(Good.BREAD).exportPrice();
         assertTrue("fixture: the world pays something for food", exportPrice > 0);
-        ih.bookSale(new Trade(Good.FOOD, ih.key(), Sectors.RETAIL, 4000, .09));
-        ih.bookSale(new Trade(Good.FOOD, ih.key(), Trade.WORLD, 1500, exportPrice));
+        ih.bookSale(new Trade(Good.BREAD, ih.key(), Sectors.RETAIL, 4000, .09));
+        ih.bookSale(new Trade(Good.BREAD, ih.key(), Trade.WORLD, 1500, exportPrice));
         double expectedExport = 1500 * exportPrice;
 
         ih.strike();
@@ -93,7 +93,7 @@ public class BooksCheck {
         check("total operating expenses", s.payroll + s.electricity + s.water + s.maintenance + s.inputs, expectedOpCost);
         check("operating income", s.operatingIncome, expectedOpIncome);
         check("tax", s.profitTax, expectedOpIncome * taxRate);
-        check("units sold, in the ledger", ih.pending().unitsSold.get(Good.FOOD), 5500);
+        check("units sold, in the ledger", ih.pending().unitsSold.get(Good.BREAD), 5500);
 
         // A loss-making month must show no tax and no phantom credit - the city
         // collects Math.max(income * rate, 0), so the statement has to agree.
@@ -153,7 +153,7 @@ public class BooksCheck {
 
         /* ============ the sheet must move with the market price ============ */
         // Inventory is held at market, so a price collapse shrinks the business.
-        markets.get(Good.FOOD).setLocalPrice(.05);
+        markets.get(Good.BREAD).setLocalPrice(.05);
         BalanceSheet cheap = ih.getBalanceSheet();
         System.out.println("\n--- price collapse .09 -> .05 ---");
         check("inventory revalued", cheap.getInventory(), 12000 * .05);
@@ -163,7 +163,7 @@ public class BooksCheck {
             fails++;
             System.out.println("FAIL: assets should shrink when the price falls");
         }
-        markets.get(Good.FOOD).setLocalPrice(.09);
+        markets.get(Good.BREAD).setLocalPrice(.09);
 
         /* ============ ratios must not blow up on an empty business ============ */
         Sector empty = new ham.citybuildersim.sectors.FoodIndustry();
@@ -179,8 +179,8 @@ public class BooksCheck {
         /* ============ book value comes off the real templates ============ */
         BuildingManager bm = new BuildingManager();
         bm.initializeTemplates();
-        BuildingsTemplate plant = bm.getTemplateByName("Food Processing Plant");
-        BuildingsTemplate mill  = bm.getTemplateByName("Textile Mill");
+        BuildingsTemplate plant = bm.getTemplateByName("Bakery");
+        BuildingsTemplate mill  = bm.getTemplateByName("Industrial Bakery");
         bm.addStack(plant, 2, true);
         bm.addStack(mill, 1, true);
 
@@ -211,7 +211,7 @@ public class BooksCheck {
         System.out.println("\n--- the profit tax comes out of the business ---");
         Sector t = new ham.citybuildersim.sectors.FoodIndustry();
         t.setCash(1000);
-        t.bookSale(new Trade(Good.FOOD, t.key(), Sectors.RETAIL, 1000, .10));   // revenue 100
+        t.bookSale(new Trade(Good.BREAD, t.key(), Sectors.RETAIL, 1000, .10));   // revenue 100
         t.setEnergyRatio(1);
         t.setWaterRatio(1);
         t.updateJobFillRate(fullFill);

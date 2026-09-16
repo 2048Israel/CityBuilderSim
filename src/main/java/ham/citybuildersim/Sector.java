@@ -748,7 +748,60 @@ public abstract class Sector {
         double output = getCapacity(g) * getOperatingRate();
         if (output <= 0) return Double.MAX_VALUE;
         return (getPayroll() + getElectricityCost() + getWaterCost() + maintenanceExpense
-                + inputCostAtRate()) / output;
+                + inputCostAtRate()) * costShareOf(g) / output;
+    }
+
+    /* =====================================================================
+       WHOSE COST IS IT, WHEN ONE LINE MAKES TWO THINGS
+
+       A sector's payroll, power, water and input bill are JOINT: one crew,
+       one meter, one delivery of crops, and whatever comes off the end of the
+       line. Both methods here used to divide that whole bill by ONE good's
+       output - which is right, and only right, while a sector makes one good.
+
+       IT WAS FOUND BY A BAKERY AND IT WAS NEVER ONLY THE BAKERY'S. An oven
+       drafted making BREAD and BAKERY was charged its entire cost twice over,
+       once against each, so neither output cleared its own marginal cost and
+       NOTHING WAS MADE: 858,000kg of nameplate capacity and zero produced,
+       while the city imported bread beside it. No exception, no harness, no
+       log line.
+
+       AND THEN THE GUARD WRITTEN FOR IT PRINTED THE REAL SCOPE. Every BUILDING
+       in this game makes one good, which is what made the bakery look like a
+       new path - but these are SECTOR methods, and three sectors have made
+       more than one good for some time: Business Services makes THREE,
+       Manufacturing TWO, Industry two again now. Every one of them has been
+       charging each of its goods the whole line's payroll, power, water and
+       inputs since the day it shipped. The bakery was the first line where
+       that was fatal rather than merely wrong.
+
+       THE SPLIT IS BY RELATIVE SALES VALUE, which is what an accountant does
+       with a joint product and is the only split that cannot make one output
+       look profitable by making the other look absurd. Each good's share is
+       its nameplate revenue over the line's.
+
+       A SECTOR WITH ONE OUTPUT RETURNS EXACTLY 1.0 AND MULTIPLYING BY IT IS
+       EXACT, so all ten of today's sectors are bit-identical to what they
+       were. That is the property worth asserting, and ManufacturingCheck does.
+       ===================================================================== */
+    protected double costShareOf(Good g) {
+        if (makes.size() <= 1) return 1;
+        double mine = 0, all = 0;
+        for (Good o : makes) {
+            double value = getCapacity(o) * priceOf(o);
+            if (!(value > 0)) continue;
+            all += value;
+            if (o == g) mine = value;
+        }
+        /*
+         * A LINE WHOSE OUTPUTS ARE NOT PRICED YET SHARES ITS COST EVENLY. A
+         * founding month can reach here before any market has traded, and a
+         * share of zero would hand one output the whole bill and the other
+         * none - which is the bug this method exists to stop, wearing a
+         * different hat.
+         */
+        if (all <= 0) return 1.0 / makes.size();
+        return mine / all;
     }
 
     /**
@@ -761,7 +814,8 @@ public abstract class Sector {
     public double getMarginalCostPerUnit(Good g) {
         double output = getCapacity(g) * getOperatingRate();
         if (output <= 0) return Double.MAX_VALUE;
-        return (getElectricityCost() + getWaterCost() + inputCostAtRate()) / output;
+        return (getElectricityCost() + getWaterCost() + inputCostAtRate())
+                * costShareOf(g) / output;
     }
 
     /** What the month's inputs cost at the operating rate, at today's prices. */
@@ -1138,9 +1192,25 @@ public abstract class Sector {
         stock.clear();
         pantry.clear();
         pantryUsedLastMonth.clear();
+        /*
+         * A GOOD THIS BUILD DOES NOT KNOW IS DROPPED, NOT SHIFTED - the same
+         * answer the age bands take, and for the same reason: there is nowhere
+         * honest to put it. The first case was FOOD, retired 2026-09-15, so a
+         * city saved before that day opens with its mills' food warehouse empty
+         * and its ovens' bread warehouse filling from the next month. It is
+         * said out loud rather than done quietly, because a warehouse emptying
+         * on load is the kind of thing a player notices and cannot explain.
+         */
         if (s.stock != null) for (Map.Entry<String, Double> e : s.stock.entrySet()) {
             Good g = Good.byName(e.getKey());
-            if (g != null && e.getValue() != null) stock.put(g, Math.max(0, e.getValue()));
+            if (g == null) {
+                if (e.getValue() != null && e.getValue() > 0) {
+                    System.out.println(key + ": this save holds " + String.format("%,.0f", e.getValue())
+                            + " of \"" + e.getKey() + "\", which this version no longer trades; dropped.");
+                }
+                continue;
+            }
+            if (e.getValue() != null) stock.put(g, Math.max(0, e.getValue()));
         }
         if (s.pantry != null) for (Map.Entry<String, Double> e : s.pantry.entrySet()) {
             Good g = Good.byName(e.getKey());

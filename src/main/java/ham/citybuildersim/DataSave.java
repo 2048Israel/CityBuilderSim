@@ -926,6 +926,31 @@ public class DataSave {
      * been dying since spring and cannot shed a single resident for a year.
      */
     private double[] cohorts;
+
+    /*
+     * THE AGE BANDS THIS WHOLE SAVE WAS WRITTEN WITH (2026-09-15).
+     *
+     * ONE LIST, NOT ONE PER ARRAY, because it is a property of the FILE rather
+     * than of any array in it: everything band-indexed here was written from
+     * the same AgeBand.values() in the same moment. Three arrays read against
+     * it so far - the pyramid, the families and the ring of the long sick -
+     * and a fourth gets it free.
+     *
+     * Each of those used to take its width from however many bands the READING
+     * build had, which is fine until a band is added and then silently
+     * disastrous: the pyramid would have been read at the wrong offsets, the
+     * families refused whole and quietly reset, the sick ring discarded. These
+     * names make the file describe its own shape, the way equityKeys and
+     * householdCellKeys already do.
+     *
+     * Absent on a save written before this, which is what tells every reader to
+     * fall back to PopulationCohorts.LEGACY_BANDS. No format bump: an older
+     * build ignores a field it does not know and reads positionally, which is
+     * still right for as long as the band list has not changed. The bump
+     * belongs to the batch that changes it.
+     */
+    private String[] bandNames;
+
     private double[] families;
     private double[] migration;
 
@@ -1042,6 +1067,26 @@ public class DataSave {
 
     public void setCohorts(double[] a)  { this.cohorts = a; }
     public double[] getCohorts()        { return cohorts; }
+
+    /** @param names PopulationCohorts.saveBands(), written once for the whole file. */
+    public void setBandNames(String[] names) { this.bandNames = names; }
+    /** Null on a save from before the names travelled: read it as LEGACY_BANDS. */
+    public String[] getBandNames()           { return bandNames; }
+
+    /**
+     * The household shapes this save was written with.
+     *
+     * The same argument as bandNames one axis over: FamilyModel's matrix is
+     * shapes by tiers, flattened, with the outside block and the formed-household
+     * memory behind it. Adding a shape moves every offset after the matrix, so
+     * without this an existing save is refused whole and the city comes back
+     * with no households at all.
+     */
+    private String[] shapeNames;
+
+    /** @param names FamilyModel.saveShapes(). Null on a save from before they travelled. */
+    public void setShapeNames(String[] names) { this.shapeNames = names; }
+    public String[] getShapeNames()           { return shapeNames; }
     public void setFamilies(double[] a) { this.families = a; }
     public double[] getFamilies()       { return families; }
     public void setMigration(double[] a){ this.migration = a; }

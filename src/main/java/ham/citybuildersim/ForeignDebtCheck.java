@@ -71,7 +71,7 @@ public class ForeignDebtCheck {
         g.buildStack(template(g, "Construction Depot"), 4, false);
         g.buildStack(template(g, "Coal Power Plant"), 1, false);
         g.buildStack(template(g, "Water Treatment Plant"), 1, false);
-        g.buildStack(template(g, "Textile Mill"), 2, false);
+        g.buildStack(template(g, "Industrial Bakery"), 2, false);
         g.buildStack(template(g, "Paved Road"), 30, false);
         g.simulateMonths(60);
         return g;
@@ -145,7 +145,7 @@ public class ForeignDebtCheck {
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Water Treatment Plant"), 1, false);
-            city.buildStack(template(city, "Textile Mill"), 2, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
             city.buildStack(template(city, "Paved Road"), 30, false);
 
             /*

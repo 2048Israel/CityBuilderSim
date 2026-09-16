@@ -99,7 +99,7 @@ public class InvestCheck {
         /* ==================== 2. lead time ==================== */
         System.out.println("\n--- lead time ---");
         BuildingsTemplate house = bm.getTemplateByName("House");
-        BuildingsTemplate plant = bm.getTemplateByName("Food Processing Plant");
+        BuildingsTemplate plant = bm.getTemplateByName("Bakery");
 
         /*
          * ASKED OF THE TEMPLATE, not typed. This read `.30` with a comment
@@ -143,7 +143,7 @@ public class InvestCheck {
         System.out.println("   " + d.reason);
         assertTrue("housing ahead of jobs -> hold", !d.build);
 
-        hb.addStack(template(housed, "Food Processing Plant"), 30, true);
+        hb.addStack(template(housed, "Bakery"), 30, true);
         hb.addStack(template(housed, "Construction Depot"), 10, true);
         month(housed);
         int jobs = housed.getPopulationManager().getTotalJobs();
@@ -183,7 +183,7 @@ public class InvestCheck {
 
         Game milling = city(root, "milling");
         BuildingManager mb = milling.getBuildingManager();
-        mb.addStack(template(milling, "Food Processing Plant"), 1, true);
+        mb.addStack(template(milling, "Bakery"), 1, true);
         BusinessInvestment plansMill = new BusinessInvestment(mb, milling.getEconomyManager());
         plansMill.setLandAvailable(1e12, 0);
 
@@ -196,10 +196,21 @@ public class InvestCheck {
 
         // The market has wanted far more than the one plant makes, all year -
         // the planner reads the year's average, not one month's burst.
-        GoodsMarket food = milling.getMarkets().get(Good.FOOD);
-        food.strike(0, 0, 40_000);
+        /*
+         * THE PREMISE IS "FAR MORE THAN ONE PLANT MAKES", SO IT IS WRITTEN
+         * THAT WAY. It used to be 40,000 typed against a plant making 5,500
+         * units of FOOD - seven times its output, and a magic number that only
+         * meant anything while both figures stayed still. They did not: the
+         * ovens make BREAD by the kilogram now and 40,000 became a rounding
+         * error on one plant's month, so the planner saw a glut and held.
+         * Struck off the template's own output instead, so it says what it
+         * means whatever the oven is re-balanced to.
+         */
+        GoodsMarket food = milling.getMarkets().get(Good.BREAD);
+        double wanted = Math.max(1, mills.getCapacity(Good.BREAD)) * 7;
+        food.strike(0, 0, wanted);
         double[] year = new double[GoodsMarket.TREND_MONTHS];
-        java.util.Arrays.fill(year, 40_000);
+        java.util.Arrays.fill(year, wanted);
         food.restoreTakenHistory(year);
 
         // ...but a plant that burns a fortune in power sells below cost, and

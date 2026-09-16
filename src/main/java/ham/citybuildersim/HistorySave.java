@@ -246,6 +246,8 @@ public class HistorySave {
     private List<Double> deathsTeens = new ArrayList<>();
     private List<Double> deathsAdults = new ArrayList<>();
     private List<Double> deathsSeniors = new ArrayList<>();
+    /** The over-85s, since the band was split on 2026-09-15. */
+    private List<Double> deathsElders = new ArrayList<>();
     private List<Double> deathsOrphans = new ArrayList<>();
     private List<Double> deathsUnhoused = new ArrayList<>();
 
@@ -361,7 +363,7 @@ public class HistorySave {
         careCoverage.add(round4(game.getHealth().getCoverage()));
 
         landPrice.add(Math.round(game.getLandManager().getAcquisitionCostPerSqFt() * 1e6) / 1e6);
-        foodPrice.add(round4(game.getMarkets().get(Good.FOOD).getLocalPrice()));
+        foodPrice.add(round4(game.getSectors().retail().getFoodPrice()));
         materialsPrice.add(round4(game.getBuildingManager().getConstructionMaterialPrice()));
         orePrice.add(round4(game.getMarkets().get(Good.IRON).exportPrice()));
 
@@ -442,6 +444,7 @@ public class HistorySave {
         deathsTeens.add(round2(pyramid.getDeaths(AgeBand.TEEN)));
         deathsAdults.add(round2(pyramid.getDeaths(AgeBand.ADULT)));
         deathsSeniors.add(round2(pyramid.getDeaths(AgeBand.SENIOR)));
+        deathsElders.add(round2(pyramid.getDeaths(AgeBand.ELDER)));
         deathsOrphans.add(round2(game.getLastOrphanDeaths()));
         deathsUnhoused.add(round2(game.getLastUnhousedDeaths()));
         Crime crime = game.getCrime();
@@ -597,6 +600,7 @@ public class HistorySave {
         deathsTeens = copy(loaded.deathsTeens);
         deathsAdults = copy(loaded.deathsAdults);
         deathsSeniors = copy(loaded.deathsSeniors);
+        deathsElders  = copy(loaded.deathsElders);
         deathsOrphans = copy(loaded.deathsOrphans);
         deathsUnhoused = copy(loaded.deathsUnhoused);
         crimeRate = copy(loaded.crimeRate);
@@ -794,6 +798,7 @@ public class HistorySave {
         map.put("deathsTeens", deathsTeens);
         map.put("deathsAdults", deathsAdults);
         map.put("deathsSeniors", deathsSeniors);
+        map.put("deathsElders", deathsElders);
         map.put("deathsOrphans", deathsOrphans);
         map.put("deathsUnhoused", deathsUnhoused);
         map.put("crimeRate", crimeRate);

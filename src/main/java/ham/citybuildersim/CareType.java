@@ -74,10 +74,44 @@ public enum CareType {
         switch (this) {
             case CHILDCARE: return band == AgeBand.BABY || band == AgeBand.CHILD;
             case GENERAL:   return true;
-            case SENIOR:    return band == AgeBand.SENIOR;
+            case SENIOR:    return band != null && band.isRetirementAge();
             default:        return false;
         }
     }
+
+    /**
+     * How much of a place one person in this band needs.
+     *
+     * ONE PER HEAD FOR EVERY TYPE BUT SENIOR CARE, where it is the whole point.
+     *
+     * The model used to want a senior-care place for every person over seventy,
+     * which is a claim nobody would make out loud: in Canada about one person in
+     * fifty at seventy-four is in some kind of care, against nearly one in three
+     * of the over-85s (2011 census, 2.0% at 70-74 rising to 29.6% at 85+). A
+     * fifteenfold gradient inside one denominator, counted flat.
+     *
+     * So the bands are weighted by that curve, NORMALISED ON THE ELDERS. An
+     * elder who needs a place needs a whole one; a senior needs one at 0.19 of
+     * that rate, which is the population-weighted 70-84 residency of about 5.5%
+     * over the over-85s' 29.6%.
+     *
+     * WHY NORMALISED RATHER THAN ABSOLUTE. Using the raw rates - 0.055 and 0.296
+     * of a place - would have divided the denominator by roughly ten overnight
+     * and handed every city in existence full senior care for free, which is a
+     * balance change wearing a realism change's clothes. Normalising keeps the
+     * unit of capacity meaning "a place for somebody who needs one" and moves
+     * the denominator by about two and a half times instead. The absolute
+     * version is a defensible thing to want; it is a separate, measured
+     * decision, not a side effect of this one.
+     */
+    public double placesPerHead(AgeBand band) {
+        if (band == null || !servedBy(band)) return 0;
+        if (this != SENIOR) return 1;
+        return band == AgeBand.ELDER ? 1.0 : SENIOR_NEED_AGAINST_AN_ELDER;
+    }
+
+    /** 5.5% of 70-84 in care against 29.6% of the over-85s - see placesPerHead. */
+    public static final double SENIOR_NEED_AGAINST_AN_ELDER = .19;
 
     /**
      * How many people this type is on the hook for, given the pyramid.
@@ -92,7 +126,7 @@ public enum CareType {
 
         double served = 0;
         for (AgeBand band : AgeBand.values()) {
-            if (servedBy(band)) served += cohorts.get(band);
+            if (servedBy(band)) served += cohorts.get(band) * placesPerHead(band);
         }
         return served;
     }

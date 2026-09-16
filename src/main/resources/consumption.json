@@ -1,0 +1,140 @@
+{
+  "_comment": [
+    "WHAT A PERSON EATS, AND WHAT CHANGES IT.",
+    "",
+    "Every number a household's grocery basket is built from lives here and",
+    "nowhere else. Consumption.java reads it and answers the questions; nothing",
+    "else holds a copy. See that file's header for the two laws these numbers",
+    "are shaped to obey.",
+    "",
+    "UNITS. A kilogram, and money in the game's thousands - so 0.0070 is $7.00 a",
+    "kilo, which is what imported meat costs. Prices are the WORLD's, delivered",
+    "and at the gate, the same two ends every other good in this game is priced",
+    "at. Nothing here is made locally yet; that is the next batch.",
+    "",
+    "kcalPerUnit is per kilogram and is what subsistence is measured in, so the",
+    "cheapest calorie in the file is the floor a starving household collapses",
+    "to. quality is 0 to 1 and is nutrition, not price. elasticity is the income",
+    "elasticity of demand - NEGATIVE for an inferior good, which is what a",
+    "staple is: a household eats LESS rice as it gets richer, and that is the",
+    "whole of Bennett's law. convenience is 0 to 1, where 1 is food that needs",
+    "no cooking. referenceKg is what one person eats in a month at the reference",
+    "income, which is what every other quantity is scaled from.",
+    "",
+    "THIRTEEN IS A STARTING POINT AND THE FILE IS BUILT FOR A THOUSAND. Goods",
+    "are addressed BY KEY everywhere, never by position, so adding or removing a",
+    "row cannot shift anything else - the same rule the save format learned the",
+    "hard way in September."
+  ],
+  "_targetComment": [
+    "WHAT A BALANCED DIET LOOKS LIKE, as a share of calories by category.",
+    "",
+    "Diet quality is not the average healthiness of what is in the basket - by",
+    "that measure a famine diet of eighty per cent grain scores WELL, because",
+    "there is nothing wrong with rice. It is the DISTANCE FROM BALANCE, which",
+    "is how every real diet-quality index is built, and it is the only shape",
+    "that penalises both ends: too much starch because the household is poor,",
+    "and too many treats because it is rich.",
+    "",
+    "Roughly a healthy mixed diet - about half the calories from staples, a",
+    "quarter from protein, and the rest split between produce, prepared food",
+    "and treats. The shares sum to one and the harness asserts it."
+  ],
+  "targetCalorieShares": {
+    "FOOD_STAPLE": 0.45,
+    "FOOD_PROTEIN": 0.25,
+    "FOOD_PRODUCE": 0.12,
+    "FOOD_PREPARED": 0.08,
+    "FOOD_TREAT": 0.10
+  },
+  "referenceIncomeMultiple": 27.0,
+  "goods": [
+    {
+      "key": "GRAINS", "label": "Grains", "unit": "kg", "category": "FOOD_STAPLE",
+      "worldImportPrice": 0.00080, "worldExportPrice": 0.00050,
+      "kcalPerUnit": 3600, "quality": 0.70, "elasticity": -0.25,
+      "convenience": 0.15, "referenceKg": 3.0,
+      "note": "Rice, pasta, flour. The cheapest calorie in the file at 4,500 kcal a dollar, so it is what a household with nothing eats and what it stops eating first when it can afford to."
+    },
+    {
+      "key": "BREAD", "label": "Bread", "unit": "kg", "category": "FOOD_STAPLE",
+      "worldImportPrice": 0.00250, "worldExportPrice": 0.00160,
+      "kcalPerUnit": 2650, "quality": 0.60, "elasticity": -0.10,
+      "convenience": 0.80, "referenceKg": 3.5,
+      "note": "A staple that needs no cooking, which is why it is only mildly inferior where grains are strongly so."
+    },
+    {
+      "key": "DAIRY_EGGS", "label": "Dairy and eggs", "unit": "kg", "category": "FOOD_PROTEIN",
+      "worldImportPrice": 0.00300, "worldExportPrice": 0.00190,
+      "kcalPerUnit": 1000, "quality": 0.75, "elasticity": 0.35,
+      "convenience": 0.60, "referenceKg": 8.0,
+      "note": "The cheapest protein, so it is the first thing a household buys on the way up and the last protein it gives up on the way down."
+    },
+    {
+      "key": "VEGETABLES", "label": "Vegetables", "unit": "kg", "category": "FOOD_PRODUCE",
+      "worldImportPrice": 0.00180, "worldExportPrice": 0.00110,
+      "kcalPerUnit": 300, "quality": 0.95, "elasticity": 0.45,
+      "convenience": 0.20, "referenceKg": 7.0,
+      "note": "Almost no calories for the money, which is exactly why a household short of food buys grain instead - and why a city that eats no vegetables is not a city that is starving."
+    },
+    {
+      "key": "FRUIT", "label": "Fruit", "unit": "kg", "category": "FOOD_PRODUCE",
+      "worldImportPrice": 0.00250, "worldExportPrice": 0.00150,
+      "kcalPerUnit": 520, "quality": 0.90, "elasticity": 0.60,
+      "convenience": 0.85, "referenceKg": 5.0
+    },
+    {
+      "key": "MEAT", "label": "Meat", "unit": "kg", "category": "FOOD_PROTEIN",
+      "worldImportPrice": 0.00700, "worldExportPrice": 0.00440,
+      "kcalPerUnit": 2000, "quality": 0.65, "elasticity": 0.55,
+      "convenience": 0.15, "referenceKg": 4.5,
+      "note": "Bennett's law in one row: the share of a city's calories that comes from meat is the single best guess at how rich it is."
+    },
+    {
+      "key": "FISH", "label": "Fish", "unit": "kg", "category": "FOOD_PROTEIN",
+      "worldImportPrice": 0.00800, "worldExportPrice": 0.00500,
+      "kcalPerUnit": 1200, "quality": 0.90, "elasticity": 0.75,
+      "convenience": 0.20, "referenceKg": 1.2
+    },
+    {
+      "key": "FATS", "label": "Cooking fats", "unit": "kg", "category": "FOOD_STAPLE",
+      "worldImportPrice": 0.00300, "worldExportPrice": 0.00190,
+      "kcalPerUnit": 8800, "quality": 0.40, "elasticity": 0.05,
+      "convenience": 0.30, "referenceKg": 0.8,
+      "note": "The densest calorie in the file by a factor of two. A household buying calories rather than food buys grain and oil, which is what every real famine diet looks like."
+    },
+    {
+      "key": "PROCESSED_MEAT", "label": "Processed meats", "unit": "kg", "category": "FOOD_PREPARED",
+      "worldImportPrice": 0.00900, "worldExportPrice": 0.00560,
+      "kcalPerUnit": 3000, "quality": 0.25, "elasticity": 0.25,
+      "convenience": 0.75, "referenceKg": 1.0
+    },
+    {
+      "key": "READY_MEALS", "label": "Ready meals", "unit": "kg", "category": "FOOD_PREPARED",
+      "worldImportPrice": 0.00800, "worldExportPrice": 0.00500,
+      "kcalPerUnit": 1300, "quality": 0.35, "elasticity": 0.40,
+      "convenience": 1.00, "referenceKg": 1.5,
+      "note": "The convenience axis at its far end: bought for time rather than for money, which is why a working household with children buys it and an out-of-work household with the same children does not."
+    },
+    {
+      "key": "BAKERY", "label": "Bakery goods", "unit": "kg", "category": "FOOD_TREAT",
+      "worldImportPrice": 0.00600, "worldExportPrice": 0.00370,
+      "kcalPerUnit": 4000, "quality": 0.30, "elasticity": 0.50,
+      "convenience": 0.95, "referenceKg": 1.5,
+      "note": "Cake, not bread. Kept apart from BREAD deliberately - one is a staple a household eats more of when it is poor and the other is a treat it eats more of when it is rich, and a single 'baked goods' row cannot say both."
+    },
+    {
+      "key": "SNACKS", "label": "Snacks", "unit": "kg", "category": "FOOD_TREAT",
+      "worldImportPrice": 0.01000, "worldExportPrice": 0.00620,
+      "kcalPerUnit": 5000, "quality": 0.15, "elasticity": 0.55,
+      "convenience": 1.00, "referenceKg": 1.0
+    },
+    {
+      "key": "DRINKS", "label": "Drinks", "unit": "kg", "category": "FOOD_TREAT",
+      "worldImportPrice": 0.00150, "worldExportPrice": 0.00090,
+      "kcalPerUnit": 200, "quality": 0.30, "elasticity": 0.35,
+      "convenience": 1.00, "referenceKg": 12.0,
+      "note": "Non-alcoholic, for now. Alcohol and tobacco are their own categories when there is an excise dial to put on them."
+    }
+  ]
+}

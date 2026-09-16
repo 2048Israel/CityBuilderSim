@@ -237,6 +237,21 @@ public class HouseholdBalance {
         this.rentShares = shares == null ? c -> 1 : shares;
     }
 
+    /**
+     * Dependants living in each cell the family matrix does not hold.
+     *
+     * A LIVE FUNCTION, like the census and the rent shares beside it, and for
+     * the same reason: it is FamilyModel's figure, re-derived every month, and
+     * a copy kept here would be a second version of it that drifts. Set by Game
+     * off FamilyModel.dependantsPerOutsideHousehold(); nobody has anybody by
+     * default, so a fixture that never sets it has the city it always had.
+     */
+    private ToDoubleFunction<Household> outsideDependants = c -> 0;
+
+    public void setOutsideDependants(ToDoubleFunction<Household> kin) {
+        this.outsideDependants = kin == null ? c -> 0 : kin;
+    }
+
     /* ------------------------------- the month ------------------------------- */
 
     private double lastWrittenOff;
@@ -432,7 +447,7 @@ public class HouseholdBalance {
         lastDelivered = delivered;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            double people = fresh[i] * c.size();
+            double people = fresh[i] * c.headcount();
             totalPeople += people;
             double ate = c.planned * delivered;
             if (c.subsistence > 0 && ate < c.subsistence) {
@@ -457,7 +472,7 @@ public class HouseholdBalance {
         }
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            shopWeight[i] = rowHasPlan[c.row()] ? c.planned * c.households : fresh[i] * c.size();
+            shopWeight[i] = rowHasPlan[c.row()] ? c.planned * c.households : fresh[i] * c.headcount();
             rowShopWeight[c.row()] += shopWeight[i];
         }
 
@@ -528,10 +543,14 @@ public class HouseholdBalance {
         PayTier retiredSlot = PayTier.values()[0];
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            fresh[i] = c.shape() == null
-                    ? Math.max(0, outsideCensus.applyAsDouble(c))
-                    : Math.max(0, census.applyAsDouble(c.shape(),
-                            c.isRetired() ? retiredSlot : c.tier()));
+            if (c.shape() == null) {
+                fresh[i] = Math.max(0, outsideCensus.applyAsDouble(c));
+                // Struck with the count, from the same month's rebuild.
+                c.dependants = Math.max(0, outsideDependants.applyAsDouble(c));
+            } else {
+                fresh[i] = Math.max(0, census.applyAsDouble(c.shape(),
+                        c.isRetired() ? retiredSlot : c.tier()));
+            }
         }
         return fresh;
     }
@@ -566,12 +585,12 @@ public class HouseholdBalance {
         if (rowTotal == null) return per;
         double[] rowWeight = new double[ROWS];
         for (int i = 0; i < cells.length; i++) {
-            rowWeight[cells[i].row()] += fresh[i] * cells[i].size();
+            rowWeight[cells[i].row()] += fresh[i] * cells[i].headcount();
         }
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
             per[i] = rowWeight[c.row()] > 0
-                    ? rowTotal[c.row()] * c.size() / rowWeight[c.row()] : 0;
+                    ? rowTotal[c.row()] * c.headcount() / rowWeight[c.row()] : 0;
         }
         return per;
     }

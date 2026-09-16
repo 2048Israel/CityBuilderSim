@@ -29,7 +29,7 @@ public class WaterCheck {
         UtilitiesHandler uh = sm.getUtilitiesHandler();
 
         BuildingsTemplate house  = bm.getTemplateByName("House");
-        BuildingsTemplate mill   = bm.getTemplateByName("Textile Mill");
+        BuildingsTemplate mill   = bm.getTemplateByName("Industrial Bakery");
         BuildingsTemplate store  = bm.getTemplateByName("Small Grocery Store");
         BuildingsTemplate plant  = bm.getTemplateByName("Water Treatment Plant");
         BuildingsTemplate coal   = bm.getTemplateByName("Coal Power Plant");
@@ -38,7 +38,7 @@ public class WaterCheck {
         System.out.println("--- template water draws ---");
         check("House", house.getWaterConsumption(), .2);
         check("Small Grocery Store", store.getWaterConsumption(), 6);
-        check("Textile Mill", mill.getWaterConsumption(), 60);
+        check("Industrial Bakery", mill.getWaterConsumption(), 60);
         check("Coal Power Plant", coal.getWaterConsumption(), 400);
         check("Water Treatment Plant", plant.getWaterConsumption(), 20);
 

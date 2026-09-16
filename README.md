@@ -7,11 +7,17 @@ their own judgement, a commercial bank funds them and cannot lend below what its
 own money costs it, a treasury borrows at a rate the market quotes it, and a
 currency floats against a world that has its own prices and its own inflation.
 
+Households eat thirteen separate foods, and what is in the basket is what their
+income says it is: the share spent on food falls as they get richer and the
+calories move off staples onto meat, fish and produce, which is Engel's law and
+Bennett's rather than a dial anybody set. The shops buy those thirteen from the
+city's own ovens and from the world, and the shelf is thirteen invoices.
+
 Nothing in it is a headline number with a formula behind it. Every dollar that
 leaves a pool arrives in another or crosses the border in a way the audit can
 name, and a harness asserts that to the cent every month of a 333-year run.
 
-**Status:** in development, headed for Steam. Build `0.5.15`, save format `26`.
+**Status:** in development, headed for Steam. Build `0.6.0`, save format `27`.
 
 ---
 
@@ -62,8 +68,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **forty-eight harnesses plus the
-4,002-month playtest**, which it reports as forty-nine, in about two minutes. In
+`AllChecks` runs the lot, one JVM each — **fifty harnesses plus the 4,002-month
+playtest**, which it reports as fifty-one, in about ninety seconds. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
 

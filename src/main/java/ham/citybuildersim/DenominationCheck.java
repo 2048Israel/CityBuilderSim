@@ -134,7 +134,7 @@ public class DenominationCheck {
             LongPlaytest.build(g, "Construction Depot", 6);
             LongPlaytest.build(g, "Coal Power Plant", 2);
             LongPlaytest.build(g, "Water Treatment Plant", 2);
-            LongPlaytest.build(g, "Textile Mill", 4);
+            LongPlaytest.build(g, "Industrial Bakery", 4);
             LongPlaytest.build(g, "Iron Mine", 2);
             LongPlaytest.build(g, "Steel Foundry", 2);
             LongPlaytest.build(g, "Commercial Bank", 1);

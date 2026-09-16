@@ -232,7 +232,7 @@ public class CrimeCheck {
                 // and more homes than work, so there are reasons.
                 b.addStack(b.getTemplateByName("House"), 3000, true);
                 b.addStack(b.getTemplateByName("Convenience Store"), 60, true);
-                b.addStack(b.getTemplateByName("Textile Mill"), 30, true);
+                b.addStack(b.getTemplateByName("Industrial Bakery"), 30, true);
                 b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
                 b.addStack(b.getTemplateByName("Water Treatment Plant"), 2, true);
                 b.addStack(b.getTemplateByName("Paved Road"), 20, true);

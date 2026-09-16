@@ -75,7 +75,7 @@ public class ConservationCheck {
             BuildingManager b = g.getBuildingManager();
             b.addStack(b.getTemplateByName("House"), 300, true);
             b.addStack(b.getTemplateByName("Convenience Store"), 12, true);
-            b.addStack(b.getTemplateByName("Food Processing Plant"), 3, true);
+            b.addStack(b.getTemplateByName("Bakery"), 3, true);
             b.addStack(b.getTemplateByName("Construction Depot"), 3, true);
             b.addStack(b.getTemplateByName("Coal Power Plant"), 2, true);
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
@@ -128,7 +128,15 @@ public class ConservationCheck {
         int lowStock = Integer.MAX_VALUE, highStock = Integer.MIN_VALUE;
 
         for (int m = 0; m < 36; m++) {
-            double opening = ih.getStock(Good.FOOD);
+            /*
+              * THE WAREHOUSE HOLDS BREAD NOW. This read Good.FOOD, and the
+              * ovens stopped making it on 2026-09-15 - so every term in the
+              * law was zero, the law held perfectly, and the two assertions
+              * below (which exist precisely to catch a law satisfied by an
+              * empty warehouse) went red. They were right to: the warehouse
+              * was not conserving, it was absent.
+              */
+            double opening = ih.getStock(Good.BREAD);
             System.setOut(quiet);
             try { g.simulateMonths(1); } finally { System.setOut(out); }
 
@@ -146,7 +154,7 @@ public class ConservationCheck {
              * see Sector.produceStock - so it is counted but is not a term in
              * the warehouse's law.
              */
-            Sector.Output o = ih.output(Good.FOOD);
+            Sector.Output o = ih.output(Good.BREAD);
             double made = o.produced;
             double spoiled = o.writtenOff;
             double sold = o.soldLocal;
@@ -157,11 +165,11 @@ public class ConservationCheck {
             totalSold += sold;
             totalExported += exported;
 
-            lowStock = Math.min(lowStock, (int) Math.round(ih.getStock(Good.FOOD)));
-            highStock = Math.max(highStock, (int) Math.round(ih.getStock(Good.FOOD)));
+            lowStock = Math.min(lowStock, (int) Math.round(ih.getStock(Good.BREAD)));
+            highStock = Math.max(highStock, (int) Math.round(ih.getStock(Good.BREAD)));
 
             double expected = opening + made - spoiled - sold;
-            double gap = Math.abs(expected - ih.getStock(Good.FOOD));
+            double gap = Math.abs(expected - ih.getStock(Good.BREAD));
             if (gap > worstGap) { worstGap = gap; worstMonth = m; }
             // Doubles now, so a few ulps of slack on a five-figure stock.
             if (gap > 1e-6) conserved = false;

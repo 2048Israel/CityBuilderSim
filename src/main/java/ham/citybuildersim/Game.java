@@ -1103,6 +1103,13 @@ public class Game {
                     householdBalance.plannedShare(), interestPerRow, doors);
         }
 
+        /*
+         * THE SHELF IS RESTOCKED FOR WHAT THIS CITY EATS, struck from the
+         * household ledger that was just settled rather than from a constant.
+         * Before the shops can price or restock anything they have to know
+         * what a person-month is made of - see Retail.setBasket().
+         */
+        shops.setBasket(cityBasketPerHead());
         shops.setSpendingCapacity(householdBalance.getSpendingCapacity());
         shops.setWantedSpend(householdBalance.getWantedSpend());
 
@@ -4695,8 +4702,15 @@ public class Game {
         // The month's adult arrivals look for work next month.
         unemployment.noteArrivals(migration.getLastArrivals() * cohorts.share(AgeBand.ADULT));
 
-        // The prisoners are outside the families too - in the prisoners' ledger.
-        families.rebuild(cohorts, jobsByTier, outOfWork + studying + crime.prisoners());
+        /*
+         * THE PRISONERS ARE AWAY; THE REST ARE OUT OF WORK, NOT OUT OF THE
+         * HOUSE. Both are outside the families - none of them is built into
+         * one - but only a prisoner stops living with their children. See the
+         * note on FamilyModel.rebuild(): the out of work and the students take
+         * their dependants with them, and before 2026-09-15 they did not, which
+         * is why a city that built universities filled its orphan section.
+         */
+        families.rebuild(cohorts, jobsByTier, crime.prisoners(), outOfWork + studying);
         families.setSeekers(unemployment.getHoused(), studying);
         // The student body above is last month's education step, and so are
         // the ones who finished: they leave it with their loans at this
@@ -5113,6 +5127,7 @@ public class Game {
     {
         householdBalance.setOutsideCensus(this::outsideHouseholds);
         householdBalance.setRentShares(this::rentShareOf);
+        householdBalance.setOutsideDependants(this::outsideDependantsOf);
     }
 
     /** How many households are in a cell the family matrix does not hold. */
@@ -5129,6 +5144,23 @@ public class Game {
         if (families == null) return 0;
         if (c instanceof StudentHousehold) return families.getSeekers(FamilyModel.Seeker.STUDENT);
         if (c instanceof OrphanHousehold o) return families.getOrphans(o.band());
+        return 0;
+    }
+
+    /**
+     * Dependants in one household of a cell the family matrix does not hold.
+     *
+     * The out of work and the students took their children with them, so they
+     * carry them here; a prisoner did not, so theirs are in the orphan section
+     * and this is zero. An orphan household holds nobody else by definition -
+     * it IS the children, one cell a band, and giving it dependants as well
+     * would count the same child twice.
+     */
+    private double outsideDependantsOf(Household c) {
+        if (families == null) return 0;
+        if (c instanceof UnemployedHousehold || c instanceof StudentHousehold) {
+            return families.dependantsPerOutsideHousehold();
+        }
         return 0;
     }
 
@@ -5222,6 +5254,103 @@ public class Game {
      * it with a lag rather than reacting to a number struck the same instant.
      */
     private final PriceIndex priceIndex = new PriceIndex();
+
+    /* =====================================================================
+       WHAT THE CITY EATS
+
+       Loaded once. Consumption owns the thirteen goods, Engel's curve and
+       Bennett's, and knows nothing about this city; what makes the basket
+       THIS city's basket is the incomes handed to it below, cell by cell.
+
+       LOADED, NOT REQUIRED. A city whose consumption.json is missing or
+       unreadable gets an empty model, and cityBasketPerHead() then hands the
+       shops an empty basket - which they read as "no shelf yet" rather than
+       as "nobody eats". A data file must not be able to stop a game.
+       ===================================================================== */
+    private final Consumption consumption = new Consumption();
+    private boolean consumptionLoaded;
+
+    /** Loaded on first ask, so a caller never gets an empty model by arriving early. */
+    public Consumption getConsumption() {
+        if (!consumptionLoaded) { consumptionLoaded = true; consumption.load(); }
+        return consumption;
+    }
+
+    /**
+     * Kilograms of each of the thirteen in ONE person-month, averaged over the
+     * city by headcount.
+     *
+     * The shops buy one basket; the city contains many households and they do
+     * not eat the same one. A labourer's month and an elite's month differ in
+     * what they are made of - that is Bennett's law and it is the whole point
+     * of the model - but the shops stock ONE shelf, so what they stock is the
+     * city's average, weighted by the people who will come through the door.
+     *
+     * The rich are not weighted by their money here, deliberately. A shelf
+     * stocked for spending would carry the elite's fish and the elite's fruit
+     * for a city of labourers, and the households at the bottom of the ladder
+     * would find nothing they could afford - which is a real failure mode of
+     * real retail and is NOT what this models today. One person, one place in
+     * the basket.
+     */
+    public java.util.Map<Good, Double> cityBasketPerHead() {
+        java.util.Map<Good, Double> out = new java.util.EnumMap<>(Good.class);
+        getConsumption();
+        if (consumption.items().isEmpty()) return out;
+
+        double rate = foreign == null ? 1 : foreign.getRate();
+        if (householdBalance == null) return referenceBasket();
+        double heads = 0;
+        for (Household cell : householdBalance.cells()) {
+            double homes = cell.households();
+            if (homes < .5) continue;
+            double perHome = cell.headcount();
+            if (perHome <= 0) continue;
+            double people = homes * perHome;
+
+            double x = consumption.incomeMultiple(cell.disposable() / perHome, rate);
+            if (!(x > 0)) continue;
+
+            java.util.Map<String, Double> theirs =
+                    consumption.basket(x, Consumption.timePressure(cell.shape()));
+            for (java.util.Map.Entry<String, Double> e : theirs.entrySet()) {
+                Good g = Good.byName(e.getKey());
+                if (g != null) out.merge(g, e.getValue() * people, Double::sum);
+            }
+            heads += people;
+        }
+        /*
+         * A FOUNDING CITY HAS NO LEDGER TO READ, AND STILL HAS TO EAT.
+         *
+         * cityBasketPerHead() is struck from the household statements, and on
+         * month one there are none - the shops reach their restock before any
+         * household has been settled. The first version of this returned an
+         * empty basket there, so recentUse() was zero for all thirteen goods,
+         * the shops stocked nothing, basketsOnShelf() was nothing, and the
+         * city could not buy a loaf. InfrastructureCheck caught it on the one
+         * assertion that says a shop can be supplied at all.
+         *
+         * So an unmeasured city stocks the reference household's basket. It is
+         * the same fallback the shops already had in another form - recentUse()
+         * has always guessed at coverage before it had a month of sales to go
+         * on - and it is replaced by the real thing the moment one month has
+         * been lived.
+         */
+        if (heads <= 0) return referenceBasket();
+        for (java.util.Map.Entry<Good, Double> e : out.entrySet()) e.setValue(e.getValue() / heads);
+        return out;
+    }
+
+    /** What the file's reference household eats, for a city with no statements yet. */
+    private java.util.Map<Good, Double> referenceBasket() {
+        java.util.Map<Good, Double> out = new java.util.EnumMap<>(Good.class);
+        for (java.util.Map.Entry<String, Double> e
+                : consumption.basket(consumption.referenceMultiple(), 0).entrySet()) {
+            Good g = Good.byName(e.getKey());
+            if (g != null && e.getValue() > 0) out.put(g, e.getValue());
+        }
+        return out;
+    }
 
     /** The rest of the world, which has its own inflation. See WorldEconomy. */
     private final WorldEconomy world = new WorldEconomy();
@@ -5596,6 +5725,8 @@ public class Game {
         // History, not state: what the city lost and what its lenders wrote off.
         dataSave.setDemolitions(demolitionLog.all());
         dataSave.setBuilds(buildLog.all());
+        dataSave.setBandNames(PopulationCohorts.saveBands());
+        dataSave.setShapeNames(FamilyModel.saveShapes());
         dataSave.setCohorts(cohorts.toSaveArray());
         dataSave.setFamilies(families.toSaveArray());
         dataSave.setMigration(migration.toSaveArray());
@@ -6288,6 +6419,7 @@ public class Game {
     // ...and the two-pass figure the save carried wins over that one pass,
     // because migration reads it. See FamilyModel.adoptCarriedUnplaced().
     families.adoptCarriedUnplaced();
+    families.adoptCarriedDoubling();
     if (carriedRentWeight > 0) {
         /*
          * BOTH HALVES, RESTORED, not one total re-split.
@@ -6305,7 +6437,9 @@ public class Game {
     getSectors().realEstate().setRentWeight(
             families.studioRentWeight(), families.familyRentWeight());
     businessInvestment.setFamilies(families);
-    economyManager.setSeniors(cohorts.get(AgeBand.SENIOR));
+    // BOTH retired bands, or the over-85s stop drawing a pension the day the
+    // band lands and the city's pension bill silently falls.
+    economyManager.setSeniors(cohorts.get(AgeBand.SENIOR) + cohorts.get(AgeBand.ELDER));
     // The month's EI and grant bills, as the save struck them - see advanceDemographics().
     economyManager.setOutsidePayments(unemployment.getBenefitsPaid(),
             families.getSeekers(FamilyModel.Seeker.STUDENT)
@@ -7040,11 +7174,12 @@ public class Game {
          * anything the rebuild does, and the rebuild very much depends on them.
          */
         if (restoredFlows != null) {
-            cohorts.restore(restoredFlows.getCohorts());
-            families.restore(restoredFlows.getFamilies());
+            String[] savedBands = restoredFlows.getBandNames();
+            cohorts.restore(savedBands, restoredFlows.getCohorts());
+            families.restore(savedBands, restoredFlows.getShapeNames(), restoredFlows.getFamilies());
             migration.restore(restoredFlows.getMigration());
             unemployment.restore(restoredFlows.getUnemployment());
-            sickness.restore(restoredFlows.getSickness());
+            sickness.restore(savedBands, restoredFlows.getSickness());
             // The prisoners are out of the supply on the load path as on the
             // monthly one, like the students below - or a reloaded city has
             // more workers than the live one until its first month.

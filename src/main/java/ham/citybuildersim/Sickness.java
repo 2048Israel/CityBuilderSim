@@ -71,7 +71,20 @@ public class Sickness {
 
     /**
      * The monthly chance of dying once sick for more than two months, by age:
-     * the youngest and the oldest 4%, children and teenagers 1%, adults 2%.
+     * babies 4%, children and teenagers 1%, adults 2%, seniors 4%, elders 8%.
+     *
+     * THE ELDERS DIE MORE OF IT, Jerus's call with the band. Being ill for
+     * three months at ninety is not the same event as being ill for three
+     * months at seventy-two, and the band exists precisely so the model can
+     * say so; doubling the senior figure is the same relationship the two
+     * bands' own mortality has (12.77% against 2.90% is four and a half times,
+     * so twice is if anything conservative).
+     *
+     * THE DEFAULT USED TO SWALLOW THIS. A `default: return 0` meant the elder
+     * band, on the day it was added, would have been the one band in the city
+     * that could not die of illness - the frailest people in it, immortal to
+     * the thing that kills the frail, with nothing to say so. The switch is
+     * exhaustive now and the default is gone.
      */
     public static double deathChance(AgeBand band) {
         if (band == null) return 0;
@@ -81,8 +94,9 @@ public class Sickness {
             case TEEN:   return .01;
             case ADULT:  return .02;
             case SENIOR: return .04;
-            default:     return 0;
+            case ELDER:  return .08;
         }
+        return 0;
     }
 
     /** How much of a band is sick at a city rate, given the care that serves it. */
@@ -90,8 +104,8 @@ public class Sickness {
                                   double childcareCoverage, double seniorCoverage) {
         double rate = Math.max(0, cityRate);
         double extra = 0;
-        if (band == AgeBand.BABY)   extra = EXTRA_SICKNESS * (1 - clamp(childcareCoverage));
-        if (band == AgeBand.SENIOR) extra = EXTRA_SICKNESS * (1 - clamp(seniorCoverage));
+        if (band == AgeBand.BABY)      extra = EXTRA_SICKNESS * (1 - clamp(childcareCoverage));
+        if (band.isRetirementAge())    extra = EXTRA_SICKNESS * (1 - clamp(seniorCoverage));
         return Math.min(MAX_SHARE, rate * (1 + extra));
     }
 
@@ -269,20 +283,53 @@ public class Sickness {
         return out;
     }
 
+    /** A ring saved before the band names travelled with it. Read as five bands. */
+    public boolean restore(double[] saved) {
+        return restore(null, saved);
+    }
+
     /**
      * Refused whole on a length mismatch. A save from before the ring existed
      * has none, and the first month back seeds it - see seed().
+     *
+     * THE WIDTH COMES FROM THE SAVE, NOT FROM THIS BUILD (2026-09-15). It used
+     * to be AgeBand.values().length, so the day a band is added every ring on
+     * disk is the wrong length, refused, and silently reseeded - a city that
+     * quietly forgets who has been ill for eleven months. Each band is found
+     * by name; a band the save does not carry starts empty, which is the right
+     * answer for a band that did not exist when it was written.
+     *
+     * @param bands the names the save was written with, or null for LEGACY_BANDS
      */
-    public boolean restore(double[] saved) {
+    public boolean restore(String[] bands, double[] saved) {
         reset();
-        int bands = AgeBand.values().length;
-        if (saved == null || saved.length != bands * RING + bands + 2) return false;
+        String[] names = (bands == null || bands.length == 0)
+                ? PopulationCohorts.LEGACY_BANDS : bands;
+        int saveBands = names.length;
+        if (saved == null || saved.length != saveBands * RING + saveBands + 2) return false;
         int i = 0;
-        for (double[] slot : ring) for (int k = 0; k < RING; k++) slot[k] = Math.max(0, saved[i++]);
-        for (int b = 0; b < bands; b++) lastDeaths[b] = Math.max(0, saved[i++]);
+        for (int b = 0; b < saveBands; b++) {
+            AgeBand target = bandNamed(names[b]);
+            for (int k = 0; k < RING; k++) {
+                double v = Math.max(0, saved[i++]);
+                if (target != null) ring[target.ordinal()][k] = v;
+            }
+        }
+        for (int b = 0; b < saveBands; b++) {
+            AgeBand target = bandNamed(names[b]);
+            double v = Math.max(0, saved[i++]);
+            if (target != null) lastDeaths[target.ordinal()] = v;
+        }
         lastRecovery = saved[i++];
         seeded = saved[i] > .5;
         return true;
+    }
+
+    /** The band of that name, or null if this build has no such band. */
+    private static AgeBand bandNamed(String name) {
+        if (name == null) return null;
+        for (AgeBand b : AgeBand.values()) if (b.name().equals(name)) return b;
+        return null;
     }
 
     public void reset() {

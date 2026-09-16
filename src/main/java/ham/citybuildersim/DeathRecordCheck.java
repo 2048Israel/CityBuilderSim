@@ -87,14 +87,19 @@ public class DeathRecordCheck {
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 100_000_000L);
             b.addStack(b.getTemplateByName("House"), 600, true);
             b.addStack(b.getTemplateByName("Convenience Store"), 14, true);
-            b.addStack(b.getTemplateByName("Textile Mill"), 6, true);
+            b.addStack(b.getTemplateByName("Industrial Bakery"), 6, true);
             b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             g.simulateMonths(48);
         });
         HistorySave h = g.getHistorySave();
         PopulationCohorts pyramid = g.getCohorts();
-        String[] keys = {"deathsBabies", "deathsChildren", "deathsTeens", "deathsAdults", "deathsSeniors"};
+        String[] keys = {"deathsBabies", "deathsChildren", "deathsTeens",
+                         "deathsAdults", "deathsSeniors", "deathsElders"};
+        if (keys.length != AgeBand.values().length) {
+            System.out.println("  FAIL  a band has been added with no death series beside it");
+            fails++;
+        }
         double bands = 0;
         for (AgeBand band : AgeBand.values()) {
             check("the graph holds this month's dead: " + band.getLabel().toLowerCase(),
@@ -108,20 +113,83 @@ public class DeathRecordCheck {
         check("the running total is every month's dead since the founding", total[total.length - 1], sum, 1e-9);
         assertTrue("fixture: the city has buried somebody", sum > 0);
 
-        // Close the mill: the parents who worked there leave their families.
+        /* =================================================================
+           CLOSING THE MILL USED TO ORPHAN CHILDREN, AND IT NO LONGER DOES.
+
+           This block was written on the old behaviour and its own comment said
+           so: "the parents who worked there leave their families". They did -
+           the families are built from the adults who WORK, so losing a job took
+           an adult out of the pool and their children were left with nobody.
+           On a real city at a million people that mechanism, reached through
+           the university door instead, killed five to seven thousand children a
+           decade.
+
+           Since 2026-09-15 an adult who leaves work stays with their children;
+           only a prisoner is genuinely away. So the premise is inverted, and
+           the assertion is now a REGRESSION TEST for the fix rather than a
+           fixture for the bug: a wave of layoffs must not fill the orphan
+           section, and the children must be findable in the households their
+           parents went to.
+
+           The block's own subject - that a dead orphan is recorded and its
+           running total grows - needs orphans to EXIST, not to be created, and
+           the builder's half-of-what-is-possible throttle leaves some in every
+           city. That is what it counts now.
+           ================================================================= */
         double orphansBefore = g.getFamilies().getOrphansTotal();
+        double atHomeBefore = g.getFamilies().getAtHomeAdults();
+        double[] peakOutOfWork = { atHomeBefore };
+        double[] peakOrphans = { orphansBefore };
         double[] orphanDeathsEver = new double[1];
         quietly(() -> {
-            BuildingsTemplate mill = g.getBuildingManager().getTemplateByName("Textile Mill");
+            BuildingsTemplate mill = g.getBuildingManager().getTemplateByName("Industrial Bakery");
             g.getBuildingManager().retire(mill, g.getBuildingManager().getQuantity(mill.getId()));
             for (int m = 0; m < 24; m++) {
                 g.simulateMonths(1);
                 orphanDeathsEver[0] += g.getLastOrphanDeaths();
+                /*
+                 * WATCHED ACROSS THE WINDOW, not read at the end of it. The
+                 * layoff lands in one month and the migration valve has two
+                 * years to wash it out, so the endpoint says nothing about
+                 * either the wave or what it did - measured, the out-of-work
+                 * count is LOWER two years later than before the closing,
+                 * because the city shrank instead. The claim is about the
+                 * months in between and has to be measured there.
+                 */
+                peakOutOfWork[0] = Math.max(peakOutOfWork[0], g.getFamilies().getAtHomeAdults());
+                peakOrphans[0] = Math.max(peakOrphans[0], g.getFamilies().getOrphansTotal());
             }
         });
-        System.out.printf("   orphans %,.0f before the mill closed, %,.0f after; %,.2f of them died in two years%n",
+        System.out.printf("   orphans %,.2f before the mill closed, %,.2f after; %,.2f of them died in two years%n",
                 orphansBefore, g.getFamilies().getOrphansTotal(), orphanDeathsEver[0]);
-        assertTrue("fixture: the closing orphaned children", g.getFamilies().getOrphansTotal() > orphansBefore);
+        System.out.printf("   out of work but at home %,.2f before, peak %,.2f over the two years,"
+                + " %,.2f after; their children %,.2f%n",
+                atHomeBefore, peakOutOfWork[0], g.getFamilies().getAtHomeAdults(),
+                g.getFamilies().getOutsideDependantsTotal());
+        System.out.printf("   orphans peaked at %,.2f against %,.2f before%n", peakOrphans[0], orphansBefore);
+        assertTrue("fixture: the closing put adults out of work",
+                peakOutOfWork[0] > atHomeBefore);
+        /*
+         * ...AND BIG ENOUGH TO HAVE SHOWN THE BUG, which is the premise that
+         * makes the assertion below mean anything. Under the old rule every one
+         * of those adults left their children behind, so the wave would have
+         * orphaned (adults) x (the city's own children per adult). Stated
+         * against the model's rate rather than a number typed here, and
+         * against the orphan count the city already had: if the wave could not
+         * have at least doubled it, this fixture is not testing the fix.
+         */
+        double wouldHaveOrphaned = (peakOutOfWork[0] - atHomeBefore)
+                * g.getFamilies().dependantsPerOutsideHousehold();
+        System.out.printf("   under the old rule the wave would have orphaned %,.1f children,"
+                + " against the %,.2f the city had%n", wouldHaveOrphaned, orphansBefore);
+        assertTrue("...and big enough that the old rule would have at least doubled the orphans",
+                wouldHaveOrphaned > orphansBefore);
+        assertTrue("the orphan section does not fill behind it, in any month of the two years",
+                peakOrphans[0] <= orphansBefore + 1);
+        assertTrue("...because the children went with their parents",
+                g.getFamilies().getOutsideDependantsTotal() > 0);
+        assertTrue("fixture: the city still has orphans for the record to count",
+                g.getFamilies().getOrphansTotal() > 0);
         assertTrue("...and some of them died", orphanDeathsEver[0] > 0);
         check("the graph holds this month's orphans who died", last(h, "deathsOrphans"),
                 Math.round(g.getLastOrphanDeaths() * 100) / 100.0, 1e-9);

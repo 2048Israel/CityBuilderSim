@@ -136,7 +136,8 @@ public class SimulationEngine {
                                          game.getFamilies().familySeekerHeads());
         economyManager.setMarginalHousingCost(game.marginalHousingCost());
 
-        economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR));
+        economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR)
+                + game.getCohorts().get(AgeBand.ELDER));
         // The fill first: every sector's payroll is discounted by it, so it
         // has to be current before the wages are set. One call for all seven
         // sectors since the sector template (2026-09-11); the bank's posts

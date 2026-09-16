@@ -78,7 +78,7 @@ public class MoneyCheck {
         g.buildStack(t(g, "House"), 400, false);
         g.buildStack(t(g, "Low-Rise Apartments"), 4, false);
         g.buildStack(t(g, "Small Grocery Store"), 4, false);
-        g.buildStack(t(g, "Textile Mill"), 3, false);
+        g.buildStack(t(g, "Industrial Bakery"), 3, false);
         g.buildStack(t(g, "Construction Depot"), 3, false);
         g.buildStack(t(g, "Coal Power Plant"), 1, false);
         g.buildStack(t(g, "Water Treatment Plant"), 1, false);
@@ -170,7 +170,7 @@ public class MoneyCheck {
         hot.getLandManager().setOwnedSqFt(hot.getLandManager().getOwnedSqFt() + 400_000_000L);
         hot.buildStack(t(hot, "House"), 400, false);
         hot.buildStack(t(hot, "Small Grocery Store"), 4, false);
-        hot.buildStack(t(hot, "Textile Mill"), 3, false);
+        hot.buildStack(t(hot, "Industrial Bakery"), 3, false);
         hot.buildStack(t(hot, "Coal Power Plant"), 1, false);
         hot.buildStack(t(hot, "Water Treatment Plant"), 1, false);
         hot.buildStack(t(hot, "Paved Road"), 10, false);

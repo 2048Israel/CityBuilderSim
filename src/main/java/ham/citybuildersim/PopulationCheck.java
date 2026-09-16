@@ -69,7 +69,8 @@ public class PopulationCheck {
         check("children seven",          AgeBand.CHILD.spanMonths(),  84, 0);
         check("teens five",              AgeBand.TEEN.spanMonths(),   60, 0);
         check("adults fifty-two",        AgeBand.ADULT.spanMonths(), 624, 0);
-        check("seniors fifty",           AgeBand.SENIOR.spanMonths(),600, 0);
+        check("seniors fifteen",         AgeBand.SENIOR.spanMonths(),180, 0);
+        check("elders thirty-five",      AgeBand.ELDER.spanMonths(), 420, 0);
 
         int wholeLife = 0;
         for (AgeBand b : AgeBand.values()) wholeLife += b.spanMonths();
@@ -206,15 +207,26 @@ public class PopulationCheck {
                 AgeBand.SENIOR.getAnnualMortality() < .10);
 
         /*
-         * The shape all of that is FOR. Total outflow from the senior band is
-         * mortality plus ageing out at 120, and one over that is how long the
-         * average seventy-year-old has left. Life expectancy at seventy is
-         * about fifteen years in the real world, and if this drifts far from it
-         * the pyramid is wrong however plausible each individual rate looks.
+         * The shape all of that is FOR. Life expectancy at seventy is about
+         * fifteen years in the real world, and if this drifts far from it the
+         * pyramid is wrong however plausible each individual rate looks.
+         *
+         * TWO BANDS SINCE 2026-09-15, so it is two terms: how long the average
+         * seventy-year-old stays a senior, plus - for the share of them who
+         * live to reach it - how long they then stay an elder. A band's outflow
+         * is its mortality plus its ageing, and the share who age rather than
+         * die is the ageing over the total.
+         *
+         * Written from the bands' own constants rather than from the 14.9 it
+         * currently produces, so that re-deriving either rate moves this
+         * number instead of breaking an assertion pinned to a literal.
          */
-        double seniorOutflow = AgeBand.SENIOR.getAnnualMortality()
-                + 12.0 / AgeBand.SENIOR.spanMonths();
-        double yearsLeftAt70 = 1 / seniorOutflow;
+        double seniorAgeing  = 12.0 / AgeBand.SENIOR.spanMonths();
+        double seniorOutflow = AgeBand.SENIOR.getAnnualMortality() + seniorAgeing;
+        double elderOutflow  = AgeBand.ELDER.getAnnualMortality()
+                + 12.0 / AgeBand.ELDER.spanMonths();
+        double reachTheElders = seniorAgeing / seniorOutflow;
+        double yearsLeftAt70 = 1 / seniorOutflow + reachTheElders / elderOutflow;
         System.out.printf("   average years left at seventy: %.1f (real world: about 15)%n",
                 yearsLeftAt70);
         assertTrue("a seventy-year-old has a realistic time left",
@@ -990,6 +1002,8 @@ public class PopulationCheck {
         wrong.restore(new double[]{1, 2, 3});
         check("a malformed pyramid is refused, not half-read", wrong.total(), keep, .01);
 
+        theBandsAreSavedByName();
+
         cleanUp(root);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -1032,6 +1046,286 @@ public class PopulationCheck {
             // The target the model ACTUALLY used, not one rebuilt out here.
             g.getMigration().getLastTarget()
         };
+    }
+
+    /* ===================================================================
+       THE PYRAMID IS SAVED BY NAME, NOT BY POSITION
+
+       WHY THIS SECTION EXISTS. The pyramid used to be written as the bands in
+       order and read back at offsets taken from however many bands the READING
+       build had. That works until a band is added and then fails silently and
+       catastrophically: with five bands the reader accepts a length of 8; with
+       six it accepts 9 or 8, and every save on disk is 8. An old city would
+       have been read as "six bands, births, deaths, no migration", putting
+       last month's births into the new band and shifting the rest.
+
+       So these assert the property that makes adding a band survivable -
+       position carries no meaning - rather than any particular band list. They
+       are written to keep passing after the sixth band lands, and the fourth
+       one is written to FAIL if anybody ever re-derives the legacy width from
+       AgeBand.values().length again.
+       =================================================================== */
+    static void theBandsAreSavedByName() {
+        System.out.println("\n--- the pyramid survives a band being added ---");
+
+        PopulationCohorts city = new PopulationCohorts();
+        city.migrate(60_000);
+        for (int i = 0; i < 24; i++) city.advanceMonth(null);
+        double[] saved = city.toSaveArray();
+        String[] names = PopulationCohorts.saveBands();
+
+        assertTrue("the names travel beside the pyramid", names.length == AgeBand.values().length);
+
+        /* ---- 1. the plain round trip ---- */
+        PopulationCohorts back = new PopulationCohorts();
+        back.restore(names, saved);
+        for (AgeBand b : AgeBand.values()) {
+            check("restored by name: " + b.name(), back.get(b), city.get(b), 1e-9);
+        }
+        check("and the births beside it",   back.getLastBirths(),    city.getLastBirths(),    1e-9);
+        check("and the deaths",             back.getLastDeaths(),    city.getLastDeaths(),    1e-9);
+
+        /* ---- 2. the order of the names carries no meaning ---- *
+         *
+         * The same numbers, handed over backwards. If anything here were still
+         * positional every band would land in the wrong place and the totals
+         * would still match, which is why this checks bands and not the total.
+         */
+        String[] backwards = new String[names.length];
+        double[] shuffled  = new double[saved.length];
+        for (int i = 0; i < names.length; i++) {
+            backwards[i] = names[names.length - 1 - i];
+            shuffled[i]  = saved[names.length - 1 - i];
+        }
+        for (int i = names.length; i < saved.length; i++) shuffled[i] = saved[i];
+
+        PopulationCohorts reversed = new PopulationCohorts();
+        reversed.restore(backwards, shuffled);
+        for (AgeBand b : AgeBand.values()) {
+            check("order does not matter: " + b.name(), reversed.get(b), city.get(b), 1e-9);
+        }
+
+        /* ---- 3. a band this build has never heard of is dropped, not shifted ---- *
+         *
+         * This is the landmine's own shape, from the other side: a file with
+         * MORE bands than the build. The five it knows must land correctly and
+         * the three scalars must be read from after all six, not after five.
+         */
+        String[] withExtra = new String[names.length + 1];
+        double[] sixBands  = new double[saved.length + 1];
+        System.arraycopy(names, 0, withExtra, 0, names.length);
+        withExtra[names.length] = "A_BAND_FROM_THE_FUTURE";
+        System.arraycopy(saved, 0, sixBands, 0, names.length);
+        sixBands[names.length] = 12_345;                       // the unknown band
+        for (int i = names.length; i < saved.length; i++) sixBands[i + 1] = saved[i];
+
+        PopulationCohorts older = new PopulationCohorts();
+        older.restore(withExtra, sixBands);
+        for (AgeBand b : AgeBand.values()) {
+            check("an unknown band shifts nothing: " + b.name(), older.get(b), city.get(b), 1e-9);
+        }
+        check("...and the births are still the births", older.getLastBirths(), city.getLastBirths(), 1e-9);
+        assertTrue("...and the stranger is not in the pyramid", Math.abs(older.total() - city.total()) < 1e-6);
+
+        /* ---- 4. a nameless save is FIVE bands, whatever this build has ---- *
+         *
+         * The assertion that has to outlive the sixth band. A save from before
+         * the names travelled is 5 + 3 long for ever, and reading it as
+         * AgeBand.values().length + 3 is the bug this whole section is about.
+         * Written against the literal 5 on purpose: if LEGACY_BANDS is ever
+         * "fixed" to track the enum, this fails, which is the point.
+         */
+        check("the legacy format is five bands, in writing",
+                PopulationCohorts.LEGACY_BANDS.length, 5, 0);
+
+        double[] legacy = { 11, 22, 33, 44, 55, 666, 777, 888 };   // 5 bands + 3 scalars
+        PopulationCohorts old = new PopulationCohorts();
+        old.restore(null, legacy);
+        check("a nameless save puts babies in BABY",   old.get(AgeBand.BABY),   11, 1e-9);
+        check("...and seniors in SENIOR",              old.get(AgeBand.SENIOR), 55, 1e-9);
+        check("...and reads births after the fifth",   old.getLastBirths(),    666, 1e-9);
+        check("...and deaths after that",              old.getLastDeaths(),    777, 1e-9);
+        assertTrue("...and nobody else is in the city",
+                Math.abs(old.total() - (11 + 22 + 33 + 44 + 55)) < 1e-9);
+
+        /* ---- 5. a real save off a real disk, with no names in it ---- *
+         *
+         * These eight numbers are lifted from slot 3 at month 3,271 - a city
+         * of 1,226,167 - so this is not a figure anybody invented. The last
+         * three are births, deaths and migration, and the first assertion
+         * that matters is that 2,716 is still last month's BIRTHS and not a
+         * new band full of imaginary people.
+         */
+        String asWritten = "{\"cohorts\":[173763.75015645463,180737.89180734105,"
+                + "118849.36603446529,604706.7845209923,148108.94555178587,"
+                + "2716.3657466521263,938.2822440289626,0.0]}";
+        DataSave onDisk = new com.google.gson.Gson().fromJson(asWritten, DataSave.class);
+        assertTrue("a save from before the names carries none", onDisk.getBandNames() == null);
+
+        PopulationCohorts loaded = new PopulationCohorts();
+        loaded.restore(onDisk.getBandNames(), onDisk.getCohorts());
+        check("a real old save: its adults are its adults",
+                loaded.get(AgeBand.ADULT), 604706.7845209923, .01);
+        check("...its seniors are its seniors",
+                loaded.get(AgeBand.SENIOR), 148108.94555178587, .01);
+        check("...last month's births are births, not a band",
+                loaded.getLastBirths(), 2716.3657466521263, .01);
+        check("...and the city is the size it was saved at",
+                loaded.total(), 1226166.7380806038, .01);
+
+        /* ---- 6. and a malformed one is still refused whole ---- */
+        PopulationCohorts guard = new PopulationCohorts();
+        guard.migrate(5000);
+        double kept = guard.total();
+        guard.restore(names, new double[]{1, 2, 3});
+        check("a malformed named pyramid is refused too", guard.total(), kept, .01);
+
+        theOtherTwoBandArraysSurviveItToo();
+    }
+
+    /* ===================================================================
+       THE FAMILIES AND THE RING OF THE LONG SICK, SAME PROPERTY
+
+       Three arrays in the save are band-indexed and all three used to take
+       their width from the READING build. The pyramid was the one that would
+       have been misread; these two would have failed differently and just as
+       quietly:
+
+         - FamilyModel writes the orphans in the MIDDLE of its array with the
+           seekers and the unhoused-by-shape behind them, so one more band
+           moves every offset after it. Every save on disk would have been one
+           slot short of all five accepted lengths, and restore() would have
+           returned at the guard having restored nothing at all - not the
+           orphans, not the household matrix, not the formed-household memory.
+
+         - Sickness checks its length with an exact !=, so every existing ring
+           would have been refused and silently reseeded: a city that forgets
+           who has been ill for eleven months, on the frame it loads.
+
+       Both are asserted by round-tripping the array itself rather than by
+       naming getters, because the array IS the contract and a getter-by-getter
+       check tests whichever ones somebody remembered.
+       =================================================================== */
+    static void theOtherTwoBandArraysSurviveItToo() {
+        System.out.println("\n--- the families and the sick ring survive it too ---");
+
+        Game game = new Game(GameFiles.scratch("band-array-check"));
+        game.newGame();
+        for (int i = 0; i < 18; i++) game.toggleNextMonth();
+
+        String[] names = PopulationCohorts.saveBands();
+        int bands = names.length;
+
+        /* ------------------------------ families ------------------------------ */
+        double[] savedFamilies = game.getFamilies().toSaveArray();
+        assertTrue("the fixture actually has families to save", savedFamilies.length > bands);
+
+        String[] shapes = FamilyModel.saveShapes();
+        FamilyModel back = new FamilyModel();
+        back.restore(names, shapes, savedFamilies);
+        sameArray("the families round-trip by name", back.toSaveArray(), savedFamilies);
+
+        /*
+         * A save written by THIS build read with the legacy lists must be
+         * REFUSED, not half-read: thirteen shapes cannot describe a fifteen
+         * shape array, and the thing that makes that safe is that no two
+         * accepted lengths collide.
+         */
+        FamilyModel legacy = new FamilyModel();
+        legacy.restore(null, null, savedFamilies);
+        check("a today-save read as five bands and thirteen shapes is refused whole",
+                legacy.getOrphansTotal(), 0, 1e-9);
+
+        /*
+         * A save carrying a band this build has never heard of. The orphan
+         * block widens by one and EVERYTHING BEHIND IT SHIFTS - which is the
+         * whole point: if the offsets were still taken from this build, the
+         * seekers would be read as orphans and the household memory would be
+         * lost, and the round-trip below would not match.
+         *
+         * TWO BLOCKS ARE BAND-INDEXED SINCE 2026-09-15, not one: the orphans,
+         * and the children who went out of work with their parent at the very
+         * end. So a band added is TWO slots, not one, and this fixture spliced
+         * one and was refused - correctly, and it is a better test for having
+         * had to learn it. The tail is spliced from the BACK first so the
+         * orphan block's offset is still the one measured on the original.
+         */
+        String[] withExtra = java.util.Arrays.copyOf(names, bands + 1);
+        withExtra[bands] = "A_BAND_FROM_THE_FUTURE";
+        double[] widened = spliceOneSlot(savedFamilies, savedFamilies.length, 8_888);
+        widened = spliceOneSlot(widened, orphanBlockEnd(bands, shapes.length), 7_777);
+
+        FamilyModel wider = new FamilyModel();
+        wider.restore(withExtra, shapes, widened);
+        sameArray("...and a band from the future shifts nothing behind it",
+                wider.toSaveArray(), savedFamilies);
+
+        FamilyModel refused = new FamilyModel();
+        refused.restore(names, shapes, new double[]{1, 2, 3});
+        check("a malformed family array is refused whole", refused.getOrphansTotal(), 0, 1e-9);
+
+        /* ------------------------------ the ring ------------------------------ */
+        double[] savedRing = game.getSickness().getState();
+        Sickness ring = new Sickness();
+        assertTrue("the ring restores by name", ring.restore(names, savedRing));
+        sameArray("...and round-trips", ring.getState(), savedRing);
+
+        /*
+         * A ring written by THIS build read with the legacy list must be
+         * refused, not half-read - the same property the families have. Five
+         * band names cannot describe a six-band ring, and the exact length
+         * check is what makes that safe.
+         */
+        Sickness old = new Sickness();
+        assertTrue("a today-ring read as five bands is refused whole", !old.restore(null, savedRing));
+
+        /*
+         * ...and a genuinely old ring, five bands wide, still loads. Built at
+         * the legacy width on purpose rather than from this build's, because
+         * that is the file sitting on somebody's disk.
+         */
+        int legacyBands = PopulationCohorts.LEGACY_BANDS.length;
+        double[] legacyRing = new double[legacyBands * Sickness.RING + legacyBands + 2];
+        for (int k = 0; k < legacyRing.length; k++) legacyRing[k] = k + 1;
+        legacyRing[legacyRing.length - 1] = 1;          // seeded
+        Sickness fromDisk = new Sickness();
+        assertTrue("a five-band ring from before the names still loads", fromDisk.restore(null, legacyRing));
+        assertTrue("...and it put somebody in the ring", fromDisk.getState().length > 0);
+
+        Sickness stranger = new Sickness();
+        assertTrue("a ring is refused whole when the width does not match its names",
+                !stranger.restore(withExtra, savedRing));
+    }
+
+    /** Where FamilyModel's orphan block ends, counting from the front of its array. */
+    static int orphanBlockEnd(int bands, int shapes) {
+        int base = shapes * PayTier.values().length + 2;
+        return base + 3 + 1 + bands;     // ...the matrix, the counts, outsideAdults, the orphans
+    }
+
+    /** The same array with one extra slot pushed in at `at`, everything behind it moved along. */
+    static double[] spliceOneSlot(double[] source, int at, double value) {
+        double[] out = new double[source.length + 1];
+        System.arraycopy(source, 0, out, 0, at);
+        out[at] = value;
+        System.arraycopy(source, at, out, at + 1, source.length - at);
+        return out;
+    }
+
+    static void sameArray(String label, double[] got, double[] wanted) {
+        if (got.length != wanted.length) {
+            System.out.printf("  FAIL  %s: %d slots, wanted %d%n", label, got.length, wanted.length);
+            fails++;
+            return;
+        }
+        for (int i = 0; i < got.length; i++) {
+            if (Math.abs(got[i] - wanted[i]) > 1e-9) {
+                System.out.printf("  FAIL  %s: slot %d is %s, wanted %s%n", label, i, got[i], wanted[i]);
+                fails++;
+                return;
+            }
+        }
+        System.out.printf("%-58s %d slots  OK%n", label, got.length);
     }
 
     static void cleanUp(Path root) {

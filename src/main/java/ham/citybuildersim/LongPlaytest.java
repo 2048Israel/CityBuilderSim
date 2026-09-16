@@ -193,7 +193,7 @@ public class LongPlaytest {
         finite(month, "monthly GDP", e.getMonthGdp());
         finite(month, "annual GDP", e.getNationalAccounts().getAnnualGdp());
         finite(month, "total wage", p.getTotalWage());
-        finite(month, "food price", g.getMarkets().get(Good.FOOD).getLocalPrice());
+        finite(month, "food price", g.getSectors().retail().getFoodPrice());
         finite(month, "materials price", b.getConstructionMaterialPrice());
         finite(month, "land price", l.getPricePerSqFt());
 
@@ -372,7 +372,7 @@ public class LongPlaytest {
                         fm.totalHouseholds(), fm.getStillUnplaced(), fm.getDoubledUpHouseholds(),
                         fm.getSeekers(FamilyModel.Seeker.UNEMPLOYED), fm.getSeekersSharing(FamilyModel.Seeker.UNEMPLOYED),
                         shop.getStoreCoverage(), shop.getWantedDemand(), shop.getDemand(), shop.getProductsSold(),
-                        shop.getPantry(Good.FOOD), shop.getOperatingRate(), shop.getHealthRatio(), shop.getSupplyRatio(),
+                        (double) shop.getStoreInventory(), shop.getOperatingRate(), shop.getHealthRatio(), shop.getSupplyRatio(),
                         shop.getSpendingCapacity(), shop.getWantedSpend(), shop.getStoreSellPrice(),
                         g.getHouseholdBalance().getHungerRate() * 100, g.getHealth().getSickRate() * 100,
                         u.getJobsLost(), u.getOpenings(), u.getLocalHires(), u.getArrivalsUnhired(), u.getEntrants(), u.getOtherExits(),
@@ -962,7 +962,7 @@ public class LongPlaytest {
          * figure the planner and the throttle both work from.
          */
         if (b.getFoodProduction() < Math.min(b.getTotalStoreCoverage(), population)) {
-            addThrottle(moves, g, "Food Processing Plant", "food plant",
+            addThrottle(moves, g, "Bakery", "food plant",
                     gdp * .05);
         }
 
@@ -999,7 +999,7 @@ public class LongPlaytest {
             if (wouldPay(g, "Steel Foundry", Sectors.HEAVY_INDUSTRY)) {
                 addThrottle(moves, g, "Steel Foundry", "foundry", jobGain);
             }
-            addThrottle(moves, g, "Textile Mill", "mill", jobGain);
+            addThrottle(moves, g, "Industrial Bakery", "mill", jobGain);
         }
 
         /* ================================================================
@@ -1867,8 +1867,8 @@ public class LongPlaytest {
                                 / (fx.monthlyExports() + fx.monthlyImports()) : 0);
         out.printf("  shelf price %.4f, food import price %.4f, local food %.4f%n",
                 g.getSectors().retail().getStoreSellPrice(),
-                g.getMarkets().get(Good.FOOD).importPrice(),
-                g.getMarkets().get(Good.FOOD).getLocalPrice());
+                g.getSectors().retail().getImportPrice(),
+                g.getSectors().retail().getFoodPrice());
         /*
          * THE FOOD CHAIN, FROM THE GROUND UP (2026-09-13). Which farms are
          * standing tells the whole story of the tenth sector: fields while the

@@ -132,9 +132,21 @@
     "GROCERIES": 480
    },
    "uses": {
-    "FOOD": 480
+    "GRAINS": 1440,
+    "BREAD": 1680,
+    "DAIRY_EGGS": 3840,
+    "VEGETABLES": 3360,
+    "FRUIT": 2400,
+    "MEAT": 2160,
+    "FISH": 576,
+    "FATS": 384,
+    "PROCESSED_MEAT": 480,
+    "READY_MEALS": 720,
+    "BAKERY": 720,
+    "SNACKS": 480,
+    "DRINKS": 5760
    },
-   "stock": 1400
+   "stock": 70000
   },
   {
    "id": 5,
@@ -158,13 +170,25 @@
     "GROCERIES": 1600
    },
    "uses": {
-    "FOOD": 1600
+    "GRAINS": 4800,
+    "BREAD": 5600,
+    "DAIRY_EGGS": 12800,
+    "VEGETABLES": 11200,
+    "FRUIT": 8000,
+    "MEAT": 7200,
+    "FISH": 1920,
+    "FATS": 1280,
+    "PROCESSED_MEAT": 1600,
+    "READY_MEALS": 2400,
+    "BAKERY": 2400,
+    "SNACKS": 1600,
+    "DRINKS": 19200
    },
-   "stock": 7000
+   "stock": 350000
   },
   {
    "id": 3,
-   "name": "Textile Mill",
+   "name": "Industrial Bakery",
    "category": "INDUSTRIAL",
    "sector": "Industry",
    "cashCost": 18717,
@@ -179,16 +203,17 @@
    "land": 80000,
    "roadLoad": 40,
    "makes": {
-    "FOOD": 5500
+    "BREAD": 213000,
+    "BAKERY": 91000
    },
    "uses": {
     "CROPS": 579
    },
-   "stock": 15000
+   "stock": 829000
   },
   {
    "id": 7,
-   "name": "Food Processing Plant",
+   "name": "Bakery",
    "category": "INDUSTRIAL",
    "sector": "Industry",
    "cashCost": 8994,
@@ -204,12 +229,13 @@
    "land": 40000,
    "roadLoad": 40,
    "makes": {
-    "FOOD": 6000
+    "BREAD": 232000,
+    "BAKERY": 100000
    },
    "uses": {
     "CROPS": 632
    },
-   "stock": 18000
+   "stock": 996000
   },
   {
    "id": 8,

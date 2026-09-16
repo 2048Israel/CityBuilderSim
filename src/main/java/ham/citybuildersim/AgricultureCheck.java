@@ -83,16 +83,38 @@ public class AgricultureCheck {
         BuildingManager bm = plain.getBuildingManager();
 
         /* ---- the chain: ground -> crops -> food -> groceries ---- */
-        BuildingsTemplate mill = bm.getTemplateByName("Textile Mill");
-        BuildingsTemplate plant = bm.getTemplateByName("Food Processing Plant");
-        assertTrue("the Textile Mill buys crops, which it never did before",
+        BuildingsTemplate mill = bm.getTemplateByName("Industrial Bakery");
+        BuildingsTemplate plant = bm.getTemplateByName("Bakery");
+        assertTrue("the Industrial Bakery buys crops, which it never did before",
                 mill.uses(Good.CROPS) > 0);
-        assertTrue("...and so does the Food Processing Plant",
+        assertTrue("...and so does the Bakery",
                 plant.uses(Good.CROPS) > 0);
-        check("a tonne of crops is 9.5 units of food at the mill",
-                mill.makes(Good.FOOD) / mill.uses(Good.CROPS), Agriculture.FOOD_PER_TONNE, .05);
-        check("...and at the plant",
-                plant.makes(Good.FOOD) / plant.uses(Good.CROPS), Agriculture.FOOD_PER_TONNE, .05);
+        /*
+         * THE SAME PREMISE IN THE UNITS THE OVENS NOW WORK IN. It used to read
+         * "a tonne of crops is 9.5 units of food"; a unit of food was a person
+         * fed for a month and no longer exists. What the ovens make is bread
+         * and bakery goods, by the kilogram, at 76% of the crop's mass - so
+         * this asserts the yield rather than a conversion to a good that went
+         * away, and it asserts it of BOTH outputs together, because a bakery
+         * that made only one of them would pass a test written on the other.
+         */
+        check("a tonne of crops comes out as 52.5% of its own mass, baked, at the big oven",
+                (mill.makes(Good.BREAD) + mill.makes(Good.BAKERY)) / (mill.uses(Good.CROPS) * 1000),
+                Agriculture.BAKED_KG_PER_TONNE / 1000, .05);
+        check("...and at the small one",
+                (plant.makes(Good.BREAD) + plant.makes(Good.BAKERY)) / (plant.uses(Good.CROPS) * 1000),
+                Agriculture.BAKED_KG_PER_TONNE / 1000, .05);
+        /*
+         * TWO OUTPUTS EACH, AND THE OVENS ARE THE ONLY BUILDINGS IN THE GAME
+         * THAT HAVE THEM. For one batch they had one, because the cost model
+         * could not price two and silently made nothing of either - see
+         * Sector.costShareOf(). This asserts the shape that batch could not
+         * have, so the day somebody takes the split back out, it says so.
+         */
+        for (BuildingsTemplate oven : new BuildingsTemplate[] { mill, plant }) {
+            assertTrue(oven.getName() + " bakes bread and bakery goods both",
+                    oven.makes(Good.BREAD) > 0 && oven.makes(Good.BAKERY) > 0);
+        }
         assertTrue("the mills declare crops as an input on the sector, not just the template",
                 plain.getSectors().industry().isUser(Good.CROPS));
         assertTrue("...and the fields declare them as an output",
@@ -106,8 +128,17 @@ public class AgricultureCheck {
          */
         out.println("\n   what a mill clears, at the world's crop price:");
         for (BuildingsTemplate t : new BuildingsTemplate[] { mill, plant }) {
-            double revenue = t.makes(Good.FOOD)
-                    * (Good.FOOD.worldImportPrice() + Good.FOOD.worldExportPrice()) / 2;
+            /*
+             * BOTH OUTPUTS, because an oven that sells two things and is
+             * measured on one looks like it is losing money. This line counted
+             * bread alone for exactly as long as the ovens made bread alone,
+             * and reported a 58% crop bill and a negative margin the moment
+             * they got their second output back.
+             */
+            double revenue = t.makes(Good.BREAD)
+                        * (Good.BREAD.worldImportPrice() + Good.BREAD.worldExportPrice()) / 2
+                    + t.makes(Good.BAKERY)
+                        * (Good.BAKERY.worldImportPrice() + Good.BAKERY.worldExportPrice()) / 2;
             double crops = t.uses(Good.CROPS) * Good.CROPS.worldImportPrice();
             double payroll = payrollOf(t);
             double utilities = t.getElectricityConsumption() * plain.getEconomyManager().getPricePerWatt()
@@ -229,7 +260,7 @@ public class AgricultureCheck {
             b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             b.addStack(b.getTemplateByName("Paved Road"), 20, true);
-            b.addStack(b.getTemplateByName("Textile Mill"), 2, true);
+            b.addStack(b.getTemplateByName("Industrial Bakery"), 2, true);
             b.addStack(b.getTemplateByName(GRAIN), 6, true);
             for (int i = 0; i < 18; i++) city.simulateMonths(1);
         });

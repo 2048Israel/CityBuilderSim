@@ -380,11 +380,98 @@ public class FamilyModel {
     }
 
     /**
-     * @param outsideAdults adults the families are NOT built from: the
-     *                      unemployed and the full-time students, who are
-     *                      households of their own since 2026-09-11
+     * @param outsideAdults adults the families are NOT built from, ALL OF THEM
+     *                      counted as away: nobody takes a child with them.
+     *                      This is what the method did before 2026-09-15 and it
+     *                      is kept for fixtures whose subject is something else.
+     *                      Live play calls the four-argument form below.
      */
     public void rebuild(PopulationCohorts cohorts, double[] jobsByTier, double outsideAdults) {
+        rebuild(cohorts, jobsByTier, outsideAdults, 0);
+    }
+
+    /* =======================================================================
+       THE ADULTS WHO LEFT WORK ARE STILL AT THE KITCHEN TABLE (2026-09-15)
+
+       Jerus, on the decade book of a city at a million people: universities
+       went up around month 2,300, the students went 27,000 -> 96,000, and the
+       orphans went 7,600 -> 35,000 with them. FIVE TO SEVEN THOUSAND CHILDREN
+       A DECADE DIED AS ORPHANS - 83 to 91 per cent of every child death in the
+       city since decade 22, against a quarter before the universities. A player
+       caused it by doing the right thing.
+
+       The mechanism is one subtraction. The families are built from the adults
+       who WORK, so an adult who enrols is taken out of the pool, and the
+       children who were in that household have nobody to be placed with. The
+       same door is open three other ways: a layoff, EI running out, and prison.
+       Measured on a probe city while the senior band was being split, a jobs
+       event alone - no universities anywhere near it - took the orphan count
+       from 12 to 2,094 in two years.
+
+       SO THE QUESTION IS NOT WHERE THE ADULT WENT, IT IS WHETHER THEY WENT
+       HOME. A student and a laid-off parent both sleep in the same bed as
+       their children; a prisoner does not. That is the whole distinction, and
+       it is why this takes two numbers where it took one.
+
+       CHILDREN FOLLOW ADULTS AT THE CITY'S OWN RATE, which is the only honest
+       rule available to a model that has no individual people in it: if a
+       fifth of the adults are out of work or studying, a fifth of the children
+       go with them. It is exactly right in aggregate and says nothing about any
+       one household, which is what every other rate in this class already does.
+
+       They are taken out BEFORE the builder runs, so they are neither offered
+       to the families nor left over at the end. What remains in the orphan
+       section afterwards is the throttle's own residue - about one child in
+       seven, which the note at the top of this class has always described -
+       plus the children of whoever is genuinely away.
+
+       WHAT THE CHILDREN LIVE ON is the household they went to: a student's
+       grant, loan and savings, or a claimant's EI. They eat and are billed
+       through HouseholdBalance like anybody, because the outside cells carry
+       them as mouths now (Household.headcount()). A student supporting two
+       children borrows more, and a laid-off parent with two children goes
+       broke faster and is evicted sooner. Both of those are the point.
+       ======================================================================= */
+
+    /** Children of the adults who left work but not the house, by band. */
+    private final double[] outsideDependants = new double[AgeBand.values().length];
+
+    /** Adults outside the families who still live with their dependants. */
+    private double atHomeAdults;
+
+    /** Children of this band living with an adult outside the families. */
+    public double getOutsideDependants(AgeBand band) { return outsideDependants[band.ordinal()]; }
+
+    public double getOutsideDependantsTotal() {
+        double sum = 0;
+        for (double v : outsideDependants) sum += v;
+        return sum;
+    }
+
+    /** Adults outside the families who took their children with them. */
+    public double getAtHomeAdults() { return atHomeAdults; }
+
+    /**
+     * Dependants per outside household, for the cells that carry them.
+     *
+     * One adult is one household, so this is the whole of what went out over
+     * the adults it went out with. Zero when nobody is outside, which is what
+     * a city at full employment with no college looks like.
+     */
+    public double dependantsPerOutsideHousehold() {
+        return atHomeAdults > 0 ? getOutsideDependantsTotal() / atHomeAdults : 0;
+    }
+
+    /**
+     * @param awayAdults   adults the families are not built from AND who are
+     *                     not at home either - the prisoners. Their children
+     *                     are orphaned, which is the honest answer for them.
+     * @param atHomeAdults adults the families are not built from but who still
+     *                     live with their dependants - the out of work and the
+     *                     full-time students. See the note above.
+     */
+    public void rebuild(PopulationCohorts cohorts, double[] jobsByTier,
+                        double awayAdults, double atHomeAdults) {
 
         for (double[] row : households) java.util.Arrays.fill(row, 0);
         unhoused = 0;
@@ -392,6 +479,7 @@ public class FamilyModel {
         pricedOutShares = 0;
         stillUnplaced = 0;
         java.util.Arrays.fill(orphans, 0);
+        java.util.Arrays.fill(outsideDependants, 0);
         java.util.Arrays.fill(unhousedByShape, 0);
         java.util.Arrays.fill(unplacedByShape, 0);
 
@@ -399,16 +487,40 @@ public class FamilyModel {
         double children = cohorts.get(AgeBand.CHILD);
         double teens    = cohorts.get(AgeBand.TEEN);
         double allAdults = cohorts.get(AgeBand.ADULT);
-        this.outsideAdults = Math.max(0, Math.min(allAdults, outsideAdults));
+
+        /*
+         * BOTH KINDS ARE OUTSIDE THE FAMILIES; only one kind is out of the
+         * house. Clamped together and in that order, so a caller who hands in
+         * more than the pyramid holds loses the at-home share first rather than
+         * ending up with prisoners the city does not have.
+         */
+        double away = Math.max(0, Math.min(allAdults, awayAdults));
+        this.atHomeAdults = Math.max(0, Math.min(allAdults - away, atHomeAdults));
+        this.outsideAdults = away + this.atHomeAdults;
+
+        /*
+         * The children who went with them, at the city's own rate. Taken out
+         * here, before the builder, so they are not offered to the families and
+         * not left in the orphan section at the end. See the note above.
+         */
+        double followed = allAdults > 0 ? this.atHomeAdults / allAdults : 0;
+        outsideDependants[AgeBand.BABY.ordinal()]  = Math.max(0, babies)   * followed;
+        outsideDependants[AgeBand.CHILD.ordinal()] = Math.max(0, children) * followed;
+        outsideDependants[AgeBand.TEEN.ordinal()]  = Math.max(0, teens)    * followed;
+        babies   -= outsideDependants[AgeBand.BABY.ordinal()];
+        children -= outsideDependants[AgeBand.CHILD.ordinal()];
+        teens    -= outsideDependants[AgeBand.TEEN.ordinal()];
+
         // THE FAMILIES ARE THE PEOPLE WHO WORK, and their dependants. See the
         // note on the people outside the families, above.
         double adults   = allAdults - this.outsideAdults;
         double seniors  = cohorts.get(AgeBand.SENIOR);
+        double elders   = cohorts.get(AgeBand.ELDER);
 
         boolean keep = remembers && haveFormed;
         lastKept = 0; lastReformed = 0; lastNoLongerFit = 0; lastNew = 0;
 
-        if (adults <= 0 && seniors <= 0) {
+        if (adults <= 0 && seniors <= 0 && elders <= 0) {
             orphans[AgeBand.BABY.ordinal()]  = Math.max(0, babies);
             orphans[AgeBand.CHILD.ordinal()] = Math.max(0, children);
             orphans[AgeBand.TEEN.ordinal()]  = Math.max(0, teens);
@@ -422,33 +534,17 @@ public class FamilyModel {
             return;
         }
 
-        /* ---- 1. seniors, who compete for nothing ---- */
-        /*
-         * KEPT FIRST, when there is a record: last month's couples and seniors
-         * alone, less the share that re-forms, as far as there are seniors for
-         * them. A death leaves too few, and both shrink by the shortfall; the
-         * survivors go back with everybody else who is left over.
+        /* ---- 1. the retired, who compete for nothing ---- *
+         *
+         * Once per retired band since 2026-09-15, into that band's own pair of
+         * shapes. It was one block for seniors; the elders need exactly the same
+         * treatment out of a different bucket, and writing it twice is how the
+         * two quietly drift apart.
          */
-        double keptCouples = 0, keptAlone = 0;
-        if (keep) {
-            double hadCouples = formed[FamilyStructure.SENIOR_COUPLE.ordinal()][0];
-            double hadAlone   = formed[FamilyStructure.SENIOR_ALONE.ordinal()][0];
-            keptCouples = hadCouples * (1 - REFORMING_EACH_MONTH);
-            keptAlone   = hadAlone * (1 - REFORMING_EACH_MONTH);
-            double need = 2 * keptCouples + keptAlone;
-            double fits = need > seniors && need > 0 ? Math.max(0, seniors) / need : 1;
-            lastReformed += (hadCouples + hadAlone) * REFORMING_EACH_MONTH;
-            lastNoLongerFit += (keptCouples + keptAlone) * (1 - fits);
-            keptCouples *= fits;
-            keptAlone *= fits;
-            lastKept += keptCouples + keptAlone;
-        }
-        double leftSeniors = Math.max(0, seniors - 2 * keptCouples - keptAlone);
-        double seniorCouples = leftSeniors * .55 / 2;
-        double seniorSingles = leftSeniors - seniorCouples * 2;
-        lastNew += seniorCouples + Math.max(0, seniorSingles);
-        households[FamilyStructure.SENIOR_COUPLE.ordinal()][0] = keptCouples + seniorCouples;
-        households[FamilyStructure.SENIOR_ALONE.ordinal()][0]  = keptAlone + Math.max(0, seniorSingles);
+        placeRetired(AgeBand.SENIOR, FamilyStructure.SENIOR_COUPLE,
+                FamilyStructure.SENIOR_ALONE, seniors, keep, COUPLED_SENIORS);
+        placeRetired(AgeBand.ELDER, FamilyStructure.ELDER_COUPLE,
+                FamilyStructure.ELDER_ALONE, elders, keep, COUPLED_ELDERS);
 
         /*
          * ---- 2. what share of adults sits in each tier ----
@@ -1267,6 +1363,32 @@ public class FamilyModel {
      * Doubling up needs no door of its own, so it absorbs whatever is left.
      */
     public void noteUnplaced(double left) {
+        /*
+         * THE SCALAR IS CLEARED WITH THE THREE ARRAYS (2026-09-15), and used
+         * not to be. That asymmetry was a real bug hiding behind a zero.
+         *
+         * This method ADDS to doubledUp. On the live path that is harmless,
+         * because squeezeUnplaced() has just zeroed it - the sequence is
+         * house, squeeze, house, note. The LOAD path deliberately runs only
+         * one pass, house then note, on a matrix that came out of the save
+         * already squeezed, and never zeroes anything: so it added a second
+         * helping of doubling on top of the figure it had just restored.
+         *
+         * It was invisible for as long as that second pass absorbed nobody.
+         * The households came back already crowded, `left` was zero, and zero
+         * added to the restored value is the restored value. Splitting the
+         * senior band at 85 gave the same people more households - the
+         * over-85s couple at 25% where the seniors couple at 55% - which made
+         * `left` non-zero on the reload pass and turned a latent bug into a
+         * reloaded city with twice the crowding it was saved with. Caught by
+         * SaveFileCheck, which compares a played city against a reloaded one
+         * and is the only thing that could have caught it.
+         *
+         * Clearing here is safe on both paths: reset-then-add and
+         * add-to-zero are the same arithmetic, and nothing between
+         * squeezeUnplaced() and here writes the field.
+         */
+        doubledUp = 0;
         java.util.Arrays.fill(unhousedByShape, 0);
         java.util.Arrays.fill(seekersDoubled, 0);
         java.util.Arrays.fill(seekersUnhoused, 0);
@@ -1407,11 +1529,58 @@ public class FamilyModel {
         }
     }
 
+    /**
+     * What share of a retired band lives as a couple rather than alone.
+     *
+     * FEWER AT EIGHTY-FIVE THAN AT SEVENTY, and by a lot: the odds that both of
+     * a couple are still alive fall away exactly as this band's mortality says
+     * they do, which is why a majority of the over-85s live alone or in care
+     * and a majority of the newly retired do not. 55% coupled was the single
+     * band's figure and it stays with the seniors; the elders get 25%, which is
+     * the same shape the census shows without pretending to be a measurement of
+     * it. A dial to turn if the household screen looks wrong.
+     */
+    private static final double COUPLED_SENIORS = .55;
+    private static final double COUPLED_ELDERS  = .25;
+
+    /**
+     * One retired band into its own two shapes.
+     *
+     * KEPT FIRST, when there is a record: last month's couples and singles, less
+     * the share that re-forms, as far as there are people of that band left for
+     * them. A death leaves too few, and both shrink by the shortfall; the
+     * survivors go back with everybody else who is left over.
+     */
+    private void placeRetired(AgeBand band, FamilyStructure coupleShape,
+                              FamilyStructure aloneShape, double people,
+                              boolean keep, double coupledShare) {
+        double keptCouples = 0, keptAlone = 0;
+        if (keep) {
+            double hadCouples = formed[coupleShape.ordinal()][0];
+            double hadAlone   = formed[aloneShape.ordinal()][0];
+            keptCouples = hadCouples * (1 - REFORMING_EACH_MONTH);
+            keptAlone   = hadAlone * (1 - REFORMING_EACH_MONTH);
+            double need = 2 * keptCouples + keptAlone;
+            double fits = need > people && need > 0 ? Math.max(0, people) / need : 1;
+            lastReformed += (hadCouples + hadAlone) * REFORMING_EACH_MONTH;
+            lastNoLongerFit += (keptCouples + keptAlone) * (1 - fits);
+            keptCouples *= fits;
+            keptAlone *= fits;
+            lastKept += keptCouples + keptAlone;
+        }
+        double left = Math.max(0, people - 2 * keptCouples - keptAlone);
+        double couples = left * coupledShare / 2;
+        double singles = left - couples * 2;
+        lastNew += couples + Math.max(0, singles);
+        households[coupleShape.ordinal()][0] = keptCouples + couples;
+        households[aloneShape.ordinal()][0]  = keptAlone + Math.max(0, singles);
+    }
+
     /** How many of this shape the remaining people could fill. */
     private double capacityFor(FamilyStructure shape, double[] remaining) {
         double limit = Double.MAX_VALUE;
         for (AgeBand b : AgeBand.values()) {
-            if (b == AgeBand.SENIOR) continue;
+            if (b.isRetirementAge()) continue;
             int need = shape.membersOf(b);
             if (need <= 0) continue;
             limit = Math.min(limit, remaining[b.ordinal()] / need);
@@ -1430,7 +1599,7 @@ public class FamilyModel {
         }
 
         for (AgeBand b : AgeBand.values()) {
-            if (b == AgeBand.SENIOR) continue;
+            if (b.isRetirementAge()) continue;
             remaining[b.ordinal()] -= count * shape.membersOf(b);
         }
     }
@@ -1489,9 +1658,97 @@ public class FamilyModel {
      * codebase has been caught by that gap before - a reloaded save took several
      * months to settle back to its real numbers.
      */
+    /**
+     * The shapes a save written before the names travelled must be read with.
+     *
+     * A LITERAL LIST, for the same reason PopulationCohorts.LEGACY_BANDS is one:
+     * it describes a file already on somebody's disk, so it must not move when
+     * this enum moves. The matrix is shapes by tiers and everything else in the
+     * array sits behind it, so one extra shape shifts twelve slots and the whole
+     * save is refused - the city comes back with no households at all.
+     */
+    public static final String[] LEGACY_SHAPES = {
+        "SENIOR_ALONE", "SENIOR_COUPLE", "SINGLE_ADULT", "COUPLE", "SINGLE_PARENT",
+        "COUPLE_BABY", "COUPLE_CHILD", "COUPLE_TEEN", "COUPLE_BABY_CHILD",
+        "COUPLE_CHILD_TEEN", "COUPLE_TWO_CHILDREN", "LARGE_FAMILY", "SHARED_ADULTS"
+    };
+
+    /** The shape names this build would write beside the matrix. */
+    public static String[] saveShapes() {
+        FamilyStructure[] all = FamilyStructure.values();
+        String[] names = new String[all.length];
+        for (int i = 0; i < all.length; i++) names[i] = all[i].name();
+        return names;
+    }
+
+    /** The shape of that name, or null if this build has no such shape. */
+    private static FamilyStructure shapeNamed(String name) {
+        if (name == null) return null;
+        for (FamilyStructure s : FamilyStructure.values()) if (s.name().equals(name)) return s;
+        return null;
+    }
+
     /** What the people outside the families add to the save: see toSaveArray(). */
-    private static final int OUTSIDE_SLOTS =
-            1 + AgeBand.values().length + 4 * Seeker.values().length + FamilyStructure.values().length;
+    private static final int OUTSIDE_SLOTS = outsideSlots(AgeBand.values().length);
+
+    /**
+     * The same block measured against a SAVE's band count, not this build's.
+     *
+     * The orphans sit in the middle of this array with the seekers and the
+     * unhoused-by-shape behind them, so one extra band moves every offset
+     * after it. Before 2026-09-15 the accepted lengths were all derived from
+     * AgeBand.values().length, which means the day a sixth band is added every
+     * save on disk is one slot short of all five accepted lengths - and
+     * restore() returns at the guard having restored NOTHING: not the orphans,
+     * not the household matrix, not the formed-household memory. No exception
+     * and no notice, just a city that came back wrong.
+     *
+     * It fails safe rather than misreading, because no two accepted lengths
+     * collide. It still fails silently, which is enough.
+     */
+    private static int outsideSlots(int bands) {
+        return outsideSlots(bands, FamilyStructure.values().length);
+    }
+
+    private static int outsideSlots(int bands, int shapes) {
+        return 1 + bands + 4 * Seeker.values().length + shapes;
+    }
+
+    /** The formed-household memory, measured against a SAVE's shape count. */
+    private static int memorySlots(int shapes) {
+        return shapes * PayTier.values().length + 1 + 4;
+    }
+
+    /**
+     * The children who went out of work with their parent, appended 2026-09-15
+     * as a TAIL rather than widened into the outside block.
+     *
+     * Everything in the outside block sits in front of the seekers and the
+     * memory, so growing it moves every offset behind it and every save on disk
+     * is read at the wrong place. Appending costs one comparison in the guard
+     * and nothing else: an older file is simply short, and the fields it does
+     * not carry start at zero. A band added still moves this, which is why it
+     * is measured against the SAVE's band count like everything else here.
+     */
+    private static int kinSlots(int bands) {
+        return 1 + bands;
+    }
+
+    private static final int KIN_SLOTS = kinSlots(AgeBand.values().length);
+
+    /**
+     * Slots a save carries before the formed-household memory.
+     *
+     * For the harness that truncates one, and it exists because the harness
+     * used to work the boundary out by SUBTRACTING the memory block from
+     * today's total length - which is right until the array grows a tail, and
+     * then silently produces a length no reader accepts. The layout is this
+     * class's business; asking it is cheaper than re-deriving it correctly in
+     * two places.
+     */
+    public static int slotsBeforeMemory() {
+        return FamilyStructure.values().length * PayTier.values().length + 5 + OUTSIDE_SLOTS;
+    }
 
     /** ...and what the households remember: the formed matrix, whether there is one, the month's four counts. */
     private static final int MEMORY_SLOTS =
@@ -1499,7 +1756,7 @@ public class FamilyModel {
 
     public double[] toSaveArray() {
         double[] out = new double[households.length * PayTier.values().length + 5 + OUTSIDE_SLOTS
-                + MEMORY_SLOTS];
+                + MEMORY_SLOTS + KIN_SLOTS];
         int i = 0;
         for (double[] row : households) {
             for (double v : row) out[i++] = v;
@@ -1562,6 +1819,16 @@ public class FamilyModel {
         out[i++] = lastReformed;
         out[i++] = lastNoLongerFit;
         out[i++] = lastNew;
+        /*
+         * ...AND THE CHILDREN WHO LEFT WORK WITH THEIR PARENT, appended
+         * 2026-09-15. Derived every month like the orphans beside them, and
+         * carried for the same reason: the first frame of a reloaded city is
+         * read before any rebuild has run, and a frame where these children
+         * are not in the outside households is a frame where they are missing
+         * from the city's own count of its children.
+         */
+        out[i++] = atHomeAdults;
+        for (double v : outsideDependants) out[i++] = v;
         return out;
     }
 
@@ -1575,20 +1842,57 @@ public class FamilyModel {
      * the two at zero, which is exactly the state those saves loaded in anyway.
      * Anything that is neither length is still refused whole.
      */
+    /** Families saved before the names travelled with them. Read as five bands, thirteen shapes. */
     public void restore(double[] saved) {
-        int base = households.length * PayTier.values().length + 2;
+        restore(null, null, saved);
+    }
+
+    public void restore(String[] bands, double[] saved) {
+        restore(bands, null, saved);
+    }
+
+    /**
+     * @param bands  the band names the save was written with, or null for LEGACY_BANDS
+     * @param shapes the household shapes it was written with, or null for LEGACY_SHAPES
+     *
+     * BOTH AXES COME FROM THE SAVE. The matrix is shapes by tiers with the
+     * outside block and the formed memory behind it, and the orphans sit inside
+     * that block with the seekers behind THEM - so a band added or a shape added
+     * moves every offset after it. Taking either width from this build is the
+     * bug that would have thrown away every household in every save.
+     */
+    public void restore(String[] bands, String[] shapes, double[] saved) {
+        String[] bandNames = (bands == null || bands.length == 0)
+                ? PopulationCohorts.LEGACY_BANDS : bands;
+        String[] shapeNames = (shapes == null || shapes.length == 0)
+                ? LEGACY_SHAPES : shapes;
+
+        final int outside = outsideSlots(bandNames.length, shapeNames.length);
+        final int memory  = memorySlots(shapeNames.length);
+        final int kin     = kinSlots(bandNames.length);
+        final int tiers   = PayTier.values().length;
+
+        int base = shapeNames.length * tiers + 2;
         if (saved == null || (saved.length != base && saved.length != base + 2
-                && saved.length != base + 3 && saved.length != base + 3 + OUTSIDE_SLOTS
-                && saved.length != base + 3 + OUTSIDE_SLOTS + MEMORY_SLOTS)) {
+                && saved.length != base + 3 && saved.length != base + 3 + outside
+                && saved.length != base + 3 + outside + memory
+                && saved.length != base + 3 + outside + memory + kin)) {
             return;   // refused whole, per the standing rule on state arrays
         }
         carriedUnplaced = -1;
         int i = 0;
-        for (double[] row : households) {
-            for (int t = 0; t < row.length; t++) row[t] = saved[i++];
+        for (double[] row : households) java.util.Arrays.fill(row, 0);
+        for (int s = 0; s < shapeNames.length; s++) {
+            FamilyStructure target = shapeNamed(shapeNames[s]);
+            for (int t = 0; t < tiers; t++) {
+                double v = saved[i++];
+                if (target != null) households[target.ordinal()][t] = v;
+            }
         }
         unhoused = saved[i++];
         doubledUp = saved[i++];
+        carriedDoubledUp = doubledUp;
+        carriedSeekersDoubled = null;
         if (saved.length >= base + 2) {
             crowdedHouseholds = saved[i++];
             refusedByStudio   = saved[i++];
@@ -1597,6 +1901,8 @@ public class FamilyModel {
             carriedUnplaced = Math.max(0, saved[i++]);
         }
         outsideAdults = 0;
+        atHomeAdults = 0;
+        java.util.Arrays.fill(outsideDependants, 0);
         java.util.Arrays.fill(orphans, 0);
         java.util.Arrays.fill(seekers, 0);
         java.util.Arrays.fill(seekersSharing, 0);
@@ -1606,25 +1912,60 @@ public class FamilyModel {
         for (double[] cells : formed) java.util.Arrays.fill(cells, 0);
         haveFormed = false;
         lastKept = 0; lastReformed = 0; lastNoLongerFit = 0; lastNew = 0;
-        if (saved.length >= base + 3 + OUTSIDE_SLOTS) {
+        if (saved.length >= base + 3 + outside) {
             outsideAdults = saved[i++];
-            for (int b = 0; b < orphans.length; b++) orphans[b] = saved[i++];
+            for (int b = 0; b < bandNames.length; b++) {
+                double v = saved[i++];
+                AgeBand target = bandNamed(bandNames[b]);
+                if (target != null) orphans[target.ordinal()] = v;
+            }
             for (int g = 0; g < SEEKERS; g++) {
                 seekers[g] = saved[i++];
                 seekersSharing[g] = saved[i++];
                 seekersDoubled[g] = saved[i++];
                 seekersUnhoused[g] = saved[i++];
             }
-            for (int s = 0; s < unhousedByShape.length; s++) unhousedByShape[s] = saved[i++];
+            carriedSeekersDoubled = seekersDoubled.clone();
+            for (int s = 0; s < shapeNames.length; s++) {
+                double v = saved[i++];
+                FamilyStructure target = shapeNamed(shapeNames[s]);
+                if (target != null) unhousedByShape[target.ordinal()] = v;
+            }
         }
-        if (saved.length == base + 3 + OUTSIDE_SLOTS + MEMORY_SLOTS) {
-            for (double[] cells : formed) for (int t = 0; t < cells.length; t++) cells[t] = Math.max(0, saved[i++]);
+        if (saved.length >= base + 3 + outside + memory) {
+            for (int s = 0; s < shapeNames.length; s++) {
+                FamilyStructure target = shapeNamed(shapeNames[s]);
+                for (int t = 0; t < tiers; t++) {
+                    double v = Math.max(0, saved[i++]);
+                    if (target != null) formed[target.ordinal()][t] = v;
+                }
+            }
             haveFormed = saved[i++] > .5;
             lastKept = saved[i++];
             lastReformed = saved[i++];
             lastNoLongerFit = saved[i++];
-            lastNew = saved[i];
+            lastNew = saved[i++];
         }
+        /*
+         * ...and the children who went with their parent, BY NAME like the
+         * orphans, so a band this build does not have is dropped rather than
+         * shifted and a band the file does not have starts empty.
+         */
+        if (saved.length >= base + 3 + outside + memory + kin) {
+            atHomeAdults = Math.max(0, saved[i++]);
+            for (int b = 0; b < bandNames.length; b++) {
+                double v = saved[i++];
+                AgeBand target = bandNamed(bandNames[b]);
+                if (target != null) outsideDependants[target.ordinal()] = Math.max(0, v);
+            }
+        }
+    }
+
+    /** The band of that name, or null if this build has no such band. */
+    private static AgeBand bandNamed(String name) {
+        if (name == null) return null;
+        for (AgeBand b : AgeBand.values()) if (b.name().equals(name)) return b;
+        return null;
     }
 
     /**
@@ -1632,6 +1973,13 @@ public class FamilyModel {
      * was carried. See adoptCarriedUnplaced().
      */
     private double carriedUnplaced = -1;
+
+    /**
+     * ...and what it said was crowded. Same argument, same shape, found the
+     * same way - see adoptCarriedDoubling().
+     */
+    private double carriedDoubledUp = -1;
+    private double[] carriedSeekersDoubled;
 
     /**
      * The saved residual wins over the load path's one-pass re-derivation.
@@ -1647,11 +1995,46 @@ public class FamilyModel {
         if (carriedUnplaced >= 0) stillUnplaced = carriedUnplaced;
     }
 
+    /**
+     * The saved crowding wins over the load path's one-pass re-derivation.
+     *
+     * EXACTLY THE SAME ARGUMENT AS adoptCarriedUnplaced(), and it should have
+     * been written at the same time. The live path houses, runs the valves,
+     * and houses AGAIN - the flatshares the valves form change what fits where,
+     * so the second pass is the true one. The load path deliberately runs one
+     * pass over an already-squeezed matrix, which leaves more households
+     * looking unplaced than really are, and noteUnplaced() then crowds them a
+     * second time.
+     *
+     * For a long time that cost nothing: the reloaded pass absorbed nobody and
+     * a recomputation that lands on zero is indistinguishable from not
+     * recomputing. Splitting the senior band at 85 changed the household count
+     * for the same people - the over-85s couple at 25% against the seniors' 55%
+     * - and the second helping became real: a city saved with 17.9 crowded
+     * households came back with 36.5 and twenty-five crowded seekers it never
+     * had. SaveFileCheck is what caught it, by comparing a played city against
+     * a reloaded one.
+     *
+     * So the figure the save carried is put back over the one-pass estimate,
+     * both for the families and for the seekers. A save from before either was
+     * carried has -1 and keeps whatever the load path derived, which is the
+     * behaviour those saves already had.
+     */
+    public void adoptCarriedDoubling() {
+        if (carriedDoubledUp >= 0) doubledUp = carriedDoubledUp;
+        if (carriedSeekersDoubled != null
+                && carriedSeekersDoubled.length == seekersDoubled.length) {
+            System.arraycopy(carriedSeekersDoubled, 0, seekersDoubled, 0, seekersDoubled.length);
+        }
+    }
+
     public void reset() {
         for (double[] row : households) java.util.Arrays.fill(row, 0);
         unhoused = 0;
         doubledUp = 0;
         outsideAdults = 0;
+        atHomeAdults = 0;
+        java.util.Arrays.fill(outsideDependants, 0);
         java.util.Arrays.fill(orphans, 0);
         java.util.Arrays.fill(seekers, 0);
         java.util.Arrays.fill(seekersSharing, 0);

@@ -30,8 +30,11 @@ public class HouseholdMemoryCheck {
         try { work.run(); } finally { System.setOut(out); }
     }
 
+    /** A pyramid from the five bands this fixture cares about. Elders stay empty. */
     static PopulationCohorts pyramid(double babies, double children, double teens, double adults, double seniors) {
         PopulationCohorts c = new PopulationCohorts();
+        // The LEGACY_BANDS path on purpose: five values plus three scalars is
+        // what these arguments are, whatever this build's band list has become.
         c.restore(new double[] {babies, children, teens, adults, seniors, 0, 0, 0});
         return c;
     }
@@ -97,7 +100,7 @@ public class HouseholdMemoryCheck {
 
         // What the kept households use, and what is left for the builder.
         double r = 1 - FamilyModel.REFORMING_EACH_MONTH;
-        double[] used = new double[5];
+        double[] used = new double[AgeBand.values().length];
         for (FamilyStructure s : FamilyStructure.values()) {
             double k = monthOne[s.ordinal()] * r;
             for (AgeBand b : AgeBand.values()) used[b.ordinal()] += k * s.membersOf(b);
@@ -189,7 +192,9 @@ public class HouseholdMemoryCheck {
         double[] state = saved.toSaveArray();
         FamilyModel loaded = new FamilyModel();
         loaded.rememberHouseholds(true);
-        loaded.restore(state);
+        // Named on both axes: this array was written by THIS build, and the
+        // nameless path is five bands and thirteen shapes for ever.
+        loaded.restore(PopulationCohorts.saveBands(), FamilyModel.saveShapes(), state);
         assertTrue("the record comes back", loaded.hasRecord());
         check("...with the month's kept households", loaded.getLastKept(), saved.getLastKept(), 0);
         saved.rebuild(city, jobs);
@@ -200,10 +205,20 @@ public class HouseholdMemoryCheck {
         }
         check("the month after a load keeps exactly what the unloaded city keeps", worstLoad, 0, 0);
 
-        int oldLength = state.length - (FamilyStructure.values().length * PayTier.values().length + 5);
+        /*
+         * THE BOUNDARY COMES FROM THE MODEL, NOT FROM ARITHMETIC ON TODAY'S
+         * LENGTH. This worked the old length out by subtracting the memory
+         * block from the full array, which is correct exactly while the memory
+         * block is the LAST thing in it. A tail was appended on 2026-09-15 and
+         * the subtraction started producing a length no reader accepts, so this
+         * fixture failed reporting that a pre-record save loads no households -
+         * which was true of the fixture's array and of nothing else.
+         */
+        int oldLength = FamilyModel.slotsBeforeMemory();
         FamilyModel old = new FamilyModel();
         old.rememberHouseholds(true);
-        old.restore(java.util.Arrays.copyOf(state, oldLength));
+        old.restore(PopulationCohorts.saveBands(), FamilyModel.saveShapes(),
+                java.util.Arrays.copyOf(state, oldLength));
         assertTrue("a save from before the record still loads its households", old.totalHouseholds() > 0);
         assertTrue("...and has no record", !old.hasRecord());
         old.rebuild(city, jobs);
@@ -221,7 +236,7 @@ public class HouseholdMemoryCheck {
             BuildingManager b = g.getBuildingManager();
             b.addStack(b.getTemplateByName("House"), 400, true);
             b.addStack(b.getTemplateByName("Convenience Store"), 10, true);
-            b.addStack(b.getTemplateByName("Textile Mill"), 3, true);
+            b.addStack(b.getTemplateByName("Industrial Bakery"), 3, true);
             b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             g.simulateMonths(36);

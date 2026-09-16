@@ -134,7 +134,7 @@ public class NationalAccounts {
      * Stock held at the end of last month, in UNITS, so the change can be
      * measured as a volume rather than as a value. See the class note.
      */
-    private double lastFoodUnits;
+    private double lastFoodVolume;
     private double lastMaterialUnits;
 
     /*
@@ -194,7 +194,7 @@ public class NationalAccounts {
      * The rolling history is deliberately not restored: it is not saved at all
      * yet, and inventing entries for it would be worse than a short one.
      */
-    public void restore(double gdp, double lastFoodUnits,
+    public void restore(double gdp, double lastFoodVolume,
                         double consumptionGoods, double consumptionHousing,
                         double investmentConstruction, double investmentInventories,
                         double government, double importsFood, double importsMaterials,
@@ -203,7 +203,7 @@ public class NationalAccounts {
                         boolean baselineKnown) {
 
         this.gdp = gdp;
-        this.lastFoodUnits = lastFoodUnits;
+        this.lastFoodVolume = lastFoodVolume;
         this.lastMaterialUnits = lastMaterialUnits;
         this.inventoryBaselineKnown = baselineKnown;
 
@@ -222,7 +222,17 @@ public class NationalAccounts {
         this.exports = exports;
     }
 
-    public double getLastFoodUnits()     { return lastFoodUnits; }
+    /**
+     * Last month's food inventory, as a VOLUME.
+     *
+     * It counted loaves until 2026-09-15, when food became thirteen goods and
+     * kilograms of grain stopped being addable to kilograms of fish. It is a
+     * fixed-weight index across the thirteen now - each good's stock weighted
+     * by its world import price, which is a constant of the model - so it is
+     * still a quantity, still immune to a price move, and still does not
+     * belong in redenominate().
+     */
+    public double getLastFoodVolume()    { return lastFoodVolume; }
     public double getLastMaterialUnits() { return lastMaterialUnits; }
     public double getInvFood() { return invFood; }
     public double getInventoryFood()         { return invFood; }
@@ -265,7 +275,7 @@ public class NationalAccounts {
              * not consumed and it was not unproduced - counting it here would
              * book a demolition as a month of negative output.
              */
-            invFood = ((foodUnits + foodStockWrittenOff) - lastFoodUnits) * foodPrice;
+            invFood = ((foodUnits + foodStockWrittenOff) - lastFoodVolume) * foodPrice;
 
             /*
              * THE MATERIALS PLANT'S WAREHOUSE IS THE THIRD TERM, and the city's
@@ -292,7 +302,7 @@ public class NationalAccounts {
             inventoryBaselineKnown = true;
         }
 
-        lastFoodUnits = foodUnits;
+        lastFoodVolume = foodUnits;
         lastMaterialUnits = materialUnits;
 
         government = governmentServices;
@@ -687,7 +697,7 @@ public class NationalAccounts {
 
     public void reset() {
         history.clear();
-        lastFoodUnits = 0;
+        lastFoodVolume = 0;
         lastMaterialUnits = 0;
         inventoryBaselineKnown = true;   // an empty warehouse is a real baseline
         gdp = 0;
@@ -696,12 +706,22 @@ public class NationalAccounts {
     /**
      * The month's national accounts, in the new unit.
      *
-     * lastFoodUnits and lastMaterialUnits are UNITS - loaves and bricks - and
-     * do not move. (Work in progress, while it was a term here, was measured
-     * at CONTRACT VALUE, which is money, and leaving it unscaled was the
-     * single worst bug in this whole change: GDP came out at -958,009 against
-     * +18.43, and the two cities never recovered. Every money field below is
-     * scaled for that reason.)
+     * lastFoodVolume and lastMaterialUnits are QUANTITIES - a weighted index
+     * of the thirteen foods, and bricks - and do not move. (Work in progress,
+     * while it was a term here, was measured at CONTRACT VALUE, which is
+     * money, and leaving it unscaled was the single worst bug in this whole
+     * change: GDP came out at -958,009 against +18.43, and the two cities
+     * never recovered. Every money field below is scaled for that reason.)
+     *
+     * THE FOOD INDEX NEARLY STOPPED BEING A QUANTITY ON 2026-09-15. The first
+     * draft of the thirteen-good version valued each stock at its own LOCAL
+     * price and handed the accounts money, which would have made this a money
+     * field, needed scaling here, and - much worse - booked every move in the
+     * food market as production, which is the exact bug the note on
+     * update()'s inventory block records as already fixed once. Measured
+     * before it shipped: 8 of 8 ensemble seeds clean became 6 of 8. Weighting
+     * the thirteen at their WORLD import prices, which are constants, keeps it
+     * a volume.
      */
     public void redenominate(double scale) {
         consumptionGoods *= scale;  consumptionHousing *= scale;

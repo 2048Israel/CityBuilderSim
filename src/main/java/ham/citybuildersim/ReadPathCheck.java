@@ -192,7 +192,7 @@ public class ReadPathCheck {
             b.addStack(template(g, "Convenience Store"), 8, true);
             b.addStack(template(g, "Small Grocery Store"), 2, true);
             b.addStack(template(g, "Construction Depot"), 4, true);
-            b.addStack(template(g, "Food Processing Plant"), 1, true);
+            b.addStack(template(g, "Bakery"), 1, true);
             b.addStack(template(g, "Coal Power Plant"), 1, true);
             b.addStack(template(g, "Water Treatment Plant"), 1, true);
             b.addStack(template(g, "Paved Road"), 3, true);
@@ -240,7 +240,7 @@ public class ReadPathCheck {
         untouched.put("retail.grossRevenue", ch.statement().revenue);
         untouched.put("retail.pending", ch.pending().revenue());
         untouched.put("retail.cash", ch.getCash());
-        untouched.put("industry.inventory", g.getSectors().industry().getStock(Good.FOOD));
+        untouched.put("industry.inventory", g.getSectors().industry().getStock(Good.BREAD));
         untouched.put("industry.cash", g.getSectors().industry().getCash());
         untouched.put("cash", g.getCash());
 
@@ -257,7 +257,7 @@ public class ReadPathCheck {
                 case "retail.grossRevenue" -> ch.statement().revenue;
                 case "retail.pending"      -> ch.pending().revenue();
                 case "retail.cash"         -> ch.getCash();
-                case "industry.inventory"  -> g.getSectors().industry().getStock(Good.FOOD);
+                case "industry.inventory"  -> g.getSectors().industry().getStock(Good.BREAD);
                 case "industry.cash"       -> g.getSectors().industry().getCash();
                 default                    -> g.getCash();
             };
@@ -333,6 +333,22 @@ public class ReadPathCheck {
          * on the shelf now.
          */
         int shelfBefore = c.getStoreInventory();
+        /*
+         * THIRTEEN LAWS WHERE THERE WAS ONE.
+         *
+         * getStoreInventory() used to BE the shelf - units of FOOD, one good,
+         * one number, and the law could be asserted straight on it. It is now
+         * a SUMMARY: the person-months the scarcest of thirteen goods allows,
+         * which is a min and not a stock, so nothing conserves about it.
+         *
+         * The law itself did not weaken - it multiplied. Each good's pantry
+         * still falls by exactly what the month sold of it and rises by
+         * exactly what the market delivered, so that is asserted thirteen
+         * times, on the thirteen quantities that are actually stocks. A
+         * harness that checked one number now checks thirteen.
+         */
+        java.util.Map<Good, Double> pantryBefore = new java.util.EnumMap<>(Good.class);
+        for (Good sg : ham.citybuildersim.sectors.Retail.SHELF) pantryBefore.put(sg, c.getPantry(sg));
         System.setOut(quiet);
         for (int i = 0; i < 20; i++) {
             econ.getTaxIncome();                 // the path that used to assign
@@ -341,12 +357,26 @@ public class ReadPathCheck {
         System.setOut(out);
 
         double sold = c.pending().unitsSold.getOrDefault(Good.GROCERIES, 0.0);
-        Sector.Input food = c.input(Good.FOOD);
-        double restocked = food.boughtLocal + food.imported;
-        assertTrue("the shelf fell by exactly the units in the ledger, plus the restock",
-                Math.abs(c.getPantry(Good.FOOD) - (shelfBefore - sold + restocked)) < 1e-6);
-        out.printf("   %,d on the shelf, %,.0f sold, %,.0f restocked, %,d left%n",
-                shelfBefore, sold, restocked, c.getStoreInventory());
+
+        boolean everyGoodConserves = true;
+        double restocked = 0;
+        Good worst = null;
+        double worstGap = 0;
+        for (Good sg : ham.citybuildersim.sectors.Retail.SHELF) {
+            Sector.Input in = c.input(sg);
+            double delivered = in.boughtLocal + in.imported;
+            restocked += delivered;
+            double expected = pantryBefore.get(sg) - sold * c.kgPerHead(sg) + delivered;
+            double gap = Math.abs(c.getPantry(sg) - expected);
+            if (gap > 1e-6) everyGoodConserves = false;
+            if (gap > worstGap) { worstGap = gap; worst = sg; }
+        }
+        assertTrue("every one of the thirteen pantries fell by what sold and rose by what arrived",
+                everyGoodConserves);
+        out.printf("   %,d person-months on the shelf, %,.0f sold, %,.0fkg restocked, %,d left"
+                + " (worst gap %.2eg on %s)%n",
+                shelfBefore, sold, restocked, c.getStoreInventory(),
+                worstGap, worst == null ? "nothing" : worst.name());
 
         assertTrue("...and the statement never sold more than was in stock",
                 sold <= shelfBefore + 1e-9);

@@ -73,7 +73,9 @@ public class OutsideCheck {
             PopulationCohorts c = new PopulationCohorts();
             double[] pyr = new double[AgeBand.values().length + 3];
             for (AgeBand b : AgeBand.values()) pyr[b.ordinal()] = 18_000 * PopulationCohorts.equilibriumShare(b);
-            c.restore(pyr);
+            // Named, because this array is as wide as THIS build's band list and
+            // the nameless path is five bands for ever - see LEGACY_BANDS.
+            c.restore(PopulationCohorts.saveBands(), pyr);
             double[] jobs = new double[tiers];
             jobs[unskilled] = 700; jobs[skilled] = 300;
 
@@ -108,7 +110,7 @@ public class OutsideCheck {
             PopulationCohorts c = new PopulationCohorts();
             double[] pyr = new double[AgeBand.values().length + 3];
             pyr[AgeBand.ADULT.ordinal()] = 1_000;
-            c.restore(pyr);
+            c.restore(PopulationCohorts.saveBands(), pyr);
             double[] jobs = new double[tiers];
             jobs[unskilled] = 800;
             FamilyModel f = new FamilyModel();
@@ -145,6 +147,94 @@ public class OutsideCheck {
             assertTrue("one of them pays less than a whole door", share < 1);
             check("every household that wants a door is housed, doubled up, or outside",
                     f.homesNeeded() + f.getDoubledUpHouseholds(), f.householdsSeekingDoors(), 1e-6);
+        }
+
+
+        /* ============ 3b. the children go where their parent goes ============
+
+           EVERY CHILD IS SOMEWHERE, and before 2026-09-15 that was true only by
+           accident. The families are built from the adults who WORK, so an
+           adult who enrolled or lost a job was subtracted from the pool and the
+           children who lived with them were left over as orphans. On Jerus's
+           slot-3 city, read at 272 years, that put 35,000 children in the orphan
+           section and killed five to seven thousand of them a decade - 83 to 91
+           per cent of every child death in the city since the universities went
+           up. A player caused it by building a university.
+
+           An orphan is fed by nobody and dies at the no-care rates, so this is
+           a conservation law worth stating outright rather than a report: the
+           children in the families, plus the children who went out of work with
+           a parent, plus the orphans, are every child in the pyramid. If any
+           future change subtracts an adult from the families without saying
+           where their dependants went, this fails on the month it happens.
+
+           AND THE PRISONER IS THE EXCEPTION THAT PROVES IT. A prisoner is
+           genuinely not at home; their children are orphaned, deliberately, and
+           the second fixture below asserts that rather than leaving it to be
+           assumed from the first one's silence.
+           ===================================================================== */
+        System.out.println("\n--- every child is in a household, or in the orphan section ---");
+        {
+            PopulationCohorts c = new PopulationCohorts();
+            double[] pyr = new double[AgeBand.values().length + 3];
+            pyr[AgeBand.BABY.ordinal()]  = 300;
+            pyr[AgeBand.CHILD.ordinal()] = 600;
+            pyr[AgeBand.TEEN.ordinal()]  = 300;
+            pyr[AgeBand.ADULT.ordinal()] = 2_000;
+            c.restore(PopulationCohorts.saveBands(), pyr);
+            double[] jobs = new double[tiers];
+            jobs[unskilled] = 1_600;
+
+            // The cause: a fifth of the adults are out of work or studying.
+            FamilyModel atHome = new FamilyModel();
+            atHome.rebuild(c, jobs, 0, 400);
+
+            check("fixture: four hundred adults left work and none went away",
+                    atHome.getAtHomeAdults(), 400, 1e-9);
+            check("...so a fifth of the children went with them",
+                    atHome.getOutsideDependantsTotal(), 1_200 * 400.0 / 2_000, 1e-9);
+            for (AgeBand band : new AgeBand[] { AgeBand.BABY, AgeBand.CHILD, AgeBand.TEEN }) {
+                double inFamilies = 0;
+                for (FamilyStructure s : FamilyStructure.values()) {
+                    inFamilies += atHome.totalOf(s) * s.membersOf(band);
+                }
+                check("the " + band.getLabel().toLowerCase() + " are all in a family, outside with a parent, or orphans",
+                        inFamilies + atHome.getOutsideDependants(band) + atHome.getOrphans(band),
+                        c.get(band), 1e-6);
+            }
+            check("one outside adult is one household, so this is what each of them holds",
+                    atHome.dependantsPerOutsideHousehold(), 1_200 * 400.0 / 2_000 / 400, 1e-9);
+
+            /*
+             * THE SAME CITY WITH THE SAME ADULTS IN PRISON. Identical pyramid,
+             * identical jobs, identical number missing from the families - and
+             * the children have nowhere to go, because a prisoner has no
+             * household for them to be in. The difference between the two
+             * lines below is the whole of what this change decides.
+             */
+            FamilyModel away = new FamilyModel();
+            away.rebuild(c, jobs, 400, 0);
+            check("fixture: the same four hundred adults, in prison instead",
+                    away.getOutsideAdults(), atHome.getOutsideAdults(), 1e-9);
+            check("a prisoner takes nobody with them", away.getOutsideDependantsTotal(), 0, 1e-12);
+            assertTrue("...so their children are orphans, which is the honest answer for them",
+                    away.getOrphansTotal() > atHome.getOrphansTotal());
+            for (AgeBand band : new AgeBand[] { AgeBand.BABY, AgeBand.CHILD, AgeBand.TEEN }) {
+                double inFamilies = 0;
+                for (FamilyStructure s : FamilyStructure.values()) {
+                    inFamilies += away.totalOf(s) * s.membersOf(band);
+                }
+                check("...and the count still holds for " + band.getLabel().toLowerCase(),
+                        inFamilies + away.getOutsideDependants(band) + away.getOrphans(band),
+                        c.get(band), 1e-6);
+            }
+
+            // Nobody outside at all is the city the model had before this.
+            FamilyModel none = new FamilyModel();
+            none.rebuild(c, jobs, 0, 0);
+            check("a city with nobody outside the families holds nobody's children either",
+                    none.getOutsideDependantsTotal(), 0, 1e-12);
+            check("...and asks for none per household", none.dependantsPerOutsideHousehold(), 0, 1e-12);
         }
 
         /* ============ 4. EI, on the inflow ============ */
@@ -356,7 +446,7 @@ public class OutsideCheck {
                 // and one mill whose closing takes posts that are filled.
                 g.buildStack(t(g, "House"), 400, false);
                 g.buildStack(t(g, "Small Grocery Store"), 2, false);
-                g.buildStack(t(g, "Textile Mill"), 2, false);
+                g.buildStack(t(g, "Industrial Bakery"), 2, false);
                 g.buildStack(t(g, "Coal Power Plant"), 1, false);
                 g.buildStack(t(g, "Water Treatment Plant"), 1, false);
                 g.buildStack(t(g, "Paved Road"), 4, false);
@@ -386,7 +476,11 @@ public class OutsideCheck {
              */
             double[] pyramid = g.getCohorts().toSaveArray();
             pyramid[AgeBand.ADULT.ordinal()] *= 1.5;
-            g.getCohorts().restore(pyramid);
+            // Named: this array is as wide as THIS build's band list, and the
+            // nameless path is five bands for ever. Handed over unnamed it was
+            // refused whole, the adults never arrived, and the fixture stopped
+            // causing the condition it exists to cause.
+            g.getCohorts().restore(PopulationCohorts.saveBands(), pyramid);
             quietly(() -> g.simulateMonths(2));
             BuildingsTemplate biggest = null;
             int biggestJobs = 0;

@@ -23,25 +23,41 @@ public enum FamilyStructure {
 
     /* ----- households with nobody of working age ----- */
 
-    SENIOR_ALONE   ("Senior living alone",      0, 0, 0, 0, 1),
-    SENIOR_COUPLE  ("Senior couple",            0, 0, 0, 0, 2),
+    SENIOR_ALONE   ("Senior living alone",      0, 0, 0, 0, 1, 0),
+    SENIOR_COUPLE  ("Senior couple",            0, 0, 0, 0, 2, 0),
+
+    /*
+     * THE OVER-85s KEEP THEIR OWN SHAPES, added 2026-09-15 with the band.
+     *
+     * Not folded into the senior shapes, because the whole reason for the band
+     * is that these two ages are different: about three in ten of the over-85s
+     * are in some kind of care against one in fifty at seventy-four, and a
+     * household row that mixes them cannot show it. They are also the rows a
+     * player should be able to find on the household screen when senior care
+     * is short - "Elder living alone" is the cell in trouble first.
+     *
+     * A mixed elder-and-senior household is a real omission, the same one the
+     * note above makes about multi-generational families.
+     */
+    ELDER_ALONE    ("Elder living alone",       0, 0, 0, 0, 0, 1),
+    ELDER_COUPLE   ("Elder couple",             0, 0, 0, 0, 0, 2),
 
     /* ----- working-age households ----- */
 
-    SINGLE_ADULT   ("Single adult",             0, 0, 0, 1, 0),
-    COUPLE         ("Couple, no children",      0, 0, 0, 2, 0),
+    SINGLE_ADULT   ("Single adult",             0, 0, 0, 1, 0, 0),
+    COUPLE         ("Couple, no children",      0, 0, 0, 2, 0, 0),
 
-    SINGLE_PARENT  ("Single parent, one child", 0, 1, 0, 1, 0),
+    SINGLE_PARENT  ("Single parent, one child", 0, 1, 0, 1, 0, 0),
 
-    COUPLE_BABY    ("Couple with a baby",       1, 0, 0, 2, 0),
-    COUPLE_CHILD   ("Couple with a child",      0, 1, 0, 2, 0),
-    COUPLE_TEEN    ("Couple with a teen",       0, 0, 1, 2, 0),
+    COUPLE_BABY    ("Couple with a baby",       1, 0, 0, 2, 0, 0),
+    COUPLE_CHILD   ("Couple with a child",      0, 1, 0, 2, 0, 0),
+    COUPLE_TEEN    ("Couple with a teen",       0, 0, 1, 2, 0, 0),
 
-    COUPLE_BABY_CHILD ("Couple, a baby and a child", 1, 1, 0, 2, 0),
-    COUPLE_CHILD_TEEN ("Couple, a child and a teen", 0, 1, 1, 2, 0),
-    COUPLE_TWO_CHILDREN("Couple with two children",  0, 2, 0, 2, 0),
+    COUPLE_BABY_CHILD ("Couple, a baby and a child", 1, 1, 0, 2, 0, 0),
+    COUPLE_CHILD_TEEN ("Couple, a child and a teen", 0, 1, 1, 2, 0, 0),
+    COUPLE_TWO_CHILDREN("Couple with two children",  0, 2, 0, 2, 0, 0),
 
-    LARGE_FAMILY   ("Large family",             1, 2, 1, 2, 0),
+    LARGE_FAMILY   ("Large family",             1, 2, 1, 2, 0, 0),
 
     /**
      * Five single adults in one home, formed ONLY when homes run short.
@@ -57,19 +73,20 @@ public enum FamilyStructure {
      * live alone, so a city with any of these is a city that is short of homes,
      * and how many there are is how short.
      */
-    SHARED_ADULTS  ("Five adults sharing",      0, 0, 0, 5, 0);
+    SHARED_ADULTS  ("Five adults sharing",      0, 0, 0, 5, 0, 0);
 
     private final String label;
     private final int[] members = new int[AgeBand.values().length];
 
     FamilyStructure(String label, int babies, int children, int teens,
-                    int adults, int seniors) {
+                    int adults, int seniors, int elders) {
         this.label = label;
         members[AgeBand.BABY.ordinal()]   = babies;
         members[AgeBand.CHILD.ordinal()]  = children;
         members[AgeBand.TEEN.ordinal()]   = teens;
         members[AgeBand.ADULT.ordinal()]  = adults;
         members[AgeBand.SENIOR.ordinal()] = seniors;
+        members[AgeBand.ELDER.ordinal()]  = elders;
     }
 
     public String getLabel() { return label; }

@@ -39,8 +39,18 @@ package ham.citybuildersim;
  */
 public final class GameVersion {
 
-    /** Bump on release. Build EXE.bat reads this line for APPVER. */
-    public static final String VERSION = "0.5.15";
+    /**
+     * Bump on release. Build EXE.bat reads this line for APPVER.
+     *
+     * 0.6.0 (2026-09-15) - THE THIRTEEN GOODS. 0.5.15 stood while seven batches
+     * shipped under it, which is what a version number is for and is not what
+     * this one was doing: the sixth age band and save format 27, the children
+     * who follow a parent out of work, the consumption model, the exchange-rate
+     * units fix, the thirteen foods going live, FOOD's retirement, and a cost
+     * model that can price a line making two things. The goods economy is a
+     * bigger change than the clock was, and the clock took 0.4.4 to 0.5.0.
+     */
+    public static final String VERSION = "0.6.0";
 
     /**
      * The save shape.
@@ -483,8 +493,30 @@ public final class GameVersion {
      *     sitting on today's level rather than on 1.0: its real high and low
      *     are unknowable from that save, and claiming it had never been
      *     anywhere else would be a made-up record rather than an empty one.
+     *
+     * 27 - THE SIXTH AGE BAND: the seniors split at 85, and the over-85s given
+     *     their own two household shapes. Here because the pyramid's array
+     *     grows from five bands to six and the household matrix from thirteen
+     *     shapes to fifteen, so a format-26 build handed this save refuses
+     *     both whole and comes back with a city of nobody living in no
+     *     houses. That is the exact accident this number exists to prevent.
+     *
+     *     THE OTHER DIRECTION IS SAFE AND IS THE POINT. A format-26 save has
+     *     no bandNames and no shapeNames, which is what tells this build to
+     *     read it as the five bands and thirteen shapes it was written with -
+     *     see PopulationCohorts.LEGACY_BANDS and FamilyModel.LEGACY_SHAPES.
+     *     Every band and every shape is then found by name, so nothing is read
+     *     at an offset it was not written at.
+     *
+     *     An old city therefore loads with ALL of its over-seventies in the
+     *     70-85 band and none in the new one (Jerus's call: the save never
+     *     recorded who was over 85, and dividing the headcount at load would
+     *     be inventing a number nothing can check). They age across over the
+     *     following years. The visible transient is that senior care reads as
+     *     fully covered for a while, because the band it mostly serves is
+     *     still filling.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 26;
+    public static final int SAVE_FORMAT = 27;
 
     /** The first format a sector can be read out of. Nothing older loads. */
     public static final int FIRST_SECTOR_FORMAT = 21;

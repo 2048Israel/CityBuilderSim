@@ -441,6 +441,140 @@ public class HouseholdCheck {
                 SocialSecurity.shortfall(1000, 200),
                 SocialSecurity.pensionsFor(200) - SocialSecurity.contributionsOn(1000));
 
+
+        /* ---- and a household outside the families can have mouths in it ----
+
+           A STUDENT AND A LAID-OFF PARENT GO ON BEING PARENTS. Since 2026-09-15
+           the children of an adult who leaves work go with them rather than
+           into the orphan section, so these two cells hold dependants - a
+           fraction per household, because a cell is an average of thousands.
+
+           THE MOUTHS AND THE EARNERS ARE DIFFERENT NUMBERS AND BOTH ARE USED.
+           A student with children shops and is billed for all of them, out of a
+           grant and a loan; the income split is by GROWN-UPS, and a student
+           with two children is still one wallet. Reading the wrong one of those
+           is how the over-85s came to draw no pension three days earlier, so
+           both are asserted here against one household rather than left to a
+           row total that would hide either.
+           ------------------------------------------------------------------ */
+        HouseholdBalance kin = new HouseholdBalance();
+        kin.setOutsideCensus(c -> c instanceof StudentHousehold ? 100 : 0);
+        kin.setOutsideDependants(c -> c instanceof StudentHousehold ? 0.6 : 0);
+        double[] kinIncome = new double[HouseholdBalance.ROWS];
+        kinIncome[Household.STUDENT_ROW] = 100 * 2.0;      // two apiece
+        double[] kinNone = new double[HouseholdBalance.ROWS];
+        kin.advanceMonth((s, t) -> 0, kinIncome, 0, kinNone, kinNone, 0, .05, 1);
+
+        Household student = kin.students();
+        check("fixture: a hundred student households", student.households(), 100);
+        check("one of them is an adult and their dependants", student.headcount(), 1.6);
+        check("...so the cell is a hundred and sixty people", student.people(), 160);
+        check("a student with children is still ONE wallet", student.grownUps(), 1);
+        check("...so the row's income is split by wallets and they take home a whole one",
+                student.disposable(), 2.0);
+
+        HouseholdBalance kinSolo = new HouseholdBalance();
+        kinSolo.setOutsideCensus(c -> c instanceof StudentHousehold ? 100 : 0);
+        kinSolo.advanceMonth((s, t) -> 0, kinIncome, 0, kinNone, kinNone, 0, .05, 1);
+        check("a student with nobody is one person, as they always were",
+                kinSolo.students().headcount(), 1);
+
+        /*
+         * AND THE FEES FOLLOW THE MOUTHS, asserted in the one row that can tell
+         * the difference. A fee kinSplit is PRO RATA within a row, so a row with a
+         * single cell in it hands that cell the whole total whatever its
+         * headcount - the students' row would have passed this reading size()
+         * or headcount() or anything else. The out-of-work row has three cells,
+         * so giving two of them different numbers of children is a fixture that
+         * can actually fail: the one with a child in it must carry twice the
+         * share of the city's doctors' bill.
+         */
+        HouseholdBalance kinSplit = new HouseholdBalance();
+        kinSplit.setOutsideCensus(c -> c instanceof UnemployedHousehold u
+                && u.status() != UnemployedHousehold.Status.UNHOUSED ? 100 : 0);
+        kinSplit.setOutsideDependants(c -> c instanceof UnemployedHousehold u
+                && u.status() == UnemployedHousehold.Status.ON_EI ? 1 : 0);
+        double[] outIncome = new double[HouseholdBalance.ROWS];
+        outIncome[Household.UNEMPLOYED_ROW] = 200 * 8.0;
+        double[] outFees = new double[HouseholdBalance.ROWS];
+        outFees[Household.UNEMPLOYED_ROW] = 300;            // 300 over 300 people
+        kinSplit.advanceMonth((s, t) -> 0, outIncome, 0, outFees, kinNone, 0, .05, 1);
+
+        Household kinParent = kinSplit.unemployed(UnemployedHousehold.Status.ON_EI);
+        Household kinAlone   = kinSplit.unemployed(UnemployedHousehold.Status.OFF_EI);
+        check("fixture: two out-of-work cells, one of them with a child in it",
+                kinParent.headcount() - kinAlone.headcount(), 1);
+        check("the claimant with a child is billed for two heads",
+                kinParent.disposable() - kinParent.afterFixed(), 2);
+        check("...and the one without a child for one",
+                kinAlone.disposable() - kinAlone.afterFixed(), 1);
+        check("...so the row's bill is still all of it and no more",
+                100 * (kinParent.disposable() - kinParent.afterFixed())
+                        + 100 * (kinAlone.disposable() - kinAlone.afterFixed()), 300);
+        /*
+         * AND A CHILD DRAWS NO EI, which is the other half of the same point
+         * and it corrected this fixture on its first run. The income split is
+         * by earningWeight(), and UnemployedHousehold overrides that to ONE
+         * while the claim is live and ZERO after it runs out - so the whole
+         * benefit goes to the hundred households still on EI, whatever anybody
+         * is feeding. The first draft asserted the two cells drew the same and
+         * was wrong about the model, not about the change.
+         */
+        check("the benefit goes to the claimants, and a child does not draw one",
+                kinParent.disposable(), outIncome[Household.UNEMPLOYED_ROW] / 100);
+        check("...so a household whose EI has run out draws nothing, child or no child",
+                kinAlone.disposable(), 0);
+
+        /* ---- and a pensioner is a pensioner in whichever band ----
+
+           THE BUG THIS EXISTS FOR, found 2026-09-15 the day the senior band
+           split. RetiredHousehold.grownUps() answered "members of SENIOR", and
+           HouseholdBalance splits each row's income across its cells BY THAT
+           WEIGHT - so the moment the over-85s got their own shapes, an elder
+           household weighed nothing in the split and drew no pension at all.
+           Nobody noticed for a batch: the pension BILL was right, the money
+           audit balanced (the same total went out, just to the wrong cells),
+           and every harness passed. What it did was quiet and slow - an elder
+           paid rent out of savings until there were none, the landlord's
+           revenue fell, and it shed plant under the rule that a firm which
+           cannot pay must. Measured on DenominationCheck's founding: 7,955
+           homes and 18,400 people down to 2,881 and 4,200 over fifteen years,
+           where the same city on the shipped build never lost one home.
+
+           Asserted against the SHAPE'S OWN CENSUS rather than a list of band
+           names, so a third retired band cannot reintroduce it.
+           ------------------------------------------------------------------ */
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (!shape.isRetired()) continue;
+            check("every one of a " + shape.getLabel().toLowerCase() + " is a pensioner",
+                    RetiredHousehold.pensionersIn(shape), shape.size());
+            check("...and the row split weighs them all",
+                    new RetiredHousehold(shape).grownUps(), shape.size());
+        }
+
+        /*
+         * AND IN A LIVE BOOK, which is where the weight is actually used: one
+         * senior alone and one elder alone, the row handed two pensions, and
+         * each must come away with one. The census CAUSES the condition - two
+         * retired cells in different bands - and the assertion is against the
+         * model's own pension, not a number typed here.
+         */
+        HouseholdBalance retired = new HouseholdBalance();
+        double pensionEach = SocialSecurity.pensionPerSenior();
+        double[] retIncome = new double[HouseholdBalance.ROWS];
+        retIncome[Household.RETIRED_ROW] = 2 * pensionEach;
+        double[] retNone = new double[HouseholdBalance.ROWS];
+        double[] retSpent = new double[HouseholdBalance.ROWS];
+        retired.advanceMonth((s, t) -> s == FamilyStructure.SENIOR_ALONE
+                        || s == FamilyStructure.ELDER_ALONE ? 1 : 0,
+                retIncome, 0, retNone, retSpent, 0, .05, 1);
+        Household senior = retired.cell(FamilyStructure.SENIOR_ALONE);
+        Household elder  = retired.cell(FamilyStructure.ELDER_ALONE);
+        check("a senior living alone draws one pension", senior.disposable(), pensionEach);
+        check("...and an elder living alone draws the same one",
+                elder.disposable(), pensionEach);
+
+
         /* ============ THE BUDGET CONSTRAINT ============
 
            Until 2026-09-07 the shops sold `min(coverage, population)` - one
@@ -621,8 +755,10 @@ public class HouseholdCheck {
         // Since 2026-09-11: and eight outside the families - the out of work in
         // three situations, the students, the orphans of three bands, and
         // (that night) the prisoners' ledger.
-        assertTrue("seventy-six cells: eleven working shapes by six tiers, two retired, eight outside the families",
-                cellsBal.cellCount() == 11 * 6 + 2 + 3 + 1 + 3 + 1);
+        // Four retired rows since the seniors split at 85 (2026-09-15): the two
+        // senior shapes and the two elder ones, one cell each.
+        assertTrue("seventy-eight cells: eleven working shapes by six tiers, four retired, eight outside the families",
+                cellsBal.cellCount() == 11 * 6 + 4 + 3 + 1 + 3 + 1);
         Household one = cellsBal.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
         Household two = cellsBal.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household six = cellsBal.cell(FamilyStructure.LARGE_FAMILY, PayTier.UNSKILLED);
@@ -988,7 +1124,7 @@ public class HouseholdCheck {
                 if (t.getName().equals("Coal Power Plant"))     poor.buildStack(t, 2, true);
                 if (t.getName().equals("Water Treatment Plant"))poor.buildStack(t, 2, true);
                 if (t.getName().equals("Paved Road"))           poor.buildStack(t, 20, true);
-                if (t.getName().equals("Textile Mill"))         poor.buildStack(t, 6, true);
+                if (t.getName().equals("Industrial Bakery"))         poor.buildStack(t, 6, true);
             }
             poor.simulateMonths(120);
         } finally { System.setOut(realOut); }

@@ -2499,7 +2499,7 @@ public class UserInterface extends Application {
          * anybody can price a decision from. */
         BuildingsTemplate house = game.getBuildingManager().getTemplateByName("House");
         BuildingsTemplate plant = game.getBuildingManager()
-                .getTemplateByName("Food Processing Plant");
+                .getTemplateByName("Bakery");
 
         column.getChildren().add(statementHead("What that comes to"));
         if (house != null) {
@@ -2610,6 +2610,54 @@ public class UserInterface extends Application {
     }
 
     /** One line of a statement: what it is, and what it reads. */
+    /**
+     * One good: what it is, what it costs here, and what happened to it.
+     *
+     * Three columns rather than the statement line's two, because a price on
+     * its own does not say whether it is dear - the band beside it does, and
+     * the flow says whether anybody actually traded at it.
+     */
+    private HBox goodsRow(Good g) {
+
+        GoodsMarket m = game.getMarkets().get(g);
+
+        Label name = new Label(g.label());
+        name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
+        name.setMinWidth(150);
+        name.setPrefWidth(150);
+
+        double local = m == null ? 0 : m.getLocalPrice();
+        Label price = new Label(local > 0 ? unitPrice(local) + " /" + g.unit() : "\u2014");
+        price.setStyle(Palette.figure(Palette.SIZE_BODY,
+                local > 0 ? Palette.TEXT_BODY : Palette.TEXT_MUTED));
+        price.setMinWidth(130);
+        price.setPrefWidth(130);
+
+        StringBuilder said = new StringBuilder();
+        if (!g.traded()) {
+            said.append("priced by the seller");
+        } else {
+            said.append("band ");
+            said.append(g.exportable() ? unitPrice(m.exportPrice()) : "no floor");
+            said.append(" \u2013 ");
+            said.append(g.importable() ? unitPrice(m.importPrice()) : "no ceiling");
+        }
+        if (m != null) {
+            double in = m.getImported(), out = m.getExported();
+            if (in  > .005) said.append("   \u00b7   imported ").append(String.format("%,.0f", in));
+            if (out > .005) said.append("   \u00b7   exported ").append(String.format("%,.0f", out));
+        }
+        Label detail = new Label(said.toString());
+        detail.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+
+        HBox row = new HBox(Palette.GAP_LOOSE, name, price, detail);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(GRAPH);
+        row.setPrefWidth(GRAPH);
+        row.setStyle("-fx-padding: 2 0 2 0;");
+        return row;
+    }
+
     private HBox statementLine(String label, String value) {
         return statementLine(label, value, null);
     }
@@ -17297,7 +17345,8 @@ public class UserInterface extends Application {
          * times the pension, which is where the sum came from.
          */
         double income = toDollars(s.income());
-        double pension = shape.membersOf(AgeBand.SENIOR) * toDollars(hh.getPensionPerSenior());
+        double pensioners = RetiredHousehold.pensionersIn(shape);
+        double pension = pensioners * toDollars(hh.getPensionPerSenior());
         double wages = income - pension;
 
         panel.getChildren().add(panelBlockHead("What comes in"));
@@ -17309,7 +17358,7 @@ public class UserInterface extends Application {
         }
         if (pension > .005) {
             panel.getChildren().add(statementLine(
-                    shape.membersOf(AgeBand.SENIOR) == 1 ? "A pension" : "Pensions",
+                    pensioners == 1 ? "A pension" : "Pensions",
                     tightMoney(pension, false), "#8ed4ff"));
         }
 
@@ -19702,6 +19751,7 @@ public class UserInterface extends Application {
         new Trace("cumulative:deathsTeens",    "Teens",               "THE DEAD", "count"),
         new Trace("cumulative:deathsAdults",   "Adults",              "THE DEAD", "count"),
         new Trace("cumulative:deathsSeniors",  "Seniors",             "THE DEAD", "count"),
+        new Trace("cumulative:deathsElders",   "Elders",              "THE DEAD", "count"),
         new Trace("cumulative:deathsOrphans",  "Orphans",             "THE DEAD", "count"),
         new Trace("cumulative:deathsUnhoused", "With no home",        "THE DEAD", "count"),
         new Trace("cumulative:deathsKilled",   "Killed",              "THE DEAD", "count"),
@@ -19996,6 +20046,26 @@ public class UserInterface extends Application {
         column.getChildren().add(statementHead("Pick what to draw", GRAPH));
         column.getChildren().add(historyPresets());
         column.getChildren().add(historyPickerRows());
+
+        /* =====================================================================
+           EVERY GOOD, ON ONE PAGE.
+
+           Jerus: "somewhere somehow, i should be able to see all the goods, and
+           the current prices and some quick info". There was nowhere: a good's
+           price appeared only on the screen of whichever sector happened to
+           make it, and the thirteen foods had no screen at all because no
+           sector makes them. Twenty-five goods and no index is a model you have
+           to read the source to see.
+
+           The band is the whole story for a traded good - what the world charges
+           to land one and what it pays for one - so the row says where in that
+           band the city has ended up, and what moved this month.
+           ===================================================================== */
+        column.getChildren().add(statementHead("Every good in the city", GRAPH));
+        column.getChildren().add(statementNote(
+                "What a unit costs here this month, the world's band around it, and what crossed the "
+                + "border. A good with no band is priced by whoever sells it."));
+        for (Good g : Good.values()) column.getChildren().add(goodsRow(g));
 
         column.getChildren().add(statementHead("Send this run to somebody", GRAPH));
         column.getChildren().add(statementNote(
@@ -20804,6 +20874,7 @@ public class UserInterface extends Application {
             case "cumulative:deathsChildren":
             case "cumulative:deathsTeens":
             case "cumulative:deathsAdults":
+            case "cumulative:deathsElders":
             case "cumulative:deathsSeniors":
             case "cumulative:deathsOrphans":
             case "cumulative:deathsUnhoused":
@@ -23616,7 +23687,7 @@ public class UserInterface extends Application {
                         statLine("Store stock", String.format("%,d",
                                 game.getSectors().retail().getStoreInventory())),
                         statLine("Food stock", String.format("%,.0f",
-                                game.getSectors().industry().getStock(Good.FOOD))))));
+                                game.getSectors().industry().getStock(Good.BREAD))))));
 
         /* ================= LAND ================= */
         double landUsed = land.getUtilisation();

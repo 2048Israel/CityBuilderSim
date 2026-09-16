@@ -352,7 +352,7 @@ public class HousingCheck {
                 {"Studio Apartments", "40"}, {"House", "12"},
                 {"Convenience Store", "14"}, {"Construction Depot", "4"},
                 {"Coal Power Plant", "2"},   {"Water Treatment Plant", "2"},
-                {"Textile Mill", "3"},       {"Paved Road", "10"} }) {
+                {"Industrial Bakery", "3"},       {"Paved Road", "10"} }) {
             studios.buildStack(template(studios, o[0]), Integer.parseInt(o[1]), true);
         }
         studios.simulateMonths(150);

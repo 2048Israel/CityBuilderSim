@@ -81,18 +81,37 @@ public final class Agriculture extends Sector {
     }
 
     /**
-     * Months of the city's own eating the fields cover, at nine and a half
-     * units of food to the tonne. The one number that says what the sector is
-     * for.
+     * Months of the city's BAKED eating the fields cover.
+     *
+     * IT USED TO MEAN ALL EATING, and it stopped meaning that on 2026-09-15.
+     * The mills turned a tonne of crops into 9.5 units of FOOD, and a unit of
+     * FOOD was a person fed for a month - everything they ate. The shelf is
+     * thirteen goods now and the ovens make two of them, so what a tonne of
+     * crops covers is bread and the things next to it on the counter, which is
+     * about a tenth of the basket by value.
+     *
+     * That is a smaller claim and an honest one. A city that grows all its own
+     * crops is not a city that feeds itself; it is a city that bakes its own
+     * bread and imports its dinner, which is what this model actually says.
      */
     public double getSelfSufficiency(Game game) {
         if (game == null) return 0;
-        double eaten = game.getPopulationManager().getPopulation();
-        return eaten > 0 ? getHarvest() * FOOD_PER_TONNE / eaten : 0;
+        double eaters = game.getPopulationManager().getPopulation();
+        return eaters > 0 ? getHarvest() * BAKED_KG_PER_TONNE / (eaters * BAKED_KG_A_HEAD) : 0;
     }
 
-    /** Units of food a tonne of crops becomes. See Good.CROPS for where 9.5 comes from. */
-    public static final double FOOD_PER_TONNE = 9.5;
+    /**
+     * Kilograms of bread and bakery goods a tonne of crops becomes.
+     *
+     * 52.5% of the crop's mass, which is what both ovens are struck at - see
+     * BuildingManager, building 3 and building 7, for why it is the margin and
+     * not the milling that sets it. Replaced FOOD_PER_TONNE = 9.5 when a unit
+     * of food stopped being a thing anybody could buy.
+     */
+    public static final double BAKED_KG_PER_TONNE = 525;
+
+    /** What one person eats of the city's own baking a month: 3.5kg of bread, 1.5kg of the rest. */
+    public static final double BAKED_KG_A_HEAD = 5.0;
 
     /** Ground the sector stands on, in square feet. */
     public double getLandSqFt() {

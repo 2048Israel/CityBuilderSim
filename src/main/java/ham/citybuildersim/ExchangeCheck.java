@@ -286,6 +286,100 @@ public class ExchangeCheck {
         close("with the deposit rate above every yield, nobody buys", ex6b.getHouseholdBuying(), 0, 1e-12);
         close("...and nobody's savings moved", couple(cautious).savings(), 100.0, 1e-12);
 
+
+        /* ================= 4b. and when the model prices two of them the same =================
+
+           THE TIE IS NOT CONTRIVED, it is what the valuation rule does. A
+           company valued on its earnings is priced at
+
+               PAYOUT * income / (worldRate + FOREIGN_PREMIUM)
+
+           and pays PAYOUT * income / shares, so its yield at fair value IS the
+           discount rate, whatever its income and however many shares it has.
+           Two such companies tie to the last bit, and before TIED_YIELD the
+           sort decided between them on which copy had lost it - and the winner
+           took the whole month's unmet demand, which is what lifts a quote.
+           DenominationCheck found it as a company tripling in a month.
+
+           The fixture CAUSES the tie the way the model does: two companies,
+           different incomes, different share counts, both worth more on their
+           earnings than on their books.
+           ===================================================================== */
+        out.println("\n--- two companies the buyers cannot tell apart share the unmet demand ---");
+
+        int MATERIALS = Equity.indexOf(Sectors.MATERIALS);
+        Equity regT = new Equity();
+        for (double v : months(300)) regT.recordMonth(INDUSTRY, v, 0);
+        for (double v : months(100)) regT.recordMonth(MATERIALS, v, 0);
+        regT.offer(INDUSTRY, 3_000, 0, null, W);            // three thousand shares...
+        regT.offer(MATERIALS, 1_000, 0, null, W);           // ...against one, so the weights differ
+        regT.deskBuysFromAbroad(INDUSTRY, 5);               // and almost nothing for sale, so
+        regT.deskBuysFromAbroad(MATERIALS, 5);              // the demand cannot be met
+        Exchange exT = new Exchange();
+        Bank bankT = bankWith(1_000_000);
+        Firms firmsT = new Firms();
+        java.util.Arrays.fill(book, 0);
+        book[INDUSTRY] = 1;                                 // worth its earnings, not its book
+        book[MATERIALS] = 1;
+        exT.quote(regT, book, bankT.equity(), W);
+
+        double yInd = exT.yieldAt(regT, INDUSTRY, exT.ask(INDUSTRY));
+        double yMat = exT.yieldAt(regT, MATERIALS, exT.ask(MATERIALS));
+        close("fixture: the valuation rule prices Industry to the discount rate",
+                exT.yieldAt(regT, INDUSTRY, exT.fair(INDUSTRY)), W + Equity.FOREIGN_PREMIUM, 1e-12);
+        close("fixture: ...and Materials to the same one, on a third of the shares",
+                exT.yieldAt(regT, MATERIALS, exT.fair(MATERIALS)), W + Equity.FOREIGN_PREMIUM, 1e-12);
+        assertTrue("fixture: ...so the two yields tie inside the dead band",
+                Math.abs(yInd - yMat) <= Exchange.TIED_YIELD * yInd);
+        assertTrue("fixture: ...and the companies are not the same size",
+                regT.getShares(INDUSTRY) > 2 * regT.getShares(MATERIALS));
+
+        HouseholdBalance keenT = savers(100.0, 4.0);
+        double wantT = keenT.sharesWanted(Exchange.MONTHLY_SHARE_OF_EXCESS);
+        double askI = exT.ask(INDUSTRY), askM = exT.ask(MATERIALS);
+        assertTrue("fixture: the desk holds less than the month's money can buy",
+                wantT > 5 * askI + 5 * askM);
+        exT.startMonth();
+        exT.takeMonth(regT, keenT, bankT, firmsT, book, W, 0);
+
+        double issuedT = regT.getShares(INDUSTRY) + regT.getShares(MATERIALS);
+        close("the unmet demand is shared in proportion to the shares on issue, not given to one",
+                exT.getUnfilled(INDUSTRY),
+                (wantT * regT.getShares(INDUSTRY) / issuedT - 5 * askI) / askI, 1e-6);
+        close("...and the smaller company keeps its own",
+                exT.getUnfilled(MATERIALS),
+                (wantT * regT.getShares(MATERIALS) / issuedT - 5 * askM) / askM, 1e-6);
+        assertTrue("...so both quotes lift, not one",
+                exT.mid(INDUSTRY) > exT.fair(INDUSTRY) && exT.mid(MATERIALS) > exT.fair(MATERIALS));
+        assertTrue("the deepest of the tied names is the one the screen calls best",
+                exT.getBestBuy() == INDUSTRY);
+
+        /*
+         * AND THE BIT DOES NOT DECIDE IT. The same fixture with one company's
+         * record moved by a single ulp - far inside the dead band, far outside
+         * anything a household could act on - answers identically. Before the
+         * dead band this is the perturbation that swapped the two quotes.
+         */
+        Equity regU = new Equity();
+        for (double v : months(Math.nextUp(300.0))) regU.recordMonth(INDUSTRY, v, 0);
+        for (double v : months(100)) regU.recordMonth(MATERIALS, v, 0);
+        regU.offer(INDUSTRY, 3_000, 0, null, W);
+        regU.offer(MATERIALS, 1_000, 0, null, W);
+        regU.deskBuysFromAbroad(INDUSTRY, 5);
+        regU.deskBuysFromAbroad(MATERIALS, 5);
+        Exchange exU = new Exchange();
+        Bank bankU = bankWith(1_000_000);
+        Firms firmsU = new Firms();
+        HouseholdBalance keenU = savers(100.0, 4.0);
+        exU.quote(regU, book, bankU.equity(), W);
+        exU.startMonth();
+        exU.takeMonth(regU, keenU, bankU, firmsU, book, W, 0);
+        assertTrue("a company's income moved by one ulp does not move who the demand goes to",
+                exU.getBestBuy() == exT.getBestBuy());
+        close("...nor how much of it either of them carries",
+                exU.getUnfilled(MATERIALS), exT.getUnfilled(MATERIALS),
+                1e-6 * Math.max(1, exT.getUnfilled(MATERIALS)));
+
         /* ================= 5. the distress sale ================= */
         out.println("\n--- a household short of money sells before it borrows ---");
 

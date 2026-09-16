@@ -356,7 +356,7 @@ public class BankCheck {
             city.getForeignAccounts().pinRate(1.0);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.buildStack(template(city, "Textile Mill"), 2, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Commercial Bank"), 1, false);
@@ -761,7 +761,7 @@ public class BankCheck {
             trading.buildStack(template(trading, "House"), 400, true);
             trading.buildStack(template(trading, "Convenience Store"), 8, true);
             trading.buildStack(template(trading, "Small Grocery Store"), 2, true);
-            trading.buildStack(template(trading, "Food Processing Plant"), 1, true);
+            trading.buildStack(template(trading, "Bakery"), 1, true);
             trading.buildStack(template(trading, "Paved Road"), 20, true);
             trading.buildStack(template(trading, "Construction Depot"), 4, true);
             trading.buildStack(template(trading, "Coal Power Plant"), 1, true);
@@ -847,9 +847,9 @@ public class BankCheck {
             books.buildStack(template(books, "House"), 400, true);
             books.buildStack(template(books, "Convenience Store"), 8, true);
             books.buildStack(template(books, "Small Grocery Store"), 2, true);
-            books.buildStack(template(books, "Food Processing Plant"), 1, true);
+            books.buildStack(template(books, "Bakery"), 1, true);
             books.buildStack(template(books, "Paved Road"), 20, true);
-            books.buildStack(template(books, "Textile Mill"), 2, true);
+            books.buildStack(template(books, "Industrial Bakery"), 2, true);
             books.buildStack(template(books, "Construction Depot"), 4, true);
             books.buildStack(template(books, "Coal Power Plant"), 1, true);
             books.buildStack(template(books, "Water Treatment Plant"), 1, true);

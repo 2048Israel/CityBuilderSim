@@ -920,14 +920,38 @@ public class EconomyManager {
         double retailSales = retail.statement().salesToHouseholds;
         double rentPaid = sectors.realEstate().statement().salesToHouseholds;
 
-        double foodPrice = markets.get(Good.FOOD).getLocalPrice();
-        double foodUnits = 0, foodWrittenOff = 0;
+        /*
+         * THIRTEEN GOODS, AND STILL A VOLUME - WHICH IS THE WHOLE POINT.
+         *
+         * Kilograms of grain do not add to kilograms of fish, so the obvious
+         * move is to value each good's stock at its own price and hand the
+         * accounts the money. THAT IS THE BUG NationalAccounts.update() WARNS
+         * AGAINST IN THE LINES THAT RECEIVE THIS: "a change in PRICE is neither
+         * production nor consumption, and measuring the change in value rather
+         * than in volume booked every price move as production". Done that way,
+         * every wobble in the food market becomes output.
+         *
+         * So the thirteen are aggregated at FIXED WEIGHTS - each good's world
+         * import price, which is a constant of the model and cannot move - to
+         * make one volume index that behaves exactly as a count of loaves did.
+         * The deflator beside it is what that volume costs in this city today,
+         * so the accounts still multiply a change in volume by a price, which
+         * is the shape the comment asks for.
+         *
+         * MATERIALS IS STILL ONE GOOD and is still counted in bricks.
+         */
+        double foodUnits = 0, foodWrittenOff = 0, foodAtLocal = 0;
         double materialUnits = 0;
         for (Sector s : sectors.all()) {
-            foodUnits += s.getStock(Good.FOOD) + s.getPantry(Good.FOOD);
-            foodWrittenOff += s.output(Good.FOOD).writtenOff;
+            for (Good fg : ham.citybuildersim.sectors.Retail.SHELF) {
+                double held = s.getStock(fg) + s.getPantry(fg);
+                foodUnits      += held * fg.worldImportPrice();
+                foodWrittenOff += s.output(fg).writtenOff * fg.worldImportPrice();
+                foodAtLocal    += held * Math.max(0, markets.get(fg).getLocalPrice());
+            }
             materialUnits += s.getStock(Good.MATERIALS);
         }
+        double foodPrice = foodUnits > 0 ? foodAtLocal / foodUnits : 0;
         double materialPrice = markets.get(Good.MATERIALS).getLocalPrice();
 
         double exports = 0, rawImports = 0;
@@ -980,12 +1004,23 @@ public class EconomyManager {
         nationalAccounts.setSafetySpending(safetyBill);
     }
 
-    public double getLastFoodUnits() { return nationalAccounts.getLastFoodUnits(); }
+    public double getLastFoodVolume() { return nationalAccounts.getLastFoodVolume(); }
 
+    /**
+     * A NEW SLOT RATHER THAN A CHANGED ONE, because slot 11 changed SCALE.
+     *
+     * It counted units of FOOD until 2026-09-15 and holds a thirteen-good
+     * volume index after it - still a volume, but weighted, so an old file's
+     * loaf count read into it would put one month's inventory investment out
+     * by the weighting. The index goes in a new slot at the tail and a file
+     * without it reads zero, which is exactly the fallback a pre-13-slot file
+     * already had.
+     */
     public void restoreNationalAccounts(double[] a) {
         if (a == null || a.length < 11) return;
         boolean hasUnits = a.length >= 13;
-        nationalAccounts.restore(a[0], hasUnits ? a[11] : 0,
+        boolean hasFoodValue = a.length >= 14;
+        nationalAccounts.restore(a[0], hasFoodValue ? a[13] : 0,
                 a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10],
                 hasUnits ? a[12] : 0, hasUnits);
     }
@@ -993,7 +1028,7 @@ public class EconomyManager {
     public double[] getNationalAccountsState() {
         return new double[] {
             nationalAccounts.getGdp(),
-            nationalAccounts.getLastFoodUnits(),
+            nationalAccounts.getLastFoodVolume(),
             nationalAccounts.getConsumptionGoods(),
             nationalAccounts.getConsumptionHousing(),
             nationalAccounts.getInvestmentConstruction(),
@@ -1003,8 +1038,9 @@ public class EconomyManager {
             nationalAccounts.getImportsMaterials(),
             nationalAccounts.getImportsRawMaterial(),
             nationalAccounts.getExports(),
-            nationalAccounts.getLastFoodUnits(),
-            nationalAccounts.getLastMaterialUnits()
+            nationalAccounts.getLastFoodVolume(),
+            nationalAccounts.getLastMaterialUnits(),
+            nationalAccounts.getLastFoodVolume()     // slot 13 - see restoreNationalAccounts()
         };
     }
 
@@ -1031,14 +1067,17 @@ public class EconomyManager {
        CONVENIENCES - the prices the screens and the harnesses ask for by name
        =================================================================== */
 
-    public double getFoodLocalPrice() { return markets.get(Good.FOOD).getLocalPrice(); }
+    /** What one person-month of food costs the shops at today's market prices. */
+    public double getFoodLocalPrice() { return sectors.retail().getFoodPrice(); }
     public double getIronLocalPrice() { return markets.get(Good.IRON).getLocalPrice(); }
 
-    /** Every warehouse and shelf of food in the city, in units. */
+    /** Every warehouse and shelf of food in the city, in KILOGRAMS across the thirteen. */
     public int getFoodUnitsHeld() {
-        double units = 0;
-        for (Sector s : sectors.all()) units += s.getStock(Good.FOOD) + s.getPantry(Good.FOOD);
-        return (int) Math.floor(units);
+        double kg = 0;
+        for (Sector s : sectors.all()) {
+            for (Good fg : ham.citybuildersim.sectors.Retail.SHELF) kg += s.getStock(fg) + s.getPantry(fg);
+        }
+        return (int) Math.floor(kg);
     }
 
     /* ===================================================================

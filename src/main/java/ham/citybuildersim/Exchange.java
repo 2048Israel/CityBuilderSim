@@ -186,6 +186,48 @@ public class Exchange {
        ======================================================================= */
     public static final double MIN_EXCESS = 1e-9;
 
+    /* =======================================================================
+       AND A DEAD BAND ON THE RANKING (2026-09-15)
+
+       "best first" is not defined when the model prices everything to the
+       same yield, and it does. Equity.priceOf() values a company on its
+       earnings at
+
+           PAYOUT * income / (worldRate + FOREIGN_PREMIUM)
+
+       and dividendPerShareAnnual() is PAYOUT * income / shares, so a company
+       valued on its earnings rather than its book yields EXACTLY the discount
+       rate at fair value - the same number for every company in that state,
+       and the same number again at the ask once the spread divides it. The
+       comparator below was then sorting six copies of 0.0495049504950495 and
+       the winner was decided by which of them had lost the last bit.
+
+       The winner takes the whole month's unmet demand, and unmet demand is
+       what lifts a quote. Measured, DenominationCheck month 129: six
+       companies tied to sixteen digits, one city's sort put Industry first
+       and its twin's put Heavy Industry first, and the two quotes went to
+       8.04 and 2.64 against 2.64 and 10.15 - a company's shares tripling in
+       a month on a rounding error, and the two cities different cities from
+       there. Rare, not negligible: once in roughly two hundred months of
+       buying in both the shipped build and this one.
+
+       The FIX IS NOT A TIE-BREAK BY INDEX. That is deterministic and it is
+       biased: it would hand Retail every tied month for ever. Buyers who are
+       indifferent spread, so the tied front runners share the unmet demand in
+       proportion to the shares on issue, and are ordered among themselves by
+       the same measure - the deepest name first, which is what a buyer with
+       no reason to prefer one would do anyway. With one front runner the
+       arithmetic below is the line it replaced, unchanged.
+
+       RELATIVE, so it never needs seeding, and the same reasoning as
+       MIN_EXCESS: a billionth of a yield is seven orders above the
+       arithmetic's own noise and seven below the smallest difference a
+       household could act on. The yields this fires on differ in the
+       seventeenth digit; the ones it must not fire on differed by six per
+       cent of themselves when this was measured.
+       ======================================================================= */
+    public static final double TIED_YIELD = 1e-9;
+
     /** The most a company retires in a year, as a share of what it is worth. */
     public static final double BUYBACK_PACE = .10;
 
@@ -610,6 +652,7 @@ public class Exchange {
     private int bestBuy = -1;
     private double householdBuying;
 
+
     /**
      * The households' month: every company yielding more than the deposit
      * rate plus the premium, best first, and what the desk cannot sell them
@@ -626,6 +669,21 @@ public class Exchange {
         if (k == 0) return;
         Integer[] wanted = java.util.Arrays.copyOf(order, k);
         java.util.Arrays.sort(wanted, (a, b) -> Double.compare(yieldAt(register, b, ask(b)), yieldAt(register, a, ask(a))));
+
+        /*
+         * The front runners the buyers cannot tell apart, put in an order a
+         * bit of float cannot decide. See TIED_YIELD.
+         */
+        double best = yieldAt(register, wanted[0], ask(wanted[0]));
+        int tied = 1;
+        while (tied < k && Math.abs(yieldAt(register, wanted[tied], ask(wanted[tied])) - best)
+                <= TIED_YIELD * Math.abs(best)) tied++;
+        if (tied > 1) {
+            Integer[] front = java.util.Arrays.copyOf(wanted, tied);
+            java.util.Arrays.sort(front, (a, b) -> Double.compare(register.getShares(b), register.getShares(a)));
+            System.arraycopy(front, 0, wanted, 0, tied);
+        }
+
         int[] companies = new int[k];
         double[] capacity = new double[k];
         for (int i = 0; i < k; i++) {
@@ -633,10 +691,28 @@ public class Exchange {
             capacity[i] = deskCanSell(register, wanted[i]) * ask(wanted[i]);
         }
         bestBuy = companies[0];
+
+        /*
+         * The shares on issue BEFORE the month's dealing, so the weights are
+         * the same numbers the order was struck on.
+         */
+        double[] soldBefore = new double[tied];
+        double[] onIssue = new double[tied];
+        double issued = 0;
+        for (int i = 0; i < tied; i++) {
+            soldBefore[i] = soldToHouseholds[companies[i]];
+            onIssue[i] = Math.max(0, register.getShares(companies[i]));
+            issued += onIssue[i];
+        }
+
         double want = households.sharesWanted(MONTHLY_SHARE_OF_EXCESS);
-        double soldOfBestBefore = soldToHouseholds[bestBuy];
         householdBuying = households.buyShares(this, register, bank, companies, MONTHLY_SHARE_OF_EXCESS, capacity);
-        noteUnfilled(bestBuy, (want - (soldToHouseholds[bestBuy] - soldOfBestBefore)) / ask(bestBuy));
+
+        for (int i = 0; i < tied; i++) {
+            int c = companies[i];
+            double share = issued > 0 ? onIssue[i] / issued : 1.0 / tied;
+            noteUnfilled(c, (want * share - (soldToHouseholds[c] - soldBefore[i])) / ask(c));
+        }
     }
 
     /**

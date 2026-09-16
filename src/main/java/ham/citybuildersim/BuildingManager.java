@@ -545,9 +545,34 @@ public class BuildingManager {
         BuildingsTemplate convienceStore = new BuildingsTemplate("Convenience Store", BuildingType.COMMERCIAL);
         convienceStore.setSector("Retail");
         convienceStore.setCoverage(480);
-        convienceStore.setStock(1400);
+        /*
+         * THE SHELF IS MEASURED IN KILOGRAMS NOW, AND THAT IS WHY THE STOCK
+         * FIGURE MOVED BY FIFTY.
+         *
+         * It used to hold 1,400 UNITS of FOOD, where a unit was a person fed
+         * for a month. The thirteen goods are kilograms, and one person-month
+         * is exactly 50kg of them (consumption.json's reference quantities sum
+         * to that), so the same shelf is 70,000kg. Left at 1,400 the shop
+         * could stock a tenth of the drinks its customers wanted and delivered
+         * 20%% of demand for ever - which is what InfrastructureCheck caught,
+         * on a city with roads and a city without scoring exactly alike
+         * because both were starved by the shelf rather than by the road.
+         */
+        convienceStore.setStock(70000);
         convienceStore.makes(Good.GROCERIES, 480);
-        convienceStore.uses(Good.FOOD, 480);
+        convienceStore.uses(Good.GRAINS, 1440);
+        convienceStore.uses(Good.BREAD, 1680);
+        convienceStore.uses(Good.DAIRY_EGGS, 3840);
+        convienceStore.uses(Good.VEGETABLES, 3360);
+        convienceStore.uses(Good.FRUIT, 2400);
+        convienceStore.uses(Good.MEAT, 2160);
+        convienceStore.uses(Good.FISH, 576);
+        convienceStore.uses(Good.FATS, 384);
+        convienceStore.uses(Good.PROCESSED_MEAT, 480);
+        convienceStore.uses(Good.READY_MEALS, 720);
+        convienceStore.uses(Good.BAKERY, 720);
+        convienceStore.uses(Good.SNACKS, 480);
+        convienceStore.uses(Good.DRINKS, 5760);
         convienceStore.setCashCost(442);
         convienceStore.setConstructionPoints(120);
         convienceStore.setConstructionMaterials(17);
@@ -563,9 +588,21 @@ public class BuildingManager {
         BuildingsTemplate smallGroceryStore = new BuildingsTemplate("Small Grocery Store", BuildingType.COMMERCIAL);
         smallGroceryStore.setSector("Retail");
         smallGroceryStore.setCoverage(1600);
-        smallGroceryStore.setStock(7000);
+        smallGroceryStore.setStock(350000);
         smallGroceryStore.makes(Good.GROCERIES, 1600);
-        smallGroceryStore.uses(Good.FOOD, 1600);
+        smallGroceryStore.uses(Good.GRAINS, 4800);
+        smallGroceryStore.uses(Good.BREAD, 5600);
+        smallGroceryStore.uses(Good.DAIRY_EGGS, 12800);
+        smallGroceryStore.uses(Good.VEGETABLES, 11200);
+        smallGroceryStore.uses(Good.FRUIT, 8000);
+        smallGroceryStore.uses(Good.MEAT, 7200);
+        smallGroceryStore.uses(Good.FISH, 1920);
+        smallGroceryStore.uses(Good.FATS, 1280);
+        smallGroceryStore.uses(Good.PROCESSED_MEAT, 1600);
+        smallGroceryStore.uses(Good.READY_MEALS, 2400);
+        smallGroceryStore.uses(Good.BAKERY, 2400);
+        smallGroceryStore.uses(Good.SNACKS, 1600);
+        smallGroceryStore.uses(Good.DRINKS, 19200);
         smallGroceryStore.setCashCost(3478);
         smallGroceryStore.setConstructionPoints(800);
         smallGroceryStore.setConstructionMaterials(128);
@@ -643,15 +680,57 @@ public class BuildingManager {
            Both sheds keep the months of stock they held before - three for the
            plant, two and three quarters for the mill.
            ===================================================================== */
-        BuildingsTemplate texttileMill = new BuildingsTemplate("Textile Mill", BuildingType.INDUSTRIAL);
+        /*
+         * THE INDUSTRIAL BAKERY, WHICH USED TO BE A TEXTILE MILL THAT MADE FOOD.
+         *
+         * It was a copy-paste: a textile mill with a food line on it, and
+         * nobody noticed for as long as "food" was one good. When the shelf
+         * was itemised on 2026-09-15 the line had to name a real product, and
+         * a mill that turns crops into cloth does not exist. Jerus's call: it
+         * is a bakery, and the plant below is the small one.
+         *
+         * THE ID IS KEPT. Deleting building 3 would have orphaned every save
+         * that contains one - saves are keyed by id and the catalog says so.
+         * A rename costs nothing and a deletion costs somebody's city.
+         *
+         * NOTE FOR A BALANCE PASS, NOT TOUCHED HERE: building 7 below is 48%
+         * of this one's cash cost, half its land and 83% of its jobs, and it
+         * out-produces it. That was true before this change and is not part of
+         * it.
+         */
+        BuildingsTemplate texttileMill = new BuildingsTemplate("Industrial Bakery", BuildingType.INDUSTRIAL);
         texttileMill.setSector("Industry");
-        texttileMill.setStock(15000);
+        texttileMill.setStock(829000);
         texttileMill.setCashCost(18717);
         texttileMill.setConstructionPoints(1800);
         texttileMill.setConstructionMaterials(347);
-        texttileMill.makes(Good.FOOD, 5500);
-        // 579 tonnes of crops, which is 9.50 units of food to the tonne - see
-        // Good.CROPS. The mills bought nothing at all until 2026-09-13.
+        /*
+         * BREAD AND THE THINGS NEXT TO IT ON THE COUNTER, SPLIT SEVEN TO THREE
+         * - roughly the 3.5kg and 1.5kg a person eats of each in a month.
+         *
+         * THESE OVENS MADE NOTHING FOR ONE BATCH, and the reason was the
+         * engine rather than the trade. getMarginalCostPerUnit() divided the
+         * whole line's electricity, water and input bill by ONE good's output,
+         * so a plant with two outputs was charged its entire cost twice over
+         * and neither cleared its own marginal cost: 858,000kg of nameplate
+         * capacity and zero produced, while the city imported bread beside it.
+         * Every BUILDING in this game makes one good, which is what made this
+         * look like a new path - but the cost methods are the SECTOR's, and
+         * Business Services and Manufacturing have been quietly charging each
+         * of their goods the whole line's bill since they shipped.
+         * Sector.costShareOf() splits it now, for all three.
+         *
+         * 52.5% of the crop's mass. THE YIELD IS STRUCK FROM THE MARGIN, NOT
+         * THE MILLING: a real wheat-to-bread yield of about 74% gave both
+         * ovens a 60% operating margin and made this the most profitable
+         * building in the game, which Agriculture's own header records as a
+         * bug it held once already. This leaves the crop bill at 29% of
+         * revenue - the band every other plant occupies, and where these two
+         * sat before they stopped making FOOD.
+         */
+        texttileMill.makes(Good.BREAD, 213000);
+        texttileMill.makes(Good.BAKERY, 91000);
+        // 579 tonnes of crops. The mills bought nothing at all until 2026-09-13.
         texttileMill.uses(Good.CROPS, 579);
         texttileMill.setElectricityConsumption(40);
         texttileMill.setWaterConsumption(60);
@@ -677,14 +756,16 @@ public class BuildingManager {
            somewhat dearer per unit than a large one, and that is an economy of
            scale for later, not a reason to keep a plant nobody can build.
            ===================================================================== */
-        BuildingsTemplate foodProcessingPlant = new BuildingsTemplate("Food Processing Plant", BuildingType.INDUSTRIAL);
+        /** The small bakery. Same trade as building 3, on a smaller footprint. */
+        BuildingsTemplate foodProcessingPlant = new BuildingsTemplate("Bakery", BuildingType.INDUSTRIAL);
         foodProcessingPlant.setSector("Industry");
-        foodProcessingPlant.setStock(18000);
+        foodProcessingPlant.setStock(996000);
         foodProcessingPlant.setCashCost(8994);
         foodProcessingPlant.setConstructionPoints(700);
         foodProcessingPlant.setConstructionMaterials(166);
-        foodProcessingPlant.makes(Good.FOOD, 6000);
-        foodProcessingPlant.uses(Good.CROPS, 632);   // 9.49 units of food to the tonne
+        foodProcessingPlant.makes(Good.BREAD, 232000);
+        foodProcessingPlant.makes(Good.BAKERY, 100000);
+        foodProcessingPlant.uses(Good.CROPS, 632);   // the same 74% yield
         foodProcessingPlant.setElectricityConsumption(24);
         foodProcessingPlant.setWaterConsumption(30);
         foodProcessingPlant.setLandSqFt(40000);
@@ -2558,8 +2639,9 @@ public class BuildingManager {
     
     
      */
+    /** Kilograms of bakery goods the city's own ovens turn out a month. */
     public int getFoodProduction() {
-        return (int) totalBySector("Industry", t -> t.makes(Good.FOOD));
+        return (int) totalBySector("Industry", t -> t.makes(Good.BREAD) + t.makes(Good.BAKERY));
     }
 
     public int getFoodCapacity() {

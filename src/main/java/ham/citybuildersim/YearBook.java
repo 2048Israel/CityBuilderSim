@@ -117,7 +117,8 @@ public final class YearBook {
         flow(m, "deathsChildren", "deaths aged 6-12");
         flow(m, "deathsTeens", "deaths aged 13-17");
         flow(m, "deathsAdults", "deaths aged 18-69");
-        flow(m, "deathsSeniors", "deaths aged 70 and over");
+        flow(m, "deathsSeniors", "deaths aged 70 to 84");
+        flow(m, "deathsElders", "deaths aged 85 and over");
         flow(m, "deathsOrphans", "deaths among children with no adult");
         flow(m, "deathsUnhoused", "deaths among people with no home");
         flow(m, "deathsKilled", "adults killed by violence");

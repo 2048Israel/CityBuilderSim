@@ -1,8 +1,8 @@
 package ham.citybuildersim;
 
 /**
- * A household with nobody of working age in it: a senior alone, or a senior
- * couple.
+ * A household with nobody of working age in it: a senior or an elder, alone or
+ * as a couple.
  *
  * No pay tier, because a tier is a wage and nobody here draws one. Its income
  * is the pension bill, split across the retired cells by how many pensioners
@@ -10,6 +10,17 @@ package ham.citybuildersim;
  * its money follows: a worker retiring into SENIOR_ALONE carries their wallet
  * across the row boundary, and one of a senior couple dying leaves half the
  * couple's position to the survivor and takes the other half out of the city.
+ *
+ * A PENSIONER IS ANYONE PAST THE RETIREMENT AGE, not anyone in the senior band.
+ * This counted members of SENIOR only, and when the band split on 2026-09-15
+ * the over-85s inherited a household that reported NO pensioners in it: zero
+ * weight in HouseholdBalance's row split, so zero pension, so an elder paid
+ * rent out of savings until there were none. Measured on DenominationCheck's
+ * founding: the landlord's revenue fell, it shed plant under the rule that a
+ * firm which cannot pay must, and the city went from 7,955 homes and 18,400
+ * people to 2,881 homes and 4,200 over fifteen years - while the same city on
+ * the shipped build never lost a single home. Asking the BAND whether it is
+ * retirement age, rather than naming one, is what makes a third band safe.
  *
  * FamilyModel keeps the retired at tier index 0 by convention; this class is
  * where that convention stops - a retired cell has no tier at all, and sums
@@ -27,5 +38,14 @@ public class RetiredHousehold extends Household {
     @Override public PayTier tier()      { return null; }
     @Override public int row()           { return RETIRED_ROW; }
     @Override public boolean isRetired() { return true; }
-    @Override public int grownUps()      { return shape.membersOf(AgeBand.SENIOR); }
+    @Override public int grownUps()      { return pensionersIn(shape); }
+
+    /** Everyone in the shape who is past the retirement age, whichever band they are in. */
+    static int pensionersIn(FamilyStructure shape) {
+        int n = 0;
+        for (AgeBand band : AgeBand.values()) {
+            if (band.isRetirementAge()) n += shape.membersOf(band);
+        }
+        return n;
+    }
 }

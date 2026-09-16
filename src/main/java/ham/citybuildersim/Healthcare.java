@@ -79,8 +79,12 @@ public class Healthcare {
             case CHILDCARE: return FOUNDING_CITY
                     * (PopulationCohorts.equilibriumShare(AgeBand.BABY)
                      + PopulationCohorts.equilibriumShare(AgeBand.CHILD));
+            // Both retired bands, each at what a head of it actually needs.
             case SENIOR:    return FOUNDING_CITY
-                    * PopulationCohorts.equilibriumShare(AgeBand.SENIOR);
+                    * (PopulationCohorts.equilibriumShare(AgeBand.SENIOR)
+                            * CareType.SENIOR.placesPerHead(AgeBand.SENIOR)
+                     + PopulationCohorts.equilibriumShare(AgeBand.ELDER)
+                            * CareType.SENIOR.placesPerHead(AgeBand.ELDER));
             case BURIAL:    return FOUNDING_PLOTS;
             default:        return 0;   // nobody founds a city with a crematorium
         }
@@ -273,6 +277,22 @@ public class Healthcare {
     public static final double SENIOR_SWING = 1.35;
 
     /**
+     * And what it is worth to the over-85s, which is more.
+     *
+     * Jerus, with the band: a larger swing for the elders. Care does most where
+     * mortality is highest - that is true of every intervention in this model
+     * and true in life - and the band this applies to dies at 12.77% a year
+     * against the seniors' 2.90%. At 1.8x, full senior care takes an elder's
+     * own rate from 23.0% a year unserved to 7.1% fully served, against the
+     * seniors' 3.9% and 2.1%.
+     *
+     * It is the same geometric interpolation every other swing uses, so half
+     * coverage is exactly the band's base rate and nothing has to be special-
+     * cased to keep the middle honest.
+     */
+    public static final double ELDER_SWING = 1.80;
+
+    /**
      * How much more a city with childcare gives birth.
      *
      * One-directional, unlike the mortality swings, because Jerus asked for an
@@ -298,6 +318,7 @@ public class Healthcare {
 
         if (CareType.CHILDCARE.servedBy(band)) return swing(CHILDCARE_SWING, childcareCoverage);
         if (band == AgeBand.SENIOR)            return swing(SENIOR_SWING, seniorCoverage);
+        if (band == AgeBand.ELDER)             return swing(ELDER_SWING, seniorCoverage);
         // General care saves teenagers and adults through Sickness, not here.
         return 1;
     }

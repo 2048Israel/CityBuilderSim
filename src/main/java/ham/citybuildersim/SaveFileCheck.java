@@ -311,7 +311,7 @@ public class SaveFileCheck {
         // assertions pass without proving anything.
         city.buildStack(house, 120, false);
         city.buildStack(store, 3, false);
-        city.buildStack(template(city, "Textile Mill"), 1, false);
+        city.buildStack(template(city, "Industrial Bakery"), 1, false);
         city.simulateMonths(90);
 
         // Started now and deliberately NOT finished, so the save is taken with
@@ -556,7 +556,7 @@ public class SaveFileCheck {
          * shops, and the taxes being compared are real money.
          */
         System.out.printf("   food stock %.0f, shop stock %d, taxes $%.2f%n",
-                city.getSectors().industry().getStock(Good.FOOD),
+                city.getSectors().industry().getStock(Good.BREAD),
                 city.getSectors().retail().getStoreInventory(), e1.getTaxIncome());
 
         /*
@@ -692,7 +692,7 @@ public class SaveFileCheck {
         growing.run();
         growing.buildStack(template(growing, "House"), 300, false);
         growing.buildStack(template(growing, "Convenience Store"), 6, false);
-        growing.buildStack(template(growing, "Textile Mill"), 1, false);
+        growing.buildStack(template(growing, "Industrial Bakery"), 1, false);
         growing.simulateMonths(40);
 
         /*
@@ -875,7 +875,7 @@ public class SaveFileCheck {
         for (String[] order : new String[][] {
                 {"House", "400"}, {"Convenience Store", "2"}, {"Construction Depot", "6"},
                 {"Coal Power Plant", "2"}, {"Water Treatment Plant", "2"},
-                {"Textile Mill", "4"}, {"Mixed Farm", "4"}, {"Iron Mine", "2"},
+                {"Industrial Bakery", "4"}, {"Mixed Farm", "4"}, {"Iron Mine", "2"},
                 {"Steel Foundry", "2"},
                 {"Commercial Bank", "1"}, {"Elementary School", "3"},
                 {"Walk-in Clinic", "3"}, {"Paved Road", "20"} }) {

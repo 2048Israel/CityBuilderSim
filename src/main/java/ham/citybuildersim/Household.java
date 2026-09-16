@@ -264,8 +264,42 @@ public abstract class Household {
 
     public FamilyStructure shape() { return shape; }
 
-    /** People in one of these households. */
+    /** People in one of these households, as its SHAPE declares them. */
     public int size() { return shape.size(); }
+
+    /* =====================================================================
+       A SHAPE IS NOT ALWAYS THE CENSUS (2026-09-15)
+
+       Every family cell is a shape and a shape is a shopping list of people,
+       so size() is the whole answer for them. The cells outside the families
+       have no shape at all - they are one adult, and until now that was the
+       whole answer for them too.
+
+       It was wrong for the two of them whose adult still lives with somebody.
+       A full-time student and an adult out of work go on being parents; the
+       children who were in their household go with them, and those children
+       eat, get ill, and are billed. FamilyModel works out how many (see the
+       note there), and the figure is a fraction per household because a cell
+       is an average of thousands - 0.4 children per student household is what
+       "two in five students are parents" looks like from here.
+
+       SO THE MOUTHS AND THE EARNERS PART COMPANY, and that is the point of
+       having both. people() is who eats: hunger, the shopping plan, and the
+       fees that follow heads. grownUps() stays ONE, because the money still
+       follows the adult - a student with two children is one wallet, not
+       three, and the row's income is split by wallets. Reading the wrong one
+       of these is how an elder household came to draw no pension at all four
+       days ago; they are named apart so the next person has to choose.
+       ===================================================================== */
+
+    /** Dependants who live in one of these households but are not its shape. */
+    double dependants;
+
+    /** People in one of these households, counting anybody who came with them. */
+    public double headcount() { return size() + dependants; }
+
+    /** ...of whom this many live here without being its shape's own. */
+    public double getDependants() { return dependants; }
 
     public String label() {
         return isRetired() ? shape.getLabel()
@@ -278,7 +312,8 @@ public abstract class Household {
     }
 
     public double households() { return households; }
-    public double people()     { return households * size(); }
+    /** People in the whole cell - its households times what each of them holds. */
+    public double people()     { return households * headcount(); }
 
     public double studentDebt()     { return studentDebt; }
     public double studentBorrowed() { return studentBorrowed; }

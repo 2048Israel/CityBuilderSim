@@ -44,7 +44,7 @@ public class SicknessCheck {
         g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
         b.addStack(b.getTemplateByName("House"), 2000, true);
         b.addStack(b.getTemplateByName("Convenience Store"), 48, true);
-        b.addStack(b.getTemplateByName("Textile Mill"), 16, true);
+        b.addStack(b.getTemplateByName("Industrial Bakery"), 16, true);
         b.addStack(b.getTemplateByName("Construction Depot"), 10, true);
         b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
         b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
@@ -58,7 +58,25 @@ public class SicknessCheck {
         check("teens: half of 0.04%", AgeBand.TEEN.getAnnualMortality(), .0004 / 2, 1e-12);
         check("adults: half of 0.45%", AgeBand.ADULT.getAnnualMortality(), .0045 / 2, 1e-12);
         check("babies untouched", AgeBand.BABY.getAnnualMortality(), .001, 1e-12);
-        check("seniors untouched", AgeBand.SENIOR.getAnnualMortality(), .045, 1e-12);
+        /*
+         * THE SENIORS' 4.5% IS GONE, and this assertion is not being softened
+         * to let a change through - the thing it described no longer exists.
+         * It said "the 2026-09-11 halving left the seniors alone at the life
+         * table's 4.5%", and that was a claim about one band covering 70 to
+         * 120. The band was split at 85 on 2026-09-15 and both halves were
+         * re-derived from the life table, so there is no single senior rate
+         * left to be untouched.
+         *
+         * What replaces it asserts the two figures against the derivation in
+         * AgeBand's own header, and that they still bracket the old one - a
+         * band that used to die at 4.5% flat cannot honestly become two bands
+         * that both die slower, or both faster.
+         */
+        check("seniors, 70 to 85, from the life table", AgeBand.SENIOR.getAnnualMortality(), .0290, 1e-12);
+        check("elders, 85 to 120, from the life table", AgeBand.ELDER.getAnnualMortality(), .1277, 1e-12);
+        assertTrue("and the split brackets the flat rate it replaced",
+                AgeBand.SENIOR.getAnnualMortality() < .045
+                        && AgeBand.ELDER.getAnnualMortality() > .045);
         for (AgeBand b : new AgeBand[]{AgeBand.TEEN, AgeBand.ADULT}) {
             check("general care no longer scales " + b.getLabel().toLowerCase() + "' deaths: none",
                     Healthcare.mortalityFactor(b, .5, 0, .5), 1, 1e-12);

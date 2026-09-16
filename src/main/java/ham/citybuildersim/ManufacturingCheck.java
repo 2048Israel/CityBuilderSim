@@ -62,6 +62,43 @@ public class ManufacturingCheck {
     static final String WORKS = "Fabrication Works";
     static final String MACH  = "Machine Works";
 
+    /* =====================================================================
+       WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is
+       the harness that already knows about lines which buy one thing and sell
+       another.
+
+       TWO CLAIMS, AND THE FIRST IS THE ONE THAT MATTERS. A sector making ONE
+       good must get a share of exactly 1, because multiplying by exactly 1 is
+       the only thing that leaves all ten of today's sectors bit-identical to
+       what they were before the split existed. The second is that a line
+       making two goods DIVIDES its bill rather than duplicating it - the
+       shares sum to one and neither is zero - which is the bug that stopped
+       two ovens producing anything at all on 2026-09-15.
+       ===================================================================== */
+    static void costSharesAddUp(Game g) {
+        System.out.println("\n--- a line's costs are split between its outputs, not charged twice ---");
+        for (Sector s : g.getSectors().all()) {
+            java.util.Set<Good> made = s.goodsMade();
+            if (made.size() == 1) {
+                Good only = made.iterator().next();
+                check("   " + s.key() + " makes one good, so it carries all of its own cost",
+                        s.costShareOf(only), 1.0, 0);
+            } else if (made.size() > 1) {
+                double sum = 0;
+                boolean everyShareIsReal = true;
+                for (Good o : made) {
+                    double share = s.costShareOf(o);
+                    sum += share;
+                    if (!(share > 0 && share < 1)) everyShareIsReal = false;
+                }
+                check("   " + s.key() + " makes " + made.size() + " goods and its shares sum to one",
+                        sum, 1.0, 1e-9);
+                assertTrue("   ...with every one a real share, not nothing and not all of it",
+                        everyShareIsReal);
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -123,6 +160,8 @@ public class ManufacturingCheck {
         Game plain = new Game(files);
         quietly(plain::run);
         BuildingManager bm = plain.getBuildingManager();
+
+        costSharesAddUp(plain);
 
         String[] names = { SHOP, MACH, WORKS };
         Good[] makes = { Good.FABRICATED_STEEL, Good.MACHINERY, Good.FABRICATED_STEEL };

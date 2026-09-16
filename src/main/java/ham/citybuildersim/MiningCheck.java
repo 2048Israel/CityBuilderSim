@@ -201,7 +201,7 @@ public class MiningCheck {
         out.printf("   a mine employs %d people; a grocery %d; a food plant %d%n",
                 mine.getTotalJobs(),
                 template(city, "Small Grocery Store").getTotalJobs(),
-                template(city, "Food Processing Plant").getTotalJobs());
+                template(city, "Bakery").getTotalJobs());
 
         System.setOut(quiet);
         Game.BuildResult refused = city.buildStack(mine, 1, false);

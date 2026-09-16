@@ -109,8 +109,94 @@ public enum Good {
      */
     CROPS("Crops", "tonne", .44, .28, true, Pricing.BAND, false),
 
-    /** What one person eats in a month. Made by the mills OUT OF CROPS, sold to the shops. */
-    FOOD("Food", "unit", .20, .12, true, Pricing.BAND, false),
+    /* =====================================================================
+       FOOD IS GONE, AND THIS IS THE NOTE THAT REPLACES IT.
+
+       FOOD("Food", "unit", .20, .12, ...) - one unit was one person fed for one
+       month, everything they ate, and for the life of this project every
+       question about what a city ate had that one answer. The mills made it out
+       of crops and the shops sold it on.
+
+       It was retired on 2026-09-15, behind the thirteen below. Two things it
+       had been standing in for are worth naming, because both are now real:
+       the shops' INPUT, which is thirteen invoices; and the ovens' OUTPUT,
+       which is BREAD. The retail sale is still one good - GROCERIES, one unit a
+       head a month - because the household ledger, hunger, subsistence and the
+       price index are all written in it.
+
+       A SAVE WRITTEN BEFORE THAT DAY STILL HAS "FOOD" IN ITS STOCK AND PANTRY.
+       Sector.restore() maps goods by name and drops a name this build does not
+       know, which is the right answer and the same one the age bands take: that
+       food cannot go anywhere honest, because nothing eats it any more. See the
+       note there.
+       ===================================================================== */
+
+    /* =====================================================================
+       THE THIRTEEN, AND WHY THEY ARE PRICED IN KILOGRAMS
+
+       The shops' basket, itemised. Until 2026-09-15 a city bought one good
+       called FOOD, one unit of it a person a month, and every question about
+       what people ate had the same answer. These are that unit taken apart.
+
+       KILOGRAMS, NOT TONNES, and deliberately out of step with CROPS and IRON
+       above. consumption.json is written in kilograms because that is the unit
+       a household's month is legible in - three kilos of grain, four and a
+       half of meat - and the ONE thing that must never happen to these numbers
+       is a conversion. This project has found twenty bugs of the units family
+       and every one of them lived at a boundary where the same quantity had
+       two names. So the file's number and the enum's number are the same
+       number, and ConsumptionCheck asserts to the cent that they still are.
+
+       THE PRICES ARE THE FILE'S PRICES. consumption.json owns what a good
+       costs the world; these constants exist because the market machinery is
+       built on the enum and cannot read a file at class-init time. That is a
+       duplication, so it is guarded rather than trusted - see section 9 of
+       ConsumptionCheck, which fails the day the two disagree.
+
+       ALL THIRTEEN ARE IMPORTED TODAY. No industry makes any of them; a city
+       buys its dinner from the world. That is Jerus's call and it is what
+       makes this batch a decomposition rather than a supply chain: thirteen
+       import lines where there was one, and nothing new to produce.
+       ===================================================================== */
+
+    /** The cheapest calorie there is, and what subsistence is measured in. */
+    GRAINS("Grains", "kg", .00080, .00050, true, Pricing.BAND, false),
+
+    /** A staple with the milling and baking already done. */
+    BREAD("Bread", "kg", .00250, .00160, true, Pricing.BAND, false),
+
+    /** Milk, cheese and eggs - the protein a poor city can still afford. */
+    DAIRY_EGGS("Dairy and eggs", "kg", .00300, .00190, true, Pricing.BAND, false),
+
+    /** Cheap by the kilo, dear by the calorie, which is why the poor eat few. */
+    VEGETABLES("Vegetables", "kg", .00180, .00110, true, Pricing.BAND, false),
+
+    /** The most income-elastic produce in the file: the first thing a raise buys. */
+    FRUIT("Fruit", "kg", .00250, .00150, true, Pricing.BAND, false),
+
+    /** Bennett's law in one line - the share of this rises with every wage. */
+    MEAT("Meat", "kg", .00700, .00440, true, Pricing.BAND, false),
+
+    /** Dearer than meat and healthier than it; the last thing a city learns to buy. */
+    FISH("Fish", "kg", .00800, .00500, true, Pricing.BAND, false),
+
+    /** Cooking fats. Eight thousand calories a kilo, and almost no quality. */
+    FATS("Cooking fats", "kg", .00300, .00190, true, Pricing.BAND, false),
+
+    /** Bought for convenience, not for nutrition - see Consumption's time axis. */
+    PROCESSED_MEAT("Processed meats", "kg", .00900, .00560, true, Pricing.BAND, false),
+
+    /** What a household with two earners and three children eats on a Tuesday. */
+    READY_MEALS("Ready meals", "kg", .00800, .00500, true, Pricing.BAND, false),
+
+    /** Bakery goods, as distinct from bread: a treat, priced like one. */
+    BAKERY("Bakery goods", "kg", .00600, .00370, true, Pricing.BAND, false),
+
+    /** The dearest calorie in the file, and the one a rich city buys most of. */
+    SNACKS("Snacks", "kg", .01000, .00620, true, Pricing.BAND, false),
+
+    /** Mostly water, sold by the kilo, and a tenth of what the city spends. */
+    DRINKS("Drinks", "kg", .00150, .00090, true, Pricing.BAND, false),
 
     /**
      * Iron ore, and the scrap that stands in for it. Made by the mines, used

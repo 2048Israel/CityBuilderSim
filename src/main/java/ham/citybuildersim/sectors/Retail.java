@@ -89,13 +89,76 @@ public final class Retail extends Sector {
     private int rDemand;
     private int rProductsSold;
 
+    /* =====================================================================
+       THE THIRTEEN THINGS ON THE SHELF
+
+       Until 2026-09-15 this was one line - pantry(Good.FOOD) - and a unit of
+       FOOD was a person fed for a month. The shelf is itemised now, and the
+       basket that says how much of each good a person-month is comes from
+       Consumption at the city's own incomes, handed in by Game each month the
+       way population and spendingCapacity are. Retail does not know Engel's
+       law from a hole in the ground; it knows kilograms.
+
+       WHY THE SALE IS STILL ONE GOOD. GROCERIES is what a household buys and
+       it is still one unit a head a month, because that is what the household
+       ledger, hunger, subsistence and the price index are all written in.
+       What changed is the COST side: a unit of GROCERIES is now thirteen
+       invoices instead of one, which is where the import bill, the trade
+       entries and the VAT lines come from.
+       ===================================================================== */
+    public static final Good[] SHELF = {
+        Good.GRAINS, Good.BREAD, Good.DAIRY_EGGS, Good.VEGETABLES, Good.FRUIT,
+        Good.MEAT, Good.FISH, Good.FATS, Good.PROCESSED_MEAT, Good.READY_MEALS,
+        Good.BAKERY, Good.SNACKS, Good.DRINKS
+    };
+
+    /**
+     * Kilograms of each good in one person-month, set by Game from Consumption.
+     *
+     * Empty until the first month has been costed, and everything below treats
+     * an empty basket as "no shelf yet" rather than dividing by zero - a fresh
+     * game reaches sellOwnPriced() before any household statement exists.
+     */
+    private final Map<Good, Double> basket = new java.util.EnumMap<>(Good.class);
+
     public Retail() {
         super("Retail", "Retail", BuildingType.COMMERCIAL);
         makes(Good.GROCERIES);
-        pantry(Good.FOOD, STORE_COVER_MONTHS);
-        blurb("Buys food from the mills and the world, keeps a shelf, and sells it "
-                + "to the households at a price it sets itself. What it charges is "
-                + "the biggest single line in every family's month.");
+        for (Good g : SHELF) pantry(g, STORE_COVER_MONTHS);
+        blurb("Buys thirteen foods from the world and the bakery, keeps a shelf, and "
+                + "sells it to the households at a price it sets itself. What it charges "
+                + "is the biggest single line in every family's month.");
+    }
+
+    /** What one person-month costs in kilograms, by good. Game hands this in. */
+    public void setBasket(Map<Good, Double> kgPerHead) {
+        basket.clear();
+        if (kgPerHead == null) return;
+        for (Map.Entry<Good, Double> e : kgPerHead.entrySet()) {
+            if (e.getKey() != null && e.getValue() != null && e.getValue() > 0) {
+                basket.put(e.getKey(), e.getValue());
+            }
+        }
+    }
+
+    /** Kilograms of one good in one person-month; 0 for anything not on the shelf. */
+    public double kgPerHead(Good g) { return basket.getOrDefault(g, 0.0); }
+
+    public Map<Good, Double> getBasket() { return java.util.Collections.unmodifiableMap(basket); }
+
+    /**
+     * Person-months the shelf can cover: the good that runs out first.
+     *
+     * A shop with a tonne of grain and no meat cannot sell a basket, and this
+     * is the line that says so. Liebig's barrel, on a shelf.
+     */
+    private double basketsOnShelf() {
+        if (basket.isEmpty()) return 0;
+        double least = Double.MAX_VALUE;
+        for (Map.Entry<Good, Double> e : basket.entrySet()) {
+            least = Math.min(least, getPantry(e.getKey()) / e.getValue());
+        }
+        return least == Double.MAX_VALUE ? 0 : Math.max(0, least);
     }
 
     /* ===================================================================
@@ -120,8 +183,8 @@ public final class Retail extends Sector {
         return buildings == null ? 0 : buildings.getTotalStoreCapacity();
     }
 
-    /** What is on the shelf now. */
-    public int getStoreInventory() { return (int) Math.floor(getPantry(Good.FOOD)); }
+    /** What is on the shelf now, counted in person-months rather than kilograms. */
+    public int getStoreInventory() { return (int) Math.floor(basketsOnShelf()); }
 
     public double getStoreSellPrice()   { return storeSellPrice; }
     public double getOpeningSellPrice() { return openingSellPrice; }
@@ -133,14 +196,25 @@ public final class Retail extends Sector {
     public int getUnaffordableDemand()  { return Math.max(0, rWantedDemand - rDemand); }
     public int getProductsSold()        { return rProductsSold; }
 
-    /** What the shops paid for a unit of food this month: the market's price. */
+    /** What the shops paid for one person-month of food this month: the basket, at the market's prices. */
     public double getFoodPrice() {
-        return markets == null ? 0 : markets.get(Good.FOOD).getLocalPrice();
+        if (markets == null) return 0;
+        double sum = 0;
+        for (Map.Entry<Good, Double> e : basket.entrySet()) {
+            sum += e.getValue() * Math.max(0, markets.get(e.getKey()).getLocalPrice());
+        }
+        return sum;
     }
 
     /** ...and what the world charges for one. */
     public double getImportPrice() {
-        return markets == null ? 0 : markets.get(Good.FOOD).importPrice();
+        if (markets == null) return 0;
+        double sum = 0;
+        for (Map.Entry<Good, Double> e : basket.entrySet()) {
+            double p = markets.get(e.getKey()).importPrice();
+            if (p > 0 && !Double.isNaN(p)) sum += e.getValue() * p;
+        }
+        return sum;
     }
 
     /** Sold over demand - what left the shelf against what people came for and could afford. */
@@ -150,7 +224,11 @@ public final class Retail extends Sector {
 
     public void setStoreSellPrice(double price) { if (price > 0) storeSellPrice = price; }
     public void setLastMonthSales(int units)    { lastMonthSales = Math.max(0, units); }
-    public void setStoreInventory(int units)    { setPantry(Good.FOOD, Math.max(0, units)); }
+    /** Puts N person-months on the shelf, in the kilograms that makes - the save's way back in. */
+    public void setStoreInventory(int units) {
+        double n = Math.max(0, units);
+        for (Map.Entry<Good, Double> e : basket.entrySet()) setPantry(e.getKey(), n * e.getValue());
+    }
 
     /* ===================================================================
        THE SALE, at the bottom of the month
@@ -193,7 +271,7 @@ public final class Retail extends Sector {
          * on the shelf next month.
          */
         double serviceable = rDemand * getOperatingRate();
-        int sold = (int) Math.floor(Math.min(serviceable, getPantry(Good.FOOD)));
+        int sold = (int) Math.floor(Math.min(serviceable, basketsOnShelf()));
         rProductsSold = sold;
         lastMonthSales = sold;
 
@@ -201,10 +279,15 @@ public final class Retail extends Sector {
             GoodsMarket m = markets.get(Good.GROCERIES);
             Trade t = m.record(key(), Trade.HOUSEHOLDS, sold, storeSellPrice);
             bookSale(t);
-            usePantry(Good.FOOD, sold);
-        } else {
-            usePantry(Good.FOOD, 0);
         }
+        /*
+         * EVERY GOOD IS DRAWN DOWN EVERY MONTH, INCLUDING BY ZERO. usePantry
+         * is what records the month's use, and a good that is never called is
+         * a good whose recentUse() keeps last month's figure for ever - so the
+         * shelf would restock a line the city stopped eating. The loop runs
+         * over the whole shelf rather than over what sold.
+         */
+        for (Good g : SHELF) usePantry(g, sold * kgPerHead(g));
     }
 
     /**
@@ -214,8 +297,10 @@ public final class Retail extends Sector {
      */
     @Override
     protected double recentUse(Good g) {
-        if (g != Good.FOOD) return super.recentUse(g);
-        return lastMonthSales > 0 ? lastMonthSales : Math.min(getStoreCoverage(), population);
+        double kg = kgPerHead(g);
+        if (kg <= 0) return super.recentUse(g);
+        double baskets = lastMonthSales > 0 ? lastMonthSales : Math.min(getStoreCoverage(), population);
+        return baskets * kg;
     }
 
     /**
@@ -223,12 +308,31 @@ public final class Retail extends Sector {
      * and prices the shops just paid, so what they charge and what they were
      * charged cannot be computed from different months.
      */
+    /**
+     * ...and the shelf follows THIRTEEN invoices now.
+     *
+     * What one person-month cost the shops this month: for each good on the
+     * shelf, the kilograms in a basket times the blended price the shops
+     * actually paid for that good - local and imported, weighted by how much
+     * of each they bought. A good they bought none of falls back to the
+     * market's local price, because the basket still contains it and a shelf
+     * price that ignored it would be cost-plus on a cost it did not count.
+     */
     @Override
     public void endOfMonth(Game game) {
-        Input in = input(Good.FOOD);
-        GoodsMarket m = markets.get(Good.FOOD);
-        repriceShelf(in.boughtLocal, m.getLocalPrice(), in.imported, m.importPrice(),
-                rDemand, rProductsSold);
+        double basketCost = 0;
+        for (Map.Entry<Good, Double> e : basket.entrySet()) {
+            Good g = e.getKey();
+            Input in = input(g);
+            GoodsMarket m = markets.get(g);
+            double units = Math.max(0, in.boughtLocal) + Math.max(0, in.imported);
+            double blended = units > 0
+                    ? (Math.max(0, in.boughtLocal) * Math.max(0, m.getLocalPrice())
+                     + Math.max(0, in.imported)   * Math.max(0, m.importPrice())) / units
+                    : Math.max(0, m.getLocalPrice());
+            basketCost += e.getValue() * blended;
+        }
+        repriceShelf(basketCost, rDemand, rProductsSold);
     }
 
     /**
@@ -256,6 +360,20 @@ public final class Retail extends Sector {
 
         double blendedCost = (Math.max(0, localUnits) * Math.max(0, localPrice)
                 + Math.max(0, importUnits) * Math.max(0, importPrice)) / units;
+        repriceShelf(blendedCost, plannedUnits, deliveredUnits);
+    }
+
+    /**
+     * The same rule, told what one unit cost instead of working it out.
+     *
+     * The thirteen-good shelf blends its cost per good before it gets here,
+     * because a weighted average of thirteen weighted averages is not a
+     * weighted average of the lot - the units are kilograms of different
+     * things and adding them would be adding apples to litres. The scarcity
+     * and lag below are untouched: that reasoning is the mechanic and it did
+     * not change when the shelf did.
+     */
+    public void repriceShelf(double blendedCost, double plannedUnits, double deliveredUnits) {
         if (blendedCost <= 0) return;
 
         double floor = Math.max(openingSellPrice, blendedCost * RETAIL_MARKUP);
@@ -364,14 +482,30 @@ public final class Retail extends Sector {
             lines.add(Line.note("Empty shelves put the price up. It comes back down as stock returns."));
         }
 
-        Input in = input(Good.FOOD);
-        GoodsMarket m = markets == null ? null : markets.get(Good.FOOD);
+        /*
+         * THIRTEEN INVOICES, SUMMED, AND THE BASKET PRICED BESIDE THEM.
+         *
+         * This showed one good's units at one price. Thirteen goods cannot be
+         * shown that way in two lines and should not be: what a shopkeeper
+         * knows is what the month's stock weighed, what of it came off a lorry
+         * from abroad, and what a customer's month costs to put on the shelf.
+         * The per-good breakdown is the goods screen's job.
+         */
+        double localKg = 0, importedKg = 0;
+        for (Good g : SHELF) {
+            Input in = input(g);
+            localKg    += Math.max(0, in.boughtLocal);
+            importedKg += Math.max(0, in.imported);
+        }
         lines.add(Line.head("What it paid for stock"));
-        lines.add(Line.of("Bought locally", f.units(in.boughtLocal, Good.FOOD)
-                + (m == null ? "" : " at " + f.cash(m.getLocalPrice()))));
-        lines.add(Line.of("Imported", f.units(in.imported, Good.FOOD)
-                + (m == null ? "" : " at " + f.cash(m.importPrice())),
-                in.imported > 0 ? Line.Tone.WARN : Line.Tone.NONE));
+        lines.add(Line.of("Bought locally", f.units(localKg, Good.GRAINS)));
+        lines.add(Line.of("Imported", f.units(importedKg, Good.GRAINS),
+                importedKg > 0 ? Line.Tone.WARN : Line.Tone.NONE));
+        lines.add(Line.of("A customer's month", f.cash(getFoodPrice())
+                + " of food, over " + SHELF.length + " goods"));
+        lines.add(Line.note("One basket is one person for one month. What is in it comes from "
+                + "the consumption model at this city's own incomes, so a richer city stocks "
+                + "a different shelf."));
         return lines;
     }
 
