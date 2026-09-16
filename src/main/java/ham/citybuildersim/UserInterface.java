@@ -12345,6 +12345,118 @@ public class UserInterface extends Application {
         return row;
     }
 
+    /* =====================================================================
+       A STATEMENT LINE THAT OPENS
+
+       Jerus, 2026-09-16: "can you make it so in the UI when you click on
+       revenue or cogs, it expands and shows the individual items".
+
+       Same mechanics as budgetLine() on the city's budget pages, which took
+       the same request a week earlier for the same reason: one figure that is
+       really ten is a figure a player can read and cannot act on. Revenue is
+       five goods at five prices, half of them possibly shipped abroad at a
+       floor; the cost of sales is three or four inputs, some grown here and
+       some landed. Which one is carrying the sector, and how much of it is the
+       world, are both decisions - a farm to build, a tax to move - and neither
+       is answerable from a total.
+
+       THE DETAIL IS THIS MONTH ONLY, and the closed row keeps both columns.
+       SectorBooks keeps two months of SectorMonth and a SectorMonth carries no
+       per-good money - it is a twenty-eight-component positional record with
+       three construction sites, and widening it to carry a map would be a lot
+       of surface for a comparative column nobody asked for. The breakdown
+       answers "what is this made of", which is a question about now.
+       ===================================================================== */
+
+    /** A statement line that opens into its parts. `word` is the one-word hint on the mark. */
+    private VBox bookLine(String label, double now, double then, boolean known, String tone,
+                          VBox detail, String word) {
+
+        HBox row = bookLine(label, now, then, known, tone);
+        VBox box = new VBox(0, row);
+        box.setMaxWidth(STATEMENT);
+        if (detail == null || detail.getChildren().isEmpty()) return box;
+
+        /*
+         * THE MARK GOES NEXT TO THE LABEL, NOT AT THE END OF THE ROW. The two
+         * money columns are right-aligned to fixed widths so that every figure
+         * on the statement lines up; a caret after them would push the whole
+         * line out of that grid, and a statement whose columns do not line up
+         * is not a statement. Same reason budgetLine() puts its mark where it
+         * does.
+         */
+        Label mark = new Label(CLOSED + " " + word);
+        mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
+        row.getChildren().add(1, mark);
+        row.setStyle("-fx-padding: 3 0 3 0; -fx-cursor: hand;");
+
+        detail.setVisible(false);
+        detail.setManaged(false);
+        detail.setStyle("-fx-padding: 1 0 6 16;");
+        row.setOnMouseClicked(e -> {
+            boolean open = !detail.isVisible();
+            detail.setVisible(open);
+            detail.setManaged(open);
+            mark.setText((open ? OPENED : CLOSED) + " " + word);
+        });
+        box.getChildren().add(detail);
+        return box;
+    }
+
+    /**
+     * One line inside an opened statement line.
+     *
+     * Right-aligned into the SAME column the figure it explains sits in, so a
+     * breakdown reads down the page against its own total rather than floating
+     * in the middle of the row. The comparative column is left empty: the
+     * detail is this month's (see above), and a dash there would read as a
+     * figure the screen could not find rather than one it does not keep.
+     */
+    private HBox bookDetailRow(String label, String value, boolean indented, String tone) {
+        Label what = new Label(label);
+        what.setStyle(Palette.words(Palette.SIZE_CAPTION,
+                indented ? Palette.TEXT_MUTED : Palette.TEXT_BODY));
+
+        Region pad = new Region();
+        pad.setMinWidth(indented ? 14 : 0);
+        pad.setPrefWidth(indented ? 14 : 0);
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+
+        Label a = new Label(value);
+        a.setPrefWidth(BOOK_NOW);
+        a.setMinWidth(BOOK_NOW);
+        a.setAlignment(Pos.CENTER_RIGHT);
+        a.setStyle(Palette.figure(Palette.SIZE_CAPTION,
+                tone == null ? (indented ? Palette.TEXT_MUTED : Palette.TEXT_BODY) : tone));
+
+        Region tail = new Region();
+        tail.setMinWidth(BOOK_THEN);
+        tail.setPrefWidth(BOOK_THEN);
+
+        HBox row = new HBox(Palette.GAP, pad, what, gap, a, tail);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(STATEMENT);
+        row.setPrefWidth(STATEMENT);
+        row.setStyle("-fx-padding: 1 0 1 0;");
+        return row;
+    }
+
+    private HBox bookDetailRow(String label, double amount, boolean indented) {
+        return bookDetailRow(label, tightMoney(toDollars(amount), false), indented, null);
+    }
+
+    /** A sentence at the bottom of an opened line, when the split has something to say. */
+    private Label bookDetailNote(String text) {
+        Label l = new Label(text);
+        l.setWrapText(true);
+        l.setMaxWidth(STATEMENT - 40);
+        l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
+                + " -fx-padding: 3 0 2 0;");
+        return l;
+    }
+
     /** The line a section adds up to: a rule, then the figure at full weight. */
     private VBox bookTotal(String label, double now, double then, boolean known, String tone) {
 
@@ -12394,6 +12506,242 @@ public class UserInterface extends Application {
         return sector.inputLabel();
     }
 
+    /* ------------------- what the two big lines open into ------------------- */
+
+    /**
+     * Revenue, by good, each split into what the city took and what was
+     * shipped.
+     *
+     * WHY THE SPLIT IS ON EVERY GOOD AND NOT ONE LINE AT THE BOTTOM. A sector
+     * can be selling one good entirely at home at the import ceiling and
+     * dumping another abroad at the floor in the same month - Food Processing
+     * does exactly that with drinks and cooking fats - and a single "exported
+     * $22k" line under the total cannot say which. The two prices are
+     * different, so the two lines have to be.
+     */
+    private VBox revenueDetail(Sector sector) {
+        VBox box = new VBox(0);
+        if (sector == null) return box;
+        Sector.Statement st = sector.statement();
+
+        java.util.List<java.util.Map.Entry<Good, Sector.Split>> lines =
+                new java.util.ArrayList<>(st.sold.entrySet());
+        lines.removeIf(e -> Math.abs(e.getValue().total()) < .0000005);
+        lines.sort((x, y) -> Double.compare(y.getValue().total(), x.getValue().total()));
+
+        double abroad = 0;
+        for (java.util.Map.Entry<Good, Sector.Split> e : lines) {
+            Sector.Split s = e.getValue();
+            abroad += s.abroad;
+            box.getChildren().add(bookDetailRow(e.getKey().label(), s.total(), false));
+            if (s.atHome != 0 && s.abroad != 0) {
+                box.getChildren().add(bookDetailRow("in the city", s.atHome, true));
+                box.getChildren().add(bookDetailRow("shipped abroad", s.abroad, true));
+            } else if (s.abroad != 0) {
+                box.getChildren().add(bookDetailRow("all of it shipped abroad", s.abroad, true));
+            }
+        }
+        /*
+         * WORK IS NOT A GOOD, and the one sector that sells any is the one this
+         * breakdown would otherwise show as empty: the builders recognise
+         * building work and bill repairs, and neither clears on a goods
+         * market. Named parts rather than one label - see
+         * Sector.otherRevenueParts() and what happened without it.
+         */
+        int named = box.getChildren().size();
+        for (java.util.Map.Entry<String, Double> part : sector.otherRevenueParts().entrySet()) {
+            if (Math.abs(part.getValue()) < .0000005) continue;
+            box.getChildren().add(bookDetailRow(part.getKey(), part.getValue(), false));
+            named++;
+        }
+
+        /*
+         * AND A DISCLOSURE THAT DISCLOSES NOTHING DOES NOT GET DRAWN.
+         *
+         * Retail sells groceries, the landlords sell housing, a materials
+         * plant sells building material: one row, no split, and the caret
+         * would promise a breakdown and then repeat the figure above it. The
+         * player pays a click to find that out.
+         *
+         * COUNTED RATHER THAN GUESSED AT, since Jerus asked on 2026-09-16
+         * whether this line shows its revenues. The first version tested
+         * `lines.size() == 1` on the GOODS - which is zero for the builders,
+         * who sell no goods at all - so Construction fell straight through it
+         * and drew a caret onto a single row reading $140,781,361, the number
+         * already on the line above. A rule about how many rows there are has
+         * to count the rows.
+         */
+        if (named <= 1 && abroad == 0) {
+            box.getChildren().clear();
+            return box;
+        }
+
+        if (abroad > 0 && st.revenue > 0) {
+            box.getChildren().add(bookDetailNote(String.format(
+                    "%.0f%% of this month went abroad, where the price is the world's floor "
+                    + "rather than the city's.", abroad / st.revenue * 100)));
+        }
+        return box;
+    }
+
+    /**
+     * The cost of sales, by good, each split into what the city grew or made
+     * and what was landed.
+     *
+     * AND THE SPLIT IS THE POINT HERE, more than on the revenue side. An input
+     * bought from a supplier in this city carries a sales-tax credit at that
+     * supplier's rate; one bought abroad carries none, because no foreign
+     * seller remitted anything (SalesTaxLedger.chargeImport). So the same
+     * kilogram at the same price costs an import-fed sector more, and this is
+     * the only screen that says which kilograms those were.
+     */
+    private VBox inputsDetail(Sector sector) {
+        VBox box = new VBox(0);
+        if (sector == null) return box;
+        Sector.Statement st = sector.statement();
+
+        java.util.List<java.util.Map.Entry<Good, Sector.Split>> lines =
+                new java.util.ArrayList<>(st.bought.entrySet());
+        lines.removeIf(e -> Math.abs(e.getValue().total()) < .0000005);
+        lines.sort((x, y) -> Double.compare(y.getValue().total(), x.getValue().total()));
+
+        /*
+         * THE COST SIDE NEVER SUPPRESSES, and that is not the same rule as the
+         * revenue side's because it is not the same question.
+         *
+         * An opened cost line always says WHERE the input came from, and that
+         * is news even when there is one input and it all came from one place:
+         * "Crops, all of it from the city" is the difference between a mill
+         * with farms behind it and a mill on a ship, and the closed line
+         * cannot say which. The draft that suppressed it left the Industry
+         * sector's whole input story behind a line that looked like it had
+         * nothing under it.
+         */
+        double landed = 0;
+        for (java.util.Map.Entry<Good, Sector.Split> e : lines) {
+            Sector.Split s = e.getValue();
+            landed += s.abroad;
+            box.getChildren().add(bookDetailRow(e.getKey().label(), -s.total(), false));
+            if (s.atHome != 0 && s.abroad != 0) {
+                box.getChildren().add(bookDetailRow("from the city", -s.atHome, true));
+                box.getChildren().add(bookDetailRow("imported", -s.abroad, true));
+            } else if (s.abroad != 0) {
+                box.getChildren().add(bookDetailRow("all of it imported", -s.abroad, true));
+            } else {
+                box.getChildren().add(bookDetailRow("all of it from the city", -s.atHome, true));
+            }
+        }
+        if (box.getChildren().isEmpty()) return box;
+
+        if (st.inputs > 0) {
+            double share = landed / st.inputs;
+            box.getChildren().add(bookDetailNote(share > .5
+                    ? String.format("%.0f%% of this bill was landed rather than bought here, and "
+                    + "an import carries no sales-tax credit - so the tax below falls on nearly "
+                    + "the whole ticket rather than on what this business added.", share * 100)
+                    : String.format("%.0f%% of this bill was landed. The rest was bought from "
+                    + "businesses in this city, whose own sales tax this one gets credit for.",
+                    share * 100)));
+        }
+        return box;
+    }
+
+    /** Wages by pay tier - which kind of worker this business is actually paying. */
+    private VBox wagesDetail(Sector sector) {
+        VBox box = new VBox(0);
+        if (sector == null) return box;
+        double[] pay = sector.getStaffedPayrollPerType();
+        int[] posts = sector.postsPerTier();
+        if (pay == null) return box;
+
+        java.util.List<Integer> order = new java.util.ArrayList<>();
+        for (int i = 0; i < pay.length && i < JobType.values().length; i++) {
+            if (Math.abs(pay[i]) >= .0000005) order.add(i);
+        }
+        order.sort((x, y) -> Double.compare(pay[y], pay[x]));
+        for (int i : order) {
+            JobType job = JobType.values()[i];
+            int n = posts != null && i < posts.length ? posts[i] : 0;
+            box.getChildren().add(bookDetailRow(
+                    n > 0 ? String.format("%s  (%d %s)", jobLabel(job), n, n == 1 ? "post" : "posts")
+                          : jobLabel(job), -pay[i], false));
+        }
+        /*
+         * AND WHAT THE UNFILLED POSTS WOULD COST, when there are any. The
+         * payroll on the statement is the STAFFED payroll - a sector at 70%
+         * fill pays 70% of its wage bill - and a player looking at a cheap
+         * wage line on a half-staffed sector is reading a saving that is
+         * really a shortage. See Sector.getPayroll().
+         */
+        if (!box.getChildren().isEmpty() && sector.getAverageFill() < .999) {
+            double staffed = 0;
+            for (double p : pay) staffed += p;
+            double full = sector.getAverageFill() > 0 ? staffed / sector.getAverageFill() : staffed;
+            box.getChildren().add(bookDetailNote(String.format(
+                    "These posts are %.0f%% filled. Fully staffed the wage bill would be %s, "
+                    + "and the business would be making what its buildings can make.",
+                    sector.getAverageFill() * 100, tightMoney(toDollars(full), false))));
+        }
+        return box;
+    }
+
+    /**
+     * The sales tax, as the ledger actually strikes it: charged on what was
+     * sold here, credited for what suppliers already remitted, and the
+     * difference remitted.
+     *
+     * A NET FIGURE ON A STATEMENT HIDES A VAT. Sales tax remitted can be a
+     * small number because the sector sells little or because its credits are
+     * large, and those are opposite situations. Exports are zero-rated and keep
+     * their credits, so a heavy exporter can even be in refund - the ledger
+     * does not floor it, and neither does this.
+     */
+    private VBox salesTaxDetail(Sector sector) {
+        VBox box = new VBox(0);
+        if (sector == null || game == null) return box;
+        SalesTaxLedger ledger = game.getEconomyManager().getSalesTaxLedger();
+        String key = sector.key();
+        double payable = ledger.getPayable(key), credit = ledger.getCredit(key);
+        if (Math.abs(payable) < .0000005 && Math.abs(credit) < .0000005) return box;
+
+        double rate = game.getEconomyManager().getTaxPolicy().effectiveSalesRate(sector);
+        double taxable = ledger.getTaxableSales(key), zeroRated = ledger.getZeroRated(key);
+        double importTax = ledger.getImportTax(key);
+
+        /*
+         * EVERY ROW HERE IS CONDITIONAL, because three of the four are zero
+         * for somebody. A pure exporter charges nothing and is all credit; a
+         * sector buying only at home is charged nothing at the border; one
+         * buying only abroad has no supplier credit at all. A panel of "$0"
+         * rows reads as a screen that could not find the figures.
+         */
+        if (Math.abs(payable - importTax) >= .0000005) {
+            box.getChildren().add(bookDetailRow(
+                    String.format("Charged on %s sold here, at %.1f%%",
+                            tightMoney(toDollars(taxable), false), rate * 100),
+                    -(payable - importTax), false));
+        }
+        if (Math.abs(importTax) >= .0000005) {
+            box.getChildren().add(bookDetailRow("Charged at the border on imports", -importTax, false));
+        }
+        if (Math.abs(credit) >= .0000005) {
+            box.getChildren().add(bookDetailRow("Credit for tax its suppliers remitted", credit, false));
+        }
+        if (zeroRated > 0) {
+            box.getChildren().add(bookDetailRow(
+                    String.format("Zero-rated: %s shipped abroad",
+                            tightMoney(toDollars(zeroRated), false)), "\u2014", false, null));
+        }
+        box.getChildren().add(bookDetailNote(payable - credit < 0
+                ? "The city owes this business tax this month rather than the other way round. "
+                + "That is a refund and it is correct: exports are charged nothing and keep the "
+                + "credits behind them."
+                : "The tax is on what this business ADDED - what it charged, less what its "
+                + "suppliers already remitted. An import carries no such credit, because nobody "
+                + "abroad remits anything to this city."));
+        return box;
+    }
+
     private void incomePage(VBox column, Sector sector,
                             SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
 
@@ -12403,15 +12751,18 @@ public class UserInterface extends Application {
         column.getChildren().add(bookHead(CityCalendar.format(now.month())));
 
         column.getChildren().add(bookLine("Revenue",
-                now.revenue(), then.revenue(), known, Palette.GOOD_MONEY));
+                now.revenue(), then.revenue(), known, Palette.GOOD_MONEY,
+                revenueDetail(sector), "what"));
 
         if (now.inputs() != 0 || then.inputs() != 0) {
             column.getChildren().add(bookLine(inputLabel(sector),
-                    -now.inputs(), -then.inputs(), known, null));
+                    -now.inputs(), -then.inputs(), known, null,
+                    inputsDetail(sector), "what"));
         }
         if (now.payroll() != 0 || then.payroll() != 0) {
             column.getChildren().add(bookLine("Wages",
-                    -now.payroll(), -then.payroll(), known, null));
+                    -now.payroll(), -then.payroll(), known, null,
+                    wagesDetail(sector), "who"));
         }
         if (now.electricity() != 0 || then.electricity() != 0) {
             column.getChildren().add(bookLine("Electricity",
@@ -12442,7 +12793,8 @@ public class UserInterface extends Application {
         if (now.salesTaxPaid() != 0 || then.salesTaxPaid() != 0) {
             column.getChildren().add(bookLine("Sales tax remitted",
                     -now.salesTaxPaid(), -then.salesTaxPaid(), known,
-                    now.salesTaxPaid() > 0 ? Palette.WARN : Palette.GOOD));
+                    now.salesTaxPaid() > 0 ? Palette.WARN : Palette.GOOD,
+                    salesTaxDetail(sector), "how"));
         }
 
         column.getChildren().add(bookTotal("Profit before tax",

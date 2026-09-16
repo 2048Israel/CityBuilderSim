@@ -783,6 +783,37 @@ public class HouseholdBalance {
             }
         }
 
+        /* =================================================================
+           EVERY SHARE HERE IS A FRACTION, AND IS HELD TO BEING ONE (2026-09-16)
+
+           `moved` is a MINIMUM of the two sides, so every ratio below is at
+           most one on paper - and `weight * moved / gain` with moved == gain
+           can still come back a ULP ABOVE `weight`, which makes `rest`
+           a hair NEGATIVE. A negative share hands a cell a negative slice of
+           the pool, and from then on the cell is carrying a signed residue
+           instead of a position.
+
+           WHY THAT IS NOT HARMLESS, AND HOW IT WAS FOUND. The residue is
+           1e-29 of a dollar and nothing reads it as money - but something
+           reads its SIGN. investAbroad() asks `c.debt <= 0` to decide whether
+           a household may keep money abroad, and a negative dust reads
+           debt-free while a positive dust reads indebted. DenominationCheck
+           ran a city and its reformed twin exactly together for 158 months
+           and then parted: the reform changed the last bit of this
+           cancellation, four retired cells flipped, their money abroad came
+           home at HOME_SPEED, the financial account moved by thousands, and
+           with it the exchange rate - which is every import and export price
+           in the city. By the decade the two were 2-4% apart on population,
+           GDP, rent, the price level and the bank. NINE FIXTURES IN TEN NEVER
+           SAW IT; the sign of a residue is luck and this fixture was unlucky.
+
+           THE CLAMPS ARE EXACT AND FREE OF UNITS. A cell cannot take more
+           than its own weight from its own row, and a pool cannot hand out
+           more than it holds. No tolerance, no figure in dollars - a bound in
+           absolute money is the mistake this project keeps finding, and the
+           way not to make it again is not to write a number at all.
+           ================================================================= */
+
         /* ---- within each row first ---- */
         double[] rowMoved = new double[ROWS];
         double cityPool = 0, cityLoss = 0, cityGain = 0;
@@ -790,20 +821,20 @@ public class HouseholdBalance {
             double moved = Math.min(rowLoss[r], rowGain[r]);
             rowMoved[r] = moved;
             if (rowLoss[r] > 0) {
-                double kept = moved / rowLoss[r];
+                double kept = Math.min(1, moved / rowLoss[r]);
                 cityPool += rowPool[r] * (1 - kept);
                 rowPool[r] *= kept;
-                cityLoss += rowLoss[r] - moved;
+                cityLoss += Math.max(0, rowLoss[r] - moved);
             }
-            cityGain += rowGain[r] - moved;
+            cityGain += Math.max(0, rowGain[r] - moved);
         }
 
         /* ---- then across the city ---- */
         double cityMoved = Math.min(cityLoss, cityGain);
-        double cityKept = cityLoss > 0 ? cityMoved / cityLoss : 0;
+        double cityKept = cityLoss > 0 ? Math.min(1, cityMoved / cityLoss) : 0;
         double gone = cityPool * (1 - cityKept);
         cityPool *= cityKept;
-        double cityShare = cityGain > 0 ? cityMoved / cityGain : 0;
+        double cityShare = cityGain > 0 ? Math.min(1, cityMoved / cityGain) : 0;
 
         /* ---- and hand it out ---- */
         for (int i = 0; i < n; i++) {
@@ -811,10 +842,10 @@ public class HouseholdBalance {
             if (delta[i] <= 0 || c.grownUps() <= 0) continue;
             int r = c.stockGroup();
             double weight = delta[i] * c.grownUps();
-            double fromRow = rowGain[r] > 0 ? weight * rowMoved[r] / rowGain[r] : 0;
-            double rest = weight - fromRow;
-            double fromCity = rest * cityShare;
-            double newcomers = (rest - fromCity) / c.grownUps();
+            double fromRow = rowGain[r] > 0 ? Math.min(weight, weight * rowMoved[r] / rowGain[r]) : 0;
+            double rest = Math.max(0, weight - fromRow);
+            double fromCity = Math.min(rest, rest * cityShare);
+            double newcomers = Math.max(0, rest - fromCity) / c.grownUps();
 
             double received = (rowMoved[r] > 0 ? rowPool[r] * fromRow / rowMoved[r] : 0)
                     + (cityMoved > 0 ? cityPool * fromCity / cityMoved : 0);
@@ -999,6 +1030,46 @@ public class HouseholdBalance {
        hands and lost its door. This is the door.
        ===================================================================== */
 
+    /* =====================================================================
+       THE ROUNDING FLOOR, AND WHY IT IS SEEDED (2026-09-16)
+
+       A household move smaller than a trillionth of a dollar is the
+       arithmetic's own dust, and moving it writes a line into the balance of
+       payments for nothing. So it is swept to zero - and it was swept at a
+       FIXED 1e-12, which makes it a money constant that a currency reform
+       never reseeded. That is the FOURTH of these the project has found, after
+       Equity.FOUNDING_PRICE, Exchange.MIN_FAIR and OutwardInvestment.MIN_MOVE,
+       whose note describes this exact symptom - and this is the sector rule's
+       own twin, on the households, written the day the households were given
+       the same door and given a bare literal instead of the seeded field
+       sitting twenty lines away in OutwardInvestment.
+
+       WHAT IT WOULD COST, and an honest note about how it was found. After a
+       hundred-to-one reform every amount is a hundred times smaller, so a
+       household move the plain city makes is swept away in the reformed one:
+       that cell's savings and its dollars abroad differ from then on. THIS IS
+       NOT WHAT BROKE DenominationCheck ON 2026-09-16 - it was found while
+       chasing that, seeded, and the divergence did not move by a digit. The
+       cause was the cancellation dust in moveStock() above. It is fixed here
+       anyway because it is unambiguously the same bug as the seeded field
+       twenty lines away in OutwardInvestment, and leaving a known-wrong
+       constant in because today's harness cannot see it is how the other four
+       survived as long as they did.
+
+       THE DOLLAR FLOOR BELOW IS NOT THIS BUG. `abroad` is in dollars and a
+       reform does not move dollars - see Household.redenominate(), whose note
+       says so - so 1e-15 there is scale-invariant and stays a literal.
+       ===================================================================== */
+    public static final double MIN_MOVE = 1e-12;
+
+    /** The same floor in today's money. See MIN_MOVE. */
+    private double minMove = MIN_MOVE;
+
+    /** Re-seeds the floor at a given unit. See Denomination. */
+    public void seedConstants(double unit) {
+        minMove = MIN_MOVE / (unit > 0 ? unit : 1);
+    }
+
     /** Local currency per dollar, this month: what the paper abroad is worth here. Set by Game before the strike. */
     private double localPerUsd = ForeignAccounts.OPENING_RATE;
 
@@ -1051,7 +1122,7 @@ public class HouseholdBalance {
             } else {
                 move = Math.max(gap * OutwardInvestment.HOME_SPEED, -held);
             }
-            if (Math.abs(move) < 1e-12) continue;
+            if (Math.abs(move) < minMove) continue;
             c.savings -= move;
             c.abroad += move / rate;
             if (c.abroad < 1e-15) c.abroad = 0;
@@ -1774,6 +1845,7 @@ public class HouseholdBalance {
      * delivered share is a share.
      */
     public void redenominate(double scale) {
+        minMove *= scale;
         lastWrittenOff *= scale;
         lastTakenAway *= scale;
         lastStudentDebtTakenAway *= scale;

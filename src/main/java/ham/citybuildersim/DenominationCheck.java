@@ -216,6 +216,64 @@ public class DenominationCheck {
                 cost(lopped, "House"), cost(plain, "House") / factor, 1e-9);
 
         /*
+         * ...AND SO DOES EVERY LINE THE INCOME STATEMENT OPENS INTO.
+         *
+         * The per-good money behind Revenue and the cost of sales (Sector.Split,
+         * 2026-09-16) is money like any other and has to divide like any other.
+         * It was written with the two scale() calls in place and then they were
+         * DELETED to see what would notice: the whole suite, all fifty-two
+         * harnesses, stayed green. Nothing else in the game reads these maps -
+         * only the screen does - so a reform that left them alone would have
+         * shipped a statement whose parts were a hundred times its total, and
+         * the only way to find it would have been to reform a city and click.
+         *
+         * That is the twenty-third of this family and the first one caught
+         * before it existed. Both maps, both sides, every sector, every good -
+         * the same shape as the claim above it, because "any field left
+         * unscaled changes a relative price" is what this harness is for.
+         */
+        int splitLines = 0;
+        for (Sector was : plain.getSectors().all()) {
+            Sector is = lopped.getSectors().byKey(was.key());
+            for (Good g : Good.values()) {
+                Sector.Split soldWas = was.statement().sold.get(g);
+                Sector.Split soldIs = is.statement().sold.get(g);
+                if (soldWas != null || soldIs != null) {
+                    splitLines++;
+                    close(was.key() + ": " + g + " sold here divided",
+                            soldIs == null ? 0 : soldIs.atHome,
+                            (soldWas == null ? 0 : soldWas.atHome) / factor, 1e-9);
+                    close(was.key() + ": " + g + " sold abroad divided",
+                            soldIs == null ? 0 : soldIs.abroad,
+                            (soldWas == null ? 0 : soldWas.abroad) / factor, 1e-9);
+                }
+                Sector.Split boughtWas = was.statement().bought.get(g);
+                Sector.Split boughtIs = is.statement().bought.get(g);
+                if (boughtWas != null || boughtIs != null) {
+                    splitLines++;
+                    close(was.key() + ": " + g + " bought here divided",
+                            boughtIs == null ? 0 : boughtIs.atHome,
+                            (boughtWas == null ? 0 : boughtWas.atHome) / factor, 1e-9);
+                    close(was.key() + ": " + g + " imported divided",
+                            boughtIs == null ? 0 : boughtIs.abroad,
+                            (boughtWas == null ? 0 : boughtWas.abroad) / factor, 1e-9);
+                }
+            }
+        }
+        assertTrue("fixture: there was a per-good breakdown to divide (" + splitLines + " lines)",
+                splitLines > 0);
+
+        /* ...and the named parts of revenue that are not a good, the same way. */
+        for (Sector was : plain.getSectors().all()) {
+            Sector is = lopped.getSectors().byKey(was.key());
+            for (java.util.Map.Entry<String, Double> part : was.otherRevenueParts().entrySet()) {
+                close(was.key() + ": " + part.getKey().toLowerCase() + " divided",
+                        is.otherRevenueParts().getOrDefault(part.getKey(), 0.0),
+                        part.getValue() / factor, 1e-9);
+            }
+        }
+
+        /*
          * ...AND THE RATIOS DID NOT MOVE, which is the other half of the claim
          * and the more important one. A reform that divided everything by
          * slightly different numbers would pass the lines above and fail these.

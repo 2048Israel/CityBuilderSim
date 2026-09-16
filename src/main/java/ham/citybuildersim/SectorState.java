@@ -34,6 +34,43 @@ public final class SectorState {
     public LedgerState ledger;
     public StatementState statement;
 
+    /**
+     * A good's money in a save: what it sold or bought at home and abroad.
+     *
+     * A NEW FIELD IN AN OLD SAVE READS ZERO, which is what this class's header
+     * promises and what an older city actually had - it kept no per-good money
+     * at all. So the income statement's breakdown is blank for the one month a
+     * pre-2026-09-16 save was taken in and correct from the next month on, and
+     * SAVE_FORMAT did not have to move for it. See UserInterface.incomePage().
+     */
+    public static final class SplitState {
+        public double atHome, abroad;
+    }
+
+    static Map<String, SplitState> splitsOf(Map<Good, Sector.Split> from) {
+        Map<String, SplitState> out = new LinkedHashMap<>();
+        if (from != null) for (Map.Entry<Good, Sector.Split> e : from.entrySet()) {
+            SplitState s = new SplitState();
+            s.atHome = e.getValue().atHome;
+            s.abroad = e.getValue().abroad;
+            out.put(e.getKey().name(), s);
+        }
+        return out;
+    }
+
+    static Map<Good, Sector.Split> splitsTo(Map<String, SplitState> from) {
+        Map<Good, Sector.Split> out = new java.util.EnumMap<>(Good.class);
+        if (from != null) for (Map.Entry<String, SplitState> e : from.entrySet()) {
+            Good g = Good.byName(e.getKey());
+            if (g == null || e.getValue() == null) continue;
+            Sector.Split x = new Sector.Split();
+            x.atHome = e.getValue().atHome;
+            x.abroad = e.getValue().abroad;
+            out.put(g, x);
+        }
+        return out;
+    }
+
     /** A sector's own state - a price it walks, an order book - by name. */
     public Map<String, Double> extras = new LinkedHashMap<>();
 
@@ -43,6 +80,8 @@ public final class SectorState {
         public Map<String, Double> purchasesBySupplier = new LinkedHashMap<>();
         public Map<String, Double> unitsSold = new LinkedHashMap<>();
         public Map<String, Double> unitsBought = new LinkedHashMap<>();
+        public Map<String, SplitState> sold = new LinkedHashMap<>();
+        public Map<String, SplitState> bought = new LinkedHashMap<>();
 
         static LedgerState of(Sector.Ledger l) {
             LedgerState s = new LedgerState();
@@ -54,6 +93,8 @@ public final class SectorState {
             s.purchasesBySupplier = new LinkedHashMap<>(l.purchasesBySupplier);
             for (Map.Entry<Good, Double> e : l.unitsSold.entrySet())   s.unitsSold.put(e.getKey().name(), e.getValue());
             for (Map.Entry<Good, Double> e : l.unitsBought.entrySet()) s.unitsBought.put(e.getKey().name(), e.getValue());
+            s.sold = splitsOf(l.sold);
+            s.bought = splitsOf(l.bought);
             return s;
         }
 
@@ -73,6 +114,8 @@ public final class SectorState {
                 Good g = Good.byName(e.getKey());
                 if (g != null && e.getValue() != null) l.unitsBought.put(g, e.getValue());
             }
+            l.sold.putAll(splitsTo(sold));
+            l.bought.putAll(splitsTo(bought));
             return l;
         }
     }
@@ -83,6 +126,9 @@ public final class SectorState {
         public double operatingIncome, interest, propertyTax, salesTax, preTaxIncome, profitTax, netIncome;
         public double localSales, exports, otherRevenue, salesToHouseholds, localPurchases, imports;
         public Map<String, Double> purchasesBySupplier = new LinkedHashMap<>();
+        public Map<String, SplitState> sold = new LinkedHashMap<>();
+        public Map<String, SplitState> bought = new LinkedHashMap<>();
+        public Map<String, Double> otherParts = new LinkedHashMap<>();
 
         static StatementState of(Sector.Statement t) {
             StatementState s = new StatementState();
@@ -94,6 +140,9 @@ public final class SectorState {
             s.localSales = t.localSales; s.exports = t.exports; s.otherRevenue = t.otherRevenue;
             s.salesToHouseholds = t.salesToHouseholds; s.localPurchases = t.localPurchases; s.imports = t.imports;
             s.purchasesBySupplier = new LinkedHashMap<>(t.purchasesBySupplier);
+            s.sold = splitsOf(t.sold);
+            s.bought = splitsOf(t.bought);
+            s.otherParts = new LinkedHashMap<>(t.otherParts);
             return s;
         }
 
@@ -108,6 +157,9 @@ public final class SectorState {
             t.salesToHouseholds = salesToHouseholds; t.localPurchases = localPurchases; t.imports = imports;
             t.purchasesBySupplier = purchasesBySupplier == null
                     ? new LinkedHashMap<>() : new LinkedHashMap<>(purchasesBySupplier);
+            t.sold = splitsTo(sold);
+            t.bought = splitsTo(bought);
+            t.otherParts = otherParts == null ? new LinkedHashMap<>() : new LinkedHashMap<>(otherParts);
             return t;
         }
     }

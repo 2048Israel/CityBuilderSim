@@ -65,12 +65,28 @@ public final class Agriculture extends Sector {
 
     public Agriculture() {
         super("Agriculture", "Agriculture", BuildingType.AGRICULTURE);
+        /*
+         * FIVE GOODS, AND THE SECTOR'S OWN LIST IS WHAT MAKES THEM EXIST.
+         *
+         * Markets iterates goodsMade() to decide what comes to market, so this
+         * line - not the templates - is what brings a good into being. The day
+         * the ovens were repointed at BREAD and FoodIndustry still said FOOD,
+         * the sector had 858,000kg of nameplate capacity and produced nothing,
+         * with no exception and no log line. Two places name what a sector
+         * makes and they have to agree: the buildings say how much, this says
+         * what.
+         */
         makes(Good.CROPS);
-        blurb("Grows what the mills turn into food. It needs almost no people and "
-                + "almost no power - what it needs is ground, more of it than "
-                + "anything else the city builds, and ground is the one thing a "
-                + "growing city runs out of. Whether the fields survive the city "
-                + "growing around them is a tax decision.");
+        makes(Good.MEAT);
+        makes(Good.DAIRY_EGGS);
+        makes(Good.VEGETABLES);
+        makes(Good.FRUIT);
+        blurb("Grows the city's dinner, and the grain its bakeries turn into bread. "
+                + "It needs almost no people and almost no power - what it needs is "
+                + "ground, more of it than anything else the city builds, and ground "
+                + "is the one thing a growing city runs out of. Whether a field can "
+                + "outbid a warehouse for the same acre is a tax decision, and "
+                + "whether the city grows its own dinner at all is a price one.");
     }
 
     /* ---------------------------------------------------------------- reading */
@@ -252,8 +268,21 @@ public final class Agriculture extends Sector {
      */
     private double worthAtTheFloor(ham.citybuildersim.BuildingsTemplate t, BusinessInvestment plans) {
         if (t == null || markets == null) return 0;
-        double floor = Math.max(0, markets.get(Good.CROPS).exportPrice());
-        return t.makes(Good.CROPS) * floor
+        /*
+         * EVERY GOOD THE FARM MAKES, EACH AT ITS OWN FLOOR. It read CROPS alone
+         * while that was all a farm made; a greenhouse making vegetables and
+         * fruit would have been underwritten at zero and never built, and a
+         * livestock farm likewise. The argument above is unchanged and is the
+         * whole of Jerus's rule for this sector: value the harvest at the worst
+         * price the world will ever pay for it, and if the mortgage still
+         * clears, the city can afford to grow its own.
+         */
+        double atTheFloor = 0;
+        for (Good g : goodsMade()) {
+            double made = t.makes(g);
+            if (made > 0) atTheFloor += made * Math.max(0, markets.get(g).exportPrice());
+        }
+        return atTheFloor
                 - plans.runningCostOf(t)
                 - plans.standingCostOf(this, t);
     }
@@ -281,7 +310,14 @@ public final class Agriculture extends Sector {
         if (game == null) return lines;
         Formats f = Formats.INSTANCE;
 
-        if (getCapacity(Good.CROPS) <= 0) {
+        /*
+         * ANY of the five, not just crops - a city with nothing but greenhouses
+         * grows a great deal and no crops at all, and this line told it it had
+         * nothing under cultivation.
+         */
+        double growingAnything = 0;
+        for (Good g : goodsMade()) growingAnything += getCapacity(g);
+        if (growingAnything <= 0) {
             lines.add(Line.note("Nothing under cultivation. The mills are buying their crops "
                     + "from the world, which they can do for ever - but a field here is worth "
                     + "the whole gap between what the world charges and what a farm next door "
@@ -291,6 +327,10 @@ public final class Agriculture extends Sector {
         }
 
         lines.add(Line.head("What the city grows for itself"));
+        for (Good g : goodsMade()) {
+            double made = getCapacity(g) * getOperatingRate();
+            if (made > 0) lines.add(Line.of(g.label(), f.units(made, g)));
+        }
         double share = getSelfSufficiency(game);
         lines.add(Line.of("Of what the city eats", f.pct(Math.min(1, share)),
                 share >= .5 ? Line.Tone.GOOD : share >= .2 ? Line.Tone.NONE : Line.Tone.MUTED));
@@ -333,8 +373,21 @@ public final class Agriculture extends Sector {
      */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {
-        Good g = Good.CROPS;
-        double trend = markets == null ? 0 : markets.get(g).getDemandTrend();
-        return new double[] { Math.max(plannedDemand(g), trend), getCapacity(g) };
+        /*
+         * MEASURED IN MONEY, because the five goods are counted in two units -
+         * crops by the tonne, the rest by the kilogram - and adding them would
+         * be adding tonnes to kilos. Each good's demand and capacity is valued
+         * at its own export floor first, which is the same yardstick the
+         * underwriting above uses.
+         */
+        double demand = 0, capacity = 0;
+        for (Good g : goodsMade()) {
+            double floor = markets == null ? 0 : Math.max(0, markets.get(g).exportPrice());
+            if (floor <= 0) continue;
+            double trend = markets.get(g).getDemandTrend();
+            demand   += Math.max(plannedDemand(g), trend) * floor;
+            capacity += getCapacity(g) * floor;
+        }
+        return new double[] { demand, capacity };
     }
 }

@@ -495,6 +495,29 @@ public abstract class Sector {
        old handlers carried "month flows" in the save.
        =================================================================== */
 
+    /**
+     * One good's side of the month, in money, split by which side of the
+     * border it cleared on.
+     *
+     * WHY MONEY PER GOOD AND NOT UNITS TIMES A PRICE. The ledger already keeps
+     * unitsSold and unitsBought, and for a while the income statement's
+     * breakdown could have been reconstructed from those against the market's
+     * price. It would have been wrong twice over: a local sale and an export
+     * clear at DIFFERENT prices in the same month, and the price on the market
+     * is restruck before anybody draws a screen. What changed hands is on the
+     * trade (Trade.value()), so it is booked from the trade.
+     *
+     * `abroad` reads as EXPORTED on the sold side and IMPORTED on the bought
+     * side. One type rather than two because it is the same question - how
+     * much of this line is the world - and the two sides of a statement should
+     * answer it the same way.
+     */
+    public static final class Split {
+        public double atHome;
+        public double abroad;
+        public double total() { return atHome + abroad; }
+    }
+
     public static final class Ledger {
         /** Sold to local buyers - sectors, households, the city - in money. */
         public double localSales;
@@ -509,6 +532,18 @@ public abstract class Sector {
         /** Units sold and bought, per good, for the accounts and the screens. */
         public final Map<Good, Double> unitsSold = new EnumMap<>(Good.class);
         public final Map<Good, Double> unitsBought = new EnumMap<>(Good.class);
+        /**
+         * And the same two in MONEY, split home and abroad. This is what the
+         * income statement's Revenue and cost lines open into: which good the
+         * money came from or went to, and how much of it crossed the border.
+         * Jerus, 2026-09-16: "when you click on revenue or cogs, it expands and
+         * shows the individual items".
+         */
+        public final Map<Good, Split> sold   = new EnumMap<>(Good.class);
+        public final Map<Good, Split> bought = new EnumMap<>(Good.class);
+
+        public Split soldOf(Good g)   { return sold.computeIfAbsent(g, k -> new Split()); }
+        public Split boughtOf(Good g) { return bought.computeIfAbsent(g, k -> new Split()); }
         /** Sold to households in particular - consumption, in the national accounts. */
         public double salesToHouseholds;
 
@@ -525,12 +560,34 @@ public abstract class Sector {
             purchasesBySupplier.clear();
             unitsSold.clear();
             unitsBought.clear();
+            sold.clear();
+            bought.clear();
         }
 
+        /*
+         * AND THE PER-GOOD MONEY SCALES WITH EVERYTHING ELSE. A figure in money
+         * that a reform does not move is the twenty-third of its family in this
+         * project; the units maps are deliberately NOT scaled, because a
+         * kilogram is a kilogram through a redenomination and a dollar is not.
+         */
         void scale(double s) {
             localSales *= s; exports *= s; otherRevenue *= s; imports *= s; salesToHouseholds *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
+            for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
+            for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
         }
+    }
+
+    /** A deep copy, because a Split is mutable and the ledger is cleared under it. */
+    public static Map<Good, Split> copyOf(Map<Good, Split> from) {
+        Map<Good, Split> out = new EnumMap<>(Good.class);
+        if (from != null) for (Map.Entry<Good, Split> e : from.entrySet()) {
+            Split x = new Split();
+            x.atHome = e.getValue().atHome;
+            x.abroad = e.getValue().abroad;
+            out.put(e.getKey(), x);
+        }
+        return out;
     }
 
     private Ledger pending = new Ledger();
@@ -546,6 +603,8 @@ public abstract class Sector {
             if (Trade.HOUSEHOLDS.equals(t.buyer())) pending.salesToHouseholds += t.value();
         }
         pending.unitsSold.merge(t.good(), t.units(), Double::sum);
+        Split line = pending.soldOf(t.good());
+        if (t.isExport()) line.abroad += t.value(); else line.atHome += t.value();
         output(t.good());
         if (t.isExport()) outputs.get(t.good()).exported += t.units();
         else              outputs.get(t.good()).soldLocal += t.units();
@@ -557,6 +616,8 @@ public abstract class Sector {
         if (t.isImport()) pending.imports += t.value();
         else pending.purchasesBySupplier.merge(t.seller(), t.value(), Double::sum);
         pending.unitsBought.merge(t.good(), t.units(), Double::sum);
+        Split line = pending.boughtOf(t.good());
+        if (t.isImport()) line.abroad += t.value(); else line.atHome += t.value();
         Input in = input(t.good());
         if (t.isImport()) in.imported += t.units();
         else              in.boughtLocal += t.units();
@@ -583,6 +644,21 @@ public abstract class Sector {
         /** The two halves of inputs, for the accounts and the audit. */
         public double localPurchases, imports;
         public Map<String, Double> purchasesBySupplier = new LinkedHashMap<>();
+        /**
+         * Revenue and the cost of sales BY GOOD, each split home and abroad -
+         * what the income statement's two biggest lines open into. Copied from
+         * the ledger at strike() and, like every other figure here, written by
+         * strike() and bank() only.
+         */
+        public Map<Good, Split> sold   = new EnumMap<>(Good.class);
+        public Map<Good, Split> bought = new EnumMap<>(Good.class);
+        /**
+         * And the parts of otherRevenue that have names - the builders' work
+         * recognised and repairs billed. Frozen here at strike() for the same
+         * reason everything else on this class is: it describes the month that
+         * closed, not the one running. See Sector.nameOtherRevenue().
+         */
+        public Map<String, Double> otherParts = new LinkedHashMap<>();
 
         void scale(double s) {
             revenue *= s; inputs *= s; payroll *= s; electricity *= s; water *= s; maintenance *= s;
@@ -591,6 +667,9 @@ public abstract class Sector {
             localSales *= s; exports *= s; otherRevenue *= s; salesToHouseholds *= s;
             localPurchases *= s; imports *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
+            for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
+            for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
+            otherParts.replaceAll((k, v) -> v * s);
         }
     }
 
@@ -619,7 +698,11 @@ public abstract class Sector {
         s.imports = pending.imports;
         s.localPurchases = pending.purchases() - pending.imports;
         s.purchasesBySupplier = new LinkedHashMap<>(pending.purchasesBySupplier);
+        s.sold = copyOf(pending.sold);
+        s.bought = copyOf(pending.bought);
         s.inputs = pending.purchases();
+        // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
+        s.otherParts = nameOtherRevenue();
         s.payroll = getPayroll();
         s.electricity = getElectricityCost();
         s.water = getWaterCost();
@@ -678,6 +761,10 @@ public abstract class Sector {
         s.localPurchases = saved.localPurchases; s.imports = saved.imports;
         s.purchasesBySupplier = saved.purchasesBySupplier == null
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.purchasesBySupplier);
+        s.sold = copyOf(saved.sold);
+        s.bought = copyOf(saved.bought);
+        s.otherParts = saved.otherParts == null
+                ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherParts);
     }
 
     /* ===================================================================
@@ -1109,6 +1196,48 @@ public abstract class Sector {
         return sb.substring(0, 1).toUpperCase() + sb.substring(1) + " bought";
     }
 
+    /**
+     * The parts of this sector's revenue that are not the sale of a good,
+     * named, for the lines inside an opened Revenue.
+     *
+     * A LIST AND NOT A LABEL, which is what the first draft had and what
+     * Jerus's question found. Work does not clear on a goods market, so it
+     * never appears in the per-good breakdown - and the ONE sector that has
+     * any books two different things into the same figure: the building work
+     * it recognised as it finished it, and the repair bills it sent to every
+     * owner of a standing building. Under a single label the builders' Revenue
+     * opened into one row that repeated the total, which is exactly the
+     * disclosure-that-discloses-nothing this screen refuses to draw elsewhere.
+     *
+     * The parts MUST add up to Statement.otherRevenue - SectorBooksCheck says
+     * so every month - so a sector that splits this figure splits all of it.
+     */
+    public Map<String, Double> otherRevenueParts() { return statement.otherParts; }
+
+    /**
+     * ...and where those names come from, read off the sector's LIVE fields at
+     * the moment the month is struck.
+     *
+     * IT HAS TO BE FROZEN AND NOT READ LATE, which is what the first version
+     * got wrong and what SectorBooksCheck caught the same afternoon. The
+     * builders' recognisedThisMonth and repairsThisMonth are working fields:
+     * they are zeroed and refilled as the next month runs, so a screen reading
+     * them is reading a month the statement above it is not about. The check
+     * said so in the plainest possible way - the named parts for month 3 added
+     * up to month 4's figure:
+     *
+     *     FAIL Construction other revenue named month 3: 715.90, expected 7.90
+     *     FAIL Construction other revenue named month 4: 3,011.77, expected 716.90
+     *
+     * So strike() takes a copy, exactly as it does for the per-good money, and
+     * everything the income statement draws comes off the struck month.
+     */
+    protected Map<String, Double> nameOtherRevenue() {
+        Map<String, Double> parts = new LinkedHashMap<>();
+        if (Math.abs(statement.otherRevenue) > 0) parts.put("Work billed", statement.otherRevenue);
+        return parts;
+    }
+
     public List<Line> operations(Game game) {
         List<Line> lines = new ArrayList<>();
         Formats f = Formats.INSTANCE;
@@ -1123,6 +1252,26 @@ public abstract class Sector {
         for (Good g : makes) {
             if (!g.traded()) continue;
             Output o = output(g);
+            /*
+             * A GOOD THIS SECTOR HAS NO PLANT FOR IS NOT A LINE ON ITS SCREEN
+             * (2026-09-16).
+             *
+             * `makes` is the SECTOR's list, not the city's buildings, so a city
+             * with a Grain Farm and no Livestock Farm still declares MEAT,
+             * DAIRY_EGGS, VEGETABLES and FRUIT - and drew four blocks of zeroes,
+             * each of them printing "Cost to make one:
+             * $9,223,372,036,854,775,807". That figure is getCostPerUnit()'s
+             * SENTINEL for "there is no line to cost", which is the right answer
+             * for the investor comparing projects and is not a price. Found by
+             * playing the game rather than by any harness; SectorBooksCheck walks
+             * every sector's page every month now and refuses a value that is not
+             * a figure.
+             *
+             * A warehouse outlives its plant, so stock alone still earns a block
+             * - and that block is where "no plant" belongs, said in words.
+             */
+            if (o.capacity <= 0 && o.produced <= 0 && o.exportBound <= 0
+                    && o.soldLocal <= 0 && o.exported <= 0 && getStock(g) <= 0) continue;
             GoodsMarket m = markets == null ? null : markets.get(g);
             lines.add(Line.head(g.label()));
             lines.add(Line.of("Could make", f.units(o.capacity, g)));
@@ -1132,8 +1281,10 @@ public abstract class Sector {
             if (o.exported > 0) lines.add(Line.of("Exported", f.units(o.exported, g), Line.Tone.GOOD));
             if (m != null) {
                 lines.add(Line.of("Price", f.cash(m.getLocalPrice())));
-                lines.add(Line.of("Cost to make one", f.cash(o.costPerUnit),
-                        o.costPerUnit > m.getLocalPrice() ? Line.Tone.BAD : Line.Tone.NONE));
+                boolean costed = Double.isFinite(o.costPerUnit) && o.costPerUnit < Double.MAX_VALUE;
+                lines.add(Line.of("Cost to make one", costed ? f.cash(o.costPerUnit) : "no plant",
+                        costed && o.costPerUnit > m.getLocalPrice() ? Line.Tone.BAD
+                                : costed ? Line.Tone.NONE : Line.Tone.MUTED));
             }
             if (g.stockable()) {
                 lines.add(Line.of("In the warehouse", f.units(getStock(g), g)));

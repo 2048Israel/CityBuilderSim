@@ -2030,7 +2030,17 @@ public class BuildingManager {
         BuildingsTemplate mixedFarm = new BuildingsTemplate("Mixed Farm", BuildingType.AGRICULTURE)
                 .setCashCost(240).setConstructionPoints(25).setConstructionMaterials(4)
                 .setSector("Agriculture")
-                .makes(Good.CROPS, 125).setStock(400)
+                /*
+                 * A MIXED FARM IS CALLED MIXED BECAUSE IT KEEPS ANIMALS.
+                 * It made crops and nothing else until 2026-09-16, which made
+                 * it a small Grain Farm rather than a different trade. Its crop
+                 * line falls from 125 to 69 because most of what it grows now
+                 * goes into its own animals instead of to market - the revenue
+                 * is the same, the goods are not.
+                 */
+                .makes(Good.CROPS, 69)
+                .makes(Good.DAIRY_EGGS, 5000)
+                .makes(Good.MEAT, 1400).setStock(15000)
                 .setElectricityConsumption(8).setWaterConsumption(30)
                 .setLandSqFt(600000).setRoadLoad(8)
                 .setJobs(JobType.NO_DIPLOMA, 2)
@@ -2077,7 +2087,14 @@ public class BuildingManager {
         BuildingsTemplate greenhouse = new BuildingsTemplate("Greenhouse Complex", BuildingType.AGRICULTURE)
                 .setCashCost(5600).setConstructionPoints(410).setConstructionMaterials(104)
                 .setSector("Agriculture")
-                .makes(Good.CROPS, 900).setStock(1350)
+                /*
+                 * GLASS EXISTS TO GROW SALAD, and a Greenhouse Complex making
+                 * "crops" was the same abstraction as a Textile Mill making
+                 * "food". Vegetables and fruit, seven to three by value, at the
+                 * revenue it always had.
+                 */
+                .makes(Good.VEGETABLES, 154000)
+                .makes(Good.FRUIT, 47500).setStock(300000)
                 .setElectricityConsumption(940).setWaterConsumption(150)
                 .setLandSqFt(150000).setRoadLoad(34)
                 .setJobs(JobType.NO_DIPLOMA, 12)
@@ -2085,7 +2102,202 @@ public class BuildingManager {
                 .setJobs(JobType.COLLEGE_ENGINEERING, 1).setId(54);
 
         templates.add(greenhouse);
-        //add more buildings; next Building ID is 55
+
+        /* =====================================================================
+           THE LIVESTOCK FARM, AND WHY IT IS THE DEAREST THING IN THE CATALOGUE
+           PER ACRE.
+
+           Jerus's rule for the whole of agriculture: "just purely $ math, if its
+           more cost effective then it feeds itself... just that it usually
+           isnt". So nothing here is aimed at a self-sufficiency figure. The
+           yields are struck off real revenue per acre relative to grain, and
+           the capital is struck off what a real dairy operation costs per acre -
+           roughly FIVE TIMES a grain farm's, because a milking parlour, the
+           herd and its quota are most of the money and the ground is not.
+
+           What falls out: revenue of about 840 a month against a build cost of
+           13,000, which is 6.5% - against the Grain Farm's 18% and about the
+           Greenhouse's 7%. Livestock is the worst business per dollar on the
+           menu, which is the answer the arithmetic gives rather than one that
+           was chosen, and it is why a city usually buys its meat from the world.
+
+           PASTURE-FED, so it takes no feed line. That is honest for the
+           Maritimes, and it is also what keeps Agriculture from being a sector
+           that makes CROPS and uses CROPS at the same time - which the market
+           would clear, but which would hand the greenhouse's vegetables a share
+           of the cows' feed bill through the joint-cost split. The land IS the
+           feed bill here, and there is a lot of it.
+           ===================================================================== */
+        BuildingsTemplate livestockFarm = new BuildingsTemplate("Livestock Farm", BuildingType.AGRICULTURE)
+                .setCashCost(13000).setConstructionPoints(1080).setConstructionMaterials(184)
+                .setSector("Agriculture")
+                .makes(Good.DAIRY_EGGS, 210000)
+                .makes(Good.MEAT, 30000).setStock(400000)
+                .setElectricityConsumption(120).setWaterConsumption(600)
+                .setLandSqFt(5227200).setRoadLoad(40)
+                .setJobs(JobType.NO_DIPLOMA, 9)
+                .setJobs(JobType.DIPLOMA, 3).setId(55);
+
+        templates.add(livestockFarm);
+
+        /* =================================================================
+           THE ELEVENTH SECTOR'S THREE PLANTS (2026-09-16)
+
+           Jerus: "a new sector which makes the ready meals, processed meals,
+           snacks, drinks, and cooking fats". Those five are 16.3kg of the
+           reference basket's 50 and $51.40 of its $161.75 - a third of the
+           shelf - and every gram of them was imported until today.
+
+           THE YIELDS ARE STRUCK OFF REAL PROCESS FIGURES, then the crew is
+           struck so the margin lands in the band every other plant occupies.
+           That order matters, and the bakeries' own note says why: a real
+           wheat-to-bread yield gave both ovens a 60% margin and made them the
+           most profitable buildings in the game. Yield first, margin second.
+
+           AND THE CAPITAL IS ONE YEAR OF REVENUE, which is Manufacturing's
+           measured calibration rather than the ovens'. Priced off the
+           Industrial Bakery instead - twenty-eight months of revenue - every
+           one of these was refused by servicesItsOwnDebt() for four thousand
+           months running: "not even one would cover its interest". A real food
+           manufacturer carries five to eight months of revenue in assets, so
+           twelve is generous and twenty-eight was the outlier. The ovens are
+           the thing out of line here, not these.
+
+           EACH PLANT SERVES ABOUT TWO AND A HALF THOUSAND PEOPLE, deliberately
+           small. An
+           Industrial Bakery feeds sixty thousand, which is most of a playtest
+           city, and a plant a young city cannot fill is a plant a young city
+           never builds - the Grain Farm's problem, one sector over. Three
+           small rungs let a city of two thousand buy its first one and a city
+           of a hundred thousand buy forty - the way a Convenience Store covers
+           four hundred and eighty people rather than the whole town.
+
+           AND THIS SECTOR CANNOT EXPORT ITS WAY OUT, which is the fact that
+           forced the size. The world sells raw meat at $7.00 and buys processed
+           meat at $5.60: a plant that imports its input at the ceiling and
+           ships its output at the floor earns 27 CENTS A TONNE before wages.
+           It is the mirror of Business Services, whose customer is only ever
+           foreign - this one's customer is only ever here. A plant bigger than
+           the city it stands in has nowhere to put the surplus, which is why
+           the first version, sized at forty thousand people, ran a loss every
+           month from the month it opened.
+
+           EACH PLANT HAS ITS OWN COST STORY, which is the whole point of three
+           rather than one - the same "two brakes" argument Manufacturing made:
+
+             Meat Works      46% of revenue is MEAT. The meat price decides it.
+             Snack & Oils    19% crops, the rest labour and the fryers.
+             Bottling Plant   4% crops, and the first real water bill in the
+                              game - a drink is mostly water.
+
+           SIZED BY REVENUE PER WORKER, and the first three passes were not.
+
+           The measure that matters for a maker in this economy is what one
+           plant sells a month divided by how many people run it, because the
+           wage is the one cost that follows the city up. Here is the game's
+           own catalogue, at mid-band prices, on the day these were written:
+
+             Bakery                $17.8k a head    pay 22% of revenue
+             Industrial Bakery     $13.5k           pay 28%
+             Steel Foundry         $33.6k           pay 12%
+             Fabrication Shop      $19.6k           pay 20%
+             Iron Mine             $11.5k           pay 33%
+
+           The first calibration of these three came in at $10.7k, $6.3k and
+           $6.0k a head - pay at 35%, 59% and 61% of revenue. A Bottling Plant
+           was six people producing thirty tonnes a month, which is a tonne a
+           day: a craft operation, not a plant. It cleared $12k a month at a
+           founding city's wages and lost $20k at a grown one's, and the run
+           showed exactly that - built at month 271, under water by month 288,
+           the sector bankrupt with the plant still standing.
+
+           These three are at $17.1k, $16.8k and $18.0k a head, pay 21-22% at
+           mid-band and 28% at the export floor. The nameplates are two to
+           four times the first pass against the same order of staff, which is
+           also what a real line looks like.
+           ================================================================= */
+
+        /*
+         * MEAT WORKS. 1.2kg of finished product per kilo of meat, which is the
+         * rusk, the brine and the water a real sausage carries; a ready meal is
+         * a quarter meat, two fifths vegetables and a tenth dry grains by
+         * purchased weight. 12.5 tonnes out of 9.75 in, and the basket says
+         * that feeds about five thousand people.
+         *
+         * THE DEAREST INPUT BILL OF ANY BUILDING IN THE GAME as a share of
+         * what it sells: 46% at mid-band, and it stays 46% at the floor
+         * because meat and sausage move together. That is the whole business.
+         * On a city's own herd it clears about a quarter of revenue; on meat
+         * landed at the world's ceiling the input bill alone is 73% and there
+         * is nothing left for the wages. See sectors.FoodProcessing.
+         */
+        BuildingsTemplate meatWorks = new BuildingsTemplate("Meat Works", BuildingType.INDUSTRIAL)
+                .setCashCost(1023).setConstructionPoints(98).setConstructionMaterials(19)
+                .setSector("Food Processing")
+                .makes(Good.PROCESSED_MEAT, 5000)
+                .makes(Good.READY_MEALS, 7500).setStock(25000)
+                .uses(Good.MEAT, 6000)
+                .uses(Good.VEGETABLES, 3000)
+                .uses(Good.GRAINS, 750)
+                .setElectricityConsumption(8).setWaterConsumption(6)
+                .setLandSqFt(6000).setRoadLoad(4)
+                .setJobs(JobType.NO_DIPLOMA, 4)
+                .setJobs(JobType.DIPLOMA, 1).setId(56);
+        templates.add(meatWorks);
+
+        /*
+         * SNACK & OILS PLANT. Four kilos of potatoes make a kilo of crisps and
+         * a tonne of oilseed presses to 420kg of oil; blended over a mixed line
+         * that is three tonnes of crops a tonne of output. The crop bill is
+         * small - 19% - and the fryers and the packing hall are not, which is
+         * what makes this the labour-and-power rung. Eighteen tonnes a month
+         * feeds about ten thousand people of both.
+         *
+         * THE WIDEST MARK-UP IN THE CATALOGUE, and it is not an accident of
+         * the price table: crisps really are $10 a kilo made out of $0.44
+         * potatoes. What stops it being a money printer is the band - a city
+         * whose plants cover its own appetite pushes snacks down towards the
+         * $6.20 floor, and the sales tax falls on value added, which is nearly
+         * all of what this plant is.
+         */
+        BuildingsTemplate snackPlant = new BuildingsTemplate("Snack & Oils Plant", BuildingType.INDUSTRIAL)
+                .setCashCost(1207).setConstructionPoints(116).setConstructionMaterials(22)
+                .setSector("Food Processing")
+                .makes(Good.SNACKS, 10000)
+                .makes(Good.FATS, 8000).setStock(48000)
+                .uses(Good.CROPS, 54)
+                .setElectricityConsumption(15).setWaterConsumption(5)
+                .setLandSqFt(7000).setRoadLoad(5)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 1).setId(57);
+        templates.add(snackPlant);
+
+        /*
+         * BOTTLING PLANT. A drink is about an eighth sugar and concentrate and
+         * the rest water, so the crop line is a rounding error - 4% - and the
+         * water line is real: forty units a month on $72k of revenue, eight
+         * times a bakery's intensity per dollar and the first building in the
+         * game whose utility bill is worth reading. Twelve kilos a head a
+         * month is what the basket says a city drinks, so sixty tonnes serves
+         * about five thousand people.
+         *
+         * WHICH MAKES IT THE WAGE PLANT. With almost no input bill to credit
+         * against the sales tax, nearly everything this plant sells is value
+         * added, and the two things that can eat it are the payroll and the
+         * tax rate. A player who wants to know what a sales tax does to a
+         * business can watch it here first.
+         */
+        BuildingsTemplate bottling = new BuildingsTemplate("Bottling Plant", BuildingType.INDUSTRIAL)
+                .setCashCost(864).setConstructionPoints(83).setConstructionMaterials(16)
+                .setSector("Food Processing")
+                .makes(Good.DRINKS, 60000).setStock(162000)
+                .uses(Good.CROPS, 8)
+                .setElectricityConsumption(4).setWaterConsumption(40)
+                .setLandSqFt(5000).setRoadLoad(8)
+                .setJobs(JobType.NO_DIPLOMA, 3)
+                .setJobs(JobType.DIPLOMA, 1).setId(58);
+        templates.add(bottling);
+        //add more buildings; next Building ID is 59
     }
 
     public void finalUpdateBuildings() {

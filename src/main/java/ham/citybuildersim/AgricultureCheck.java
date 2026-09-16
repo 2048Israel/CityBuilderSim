@@ -57,6 +57,16 @@ public class AgricultureCheck {
     static final String GRAIN = "Grain Farm";
     static final String GLASS = "Greenhouse Complex";
 
+    /** A template's whole harvest, valued at the world's export floor, in dollars. */
+    static double atTheFloor(BuildingsTemplate t) {
+        double worth = 0;
+        for (Good g : Good.values()) {
+            double made = t.makes(g);
+            if (made > 0 && g.exportable()) worth += made * g.worldExportPrice();
+        }
+        return worth * 1000;
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -172,18 +182,30 @@ public class AgricultureCheck {
         /* ============ 3. a farm is ground and almost nothing else ============ */
         out.println("\n--- three farms, and the clock that runs on them ---");
 
+        /*
+         * WHAT A FARM GROWS IS MEASURED IN MONEY NOW, not in tonnes.
+         *
+         * The three farms made one good until 2026-09-16 and this table said
+         * "tonnes a month". They make five between them now, in two units -
+         * crops by the tonne, dinner by the kilogram - so a tonnage column
+         * could only describe the one that still grows grain. Valued at the
+         * world's EXPORT FLOOR, which is the same yardstick the sector
+         * underwrites a new farm on, they are comparable again, and the figure
+         * says something a tonnage never did: what the harvest is worth if
+         * nobody here wants it.
+         */
         String[] names = { MIXED, GRAIN, GLASS };
-        // tonnes a month, posts, land sq ft, all-in build cost
+        // harvest a month at the world's floor, posts, land sq ft, all-in build cost
         double[][] want = {
-            { 125,  3,  600000,   312 },
-            { 500,  4, 2400000,  1506 },
-            { 900, 17,  150000,  7472 },
+            {  34980,  3,  600000,   312 },
+            { 140000,  4, 2400000,  1506 },
+            { 240650, 17,  150000,  7472 },
         };
         for (int i = 0; i < names.length; i++) {
             BuildingsTemplate t = bm.getTemplateByName(names[i]);
             assertTrue(names[i] + " exists", t != null);
             if (t == null) continue;
-            check(names[i] + ": what it grows a month", t.makes(Good.CROPS), want[i][0], 0);
+            check(names[i] + ": what it grows a month, at the world's floor", atTheFloor(t), want[i][0], 1);
             check(names[i] + ": posts", jobsOf(t), want[i][1], 0);
             check(names[i] + ": the ground it stands on", t.getLandSqFt(), want[i][2], 1);
             check(names[i] + ": all-in build cost",
@@ -214,12 +236,19 @@ public class AgricultureCheck {
         assertTrue("a field takes more ground a post than any factory in the game",
                 mixed.getLandSqFt() / jobsOf(mixed) > foundry.getLandSqFt() / jobsOf(foundry)
                         && grain.getLandSqFt() / jobsOf(grain) > foundry.getLandSqFt() / jobsOf(foundry));
-        assertTrue("...and far more ground a tonne than glass does",
-                grain.getLandSqFt() / grain.makes(Good.CROPS)
-                        > 20 * glass.getLandSqFt() / glass.makes(Good.CROPS));
+        /*
+         * THE SAME CLAIM, IN THE ONLY UNIT BOTH ENDS CAN BE COUNTED IN. A field
+         * is land-hungry per unit of what it produces and glass is dense: that
+         * is the whole economic difference between them and it has not changed.
+         * What changed is that glass no longer makes the good the field makes,
+         * so a ratio of tonnes to tonnes had nothing on one side of it.
+         */
+        assertTrue("...and far more ground per dollar of harvest than glass does",
+                grain.getLandSqFt() / atTheFloor(grain)
+                        > 20 * glass.getLandSqFt() / atTheFloor(glass));
         assertTrue("glass pays for its density in power",
-                glass.getElectricityConsumption() / glass.makes(Good.CROPS)
-                        > 5 * grain.getElectricityConsumption() / grain.makes(Good.CROPS));
+                glass.getElectricityConsumption() / atTheFloor(glass)
+                        > 5 * grain.getElectricityConsumption() / atTheFloor(grain));
         assertTrue("a field's wage bill is small against what it sells",
                 payrollOf(grain) < .25 * grain.makes(Good.CROPS) * Good.CROPS.worldExportPrice());
 

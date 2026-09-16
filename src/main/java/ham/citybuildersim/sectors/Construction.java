@@ -298,6 +298,27 @@ public final class Construction extends Sector {
     @Override
     public String inputLabel() { return "Materials bought"; }
 
+    /**
+     * THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one
+     * figure. Work recognised is a share of a contract signed months ago and
+     * delivered this month; repairs are this month's bill to every owner of a
+     * standing building, and the two move for completely different reasons -
+     * the first with the order book, the second with how much of the city is
+     * already built. A city whose building work has stopped and whose repair
+     * income is still growing is a city that has finished growing, and that is
+     * worth being able to see.
+     *
+     * Both are saved (extras) and both scale in a reform, so this splits the
+     * same way after a reload and after a currency reform.
+     */
+    @Override
+    protected java.util.Map<String, Double> nameOtherRevenue() {
+        java.util.Map<String, Double> parts = new java.util.LinkedHashMap<>();
+        if (Math.abs(recognisedThisMonth) > 0) parts.put("Building work recognised", recognisedThisMonth);
+        if (Math.abs(repairsThisMonth) > 0) parts.put("Repairs billed", repairsThisMonth);
+        return parts.isEmpty() ? super.nameOtherRevenue() : parts;
+    }
+
     @Override
     public List<Line> operations(Game game) {
         Formats f = Formats.INSTANCE;

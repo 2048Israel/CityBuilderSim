@@ -4,6 +4,7 @@ import ham.citybuildersim.sectors.Agriculture;
 import ham.citybuildersim.sectors.BusinessServices;
 import ham.citybuildersim.sectors.Construction;
 import ham.citybuildersim.sectors.FoodIndustry;
+import ham.citybuildersim.sectors.FoodProcessing;
 import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.Manufacturing;
 import ham.citybuildersim.sectors.Materials;
@@ -52,11 +53,22 @@ public final class Sectors {
     public static final String RETAIL = "Retail", REAL_ESTATE = "Real Estate", INDUSTRY = "Industry",
             CONSTRUCTION = "Construction", HEAVY_INDUSTRY = "Heavy Industry", MINING = "Mining",
             MATERIALS = "Materials", BUSINESS_SERVICES = "Business Services",
-            MANUFACTURING = "Manufacturing", AGRICULTURE = "Agriculture";
+            MANUFACTURING = "Manufacturing", AGRICULTURE = "Agriculture",
+            FOOD_PROCESSING = "Food Processing";
 
+    /*
+     * ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than
+     * BuildingType's. Nothing is saved by this array's INDEX: SectorState is
+     * keyed by name, Equity.COMPANIES is built from these strings and the
+     * household cells carry the company names beside their holdings, so a save
+     * written by the ten-sector build restores into the eleven-sector one with
+     * the new sector simply empty. What order does decide is the order every
+     * screen and every loop walks the sectors in, and appending keeps that
+     * stable for anybody reading a saved run beside a live one.
+     */
     public static final String[] KEYS = {
         RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING, MATERIALS,
-        BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE
+        BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE, FOOD_PROCESSING
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -72,6 +84,7 @@ public final class Sectors {
     private final BusinessServices businessServices;
     private final Manufacturing manufacturing;
     private final Agriculture agriculture;
+    private final FoodProcessing foodProcessing;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -84,6 +97,7 @@ public final class Sectors {
         businessServices = add(new BusinessServices(), buildings, markets);
         manufacturing = add(new Manufacturing(), buildings, markets);
         agriculture = add(new Agriculture(), buildings, markets);
+        foodProcessing = add(new FoodProcessing(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -152,6 +166,13 @@ public final class Sectors {
      * costing. See Agriculture.
      */
     public Agriculture agriculture() { return agriculture; }
+
+    /**
+     * Typed, because it is the second sector that BUYS a traded good another
+     * sector makes - the Livestock Farm's meat - so the farms' screen and the
+     * playtest both want to ask it what it is paying for it. See FoodProcessing.
+     */
+    public FoodProcessing foodProcessing() { return foodProcessing; }
 
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {

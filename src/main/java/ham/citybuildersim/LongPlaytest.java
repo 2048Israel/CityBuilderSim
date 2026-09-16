@@ -304,6 +304,39 @@ public class LongPlaytest {
                     homeless);
         }
 
+        /*
+         * NO CELL CARRIES A NEGATIVE POSITION (2026-09-16).
+         *
+         * A household cannot own minus three dollars, owe minus a dollar, or
+         * hold minus a share - and for months on end four retired cells owed
+         * MINUS 2.7e-29, which is not money and was never meant to be there.
+         * It came out of the monthly rebuild, where a cell's share of the pool
+         * was `weight * moved / gain` and could land one ulp above `weight`,
+         * leaving the remainder a hair negative. Nothing read it as money.
+         * Something read its SIGN: investAbroad() asks `debt <= 0` to decide
+         * who may keep money abroad, and a currency reform flipped four cells
+         * to the other side of zero and took the city's exchange rate with it
+         * (see HouseholdBalance.moveStock, and DenominationCheck, which caught
+         * it 158 months after a reform).
+         *
+         * ZERO TOLERANCE, DELIBERATELY. The clamps that fix it are exact, so
+         * any negative at all is the arithmetic leaking again - and a band
+         * here would be a figure in dollars, which is the other mistake.
+         */
+        for (Household cell : g.getHouseholdBalance().cells()) {
+            double worstShare = 0;
+            for (int co = 0; co < Equity.COMPANIES.length; co++) worstShare = Math.min(worstShare, cell.shares(co));
+            double worst = Math.min(Math.min(Math.min(cell.savings(), cell.debt()),
+                    Math.min(cell.abroad(), cell.studentDebt())), worstShare);
+            if (worst < 0) {
+                flag(month, "a household cell carries a negative position",
+                        String.format("%s: savings %.3g, debt %.3g, abroad %.3g, student %.3g, worst share %.3g",
+                                cell.label(), cell.savings(), cell.debt(), cell.abroad(),
+                                cell.studentDebt(), worstShare),
+                        -worst);
+            }
+        }
+
         // Worth watching even though it is no longer a fault: how far past what
         // the buildings comfortably hold the city has been pulled by its jobs.
         if (b.getTotalHouseCapacity() > 0) {
@@ -1341,8 +1374,47 @@ public class LongPlaytest {
             same(month, "  ..." + s.key() + " net income", t.getNetIncome(), s.getNetIncome());
             same(month, "  ..." + s.key() + " cash", t.getCash(), s.getCash());
             same(month, "  ..." + s.key() + " month in progress", t.pending().revenue(), s.pending().revenue());
+            /*
+             * The named halves of revenue that are not a good - the builders'
+             * work recognised against their repair bill. Saved like the rest
+             * of the struck month, so compared like the rest of it.
+             */
+            for (String part : s.otherRevenueParts().keySet()) {
+                same(month, "  ..." + s.key() + " " + part,
+                        t.otherRevenueParts().getOrDefault(part, 0.0),
+                        s.otherRevenueParts().get(part));
+            }
+            same(month, "  ..." + s.key() + " named revenue parts",
+                    t.otherRevenueParts().size(), s.otherRevenueParts().size());
             for (Good good : Good.values()) {
                 same(month, "  ..." + s.key() + " " + good + " stock", t.getStock(good), s.getStock(good));
+                /*
+                 * AND THE PER-GOOD MONEY THE STATEMENT OPENS INTO. A breakdown
+                 * that is written but not restored is invisible until somebody
+                 * reloads a game and clicks Revenue, which is the worst place
+                 * to find it. Both maps, both sides of each, on the struck
+                 * month AND on the month in progress - the ledger is saved for
+                 * the same reason the statement is, and either one going
+                 * missing loses a screen. See Sector.Split and SectorState.
+                 */
+                Sector.Split soldWas = s.statement().sold.get(good);
+                Sector.Split soldIs = t.statement().sold.get(good);
+                same(month, "  ..." + s.key() + " " + good + " sold at home",
+                        soldIs == null ? 0 : soldIs.atHome, soldWas == null ? 0 : soldWas.atHome);
+                same(month, "  ..." + s.key() + " " + good + " sold abroad",
+                        soldIs == null ? 0 : soldIs.abroad, soldWas == null ? 0 : soldWas.abroad);
+                Sector.Split boughtWas = s.statement().bought.get(good);
+                Sector.Split boughtIs = t.statement().bought.get(good);
+                same(month, "  ..." + s.key() + " " + good + " bought here",
+                        boughtIs == null ? 0 : boughtIs.atHome, boughtWas == null ? 0 : boughtWas.atHome);
+                same(month, "  ..." + s.key() + " " + good + " imported",
+                        boughtIs == null ? 0 : boughtIs.abroad, boughtWas == null ? 0 : boughtWas.abroad);
+                Sector.Split pendWas = s.pending().sold.get(good), pendIs = t.pending().sold.get(good);
+                same(month, "  ..." + s.key() + " " + good + " sold, unstruck",
+                        pendIs == null ? 0 : pendIs.total(), pendWas == null ? 0 : pendWas.total());
+                Sector.Split pbWas = s.pending().bought.get(good), pbIs = t.pending().bought.get(good);
+                same(month, "  ..." + s.key() + " " + good + " bought, unstruck",
+                        pbIs == null ? 0 : pbIs.total(), pbWas == null ? 0 : pbWas.total());
             }
         }
         for (GoodsMarket m : g.getMarkets().all()) {

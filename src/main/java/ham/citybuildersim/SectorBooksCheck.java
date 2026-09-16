@@ -40,6 +40,49 @@ public class SectorBooksCheck {
     static int fails = 0;
     static int months = 0;
     static int statements = 0;
+    static int screenLines = 0;
+
+    /* =====================================================================
+       4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16)
+
+       Sector.operations() draws a block per good the SECTOR declares, not per
+       good the city has a plant for - so a city with a Grain Farm and no
+       Livestock Farm drew MEAT, DAIRY_EGGS, VEGETABLES and FRUIT, each saying
+       "Cost to make one: $9,223,372,036,854,775,807". That is
+       getCostPerUnit()'s sentinel for "there is no line to cost", rendered.
+
+       Nothing caught it: the books balanced, every harness was green, and the
+       only place it existed was a screen. It was found by opening the game and
+       clicking on Agriculture. So this walks EVERY sector's page EVERY month
+       and refuses a value that is not a figure - a sentinel, an infinity, a
+       NaN. A page is part of the product; a page that prints 9.2 quintillion
+       dollars is a bug whether or not the ledger under it adds up.
+       ===================================================================== */
+    static boolean isAFigure(String value) {
+        if (value.contains("Infinity") || value.contains("NaN") || value.contains("\u221e")) return false;
+        int run = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (Character.isDigit(c)) { if (++run > 15) return false; }
+            else if (c != ',') run = 0;
+        }
+        return true;
+    }
+
+    static void pageIsReadable(Game game) {
+        for (Sector s : game.getSectors().all()) {
+            for (Sector.Line line : s.operations(game)) {
+                if (line.kind() != Sector.Line.Kind.LINE) continue;
+                screenLines++;
+                if (isAFigure(line.value())) continue;
+                if (fails < 12) {
+                    System.out.printf("  FAIL  %-14s month %3d: \"%s\" reads %s%n",
+                            s.key(), game.getMonth(), line.label(), line.value());
+                }
+                fails++;
+            }
+        }
+    }
 
     /** Everything here is in thousands, so a tenth of a cent is plenty. */
     static final double TOLERANCE = 1e-6;
@@ -93,6 +136,63 @@ public class SectorBooksCheck {
                 near("cash flow", sector, m.month(), m.unexplained(), 0);
 
                 /*
+                 * ------------ AND THE BREAKDOWN ADDS UP TO THE LINE ------------
+                 *
+                 * The income statement's Revenue and cost-of-sales lines open
+                 * into what they are made of, by good, split home and abroad
+                 * (2026-09-16, Jerus: "when you click on revenue or cogs, it
+                 * expands and shows the individual items"). A breakdown that
+                 * does not add up to the figure above it is worse than no
+                 * breakdown at all - it reads as an accounting error in the
+                 * game rather than a bug in the screen - so it is checked
+                 * here, on every sector, every month, along with everything
+                 * else that has to sum.
+                 *
+                 * Revenue also carries whatever did not clear on a goods
+                 * market: the builders' recognised work, the landlords' rent.
+                 * The per-good part is the rest of it, which is why
+                 * otherRevenue is added back rather than ignored.
+                 */
+                Sector s = game.getSectors().byKey(sector);
+                if (s != null) {
+                    Sector.Statement st = s.statement();
+                    double sold = 0, bought = 0;
+                    for (Sector.Split x : st.sold.values())   sold += x.total();
+                    for (Sector.Split x : st.bought.values()) bought += x.total();
+                    near("revenue by good", sector, m.month(), sold + st.otherRevenue, st.revenue);
+                    near("cost of sales by good", sector, m.month(), bought, st.inputs);
+
+                    /*
+                     * AND THE HOME/ABROAD SPLIT IS THE SAME SPLIT THE
+                     * STATEMENT ALREADY KEEPS, which is what makes the two
+                     * indented lines under each good trustworthy: exports on
+                     * one side, imports on the other, reached by a different
+                     * route (per trade, per good) from the totals the VAT is
+                     * struck off.
+                     */
+                    double abroadSold = 0, abroadBought = 0;
+                    for (Sector.Split x : st.sold.values())   abroadSold += x.abroad;
+                    for (Sector.Split x : st.bought.values()) abroadBought += x.abroad;
+                    near("exports by good", sector, m.month(), abroadSold, st.exports);
+                    near("imports by good", sector, m.month(), abroadBought, st.imports);
+
+                    /*
+                     * AND THE PART OF REVENUE THAT IS NOT A GOOD SPLITS ALL
+                     * THE WAY. Only the builders have any, and they book TWO
+                     * things into it - work recognised off the order book, and
+                     * the repair bill sent to every owner of a standing
+                     * building. Those are two lines on the opened Revenue and
+                     * they have to be the whole of it: a sector that names
+                     * half its other revenue draws a breakdown that silently
+                     * does not add up to its own total, which is the one thing
+                     * a statement may never do.
+                     */
+                    double named = 0;
+                    for (double part : s.otherRevenueParts().values()) named += part;
+                    near("other revenue named", sector, m.month(), named, st.otherRevenue);
+                }
+
+                /*
                  * AND THE TAX IS NEVER A REFUND. Every handler clamps it at
                  * zero on a loss-making month, and the screen prints it as a
                  * deduction - so a negative here would draw a credit the city
@@ -104,6 +204,8 @@ public class SectorBooksCheck {
                     fails++;
                 }
             }
+
+            pageIsReadable(game);
         }
 
         /* ===================================================================
@@ -144,9 +246,10 @@ public class SectorBooksCheck {
         near("cash flow across a reload", Sectors.RETAIL, next.month(),
                 next.unexplained(), 0);
 
-        System.out.printf("%n%,d statements over %,d months: %s%n",
-                statements, months,
-                fails == 0 ? "every one of them balanced." : fails + " FAILED");
+        System.out.printf("%n%,d statements and %,d screen lines over %,d months: %s%n",
+                statements, screenLines, months,
+                fails == 0 ? "every one of them balanced and read as a figure."
+                        : fails + " FAILED");
 
         if (fails > 0) System.exit(1);
     }

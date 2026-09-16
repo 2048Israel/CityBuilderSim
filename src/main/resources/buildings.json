@@ -55,7 +55,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 55,
+ "nextId": 59,
  "buildings": [
   {
    "id": 0,
@@ -1196,9 +1196,11 @@
    "land": 600000,
    "roadLoad": 8,
    "makes": {
-    "CROPS": 125
+    "CROPS": 69,
+    "DAIRY_EGGS": 5000,
+    "MEAT": 1400
    },
-   "stock": 400
+   "stock": 15000
   },
   {
    "id": 53,
@@ -1239,9 +1241,108 @@
    "land": 150000,
    "roadLoad": 34,
    "makes": {
-    "CROPS": 900
+    "VEGETABLES": 154000,
+    "FRUIT": 47500
    },
-   "stock": 1350
+   "stock": 300000
+  },
+  {
+   "id": 55,
+   "name": "Livestock Farm",
+   "category": "AGRICULTURE",
+   "sector": "Agriculture",
+   "cashCost": 13000,
+   "constructionPoints": 1080,
+   "constructionMaterials": 184,
+   "electricity": 120,
+   "water": 600,
+   "jobs": {
+    "NO_DIPLOMA": 9,
+    "DIPLOMA": 3
+   },
+   "land": 5227200,
+   "roadLoad": 40,
+   "makes": {
+    "DAIRY_EGGS": 210000,
+    "MEAT": 30000
+   },
+   "stock": 400000
+  },
+  {
+   "id": 56,
+   "name": "Meat Works",
+   "category": "INDUSTRIAL",
+   "sector": "Food Processing",
+   "cashCost": 1023,
+   "constructionPoints": 98,
+   "constructionMaterials": 19,
+   "electricity": 8,
+   "water": 6,
+   "jobs": {
+    "NO_DIPLOMA": 4,
+    "DIPLOMA": 1
+   },
+   "land": 6000,
+   "roadLoad": 4,
+   "makes": {
+    "PROCESSED_MEAT": 5000,
+    "READY_MEALS": 7500
+   },
+   "uses": {
+    "MEAT": 6000,
+    "VEGETABLES": 3000,
+    "GRAINS": 750
+   },
+   "stock": 25000
+  },
+  {
+   "id": 57,
+   "name": "Snack & Oils Plant",
+   "category": "INDUSTRIAL",
+   "sector": "Food Processing",
+   "cashCost": 1207,
+   "constructionPoints": 116,
+   "constructionMaterials": 22,
+   "electricity": 15,
+   "water": 5,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 1
+   },
+   "land": 7000,
+   "roadLoad": 5,
+   "makes": {
+    "SNACKS": 10000,
+    "FATS": 8000
+   },
+   "uses": {
+    "CROPS": 54
+   },
+   "stock": 48000
+  },
+  {
+   "id": 58,
+   "name": "Bottling Plant",
+   "category": "INDUSTRIAL",
+   "sector": "Food Processing",
+   "cashCost": 864,
+   "constructionPoints": 83,
+   "constructionMaterials": 16,
+   "electricity": 4,
+   "water": 40,
+   "jobs": {
+    "NO_DIPLOMA": 3,
+    "DIPLOMA": 1
+   },
+   "land": 5000,
+   "roadLoad": 8,
+   "makes": {
+    "DRINKS": 60000
+   },
+   "uses": {
+    "CROPS": 8
+   },
+   "stock": 162000
   }
  ]
 }

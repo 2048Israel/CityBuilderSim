@@ -6817,6 +6817,7 @@ public class Game {
                 equity.seedConstants(unit);
                 exchange.seedConstants(unit);
                 outward.seedConstants(unit);
+                householdBalance.seedConstants(unit);
             }
             carriedRentWeight = loaded.getRentWeight();
             carriedStudioWeight = loaded.getRentWeightStudio();
