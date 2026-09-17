@@ -156,7 +156,21 @@ public class SimulationEngine {
         economyManager.setWageDetail(populationManager.getStaffedWagePerType());
         economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
         economyManager.setWaterRatio(servicesManager.getWaterRatio());
-        economyManager.setRoadRatio(servicesManager.getRoadRatio());
+        /*
+         * THE ROAD, PER SECTOR, AND IT HAS TO BE THE SAME CALL AS ON THE LOAD
+         * PATH. This line read servicesManager.getRoadRatio() - one number for
+         * everybody - while Game.rebuildSimulationState() already handed every
+         * sector its own mix-weighted exposure, so the split streams were doing
+         * nothing at all in a running game and appeared for the first time when
+         * a save was loaded. That is precisely the class of bug this file's own
+         * comments warn about three lines further down, and it was mine, from
+         * the batch that added the streams. See EconomyManager.setRoadRatio.
+         *
+         * A city with no highway, no transit and no rail reads the same number
+         * it always read, to the bit - InfrastructureManager.throughputFor()
+         * returns the plain ratio unblended when there is nothing to blend.
+         */
+        economyManager.setRoadRatio(game.getInfrastructureManager(), buildingManager);
         // The fourth ratio. advanceDemographics() has already set it for this
         // month - see Game.advanceDemographics step 6.
         economyManager.setHealthRatio(game.getHealth().getWorkRatio());

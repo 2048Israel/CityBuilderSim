@@ -36,6 +36,61 @@ package ham.citybuildersim;
  * from the world; a good with no export price cannot be exported and its
  * makers idle or stock what they cannot sell.
  *
+ * ...AND SINCE 2026-09-16 THE GAP IS ARITHMETIC RATHER THAN A SENTENCE.
+ *
+ * The paragraph above has always said what the wedge IS - "freight, middlemen
+ * and the buyer's margin" - and for a year it said it in words while the code
+ * carried two constants nobody could move. Jerus: "i really like the idea of
+ * decomposing the existing import/export bands into world price +
+ * transportation cost... then later, transportation efficiency can make that
+ * freight component smaller or larger."
+ *
+ * So each good now carries a THIRD number, the cost of moving one unit, and
+ * the two ends split into four:
+ *
+ *      worldBuyPrice   the world's own ask, before anything is moved
+ *    + baseFreight     getting it here
+ *    = worldImportPrice
+ *
+ *      worldSellPrice  the world's own bid
+ *    - baseFreight     getting it there
+ *    = worldExportPrice
+ *
+ * THE DELIVERED PRICES ARE THE STORED ONES AND THE WORLD BAND IS DERIVED,
+ * which is the opposite of how it reads and is the only way round that is
+ * exact. Storing the world band and adding freight back gives 0.847 as
+ * 0.8470000000000002 for steel and 0.28 as 0.27999999999999997 for crops -
+ * one ulp, which in this codebase is never nothing: DenominationCheck spent
+ * a day on a 1e-16 tie that tripled a company's share price. Deriving the
+ * other way cannot drift, because nothing on the hot path is recomputed at
+ * all.
+ *
+ * WHAT IT IS FOR. Today `baseFreight` is read by nothing and every price in
+ * the game is the literal it always was. It exists so that freight can later
+ * become a PRICE - what the haulage sector charges - rather than a constant,
+ * at which point a city with good logistics faces a narrow band and one
+ * without faces today's wide one. The world's own margin stays where it is;
+ * that half is not the player's to move. See
+ * claude/transport-and-the-freight-band.md.
+ *
+ * THE SPLIT IS THREE QUARTERS FREIGHT, ONE QUARTER THE WORLD'S MARGIN, on
+ * every good that has both ends, and it is a game decision rather than a
+ * measured one: it sets how much of the wedge good logistics can ever win
+ * back. At three quarters a 23% band bottoms out near 6%; at a half it would
+ * stop at 11% and the mechanic would barely be worth the screens.
+ *
+ * Two goods are wider than the rest and it is the right two. IRON at 49% of
+ * its world price and MATERIALS at 43%, against 21-25% for the whole food
+ * shelf and steel - ore and aggregate are the cheapest things here per tonne,
+ * and freight really is half of what delivered ore costs. Nobody designed the
+ * table that way; it came out that way, which is the best evidence there is
+ * that a freight reading of the wedge is the right one.
+ *
+ * WHAT CARRIES NO FREIGHT. The three seat-months, because a month of
+ * somebody's work is delivered down a wire and there is nothing to ship. The
+ * seller-priced three, because the world never sees them. Both read zero and
+ * both are correct rather than unfinished.
+ *
  * THREE FLAGS. Importable and exportable are the two prices. Stockable says
  * whether a maker can hold it from one month to the next: food keeps, in a
  * warehouse the plant owns; ore does not - a mine ships what it lifts; steel
@@ -107,7 +162,7 @@ public enum Good {
      * that is what a silo is for, and it is the whole reason a farm can sell
      * into a market that wants the same amount every month.
      */
-    CROPS("Crops", "tonne", .44, .28, true, Pricing.BAND, false),
+    CROPS("Crops", "tonne", .44, .28, .06, true, Pricing.BAND, false),
 
     /* =====================================================================
        FOOD IS GONE, AND THIS IS THE NOTE THAT REPLACES IT.
@@ -160,50 +215,50 @@ public enum Good {
        ===================================================================== */
 
     /** The cheapest calorie there is, and what subsistence is measured in. */
-    GRAINS("Grains", "kg", .00080, .00050, true, Pricing.BAND, false),
+    GRAINS("Grains", "kg", .00080, .00050, .000113, true, Pricing.BAND, false),
 
     /** A staple with the milling and baking already done. */
-    BREAD("Bread", "kg", .00250, .00160, true, Pricing.BAND, false),
+    BREAD("Bread", "kg", .00250, .00160, .000338, true, Pricing.BAND, false),
 
     /** Milk, cheese and eggs - the protein a poor city can still afford. */
-    DAIRY_EGGS("Dairy and eggs", "kg", .00300, .00190, true, Pricing.BAND, false),
+    DAIRY_EGGS("Dairy and eggs", "kg", .00300, .00190, .000412, true, Pricing.BAND, false),
 
     /** Cheap by the kilo, dear by the calorie, which is why the poor eat few. */
-    VEGETABLES("Vegetables", "kg", .00180, .00110, true, Pricing.BAND, false),
+    VEGETABLES("Vegetables", "kg", .00180, .00110, .000262, true, Pricing.BAND, false),
 
     /** The most income-elastic produce in the file: the first thing a raise buys. */
-    FRUIT("Fruit", "kg", .00250, .00150, true, Pricing.BAND, false),
+    FRUIT("Fruit", "kg", .00250, .00150, .000375, true, Pricing.BAND, false),
 
     /** Bennett's law in one line - the share of this rises with every wage. */
-    MEAT("Meat", "kg", .00700, .00440, true, Pricing.BAND, false),
+    MEAT("Meat", "kg", .00700, .00440, .000975, true, Pricing.BAND, false),
 
     /** Dearer than meat and healthier than it; the last thing a city learns to buy. */
-    FISH("Fish", "kg", .00800, .00500, true, Pricing.BAND, false),
+    FISH("Fish", "kg", .00800, .00500, .001125, true, Pricing.BAND, false),
 
     /** Cooking fats. Eight thousand calories a kilo, and almost no quality. */
-    FATS("Cooking fats", "kg", .00300, .00190, true, Pricing.BAND, false),
+    FATS("Cooking fats", "kg", .00300, .00190, .000412, true, Pricing.BAND, false),
 
     /** Bought for convenience, not for nutrition - see Consumption's time axis. */
-    PROCESSED_MEAT("Processed meats", "kg", .00900, .00560, true, Pricing.BAND, false),
+    PROCESSED_MEAT("Processed meats", "kg", .00900, .00560, .001275, true, Pricing.BAND, false),
 
     /** What a household with two earners and three children eats on a Tuesday. */
-    READY_MEALS("Ready meals", "kg", .00800, .00500, true, Pricing.BAND, false),
+    READY_MEALS("Ready meals", "kg", .00800, .00500, .001125, true, Pricing.BAND, false),
 
     /** Bakery goods, as distinct from bread: a treat, priced like one. */
-    BAKERY("Bakery goods", "kg", .00600, .00370, true, Pricing.BAND, false),
+    BAKERY("Bakery goods", "kg", .00600, .00370, .000862, true, Pricing.BAND, false),
 
     /** The dearest calorie in the file, and the one a rich city buys most of. */
-    SNACKS("Snacks", "kg", .01000, .00620, true, Pricing.BAND, false),
+    SNACKS("Snacks", "kg", .01000, .00620, .001425, true, Pricing.BAND, false),
 
     /** Mostly water, sold by the kilo, and a tenth of what the city spends. */
-    DRINKS("Drinks", "kg", .00150, .00090, true, Pricing.BAND, false),
+    DRINKS("Drinks", "kg", .00150, .00090, .000225, true, Pricing.BAND, false),
 
     /**
      * Iron ore, and the scrap that stands in for it. Made by the mines, used
      * by the mills. The import price is imported scrap, the export price is
      * what a mine gets shipping ore out - IronMarket's two ends, unchanged.
      */
-    IRON("Iron ore", "tonne", .41, .14, false, Pricing.BAND, false),
+    IRON("Iron ore", "tonne", .41, .14, .101, false, Pricing.BAND, false),
 
     /**
      * Smelted by the mills. .847 is scrap plus half the real conversion
@@ -230,7 +285,7 @@ public enum Good {
      * ship every tonne abroad at .847 exactly as before. The ceiling is a
      * ceiling; it binds only when somebody bids.
      */
-    STEEL("Steel", "tonne", 1.284, .847, false, Pricing.BAND, false),
+    STEEL("Steel", "tonne", 1.284, .847, .1639, false, Pricing.BAND, false),
 
     /**
      * One unit of building material - a House is ten of them. Made by the
@@ -250,14 +305,14 @@ public enum Good {
      * and a city that stops building sells its plants back within the
      * year. The sector is the builders' supplier, not an exporter.
      */
-    MATERIALS("Building materials", "unit", 18, 7.2, true, Pricing.BAND, false),
+    MATERIALS("Building materials", "unit", 18, 7.2, 4.05, true, Pricing.BAND, false),
 
     /**
      * What the shops sell: food, on a shelf, to a household. One unit of
      * food becomes one unit of this. Priced by the shops, cost-plus with a
      * scarcity mark-up (see sectors.Retail), never traded with the world.
      */
-    GROCERIES("Groceries", "unit", Double.NaN, Double.NaN, false, Pricing.SELLER, false),
+    GROCERIES("Groceries", "unit", Double.NaN, Double.NaN, 0, false, Pricing.SELLER, false),
 
     /**
      * A home for a month. Made by the landlords out of their doors, priced
@@ -265,14 +320,14 @@ public enum Good {
      * tax - long-term residential rent is an exempt supply under real HST,
      * and taxing it would put fifteen percent on every tenant in the city.
      */
-    HOUSING("Housing", "home", Double.NaN, Double.NaN, false, Pricing.SELLER, true),
+    HOUSING("Housing", "home", Double.NaN, Double.NaN, 0, false, Pricing.SELLER, true),
 
     /**
      * A point of construction work. Made by the builders and sold to whoever
      * orders a building, at the order price; recognised as the points are
      * delivered. See sectors.Construction.
      */
-    BUILDING_WORK("Building work", "point", Double.NaN, Double.NaN, false, Pricing.SELLER, false),
+    BUILDING_WORK("Building work", "point", Double.NaN, Double.NaN, 0, false, Pricing.SELLER, false),
 
     /* =======================================================================
        THE THREE THE WORLD PAYS FOR (2026-09-12)
@@ -319,11 +374,11 @@ public enum Good {
        See claude/business-services.md for the sourcing and the arithmetic.
        ======================================================================= */
 
-    SUPPORT_WORK("Support work", "seat-month", Double.NaN, 5.5, false, Pricing.BAND, false),
+    SUPPORT_WORK("Support work", "seat-month", Double.NaN, 5.5, 0, false, Pricing.BAND, false),
 
-    BACK_OFFICE_WORK("Back-office work", "seat-month", Double.NaN, 8.6, false, Pricing.BAND, false),
+    BACK_OFFICE_WORK("Back-office work", "seat-month", Double.NaN, 8.6, 0, false, Pricing.BAND, false),
 
-    ENGINEERING_WORK("Engineering work", "seat-month", Double.NaN, 14.6, false, Pricing.BAND, false),
+    ENGINEERING_WORK("Engineering work", "seat-month", Double.NaN, 14.6, 0, false, Pricing.BAND, false),
 
     /* =======================================================================
        THE TWO THE CITY MAKES OUT OF ITS OWN STEEL (2026-09-13)
@@ -379,12 +434,39 @@ public enum Good {
               machine works bills $1.62M, buys $335k of steel, and pays $796k
               in wages to a hundred and seventy-three people.
 
-       NEITHER IS IMPORTABLE, for the reason steel used to not be: nothing in
-       the city buys a beam or a machine. Both are made HERE out of steel and
-       both leave, so both clear at their floor and the world's price is
-       simply what a tonne fetches - which is what makes the wage bill and
-       the steel bill the whole of the question. The day something here buys
-       one, it gets a ceiling that day and for the reason steel just got one.
+       FABRICATED STEEL IS NOT IMPORTABLE, for the reason steel used to not
+       be: nothing in the city buys a beam. It is made HERE out of steel and it
+       leaves, so it clears at its floor and the world's price is simply what a
+       tonne fetches - which is what makes the wage bill and the steel bill the
+       whole of the question.
+
+       MACHINERY GOT ITS CEILING ON 2026-09-16, exactly as the sentence that
+       used to sit here said it would: "The day something here buys one, it
+       gets a ceiling that day and for the reason steel just got one." The
+       thing that buys one is an assembly plant - see the vehicles below.
+
+       14.3 A TONNE, and the freight did not have to move for it: 1.98 was
+       already three quarters of the half-wedge of a 14.3/9.0 band, which is
+       the shape every other good in this table has. A 37% band, wider than
+       steel's 34%, because a machine tool is a specialised thing to buy off a
+       ship and a cheap thing to make next door to a foundry.
+
+       AND FABRICATED STEEL DELIBERATELY DID NOT GET ONE, which is the whole
+       design of the chain above it. A car is three and a half tonnes of
+       fabricated steel and four hundred kilos of machinery, so the BULKY
+       input is the one a city must be able to make itself and the specialised
+       one can come off a ship - which is how industrialisation has actually
+       worked everywhere it has happened. A city with fabricators can be in the
+       car business; a city without them cannot, at any price.
+
+       (What made this urgent rather than tidy: the four-thousand-month
+       playtest builds 179 Fabrication Works and ZERO Machine Works, because
+       Manufacturing's planner scores its two products against each other every
+       month and fabrication wins every month. Gating an entire industry on a
+       building the model never puts up is not a design decision, it is a dead
+       branch. The monoculture underneath that - an unbounded export market at
+       a fixed floor means the best export is built for ever and nothing else
+       ever is - is real, is older than this batch, and is not fixed here.)
 
        NEITHER IS STOCKABLE, and that is not a simplification. Fabricated
        steel is cut for one client's drawings and a machine is built to one
@@ -396,9 +478,113 @@ public enum Good {
        See claude/manufacturing.md.
        ======================================================================= */
 
-    FABRICATED_STEEL("Fabricated steel", "tonne", Double.NaN, 2.21, false, Pricing.BAND, false),
+    FABRICATED_STEEL("Fabricated steel", "tonne", Double.NaN, 2.21, .486, false, Pricing.BAND, false),
 
-    MACHINERY("Machinery", "tonne", Double.NaN, 9.0, false, Pricing.BAND, false);
+    MACHINERY("Machinery", "tonne", 14.3, 9.0, 1.98, false, Pricing.BAND, false),
+
+    /* =======================================================================
+       THE VEHICLES (2026-09-16)
+
+       Jerus: "we are going to also add the autombile industry, where customers
+       can buy cars and business can buy vans/trucks, and rail sector can buy
+       trains."
+
+       THE FIRST DOMESTIC CUSTOMER MACHINERY HAS EVER HAD. Read the header
+       above this one: fabricated steel and machinery are made here out of
+       steel and both leave, because nothing in the city buys a beam or a
+       machine. An assembly plant buys both, which makes this the FOURTH LINK
+       of a chain that until today stopped at three - ore, steel, fabrication,
+       and now something a person drives away in.
+
+       AND THE CHAIN CANNOT BE SHORTCUT, which is the whole point of putting
+       the recipe on those two goods rather than on steel. Neither is
+       importable: a city with no fabrication shop and no machine works cannot
+       buy the parts from anywhere, so it cannot make cars, however much money
+       it has. It can still BUY cars - CARS is importable like anything else -
+       it simply cannot be in the business. That is the strongest version of
+       the thing this game keeps rewarding: putting several things near each
+       other.
+
+       (The header above predicted that the day something here bought a machine
+       it would need an import ceiling. It already has one: GoodsMarket.ceiling()
+       falls back to twice the floor for a good the world will not sell, so a
+       local buyer bidding into a shortage pays double rather than NaN. A real
+       world ask for those two is a separate decision about how much of the
+       chain a city may skip, and it is not this batch's.)
+
+       THE PRICES, in the world's money, per vehicle, in thousands. Each band
+       is the usual shape - the world's own margin plus freight at three
+       quarters of the half-wedge - and each is NARROWER than the food shelf's
+       21-25%, which is what value density does: moving a $44,000 car costs
+       about what moving two tonnes of steel costs, and the car is worth
+       thirty-four times as much.
+
+         CARS  44 / 36, freight 3.0        18.2% band
+              A car is about 1.5 tonnes of finished vehicle and takes roughly
+              3.5 tonnes of fabricated steel and four hundred kilos of
+              machinery to build, so the parts are about $11.3k against a
+              $40k mid-band price - a bit over a quarter, which is where the
+              Meat Works sits and is what a manufactured consumer good should
+              look like. The rest is the wage bill, and that is the point of
+              an automobile industry: it is the largest payroll a city of this
+              size can build.
+
+         VANS  72 / -, freight 4.5
+              A working vehicle: heavier, dearer, and bought by a business
+              rather than a household - and, like a locomotive, NOT something
+              the world buys. Jerus asked for cars to be a real export
+              industry; a van is a capital good a business orders for its own
+              yard, and the two are different things.
+
+              Measured with it exportable, and the measurement is why: the
+              4,000-month playtest built TWO HUNDRED AND FORTY Commercial
+              Vehicle Plants and shipped thirty-six thousand vans a month. That
+              is the same failure 179 Fabrication Works is - an unbounded export
+              market at a fixed floor means the single best export is built for
+              ever and nothing else ever is - and the narrow fix is to stop
+              pretending the world wants a town's vans. The general fix is a
+              bounded world demand, which is a real piece of work and older
+              than this batch.
+
+         ROLLING_STOCK  2,400 / -, freight 150
+              A locomotive and the wagons behind it. The most expensive single
+              thing the world sells this city, and a railway needs one for
+              every few thousand tonnes a month it means to move.
+
+              THE ONE THE WORLD WILL NOT BUY, and that asymmetry is the whole
+              design of it. Jerus asked for cars to be "a real export industry"
+              and they are; a locomotive is not a consumer good with a world
+              market, it is a capital good a railway orders for its own track.
+              Left exportable it was measured doing exactly what an unbounded
+              export market lets anything do: a fixture town of forty thousand
+              people built NINETEEN Locomotive Works - 9,880 posts against the
+              city's 25,102 jobs - and shipped seventy-six wagon sets a month
+              to nobody in particular.
+
+              So the world sells them, which is what lets a city lay track
+              before it has an industry, and does not buy them. A Locomotive
+              Works is therefore worth building only when the city's own
+              railway wants trains - which is the next batch, and until then it
+              is a building nobody has a reason to put up. That is the correct
+              state for a plant with no customer, and it is the same state
+              MACHINERY was in until this morning.
+
+              The floor for a good the world will not buy is zero
+              (GoodsMarket.floor()), so with no local buyer the price is zero
+              and the planner values a works at nothing. Nothing else was
+              needed to stop it.
+
+       ALL THREE ARE STOCKABLE, unlike the two they are made from, and for the
+       opposite reason: a beam is cut to one client's drawings and a car is
+       not. A finished vehicle sits on a lot until somebody buys it, which is
+       what a stockable good is for.
+       ======================================================================= */
+
+    CARS("Cars", "car", 44.0, 36.0, 3.0, true, Pricing.BAND, false),
+
+    VANS("Vans and trucks", "van", 72.0, Double.NaN, 4.5, true, Pricing.BAND, false),
+
+    ROLLING_STOCK("Rolling stock", "wagon set", 2400.0, Double.NaN, 150.0, true, Pricing.BAND, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -412,16 +598,18 @@ public enum Good {
     private final String unit;
     private final double worldImportPrice;
     private final double worldExportPrice;
+    private final double baseFreight;
     private final boolean stockable;
     private final Pricing pricing;
     private final boolean taxExempt;
 
     Good(String label, String unit, double worldImportPrice, double worldExportPrice,
-         boolean stockable, Pricing pricing, boolean taxExempt) {
+         double baseFreight, boolean stockable, Pricing pricing, boolean taxExempt) {
         this.label = label;
         this.unit = unit;
         this.worldImportPrice = worldImportPrice;
         this.worldExportPrice = worldExportPrice;
+        this.baseFreight = baseFreight;
         this.stockable = stockable;
         this.pricing = pricing;
         this.taxExempt = taxExempt;
@@ -430,11 +618,49 @@ public enum Good {
     public String label() { return label; }
     public String unit()  { return unit; }
 
-    /** What the world charges for one, in ITS money. NaN when it will not sell the city any. */
+    /**
+     * What the world charges for one DELIVERED HERE, in ITS money. NaN when it
+     * will not sell the city any.
+     *
+     * The stored literal, untouched since the day it was written, and the
+     * reason the decomposition below is exact. Every one of the fifty-eight
+     * call sites in this codebase reads this and none of them had to change.
+     */
     public double worldImportPrice() { return worldImportPrice; }
 
-    /** What the world pays for one, in ITS money. NaN when it will not buy any. */
+    /** What the world pays for one DELIVERED THERE, in ITS money. NaN when it will not buy any. */
     public double worldExportPrice() { return worldExportPrice; }
+
+    /**
+     * What it costs to move one unit between the city and the world, in the
+     * world's money - three quarters of the wedge on every good that has both
+     * ends, and zero for the things nobody ships.
+     *
+     * A CONSTANT TODAY AND NOT FOR EVER. This is the half of the band that
+     * belongs to whoever carries the goods, and when that becomes a business
+     * with a price to set, this is the number it sets. See the header.
+     */
+    public double baseFreight() { return baseFreight; }
+
+    /**
+     * The world's own ask, before anything is moved - the import price less
+     * the freight in it. NaN when the world will not sell.
+     *
+     * The floor under the import ceiling: no amount of logistics gets a city
+     * a unit cheaper than the world is willing to part with one for.
+     */
+    public double worldBuyPrice() { return worldImportPrice - baseFreight; }
+
+    /**
+     * The world's own bid, before anything is moved - the export price with
+     * the freight added back. NaN when the world will not buy.
+     *
+     * The ceiling over the export floor, and with worldBuyPrice() the pair
+     * that says how narrow this band could ever get. The gap between the two
+     * is the world's margin and the player never touches it, which is why
+     * freight can fall a long way and the market still has something to do.
+     */
+    public double worldSellPrice() { return worldExportPrice + baseFreight; }
 
     public boolean importable() { return !Double.isNaN(worldImportPrice) && worldImportPrice > 0; }
     public boolean exportable() { return !Double.isNaN(worldExportPrice) && worldExportPrice > 0; }
@@ -457,6 +683,82 @@ public enum Good {
 
     /** Clears in the band on scarcity, as opposed to being priced by its seller. */
     public boolean traded()     { return pricing == Pricing.BAND; }
+
+    /* =======================================================================
+       WHAT IT TAKES TO CARRY ONE (2026-09-16)
+
+       Two facts a transport model needs and a price table never had: how much
+       one unit WEIGHS, and WHAT KIND of traffic moving it is. See Traffic.
+       ======================================================================= */
+
+    /**
+     * One unit, in tonnes.
+     *
+     * DERIVED FROM THE UNIT RATHER THAN STORED, because it already is: this
+     * file has been writing "kg" and "tonne" in the second column since the
+     * day it was written, and a good whose unit is a kilogram weighs a
+     * kilogram. Adding twenty-five more numbers to say so again would be
+     * twenty-five more chances to disagree with the column beside them.
+     *
+     * MATERIALS is the one that needs telling. Its unit is neither: "a House
+     * is ten of them", and a house's structure is on the order of fifty
+     * tonnes, so a unit is about five. Aggregate, cement and timber are the
+     * heaviest thing this city moves per dollar, which is the same fact that
+     * makes its freight wedge the second widest in the table.
+     *
+     * The non-physical goods weigh nothing and that is not a gap: a home, a
+     * point of building work and a seat-month of somebody's attention are not
+     * put on a lorry.
+     */
+    public double tonnesPerUnit() {
+        if (this == MATERIALS) return 5;
+        switch (unit) {
+            case "kg":    return .001;
+            case "tonne": return 1;
+            /*
+             * THE VEHICLES WEIGH WHAT THEY WEIGH. A unit here is one machine,
+             * not a tonne, and the road and the railway both count tonnes - so
+             * a car that reported nothing would cross the city boundary
+             * weightless and cost nobody a freight bill. A wagon set is a
+             * locomotive and what it pulls.
+             */
+            case "car":       return 1.5;
+            case "van":       return 3;
+            case "wagon set": return 300;
+            default:      return 0;
+        }
+    }
+
+    /**
+     * Which stream of traffic a tonne of this joins, or null for the things
+     * that never take up road at all.
+     *
+     * THE LINE IS DRAWN BY WHAT CAN CARRY IT, not by weight - see Traffic.
+     * Ore, steel, crops, grain and aggregate move in hopper and flatbed loads
+     * and a railway is the obvious answer to them. The shelf does not: a
+     * shop's bread and milk is a van at a back door however many rails a city
+     * lays, which is the whole of "some stuff wont even take the rail".
+     *
+     * DRINKS SITS ON THE LINE and is called GOODS. Twelve kilos a head a
+     * month makes it far the heaviest thing on the shelf and it is mostly
+     * water, which argues for BULK - but it is palletised, it is delivered to
+     * shops, and it goes in the same van as everything else in the basket.
+     * Worth revisiting if the freight screens ever make it look wrong.
+     */
+    public Traffic traffic() {
+        switch (this) {
+            case CROPS: case GRAINS: case IRON: case STEEL:
+            case MATERIALS: case FABRICATED_STEEL: case MACHINERY:
+            // A locomotive on a low-loader is not a crate of bread.
+            case ROLLING_STOCK:
+                return Traffic.BULK;
+            case GROCERIES: case HOUSING: case BUILDING_WORK:
+            case SUPPORT_WORK: case BACK_OFFICE_WORK: case ENGINEERING_WORK:
+                return null;
+            default:
+                return Traffic.GOODS;
+        }
+    }
 
     /** The good with this saved name, or null - a save from a build without it loses that line, not the load. */
     public static Good byName(String name) {

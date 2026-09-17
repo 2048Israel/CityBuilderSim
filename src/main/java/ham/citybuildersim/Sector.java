@@ -485,6 +485,19 @@ public abstract class Sector {
     public Output output(Good g) { return outputs.computeIfAbsent(g, k -> new Output()); }
     public Input input(Good g)   { return inputs.computeIfAbsent(g, k -> new Input()); }
 
+    /**
+     * What CROSSED THE CITY BOUNDARY this month, in units, by good - read-only,
+     * so asking does not create a row.
+     *
+     * The pair above would answer the same question and quietly put an empty
+     * Output on every sector for every good in the game the first time anything
+     * walked the list. The railway walks it twice a month over twelve sectors;
+     * these two do not touch the maps. Cleared with everything else in bank(),
+     * so they are the month the statement is about right up to the strike.
+     */
+    public double unitsExported(Good g) { Output o = outputs.get(g); return o == null ? 0 : o.exported; }
+    public double unitsImported(Good g) { Input i = inputs.get(g);   return i == null ? 0 : i.imported; }
+
     /* ===================================================================
        THE LEDGER
 
@@ -542,6 +555,25 @@ public abstract class Sector {
         public final Map<Good, Split> sold   = new EnumMap<>(Good.class);
         public final Map<Good, Split> bought = new EnumMap<>(Good.class);
 
+        /**
+         * ...and the part of the input line that is NOT a good, by name.
+         *
+         * A SERVICE HAS NO UNITS AND NO MARKET, so it can never appear in the
+         * per-good breakdown above - and the moment anything in this game
+         * billed one, the opened cost line stopped adding up to the closed
+         * one. That is exactly the disclosure-that-discloses-nothing the
+         * income statement refuses to draw: a total with parts under it that
+         * do not come to the total.
+         *
+         * NAMED WHERE IT IS CHARGED rather than worked out later, which is the
+         * lesson otherRevenue taught the hard way (see nameOtherRevenue): a
+         * figure reconstructed by subtraction is a figure nobody can label, and
+         * the label is the whole point of opening the line. Rail's haulage
+         * charge names itself "Haulage" on the shipper's ledger as it is
+         * raised. See billForService().
+         */
+        public final Map<String, Double> otherInputs = new LinkedHashMap<>();
+
         public Split soldOf(Good g)   { return sold.computeIfAbsent(g, k -> new Split()); }
         public Split boughtOf(Good g) { return bought.computeIfAbsent(g, k -> new Split()); }
         /** Sold to households in particular - consumption, in the national accounts. */
@@ -562,6 +594,7 @@ public abstract class Sector {
             unitsBought.clear();
             sold.clear();
             bought.clear();
+            otherInputs.clear();
         }
 
         /*
@@ -575,6 +608,7 @@ public abstract class Sector {
             purchasesBySupplier.replaceAll((k, v) -> v * s);
             for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
             for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
+            otherInputs.replaceAll((k, v) -> v * s);
         }
     }
 
@@ -628,6 +662,60 @@ public abstract class Sector {
         if (amount > 0 && Double.isFinite(amount)) pending.otherRevenue += amount;
     }
 
+    /**
+     * A SERVICE BOUGHT FROM ANOTHER BUSINESS IN THE CITY, billed by the
+     * business that performed it. Haulage, today - see sectors.Rail.
+     *
+     * PUBLIC, AND ON THE PAYER, because the biller raises it: the railway walks
+     * the shippers whose goods it moved and puts a line on each of their
+     * ledgers, exactly as the builders put a repair bill on every owner of a
+     * standing building. The one difference from a repair is that this one is
+     * an INPUT rather than an expense of its own, and it belongs there: freight
+     * on what a business buys and ships is cost of sales in every set of books
+     * there has ever been.
+     *
+     * INTO purchasesBySupplier AS WELL, and that is not bookkeeping tidiness -
+     * it is what makes the VAT come out right for free. The input credit is
+     * taken at THE SUPPLIER's rate, the supplier remits on the same figure as
+     * output tax, and a service invoice between two registered businesses nets
+     * to nothing across the pair. Nothing had to be written for that; the
+     * ledger already worked that way for goods.
+     *
+     * AND NO CASH MOVES HERE. Nothing in this class moves cash until bank(),
+     * which settles the whole month at net income - so the payer's cash falls
+     * by this and the biller's rises by it, in the same strike, and the money
+     * audit sees a domestic transfer that nets to zero. See bank().
+     */
+    public final void billForService(String supplier, String what, double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        if (supplier != null) pending.purchasesBySupplier.merge(supplier, amount, Double::sum);
+        pending.otherInputs.merge(what == null ? "Services" : what, amount, Double::sum);
+    }
+
+    /**
+     * ...and one bought from the WORLD: an import with no good behind it.
+     *
+     * THE RAILWAY'S FUEL, and it is here rather than on the goods market
+     * because there is no oil in this game yet. Jerus: "for now, its just a
+     * cost item, so make the basic structure for oil cost even tho its not
+     * currently in place, so currently there is no oil good." The structure is
+     * this method and Rail.fuelBill(); the day OIL exists, the same number
+     * becomes an ordinary uses() good bought on an ordinary market and this
+     * call goes away.
+     *
+     * IT IS A REAL IMPORT, not a notional cost. It lands on pending.imports, so
+     * the money audit debits it against the rest of the world (MoneyAudit reads
+     * the statement's imports line directly), the national accounts count it in
+     * raw-material imports, and the trade balance moves. A city that builds a
+     * railway starts buying fuel from abroad, and the balance of payments says
+     * so - which is the whole reason to put it through the front door.
+     */
+    protected final void bookImportedService(String what, double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.imports += amount;
+        pending.otherInputs.merge(what == null ? "Services" : what, amount, Double::sum);
+    }
+
     /* ===================================================================
        THE STATEMENT
        =================================================================== */
@@ -659,6 +747,12 @@ public abstract class Sector {
          * closed, not the one running. See Sector.nameOtherRevenue().
          */
         public Map<String, Double> otherParts = new LinkedHashMap<>();
+        /**
+         * ...and the parts of the INPUT line that are not a good: haulage on
+         * the shippers' books, fuel on the railway's. Copied from the ledger
+         * at strike() like everything else here. See Ledger.otherInputs.
+         */
+        public Map<String, Double> otherInputs = new LinkedHashMap<>();
 
         void scale(double s) {
             revenue *= s; inputs *= s; payroll *= s; electricity *= s; water *= s; maintenance *= s;
@@ -670,6 +764,7 @@ public abstract class Sector {
             for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
             for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
             otherParts.replaceAll((k, v) -> v * s);
+            otherInputs.replaceAll((k, v) -> v * s);
         }
     }
 
@@ -700,6 +795,7 @@ public abstract class Sector {
         s.purchasesBySupplier = new LinkedHashMap<>(pending.purchasesBySupplier);
         s.sold = copyOf(pending.sold);
         s.bought = copyOf(pending.bought);
+        s.otherInputs = new LinkedHashMap<>(pending.otherInputs);
         s.inputs = pending.purchases();
         // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
         s.otherParts = nameOtherRevenue();
@@ -765,6 +861,8 @@ public abstract class Sector {
         s.bought = copyOf(saved.bought);
         s.otherParts = saved.otherParts == null
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherParts);
+        s.otherInputs = saved.otherInputs == null
+                ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherInputs);
     }
 
     /* ===================================================================
@@ -824,7 +922,7 @@ public abstract class Sector {
         if (!g.exportable() || markets == null) return 0;
         double spare = Math.max(0, getCapacity(g) * getOperatingRate() - getPlannedOutput(g));
         if (spare <= 0) return 0;
-        return markets.get(g).exportPrice() >= getMarginalCostPerUnit(g) ? spare : 0;
+        return markets.get(g).netExportPrice() >= getMarginalCostPerUnit(g) ? spare : 0;
     }
 
     /**
@@ -1215,6 +1313,16 @@ public abstract class Sector {
     public Map<String, Double> otherRevenueParts() { return statement.otherParts; }
 
     /**
+     * ...and the same for the cost line: what is in Inputs that is not a good.
+     *
+     * Named where it was charged rather than derived here, so it is exact by
+     * construction and cannot drift from the total the way a reconstructed
+     * figure can. The goods in statement.bought plus these parts come to
+     * statement.inputs to the cent, and SectorBooksCheck says so every month.
+     */
+    public Map<String, Double> otherInputParts() { return statement.otherInputs; }
+
+    /**
      * ...and where those names come from, read off the sector's LIVE fields at
      * the moment the month is struck.
      *
@@ -1306,7 +1414,7 @@ public abstract class Sector {
             if (in.imported > 0) lines.add(Line.of("Imported instead", f.units(in.imported, g), Line.Tone.WARN));
             if (m != null && m.good().importable()) {
                 lines.add(Line.note(String.format("Local %s is %s a %s and imported %s. Both work; one keeps the margin here.",
-                        g.label().toLowerCase(), f.cash(m.getLocalPrice()), g.unit(), f.cash(m.importPrice()))));
+                        g.label().toLowerCase(), f.cash(m.getLocalPrice()), g.unit(), f.cash(m.netImportPrice()))));
             }
             if (hasPantry(g)) lines.add(Line.of("On hand", f.units(getPantry(g), g)));
         }

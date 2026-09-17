@@ -505,10 +505,32 @@ public class MiningCheck {
              * Two Paved Roads against a load of about 1,960 trips, one coal
              * plant and one water plant. All three ratios sit at 1, and what is
              * left in the number is the price of ore.
+             *
+             * FIVE ROADS SINCE 2026-09-16, AND ONE OF THE TWO WAS ALREADY
+             * SHORT. Cars are the occasion: this city motorises to about 18%
+             * over its thirty-six months and a commuter who drives asks more of
+             * the road than one who does not, which took the effective load
+             * from 3,610 to 4,814 against a capacity of 4,000 and the ratio
+             * from 1 to 0.75. The paragraph above then stopped being true and
+             * this fixture went back to measuring traffic - exactly the failure
+             * it was written to prevent, arriving from a direction it could not
+             * have known about.
+             *
+             * THE USEFUL PART IS WHAT THE FIX REVEALED. At five roads the
+             * control city reproduces the pre-car measurement to the cent -
+             * $245.23k on $983k, the same two figures as the build before cars
+             * existed - which is how we know the premise is restored rather
+             * than bent. The MINING city does not: it comes back at $981k where
+             * it used to read $873k. A mine is several thousand tonnes of bulk
+             * a month, so the city that had one was over its free-flow point
+             * BEFORE any of this, and the harness has been quietly measuring a
+             * congested mill against an uncongested one in the very comparison
+             * it exists to make. The gap it asserts on was right anyway; it was
+             * right for one reason less than it claimed.
              */
             buildings.addStack(template(game, "Coal Power Plant"), 1, true);
             buildings.addStack(template(game, "Water Treatment Plant"), 1, true);
-            buildings.addStack(template(game, "Paved Road"), 3, true);
+            buildings.addStack(template(game, "Paved Road"), 5, true);
 
             /*
              * ...and healthy, and with somewhere to bury its dead, for exactly

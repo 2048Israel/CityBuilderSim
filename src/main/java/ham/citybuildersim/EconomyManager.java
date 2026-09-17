@@ -150,6 +150,32 @@ public class EconomyManager {
     public void setWaterRatio(double ratio)  { for (Sector s : sectors.all()) s.setWaterRatio(ratio); }
     /** The road network's throughput, handed to everyone whose goods move on it. */
     public void setRoadRatio(double ratio)   { for (Sector s : sectors.all()) s.setRoadRatio(ratio); }
+
+    /**
+     * ...and the same thing done properly, once the streams exist: each sector
+     * feels the congestion IT generates.
+     *
+     * A contact centre is three hundred people and nothing shipped. A steel
+     * mill is 83% ore. They stand in the same city on the same roads and they
+     * do not have the same problem - the office's people can be on a tram
+     * while the mill's lorries sit in the same jam they always did - and a
+     * single city-wide ratio could not say so. The mix is the sector's own
+     * buildings, which is the only honest measure of what it puts on the road.
+     *
+     * A SECTOR WITH NOTHING STANDING READS ONE, not zero: it is not being held
+     * up by traffic, it simply is not there.
+     */
+    public void setRoadRatio(InfrastructureManager roads, BuildingManager buildings) {
+        if (roads == null || buildings == null) return;
+        for (Sector s : sectors.all()) {
+            double[] mix = new double[Traffic.values().length];
+            for (Traffic stream : Traffic.values()) {
+                final Traffic t = stream;
+                mix[t.ordinal()] = buildings.totalBySector(s.key(), b -> b.loadOf(t));
+            }
+            s.setRoadRatio(roads.throughputFor(mix));
+        }
+    }
     /** What is left of the workforce once this month's illness is taken off. Never touches payroll. See Health. */
     public void setHealthRatio(double ratio) { for (Sector s : sectors.all()) s.setHealthRatio(ratio); }
 
@@ -805,7 +831,8 @@ public class EconomyManager {
         // were billed them and bore them, and the city collects the figure
         // the businesses paid.
         return profit + totalWageTax + salesTax + totalPropertyTax
-                + totalContributions + totalEiPremiums + healthcareFees + educationFees + totalBankTax;
+                + totalContributions + totalEiPremiums + healthcareFees + educationFees
+                + transitFares + totalBankTax;
     }
 
     /* ------------------- EI and the student grant (2026-09-11) ------------------- */
@@ -856,6 +883,38 @@ public class EconomyManager {
     private double safetyBill;
     public void setSafety(double grossCost) { this.safetyBill = Math.max(0, grossCost); }
     public double getSafetyBill() { return safetyBill; }
+
+    /* =======================================================================
+       THE TRANSIT BOOKS (2026-09-16)
+
+       The fourth thing the city builds for itself, and the FIRST ONE THAT CAN
+       PAY FOR ITSELF. Jerus: "yes riders pay, yes its adjustable, to the point
+       you can even make it profitable by alot."
+
+       That is deliberately unlike the other three. Nobody pays to be policed;
+       a patient pays something and never enough; a school charges a fee that
+       is a rounding error against its wage bill. A tram is different because
+       the person on it chose to be, so a fare is a price rather than a charge,
+       and a city that sets it high enough is running a business.
+
+       AND THE PRICE HAS A COST, which is what stops it being free money: a
+       fare high enough to turn a profit is a fare people will not pay, and
+       everybody who will not pay it is back in a car on the road the transit
+       was built to relieve. The revenue line and the congestion line move
+       against each other, and that is the whole decision. See
+       InfrastructureManager.ridershipAt() and TaxPolicy.getTransitFare().
+       ======================================================================= */
+
+    private double transitBill, transitFares;
+    public void setTransit(double grossCost, double fares) {
+        this.transitBill = Math.max(0, grossCost);
+        this.transitFares = Math.max(0, fares);
+    }
+    public double getTransitBill()  { return transitBill; }
+    public double getTransitFares() { return transitFares; }
+
+    /** Negative when the fare more than covers the wages, which a player can arrange. */
+    public double getTransitNet()   { return transitBill - transitFares; }
 
     /** What the city paid this month to hold protected sectors at break-even. Reporting only; the cash already left. */
     private double subsidiesPaid;
@@ -980,6 +1039,7 @@ public class EconomyManager {
                 subsidiesPaid);
         nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants);
         nationalAccounts.setSafetySpending(safetyBill);
+        nationalAccounts.setTransitLines(transitBill, transitFares);
 
         GDP = nationalAccounts.getGdp();
     }
@@ -1002,6 +1062,7 @@ public class EconomyManager {
                 subsidiesPaid);
         nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants);
         nationalAccounts.setSafetySpending(safetyBill);
+        nationalAccounts.setTransitLines(transitBill, transitFares);
     }
 
     public double getLastFoodVolume() { return nationalAccounts.getLastFoodVolume(); }

@@ -280,7 +280,7 @@ public final class Agriculture extends Sector {
         double atTheFloor = 0;
         for (Good g : goodsMade()) {
             double made = t.makes(g);
-            if (made > 0) atTheFloor += made * Math.max(0, markets.get(g).exportPrice());
+            if (made > 0) atTheFloor += made * Math.max(0, markets.get(g).netExportPrice());
         }
         return atTheFloor
                 - plans.runningCostOf(t)
@@ -382,7 +382,7 @@ public final class Agriculture extends Sector {
          */
         double demand = 0, capacity = 0;
         for (Good g : goodsMade()) {
-            double floor = markets == null ? 0 : Math.max(0, markets.get(g).exportPrice());
+            double floor = markets == null ? 0 : Math.max(0, markets.get(g).netExportPrice());
             if (floor <= 0) continue;
             double trend = markets.get(g).getDemandTrend();
             demand   += Math.max(plannedDemand(g), trend) * floor;

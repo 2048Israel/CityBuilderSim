@@ -617,9 +617,42 @@ public final class RealEstate extends Sector {
         return new double[] { population, game == null ? household : game.getHouseholdCapacity() };
     }
 
-    /** A residential holding is only sheddable if ITS OWN segment has doors to spare. */
+    /**
+     * A residential holding is only sheddable if ITS OWN segment has doors to
+     * spare - AND NOBODY IN THE CITY IS SHARING A DOOR THEY DID NOT CHOOSE.
+     *
+     * THE SEGMENT TEST ALONE LET A CITY DEMOLISH ITSELF, and the run that found
+     * it is worth writing down. A distressed landlord in a city of 32,022
+     * people sold 5,800 of its 13,272 homes in SEVEN MONTHS - beds went from
+     * 40,650 to 22,858, under a population that did not move - and left 1,137
+     * households with nowhere for the next hundred and forty months.
+     *
+     * The segment totals were telling the truth and were still the wrong
+     * question. There were twice as many doors as households, so both segments
+     * read "spare" throughout; what they cannot see is that a segment's slack
+     * is spread over four different SIZES and the doors being sold were the
+     * ones people were living in. Whether a given set of households fits a
+     * given set of doors is a packing question and no comparison of totals
+     * answers it - which is exactly what FamilyModel's own header says about
+     * the same arithmetic, and this method had not caught up.
+     *
+     * FamilyModel knows the answer as a FACT rather than an estimate, because
+     * it has just done the packing: anybody it could not place, and anybody it
+     * could only place by doubling them up with someone else. Neither is a
+     * normal state - the doubling valve runs only when the first pass fails -
+     * so either one means the city is short of doors, whatever the totals say,
+     * and a landlord in a city short of doors does not get to sell one.
+     *
+     * A PROPER FIX IS SIZE-LEVEL SLACK and it is a bigger piece of work: the
+     * retirement rule should ask which sizes are free rather than which
+     * segments. This is the guard that stops the damage while that is written.
+     */
     @Override
     public boolean mayRetire(BuildingsTemplate t) {
+        if (game != null && game.getFamilies() != null) {
+            ham.citybuildersim.FamilyModel f = game.getFamilies();
+            if (f.getStillUnplaced() > 0 || f.getDoubledUpHouseholds() > 0) return false;
+        }
         return hasDoorsToSpare(t);
     }
 

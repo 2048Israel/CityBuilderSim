@@ -15,6 +15,9 @@
   "land is the lot footprint in square feet; a city block is 100,000.",
   "roadLoad is the traffic a building puts on the road network each month.",
   "For INFRASTRUCTURE, capacity is the road capacity the building provides;",
+  "and transitCapacity is commuter journeys a month a bus, tram or metro can carry.",
+  "For RAIL, railCapacity is tonnes a month the network can move across the city",
+  "boundary. Rail is a SECTOR (\"sector\": \"Rail\"), so the investor builds it, not the city.",
   "the city starts with 400 of it for free. Traffic flows freely up to 90% of",
   "capacity and then degrades, so headroom is what matters, not the raw total.",
   "WHO OWNS IT, AND WHAT IT MAKES. 'sector' is the owning business by its saved name -",
@@ -55,7 +58,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 59,
+ "nextId": 69,
  "buildings": [
   {
    "id": 0,
@@ -408,7 +411,8 @@
    "electricity": 40,
    "water": 0,
    "land": 250000,
-   "roadLoad": 0
+   "roadLoad": 0,
+   "freightGrade": 0.35
   },
   {
    "id": 30,
@@ -421,7 +425,8 @@
    "electricity": 135,
    "water": 0,
    "land": 63000,
-   "roadLoad": 0
+   "roadLoad": 0,
+   "freightGrade": 1.0
   },
   {
    "id": 14,
@@ -1343,6 +1348,224 @@
     "CROPS": 8
    },
    "stock": 162000
+  },
+  {
+   "id": 59,
+   "name": "Bus Network",
+   "category": "INFRASTRUCTURE",
+   "transitCapacity": 2500,
+   "cashCost": 12000,
+   "constructionPoints": 2200,
+   "constructionMaterials": 280,
+   "electricity": 60,
+   "water": 12,
+   "jobs": {
+    "NO_DIPLOMA": 210,
+    "DIPLOMA": 40
+   },
+   "land": 20000,
+   "roadLoad": 120
+  },
+  {
+   "id": 60,
+   "name": "Light Rail Line",
+   "category": "INFRASTRUCTURE",
+   "transitCapacity": 8000,
+   "cashCost": 64000,
+   "constructionPoints": 14000,
+   "constructionMaterials": 1900,
+   "electricity": 420,
+   "water": 20,
+   "jobs": {
+    "NO_DIPLOMA": 180,
+    "DIPLOMA": 90,
+    "COLLEGE_ENGINEERING": 14
+   },
+   "land": 45000,
+   "roadLoad": 30
+  },
+  {
+   "id": 61,
+   "name": "Metro Line",
+   "category": "INFRASTRUCTURE",
+   "transitCapacity": 30000,
+   "cashCost": 320000,
+   "constructionPoints": 62000,
+   "constructionMaterials": 9400,
+   "electricity": 1850,
+   "water": 90,
+   "jobs": {
+    "NO_DIPLOMA": 520,
+    "DIPLOMA": 260,
+    "COLLEGE_ENGINEERING": 48
+   },
+   "land": 30000,
+   "roadLoad": 60
+  },
+  {
+   "id": 62,
+   "name": "Rail Spur",
+   "category": "RAIL",
+   "sector": "Rail",
+   "railCapacity": 50000,
+   "cashCost": 140000,
+   "constructionPoints": 21000,
+   "constructionMaterials": 4500,
+   "electricity": 600,
+   "water": 30,
+   "jobs": {
+    "NO_DIPLOMA": 120,
+    "DIPLOMA": 45,
+    "COLLEGE_ENGINEERING": 8
+   },
+   "land": 700000,
+   "roadLoad": 500
+  },
+  {
+   "id": 63,
+   "name": "Freight Line",
+   "category": "RAIL",
+   "sector": "Rail",
+   "railCapacity": 200000,
+   "cashCost": 520000,
+   "constructionPoints": 78000,
+   "constructionMaterials": 16500,
+   "electricity": 2300,
+   "water": 110,
+   "jobs": {
+    "NO_DIPLOMA": 430,
+    "DIPLOMA": 165,
+    "COLLEGE_ENGINEERING": 30
+   },
+   "land": 2400000,
+   "roadLoad": 2000
+  },
+  {
+   "id": 64,
+   "name": "Rail Terminal",
+   "category": "RAIL",
+   "sector": "Rail",
+   "railCapacity": 500000,
+   "cashCost": 1240000,
+   "constructionPoints": 186000,
+   "constructionMaterials": 39000,
+   "electricity": 5600,
+   "water": 260,
+   "jobs": {
+    "NO_DIPLOMA": 1020,
+    "DIPLOMA": 390,
+    "COLLEGE_ENGINEERING": 72
+   },
+   "land": 5500000,
+   "roadLoad": 4900
+  },
+  {
+   "id": 65,
+   "name": "Vehicle Works",
+   "category": "AUTOMOTIVE",
+   "sector": "Automotive",
+   "cashCost": 66000,
+   "constructionPoints": 7260,
+   "constructionMaterials": 1580,
+   "electricity": 600,
+   "water": 45,
+   "jobs": {
+    "NO_DIPLOMA": 100,
+    "DIPLOMA": 55,
+    "COLLEGE_ENGINEERING": 13,
+    "UNIV_SCIENCE": 2
+   },
+   "land": 500000,
+   "roadLoad": 150,
+   "makes": {
+    "CARS": 120
+   },
+   "uses": {
+    "FABRICATED_STEEL": 420,
+    "MACHINERY": 48
+   },
+   "stock": 360
+  },
+  {
+   "id": 66,
+   "name": "Assembly Plant",
+   "category": "AUTOMOTIVE",
+   "sector": "Automotive",
+   "cashCost": 221000,
+   "constructionPoints": 24300,
+   "constructionMaterials": 5300,
+   "electricity": 2600,
+   "water": 190,
+   "jobs": {
+    "NO_DIPLOMA": 415,
+    "DIPLOMA": 225,
+    "COLLEGE_ENGINEERING": 52,
+    "UNIV_SCIENCE": 8
+   },
+   "land": 1800000,
+   "roadLoad": 610,
+   "makes": {
+    "CARS": 500
+   },
+   "uses": {
+    "FABRICATED_STEEL": 1750,
+    "MACHINERY": 200
+   },
+   "stock": 1500
+  },
+  {
+   "id": 67,
+   "name": "Commercial Vehicle Plant",
+   "category": "AUTOMOTIVE",
+   "sector": "Automotive",
+   "cashCost": 132000,
+   "constructionPoints": 14500,
+   "constructionMaterials": 3170,
+   "electricity": 1200,
+   "water": 90,
+   "jobs": {
+    "NO_DIPLOMA": 195,
+    "DIPLOMA": 106,
+    "COLLEGE_ENGINEERING": 25,
+    "UNIV_SCIENCE": 4
+   },
+   "land": 950000,
+   "roadLoad": 290,
+   "makes": {
+    "VANS": 150
+   },
+   "uses": {
+    "FABRICATED_STEEL": 750,
+    "MACHINERY": 90
+   },
+   "stock": 450
+  },
+  {
+   "id": 68,
+   "name": "Locomotive Works",
+   "category": "AUTOMOTIVE",
+   "sector": "Automotive",
+   "cashCost": 130000,
+   "constructionPoints": 14300,
+   "constructionMaterials": 3120,
+   "electricity": 1100,
+   "water": 80,
+   "jobs": {
+    "NO_DIPLOMA": 180,
+    "DIPLOMA": 100,
+    "COLLEGE_ENGINEERING": 26,
+    "UNIV_SCIENCE": 4
+   },
+   "land": 800000,
+   "roadLoad": 295,
+   "makes": {
+    "ROLLING_STOCK": 4
+   },
+   "uses": {
+    "FABRICATED_STEEL": 480,
+    "MACHINERY": 80
+   },
+   "stock": 12
   }
  ]
 }

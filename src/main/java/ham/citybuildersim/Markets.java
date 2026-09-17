@@ -57,6 +57,20 @@ public final class Markets {
         for (GoodsMarket m : markets.values()) m.setExchangeRate(rate);
     }
 
+    /**
+     * The one rate every market here was told, read off one of them.
+     *
+     * READ AND NOT KEPT, deliberately: a second copy of a number is a number
+     * that can disagree with the first, and this codebase has been bitten four
+     * times by a duplicated calculation. The caller that wants it has no good
+     * in mind - the railway pricing a tonne of anything - so it should not have
+     * to pick one arbitrarily to ask.
+     */
+    public double getExchangeRate() {
+        for (GoodsMarket m : markets.values()) return m.getExchangeRate();
+        return 1;
+    }
+
     /* ===================================================================
        THE MONTH
        =================================================================== */

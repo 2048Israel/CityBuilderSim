@@ -499,6 +499,24 @@ public class NationalAccounts {
     public void setSafetySpending(double spending) { this.safetySpending = spending; }
     public double getSafetySpending() { return safetySpending; }
 
+    /**
+     * Fares in, the buses' and trams' wage bill out. See EconomyManager.
+     *
+     * ITS OWN SETTER RATHER THAN TWO MORE ARGUMENTS on updateGovernment(),
+     * which already takes seventeen positional doubles and is exactly the
+     * machine for transposing two of them silently that HistorySave's header
+     * warns about. Safety went in this way for the same reason.
+     */
+    private double transitFares, transitSpending;
+
+    public void setTransitLines(double spending, double fares) {
+        this.transitSpending = spending;
+        this.transitFares = fares;
+    }
+
+    public double getTransitSpending() { return transitSpending; }
+    public double getTransitFares()    { return transitFares; }
+
     /** Patient and funeral fees in, the health service's bill out. See Healthcare. */
     private double healthFees;
     private double healthSpending;

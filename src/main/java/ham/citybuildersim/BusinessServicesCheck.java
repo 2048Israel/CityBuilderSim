@@ -322,8 +322,8 @@ public class BusinessServicesCheck {
         HouseholdBalance cells = city.getHouseholdBalance();
         String[] keys = cells.cellKeys();
         double[] now = cells.toCellSaveArray();
-        check("a cell carries eight slots, a holding per company, the dollars abroad and the student debt",
-                (now.length - 3.0) / keys.length, 8 + Equity.COMPANIES.length + 1 + 1, 0);
+        check("a cell carries eight slots, a holding per company, the dollars abroad, the student debt and the cars",
+                (now.length - 3.0) / keys.length, 8 + Equity.COMPANIES.length + 1 + 1 + 1, 0);
 
         // A save written one company short - which every save from the build
         // before this sector is. Read with the company list it was WRITTEN
@@ -342,6 +342,16 @@ public class BusinessServicesCheck {
                 first.shares[Equity.COMPANIES.length - 1] == 0);
         assertTrue("...while its first holding is still its first holding",
                 first.shares[0] == 9);
+        /*
+         * THAT SAME ARRAY IS ALSO A SAVE FROM BEFORE CARS EXISTED - one slot a
+         * cell short of today's - and it is filled with 1, 2, 3... so a reader
+         * that walked off the end of it would hand this household a car park
+         * rather than a zero. The whole of the car step rests on an old save
+         * reloading into a city that behaves exactly as it did the day it was
+         * written, and "exactly" starts here.
+         */
+        assertTrue("...and a city from before cars existed owns none",
+                first.cars == 0);
 
         out.println();
         if (fails == 0) {

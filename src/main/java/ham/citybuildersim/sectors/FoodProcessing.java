@@ -186,7 +186,7 @@ public final class FoodProcessing extends Sector {
         for (Good g : t.goodsMade().keySet()) {
             double made = t.makes(g);
             if (made <= 0 || !g.traded() || markets == null) continue;
-            double floor = Math.max(0, markets.get(g).exportPrice());
+            double floor = Math.max(0, markets.get(g).netExportPrice());
             onePlant += made * floor;
             uncovered += Math.max(0, markets.get(g).getDemand()
                     - getCapacity(g) - getPipeline(g)) * floor;
@@ -528,7 +528,7 @@ public final class FoodProcessing extends Sector {
     public double[] retirementDemandAndCapacity(Game game) {
         double demand = 0, capacity = 0;
         for (Good g : goodsMade()) {
-            double floor = markets == null ? 0 : Math.max(0, markets.get(g).exportPrice());
+            double floor = markets == null ? 0 : Math.max(0, markets.get(g).netExportPrice());
             if (floor <= 0) continue;
             double trend = markets.get(g).getDemandTrend();
             demand   += Math.max(plannedDemand(g), trend) * floor;

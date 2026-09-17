@@ -156,6 +156,51 @@ public enum BuildingType {
      * constant in above an existing one would hand every old save's industrial
      * tax bill to whoever now holds that ordinal.
      */
-    AGRICULTURE
+    AGRICULTURE,
+
+    /**
+     * Freight rail. Lines, yards and the terminals at the end of them.
+     *
+     * ITS OWN CATEGORY BECAUSE IT IS PRIVATE AND THE ROADS ARE NOT. Every
+     * other thing that carries something in this game is INFRASTRUCTURE - the
+     * city builds it, the city pays for it, and the city decides. Jerus drew
+     * the line somewhere else for rail: "you build roads obviously but rail is
+     * its own sector... it wants and will do everything possible to stay
+     * profitable and maximize profits." So a rail line is financed by the
+     * investor against a business case, like a steel mill, and if the freight
+     * does not pay it does not get built.
+     *
+     * AND THE CITY IS NOT STUCK WITHOUT ONE. "no at first, rail doesnt even
+     * build, everything is exported by truck, which is obviously more
+     * expensive and road demanding." A founding city trades on lorries at the
+     * price the world has always charged; rail is what makes that cheaper. See
+     * sectors.Rail and GoodsMarket.setFreightFactor.
+     *
+     * ON THE END, for the seventh time, and the reason has not changed since
+     * INFRASTRUCTURE: the saved per-sector property tax and interest arrays
+     * are indexed by ordinal(), so a constant slipped in above an existing one
+     * hands every old save's industrial tax bill to whoever now holds that
+     * ordinal.
+     */
+    RAIL,
+
+    /**
+     * The automobile industry. Assembly plants, commercial vehicle plants and
+     * the works that builds locomotives.
+     *
+     * ITS OWN CATEGORY BECAUSE IT IS THE TOP OF THE CHAIN, and a player needs
+     * to see that it is there before they can plan for it. Every other private
+     * category is one link - a mine digs, a mill smelts, a shop fabricates -
+     * and this is the only one that takes TWO manufactured inputs and turns
+     * them into something a person drives away in. Filing it under Industrial
+     * beside the foundries would hide the one fact about it that matters:
+     * you cannot have it until you have the three links underneath it.
+     *
+     * ON THE END, for the eighth time, and the reason has not changed: the
+     * saved per-sector property tax and interest arrays are indexed by
+     * ordinal(), so a constant slipped in above an existing one hands every
+     * old save's bill to whoever now holds that ordinal.
+     */
+    AUTOMOTIVE
 
 }

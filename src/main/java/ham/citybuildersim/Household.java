@@ -146,6 +146,31 @@ public abstract class Household {
      */
     double abroad;
 
+    /**
+     * CARS THIS HOUSEHOLD OWNS, per household of the cell, 0 to 1 (2026-09-16).
+     *
+     * A STOCK LIKE THE OTHERS AND NOT LIKE THEM. It sits beside savings, debt,
+     * shares and the dollars abroad because it moves the way they move - it
+     * follows the people, it is saved, a household that leaves takes it - and
+     * it is the first one that is not money. Two consequences, both deliberate:
+     * redenominate() does not touch it (a currency reform does not halve a
+     * car), and it is counted rather than valued, so nothing reads it as
+     * wealth.
+     *
+     * WHY THE HOUSEHOLDS AND NOT THE CITY. A city-wide fleet would have been
+     * one field and would have answered the road question just as well. It
+     * would not have answered the one Jerus actually asked - "income decides
+     * who can afford one" - because a city-wide count has no income. Here the
+     * question is asked of the cell that has the savings, which is the same
+     * cell the share offer is made to and for the same reason.
+     *
+     * ONE PER HOUSEHOLD IS SATURATION. A second car is a real thing and it is
+     * not modelled: the number this feeds is commuter road load, a household
+     * that owns two cars does not make two commutes, and the day somebody
+     * wants garages and school runs the ceiling is one constant.
+     */
+    double cars;
+
     /** This month's, per household, in local money: sent abroad, brought home, and earned there (rolled, not paid home). */
     double sentAbroad, broughtHome, foreignInterest;
 
@@ -336,6 +361,9 @@ public abstract class Household {
 
     /** Dollars held abroad, per household. */
     public double abroad()      { return abroad; }
+    public double cars()        { return cars; }
+    /** Every car this cell's households own between them. */
+    public double totalCars()   { return cars * households; }
     /** ...worth this much at home, per household, at a rate. */
     public double abroadValue(double localPerUsd) { return abroad * localPerUsd; }
     public double sentAbroad()  { return sentAbroad; }
@@ -470,7 +498,18 @@ public abstract class Household {
         } else {
             double surplus = -gap;
             repaid = Math.min(surplus, debt);
-            debt -= repaid;
+            /*
+             * CLAMPED, LIKE EVERY OTHER WRITE TO A POSITION (2026-09-16).
+             *
+             * A household cannot owe minus a dollar. This subtraction is exact
+             * when the minimum picks `debt` - x minus x is zero for every
+             * finite x - so it is not where the dust comes from, and that is
+             * precisely why the clamp is here anyway: the invariant is
+             * enforced at the boundary rather than at whichever arithmetic is
+             * currently suspected. See HouseholdBalance.moveStock() for the
+             * 158-month divergence the SIGN of one of these cost.
+             */
+            debt = Math.max(0, debt - repaid);
             banked = surplus - repaid;
             savings += banked;
         }
@@ -512,7 +551,28 @@ public abstract class Household {
      */
     protected double fundShortfall(double still, double disposablePer) {
         double room = creditRoom(disposablePer);
-        borrowed = Math.min(still, room);
+        /*
+         * AND NOBODY BORROWS A NEGATIVE AMOUNT (2026-09-16).
+         *
+         * `still` is the tail of a subtraction waterfall - what is short after
+         * savings, the paper abroad and the shares have each been taken off it
+         * - so it can come out a HAIR BELOW ZERO when the last sale overshoots
+         * by a rounding. Without this, min(still, room) is that hair, and
+         * `debt += borrowed` hands a household a debt of minus 4.6e-19.
+         *
+         * WHICH IS NOT MONEY, AND SOMETHING READS ITS SIGN. investAbroad() asks
+         * `c.debt <= 0` to decide whether a household may hold money abroad, so
+         * a negative dust reads debt-free where a zero reads the same and a
+         * positive one does not - and once one cell has it, every cell it
+         * shares a migration pool with inherits a slice. Seed 2 of the
+         * eight-seed ensemble carried it for THREE THOUSAND MONTHS.
+         *
+         * The three sibling clamps - moveStock's write, the repayment, the
+         * restore - were put in first and cut it from 35,199 flagged months to
+         * 157. This is the one that makes it none: the others stop the dust
+         * spreading, this stops it being created.
+         */
+        borrowed = Math.max(0, Math.min(still, room));
         debt += borrowed;
         return borrowed;
     }
@@ -582,6 +642,7 @@ public abstract class Household {
     /** The cell is empty: no position either. */
     void clearAll() {
         savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0; studentDebt = 0;
+        cars = 0;
         java.util.Arrays.fill(shares, 0);
         clearWorking();
     }
@@ -594,6 +655,13 @@ public abstract class Household {
         banked *= scale;  want *= scale;  planned *= scale;  subsistence *= scale;
         sentAbroad *= scale;  broughtHome *= scale;  foreignInterest *= scale;
         studentDebt *= scale;  studentBorrowed *= scale;  studentRepaid *= scale;
+        /*
+         * `cars` IS NOT HERE AND THAT IS THE POINT. A reform divides every
+         * amount of money by a hundred; it does not divide a car park. The
+         * same sentence the note on `abroad` makes about dollars - a stock
+         * denominated in something other than this city's money does not move
+         * when this city's money does - and cars are denominated in cars.
+         */
     }
 
     @Override

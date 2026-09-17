@@ -104,18 +104,50 @@ public class ManufacturingCheck {
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
 
-        /* ============ 1. two goods the city makes and cannot buy ============ */
+        /* ============ 1. two goods the city makes ============
+
+           ONE OF THEM STOPPED BEING UNBUYABLE ON 2026-09-16, and this section
+           is where that decision is recorded rather than where it is resisted.
+
+           Both used to be export-only, and the reason was good: nothing in the
+           city bought a beam or a machine, so both cleared at their floor and
+           the wage bill and the steel bill were the whole of the question. Good's
+           own header said what would end that - "the day something here buys
+           one, it gets a ceiling that day" - and the thing that buys one is an
+           assembly plant (see sectors.Automotive, the thirteenth sector).
+
+           MACHINERY GOT THE CEILING AND FABRICATED STEEL DELIBERATELY DID NOT,
+           which is the interesting half. A car is three and a half tonnes of
+           fabricated steel and four hundred kilos of machinery: the bulky input
+           is the one a city must be able to make for itself, the specialised
+           one is the one every industrialising country has bought off a ship.
+           So the chain still cannot be shortcut at the heavy end, and a city
+           with its own machine works still wins - it buys at the local floor
+           rather than the world's landed price.
+
+           What forced it was a measurement rather than a preference: the
+           4,000-month playtest builds 179 Fabrication Works and ZERO Machine
+           Works, because this sector's planner scores its two products against
+           each other every month and fabrication wins every month. An industry
+           gated on a building the model never puts up is a dead branch.
+           ==================================================================== */
         out.println("--- two goods that leave ---");
 
         Good[] kinds = { Good.FABRICATED_STEEL, Good.MACHINERY };
         for (Good g : kinds) {
-            assertTrue(g.label() + " is not importable - nobody here buys one", !g.importable());
             assertTrue(g.label() + " is exportable", g.exportable());
             assertTrue(g.label() + " is cut to order, not warehoused", !g.stockable());
             assertTrue(g.label() + " clears on the band", g.traded());
             assertTrue(g.label() + " is not tax exempt - zero-rated, like steel", !g.taxExempt());
             assertTrue(g.label() + " is sold by the tonne", "tonne".equals(g.unit()));
         }
+        assertTrue("a beam still cannot be bought from the world, at any price",
+                !Good.FABRICATED_STEEL.importable());
+        assertTrue("...but a machine can, now that something here buys one",
+                Good.MACHINERY.importable());
+        assertTrue("...and the world charges a premium for it over what it pays",
+                Good.MACHINERY.worldImportPrice() > Good.MACHINERY.worldExportPrice());
+
         assertTrue("shaped steel is worth more than the steel in it",
                 Good.FABRICATED_STEEL.worldExportPrice() > Good.STEEL.worldImportPrice());
         assertTrue("...and a machine is worth more than the beam",

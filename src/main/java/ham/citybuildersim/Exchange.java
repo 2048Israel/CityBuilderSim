@@ -822,7 +822,21 @@ public class Exchange {
             double sell = Math.min(cell.shares[c] * share * cell.households(), deskCanBuy(register, c));
             if (sell <= 0) continue;
             double cash = deskBuysFromHousehold(register, bank, c, sell);
-            cell.shares[c] -= sell / cell.households();
+            /*
+             * CLAMPED, BECAUSE THE MULTIPLY DOES NOT ROUND-TRIP THROUGH THE
+             * DIVIDE (2026-09-16). `sell` is shares x share x households and is
+             * then taken off the holding as sell / households - and
+             * (x * h) / h is not x for every double, so a cell selling its
+             * whole holding can end up a ULP SHORT OF NOTHING.
+             *
+             * A holding of minus 8.47e-22 is not shares, and the sign of a
+             * residue is what this codebase keeps getting bitten by - see
+             * HouseholdBalance.moveStock() for the 158-month divergence one of
+             * these cost. Found by seed 2 of the eight-seed ensemble, which
+             * carried it for 136 months after the three debt clamps had cleared
+             * everything else.
+             */
+            cell.shares[c] = Math.max(0, cell.shares[c] - sell / cell.households());
             raised += cash / cell.households();
         }
         return raised;

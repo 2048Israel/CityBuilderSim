@@ -1,6 +1,7 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.Agriculture;
+import ham.citybuildersim.sectors.Automotive;
 import ham.citybuildersim.sectors.BusinessServices;
 import ham.citybuildersim.sectors.Construction;
 import ham.citybuildersim.sectors.FoodIndustry;
@@ -9,6 +10,7 @@ import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.Manufacturing;
 import ham.citybuildersim.sectors.Materials;
 import ham.citybuildersim.sectors.Mining;
+import ham.citybuildersim.sectors.Rail;
 import ham.citybuildersim.sectors.RealEstate;
 import ham.citybuildersim.sectors.Retail;
 
@@ -54,7 +56,8 @@ public final class Sectors {
             CONSTRUCTION = "Construction", HEAVY_INDUSTRY = "Heavy Industry", MINING = "Mining",
             MATERIALS = "Materials", BUSINESS_SERVICES = "Business Services",
             MANUFACTURING = "Manufacturing", AGRICULTURE = "Agriculture",
-            FOOD_PROCESSING = "Food Processing";
+            FOOD_PROCESSING = "Food Processing", RAIL = "Rail",
+            AUTOMOTIVE = "Automotive";
 
     /*
      * ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than
@@ -68,7 +71,7 @@ public final class Sectors {
      */
     public static final String[] KEYS = {
         RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING, MATERIALS,
-        BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE, FOOD_PROCESSING
+        BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE, FOOD_PROCESSING, RAIL, AUTOMOTIVE
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -85,6 +88,8 @@ public final class Sectors {
     private final Manufacturing manufacturing;
     private final Agriculture agriculture;
     private final FoodProcessing foodProcessing;
+    private final Rail rail;
+    private final Automotive automotive;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -98,6 +103,8 @@ public final class Sectors {
         manufacturing = add(new Manufacturing(), buildings, markets);
         agriculture = add(new Agriculture(), buildings, markets);
         foodProcessing = add(new FoodProcessing(), buildings, markets);
+        rail = add(new Rail(), buildings, markets);
+        automotive = add(new Automotive(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -173,6 +180,23 @@ public final class Sectors {
      * playtest both want to ask it what it is paying for it. See FoodProcessing.
      */
     public FoodProcessing foodProcessing() { return foodProcessing; }
+
+    /**
+     * Typed, and for a reason none of the others have: it is the only sector
+     * whose price is a fact about every OTHER sector's trade. Game hands it the
+     * month at the top of the month, the income statements are billed from it,
+     * the road network is relieved by it and the import and export bands move
+     * with it. See sectors.Rail.
+     */
+    public Rail rail() { return rail; }
+
+    /**
+     * Typed, because it is the only sector that buys what Manufacturing makes,
+     * and the mills' screen and the planner both want to ask what the parts are
+     * costing. The same reason Manufacturing and Food Processing are typed.
+     * See sectors.Automotive.
+     */
+    public Automotive automotive() { return automotive; }
 
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {

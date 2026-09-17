@@ -211,7 +211,7 @@ public final class Retail extends Sector {
         if (markets == null) return 0;
         double sum = 0;
         for (Map.Entry<Good, Double> e : basket.entrySet()) {
-            double p = markets.get(e.getKey()).importPrice();
+            double p = markets.get(e.getKey()).netImportPrice();
             if (p > 0 && !Double.isNaN(p)) sum += e.getValue() * p;
         }
         return sum;
@@ -328,7 +328,7 @@ public final class Retail extends Sector {
             double units = Math.max(0, in.boughtLocal) + Math.max(0, in.imported);
             double blended = units > 0
                     ? (Math.max(0, in.boughtLocal) * Math.max(0, m.getLocalPrice())
-                     + Math.max(0, in.imported)   * Math.max(0, m.importPrice())) / units
+                     + Math.max(0, in.imported)   * Math.max(0, m.netImportPrice())) / units
                     : Math.max(0, m.getLocalPrice());
             basketCost += e.getValue() * blended;
         }

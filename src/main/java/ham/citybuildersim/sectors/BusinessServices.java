@@ -97,7 +97,7 @@ public final class BusinessServices extends Sector {
      * having changed about the city.
      */
     public double priceOfSeat(Good g) {
-        return markets == null ? 0 : Math.max(0, markets.get(g).exportPrice());
+        return markets == null ? 0 : Math.max(0, markets.get(g).netExportPrice());
     }
 
     /**

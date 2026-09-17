@@ -77,6 +77,540 @@ public class InfrastructureManager {
         this.load = Math.max(0, load);
     }
 
+    /* =======================================================================
+       THE SAME LOAD, IN THE THREE STREAMS IT IS MADE OF (2026-09-16)
+
+       The network still carries one number and degrades on one number, and
+       that is deliberate: this step SPLITS the demand and changes nothing
+       about how it is served. Which mode serves which stream is the next step,
+       and putting it here before the modes exist would be a second capacity
+       with nothing to spend it on.
+
+       So what this buys today is the ability to SEE it. A city that is 90% of
+       the way to gridlock is in completely different trouble depending on
+       whether that is ore or nurses - the first wants a railway and the second
+       a bus - and until now the screens could not tell a player which.
+
+       THE BREAKDOWN IS A VIEW AND THE TOTAL IS STILL THE TOTAL, which is a
+       correction rather than a nicety and the ensemble is what found it.
+
+       The first version summed the three streams to get the total, and eight
+       seeds came back subtly different from the build before them - a
+       thousand dollars in three trillion, one person in forty-eight thousand,
+       amplified over three hundred and thirty-three years. Every building's
+       three loads add to its own roadLoad to the bit; what does NOT survive is
+       adding them up in a different ORDER. Summing per stream and then adding
+       the three is not the same floating-point operation as summing per
+       building, and over 4,002 months that is enough to make a different city.
+
+       So the total keeps the exact sweep it has always had and the streams are
+       read alongside it. That is also the truer statement of what this step
+       is: the demand did not change, only the ability to see what it is made
+       of. A fixture that sets a raw total and no breakdown gets zeroes in the
+       streams, and that is honest - it never said what its traffic was.
+       ======================================================================= */
+
+    private final double[] byStream = new double[Traffic.values().length];
+
+    /** What the month's load is made of. Read beside the total, never instead of it. */
+    public void setBreakdown(double[] streams) {
+        for (int i = 0; i < byStream.length; i++) {
+            byStream[i] = streams != null && i < streams.length ? Math.max(0, streams[i]) : 0;
+        }
+    }
+
+    public double getLoad(Traffic stream) {
+        return stream == null ? 0 : byStream[stream.ordinal()];
+    }
+
+    /** What share of everything on the road is this. For the screens. */
+    public double getShareOf(Traffic stream) {
+        return load > 0 ? getLoad(stream) / load : 0;
+    }
+
+    /** People and things, which is the cut a player acts on. */
+    public double getFreightLoad() {
+        return getLoad(Traffic.GOODS) + getLoad(Traffic.BULK);
+    }
+
+    /* =======================================================================
+       THE MODES (2026-09-16)
+
+       Three roads that were the same road, plus the first thing in this game
+       that carries people instead of everything.
+
+       EVERY MODE IS A RELIEF ON AN UNCHANGED BASELINE, and that is the whole
+       design of this step rather than an implementation detail. A city with no
+       highway and no transit computes exactly the load it computed yesterday -
+       commuters plus goods plus bulk, at one apiece - and degrades on exactly
+       the curve it degraded on. Highways and transit SUBTRACT from that. The
+       alternative, charging ore a penalty on ordinary streets and calling a
+       highway the absence of it, would have been the same arithmetic and would
+       have raised every existing city's road demand by half overnight: a
+       rebalance wearing a mechanic's clothes.
+
+       WHAT EACH MODE ACTUALLY DOES
+
+       A HIGHWAY relieves freight. Not by carrying more - its capacity is
+       already its capacity - but because a tonne of ore on a grade-separated
+       road does not share a junction with a school run. Bulk is relieved
+       hardest, goods a little, commuters not at all: a commuter is the traffic
+       a highway was built to carry in the first place and is already counted
+       at one.
+
+       TRANSIT takes people off the road entirely, and three things stop it
+       from being the answer to everything:
+
+         1. NOT EVERYONE TAKES IT. TRANSIT_MAX_SHARE is a hard ceiling on the
+            share of commuters transit can ever carry, whatever is built. Jerus:
+            "transit cannot work without road, and not everyone takes transit."
+            New York is about 56% and most North American cities are under 10%;
+            65% is already generous for a city that can build freely.
+
+         2. IT RUNS ON THE ROAD IT IS SUPPOSED TO REPLACE. Buses are road
+            vehicles and a metro station still needs a street outside it, so
+            what a city's transit can carry is capped against the road network
+            under it (TRANSIT_NEEDS_ROAD). A city that builds metro instead of
+            streets gets a metro nobody can reach.
+
+         3. IT NEVER TOUCHES FREIGHT. Ore and bread do not ride a bus.
+
+       So a city with the best transit and the best highways in the game still
+       has 35% of its commuters driving, all of its goods on the road and all
+       of its bulk on it too - which against a typical split of 86/3/11 floors
+       road demand at about 44% of what it would otherwise be. The road can be
+       halved and it can never be deleted, which is exactly the shape asked for.
+       ======================================================================= */
+
+    /** The most of its commuters any city can ever put on transit. */
+    public static final double TRANSIT_MAX_SHARE = .65;
+
+    /** Transit capacity a city can use, per unit of road capacity under it. */
+    public static final double TRANSIT_NEEDS_ROAD = 2.0;
+
+    /** What a fully grade-separated network takes off a tonne of bulk. */
+    public static final double BULK_HIGHWAY_RELIEF = .40;
+
+    /** ...and off a crate of goods, which shares fewer junctions to begin with. */
+    public static final double GOODS_HIGHWAY_RELIEF = .15;
+
+    /**
+     * ...AND RAIL TAKES THE LONG HAUL OFF IT ALTOGETHER, which is the third
+     * mode and the only one the city does not own.
+     *
+     * A tonne of ore that leaves by train does not drive across the city to
+     * leave by lorry - but it still gets to the siding somehow, and that is a
+     * truck. Jerus: "stuff still needs to freight to and fro from the rail. and
+     * some stuff wont even take the rail." So the relief is three quarters, not
+     * all of it, AND the terminals carry a road load of their own on top (see
+     * BuildingsTemplate.loadOf, which reads a rail building's throughput as
+     * bulk rather than as commuters).
+     *
+     * MEASURED AGAINST CROSS-BOUNDARY TONNAGE and applied to the whole bulk
+     * stream, which is a deliberate approximation and worth naming. The share
+     * sectors.Rail reports is the share of the city's TRADE it carries; the
+     * bulk stream also contains ore moving between two plants inside the city,
+     * which no train touches. In a city that exports 97% of what it digs those
+     * are nearly the same number; in one that does not, this over-credits the
+     * railway a little. The honest fix needs an in-city freight matrix, which
+     * is a later argument.
+     */
+    public static final double RAIL_ROAD_RELIEF = .75;
+
+
+    /* =======================================================================
+       THE CARS (2026-09-16)
+
+       Jerus, asked how much road demand a fully motorised city should make:
+       "if everyone has cars then road demand is enormous."
+
+       IT IS THE FOURTH MODE AND THE ONLY ONE THAT COSTS. Highways, transit and
+       rail are all reliefs on an unchanged baseline - the note above this one
+       says so and the whole step was built that way. A car is the opposite: it
+       is the first thing in this game that makes the road WORSE, and it has to
+       be, because the baseline this network has always computed is a city
+       where everybody somehow gets to work and nobody owns anything to get
+       there in. That was never a neutral assumption; it was an unmotorised
+       city, unlabelled.
+
+       SO THE BASELINE IS NOW NAMED RATHER THAN MOVED. At zero ownership the
+       factor is exactly 1 and every city that exists reads what it read
+       yesterday, to the bit. At one car per household it is
+       CAR_LOAD_AT_SATURATION, and everything in between is the straight line
+       through the two - which is the same "relief on an unchanged baseline"
+       discipline pointed the other way.
+
+       AND ONLY THE PEOPLE STILL DRIVING PAY IT. The multiplier lands on
+       commuters who did not get on a tram, not on the whole stream, so a city
+       that motorises AND builds transit is not punished twice for the same
+       journey. That is also what makes the loop below close.
+       ======================================================================= */
+
+    /**
+     * What a city where every household owns a car asks of the road, against
+     * the same city where none does.
+     *
+     * THREE, and it is a game decision rather than a measured one. A car takes
+     * something like ten times the road space per traveller that a full bus
+     * does and perhaps four times a walked or cycled trip, but most of a
+     * commute in an unmotorised city is not on the road at all - so the
+     * question is not "how big is a car" but "how much more road does the same
+     * number of journeys need once they are all driven". Three makes
+     * motorisation a problem a player must answer with transit or with
+     * tarmac, and does not make it unsurvivable: a city at 86% commuters goes
+     * from 1.0x load to about 2.7x, which is four or five rounds of road
+     * building spread over the thirty years the fleet takes to arrive.
+     */
+    public static final double CAR_LOAD_AT_SATURATION = 3.0;
+
+    /**
+     * How many of the people who own a car get on the tram anyway once the
+     * road is completely gridlocked.
+     *
+     * JERUS'S RULE, AND THE LOOP IT CLOSES: "people drive until the road is
+     * full, then take the tram." A household with a car in the drive does not
+     * ride at all on a clear morning - which is what makes a motorised city
+     * jam in the first place - and three quarters of them ride when nothing is
+     * moving. Between the two it is the straight line in how bad the jam is.
+     *
+     * THIS IS NEGATIVE FEEDBACK AND IT IS MEANT TO BE. Motorise -> nobody
+     * rides -> the road jams -> they ride -> the road clears. Left raw that is
+     * a two-month oscillator, so what it reads is not last month's road but a
+     * MEMORY of it (see JAM_MEMORY): people answer for how the commute has
+     * been going, which is both the stable thing to model and the true one.
+     */
+    public static final double CAR_OWNER_RIDES_AT_GRIDLOCK = .75;
+
+    /** How fast the remembered commute catches up with this month's. */
+    public static final double JAM_MEMORY = .25;
+
+    private double carOwnership;
+
+    /**
+     * Cars per household, 0 to 1, handed over each month by Game. Zero in
+     * every city that has never bought one, which is every city before today.
+     */
+    public void setCarOwnership(double perHousehold) {
+        this.carOwnership = Double.isFinite(perHousehold)
+                ? Math.max(0, Math.min(1, perHousehold)) : 0;
+    }
+
+    public double getCarOwnership() { return carOwnership; }
+
+    /**
+     * How much road one commuter who is still driving asks for.
+     *
+     * Exactly 1 with nobody owning a car, which is what keeps every existing
+     * city bit-identical - and is checked rather than computed, because
+     * 1 + 0 * 2 is 1 in arithmetic and this codebase has been bitten by the
+     * difference between those two sentences (see streamsDiffer()).
+     */
+    public double carRoadFactor() {
+        if (!(carOwnership > 0)) return 1;
+        return 1 + carOwnership * (CAR_LOAD_AT_SATURATION - 1);
+    }
+
+    /* ------------------------- the remembered jam ------------------------- */
+
+    private double rememberedThroughput = 1;
+
+    /**
+     * Told what the road actually did, at the end of a month.
+     *
+     * WHY IT IS PUSHED IN RATHER THAN READ. Who rides decides the load, the
+     * load decides the ratio, and the ratio decides who rides - a circle
+     * inside one month. So the ridership reads a number from BEFORE the month,
+     * exactly as sectors.Rail bills at last month's shares and for the same
+     * reason. One month of lag, and it is the behaviourally right lag too:
+     * nobody changes how they commute because of a Tuesday.
+     */
+    public void noteCongestion(double ratio) {
+        if (!Double.isFinite(ratio)) return;
+        double r = Math.max(MIN_THROUGHPUT, Math.min(1, ratio));
+        rememberedThroughput += (r - rememberedThroughput) * JAM_MEMORY;
+    }
+
+    public double getRememberedThroughput() { return rememberedThroughput; }
+
+    /** Put back from a save. See DataSave.rememberedCommute. */
+    public void setRememberedThroughput(double ratio) {
+        if (!Double.isFinite(ratio) || ratio <= 0) return;
+        rememberedThroughput = Math.max(MIN_THROUGHPUT, Math.min(1, ratio));
+    }
+
+    /** How bad the commute has been, 0 clear to 1 gridlocked. */
+    public double getJam() {
+        return Math.max(0, Math.min(1,
+                (1 - rememberedThroughput) / (1 - MIN_THROUGHPUT)));
+    }
+
+    /**
+     * How willing the city's commuters are to get on a tram at all, against a
+     * city where nobody owns a car.
+     *
+     * 1 exactly with no cars - see carRoadFactor() for why that is an early
+     * return and not an arithmetic identity.
+     */
+    public double willingToRide() {
+        if (!(carOwnership > 0)) return 1;
+        return (1 - carOwnership) + carOwnership * CAR_OWNER_RIDES_AT_GRIDLOCK * getJam();
+    }
+
+    /**
+     * What share of the city's commuters the transit stock could carry if they
+     * all turned up - which is what decides whether a household bothers buying
+     * a car. See HouseholdBalance.TRANSIT_DETERRENT.
+     *
+     * NOT CAPPED AT TRANSIT_MAX_SHARE, deliberately, and it is the one place
+     * in this class that ceiling does not apply. TRANSIT_MAX_SHARE is a
+     * statement about how many people will ever RIDE; this is a question about
+     * whether the line outside your door could carry you, and the answer does
+     * not stop being yes because two thirds of the city is the most that will
+     * ever get on. Capped, the deterrent could never exceed two thirds of its
+     * own constant and the mechanic was a rounding error on a delay.
+     */
+    public double getTransitCover() {
+        double commuters = getLoad(Traffic.COMMUTERS);
+        if (commuters <= 0) return 0;
+        return Math.min(1, getUsableTransit() / commuters);
+    }
+
+    private double highwayCapacity;
+    private double transitCapacity;
+    private final double[] railShare = new double[Traffic.values().length];
+
+    /**
+     * @param highwayCapacity the share of built road capacity that is
+     *                        grade-separated, weighted by each road's grade
+     * @param transitCapacity commuter journeys a month the transit stock could
+     *                        carry, before the road under it is taken account of
+     */
+    public void setModes(double highwayCapacity, double transitCapacity) {
+        this.highwayCapacity = Math.max(0, highwayCapacity);
+        this.transitCapacity = Math.max(0, transitCapacity);
+    }
+
+    /**
+     * What share of each stream the railway is carrying, handed over each month
+     * by Game.chargeFreight(). Zero in a city with no track, which is every
+     * city until somebody builds one.
+     */
+    public void setRailShare(double[] shares) {
+        for (Traffic stream : Traffic.values()) {
+            int i = stream.ordinal();
+            double s = shares != null && i < shares.length ? shares[i] : 0;
+            railShare[i] = Double.isFinite(s) ? Math.max(0, Math.min(1, s)) : 0;
+        }
+    }
+
+    public double getRailShare(Traffic stream) {
+        return stream == null ? 0 : railShare[stream.ordinal()];
+    }
+
+    /**
+     * True once the city has something other than an ordinary street.
+     *
+     * A CAR COUNTS, which is not obvious and is the line that lets the
+     * multiplier be felt at all: getEffectiveLoad() returns the untouched
+     * sweep unless this is true, so a motorised city with no highway, no tram
+     * and no track would otherwise have computed its old load for ever.
+     */
+    private boolean hasModes() {
+        if (highwayCapacity > 0 || transitCapacity > 0 || carOwnership > 0) return true;
+        for (double s : railShare) if (s > 0) return true;
+        return false;
+    }
+
+    /**
+     * Whether two businesses standing in this city can face DIFFERENT road
+     * ratios - and ONLY TRANSIT can do that.
+     *
+     * A highway and a railway change the LOAD the network is carrying, so they
+     * move the ratio for everybody at once; a tram takes one business's staff
+     * out of the jam and leaves the one next door's lorries in it. So with
+     * nobody riding, every stream reads getThroughputRatio() and the blends
+     * below have to hand that number BACK rather than recompute it: a weighted
+     * average of one number is that number in arithmetic and not always in
+     * floating point.
+     *
+     * AND AN ULP HERE IS A DIFFERENT CITY. This guard was missing for one
+     * build and BankCheck found it in twenty minutes: a fixture with twenty
+     * paved roads, no tram and no train came out a shade different in the
+     * eighth decimal, the shops' branch opened on the other side of a strain
+     * threshold, and the bank failed. Nothing about the model was wrong.
+     */
+    private boolean streamsDiffer() { return getTransitRiders() > 0; }
+
+    /** How much of the road network is built for lorries, 0 to 1. */
+    public double getHighwayShare() {
+        return capacity > 0 ? Math.min(1, highwayCapacity / capacity) : 0;
+    }
+
+    /** What the transit stock could carry, before the road under it is considered. */
+    public double getTransitCapacity() { return transitCapacity; }
+
+    /** ...and what it can actually carry, which a city with no streets cannot raise. */
+    public double getUsableTransit() {
+        return Math.min(transitCapacity, capacity * TRANSIT_NEEDS_ROAD);
+    }
+
+    /* ----------------------------- the fare ----------------------------- */
+
+    /**
+     * What share of the ceiling actually rides, at a given fare.
+     *
+     * A FARE IS A PRICE AND NOT A CHARGE, which is what makes transit
+     * different from the clinics and the schools: the person on the bus chose
+     * to be, and can choose a car instead. So the ridership ceiling is what a
+     * FREE system would carry and the fare walks it down from there.
+     *
+     * The shape is a straight line to zero at MAX_TRANSIT_FARE, which is
+     * crude and is the right kind of crude for a first pass: it is monotone,
+     * it has no constants in money of its own (the fare is measured against
+     * the cap, so a currency reform moves both and the ridership does not
+     * budge), and a player can read it off the screen in one go. A real
+     * elasticity is a later argument and wants a measurement behind it.
+     *
+     * AT THE DEFAULT FARE about ninety-five percent still ride, which is the
+     * point of the default: a city that has not touched the dial is running
+     * a normally-priced bus service, not an experiment.
+     */
+    public static double ridershipAt(double fare) {
+        if (!(fare > 0)) return 1;
+        double of = fare / TaxPolicy.MAX_TRANSIT_FARE;
+        return Math.max(0, Math.min(1, 1 - of));
+    }
+
+    private double fareShare = 1;
+
+    /** Told to the network each month, because the dial is the player's. */
+    public void setFare(double fare) {
+        this.fareShare = ridershipAt(fare);
+    }
+
+    public double getFareShare() { return fareShare; }
+
+    /**
+     * Commuters actually carried off the road this month.
+     *
+     * Three ceilings and the lowest wins: what the stock could carry, what the
+     * road under it allows, and what the ceiling on any city's transit share
+     * permits - then the fare walks that down.
+     */
+    public double getTransitRiders() {
+        return Math.min(getUsableTransit(),
+                getLoad(Traffic.COMMUTERS) * TRANSIT_MAX_SHARE) * fareShare * willingToRide();
+    }
+
+    /** What one unit of a stream costs the road, after the highways are counted. */
+    public double roadCostOf(Traffic stream) {
+        double grade = getHighwayShare();
+        double railed = 1 - RAIL_ROAD_RELIEF * getRailShare(stream);
+        switch (stream) {
+            case BULK:  return (1 - BULK_HIGHWAY_RELIEF * grade) * railed;
+            case GOODS: return (1 - GOODS_HIGHWAY_RELIEF * grade) * railed;
+            default:    return 1;
+        }
+    }
+
+    /**
+     * What the road is actually being asked to carry, after transit has taken
+     * its riders and the highways have eased the lorries.
+     *
+     * Equal to getLoad() to the bit in a city with neither, which is every
+     * city that exists today.
+     */
+    public double getEffectiveLoad() {
+        if (!hasModes()) return load;
+        double onRoad = Math.max(0, getLoad(Traffic.COMMUTERS) - getTransitRiders())
+                * carRoadFactor();
+        return onRoad
+                + getLoad(Traffic.GOODS) * roadCostOf(Traffic.GOODS)
+                + getLoad(Traffic.BULK) * roadCostOf(Traffic.BULK);
+    }
+
+    /**
+     * What each stream actually gets through.
+     *
+     * Freight gets the road's ratio and nothing else: a lorry in a jam is in a
+     * jam. COMMUTERS get a blend, because the ones on transit are not in the
+     * jam at all - which is the second thing transit buys and the one a player
+     * feels rather than reads. A city whose offices are staffed by people on a
+     * metro keeps working while its mills grind to a halt, and that is a real
+     * and legible difference between two cities with identical road networks.
+     */
+    public double throughputOf(Traffic stream) {
+        double road = getThroughputRatio();
+        if (stream != Traffic.COMMUTERS) return road;
+        double commuters = getLoad(Traffic.COMMUTERS);
+        double riders = getTransitRiders();
+        /*
+         * RETURNED WHOLE WHEN NOBODY IS ON A TRAM, and that early exit is not a
+         * shortcut - it is what makes this method safe to use on the live path.
+         * The blend below computes c x road / c, which is road to within an ulp
+         * and not road, and an ulp in this codebase is never nothing:
+         * DenominationCheck once spent a day on a 1e-16 tie that tripled a
+         * company's share price. Every city that exists today has no transit,
+         * so every city that exists today takes this line and reads exactly
+         * what a single city-wide ratio used to hand it.
+         */
+        if (commuters <= 0 || riders <= 0) return road;   // see streamsDiffer()
+        return (riders + (commuters - riders) * road) / commuters;
+    }
+
+    /**
+     * The ratio a business with THIS mix of traffic actually feels.
+     *
+     * A contact centre is three hundred people and nothing shipped; a steel
+     * mill is 83% ore. They are standing in the same city on the same roads
+     * and they do not have the same problem, and until the streams were split
+     * the game could not say so. A sector's exposure is its own load.
+     *
+     * A SECTOR WITH NOTHING STANDING GETS THE CITY'S OWN BLEND, not a clean
+     * one, and the first version of this got it wrong in a way worth writing
+     * down. "A sector with nothing standing is not being held up" is true of
+     * its OUTPUT and false of its PLANNER: BusinessInvestment costs a first
+     * plant at the sector's operating rate (estimatedMakerProfit, through
+     * operatingRateOf), and a plant built into a gridlocked city will sit in
+     * exactly the jam every other plant is sitting in. Reading 1 told six
+     * empty sectors that traffic was somebody else's problem.
+     *
+     * InfrastructureCheck caught it and the shape of the failure is the useful
+     * part: the congested city's shelves went from 31% full to 100%, because
+     * it had cheerfully built plants a 38% road said it could not afford. Two
+     * cities meant to differ only in their roads differed by six hundred
+     * people. Nothing about congestion was wrong; the thing that reads it was.
+     *
+     * @param mix load by stream, in Traffic order
+     */
+    public double throughputFor(double[] mix) {
+        // See streamsDiffer(): with nobody on a tram there is nothing to blend,
+        // and blending anyway moves the answer by an ulp.
+        if (!streamsDiffer()) return getThroughputRatio();
+        double total = 0, got = 0;
+        if (mix != null) {
+            for (Traffic stream : Traffic.values()) {
+                int i = stream.ordinal();
+                double at = i < mix.length ? Math.max(0, mix[i]) : 0;
+                total += at;
+                got += at * throughputOf(stream);
+            }
+        }
+        return total > 0 ? got / total : cityThroughput();
+    }
+
+    /** What the city as a whole is getting through, blended over its own traffic. */
+    public double cityThroughput() {
+        if (!streamsDiffer()) return getThroughputRatio();
+        double total = 0, got = 0;
+        for (Traffic stream : Traffic.values()) {
+            double at = getLoad(stream);
+            total += at;
+            got += at * throughputOf(stream);
+        }
+        return total > 0 ? got / total : getThroughputRatio();
+    }
+
     /* ------------------------------- results ------------------------------- */
 
     public double getCapacity() { return capacity; }
@@ -89,7 +623,7 @@ public class InfrastructureManager {
 
     /** Load over capacity. Above 1 the network is carrying more than it can. */
     public double getUtilisation() {
-        return (capacity > 0) ? load / capacity : 0;
+        return (capacity > 0) ? getEffectiveLoad() / capacity : 0;
     }
 
     public double getSpareCapacity() {
@@ -146,5 +680,7 @@ public class InfrastructureManager {
     public void reset() {
         capacity = BASE_CAPACITY;
         load = 0;
+        carOwnership = 0;
+        rememberedThroughput = 1;
     }
 }

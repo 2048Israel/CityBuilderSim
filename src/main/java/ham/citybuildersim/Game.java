@@ -978,6 +978,14 @@ public class Game {
         rowHomes[HouseholdAccounts.PRISONERS]   = crime.prisoners();
         households.setOutsideMoney(economyManager.getEiPremiums(),
                 economyManager.getEiBenefits(), economyManager.getStudentGrants());
+        /*
+         * What the city took at the barrier, read from the figure it is shown
+         * COLLECTING rather than recomputed here - the same one-source rule the
+         * health fees and the tuition above are read by, and for the same
+         * reason: two copies of one number is how this codebase has produced
+         * money from nowhere before.
+         */
+        households.setTransitFares(economyManager.getTransitFares());
 
         double interestPaid = householdBalance.totalInterest();
         households.setPensionPerSenior(tax.pensionPerSenior());
@@ -1048,7 +1056,15 @@ public class Game {
         double[] actualShopping = new double[rowCount];
         for (int r = 0; r < rowCount; r++) {
             disposable[r] = households.getRowDisposable(r);
-            fees[r] = households.getRowHealthcare(r) + households.getRowTuition(r);
+            /*
+             * ...AND THE FARE, SINCE 2026-09-16. The third fee, and the one
+             * the city had been collecting from nobody - see
+             * HouseholdAccounts.fares for how long and why nothing noticed.
+             * Here it becomes real money: what this row's people paid to ride
+             * comes out of the same waterfall the clinic's fees do.
+             */
+            fees[r] = households.getRowHealthcare(r) + households.getRowTuition(r)
+                    + households.getRowFares(r);
             actualShopping[r] = households.getRowShopping(r);
         }
         ham.citybuildersim.sectors.Retail shops = getSectors().retail();
@@ -1143,6 +1159,123 @@ public class Game {
             studentLoansWrittenOff = householdBalance.getStudentDebtTakenAway();
             cash += studentLoansRepaid - studentLoansLent;
         }
+    }
+
+
+    /* =====================================================================
+       THE HOUSEHOLDS BUY CARS (2026-09-16)
+
+       The fifth link, and the first time in this game that a household has
+       bought anything except food, a roof and a share.
+
+       WHY IT IS HERE AND NOT IN THE MARKET PASS. Cars clear in the band like
+       everything else, but the households are not a sector and cannot bid in
+       a strike. They take what they want off the makers' shelf at the price
+       the market struck, and import the rest - which is exactly what the CITY
+       does for building material, through the same Markets.draw(). The units
+       count as demand for next month's strike (see Markets.noteDrawn), so the
+       price answers with a month's lag, as materials' does.
+
+       WHY THE TOP OF THE MONTH. Savings are fresh - updateHouseholdAccounts()
+       settled them three lines up - and the makers' shelf holds what last
+       month's production put there. A household buying before the export
+       market opens is domestic demand getting first refusal on a domestic
+       car, which is the right way round and is what the city's own materials
+       draw already does.
+
+       THE PRICE IS QUOTED BEFORE IT IS CHARGED, and that is not a nicety. The
+       shelf is finite: past it every car is an import at the ceiling, so a
+       month that buys more than the city made costs more per car than the
+       market price says. Sizing the demand at the local price and settling it
+       at the blended one would have taken money the households had not agreed
+       to spend - and the clamp that stops savings going negative would have
+       swallowed the difference silently, which is money from nowhere wearing a
+       safety guard. So: quote at what they want, re-ask at what that would
+       cost, buy that, and settle at the blend of what was actually taken -
+       which is never dearer than the figure they were re-asked at, because
+       fewer cars means a smaller imported share.
+       ===================================================================== */
+
+    /**
+     * The ownership rate the save was taken at, applied inside the rebuild.
+     *
+     * CARRIED BECAUSE OF WHEN THE CELLS COME BACK. The cars live in the
+     * household cells and the cells are restored AFTER
+     * rebuildSimulationState() - by design, and for reasons the note at that
+     * restore gives - while the road ratio is struck INSIDE it. So the network
+     * would read an unmotorised city for the whole of the first month back,
+     * which is exactly the bug the railway's share note one line above
+     * setRoadRatio() describes. -1 means a save from before cars existed, and
+     * the cells' own figure (zero) is then right.
+     */
+    private double carriedCarOwnership = -1;
+
+    private double householdCarsBought;
+    private double householdCarSpend;
+    private double householdCarImports;
+
+    /** Cars the households bought this month. */
+    public double getHouseholdCarsBought() { return householdCarsBought; }
+
+    /** ...what they paid for them, and what of that left the country. */
+    public double getHouseholdCarSpend()   { return householdCarSpend; }
+    public double getHouseholdCarImports() { return householdCarImports; }
+
+    private void motoring() {
+
+        InfrastructureManager roads = getInfrastructureManager();
+
+        /*
+         * WHAT THE COMMUTE WAS LIKE, remembered before anything about this
+         * month changes it. Who rides decides the load and the load decides
+         * the ratio, so the ratio a driver answers has to be one from before
+         * the month he is deciding about - see
+         * InfrastructureManager.noteCongestion().
+         */
+        roads.noteCongestion(roads.getThroughputRatio());
+
+        householdCarsBought = 0;
+        householdCarSpend = 0;
+        householdCarImports = 0;
+
+        // Fifteen years on, cars are scrapped - whether or not anything can be
+        // bought to replace them. See HouseholdBalance.wearOutCars().
+        householdBalance.wearOutCars();
+
+        GoodsMarket m = getMarkets().get(Good.CARS);
+        double asking = m.getLocalPrice();
+        /*
+         * ...AND HOW MANY BOTHER AT ALL. The other half of Jerus's rule, and a
+         * CEILING on ownership rather than a brake on it: a city whose lines
+         * could carry everybody tops out at half a car per household for ever,
+         * and one that builds those lines after it has motorised watches the
+         * fleet decay to that ceiling as cars wear out. See
+         * HouseholdBalance.TRANSIT_DETERRENT. Transit's effect on the decision
+         * to DRIVE, with a car already bought, is a different mechanism and
+         * lives on the network - see InfrastructureManager.willingToRide().
+         */
+        double ceiling = 1 - HouseholdBalance.TRANSIT_DETERRENT * roads.getTransitCover();
+
+        if (asking > 0) {
+            double wanted = householdBalance.carsWanted(asking, ceiling);
+            if (wanted > 0) {
+                Markets.Draw quote = getMarkets().quote(Good.CARS, wanted, getSectors());
+                double perCar = quote.cost() / wanted;
+                double affordable = perCar > 0
+                        ? householdBalance.carsWanted(perCar, ceiling) : 0;
+                if (affordable > 0) {
+                    Markets.Draw took = getMarkets().draw(
+                            Good.CARS, null, Trade.HOUSEHOLDS, affordable, getSectors());
+                    double paid = took.units() > 0 ? took.cost() / took.units() : 0;
+                    householdCarsBought = took.units();
+                    householdCarSpend = householdBalance.takeCars(took.units(), paid, ceiling);
+                    householdCarImports = took.importCost();
+                }
+            }
+        }
+
+        // ...and the road is told what is now parked on it.
+        roads.setCarOwnership(householdBalance.carsPerHousehold());
     }
 
     /**
@@ -1993,6 +2126,26 @@ public class Game {
      * what they cost when the building went up, so the bill inflates on its
      * own. A constant in absolute money is the same bug as a cached figure.
      */
+    /**
+     * THE RAILWAY'S MONTH, and the band it leaves behind.
+     *
+     * Beside chargeBuildingMaintenance() because it is the same kind of thing:
+     * one sector billing every other, before any statement is struck. See
+     * sectors.Rail.haul(), which does the arithmetic and explains why the
+     * invoice is raised at LAST month's quote.
+     *
+     * AND THE ROAD IS TOLD, in the same breath, because what the railway is
+     * carrying is freight that is not on the street. The relief is applied the
+     * way the highways' and the trams' already are - see
+     * InfrastructureManager.RAIL_ROAD_RELIEF - so a city with no track computes
+     * exactly what it computed before any of this existed.
+     */
+    private void chargeFreight() {
+        ham.citybuildersim.sectors.Rail rail = getSectors().rail();
+        rail.haul(getSectors());
+        getInfrastructureManager().setRailShare(rail.getCarried());
+    }
+
     private void chargeBuildingMaintenance(){
 
         ham.citybuildersim.sectors.Construction builders = getSectors().construction();
@@ -3923,6 +4076,10 @@ public class Game {
         // it is an expense on one of them and revenue on the other.
         chargeBuildingMaintenance();
 
+        // ...and the freight bill on the month's trade, for exactly the same
+        // reason: an expense on eleven sets of books and revenue on a twelfth.
+        chargeFreight();
+
         /*
          * THE MONTH'S BUILDING WORK, AS THE STATEMENT WILL CARRY IT. The work
          * is recognised where the sites advance and the crews draw their
@@ -4000,6 +4157,14 @@ public class Game {
         monthlyMaterialImportBill = 0;
 
         updateHouseholdAccounts();
+
+        /*
+         * ...AND THEY SPEND SOME OF IT ON A CAR. After the ledger, because the
+         * money it draws on is the money the ledger just settled; before the
+         * investor below, because a month of car sales is demand the investor
+         * should be able to see. See motoring().
+         */
+        motoring();
 
         // Then advance the loans, take back matured principal, and lend to
         // whichever sector the month left short.
@@ -4849,6 +5014,26 @@ public class Game {
                         populationManager.getWagesPerType(), fill),
                 buildingManager.getUpkeepByCategory(BuildingType.SAFETY));
         economyManager.setSafety(crime.getGrossCost());
+
+        /*
+         * 6d. AND THE BUSES AND THE TRAMS, which are the first thing the city
+         *     builds for itself that can turn a profit.
+         *
+         *     THE WAGES WERE FREE UNTIL TODAY, and only because nothing in
+         *     INFRASTRUCTURE had ever had a job: a road does not employ
+         *     anybody, so no line was ever written to pay one. A Metro Line is
+         *     eight hundred and twenty-eight posts. Adding the category here
+         *     costs a city with only roads exactly nothing, which is every
+         *     city that exists, and stops the transit stock being staffed by
+         *     volunteers.
+         */
+        servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());
+        economyManager.setTransit(
+                buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
+                        populationManager.getWagesPerType(), fill)
+                        + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE),
+                getInfrastructureManager().getTransitRiders()
+                        * economyManager.getTaxPolicy().getTransitFare());
 
         /*
          * 7. And who is too ill to work. Last, because the dead nobody buried
@@ -5704,6 +5889,17 @@ public class Game {
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setPolicyRate(debtManager.getPolicyRate());
         dataSave.setCostOfLiving(labourMarket.getCostOfLiving());
+        /*
+         * THE MOTORING, in the two figures the road cannot rebuild. The cars
+         * themselves ride in the household cells; these are the network's
+         * reading of them - the ownership rate, because the cells are not back
+         * yet when the road ratio is first struck on the load path, and the
+         * remembered commute, because it is a lagged average of months that
+         * are gone. See DataSave.rememberedCommute.
+         */
+        dataSave.setCarsPerHousehold(householdBalance.carsPerHousehold());
+        dataSave.setRememberedCommute(
+                getInfrastructureManager().getRememberedThroughput());
         dataSave.setDenomination(denomination.toSaveArray());
         dataSave.setBankTaxCharged(economyManager.getBankTax());
         dataSave.setRentWeight(families.rentWeight());
@@ -6452,7 +6648,34 @@ public class Game {
     economyManager.setWageDetail(populationManager.getStaffedWagePerType());
     economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
     economyManager.setWaterRatio(servicesManager.getWaterRatio());
-    economyManager.setRoadRatio(servicesManager.getRoadRatio());
+    /*
+     * The railway's share, before the road ratio reads it: a reloaded city has
+     * the track it was saved with, so the relief has to be back on the network
+     * before anything is measured against it. See chargeFreight().
+     */
+    getInfrastructureManager().setRailShare(getSectors().rail().getCarried());
+    // ...and the band the saved month was quoting, which lives on the markets
+    // and is not saved there. See sectors.Rail.reapplyBand().
+    getSectors().rail().reapplyBand();
+    /*
+     * ...AND THE CARS, for the same reason and one line later: a reloaded city
+     * has the fleet it was saved with, and a fleet is a load on the road. See
+     * carriedCarOwnership for why this is a carried figure rather than a read
+     * of the cells.
+     */
+    getInfrastructureManager().setCarOwnership(carriedCarOwnership >= 0
+            ? carriedCarOwnership : householdBalance.carsPerHousehold());
+    /*
+     * ...AND THE FARE, which is the third thing the road ratio reads and is
+     * not saved: ridershipAt() is struck from the dial every month, so a
+     * reloaded city put every rider back on a free tram - more riders, less
+     * road load, a different ratio - until the next tick corrected it. The
+     * dial itself is saved; what is derived from it has to be re-derived
+     * HERE, above the line that reads it. See setTransit() below for the
+     * money half and for how long this whole family of gap has existed.
+     */
+    servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());
+    economyManager.setRoadRatio(getInfrastructureManager(), buildingManager);
 
     /*
      * The fourth ratio, on the load path.
@@ -6477,6 +6700,30 @@ public class Game {
     economyManager.setHealthcare(healthcare.getGrossCost(), healthcare.getFees());
     // ...and the police and the prisons', from the month Crime carried.
     economyManager.setSafety(crime.getGrossCost());
+
+    /*
+     * ...AND THE BUSES, ON THE LOAD PATH (2026-09-16), which is the FIFTH
+     * sighting of the shape the two lines above already carry notes about:
+     * set in advanceDemographics() on the monthly path and nowhere here.
+     * Mining's wages went that way, then the property-tax charge, then the
+     * health ratio, then the health service's books, and now this.
+     *
+     * IT ONLY BECAME VISIBLE THE DAY THE FARE BECAME REAL MONEY. The transit
+     * bill is read by nothing but the national accounts, so a reloaded city
+     * quietly reporting a transit bill of zero cost nothing anybody could
+     * measure. The fare is a charge on the households now, so a reloaded city
+     * charged them nothing for a month - and LongPlaytest caught it at
+     * $12.85 on $10,388 of next-month income, eight months out of 3,650.
+     *
+     * The fare SHARE goes with it and had to go FURTHER UP, above the line
+     * that strikes the road ratio - see the note there.
+     */
+    economyManager.setTransit(
+            buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
+                    populationManager.getWagesPerType(), populationManager.getJobFillRate())
+                    + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE),
+            getInfrastructureManager().getTransitRiders()
+                    * economyManager.getTaxPolicy().getTransitFare());
 
     /*
      * EVERY SECTOR'S WAGES, in one call - the same call the monthly path
@@ -6779,6 +7026,8 @@ public class Game {
             bank.restoreSecurities(exchange.markToMarket(equity));
             exchange.reopen(bank.equity());
             labourMarket.setCostOfLiving(loaded.getCostOfLiving());
+            carriedCarOwnership = loaded.getCarsPerHousehold();
+            getInfrastructureManager().setRememberedThroughput(loaded.getRememberedCommute());
 
             /*
              * EVERY SECTOR, WHOLE, and every market's price. Before the
@@ -7442,6 +7691,17 @@ public class Game {
          * The live path does all of this at the end of nextMonth(); this is
          * that same sequence, in that same order, at the end of the load.
          */
+        /*
+         * THE FLEET, READ OFF THE CELLS THAT ARE FINALLY BACK. The rebuild
+         * used the carried figure because the cells were not; this is the same
+         * number from its own source, and the two agreeing is the point rather
+         * than a coincidence - the save wrote the carried figure out of these
+         * same cells. Cheap, and it stops a carried scalar and the cells that
+         * own it from ever drifting apart unnoticed.
+         */
+        getInfrastructureManager().setCarOwnership(householdBalance.carsPerHousehold());
+        carriedCarOwnership = -1;
+
         priceTheDebtMarket();
         refreshBank();
         debtManager.setBankPremium(bank.ratePremium());

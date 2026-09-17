@@ -302,6 +302,7 @@ public class HouseholdBalance {
         built.add(new PrisonerHousehold());
         cells = built.toArray(new Household[0]);
         view = java.util.Collections.unmodifiableList(java.util.Arrays.asList(cells));
+        carsToReplace = new double[cells.length];
     }
 
     /* =====================================================================
@@ -674,9 +675,29 @@ public class HouseholdBalance {
         });
         // The student loan follows the graduate into a family - and out of
         // the city with one who leaves, which the treasury writes off.
+        //
+        // ITS POSITION IN THE LIST IS NOW NAMED. It used to be "the last one",
+        // read off stocks.size() - 1 inside the loop below, which was true for
+        // exactly as long as it was last. The car that follows it would have
+        // silently taken the graduates' census and moved the loans on the
+        // plain one - nobody's loan wrong by much, everybody's loan wrong.
+        final int loanSlot = stocks.size();
         stocks.add(new Stock() {
             public double get(Household c) { return c.studentDebt; }
             public void set(Household c, double v) { c.studentDebt = v; }
+        });
+        /*
+         * AND THE CAR GOES WITH THE PEOPLE (2026-09-16), which is the whole
+         * reason it is a household stock rather than a city-wide count. A
+         * couple who move in together have two cars between them and then one
+         * household; five flatmates who split have a car each. Nobody had to
+         * write that down - the pool below does not know what it is moving,
+         * which is what the note at the top of this section promised the day
+         * the shares were added.
+         */
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.cars; }
+            public void set(Household c, double v) { c.cars = v; }
         });
 
         int n = cells.length;
@@ -686,7 +707,7 @@ public class HouseholdBalance {
 
         double[] left = new double[stocks.size()];
         for (int k = 0; k < stocks.size(); k++) {
-            boolean loans = k == stocks.size() - 1;
+            boolean loans = k == loanSlot;
             left[k] = moveStock(stocks.get(k), fresh, loans ? beforeLoans : before, k == 0 ? buffer : null);
         }
         // What nobody claimed has left the city: the savings with them, the
@@ -699,6 +720,10 @@ public class HouseholdBalance {
         // so nothing crosses the border - a stock that changes hands.
         lastAbroadTakenAway = left[2 + Equity.COMPANIES.length];
         lastStudentDebtTakenAway = left[3 + Equity.COMPANIES.length];
+        // ...and the cars drove out of the city with their owners. Not written
+        // off and not sold: a car that left is simply not here any more, which
+        // is why nothing but the road reads this.
+        lastCarsTakenAway = left[4 + Equity.COMPANIES.length];
 
         for (int i = 0; i < n; i++) {
             // A cell that lost households keeps its average: the ones who
@@ -851,7 +876,39 @@ public class HouseholdBalance {
                     + (cityMoved > 0 ? cityPool * fromCity / cityMoved : 0);
             double brought = arrival == null ? 0 : newcomers * arrival[i];
 
-            stock.set(c, (stock.get(c) * before[i] + received + brought) / fresh[i]);
+            /*
+             * AND THE POSITION IS CLAMPED ON THE WAY IN (2026-09-16).
+             *
+             * Every stock this method moves is a thing a household HOLDS -
+             * savings, debt, shares in a company, dollars abroad, a student
+             * loan - and not one of them can be less than nothing. The share
+             * clamps above stop a cell taking a negative SLICE; this stops a
+             * cell ending up with a negative POSITION, which is the same
+             * defect one step further on and reachable by a different route:
+             * a pool that is itself a hair negative divides out into every
+             * cell that draws on it, month after month.
+             *
+             * Found by the eight-seed ensemble on the day the railway started
+             * buying locomotives. Seed 2 carried `debt -4.61e-19` on one cell
+             * for THREE THOUSAND MONTHS - 35,199 flagged months against the
+             * dozen the known rounding noise produces - because once a cell
+             * holds a signed dust it hands it on to everyone it shares a pool
+             * with. Nothing about rolling stock was wrong; the trajectory
+             * simply put a cell somewhere the old residue could persist.
+             *
+             * WHY THE SIGN MATTERS WHEN THE MAGNITUDE CANNOT: investAbroad()
+             * asks `c.debt <= 0` to decide whether a household may hold money
+             * abroad, so a negative dust reads debt-free and a positive one
+             * reads indebted. See the header above this loop for the 158-month
+             * divergence that cost.
+             *
+             * Exact, and free of units, for the reason written up there: a
+             * bound in absolute money is the mistake this project keeps
+             * finding, and the way not to make it again is not to write a
+             * number at all.
+             */
+            double position = (stock.get(c) * before[i] + received + brought) / fresh[i];
+            stock.set(c, position > 0 ? position : 0);
         }
         return gone;
     }
@@ -859,6 +916,255 @@ public class HouseholdBalance {
     /** Shares of each company that left the city with their holders this month. */
     private final double[] lastSharesTakenAway = new double[Equity.COMPANIES.length];
     public double getSharesTakenAway(int company) { return lastSharesTakenAway[company]; }
+
+    /* =====================================================================
+       THE CARS (2026-09-16)
+
+       Jerus, on how ownership should work: "income decides who can afford
+       one, good transit makes people not bother" - and, on what it should do
+       to the street, "if everyone has cars then road demand is enormous".
+
+       WHAT THE MEASUREMENT SAID BEFORE A LINE OF THIS WAS WRITTEN, because it
+       decided the shape. A six-hundred-month city: an UNSKILLED couple takes
+       home $4,880 a month, banks $3,160 of it, and is sitting on $799,100 -
+       a hundred and sixty-four months of income. Every cell in the city is
+       between a hundred and three hundred months. Total household savings
+       $17.6bn against zero household debt.
+
+       That is not a rich city, it is a city WITH NOTHING TO BUY. Rent is
+       rent, the grocery basket is capped at what a person eats, and every
+       dollar past those two has had nowhere to go since the game was written.
+       A car is the first durable this city has ever been able to own, and the
+       pile is why affordability barely binds in a mature one and binds hard
+       in a young one - which is exactly the right way round and took no
+       tuning at all.
+
+       SO THE CONSTRAINT IS NOT MONEY, IT IS TIME. Everybody could buy a car
+       this month; nobody does, because that is not how a country motorises.
+       CAR_ADOPTION spreads it over about three decades of game time, and the
+       fleet then holds itself up against CAR_LIFE_MONTHS for ever after. The
+       road feels the level, the industry feels the flow, and the two settle
+       at different times - which is the interesting part.
+
+       WHAT REPLACEMENT IS NOT THROTTLED BY. A household whose car has died
+       buys another at once; only a household that has NEVER owned one waits
+       its turn. Put the diffusion rate on both and the fleet plateaus at 78%
+       for ever, which is an arithmetic accident of two constants and not a
+       fact about anywhere.
+       ===================================================================== */
+
+    /** How long a car lasts. Fifteen years, and then it is replaced or it is not. */
+    public static final double CAR_LIFE_MONTHS = 180;
+
+    /**
+     * What share of the households who have never owned a car buy one in a
+     * month, before they are asked whether they can afford it.
+     *
+     * A DIFFUSION RATE AND NOT A PREFERENCE. Two percent is a half-life of
+     * about thirty-five months, so a city that could motorise instantly takes
+     * something like three decades to get most of the way - which is roughly
+     * what motorisation took everywhere it happened, and is slow enough that a
+     * player watches it rather than being handed it.
+     */
+    public static final double CAR_ADOPTION = .02;
+
+    /**
+     * How much of the wanting a fully-served transit system takes away.
+     *
+     * The other half of Jerus's rule. This is the ONLY place transit touches
+     * the decision to BUY; what it does to the decision to DRIVE, on a given
+     * morning, with a car already in the drive, is InfrastructureManager's and
+     * is a different mechanism.
+     *
+     * IT IS A CEILING ON OWNERSHIP AND NOT A BRAKE ON ADOPTION, and the
+     * difference is the whole of whether a player has a move here. Scaled
+     * against the RATE it only delays: a well-served city motorises at half
+     * speed and arrives at the same place a few decades later, so transit buys
+     * a postponement and nothing else. Against the LEVEL it is a decision - a
+     * city whose lines could carry everybody tops out at half a car per
+     * household, for ever, because half of its households never bother owning
+     * one.
+     *
+     * AND IT WORKS BACKWARDS TOO, which is the part worth building for. A city
+     * that motorises first and builds its metro afterwards does not lose its
+     * cars overnight; it stops REPLACING them, and the fleet decays over
+     * CAR_LIFE_MONTHS toward what the new ceiling allows. Fifteen years to
+     * unmotorise, which is about what it takes.
+     */
+    public static final double TRANSIT_DETERRENT = .5;
+
+    /** What died this month, per cell, waiting to be replaced. Within-month working. */
+    private final double[] carsToReplace;
+
+    /** ...and the cars whose owners left the city. */
+    private double lastCarsTakenAway;
+
+    public double getCarsTakenAway() { return lastCarsTakenAway; }
+
+    /** Every car in the city. */
+    public double totalCars() { return sum(Household::totalCars); }
+
+    /** Cars per household, 0 to 1 - what the road reads. */
+    public double carsPerHousehold() {
+        double homes = sum(Household::households);
+        return homes > 0 ? Math.min(1, totalCars() / homes) : 0;
+    }
+
+    /**
+     * Fifteen years on, every car in the city is scrapped.
+     *
+     * Runs whether or not anything can be bought to replace it, because that
+     * is what makes ownership something a city can LOSE: a crash that empties
+     * the savings does not take the cars away this month, it takes them away
+     * over the fifteen years nobody can replace one.
+     *
+     * @return cars scrapped
+     */
+    public double wearOutCars() {
+        double gone = 0;
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            double worn = c.cars > 0 ? c.cars / CAR_LIFE_MONTHS : 0;
+            carsToReplace[i] = worn;
+            if (worn <= 0) continue;
+            c.cars = Math.max(0, c.cars - worn);
+            gone += worn * c.households;
+        }
+        return gone;
+    }
+
+    /**
+     * What the households would buy this month at this price, before the
+     * market says how many there are.
+     *
+     * THE SAME FOUR GATES THE SHARE OFFER USES - no debt, not locked out, not
+     * going short, and a household that can hold anything at all - and the
+     * same cushion, which was Jerus's call the day the shares went in: one
+     * rule for idle money, and the rich still buy more because they have more
+     * past it.
+     *
+     * AFFORDABILITY IS A FRACTION RATHER THAN A CLIFF. A cell is an average of
+     * thousands of households, so "this cell can afford four tenths of a car
+     * each" is the honest reading of "two fifths of these households can
+     * afford one" - and it is the reading that makes a poor city motorise
+     * slowly instead of all at once on the month its savings cross a line.
+     *
+     * @param price   what one car costs here
+     * @param ceiling cars per household this city will own at all: 1 where
+     *                nobody has a tram - see TRANSIT_DETERRENT
+     * @return cars, city-wide
+     */
+    public double carsWanted(double price, double ceiling) {
+        if (!(price > 0)) return 0;
+        double total = 0;
+        for (int i = 0; i < cells.length; i++) total += wantOf(i, price, ceiling);
+        return total;
+    }
+
+    /* =====================================================================
+       WHOLE CARS, AND WHY THE FLOOR IS LOAD-BEARING (2026-09-16)
+
+       The affordability test is a MONEY RATIO - what a household has spare,
+       over what a car costs - and it comes out of this method as a PHYSICAL
+       QUANTITY that the road, the goods market and the trade balance all then
+       read. Nothing else in this file does that. Every other household
+       decision multiplies money by a scale-free fraction and stays money.
+
+       A currency reform divides every amount by a hundred, and (a/100)/(b/100)
+       is not a/b - it is a/b give or take a unit in the last place. So a
+       reformed city wanted an ulp more or less of a car than the plain one,
+       bought it from a different place, and the two cities' trade balances
+       parted company: DenominationCheck went red on sixteen assertions, the
+       first of them the exchange rate four decimals in, one month after the
+       reform.
+
+       THIS IS THE MONEY-CONSTANT FAMILY WEARING A NEW COAT. The other
+       twenty-three are absolute amounts that a reform walks past a threshold;
+       this one is scale-INVARIANT in arithmetic and not in floating point, and
+       it bites for the same reason: a quantity crossing from the money world
+       into the physical one has to cross at a grain coarser than the dust.
+
+       So a cell buys WHOLE CARS. It is also the truer statement - a cell is
+       thousands of households and "four hundred and seven cars" is what
+       happens - and the grain is far coarser than any rounding: a cell that
+       wants 407.0000000000001 cars and one that wants 406.9999999999999 both
+       buy 406, which is the same answer the shops reach by flooring a basket
+       count (see Retail.sellOwnPriced) and for exactly the same reason.
+       ===================================================================== */
+
+    /** What one cell would buy this month, in whole cars. */
+    private double wantOf(int i, double price, double ceiling) {
+        Household c = cells[i];
+        if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) return 0;
+        double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
+        if (spare <= 0) return 0;
+        /*
+         * THE ROOM IS MEASURED TO THE CEILING, which is what makes a tram
+         * something other than a delay - and it is also what lets a fleet
+         * SHRINK. A city that motorised and then built a metro has cars above
+         * its new ceiling: room is zero, so the month's scrapped cars are not
+         * replaced and the fleet walks down to the ceiling over the life of a
+         * car. Nothing special had to be written for that; it falls out of
+         * replacement being room-limited like everything else.
+         */
+        double room = Math.max(0, Math.max(0, Math.min(1, ceiling)) - c.cars) * c.households;
+        double want = carsToReplace[i] * c.households + room * CAR_ADOPTION;
+        return Math.floor(Math.min(Math.min(want, room), spare / price));
+    }
+
+    /**
+     * Hands out the cars the market actually had, pro rata over who wanted
+     * them, and takes the money out of savings.
+     *
+     * OUT OF SAVINGS AND NOT OFF THE INCOME STATEMENT, which is the same
+     * treatment buyShares() and investAbroad() give: a household turning money
+     * into a thing it owns is a portfolio move, not consumption. The month's
+     * books do not see it and the balance sheet does - savings down, a car up
+     * - which is what happened.
+     *
+     * @return cash spent
+     */
+    public double takeCars(double units, double price, double ceiling) {
+        if (!(units > 0) || !(price > 0)) return 0;
+        lastCarsBought = 0;
+        double bought = 0;
+        double[] want = new double[cells.length];
+        double total = 0;
+        for (int i = 0; i < cells.length; i++) {
+            want[i] = wantOf(i, price, ceiling);
+            total += want[i];
+        }
+        if (total <= 0) return 0;
+        /*
+         * ONE IN THE ORDINARY CASE, and that is worth saying out loud. Cars are
+         * importable, so Markets.draw() always returns the units it was asked
+         * for - the shelf for what the shelf holds and the world for the rest -
+         * and the ratio below is exactly 1. It is here for the day something
+         * stops that being true, not for today.
+         */
+        double scale = Math.min(1, units / total);
+        double spent = 0;
+        for (int i = 0; i < cells.length; i++) {
+            if (want[i] <= 0) continue;
+            Household c = cells[i];
+            double got = want[i] * scale / c.households;
+            // A position, and a position cannot be negative or past its
+            // ceiling - the clamp every stock in this file carries, and for
+            // the reason HouseholdBalance.moveStock's note gives.
+            c.cars = Math.max(0, Math.min(1, c.cars + got));
+            c.savings = Math.max(0, c.savings - got * price);
+            spent += got * price * c.households;
+            bought += got * c.households;
+        }
+        lastCarsBought = bought;
+        return spent;
+    }
+
+    private double lastCarsBought;
+
+    /** Cars the households actually took this month. See takeCars(). */
+    public double getCarsBought() { return lastCarsBought; }
+
 
     /* =====================================================================
        THE MARKET
@@ -992,7 +1298,9 @@ public class HouseholdBalance {
         for (Household c : cells) {
             if (c.households <= 0 || c.shares[company] <= 0) continue;
             double sell = c.shares[company] * Math.min(1, fraction);
-            c.shares[company] -= sell;
+            // The same clamp as its sibling in Exchange, and for the same
+            // reason: a holding is a position and cannot be negative.
+            c.shares[company] = Math.max(0, c.shares[company] - sell);
             c.savings += sell * price;
             paid += sell * price * c.households;
         }
@@ -1632,8 +1940,11 @@ public class HouseholdBalance {
     /** ...and before the student loans were (2026-09-11, afternoon). */
     public static final int CELL_SLOTS_BEFORE_STUDENT_DEBT = CELL_SLOTS_BEFORE_ABROAD + 1;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_STUDENT_DEBT + 1;
+    /** ...and before the cars were (2026-09-16). */
+    public static final int CELL_SLOTS_BEFORE_CARS = CELL_SLOTS_BEFORE_STUDENT_DEBT + 1;
+
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars. */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_CARS + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public String[] cellKeys() {
@@ -1658,6 +1969,7 @@ public class HouseholdBalance {
             for (double held : c.shares) out[i++] = held;
             out[i++] = c.abroad;
             out[i++] = c.studentDebt;
+            out[i++] = c.cars;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -1706,11 +2018,12 @@ public class HouseholdBalance {
         final int wasBeforeShares  = CELL_SLOTS_BEFORE_SHARES;
         final int wasBeforeAbroad  = wasBeforeShares + savedShares;
         final int wasBeforeStudent = wasBeforeAbroad + 1;
-        final int wasFull          = wasBeforeStudent + 1;
+        final int wasBeforeCars    = wasBeforeStudent + 1;
+        final int wasFull          = wasBeforeCars + 1;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != wasFull && slots != wasBeforeStudent
+                || (slots != wasFull && slots != wasBeforeCars && slots != wasBeforeStudent
                     && slots != wasBeforeAbroad && slots != wasBeforeShares)) {
             return false;
         }
@@ -1747,6 +2060,14 @@ public class HouseholdBalance {
             java.util.Arrays.fill(c.shares, 0);
             c.abroad = 0;
             c.studentDebt = 0;
+            /*
+             * A CITY FROM BEFORE CARS EXISTED OWNS NONE, and that zero is the
+             * whole of why this batch could be measured at all: the road
+             * multiplier and the transit rule below are both exactly 1 at zero
+             * ownership, so an old save reloads into a city that behaves to
+             * the bit as it did the day it was written, and then starts buying.
+             */
+            c.cars = 0;
             if (slots >= wasBeforeAbroad) {
                 for (int k = 0; k < savedShares; k++) {
                     double held = saved[i++];
@@ -1754,7 +2075,8 @@ public class HouseholdBalance {
                 }
             }
             if (slots >= wasBeforeStudent) c.abroad = Math.max(0, saved[i++]);
-            if (slots >= wasFull) c.studentDebt = Math.max(0, saved[i++]);
+            if (slots >= wasBeforeCars) c.studentDebt = Math.max(0, saved[i++]);
+            if (slots >= wasFull) c.cars = Math.max(0, saved[i++]);
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];
@@ -1800,8 +2122,10 @@ public class HouseholdBalance {
             int r = c.row();
             c.households = fresh[i];
             if (r >= rows) continue;
-            c.savings = saved[r];
-            c.debt = saved[rows + r];
+            // Clamped on the way back in, for the reason every other write to
+             // a position is: a saved dust is still a dust. See moveStock().
+            c.savings = Math.max(0, saved[r]);
+            c.debt = Math.max(0, saved[rows + r]);
             c.lockout = (int) Math.round(saved[rows * 2 + r]);
             if (current) {
                 c.want        = saved[rows * 4 + r];

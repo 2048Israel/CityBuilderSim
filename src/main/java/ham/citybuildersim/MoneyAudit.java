@@ -368,6 +368,17 @@ public final class MoneyAudit {
         in += credit.apply("+ treasury StudentLoansRepaid", g.getStudentLoansRepaid(), Scope.DOMESTIC);
         in += credit.apply("+ care Fees", care.getFees(), Scope.DOMESTIC);
         in += credit.apply("+ schools Fees", schools.getFees(), Scope.DOMESTIC);
+        /*
+         * ...AND THE FARE (2026-09-16), which belongs beside those two and was
+         * missing from this list since the day transit was built. The city
+         * banked it inside getTotalIncome() and no household was ever debited
+         * for it, so the pools gained money the flows could not explain - and
+         * nothing caught it for the plainest possible reason: until the advisor
+         * learned to buy a bus, no city in any harness ever had a rider. See
+         * HouseholdAccounts.fares.
+         */
+        in += credit.apply("+ e TransitFares",
+                e.getTransitFares(), Scope.DOMESTIC);
         // The world: every sector's exports, at the price the statement sold them for.
         for (Sector s : sectors.all()) {
             in += credit.apply("+ " + s.key() + " Exports", s.statement().exports, Scope.TRADE);
@@ -444,6 +455,26 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ households BroughtHome", g.getHouseholdBalance().getBroughtHome(), Scope.FINANCIAL);
         in += credit.apply("+ households SavedFromAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.DOMESTIC);
+        /*
+         * THE CARS THE HOUSEHOLDS BOUGHT FROM ABROAD (2026-09-16).
+         *
+         * The first thing a household has ever imported. The domestic half of
+         * the same purchase needs no line here - it is already in some
+         * sector's SalesToHouseholds above - but this half crosses the
+         * country's edge and is booked against no sector's statement, because
+         * Markets.draw() has nobody to book it to when the buyer is not a
+         * sector.
+         *
+         * THE PAIR IS THE ONE `SavedFromAbroad` USES, two lines up, and for
+         * the identical reason: households are outside the audited POOLS, so
+         * money going from a household to the world moves nothing the pool
+         * identity can see and has to be declared on both sides to keep it. Of
+         * the two only the debit carries a scope the balance of payments
+         * reads, and TRADE is the right one - it is a good, arriving on a
+         * ship. See getHouseholdCarImports().
+         */
+        in += credit.apply("+ households CarImportsFunded",
+                g.getHouseholdCarImports(), Scope.DOMESTIC);
         in += credit.apply("+ households ForeignInterest", g.getHouseholdBalance().getForeignInterest(), Scope.INCOME);
         /*
          * THE OWNERS' MONEY, COMING IN. Shares sold to the city's households
@@ -622,6 +653,9 @@ public final class MoneyAudit {
         out += debit.apply("- sectors ForeignInterestReinvested", g.getOutwardInvestment().getInterestThisMonth(), Scope.FINANCIAL);
         // The households' three, the other way round. See the credits.
         out += debit.apply("- households InvestedAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.FINANCIAL);
+        // ...and the cars they bought from the world. See the credit's note.
+        out += debit.apply("- households CarImports",
+                g.getHouseholdCarImports(), Scope.TRADE);
         out += debit.apply("- households BroughtHomeSaved", g.getHouseholdBalance().getBroughtHome(), Scope.DOMESTIC);
         out += debit.apply("- households ForeignInterestReinvested", g.getHouseholdBalance().getForeignInterest(), Scope.FINANCIAL);
         /*

@@ -435,6 +435,167 @@ public class BuildingsTemplate {
         return roadLoad;
     }
 
+    /* =======================================================================
+       WHAT A MODE IS GOOD AT (2026-09-16)
+
+       Two numbers that turn three identical roads into three different modes.
+       Everything standing today reads zero for both and behaves exactly as it
+       always has; see InfrastructureManager for why every mode is written as a
+       RELIEF on an unchanged baseline rather than as a penalty on it.
+       ======================================================================= */
+
+    private double freightGrade;
+    private double transitCapacity;
+
+    /**
+     * How much of this road is built for lorries, 0 to 1.
+     *
+     * A gravel road is 0 and a highway is 1, and the thing it buys is not
+     * capacity - that is the `capacity` field and always was - but the fact
+     * that a tonne of ore on a grade-separated highway costs the network less
+     * than the same tonne through streets that also have school runs on them.
+     * Ore is the traffic most improved by not sharing, which is why this
+     * relieves BULK hardest and GOODS a little.
+     */
+    public BuildingsTemplate setFreightGrade(double grade) {
+        this.freightGrade = Math.max(0, Math.min(1, grade));
+        return this;
+    }
+
+    public double getFreightGrade() { return freightGrade; }
+
+    /**
+     * Commuter journeys a month this carries OFF the road, if it is transit.
+     *
+     * Zero for everything that is not, which is everything that existed before
+     * today. It is deliberately not the same field as `capacity`: road
+     * capacity is a pool anything may use and this is a pool only people may
+     * use, and adding them would let a metro line carry ore.
+     */
+    public BuildingsTemplate setTransitCapacity(double riders) {
+        this.transitCapacity = Math.max(0, riders);
+        return this;
+    }
+
+    public double getTransitCapacity() { return transitCapacity; }
+
+    /** True for a building whose whole purpose is carrying people. */
+    public boolean isTransit() { return transitCapacity > 0; }
+
+    private double railCapacity;
+
+    /**
+     * Tonnes a month this can haul across the city boundary, if it is rail.
+     *
+     * Separate from transitCapacity for the reason that one is separate from
+     * `capacity`: they are three different pools and a thing that can carry
+     * one of them cannot carry the others. A metro does not move ore and a
+     * freight line does not move commuters.
+     */
+    public BuildingsTemplate setRailCapacity(double tonnes) {
+        this.railCapacity = Math.max(0, tonnes);
+        return this;
+    }
+
+    public double getRailCapacity() { return railCapacity; }
+
+    /* =======================================================================
+       WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16)
+
+       roadLoad is one number and it always meant two things. These three split
+       it - and they SPLIT it, they do not replace it. loadOf(COMMUTERS) +
+       loadOf(GOODS) + loadOf(BULK) is getRoadLoad() exactly, for every
+       building, so the network sums to what it always summed to and this
+       whole step is a decomposition rather than a rebalance. Which mode
+       carries which stream is step three; this is the plumbing under it.
+
+       WHERE THE SHARES COME FROM, AND IT IS NOT A GUESS. Least squares against
+       the catalogue itself, on the three things a building obviously has:
+
+           roadLoad  =  0.726 x jobs  +  0.878 x homes  +  0.0386 x tonnes/mo
+
+       R-squared 0.74 over the fifty-six buildings that load a road at all. Two
+       things are worth reading out of that fit.
+
+       ONE: the implied rate is 0.0386/0.726, or ONE WORKER PER NINETEEN TONNES
+       A MONTH. A truck carries about twenty. Nobody set out to encode that -
+       it fell out of numbers that were tuned one building at a time over
+       months - and it is the strongest evidence available that the existing
+       table was already a freight model that nobody had written down. The
+       constant below is twenty rather than nineteen because a truckload is a
+       reason and a regression coefficient is not; the shares move by under a
+       percentage point either way.
+
+       TWO: the residuals are all explainable and all in the same direction.
+       An Iron Mine is +280 over the fit, because heavy vehicles on an unpaved
+       approach are worse than their tonnage; a Penitentiary is -288 and a
+       Long-Term Care Complex -136, because their occupants do not commute
+       however many staff they have; a University is +258 and a Medical School
+       +177, because students travel and this fit only counts wages. Every one
+       of those is a real fact the fit cannot see.
+
+       AND NONE OF IT MATTERS HERE, which is the point of splitting rather than
+       replacing. The fit supplies the SHARE; the stored roadLoad supplies the
+       MAGNITUDE. A mine keeps its 420 and simply learns that 69% of it is ore.
+       ======================================================================= */
+
+    /** One worker's monthly travel, as tonnes of freight. A truckload. See above. */
+    public static final double TONNES_PER_WORKER = 20;
+
+    /** A home's monthly travel, as workers. Commuting, plus the shopping and the school run. */
+    public static final double WORKERS_PER_HOME = 1.2;
+
+    /**
+     * This building's road load, split by what is actually moving.
+     *
+     * The three sum to getRoadLoad(). A building with jobs and no throughput
+     * is all commuters, which is every school, hospital, prison and office in
+     * the game; a building with neither - and there are none today - would be
+     * called commuters rather than divided by zero.
+     */
+    public double loadOf(Traffic stream) {
+        if (stream == null || roadLoad <= 0) return 0;
+
+        double commuters = WORKERS_PER_HOME * makes(Good.HOUSING);
+        for (JobType job : JobType.values()) commuters += getJobs(job);
+
+        /*
+         * A RAIL TERMINAL'S THROUGHPUT IS BULK ON THE ROAD, at one end of it.
+         * The wagon does the long haul and a lorry does the last mile between
+         * the siding and the works, so a terminal that would otherwise read as
+         * a pure office - it makes nothing and uses nothing - reads as what it
+         * is: a few hundred people and a very great many trucks. Zero for
+         * every building that is not rail, so nothing else moved by a bit.
+         */
+        double goods = 0, bulk = railCapacity / TONNES_PER_WORKER;
+        for (java.util.Map<Good, Double> side : java.util.List.of(makes, uses)) {
+            for (java.util.Map.Entry<Good, Double> e : side.entrySet()) {
+                Traffic t = e.getKey().traffic();
+                if (t == null) continue;
+                double tonnes = e.getValue() * e.getKey().tonnesPerUnit() / TONNES_PER_WORKER;
+                if (t == Traffic.BULK) bulk += tonnes; else goods += tonnes;
+            }
+        }
+
+        double total = commuters + goods + bulk;
+        if (total <= 0) return stream == Traffic.COMMUTERS ? roadLoad : 0;
+
+        /*
+         * THE LAST STREAM TAKES THE REMAINDER rather than its own share, so
+         * the three add to roadLoad to the bit rather than to within three
+         * roundings of it. The network's total is what has to be preserved and
+         * this is the cheapest way to make that arithmetic rather than a
+         * tolerance.
+         */
+        double asCommuters = roadLoad * commuters / total;
+        double asGoods = roadLoad * goods / total;
+        switch (stream) {
+            case COMMUTERS: return asCommuters;
+            case GOODS:     return asGoods;
+            default:        return roadLoad - asCommuters - asGoods;
+        }
+    }
+
     public int getCoverage() {
         return coverage;
     }

@@ -856,6 +856,36 @@ public class DataSave {
      * and the target alone cannot reproduce it. A save that forgot it reloaded a
      * city whose workers had never noticed the last devaluation.
      */
+    /**
+     * The commute the city REMEMBERS, which decides how many of its car owners
+     * get on a tram - see InfrastructureManager.noteCongestion().
+     *
+     * SAVED BECAUSE IT CANNOT BE REBUILT. Almost nothing about the road is
+     * carried: capacity and load are pure functions of what is standing and
+     * are swept from the stock on every load. This one is not - it is a lagged
+     * average of months that are gone, and a reloaded city that started it at
+     * a clear road would put its drivers back in their cars for three months
+     * and read a different ratio than the city it was saved from.
+     *
+     * One, not zero, in a save from before it existed: an unmotorised city has
+     * nobody reading it, and one is the value that changes nothing.
+     */
+    private double rememberedCommute = 1;
+
+    /**
+     * Cars per household, as the road read it. See Game.carriedCarOwnership
+     * for why the cells' own count cannot serve on the load path.
+     */
+    private double carsPerHousehold;
+
+    public void setCarsPerHousehold(double v) { this.carsPerHousehold = v; }
+    public double getCarsPerHousehold()       { return carsPerHousehold; }
+
+    public void setRememberedCommute(double v) { this.rememberedCommute = v; }
+    public double getRememberedCommute() {
+        return rememberedCommute > 0 ? rememberedCommute : 1;
+    }
+
     private double costOfLiving = 1;
 
     public void setCostOfLiving(double v) { this.costOfLiving = v; }

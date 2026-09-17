@@ -103,6 +103,45 @@ public class HouseholdAccounts {
     private double tuition;
     private double interest;
 
+    /* =====================================================================
+       THE FARE (2026-09-16)
+
+       WHAT THIS LINE IS FIXING, and it is not a car mechanic. Transit has been
+       in the game since the modes went in, and the fare it charges has been
+       CREDITED TO THE CITY AND DEBITED TO NOBODY the whole time: the money
+       arrived in the treasury out of thin air, exactly the failure the note on
+       the health fees in Game.syncHouseholdAccounts() says these books exist to
+       catch, and exactly the failure that note says this codebase has produced
+       before.
+
+       WHY NOBODY SAW IT. Nothing had ever built a bus. The playtest advisor
+       answered every jam with tarmac - the road throttle offered three roads
+       and no transit - so four thousand months a seed, eight seeds a run, for
+       as long as transit has existed, not one city ever carried a passenger.
+       The first ensemble in which the advisor bought a Bus Network failed the
+       money audit on all eight seeds within a few hundred months, and the
+       residual was the fare to six decimals: 2,186 riders at $2.50 is $5.47,
+       and the audit said 5.465207.
+
+       A HARNESS CANNOT CHECK A THING NOBODY DOES. That is the useful half of
+       this and it is worth more than the fix: a mechanic with no player is a
+       mechanic with no test, however many assertions surround it.
+
+       AND IT IS A FEE, NOT A PRICE, AS FAR AS THESE BOOKS GO. It sits with the
+       health fee and the tuition rather than with the shopping - deducted
+       before the food money is counted, split across the rows the way the
+       clinic's fees are - because that is what it is: a fixed monthly charge
+       on everybody who rides.
+       ===================================================================== */
+    private double fares;
+
+    /** What the city took in fares this month, told to the households who paid it. */
+    public void setTransitFares(double paid) {
+        this.fares = Math.max(0, paid);
+    }
+
+    public double getFares() { return fares; }
+
     private int population;
     private int workforce;
     private int jobsFilled;
@@ -241,7 +280,7 @@ public class HouseholdAccounts {
      * were paying school fees out of savings they did not have.
      */
     public double getSpending() {
-        return rent + shopping + healthcare + tuition + interest;
+        return rent + shopping + healthcare + tuition + fares + interest;
     }
 
     /** Income less tax less everything paid out. Negative means living beyond it. */
@@ -348,6 +387,7 @@ public class HouseholdAccounts {
     private final double[] rowPensions      = new double[ROWS];
     private final double[] rowHealthcare    = new double[ROWS];
     private final double[] rowTuition       = new double[ROWS];
+    private final double[] rowFares         = new double[ROWS];
     private final double[] rowInterest      = new double[ROWS];
     private final double[] rowEiPremiums    = new double[ROWS];
     /**
@@ -421,6 +461,7 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowPensions, 0);
         java.util.Arrays.fill(rowHealthcare, 0);
         java.util.Arrays.fill(rowTuition, 0);
+        java.util.Arrays.fill(rowFares, 0);
         java.util.Arrays.fill(rowInterest, 0);
         java.util.Arrays.fill(rowEiPremiums, 0);
         java.util.Arrays.fill(rowBenefits, 0);
@@ -505,6 +546,17 @@ public class HouseholdAccounts {
              */
             rowHealthcare[r] = r == ORPHANS || r == PRISONERS || payingHeads <= 0 ? 0
                     : healthcare * peoplePerRow[r] / payingHeads;
+            /*
+             * The fare follows the same heads as the clinic's fees, and with
+             * the same two exemptions: an orphan and a prisoner pay for
+             * nothing, so what they would have paid falls on the people who
+             * can. It is not exact - a retired household rides less than a
+             * commuting one - but the model has no per-row ridership to be
+             * exact WITH, and inventing one would be an estimate wearing a
+             * fact's clothes. The same sentence the healthcare split makes.
+             */
+            rowFares[r] = r == ORPHANS || r == PRISONERS || payingHeads <= 0 ? 0
+                    : fares * peoplePerRow[r] / payingHeads;
         }
 
         /*
@@ -606,7 +658,7 @@ public class HouseholdAccounts {
     public double feesPerHead() {
         double heads = 0;
         for (double n : rowPeople) heads += n;
-        return heads > 0 ? (healthcare + tuition) / heads : 0;
+        return heads > 0 ? (healthcare + tuition + fares) / heads : 0;
     }
 
     /** What one pensioner receives, as the policy currently sets it. */
@@ -694,6 +746,7 @@ public class HouseholdAccounts {
     public double getRowTax(int row)        { return rowTax[row]; }
     public double getRowRent(int row)       { return rowRent[row]; }
     public double getRowShopping(int row)   { return rowShopping[row]; }
+    public double getRowFares(int row)      { return rowFares[row]; }
     public double getRowPeople(int row)     { return rowPeople[row]; }
     public double getRowHouseholds(int row) { return rowHouseholds[row]; }
     public int getRowCount()                { return ROWS; }
@@ -732,18 +785,23 @@ public class HouseholdAccounts {
         out[i++] = interest;
         out[i++] = population;    out[i++] = workforce;   out[i++] = jobsFilled;
         out[i++] = eiPremiums;    out[i++] = eiBenefits;  out[i++] = studentGrants;
+        // ...and the fare, on the END, per the rule at the top of this note.
+        out[i++] = fares;
         for (double[] row : new double[][] {
                 rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
                 rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
-                rowEiPremiums, rowBenefits, rowDoors }) {
+                rowEiPremiums, rowBenefits, rowDoors, rowFares }) {
             System.arraycopy(row, 0, out, i, ROWS);
             i += ROWS;
         }
         return out;
     }
 
-    /** Scalars and row arrays in the statement's state since 2026-09-11. */
-    private static final int STATE_SCALARS = 15, STATE_ROWS = 14;
+    /** Scalars and row arrays in the statement's state since 2026-09-16. */
+    private static final int STATE_SCALARS = 16, STATE_ROWS = 15;
+
+    /** ...and the shape before the transit fare was a line on it (2026-09-16). */
+    private static final int SCALARS_BEFORE_FARES = 15, ROWS_BEFORE_FARES = 14;
 
     /**
      * Puts a saved statement back, exactly as it was written.
@@ -759,10 +817,23 @@ public class HouseholdAccounts {
          * which is the month those saves were struck in.
          */
         // ...or the day's shape before the prisoners had a row: the same arrays, one row short.
+        /*
+         * ...OR THE SHAPE FROM BEFORE THE FARE WAS ON IT, which every save
+         * written before 2026-09-16 is. It restores what it carries and the
+         * fare reads zero - which is exactly true of a city whose fare was
+         * being collected from nobody.
+         */
         boolean beforePrison = in != null
-                && in.length == STATE_SCALARS + Household.ROWS_BEFORE_PRISON * STATE_ROWS;
+                && (in.length == STATE_SCALARS + Household.ROWS_BEFORE_PRISON * STATE_ROWS
+                    || in.length == SCALARS_BEFORE_FARES + Household.ROWS_BEFORE_PRISON * ROWS_BEFORE_FARES);
+        boolean beforeFares = in != null
+                && (in.length == SCALARS_BEFORE_FARES + ROWS * ROWS_BEFORE_FARES
+                    || in.length == SCALARS_BEFORE_FARES + Household.ROWS_BEFORE_PRISON * ROWS_BEFORE_FARES);
         boolean older = in != null && in.length == 12 + ROWS_BEFORE_OUTSIDE * 11;
-        boolean current = in != null && (in.length == STATE_SCALARS + ROWS * STATE_ROWS || beforePrison);
+        boolean current = in != null
+                && (in.length == STATE_SCALARS + ROWS * STATE_ROWS
+                    || in.length == SCALARS_BEFORE_FARES + ROWS * ROWS_BEFORE_FARES
+                    || beforePrison);
         if (!current && !older) return false;
         int rows = beforePrison ? Household.ROWS_BEFORE_PRISON : current ? ROWS : ROWS_BEFORE_OUTSIDE;
         int i = 0;
@@ -775,18 +846,25 @@ public class HouseholdAccounts {
         workforce  = (int) Math.round(in[i++]);
         jobsFilled = (int) Math.round(in[i++]);
         eiPremiums = 0; eiBenefits = 0; studentGrants = 0;
+        fares = 0;
         if (current) {
             eiPremiums = in[i++]; eiBenefits = in[i++]; studentGrants = in[i++];
+            if (!beforeFares) fares = in[i++];
         }
-        double[][] arrays = current
+        double[][] arrays = !current
+                ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
+                        rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest }
+                : beforeFares
                 ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
                         rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
                         rowEiPremiums, rowBenefits, rowDoors }
                 : new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
-                        rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest };
+                        rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
+                        rowEiPremiums, rowBenefits, rowDoors, rowFares };
         java.util.Arrays.fill(rowEiPremiums, 0);
         java.util.Arrays.fill(rowBenefits, 0);
         java.util.Arrays.fill(rowDoors, 0);
+        java.util.Arrays.fill(rowFares, 0);
         for (double[] row : arrays) {
             java.util.Arrays.fill(row, 0);
             System.arraycopy(in, i, row, 0, rows);
@@ -871,7 +949,9 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowEiPremiums, 0);
         java.util.Arrays.fill(rowBenefits, 0);
         java.util.Arrays.fill(rowDoors, 0);
+        java.util.Arrays.fill(rowFares, 0);
         tuition = 0;
+        fares = 0;
         interest = 0;
     }
 
@@ -881,13 +961,14 @@ public class HouseholdAccounts {
         contributions *= scale;  pensions *= scale;
         eiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
         healthcare *= scale;  tuition *= scale;  interest *= scale;
+        fares *= scale;
         cumulativeSaving *= scale;
         pensionPerSenior *= scale;
         for (int r = 0; r < ROWS; r++) {
             rowWages[r] *= scale;  rowTax[r] *= scale;  rowRent[r] *= scale;
             rowShopping[r] *= scale;  rowContributions[r] *= scale;
             rowPensions[r] *= scale;  rowHealthcare[r] *= scale;
-            rowTuition[r] *= scale;  rowInterest[r] *= scale;
+            rowTuition[r] *= scale;  rowFares[r] *= scale;  rowInterest[r] *= scale;
             rowEiPremiums[r] *= scale;  rowBenefits[r] *= scale;
         }
     }

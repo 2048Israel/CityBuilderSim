@@ -82,6 +82,8 @@ public final class SectorState {
         public Map<String, Double> unitsBought = new LinkedHashMap<>();
         public Map<String, SplitState> sold = new LinkedHashMap<>();
         public Map<String, SplitState> bought = new LinkedHashMap<>();
+        /** The named non-goods part of the month's purchases. See Sector.Ledger.otherInputs. */
+        public Map<String, Double> otherInputs = new LinkedHashMap<>();
 
         static LedgerState of(Sector.Ledger l) {
             LedgerState s = new LedgerState();
@@ -95,6 +97,7 @@ public final class SectorState {
             for (Map.Entry<Good, Double> e : l.unitsBought.entrySet()) s.unitsBought.put(e.getKey().name(), e.getValue());
             s.sold = splitsOf(l.sold);
             s.bought = splitsOf(l.bought);
+            s.otherInputs = new LinkedHashMap<>(l.otherInputs);
             return s;
         }
 
@@ -116,6 +119,7 @@ public final class SectorState {
             }
             l.sold.putAll(splitsTo(sold));
             l.bought.putAll(splitsTo(bought));
+            if (otherInputs != null) l.otherInputs.putAll(otherInputs);
             return l;
         }
     }
@@ -129,6 +133,8 @@ public final class SectorState {
         public Map<String, SplitState> sold = new LinkedHashMap<>();
         public Map<String, SplitState> bought = new LinkedHashMap<>();
         public Map<String, Double> otherParts = new LinkedHashMap<>();
+        /** The named non-goods part of the input line. Absent in a save from before rail: empty is right. */
+        public Map<String, Double> otherInputs = new LinkedHashMap<>();
 
         static StatementState of(Sector.Statement t) {
             StatementState s = new StatementState();
@@ -143,6 +149,7 @@ public final class SectorState {
             s.sold = splitsOf(t.sold);
             s.bought = splitsOf(t.bought);
             s.otherParts = new LinkedHashMap<>(t.otherParts);
+            s.otherInputs = new LinkedHashMap<>(t.otherInputs);
             return s;
         }
 
@@ -160,6 +167,7 @@ public final class SectorState {
             t.sold = splitsTo(sold);
             t.bought = splitsTo(bought);
             t.otherParts = otherParts == null ? new LinkedHashMap<>() : new LinkedHashMap<>(otherParts);
+            t.otherInputs = otherInputs == null ? new LinkedHashMap<>() : new LinkedHashMap<>(otherInputs);
             return t;
         }
     }

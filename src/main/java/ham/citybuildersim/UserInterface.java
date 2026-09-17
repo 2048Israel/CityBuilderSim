@@ -2179,7 +2179,8 @@ public class UserInterface extends Application {
         return EnumSet.of(BuildingType.RESIDENTIAL, BuildingType.COMMERCIAL,
                 BuildingType.INDUSTRIAL, BuildingType.HEAVY_INDUSTRY,
                 BuildingType.MINING, BuildingType.CONSTRUCTION,
-                BuildingType.BUSINESS_SERVICES, BuildingType.AGRICULTURE);
+                BuildingType.BUSINESS_SERVICES, BuildingType.AGRICULTURE,
+                BuildingType.RAIL, BuildingType.AUTOMOTIVE);
     }
 
     /** True when everything in this category is something investors put up. */
@@ -2241,6 +2242,16 @@ public class UserInterface extends Application {
             // the whole neighbourhood rather than with one lot. See
             // BuildingType.AGRICULTURE.
             new BuildCategory("Farms",          EnumSet.of(BuildingType.AGRICULTURE)),
+            // Its own row because it is the one thing in this strip that is
+            // neither a business the city hopes will employ people nor a
+            // network the city owns: it is a private company whose product is
+            // a price on every other screen. See BuildingType.RAIL.
+            new BuildCategory("Rail",           EnumSet.of(BuildingType.RAIL)),
+            // ...and its own row for the reason Farms and Services have one:
+            // what a player has to understand about an assembly plant is the
+            // one thing it does not share with a foundry - it cannot be run on
+            // imported parts, at any price. See BuildingType.AUTOMOTIVE.
+            new BuildCategory("Vehicles",       EnumSet.of(BuildingType.AUTOMOTIVE)),
         };
     }
 
@@ -4969,7 +4980,8 @@ public class UserInterface extends Application {
              * a breakdown that does not foot in front of the player.
              */
             double fixed = (hh.getRowRent(retired) + hh.getRowHealthcare(retired)
-                    + hh.getRowTuition(retired) + hh.getRowInterest(retired)) / homes;
+                    + hh.getRowTuition(retired) + hh.getRowFares(retired)
+                    + hh.getRowInterest(retired)) / homes;
             column.getChildren().add(statementLine("...its rent and bills come to",
                     fixed > 0 ? "\u2212" + moneyFull(fixed) : "nothing",
                     fixed > 0 ? Palette.WARN : Palette.TEXT_SPENT));
@@ -11333,6 +11345,37 @@ public class UserInterface extends Application {
                 break;
             }
 
+            case RAIL: {
+                /*
+                 * THE ONE BUILDING WHOSE VALUE IS A PRICE SOMEWHERE ELSE. A
+                 * player can read tonnes off a line and still have no idea what
+                 * it is for, because what it buys is a narrower import and
+                 * export band on every screen in the game. So the card says
+                 * what the freight costs today and what the railway charges,
+                 * and leaves the tonnage as the second sentence.
+                 */
+                ham.citybuildersim.sectors.Rail rail = game.getSectors().rail();
+                out.add(String.format("Hauls up to %s tonnes a month of the city's trade "
+                        + "to and from the world. Everything it does not carry goes by "
+                        + "lorry, at the price the world charges.",
+                        formatter.format(t.getRailCapacity())));
+                double lorry = rail.lorryRatePerTonne();
+                if (lorry > 0) {
+                    out.add(String.format("A lorry charges about %s a tonne today and the "
+                            + "railway quotes %.0f%% of that - freight money that stays in "
+                            + "the city instead of leaving with the cargo.",
+                            unitPrice(lorry), rail.getQuote() * 100));
+                }
+                out.add(String.format("The city trades %s tonnes a month and the network "
+                        + "can reach %s of them.",
+                        formatter.format(rail.getTradeTonnes()),
+                        formatter.format(Math.min(rail.getTradeTonnes(), rail.getCapacityTonnes()))));
+                out.add("Owned by the rail sector, which builds it out of its own money "
+                        + "when the freight pays for it. The lorries between the siding "
+                        + "and the works are still on the road.");
+                break;
+            }
+
             case HEALTHCARE:
                 out.addAll(whatCareItGives(t));
                 break;
@@ -12631,6 +12674,29 @@ public class UserInterface extends Application {
                 box.getChildren().add(bookDetailRow("all of it from the city", -s.atHome, true));
             }
         }
+        /*
+         * AND WHAT IS IN THIS LINE THAT IS NOT A GOOD, by name.
+         *
+         * The haulage the railway billed, and the railway's own fuel. A service
+         * has no units and no market, so it can never appear in the per-good
+         * rows above - and the first draft of the railway left the opened cost
+         * line adding up to less than the closed one, which is exactly the
+         * disclosure this screen refuses to draw. Named where it was charged
+         * rather than worked out here by subtraction; see
+         * Sector.billForService() and Sector.otherInputParts().
+         */
+        double services = 0;
+        for (java.util.Map.Entry<String, Double> e : sector.otherInputParts().entrySet()) {
+            if (Math.abs(e.getValue()) < .0000005) continue;
+            box.getChildren().add(bookDetailRow(e.getKey(), -e.getValue(), false));
+            services += e.getValue();
+        }
+        if (services != 0 && sector != game.getSectors().rail()) {
+            box.getChildren().add(bookDetailNote("Freight. The railway carries what it can "
+                    + "of this business's trade and bills for it here; the rest is inside "
+                    + "the import and export prices, paid to whoever moved it."));
+        }
+
         if (box.getChildren().isEmpty()) return box;
 
         if (st.inputs > 0) {
@@ -16798,6 +16864,10 @@ public class UserInterface extends Application {
                 tightMoney(toDollars(-hh.getHealthcare()), false)));
         column.getChildren().add(statementLine("School fees",
                 tightMoney(toDollars(-hh.getTuition()), false)));
+        // The third fee, and the one the city used to collect from nobody.
+        // See HouseholdAccounts.fares.
+        column.getChildren().add(statementLine("Transit fares",
+                tightMoney(toDollars(-hh.getFares()), false)));
         column.getChildren().add(statementLine("Interest on debt",
                 tightMoney(toDollars(-hh.getInterest()), false)));
         column.getChildren().add(statementLine("Spent in the shops",

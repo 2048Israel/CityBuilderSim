@@ -1103,6 +1103,7 @@ public class BuildingManager {
                 .setElectricityConsumption(40)  // street lighting and signals
                 .setLandSqFt(250000)
                 .setRoadLoad(0)                 // a road does not drive on itself
+                .setFreightGrade(.35)           // kerbed and signalled; a lorry still stops at junctions
                 .setId(13);
 
         templates.add(pavedRoad);
@@ -1126,9 +1127,331 @@ public class BuildingManager {
                 .setElectricityConsumption(135) // lit, pumped and signalled end to end
                 .setLandSqFt(63000)
                 .setRoadLoad(0)                 // a road does not drive on itself
+                .setFreightGrade(1.0)           // grade-separated: no junction shares it
                 .setId(30);
 
         templates.add(elevatedHighway);
+
+        /* ===================================================================
+           THE THINGS THAT CARRY PEOPLE (2026-09-16)
+
+           The land ladder these sit on was already in this file and nobody had
+           pointed at it. Per unit of capacity:
+
+             Gravel Road        500 sq ft      $2.58
+             Paved Road         208            $4.50
+             Elevated Highway    42            $6.40
+
+           Twelve times the capacity per acre for two and a half times the
+           price. Transit is the same trade taken two rungs further, which is
+           what makes it the answer to the thing that actually stops a mature
+           city: land at eighty-eight percent with nothing built for a decade.
+
+           THEY ARE PUBLIC. Jerus: "transit is public, so thats the
+           government." The city builds them, the city pays for them, and the
+           fare is the player's to set - see TaxPolicy. Roads work exactly this
+           way already and have since they were buildings.
+
+           AND THEY CARRY NOTHING BUT PEOPLE, which is not a limitation to be
+           designed around but the point: a city cannot solve an ore problem
+           with a tram. See InfrastructureManager and Traffic.
+           =================================================================== */
+
+        /*
+         * BUS NETWORK. Depots, shelters and the buses themselves - and it runs
+         * on the road, which is why it is the one transit mode with a road load
+         * of its own. The cheapest way to move people and the one that helps
+         * least when the streets are already full, which is exactly what a bus
+         * is.
+         */
+        BuildingsTemplate busNetwork = new BuildingsTemplate("Bus Network", BuildingType.INFRASTRUCTURE)
+                .setTransitCapacity(2500)
+                .setCashCost(12000)
+                .setConstructionPoints(2200)
+                .setConstructionMaterials(280)
+                .setElectricityConsumption(60)
+                .setWaterConsumption(12)
+                .setLandSqFt(20000)             // a depot and a few hundred shelters
+                .setRoadLoad(120)               // the buses are on the road too
+                .setJobs(JobType.NO_DIPLOMA, 210)
+                .setJobs(JobType.DIPLOMA, 40)
+                .setId(59);
+
+        templates.add(busNetwork);
+
+        /*
+         * LIGHT RAIL. Its own right of way at street level: eight times a bus
+         * network's capacity on twice the land and five times the money, and
+         * it is not in traffic. The middle rung, and the first one that is
+         * cheaper per rider than it is per acre.
+         */
+        BuildingsTemplate lightRail = new BuildingsTemplate("Light Rail Line", BuildingType.INFRASTRUCTURE)
+                .setTransitCapacity(8000)
+                .setCashCost(64000)
+                .setConstructionPoints(14000)
+                .setConstructionMaterials(1900)
+                .setElectricityConsumption(420)
+                .setWaterConsumption(20)
+                .setLandSqFt(45000)
+                .setRoadLoad(30)                // stations and the vans that service them
+                .setJobs(JobType.NO_DIPLOMA, 180)
+                .setJobs(JobType.DIPLOMA, 90)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 14)
+                .setId(60);
+
+        templates.add(lightRail);
+
+        /*
+         * METRO LINE. Thirty thousand journeys a month on thirty thousand
+         * square feet, which is FIVE HUNDRED TIMES a gravel road's capacity per
+         * acre for four times its price per rider. The whole ladder in one
+         * building: a city that has run out of ground and not out of money
+         * builds this, and a city with ground to spare never should.
+         */
+        BuildingsTemplate metro = new BuildingsTemplate("Metro Line", BuildingType.INFRASTRUCTURE)
+                .setTransitCapacity(30000)
+                .setCashCost(320000)
+                .setConstructionPoints(62000)
+                .setConstructionMaterials(9400)
+                .setElectricityConsumption(1850)
+                .setWaterConsumption(90)
+                .setLandSqFt(30000)             // entrances and vents; the rest is underneath
+                .setRoadLoad(60)
+                .setJobs(JobType.NO_DIPLOMA, 520)
+                .setJobs(JobType.DIPLOMA, 260)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 48)
+                .setId(61);
+
+        templates.add(metro);
+
+        /* ------------------------------- RAIL -------------------------------
+           Freight rail, and the first thing the city does NOT build.
+
+           Jerus: "you build roads obviously but rail is its own sector... it
+           wants and will do everything possible to stay profitable and maximize
+           profits", and "no at first, rail doesnt even build, everything is
+           exported by truck, which is obviously more expensive and road
+           demanding." So these are financed by the investor against a business
+           case like a steel mill, they are owned by sectors.Rail, and a city
+           that never builds one trades exactly as it always did.
+
+           WHAT ONE IS WORTH, AT THE PLAYTEST'S OWN NUMBERS. The 4,000-month
+           city ships 1,166,821 tonnes a month across its boundary - 99.7% of it
+           bulk, and 97% of that steel in and fabricated steel out - and pays
+           $372m of freight on it against a GDP of $592m. A lorry charges about
+           $319 a tonne. At 60% of that a Freight Line's 100,000 tonnes is
+           $19.1m a month of haulage, which is why these cost what they cost:
+           the capital is the only thing standing between a player and the
+           whole of that bill.
+
+           THE LADDER IS PER TONNE, like every other ladder in this catalogue.
+           $5,600 of capital per tonne a month on a spur, $5,200 on a line,
+           $4,960 on a terminal - bigger is cheaper, and bigger is also 1,482
+           posts, which is the largest single hiring commitment in the game.
+
+           AND THEY ARE ENORMOUS ON THE GROUND. Seven and a half million square
+           feet for a terminal, against two million for a Coal Power Plant, the
+           largest thing here before today. That is the trade Jerus asked for:
+           rail takes bulk freight off the road and hands back a lot of the land
+           it saved, so a city buys track with ground as well as money.
+           ------------------------------------------------------------------ */
+
+        /*
+         * RAIL SPUR. A siding, a small yard and enough track to reach it - what
+         * a city lays when its first mill starts shipping and the lorries are
+         * charging the world's price to move it.
+         */
+        BuildingsTemplate railSpur = new BuildingsTemplate("Rail Spur", BuildingType.RAIL)
+                .setSector("Rail")
+                .setRailCapacity(50000)         // tonnes across the boundary a month
+                .setCashCost(140000)
+                .setConstructionPoints(21000)
+                .setConstructionMaterials(4500)
+                .setElectricityConsumption(600)
+                .setWaterConsumption(30)
+                .setLandSqFt(700000)
+                // Mostly the drayage between the siding and the works, which is
+                // still a lorry - see Rail's header and BuildingsTemplate.loadOf.
+                .setRoadLoad(500)
+                .setJobs(JobType.NO_DIPLOMA, 120)
+                .setJobs(JobType.DIPLOMA, 45)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 8)
+                .setId(62);
+
+        templates.add(railSpur);
+
+        /*
+         * FREIGHT LINE. Real main line: four times the spur's tonnage for less
+         * than four times its money, and the rung a trading city actually lives
+         * on.
+         */
+        BuildingsTemplate freightLine = new BuildingsTemplate("Freight Line", BuildingType.RAIL)
+                .setSector("Rail")
+                .setRailCapacity(200000)
+                .setCashCost(520000)
+                .setConstructionPoints(78000)
+                .setConstructionMaterials(16500)
+                .setElectricityConsumption(2300)
+                .setWaterConsumption(110)
+                .setLandSqFt(2400000)
+                .setRoadLoad(2000)
+                .setJobs(JobType.NO_DIPLOMA, 430)
+                .setJobs(JobType.DIPLOMA, 165)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 30)
+                .setId(63);
+
+        templates.add(freightLine);
+
+        /*
+         * RAIL TERMINAL. A quarter of a million tonnes a month, 186,000
+         * construction points - a year and a half of everything the playtest
+         * city can build - and seven and a half million square feet. The
+         * biggest single decision in the game.
+         */
+        BuildingsTemplate railTerminal = new BuildingsTemplate("Rail Terminal", BuildingType.RAIL)
+                .setSector("Rail")
+                .setRailCapacity(500000)
+                .setCashCost(1240000)
+                .setConstructionPoints(186000)
+                .setConstructionMaterials(39000)
+                .setElectricityConsumption(5600)
+                .setWaterConsumption(260)
+                .setLandSqFt(5500000)
+                .setRoadLoad(4900)
+                .setJobs(JobType.NO_DIPLOMA, 1020)
+                .setJobs(JobType.DIPLOMA, 390)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 72)
+                .setId(64);
+
+        templates.add(railTerminal);
+
+        /* --------------------------- AUTOMOTIVE ---------------------------
+           The top of the chain, and the biggest payroll on it.
+
+           THE RECIPE IS THE MECHANIC. A car is 3.5 tonnes of fabricated steel
+           and 400kg of machinery; a van is 5 and 600; a wagon set is 120 and
+           20. Neither input can be bought from the world at any price - see
+           Good's header - so every one of these plants is a bet that the city
+           already has fabrication shops and a machine works behind it. That is
+           the longest dependency in the game: a mine, a mill, a fabricator, a
+           machine works, and then this.
+
+           WHAT THE NUMBERS ARE ANCHORED ON. Revenue per worker, against the
+           bakeries, exactly as Food Processing was: about $17k a head a month,
+           which is where every maker in this catalogue sits. At a mid-band car
+           price of $40k an Assembly Plant's five hundred cars is $20m a month
+           against 1,180 posts - $16.9k a head - and the parts are $17k a car
+           at mid-band prices, about 42% of revenue, falling to 28% in a city
+           whose fabricators are competing. That gap IS the cluster reward.
+
+           AND THEY ARE ENORMOUS EMPLOYERS. An Assembly Plant is 1,180 posts,
+           the second largest single hiring commitment in the game after a rail
+           terminal, and it needs 80% of them staffable before it is ordered.
+           A city builds this when it has people, not when it has money.
+           ------------------------------------------------------------------ */
+
+        /*
+         * VEHICLE WORKS. The small rung: a coachbuilder rather than a
+         * production line, and the one a city can put up before it has twelve
+         * hundred spare workers.
+         */
+        BuildingsTemplate vehicleWorks = new BuildingsTemplate("Vehicle Works", BuildingType.AUTOMOTIVE)
+                .setSector("Automotive")
+                .makes(Good.CARS, 120)                  // cars a month
+                .uses(Good.FABRICATED_STEEL, 420)       // 3.5 t a car
+                .uses(Good.MACHINERY, 48)               // 400 kg a car
+                .setCashCost(66000)
+                .setConstructionPoints(7260)
+                .setConstructionMaterials(1580)
+                .setElectricityConsumption(600)
+                .setWaterConsumption(45)
+                .setLandSqFt(500000)
+                .setRoadLoad(150)
+                .setStock(360)                          // three months on the lot
+                .setJobs(JobType.NO_DIPLOMA, 100)
+                .setJobs(JobType.DIPLOMA, 55)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 13)
+                .setJobs(JobType.UNIV_SCIENCE, 2)
+                .setId(65);
+
+        templates.add(vehicleWorks);
+
+        /*
+         * ASSEMBLY PLANT. The real thing: four times the works on four times
+         * the money, and the single largest industrial payroll a city of this
+         * size can carry.
+         */
+        BuildingsTemplate assemblyPlant = new BuildingsTemplate("Assembly Plant", BuildingType.AUTOMOTIVE)
+                .setSector("Automotive")
+                .makes(Good.CARS, 500)
+                .uses(Good.FABRICATED_STEEL, 1750)
+                .uses(Good.MACHINERY, 200)
+                .setCashCost(221000)
+                .setConstructionPoints(24300)
+                .setConstructionMaterials(5300)
+                .setElectricityConsumption(2600)
+                .setWaterConsumption(190)
+                .setLandSqFt(1800000)
+                .setRoadLoad(610)
+                .setStock(1500)
+                .setJobs(JobType.NO_DIPLOMA, 415)
+                .setJobs(JobType.DIPLOMA, 225)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 52)
+                .setJobs(JobType.UNIV_SCIENCE, 8)
+                .setId(66);
+
+        templates.add(assemblyPlant);
+
+        /*
+         * COMMERCIAL VEHICLE PLANT. Vans and trucks - heavier, dearer, and
+         * bought by a business rather than a household.
+         */
+        BuildingsTemplate vanPlant = new BuildingsTemplate("Commercial Vehicle Plant", BuildingType.AUTOMOTIVE)
+                .setSector("Automotive")
+                .makes(Good.VANS, 150)
+                .uses(Good.FABRICATED_STEEL, 750)       // 5 t a van
+                .uses(Good.MACHINERY, 90)               // 600 kg a van
+                .setCashCost(132000)
+                .setConstructionPoints(14500)
+                .setConstructionMaterials(3170)
+                .setElectricityConsumption(1200)
+                .setWaterConsumption(90)
+                .setLandSqFt(950000)
+                .setRoadLoad(290)
+                .setStock(450)
+                .setJobs(JobType.NO_DIPLOMA, 195)
+                .setJobs(JobType.DIPLOMA, 106)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 25)
+                .setJobs(JobType.UNIV_SCIENCE, 4)
+                .setId(67);
+
+        templates.add(vanPlant);
+
+        /*
+         * LOCOMOTIVE WORKS. Four wagon sets a month - a locomotive and what it
+         * pulls - and the most expensive single thing anybody in this game
+         * sells. The railway's supplier, once the railway needs one.
+         */
+        BuildingsTemplate locoWorks = new BuildingsTemplate("Locomotive Works", BuildingType.AUTOMOTIVE)
+                .setSector("Automotive")
+                .makes(Good.ROLLING_STOCK, 4)
+                .uses(Good.FABRICATED_STEEL, 480)       // 120 t a set
+                .uses(Good.MACHINERY, 80)               // 20 t a set
+                .setCashCost(130000)
+                .setConstructionPoints(14300)
+                .setConstructionMaterials(3120)
+                .setElectricityConsumption(1100)
+                .setWaterConsumption(80)
+                .setLandSqFt(800000)
+                .setRoadLoad(295)
+                .setStock(12)
+                .setJobs(JobType.NO_DIPLOMA, 180)
+                .setJobs(JobType.DIPLOMA, 100)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 26)
+                .setJobs(JobType.UNIV_SCIENCE, 4)
+                .setId(68);
+
+        templates.add(locoWorks);
 
         /* ------------------------------ MINING ------------------------------
            An iron mine, and the biggest employer in the game.
@@ -2297,7 +2620,7 @@ public class BuildingManager {
                 .setJobs(JobType.NO_DIPLOMA, 3)
                 .setJobs(JobType.DIPLOMA, 1).setId(58);
         templates.add(bottling);
-        //add more buildings; next Building ID is 59
+        //add more buildings; next Building ID is 62
     }
 
     public void finalUpdateBuildings() {

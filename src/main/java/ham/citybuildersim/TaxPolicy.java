@@ -235,7 +235,50 @@ public class TaxPolicy {
     /** The wage a pension is a share of, carried in today's money. */
     private double pensionWageBase = PayTier.UNSKILLED.getMonthlyWage();
 
-    public void redenominate(double scale) { pensionWageBase *= scale; }
+    public void redenominate(double scale) {
+        pensionWageBase *= scale;
+        /*
+         * AND THE FARE, because it is a price and not a rate. Every other dial
+         * on this class is a fraction and survives a reform untouched; a fare
+         * is dollars a journey and a reform that left it alone would multiply
+         * the real price of a bus ride by a hundred overnight. Twenty-third of
+         * a family this codebase has been finding since September 8th, and the
+         * first one caught in the same edit that created the field.
+         */
+        transitFare *= scale;
+    }
+
+    /* =======================================================================
+       WHAT A RIDE COSTS (2026-09-16)
+
+       The first price the city charges that a person can refuse to pay.
+
+       Nobody chooses to be policed and a patient in a clinic is not shopping,
+       so healthcare and safety are charges. A fare is a PRICE: set it high and
+       people drive instead, and every one of them is back on the road the
+       transit was built to empty. Jerus: "yes riders pay, yes its adjustable,
+       to the point you can even make it profitable by alot" - and it can be,
+       at a ridership the city may not want.
+
+       ZERO IS A LEGITIMATE SETTING and the default is not it. Free transit is
+       a real policy with a real bill attached; the default is a fare that
+       covers a decent share of the wages, because a city that has not thought
+       about it should not be quietly running the buses for nothing.
+       ======================================================================= */
+
+    /** What a single journey costs a rider, in thousands. $2.50 a ride. */
+    public static final double DEFAULT_TRANSIT_FARE = .0025;
+
+    /** Past this nobody rides at all, as a multiple of the default. */
+    public static final double MAX_TRANSIT_FARE = .05;
+
+    private double transitFare = DEFAULT_TRANSIT_FARE;
+
+    public double getTransitFare() { return transitFare; }
+
+    public void setTransitFare(double fare) {
+        this.transitFare = Math.max(0, Math.min(MAX_TRANSIT_FARE, fare));
+    }
 
     /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
     public void seedConstants(double unit) {
@@ -449,7 +492,12 @@ public class TaxPolicy {
 
         int bands = WageBand.values().length;
 
-        double[] state = new double[4 + bands + 3 + 1];
+        // 4 rates, one per wage band, the three dials of 2026-09-11, the
+        // farmland relief of 09-13, and the transit fare of 09-16. GROW THIS
+        // WITH EVERY SLOT ADDED BELOW: the first version of the fare wrote to
+        // state[12] of a twelve-long array and took forty-three harnesses down
+        // with it in nineteen seconds, which is the good outcome.
+        double[] state = new double[4 + bands + 3 + 2];
         int i = 0;
         state[i++] = incomeTaxRate;
         state[i++] = propertyTaxRate;
@@ -463,7 +511,11 @@ public class TaxPolicy {
         // The farmland dial of 2026-09-13, on the end, for the same reason the
         // three above are on the end: an older save has one fewer slot and
         // keeps the default, which is the behaviour that city had.
-        state[i]   = farmlandRelief;
+        state[i++] = farmlandRelief;
+        // The fare of 2026-09-16, on the end, for the reason the four above it
+        // are on the end: an older save is one slot shorter and keeps the
+        // default, which is the city it was.
+        state[i]   = transitFare;
         return state;
     }
 
@@ -473,7 +525,8 @@ public class TaxPolicy {
         int bands = WageBand.values().length;
         // With the EI and grant dials, or a save from before them - which keeps
         // the defaults for the three, as the city it was had them.
-        boolean withFarm = state != null && state.length == 4 + bands + 3 + 1;
+        boolean withFare = state != null && state.length == 4 + bands + 3 + 2;
+        boolean withFarm = withFare || (state != null && state.length == 4 + bands + 3 + 1);
         boolean current = withFarm || (state != null && state.length == 4 + bands + 3);
         if (state == null || (!current && state.length != 4 + bands)) return false;
 
@@ -487,11 +540,13 @@ public class TaxPolicy {
         eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
         studentGrantShare = DEFAULT_STUDENT_GRANT_SHARE;
         farmlandRelief = DEFAULT_FARMLAND_RELIEF;
+        transitFare = DEFAULT_TRANSIT_FARE;
         if (current) {
             setEiPremiumRate(state[i++]);
             setEiBenefitRate(state[i++]);
             setStudentGrantShare(state[i++]);
-            if (withFarm) setFarmlandRelief(state[i]);
+            if (withFarm) setFarmlandRelief(state[i++]);
+            if (withFare) setTransitFare(state[i]);
         }
         return true;
     }
@@ -536,6 +591,7 @@ public class TaxPolicy {
     public void reset() {
         incomeTaxRate = DEFAULT_INCOME_TAX;
         propertyTaxRate = DEFAULT_PROPERTY_TAX;
+        transitFare = DEFAULT_TRANSIT_FARE;
         contributionRate = SocialSecurity.DEFAULT_CONTRIBUTION_RATE;
         pensionReplacement = SocialSecurity.DEFAULT_PENSION_REPLACEMENT;
         eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;

@@ -874,10 +874,43 @@ public class LongPlaytest {
          * trip across a band of land prices, and the advisor never used two of
          * them. Offered as three moves now, so the price of land picks.
          */
+        /*
+         * ...AND THE THREE THAT ARE NOT ROADS AT ALL (2026-09-16).
+         *
+         * A Bus Network, a Light Rail Line and a Metro Line have been in the
+         * catalogue since transit was built and this advisor had never once
+         * bought one - so four thousand months of playtest measured a city
+         * whose only answer to congestion was tarmac. That did not matter while
+         * a commuter cost the road one trip and nothing could change it. Cars
+         * changed it, and the eight seeds said so in one number: population
+         * 191,000 -> 132,000, with the advisor doubling its road building and
+         * still finishing at 66% throughput on land that was 90% used.
+         *
+         * A city that cannot build its way out with roads and will not build a
+         * bus is not a pessimistic measurement, it is the wrong one. A player
+         * would build the bus.
+         *
+         * WHAT DECIDES BETWEEN THEM IS THE CATALOGUE, not an ordering written
+         * here, which is the same promise the three roads above are supposed to
+         * keep. Every candidate is costed in TRIPS TAKEN OFF THE ROAD PER
+         * DOLLAR and they are offered best-first:
+         *
+         *     Gravel Road      900 trips / $2,326k   = 0.387
+         *     Bus Network    2,500 riders / $12,000k = 0.208 x the car factor
+         *
+         * ...so a bus loses outright in a city where nobody drives, and wins
+         * once about half the households own a car, because a rider taken off
+         * the street is worth whatever a driver was costing it. Nobody chose
+         * that crossover; it falls out of two prices that were set months
+         * apart for other reasons, and it is exactly where it should be.
+         *
+         * AND A BUS RELIEVES NOTHING IN A CITY THAT IS ALREADY FULL OF BUSES.
+         * The room below is the real one - the transit share ceiling, and the
+         * road that has to exist underneath it - so the advisor stops buying
+         * them when they stop working rather than when a cap says to.
+         */
         double roadGain = gdp * (1 - g.getRoadRatio());
-        addThrottle(moves, g, "Gravel Road", "gravel road", roadGain);
-        addThrottle(moves, g, "Paved Road", "roads", roadGain);
-        addThrottle(moves, g, "Elevated Highway", "highway", roadGain);
+        addRoadThrottle(moves, g, roadGain);
 
         /* --- and the two health terms, which are throttles wearing a hat --- */
         double treatable = Math.max(0, health.getBaselineRate() - Health.WELL_SERVED_RATE);
@@ -933,16 +966,55 @@ public class LongPlaytest {
         }
 
         /* --- somewhere to live, and somewhere to shop --- */
+
+        /*
+         * TWO SHORTAGES, AND THIS ADVISOR COULD ONLY SEE ONE OF THEM.
+         *
+         * getTotalHouseCapacity() is BEDS. Since homes got SIZES (2026-09-07) a
+         * city can have a bed for everybody and nowhere for a family to live -
+         * FamilyModel's own comment says so in as many words: "A city with a
+         * studio for every household is at one-home-each by the count below and
+         * returns 1 - room to spare - while every family in it has nowhere to
+         * go." The advisor never caught up, and so it read one number that
+         * cannot answer the question.
+         *
+         * MEASURED, in the transport ensemble: a city of 42,548 people with
+         * 46,856 beds, 14,348 doors and 14,621 households. homesShort was
+         * MINUS four thousand, so housing was never even considered - while a
+         * thousand households had nowhere and Real Estate, deep in debt after
+         * the bust, could not finance a block either. Nobody built anything for
+         * a hundred and forty-one months and the run flagged people sleeping
+         * outside.
+         *
+         * A player looking at "1,137 households with nowhere" builds houses.
+         * FamilyModel already knows that number as a fact rather than an
+         * estimate: whoever BOTH valves failed to place.
+         *
+         * THE DOUBLED-UP ARE DELIBERATELY NOT IN IT, and the first draft had
+         * them and was wrong. Sharing a flat is the second valve WORKING, not
+         * failing, and it is positive in any young city with people arriving -
+         * so an advisor that read it built housing every month of every run,
+         * and FoodProcessingCheck's fixture city went from month 98 to month
+         * 185 with ten times the price level. The failure to react to is the
+         * one the run flags: somebody with nowhere at all.
+         */
         double homesShort = population - b.getTotalHouseCapacity();
-        if (homesShort > -4) {
+        FamilyModel fam = g.getFamilies();
+        double doorsShort = fam.getStillUnplaced();
+        if (homesShort > -4 || doorsShort > 0) {
             /*
              * Priced on the output the people it houses would produce, less a
              * discount because they arrive over the years rather than next
              * month. Growth is worth less per dollar than restoration, and it
              * should be - a city that builds houses while its power is out has
              * simply moved the shortage.
+             *
+             * A DOOR SHORTAGE IS COUNTED IN HOUSEHOLDS, so it is put on the
+             * same footing as the bed shortage by the city's own average household
+             * size before the two are compared.
              */
-            double housingGain = perHead * Math.max(20, homesShort) * GROWTH_DISCOUNT;
+            double housingGain = perHead * Math.max(20,
+                    Math.max(homesShort, doorsShort * Math.max(1, fam.averageHouseholdSize()))) * GROWTH_DISCOUNT;
             addThrottle(moves, g, "House", "houses", housingGain);
             addThrottle(moves, g, "Low-Rise Apartments", "apartments", housingGain);
             addThrottle(moves, g, "Studio Apartments", "studios", housingGain);
@@ -1067,6 +1139,69 @@ public class LongPlaytest {
      * enter here at all - that was the mistake this rewrite exists to undo -
      * beyond build() refusing what the city cannot fund.
      */
+
+    /**
+     * The road constraint, and every way there is of easing it.
+     *
+     * Three roads and three transit lines, each costed in the trips a dollar
+     * takes off the street, offered best-first so that the tie-break inside
+     * addThrottle picks the best rather than the first one somebody typed. See
+     * the note at the call site for why transit is in here at all.
+     */
+    static void addRoadThrottle(java.util.List<Move> moves, Game g, double lost) {
+        if (lost <= 0) return;
+        InfrastructureManager roads = g.getInfrastructureManager();
+        double gdp = Math.max(1, g.getEconomyManager().getMonthGdp());
+        double roadGap = lost / gdp;
+
+        /*
+         * WHAT A RIDER IS WORTH, which is the whole of why transit is offered
+         * beside tarmac rather than instead of it: taking one commuter off the
+         * street saves whatever that commuter was costing it, and a driver
+         * costs carRoadFactor times what a walker does.
+         */
+        double perRider = roads.carRoadFactor();
+        double ceiling = roads.getLoad(Traffic.COMMUTERS) * InfrastructureManager.TRANSIT_MAX_SHARE;
+        double underneath = roads.getCapacity() * InfrastructureManager.TRANSIT_NEEDS_ROAD;
+        double room = Math.max(0, Math.min(ceiling, underneath) - roads.getUsableTransit());
+
+        java.util.List<double[]> order = new java.util.ArrayList<>();
+        java.util.List<String[]> names = new java.util.ArrayList<>();
+        String[][] candidates = {
+            { "Gravel Road", "gravel road" }, { "Paved Road", "roads" },
+            { "Elevated Highway", "highway" }, { "Bus Network", "buses" },
+            { "Light Rail Line", "light rail" }, { "Metro Line", "metro" },
+        };
+        for (String[] candidate : candidates) {
+            BuildingsTemplate t = template(g, candidate[0]);
+            if (t == null || t.getCashCost() <= 0) continue;
+            double seats = t.getTransitCapacity();
+            double trips, gap;
+            if (seats > 0) {
+                if (room <= 0) continue;                 // the buses are already full
+                trips = Math.min(seats, room) * perRider;
+                // ...and never order more of them than the city could use.
+                gap = Math.min(roadGap, room / seats);
+            } else {
+                trips = t.getCapacity();
+                gap = roadGap;
+            }
+            if (trips <= 0) continue;
+            order.add(new double[] { trips / t.getCashCost(), gap });
+            names.add(candidate);
+        }
+        // Best trips per dollar first. A plain insertion sort: six candidates.
+        for (int i = 1; i < order.size(); i++) {
+            for (int k = i; k > 0 && order.get(k)[0] > order.get(k - 1)[0]; k--) {
+                java.util.Collections.swap(order, k, k - 1);
+                java.util.Collections.swap(names, k, k - 1);
+            }
+        }
+        for (int i = 0; i < order.size(); i++) {
+            addThrottle(moves, g, names.get(i)[0], names.get(i)[1], lost, order.get(i)[1]);
+        }
+    }
+
     static void addThrottle(java.util.List<Move> moves, Game g,
                             String name, String label, double lost) {
         addThrottle(moves, g, name, label, lost, lost / Math.max(1, g.getEconomyManager().getMonthGdp()));
@@ -2192,7 +2327,7 @@ public class LongPlaytest {
 
         return String.format(
                 "m%-5d %-22s pop %-7d cash %-14s GDP/mo %-11s jobs %-6d "
-                + "fill %3.0f%% roads %3.0f%% power %3.0f%% water %3.0f%% "
+                + "fill %3.0f%% roads %3.0f%% cars %3.0f%% ride %3.0f%% power %3.0f%% water %3.0f%% "
                 + "cityDebt %-12s bizDebt %-11s land %3.0f%% mines %d/%d ore $%.2f fields %3.0f%% crops $%.2f"
                 + " px %.2f (%.2f-%.2f)",
                 g.getMonth(), label,
@@ -2204,6 +2339,18 @@ public class LongPlaytest {
                         ? 100.0 * Math.min(p.getWorkforce(), p.getTotalJobs()) / p.getTotalJobs()
                         : 100),
                 roads.getThroughputRatio() * 100,
+                /*
+                 * THE MOTORING, IN TWO FIGURES (2026-09-16), and they belong
+                 * beside the road ratio rather than anywhere else because they
+                 * are what that ratio is now mostly about. The first is cars
+                 * per household; the second is the share of commuters actually
+                 * carried off the street. The same argument the price level's
+                 * note two fields down makes: a line that carries everything
+                 * except the number the mechanic is about cannot be read.
+                 */
+                roads.getCarOwnership() * 100,
+                roads.getLoad(Traffic.COMMUTERS) > 0
+                        ? roads.getTransitRiders() / roads.getLoad(Traffic.COMMUTERS) * 100 : 0,
                 g.getEnergyRatio() * 100,
                 g.getWaterRatio() * 100,
                 money(g.getDebtManager().getAllPrincipal()),

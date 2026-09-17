@@ -39,13 +39,13 @@ public final class HeavyIndustry extends Sector {
 
     /** What a tonne of imported scrap costs - the mills' fallback, and the ore market's ceiling. */
     public double getScrapPricePerTonne() {
-        return markets == null ? 0 : markets.get(Good.IRON).importPrice();
+        return markets == null ? 0 : markets.get(Good.IRON).netImportPrice();
     }
 
     /** What a tonne of steel fetches over what the iron in it cost. */
     public double getConversionMargin() {
         if (markets == null) return 0;
-        double steel = markets.get(Good.STEEL).exportPrice();
+        double steel = markets.get(Good.STEEL).netExportPrice();
         // Tonnes of iron a tonne of steel takes: 1.1 on every mill in the catalogue.
         double perTonne = getCapacity(Good.STEEL) > 0
                 ? getInputAtCapacity(Good.IRON) / getCapacity(Good.STEEL) : 1.1;

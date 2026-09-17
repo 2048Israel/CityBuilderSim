@@ -104,10 +104,32 @@ public class MoneyCheck {
         g.buildStack(t(g, "Steel Foundry"), 1, false);
         g.buildStack(t(g, "Memorial Cemetery"), 1, false);
         g.buildStack(t(g, "Community College"), 1, false);
+        /* =================================================================
+           AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).
 
-        worst = play("with mines, mills, a cemetery and a college, 240 months", g, 240, verbose);
+           Transit had been in the game for as long as the modes had, and no
+           harness in this suite had ever put a passenger on one - the playtest
+           advisor answered every jam with tarmac, and every fixture that
+           needed a road bought a road. So the fare, which the city collects
+           and NOBODY WAS EVER DEBITED FOR, sat as money from nowhere through
+           every run of the very harness that exists to catch money from
+           nowhere. It was found the first time the advisor bought a Bus
+           Network, and the residual was the fare to six decimals.
+
+           This class's own header says it: "every money bug this codebase has
+           had was a flow with one side". The twenty-ninth harness could not
+           see this one because its city had no buses, which is the more
+           general lesson - a mechanic no fixture exercises has no test,
+           whatever the assertion count says.
+           ================================================================= */
+        g.buildStack(t(g, "Bus Network"), 3, false);
+
+        worst = play("with mines, mills, a cemetery, a college and a bus, 240 months", g, 240, verbose);
         assertTrue("an industrial city conserves money to within 0.01% of what moved",
                 worst.relative() < 1e-4);
+        assertTrue("...and it really did carry passengers, so the fare was really charged",
+                g.getInfrastructureManager().getTransitRiders() > 0
+                        && g.getEconomyManager().getTransitFares() > 0);
 
         /* ==================== 2. a city under stress ==================== */
         System.out.println("\n--- broke, banned, taxed and importing: still nothing leaks ---");

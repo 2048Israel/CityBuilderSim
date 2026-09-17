@@ -126,9 +126,41 @@ public class ServicesManager {
                 infrastructureManager::setBuiltCapacity,
                 BuildingsTemplate::getCapacity);
 
+        /*
+         * THE TOTAL IS THE SWEEP IT HAS ALWAYS BEEN - untouched, on purpose.
+         * The three streams below are read beside it rather than summed into
+         * it: every template's three loads add to its own roadLoad to the bit,
+         * but adding them up per stream is a different floating-point order
+         * from adding them up per building, and eight ensemble seeds proved
+         * that is enough to make a different city over 333 years. See
+         * InfrastructureManager.setBreakdown().
+         */
         updateHandlerDouble(
                 infrastructureManager::setLoad,
                 BuildingsTemplate::getRoadLoad);
+
+        double[] streams = new double[Traffic.values().length];
+        for (Traffic stream : Traffic.values()) {
+            final Traffic s = stream;
+            streams[s.ordinal()] = buildingManager.getTotalDouble(t -> t.loadOf(s));
+        }
+        infrastructureManager.setBreakdown(streams);
+
+        /*
+         * AND WHAT THE CITY HAS BUILT TO CARRY IT WITH. Highway capacity is
+         * each road's capacity weighted by how grade-separated it is, so a city
+         * of gravel reads zero and nothing about it changes; transit is the
+         * plain sum of what the trams and buses could carry, before the road
+         * under them is taken into account. See InfrastructureManager.setModes.
+         */
+        infrastructureManager.setModes(
+                buildingManager.getTotalDouble(t -> t.getCapacity() * t.getFreightGrade()),
+                buildingManager.getTotalDouble(BuildingsTemplate::getTransitCapacity));
+    }
+
+    /** The fare the player set, which decides how many of them ride. See TaxPolicy. */
+    public void updateTransitFare(double fare) {
+        infrastructureManager.setFare(fare);
     }
 
     private void updateLabor() {

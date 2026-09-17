@@ -662,7 +662,19 @@ public class BusinessInvestment {
             double room = Math.max(0, forecast(sector, m) - sector.getCapacity(g) - sector.getPipeline(g));
             double atHome = Math.min(units, room);
             double abroad = g.exportable() ? units - atHome : 0;
-            gross += atHome * m.getLocalPrice() + abroad * Math.max(0, m.exportPrice());
+            gross += atHome * m.getLocalPrice();
+            /*
+             * GUARDED, BECAUSE ZERO TIMES NOT-A-NUMBER IS NOT-A-NUMBER. A good
+             * the world will not buy has an export price of NaN, and this line
+             * used to multiply it by an `abroad` that was already zero for
+             * exactly that reason - which poisoned the whole estimate and with
+             * it the score the planner sorts on. Found the day rolling stock
+             * became the first stockable good with no export market: every
+             * Locomotive Works in the catalogue was valued at NaN, and
+             * NaN > bestScore is false, so it read as "never worth building"
+             * rather than as the arithmetic mistake it was.
+             */
+            if (abroad > 0) gross += abroad * Math.max(0, m.netExportPrice());
         }
         double inputs = 0;
         for (java.util.Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {

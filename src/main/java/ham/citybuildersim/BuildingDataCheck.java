@@ -115,6 +115,9 @@ public class BuildingDataCheck {
             check(who + " water", actual.getWaterConsumption(), expected.getWaterConsumption());
             check(who + " land", actual.getLandSqFt(), expected.getLandSqFt());
             check(who + " roadLoad", actual.getRoadLoad(), expected.getRoadLoad());
+            check(who + " freightGrade", actual.getFreightGrade(), expected.getFreightGrade());
+            check(who + " transitCapacity", actual.getTransitCapacity(), expected.getTransitCapacity());
+            check(who + " railCapacity", actual.getRailCapacity(), expected.getRailCapacity());
             check(who + " production1", actual.getProduction1(), expected.getProduction1());
             check(who + " production2", actual.getProduction2(), expected.getProduction2());
 

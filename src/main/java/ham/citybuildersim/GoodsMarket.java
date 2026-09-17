@@ -119,15 +119,129 @@ public final class GoodsMarket {
 
     public double getExchangeRate() { return exchangeRate; }
 
+    /* =======================================================================
+       WHAT IT COSTS TO MOVE ONE, THIS MONTH (2026-09-16)
+
+       Good.baseFreight() is what a lorry charges, and it is the freight in
+       every price this game has ever quoted. This is what the city is ACTUALLY
+       paying now - a rail network undercutting the lorries pulls it down, a
+       rail network that is full lets it back up - and the band moves with it.
+
+       ON THE MARKET AND NOT ON THE GOOD, which is not a style preference. Good
+       is an enum, so anything mutable on it is shared by every Game in the
+       process, and half the harnesses in this suite run two cities side by
+       side on purpose - InfrastructureCheck's withRoads and without,
+       DenominationCheck's reformed twin, every ForeignCheck parity pair. A
+       freight quote living on the enum would have leaked between them.
+
+       THE BAND MOVES BY THE CHANGE, NOT BY RECOMPUTING THE ENDS, and that is
+       what makes a city with no rail bit-identical to one from before any of
+       this existed. worldBuyPrice() + freight does NOT reliably come back to
+       the stored literal - iron comes back 0.4099999999999999 and snacks
+       0.009999999999999998, two of the seven goods tested - but adding a delta
+       of exactly zero is exact for every finite number there is. So a city
+       whose freight has not moved is quoting the literal it always quoted, by
+       construction rather than by luck.
+       ======================================================================= */
+
+    /** What a unit's freight costs today, as a share of what a lorry charges. */
+    private double freightFactor = 1;
+
+    /**
+     * @param factor the share of the city's freight on this good the LORRIES
+     *               still carry, and therefore the share of baseFreight() left
+     *               in the world-facing price. One when there is no railway.
+     *
+     * ZERO IS LEGAL AND IT IS NOT "FREE FREIGHT". A railway carrying all of a
+     * good bills the shipper itself, at home, at its own quote - see
+     * sectors.Rail.haul(). What leaves this band is the money that used to go
+     * abroad with the cargo; what replaces it is a domestic invoice. Jerus:
+     * "the freight cant reach zero cause freight needs profit" - and it does
+     * not: Rail.RAIL_FLOOR is what stops the CHARGE falling, and it lives on
+     * the railway's price rather than on this band, which is only about who
+     * is owed the money.
+     */
+    public void setFreightFactor(double factor) {
+        this.freightFactor = Double.isFinite(factor) && factor >= 0 ? Math.min(1, factor) : 1;
+    }
+
+    public double getFreightFactor() { return freightFactor; }
+
+    /**
+     * WHAT THE SHIPPER STILL PAYS AT HOME, per unit, as a share of the lorry
+     * rate - the railway's own invoice. Zero in a city with no railway.
+     *
+     * THE TWO NUMBERS TOGETHER ARE THE WHOLE FREIGHT BILL and neither is it on
+     * its own, which is the thing to understand about this pair. The band above
+     * is what crosses the boundary and the world is paid for; this is what the
+     * city's own railway charges to get the cargo to the boundary. A tonne of
+     * steel with half the network's freight on rail at a 60% quote reads
+     *
+     *      freightFactor .50   still in the band, paid abroad
+     *      railCharge    .30   billed at home, by sectors.Rail
+     *      -----------------
+     *      .80 of what a lorry alone would have cost
+     *
+     * and a screen or a decision that reads only the first of the two thinks
+     * the city's freight got twice as cheap as it did. See netExportPrice().
+     */
+    private double railCharge;
+
+    public void setRailCharge(double shareOfLorryRate) {
+        this.railCharge = Double.isFinite(shareOfLorryRate) && shareOfLorryRate > 0
+                ? Math.min(1, shareOfLorryRate) : 0;
+    }
+
+    public double getRailCharge() { return railCharge; }
+
+    /** The railway's charge on one unit, in city money. Exactly zero with no railway. */
+    public double domesticFreight() { return good.baseFreight() * railCharge * exchangeRate; }
+
+    /** What the freight on one unit has moved by, in the world's money. Exactly zero at rest. */
+    public double freightChange() {
+        return good.baseFreight() * (freightFactor - 1);
+    }
+
     /** What an import costs the city, in the city's money. NaN when the good cannot be imported. */
     public double importPrice() {
-        return good.importable() ? good.worldImportPrice() * exchangeRate : Double.NaN;
+        return good.importable()
+                ? (good.worldImportPrice() + freightChange()) * exchangeRate : Double.NaN;
     }
 
     /** What the world pays the city for one, in the city's money. NaN when it will not buy. */
     public double exportPrice() {
-        return good.exportable() ? good.worldExportPrice() * exchangeRate : Double.NaN;
+        return good.exportable()
+                ? (good.worldExportPrice() - freightChange()) * exchangeRate : Double.NaN;
     }
+
+    /* =======================================================================
+       ...AND WHAT THE SHIPPER IS ACTUALLY LEFT WITH
+
+       The two above are the prices AT THE BOUNDARY - free on board, in the
+       trade statistician's language - and they are the right figures for the
+       trade itself, for the balance of payments and for the money audit,
+       because they are what actually crosses the edge. They are the WRONG
+       figures for a decision, because the shipper has a second invoice coming
+       from its own city's railway.
+
+       So every place that asks "is this worth exporting" or "what will this
+       import cost me" reads the pair below, and every place that settles a
+       trade reads the pair above. Getting that backwards is not a rounding
+       error: measured at a 92% quote on 92% of the traffic, the band alone
+       said steel's wedge had fallen from 52% to 11% when what the shipper
+       actually saved was eight per cent.
+
+       EXACTLY THE GROSS PRICE WHEN THERE IS NO RAILWAY, by the same
+       construction as everything else here: railCharge is zero, so
+       domesticFreight() is a product with a zero in it, and subtracting zero
+       is exact for every finite number there is.
+       ======================================================================= */
+
+    /** What an exporter nets on one, after the haulage it will be billed for. */
+    public double netExportPrice() { return exportPrice() - domesticFreight(); }
+
+    /** ...and what an importer pays for one, landed AND hauled. */
+    public double netImportPrice() { return importPrice() + domesticFreight(); }
 
     /** The floor: the export price, or nothing. */
     public double floor() {
@@ -288,6 +402,8 @@ public final class GoodsMarket {
 
     public void reset() {
         localPrice = openingPrice();
+        // A city with no railway quotes the literal it always quoted. See above.
+        freightFactor = 1;
         rSupplyFlow = rSupplyStock = rDemand = 0;
         java.util.Arrays.fill(taken, 0);
         takenAt = 0;
