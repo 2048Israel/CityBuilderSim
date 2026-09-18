@@ -94,15 +94,6 @@ final class PolicyScreen {
     static final String[] POLICY_MONEY_PAGES   = {"The policy rate", "Currency reform"};
     static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Tuition", "Subsidies"};
 
-    /**
-     * The one lever that has been moved and not yet applied.
-     *
-     * ONE AT A TIME, deliberately. A page whose dials each hold a pending value
-     * is a page where the preview has to answer "all of them together", and the
-     * answer to that is a budget rather than a decision. Touching a second dial
-     * drops the first proposal, which is also why the key is a string: it names
-     * the lever, down to the band or the sector.
-     */
     /* =====================================================================
        THE STAGED SET.
 
@@ -1570,8 +1561,9 @@ final class PolicyScreen {
        TAXES - by wage band
        ===================================================================== */
 
-    /** The heading row of one band or one sector's line: what it is, and where it sits. */
     /**
+     * The heading row of one band or one sector's line: what it is, and where it sits.
+     *
      * @param effective what this row is charged at - and, when something on the
      *        page is staged that reaches it, what it WOULD be charged at,
      *        written "20.00%  \u2192  20.25%".

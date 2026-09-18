@@ -1,4 +1,4 @@
-# DebtManager.java - 1,018 lines · 80 methods · 20 constants · model
+# DebtManager.java - 1,017 lines · 80 methods · 20 constants · model
 
 `ham/citybuildersim/DebtManager.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
 
@@ -15,7 +15,7 @@
 | 16 | THE POLICY RATE |
 | 259 | THE RATE THE FOREIGN PAPER IS VALUED AT |
 | 316 | WHAT THE WORLD CHARGES, AND WHEN IT STOPS ANSWERING |
-| 813 | THE RATE, TAKEN APART - for the Finances screen and nothing else. |
+| 812 | THE RATE, TAKEN APART - for the Finances screen and nothing else. |
 
 ## Constants
 
@@ -40,7 +40,7 @@
 | 367 | `DebtManager.WINDOW_SHUT_SERVICE_SHARE` | `.45` | ...and above this share of exports going out in service, likewise. |
 | 370 | `DebtManager.DEFAULT_SCAR` | `.10` | What a default abroad adds to the premium the day it happens. |
 | 373 | `DebtManager.SCAR_DECAY` | `.9885` | ...and how much of the scar is left after each month. |
-| 999 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 998 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -64,7 +64,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14 | 1005 | **type** `public class DebtManager` |  |
+| 14 | 1004 | **type** `public class DebtManager` |  |
 
 ### THE POLICY RATE (lines 16-258)
 
@@ -95,7 +95,7 @@
 | 305 | 5 | `public double getForeignCouponUsd()` | Next month's USD coupon bill, in dollars. |
 | 311 | 4 | `public boolean hasForeignDebt()` |  |
 
-### WHAT THE WORLD CHARGES, AND WHEN IT STOPS ANSWERING (lines 316-812)
+### WHAT THE WORLD CHARGES, AND WHEN IT STOPS ANSWERING (lines 316-811)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -134,36 +134,36 @@
 | 677 | 1 | `public double getOverdraft()` |  |
 | 679 | 3 | `public List<Debt> getDebt()` |  |
 | 683 | 16 | `public void processAllDebts(Game game)` |  |
-| 715 | 7 | `public double getNotePrincipal()` | Face value of the discount notes outstanding. |
-| 723 | 3 | `public double getPricedDebt()` |  |
+| 709 | 7 | `public double getNotePrincipal()` | Face value of the discount notes outstanding. |
+| 723 | 3 | `public double getPricedDebt()` | Everything the city owes, including what it is overdrawn. |
 | 738 | 3 | `public boolean retire(Debt debt)` | Takes one bond off the books. |
 | 743 | 7 | `public double getTotalMarketValue()` | What every outstanding bond would cost to buy back at today's rate. |
 | 763 | 12 | `private double spreadFor(double debt, double annualCapacity)` | What one measure adds to the rate: a linear ramp, then flat. |
-| 806 | 6 | `private double priceAt(double debt)` | funds - and the second half has to be here rather than at the one call site that sets the standing rate. |
+| 805 | 6 | `private double priceAt(double debt)` | The curve itself: a floor, plus up to ten points from each measure. |
 
-### THE RATE, TAKEN APART - for the Finances screen and nothing else. (lines 813-1018)
+### THE RATE, TAKEN APART - for the Finances screen and nothing else. (lines 812-1017)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 836 | 7 | `public double rateAtPolicy(double policy)` | What the city would be quoted if the policy rate were this instead. |
-| 845 | 1 | `public double baseComponent()` | The floor everybody pays: the policy rate less the city's own spread. |
-| 848 | 1 | `public double gdpSpread()` | What the debt costs against the size of the economy. |
-| 851 | 1 | `public double revenueSpread()` | ...and against what the city can actually collect. |
-| 854 | 3 | `public double gdpStress()` | How much of the worst case each measure has used up, 0 to 1. |
-| 858 | 3 | `public double revenueStress()` |  |
-| 863 | 1 | `public static double maxSpreadPerMeasure()` | The most either measure can add on its own. |
-| 866 | 1 | `public static double fullStressMultiple()` | Years of GDP, or of revenue, at which a measure has said all it can. |
-| 869 | 1 | `public double annualCapacityGdp()` | A year of output, as the market is pricing it. |
-| 872 | 1 | `public double annualCapacityRevenue()` | ...and a year of tax, likewise. |
-| 875 | 3 | `public boolean atCeiling()` | True when the quoted rate is pinned at the top of the curve. |
-| 903 | 4 | `public double floorRate()` | What a spotless city pays: the policy rate less CITY_DISCOUNT - see its note - but never less than the money costs the bank that lends it. |
-| 909 | 3 | `public double ceilingRate()` | What a hopeless one pays - both measures maxed out. |
-| 920 | 14 | `public void updateInterest()` | Re-prices the standing rate off what the city owes right now. |
-| 955 | 12 | `public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf)` | What a NEW loan of this size would cost - priced with itself included. |
-| 969 | 3 | `public double quoteRate(double requested)` | Straight-line version for instruments whose face value IS the request. |
-| 985 | 4 | `private double debtAfterProceedsOf(double received)` | The debt the loan lands ON TOP OF - which is not simply what is owed now. |
-| 990 | 3 | `public void clearDebts()` |  |
-| 994 | 4 | `public void setDebt(List<Debt> debts)` |  |
-| 1001 | 4 | `static { ... }` |  |
-| 1007 | 10 | `public void redenominate(double scale)` | The city's debt book, in the new unit. |
+| 835 | 7 | `public double rateAtPolicy(double policy)` | What the city would be quoted if the policy rate were this instead. |
+| 844 | 1 | `public double baseComponent()` | The floor everybody pays: the policy rate less the city's own spread. |
+| 847 | 1 | `public double gdpSpread()` | What the debt costs against the size of the economy. |
+| 850 | 1 | `public double revenueSpread()` | ...and against what the city can actually collect. |
+| 853 | 3 | `public double gdpStress()` | How much of the worst case each measure has used up, 0 to 1. |
+| 857 | 3 | `public double revenueStress()` |  |
+| 862 | 1 | `public static double maxSpreadPerMeasure()` | The most either measure can add on its own. |
+| 865 | 1 | `public static double fullStressMultiple()` | Years of GDP, or of revenue, at which a measure has said all it can. |
+| 868 | 1 | `public double annualCapacityGdp()` | A year of output, as the market is pricing it. |
+| 871 | 1 | `public double annualCapacityRevenue()` | ...and a year of tax, likewise. |
+| 874 | 3 | `public boolean atCeiling()` | True when the quoted rate is pinned at the top of the curve. |
+| 902 | 4 | `public double floorRate()` | What a spotless city pays: the policy rate less CITY_DISCOUNT - see its note - but never less than the money costs the bank that lends it. |
+| 908 | 3 | `public double ceilingRate()` | What a hopeless one pays - both measures maxed out. |
+| 919 | 14 | `public void updateInterest()` | Re-prices the standing rate off what the city owes right now. |
+| 954 | 12 | `public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf)` | What a NEW loan of this size would cost - priced with itself included. |
+| 968 | 3 | `public double quoteRate(double requested)` | Straight-line version for instruments whose face value IS the request. |
+| 984 | 4 | `private double debtAfterProceedsOf(double received)` | The debt the loan lands ON TOP OF - which is not simply what is owed now. |
+| 989 | 3 | `public void clearDebts()` |  |
+| 993 | 4 | `public void setDebt(List<Debt> debts)` |  |
+| 1000 | 4 | `static { ... }` |  |
+| 1006 | 10 | `public void redenominate(double scale)` | The city's debt book, in the new unit. |
 

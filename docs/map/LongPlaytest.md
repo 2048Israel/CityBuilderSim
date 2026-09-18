@@ -1,4 +1,4 @@
-# LongPlaytest.java - 2,513 lines · 28 methods · 8 constants · harnesses
+# LongPlaytest.java - 2,512 lines · 28 methods · 8 constants · harnesses
 
 `ham/citybuildersim/LongPlaytest.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
 
@@ -43,17 +43,17 @@
 | 170 | · A mechanic that is not counted over a real run is a mechanic nobody |
 | 227 | · · AND NOTHING MOVED AFTER THE AUDIT STRUCK. |
 | 701 | THE ADVISOR |
-| 777 | WHO IS PLAYING (2026-09-17) |
+| 719 | WHO IS PLAYING (2026-09-17) |
 | 828 | · THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free. |
 | 879 | · AND EVERYTHING THAT IS A PURCHASE. |
 | 1168 | · AND THE BEST OF THEM WINS. |
-| 1444 | RUNNING MONTHS |
-| 1512 | SAVE / RELOAD, MID-RUN |
-| 1718 | (untitled) |
-| 1747 | · · founding: a few months at a time, by hand |
-| 1783 | · · then the real rhythm |
-| 1908 | · · the report |
-| 2002 | · · BUSINESS SERVICES - and the point of printing it is the MECHANISM, |
+| 1443 | RUNNING MONTHS |
+| 1511 | SAVE / RELOAD, MID-RUN |
+| 1717 | (untitled) |
+| 1746 | · · founding: a few months at a time, by hand |
+| 1782 | · · then the real rhythm |
+| 1907 | · · the report |
+| 2001 | · · BUSINESS SERVICES - and the point of printing it is the MECHANISM, |
 
 ## Constants
 
@@ -63,10 +63,10 @@
 | 55 | `LongPlaytest.findings` | `new LinkedHashMap<>()` |  |
 | 161 | `LongPlaytest.illnessDeathsByBand` | `new double [ AgeBand.values().length ]` | The long sick (2026-09-11): who died of staying sick, by band, and the most ever ill past two months. |
 | 163 | `LongPlaytest.deathsByBandRun` | `new double [ AgeBand.values().length ]` | Everyone who died, by band, and the orphans and the unhoused among them (2026-09-11). |
-| 807 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasiona...` | True when this run is played by somebody paying attention. |
+| 749 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasiona...` | True when this run is played by somebody paying attention. |
 | 1189 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
-| 1399 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
-| 1431 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
+| 1398 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
+| 1430 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
 
 ## Fields (state)
 
@@ -108,17 +108,17 @@
 | 186 | `static int monthsObserved` |  |
 | 187 | `static double totalDepartures` |  |
 | 188 | `static double totalArrivals` |  |
-| 1454 | `static int refusedSkips` |  |
-| 1720 | `static double lifetimeWriteOffs` |  |
-| 1721 | `static double lifetimeBailouts` |  |
-| 1722 | `static int failuresSeen` |  |
-| 1723 | `static double lifetimeHouseholdWriteOffs` |  |
+| 1453 | `static int refusedSkips` |  |
+| 1719 | `static double lifetimeWriteOffs` |  |
+| 1720 | `static double lifetimeBailouts` |  |
+| 1721 | `static int failuresSeen` |  |
+| 1722 | `static double lifetimeHouseholdWriteOffs` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 2474 | **type** `public class LongPlaytest` | A city played for four thousand months, the way a person plays. |
+| 40 | 2473 | **type** `public class LongPlaytest` | A city played for four thousand months, the way a person plays. |
 
 ### FINDINGS (lines 47-65)
 
@@ -143,52 +143,52 @@
 | 686 | 6 | `static void finiteArray(int month, String what, double[] values)` |  |
 | 693 | 7 | `static void finite(int month, String what, double value)` |  |
 
-### THE ADVISOR (lines 701-776)
+### THE ADVISOR (lines 701-718)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 717 | 1 | **type** `record Move(String label, double lost, java.util.function.BooleanSupplier act)` | ONE THING THE CITY COULD DO, AND WHAT IT IS WORTH. |
 
-### WHO IS PLAYING (2026-09-17) (lines 777-1443)
+### WHO IS PLAYING (2026-09-17) (lines 719-1442)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 811 | 1 | `static int longestSkip()` | Months the player will let pass before looking, at most. |
-| 814 | 1 | `static int movesPerLook()` | ...and how many things it will fix when it does look. |
-| 816 | 363 | `static String advise(Game g)` |  |
-| 1209 | 53 | `static void addRoadThrottle(java.util.List<Move> moves, Game g, double lost)` | The road constraint, and every way there is of easing it. |
-| 1263 | 4 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost)` |  |
-| 1272 | 22 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost, double gap)` | how many of the building to order |
-| 1296 | 9 | `static double runningCost(Game g, BuildingsTemplate t)` | What one of these costs the city a month to run, fully staffed at today's wages. |
-| 1307 | 4 | `static boolean wouldPay(Game g, String name, String sector)` | Whether one of these would clear its own running costs, on the private sector's screen. |
-| 1312 | 4 | `static int qty(Game g, String name)` |  |
-| 1321 | 54 | `static boolean build(Game g, String name, int quantity)` | Orders a building the way the screens do: check land, buy some if short, borrow if the treasury cannot cover it, then place the order. |
-| 1402 | 1 | `static double fxRate(Game g)` | Local per USD, for turning a local-money need into a dollar ask. |
-| 1404 | 18 | `static boolean canService(Game g, double extra)` |  |
-| 1433 | 3 | `static void refusal(String why)` |  |
-| 1437 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 753 | 1 | `static int longestSkip()` | Months the player will let pass before looking, at most. |
+| 756 | 1 | `static int movesPerLook()` | ...and how many things it will fix when it does look. |
+| 816 | 363 | `static String advise(Game g)` | WHAT THE CITY DOES NEXT, AND WHY THIS IS NOT A LIST OF RULES ANY MORE. |
+| 1199 | 53 | `static void addRoadThrottle(java.util.List<Move> moves, Game g, double lost)` | The road constraint, and every way there is of easing it. |
+| 1262 | 4 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost)` | Adds one building as a way of relieving a constraint worth `lost` a month. |
+| 1271 | 22 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost, double gap)` | how many of the building to order |
+| 1295 | 9 | `static double runningCost(Game g, BuildingsTemplate t)` | What one of these costs the city a month to run, fully staffed at today's wages. |
+| 1306 | 4 | `static boolean wouldPay(Game g, String name, String sector)` | Whether one of these would clear its own running costs, on the private sector's screen. |
+| 1311 | 4 | `static int qty(Game g, String name)` |  |
+| 1320 | 54 | `static boolean build(Game g, String name, int quantity)` | Orders a building the way the screens do: check land, buy some if short, borrow if the treasury cannot cover it, then place the order. |
+| 1401 | 1 | `static double fxRate(Game g)` | Local per USD, for turning a local-money need into a dollar ask. |
+| 1403 | 18 | `static boolean canService(Game g, double extra)` |  |
+| 1432 | 3 | `static void refusal(String why)` |  |
+| 1436 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
 
-### RUNNING MONTHS (lines 1444-1511)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1456 | 55 | `static void run(Game g, int months)` |  |
-
-### SAVE / RELOAD, MID-RUN (lines 1512-1717)
+### RUNNING MONTHS (lines 1443-1510)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1521 | 190 | `static void roundTrip(Game g, GameFiles files, int slot)` |  |
-| 1712 | 5 | `static void same(int month, String what, double actual, double expected)` |  |
+| 1455 | 55 | `static void run(Game g, int months)` |  |
 
-### (untitled) (lines 1718-2513)
+### SAVE / RELOAD, MID-RUN (lines 1511-1716)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1725 | 670 | `public static void main(String[] args) throws Exception` |  |
-| 2411 | 10 | `static String shortTag(String key)` | A sector's name in three or four characters, for the checkpoint line. |
-| 2422 | 17 | `static String creditEra(Game g)` |  |
-| 2440 | 57 | `static String era(Game g, String label)` |  |
-| 2498 | 7 | `static String money(double v)` |  |
-| 2506 | 7 | `static void cleanUp(Path root)` |  |
+| 1520 | 190 | `static void roundTrip(Game g, GameFiles files, int slot)` |  |
+| 1711 | 5 | `static void same(int month, String what, double actual, double expected)` |  |
+
+### (untitled) (lines 1717-2512)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1724 | 670 | `public static void main(String[] args) throws Exception` |  |
+| 2402 | 10 | `static String shortTag(String key)` | A sector's name in three or four characters, for the checkpoint line. |
+| 2421 | 17 | `static String creditEra(Game g)` | The business economy at a checkpoint, on one line: per sector its cash, write-downs and months of ban left, then hunger and the shelf. |
+| 2439 | 57 | `static String era(Game g, String label)` |  |
+| 2497 | 7 | `static String money(double v)` |  |
+| 2505 | 7 | `static void cleanUp(Path root)` |  |
 

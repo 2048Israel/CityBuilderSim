@@ -392,7 +392,7 @@ public class DataSave {
     
 
     /**
-     * Writes the city out.
+     * Writes the save, and refuses to take the game down with it if it cannot.
      *
      * Returns the outcome instead of swallowing it. The previous version caught
      * IOException, printed "Error saving." to a console no player will ever see,
@@ -400,9 +400,6 @@ public class DataSave {
      * successfuly saved." on top of a save that had not happened. Telling
      * someone their city is safe when it is not is worse than not saving at all,
      * because it is the point at which they stop worrying about it.
-     */
-    /**
-     * Writes the save, and refuses to take the game down with it if it cannot.
      *
      * Gson will not serialise NaN or Infinity - it throws
      * IllegalArgumentException rather than writing them - and that throw used
@@ -850,13 +847,6 @@ public class DataSave {
     public double getPolicyRate()          { return policyRate; }
 
     /**
-     * How far wages have chased the cost of living.
-     *
-     * A STOCK - it is an accumulation of every month's drift towards a target,
-     * and the target alone cannot reproduce it. A save that forgot it reloaded a
-     * city whose workers had never noticed the last devaluation.
-     */
-    /**
      * The commute the city REMEMBERS, which decides how many of its car owners
      * get on a tram - see InfrastructureManager.noteCongestion().
      *
@@ -886,6 +876,13 @@ public class DataSave {
         return rememberedCommute > 0 ? rememberedCommute : 1;
     }
 
+    /**
+     * How far wages have chased the cost of living.
+     *
+     * A STOCK - it is an accumulation of every month's drift towards a target,
+     * and the target alone cannot reproduce it. A save that forgot it reloaded a
+     * city whose workers had never noticed the last devaluation.
+     */
     private double costOfLiving = 1;
 
     public void setCostOfLiving(double v) { this.costOfLiving = v; }

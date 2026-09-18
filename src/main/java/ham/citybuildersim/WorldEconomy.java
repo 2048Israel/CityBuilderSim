@@ -158,8 +158,7 @@ public class WorldEconomy {
      * At 2 the draw is u squared, whose mean is a third rather than a half. Two
      * thirds of months draw under 4%; 8% needs a draw within a whisker of 1.0,
      * and so turns up about as often as a bad decade should.
-     */
-    /**
+     *
       * RETIRED 2026-09-13, kept because the reasoning is still true of the band
       * it was written for. It dragged a [1%, 8%] draw's mean down toward the
       * floor; the band is centred on the mean now and does not need dragging.

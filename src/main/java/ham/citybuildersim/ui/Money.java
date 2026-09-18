@@ -80,17 +80,6 @@ public final class Money {
     }
 
     /**
-     * Money at a width that cannot overflow its column.
-     *
-     * THE READABILITY BUG THIS FIXES. The per-tier table formatted every cell as
-     * "$" + a comma-grouped total into fields of six to nine characters. A city
-     * of eighty thousand earns tens of millions, so almost every cell was wider
-     * than the cell it was in - and a mono table whose first row overflows is
-     * not a table any more, it is nine columns of numbers sliding sideways past
-     * each other. Compact above a hundred thousand keeps every cell inside seven
-     * characters whatever the city's size.
-     */
-    /**
      * Thousands into dollars, for the one screen that has to talk about a family.
      *
      * The game counts money in thousands everywhere and prints it raw, which is
@@ -103,6 +92,17 @@ public final class Money {
      */
     public static double toDollars(double thousands) { return thousands * 1000; }
 
+    /**
+     * Money at a width that cannot overflow its column.
+     *
+     * THE READABILITY BUG THIS FIXES. The per-tier table formatted every cell as
+     * "$" + a comma-grouped total into fields of six to nine characters. A city
+     * of eighty thousand earns tens of millions, so almost every cell was wider
+     * than the cell it was in - and a mono table whose first row overflows is
+     * not a table any more, it is nine columns of numbers sliding sideways past
+     * each other. Compact above a hundred thousand keeps every cell inside seven
+     * characters whatever the city's size.
+     */
     public static String tightMoney(double value) { return tightMoney(value, true); }
 
     /**
@@ -154,12 +154,6 @@ public final class Money {
     }
 
     /**
-     * A movement, signed - and a zero movement is written without one.
-     *
-     * "-$0" reads as a direction, and there was not one. Same rule as the
-     * treasury bridge, which learned it first.
-     */
-    /**
      * signed(), in the k/M column a city-scale statement wants.
      *
      * The balance-of-payments ledger reads in millions on every line but one,
@@ -172,6 +166,12 @@ public final class Money {
         return (minus ? "\u2212" : "+") + money(Math.abs(thousands));
     }
 
+    /**
+     * A movement, signed - and a zero movement is written without one.
+     *
+     * "-$0" reads as a direction, and there was not one. Same rule as the
+     * treasury bridge, which learned it first.
+     */
     public static String signed(double thousands, boolean negate) {
         if (Math.abs(thousands) < .5) return "$0";
         boolean minus = negate != (thousands < 0);

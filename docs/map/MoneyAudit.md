@@ -1,4 +1,4 @@
-# MoneyAudit.java - 761 lines · 23 methods · 2 constants · model
+# MoneyAudit.java - 760 lines · 23 methods · 2 constants · model
 
 `ham/citybuildersim/MoneyAudit.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
 
@@ -46,19 +46,19 @@
 
 | line | constant | says |
 |---:|---|---|
-| 252 | `MoneyAudit.Scope.DOMESTIC` |  |
-| 252 | `MoneyAudit.Scope.TRADE` |  |
-| 252 | `MoneyAudit.Scope.INCOME` |  |
-| 252 | `MoneyAudit.Scope.FINANCIAL` |  |
-| 252 | `MoneyAudit.Scope.VALUATION` |  |
-| 252 | `MoneyAudit.Scope.RESERVE` |  |
+| 251 | `MoneyAudit.Scope.DOMESTIC` |  |
+| 251 | `MoneyAudit.Scope.TRADE` |  |
+| 251 | `MoneyAudit.Scope.INCOME` |  |
+| 251 | `MoneyAudit.Scope.FINANCIAL` |  |
+| 251 | `MoneyAudit.Scope.VALUATION` |  |
+| 251 | `MoneyAudit.Scope.RESERVE` |  |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 44 | `MoneyAudit.Result.NONE` | `new Result(0, 0, 0, 0, 0, 0)` |  |
-| 266 | `MoneyAudit.POOL_NAMES` | `poolNames()` | The pools, by name: the city, every sector in the registry's order, the builders' order book, the bank. |
+| 265 | `MoneyAudit.POOL_NAMES` | `poolNames()` | The pools, by name: the city, every sector in the registry's order, the builders' order book, the bank. |
 
 ## Fields (state)
 
@@ -88,7 +88,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 722 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
+| 40 | 721 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
 | 43 | 137 | **type** `public static final class Result` | One month's strike. |
 | 95 | 1 | `public double tradeBalance()` _(in MoneyAudit.Result)_ | Exports less imports. |
 | 98 | 1 | `public double incomeBalance()` _(in MoneyAudit.Result)_ | What the city earns on foreign assets, less what it pays on foreign debts. |
@@ -107,12 +107,12 @@
 | 170 | 4 | `public double relative()` _(in MoneyAudit.Result)_ | Residual as a share of what moved, so a $3 leak in a $3B city reads as 0. |
 | 175 | 4 | `public String toString()` _(in MoneyAudit.Result)_ |  |
 | 181 | 1 | `private MoneyAudit()` |  |
-| 252 | 1 | **type** `public enum Scope` | Which line of the balance of payments a flow belongs on. |
-| 255 | 3 | **type** `private interface Tagged` | Label, amount and scope, for one line of the month. |
-| 256 | 1 | `double apply(String label, double amount, Scope scope)` _(in MoneyAudit.Tagged)_ |  |
-| 268 | 8 | `private static String[] poolNames()` |  |
-| 278 | 16 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
-| 296 | 5 | `public static double pooled(Game g)` | Every dollar the city and its businesses hold, plus the builder's order book. |
-| 310 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
-| 315 | 446 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
+| 251 | 1 | **type** `public enum Scope` | WHICH SIDE OF WHICH BOUNDARY A FLOW CROSSES. |
+| 254 | 3 | **type** `private interface Tagged` | Label, amount and scope, for one line of the month. |
+| 255 | 1 | `double apply(String label, double amount, Scope scope)` _(in MoneyAudit.Tagged)_ |  |
+| 267 | 8 | `private static String[] poolNames()` |  |
+| 277 | 16 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
+| 295 | 5 | `public static double pooled(Game g)` | Every dollar the city and its businesses hold, plus the builder's order book. |
+| 309 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
+| 314 | 446 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
 

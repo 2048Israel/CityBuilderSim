@@ -40,12 +40,12 @@
 | 163 | · state |
 | 175 | THE OTHER DIRECTION (2026-09-12) |
 | 233 | · the month |
-| 247 | WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. |
+| 235 | WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. |
 | 286 | · · is anybody panicking |
 | 345 | · · what it is worth |
 | 362 | · · and it moves |
 | 390 | · reading |
-| 393 | · * |
+| 392 | · * |
 | 525 | · carrying |
 
 ## Constants
@@ -111,36 +111,36 @@
 
 ### THE OTHER DIRECTION (2026-09-12) (lines 175-232)
 
-### the month (lines 233-246)
+### the month (lines 233-234)
 
-### WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. (lines 247-389)
+### WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. (lines 235-389)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 264 | 6 | `public double stockAt(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp)` |  |
-| 272 | 5 | `public double arrivalsAt(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp)` | How much of that gap actually arrives in the first month. |
+| 252 | 6 | `public double stockAt(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp)` |  |
+| 260 | 5 | `public double arrivalsAt(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp)` | How much of that gap actually arrives in the first month. |
 | 278 | 111 | `public void takeMonth(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp, double r...` |  |
 
-### reading (lines 390-392)
+### reading (lines 390-391)
 
-### * (lines 393-524)
+### * (lines 392-524)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 412 | 51 | `public double carryTakeMonth(double lendingRate, double worldRate, double countryPremium, double headroom)` |  |
-| 465 | 5 | `public double carryInterestOn(double lendingRate)` | What the book earns the bank this month, at the rate they borrowed at. |
-| 471 | 1 | `public double getCarryStock()` |  |
-| 472 | 1 | `public double getCarryTarget()` |  |
-| 473 | 1 | `public double getCarrySpread()` |  |
-| 474 | 1 | `public double getCarryBorrowed()` |  |
-| 475 | 1 | `public double getCarryRepaid()` |  |
-| 476 | 1 | `public double getLifetimeCarryBorrowed()` |  |
-| 477 | 1 | `public double getLifetimeCarryRepaid()` |  |
-| 478 | 1 | `public double getLifetimeCarryInterest()` |  |
-| 479 | 1 | `public double getPeakCarryStock()` |  |
-| 480 | 1 | `public double getPeakCarrySpread()` |  |
-| 483 | 6 | `public double carryTargetAt(double lendingRate, double worldRate, double countryPremium, double headroom)` | What the trade would want at a given spread, for a screen or a forecast. |
-| 490 | 1 | `public double getStock()` |  |
+| 411 | 51 | `public double carryTakeMonth(double lendingRate, double worldRate, double countryPremium, double headroom)` |  |
+| 464 | 5 | `public double carryInterestOn(double lendingRate)` | What the book earns the bank this month, at the rate they borrowed at. |
+| 470 | 1 | `public double getCarryStock()` |  |
+| 471 | 1 | `public double getCarryTarget()` |  |
+| 472 | 1 | `public double getCarrySpread()` |  |
+| 473 | 1 | `public double getCarryBorrowed()` |  |
+| 474 | 1 | `public double getCarryRepaid()` |  |
+| 475 | 1 | `public double getLifetimeCarryBorrowed()` |  |
+| 476 | 1 | `public double getLifetimeCarryRepaid()` |  |
+| 477 | 1 | `public double getLifetimeCarryInterest()` |  |
+| 478 | 1 | `public double getPeakCarryStock()` |  |
+| 479 | 1 | `public double getPeakCarrySpread()` |  |
+| 482 | 6 | `public double carryTargetAt(double lendingRate, double worldRate, double countryPremium, double headroom)` | What the trade would want at a given spread, for a screen or a forecast. |
+| 490 | 1 | `public double getStock()` | Foreign money currently funding the city, in local money. |
 | 493 | 1 | `public double getTarget()` | What would be here if it had all arrived. |
 | 496 | 1 | `public double getSpread()` | The excess return that is pulling it, net of what the risk costs. |
 | 498 | 1 | `public double getArrived()` |  |

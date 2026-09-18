@@ -807,14 +807,6 @@ final class PeopleScreen {
         return table;
     }
 
-    /**
-     * Household shape down the side, pay tier across the top.
-     *
-     * The same two axes the affordability grid crosses, counting households
-     * instead of dollars - so a player can read "the city's large families are
-     * the poor ones" off one screen and "and here is what that costs them" off
-     * the other.
-     */
     /* =====================================================================
        THE PEOPLE OUTSIDE THE FAMILIES (2026-09-11)
 
@@ -951,6 +943,14 @@ final class PeopleScreen {
         return table;
     }
 
+    /**
+     * Household shape down the side, pay tier across the top.
+     *
+     * The same two axes the affordability grid crosses, counting households
+     * instead of dollars - so a player can read "the city's large families are
+     * the poor ones" off one screen and "and here is what that costs them" off
+     * the other.
+     */
     javafx.scene.layout.GridPane shapeMatrix(FamilyModel families) {
 
         int columns = PayTier.values().length + 2;
@@ -1155,16 +1155,6 @@ final class PeopleScreen {
         return table;
     }
     /**
-     * The residents' own books - the last participant in this economy that did
-     * not have any.
-     *
-     * The line that matters is the bottom one. Retail spending is currently
-     * driven by how many people there are rather than by what they earn, so
-     * nothing in the model stops households being made to spend more than they
-     * take home. If that happens it is money arriving from nowhere, and this is
-     * the screen where it becomes visible instead of invisible.
-     */
-    /**
      * Whether the per-tier table shows one family or the whole city.
      *
      * A screen-level toggle rather than two tables, because they answer two
@@ -1175,22 +1165,6 @@ final class PeopleScreen {
      */
     boolean householdPerFamily = true;
 
-    /**
-     * The residents' own books - the last participant in this economy that did
-     * not have any.
-     *
-     * The line that matters is the bottom one. Retail spending is currently
-     * driven by how many people there are rather than by what they earn, so
-     * nothing in the model stops households being made to spend more than they
-     * take home. If that happens it is money arriving from nowhere, and this is
-     * the screen where it becomes visible instead of invisible.
-     *
-     * REBUILT 2026-09-07 (Jerus: "that part is basically unreadable"). It was
-     * five separate boxes - INCOME, OUTGOINGS, WHAT IS LEFT, PENSIONS,
-     * AFFORDABILITY - each with its own alignment, and the pension lines sat two
-     * boxes away from the statement they belong to. It is one statement now, in
-     * one column, read top to bottom: what came in, what went out, what is left.
-     */
     /* =====================================================================
        CAN THE PEOPLE OF THIS CITY AFFORD TO LIVE IN IT?
 
@@ -1231,6 +1205,22 @@ final class PeopleScreen {
     javafx.scene.Node revealTop = null;
     javafx.scene.Node revealBottom = null;
 
+    /**
+     * The residents' own books - the last participant in this economy that did
+     * not have any.
+     *
+     * The line that matters is the bottom one. Retail spending is currently
+     * driven by how many people there are rather than by what they earn, so
+     * nothing in the model stops households being made to spend more than they
+     * take home. If that happens it is money arriving from nowhere, and this is
+     * the screen where it becomes visible instead of invisible.
+     *
+     * REBUILT 2026-09-07 (Jerus: "that part is basically unreadable"). It was
+     * five separate boxes - INCOME, OUTGOINGS, WHAT IS LEFT, PENSIONS,
+     * AFFORDABILITY - each with its own alignment, and the pension lines sat two
+     * boxes away from the statement they belong to. It is one statement now, in
+     * one column, read top to bottom: what came in, what went out, what is left.
+     */
     void showHouseholdMenu() {
         ui.clearMenu("showHouseholdMenu", () -> showHouseholdMenu());
 

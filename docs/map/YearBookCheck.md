@@ -42,11 +42,11 @@
 | 220 | 9 - NO DECIMAL COMMAS, EVER |
 | 257 | 10 - THE FILES LAND SOMEWHERE THE PLAYER CAN FIND THEM |
 | 270 | FIXTURES AND READING |
-| 281 | 11 - THE UNEMPLOYMENT COLUMN IS THE POOL OVER THE LABOUR FORCE |
-| 318 | 13 - THE BOOK AGREES WITH THE MODEL, ON A CITY THAT HAS BEEN PLAYED |
-| 369 | · · the premise |
-| 382 | · · and the assertions |
-| 459 | 12 - THE CURRENCY NOTE READS THE SAME WAY AS THE RATE |
+| 274 | 11 - THE UNEMPLOYMENT COLUMN IS THE POOL OVER THE LABOUR FORCE |
+| 311 | 13 - THE BOOK AGREES WITH THE MODEL, ON A CITY THAT HAS BEEN PLAYED |
+| 362 | · · the premise |
+| 375 | · · and the assertions |
+| 452 | 12 - THE CURRENCY NOTE READS THE SAME WAY AS THE RATE |
 | 530 | · assertions |
 
 ## Constants
@@ -130,29 +130,29 @@
 |---:|---:|---|---|
 | 260 | 9 | `private static void theExportPathsAreBesideTheSaves()` |  |
 
-### FIXTURES AND READING (lines 270-280)
+### FIXTURES AND READING (lines 270-273)
 
-### 11 - THE UNEMPLOYMENT COLUMN IS THE POOL OVER THE LABOUR FORCE (lines 281-317)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 293 | 24 | `private static void theUnemploymentColumnIsThePool()` |  |
-
-### 13 - THE BOOK AGREES WITH THE MODEL, ON A CITY THAT HAS BEEN PLAYED (lines 318-458)
+### 11 - THE UNEMPLOYMENT COLUMN IS THE POOL OVER THE LABOUR FORCE (lines 274-310)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 343 | 83 | `private static void theBookAgreesWithTheModelOnAPlayedCity()` |  |
-| 428 | 6 | `private static void put(Game g, String name, int n)` | One template, n of them, paid for and standing - EducationCheck's shape. |
-| 435 | 7 | `private static void near(String what, double got, double wanted, double slack)` |  |
-| 444 | 14 | `private static HistorySave history(int workforce, int students, int jobs, int outOfWork)` | Twelve identical months of workforce, students, posts and (if not negative) the pool. |
+| 286 | 24 | `private static void theUnemploymentColumnIsThePool()` |  |
 
-### 12 - THE CURRENCY NOTE READS THE SAME WAY AS THE RATE (lines 459-529)
+### 13 - THE BOOK AGREES WITH THE MODEL, ON A CITY THAT HAS BEEN PLAYED (lines 311-451)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 467 | 7 | `private static void theCurrencyNoteReadsTheRightWay()` |  |
-| 475 | 10 | `private static HistorySave built(int months, String series, double[] values)` |  |
+| 336 | 83 | `private static void theBookAgreesWithTheModelOnAPlayedCity()` |  |
+| 421 | 6 | `private static void put(Game g, String name, int n)` | One template, n of them, paid for and standing - EducationCheck's shape. |
+| 428 | 7 | `private static void near(String what, double got, double wanted, double slack)` |  |
+| 437 | 14 | `private static HistorySave history(int workforce, int students, int jobs, int outOfWork)` | Twelve identical months of workforce, students, posts and (if not negative) the pool. |
+
+### 12 - THE CURRENCY NOTE READS THE SAME WAY AS THE RATE (lines 452-529)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 460 | 7 | `private static void theCurrencyNoteReadsTheRightWay()` |  |
+| 475 | 10 | `private static HistorySave built(int months, String series, double[] values)` | A history of `months` months with one series filled in. |
 | 486 | 5 | `private static double[] ramp(int n)` |  |
 | 492 | 5 | `private static double sum(int from, int to)` |  |
 | 499 | 4 | `private static double cell(String text, String column, int row)` | The value a reader would take out of the file, found the way a reader finds it. |

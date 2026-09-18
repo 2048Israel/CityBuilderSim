@@ -30,8 +30,13 @@ from the code.
 
 ## What to do, in order
 
-1. **Regenerate the indexes.** `Regenerate maps.bat` on the PC, or
-   `java -cp target/classes ham.citybuildersim.tools.Maps` anywhere. Never
+1. **Regenerate the indexes, then run `Stale`.** `Regenerate maps.bat` on
+   the PC, or `java -cp target/classes ham.citybuildersim.tools.Maps`
+   anywhere; then `Stale report.bat`, or `java -cp target/classes
+   ham.citybuildersim.tools.Stale`. Its three firm categories (an orphaned
+   javadoc, a named file that is not there, a stated count that is out) are
+   the first of your list - the suite's `StaleCheck` fails on them - and its
+   soft ones (a `name()` nothing declares, a fuzzy count) are leads. Never
    edit anything under `docs/map/`, `docs/dials.md`, `docs/month-order.md` or
    `docs/harnesses.md` by hand — they are generated, and a hand edit is
    overwritten next time. If an index shows a *blank* — a dial with no

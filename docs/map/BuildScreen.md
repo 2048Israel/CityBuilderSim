@@ -110,9 +110,9 @@
 | 1392 | 19 | `String schoolSubtitle(EducationType type)` | One line, like the care subtitles beside it. |
 | 1413 | 10 | `String careHeading(CareType care)` | The group's name, in the player's words rather than the enum's. |
 | 1431 | 22 | `String careSubtitle(CareType care)` | What building one of these actually gets you. |
-| 1471 | 31 | `void showNoDepositMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money, the land, and nothing to dig. |
-| 1510 | 42 | `void showNoLicenceMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Nobody licensed to practise in it. |
-| 1553 | 35 | `void showNoLandMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` |  |
+| 1463 | 31 | `void showNoDepositMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money, the land, and nothing to dig. |
+| 1502 | 42 | `void showNoLicenceMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Nobody licensed to practise in it. |
+| 1553 | 35 | `void showNoLandMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The city has the money and nowhere to put the building. |
 | 1598 | 61 | `void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | "You cannot afford this - borrow for it?" with the terms on the screen. |
 | 1668 | 30 | `void showFundingFellShortMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The note went through and the building still did not. |
 | 1706 | 18 | `String rateStyle(DebtQuote quote)` | Colours a quoted rate by how punishing it is. |

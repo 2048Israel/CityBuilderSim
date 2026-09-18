@@ -226,8 +226,7 @@ public final class MoneyAudit {
      * which is the whole point: a line added here cannot be forgotten there,
      * and ForeignCheck asserts that domestic and foreign together come to
      * exactly what this class already said crossed the edge.
-     */
-    /**
+     *
      * Which line of the balance of payments a flow belongs on.
      *
      * RESERVE is the odd one, and it is odd for the reason the textbooks make

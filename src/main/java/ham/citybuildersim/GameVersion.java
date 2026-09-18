@@ -68,8 +68,7 @@ public final class GameVersion {
      * keyed by name or appended to the end of an array whose reader checks its
      * length, so a 0.6.0 city opens in 0.6.5 with no cars, no fleets and the
      * rolling stock its track implies - which is exactly what that city was.
-     */
-    /**
+     *
      * 0.6.6 - THE FOURTEENTH SECTOR, AND A RIDE STOPS BEING A MONTH.
      *
      * Luxury Retail: boutiques and department stores that import what they
@@ -88,8 +87,7 @@ public final class GameVersion {
      * accounts' luxury baseline is appended to an array whose reader checks
      * its length, so a 0.6.5 city opens with no boutiques and an empty shelf -
      * which is exactly what that city was.
-     */
-    /**
+     *
      * 0.6.7 - THE FIFTEENTH SECTOR, AND A MEAL OUT IS FOOD.
      *
      * Restaurants, the other half of what Jerus asked for beside the luxury
@@ -277,8 +275,7 @@ public final class GameVersion {
      *     staffing out of its general graduate pool now correctly cannot be.
      *     That is a real change to a loaded city and it is the right one: those
      *     doctors were the bug.
-     */
-    /* ---------------------------------------------------------------------
+     * ---------------------------------------------------------------------
      * 18  Education carries its pipeline (2026-09-06). Until now `Education`
      *     handed a school's steady-state throughput out the month the school
      *     opened; there were no students in flight, so there was nothing to
@@ -296,8 +293,7 @@ public final class GameVersion {
      *     which is what they would have done had they been built the month
      *     the save was made. The old ledger and flow shapes are read with the
      *     new fields at zero.
-     */
-    /* ---------------------------------------------------------------------
+     * ---------------------------------------------------------------------
      * NOT 20: the inbox, and thirty-one new graph series (2026-09-08).
      *
      *     Both are additions that fail SAFELY in both directions, which is the
@@ -375,8 +371,7 @@ public final class GameVersion {
      *       - the bank's lifetime resolution loss now lives in the slot the
      *         monthly one used to be saved in; an old save restores whatever
      *         its save month held, which is what it always did
-     * --------------------------------------------------------------------- */
-    /* ---------------------------------------------------------------------
+     * ---------------------------------------------------------------------
      * 20  The unit of construction material changed meaning (2026-09-10).
      *
      *     NOTHING WAS ADDED TO THE SAVE. This number moves because a field
@@ -405,8 +400,7 @@ public final class GameVersion {
      *     when it is valued, as it was through the two rebalances before
      *     this - a city's power plant did not need a format change to become
      *     a $1.43B power plant.
-     * --------------------------------------------------------------------- */
-    /* ---------------------------------------------------------------------
+     * ---------------------------------------------------------------------
      * NOT 21: the sectors' savings abroad (2026-09-10, OutwardInvestment).
      *
      *     A new array under a new key (outwardInvestment), two figures
@@ -416,8 +410,7 @@ public final class GameVersion {
      *     financial account of zero that settles within a year, and sector
      *     books that show no foreign line - which is exactly what that city
      *     had, because the mechanic did not exist when it was saved.
-     * --------------------------------------------------------------------- */
-    /* ---------------------------------------------------------------------
+     * ---------------------------------------------------------------------
      * NOT 21 EITHER: the households' cells and the share register
      * (2026-09-10, evening). Two new keys (householdCellKeys/householdCells,
      * equityKeys/equity), both named entry by entry so a shape or a company
@@ -427,8 +420,7 @@ public final class GameVersion {
      * dividendsPaid) which Gson matches by name. All absent-safe: an older
      * save loads with its rows seeded into the cells and nobody owning
      * anything, which is what that city had.
-     * --------------------------------------------------------------------- */
-    /* ---------------------------------------------------------------------
+     * ---------------------------------------------------------------------
      * NOR THIS: the exchange and the households' dollars abroad (2026-09-11).
      * One new key (exchange: the quote, fair value and the unfilled demand
      * per company, by the register's names, then the lifetime volume), two
@@ -444,8 +436,7 @@ public final class GameVersion {
      * with one share then being one share now), and two maps of series in
      * the graph history (a share price and a share value per company, by
      * name), which Gson leaves empty on a history written before them.
-     * --------------------------------------------------------------------- */
-    /* ---------------------------------------------------------------------
+     * ---------------------------------------------------------------------
      * 21  THE SECTOR TEMPLATE (2026-09-11), and the first CLEAN BREAK.
      *
      *     Every sector is one class over one template now (see Sector and

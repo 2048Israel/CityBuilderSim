@@ -89,8 +89,8 @@
 | 662 | 6 | `public void retireSkilled(double leaveRate)` | Death and retirement, which take the skilled along with everybody else. |
 | 678 | 15 | `public void trimLicencesToBand()` | Keeps the licensed counts inside the band that contains them. |
 | 694 | 5 | `public void restoreSkilledHeads(double[] saved)` |  |
-| 718 | 6 | `public void applyBandFlow(double[] flow)` | This month's schooling, as a net movement between bands. |
-| 725 | 7 | `public void applySkilledFlows(double[] arrivals, double[] departures)` |  |
+| 710 | 6 | `public void applyBandFlow(double[] flow)` | This month's schooling, as a net movement between bands. |
+| 725 | 7 | `public void applySkilledFlows(double[] arrivals, double[] departures)` | Who moved in and who moved out, by skill. |
 | 742 | 12 | `public void inferBandShareFromJobs()` | Reads a plausible skill mix off the jobs the city is currently staffing. |
 | 755 | 13 | `public double[] getJobFillRate()` |  |
 | 769 | 3 | `public int getWorkforce()` |  |

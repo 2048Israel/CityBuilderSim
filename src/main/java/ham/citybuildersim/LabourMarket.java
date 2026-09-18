@@ -238,7 +238,6 @@ public class LabourMarket {
         return floor > 0 ? PayTier.wageOf(job) / floor : 1;
     }
 
-    /** What this job would pay in a city with exactly enough people for it. */
     /* ==================== THE COST OF LIVING ====================
      *
      * Jerus, on deferring inflation: wages should show "slow partial drift".
@@ -336,6 +335,7 @@ public class LabourMarket {
         if (value > 0) this.costOfLiving = value;
     }
 
+    /** What this job would pay in a city with exactly enough people for it. */
     public double baseWage(JobType job) {
         /*
          * ONE INDEXATION, NOT TWO - AND IT IS THIS ONE.
@@ -440,7 +440,7 @@ public class LabourMarket {
              * INDEXED, because this is the one place the floor was nominal.
              * baseWage() multiplies the floor by costOfLiving, so the floor is
              * real everywhere else; a bare `minimumWage` here is a legislated
-             * minimum that inflation quietly removes. See getCashMinimumWage().
+             * minimum that inflation quietly removes. See cashMinimumWage().
              */
             wage[i] = Math.max(wage[i], cashMinimumWage());
         }
@@ -491,13 +491,6 @@ public class LabourMarket {
     public double getBandMultiple(WageBand band)   { return bandMultiple[band.ordinal()]; }
 
     /**
-     * The premium the BAND is paying, read off an ungated job in it.
-     *
-     * Migration used to read "any job in the band" for this, and the first
-     * university job in enum order is UNIV_DOCTOR - so once doctors carried a
-     * premium of their own, the whole graduate band would have looked dear.
-     */
-    /**
      * What a licensed profession is paid OVER ITS OWN BAND, as actually paid.
      *
      * The band premium answers "are graduates dear here"; this answers "are
@@ -519,6 +512,13 @@ public class LabourMarket {
         return band > 0 ? Math.max(1, premium(job) / band) : 1;
     }
 
+    /**
+     * The premium the BAND is paying, read off an ungated job in it.
+     *
+     * Migration used to read "any job in the band" for this, and the first
+     * university job in enum order is UNIV_DOCTOR - so once doctors carried a
+     * premium of their own, the whole graduate band would have looked dear.
+     */
     public double bandPremium(WageBand band) {
         for (JobType job : JobType.values()) {
             if (WageBand.of(job) == band && !isGated(job)) return premium(job);
@@ -566,12 +566,6 @@ public class LabourMarket {
     public double getMinimumWageAdjustment() { return minimumWageAdjustment; }
 
     /**
-     * Re-strikes the cash floor from the base, the index and the adjustment.
-     *
-     * Called every month, because the whole point is that it moves when prices
-     * do without anybody touching the dial.
-     */
-    /**
      * The floor in TODAY'S money: the real floor, lifted by the cost of living.
      *
      * NOT clamped to MIN_SETTABLE..MAX_SETTABLE. Those bounds are what a player
@@ -604,8 +598,7 @@ public class LabourMarket {
      * at ADJUST_RATE like everything else, so a minimum wage rise arrives over a
      * year rather than on the turn it is signed - which is both truer and the
      * only version a player can see happening.
-     */
-    /**
+     *
      * Sets the floor as a CASH figure, in today's money.
      *
      * AND SETS THE REAL BASE TO MATCH, which is the whole of a bug worth

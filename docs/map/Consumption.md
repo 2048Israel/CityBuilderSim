@@ -7,7 +7,7 @@
 > ONE PLACE, AND NOBODY KEEPS A COPY. Jerus: "basically its just where other
 > files get there numbers from". Every figure a grocery basket is built out of
 > is in consumption.json and every question about one is answered here. The
-> rule this is meant to end is the one UserInterface.historyValues() broke on
+> rule this is meant to end is the one HistoryScreen.historyValues() broke on
 > 2026-09-15, when a second copy of the unemployment formula sat beside the
 > model's and rotted for nine days without anybody noticing.
 > 
@@ -163,6 +163,6 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 533 | 1 | `public Item byKey(String key)` | One good by its key, or null if the file has no such line. |
-| 535 | 4 | `public static double timePressure(FamilyStructure shape)` |  |
+| 523 | 1 | `public Item byKey(String key)` | One good by its key, or null if the file has no such line. |
+| 535 | 4 | `public static double timePressure(FamilyStructure shape)` | Dependants per adult, for a household that works - and zero for one that does not, which is the whole point of the time axis. |
 

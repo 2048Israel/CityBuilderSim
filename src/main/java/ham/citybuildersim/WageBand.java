@@ -128,6 +128,9 @@ public enum WageBand {
         }
     }
 
+    /** The band a worker of this level can also work down into. */
+    public static WageBand[] ladder() { return values(); }
+
     /**
      * Which band a job sits in.
      *
@@ -138,9 +141,6 @@ public enum WageBand {
      * specialist role than a new unskilled one, and taxing it at the top band is
      * the error that gets NOTICED rather than the one that quietly under-collects.
      */
-    /** The band a worker of this level can also work down into. */
-    public static WageBand[] ladder() { return values(); }
-
     public static WageBand of(JobType job) {
         return switch (job) {
             case NO_DIPLOMA -> NONE;

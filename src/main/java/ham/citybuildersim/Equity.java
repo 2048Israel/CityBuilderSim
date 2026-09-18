@@ -65,7 +65,7 @@ package ham.citybuildersim;
  * the last twelve months' income swung: a steady earner runs at thirty
  * percent equity and seventy percent debt, a business whose income swings by
  * its own size runs at fifty, and nothing runs past seventy. See
- * targetEquityShare().
+ * targetEquityShareOf().
  *
  * ==================== WHAT THE OWNERS GET ====================
  *
@@ -121,7 +121,7 @@ public class Equity {
      *
      * A MONEY CONSTANT THAT A REFORM NEVER RESEEDED - found 2026-09-12, and it
      * had been there since the exchange was built. FOUNDING_PRICE is the
-     * yardstick every share is measured against: Exchange.splitShares() takes
+     * yardstick every share is measured against: Exchange.splitWhatNeedsIt() takes
      * `mid / FOUNDING_PRICE` and splits above SPLIT_AT or consolidates below
      * one over it. Exchange.redenominate() dutifully scales mid, fair and
      * lastMid; the yardstick they are divided by stayed at 1.0. So a city that

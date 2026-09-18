@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 /**
  * What every harness asserts, in its own words: docs/harnesses.md.
  *
- * WHY. Fifty-six harnesses, 28,000 lines, and the question that matters
+ * WHY. Fifty-seven harnesses, 28,000 lines, and the question that matters
  * before any change is "what already checks this?" - because README rule 4
  * says a check that fails is the finding, and you cannot honour that rule
  * for a check you did not know existed. Each harness labels its assertions

@@ -698,12 +698,6 @@ public class DebtManager {
     }
 
     /**
-     * Everything the city owes, including what it is overdrawn.
-     *
-     * NOT the same as getAllPrincipal(), which is bonds and bills only. This is
-     * what the market is actually looking at when it decides what to charge.
-     */
-    /**
      * Face value of the discount notes outstanding.
      *
      * The screens need it because a note is the one instrument whose interest
@@ -720,6 +714,12 @@ public class DebtManager {
         return total;
     }
 
+    /**
+     * Everything the city owes, including what it is overdrawn.
+     *
+     * NOT the same as getAllPrincipal(), which is bonds and bills only. This is
+     * what the market is actually looking at when it decides what to charge.
+     */
     public double getPricedDebt() {
         return getAllPrincipal() + Math.max(0, overdraft);
     }
@@ -784,8 +784,7 @@ public class DebtManager {
      * worst case, not the whole of it.
      *
      * The market always lends. There is a price at which it will do anything.
-     */
-    /**
+     *
      * @return the city's own credit spread, PLUS what the bank charges for
      *         funds - and the second half has to be here rather than at the one
      *         call site that sets the standing rate.

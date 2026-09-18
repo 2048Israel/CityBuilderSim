@@ -64,8 +64,8 @@
 | 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 57 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 64 | 716 | `public static void main(String[] args) throws Exception` |  |
-| 788 | 6 | `static MoneyAudit.Result intervention(double soldIn, double boughtOut)` | A month whose only foreign flow is the treasury working its own vault. |
-| 795 | 6 | `static MoneyAudit.Result month(double exports, double imports)` |  |
+| 782 | 6 | `static MoneyAudit.Result intervention(double soldIn, double boughtOut)` | A month whose only foreign flow is the treasury working its own vault. |
+| 795 | 6 | `static MoneyAudit.Result month(double exports, double imports)` | A synthetic month, which is the only honest way to test the rate rule. |
 | 807 | 139 | `static Game devaluationCity(Path dir, double rate, double[] food) throws Exception` | The same city twice, differing only in what its currency is worth. |
 | 948 | 26 | `static double worldFoodPrice(double rate) throws Exception` | What a foreign basket costs in local money at a given rate. |
 | 978 | 12 | `static int run(Path dir) throws Exception` | One deterministic city, played the same way twice. |

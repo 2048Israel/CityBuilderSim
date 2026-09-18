@@ -2833,7 +2833,6 @@ public class HouseholdBalance {
     /** ...and before the month's investment income was (2026-09-17). */
     public static final int CELL_SLOTS_BEFORE_INVESTMENT_INCOME = CELL_SLOTS_BEFORE_CARS + 1;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income. */
     /**
      * ...and the dinners, appended 2026-09-18.
      *
@@ -2844,6 +2843,7 @@ public class HouseholdBalance {
      */
     public static final int CELL_SLOTS_BEFORE_MEALS = CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1;
 
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income. */
     public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_MEALS + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */

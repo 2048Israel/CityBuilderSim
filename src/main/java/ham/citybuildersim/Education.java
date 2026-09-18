@@ -72,20 +72,6 @@ public class Education {
 
     private double tuitionSubsidy = DEFAULT_SUBSIDY;
 
-    /**
-     * Tuition per student per month, before any subsidy.
-     *
-     * A PRICE, not a cost recovery. What it costs the city to run a school is
-     * the building's upkeep plus its payroll, which the treasury pays whether
-     * anybody enrols or not; this is what a seat is sold for, and the gap
-     * between the two is the point of a public education system.
-     *
-     * Calibrated against the wages of the people who would pay it. University
-     * tuition is 0.80 against a diploma wage of 1.500 - fifty-three per cent of
-     * a month's pay unsubsidised, which stops almost everybody, and twenty-one
-     * per cent at the default subsidy, which stops almost nobody. The dial has
-     * to move something or it is not a decision.
-     */
     /* =====================================================================
        WHAT A COURSE COSTS, IN TODAY'S MONEY
 
@@ -121,7 +107,22 @@ public class Education {
         return type == null ? 0 : tuition[type.ordinal()];
     }
 
-    /** The same table in founding dollars, which is where the numbers live. */
+    /**
+     * Tuition per student per month, before any subsidy.
+     *
+     * The same table in founding dollars, which is where the numbers live.
+     *
+     * A PRICE, not a cost recovery. What it costs the city to run a school is
+     * the building's upkeep plus its payroll, which the treasury pays whether
+     * anybody enrols or not; this is what a seat is sold for, and the gap
+     * between the two is the point of a public education system.
+     *
+     * Calibrated against the wages of the people who would pay it. University
+     * tuition is 0.80 against a diploma wage of 1.500 - fifty-three per cent of
+     * a month's pay unsubsidised, which stops almost everybody, and twenty-one
+     * per cent at the default subsidy, which stops almost nobody. The dial has
+     * to move something or it is not a decision.
+     */
     public static double foundingTuition(EducationType type) {
         switch (type) {
             case ELEMENTARY:

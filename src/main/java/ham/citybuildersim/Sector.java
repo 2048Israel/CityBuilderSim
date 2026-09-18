@@ -133,7 +133,7 @@ public abstract class Sector {
     public final boolean hasPantry(Good g) { return pantryMonths.containsKey(g); }
 
     /* ===================================================================
-       WIRING - set once by Sectors.attach()
+       WIRING - set once by Sectors, through attach()
        =================================================================== */
 
     protected BuildingManager buildings;

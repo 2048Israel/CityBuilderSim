@@ -71,7 +71,7 @@
 | line | section |
 |---:|---|
 | 75 | IDENTITY AND DECLARATION |
-| 135 | WIRING - set once by Sectors.attach() |
+| 135 | WIRING - set once by Sectors, through attach() |
 | 155 | LABOUR |
 | 198 | A FIRM DOES NOT OPEN A BUILDING IT CANNOT STAFF (2026-09-12, moved |
 | 315 | UTILISATION |
@@ -213,7 +213,7 @@
 | 132 | 1 | `public final boolean isUser(Good g)` |  |
 | 133 | 1 | `public final boolean hasPantry(Good g)` |  |
 
-### WIRING - set once by Sectors.attach() (lines 135-154)
+### WIRING - set once by Sectors, through attach() (lines 135-154)
 
 | line | len | member | says |
 |---:|---:|---|---|

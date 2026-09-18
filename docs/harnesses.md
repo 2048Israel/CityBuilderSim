@@ -2,7 +2,7 @@
 
 Generated 2026-09-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**57 harness files, 3,061 labelled assertions.** AllChecks runs 57 of them.
+**58 harness files, 3,072 labelled assertions.** AllChecks runs 58 of them.
 
 ## Which harnesses read which class
 
@@ -1191,56 +1191,56 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-  - L55 the same people live there, to the person
-  - L58 the same output
-  - L60 ...and the same year of it
-  - L62 the same rent
-  - L63 the same price level
-  - L65 the same currency
-  - L67 the same treasury
-  - L68 the same shops' till
-  - L72 the same city debt
-  - L74 the same bank
-- **L157 1. THE UNIT**
-  - L161 a founding city is in founding money
-  - L162 ...and cannot reform, because nothing has inflated
-  - L164 ...nor at nine times
-  - L165 ...and can at ten
-  - L168 lopping two zeros makes a dollar a hundred old ones
-  - L169 ...so a founding price reads as a hundredth
-  - L170 ...and the money gets a new name
-  - L172 ...and again
-  - L173 the unit compounds
-  - L177 it stops before a double runs out of digits
-- **L180 2. IT IS THE SAME CITY**
-- **L186 a reformed city is the same city**
-  - L191 fixture: the two cities really are identical to start with
-  - L203 the reform goes through
-  - L205 cash divided
-  - L206 the exchange rate divided
-  - L209 the shelf price divided
-  - L211 rent divided
-  - L212 the minimum wage divided
-  - L215 a House costs a hundredth as many dollars
-- **L218 ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT**
-  - L250 the desk's room in
-  - L315 fixture: there was a per-good breakdown to divide (
-  - L333 the price index did not move
-  - L335 nor the rent burden
-  - L338 nor the cost of living
-  - L341 nor the population
-- **L344 3. AND IT STAYS THE SAME CITY**
-- **L395 ...and the month after the reform is the same month**
-- **L400 ...and the same city a year later**
-- **L404 ...and the same city a decade later**
-- **L446 4. AND NO MONEY WAS MADE OR LOST**
-- **L451 and the books still balance**
-  - L459 a reformed city conserves money like any other
-- **L461 5. AND IT SURVIVES A SAVE**
-  - L484 the unit came back
-  - L485 ...and the money with it
-  - L486 ...and the rent it was charging
-  - L487 ...and a House still costs what it cost
+  - L54 the same people live there, to the person
+  - L57 the same output
+  - L59 ...and the same year of it
+  - L61 the same rent
+  - L62 the same price level
+  - L64 the same currency
+  - L66 the same treasury
+  - L67 the same shops' till
+  - L71 the same city debt
+  - L73 the same bank
+- **L156 1. THE UNIT**
+  - L160 a founding city is in founding money
+  - L161 ...and cannot reform, because nothing has inflated
+  - L163 ...nor at nine times
+  - L164 ...and can at ten
+  - L167 lopping two zeros makes a dollar a hundred old ones
+  - L168 ...so a founding price reads as a hundredth
+  - L169 ...and the money gets a new name
+  - L171 ...and again
+  - L172 the unit compounds
+  - L176 it stops before a double runs out of digits
+- **L179 2. IT IS THE SAME CITY**
+- **L185 a reformed city is the same city**
+  - L190 fixture: the two cities really are identical to start with
+  - L202 the reform goes through
+  - L204 cash divided
+  - L205 the exchange rate divided
+  - L208 the shelf price divided
+  - L210 rent divided
+  - L211 the minimum wage divided
+  - L214 a House costs a hundredth as many dollars
+- **L217 ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT**
+  - L249 the desk's room in
+  - L314 fixture: there was a per-good breakdown to divide (
+  - L332 the price index did not move
+  - L334 nor the rent burden
+  - L337 nor the cost of living
+  - L340 nor the population
+- **L343 3. AND IT STAYS THE SAME CITY**
+- **L394 ...and the month after the reform is the same month**
+- **L399 ...and the same city a year later**
+- **L403 ...and the same city a decade later**
+- **L445 4. AND NO MONEY WAS MADE OR LOST**
+- **L450 and the books still balance**
+  - L458 a reformed city conserves money like any other
+- **L460 5. AND IT SURVIVES A SAVE**
+  - L483 the unit came back
+  - L484 ...and the money with it
+  - L485 ...and the rent it was charging
+  - L486 ...and a House still costs what it cost
 
 ## EducationCheck.java - 52 labelled assertions
 
@@ -2987,13 +2987,13 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L828 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L879 AND EVERYTHING THAT IS A PURCHASE.**
 - **L1168 AND THE BEST OF THEM WINS.**
-- **L1747 founding: a few months at a time, by hand**
-- **L1783 then the real rhythm**
-- **L1908 the report**
-- **L1916 ==**
-- **L2002 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L2372 what the advisor tried, and what happened**
-- **L2378 findings**
+- **L1746 founding: a few months at a time, by hand**
+- **L1782 then the real rhythm**
+- **L1907 the report**
+- **L1915 ==**
+- **L2001 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L2371 what the advisor tried, and what happened**
+- **L2377 findings**
 
 ## ManufacturingCheck.java - 57 labelled assertions
 
@@ -4357,6 +4357,38 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L223 worst energy back to full
   - L224 and it is no longer complete
 
+## StaleCheck.java - 11 labelled assertions
+
+> The prose still describes the code: the firm half of `tools.Stale`, asserted.
+> 
+> WHAT THIS HAS TO PROVE, and none of it is about what the game does - a
+> finding here is a sentence that has stopped being true, not a mechanic that
+> has stopped working:
+> 
+>   1. THE TOOL SEES A DEFECT WHEN THERE IS ONE. A fixture tree is written
+>      with three planted lies in it - a javadoc with no member under it, a
+>      comment naming a source file that is not in the tree, and a class
+>      header that miscounts its own banners - and each one has to come back.
+>      A checker that cannot fail is the failure mode this harness itself is
+>      most exposed to, because the tree it reads is usually clean.
+> ...
+
+- **L84 no source tree**
+- **L90 1. the tool sees a defect**
+  - L104 the fixture is two files
+  - L105 a javadoc with no member under it is found
+  - L107 a comment naming a source file that is not in the tree is found
+  - L109 a header that miscounts its own banners is found
+- **L112 2. ...and nothing when there is none**
+  - L115 no orphaned javadoc in the sound file
+  - L117 ...no missing file
+  - L118 ...and no stated count, because its header counts right
+- **L123 3. the tree itself**
+  - L128 the scan read the whole tree, not an empty one
+  - L131 no javadoc is left documenting nothing
+  - L132 nothing names a source file or a docs/ page that is not there
+  - L133 every stated count is the count
+
 ## TradeCostCheck.java - 30 labelled assertions
 
 > The wedge between what the world charges and what it pays, and what it is
@@ -4609,21 +4641,21 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L262 the year book sits in the game's own folder
   - L264 so does the decade book
   - L266 and they are not the same file
-  - L301 the history records the pool the People screen shows
-  - L308 with the pool recorded, the pool over the labour force
-  - L310 the column says what it is
-  - L314 without the pool, the labour force less the posts, over the labour force
-- **L369 the premise**
-  - L370 the fixture has somebody studying, or the two denominators are the same number
-  - L372 the fixture offers posts it has not filled, or jobs and filled posts agree by luck
-  - L379 ...so the formula this replaced actually disagrees with the model here
-- **L382 and the assertions**
-  - L402 the labour force is the model's labour force
-  - L404 the filled posts are the model's filled posts
-  - L407 unemployment is the model's own rate
-  - L418 the average wage divides the recorded wage bill by the filled posts
-  - L423 ...and the recorded wage bill is the model's, to the cent
-  - L470 the fxRate note says Danzik dollars per US dollar
-  - L471 ...and that higher is a fallen currency
-  - L472 ...and never the other way round
+  - L294 the history records the pool the People screen shows
+  - L301 with the pool recorded, the pool over the labour force
+  - L303 the column says what it is
+  - L307 without the pool, the labour force less the posts, over the labour force
+- **L362 the premise**
+  - L363 the fixture has somebody studying, or the two denominators are the same number
+  - L365 the fixture offers posts it has not filled, or jobs and filled posts agree by luck
+  - L372 ...so the formula this replaced actually disagrees with the model here
+- **L375 and the assertions**
+  - L395 the labour force is the model's labour force
+  - L397 the filled posts are the model's filled posts
+  - L400 unemployment is the model's own rate
+  - L411 the average wage divides the recorded wage bill by the filled posts
+  - L416 ...and the recorded wage bill is the model's, to the cent
+  - L463 the fxRate note says Danzik dollars per US dollar
+  - L464 ...and that higher is a fallen currency
+  - L465 ...and never the other way round
 

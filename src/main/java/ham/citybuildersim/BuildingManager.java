@@ -2866,19 +2866,6 @@ public class BuildingManager {
     }
 
     /**
-     * Runs the month's construction and reports what actually opened.
-     *
-     * Returns rather than logging here, because BuildingManager has no clock -
-     * the month a completion happened in is Game's to know, and handing this
-     * class the month just so it could stamp a log entry would be the wrong
-     * dependency in the wrong direction.
-     *
-     * Instances are advanced but not reported. They are latent (nothing calls
-     * addInstance() yet) and the aggregation helpers already skip them - see
-     * backlog item 4 - so reporting them would be the only place in the codebase
-     * pretending that path is live.
-     */
-    /**
      * What each site gets of the month's output. The engine splits evenly
      * per stack (backlog item 2 - per stack, not per work remaining), and the
      * construction panel used to re-derive this split beside it. One place.
@@ -2900,6 +2887,19 @@ public class BuildingManager {
         return Math.ceil(Math.max(0, owed) / perSiteOutput);
     }
 
+    /**
+     * Runs the month's construction and reports what actually opened.
+     *
+     * Returns rather than logging here, because BuildingManager has no clock -
+     * the month a completion happened in is Game's to know, and handing this
+     * class the month just so it could stamp a log entry would be the wrong
+     * dependency in the wrong direction.
+     *
+     * Instances are advanced but not reported. They are latent (nothing calls
+     * addInstance() yet) and the aggregation helpers already skip them - see
+     * backlog item 4 - so reporting them would be the only place in the codebase
+     * pretending that path is live.
+     */
     public java.util.List<Completion> advanceConstruction(int constructionOutput) {
 
         java.util.List<Completion> finished = new java.util.ArrayList<>();
@@ -3036,14 +3036,6 @@ public class BuildingManager {
     }
 
     /**
-     * Stacks of one category with work still on site.
-     *
-     * Used to stop a sector queueing a second building while the first is still
-     * going up - without it a business would re-read the same unmet demand every
-     * month and order against it again, because the capacity it already paid for
-     * does not show up until it opens.
-     */
-    /**
      * Construction points still owed on everything on site.
      *
      * Divided by the city's monthly output this is the queue length in months,
@@ -3086,6 +3078,14 @@ public class BuildingManager {
         return total;
     }
 
+    /**
+     * Stacks of one category with work still on site.
+     *
+     * Used to stop a sector queueing a second building while the first is still
+     * going up - without it a business would re-read the same unmet demand every
+     * month and order against it again, because the capacity it already paid for
+     * does not show up until it opens.
+     */
     public int getUnderConstructionByCategory(BuildingType category) {
         int count = 0;
         for (BuildingsStacks stack : stacks) {
@@ -3323,11 +3323,6 @@ public class BuildingManager {
     }
 
     /**
-     * calculates Construction Materials production from all buildings
-     *
-     * @return Construction Materials production
-     */
-    /**
      * THE YARD'S OWN OUTPUT, and only that, since the sector template. The
      * Construction Materials Plant sells what it makes on the materials
      * market now (see sectors.Materials); the public works yard still turns
@@ -3509,25 +3504,6 @@ public class BuildingManager {
     }
 
     /**
-     * Gross book value of everything standing in a category: cash paid plus the
-     * materials it consumed, valued at market.
-     *
-     * cashCost alone is NOT the cost of a building - it is only the part paid in
-     * cash, with materials bought separately and construction labour billed to
-     * the construction sector. Using cashCost as book value would have put the
-     * Water Treatment Plant on the books at $45M when it cost about $95M.
-     *
-     * Construction labour is still excluded, so this understates true cost. There
-     * is no depreciation either, so it is gross rather than net book value.
-     */
-    /**
-     * Square feet of lot held by one category, standing and under construction.
-     *
-     * Under-construction land counts because the plot was bought and allocated
-     * the day the order was placed - a half-built plant is occupying and owing
-     * tax on its site exactly like a finished one.
-     */
-    /**
      * People a category's buildings hold, plus those its SITES will hold.
      *
      * MATCHES getLandSqFtByCategory below, deliberately. The property tax bill
@@ -3550,6 +3526,13 @@ public class BuildingManager {
         return total;
     }
 
+    /**
+     * Square feet of lot held by one category, standing and under construction.
+     *
+     * Under-construction land counts because the plot was bought and allocated
+     * the day the order was placed - a half-built plant is occupying and owing
+     * tax on its site exactly like a finished one.
+     */
     public double getLandSqFtByCategory(BuildingType category) {
         double total = 0;
         for (BuildingsStacks stack : stacks) {
@@ -3850,6 +3833,18 @@ public class BuildingManager {
         return getTotalByCategoryDouble(category, BuildingsTemplate::getUpkeep);
     }
 
+    /**
+     * Gross book value of everything standing in a category: cash paid plus the
+     * materials it consumed, valued at market.
+     *
+     * cashCost alone is NOT the cost of a building - it is only the part paid in
+     * cash, with materials bought separately and construction labour billed to
+     * the construction sector. Using cashCost as book value would have put the
+     * Water Treatment Plant on the books at $45M when it cost about $95M.
+     *
+     * Construction labour is still excluded, so this understates true cost. There
+     * is no depreciation either, so it is gross rather than net book value.
+     */
     public double getBookValueByCategory(BuildingType category) {
         return getTotalByCategoryDouble(
                 category,

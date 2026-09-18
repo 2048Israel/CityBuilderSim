@@ -2972,8 +2972,7 @@ public class UserInterface extends Application {
      * to build on, then the money, then the state, then the two screens that
      * only report. The graph is last because it is the one you go to when you
      * have already decided something is wrong.
-     */
-    /**
+     *
      * The rail, and every entry is a PLACE.
      *
      * The first version had eleven tabs of which two - Economy and Sector -

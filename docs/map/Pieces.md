@@ -20,13 +20,13 @@
 | line | section |
 |---:|---|
 | 38 | A FIGURE THAT GOES WHERE IT IS DECIDED. |
-| 257 | · THE HELPERS THE SCREENS SHARE WITH EACH OTHER, moved 2026-09-18 (second pass): |
-| 327 | · · where the recording starts |
-| 353 | · · the scale |
-| 384 | · · the grid |
-| 393 | · · the lines |
-| 422 | · · the labels |
-| 439 | · · the key |
+| 264 | · THE HELPERS THE SCREENS SHARE WITH EACH OTHER, moved 2026-09-18 (second pass): |
+| 334 | · · where the recording starts |
+| 360 | · · the scale |
+| 391 | · · the grid |
+| 400 | · · the lines |
+| 429 | · · the labels |
+| 446 | · · the key |
 
 ## Constants
 
@@ -43,7 +43,7 @@
 | 31 | 589 | **type** `public final class Pieces` | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals bar, a stacked bar, a limit cell - and, under the divider half way down,... |
 | 34 | 3 | `public static VBox limitCell(String label, String value, String note, String tone)` | One figure in the constraints bar: what it is, what it reads, what it means. |
 
-### A FIGURE THAT GOES WHERE IT IS DECIDED. (lines 38-256)
+### A FIGURE THAT GOES WHERE IT IS DECIDED. (lines 38-263)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -59,21 +59,21 @@
 | 210 | 9 | `public static Label gridCell(String text, String tone, int size, boolean rightAlign)` | One cell of a table: a figure right, a name left. |
 | 220 | 5 | `public static Label monoLabel(String text)` |  |
 | 227 | 1 | **type** `public record Slice(String name, double amount, String colour)` | A named amount, with the colour it was assigned and what it opens into. |
-| 229 | 27 | `public static VBox stackedBar(java.util.List<Slice> parts, double width)` |  |
+| 236 | 27 | `public static VBox stackedBar(java.util.List<Slice> parts, double width)` | A part-to-whole bar, which is the right form when the parts can be negative and a ring cannot be drawn at all. |
 
-### THE HELPERS THE SCREENS SHARE WITH EACH OTHER, moved 2026-09-18 (second pass): (lines 257-619)
+### THE HELPERS THE SCREENS SHARE WITH EACH OTHER, moved 2026-09-18 (second pass): (lines 264-619)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 263 | 5 | `public static void showIf(javafx.scene.Node node, boolean visible)` | Show or hide an overlay without it still taking up its space. |
-| 270 | 3 | `public static String cell(double value)` | A count, or a dot where there is nothing - a grid of zeros reads as data. |
-| 281 | 10 | `public static String shortTier(PayTier tier)` | Pay tiers, shortened to fit six across. |
-| 301 | 6 | `public static String flowText(double value)` | A monthly flow, at a precision that stays honest in a small city. |
-| 322 | 137 | `public static VBox trendChart(String[] names, double[][] series, String[] colours)` | A small line chart, in the statement's own language. |
-| 461 | 6 | `public static double latest(double[] series)` | The last recorded value of a series, or NaN if there is none. |
-| 475 | 12 | `public static String chartFigure(double value, String name)` | A figure on a chart axis, in whatever the series is counted in. |
-| 488 | 12 | `public static HBox keySwatch(String colour, String name)` |  |
-| 502 | 9 | `public static Label stepChip(String text, Runnable act, boolean quiet)` | A small clickable chip that does something rather than picking a page. |
+| 270 | 5 | `public static void showIf(javafx.scene.Node node, boolean visible)` | Show or hide an overlay without it still taking up its space. |
+| 277 | 3 | `public static String cell(double value)` | A count, or a dot where there is nothing - a grid of zeros reads as data. |
+| 288 | 10 | `public static String shortTier(PayTier tier)` | Pay tiers, shortened to fit six across. |
+| 308 | 6 | `public static String flowText(double value)` | A monthly flow, at a precision that stays honest in a small city. |
+| 329 | 137 | `public static VBox trendChart(String[] names, double[][] series, String[] colours)` | A small line chart, in the statement's own language. |
+| 468 | 6 | `public static double latest(double[] series)` | The last recorded value of a series, or NaN if there is none. |
+| 482 | 12 | `public static String chartFigure(double value, String name)` | A figure on a chart axis, in whatever the series is counted in. |
+| 495 | 12 | `public static HBox keySwatch(String colour, String name)` |  |
+| 509 | 9 | `public static Label stepChip(String text, Runnable act, boolean quiet)` | A small clickable chip that does something rather than picking a page. |
 | 526 | 22 | `public static VBox keyedBar(java.util.List<Slice> parts, double width)` | A stacked bar with its own swatch legend under it. |
 | 562 | 6 | `public static double annualGdp(NationalAccounts na)` | A year of output — annualised when the city has not lived a year yet. |
 | 569 | 4 | `public static boolean gdpEstimated(NationalAccounts na)` |  |

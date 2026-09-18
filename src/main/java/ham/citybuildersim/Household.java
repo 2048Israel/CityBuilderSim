@@ -462,7 +462,6 @@ public abstract class Household {
     /** True when the bank has stopped lending to this cell - ceiling or lockout. */
     public boolean isCutOff()    { return unfunded > 0; }
 
-    /** True when this cell is buying less than it wants. */
     /**
      * Whether this household planned to spend less than it wanted to.
      *

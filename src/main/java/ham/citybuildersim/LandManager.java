@@ -52,7 +52,7 @@ public class LandManager {
      */
     public static final double STARTING_SQ_FT = 3000000;
 
-    /**
+    /*
      * Cost of the first block bought, in thousands. $70,000, i.e. $0.70/sq ft.
      *
      * Priced off the House, which is the one building whose lot is large
@@ -72,8 +72,7 @@ public class LandManager {
      * The treasury still feels it, through volume rather than unit price: a
      * city of 160,000 needs hundreds of millions of square feet, and at these
      * prices that is hundreds of millions of dollars of land.
-     */
-    /*
+     *
      * BASE_BLOCK_COST was here: a flat 70 founding dollars for a block of land,
      * declared and never read. Removed 2026-09-09 rather than left, because a
      * money constant nobody uses is a money constant nobody redenominates, and

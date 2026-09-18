@@ -112,8 +112,8 @@
 | 426 | `private double lastDecliningShare` |  |
 | 427 | `private double lastSeniorPull` |  |
 | 428 | `private double lastResidentsPerJob` |  |
-| 810 | `private double bankruptcyPush` | Households the balance sheet discharged this month, whose people are leaving because they are broke. |
-| 818 | `private double lastBankruptcyPush` |  |
+| 801 | `private double bankruptcyPush` | Households the balance sheet discharged this month, whose people are leaving because they are broke. |
+| 809 | `private double lastBankruptcyPush` |  |
 
 ## Methods, in file order, under their sections
 
@@ -207,9 +207,9 @@
 | 677 | 33 | `public double crowdingFactor(int homes, FamilyModel families)` | How crowded the city is, as a multiplier on arrivals: 1 is room to spare, 0 is physically full. |
 | 720 | 5 | `public double monthlyNet(int population, int totalJobs, int householdCapacity, int homes, FamilyModel families, double adultShare)` | The month's net migration: positive is people arriving. |
 | 733 | 58 | `public double monthlyNet(int population, int totalJobs, int householdCapacity, int homes, FamilyModel families, double adultSha...` | The same, with the draw good senior care adds. |
-| 812 | 3 | `public void setBankruptcyDepartures(double people)` |  |
-| 816 | 1 | `public double getLastBankruptcyDepartures()` |  |
-| 820 | 105 | `public double monthlyNet(int population, int totalJobs, int householdCapacity, int homes, FamilyModel families, double adultSha...` |  |
+| 803 | 3 | `public void setBankruptcyDepartures(double people)` |  |
+| 807 | 1 | `public double getLastBankruptcyDepartures()` |  |
+| 820 | 105 | `public double monthlyNet(int population, int totalJobs, int householdCapacity, int homes, FamilyModel families, double adultSha...` | The same month, with a labour market behind it. |
 | 933 | 4 | `public static double opportunity(double open, double queue)` | A band's chance of work at its own level, as a multiplier on its pull. |
 | 948 | 118 | `private void composeArrivals(LabourMarket market, PopulationManager people)` | Splits this month's arrivals across the skill bands. |
 

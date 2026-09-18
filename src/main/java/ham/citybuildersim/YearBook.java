@@ -267,7 +267,7 @@ public final class YearBook {
        THE DERIVED SERIES THAT TWO SCREENS BOTH WANT
 
        These are public and they live here because they were struck TWICE:
-       once for the book and once in UserInterface.historyValues() for the
+       once for the book and once in HistoryScreen.historyValues() for the
        Reports chart, from the same wrong denominator. Both said 5.5%
        unemployment on a city with more posts than people to fill them, and
        fixing one left the other quietly wrong - the chart is the copy a

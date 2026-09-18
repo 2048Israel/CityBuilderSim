@@ -778,12 +778,6 @@ public class ForeignCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
-    /**
-     * A synthetic month, which is the only honest way to test the rate rule.
-     *
-     * Only the four trade and income fields matter to takeMonth; the rest of a
-     * Result describes a city this fixture does not have.
-     */
     /** A month whose only foreign flow is the treasury working its own vault. */
     static MoneyAudit.Result intervention(double soldIn, double boughtOut) {
         double[] f = new double[10];
@@ -792,6 +786,12 @@ public class ForeignCheck {
         return new MoneyAudit.Result(0, 0, 0, soldIn, boughtOut, 0, "", f);
     }
 
+    /**
+     * A synthetic month, which is the only honest way to test the rate rule.
+     *
+     * Only the four trade and income fields matter to takeMonth; the rest of a
+     * Result describes a city this fixture does not have.
+     */
     static MoneyAudit.Result month(double exports, double imports) {
         double[] f = new double[8];
         f[0] = exports;

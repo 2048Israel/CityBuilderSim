@@ -14,7 +14,7 @@
 
 **Uses:** [JavaScan](JavaScan.md) (17)
 
-**Used by (6):** [CodeMap](CodeMap.md), [Dials](Dials.md), [HarnessMap](HarnessMap.md), [Maps](Maps.md), [MonthOrder](MonthOrder.md), [Where](Where.md)
+**Used by (8):** [CodeMap](CodeMap.md), [Dials](Dials.md), [HarnessMap](HarnessMap.md), [Maps](Maps.md), [MonthOrder](MonthOrder.md), [Stale](Stale.md), [StaleCheck](StaleCheck.md), [Where](Where.md)
 
 ## Sections
 

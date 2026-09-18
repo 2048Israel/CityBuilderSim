@@ -201,8 +201,8 @@
 | 666 | 1 | `public void setPensionPerSenior(double value)` |  |
 | 667 | 1 | `public double getPensionPerSenior()` |  |
 | 670 | 5 | `public double shoppingPerHead()` | The weekly shop, per person, which is how retail demand is counted. |
-| 690 | 14 | `public double[] seekerPressure(double[] households)` | How badly one of each group living outside the families cannot afford a door of their own, 0-1 - livingAlonePressure()'s arithmetic on what they live on: EI for the out of work (nothing past the twelfth month), the gr... |
-| 705 | 39 | `public Statement statementFor(FamilyModel families, FamilyStructure shape, PayTier tier)` |  |
+| 684 | 14 | `public double[] seekerPressure(double[] households)` | How badly one of each group living outside the families cannot afford a door of their own, 0-1 - livingAlonePressure()'s arithmetic on what they live on: EI for the out of work (nothing past the twelfth month), the gr... |
+| 705 | 39 | `public Statement statementFor(FamilyModel families, FamilyStructure shape, PayTier tier)` | What one household of this shape and tier earns, pays and keeps. |
 | 745 | 1 | `public double getRowWages(int row)` |  |
 | 746 | 1 | `public double getRowTax(int row)` |  |
 | 747 | 1 | `public double getRowRent(int row)` |  |

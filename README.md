@@ -70,8 +70,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **fifty-six harnesses plus the
-4,002-month playtest**, which it reports as fifty-seven, in about two minutes.
+`AllChecks` runs the lot, one JVM each — **fifty-seven harnesses plus the
+4,002-month playtest**, which it reports as fifty-eight, in about two minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
@@ -279,9 +279,13 @@ is in:
 
 `Regenerate maps.bat` rebuilds them after a Clean and Build (it runs
 `ham.citybuildersim.tools.Maps`, a second's work); regenerate after a batch
-and commit `docs/` with it. Two small tools go with them: `tools.Where` finds a
-member or a banner section by name and prints it, `tools.SaveDump` looks
-inside a save file without loading the game. `CLAUDE.md` at the root is the
+and commit `docs/` with it. Three small tools go with them: `tools.Where` finds
+a member or a banner section by name and prints it, `tools.SaveDump` looks
+inside a save file without loading the game, and `tools.Stale` says which
+comments and documents have stopped being true — a javadoc with no member under
+it, prose naming a file that is not in the tree, a header that miscounts its
+own banners (`Stale report.bat` prints the list; `StaleCheck` asserts the firm
+half of it in the suite). `CLAUDE.md` at the root is the
 briefing an AI session reads first — the standing rules, the working loop and
 where everything is.
 

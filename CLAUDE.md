@@ -30,12 +30,13 @@ They are generated from the sources by `ham.citybuildersim.tools.Maps`
 ham.citybuildersim.tools.Maps` anywhere). Their line numbers are as of the date
 at the top of each; regenerate after a batch and commit them with it.
 
-Two command-line tools for the same purpose:
+Three command-line tools for the same purpose:
 
     java -cp target/classes ham.citybuildersim.tools.Where nextMonth            # every member called that, file and line
     java -cp target/classes ham.citybuildersim.tools.Where Game.nextMonth -print  # prints just that method, numbered
     java -cp target/classes ham.citybuildersim.tools.Where "THE BANK"           # finds a banner section by its title
     java -cp "target/classes;<gson.jar>" ham.citybuildersim.tools.SaveDump 3 sectors   # looks inside a save without loading it
+    java -cp target/classes ham.citybuildersim.tools.Stale                      # which comments and documents have stopped being true; StaleCheck asserts its firm half
 
 The design record lives outside the repository, in the claude.ai project
 "Leverage & Growth: Java Game": `claude/todo.md` is the list of what is open,
@@ -96,10 +97,10 @@ These are Jerus's, and they do not move.
                                    strips, panels, dialogs), one <Name>Screen.java per tab (split 2026-09-18 -
                                    the project's splitting-the-interface.md), Money/Statement/Pieces/Levers
                                    (what the screens share), Palette.java, Icons.java. The model never imports it.
-        *Check.java                fifty-six harnesses, each a main() with static helpers
+        *Check.java                fifty-seven harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,002 months, audited every one; also the fixture builder harnesses borrow
-        tools/                     the index generators and the two look-up tools; nothing in the game uses them
+        tools/                     the index generators, the two look-up tools and Stale (the prose check); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket
 
 A `.java` file at the root that holds only a comment saying MOVED is a stub
@@ -141,7 +142,13 @@ Conventions the code is written to, which the indexes rely on:
    the one that did has stopped seeing the prose. `Docs pass.bat` runs it
    headless against the last commit (`docs/docs-pass-agent.md` is the same
    thing as a subagent, for an interactive session). Act on its report. A
-   batch is not done until this has run.
+   batch is not done until this has run. Its mechanical half is
+   `tools.Stale`, which `StaleCheck` runs in the suite; the pass is for what
+   a tool cannot judge.
+   Which model, Jerus's rule (2026-09-18): an agent runs on Opus by default
+   and on Fable when the job is substantial - a move that has to pass a gate
+   (an identical playtest, a save format), a mechanic, a screen; the docs pass
+   runs on Opus. The orchestrating session keeps the gate either way.
 
 **From a cloud session linked to the PC (Cowork):**
 
@@ -160,7 +167,10 @@ on its report before the deploy is verified.
 
 **Either way, before saying a change works:** the suite is green except for
 what was already red (say which), the map is regenerated, the write-up
-exists, and the docs pass has run.
+exists, and the docs pass has run. `docs/notes/` carries copies of the
+project's `todo.md`, `changelog.md` and `index.md` as of the last deploy from
+the cloud loop, so a session on the PC can read the list and the record; the
+project is the original.
 
 ## Adding things - where the shape already is
 

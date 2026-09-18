@@ -56,6 +56,6 @@
 | 57 | 1 | `public int rank()` | 0 for unskilled, 3 for university. |
 | 94 | 1 | `public double arrivalCeiling()` | The most of a month's arrivals this band can ever be, relative to the diploma band's 1.00 - and it is reached only at the wage ceiling. |
 | 121 | 9 | `public double mobility()` | How readily somebody at this level will move away for work. |
-| 142 | 1 | `public static WageBand[] ladder()` | The band a worker of this level can also work down into. |
-| 144 | 8 | `public static WageBand of(JobType job)` |  |
+| 132 | 1 | `public static WageBand[] ladder()` | The band a worker of this level can also work down into. |
+| 144 | 8 | `public static WageBand of(JobType job)` | Which band a job sits in. |
 

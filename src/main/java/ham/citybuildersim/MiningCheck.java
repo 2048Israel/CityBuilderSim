@@ -408,8 +408,9 @@ public class MiningCheck {
      * The two cities are otherwise identical and run the same months, so the
      * only difference between the two numbers is where the raw material came
      * from.
+     *
+     * @return {net income, revenue, the ore price it traded at}
      */
-    /** @return {net income, revenue, the ore price it traded at} */
     static double[] foundryIncome(GameFiles files, Path root, boolean withMine) throws Exception {
 
         Path dir = root.resolve(withMine ? "with-mine" : "without-mine");

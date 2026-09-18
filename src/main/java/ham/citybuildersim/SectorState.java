@@ -52,7 +52,7 @@ public final class SectorState {
      * promises and what an older city actually had - it kept no per-good money
      * at all. So the income statement's breakdown is blank for the one month a
      * pre-2026-09-16 save was taken in and correct from the next month on, and
-     * SAVE_FORMAT did not have to move for it. See UserInterface.incomePage().
+     * SAVE_FORMAT did not have to move for it. See SectorScreen.incomePage().
      */
     public static final class SplitState {
         public double atHome, abroad;

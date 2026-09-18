@@ -23,7 +23,7 @@ import java.util.Map;
  * ONE PLACE, AND NOBODY KEEPS A COPY. Jerus: "basically its just where other
  * files get there numbers from". Every figure a grocery basket is built out of
  * is in consumption.json and every question about one is answered here. The
- * rule this is meant to end is the one UserInterface.historyValues() broke on
+ * rule this is meant to end is the one HistoryScreen.historyValues() broke on
  * 2026-09-15, when a second copy of the unemployment formula sat beside the
  * model's and rotted for nine days without anybody noticing.
  *
@@ -519,6 +519,9 @@ public class Consumption {
 
     /* ------------------------- who a household is ------------------------- */
 
+    /** One good by its key, or null if the file has no such line. */
+    public Item byKey(String key) { return key == null ? null : byKey.get(key); }
+
     /**
      * Dependants per adult, for a household that works - and zero for one that
      * does not, which is the whole point of the time axis.
@@ -529,9 +532,6 @@ public class Consumption {
      * adults are earners or neither is. When that changes, a stay-at-home adult
      * should take the pressure back off, and this is where it would go.
      */
-    /** One good by its key, or null if the file has no such line. */
-    public Item byKey(String key) { return key == null ? null : byKey.get(key); }
-
     public static double timePressure(FamilyStructure shape) {
         if (shape == null || shape.earners() <= 0) return 0;
         return (double) shape.dependants() / shape.earners();

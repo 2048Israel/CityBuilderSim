@@ -1452,14 +1452,6 @@ final class BuildScreen {
     }
 
     /**
-     * The city has the money and nowhere to put the building.
-     *
-     * Its own separate screen rather than a line on the funding screen, because
-     * the two refusals have opposite answers: no cash is solved by borrowing,
-     * no land only by annexing, and offering a T-Bill for a land shortage would
-     * sell debt that cannot fix the problem.
-     */
-    /**
      * The city has the money, the land, and nothing to dig.
      *
      * Its own refusal for the same reason no-land has one: the answer is
@@ -1550,6 +1542,14 @@ final class BuildScreen {
         ui.rootMenu.getChildren().addAll(title, explanation, toSchools, toPeople, back);
     }
 
+    /**
+     * The city has the money and nowhere to put the building.
+     *
+     * Its own separate screen rather than a line on the funding screen, because
+     * the two refusals have opposite answers: no cash is solved by borrowing,
+     * no land only by annexing, and offering a T-Bill for a land shortage would
+     * sell debt that cannot fix the problem.
+     */
     void showNoLandMenu(BuildingsTemplate selected, int quantity,
                                 String prevTitle, EnumSet<BuildingType> prevCats) {
         ui.clearMenu("showNoLandMenu", () -> showNoLandMenu(selected, quantity, prevTitle, prevCats));

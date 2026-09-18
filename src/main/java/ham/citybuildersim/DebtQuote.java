@@ -71,7 +71,6 @@ public record DebtQuote(
                 rateBefore * 100, marketRate * 100, moved);
     }
 
-    /** The terms, as the player should see them before confirming. */
     /**
      * The terms, in the vocabulary a bond is actually described in.
      *

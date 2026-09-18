@@ -266,18 +266,6 @@ public class Inbox {
     }
 
     /**
-     * The three things healthcare is silently costing the city, when they apply.
-     *
-     * ONE NOTICE, UP TO FOUR PARAGRAPHS, rather than four notices - they are one
-     * subject and one answer, and an inbox with four red lines in it teaches a
-     * player to stop reading red lines.
-     *
-     * Ordered by how expensive each is right now rather than by category, so
-     * whatever is actually hurting most is the first thing read. Empty when the
-     * city has nothing to answer for, which is the common case in a city that
-     * has built its clinics and its cemetery.
-     */
-    /**
      * Crime at one and a half times Canada's rate or worse, or people the
      * police caught with no cell to hold them (2026-09-11). The reasons come
      * first, because they are the only thing that removes it - the police
@@ -317,6 +305,18 @@ public class Inbox {
         return lines;
     }
 
+    /**
+     * The three things healthcare is silently costing the city, when they apply.
+     *
+     * ONE NOTICE, UP TO FOUR PARAGRAPHS, rather than four notices - they are one
+     * subject and one answer, and an inbox with four red lines in it teaches a
+     * player to stop reading red lines.
+     *
+     * Ordered by how expensive each is right now rather than by category, so
+     * whatever is actually hurting most is the first thing read. Empty when the
+     * city has nothing to answer for, which is the common case in a city that
+     * has built its clinics and its cemetery.
+     */
     private static List<String> healthcareBody(Game game) {
 
         Health health = game.getHealth();

@@ -1120,6 +1120,21 @@ final class FinancesScreen {
        against what it would cost to clear had the two facts on two screens.
        ===================================================================== */
 
+    /**
+     * Buying the city's own debt back, one bond at a time.
+     *
+     * The mirror of the finance menu: that one turns future payments into cash
+     * now, this one turns cash now into no future payments.
+     *
+     * WHY EVERY ROW SHOWS THE DISCOUNT AND NOT JUST THE PRICE. The interesting
+     * thing here is never the price on its own, it is the gap between the price
+     * and the face - which is a statement about the city's credit. Paper issued
+     * when the city was sound and held while its rate climbed is CHEAP to
+     * retire: $500,000 of face for $302,646, a real $197,354 gain. Paper issued
+     * dear and held while the city improved costs a premium to escape. Showing
+     * only "Buy back: $302,646" would hide the entire mechanic behind a number
+     * that looks like a bill.
+     */
     void buyBackPage(VBox column) {
 
         DebtManager ledger = ui.game.getDebtManager();

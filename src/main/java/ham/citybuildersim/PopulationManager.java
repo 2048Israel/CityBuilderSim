@@ -698,14 +698,6 @@ public class PopulationManager {
     }
 
     /**
-     * Who moved in and who moved out, by skill.
-     *
-     * The ONLY thing that changes the skilled counts, which is the whole rule:
-     * until schools exist, a skill in this city arrived here in somebody's
-     * head. The unskilled band is not touched because it is not stored - it is
-     * whatever is left of the workforce, so births and deaths move it for free.
-     */
-    /**
      * This month's schooling, as a net movement between bands.
      *
      * Education hands over +1 at the destination and -1 at the source, so a
@@ -722,6 +714,14 @@ public class PopulationManager {
         }
     }
 
+    /**
+     * Who moved in and who moved out, by skill.
+     *
+     * The ONLY thing that changes the skilled counts, which is the whole rule:
+     * until schools exist, a skill in this city arrived here in somebody's
+     * head. The unskilled band is not touched because it is not stored - it is
+     * whatever is left of the workforce, so births and deaths move it for free.
+     */
     public void applySkilledFlows(double[] arrivals, double[] departures) {
         for (int b = 1; b < skilledHeads.length; b++) {
             double in  = arrivals   == null || b >= arrivals.length   ? 0 : arrivals[b];

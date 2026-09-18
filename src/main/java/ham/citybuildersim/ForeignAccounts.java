@@ -183,7 +183,6 @@ public class ForeignAccounts {
      * city's trade position without being a function of how long it has existed.
      */
 
-    /** Where the currency is pulled back towards. */
     /**
      * The rate at which a basket costs the same at home and abroad.
      *
@@ -210,7 +209,6 @@ public class ForeignAccounts {
 
     private double parity = OPENING_PARITY;
 
-    /** @param localLevel the city's basket vs founding, worldLevel the world's */
     /** Save slot 19. Not derivable: the local level it was struck from is a stock. */
     private double localInflation, worldInflation;
 
@@ -412,13 +410,6 @@ public class ForeignAccounts {
     public double getLastAbsorption() { return lastAbsorption; }
 
     /**
-     * Moves the rate on the month just taken.
-     *
-     * Proportional rather than additive, so a 2% move is 2% whether the currency
-     * stands at one or at four - an additive drift would be trivial when the
-     * rate is high and catastrophic when it is low.
-     */
-    /**
      * Holds the exchange rate still.
      *
      * FOR FIXTURES THAT MEASURE SOMETHING ELSE. MiningCheck asks what a foundry
@@ -442,6 +433,13 @@ public class ForeignAccounts {
     /** True while the rate is being held for a measurement. */
     public boolean isPinned() { return pinned; }
 
+    /**
+     * Moves the rate on the month just taken.
+     *
+     * Proportional rather than additive, so a 2% move is 2% whether the currency
+     * stands at one or at four - an additive drift would be trivial when the
+     * rate is high and catastrophic when it is low.
+     */
     public void repriceCurrency() {
         if (pinned) return;
 
@@ -619,14 +617,6 @@ public class ForeignAccounts {
     public double monthlyFinancialAccount(){ return financialTrailing; }
 
     /**
-     * Takes the month off the audit that has just been struck.
-     *
-     * Fed the Result rather than the Game, because the Result is the thing that
-     * has already been reconciled - reading the underlying getters a second time
-     * would be a second definition of the same month, and this codebase has been
-     * caught by that four times.
-     */
-    /**
      * How much of the economy actually crosses the border.
      *
      * Trade against GDP, and it is the missing half of the pressure signal. The
@@ -648,7 +638,16 @@ public class ForeignAccounts {
         takeMonth(month, 0);
     }
 
-    /** @param monthlyGdp the city's output, for the openness weighting above. */
+    /**
+     * Takes the month off the audit that has just been struck.
+     *
+     * Fed the Result rather than the Game, because the Result is the thing that
+     * has already been reconciled - reading the underlying getters a second time
+     * would be a second definition of the same month, and this codebase has been
+     * caught by that four times.
+     *
+     * @param monthlyGdp the city's output, for the openness weighting above.
+     */
     public void takeMonth(MoneyAudit.Result month, double monthlyGdp) {
         if (month == null) return;
         if (monthlyGdp > 0) {
@@ -784,14 +783,12 @@ public class ForeignAccounts {
     /** The month's change in the city's foreign position. */
     public double balance() { return currentAccount() + financialAccount(); }
 
-    /** What the city has earned abroad, less what it has spent there. */
     /** What the treasury holds in foreign money, and could spend today. */
     public double getReserves() { return reserves; }
 
     /** Every month's balance of payments since founding, added up. */
     public double getCumulativeBalance() { return cumulativeBalance; }
 
-    /** True when the city owes the world more than it has ever earned from it. */
     /**
      * Whether the city owes the world more than it holds there.
      *
@@ -899,12 +896,6 @@ public class ForeignAccounts {
     public double getLifetimeInterest()  { return lifetimeInterest; }
     public double getLifetimeFinancial() { return lifetimeFinancial; }
 
-    /**
-     * The reserve, rebuilt from the flows that made it.
-     *
-     * Should equal getReserves() exactly. If it ever does not, the stock and the
-     * flows have stopped being the same set of books.
-     */
     /**
      * The cumulative balance, rebuilt from the flows that made it.
      *

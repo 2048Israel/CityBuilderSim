@@ -716,6 +716,45 @@ public class LongPlaytest {
      */
     record Move(String label, double lost, java.util.function.BooleanSupplier act) { }
 
+    /* =====================================================================
+       WHO IS PLAYING (2026-09-17)
+
+       Jerus asked why the shops run at half rate. The answer turned out to be
+       nothing to do with the shops: measured over six hundred months of the
+       same city, an attentive player takes the operating rate from 0.62 to
+       0.89, hunger from 42% to 22% and sickness from 27.6% to 9.5%, purely by
+       putting up power, water, streets, clinics and cemeteries as the city
+       grows. The model is fine. THE PLAYER WAS THE PROBLEM.
+
+       AND NOT BECAUSE advise() IS BAD - it ranks constraints by the output
+       each shortage is costing, which is the right rule and has its own essay
+       above. It is the RHYTHM. The loop below skips six to a hundred and
+       twenty months at a stretch, averaging fifty-four, and then allows three
+       moves. That is deliberate and the comment there says why: it is the
+       length a person actually clicks. But a city left alone for a century
+       between decisions is permanently behind its own growth, so every number
+       this harness has ever reported was measured in a city in crisis from
+       neglect - which is a fine robustness test and a poor instrument for
+       measuring anything else.
+
+       SO THERE ARE TWO PLAYERS NOW, and the default is unchanged. Without the
+       flag this file plays exactly as it always has, so every ensemble in the
+       project docs stays comparable to the digit - which is the whole reason
+       for a flag rather than a fix. With -Dplaytest.player=attentive it checks
+       in yearly and gets eight moves: still no cleverness, still the same
+       advise(), just somebody who looks at the city more than twice a century.
+       ===================================================================== */
+
+    /** True when this run is played by somebody paying attention. */
+    static final boolean ATTENTIVE = "attentive".equalsIgnoreCase(
+            System.getProperty("playtest.player", "occasional"));
+
+    /** Months the player will let pass before looking, at most. */
+    static int longestSkip() { return ATTENTIVE ? 12 : Integer.MAX_VALUE; }
+
+    /** ...and how many things it will fix when it does look. */
+    static int movesPerLook() { return ATTENTIVE ? 8 : 3; }
+
     /**
      * WHAT THE CITY DOES NEXT, AND WHY THIS IS NOT A LIST OF RULES ANY MORE.
      *
@@ -774,45 +813,6 @@ public class LongPlaytest {
      * "at most 40 roads"; roads stop winning when roads stop being what the
      * city is losing most output to, and that is measured every month.
      */
-    /* =====================================================================
-       WHO IS PLAYING (2026-09-17)
-
-       Jerus asked why the shops run at half rate. The answer turned out to be
-       nothing to do with the shops: measured over six hundred months of the
-       same city, an attentive player takes the operating rate from 0.62 to
-       0.89, hunger from 42% to 22% and sickness from 27.6% to 9.5%, purely by
-       putting up power, water, streets, clinics and cemeteries as the city
-       grows. The model is fine. THE PLAYER WAS THE PROBLEM.
-
-       AND NOT BECAUSE advise() IS BAD - it ranks constraints by the output
-       each shortage is costing, which is the right rule and has its own essay
-       above. It is the RHYTHM. The loop below skips six to a hundred and
-       twenty months at a stretch, averaging fifty-four, and then allows three
-       moves. That is deliberate and the comment there says why: it is the
-       length a person actually clicks. But a city left alone for a century
-       between decisions is permanently behind its own growth, so every number
-       this harness has ever reported was measured in a city in crisis from
-       neglect - which is a fine robustness test and a poor instrument for
-       measuring anything else.
-
-       SO THERE ARE TWO PLAYERS NOW, and the default is unchanged. Without the
-       flag this file plays exactly as it always has, so every ensemble in the
-       project docs stays comparable to the digit - which is the whole reason
-       for a flag rather than a fix. With -Dplaytest.player=attentive it checks
-       in yearly and gets eight moves: still no cleverness, still the same
-       advise(), just somebody who looks at the city more than twice a century.
-       ===================================================================== */
-
-    /** True when this run is played by somebody paying attention. */
-    static final boolean ATTENTIVE = "attentive".equalsIgnoreCase(
-            System.getProperty("playtest.player", "occasional"));
-
-    /** Months the player will let pass before looking, at most. */
-    static int longestSkip() { return ATTENTIVE ? 12 : Integer.MAX_VALUE; }
-
-    /** ...and how many things it will fix when it does look. */
-    static int movesPerLook() { return ATTENTIVE ? 8 : 3; }
-
     static String advise(Game g) {
 
         EconomyManager e = g.getEconomyManager();
@@ -1189,16 +1189,6 @@ public class LongPlaytest {
     static final double GROWTH_DISCOUNT = .15;
 
     /**
-     * Adds one building as a way of relieving a constraint worth `lost` a month.
-     *
-     * Candidates for the SAME constraint are given the same figure and are
-     * separated by a nudge in listing order, so the list stays a ranking of
-     * shortages with the alternatives for each sitting together. Cost does not
-     * enter here at all - that was the mistake this rewrite exists to undo -
-     * beyond build() refusing what the city cannot fund.
-     */
-
-    /**
      * The road constraint, and every way there is of easing it.
      *
      * Three roads and three transit lines, each costed in the trips a dollar
@@ -1260,6 +1250,15 @@ public class LongPlaytest {
         }
     }
 
+    /**
+     * Adds one building as a way of relieving a constraint worth `lost` a month.
+     *
+     * Candidates for the SAME constraint are given the same figure and are
+     * separated by a nudge in listing order, so the list stays a ranking of
+     * shortages with the alternatives for each sitting together. Cost does not
+     * enter here at all - that was the mistake this rewrite exists to undo -
+     * beyond build() refusing what the city cannot fund.
+     */
     static void addThrottle(java.util.List<Move> moves, Game g,
                             String name, String label, double lost) {
         addThrottle(moves, g, name, label, lost, lost / Math.max(1, g.getEconomyManager().getMonthGdp()));
@@ -2394,14 +2393,6 @@ public class LongPlaytest {
     }
 
     /**
-     * The business economy at a checkpoint, on one line: per sector its cash,
-     * write-downs and months of ban left, then hunger and the shelf.
-     *
-     * The end-of-run table says where a run finished; this says how it got
-     * there, which is the half that was missing when a rule that liquidated
-     * sectors was first measured only at month 4,000.
-     */
-    /**
      * A sector's name in three or four characters, for the checkpoint line.
      *
      * Derived from the key so that adding a sector cannot break it: initials
@@ -2419,6 +2410,14 @@ public class LongPlaytest {
         return key.substring(0, Math.min(3, key.length()));
     }
 
+    /**
+     * The business economy at a checkpoint, on one line: per sector its cash,
+     * write-downs and months of ban left, then hunger and the shelf.
+     *
+     * The end-of-run table says where a run finished; this says how it got
+     * there, which is the half that was missing when a rule that liquidated
+     * sectors was first measured only at month 4,000.
+     */
     static String creditEra(Game g) {
         BusinessDebtManager c = g.getEconomyManager().getBusinessDebtManager();
         StringBuilder b = new StringBuilder(String.format("       credit  "));

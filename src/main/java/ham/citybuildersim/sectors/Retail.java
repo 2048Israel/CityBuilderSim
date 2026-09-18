@@ -366,11 +366,6 @@ public final class Retail extends Sector {
     }
 
     /**
-     * ...and the shelf follows the invoice, slowly. Struck off the very units
-     * and prices the shops just paid, so what they charge and what they were
-     * charged cannot be computed from different months.
-     */
-    /**
      * ...and the shelf follows THIRTEEN invoices now.
      *
      * What one person-month cost the shops this month: for each good on the

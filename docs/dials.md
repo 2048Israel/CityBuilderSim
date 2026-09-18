@@ -2,7 +2,7 @@
 
 Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**682 constants in 203 files.**
+**698 constants in 205 files.**
 
 ## model (456 constants)
 
@@ -32,13 +32,13 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 237 | `Bank.MAX_STRAIN_PREMIUM` | `.18` | The most the strain can add to any borrower's annual rate. |
 | 294 | `Bank.PLACEMENT_RATE` | `DebtManager.WORLD_BASE_RATE` |  |
 | 425 | `Bank.MIN_MARGIN` | `.01` | The least a lender takes for writing the loan at all. |
-| 568 | `Bank.RISK_EQUITY` | `1.50` | What a dollar of shares on the desk weighs against capital. |
-| 808 | `Bank.RESOLUTION_EXIT_BUFFER` | `1.5` | How far above the required ratio a rescued bank comes out. |
-| 945 | `Bank.DOMESTIC_CAPITAL_SCALE` | `400_000` | Deposits at which half of new bank capital is found at home. |
-| 1331 | `Bank.DEPOSIT_PASS_THROUGH` | `.45` | What share of its INTEREST INCOME the bank passes on to its depositors. |
-| 1365 | `Bank.FUNDING_SPREAD` | `.02` | Over the risk-free rate, for being a bank rather than a treasury. |
-| 1368 | `Bank.FUNDING_STRETCH` | `.06` | ...and more, the further past its deposits it has reached. |
-| 1565 | `Bank.RATE_STEPS` | `12` | How many candidate rates the bank considers between nothing and its ceiling. |
+| 567 | `Bank.RISK_EQUITY` | `1.50` | What a dollar of shares on the desk weighs against capital. |
+| 807 | `Bank.RESOLUTION_EXIT_BUFFER` | `1.5` | How far above the required ratio a rescued bank comes out. |
+| 937 | `Bank.DOMESTIC_CAPITAL_SCALE` | `400_000` | Deposits at which half of new bank capital is found at home. |
+| 1327 | `Bank.DEPOSIT_PASS_THROUGH` | `.45` | What share of its INTEREST INCOME the bank passes on to its depositors. |
+| 1361 | `Bank.FUNDING_SPREAD` | `.02` | Over the risk-free rate, for being a bank rather than a treasury. |
+| 1364 | `Bank.FUNDING_STRETCH` | `.06` | ...and more, the further past its deposits it has reached. |
+| 1561 | `Bank.RATE_STEPS` | `12` | How many candidate rates the bank considers between nothing and its ceiling. |
 
 ### BuildLog.java ([map](map/BuildLog.md))
 
@@ -60,7 +60,7 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 53 | `BuildingManager.MATERIALS_WORLD_PRICE` | `18` | What a unit of construction material costs, in the city's money. |
 | 3292 | `BuildingManager.BASE_CONSTRUCTION` | `400` | The city's own crews, plus whatever the depots add. |
 | 3315 | `BuildingManager.BASE_MATERIALS` | `36` | Same idea for materials: a yard that produces this many a month on its own. |
-| 4258 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 4253 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingsTemplate.java ([map](map/BuildingsTemplate.md))
 
@@ -206,13 +206,13 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 367 | `DebtManager.WINDOW_SHUT_SERVICE_SHARE` | `.45` | ...and above this share of exports going out in service, likewise. |
 | 370 | `DebtManager.DEFAULT_SCAR` | `.10` | What a default abroad adds to the premium the day it happens. |
 | 373 | `DebtManager.SCAR_DECAY` | `.9885` | ...and how much of the scar is left after each month. |
-| 999 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 998 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### DebtQuote.java ([map](map/DebtQuote.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 157 | `DebtQuote.FORMAT` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 156 | `DebtQuote.FORMAT` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### DemolitionLog.java ([map](map/DemolitionLog.md))
 
@@ -242,12 +242,12 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 71 | `Education.DEFAULT_SUBSIDY` | `.60` | What share of tuition the city pays. |
-| 155 | `Education.MAX_BURDEN` | `.60` | The share of a month's wage above which nobody enrols. |
-| 168 | `Education.RETURN_ELASTICITY` | `1.3` | How hard the pay gap pulls people into a classroom. |
-| 171 | `Education.MAX_PARTICIPATION` | `.90` | However good the return, this share of the eligible is the most that go. |
-| 189 | `Education.ENROLMENT_RATE` | `1 / 60.0` | What fraction of the willing eligible pool starts a course in any month. |
-| 198 | `Education.ELEMENTARY_SHARE` | `4 / 7.0` | Ages 6-10 out of the CHILD band's 6-13. |
-| 816 | `Education.MONTH_FIELDS` | `4` | Scalars appended to the state array on 2026-09-09. |
+| 156 | `Education.MAX_BURDEN` | `.60` | The share of a month's wage above which nobody enrols. |
+| 169 | `Education.RETURN_ELASTICITY` | `1.3` | How hard the pay gap pulls people into a classroom. |
+| 172 | `Education.MAX_PARTICIPATION` | `.90` | However good the return, this share of the eligible is the most that go. |
+| 190 | `Education.ENROLMENT_RATE` | `1 / 60.0` | What fraction of the willing eligible pool starts a course in any month. |
+| 199 | `Education.ELEMENTARY_SHARE` | `4 / 7.0` | Ages 6-10 out of the CHILD band's 6-13. |
+| 817 | `Education.MONTH_FIELDS` | `4` | Scalars appended to the state array on 2026-09-09. |
 
 ### Equity.java ([map](map/Equity.md))
 
@@ -304,14 +304,14 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 90 | `FamilyModel.REFORMING_EACH_MONTH` | `.01` | The share of households that re-form on their own each month. |
 | 155 | `FamilyModel.SEEKERS` | `Seeker.values().length` |  |
-| 1001 | `FamilyModel.STUDIO_MAX_SIZE` | `2` | The largest unit that counts as a studio. |
+| 996 | `FamilyModel.STUDIO_MAX_SIZE` | `2` | The largest unit that counts as a studio. |
 | 1482 | `FamilyModel.MAX_SHARING` | `.85` | Not everybody doubles up, however dear the rent. |
 | 1543 | `FamilyModel.COUPLED_SENIORS` | `.55` | What share of a retired band lives as a couple rather than alone. |
 | 1544 | `FamilyModel.COUPLED_ELDERS` | `.25` |  |
-| 1670 | `FamilyModel.LEGACY_SHAPES` | `{ "SENIOR_ALONE", "SENIOR_COUPLE", "SINGLE_ADULT", "COUPLE", "SINGLE_PARENT", "COUPLE_B...` | The shapes a save written before the names travelled must be read with. |
-| 1692 | `FamilyModel.OUTSIDE_SLOTS` | `outsideSlots(AgeBand.values().length)` | What the people outside the families add to the save: see toSaveArray(). |
-| 1737 | `FamilyModel.KIN_SLOTS` | `kinSlots(AgeBand.values().length)` |  |
-| 1754 | `FamilyModel.MEMORY_SLOTS` | `FamilyStructure.values().length * PayTier.values().length + 1 + 4` | ...and what the households remember: the formed matrix, whether there is one, the month's four counts. |
+| 1660 | `FamilyModel.LEGACY_SHAPES` | `{ "SENIOR_ALONE", "SENIOR_COUPLE", "SINGLE_ADULT", "COUPLE", "SINGLE_PARENT", "COUPLE_B...` | The shapes a save written before the names travelled must be read with. |
+| 1682 | `FamilyModel.OUTSIDE_SLOTS` | `outsideSlots(AgeBand.values().length)` | What the people outside the families add to the save: see toSaveArray(). |
+| 1727 | `FamilyModel.KIN_SLOTS` | `kinSlots(AgeBand.values().length)` |  |
+| 1744 | `FamilyModel.MEMORY_SLOTS` | `FamilyStructure.values().length * PayTier.values().length + 1 + 4` | ...and what the households remember: the formed matrix, whether there is one, the month's four counts. |
 
 ### ForeignAccounts.java ([map](map/ForeignAccounts.md))
 
@@ -324,13 +324,13 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 110 | `ForeignAccounts.DRIFT_SPEED` | `.02` | How much of a month's pressure passes into the rate. |
 | 130 | `ForeignAccounts.MIN_RATE` | `.01` | UNCAPPED, and these are now a numeric guard rather than a policy. |
 | 131 | `ForeignAccounts.MAX_RATE` | `100.0` |  |
-| 209 | `ForeignAccounts.OPENING_PARITY` | `1.00` | The rate at which a basket costs the same at home and abroad. |
-| 264 | `ForeignAccounts.REVERSION` | `.004` | How hard. |
-| 326 | `ForeignAccounts.SETTLING_MONTHS` | `24` | Months before the rate is allowed to move at all. |
-| 329 | `ForeignAccounts.MIN_TRADE` | `50` | Below this much trade a month, the exchange rate is not a real price. |
-| 384 | `ForeignAccounts.RATE_PULL` | `6.0` | How far the city's own rate is above the world's, and what that is worth to the currency. |
-| 387 | `ForeignAccounts.MAX_RATE_PRESSURE` | `.8` | Most of the pressure a rate differential alone can produce. |
-| 603 | `ForeignAccounts.COVER_WINDOW` | `12` | Months of imports the reserve would cover. |
+| 208 | `ForeignAccounts.OPENING_PARITY` | `1.00` | The rate at which a basket costs the same at home and abroad. |
+| 262 | `ForeignAccounts.REVERSION` | `.004` | How hard. |
+| 324 | `ForeignAccounts.SETTLING_MONTHS` | `24` | Months before the rate is allowed to move at all. |
+| 327 | `ForeignAccounts.MIN_TRADE` | `50` | Below this much trade a month, the exchange rate is not a real price. |
+| 382 | `ForeignAccounts.RATE_PULL` | `6.0` | How far the city's own rate is above the world's, and what that is worth to the currency. |
+| 385 | `ForeignAccounts.MAX_RATE_PRESSURE` | `.8` | Most of the pressure a rate differential alone can produce. |
+| 601 | `ForeignAccounts.COVER_WINDOW` | `12` | Months of imports the reserve would cover. |
 
 ### Formats.java ([map](map/Formats.md))
 
@@ -343,13 +343,13 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 353 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
-| 2656 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 3247 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 4261 | `Game.EMERGENCY_NOTE_MONTHS` | `6` | Term of the note the city is forced into when it cannot pay its bills. |
-| 4276 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
-| 4285 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face. |
-| 4293 | `Game.MIN_PROCEEDS_PER_FACE` | `1 -.95 - UNDERWRITING_SPREAD` | The least a dollar of face can ever bank, net of the discount and the spread. |
-| 5641 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 2648 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 3233 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 4243 | `Game.EMERGENCY_NOTE_MONTHS` | `6` | Term of the note the city is forced into when it cannot pay its bills. |
+| 4258 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
+| 4267 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face. |
+| 4275 | `Game.MIN_PROCEEDS_PER_FACE` | `1 -.95 - UNDERWRITING_SPREAD` | The least a dollar of face can ever bank, net of the discount and the spread. |
+| 5623 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -382,10 +382,10 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 110 | `GameVersion.VERSION` | `"0.6.7"` | 0.6.7 - THE FIFTEENTH SECTOR, AND A MEAL OUT IS FOOD. |
-| 576 | `GameVersion.SAVE_FORMAT` | `27` |  |
-| 579 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
-| 581 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 108 | `GameVersion.VERSION` | `"0.6.7"` | Bump on release. |
+| 567 | `GameVersion.SAVE_FORMAT` | `27` | The save shape. |
+| 570 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
+| 572 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ### GoodsMarket.java ([map](map/GoodsMarket.md))
 
@@ -498,8 +498,8 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2828 | `HouseholdBalance.CELL_SLOTS_BEFORE_STUDENT_DEBT` | `CELL_SLOTS_BEFORE_ABROAD + 1` | ...and before the student loans were (2026-09-11, afternoon). |
 | 2831 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARS` | `CELL_SLOTS_BEFORE_STUDENT_DEBT + 1` | ...and before the cars were (2026-09-16). |
 | 2834 | `HouseholdBalance.CELL_SLOTS_BEFORE_INVESTMENT_INCOME` | `CELL_SLOTS_BEFORE_CARS + 1` | ...and before the month's investment income was (2026-09-17). |
-| 2845 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
-| 2847 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_MEALS + 1` |  |
+| 2844 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
+| 2847 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_MEALS + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income. |
 
 ### Inbox.java ([map](map/Inbox.md))
 
@@ -538,8 +538,8 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 151 | `LabourMarket.MIN_MULTIPLE` | `.70` | ...and how far below, before the minimum wage catches it anyway. |
 | 161 | `LabourMarket.ADJUST_RATE` | `.12` | How much of the gap to its target a wage closes each month. |
 | 171 | `LabourMarket.PINNED_TOLERANCE` | `.02` | How far from its floor a wage counts as PINNED. |
-| 293 | `LabourMarket.COST_OF_LIVING_PASS_THROUGH` | `1.0` | How much of a rise in prices wages eventually chase. |
-| 309 | `LabourMarket.DRIFT_PER_MONTH` | `1.0 / 24` | How fast they chase it. |
+| 292 | `LabourMarket.COST_OF_LIVING_PASS_THROUGH` | `1.0` | How much of a rise in prices wages eventually chase. |
+| 308 | `LabourMarket.DRIFT_PER_MONTH` | `1.0 / 24` | How fast they chase it. |
 
 ### LandManager.java ([map](map/LandManager.md))
 
@@ -547,9 +547,9 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 40 | `LandManager.BLOCK_SQ_FT` | `100000` | One city block, in square feet. |
 | 53 | `LandManager.STARTING_SQ_FT` | `3000000` | Land the city starts with - thirty blocks, about 69 acres. |
-| 86 | `LandManager.COST_GROWTH_PER_BLOCK` | `.02` | Each block bought makes the next this much dearer - annexing outward. |
-| 98 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
-| 417 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 85 | `LandManager.COST_GROWTH_PER_BLOCK` | `.02` | Each block bought makes the next this much dearer - annexing outward. |
+| 97 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
+| 416 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandMarket.java ([map](map/LandMarket.md))
 
@@ -597,7 +597,7 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 44 | `MoneyAudit.Result.NONE` | `new Result(0, 0, 0, 0, 0, 0)` |  |
-| 266 | `MoneyAudit.POOL_NAMES` | `poolNames()` | The pools, by name: the city, every sector in the registry's order, the builders' order book, the bank. |
+| 265 | `MoneyAudit.POOL_NAMES` | `poolNames()` | The pools, by name: the city, every sector in the registry's order, the builders' order book, the bank. |
 
 ### NationalAccounts.java ([map](map/NationalAccounts.md))
 
@@ -704,9 +704,9 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 199 | `TaxPolicy.MAX_EI_PREMIUM` | `.10` | A premium past a tenth of a wage is a second income tax. |
 | 202 | `TaxPolicy.MAX_EI_BENEFIT` | `1.00` | EI that replaces more than the wage pays people to stay out of work. |
 | 205 | `TaxPolicy.MAX_STUDENT_GRANT` | `1.00` | A grant of more than an unskilled wage is a wage. |
-| 270 | `TaxPolicy.DEFAULT_TRANSIT_FARE` | `.0025` | What a single journey costs a rider, in thousands. |
-| 273 | `TaxPolicy.MAX_TRANSIT_FARE` | `.05` | Past this nobody rides at all, as a multiple of the default. |
-| 314 | `TaxPolicy.JOURNEYS_A_MONTH` | `40` | Journeys one commuter makes in a month: out and back, twenty days. |
+| 269 | `TaxPolicy.DEFAULT_TRANSIT_FARE` | `.0025` | What a single journey costs a rider, in thousands. |
+| 272 | `TaxPolicy.MAX_TRANSIT_FARE` | `.05` | Past this nobody rides at all, as a multiple of the default. |
+| 313 | `TaxPolicy.JOURNEYS_A_MONTH` | `40` | Journeys one commuter makes in a month: out and back, twenty days. |
 
 ### Trade.java ([map](map/Trade.md))
 
@@ -746,12 +746,12 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 78 | `WorldEconomy.MIN_MEAN_INFLATION` | `.0` | The most and least a city may be founded with. |
 | 79 | `WorldEconomy.MAX_MEAN_INFLATION` | `.08` |  |
 | 112 | `WorldEconomy.PERSISTENCE` | `.90` | How much of last month's rate survives into this one. |
-| 168 | `WorldEconomy.LOW_BIAS` | `2.0` | RETIRED 2026-09-13, kept because the reasoning is still true of the band it was written for. |
-| 170 | `WorldEconomy.SEED` | `0x5F3A91C7L` |  |
-| 214 | `WorldEconomy.TREND_INFLATION` | `.0` | The world's long-run trend, against which the wandering rate is a cycle. |
-| 217 | `WorldEconomy.TREND_PULL` | `.006` | How hard the level is pulled back to trend. |
-| 319 | `WorldEconomy.LEVEL_RING` | `13` |  |
-| 384 | `WorldEconomy.LEGACY_MEAN_INFLATION` | `.0333` | The mean every city founded before 2026-09-13 grew up in. |
+| 167 | `WorldEconomy.LOW_BIAS` | `2.0` | How far the uniform draw is bent toward the bottom of the band. |
+| 169 | `WorldEconomy.SEED` | `0x5F3A91C7L` |  |
+| 213 | `WorldEconomy.TREND_INFLATION` | `.0` | The world's long-run trend, against which the wandering rate is a cycle. |
+| 216 | `WorldEconomy.TREND_PULL` | `.006` | How hard the level is pulled back to trend. |
+| 318 | `WorldEconomy.LEVEL_RING` | `13` |  |
+| 383 | `WorldEconomy.LEGACY_MEAN_INFLATION` | `.0333` | The mean every city founded before 2026-09-13 grew up in. |
 
 ### YearBook.java ([map](map/YearBook.md))
 
@@ -894,12 +894,12 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 80 | `HistoryScreen.MAX_PLOT_POINTS` | `400` | Above this many points a line is bucket-averaged; see decimate(). |
+| 80 | `HistoryScreen.MAX_PLOT_POINTS` | `400` | Above this many points a line is bucket-averaged; see bucketSize(). |
 | 92 | `HistoryScreen.TRACES` | `withTheCrime(withTheHouseholds(withTheMarket(new Trace[] { new Trace("gdp", "GDP", "MON...` |  |
 | 268 | `HistoryScreen.TRACE_COLOURS` | `{ "#5cb8ff", "#ff6b6b", "#5fd68a", "#ffb454", "#ce93d8", "#4dd0e1", "#d4e157", "#c8b0a5" }` | Eight, then it wraps - and the legend swatch uses the same list. |
 | 308 | `HistoryScreen.GRAPH` | `760` | How wide this one screen runs. |
 | 313 | `HistoryScreen.PRESETS` | `{ new Preset("How it is going", "output, people, and what money costs", new String[] { ...` |  |
-| 1384 | `HistoryScreen.TABLE_WIDTH` | `660` | How wide the paragraph above the buyback table wraps. |
+| 1369 | `HistoryScreen.TABLE_WIDTH` | `660` | How wide the paragraph above the buyback table wraps. |
 
 ### Icons.java ([map](map/Icons.md))
 
@@ -992,8 +992,8 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 737 | `PeopleScreen.PYRAMID_BAR` | `200` | How wide the age bars are drawn. |
-| 1513 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
-| 1514 | `PeopleScreen.SHAPE_COL` | `168` |  |
+| 1503 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
+| 1504 | `PeopleScreen.SHAPE_COL` | `168` |  |
 
 ### Pieces.java ([map](map/Pieces.md))
 
@@ -1012,9 +1012,9 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 93 | `PolicyScreen.POLICY_WAGE_PAGES` | `{ "The floor" }` |  |
 | 94 | `PolicyScreen.POLICY_MONEY_PAGES` | `{ "The policy rate", "Currency reform" }` |  |
 | 95 | `PolicyScreen.POLICY_PROMISE_PAGES` | `{ "Pensions", "Out of work", "Tuition", "Subsidies" }` |  |
-| 177 | `PolicyScreen.STEP_INCOME` | `.0025` | A quarter of a point - every rate that moves off the income tax. |
-| 180 | `PolicyScreen.STEP_PROPERTY` | `.0005` | A twentieth of a point - property, where a quarter is a quarter of the tax. |
-| 182 | `PolicyScreen.LADDER_READ` | `118` |  |
+| 168 | `PolicyScreen.STEP_INCOME` | `.0025` | A quarter of a point - every rate that moves off the income tax. |
+| 171 | `PolicyScreen.STEP_PROPERTY` | `.0005` | A twentieth of a point - property, where a quarter is a quarter of the tax. |
+| 173 | `PolicyScreen.LADDER_READ` | `118` |  |
 
 ### SectorScreen.java ([map](map/SectorScreen.md))
 
@@ -1050,7 +1050,7 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 150 | `SummaryScreen.PANEL_GOOD` | `"#5fd68a"` |  |
 | 151 | `SummaryScreen.PANEL_WARN` | `"#ffb454"` |  |
 | 152 | `SummaryScreen.PANEL_BAD` | `"#ff6b6b"` |  |
-| 383 | `SummaryScreen.PANEL_SECTIONS` | `{ "econ", "bank", "trade", "tax", "labour", "school", "people", "health", "safety", "re...` | Every section key, so open-all does not have to be kept in step by hand. |
+| 376 | `SummaryScreen.PANEL_SECTIONS` | `{ "econ", "bank", "trade", "tax", "labour", "school", "people", "health", "safety", "re...` | Every section key, so open-all does not have to be kept in step by hand. |
 
 ### TradeScreen.java ([map](map/TradeScreen.md))
 
@@ -1076,9 +1076,9 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1808 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
 | 2951 | `UserInterface.RAIL_WIDTH` | `46` | Wide enough for a glyph and its highlight, narrow enough to be an edge. |
 | 2954 | `UserInterface.STRIP_HEIGHT` | `72` | The strip under the stage that holds the dome and the time controls. |
-| 3324 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
+| 3323 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
 
-## harnesses (43 constants)
+## harnesses (45 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -1177,10 +1177,10 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 55 | `LongPlaytest.findings` | `new LinkedHashMap<>()` |  |
 | 161 | `LongPlaytest.illnessDeathsByBand` | `new double [ AgeBand.values().length ]` | The long sick (2026-09-11): who died of staying sick, by band, and the most ever ill past two months. |
 | 163 | `LongPlaytest.deathsByBandRun` | `new double [ AgeBand.values().length ]` | Everyone who died, by band, and the orphans and the unhoused among them (2026-09-11). |
-| 807 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasional"))` | True when this run is played by somebody paying attention. |
+| 749 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasional"))` | True when this run is played by somebody paying attention. |
 | 1189 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
-| 1399 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
-| 1431 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
+| 1398 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
+| 1430 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
 
 ### ManufacturingCheck.java ([map](map/ManufacturingCheck.md))
 
@@ -1209,6 +1209,13 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 88 | `SectorBooksCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
 
+### StaleCheck.java ([map](map/StaleCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 158 | `StaleCheck.PLANTED` | `""" package ham.citybuildersim; /** * A fixture with three defects planted in it. * * I...` | Three planted lies: a stranded javadoc, a file that is not there, and a header out by one. |
+| 185 | `StaleCheck.SOUND` | `""" package ham.citybuildersim; /** * A fixture with nothing wrong with it. * * The one...` | The same shapes, all of them true. |
+
 ### TradeCostCheck.java ([map](map/TradeCostCheck.md))
 
 | line | constant | value | says |
@@ -1228,7 +1235,7 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 40 | `YearBookCheck.A_CENT` | `0.005` | What HistorySave.round2() can lose on a figure it stores. |
 | 43 | `YearBookCheck.HALF_A_PERSON` | `0.51` | What storing the pool as a whole person can lose on a figure derived from it. |
 
-## tools (6 constants)
+## tools (20 constants)
 
 ### HarnessMap.java ([map](map/HarnessMap.md))
 
@@ -1255,4 +1262,23 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 84 | `SourceTree.AREAS` | `{ "model", "sectors", "interface", "harnesses", "tools" }` |  |
+
+### Stale.java ([map](map/Stale.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 251 | `Stale.JAVA_REF` | `Pattern.compile("\\b([A-Z][A-Za-z0-9]*)\\.java\\b")` |  |
+| 259 | `Stale.DOC_REF` | `Pattern.compile("\\b(docs(?:/[A-Za-z0-9_-]+)*/[a-z0-9][a-z0-9-]*\\.md)\\b")` | A document is only reported when it is written as a path under docs/ with a lower-case name. |
+| 265 | `Stale.SHAPE_NAMES` | `Set.of("Name", "NAME", "Something", "Foo", "Bar", "Baz", "ClassName", "Class", "Screen"...` | Names that are written as a shape rather than as a file: "&lt;Name&gt;Screen.java", "*Check.java", "NAME.md". |
+| 327 | `Stale.NUMBERS` | `numbers()` |  |
+| 328 | `Stale.NUM` | `alternation()` |  |
+| 331 | `Stale.SAID` | `"(?<![A-Za-z-])(" + NUM + ")"` | A number is only a number when a letter or a hyphen does not run into it: "fifty-six" is 56, never six. |
+| 333 | `Stale.BANNERS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+(?:top-level\\s+\|class-level\\s+)?b...` |  |
+| 334 | `Stale.SECTIONS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+sections?\\b")` |  |
+| 335 | `Stale.HARNESSES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+harness(?:es)?\\b")` |  |
+| 336 | `Stale.UI_FILES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+files\\b")` |  |
+| 337 | `Stale.SECTORS` | `Pattern.compile("(?i)\\b" + SAID + "\\s+(?:private\\s+)?sectors?(?:\\s+classes)?\\b")` |  |
+| 533 | `Stale.LIBRARY` | `Set.of("println", "runLater", "equals", "hashCode", "toString", "compareTo", "format", ...` | Names that appear in prose here and belong to the JDK or JavaFX, not to the tree. |
+| 541 | `Stale.PLACEHOLDERS` | `Set.of("foo", "bar", "baz", "doSomething")` | Names written as an example of a member rather than as one: "see foo()" is the shape, not a claim. |
+| 549 | `Stale.CALL` | `Pattern.compile("\\b([A-Z][A-Za-z0-9_]*)\\.([a-zA-Z][A-Za-z0-9_]*)\\(\\)\|\\b([a-z][A-Za...` | A member is named in prose as name() - the empty parentheses, with nothing between them and no space before them, are what makes it a member and not an English word with a parenthesis after it. |
 

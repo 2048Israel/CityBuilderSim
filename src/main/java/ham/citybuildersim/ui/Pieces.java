@@ -226,6 +226,13 @@ public final class Pieces {
     /** A named amount, with the colour it was assigned and what it opens into. */
     public record Slice(String name, double amount, String colour) { }
 
+    /**
+     * A part-to-whole bar, which is the right form when the parts can be
+     * negative and a ring cannot be drawn at all.
+     *
+     * Used for GDP: net exports can be a subtraction, and a pie of a negative
+     * wedge is nonsense.
+     */
     public static VBox stackedBar(java.util.List<Slice> parts, double width) {
 
         double total = 0;
@@ -509,13 +516,6 @@ public final class Pieces {
         return chip;
     }
 
-    /**
-     * A part-to-whole bar, which is the right form when the parts can be
-     * negative and a ring cannot be drawn at all.
-     *
-     * Used for GDP: net exports can be a subtraction, and a pie of a negative
-     * wedge is nonsense.
-     */
     /**
      * A stacked bar with its own swatch legend under it.
      *

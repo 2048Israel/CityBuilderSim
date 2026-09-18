@@ -3,4 +3,4 @@
 Lines the docs pass could not write to the project itself. The next Cowork
 session moves them over and empties this file. Newest at the top.
 
-(Nothing pending. Last emptied 2026-09-18, evening, after the Game split.)
+(Nothing pending. Last emptied 2026-09-18, evening, after the Stale batch.)

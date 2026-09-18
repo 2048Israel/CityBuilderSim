@@ -17,7 +17,7 @@ import static ham.citybuildersim.ui.Levers.*;
 
 /**
  * The left panel's content: the summary and the dashboard - the vitals, the
- * alert block, the six lines that are always worth a glance or the twelve
+ * alert block, the six lines that are always worth a glance or the thirteen
  * folded sections - the problem list that decides what goes red, and every
  * row's own reading of the city, seats against who would come.
  *
@@ -264,7 +264,7 @@ final class SummaryScreen {
                    rather than unfolding it, because in this mode there is
                    nothing to unfold and a dead click is worse than no click.
 
-         DASHBOARD is the instrument set: all twelve sections, folded the way
+         DASHBOARD is the instrument set: all thirteen sections, folded the way
                    you left them, with open all / close all so the whole wall is
                    one click away when you actually want to read it.
 
@@ -308,13 +308,6 @@ final class SummaryScreen {
         return chip;
     }
 
-    /**
-     * One line of the summary: a heading, a figure, and somewhere to go.
-     *
-     * Deliberately the same shape as a closed section so switching modes does
-     * not feel like switching programs - minus the caret, because there is
-     * nothing behind it here, and plus a destination, because there is.
-     */
     /**
      * One row of the summary: what it is, and what it reads.
      *
@@ -949,7 +942,7 @@ final class SummaryScreen {
     }
 
     /**
-     * The twelve sections, folded the way the player left them.
+     * The thirteen sections, folded the way the player left them.
      *
      * Lifted out of refreshCityPanel() whole when the Summary switch went in -
      * it re-reads what it needs from the game rather than taking a dozen

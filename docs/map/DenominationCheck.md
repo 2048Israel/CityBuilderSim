@@ -1,4 +1,4 @@
-# DenominationCheck.java - 524 lines · 14 methods · 0 constants · harnesses
+# DenominationCheck.java - 523 lines · 14 methods · 0 constants · harnesses
 
 `ham/citybuildersim/DenominationCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
 
@@ -34,15 +34,15 @@
 
 | line | section |
 |---:|---|
-| 123 | · (untitled) |
-| 149 | · (untitled) |
-| 157 | · 1. THE UNIT |
-| 180 | · 2. IT IS THE SAME CITY |
-| 218 | · ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT |
-| 344 | · 3. AND IT STAYS THE SAME CITY |
-| 446 | · 4. AND NO MONEY WAS MADE OR LOST |
-| 461 | · 5. AND IT SURVIVES A SAVE |
-| 494 | · helpers |
+| 122 | · (untitled) |
+| 148 | · (untitled) |
+| 156 | · 1. THE UNIT |
+| 179 | · 2. IT IS THE SAME CITY |
+| 217 | · ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT |
+| 343 | · 3. AND IT STAYS THE SAME CITY |
+| 445 | · 4. AND NO MONEY WAS MADE OR LOST |
+| 460 | · 5. AND IT SURVIVES A SAVE |
+| 493 | · helpers |
 
 ## Fields (state)
 
@@ -56,34 +56,34 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 490 | **type** `public class DenominationCheck` | A currency reform is a change of units, and this is how we know. |
+| 35 | 489 | **type** `public class DenominationCheck` | A currency reform is a change of units, and this is how we know. |
 | 41 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 54 | 23 | `static void sameCity(Game plain, Game lopped, double factor, double band)` | Everything real to the person, everything nominal to the factor. |
-| 79 | 11 | `static void relative(String label, double actual, double expected, double band)` | Equal to within a RELATIVE band, so one helper works at any scale. |
-| 92 | 4 | `static double gap(double actual, double expected)` | How far apart two figures are, as a percentage of the expected one. |
-| 97 | 9 | `static void within(String label, double actual, double expected, double band)` |  |
-| 107 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 117 | 5 | `static void quietly(Runnable work)` |  |
+| 53 | 23 | `static void sameCity(Game plain, Game lopped, double factor, double band)` | Everything real to the person, everything nominal to the factor. |
+| 78 | 11 | `static void relative(String label, double actual, double expected, double band)` | Equal to within a RELATIVE band, so one helper works at any scale. |
+| 91 | 4 | `static double gap(double actual, double expected)` | How far apart two figures are, as a percentage of the expected one. |
+| 96 | 9 | `static void within(String label, double actual, double expected, double band)` |  |
+| 106 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 116 | 5 | `static void quietly(Runnable work)` |  |
 
-### (untitled) (lines 123-148)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 126 | 22 | `static Game city(String name)` | A city with a bit of everything in it, so the reform has work to do. |
-
-### (untitled) (lines 149-493)
+### (untitled) (lines 122-147)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 151 | 342 | `public static void main(String[] args) throws Exception` |  |
+| 125 | 22 | `static Game city(String name)` | A city with a bit of everything in it, so the reform has work to do. |
 
-### helpers (lines 494-524)
+### (untitled) (lines 148-492)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 497 | 5 | `static boolean force(Game g, double factor)` | Reforms regardless of the price-level gate, which is tested separately. |
-| 504 | 7 | `static boolean same(Game a, Game b)` | The real city: who lives there and how much of everything there is. |
-| 512 | 3 | `static double shelf(Game g)` |  |
-| 516 | 3 | `static double rent(Game g)` |  |
-| 520 | 4 | `static double cost(Game g, String name)` |  |
+| 150 | 342 | `public static void main(String[] args) throws Exception` |  |
+
+### helpers (lines 493-523)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 496 | 5 | `static boolean force(Game g, double factor)` | Reforms regardless of the price-level gate, which is tested separately. |
+| 503 | 7 | `static boolean same(Game a, Game b)` | The real city: who lives there and how much of everything there is. |
+| 511 | 3 | `static double shelf(Game g)` |  |
+| 515 | 3 | `static double rent(Game g)` |  |
+| 519 | 4 | `static double cost(Game g, String name)` |  |
 

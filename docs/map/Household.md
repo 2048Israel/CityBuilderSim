@@ -1,4 +1,4 @@
-# Household.java - 908 lines · 81 methods · 8 constants · model
+# Household.java - 907 lines · 81 methods · 8 constants · model
 
 `ham/citybuildersim/Household.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
 
@@ -69,12 +69,12 @@
 | 295 | · what differs |
 | 354 | · reading |
 | 361 | A SHAPE IS NOT ALWAYS THE CENSUS (2026-09-15) |
-| 510 | · the month |
-| 541 | · · what the lender charges this one |
-| 548 | · · the bills, in order |
-| 553 | · · settle what they actually spent |
-| 659 | · AND THE FORTUNE ALSO ASKS FOR WATCHES (2026-09-17) |
-| 691 | · AND WHAT IT WOULD SPEND EATING OUT (2026-09-18) |
+| 509 | · the month |
+| 540 | · · what the lender charges this one |
+| 547 | · · the bills, in order |
+| 552 | · · settle what they actually spent |
+| 658 | · AND THE FORTUNE ALSO ASKS FOR WATCHES (2026-09-17) |
+| 690 | · AND WHAT IT WOULD SPEND EATING OUT (2026-09-18) |
 
 ## Constants
 
@@ -132,7 +132,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 851 | **type** `public abstract class Household` | Every household of one shape at one pay tier, as one ledger. |
+| 58 | 850 | **type** `public abstract class Household` | Every household of one shape at one pay tier, as one ledger. |
 
 ### the position (lines 98-249)
 
@@ -170,7 +170,7 @@
 | 356 | 1 | `public FamilyStructure shape()` |  |
 | 359 | 1 | `public int size()` | People in one of these households, as its SHAPE declares them. |
 
-### A SHAPE IS NOT ALWAYS THE CENSUS (2026-09-15) (lines 361-509)
+### A SHAPE IS NOT ALWAYS THE CENSUS (2026-09-15) (lines 361-508)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -217,32 +217,32 @@
 | 459 | 1 | `public double carsSold()` | Cars this cell sold second-hand this month, in total. |
 | 460 | 1 | `public double bankrupt()` |  |
 | 463 | 1 | `public boolean isCutOff()` | True when the bank has stopped lending to this cell - ceiling or lockout. |
-| 492 | 1 | `public boolean isGoingShort()` | Whether this household planned to spend less than it wanted to. |
-| 495 | 1 | `public double totalSavings()` | The cell's totals: the per-household figure times the households. |
-| 496 | 1 | `public double totalAbroad()` |  |
-| 497 | 1 | `public double totalDebt()` |  |
-| 498 | 1 | `public double totalInterest()` |  |
-| 499 | 1 | `public double totalBorrowed()` |  |
-| 500 | 1 | `public double totalRepaid()` |  |
-| 501 | 1 | `public double totalPlanned()` |  |
-| 502 | 1 | `public double totalWant()` |  |
-| 508 | 1 | `public double netWorth()` | Net worth of one of these households: what it has less what it owes. |
+| 491 | 1 | `public boolean isGoingShort()` | Whether this household planned to spend less than it wanted to. |
+| 494 | 1 | `public double totalSavings()` | The cell's totals: the per-household figure times the households. |
+| 495 | 1 | `public double totalAbroad()` |  |
+| 496 | 1 | `public double totalDebt()` |  |
+| 497 | 1 | `public double totalInterest()` |  |
+| 498 | 1 | `public double totalBorrowed()` |  |
+| 499 | 1 | `public double totalRepaid()` |  |
+| 500 | 1 | `public double totalPlanned()` |  |
+| 501 | 1 | `public double totalWant()` |  |
+| 507 | 1 | `public double netWorth()` | Net worth of one of these households: what it has less what it owes. |
 
-### the month (lines 510-908)
+### the month (lines 509-907)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 526 | 4 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` | Settles a month: the bills in order, the shop against what was actually spent, and savings, then credit, then going without. |
-| 535 | 80 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` |  |
-| 621 | 119 | `double plan(double localPerUsd)` | Plans the next month, without settling one. |
-| 742 | 12 | `void restrike(double disposablePer, double rentPerHome, double feesPer, double foodPricePerHead, double riskFreeAnnual)` | Re-strikes the fixed part of the month for the plan alone: the load path. |
-| 762 | 27 | `protected double fundShortfall(double still, double disposablePer)` | What is still short after savings, the paper abroad and the shares: the revolving credit line, up to its ceiling. |
-| 791 | 1 | `protected double planningRoom()` | What the plan may count on borrowing. |
-| 794 | 1 | `protected double studentRepayment()` | The month's student-loan repayment, per household. |
-| 797 | 5 | `public double creditRoom(double disposablePer)` | What the bank will still lend one of these: the ceiling less what is owed, or nothing. |
-| 812 | 30 | `double discharge()` | Whoever cannot carry it any more: a share of the cell discharges. |
-| 844 | 8 | `void clearWorking()` | Nothing to strike: the working is blank, the position stands. |
-| 854 | 6 | `void clearAll()` | The cell is empty: no position either. |
-| 862 | 41 | `void redenominate(double scale)` | Everything in money, in the new unit. |
-| 905 | 3 | `public String toString()` |  |
+| 525 | 4 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` | Settles a month: the bills in order, the shop against what was actually spent, and savings, then credit, then going without. |
+| 534 | 80 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` |  |
+| 620 | 119 | `double plan(double localPerUsd)` | Plans the next month, without settling one. |
+| 741 | 12 | `void restrike(double disposablePer, double rentPerHome, double feesPer, double foodPricePerHead, double riskFreeAnnual)` | Re-strikes the fixed part of the month for the plan alone: the load path. |
+| 761 | 27 | `protected double fundShortfall(double still, double disposablePer)` | What is still short after savings, the paper abroad and the shares: the revolving credit line, up to its ceiling. |
+| 790 | 1 | `protected double planningRoom()` | What the plan may count on borrowing. |
+| 793 | 1 | `protected double studentRepayment()` | The month's student-loan repayment, per household. |
+| 796 | 5 | `public double creditRoom(double disposablePer)` | What the bank will still lend one of these: the ceiling less what is owed, or nothing. |
+| 811 | 30 | `double discharge()` | Whoever cannot carry it any more: a share of the cell discharges. |
+| 843 | 8 | `void clearWorking()` | Nothing to strike: the working is blank, the position stands. |
+| 853 | 6 | `void clearAll()` | The cell is empty: no position either. |
+| 861 | 41 | `void redenominate(double scale)` | Everything in money, in the new unit. |
+| 904 | 3 | `public String toString()` |  |
 

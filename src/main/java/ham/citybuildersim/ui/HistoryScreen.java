@@ -76,7 +76,7 @@ final class HistoryScreen {
     boolean historySeeded = false;
     int historyWindow = 120;
 
-    /** Above this many points a line is bucket-averaged; see decimate(). */
+    /** Above this many points a line is bucket-averaged; see bucketSize(). */
     static final int MAX_PLOT_POINTS = 400;
 
     /**
@@ -227,12 +227,6 @@ final class HistoryScreen {
         new Trace("studentLoansOwed","Student loans owed","OUTSIDE THE FAMILIES", "money"),
     })));
 
-    /**
-     * ...and a share price per company, one trace each, generated off the
-     * register's own list so a company added there is graphed here without
-     * anybody remembering to. THE MARKET is the last group on the screen,
-     * and its unit is a founding share - see HistorySave's market block.
-     */
     /** One series per household shape, appended after the market. See HistorySave.householdKey(). */
     static Trace[] withTheCrime(Trace[] fixed) {
         Crime.Cause[] causes = Crime.Cause.values();
@@ -254,6 +248,12 @@ final class HistoryScreen {
         return all;
     }
 
+    /**
+     * ...and a share price per company, one trace each, generated off the
+     * register's own list so a company added there is graphed here without
+     * anybody remembering to. THE MARKET is the last group on the screen,
+     * and its unit is a founding share - see HistorySave's market block.
+     */
     static Trace[] withTheMarket(Trace[] fixed) {
         Trace[] all = java.util.Arrays.copyOf(fixed, fixed.length + Equity.COMPANIES.length);
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
@@ -790,14 +790,6 @@ final class HistoryScreen {
     }
 
     /**
-     * One, two or five times a power of ten - the only steps a reader can add up.
-     *
-     * Dividing the range by eight gives ticks at -13,019,917.2, which is a
-     * correct number and an unreadable axis. Rounding the STEP and then snapping
-     * the bounds outward to it costs a little empty margin and buys labels
-     * somebody can hold in their head.
-     */
-    /**
      * One gridline's label: short enough to fit, honest about its unit.
      *
      * The value has already been through plotScale(), so money is in dollars
@@ -866,6 +858,14 @@ final class HistoryScreen {
         return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
     }
 
+    /**
+     * One, two or five times a power of ten - the only steps a reader can add up.
+     *
+     * Dividing the range by eight gives ticks at -13,019,917.2, which is a
+     * correct number and an unreadable axis. Rounding the STEP and then snapping
+     * the bounds outward to it costs a little empty margin and buys labels
+     * somebody can hold in their head.
+     */
     static double niceStep(double raw) {
         if (!(raw > 0)) return 1;
         double power = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -1120,17 +1120,6 @@ final class HistoryScreen {
     }
 
     /**
-     * A series, aligned to the month axis, derived ones included.
-     *
-     * NOTHING DERIVED IS STORED. Unemployment is the workforce and the jobs,
-     * GDP per capita is GDP and the population - and a stored copy of either is
-     * a second number that can disagree with the two it came from, with nothing
-     * to say which is right. They are computed here, on the way to the screen,
-     * from the aligned series so a month missing from one of the inputs is
-     * missing from the result rather than dividing by a zero that was never
-     * recorded.
-     */
-    /**
      * A trailing total over the last `window` readings.
      *
      * NaN until there are enough of them, deliberately: a "year of output"
@@ -1157,6 +1146,17 @@ final class HistoryScreen {
         return out;
     }
 
+    /**
+     * A series, aligned to the month axis, derived ones included.
+     *
+     * NOTHING DERIVED IS STORED. Unemployment is the workforce and the jobs,
+     * GDP per capita is GDP and the population - and a stored copy of either is
+     * a second number that can disagree with the two it came from, with nothing
+     * to say which is right. They are computed here, on the way to the screen,
+     * from the aligned series so a month missing from one of the inputs is
+     * missing from the result rather than dividing by a zero that was never
+     * recorded.
+     */
     double[] historyValues(HistorySave h, String key) {
         switch (key) {
             /*
@@ -1358,21 +1358,6 @@ final class HistoryScreen {
         }
     }
 
-    /**
-     * Buying the city's own debt back, one bond at a time.
-     *
-     * The mirror of the finance menu: that one turns future payments into cash
-     * now, this one turns cash now into no future payments.
-     *
-     * WHY EVERY ROW SHOWS THE DISCOUNT AND NOT JUST THE PRICE. The interesting
-     * thing here is never the price on its own, it is the gap between the price
-     * and the face - which is a statement about the city's credit. Paper issued
-     * when the city was sound and held while its rate climbed is CHEAP to
-     * retire: $500,000 of face for $302,646, a real $197,354 gain. Paper issued
-     * dear and held while the city improved costs a premium to escape. Showing
-     * only "Buy back: $302,646" would hide the entire mechanic behind a number
-     * that looks like a bill.
-     */
     /**
      * How wide the paragraph above the buyback table wraps.
      *

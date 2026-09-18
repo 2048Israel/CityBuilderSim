@@ -178,13 +178,6 @@ public class NationalAccounts {
     private boolean inventoryBaselineKnown = true;
 
     /**
-     * Recomputes the month.
-     *
-     * Every argument is a figure some handler already had; nothing here is
-     * estimated. Called once a month, after the sector income statements have
-     * run and before anything reads the result.
-     */
-    /**
      * Puts back the month a save was taken in.
      *
      * lastInventoryValue matters more than the GDP figure does. Investment in
@@ -246,6 +239,10 @@ public class NationalAccounts {
 
     /**
      * Measures the month.
+     *
+     * Every argument is a figure some handler already had; nothing here is
+     * estimated. Called once a month, after the sector income statements have
+     * run and before anything reads the result.
      *
      * Stock arrives as UNITS and a price, never as a pre-multiplied value - see
      * the class note. Materials are here alongside food because a yard full of
@@ -400,7 +397,6 @@ public class NationalAccounts {
         }
     }
 
-    /** The government's own income statement for the month. */
     /**
      * The city's own budget for the month.
      *

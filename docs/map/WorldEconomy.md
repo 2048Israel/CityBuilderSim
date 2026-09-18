@@ -1,4 +1,4 @@
-# WorldEconomy.java - 395 lines · 17 methods · 11 constants · model
+# WorldEconomy.java - 394 lines · 17 methods · 11 constants · model
 
 `ham/citybuildersim/WorldEconomy.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
 
@@ -40,7 +40,7 @@
 |---:|---|
 | 40 | THE WORLD'S PRICE LEVEL IS STATIONARY, AND THE MEAN SAYS WHERE |
 | 114 | WHY THE DRAW IS BIASED LOW, AND WHY THE BAND WAS A FICTION |
-| 342 | · carrying |
+| 341 | · carrying |
 
 ## Constants
 
@@ -51,30 +51,30 @@
 | 78 | `WorldEconomy.MIN_MEAN_INFLATION` | `.0` | The most and least a city may be founded with. |
 | 79 | `WorldEconomy.MAX_MEAN_INFLATION` | `.08` |  |
 | 112 | `WorldEconomy.PERSISTENCE` | `.90` | How much of last month's rate survives into this one. |
-| 168 | `WorldEconomy.LOW_BIAS` | `2.0` | RETIRED 2026-09-13, kept because the reasoning is still true of the band it was written for. |
-| 170 | `WorldEconomy.SEED` | `0x5F3A91C7L` |  |
-| 214 | `WorldEconomy.TREND_INFLATION` | `.0` | The world's long-run trend, against which the wandering rate is a cycle. |
-| 217 | `WorldEconomy.TREND_PULL` | `.006` | How hard the level is pulled back to trend. |
-| 319 | `WorldEconomy.LEVEL_RING` | `13` |  |
-| 384 | `WorldEconomy.LEGACY_MEAN_INFLATION` | `.0333` | The mean every city founded before 2026-09-13 grew up in. |
+| 167 | `WorldEconomy.LOW_BIAS` | `2.0` | How far the uniform draw is bent toward the bottom of the band. |
+| 169 | `WorldEconomy.SEED` | `0x5F3A91C7L` |  |
+| 213 | `WorldEconomy.TREND_INFLATION` | `.0` | The world's long-run trend, against which the wandering rate is a cycle. |
+| 216 | `WorldEconomy.TREND_PULL` | `.006` | How hard the level is pulled back to trend. |
+| 318 | `WorldEconomy.LEVEL_RING` | `13` |  |
+| 383 | `WorldEconomy.LEGACY_MEAN_INFLATION` | `.0333` | The mean every city founded before 2026-09-13 grew up in. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 81 | `private double meanInflation` |  |
-| 172 | `private double annualInflation` |  |
-| 173 | `private double priceLevel` |  |
-| 219 | `private int monthsRun` |  |
-| 236 | `private boolean pinned` |  |
-| 321 | `private final double[] levels` | The level at the end of each of the last thirteen months; head is the newest. |
-| 322 | `private int head` |  |
+| 171 | `private double annualInflation` |  |
+| 172 | `private double priceLevel` |  |
+| 218 | `private int monthsRun` |  |
+| 235 | `private boolean pinned` |  |
+| 320 | `private final double[] levels` | The level at the end of each of the last thirteen months; head is the newest. |
+| 321 | `private int head` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 358 | **type** `public class WorldEconomy` | The rest of the world, which has its own inflation and did not use to. |
+| 38 | 357 | **type** `public class WorldEconomy` | The rest of the world, which has its own inflation and did not use to. |
 
 ### THE WORLD'S PRICE LEVEL IS STATIONARY, AND THE MEAN SAYS WHERE (lines 40-113)
 
@@ -85,27 +85,27 @@
 | 101 | 1 | `public double minInflation()` | The band this world's inflation wanders in: the mean, either way. |
 | 102 | 1 | `public double maxInflation()` |  |
 
-### WHY THE DRAW IS BIASED LOW, AND WHY THE BAND WAS A FICTION (lines 114-341)
+### WHY THE DRAW IS BIASED LOW, AND WHY THE BAND WAS A FICTION (lines 114-340)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 176 | 6 | `private static long scramble(long n)` | Scrambles a month into something that does not correlate with its neighbours. |
-| 232 | 1 | `public void pin()` | Holds the world's prices still, for a fixture measuring something else. |
-| 234 | 1 | `public boolean isPinned()` |  |
-| 238 | 23 | `public void advanceMonth(int month)` |  |
-| 263 | 3 | `public double trendLevel()` | Where the trend says the world's prices should be by now. |
-| 268 | 1 | `public double getPriceLevel()` | What the world's basket costs now against what it cost at founding. |
-| 283 | 1 | `public double getInflation()` | The HEADLINE rate: what the band is doing this month. |
-| 313 | 5 | `public double realisedInflation()` | What the world's prices ACTUALLY did over the last twelve months, from the level itself. |
-| 327 | 1 | `{ ... }` | A fresh world has a year of history at its opening rate, so the first twelve months read the headline rather than zero. |
-| 329 | 4 | `private void recordLevel()` |  |
-| 335 | 6 | `private void backcastLevels()` | Fills the ring as if the headline rate had held for a year. |
+| 175 | 6 | `private static long scramble(long n)` | Scrambles a month into something that does not correlate with its neighbours. |
+| 231 | 1 | `public void pin()` | Holds the world's prices still, for a fixture measuring something else. |
+| 233 | 1 | `public boolean isPinned()` |  |
+| 237 | 23 | `public void advanceMonth(int month)` |  |
+| 262 | 3 | `public double trendLevel()` | Where the trend says the world's prices should be by now. |
+| 267 | 1 | `public double getPriceLevel()` | What the world's basket costs now against what it cost at founding. |
+| 282 | 1 | `public double getInflation()` | The HEADLINE rate: what the band is doing this month. |
+| 312 | 5 | `public double realisedInflation()` | What the world's prices ACTUALLY did over the last twelve months, from the level itself. |
+| 326 | 1 | `{ ... }` | A fresh world has a year of history at its opening rate, so the first twelve months read the headline rather than zero. |
+| 328 | 4 | `private void recordLevel()` |  |
+| 334 | 6 | `private void backcastLevels()` | Fills the ring as if the headline rate had held for a year. |
 
-### carrying (lines 342-395)
+### carrying (lines 341-394)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 344 | 14 | `public double[] toSaveArray()` |  |
-| 359 | 23 | `public void restore(double[] saved)` |  |
-| 386 | 9 | `public void reset()` |  |
+| 343 | 14 | `public double[] toSaveArray()` |  |
+| 358 | 23 | `public void restore(double[] saved)` |  |
+| 385 | 9 | `public void reset()` |  |
 

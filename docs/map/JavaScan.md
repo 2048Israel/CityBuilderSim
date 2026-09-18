@@ -30,7 +30,7 @@
 > harness map). Everything is line-numbered so the reader can go straight
 > to the source.
 
-**Used by (6):** [CodeMap](CodeMap.md), [Dials](Dials.md), [HarnessMap](HarnessMap.md), [MonthOrder](MonthOrder.md), [SourceTree](SourceTree.md), [Where](Where.md)
+**Used by (7):** [CodeMap](CodeMap.md), [Dials](Dials.md), [HarnessMap](HarnessMap.md), [MonthOrder](MonthOrder.md), [SourceTree](SourceTree.md), [Stale](Stale.md), [Where](Where.md)
 
 ## Sections
 

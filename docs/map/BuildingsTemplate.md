@@ -6,7 +6,7 @@
 > 
 > MONEY HERE IS IN THOUSANDS OF DOLLARS, and this is the file where that
 > matters most, because it is the file somebody opens to balance the game.
-> UserInterface.toDollars() multiplies by a thousand on the way to the screen,
+> Money.toDollars() multiplies by a thousand on the way to the screen,
 > so:
 > 
 >     cashCost 30           is  $30,000

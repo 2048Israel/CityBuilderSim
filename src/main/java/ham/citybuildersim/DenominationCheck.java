@@ -43,7 +43,6 @@ public class DenominationCheck {
         out.printf("%-62s %s%n", label, ok ? "OK" : "FAIL");
     }
 
-    /** Within a RELATIVE band, for the claims a reform can only keep approximately. */
     /**
      * Everything real to the person, everything nominal to the factor.
      *

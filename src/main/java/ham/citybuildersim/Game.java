@@ -636,12 +636,6 @@ public class Game {
     }
 
     /**
-     * Tops a protected sector up to break-even.
-     *
-     * @return what was paid, so the caller can hand the loss counter the figure
-     *         AFTER support rather than before it
-     */
-    /**
      * One subsidy payment against a stated loss, for PolicyCheck.
      *
      * Package-private and named for what it is. It calls the real method rather
@@ -668,6 +662,12 @@ public class Game {
         this.cash = amount;
     }
 
+    /**
+     * Tops a protected sector up to break-even.
+     *
+     * @return what was paid, so the caller can hand the loss counter the figure
+     *         AFTER support rather than before it
+     */
     private double paySubsidyIfOwed(Sector sector, double netIncome){
 
         subsidyPaid.put(sector.key(), 0.0);
@@ -720,13 +720,6 @@ public class Game {
         double income = economyManager.getTotalIncome()+servicesManager.getServiceNetIncome();
         return income;
     }
-    /**
-     * This month's effective construction output, matching exactly what
-     * SimulationEngine.simulateMonth() feeds to advanceConstruction() - base
-     * capacity scaled by the construction sector's labour fill rate. Exposed so
-     * the UI can show the player what their real build rate is, and how it gets
-     * divided between concurrent sites.
-     */
     /** Read-only passthrough for the city overview panel. */
     public double getEnergyRatio(){
         return servicesManager.getEnergyRatio();
@@ -740,7 +733,6 @@ public class Game {
         return servicesManager.getRoadRatio();
     }
 
-    /** The ore market, for the mining screen. */
     /** Every sector, in the registry's order. */
     public Sectors getSectors(){
         return economyManager.getSectors();
@@ -1693,13 +1685,6 @@ public class Game {
     private double constructionShedPoints;
 
     /**
-     * Whether the city should be told construction is dismantling itself.
-     *
-     * Only while it is RECENT and the retainer is not already covering the
-     * capacity that is left. A player who has set a subsidy has answered the
-     * question and should not keep being asked it.
-     */
-    /**
      * Puts the warning back where it stood.
      *
      * The load path's entry point, and the one place that decides what an
@@ -1713,6 +1698,13 @@ public class Game {
         this.constructionShedPoints = Math.max(0, points);
     }
 
+    /**
+     * Whether the city should be told construction is dismantling itself.
+     *
+     * Only while it is RECENT and the retainer is not already covering the
+     * capacity that is left. A player who has set a subsidy has answered the
+     * question and should not keep being asked it.
+     */
     public boolean isConstructionShedding(){
 
         if (constructionShedMonth < 0 || month - constructionShedMonth > 24) {
@@ -2112,6 +2104,26 @@ public class Game {
     }
 
     /**
+     * THE RAILWAY'S MONTH, and the band it leaves behind.
+     *
+     * Beside chargeBuildingMaintenance() because it is the same kind of thing:
+     * one sector billing every other, before any statement is struck. See
+     * sectors.Rail.haul(), which does the arithmetic and explains why the
+     * invoice is raised at LAST month's quote.
+     *
+     * AND THE ROAD IS TOLD, in the same breath, because what the railway is
+     * carrying is freight that is not on the street. The relief is applied the
+     * way the highways' and the trams' already are - see
+     * InfrastructureManager.RAIL_ROAD_RELIEF - so a city with no track computes
+     * exactly what it computed before any of this existed.
+     */
+    private void chargeFreight() {
+        ham.citybuildersim.sectors.Rail rail = getSectors().rail();
+        rail.haul(getSectors());
+        getInfrastructureManager().setRailShare(rail.getCarried());
+    }
+
+    /**
      * The month's repairs: real estate pays, construction is paid, and the
      * materials are actually consumed.
      *
@@ -2136,26 +2148,6 @@ public class Game {
      * what they cost when the building went up, so the bill inflates on its
      * own. A constant in absolute money is the same bug as a cached figure.
      */
-    /**
-     * THE RAILWAY'S MONTH, and the band it leaves behind.
-     *
-     * Beside chargeBuildingMaintenance() because it is the same kind of thing:
-     * one sector billing every other, before any statement is struck. See
-     * sectors.Rail.haul(), which does the arithmetic and explains why the
-     * invoice is raised at LAST month's quote.
-     *
-     * AND THE ROAD IS TOLD, in the same breath, because what the railway is
-     * carrying is freight that is not on the street. The relief is applied the
-     * way the highways' and the trams' already are - see
-     * InfrastructureManager.RAIL_ROAD_RELIEF - so a city with no track computes
-     * exactly what it computed before any of this existed.
-     */
-    private void chargeFreight() {
-        ham.citybuildersim.sectors.Rail rail = getSectors().rail();
-        rail.haul(getSectors());
-        getInfrastructureManager().setRailShare(rail.getCarried());
-    }
-
     private void chargeBuildingMaintenance(){
 
         ham.citybuildersim.sectors.Construction builders = getSectors().construction();
@@ -3185,12 +3177,6 @@ public class Game {
         return "Term bond issued.\n" + quote.summary();
     }
 
-    /**
-     * The quote for whichever instrument, by the name the menus use.
-     *
-     * Mirrors the dispatch in the issuance screens so a screen can ask "what
-     * would this cost" without knowing which instrument it is looking at.
-     */
     /* =======================================================================
        BORROWING IN SOMEBODY ELSE'S MONEY
        =======================================================================
@@ -3397,6 +3383,12 @@ public class Game {
                 : "Issued abroad and converted.\n") + quote.summary();
     }
 
+    /**
+     * The quote for whichever instrument, by the name the menus use.
+     *
+     * Mirrors the dispatch in the issuance screens so a screen can ask "what
+     * would this cost" without knowing which instrument it is looking at.
+     */
     public DebtQuote quoteDebt(String type, double amount, int duration, double rounding) {
         return switch (type) {
             case "Note" -> quoteTBill(amount, duration, rounding);
@@ -4037,7 +4029,7 @@ public class Game {
          * ...AND THE FLOOR HOLDS ITS WORTH. The minimum wage is a standard of
          * living now, so the cash figure is restruck from the index every month
          * rather than sitting where the player last typed it while prices moved
-         * out from under it. See LabourMarket.reindexMinimumWage().
+         * out from under it. See LabourMarket.cashMinimumWage().
          */
         /*
          * THE FLOOR NEEDS NO SEPARATE INDEXATION. baseWage() already multiplies
@@ -4232,15 +4224,6 @@ public class Game {
     
     
     
-    /**
-     * Hands the debt market everything it prices against.
-     *
-     * Three inputs, and the overdraft is the one that used to be missing: the
-     * market could not see that the city was in the red, so a city $1.1M
-     * overdrawn with no bonds left outstanding was quoted the floor rate. All
-     * three have to be current before updateInterest() or any quote, which is
-     * why this is one call rather than three scattered ones.
-     */
     /* =====================================================================
        WHAT IT COSTS TO GO TO MARKET AT ALL
 
@@ -4256,7 +4239,6 @@ public class Game {
        constant nobody can justify.
        ===================================================================== */
 
-    /** Bond counsel, rating and printing. Payable however small the deal is. */
     /** Term of the note the city is forced into when it cannot pay its bills. */
     public static final int EMERGENCY_NOTE_MONTHS = 6;
 
@@ -4287,7 +4269,7 @@ public class Game {
     /**
      * The least a dollar of face can ever bank, net of the discount and the
      * spread. ShortTermTBill caps the discount at 95%, so this is
-     * 1 - 0.95 - 0.0075. Used to size the top-up in quoteNote() rather than
+     * 1 - 0.95 - 0.0075. Used to size the top-up in quoteTBill() rather than
      * discovering it a granule at a time; see the note there.
      */
     private static final double MIN_PROCEEDS_PER_FACE = 1 - .95 - UNDERWRITING_SPREAD;
@@ -4418,6 +4400,15 @@ public class Game {
         economyManager.getBusinessDebtManager().setCostOfFunds(cost);
     }
 
+    /**
+     * Hands the debt market everything it prices against.
+     *
+     * Three inputs, and the overdraft is the one that used to be missing: the
+     * market could not see that the city was in the red, so a city $1.1M
+     * overdrawn with no bonds left outstanding was quoted the floor rate. All
+     * three have to be current before updateInterest() or any quote, which is
+     * why this is one call rather than three scattered ones.
+     */
     private void priceTheDebtMarket(){
         debtManager.setGDP(economyManager.getMonthGdp());
         debtManager.setTaxRevenue(economyManager.getTaxIncome());
@@ -4623,15 +4614,6 @@ public class Game {
     public Migration getMigration()       { return migration; }
     public Health getHealth()             { return health; }
     public Healthcare getHealthcare()     { return healthcare; }
-    /**
-     * Turns the placeholder off, for the harness that proves it is a placeholder.
-     *
-     * PopulationCheck plays two identical cities with this set either way and
-     * requires every live figure to match. Package-private and static because it
-     * is a property of the build under test rather than of any one city, and
-     * because the alternative - threading a flag through the constructor - would
-     * put a permanent seam in Game for a temporary claim.
-     */
     /**
      * Ages the city, moves people in and out, and rebuilds the households.
      *
@@ -5533,6 +5515,9 @@ public class Game {
         populationManager.takeWagesFrom(labourMarket);
     }
 
+    /** This month's adult death rate with the clinics applied. Set by advanceDemographics(). */
+    private double lastAdultMortality = AgeBand.ADULT.monthlyMortality();
+
     /**
      * Moves the workforce's skill mix by who arrived and who left.
      *
@@ -5543,9 +5528,6 @@ public class Game {
      * dilute them. The first version multiplied shares by a grown workforce and
      * quietly bred graduates out of the city's own births.
      */
-    /** This month's adult death rate with the clinics applied. Set by advanceDemographics(). */
-    private double lastAdultMortality = AgeBand.ADULT.monthlyMortality();
-
     private void applyMigrationSkills() {
 
         /*
@@ -6183,22 +6165,6 @@ public class Game {
     }
     
     
-   /**
-    * The build-funding bill: raises a stated amount of CASH, not face value.
-    *
-    * NOTE: this used to take a face value already grossed up by the caller off
-    * debtManager.getRate() - the STANDING rate, struck before this bill was on
-    * the books. Two things were wrong with that. It priced the loan against a
-    * balance sheet that stopped existing the moment the money arrived, which is
-    * exactly what the repricing was meant to end; and because the screen did the
-    * same sum separately, the number shown to the player and the number booked
-    * were two independent calculations that only happened to agree.
-    *
-    * It takes the cash the city needs now and quotes it like any other bill.
-    *
-    * @param cashNeeded what has to reach the treasury
-    * @return the terms actually struck, so a caller can show them
-    */
     /* =====================================================================
        BUYING YOUR OWN DEBT BACK
 
@@ -6264,6 +6230,22 @@ public class Game {
         return price;
     }
 
+   /**
+    * The build-funding bill: raises a stated amount of CASH, not face value.
+    *
+    * NOTE: this used to take a face value already grossed up by the caller off
+    * debtManager.getRate() - the STANDING rate, struck before this bill was on
+    * the books. Two things were wrong with that. It priced the loan against a
+    * balance sheet that stopped existing the moment the money arrived, which is
+    * exactly what the repricing was meant to end; and because the screen did the
+    * same sum separately, the number shown to the player and the number booked
+    * were two independent calculations that only happened to agree.
+    *
+    * It takes the cash the city needs now and quotes it like any other bill.
+    *
+    * @param cashNeeded what has to reach the treasury
+    * @return the terms actually struck, so a caller can show them
+    */
    public DebtQuote issueEmergencyDebt(double cashNeeded, int duration){
 
        DebtQuote quote = quoteTBill(cashNeeded, duration, 1000.0);
@@ -6294,28 +6276,6 @@ public class Game {
     */
    private int pendingWorkforce = -1;
 
-   /**
-    * What it costs to supply one more person of dwelling capacity, today.
-    *
-    * THE LONG-RUN SUPPLY PRICE OF HOUSING, and the floor under the rent. Nobody
-    * rationally supplies capacity for more than the cheapest way of supplying
-    * it, so this walks the residential templates and takes the lowest cost per
-    * head - which is the House by a wide margin at founding ($8.94 against
-    * $21.07 for a studio block and $44.16 for a low-rise) and stays the House
-    * unless somebody re-costs the catalogue.
-    *
-    * PRICED AT MARKET, ALWAYS, which is the one place this deliberately
-    * disagrees with BusinessInvestment.totalCostOf(). That method charges only
-    * the materials the depot cannot supply from stock, because it is answering
-    * "what cheque does the player write". This is answering "what does housing
-    * cost to make", and a full warehouse does not make concrete free - it means
-    * somebody already paid for it. Reading the shortfall here would have rent
-    * lurching every time the depot filled or emptied, which is inventory noise
-    * wearing a price's clothes.
-    *
-    * NO LAND. See the block above - it is the most important comment attached
-    * to this mechanic.
-    */
    /* =====================================================================
       WHY LAND IS NOT IN THE RENT FLOOR
       ---------------------------------------------------------------------
@@ -6362,6 +6322,28 @@ public class Game {
       expensive. Only the rent FLOOR is structure-only.
       ===================================================================== */
 
+   /**
+    * What it costs to supply one more person of dwelling capacity, today.
+    *
+    * THE LONG-RUN SUPPLY PRICE OF HOUSING, and the floor under the rent. Nobody
+    * rationally supplies capacity for more than the cheapest way of supplying
+    * it, so this walks the residential templates and takes the lowest cost per
+    * head - which is the House by a wide margin at founding ($8.94 against
+    * $21.07 for a studio block and $44.16 for a low-rise) and stays the House
+    * unless somebody re-costs the catalogue.
+    *
+    * PRICED AT MARKET, ALWAYS, which is the one place this deliberately
+    * disagrees with BusinessInvestment.totalCostOf(). That method charges only
+    * the materials the depot cannot supply from stock, because it is answering
+    * "what cheque does the player write". This is answering "what does housing
+    * cost to make", and a full warehouse does not make concrete free - it means
+    * somebody already paid for it. Reading the shortfall here would have rent
+    * lurching every time the depot filled or emptied, which is inventory noise
+    * wearing a price's clothes.
+    *
+    * NO LAND. See the block above - it is the most important comment attached
+    * to this mechanic.
+    */
    public double marginalHousingCost() {
 
        double materialPrice = buildingManager.getConstructionMaterialPrice();

@@ -920,11 +920,6 @@ public class FamilyModel {
      */
     private int[] lastHomesBySize;
 
-    /**
-     * Crowds households until they fit the homes available.
-     *
-     * @param homesAvailable front doors the city has
-     */
     /* =====================================================================
        PUTTING HOUSEHOLDS BEHIND DOORS THAT FIT
 
@@ -1260,6 +1255,11 @@ public class FamilyModel {
         else                             familyRentWeight += weight;
     }
 
+    /**
+     * Crowds households until they fit the homes available.
+     *
+     * @param homesAvailable front doors the city has
+     */
     public void squeeze(int homesAvailable) {
         doubledUp = 0;
         if (homesAvailable <= 0) return;
@@ -1649,16 +1649,6 @@ public class FamilyModel {
     /* ----------------------------- saving ----------------------------- */
 
     /**
-     * Flattened row by row.
-     *
-     * Rebuilt from scratch every month from the pyramid and the jobs, so strictly
-     * this is derived state and need not be saved at all. It is saved anyway for
-     * one reason: a reloaded city should look identical to the one that was
-     * saved on the very first frame, not after the next tick has run. This
-     * codebase has been caught by that gap before - a reloaded save took several
-     * months to settle back to its real numbers.
-     */
-    /**
      * The shapes a save written before the names travelled must be read with.
      *
      * A LITERAL LIST, for the same reason PopulationCohorts.LEGACY_BANDS is one:
@@ -1754,6 +1744,16 @@ public class FamilyModel {
     private static final int MEMORY_SLOTS =
             FamilyStructure.values().length * PayTier.values().length + 1 + 4;
 
+    /**
+     * Flattened row by row.
+     *
+     * Rebuilt from scratch every month from the pyramid and the jobs, so strictly
+     * this is derived state and need not be saved at all. It is saved anyway for
+     * one reason: a reloaded city should look identical to the one that was
+     * saved on the very first frame, not after the next tick has run. This
+     * codebase has been caught by that gap before - a reloaded save took several
+     * months to settle back to its real numbers.
+     */
     public double[] toSaveArray() {
         double[] out = new double[households.length * PayTier.values().length + 5 + OUTSIDE_SLOTS
                 + MEMORY_SLOTS + KIN_SLOTS];
@@ -1841,8 +1841,9 @@ public class FamilyModel {
      * those cities never had. A short array restores what it carries and leaves
      * the two at zero, which is exactly the state those saves loaded in anyway.
      * Anything that is neither length is still refused whole.
+     *
+     * Families saved before the names travelled with them. Read as five bands, thirteen shapes.
      */
-    /** Families saved before the names travelled with them. Read as five bands, thirteen shapes. */
     public void restore(double[] saved) {
         restore(null, null, saved);
     }

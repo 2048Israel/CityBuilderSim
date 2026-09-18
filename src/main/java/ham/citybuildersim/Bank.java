@@ -297,13 +297,6 @@ public class Bank {
     /* ------------------------------- the month ------------------------------- */
 
     /**
-     * Re-reads the city and re-prices credit.
-     *
-     * @param branches      finished bank buildings
-     * @param householdSavings what the families have banked
-     * @param sectorCash    what the businesses are holding
-     */
-    /**
      * The fourth book: what foreigners have borrowed to take abroad.
      *
      * It has to be a book rather than a hole in the cash, and that is not a
@@ -316,6 +309,13 @@ public class Bank {
     private double carryBook;
     private double carryLent, carryRepaid, carryInterest;
 
+    /**
+     * Re-reads the city and re-prices credit.
+     *
+     * @param branches      finished bank buildings
+     * @param householdSavings what the families have banked
+     * @param sectorCash    what the businesses are holding
+     */
     public void refresh(double branches, double householdSavings, double sectorCash,
                         double sectorBook, double cityBook, double householdBook) {
         this.branches = Math.max(0, branches);
@@ -525,7 +525,6 @@ public class Bank {
 
     /* ------------------------------ the arithmetic ------------------------------ */
 
-    /** What is owed to it. The balance-sheet figure, and what it will be repaid. */
     /**
      * Everything lent, carry included.
      *
@@ -926,13 +925,6 @@ public class Bank {
     }
 
     /**
-     * Shareholders' or the city's money, put in as capital.
-     *
-     * Cash in with no loan attached, so it lands squarely in equity - which is
-     * the whole point of the exercise and the only thing that lifts a bank out
-     * of a credit crunch.
-     */
-    /**
      * Deposits at which half of new bank capital is found at home.
      *
      * FINANCIAL DEEPENING, which is the honest name for what this models and
@@ -1005,6 +997,10 @@ public class Bank {
      * part came out of their savings through the register, the rest from
      * the world. Both land in equity; the balance of payments reads only the
      * second.
+     *
+     * Cash in with no loan attached, so it lands squarely in equity - which is
+     * the whole point of the exercise and the only thing that lifts a bank out
+     * of a credit crunch.
      */
     public void injectCapital(double fromHome, double fromAbroad) {
         double amount = Math.max(0, fromHome) + Math.max(0, fromAbroad);
@@ -1698,7 +1694,6 @@ public class Bank {
     /** ...and a desk that is short owes the shares: a liability at the mark. */
     public double shortSecurities() { return Math.max(0, -securities); }
 
-    /** Total liabilities: what it owes, in its two tranches. */
     /**
      * What the bank owes: its market funding, and the hot money.
      *

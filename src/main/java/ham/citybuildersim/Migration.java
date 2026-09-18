@@ -790,15 +790,6 @@ public class Migration {
     }
 
     /**
-     * The same month, with a labour market behind it.
-     *
-     * Two things the volume-only version cannot do: give the arrivals a skill
-     * mix, and let a city that cannot employ its people lose them.
-     *
-     * @param market the wages, for the premium that draws people
-     * @param people the workforce, for the surplus that pushes them out
-     */
-    /**
      * Households the balance sheet discharged this month, whose people are
      * leaving because they are broke.
      *
@@ -817,6 +808,15 @@ public class Migration {
 
     private double lastBankruptcyPush;
 
+    /**
+     * The same month, with a labour market behind it.
+     *
+     * Two things the volume-only version cannot do: give the arrivals a skill
+     * mix, and let a city that cannot employ its people lose them.
+     *
+     * @param market the wages, for the premium that draws people
+     * @param people the workforce, for the surplus that pushes them out
+     */
     public double monthlyNet(int population, int totalJobs, int householdCapacity,
                              int homes, FamilyModel families, double adultShare,
                              double seniorCoverage,

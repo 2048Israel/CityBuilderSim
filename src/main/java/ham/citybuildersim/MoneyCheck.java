@@ -39,11 +39,11 @@ public class MoneyCheck {
         throw new IllegalArgumentException("no template " + name);
     }
 
-    /** Runs `months` and returns the worst relative residual seen, printing the worst month. */
     /** The worst post-audit drift any month of the last play() saw. See Game.getPostAuditDrift(). */
     static double worstDrift = 0;
     static String worstDriftPool = "";
 
+    /** Runs `months` and returns the worst relative residual seen, printing the worst month. */
     static MoneyAudit.Result play(String label, Game g, int months, boolean verbose) {
         MoneyAudit.Result worst = MoneyAudit.Result.NONE;
         double worstRel = -1;

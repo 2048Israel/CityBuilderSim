@@ -1,4 +1,4 @@
-# MiningCheck.java - 608 lines · 7 methods · 0 constants · harnesses
+# MiningCheck.java - 609 lines · 7 methods · 0 constants · harnesses
 
 `ham/citybuildersim/MiningCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
 
@@ -38,12 +38,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 589 | **type** `public class MiningCheck` | Ore, from the band it clears in to whether it makes steel worth building. |
+| 20 | 590 | **type** `public class MiningCheck` | Ore, from the band it clears in to whether it makes steel worth building. |
 | 26 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 31 | 9 | `static void close(String label, double actual, double expected)` |  |
 | 41 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 49 | 14 | `static void makeRoom(Game game, double sqFt, boolean wantDeposit)` | Buys land until the city can fit what is coming, deposits included. |
 | 64 | 329 | `public static void main(String[] args) throws Exception` |  |
-| 413 | 187 | `static double[] foundryIncome(GameFiles files, Path root, boolean withMine) throws Exception` |  |
-| 601 | 7 | `static void cleanUp(Path root)` |  |
+| 414 | 187 | `static double[] foundryIncome(GameFiles files, Path root, boolean withMine) throws Exception` | The measurement: the same foundry, in the same city, with and without a mine feeding it. |
+| 602 | 7 | `static void cleanUp(Path root)` |  |
 

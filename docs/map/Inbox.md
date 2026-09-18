@@ -93,6 +93,6 @@
 | 201 | 21 | `private static List<String> sheddingBody(Game game)` |  |
 | 223 | 22 | `private static List<String> landLockBody(Game game)` |  |
 | 246 | 21 | `private static List<String> bankBody(Game game)` |  |
-| 286 | 33 | `private static List<String> crimeBody(Game game)` | Crime at one and a half times Canada's rate or worse, or people the police caught with no cell to hold them (2026-09-11). |
-| 320 | 72 | `private static List<String> healthcareBody(Game game)` |  |
+| 274 | 33 | `private static List<String> crimeBody(Game game)` | Crime at one and a half times Canada's rate or worse, or people the police caught with no cell to hold them (2026-09-11). |
+| 320 | 72 | `private static List<String> healthcareBody(Game game)` | The three things healthcare is silently costing the city, when they apply. |
 

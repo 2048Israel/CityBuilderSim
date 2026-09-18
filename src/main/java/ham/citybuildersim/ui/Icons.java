@@ -28,7 +28,7 @@ package ham.citybuildersim.ui;
  * Lucide (lucide.dev), ISC licence - free to use in a commercial game, no
  * attribution required in the product. Each icon is drawn on a 24x24 grid with
  * a 2px stroke, round caps and round joins, and is STROKED rather than filled:
- * see UserInterface.icon(), which sets fill to null.
+ * see UserInterface.railButton(), which sets fill to null.
  *
  * MULTI-PART ICONS ARE ONE STRING. Lucide draws several of these with a mix of
  * <path>, <circle> and <rect> elements. JavaFX SVGPath takes a single path, so

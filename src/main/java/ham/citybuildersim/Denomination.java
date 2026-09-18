@@ -133,7 +133,7 @@ public class Denomination {
     }
 
     /**
-     * Records the reform. Dividing the city's money is Game.redenominate()'s
+     * Records the reform. Dividing the city's money is Game.reformCurrency()'s
      * job; this only moves the unit, and the two are called together or the
      * city's books are denominated in a currency that does not exist.
      */

@@ -32,8 +32,8 @@
 | line | field | says |
 |---:|---|---|
 | 22 | `static int fails` |  |
-| 44 | `static double worstDrift` | The worst post-audit drift any month of the last play() saw. |
-| 45 | `static String worstDriftPool` |  |
+| 43 | `static double worstDrift` | The worst post-audit drift any month of the last play() saw. |
+| 44 | `static String worstDriftPool` |  |
 
 ## Methods, in file order
 
@@ -43,6 +43,6 @@
 | 24 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 29 | 5 | `static void quietly(Runnable work)` |  |
 | 35 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
-| 47 | 20 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` |  |
+| 47 | 20 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` | Runs `months` and returns the worst relative residual seen, printing the worst month. |
 | 68 | 151 | `public static void main(String[] args)` |  |
 

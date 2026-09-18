@@ -271,13 +271,6 @@ public class YearBookCheck {
        FIXTURES AND READING
        ================================================================== */
 
-    /**
-     * A history of `months` months with one series filled in.
-     *
-     * A series SHORTER than the month axis is how a real save records something
-     * that began later, so a short array here lands at the END of the axis -
-     * exactly as aligned() reads it off disk.
-     */
     /* ==================================================================
        11 - THE UNEMPLOYMENT COLUMN IS THE POOL OVER THE LABOUR FORCE
 
@@ -472,6 +465,13 @@ public class YearBookCheck {
         yes("...and never the other way round", !text.contains("US dollars per Danzik dollar"));
     }
 
+    /**
+     * A history of `months` months with one series filled in.
+     *
+     * A series SHORTER than the month axis is how a real save records something
+     * that began later, so a short array here lands at the END of the axis -
+     * exactly as aligned() reads it off disk.
+     */
     private static HistorySave built(int months, String series, double[] values) {
         StringBuilder json = new StringBuilder("{\"month\":[");
         for (int m = 1; m <= months; m++) json.append(m == 1 ? "" : ",").append(m);

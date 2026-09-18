@@ -232,18 +232,6 @@ public class CapitalFlows {
 
     /* --------------------------------- the month --------------------------------- */
 
-    /**
-     * @param depositRate    what the bank pays savers, annual
-     * @param cityRate       what the city pays on its paper, annual
-     * @param worldRate      the world's own price of money
-     * @param countryPremium what the world charges this city for its risk
-     * @param monthlyGdp     the size of the thing the money is coming to
-     * @param reserves       what the treasury holds abroad, in local money
-     * @param yearlyRateMove how far the currency has fallen over a year, as a share
-     * @param bankStressed   true if the bank is insolvent or has stopped lending
-     * @param defaulted      true if the city has defaulted abroad recently
-     * @param month          the game month
-     */
     /* =====================================================================
        WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE.
 
@@ -275,6 +263,18 @@ public class CapitalFlows {
         return Math.max(0, (wouldBe - stock) * ARRIVAL_SPEED);
     }
 
+    /**
+     * @param depositRate    what the bank pays savers, annual
+     * @param cityRate       what the city pays on its paper, annual
+     * @param worldRate      the world's own price of money
+     * @param countryPremium what the world charges this city for its risk
+     * @param monthlyGdp     the size of the thing the money is coming to
+     * @param reserves       what the treasury holds abroad, in local money
+     * @param yearlyRateMove how far the currency has fallen over a year, as a share
+     * @param bankStressed   true if the bank is insolvent or has stopped lending
+     * @param defaulted      true if the city has defaulted abroad recently
+     * @param month          the game month
+     */
     public void takeMonth(double depositRate, double cityRate, double worldRate,
                           double countryPremium, double monthlyGdp,
                           double reserves, double yearlyRateMove,
@@ -389,7 +389,6 @@ public class CapitalFlows {
 
     /* --------------------------------- reading --------------------------------- */
 
-    /** Foreign money currently funding the city, in local money. */
     /* ------------------------------------------------------------------ *
        THE CARRY TRADE'S OWN MONTH.
 
@@ -487,6 +486,7 @@ public class CapitalFlows {
         return Math.max(0, headroom) * CARRY_MAX_SHARE * Math.min(1, s / CARRY_FULL_SPREAD);
     }
 
+    /** Foreign money currently funding the city, in local money. */
     public double getStock() { return stock; }
 
     /** What would be here if it had all arrived. */

@@ -674,12 +674,6 @@ public class HouseholdAccounts {
     }
 
     /**
-     * What one household of this shape and tier earns, pays and keeps.
-     *
-     * @param families the household mix, for how many of these there are and
-     *                 how many earners the tier is splitting its wages between
-     */
-    /**
      * How badly one of each group living outside the families cannot afford a
      * door of their own, 0-1 - livingAlonePressure()'s arithmetic on what they
      * live on: EI for the out of work (nothing past the twelfth month), the
@@ -702,6 +696,12 @@ public class HouseholdAccounts {
         return out;
     }
 
+    /**
+     * What one household of this shape and tier earns, pays and keeps.
+     *
+     * @param families the household mix, for how many of these there are and
+     *                 how many earners the tier is splitting its wages between
+     */
     public Statement statementFor(FamilyModel families, FamilyStructure shape, PayTier tier) {
         double homes = families == null ? 0 : families.get(shape, tier);
         double people = shape.size();

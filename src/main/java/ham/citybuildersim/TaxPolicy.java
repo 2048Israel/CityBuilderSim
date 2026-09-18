@@ -212,7 +212,6 @@ public class TaxPolicy {
     public void setEiBenefitRate(double share)    { eiBenefitRate = clamp(share, MAX_EI_BENEFIT); }
     public void setStudentGrantShare(double share){ studentGrantShare = clamp(share, MAX_STUDENT_GRANT); }
 
-    /** What one pensioner receives a month, at the rate currently set. */
     /**
      * A pension, in TODAY's money.
      *
