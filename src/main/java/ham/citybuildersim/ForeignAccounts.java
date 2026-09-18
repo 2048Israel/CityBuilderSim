@@ -915,8 +915,8 @@ public class ForeignAccounts {
      *
      * Kept separate from lifetimeFinancial because an intervention is not a
      * financial-account flow - it is the financing item below the line. Adding
-     * it here rather than there is what lets reservesFromFlows() still equal the
-     * stock while takeMonth() leaves the stock alone.
+     * it here rather than there is what lets balanceFromFlows() still equal the
+     * cumulative balance while takeMonth() leaves the stock alone.
      */
     private double lifetimeIntervention;
 

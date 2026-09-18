@@ -1835,12 +1835,32 @@ public class FamilyModel {
     /**
      * Puts the households back.
      *
-     * TWO LENGTHS ACCEPTED, deliberately. The array grew by two on 2026-09-09
-     * and refusing every older save whole would have thrown away the entire
-     * household mix of every city written before that date to gain two counters
-     * those cities never had. A short array restores what it carries and leaves
-     * the two at zero, which is exactly the state those saves loaded in anyway.
-     * Anything that is neither length is still refused whole.
+     * SIX LENGTHS ACCEPTED, deliberately. The array has grown five times, and
+     * refusing every older save whole would have thrown away the entire
+     * household mix of every city written before each of those dates to gain
+     * the counters those cities never had. A short array restores what it
+     * carries and leaves the rest at zero, which is exactly the state those
+     * saves loaded in anyway. Anything that is none of the six is still
+     * refused whole.
+     *
+     * Shortest first, each one the length before it plus a block, and every
+     * width measured against the SAVE's own band and shape counts:
+     *
+     *   shapes x tiers + 2        the household matrix, the unhoused and the
+     *                             doubled-up
+     *   + 2                       ...and the two placement counters, the
+     *                             crowded and the refused by studio (2026-09-09)
+     *   + 3                       ...and the unplaced residual (2026-09-10)
+     *   + outsideSlots()          ...and the people outside the families: the
+     *                             outside adults, the orphans by band, four
+     *                             counts per seeker, the unhoused by shape
+     *                             (2026-09-11)
+     *   + memorySlots()           ...and what the households remember: the
+     *                             formed matrix, whether there is one, the
+     *                             month's four counts (2026-09-11)
+     *   + kinSlots()              ...and the children who left work with their
+     *                             parent: the at-home adults and the dependants
+     *                             by band (2026-09-15)
      *
      * Families saved before the names travelled with them. Read as five bands, thirteen shapes.
      */

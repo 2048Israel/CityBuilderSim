@@ -1,4 +1,4 @@
-# FamilyModel.java - 2,052 lines · 97 methods · 10 constants · model
+# FamilyModel.java - 2,072 lines · 97 methods · 10 constants · model
 
 `ham/citybuildersim/FamilyModel.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
 
@@ -121,15 +121,15 @@
 | 1042 | `private double refusedByStudio` | Households a studio turned away because they have a child. |
 | 1354 | `private double stillUnplaced` | Households both valves failed to place. |
 | 1484 | `private double pricedOutShares` |  |
-| 1976 | `private double carriedUnplaced` | What the save said was left with nowhere, or -1 on a save from before it was carried. |
-| 1982 | `private double carriedDoubledUp` | ...and what it said was crowded. |
-| 1983 | `private double[] carriedSeekersDoubled` |  |
+| 1996 | `private double carriedUnplaced` | What the save said was left with nowhere, or -1 on a save from before it was carried. |
+| 2002 | `private double carriedDoubledUp` | ...and what it said was crowded. |
+| 2003 | `private double[] carriedSeekersDoubled` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 2004 | **type** `public class FamilyModel` | How the city's people are arranged into households, and what each earns. |
+| 49 | 2024 | **type** `public class FamilyModel` | How the city's people are arranged into households, and what each earns. |
 
 ### THE HOUSEHOLDS REMEMBER (2026-09-11) (lines 64-118)
 
@@ -261,7 +261,7 @@
 | 1615 | 8 | `private static FamilyStructure[] byDependantsDescending()` | Working-age shapes, most dependants first, then most adults. |
 | 1639 | 9 | `private static FamilyStructure[] formableShapes()` | The shapes rebuild() may actually form, in the order it forms them. |
 
-### saving (lines 1649-2052)
+### saving (lines 1649-2072)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -273,11 +273,11 @@
 | 1723 | 3 | `private static int kinSlots(int bands)` | The children who went out of work with their parent, appended 2026-09-15 as a TAIL rather than widened into the outside block. |
 | 1739 | 3 | `public static int slotsBeforeMemory()` | Slots a save carries before the formed-household memory. |
 | 1757 | 77 | `public double[] toSaveArray()` | Flattened row by row. |
-| 1847 | 3 | `public void restore(double[] saved)` | Puts the households back. |
-| 1851 | 3 | `public void restore(String[] bands, double[] saved)` |  |
-| 1865 | 99 | `public void restore(String[] bands, String[] shapes, double[] saved)` | BOTH AXES COME FROM THE SAVE. |
-| 1966 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
-| 1995 | 3 | `public void adoptCarriedUnplaced()` | The saved residual wins over the load path's one-pass re-derivation. |
-| 2024 | 7 | `public void adoptCarriedDoubling()` | The saved crowding wins over the load path's one-pass re-derivation. |
-| 2032 | 20 | `public void reset()` |  |
+| 1867 | 3 | `public void restore(double[] saved)` | Puts the households back. |
+| 1871 | 3 | `public void restore(String[] bands, double[] saved)` |  |
+| 1885 | 99 | `public void restore(String[] bands, String[] shapes, double[] saved)` | BOTH AXES COME FROM THE SAVE. |
+| 1986 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
+| 2015 | 3 | `public void adoptCarriedUnplaced()` | The saved residual wins over the load path's one-pass re-derivation. |
+| 2044 | 7 | `public void adoptCarriedDoubling()` | The saved crowding wins over the load path's one-pass re-derivation. |
+| 2052 | 20 | `public void reset()` |  |
 

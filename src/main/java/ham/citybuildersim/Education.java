@@ -118,10 +118,10 @@ public class Education {
      * between the two is the point of a public education system.
      *
      * Calibrated against the wages of the people who would pay it. University
-     * tuition is 0.80 against a diploma wage of 1.500 - fifty-three per cent of
-     * a month's pay unsubsidised, which stops almost everybody, and twenty-one
-     * per cent at the default subsidy, which stops almost nobody. The dial has
-     * to move something or it is not a decision.
+     * tuition is 1.20 against a diploma wage of 1.500 - eighty per cent of a
+     * month's pay unsubsidised, which is past MAX_BURDEN and stops everybody,
+     * and thirty-two per cent at the default subsidy, which lets about half of
+     * them through. The dial has to move something or it is not a decision.
      */
     public static double foundingTuition(EducationType type) {
         switch (type) {

@@ -15,6 +15,7 @@ What a session reads first, and the records of the whole.
 - `splitting-game.md` - four mechanics out of Game.java (Motoring, LuxuryCounter, Offending, CityBasket), 2026-09-18, playtest byte-identical; and the two-agent experiment - implementer and docs pass - with what it cost and what it needs
 - `the-ai-ergonomics-audit.md` - 2026-09-18: how the repository and these docs are arranged for an AI to work in, what was changed (the generated indexes, CLAUDE.md, this split) and what is recommended next
 - `handoff-after-the-sector-template.md` - the cloud working loop written out for a session that starts cold: staging, build scripts, verify copies, git
+- `the-manual-at-0-6-7.md` - the manual artifact brought to 0.6.7 (version 7, 2026-09-18): the new transport section, what reading the published page found stale, how three contexts made it, and twenty places where the tree's prose disagrees with the code
 - `the-documentation-catches-up.md` - the manual artifact brought up to 0.5.15; what the manual is and how it is versioned
 - `the-year-book.md` - the year book and decade book the game writes so a run can be read without a save: FLOW/LEVEL/RATE rules, columns
 - `reading-slot-3.md` - the decade book of Jerus's slot-3 city read end to end: the founding currency collapse, the students' orphaned children, the decade-22 bust, the branch-capped bank

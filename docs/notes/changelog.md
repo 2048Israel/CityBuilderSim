@@ -8,6 +8,57 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
+### THE MANUAL AT 0.6.7 — 2026-09-18 (night), PUBLISHED as version 7, see `the-manual-at-0-6-7.md`
+
+**THE PUBLISHED MANUAL IS AT 0.6.7 / FORMAT 27 (version 7, same URL).** Twenty
+sections instead of nineteen: a new **§17 Transport & vehicles** told in the
+order the nine batches were built — the band that was a freight bill, the load
+that was three loads, the modes and the fare, the railway, the assembly plants,
+the cars, the vans, the instrument panel — and every other section brought to
+the tree: the sixth age band's mortality table (version 6 had shipped with five
+bands three sections away from the paragraph that described the sixth),
+fifteen shapes, seventy-eight ledgers, twenty-nine slots a cell, the wealth
+term and the three counters, the cars and the loans and the used market beside
+the households; fifteen sectors with the eleventh to the fifteenth written out;
+thirty-one goods with a freight column; sixteen companies; the GDP formula
+re-struck; the concentration limit; seventy-three templates; the `ui` package,
+the statement that opens, twelve rail tabs; fifty-seven harnesses with six new
+rows and the *Decided by dust* note; the month at thirteen steps against
+`docs/month-order.md`; and §20 reconciled against the list — one retired (too
+rich against its food: it was the coupon, then the supply wall), two
+half-answered, twelve added. Vitals: 205 files, ~124,000 lines, 73 buildings,
+15 sectors, 57 harnesses; six figures from a playtest run tonight, dated on the
+page. **Made by three contexts** per the model rule: a Fable implementer from
+the published page and nothing local (36 minutes, 197 calls), an Opus reviewer
+who re-ran the suite and reproduced every dated figure and made four edits (a
+merged rail measurement, the hot money after the audit, a line count at ten
+sectors, and a published sentence wrong since it was written — 13 months for
+18), and the orchestrator on six judgement calls, then the whole page read
+before the publish guard would take it. **Found on the way, not fixed: twenty
+places the tree's prose, the notes or the list disagree with the code** — a
+"70%" above a `.75`, a fare javadoc in the wrong unit, "sixty-eight cells"
+above seventy-eight, a Diner sized from eight staff over a template with four,
+five bands in `AgeBand`, `nextId` 69 under id 72, the todo's "nine sectors
+ignore the brake" (none do) — listed in the note and in the todo for the next
+docs pass. **Share pin still at version 1** — Jerus's, from the page's share
+menu.
+
+### THE FOUR OUTLIERS — 2026-09-18 (night), DEPLOYED AND VERIFIED
+
+**THE FOUR COMMENTS THE STALE PASS FLAGGED, REWRITTEN ON JERUS'S WORD** ("the
+code is correct, the comments are the outliers"): `Education.foundingTuition()`
+says 1.20; `FamilyModel.restore()` says six lengths accepted and lists them,
+shortest first, each the one before plus a block with its date;
+`HouseholdBalance.CELL_SLOTS` ends at the meals eaten out;
+`ForeignAccounts.lifetimeIntervention` names `balanceFromFlows()`. Comments
+only — no bytecode changed, compile clean, `Stale` firm 0/0/0, maps
+regenerated. Eight files on the PC, byte-for-byte, endings intact (three of the
+four Java files CRLF). **Found on the way, not fixed:** the tuition table's prose measures the
+fee against "a diploma wage of 1.500", and that wage has been 4.500 since the
+rebalance — so the poverty trap the class header calls its most interesting
+thing has been mostly quiet for nine days; a balance call, in the list under
+Housekeeping. Opus, per the rule.
+
 ### THE STALE TOOL, AND EIGHTY-FOUR DEAD JAVADOCS — 2026-09-18 (evening), DEPLOYED AND VERIFIED, see `the-prose-that-stopped-being-true.md`
 
 **THE MECHANICAL HALF OF THE DOCS PASS IS A TOOL, AND IT RUNS IN THE SUITE.**

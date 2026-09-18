@@ -77,15 +77,21 @@ building count, harness count &mdash; and after any batch that closes one of the
 open questions on it. **Assemble it from the PUBLISHED PAGE and never from the
 local `.part` files** — they had quietly diverged by a whole comparison table and
 three open questions, and building from them would have deleted published
-content. **STILL TO DO: the share pin points at version 1**, so anybody holding
-the share link is reading the 0.4.4 manual until it is moved. *And the year book
+content; and the publish guard will refuse until the live page has been read
+line by line in the publishing session, which is the rule working. **STILL TO
+DO: the share pin points at version 1**, so anybody holding the share link is
+reading the 0.4.4 manual until it is moved. *And the year book
 is the other half of this: a run can now be read as two text files without the
 game — see the top entries — so anything written about a city from here should be
 struck off `year-book.txt` rather than off a screenshot. Since 2026-09-15 the
 book also carries `averageWage` and `labourForce`, and its unemployment column
 and the Reports chart finally strike the same rate.* ~~**AND IT IS BEHIND AGAIN as
 of 2026-09-15: save format 27, a sixth age band, and 50 harnesses.**~~ **CAUGHT UP
-2026-09-15 at 0.6.0 / format 27, version 6 — top entry.**
+2026-09-15 at 0.6.0 / format 27, version 6.** ~~**And behind again by 18
+September: five sectors, the transport stack, the vehicles, the interface
+split.**~~ **CAUGHT UP 2026-09-18 (night) at 0.6.7 / format 27, version 7 —
+twenty sections, see `the-manual-at-0-6-7.md`; the found-on-the-way list is
+under Housekeeping.**
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -764,7 +770,12 @@ Ranked by how likely they are to read as "this game is broken".
   the single biggest reason the city's households look rich against their food —
   the *poorest* cell holds $7,660 a head a month against an average Canadian's
   ~$2,665. **Not chased yet; it is the next batch.**
-- **A FULLY-WRITTEN BRAKE THAT NINE SECTORS IGNORE.**
+- ~~**A FULLY-WRITTEN BRAKE THAT NINE SECTORS IGNORE.**~~ **Stale as of
+  2026-09-18, found by the manual pass: `Game.consider()` (L1905) applies
+  `servicesItsOwnDebt()` to every sector's decision and declines with "not even
+  one would cover its interest", so it is wired for all fifteen. The original
+  note, kept because the second half — whether it should be a whole-economy
+  change with sixteen seeds — was never measured:**
   `BusinessInvestment.servicesItsOwnDebt()` — "if the new capacity cannot
   out-earn the interest on the money that built it, by a margin, the business
   declines the project even though the lender would fund it" — had **zero
@@ -776,7 +787,7 @@ Ranked by how likely they are to read as "this game is broken".
   on six blocks. **Either wire it up for all ten or delete it** — and wiring it
   up is a whole-economy change that needs sixteen seeds either side. See
   `farms.md` §5.
-- **TEN PLANNERS, EACH ASSUMING THE GROUND IS FREE.** The fields plan off the
+- **FIFTEEN PLANNERS, EACH ASSUMING THE GROUND IS FREE.** *(Ten when written.)* The fields plan off the
   crop market, the houses off the jobs, the fabricators off the steel price, and
   none of them can see that they are bidding for the same land. The rule that
   stopped the farms crowding out housing (`Agriculture.plan()` refuses while
@@ -1005,8 +1016,9 @@ each one Jerus's call, in the order they pay back:
 
 - ~~**Split `UserInterface.java` along its banners, screen by screen**~~ —
   **done 2026-09-18**, see `splitting-the-interface.md` §7–12: the `ui/`
-  package, the toolkit (`Money`, `Statement`, `Pieces`, `Levers`), and eleven
-  screen classes; the window is 3,980 lines. History and People were opened on
+  package, the toolkit (`Money`, `Statement`, `Pieces`, `Levers`), and twelve
+  screen classes (eleven tabs' plus `SummaryScreen`; Infrastructure is drawn by
+  `ServicesScreen`); the window is about 4,000 lines. History and People were opened on
   the PC; the other nine were built in the cloud while the PC was off and went
   over when it came back (124 files, byte-for-byte). **Still to do on the PC:
   Clean and Build, open every tab, run a few months, press the rail.**
@@ -1029,31 +1041,76 @@ each one Jerus's call, in the order they pay back:
 - ~~**A `Stale` tool in `tools/`** — the mechanical half of the docs pass.~~
   **Done 2026-09-18 (evening)**: `tools.Stale` + `StaleCheck` (the
   fifty-seventh harness), firm categories at 0 across the tree after the
-  84-javadoc cleanup; see `the-prose-that-stopped-being-true.md`. **Left for a
-  reader who knows the mechanic**, found by the pass and not decided:
-  `Education.foundingTuition()` says university tuition is 0.80 against a
-  constant of 1.20; `FamilyModel.restore()` says "two lengths accepted" against
-  a guard that accepts six; `HouseholdBalance.CELL_SLOTS`' enumeration stops
-  before the dinners; `ForeignAccounts.lifetimeIntervention`'s javadoc names
-  the removed `reservesFromFlows()`; `docs/dials.md` shows `Equity.BANK` with
+  84-javadoc cleanup; see `the-prose-that-stopped-being-true.md`. ~~**Left for
+  a reader who knows the mechanic**, found by the pass and not decided: four
+  comments whose numbers disagree with their constants.~~ **Decided by Jerus
+  2026-09-18 (night) — "the code is correct, the comments are the outliers" —
+  and rewritten**: `foundingTuition()` says 1.20 now, `FamilyModel.restore()`
+  "six lengths accepted" with the six listed, `CELL_SLOTS` ends at the meals
+  eaten out, `lifetimeIntervention` names `balanceFromFlows()`. Still open
+  from the same pass: `docs/dials.md` shows `Equity.BANK` with
   no sentence; and thirteen soft findings name members nothing declares
   (`treasuryUnexplained()`, `refreshCommercialReport()`, `planFromLoad()`,
   `rollIron()`, `LongPlaytest.checkMonth()`, `planRetail()`,
   `computeMonthlyReport()`, `budgetPie()`, `LuxuryRetail.sellOwnPriced()`,
   `Rail.fuelBill()`, `showMiningMenu()`, `tuitionOf()`, `getPlotsLeft()`) — run
   `Stale report.bat` to see them in place.
+- **THE TUITION TABLE WAS CALIBRATED AGAINST THE WAGES BEFORE THE REBALANCE.**
+  Found while fixing the comment above: `Education.foundingTuition()`'s prose
+  measures the university fee against "a diploma wage of 1.500", and the class
+  header says a university place "costs a diploma-holder half their monthly
+  income and almost nobody goes" — but stage one of the rebalance (2026-09-09)
+  put `PayTier.SKILLED` at 4.500, and `affordability()` reads the live band
+  wage. Against 4.500 the fee is 27% of a month unsubsidised (well inside
+  `MAX_BURDEN` 0.60, so half could pay with no subsidy at all) and 11% at the
+  default subsidy, so the poverty trap the header calls "the most interesting
+  thing on this page" has been mostly quiet since the rebalance. Either the
+  fees scale with the wages (about 3x, keeping the trap) or the prose says the
+  trap is gone — a balance decision, Jerus's. `EducationCheck` §8 asserts
+  only the direction (free tuition graduates more than full price) and its
+  own banner repeats "more than half a month's pay", so it passes either way
+  and wants a strength assertion once the fee is decided.
 - **Prune this list.** Section 2 still carries the built narratives of
   2026-09-10 and 2026-09-11 next to the two open questions that came out of
   them; moved to the changelog and left as lines with pointers, the list is
   under five hundred lines. Wants Jerus's eye on what is still open.
-- **The manual is three versions behind** — version 5 describes 0.5.15; three
-  sectors, the transport stack, the basket and the vehicles have shipped since.
-  `changelog.md` is the list of what to add.
+- ~~**The manual is three versions behind** — version 5 describes 0.5.15; three
+  sectors, the transport stack, the basket and the vehicles have shipped since.~~
+  **Done 2026-09-18 (night): version 7 at 0.6.7** — see `the-manual-at-0-6-7.md`.
+- **FOUND BY THE MANUAL PASS, 2026-09-18 — twenty places where prose disagrees
+  with code**, none fixed; the first nine are a docs pass's (Opus, small), the
+  rest are this list's and the notes'. In the tree: `sectors/Rail.java` L113
+  says the road relief is "70%" over `RAIL_ROAD_RELIEF = .75`;
+  `TaxPolicy.MAX_TRANSIT_FARE`'s javadoc calls `.05` "a multiple of the
+  default" when it is $50 a ride; `HouseholdBalance`'s banner says "SIXTY-EIGHT
+  CELLS" and the constructor builds seventy-eight; the Diner is sized in
+  `BuildingManager` L1468, `Restaurants.java` L80 and `a-meal-out-is-food.md`
+  from "eight staff at $30.8k" over a template with four posts;
+  `AgeBand.java` L56 and L140 say five bands; `Good.java` L780 says
+  "twenty-five more numbers" for thirty-one goods; `Game.java` L4082 says
+  "eleven sets of books and a twelfth" for fifteen; `Automotive.java` L62
+  says none of its customers exists yet; `buildings.json` `nextId` is 69 under
+  a highest id of 72. In this list and the notes: §4's "a brake that nine
+  sectors ignore" is stale (`Game.consider()` L1905 applies
+  `servicesItsOwnDebt()` to every sector — struck below); §4 "ten planners" and
+  §6 "eleven screen classes" are fifteen and twelve (fixed below);
+  `docs/harnesses.md` lists sixteen classes no harness names, not eleven (fixed
+  below); `the-freight-band-and-the-three-loads.md` says 69% ore in prose and
+  68% in its table; `LuxuryRetail.java` L67 claims a current-account deficit the
+  default seed does not run; `Restaurants.java` L100 and `LuxuryRetail.java`
+  L78 count the money-constant family at twenty-six and twenty-five;
+  `Sector.operations()` prints four of the five ratios; the transit payroll is
+  outside G like education's; `Good.java`'s vehicles banner compares the cars'
+  "18.2% band" with the shelf's "21–25%" on different bases; the residue
+  block's "dearest thing in the catalogue per acre" is the dearest farm;
+  `the-instrument-panel.md` says nine batches and lists eight. Full list with
+  lines in `the-manual-at-0-6-7.md` §4.
 - **Do not move the harnesses to their own package yet**: about twenty
   package-private model members at seventy-odd call sites would need a seam.
-- **Eleven classes no harness names** (`docs/harnesses.md`): `Automotive` and
-  `LuxuryRetail` are the two a check ought to name; the rest are reached through
-  others or are plain data.
+- **Sixteen classes no harness names** (`docs/harnesses.md`, as of
+  2026-09-18; eleven when written): `Automotive` and `LuxuryRetail` are the two
+  a check ought to name; four are the mechanics moved out of `Game`, reached
+  through it; the rest are reached through others or are plain data.
 
 - ~~The eight stubs from the sector template~~ gone, 2026-09-11 midday, with
   `MenuManager.java`.

@@ -2843,7 +2843,7 @@ public class HouseholdBalance {
      */
     public static final int CELL_SLOTS_BEFORE_MEALS = CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income. */
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out. */
     public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_MEALS + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */

@@ -4,7 +4,7 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 205 files, 123,851 lines, 4,816 methods, 698 constants. `GameVersion.VERSION` is "0.6.7", `SAVE_FORMAT` 27.
+**The tree:** 205 files, 123,871 lines, 4,816 methods, 698 constants. `GameVersion.VERSION` is "0.6.7", `SAVE_FORMAT` 27.
 
 ## model (101 files)
 
@@ -42,7 +42,7 @@ Generated 2026-09-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EducationType.java](EducationType.md) | 191 | 11 | What a school actually teaches. | 15 |
 | [Equity.java](Equity.md) | 795 | 72 | The share register: who owns the city's companies, what they paid for them, and what the companies pay them back. | 25 |
 | [Exchange.java](Exchange.md) | 1,006 | 73 | The stock exchange: where a share changes hands, and at what price. | 9 |
-| [FamilyModel.java](FamilyModel.md) | 2,052 | 97 | How the city's people are arranged into households, and what each earns. | 19 |
+| [FamilyModel.java](FamilyModel.md) | 2,072 | 97 | How the city's people are arranged into households, and what each earns. | 19 |
 | [FamilyStructure.java](FamilyStructure.md) | 119 | 7 | The shapes a household comes in. | 24 |
 | [ForeignAccounts.java](ForeignAccounts.md) | 1,103 | 68 | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. | 15 |
 | [Formats.java](Formats.md) | 56 | 6 | The few formats a sector needs to describe itself, without the toolkit. | 16 |
