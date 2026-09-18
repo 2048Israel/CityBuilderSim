@@ -144,6 +144,141 @@ public class HouseholdBalance {
      */
     public static final double MARGINAL_PROPENSITY = .80;
 
+    /* =====================================================================
+       AND A HOUSEHOLD SPENDS OUT OF WHAT IT HAS, NOT ONLY OUT OF WHAT IT
+       EARNS (2026-09-17)
+
+       Jerus, having been shown where the money went: yes, "a wealth term in
+       the plan".
+
+       WHY NOTHING ELSE COULD HAVE WORKED, and it was measured in that order
+       rather than argued. Two changes went in first. Paying the foreign coupon
+       home instead of rolling it abroad took household net worth from 5,380
+       months of the city's GDP to 3,412. Then letting dividends and that coupon
+       into the spending plan - which is plainly right and which Jerus asked for
+       - put it back up to 5,465, HIGHER than where it started.
+
+       THAT IS NOT A PARADOX AND IT IS THE WHOLE LESSON. Investment income is a
+       FLOW. Spending more of a flow makes the city bigger; a bigger city pays
+       more wages and more dividends; MARGINAL_PROPENSITY saves a fifth of all
+       of it. Every term in the ratio grew together and the ratio did not move.
+       A STOCK THAT COMPOUNDS CAN ONLY BE BOUNDED BY A DRAIN THAT READS THE
+       STOCK. Nothing that reads a flow can do it, however large.
+
+       FOUR PENCE IN THE POUND A YEAR is where the empirical work sits - the
+       marginal propensity to consume out of wealth is measured at three to five
+       cents on the dollar a year across a lot of countries and a lot of decades
+       - and it is a pure ratio, so a currency reform cannot touch it.
+
+       AND IT IS SELF-STABILISING, which is the property to want. The households'
+       money abroad compounds at the world's rate on the share they keep there:
+       about 1.6% a year, mechanically, whatever the city does. A drain of four
+       percent a year on the whole stock beats that at every level, so the stock
+       has a ceiling instead of an exponent - and the richer the households get,
+       the harder they spend, which is both true of people and the only shape
+       that closes the loop.
+       ===================================================================== */
+
+    /**
+     * What share of its net worth a household spends in a month, over and above
+     * what it spends out of income.
+     *
+     * A third of a percent a month is four percent a year, the middle of the
+     * measured range. A pure number: both sides are money and a reform moves
+     * neither.
+     */
+    public static final double WEALTH_SPENT_A_MONTH = .0033;
+
+    /**
+     * What share of the income a household does NOT spend on food goes over a
+     * luxury counter instead of into the bank.
+     *
+     * A LUXURY IS A GOOD WHOSE SHARE RISES WITH INCOME - that is the
+     * definition, and it is the other half of Engel's law, which this model
+     * has only ever had the food half of. `want` above takes
+     * MARGINAL_PROPENSITY of the surplus for the grocer and the shape of
+     * Consumption's basket means most of that is refused past appetite; what
+     * is left is the income a rich household has and a poor one does not.
+     * Half of it, here.
+     *
+     * AND IT IS A SHARE RATHER THAN A CURVE, deliberately, for now. The
+     * genuinely income-elastic part of this is the wealth term beside it,
+     * which is unbounded and is where the fortunes go; this line is the
+     * ordinary earner buying something nice, and a constant is an honest
+     * description of that until something measures otherwise.
+     */
+    public static final double LUXURY_SHARE_OF_SURPLUS = .5;
+
+    /* =====================================================================
+       ...AND WHAT IT SPENDS EATING OUT (2026-09-18)
+
+       A QUARTER OF THE SAME SURPLUS, so the two together take three quarters
+       of it and a household that got everything it asked for still banks the
+       rest. Smaller than the counter's half, because eating out has a ceiling
+       the counter does not: a person eats ninety meals a month and a fortune
+       buys DEARER ones, not more of them. See Household.plan().
+
+       NO WEALTH TERM for the same reason, which is the whole difference
+       between this sector and the boutiques as a drain on the hoard - and the
+       reason this is the one that feeds anybody.
+       ===================================================================== */
+    public static final double MEAL_SHARE_OF_SURPLUS = .25;
+
+    /**
+     * ...and the share of a FORTUNE'S monthly spend that goes on a table.
+     *
+     * Half of what the counter gets, and additive with it rather than a
+     * partition of it - the same "adds without subtracting" the luxury term
+     * itself was written under. Without this the sector has no demand at all
+     * in any city rich enough to matter, because `want` carries the wealth
+     * term and the surplus is therefore zero; see Household.plan().
+     */
+    public static final double MEAL_SHARE_OF_WEALTH = .5;
+
+    /* =====================================================================
+       AND THE CEILING, WHICH IS IN MEALS AND NOT IN MONEY (2026-09-18)
+
+       A person eats ninety meals a month whatever they are worth, and a third
+       of them is one a day - about the most anybody eats out. This is what
+       stops a fortune buying a ninety-first dinner, and it is the reason the
+       wealth term above is safe: money says what a household CAN spend, and
+       appetite says how many dinners it can actually get through.
+
+       THE SAME SHAPE CONSUMPTION PUTS ON THE BASKET, and for the same reason -
+       a rich household buys a DEARER meal, which the margin gives it, not
+       more of them. Applied at the counter rather than in the plan because
+       that is the only place a meal has a price.
+       ===================================================================== */
+    public static final double MOST_MEALS_EATEN_OUT = 1 / 3.0;
+
+    /* =====================================================================
+       AND IT IS NOT ENOUGH, WHICH IS THE REAL ANSWER (2026-09-17)
+
+       This term does what it was built to do and the stock still diverges: 85
+       months of GDP at month 240, 3,982 by month 3,840. Slower than before -
+       5,072 without it - and the same exponent.
+
+       SO THE COEFFICIENT WAS PUSHED TO THIRTY-SIX PERCENT A YEAR, nine times
+       the empirical range and far past anything defensible, purely to find out
+       whether the consumption side CAN bound this. It cannot. The stock came
+       down a great deal, wandered instead of climbing smoothly - and ended at
+       946 months, still rising. What fell instead was DELIVERY: the shops got
+       from 76% of what was planned to 57%.
+
+       BECAUSE THE BINDING CONSTRAINT IS NOT THE CONSUMPTION FUNCTION. It is
+       that the city cannot sell its households what they already want to buy.
+       A quarter of every plan goes undelivered at the honest coefficient and
+       nearly half at the absurd one, and WHATEVER IS NOT DELIVERED IS BANKED,
+       by construction - settle() has nowhere else to put it. Wanting to spend
+       more money in a city with nothing left on the shelf does not spend it;
+       it just moves the shortage.
+
+       The households are not hoarding because they are misers. They are
+       hoarding because there is nothing to buy. That is a supply question and
+       it is the next one - see , which
+       asked half of it before any of this was measured.
+       ===================================================================== */
+
     /**
      * A month's savings a founding city's households already have.
      *
@@ -444,16 +579,71 @@ public class HouseholdBalance {
         lastAbroadTakenAway = 0;
         java.util.Arrays.fill(lastSharesTakenAway, 0);
         for (Household c : cells) c.dividends = 0;
+        /*
+         * WHAT THE SHOPS ACTUALLY HANDED OVER, as a share of what was asked
+         * for (2026-09-17). Game passes Retail.getHouseholdShare() now; it
+         * used to pass getSupplyRatio(), whose denominator the shops had
+         * already capped at their own coverage.
+         *
+         * AND THE DIFFERENCE IS THE WHOLE OF WHETHER THE LINE BELOW MEANS
+         * ANYTHING. `ate` is a household's plan times this share, so with the
+         * honest denominator the eating adds up to what was sold, and with the
+         * old one it added up to more than the shops had. The city was being
+         * fed groceries that were never on a shelf - not in money, which came
+         * from the real takings, but in the one number anybody reads to ask
+         * whether people are being fed.
+         */
         double delivered = Math.max(0, Math.min(1, supplyRatio));
         lastDelivered = delivered;
+        /* =================================================================
+           ...AND A MEAL OUT IS FOOD (2026-09-18)
+
+           Jerus's rule for the kitchens: *a meal out replaces groceries*. This
+           line is where it is true of anything. A restaurant meal is one
+           ninetieth of a person-month of eating, and one person-month of
+           eating costs `foodPricePerHead` - so what the household ate out is
+           worth that much of the subsistence it would otherwise have had to
+           buy at a shop.
+
+           IT IS PRICED AT THE GROCER'S, NOT AT THE RESTAURANT'S, and that is
+           the whole of the honesty here. A kitchen charges two and a half to
+           five times what the food in the plate cost, and NONE of that markup
+           is nourishment: it is wages, rent and somebody else's washing up.
+           Counting the ticket would have a city fill its stomachs by putting
+           its prices up.
+
+           WHAT THIS BUYS THE MODEL is a second door. Retail's binding
+           constraint is coverage times the operating rate - people the shops
+           can physically serve - and a city at that wall has been unable to
+           feed anybody a different way. Now it can build kitchens, and they
+           compete for the same thirteen foods, which is exactly the pressure
+           on the food price Jerus asked for when he chose to let the basket
+           get dearer rather than bigger.
+
+           A MONTH LATE, AND ON THE RIGHT SIDE OF THE BOUNDARY. `ate` is
+           already last month's plan against last month's delivery - the shops
+           sold against the plan this line is reading - so last month's meals
+           belong beside it. See Household.mealsEaten.
+           ================================================================= */
+        double subsistencePerMeal = Math.max(0, foodPricePerHead)
+                * ham.citybuildersim.sectors.Restaurants.PERSON_MONTHS_PER_MEAL;
+        lastMealsEaten = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
             double people = fresh[i] * c.headcount();
             totalPeople += people;
-            double ate = c.planned * delivered;
+            lastMealsEaten += c.mealsEaten * c.households;
+            double ate = c.planned * delivered + c.mealsEaten * subsistencePerMeal;
             if (c.subsistence > 0 && ate < c.subsistence) {
                 hungryPeople += people * (1 - ate / c.subsistence);
             }
+            /*
+             * READ, THEN CLEARED, here rather than in clearWorking(), because
+             * this field is the one thing in the cell that is deliberately a
+             * month old. Leaving it would feed a household the same dinner
+             * every month for ever.
+             */
+            c.mealsEaten = 0;
         }
 
         /*
@@ -523,8 +713,28 @@ public class HouseholdBalance {
             lastWrittenOff += c.discharge();
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
 
-            plannedSpend += c.plan() * c.households;
+            plannedSpend += c.plan(localPerUsd) * c.households;
         }
+
+        /*
+         * AND THE MONTH'S INVESTMENT INCOME IS SPENT ONCE (2026-09-17).
+         *
+         * Cleared HERE, after every cell has planned, and not at the top of
+         * this method beside `c.dividends = 0`. Two reasons, and the second is
+         * the one that would have cost a day:
+         *
+         * IT HAS TO SURVIVE UNTIL plan(), which runs at the bottom of the loop
+         * above. Clearing it at the top would hand every household a zero.
+         *
+         * AND THE LOAD PATH MUST REPRODUCE THE SAME PLAN. The restrike loop in
+         * planFromLoad() re-plans without coming through here, so anything
+         * plan() reads has to be a SAVED stock that a reload restores
+         * unchanged - which is why investmentIncome is saved and why nothing
+         * clears it except this line. A field cleared inside plan() would give
+         * one answer live and another on reload, and LongPlaytest compares
+         * those two every single month.
+         */
+        for (Household c : cells) c.investmentIncome = 0;
     }
 
     /**
@@ -993,6 +1203,159 @@ public class HouseholdBalance {
      */
     public static final double TRANSIT_DETERRENT = .5;
 
+    /* =====================================================================
+       AND THEY BORROW FOR IT (2026-09-17)
+
+       Jerus: "make it so that citizens the car requirements are lowered and
+       instead they finance with the bank."
+
+       WHAT WAS WRONG WITH THE FIRST VERSION, and it is worse than a high bar.
+       A household had to have the WHOLE price in spare savings, and - this is
+       the part that reads as a bug rather than a dial - it was refused
+       outright if it owed a single dollar to anybody. `c.debt > 0` was in the
+       gate, copied from the share offer, where it belongs: a family that
+       cannot pay its grocer has no business speculating on equities. A car is
+       not a speculation. Nobody on earth buys one that way, and a family that
+       is $40 down on a bad month is not thereby barred from driving to work.
+
+       SO A HOUSEHOLD PAYS WHAT IT HAS AND BORROWS THE DIFFERENCE, against the
+       SAME credit room the grocery waterfall uses - no new ceiling, no new
+       field, no second debt to save. A family that can buy the car outright
+       still does, and still owes nothing.
+
+       WHICH IS DELIBERATELY NOT "A FIFTH DOWN AND FOUR FIFTHS BORROWED", and
+       that was the first draft, and the ensemble threw it out. These
+       households are cash-RICH and income-POOR: a hundred and sixty months of
+       take-home in savings against a credit line of six. Making the loan
+       mandatory moved the binding constraint off the thing they have and onto
+       the thing they have not, and ownership at month 266 fell from 42% to
+       11% - the opposite of what was asked for. Pay-what-you-have reduces
+       exactly to the old cash rule when the credit line is zero, so it cannot
+       refuse a purchase the rule it replaced would have allowed. That is the
+       property to preserve if this is ever touched again.
+
+       WHERE IT ACTUALLY BITES is the young city and not the rich one. Eight of
+       the playtest's seeds run four thousand months and seven of them come out
+       bit-identical, because a mature city's households are never short of the
+       cash; the education fixture's city, which is poor and growing, diverges
+       in month EIGHT and buys nearly twice the cars by month ten. Lowering a
+       requirement can only show up where the requirement was binding.
+
+       WHAT THAT COSTS THE HOUSEHOLD, deliberately: a family carrying a car
+       loan is four months closer to its ceiling, so the month it goes short it
+       reaches the discharge sooner. Household debt in this game has been
+       exactly zero in every measured city; this is the first thing that puts a
+       real credit cycle on the residents, and a city where everybody financed
+       a car is a city with something to lose. That is the game.
+       ===================================================================== */
+
+    /**
+     * The least of a car's price a household must find in cash before a lender
+     * will put up the rest.
+     *
+     * A MINIMUM AND NOT AN INSTALMENT. A household hands over every dollar it
+     * has spare and borrows what is left, so most buyers put down far more
+     * than this; what the fifth does is stop a family with nothing borrowing a
+     * car into existence. The deposit is a test of savings and savings are a
+     * test of income, so Jerus's rule - "income decides who can afford one" -
+     * survives the change intact. It is the level it bites at that moved.
+     */
+    public static final double CAR_DEPOSIT = .20;
+
+    /**
+     * How much of what a household could still borrow a lender will actually
+     * advance against a car.
+     *
+     * NO UNDERWRITER LENDS YOU YOUR LAST DOLLAR, which is the honest reading
+     * and is genuinely how car finance works: the line is sized so that the
+     * borrower can still absorb a bad month, because a borrower who cannot is
+     * a borrower who defaults. Half leaves a financed household three months
+     * of its six-month ceiling free.
+     *
+     * AND IT WAS FOUND BY A HARNESS RATHER THAN REASONED TO, which is worth
+     * saying. Without it, every financed household parked itself within a
+     * whisker of BANKRUPT_AT_MONTHS - the discharge fires at
+     * `debt >= 5.88 x disposable` - and a currency reform sent the two cities
+     * to opposite sides of that comparison within a year. DenominationCheck
+     * went red on nine assertions: bit-identical the month after the reform,
+     * 9% apart on output a year later, which is the signature of a discrete
+     * decision taken differently once rather than of an arithmetic that
+     * drifts. The comparison itself is sound - both sides are money, so a
+     * reform moves them together - and a threshold grazed by every household
+     * every month will be crossed differently eventually whatever the
+     * arithmetic. The fix is not to sharpen the knife; it is to stop standing
+     * on it.
+     */
+    public static final double CAR_CREDIT_SHARE = .5;
+
+    /* =====================================================================
+       THE SECOND-HAND MARKET (2026-09-17)
+
+       Jerus: "if they are doing bad they cut back expenses, sell their cars or
+       go for cheaper groceries and so on."
+
+       WHAT A HOUSEHOLD IN TROUBLE DID BEFORE THIS. The waterfall in
+       Household.settle() was savings, then the paper abroad, then the shares,
+       then the credit line, then going without - and a CAR was in none of it.
+       A family could sell every share it owned, draw its last dollar of credit
+       and then go hungry with five months of take-home parked in the drive,
+       for fifteen years, until the thing wore out. That is not poverty; that is
+       an asset the model could not see.
+
+       SO THEY SELL IT, AND SOMEBODY BUYS IT. Jerus's call, and the harder of
+       the two: the alternative was selling it abroad, which is one line and a
+       lie - a city's used cars are bought by the people who live in it. The
+       fleet does not shrink when a household sells; it CHANGES HANDS, from a
+       family that cannot keep it to one that could never have afforded a new
+       one. Which is the actual social fact about used cars and is worth having
+       in a game about who can afford what.
+
+       AND THE PRICE IS STRUCK, NOT SET, which is where the mechanic comes from.
+       It is the same rule GoodsMarket.strike() uses - a floor, a ceiling, and a
+       position between them off demand against supply - so it falls out for
+       free that A CITY CANNOT SELL ITS WAY OUT OF A GENERAL CRASH. When one
+       family is short it offers one car into a market full of buyers and gets
+       near the ceiling. When the whole city is short every family offers at
+       once, nobody is buying, and the price collapses to scrap. Personal bad
+       luck is insurable; a downturn is not. Nobody had to write that down.
+
+       WHERE IT SITS IN THE MONTH, and this is the part that needed care.
+       motoring() runs AFTER the household ledger, so by the time this clears,
+       every cell's month has been struck: afterFixed, savings, subsistence and
+       the credit room are all this month's. A household sells when the month
+       AHEAD does not add up - when savings and the whole credit line together
+       will not buy the food - so the cash is in the bank before the bills it
+       is for. That is a household seeing it coming, which is what people do,
+       and it means not one line of the settle waterfall had to change.
+
+       THE SELLERS CANNOT ALSO BE THE BUYERS, and that is free too. wantOf()
+       has always refused a cell that is going short, and a cell short of bare
+       subsistence is going short by definition - planned is the smaller of
+       want and what it can spend, so if it cannot afford subsistence it cannot
+       afford want either. A household selling its car this month cannot buy a
+       new one this month, and nothing had to be added to say so.
+       ===================================================================== */
+
+    /**
+     * What a scrapper pays, as a share of a new car.
+     *
+     * THE FLOOR OF THE BAND, and a share rather than an amount because a bound
+     * in absolute money is not a bound - it is a bug waiting for a reform. See
+     * the twenty-five constants of that family. A car has metal in it and the
+     * metal is worth something, so this is where the price goes when there is
+     * nobody at all on the other side.
+     */
+    public static final double USED_CAR_FLOOR = .15;
+
+    /**
+     * ...and what one fetches when buyers are queueing, on the same terms.
+     *
+     * NEVER THE PRICE OF A NEW ONE. Seventy percent is a two- or three-year-old
+     * car in a tight market, and the gap between this and 1.0 is what the
+     * showroom sells: a warranty, a choice of colour, and nobody else's miles.
+     */
+    public static final double USED_CAR_CEILING = .70;
+
     /** What died this month, per cell, waiting to be replaced. Within-month working. */
     private final double[] carsToReplace;
 
@@ -1095,7 +1458,15 @@ public class HouseholdBalance {
     /** What one cell would buy this month, in whole cars. */
     private double wantOf(int i, double price, double ceiling) {
         Household c = cells[i];
-        if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) return 0;
+        /*
+         * THE DEBT GATE IS GONE and the lockout is not. Owing money is no bar
+         * to buying a car - see CAR_DEPOSIT - but having been DISCHARGED is,
+         * because a discharged household cannot borrow at all for a year, and
+         * creditRoom() below already returns zero for one. Going short still
+         * bars it: a family that cannot buy its groceries this month is not
+         * signing a finance agreement this month either.
+         */
+        if (c.households < .5 || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
         /*
@@ -1109,7 +1480,30 @@ public class HouseholdBalance {
          */
         double room = Math.max(0, Math.max(0, Math.min(1, ceiling)) - c.cars) * c.households;
         double want = carsToReplace[i] * c.households + room * CAR_ADOPTION;
-        return Math.floor(Math.min(Math.min(want, room), spare / price));
+        /*
+         * CASH PLUS WHAT A LENDER WILL FIND, AND A DEPOSIT TEST ON TOP - and
+         * the first draft of this was a fixed fifth down and the rest borrowed,
+         * which MADE THINGS WORSE and was caught by the ensemble. This model's
+         * households are cash-rich and income-poor: they are sitting on a
+         * hundred and sixty months of take-home and their credit line is six.
+         * Replacing "have the price in savings" with "have a fifth of it and
+         * borrow four fifths against income" moved the binding constraint from
+         * the thing they have to the thing they have not, and car ownership at
+         * month 266 went from 42% to 11%. Jerus asked for the requirement to be
+         * LOWERED.
+         *
+         * So a household pays what it has and borrows the difference. The two
+         * limits are what the money stretches to at all, and the deposit test
+         * that stops a family borrowing a car into existence with nothing down.
+         * With no credit line the first reduces to spare/price, which is
+         * exactly the old rule - so this can never refuse a purchase the cash
+         * test alone would have allowed.
+         */
+        double credit = CAR_DEPOSIT >= 1 ? 0
+                : c.creditRoom(c.disposable) * CAR_CREDIT_SHARE * c.households;
+        double onMoney = (spare + credit) / price;
+        double onDeposit = spare / (price * CAR_DEPOSIT);
+        return Math.floor(Math.min(Math.min(want, room), Math.min(onMoney, onDeposit)));
     }
 
     /**
@@ -1127,7 +1521,8 @@ public class HouseholdBalance {
     public double takeCars(double units, double price, double ceiling) {
         if (!(units > 0) || !(price > 0)) return 0;
         lastCarsBought = 0;
-        double bought = 0;
+        lastCarsFinanced = 0;
+        double bought = 0, financed = 0;
         double[] want = new double[cells.length];
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
@@ -1152,18 +1547,472 @@ public class HouseholdBalance {
             // ceiling - the clamp every stock in this file carries, and for
             // the reason HouseholdBalance.moveStock's note gives.
             c.cars = Math.max(0, Math.min(1, c.cars + got));
-            c.savings = Math.max(0, c.savings - got * price);
+            /*
+             * THE SELLER IS PAID IN FULL; THE HOUSEHOLD PAYS WHAT IT HAS AND
+             * BORROWS THE DIFFERENCE. A family that can buy the car outright
+             * does, and owes nothing - which is why this change cannot make
+             * anybody worse off than the cash rule it replaced. The rest is a
+             * loan: the bank's cash goes out of the door the same month
+             * (Game.motoring tells it so), the debt sits in the same ledger the
+             * grocery borrowing does, and the existing waterfall charges the
+             * interest and takes the repayments without knowing what the money
+             * was for.
+             */
+            double bill = got * price;
+            double inHand = Math.max(0,
+                    c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
+            double cash = Math.min(bill, inHand);
+            double lent = bill - cash;
+            c.savings = Math.max(0, c.savings - cash);
+            c.debt += lent;
+            financed += lent * c.households;
             spent += got * price * c.households;
             bought += got * c.households;
         }
         lastCarsBought = bought;
+        lastCarsFinanced = financed;
         return spent;
     }
 
+    /* ---------------------- the second-hand market ---------------------- */
+
+    /**
+     * How far ahead a household looks before it decides the car has to go.
+     *
+     * SIX MONTHS, WHICH IS CREDIT_LIMIT_MONTHS, and the two being the same
+     * number is the point rather than a coincidence: a household looks as far
+     * ahead as its bank does. A family whose wage no longer covers the food
+     * does not sell the car on the first thin month - it eats the savings, and
+     * it draws the credit line, exactly as the settle waterfall says. What
+     * makes it sell is arithmetic it can do itself: this gap, every month, for
+     * half a year, against everything it has and everything it can borrow.
+     *
+     * AND THE FIRST VERSION OF THIS LOOKED ONE MONTH AHEAD, which sounded
+     * strict and honest and was neither. Measured over twelve hundred months of
+     * a city played from new: a car-owning cell was SHORT OF THE SHOP in 520 of
+     * them and a discharge fired in 513, while the one-month test found only 40
+     * - so households went bankrupt with the car still in the drive, thirteen
+     * times for every one that sold it. The whole point of the asset is that it
+     * is there to be sold BEFORE the crash, and a test that only fires in the
+     * month the money actually runs out cannot do that.
+     */
+    public static final double CAR_SALE_HORIZON_MONTHS = CREDIT_LIMIT_MONTHS;
+
+    /**
+     * What one cell would put up for sale this month, in whole cars.
+     *
+     * THE TEST IS THE MODEL'S OWN WORDS FOR TROUBLE. "Short of the shop" -
+     * afterFixed below subsistence - is the same condition discharge() uses,
+     * and it means the wage, after the rent and the fees and the interest, no
+     * longer buys the food. A household there is living on its savings and its
+     * credit line and has a countable number of months before both are gone.
+     *
+     * JERUS'S ORDERING SURVIVES, AND THIS IS WHERE IT LIVES: savings, then the
+     * paper, then the shares, then credit, and the car after all of them. It is
+     * in the second line rather than the first - the need is what half a year of
+     * the gap comes to LESS everything saved and everything borrowable, so a
+     * household that can ride it out on what it has offers nothing at all, and
+     * only one that cannot offers anything.
+     *
+     * AND IT SELLS WHAT IT NEEDS, NOT WHAT IT HAS. The need valued at the FLOOR
+     * - what a scrapper would pay - because a family deciding whether to put the
+     * car up does not know what it will fetch and will not bet the half-year on
+     * the optimistic answer. One car at the floor is many months of food, so a
+     * cell a little short offers a FRACTION of its fleet: the share of its
+     * households who cannot manage. A city does not dump its cars on one bad
+     * month, which it would if this offered the lot.
+     *
+     * A PURE NUMBER, TWICE OVER: money over a price in money, and a share of a
+     * fleet. Neither moves when the currency does.
+     */
+    private double offerOf(int i, double floorPrice) {
+        Household c = cells[i];
+        if (c.households < .5 || !(c.cars > 0) || !(floorPrice > 0)) return 0;
+        double gap = c.subsistence - Math.max(0, c.afterFixed);
+        if (gap <= 0) return 0;
+        double need = CAR_SALE_HORIZON_MONTHS * gap
+                - Math.max(0, c.savings) - c.creditRoom(c.disposable);
+        if (need <= 0) return 0;
+        // Whole cars, for the reason the note above wantOf() gives: a quantity
+        // crossing from the money world into the physical one crosses at a
+        // grain coarser than the dust.
+        return Math.floor(Math.min(c.cars, need / floorPrice) * c.households);
+    }
+
+    /* =====================================================================
+       THE LUXURY COUNTER (2026-09-17)
+
+       The same three-step every household purchase in this file uses - ask
+       what they want at a price, hand out what the seller had, take the money
+       - and the third one written, after the shares and the cars. See
+       LuxuryRetail for why the good exists at all.
+       ===================================================================== */
+
+    /**
+     * What the city's households would buy at this price, in whole pieces.
+     *
+     * THE MONEY IS ADDED UP FIRST AND THE FLOOR HAPPENS ONCE, which is the
+     * twenty-sixth sighting of the money-constant family and the subtlest one
+     * yet. The first draft floored each CELL's budget over the price - sixty-
+     * eight crossings from the money world into the physical one every month -
+     * and DenominationCheck came apart 6e-05 at a time. The arithmetic is
+     * scale-invariant and the floating point is not: (a/100)/(b/100) differs
+     * from a/b in the last bit, and a floor turns a last-bit difference into a
+     * whole piece whenever the quotient lands near an integer. Sixty-eight
+     * chances a month for four thousand months is not a small number.
+     *
+     * One crossing for the whole city is the same construction
+     * Retail.sellOwnPriced() uses on the grocery basket, and for the same
+     * reason. The cells still get their share: takeLuxuries() splits what was
+     * bought pro rata over the BUDGETS, which are money and stay money.
+     */
+    public double luxuriesWanted(double price) {
+        if (!(price > 0)) return 0;
+        return Math.floor(luxuryBudget() / price);
+    }
+
+    /** What the city's households would put over a counter, in money. */
+    private double luxuryBudget() {
+        double total = 0;
+        for (Household c : cells) total += luxuryBudgetOf(c);
+        return total;
+    }
+
+    /**
+     * What one cell would buy, in whole pieces.
+     *
+     * THE GATES ARE THE CAR'S, LESS THE CAR'S CEILING. Not locked out, not
+     * going short, able to hold anything at all, and money past the cushion -
+     * a household that cannot buy its groceries this month is not buying a
+     * watch this month either. What it does NOT have is a room-left term: a
+     * fleet has a ceiling of one car per household and a collection has none,
+     * which is the whole reason this good is here.
+     */
+    private double luxuryBudgetOf(Household c) {
+        if (c.households < .5 || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (!(c.luxuryWant > 0)) return 0;
+        double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
+        if (spare <= 0) return 0;
+        return Math.min(c.luxuryWant * c.households, spare);
+    }
+
+    /**
+     * Hands out the pieces the shops actually had, pro rata over who wanted
+     * them, and takes the money out of savings.
+     *
+     * OUT OF SAVINGS AND NOT OFF THE INCOME STATEMENT, the same treatment the
+     * shares and the cars get - except that unlike a car, a watch is not an
+     * asset this model tracks. It is bought, the money is gone, and what the
+     * household has instead is not written down anywhere. That is a deliberate
+     * simplification and it is the honest one for a consumption good: the
+     * point of buying it was to have spent the money.
+     *
+     * @return cash spent
+     */
+    public double takeLuxuries(double units, double price) {
+        lastLuxuriesBought = 0;
+        lastLuxurySpend = 0;
+        if (!(units > 0) || !(price > 0)) return 0;
+
+        double[] budget = new double[cells.length];
+        double total = 0;
+        for (int i = 0; i < cells.length; i++) {
+            budget[i] = luxuryBudgetOf(cells[i]);
+            total += budget[i];
+        }
+        if (total <= 0) return 0;
+
+        // Pro rata over the BUDGETS. What each cell gets is its share of the
+        // pieces the shops had, which is money over money and needs no floor
+        // of its own - see luxuriesWanted().
+        double spent = 0, bought = 0;
+        for (int i = 0; i < cells.length; i++) {
+            if (budget[i] <= 0) continue;
+            Household c = cells[i];
+            double got = units * (budget[i] / total) / c.households;
+            double bill = got * price;
+            c.savings = Math.max(0, c.savings - bill);
+            spent += bill * c.households;
+            bought += got * c.households;
+        }
+        lastLuxuriesBought = bought;
+        lastLuxurySpend = spent;
+        return spent;
+    }
+
+    /* =====================================================================
+       THE TABLE (2026-09-18)
+
+       The luxury counter's three-step, one sector later: ask what the city
+       wants at a price, hand out what the kitchens could serve, take the
+       money. What is different is the third line of it - see the hunger
+       measure in advanceMonth(), where a meal counts as food.
+       ===================================================================== */
+
+    /**
+     * What the city's households would eat out at this price, in whole meals.
+     *
+     * ONE FLOOR FOR THE CITY, for the reason written in full above
+     * luxuriesWanted(): a floor on a ratio of two money quantities is the
+     * money-constant family's quietest coat, and doing it per cell gives a
+     * reform sixty-eight chances a month to turn a last-bit difference into a
+     * whole meal.
+     */
+    public double mealsWanted(double price) {
+        if (!(price > 0)) return 0;
+        /*
+         * MONEY FIRST, THEN APPETITE, AND ONE FLOOR OVER BOTH. What a city can
+         * pay for divided by what a meal costs, capped at a third of the meals
+         * its people eat at all - see MOST_MEALS_EATEN_OUT. The cap is struck
+         * for the CITY rather than per cell, like the floor and for the same
+         * reason: sixty-eight crossings from money into meals a month is
+         * sixty-eight chances for a reform to move one of them.
+         */
+        double appetite = 0;
+        for (Household c : cells) {
+            appetite += c.people() * ham.citybuildersim.sectors.Restaurants.MEALS_A_PERSON_MONTH;
+        }
+        return Math.floor(Math.min(mealBudget() / price, appetite * MOST_MEALS_EATEN_OUT));
+    }
+
+    /** What the city's households would put on a table, in money. */
+    private double mealBudget() {
+        double total = 0;
+        for (Household c : cells) total += mealBudgetOf(c);
+        return total;
+    }
+
+    /**
+     * What one cell would spend eating out.
+     *
+     * THE SAME GATES AS THE COUNTER, and the awkward one is deliberate: a
+     * household that is `isGoingShort()` - that could not fund its own plan
+     * this month - does not go out to dinner. It is tempting to argue the
+     * opposite, that a household which could not get groceries is exactly the
+     * one that would eat out, and in a city at the supply wall that is a real
+     * story. It is not this one: `isGoingShort()` is about MONEY, not about
+     * shelves, and a household short of money is short of it at a restaurant
+     * too. The shelf story belongs in what the shops could deliver, and that
+     * is measured elsewhere.
+     */
+    private double mealBudgetOf(Household c) {
+        if (c.households < .5 || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (!(c.mealWant > 0)) return 0;
+        double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
+        if (spare <= 0) return 0;
+        return Math.min(c.mealWant * c.households, spare);
+    }
+
+    /**
+     * Hands out the meals the kitchens actually served, pro rata over who
+     * wanted them, takes the money out of savings and REMEMBERS THE MEALS.
+     *
+     * The remembering is what makes this different from the counter. A watch
+     * is bought and gone; a dinner was eaten, and next month's hunger measure
+     * has to know it - see advanceMonth(), and Household.mealsEaten for why it
+     * is a month late and why that is the honest side of the boundary.
+     *
+     * @return cash spent
+     */
+    public double takeMeals(double meals, double price) {
+        lastMealsBought = 0;
+        lastMealSpend = 0;
+        if (!(meals > 0) || !(price > 0)) return 0;
+
+        double[] budget = new double[cells.length];
+        double total = 0;
+        for (int i = 0; i < cells.length; i++) {
+            budget[i] = mealBudgetOf(cells[i]);
+            total += budget[i];
+        }
+        if (total <= 0) return 0;
+
+        double spent = 0, eaten = 0;
+        for (int i = 0; i < cells.length; i++) {
+            if (budget[i] <= 0) continue;
+            Household c = cells[i];
+            double got = meals * (budget[i] / total) / c.households;
+            double bill = got * price;
+            c.savings = Math.max(0, c.savings - bill);
+            c.mealsEaten += got;
+            spent += bill * c.households;
+            eaten += got * c.households;
+        }
+        lastMealsBought = eaten;
+        lastMealSpend = spent;
+        return spent;
+    }
+
+    private double lastMealsBought, lastMealSpend, lastMealsEaten;
+
+    /** Meals the city ate out in the month the hunger measure just read. */
+    public double getMealsEaten() { return lastMealsEaten; }
+
+    /** Meals the households ate out this month. */
+    public double getMealsBought() { return lastMealsBought; }
+
+    /** ...and what they paid for them. */
+    public double getMealSpend() { return lastMealSpend; }
+
+    private double lastLuxuriesBought, lastLuxurySpend;
+
+    /** Pieces the households took this month. */
+    public double getLuxuriesBought() { return lastLuxuriesBought; }
+
+    /** ...and what they paid for them. */
+    public double getLuxurySpend()    { return lastLuxurySpend; }
+
+    /** What every household in the city would like to put over a counter this month. */
+    public double getLuxuryWant() { return sum(c -> c.luxuryWant); }
+
+    /** What the city's households would put up for sale at this floor. */
+    public double carsOffered(double floorPrice) {
+        double total = 0;
+        for (int i = 0; i < cells.length; i++) total += offerOf(i, floorPrice);
+        return total;
+    }
+
+    /**
+     * Clears the month's second-hand market: strikes a price, moves the cars
+     * that find a buyer, and pays the households that sold them.
+     *
+     * THE TWO-PASS SHAPE IS motoring()'s OWN, and deliberately so. Demand
+     * depends on the price and the price depends on demand, which is a circle
+     * every market in this game has had to break: GoodsMarket strikes off an
+     * intended demand and then sells at the struck price, and the new-car path
+     * three lines below quotes, re-asks at the quote, and then draws. This does
+     * the same - probe the middle of the band, strike, then ask again at what
+     * was struck - so a reader who understands one understands all three.
+     *
+     * THE MONEY IS A TRANSFER AND THE AUDIT SHOULD SEE NOTHING. Buyers' savings
+     * fall and sellers' rise by the same figure, both inside the household
+     * pool; the only cash that crosses a boundary is what a buyer BORROWED,
+     * which leaves the bank and is declared the way a new car's finance already
+     * is. See Game.motoring().
+     *
+     * @param newPrice what a new car costs this month
+     * @param ceiling  cars per household this city will own at all
+     * @return cars that changed hands
+     */
+    public double clearUsedCars(double newPrice, double ceiling) {
+        lastUsedOffered = 0;
+        lastUsedTraded = 0;
+        lastUsedSpend = 0;
+        lastUsedFinanced = 0;
+        lastUsedPrice = 0;
+        lastUsedNewPrice = 0;
+        // Only the sellers are written to below, so the rest have to be told
+        // that this month they sold nothing.
+        for (Household c : cells) c.carsSold = 0;
+        if (!(newPrice > 0)) return 0;
+
+        lastUsedNewPrice = newPrice;
+        double lo = newPrice * USED_CAR_FLOOR, hi = newPrice * USED_CAR_CEILING;
+
+        double[] offer = new double[cells.length];
+        double supply = 0;
+        for (int i = 0; i < cells.length; i++) {
+            offer[i] = offerOf(i, lo);
+            supply += offer[i];
+        }
+        lastUsedOffered = supply;
+        if (supply <= 0) return 0;
+
+        /*
+         * THE POSITION, ON GoodsMarket.strike()'s OWN TERMS, special cases and
+         * all. There is always supply here - the guard above saw to it - so the
+         * no-makers branch cannot fire, and the one that matters is the other:
+         * a city where everybody is selling and nobody is buying puts the
+         * position at zero and the price at the floor. That is the crash.
+         */
+        double demand = carsWanted((lo + hi) / 2, ceiling);
+        double position = demand <= 0 ? 0 : demand / (demand + supply);
+        double price = lo + (hi - lo) * position;
+        lastUsedPrice = price;
+
+        double taken = Math.min(supply, carsWanted(price, ceiling));
+        if (taken <= 0) return 0;
+
+        /*
+         * THE BUYERS FIRST, through the same takeCars() a new car goes through:
+         * the same whole-car floor, the same cushion, the same deposit test,
+         * and the same lender finding the difference. A used car is a car.
+         */
+        double spent = takeCars(taken, price, ceiling);
+        double traded = lastCarsBought;
+        if (!(traded > 0)) return 0;
+
+        /*
+         * ...AND THE SELLERS ARE PAID, pro rata over what each offered, into
+         * savings - which is where a sale of anything a household owns lands.
+         * It is the same treatment the shares get: turning a thing you own back
+         * into money is a balance-sheet move and the month's income statement
+         * does not see it.
+         */
+        double scale = traded / supply;
+        for (int i = 0; i < cells.length; i++) {
+            if (offer[i] <= 0) continue;
+            Household c = cells[i];
+            double sold = offer[i] * scale / c.households;
+            c.cars = Math.max(0, c.cars - sold);
+            c.savings += sold * price;
+            c.carsSold = sold * c.households;
+        }
+
+        lastUsedTraded = traded;
+        lastUsedSpend = spent;
+        lastUsedFinanced = lastCarsFinanced;
+        return traded;
+    }
+
+    private double lastUsedOffered, lastUsedTraded, lastUsedSpend,
+            lastUsedFinanced, lastUsedPrice, lastUsedNewPrice;
+
+    /** Cars put up for sale this month, whether or not anybody took them. */
+    public double getUsedCarsOffered() { return lastUsedOffered; }
+
+    /** ...and the ones that found a buyer. */
+    public double getUsedCarsTraded() { return lastUsedTraded; }
+
+    /** What they went for. Zero in a month with no market at all. */
+    public double getUsedCarPrice() { return lastUsedPrice; }
+
+    /**
+     * ...as a share of what a NEW one cost the month it was struck, which is
+     * the only honest denominator and is between USED_CAR_FLOOR and
+     * USED_CAR_CEILING by construction.
+     *
+     * A READER WHO DIVIDES BY TODAY'S SHOWROOM PRICE GETS A LIE, and it was
+     * printed once: the playtest read the CARS market AFTER motoring had
+     * finished with it, the new price had moved underneath, and the summary
+     * announced a used car going for 74% of a new one against a ceiling of 70%.
+     * The band was never breached; the division was.
+     */
+    public double getUsedCarShare() {
+        return lastUsedNewPrice > 0 ? lastUsedPrice / lastUsedNewPrice : 0;
+    }
+
+    /** What the buyers paid, all in. */
+    public double getUsedCarSpend() { return lastUsedSpend; }
+
+    /**
+     * ...and what of that a lender advanced, which the bank has to be told
+     * about in the same month. See Game.motoring().
+     */
+    public double getUsedCarsFinanced() { return lastUsedFinanced; }
+
     private double lastCarsBought;
+    private double lastCarsFinanced;
 
     /** Cars the households actually took this month. See takeCars(). */
     public double getCarsBought() { return lastCarsBought; }
+
+    /**
+     * ...and what of that a lender advanced, which the bank has to be told
+     * about in the same month or the money audit sees a pool fall for no
+     * reason. See Game.motoring().
+     */
+    public double getCarsFinanced() { return lastCarsFinanced; }
 
 
     /* =====================================================================
@@ -1410,16 +2259,50 @@ public class HouseholdBalance {
         for (Household c : cells) {
             if (c.households < .5) continue;
 
-            // The income first, rolled where it is earned - see OutwardInvestment.
+            /* =============================================================
+               THE COUPON IS PAID HOME, NOT ROLLED (2026-09-17)
+
+               Jerus, on being shown where the money went: "pay it home as
+               income."
+
+               WHAT ROLLING IT COST, measured over one four-thousand-month run.
+               Cumulative foreign coupons came to $2,649bn against $584bn of
+               every wage the city ever paid - four and a half times the entire
+               wage bill, twenty times the dividends, and seven times everything
+               ever spent in the shops. It overtook wages around month 2,400 and
+               ran away afterwards. Household net worth, which sat at a
+               textbook-perfect 45 months of GDP at month 480, was at 5,072 by
+               month 3,840 and still climbing. Past about two centuries the city
+               stopped being an economy and became a rentier fund with a town
+               attached.
+
+               THE ENGINE WAS THIS LINE. Households hold about 79% of their
+               wealth abroad at the world's 2%, and the coupon was added to the
+               pile where it was earned. That is wealth compounding at 1.58% a
+               year MECHANICALLY - independent of the city, of the player, of
+               whether anybody works. Over 333 years, 193 times, which is
+               exactly the curve that was measured.
+
+               AND PAYING IT HOME DOES NOT ON ITS OWN STOP THE COMPOUNDING, so
+               this is honest about what it is: the coupon lands in savings,
+               savings past the cushion go abroad again at OUT_SPEED, and the
+               same loop turns a little slower. What it BUYS is that the money
+               is now somewhere a household can spend it, somewhere the
+               statement shows it, and somewhere the plan can see it. It is the
+               change the other two need to exist. A coupon is income, not a
+               bigger bond.
+               ============================================================= */
             double earnedUsd = c.abroad * Math.max(0, worldRate) / 12;
-            c.abroad += earnedUsd;
             c.foreignInterest = earnedUsd * rate;
+            c.savings += c.foreignInterest;
+            c.investmentIncome += c.foreignInterest;
 
             // A prisoner's money is held where it is. See PrisonerHousehold.
             if (!c.canInvest()) continue;
 
             double held = c.abroad * rate;
             boolean eligible = c.debt <= 0 && c.lockout <= 0 && !c.isGoingShort();
+
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double spare = c.savings - cushion;
             double target = eligible && spare + held > 0 ? (spare + held) * targetShare : 0;
@@ -1435,6 +2318,7 @@ public class HouseholdBalance {
             c.abroad += move / rate;
             if (c.abroad < 1e-15) c.abroad = 0;
             if (move > 0) c.sentAbroad += move; else c.broughtHome += -move;
+
         }
     }
 
@@ -1578,7 +2462,7 @@ public class HouseholdBalance {
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
             c.restrike(disposablePer[i], rentPerHousehold * c.rentShare, feesPer[i],
                     foodPricePerHead, riskFreeAnnual);
-            plannedSpend += c.plan() * c.households;
+            plannedSpend += c.plan(localPerUsd) * c.households;
         }
     }
 
@@ -1809,6 +2693,9 @@ public class HouseholdBalance {
             double each = c.shares[company] * perShare;
             c.savings += each;
             c.dividends += each;
+            // ...and the household knows it has it, next time it plans a month.
+            // See Household.investmentIncome.
+            c.investmentIncome += each;
             paid += each * c.households;
         }
         return paid;
@@ -1943,8 +2830,21 @@ public class HouseholdBalance {
     /** ...and before the cars were (2026-09-16). */
     public static final int CELL_SLOTS_BEFORE_CARS = CELL_SLOTS_BEFORE_STUDENT_DEBT + 1;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_CARS + 1;
+    /** ...and before the month's investment income was (2026-09-17). */
+    public static final int CELL_SLOTS_BEFORE_INVESTMENT_INCOME = CELL_SLOTS_BEFORE_CARS + 1;
+
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income. */
+    /**
+     * ...and the dinners, appended 2026-09-18.
+     *
+     * A save from before the kitchens existed has households that ate out
+     * nothing last month, which is exactly true of that city. The reader
+     * checks the width, so SAVE_FORMAT does not move - the same tail-append
+     * the cars and the investment income got.
+     */
+    public static final int CELL_SLOTS_BEFORE_MEALS = CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1;
+
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_MEALS + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public String[] cellKeys() {
@@ -1970,6 +2870,8 @@ public class HouseholdBalance {
             out[i++] = c.abroad;
             out[i++] = c.studentDebt;
             out[i++] = c.cars;
+            out[i++] = c.investmentIncome;
+            out[i++] = c.mealsEaten;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -2019,12 +2921,16 @@ public class HouseholdBalance {
         final int wasBeforeAbroad  = wasBeforeShares + savedShares;
         final int wasBeforeStudent = wasBeforeAbroad + 1;
         final int wasBeforeCars    = wasBeforeStudent + 1;
-        final int wasFull          = wasBeforeCars + 1;
+        final int wasBeforeIncome  = wasBeforeCars + 1;
+        final int wasBeforeMeals   = wasBeforeIncome + 1;
+        final int wasFull          = wasBeforeMeals + 1;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != wasFull && slots != wasBeforeCars && slots != wasBeforeStudent
-                    && slots != wasBeforeAbroad && slots != wasBeforeShares)) {
+                || (slots != wasFull && slots != wasBeforeMeals
+                    && slots != wasBeforeIncome && slots != wasBeforeCars
+                    && slots != wasBeforeStudent && slots != wasBeforeAbroad
+                    && slots != wasBeforeShares)) {
             return false;
         }
 
@@ -2076,7 +2982,14 @@ public class HouseholdBalance {
             }
             if (slots >= wasBeforeStudent) c.abroad = Math.max(0, saved[i++]);
             if (slots >= wasBeforeCars) c.studentDebt = Math.max(0, saved[i++]);
-            if (slots >= wasFull) c.cars = Math.max(0, saved[i++]);
+            if (slots >= wasBeforeIncome) c.cars = Math.max(0, saved[i++]);
+            // A save from before this field has households that received no
+            // investment income last month, which is exactly true of that city
+            // - nothing in it was ever going to spend any.
+            if (slots >= wasBeforeMeals) c.investmentIncome = Math.max(0, saved[i++]);
+            // ...and a city from before the kitchens ate out nothing.
+            c.mealsEaten = 0;
+            if (slots >= wasFull) c.mealsEaten = Math.max(0, saved[i++]);
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];

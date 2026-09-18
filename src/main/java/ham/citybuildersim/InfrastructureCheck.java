@@ -26,6 +26,11 @@ public class InfrastructureCheck {
         System.out.printf("%-58s %s%n", label, ok ? "OK" : "FAIL");
     }
 
+    /** Finite, and inside the range the screen's own label claims for it. */
+    static boolean sane(double value, double low, double high) {
+        return Double.isFinite(value) && value >= low - 1e-9 && value <= high + 1e-9;
+    }
+
     static void close(String label, double actual, double expected) {
         boolean ok = Math.abs(actual - expected) < 1e-9;
         if (!ok) {
@@ -660,6 +665,124 @@ public class InfrastructureCheck {
                 InfrastructureManager.BASE_CAPACITY);
         close("nothing is on the roads", reloaded.getInfrastructureManager().getLoad(), 0);
         close("...and throughput is whole again", reloaded.getRoadRatio(), 1);
+
+        /* ============ 9. EVERY FIGURE THE INFRASTRUCTURE TAB READS ============
+
+           WHY THIS SECTION EXISTS, and it is an honest admission rather than a
+           design. The Infrastructure tab (2026-09-17) is the first screen in
+           this game that was written and shipped WITHOUT ANYONE LOOKING AT IT:
+           JavaFX needs its platform natives to render, the only ones on hand
+           are the Windows build, and the machine this was written on is Linux.
+           The compiler proves the screen assembles. Nothing proved the numbers
+           on it were numbers.
+
+           So this walks every accessor those four pages call, in the four city
+           states that break screens - empty, congested, motorised, railed - and
+           asks the only two questions a renderer cannot survive the wrong
+           answer to: is it finite, and is it inside the range the screen's own
+           label claims for it. A NaN reaches a Label as "NaN%" and an infinity
+           reaches a meter as a bar of unbounded width.
+
+           It is not a substitute for looking at it. It is what can be checked
+           from here, and it is the half that would actually crash.
+           ==================================================================== */
+        System.out.println("\n--- every figure the Infrastructure tab reads is a number ---");
+
+        InfrastructureManager[] states = new InfrastructureManager[4];
+        String[] named = {"an empty city", "a congested one", "a motorised one", "a railed one"};
+        for (int i = 0; i < states.length; i++) states[i] = new InfrastructureManager();
+
+        states[1].setBuiltCapacity(1000);
+        states[1].setLoad(9000);
+        states[1].setBreakdown(new double[] {7000, 400, 1600});
+
+        states[2].setBuiltCapacity(10_000);
+        states[2].setLoad(12_000);
+        states[2].setBreakdown(new double[] {8600, 400, 3000});
+        states[2].setModes(4000, 20_000);
+        states[2].setFare(TaxPolicy.MAX_TRANSIT_FARE);
+        states[2].setCarOwnership(1);
+        for (int i = 0; i < 40; i++) states[2].noteCongestion(InfrastructureManager.MIN_THROUGHPUT);
+
+        states[3].setBuiltCapacity(10_000);
+        states[3].setLoad(12_000);
+        states[3].setBreakdown(new double[] {8600, 400, 3000});
+        states[3].setRailShare(new double[] {0, 1, 1});
+
+        for (int i = 0; i < states.length; i++) {
+            InfrastructureManager n = states[i];
+            boolean ok = true;
+            ok &= sane(n.getCapacity(), 0, Double.MAX_VALUE);
+            ok &= sane(n.getBuiltCapacity(), 0, Double.MAX_VALUE);
+            ok &= sane(n.getEffectiveLoad(), 0, Double.MAX_VALUE);
+            ok &= sane(n.getUtilisation(), 0, Double.MAX_VALUE);
+            ok &= sane(n.getHeadroom(), 0, Double.MAX_VALUE);
+            ok &= sane(n.getThroughputRatio(), InfrastructureManager.MIN_THROUGHPUT, 1);
+            ok &= sane(n.getHighwayShare(), 0, 1);
+            ok &= sane(n.getCarOwnership(), 0, 1);
+            ok &= sane(n.carRoadFactor(), 1, InfrastructureManager.CAR_LOAD_AT_SATURATION);
+            ok &= sane(n.getJam(), 0, 1);
+            ok &= sane(n.willingToRide(), 0, 1);
+            ok &= sane(n.getRememberedThroughput(), InfrastructureManager.MIN_THROUGHPUT, 1);
+            ok &= sane(n.getTransitCover(), 0, 1);
+            ok &= sane(n.getTransitCapacity(), 0, Double.MAX_VALUE);
+            ok &= sane(n.getUsableTransit(), 0, Double.MAX_VALUE);
+            ok &= sane(n.getTransitRiders(), 0, Double.MAX_VALUE);
+            ok &= sane(n.getFareShare(), 0, 1);
+            ok &= sane(n.cityThroughput(), InfrastructureManager.MIN_THROUGHPUT, 1);
+            ok &= n.getStatus() != null && !n.getStatus().isEmpty();
+            for (Traffic t : Traffic.values()) {
+                ok &= sane(n.getLoad(t), 0, Double.MAX_VALUE);
+                ok &= sane(n.getShareOf(t), 0, 1);
+                ok &= sane(n.roadCostOf(t), 0, 1);
+                ok &= sane(n.throughputOf(t), InfrastructureManager.MIN_THROUGHPUT, 1);
+                ok &= sane(n.getRailShare(t), 0, 1);
+            }
+            /*
+             * AND THE PREVIEW THE FARE DIAL DRAWS, which is the one figure on
+             * that page computed by the SCREEN rather than read off the model -
+             * riders at a fare the player has not applied yet. It divides by
+             * nothing, but it is the line most likely to be handed a zero.
+             */
+            for (double fare : new double[] {0, TaxPolicy.DEFAULT_TRANSIT_FARE,
+                                             TaxPolicy.MAX_TRANSIT_FARE}) {
+                double share = InfrastructureManager.ridershipAt(fare);
+                double ceiling = n.getLoad(Traffic.COMMUTERS)
+                        * InfrastructureManager.TRANSIT_MAX_SHARE;
+                ok &= sane(share, 0, 1);
+                ok &= sane(Math.min(n.getUsableTransit(), ceiling) * share * n.willingToRide(),
+                        0, Double.MAX_VALUE);
+            }
+            assertTrue("...in " + named[i], ok);
+        }
+
+        /*
+         * ...AND THE FREIGHT PAGE'S TWO GRIDS, which read the goods and the
+         * sectors rather than the network. The band grid divides by the import
+         * price and the fleet grid by the tonnage, and both are guarded on the
+         * screen - this is the guard's other half.
+         */
+        boolean goodsOk = true;
+        Markets bandMarkets = new Markets();
+        bandMarkets.setExchangeRate(1);
+        for (Good g : Good.values()) {
+            GoodsMarket m = bandMarkets.get(g);
+            if (!g.traded() || !g.exportable() || !g.importable()) continue;
+            if (!(m.importPrice() > 0)) continue;
+            goodsOk &= sane((m.importPrice() - m.exportPrice()) / m.importPrice(), 0, 1);
+            goodsOk &= sane((m.netImportPrice() - m.netExportPrice()) / m.importPrice(), 0, 1);
+        }
+        assertTrue("every good's wedge is a share of its own price", goodsOk);
+
+        boolean fleetOk = true;
+        for (Sector s : reloaded.getSectors().all()) {
+            fleetOk &= sane(s.tonnesMoved(), 0, Double.MAX_VALUE);
+            fleetOk &= sane(s.vansNeeded(), 0, Double.MAX_VALUE);
+            fleetOk &= sane(s.vanFleet(), 0, Double.MAX_VALUE);
+            fleetOk &= sane(s.getVanRatio(), Sector.MIN_VAN_RATE, 1);
+            fleetOk &= sane(s.getOperatingRate(), 0, 1);
+        }
+        assertTrue("every sector's fleet reading is a number", fleetOk);
 
         cleanUp(root);
 

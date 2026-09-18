@@ -77,6 +77,18 @@ public final class Markets {
 
     public void clearMonth(Sectors sectors, Game game) {
 
+        /*
+         * 0. THE FLEETS, before anything is made with them.
+         *
+         * A month of wear on every sector's lorries, and - once, on the first
+         * pass a save from before vans ever runs - the fleet its standing plant
+         * implies. First, because the ratio it sets is a multiplier on
+         * everything the four steps below do, and because a sector that is
+         * handed its opening fleet here is running at its own rate in the same
+         * month rather than at zero for one of them. See Sector.runFleet().
+         */
+        for (Sector s : sectors.all()) s.runFleet();
+
         // 1. the flow goods are made
         for (Sector s : sectors.all()) {
             for (Good g : s.goodsMade()) {

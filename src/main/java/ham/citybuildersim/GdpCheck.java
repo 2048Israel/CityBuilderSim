@@ -26,7 +26,7 @@ public class GdpCheck {
 
         // retail 400, rent 350, construction 200, stock 1000, government 50,
         // food imports 30, material imports 20
-        na.update(400, 350, 200, 1000, 0, 1, 0, 0, 50, 30, 20, 0, 0);
+        na.update(400, 350, 200, 1000, 0, 1, 0, 0, 0, 0, 50, 30, 20, 0, 0);
 
         check("consumption", na.getConsumption(), 750);
         check("investment (200 built + 1000 stock built up)", na.getInvestment(), 1200);
@@ -42,12 +42,12 @@ public class GdpCheck {
         System.out.println("\n--- inventories count the change, not the level ---");
 
         // Same 1,000 of stock still sitting there: that is not this month's output.
-        na.update(400, 350, 200, 1000, 0, 1, 0, 0, 50, 30, 20, 0, 0);
+        na.update(400, 350, 200, 1000, 0, 1, 0, 0, 0, 0, 50, 30, 20, 0, 0);
         check("unchanged stock adds nothing", na.getInvestmentInventories(), 0);
         check("GDP without the one-off stock build", na.getGdp(), 750 + 200 + 50 - 50);
 
         // Running the warehouse down is consumption of something made earlier.
-        na.update(400, 350, 200, 600, 0, 1, 0, 0, 50, 30, 20, 0, 0);
+        na.update(400, 350, 200, 600, 0, 1, 0, 0, 0, 0, 50, 30, 20, 0, 0);
         check("stock drawn down subtracts", na.getInvestmentInventories(), -400);
 
         /* ==================== 3. THE BUG THIS REPLACES ==================== */
@@ -56,13 +56,13 @@ public class GdpCheck {
         // Every business losing money, shops still full, builders still busy.
         // The old figure was wages + profits, so this read as negative output.
         NationalAccounts loss = new NationalAccounts();
-        loss.update(400, 350, 200, 0, 0, 1, 0, 0, 50, 30, 20, 0, 0);
+        loss.update(400, 350, 200, 0, 0, 1, 0, 0, 0, 0, 50, 30, 20, 0, 0);
         assertTrue("GDP is positive despite sector losses", loss.getGdp() > 0);
         System.out.printf("   GDP $%.2f on a month where every firm lost money%n", loss.getGdp());
 
         // The only way down is importing more than you make.
         NationalAccounts importer = new NationalAccounts();
-        importer.update(10, 0, 0, 0, 0, 1, 0, 0, 0, 500, 0, 0, 0);
+        importer.update(10, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 500, 0, 0, 0);
         assertTrue("a city living on imports does read negative", importer.getGdp() < 0);
 
         /* ======== 3c. the two ways it went negative anyway ======== */
@@ -79,7 +79,7 @@ public class GdpCheck {
 
         // A quiet city: some retail, some rent, a little building, no backlog.
         NationalAccounts bulk = new NationalAccounts();
-        bulk.update(400, 350, 200, 0, 0, 1, 0, 2, 50, 0, 0, 0, 0);
+        bulk.update(400, 350, 200, 0, 0, 1, 0, 2, 0, 0, 50, 0, 0, 0, 0);
         double calm = bulk.getGdp();
         assertTrue("the quiet month is positive", calm > 0);
 
@@ -92,7 +92,7 @@ public class GdpCheck {
          * against it; the work-in-hand term that used to cancel it is gone
          * with the import it cancelled.
          */
-        bulk.update(400, 350, 200, 0, 0, 1, 0, 2, 50, 0, 0, 0, 0);
+        bulk.update(400, 350, 200, 0, 0, 1, 0, 2, 0, 0, 50, 0, 0, 0, 0);
         System.out.printf("   quiet month $%.0f, bulk-order month $%.0f%n", calm, bulk.getGdp());
         check("ordering is not output, and not an import either", bulk.getGdp(), calm);
 
@@ -101,7 +101,7 @@ public class GdpCheck {
         // builders' input and the work is their output, so the month reads
         // what they ADDED. $96,000 of houses built with $60,000 of imported
         // brick is $36,000 of the city's own production, over the quiet month.
-        bulk.update(400, 350, 200 + 96_000, 0, 0, 1, 0, 2, 50, 0, 60_000, 0, 0);
+        bulk.update(400, 350, 200 + 96_000, 0, 0, 1, 0, 2, 0, 0, 50, 0, 60_000, 0, 0);
         check("a month of building reads the value the builders added",
                 bulk.getGdp(), calm + 96_000 - 60_000);
         assertTrue("...which is positive", bulk.getGdp() > calm);
@@ -123,17 +123,55 @@ public class GdpCheck {
          * stock is nothing at all.
          */
         NationalAccounts shed = new NationalAccounts();
-        shed.update(400, 350, 200, 0, 0, 1, 0, 2, 50, 0, 0, 0, 0);
+        shed.update(400, 350, 200, 0, 0, 1, 0, 2, 0, 0, 50, 0, 0, 0, 0);
         double emptyShed = shed.getGdp();
-        shed.update(400, 350, 200, 0, 0, 1, 5_000, 2, 50, 0, 0, 0, 0);
+        shed.update(400, 350, 200, 0, 0, 1, 5_000, 2, 0, 0, 50, 0, 0, 0, 0);
         check("a plant filling its shed is production", shed.getInventoryMaterials(), 10_000);
         check("...and GDP rises by exactly that", shed.getGdp(), emptyShed + 10_000);
-        shed.update(400, 350, 200, 0, 0, 1, 5_000, 3, 50, 0, 0, 0, 0);
+        shed.update(400, 350, 200, 0, 0, 1, 5_000, 3, 0, 0, 50, 0, 0, 0, 0);
         check("...while a price move on the same stock is nothing",
                 shed.getInventoryMaterials(), 0);
-        shed.update(400, 350, 200, 0, 0, 1, 0, 3, 50, 0, 0, 0, 0);
+        shed.update(400, 350, 200, 0, 0, 1, 0, 3, 0, 0, 50, 0, 0, 0, 0);
         check("...and selling it into a contract runs the term the other way",
                 shed.getInventoryMaterials(), -15_000);
+
+        /*
+         * AND THE BOUTIQUE'S STOCKROOM, which is the case that was missing
+         * (2026-09-17) and the reason a fresh city read GDP of -$8,636k in
+         * month 7. A shop that imports three months of luxuries in one month
+         * pays the world for them - NX goes down by the landed cost - and the
+         * city still HAS them, so the same number has to come back as
+         * inventory or the month reads as a collapse in output.
+         *
+         * The numbers are one Boutique: 960 pieces at $9, which is the figure
+         * the playtest actually reported.
+         */
+        NationalAccounts boutique = new NationalAccounts();
+        boutique.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        boutique.update(0, 0, 0, 0, 0, 0, 0, 0, 960, 9, 0, 0, 0, 8_640, 0);
+        check("a shop stocking its first stockroom books it as production",
+                boutique.getInventoryLuxuries(), 8_640);
+        check("...so a month that is nothing but the import of it is not negative output",
+                boutique.getGdp(), 0);
+
+        /*
+         * ...and the month it SELLS is the month the margin scores, and only
+         * the margin. 320 pieces off the shelf at $14, refilled at $9: the
+         * shelf is level, so the inventory term is zero and the city's output
+         * is what the shop added, which is 320 x (14 - 9).
+         */
+        boutique.update(4_480, 0, 0, 0, 0, 0, 0, 0, 960, 9, 0, 0, 0, 2_880, 0);
+        check("...and a month of selling and restocking scores the margin alone",
+                boutique.getInventoryLuxuries(), 0);
+        check("...which is what a retailer adds", boutique.getGdp(), 1_600);
+
+        /*
+         * ...and running the stockroom down is consumption of something an
+         * earlier month produced, exactly as the food and materials terms are.
+         */
+        boutique.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0);
+        check("...and running it down runs the term the other way",
+                boutique.getInventoryLuxuries(), -8_640);
 
         System.out.println("\n--- a price move is not production ---");
 
@@ -146,15 +184,15 @@ public class GdpCheck {
          * inventory valuation adjustment for exactly this reason.
          */
         NationalAccounts holding = new NationalAccounts();
-        holding.update(400, 350, 200, 804_000, 0, 1.00, 0, 0, 50, 0, 0, 0, 0);
-        holding.update(400, 350, 200, 804_000, 0, 0.75, 0, 0, 50, 0, 0, 0, 0);
+        holding.update(400, 350, 200, 804_000, 0, 1.00, 0, 0, 0, 0, 50, 0, 0, 0, 0);
+        holding.update(400, 350, 200, 804_000, 0, 0.75, 0, 0, 0, 0, 50, 0, 0, 0, 0);
 
         check("an unchanged warehouse contributes nothing when the price moves",
                 holding.getInvestmentInventories(), 0);
         assertTrue("...and output stays positive", holding.getGdp() > 0);
 
         // ...while a real change in VOLUME still counts, priced at today's price.
-        holding.update(400, 350, 200, 904_000, 0, 0.75, 0, 0, 50, 0, 0, 0, 0);
+        holding.update(400, 350, 200, 904_000, 0, 0.75, 0, 0, 0, 0, 50, 0, 0, 0, 0);
         check("100,000 more units at $0.75 is $75,000 of production",
                 holding.getInvestmentInventories(), 75_000);
 
@@ -166,20 +204,20 @@ public class GdpCheck {
          * month's production - the same class of error, from the load path.
          */
         NationalAccounts loaded = new NationalAccounts();
-        loaded.restore(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);
-        loaded.update(400, 350, 200, 804_000, 0, 1.00, 0, 0, 50, 0, 0, 0, 0);
+        loaded.restore(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);
+        loaded.update(400, 350, 200, 804_000, 0, 1.00, 0, 0, 0, 0, 50, 0, 0, 0, 0);
         check("the first month after a legacy load books no inventory swing",
                 loaded.getInvestmentInventories(), 0);
 
         // ...and the month after that measures normally against it.
-        loaded.update(400, 350, 200, 810_000, 0, 1.00, 0, 0, 50, 0, 0, 0, 0);
+        loaded.update(400, 350, 200, 810_000, 0, 1.00, 0, 0, 0, 0, 50, 0, 0, 0, 0);
         check("...and the next month measures against it", 
                 loaded.getInvestmentInventories(), 6_000);
 
         // A new city is the opposite case: an empty warehouse is a REAL baseline,
         // so its first month of stock is real production and must be counted.
         NationalAccounts fresh = new NationalAccounts();
-        fresh.update(0, 0, 0, 1_000, 0, 1.00, 0, 0, 0, 0, 0, 0, 0);
+        fresh.update(0, 0, 0, 1_000, 0, 1.00, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         check("a new city's first stock IS production",
                 fresh.getInvestmentInventories(), 1_000);
 
@@ -190,7 +228,7 @@ public class GdpCheck {
 
         // A steel mill: 2,940 of steel shipped out, 2,640 of scrap bought in.
         // Only the 300 of difference is output this city produced.
-        trader.update(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2640, 2940);
+        trader.update(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2640, 2940);
         check("exports", trader.getExports(), 2940);
         check("raw material imported", trader.getImportsRawMaterial(), 2640);
         check("net exports is the difference", trader.getNetExports(), 300);
@@ -201,13 +239,13 @@ public class GdpCheck {
         // Shipping out below the cost of the input is a real thing and must
         // read as the value destruction it is.
         NationalAccounts dumping = new NationalAccounts();
-        dumping.update(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3000, 2500);
+        dumping.update(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3000, 2500);
         assertTrue("selling below the cost of the input subtracts",
                 dumping.getNetExports() < 0);
 
         // All three import lines total.
         NationalAccounts allImports = new NationalAccounts();
-        allImports.update(0, 0, 0, 0, 0, 1, 0, 0, 0, 30, 20, 50, 0);
+        allImports.update(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 30, 20, 50, 0);
         check("every import counted", allImports.getTotalImports(), 100);
         check("...and none of them is output", allImports.getNetExports(), -100);
 
@@ -216,7 +254,7 @@ public class GdpCheck {
 
         NationalAccounts year = new NationalAccounts();
         for (int m = 0; m < 12; m++) {
-            year.update(100, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+            year.update(100, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
         check("twelve months of 100", year.getAnnualGdp(), 1200);
         check("trend equals the month when flat", year.getTrendGdp(), 100);
@@ -225,7 +263,7 @@ public class GdpCheck {
 
         // Only ever the last twelve, even after two years.
         for (int m = 0; m < 12; m++) {
-            year.update(200, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+            year.update(200, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
         check("annual uses the last twelve only", year.getAnnualGdp(), 2400);
 
@@ -235,30 +273,30 @@ public class GdpCheck {
         NationalAccounts g = new NationalAccounts();
         check("no history -> no growth", g.getMonthlyGrowthAnnualised(), 0);
 
-        g.update(100, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        g.update(100, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         check("one month -> still nothing to compare", g.getMonthlyGrowthAnnualised(), 0);
 
-        g.update(102, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        g.update(102, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         // 2% a month compounds to 26.8% a year, not 24%.
         check("2%/mo annualised", g.getMonthlyGrowthAnnualised(), Math.pow(1.02, 12) - 1);
         assertTrue("...which is more than 12x the monthly rate",
                 g.getMonthlyGrowthAnnualised() > .02 * 12);
 
         // Shrinking reads negative.
-        g.update(51, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        g.update(51, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         assertTrue("a halved month is negative growth", g.getMonthlyGrowthAnnualised() < 0);
 
         NationalAccounts yoy = new NationalAccounts();
-        for (int m = 0; m < 12; m++) yoy.update(100, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        for (int m = 0; m < 12; m++) yoy.update(100, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         check("year on year needs 13 months", yoy.getYearOnYearGrowth(), 0);
-        yoy.update(110, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        yoy.update(110, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         check("13th month against the 1st", yoy.getYearOnYearGrowth(), .10);
 
         /* ==================== 6. government books ==================== */
         System.out.println("\n--- the government's own accounts ---");
 
         NationalAccounts gov = new NationalAccounts();
-        for (int m = 0; m < 12; m++) gov.update(1000, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        for (int m = 0; m < 12; m++) gov.update(1000, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         // taxes 100/50/75/200, utilities 30, land sold 45, property tax 25;
         // interest 40, capital 500, land bought 60.
         gov.updateGovernment(100, 50, 75, 200, 30, 45, 25, 40, 500, 60);

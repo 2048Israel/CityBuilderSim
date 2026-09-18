@@ -94,6 +94,10 @@ public class TradeCostCheck {
         { Good.CARS,                   44.0,       36.0    },
         { Good.VANS,                   72.0,   Double.NaN  },
         { Good.ROLLING_STOCK,        2400.0, Double.NaN    },
+        // The first thing a household buys that it does not need (2026-09-17).
+        // The world sells them and will not buy them back, for the reason the
+        // vans block in Good.java gives. See LuxuryRetail.
+        { Good.LUXURIES,                9.0, Double.NaN    },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */
@@ -462,10 +466,12 @@ public class TradeCostCheck {
          */
         net.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
         double cheapRoad = net.getEffectiveLoad();
-        double cheapTake = net.getTransitRiders() * TaxPolicy.DEFAULT_TRANSIT_FARE;
+        double cheapTake = net.getTransitRiders()
+                * TaxPolicy.DEFAULT_TRANSIT_FARE * TaxPolicy.JOURNEYS_A_MONTH;
         net.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE * 6);
         double dearRoad = net.getEffectiveLoad();
-        double dearTake = net.getTransitRiders() * TaxPolicy.DEFAULT_TRANSIT_FARE * 6;
+        double dearTake = net.getTransitRiders()
+                * TaxPolicy.DEFAULT_TRANSIT_FARE * 6 * TaxPolicy.JOURNEYS_A_MONTH;
         report("a dearer fare takes more money and puts more cars on the road",
                 dearTake > cheapTake && dearRoad > cheapRoad,
                 String.format("%s a month against %s, for %.0f more on the road",
@@ -482,6 +488,22 @@ public class TradeCostCheck {
          */
         TaxPolicy policy = new TaxPolicy();
         policy.setTransitFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
+        /*
+         * AND A RIDE IS NOT A MONTH (2026-09-17). The assertion that would
+         * have caught the original: the fare was charged ONCE per rider per
+         * month, so a monthly pass cost $2.50 against a $3,460 wage - seven
+         * hundredths of one percent - and the buses could never pay for
+         * themselves at any fare a player would set. A pass is a recognisable
+         * share of a wage or one of the two numbers is in the wrong unit.
+         */
+        double pass = policy.monthlyFare();
+        double wage = PayTier.UNSKILLED.getMonthlyWage();
+        report("a month of riding costs a commuter a share of a wage somebody would recognise",
+                pass > wage * .01 && pass < wage * .10,
+                String.format("%s a month against an unskilled wage of %s, %.1f%% of it",
+                        Formats.INSTANCE.cash(pass), Formats.INSTANCE.cash(wage),
+                        pass / wage * 100));
+
         double ridersBefore = InfrastructureManager.ridershipAt(policy.getTransitFare());
         policy.redenominate(1 / 100.0);
         report("a currency reform divides the fare like every other price",

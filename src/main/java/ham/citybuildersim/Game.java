@@ -1084,7 +1084,14 @@ public class Game {
             householdBalance.advanceMonth(families::get, disposable,
                     households.rentPerHousehold(), fees, actualShopping,
                     shops.getStoreSellPrice(), debtManager.getRate(),
-                    shops.getSupplyRatio());
+                    /*
+                     * THE HONEST SHARE, NOT THE SHOPS' OWN (2026-09-17). This
+                     * used to be getSupplyRatio(), whose denominator is demand
+                     * AFTER the shops capped it at what they could serve - so
+                     * the hunger measure downstream divided by a number the
+                     * shops had chosen. See Retail.getHouseholdShare().
+                     */
+                    shops.getHouseholdShare());
         } else {
             /*
              * The plan only. The savings and the debt came out of the save;
@@ -1126,6 +1133,14 @@ public class Game {
          * what a person-month is made of - see Retail.setBasket().
          */
         shops.setBasket(cityBasketPerHead());
+        /*
+         * ...AND SO DO THE KITCHENS, from the SAME call and not a copy of it.
+         * A meal out replaces groceries, which it can only do honestly if it
+         * is made of the food groceries are made of - so the two sectors read
+         * one basket, and the day Consumption changes what a person-month is,
+         * both of them change with it. See Restaurants.setBasket().
+         */
+        getSectors().restaurants().setBasket(cityBasketPerHead());
         shops.setSpendingCapacity(householdBalance.getSpendingCapacity());
         shops.setWantedSpend(householdBalance.getWantedSpend());
 
@@ -1213,6 +1228,10 @@ public class Game {
     private double householdCarsBought;
     private double householdCarSpend;
     private double householdCarImports;
+    private double householdCarCredit;
+
+    /** The second-hand market's month: offered, traded, what it cost and what a lender found. */
+    private double usedCarsTraded, usedCarsOffered, usedCarSpend, usedCarCredit, usedCarPrice;
 
     /** Cars the households bought this month. */
     public double getHouseholdCarsBought() { return householdCarsBought; }
@@ -1220,6 +1239,24 @@ public class Game {
     /** ...what they paid for them, and what of that left the country. */
     public double getHouseholdCarSpend()   { return householdCarSpend; }
     public double getHouseholdCarImports() { return householdCarImports; }
+
+    /** ...and what of it the bank advanced rather than the household finding. */
+    public double getHouseholdCarCredit()  { return householdCarCredit; }
+
+    /** Cars that changed hands second-hand this month. */
+    public double getUsedCarsTraded()      { return usedCarsTraded; }
+
+    /** ...against what was put up for sale, which in a crash is far more. */
+    public double getUsedCarsOffered()     { return usedCarsOffered; }
+
+    /** What one went for. Zero in a month when nobody offered one. */
+    public double getUsedCarPrice()        { return usedCarPrice; }
+
+    /** What the buyers paid for them, all in. */
+    public double getUsedCarSpend()        { return usedCarSpend; }
+
+    /** ...and what of that a lender advanced. */
+    public double getUsedCarCredit()       { return usedCarCredit; }
 
     private void motoring() {
 
@@ -1237,6 +1274,12 @@ public class Game {
         householdCarsBought = 0;
         householdCarSpend = 0;
         householdCarImports = 0;
+        householdCarCredit = 0;
+        usedCarsTraded = 0;
+        usedCarsOffered = 0;
+        usedCarSpend = 0;
+        usedCarCredit = 0;
+        usedCarPrice = 0;
 
         // Fifteen years on, cars are scrapped - whether or not anything can be
         // bought to replace them. See HouseholdBalance.wearOutCars().
@@ -1256,6 +1299,30 @@ public class Game {
          */
         double ceiling = 1 - HouseholdBalance.TRANSIT_DETERRENT * roads.getTransitCover();
 
+        /*
+         * THE SECOND-HAND MARKET FIRST, and the order is the whole point.
+         *
+         * A household that cannot feed itself next month puts the car up here,
+         * and a household that could never afford a showroom price buys it.
+         * Clearing this BEFORE the new-car pass means the cheap cars go first,
+         * which is what happens: nobody pays forty for a car they can have for
+         * twelve. It also means the families who had to sell have the money in
+         * the bank before the month whose bills they sold it for.
+         *
+         * AND THE BANK IS TOLD, for the same reason it is told about a new one:
+         * a used car bought on credit is the bank's cash leaving for a seller's
+         * account against a debt that did not exist a moment ago. The seller
+         * here is another household rather than a showroom, so the transfer
+         * itself nets to nothing across the household pool and only the
+         * borrowed part crosses a boundary. See HouseholdBalance.clearUsedCars().
+         */
+        usedCarsTraded = householdBalance.clearUsedCars(asking, ceiling);
+        usedCarPrice = householdBalance.getUsedCarPrice();
+        usedCarsOffered = householdBalance.getUsedCarsOffered();
+        usedCarSpend = householdBalance.getUsedCarSpend();
+        usedCarCredit = householdBalance.getUsedCarsFinanced();
+        if (usedCarCredit > 0) bank.lendToHouseholds(usedCarCredit);
+
         if (asking > 0) {
             double wanted = householdBalance.carsWanted(asking, ceiling);
             if (wanted > 0) {
@@ -1270,12 +1337,151 @@ public class Game {
                     householdCarsBought = took.units();
                     householdCarSpend = householdBalance.takeCars(took.units(), paid, ceiling);
                     householdCarImports = took.importCost();
+                    /*
+                     * AND THE BANK FINDS THE REST OF IT (2026-09-17).
+                     *
+                     * A financed car is money leaving the bank's own cash for
+                     * a seller's till, against a debt that did not exist a
+                     * moment ago - which is a pool falling, and the audit will
+                     * say so unless the bank is told. It is told HERE rather
+                     * than through totalBorrowed() in the household month,
+                     * because that ran three lines above this and its working
+                     * fields are cleared before the next one. See
+                     * HouseholdBalance.CAR_DEPOSIT.
+                     */
+                    householdCarCredit = householdBalance.getCarsFinanced();
+                    bank.lendToHouseholds(householdCarCredit);
                 }
             }
         }
 
         // ...and the road is told what is now parked on it.
         roads.setCarOwnership(householdBalance.carsPerHousehold());
+    }
+
+    /* =====================================================================
+       THE LUXURY COUNTER (2026-09-17)
+
+       Jerus: "lets add restuarants as well as luxury stores, these two will
+       absorb some spending as well", and on the pricing, "supply v demand,
+       thats the most important thing."
+
+       THE SHAPE IS motoring()'s, and deliberately: ask the seller a price, ask
+       the households what they will take at it, hand over what the seller
+       actually had, take the money. What is different is that the seller here
+       strikes its price against the QUEUE rather than reading it off a market
+       band - the world has no shortage of watches, so the scarce thing is the
+       shop, and the shop is what a player builds. See LuxuryRetail.
+       ===================================================================== */
+
+    private double luxuriesSold, luxurySpend, luxuryPrice, luxuryWanted;
+    private double mealsServed, mealSpend, mealPrice, mealsWanted;
+
+    /** Meals the kitchens served the households this month. */
+    public double getMealsServed()  { return mealsServed; }
+
+    /** ...and what the households paid for them. */
+    public double getMealSpend()    { return mealSpend; }
+
+    /** ...at this price a meal, struck against the queue at the door. */
+    public double getMealPrice()    { return mealPrice; }
+
+    /** ...against this many meals they came for. */
+    public double getMealsWanted()  { return mealsWanted; }
+
+    /**
+     * The month's dining out.
+     *
+     * THE SHAPE IS luxuryShopping()'s, and deliberately: ask the households at
+     * the margin's FLOOR to measure the queue, strike the margin on it, ask
+     * again at what was struck, serve what the tables and the larder allow,
+     * take the money. Every market in this game breaks the circle between a
+     * price and the demand for it the same way.
+     *
+     * WHAT IS DIFFERENT IS THE FOOD. A boutique's stock comes off a ship and
+     * the city can have as much as it will pay for; a kitchen's comes out of
+     * the same thirteen markets the shops buy in, so serving a dinner takes
+     * food off a shelf somebody else was going to eat from. That is the
+     * pressure, and it is the point.
+     */
+    private void diningOut() {
+        mealsServed = 0;
+        mealSpend = 0;
+        mealPrice = 0;
+        mealsWanted = 0;
+
+        ham.citybuildersim.sectors.Restaurants kitchens = getSectors().restaurants();
+        if (kitchens == null) return;
+
+        double food = kitchens.foodCostOfAMeal(getMarkets());
+        if (!(food > 0)) return;
+        double atTheFloor = food * ham.citybuildersim.sectors.Restaurants.MARGIN_FLOOR;
+        mealsWanted = householdBalance.mealsWanted(atTheFloor);
+
+        double price = kitchens.strikeMargin(getMarkets(), mealsWanted);
+        if (!(price > 0)) return;
+        mealPrice = price;
+
+        // ...and now at what was actually struck, which is fewer than came at
+        // the floor: a dear kitchen is a kitchen some people walk past.
+        double affordable = householdBalance.mealsWanted(price);
+        if (!(affordable > 0)) return;
+
+        double served = kitchens.serve(getMarkets(), affordable);
+        if (!(served > 0)) return;
+
+        mealsServed = served;
+        mealSpend = householdBalance.takeMeals(served, price);
+    }
+
+
+    /** Pieces the households bought over a counter this month. */
+    public double getLuxuriesSold()  { return luxuriesSold; }
+
+    /** ...what they paid for them... */
+    public double getLuxurySpend()   { return luxurySpend; }
+
+    /** ...what one went for... */
+    public double getLuxuryPrice()   { return luxuryPrice; }
+
+    /** ...and how many they came for, which in a city short of shops is more. */
+    public double getLuxuryWanted()  { return luxuryWanted; }
+
+    private void luxuryShopping() {
+        luxuriesSold = 0;
+        luxurySpend = 0;
+        luxuryPrice = 0;
+        luxuryWanted = 0;
+
+        ham.citybuildersim.sectors.LuxuryRetail shops = getSectors().luxuryRetail();
+        if (shops == null) return;
+
+        /*
+         * THE QUEUE IS MEASURED IN MONEY AND THE STRIKE NEEDS IT IN PIECES, so
+         * it is asked at the margin's FLOOR - the cheapest the shops could
+         * possibly be. That is the largest honest reading of how many people
+         * came, which is what the position wants: a queue is a queue whatever
+         * the shop ends up charging it.
+         */
+        double landed = Math.max(0, getMarkets().get(Good.LUXURIES).getLocalPrice());
+        if (landed <= 0) landed = Good.LUXURIES.worldImportPrice();
+        double atTheFloor = landed * ham.citybuildersim.sectors.LuxuryRetail.MARGIN_FLOOR;
+        luxuryWanted = householdBalance.luxuriesWanted(atTheFloor);
+
+        double price = shops.strikeMargin(getMarkets(), luxuryWanted);
+        if (!(price > 0)) return;
+        luxuryPrice = price;
+
+        // ...and now at what was actually struck, which is less than came at
+        // the floor: a dear shop is a shop some people walk out of.
+        double affordable = householdBalance.luxuriesWanted(price);
+        if (!(affordable > 0)) return;
+
+        double sold = shops.serve(getMarkets(), affordable);
+        if (!(sold > 0)) return;
+
+        luxuriesSold = sold;
+        luxurySpend = householdBalance.takeLuxuries(sold, price);
     }
 
     /**
@@ -1590,6 +1796,23 @@ public class Game {
          * firm PRODUCES, not how much plant it owns.
          */
         for (Sector sector : getSectors().all()) {
+            /*
+             * HELD MEANS HELD, IN BOTH DIRECTIONS (2026-09-17).
+             *
+             * holdSector() was honoured by the investment loop above and not by
+             * this one, so a harness that took a sector out of the planner's
+             * hands still had the planner DEMOLISHING its fixture. RailCheck
+             * found it: it lays six extra spurs to ask what an over-built
+             * railway can charge, and the distress rule below quietly scrapped
+             * them - 618,701k of track in the build before this batch, 422,566k
+             * after, and the assertion failed for the one reason it is not
+             * allowed to, which is that a planner decided its subject.
+             *
+             * That class's own header says it: "An assertion whose subject is
+             * decided by a planner is an assertion about the planner." It was
+             * written about the investment loop and is just as true here.
+             */
+            if (businessInvestment.isHeld(sector.key())) continue;
             int orders = buildingManager.getUnderConstructionBySector(sector.key());
             int shed = 0;
             double[] measure = sector.retirementDemandAndCapacity(this);
@@ -4166,6 +4389,23 @@ public class Game {
          */
         motoring();
 
+        /*
+         * ...AND THEY SPEND THE REST OF IT ON SOMETHING THEY DO NOT NEED.
+         * Straight after the cars and for the same reasons: the savings are
+         * fresh, and a month of luxury sales is demand the investor below
+         * should be able to see. See luxuryShopping().
+         */
+        luxuryShopping();
+
+        /*
+         * ...AND THE KITCHENS, right after, because they are the same kind of
+         * purchase out of the same surplus. After the boutiques rather than
+         * before them for no better reason than that the boutiques were
+         * written first; the two budgets are struck separately in
+         * Household.plan() and neither can spend the other's.
+         */
+        diningOut();
+
         // Then advance the loans, take back matured principal, and lend to
         // whichever sector the month left short.
         economyManager.settleBusinessCredit(month);
@@ -5033,7 +5273,7 @@ public class Game {
                         populationManager.getWagesPerType(), fill)
                         + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE),
                 getInfrastructureManager().getTransitRiders()
-                        * economyManager.getTaxPolicy().getTransitFare());
+                        * economyManager.getTaxPolicy().monthlyFare());
 
         /*
          * 7. And who is too ill to work. Last, because the dead nobody buried
@@ -6723,7 +6963,7 @@ public class Game {
                     populationManager.getWagesPerType(), populationManager.getJobFillRate())
                     + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE),
             getInfrastructureManager().getTransitRiders()
-                    * economyManager.getTaxPolicy().getTransitFare());
+                    * economyManager.getTaxPolicy().monthlyFare());
 
     /*
      * EVERY SECTOR'S WAGES, in one call - the same call the monthly path

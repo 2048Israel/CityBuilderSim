@@ -1,0 +1,24 @@
+Render started 2026-09-17  8:07:38.95 
+javac: javac 
+ 
+---- compiling ---- 
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+src\main\resources\buildings.json
+src\main\resources\consumption.json
+        2 file(s) copied.
+ 
+---- rendering ---- 
+Sep 17, 2026 8:07:43 A.M. com.sun.javafx.application.PlatformImpl startup
+WARNING: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @19434ef8'
+Roads: 760x2600  column pref 679
+Transit: 760x2600  column pref 560
+The railway: 760x2600  column pref 679
+Freight: 760x2600  column pref 560
+done -> C:\Users\Jerus\Documents\NetBeansProjects\CityBuilderSim\Claude outputs
+ 
+Finished 2026-09-17  8:07:46.05 
+infra-freightPage.png
+infra-infraRoadsPage.png
+infra-railwayPage.png
+infra-transitPage.png

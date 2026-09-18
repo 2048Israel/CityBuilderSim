@@ -237,6 +237,26 @@ public class FoodProcessingCheck {
          * below are about, and it is reached by construction rather than by
          * counting on the calendar.
          */
+        /*
+         * AND THE SECTOR IS HELD WHILE THE CITY GROWS (2026-09-17), which is
+         * what the paragraph above was reaching for and did not quite get.
+         *
+         * The loop below grows the city until this sector SAYS it wants a
+         * plant, and then asserts that it still owns nothing. Nothing stopped
+         * the investment loop building one first: plan() is only asked at the
+         * top of each iteration, so a month in which the sector both became
+         * willing and was funded left the fixture asking its question of a
+         * sector that already had a pipeline. It survived on timing, and the
+         * day households started spending their dividends the timing moved and
+         * it went red - on a change that has nothing to do with food.
+         *
+         * holdSector() takes the investment loop out of it. plan() is a pure
+         * reading and still answers, so the loop below is unaffected; what
+         * cannot happen any more is the sector acting on the answer. "Reached
+         * by construction rather than by counting on the calendar" - now true.
+         */
+        game.getBusinessInvestment().holdSector(fp.key());
+
         quietly(() -> {
             LongPlaytest.build(game, "House", 40);
             LongPlaytest.build(game, "Convenience Store", 3);

@@ -379,11 +379,18 @@ public class CarCheck {
                 String.format("%.1f%% after a century - the throttled-replacement plateau is 78%%",
                         rich.carsPerHousehold() * 100));
 
+        /*
+         * NO CASH AND NO CREDIT, which is what "cannot afford" has to mean
+         * since 2026-09-17: a household finances four fifths of a car now (see
+         * HouseholdBalance.CAR_DEPOSIT), so savings of zero alone no longer
+         * settles it. Disposable of zero closes both doors at once - no
+         * deposit, and creditRoom() of nothing.
+         */
         HouseholdBalance broke = new HouseholdBalance();
         Household poor = broke.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         poor.households = 1000;
         poor.savings = 0;
-        poor.disposable = 10;
+        poor.disposable = 0;
         poor.cars = 1;
         for (int i = 0; i < 1200; i++) {
             broke.wearOutCars();
@@ -392,6 +399,242 @@ public class CarCheck {
         report("...and a city that cannot loses its fleet over the life of a car",
                 broke.carsPerHousehold() < .01,
                 String.format("%.2f%% left", broke.carsPerHousehold() * 100));
+
+        /* ================================================================
+           THE DEPOSIT AND THE LOAN (2026-09-17)
+           ================================================================ */
+
+        System.out.println("\n--- and they borrow for it ---");
+
+        double priceOne = 100;
+
+        /*
+         * A CELL THAT CANNOT QUITE PAY CASH. It is short by half the bill, so
+         * half of what it buys is borrowed - which is the case the whole change
+         * exists for. Under the rule this replaced it would have bought half as
+         * many cars and owed nothing.
+         */
+        HouseholdBalance lender = new HouseholdBalance();
+        Household buyer = lender.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
+        buyer.households = 1000;
+        buyer.disposable = 10;
+        buyer.savings = 1 + HouseholdBalance.SHARE_CUSHION_MONTHS * 10;   // $1 spare each
+        lender.wearOutCars();
+
+        double wanted = lender.carsWanted(priceOne, 1);
+        double billPer = wanted * priceOne / buyer.households();
+        report("a household short of the cash still buys, on credit",
+                wanted > 0 && billPer > 1,
+                String.format("%,.0f cars - $%,.2f each against $1.00 of spare cash",
+                        wanted, billPer));
+
+        double cashWas = buyer.savings();
+        double debtBefore = buyer.debt();
+        double paidOut = lender.takeCars(wanted, priceOne, 1);
+        double cashPaid = (cashWas - buyer.savings()) * buyer.households();
+        double borrowed = (buyer.debt() - debtBefore) * buyer.households();
+
+        report("...and the seller is paid in full",
+                Math.abs(paidOut - wanted * priceOne) < 1e-6,
+                String.format("$%,.0f for %,.0f cars", paidOut, wanted));
+        report("...of which the household paid every penny it had spare",
+                Math.abs(cashPaid - 1 * buyer.households()) < 1e-6,
+                String.format("$%,.0f of $%,.0f", cashPaid, paidOut));
+        report("...and a lender found the difference, and said so",
+                borrowed > 0 && Math.abs(lender.getCarsFinanced() - borrowed) < 1e-6,
+                String.format("$%,.0f, reported as $%,.0f", borrowed, lender.getCarsFinanced()));
+        report("...and the two halves are the whole price",
+                Math.abs(cashPaid + borrowed - paidOut) < 1e-6, "");
+
+        /*
+         * AND A HOUSEHOLD THAT CAN PAY CASH OWES NOTHING, which is what makes
+         * this change incapable of refusing anybody the old rule would have
+         * served. The first draft of it could: a fixed fifth down and the rest
+         * borrowed moved the binding constraint from savings, which this
+         * model's households have in abundance, to a credit line sized off
+         * income, which they do not - and ownership at month 266 fell from 42%
+         * to 11%. The ensemble caught it.
+         */
+        HouseholdBalance rich2 = new HouseholdBalance();
+        Household flush = rich2.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
+        flush.households = 1000;
+        flush.disposable = 10;
+        flush.savings = 100_000;
+        rich2.wearOutCars();
+        double bought2 = rich2.carsWanted(priceOne, 1);
+        rich2.takeCars(bought2, priceOne, 1);
+        report("a household that can pay cash borrows nothing",
+                bought2 > 0 && same(flush.debt(), 0) && same(rich2.getCarsFinanced(), 0),
+                String.format("%,.0f cars, $%,.2f of debt", bought2, flush.debt()));
+
+        /*
+         * NO CASH AND NO CREDIT IS STILL NO CAR. The deposit test is what stops
+         * a family borrowing one into existence with nothing down.
+         */
+        HouseholdBalance maxedOut = new HouseholdBalance();
+        Household stretched = maxedOut.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
+        stretched.households = 1000;
+        stretched.disposable = 10;
+        stretched.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * 10;   // nothing spare
+        stretched.debt = HouseholdBalance.CREDIT_LIMIT_MONTHS * 10;       // at the ceiling
+        report("a household with nothing down and no room left buys nothing",
+                same(maxedOut.carsWanted(priceOne, 1), 0),
+                String.format("room $%,.2f", stretched.creditRoom(stretched.disposable())));
+
+        /*
+         * AND OWING SOMETHING IS NOT OWING EVERYTHING. The old rule refused any
+         * household with a dollar of debt - copied from the share offer, where
+         * it belongs - and that is the line this batch exists to remove.
+         */
+        HouseholdBalance owing = new HouseholdBalance();
+        Household indebted = owing.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
+        indebted.households = 1000;
+        indebted.disposable = 10;
+        indebted.savings = 1_000;
+        indebted.debt = 1;
+        report("...but a household that owes a little still buys one",
+                owing.carsWanted(priceOne, 1) > 0,
+                String.format("%,.0f cars while owing $1 each",
+                        owing.carsWanted(priceOne, 1)));
+
+        /* =================================================================
+           AND A FAMILY IN TROUBLE SELLS IT (2026-09-17)
+
+           Jerus: "if they are doing bad they cut back expenses, sell their
+           cars or go for cheaper groceries and so on."
+
+           The waterfall in Household.settle() ran savings, then the paper
+           abroad, then the shares, then the credit line, then going without -
+           and a CAR was in none of it. This is the missing step, and the
+           second-hand market that has to exist for it to mean anything.
+           ================================================================= */
+        System.out.println("\n--- and a family in trouble sells the car ---");
+
+        double sticker = 100;
+        double floorPrice = sticker * HouseholdBalance.USED_CAR_FLOOR;
+        double ceilPrice = sticker * HouseholdBalance.USED_CAR_CEILING;
+
+        /*
+         * A CITY OF TWO CELLS. One has a car and cannot feed itself: its wage
+         * after the fixed bills is half what the food costs, and it has nothing
+         * saved and nothing left to borrow. The other has money and no car.
+         * That is the whole market.
+         */
+        HouseholdBalance town = new HouseholdBalance();
+        Household skint = town.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        skint.households = 1000;
+        skint.disposable = 4;
+        skint.afterFixed = 1;
+        skint.subsistence = 3;                       // short by $2 a month
+        skint.savings = 0;
+        skint.debt = HouseholdBalance.CREDIT_LIMIT_MONTHS * 4;   // no room left
+        skint.cars = 1;
+
+        Household comfortable = town.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
+        comfortable.households = 1000;
+        comfortable.disposable = 10;
+        comfortable.afterFixed = 8;
+        comfortable.subsistence = 3;
+        comfortable.savings = 10_000;
+        town.wearOutCars();
+
+        double offered = town.carsOffered(floorPrice);
+        report("a household that cannot feed itself puts the car up",
+                offered > 0,
+                String.format("%,.0f cars offered", offered));
+
+        double fleetBefore = town.totalCars();
+        double skintCashWas = skint.savings();
+        double buyerCashWas = comfortable.savings();
+        double traded = town.clearUsedCars(sticker, 1);
+        double price = town.getUsedCarPrice();
+
+        report("...and somebody buys it",
+                traded > 0, String.format("%,.0f cars changed hands at $%,.2f", traded, price));
+        report("...for less than a new one, and more than scrap",
+                price > floorPrice && price < ceilPrice,
+                String.format("$%,.2f, between $%,.2f and $%,.2f", price, floorPrice, ceilPrice));
+
+        /*
+         * THE FLEET DOES NOT SHRINK, WHICH IS THE WHOLE ARGUMENT FOR A DOMESTIC
+         * MARKET OVER SELLING THEM ABROAD. A used car is not consumed by being
+         * sold; it moves from a family that cannot keep it to one that could
+         * never have afforded a new one.
+         */
+        report("the fleet did not shrink - it changed hands",
+                same(town.totalCars(), fleetBefore),
+                String.format("%,.2f cars before, %,.2f after", fleetBefore, town.totalCars()));
+        report("...off the family that could not keep it",
+                skint.cars() < 1 - 1e-12,
+                String.format("%.4f cars each, from 1.0000", skint.cars()));
+        report("...and onto the one that could",
+                comfortable.cars() > 0,
+                String.format("%.4f cars each, from 0", comfortable.cars()));
+
+        /*
+         * AND THE MONEY IS A TRANSFER. What the buyers paid is what the sellers
+         * got, to the penny, which is what lets the audit see nothing: both
+         * pools are household savings. The only cash crossing a boundary is
+         * what a buyer borrowed, and Game.motoring() tells the bank about that.
+         */
+        double sellerGot = (skint.savings() - skintCashWas) * skint.households();
+        double buyerPaid = (buyerCashWas - comfortable.savings()) * comfortable.households();
+        double lent = town.getUsedCarsFinanced();
+        report("the seller was paid what the car went for",
+                Math.abs(sellerGot - traded * price) < 1e-6,
+                String.format("$%,.2f for %,.0f cars at $%,.2f", sellerGot, traded, price));
+        report("...and every dollar of it came out of a buyer or a lender",
+                Math.abs(buyerPaid + lent - sellerGot) < 1e-6,
+                String.format("$%,.2f paid + $%,.2f lent = $%,.2f", buyerPaid, lent, sellerGot));
+
+        /*
+         * A HOUSEHOLD THAT CAN RIDE IT OUT KEEPS THE CAR, which is the other
+         * half of the rule and the reason it is not simply "the poor sell".
+         * Same wage, same food bill, same car - and six months of savings.
+         */
+        HouseholdBalance patient = new HouseholdBalance();
+        Household squeezed = patient.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        squeezed.households = 1000;
+        squeezed.disposable = 4;
+        squeezed.afterFixed = 1;
+        squeezed.subsistence = 3;
+        squeezed.debt = HouseholdBalance.CREDIT_LIMIT_MONTHS * 4;
+        squeezed.cars = 1;
+        squeezed.savings = HouseholdBalance.CAR_SALE_HORIZON_MONTHS * 2 + 1;   // one more than the gap needs
+        patient.wearOutCars();
+        report("a household that can ride the gap out keeps it",
+                same(patient.carsOffered(floorPrice), 0),
+                String.format("$%,.2f saved against a $2.00 gap for %.0f months",
+                        squeezed.savings(), HouseholdBalance.CAR_SALE_HORIZON_MONTHS));
+
+        /*
+         * AND THE PART NOBODY HAD TO WRITE: A CITY CANNOT SELL ITS WAY OUT OF A
+         * CRASH. The price is struck the way GoodsMarket strikes one, so when
+         * everybody is selling and nobody is buying the position is zero and the
+         * price is the floor. Personal bad luck is insurable; a downturn is not.
+         */
+        HouseholdBalance crash = new HouseholdBalance();
+        Household ruined = crash.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        ruined.households = 10_000;
+        ruined.disposable = 4;
+        ruined.afterFixed = 1;
+        ruined.subsistence = 3;
+        ruined.savings = 0;
+        ruined.debt = HouseholdBalance.CREDIT_LIMIT_MONTHS * 4;
+        ruined.cars = 1;
+        crash.wearOutCars();
+        // ...measured after the wear, which takes its 1/180 whatever the market
+        // does: what this asserts is that the MARKET moved nothing.
+        double stuck = ruined.cars();
+        double dumped = crash.clearUsedCars(sticker, 1);
+        report("a city where everybody is selling gets the floor and nothing else",
+                same(crash.getUsedCarPrice(), floorPrice) && same(dumped, 0)
+                        && crash.getUsedCarsOffered() > 0,
+                String.format("%,.0f offered, %,.0f sold, at $%,.2f - the floor is $%,.2f",
+                        crash.getUsedCarsOffered(), dumped, crash.getUsedCarPrice(), floorPrice));
+        report("...so the cars stay where they were, and so does the hunger",
+                same(ruined.cars(), stuck),
+                String.format("%.4f cars each, exactly what they had", ruined.cars()));
 
         /* ---- transit deters the purchase ---- */
 

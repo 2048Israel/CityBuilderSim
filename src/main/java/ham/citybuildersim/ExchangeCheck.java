@@ -433,11 +433,28 @@ public class ExchangeCheck {
         close("...declared as a financial outflow", idle.getSentAbroad(), 100 * firstMove, 1e-9);
         idle.investAbroad(0, W, 1.0);
         double coupon = firstMove * W / 12;
-        assertTrue("the next month it earns the world's rate, rolled there", couple(idle).foreignInterest() > 0
+        /*
+         * PAID HOME, NOT ROLLED (2026-09-17), and this pair of lines is where
+         * the harness had the old rule written into its arithmetic.
+         *
+         * The coupon used to be added to the pile where it was earned, so a
+         * month later the holding abroad was `held x (1 + W/12)` and a tenth of
+         * THAT came home. It is banked at home the month it is earned now - see
+         * HouseholdBalance.investAbroad(), and the $2,649bn of compounding that
+         * bought - so the holding is simply `held`.
+         *
+         * THE PREMISE IS UNTOUCHED: a tenth of what is held abroad comes home
+         * in a month, which is HOME_SPEED and is what this line is for. What
+         * moved is what "held" means, and it moved because the model moved.
+         * The coupon itself is still earned, still at the world's rate, and is
+         * still asserted to the digit one line up.
+         */
+        assertTrue("the next month it earns the world's rate", couple(idle).foreignInterest() > 0
                 && Math.abs(couple(idle).foreignInterest() - coupon) < 1e-9);
         double held = couple(idle).abroad();
         idle.investAbroad(.05, W, 1.0);                     // the bank pays more than the world
-        close("when the bank pays more, a tenth comes home a month", couple(idle).broughtHome(), held * (1 + W / 12) * OutwardInvestment.HOME_SPEED, 1e-9);
+        close("when the bank pays more, a tenth comes home a month",
+                couple(idle).broughtHome(), held * OutwardInvestment.HOME_SPEED, 1e-9);
         HouseholdBalance owing = savers(100.0, 4.0);
         couple(owing).debt = 5.0;
         owing.investAbroad(0, W, 1.0);

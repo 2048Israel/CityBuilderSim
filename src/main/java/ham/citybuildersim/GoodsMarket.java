@@ -388,9 +388,34 @@ public final class GoodsMarket {
         return rDemand > getSupply();
     }
 
-    /** The price a month traded at, put back on load - restored, never recomputed. */
+    /**
+     * The price a month traded at, put back on load - restored, never
+     * recomputed.
+     *
+     * ZERO IS A PRICE (2026-09-17). This refused anything that was not
+     * strictly positive, which was defensiveness against a missing figure and
+     * was silently wrong for the goods this game gained on 2026-09-16: VANS
+     * and ROLLING_STOCK are the first two the world will NOT buy, so their
+     * floor is zero, and strike() sets a good with makers and no takers to
+     * exactly its floor. A city that saved a rolling-stock price of $0 - which
+     * is every city with a locomotive works and no railway wanting trains -
+     * reloaded with the guard dropping it and the OPENING price, mid-band,
+     * left in its place.
+     *
+     * Measured: seed 7 of the van ensemble, month 2484, one month, $1,200.00
+     * against $0.00 - the mid-point of a $0-$2,400 band against its floor. It
+     * did not cascade, because the next strike re-priced both cities the same
+     * way, and it is exactly the kind of one-month difference that is a
+     * coincidence away from being a different city.
+     *
+     * A market absent from the save is not restored at all (Markets.restore
+     * iterates what the save carries), so an absent figure and a saved zero
+     * were never the same thing and did not need one guard between them. What
+     * is refused now is what should always have been refused: a negative price
+     * and a NaN.
+     */
     public void setLocalPrice(double price) {
-        if (price > 0 && Double.isFinite(price)) localPrice = price;
+        if (price >= 0 && Double.isFinite(price)) localPrice = price;
     }
 
     /** The last strike's inputs, put back so the screens read the saved month. */

@@ -461,6 +461,7 @@ public class Exchange {
             return Math.max(0, BUYBACK_PACE / 12 * register.getShares(c) - ownBoughtThisMonth);
         }
         double room = Math.max(0, CAPACITY * limit[c] - register.getDealerShares(c));
+
         double bookRoom = Math.max(0, bookLimit - bookAtFair(register)) / fair[c];
         return Math.min(room, bookRoom);
     }
@@ -472,6 +473,15 @@ public class Exchange {
         return total;
     }
 
+    /**
+     * The desk's own room, in money, and it is a POSITION not a rate.
+     *
+     * Struck each month at BOOK_LIMIT of the bank's equity - but struck in
+     * startMonth(), which runs AFTER the households have settled theirs, so
+     * for the first half of every month this field is last month's figure.
+     * See redenominate(): that is why it has to be divided rather than left
+     * to be re-struck.
+     */
     private double bookLimit;
     private double ownBoughtThisMonth;
 
@@ -955,6 +965,36 @@ public class Exchange {
     public void redenominate(double scale) {
         minFair *= scale;
         minDealerEquity *= scale;
+        /* =================================================================
+           AND THE DESK'S OWN ROOM (2026-09-17)
+
+           IS THE FIELD MONEY? THEN IT BELONGS ON THIS LINE. bookLimit is
+           BOOK_LIMIT of the bank's equity, which is money, and it was left
+           here at its old size - so a reformed city's share desk believed it
+           had a HUNDRED TIMES the room it had, for half a month.
+
+           HALF A MONTH IS ENOUGH. It is re-struck in startMonth(), which runs
+           after the households have settled theirs, and settling is where a
+           household short of the shop sells its shares rather than borrowing.
+           So the reformed city's desk stood ready to buy where the plain
+           city's desk was full.
+
+           WHAT IT COST: DenominationCheck's cell 69 - a household with no
+           savings, nothing abroad and a grocery bill it could not meet - sold
+           nothing in the plain city and $1.03 of shares in the reformed one,
+           and borrowed the difference instead. Household debt across the city
+           was 4.2% apart within ONE month of the reform. The share flows went
+           with it, the households' money abroad with those, and the exchange
+           rate with that: 2.07e-09 on the currency in the month of the reform
+           against a 1e-09 band, and a tenth of a percent on output, rent, the
+           price level and the bank a decade later.
+
+           IT HAD BEEN THERE SINCE THE DESK WAS WRITTEN and nothing had ever
+           moved GDP enough to land the cancellation underneath it on the other
+           side of zero. Luxury Retail did. A latent one of this family is not
+           a harmless one; it is one nobody has perturbed yet.
+           ================================================================= */
+        bookLimit *= scale;
         for (int c = 0; c < n; c++) {
             mid[c] *= scale; fair[c] *= scale; lastMid[c] *= scale;
             soldToHouseholds[c] *= scale; boughtFromHouseholds[c] *= scale;

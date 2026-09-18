@@ -1376,6 +1376,180 @@ public class BuildingManager {
 
         templates.add(vehicleWorks);
 
+        /* ===================================================================
+           THE LUXURY SHOPS (2026-09-17)
+
+           They make nothing and that is the point. A boutique buys a watch
+           from the world and sells it over a counter, and the only thing it
+           adds - the only thing this city can be SHORT of - is the counter.
+           See Good.LUXURY_TRADE and LuxuryRetail.
+
+           COVERAGE PER DOLLAR IS DELIBERATELY WORSE THAN A GROCER'S. A
+           Convenience Store covers 480 people for $442k; a Boutique covers 320
+           for $1,180k, which is eight times the money a head. Selling somebody
+           a watch takes more floor, more staff and more of both per customer
+           than selling them bread, and a city that wants to spend its money
+           has to build for it rather than have it happen.
+           =================================================================== */
+        BuildingsTemplate boutique = new BuildingsTemplate("Boutique", BuildingType.LUXURY)
+                .setSector("Luxury Retail")
+                .makes(Good.LUXURY_TRADE, 320)          // customers served a month
+                .uses(Good.LUXURIES, 320)               // one piece each, bought in
+                .setCashCost(1180)
+                .setConstructionPoints(190)
+                .setConstructionMaterials(26)
+                .setElectricityConsumption(9)
+                .setWaterConsumption(1)
+                .setLandSqFt(6000)
+                .setRoadLoad(8)
+                .setStock(960)                          // three months on the shelf
+                .setJobs(JobType.NO_DIPLOMA, 2)
+                .setJobs(JobType.DIPLOMA, 4)
+                .setJobs(JobType.COLLEGE_BUSINESS, 1)
+                .setId(69);
+        boutique.setCoverage(320);
+        templates.add(boutique);
+
+        /*
+         * ...AND THE BIG ONE, which is where a large city actually spends.
+         * Thirteen times the customers on eighteen times the money, so it is
+         * the worse buy per head until the city is big enough to fill it -
+         * which is the same shape every other big building in this game has.
+         */
+        BuildingsTemplate departmentStore = new BuildingsTemplate("Department Store", BuildingType.LUXURY)
+                .setSector("Luxury Retail")
+                .makes(Good.LUXURY_TRADE, 4200)
+                .uses(Good.LUXURIES, 4200)
+                .setCashCost(21600)
+                .setConstructionPoints(2900)
+                .setConstructionMaterials(560)
+                .setElectricityConsumption(130)
+                .setWaterConsumption(18)
+                .setLandSqFt(90000)
+                .setRoadLoad(70)
+                .setStock(12600)
+                .setJobs(JobType.NO_DIPLOMA, 34)
+                .setJobs(JobType.DIPLOMA, 46)
+                .setJobs(JobType.COLLEGE_BUSINESS, 9)
+                .setJobs(JobType.UNIV_FINANCE, 2)
+                .setId(70);
+        departmentStore.setCoverage(4200);
+        templates.add(departmentStore);
+
+
+        /* ===================================================================
+           THE KITCHENS (2026-09-18)
+
+           COVERAGE HERE IS MEALS A MONTH, NOT PEOPLE A MONTH, and every
+           arithmetic in this sector turns on the difference. A person eats
+           NINETY meals in a month and buys ONE basket, so a Diner's 13,500
+           covers a hundred and fifty person-months of food and serves four
+           hundred and fifty covers a day. Read as customers it would look
+           ninety times the business it is.
+
+           WHAT THEY BUY IS THE REFERENCE BASKET, to the kilogram, scaled to
+           the person-months their meals come to: the Convenience Store's
+           thirteen lines divided by its 480 and multiplied back up. That is
+           not decoration. A meal out REPLACES groceries - Jerus's own rule -
+           and it can only replace them honestly if it is made of the same
+           food in the same proportions. A restaurant that bought a cheaper
+           basket would be feeding people a different meal and the substitution
+           underneath the whole sector would be a fiction.
+
+           A KITCHEN IS NOT A WAREHOUSE. Stock is about a month and a half of
+           throughput where a shop carries three; food goes off, and a
+           restaurant that held a quarter's dinners would be a restaurant
+           throwing most of them away.
+
+           AND THE SIZE IS SET BY THE PAYROLL, WHICH IS WHAT CAUGHT THE FIRST
+           TRY. The trade's own ratio is food about a third of the ticket and
+           labour about another third - so a kitchen's FOOD BILL should be
+           about its WAGE BILL, and that is what fixes how many meals a
+           building with eight staff has to serve. Measured at the founding
+           city's prices, a person-month of food costs $197 and a meal $2.19,
+           so eight staff at $30.8k a month need a hundred and fifty
+           person-months through the kitchen - 13,500 meals.
+
+           THE FIRST PASS HAD A DINER AT 2,700 MEALS, sized off nothing but a
+           guess at what a small restaurant looks like, and it bought $5.9k of
+           food a month against $30.8k of wages. It could not have paid them in
+           any city at any margin the band allows, and nothing outside
+           RestaurantsCheck would have said so. Same lesson as the eleventh
+           sector's four calibration passes: revenue per worker is the ratio
+           that decides whether a maker survives a city growing up.
+
+           EVEN SIZED PROPERLY THEY ARE THE LOWEST REVENUE-PER-WORKER BUSINESS
+           IN THE CATALOGUE - about $12k a head against a Steel Foundry's $34k
+           - and that is what a restaurant is. What a city buys here is
+           somewhere to eat, and somewhere to eat is mostly people.
+           =================================================================== */
+        BuildingsTemplate diner = new BuildingsTemplate("Diner", BuildingType.HOSPITALITY)
+                .setSector("Restaurants")
+                .makes(Good.MEALS, 13500)            // meals served a month
+                .uses(Good.GRAINS, 450)
+                .uses(Good.BREAD, 525)
+                .uses(Good.DAIRY_EGGS, 1200)
+                .uses(Good.VEGETABLES, 1050)
+                .uses(Good.FRUIT, 750)
+                .uses(Good.MEAT, 675)
+                .uses(Good.FISH, 180)
+                .uses(Good.FATS, 120)
+                .uses(Good.PROCESSED_MEAT, 150)
+                .uses(Good.READY_MEALS, 225)
+                .uses(Good.BAKERY, 225)
+                .uses(Good.SNACKS, 150)
+                .uses(Good.DRINKS, 1800)
+                .setCashCost(1100)
+                .setConstructionPoints(280)
+                .setConstructionMaterials(40)
+                .setElectricityConsumption(22)
+                .setWaterConsumption(8)
+                .setLandSqFt(5000)
+                .setRoadLoad(14)
+                .setStock(12000)
+                .setJobs(JobType.NO_DIPLOMA, 3)
+                .setJobs(JobType.DIPLOMA, 1)
+                .setId(71);
+        diner.setCoverage(13500);
+        templates.add(diner);
+
+        /*
+         * ...AND THE ONE A CITY EATS AT. Three times the meals on three and a
+         * third times the money, so it is the worse buy per cover until the
+         * city is large enough to fill it - the same shape the Department
+         * Store takes against the Boutique, and for the same reason.
+         */
+        BuildingsTemplate restaurant = new BuildingsTemplate("Restaurant", BuildingType.HOSPITALITY)
+                .setSector("Restaurants")
+                .makes(Good.MEALS, 40500)            // meals served a month
+                .uses(Good.GRAINS, 1350)
+                .uses(Good.BREAD, 1575)
+                .uses(Good.DAIRY_EGGS, 3600)
+                .uses(Good.VEGETABLES, 3150)
+                .uses(Good.FRUIT, 2250)
+                .uses(Good.MEAT, 2025)
+                .uses(Good.FISH, 540)
+                .uses(Good.FATS, 360)
+                .uses(Good.PROCESSED_MEAT, 450)
+                .uses(Good.READY_MEALS, 675)
+                .uses(Good.BAKERY, 675)
+                .uses(Good.SNACKS, 450)
+                .uses(Good.DRINKS, 5400)
+                .setCashCost(3600)
+                .setConstructionPoints(900)
+                .setConstructionMaterials(130)
+                .setElectricityConsumption(68)
+                .setWaterConsumption(24)
+                .setLandSqFt(14000)
+                .setRoadLoad(42)
+                .setStock(36000)
+                .setJobs(JobType.NO_DIPLOMA, 8)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_BUSINESS, 1)
+                .setId(72);
+        restaurant.setCoverage(40500);
+        templates.add(restaurant);
+
         /*
          * ASSEMBLY PLANT. The real thing: four times the works on four times
          * the money, and the single largest industrial payroll a city of this

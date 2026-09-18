@@ -2180,7 +2180,8 @@ public class UserInterface extends Application {
                 BuildingType.INDUSTRIAL, BuildingType.HEAVY_INDUSTRY,
                 BuildingType.MINING, BuildingType.CONSTRUCTION,
                 BuildingType.BUSINESS_SERVICES, BuildingType.AGRICULTURE,
-                BuildingType.RAIL, BuildingType.AUTOMOTIVE);
+                BuildingType.RAIL, BuildingType.AUTOMOTIVE,
+                BuildingType.LUXURY, BuildingType.HOSPITALITY);
     }
 
     /** True when everything in this category is something investors put up. */
@@ -2252,6 +2253,15 @@ public class UserInterface extends Application {
             // one thing it does not share with a foundry - it cannot be run on
             // imported parts, at any price. See BuildingType.AUTOMOTIVE.
             new BuildCategory("Vehicles",       EnumSet.of(BuildingType.AUTOMOTIVE)),
+            // ...and its own row because of what it is FOR. Every other
+            // category here is something the city needs; this is the one that
+            // exists so a rich city has somewhere to spend, and a player who
+            // does not build it will watch its mark-up climb and its citizens
+            // save money they cannot use. See BuildingType.LUXURY.
+            new BuildCategory("Luxury shops",   EnumSet.of(BuildingType.LUXURY)),
+            // ...and the kitchens, which are the other half of the same idea
+            // and the only one of the two that feeds anybody. See Restaurants.
+            new BuildCategory("Restaurants",    EnumSet.of(BuildingType.HOSPITALITY)),
         };
     }
 
@@ -13497,6 +13507,674 @@ public class UserInterface extends Application {
         return serviceAreas()[0];
     }
 
+    /* =====================================================================
+       INFRASTRUCTURE - the roads, the trams, the railway and the freight
+
+       Jerus, 2026-09-17: "add a tab called infrastruture or transporation and
+       basically it shows all the info about transportation and buses, and even
+       a sub tab for specific info about the rail sector system, also in the bus
+       section you can modify the price."
+
+       NINE BATCHES SHIPPED BEFORE THIS SCREEN EXISTED, and the gap between what
+       the model knew and what a player could see had got embarrassing. The road
+       carried three streams and showed one number. The fare was a real dial
+       with a real elasticity and NOTHING IN THE GAME COULD TURN IT. The railway
+       repriced itself every month against a rule about its own capital and said
+       so to nobody. A mill running at 65% because it had not taken delivery of
+       its lorries yet looked, on every screen in the game, exactly like a mill
+       running at 65% for no reason at all.
+
+       FOUR PAGES, AND EACH ONE ANSWERS A QUESTION A PLAYER ACTUALLY ASKS.
+       Roads: why is my throughput 73%. Transit: what would happen if I changed
+       the fare. The railway: is this business worth anything to me. Freight:
+       what does it cost this city to move a tonne, and who has not got the
+       lorries to do it.
+
+       WHAT IS NOT HERE. Nothing on this screen builds anything - the roads,
+       the buses and the track are ordered on the Build tab like everything
+       else, because a second place to buy a building is a second place to
+       maintain. This is the instrument panel; the controls are the fare, which
+       is a policy and has no other home.
+       ===================================================================== */
+
+    private static final String[] INFRA_PAGES =
+            {"Roads", "Transit", "The railway", "Freight"};
+
+    private String infraPage = "Roads";
+
+    private void showInfrastructureMenu() {
+        clearMenu("showInfrastructureMenu", () -> showInfrastructureMenu());
+
+        boolean known = false;
+        for (String page : INFRA_PAGES) if (page.equals(infraPage)) known = true;
+        if (!known) infraPage = INFRA_PAGES[0];
+
+        Label title = new Label("INFRASTRUCTURE");
+        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
+                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+
+        VBox column = new VBox(0);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.setMaxWidth(Region.USE_PREF_SIZE);
+
+        switch (infraPage) {
+            case "Transit"     -> transitPage(column);
+            case "The railway" -> railwayPage(column);
+            case "Freight"     -> freightPage(column);
+            default            -> infraRoadsPage(column);
+        }
+
+        javafx.scene.layout.FlowPane strip =
+                chipStrip(INFRA_PAGES, infraPage, Palette.SIZE_BODY, name -> {
+                    infraPage = name;
+                    innerScrollAt.remove("showInfrastructureMenu:body");
+                    showInfrastructureMenu();
+                });
+        strip.setStyle("-fx-padding: 4 0 10 0;");
+
+        rootMenu.getChildren().addAll(title, infraVitals(), strip, scrolled(column, 250));
+    }
+
+    /**
+     * The four figures the whole tab is about, on every page of it.
+     *
+     * Throughput first because it is the one that multiplies every business in
+     * the city; then the two things that decide it - how many people are
+     * driving and how many are not - and then the railway, because a city with
+     * a railway has a completely different freight bill from one without.
+     */
+    private HBox infraVitals() {
+
+        InfrastructureManager roads = game.getInfrastructureManager();
+        ham.citybuildersim.sectors.Rail rail = game.getSectors().rail();
+
+        double ratio = roads.getThroughputRatio();
+        double commuters = roads.getLoad(Traffic.COMMUTERS);
+        double riding = commuters > 0 ? roads.getTransitRiders() / commuters : 0;
+        double owned = roads.getCarOwnership();
+        double fare = game.getEconomyManager().getTaxPolicy().getTransitFare();
+
+        return vitalsBar(
+                limitCell("THE ROAD", String.format("%.0f%%", ratio * 100),
+                        roads.getStatus().toLowerCase(),
+                        ratio >= 1 ? Palette.GOOD
+                                : ratio >= .75 ? Palette.WARN : Palette.BAD),
+                limitCell("CARS", String.format("%.0f%%", owned * 100),
+                        owned <= 0 ? "nobody drives"
+                                : String.format("%.2fx on the commute", roads.carRoadFactor()),
+                        owned > .5 ? Palette.WARN : Palette.TEXT_HEAD),
+                limitCell("ON TRANSIT", String.format("%.0f%%", riding * 100),
+                        roads.getTransitCapacity() <= 0 ? "nothing built"
+                                : String.format("at %s a ride", unitPrice(fare)),
+                        roads.getTransitCapacity() <= 0 ? Palette.TEXT_MUTED : Palette.GOOD),
+                limitCell("BY RAIL", String.format("%.0f%%",
+                                roads.getRailShare(Traffic.BULK) * 100),
+                        rail.trackTonnes() <= 0 ? "no track"
+                                : String.format("quoting %.0f%% of a lorry", rail.getQuote() * 100),
+                        rail.trackTonnes() <= 0 ? Palette.TEXT_MUTED : Palette.ACCENT));
+    }
+
+    /* ---------------------------------------------------------------------
+       ROADS
+       --------------------------------------------------------------------- */
+
+    private void infraRoadsPage(VBox column) {
+
+        InfrastructureManager roads = game.getInfrastructureManager();
+
+        double capacity = roads.getCapacity();
+        double effective = roads.getEffectiveLoad();
+        double utilisation = roads.getUtilisation();
+        double ratio = roads.getThroughputRatio();
+
+        column.getChildren().add(statementHead("What the network is getting through"));
+        column.getChildren().add(leverHead(String.format("%.0f%%", ratio * 100),
+                "Every business in the city multiplies its output by this, and so does "
+                + "construction. It is 100% until the road is at "
+                + String.format("%.0f%%", InfrastructureManager.FREE_FLOW * 100)
+                + " of capacity and then falls away - traffic does not degrade in a "
+                + "straight line, which is why a road that coped last month can gridlock "
+                + "after one more office opens."));
+
+        column.getChildren().add(bandMeter("How full the road is",
+                String.format("%.0f%%", utilisation * 100),
+                Math.min(1, utilisation / 1.5),
+                new double[] {InfrastructureManager.FREE_FLOW / 1.5,
+                              1 / 1.5, 1},
+                new String[] {Palette.GOOD, Palette.WARN, Palette.BAD},
+                String.format("free-flowing under %.0f%% · over capacity past 100%%",
+                        InfrastructureManager.FREE_FLOW * 100),
+                capacity <= 0));
+
+        column.getChildren().add(statementHead("The network"));
+        column.getChildren().add(statementLine("Streets the city has built",
+                String.format("%,.0f trips", roads.getBuiltCapacity())));
+        column.getChildren().add(statementLine("...and the ones that were always there",
+                String.format("%,.0f trips", InfrastructureManager.BASE_CAPACITY),
+                Palette.TEXT_MUTED));
+        column.getChildren().add(statementTotal("Capacity",
+                String.format("%,.0f trips a month", capacity), Palette.TEXT_HEAD));
+        /*
+         * BOTH TOTALS, AND THE RAW ONE FIRST (2026-09-17, on first looking at
+         * this screen rendered). It printed the EFFECTIVE load here - 3,011 -
+         * directly above a table whose trips column added to 7,164, and said
+         * nothing about the difference. A player reads that as the screen
+         * contradicting itself. The two numbers are the whole point of the
+         * modes: what the city generates, and what is left of it once the
+         * trams and the highways and the railway have taken their share.
+         */
+        column.getChildren().add(statementLine("Trips everything standing generates",
+                String.format("%,.0f", roads.getLoad()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine(
+                roads.getLoad() > effective + 1
+                        ? "...and what is left for the road, after transit, highways and rail"
+                        : "What is actually being asked of it",
+                String.format("%,.0f", effective),
+                effective > capacity ? Palette.BAD : Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("Room before it starts to slow",
+                String.format("%,.0f", roads.getHeadroom()),
+                roads.getHeadroom() <= 0 ? Palette.BAD : Palette.GOOD));
+        column.getChildren().add(statementLine("Of it built for lorries",
+                String.format("%.0f%%", roads.getHighwayShare() * 100),
+                Palette.TEXT_MUTED));
+
+        /* ------------------------- the three streams ------------------------- */
+        column.getChildren().add(statementHead("What is on it"));
+        javafx.scene.layout.GridPane mix = grid(
+                new double[] {150, 110, 80, 100, 100}, rightAfterFirst(5));
+        gridHead(mix, "", "trips", "share", "costs", "gets through");
+
+        int line = 1;
+        for (Traffic stream : Traffic.values()) {
+            double at = roads.getLoad(stream);
+            mix.add(gridCell(stream.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+            mix.add(gridCell(String.format("%,.0f", at), Palette.TEXT_HEAD,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            mix.add(gridCell(String.format("%.0f%%", roads.getShareOf(stream) * 100),
+                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
+            mix.add(gridCell(String.format("%.2fx", roads.roadCostOf(stream)),
+                    roads.roadCostOf(stream) < 1 ? Palette.GOOD : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 3, line);
+            mix.add(gridCell(String.format("%.0f%%", roads.throughputOf(stream) * 100),
+                    roads.throughputOf(stream) >= 1 ? Palette.GOOD : Palette.WARN,
+                    Palette.SIZE_CAPTION, true), 4, line);
+            line++;
+        }
+        column.getChildren().add(mix);
+        column.getChildren().add(statementNote(
+                "\"Costs\" is what one trip of that kind asks of the street after the "
+                + "highways and the railway have taken their share of it - a commuter is "
+                + "always one, because a highway is built for commuters and already "
+                + "counted. \"Gets through\" differs between streams only when somebody is "
+                + "on a tram: a lorry in a jam is in a jam, and a clerk on a metro is not."));
+
+        /* ----------------------------- the cars ----------------------------- */
+        double owned = roads.getCarOwnership();
+        double commuters = roads.getLoad(Traffic.COMMUTERS);
+        double riders = roads.getTransitRiders();
+        double driving = Math.max(0, commuters - riders);
+
+        column.getChildren().add(statementHead("And the cars"));
+        if (owned <= 0) {
+            column.getChildren().add(statementNote(
+                    "Nobody in this city owns one yet, so a commuter costs the road exactly "
+                    + "one trip and this network is the network it has always been. That "
+                    + "changes on its own as households get money past their cushion."));
+        } else {
+            column.getChildren().add(statementLine("Cars per household",
+                    String.format("%.0f%%", owned * 100),
+                    owned > .5 ? Palette.WARN : Palette.TEXT_HEAD));
+            column.getChildren().add(statementLine("What one driving commuter now costs the road",
+                    String.format("%.2f trips", roads.carRoadFactor()),
+                    roads.carRoadFactor() > 2 ? Palette.BAD : Palette.WARN));
+            column.getChildren().add(statementLine("Commuters still driving",
+                    String.format("%,.0f of %,.0f", driving, commuters)));
+            column.getChildren().add(statementLine("...costing the road",
+                    String.format("%,.0f trips", driving * roads.carRoadFactor()),
+                    Palette.WARN));
+            column.getChildren().add(statementLine("Commuters on a tram",
+                    String.format("%,.0f", riders),
+                    riders > 0 ? Palette.GOOD : Palette.TEXT_MUTED));
+            column.getChildren().add(statementTotal("What the road would carry with nobody driving",
+                    String.format("%,.0f trips", effective - driving * (roads.carRoadFactor() - 1)),
+                    Palette.GOOD));
+            column.getChildren().add(statementNote(String.format(
+                    "A fully motorised city asks %.1f times the commuter road a city where "
+                    + "nobody drives does, and it only lands on the people who did not get "
+                    + "on a tram. The two answers are more tarmac and more transit, and "
+                    + "transit is the one that also stops the next household buying a car.",
+                    InfrastructureManager.CAR_LOAD_AT_SATURATION)));
+        }
+
+        if (roads.isCongested()) {
+            column.getChildren().add(alert("The city is congested",
+                    String.format("Everything standing here is producing %.0f%% of what it "
+                    + "could. Build streets, build a highway if the load is freight, or "
+                    + "build transit if it is people - and look at the mix above before "
+                    + "deciding which.", ratio * 100)));
+        }
+    }
+
+    /* ---------------------------------------------------------------------
+       TRANSIT - and the one control on this tab
+       --------------------------------------------------------------------- */
+
+    private void transitPage(VBox column) {
+
+        InfrastructureManager roads = game.getInfrastructureManager();
+        EconomyManager econ = game.getEconomyManager();
+        TaxPolicy policy = econ.getTaxPolicy();
+
+        double commuters = roads.getLoad(Traffic.COMMUTERS);
+        double stock = roads.getTransitCapacity();
+        double usable = roads.getUsableTransit();
+        double ceiling = commuters * InfrastructureManager.TRANSIT_MAX_SHARE;
+        double riders = roads.getTransitRiders();
+
+        double fare = policy.getTransitFare();
+        double want = staged("fare", fare);
+        boolean stagedFare = isStaged("fare");
+
+        column.getChildren().add(statementHead("Who is on a tram"));
+        column.getChildren().add(leverHead(String.format("%,.0f", riders),
+                commuters > 0
+                        ? String.format("commuter trips a month taken off the street - %.0f%% "
+                                + "of everybody travelling to work in this city.",
+                                riders / commuters * 100)
+                        : "nobody is travelling to work in this city yet."));
+
+        if (stock <= 0) {
+            column.getChildren().add(statementNote(
+                    "This city has built no transit at all. A Bus Network is the cheap rung "
+                    + "and a Metro Line is the one that carries a city; all three are on the "
+                    + "Build tab under infrastructure. Until one is standing the fare below "
+                    + "charges nobody anything."));
+        }
+
+        /* -------------------- three ceilings, lowest wins -------------------- */
+        column.getChildren().add(statementHead("Three ceilings, and the lowest one wins"));
+        column.getChildren().add(statementLine("What the stock could carry",
+                String.format("%,.0f", stock),
+                usable + 1e-9 >= stock && stock > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine(
+                String.format("...what the road under it allows (%.0fx street capacity)",
+                        InfrastructureManager.TRANSIT_NEEDS_ROAD),
+                String.format("%,.0f", roads.getCapacity() * InfrastructureManager.TRANSIT_NEEDS_ROAD),
+                usable < stock ? Palette.WARN : Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine(
+                String.format("...and the most any city ever rides (%.0f%% of commuters)",
+                        InfrastructureManager.TRANSIT_MAX_SHARE * 100),
+                String.format("%,.0f", ceiling),
+                ceiling < usable ? Palette.WARN : Palette.TEXT_MUTED));
+        column.getChildren().add(statementTotal("The lowest of them",
+                String.format("%,.0f", Math.min(usable, ceiling)), Palette.TEXT_HEAD));
+        column.getChildren().add(statementNote(
+                "A city that builds a metro and no streets gets a metro nobody can reach, "
+                + "and no city on earth puts everybody on public transport. Those are the "
+                + "second and third lines. The first is the only one a player buys."));
+
+        /* -------------------- and then two things walk it down -------------------- */
+        column.getChildren().add(statementHead("...and then two things walk it down"));
+        column.getChildren().add(statementLine("Put off by the fare",
+                String.format("%.0f%% still ride", roads.getFareShare() * 100),
+                roads.getFareShare() > .9 ? Palette.GOOD : Palette.WARN));
+        column.getChildren().add(statementLine("Driving instead, because they own a car",
+                roads.getCarOwnership() <= 0 ? "nobody owns one"
+                        : String.format("%.0f%% still ride", roads.willingToRide() * 100),
+                roads.getCarOwnership() <= 0 ? Palette.TEXT_MUTED
+                        : roads.willingToRide() > .5 ? Palette.WARN : Palette.BAD));
+        if (roads.getCarOwnership() > 0) {
+            column.getChildren().add(statementNote(String.format(
+                    "A household with a car in the drive does not ride on a clear morning - "
+                    + "which is what makes a motorised city jam in the first place - and %.0f%% "
+                    + "of them ride when nothing is moving. The commute this city remembers "
+                    + "is %.0f%% of free-flowing, so %.0f%% of its drivers are on a tram. "
+                    + "People drive until the road is full, then take the tram.",
+                    InfrastructureManager.CAR_OWNER_RIDES_AT_GRIDLOCK * 100,
+                    roads.getRememberedThroughput() * 100,
+                    InfrastructureManager.CAR_OWNER_RIDES_AT_GRIDLOCK * roads.getJam() * 100)));
+        }
+
+        /* ------------------------------ the books ------------------------------ */
+        column.getChildren().add(statementHead("What it costs the city"));
+        column.getChildren().add(statementLine("Drivers, crews and upkeep",
+                signedTight(econ.getTransitBill(), true), Palette.WARN));
+        column.getChildren().add(statementLine("Fares collected",
+                signedTight(econ.getTransitFares(), false), Palette.GOOD));
+        column.getChildren().add(statementTotal(
+                econ.getTransitNet() > 0 ? "Net cost to the city" : "Net profit to the city",
+                signedTight(Math.abs(econ.getTransitNet()), econ.getTransitNet() > 0),
+                econ.getTransitNet() > 0 ? Palette.WARN : Palette.GOOD));
+
+        /* ------------------------------- the dial ------------------------------- */
+        column.getChildren().add(statementHead("The fare"));
+        column.getChildren().add(statementNote(
+                "A FARE IS A PRICE AND NOT A CHARGE, which is what makes this different "
+                + "from a clinic's fee: the person on the tram chose to be there and can "
+                + "choose a car instead. The two lines above move against each other - a "
+                + "fare high enough to turn a profit is a fare people will not pay, and "
+                + "everybody who will not pay it is back on the road this was built to "
+                + "relieve. That is the whole decision."));
+        column.getChildren().add(statementLine(
+                String.format("...and what a month of riding costs one commuter (%.0f journeys)",
+                        TaxPolicy.JOURNEYS_A_MONTH),
+                fare <= 0 ? "nothing" : money(policy.monthlyFare()),
+                fare <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_HEAD));
+        column.getChildren().add(stageSlider("fare", fare, 0,
+                TaxPolicy.MAX_TRANSIT_FARE, TaxPolicy.MAX_TRANSIT_FARE / 20,
+                r -> r <= 0 ? "free" : unitPrice(r)));
+
+        if (stagedFare) {
+            double shareThen = InfrastructureManager.ridershipAt(want);
+            double ridersThen = Math.min(usable, ceiling) * shareThen * roads.willingToRide();
+            double faresThen = ridersThen * want * TaxPolicy.JOURNEYS_A_MONTH;
+            double netThen = econ.getTransitBill() - faresThen;
+            double backOnRoad = (riders - ridersThen) * roads.carRoadFactor();
+
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("The fare",
+                    fare <= 0 ? "free" : unitPrice(fare),
+                    want <= 0 ? "free" : unitPrice(want),
+                    want > fare ? Palette.WARN : Palette.GOOD));
+            column.getChildren().add(wouldBe("Riders",
+                    String.format("%,.0f", riders), String.format("%,.0f", ridersThen),
+                    ridersThen >= riders ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(wouldBe("Fares collected",
+                    money(econ.getTransitFares()), money(faresThen),
+                    faresThen >= econ.getTransitFares() ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(wouldTotal(
+                    "Net cost to the city",
+                    money(econ.getTransitNet()), money(netThen),
+                    netThen <= econ.getTransitNet() ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(wouldBe("...and back onto the road",
+                    "", String.format("%+,.0f trips", backOnRoad),
+                    backOnRoad > 0 ? Palette.BAD : Palette.GOOD));
+            column.getChildren().add(statementNote(
+                    "The riders line is this month's ceilings at the new fare, which is the "
+                    + "honest half of the preview. The half it cannot do is the second round: "
+                    + "a road that gets worse puts some of them back on the tram, and a road "
+                    + "that clears takes more of them off it. Both take a few months."));
+            column.getChildren().add(applyBar(
+                    want <= 0 ? "Make it free" : "Set the fare to " + unitPrice(want),
+                    () -> policy.setTransitFare(want)));
+        }
+    }
+
+    /* ---------------------------------------------------------------------
+       THE RAILWAY - the twelfth sector, and the only mode the city does not own
+       --------------------------------------------------------------------- */
+
+    private void railwayPage(VBox column) {
+
+        ham.citybuildersim.sectors.Rail rail = game.getSectors().rail();
+        InfrastructureManager roads = game.getInfrastructureManager();
+
+        double track = rail.trackTonnes();
+        double fleet = rail.fleet();
+        double needs = rail.setsNeeded();
+        double capacity = rail.getCapacityTonnes();
+        double quote = rail.getQuote();
+
+        column.getChildren().add(statementHead("What the railway is charging"));
+        column.getChildren().add(leverHead(
+                track <= 0 ? "no track" : String.format("%.0f%%", quote * 100),
+                track <= 0
+                        ? "Nobody has laid a line in this city, so every tonne that leaves "
+                        + "it leaves by lorry and the whole of the freight wedge is paid to "
+                        + "the world. A Rail Spur is on the Build tab."
+                        : "of what a lorry would charge for the same tonne. The railway is a "
+                        + "private business: it sets this itself, every month, from what the "
+                        + "month cost it to run plus a return on the track it has sunk - and "
+                        + "it can never charge more than a lorry, because nobody would pay."));
+
+        if (track > 0) {
+            column.getChildren().add(bandMeter("Where the quote sits",
+                    String.format("%.0f%%", quote * 100),
+                    Math.min(1, quote),
+                    new double[] {ham.citybuildersim.sectors.Rail.RAIL_FLOOR, .8, 1},
+                    new String[] {Palette.GOOD, Palette.ACCENT, Palette.WARN},
+                    String.format("its own floor is %.0f%% · a lorry is 100%%",
+                            ham.citybuildersim.sectors.Rail.RAIL_FLOOR * 100),
+                    false));
+        }
+
+        /* ---------------------------- track and trains ---------------------------- */
+        column.getChildren().add(statementHead("Track, and the trains to run on it"));
+        column.getChildren().add(statementLine("Track standing",
+                String.format("%,.0f tonnes a month", track)));
+        column.getChildren().add(statementLine("Wagon sets owned",
+                String.format("%,.1f", fleet),
+                fleet + 1e-9 >= needs ? Palette.GOOD : Palette.WARN));
+        column.getChildren().add(statementLine("...and the sets that track needs",
+                String.format("%,.1f", needs), Palette.TEXT_MUTED));
+        column.getChildren().add(statementTotal("What it can actually carry",
+                String.format("%,.0f tonnes a month", capacity),
+                capacity < track ? Palette.WARN : Palette.TEXT_HEAD));
+        if (capacity < track - 1e-9) {
+            column.getChildren().add(statementNote(String.format(
+                    "Track with no locomotives carries nothing. This railway is holding "
+                    + "%,.0f tonnes of line it cannot run, because a wagon set moves %,.0f "
+                    + "tonnes a month and it is %,.1f sets short. It buys them like any "
+                    + "other capital good - from a Locomotive Works if the city has one, "
+                    + "and from the world if it does not.",
+                    track - capacity,
+                    ham.citybuildersim.sectors.Rail.TONNES_PER_SET, needs - fleet)));
+        } else if (track > 0) {
+            column.getChildren().add(statementNote(String.format(
+                    "A set lasts %.0f years, so this fleet asks for about %,.2f replacement "
+                    + "sets a month for ever - which is what makes a Locomotive Works a "
+                    + "business rather than a single sale.",
+                    ham.citybuildersim.sectors.Rail.SET_LIFE_MONTHS / 12,
+                    fleet / ham.citybuildersim.sectors.Rail.SET_LIFE_MONTHS)));
+        }
+
+        /* ------------------------------ what it hauls ------------------------------ */
+        column.getChildren().add(statementHead("What it is hauling"));
+        column.getChildren().add(statementLine("The city's cross-border freight",
+                String.format("%,.0f tonnes", rail.getTradeTonnes())));
+        column.getChildren().add(statementLine("...of which the railway took",
+                String.format("%,.0f tonnes", rail.getHauledTonnes()),
+                rail.getHauledTonnes() > 0 ? Palette.GOOD : Palette.TEXT_MUTED));
+
+        double[] carried = rail.getCarried();
+        javafx.scene.layout.GridPane byStream = grid(
+                new double[] {170, 120, 120, 120}, rightAfterFirst(4));
+        gridHead(byStream, "", "by rail", "off the road", "still on it");
+        int line = 1;
+        for (Traffic stream : Traffic.values()) {
+            double share = stream.ordinal() < carried.length ? carried[stream.ordinal()] : 0;
+            byStream.add(gridCell(stream.label(), Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, false), 0, line);
+            byStream.add(gridCell(String.format("%.0f%%", share * 100),
+                    share > 0 ? Palette.ACCENT : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            byStream.add(gridCell(String.format("%.0f%%",
+                            InfrastructureManager.RAIL_ROAD_RELIEF * share * 100),
+                    share > 0 ? Palette.GOOD : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 2, line);
+            byStream.add(gridCell(String.format("%.2fx", roads.roadCostOf(stream)),
+                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 3, line);
+            line++;
+        }
+        column.getChildren().add(byStream);
+        column.getChildren().add(statementNote(String.format(
+                "A tonne that leaves by train does not drive across the city to leave by "
+                + "lorry - but it still gets to the siding somehow, and that is a truck. So "
+                + "the relief is %.0f%% and never all of it, and a terminal carries a road "
+                + "load of its own on top: a Rail Spur reads as 94%% lorries.",
+                InfrastructureManager.RAIL_ROAD_RELIEF * 100)));
+
+        /* ------------------------------ the business ------------------------------ */
+        column.getChildren().add(statementHead("Whether it is earning it"));
+        column.getChildren().add(statementLine("What the rule allows it to bill",
+                money(rail.getAllowedRevenue()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("What it actually billed",
+                money(rail.getHaulageBilled()),
+                rail.getHaulageBilled() + 1e-9 >= rail.getAllowedRevenue()
+                        ? Palette.GOOD : Palette.WARN));
+        column.getChildren().add(statementLine("What those tonnes would have cost by lorry",
+                money(rail.getTruckBill()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("Fuel",
+                signedTight(rail.getFuelBill(), true), Palette.WARN));
+        column.getChildren().add(statementTotal("Net income",
+                signedTight(Math.abs(rail.statement().netIncome),
+                        rail.statement().netIncome < 0),
+                rail.statement().netIncome >= 0 ? Palette.GOOD : Palette.BAD));
+        column.getChildren().add(statementLine("Track and land on its books",
+                money(rail.getBuildingsValue() + rail.getLandValue()), Palette.TEXT_MUTED));
+
+        if (track > 0 && rail.getHaulageBilled() < rail.getAllowedRevenue() * .75) {
+            column.getChildren().add(alert("This railway is bigger than its city",
+                    "It is allowed to charge for the track it has sunk and it cannot: "
+                    + "nobody pays more than a lorry, so it pins at the ceiling and earns "
+                    + "less on more capital. Over-building a railway does not make freight "
+                    + "cheaper; it makes a railway that cannot pay for itself."));
+        }
+
+        column.getChildren().add(statementNote(String.format(
+                "It will not lay a line it cannot fill to %.0f%%, which is why a town does "
+                + "not get a spur. The full set of books is on the Sector economy tab, where "
+                + "every sector's are.",
+                ham.citybuildersim.sectors.Rail.MIN_LINE_UTILISATION * 100)));
+    }
+
+    /* ---------------------------------------------------------------------
+       FREIGHT - the band, the bill, and the lorries
+       --------------------------------------------------------------------- */
+
+    private void freightPage(VBox column) {
+
+        InfrastructureManager roads = game.getInfrastructureManager();
+        ham.citybuildersim.sectors.Rail rail = game.getSectors().rail();
+
+        column.getChildren().add(statementHead("What it costs this city to move a tonne"));
+        column.getChildren().add(statementNote(
+                "Every traded good's price has a cost of MOVING it inside the gap between "
+                + "what the world pays and what the world charges. A railway takes part of "
+                + "that out of the band and bills it at home instead - so a city with good "
+                + "logistics faces a narrower band on everything it trades, and that is "
+                + "most of what a railway is worth."));
+
+        /* ------------------------------- the band ------------------------------- */
+        javafx.scene.layout.GridPane band = grid(
+                new double[] {150, 95, 95, 95, 95}, rightAfterFirst(5));
+        gridHead(band, "", "world pays", "world asks", "in the band", "delivered");
+
+        int line = 1;
+        for (Good g : Good.values()) {
+            if (!g.traded() || !g.exportable() || !g.importable()) continue;
+            GoodsMarket m = game.getMarkets().get(g);
+            double gross = m.importPrice() - m.exportPrice();
+            double net = m.netImportPrice() - m.netExportPrice();
+            if (!(m.importPrice() > 0)) continue;
+            band.add(gridCell(g.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+            band.add(gridCell(unitPrice(m.exportPrice()), Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            band.add(gridCell(unitPrice(m.importPrice()), Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 2, line);
+            band.add(gridCell(String.format("%.0f%%", gross / m.importPrice() * 100),
+                    Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, line);
+            /*
+             * THE LAST COLUMN WAS BACKWARDS AND NEVER ONCE APPEARED (2026-09-17,
+             * on first looking at this screen rendered). It was labelled "after
+             * rail" and printed only when the net wedge was NARROWER than the
+             * band - which it can never be. importPrice() already carries
+             * freightChange(), so the band shown is ALREADY what the railway
+             * left in it; the net pair adds the railway's own invoice back on
+             * top. The two columns are the band and the DELIVERED cost, and the
+             * second is the bigger one by exactly what the railway charges.
+             */
+            band.add(gridCell(net > gross + 1e-12
+                            ? String.format("%.0f%%", net / m.importPrice() * 100) : "—",
+                    net > gross + 1e-12 ? Palette.WARN : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 4, line);
+            line++;
+        }
+        if (line == 1) {
+            column.getChildren().add(statementNote(
+                    "Nothing this city trades has both a world buyer and a world seller yet, "
+                    + "so there is no band to show."));
+        } else {
+            column.getChildren().add(band);
+        }
+        column.getChildren().add(statementNote(
+                "\"In the band\" is how much of the world's asking price is the gap a local "
+                + "buyer and a local seller both do better inside - and it is ALREADY "
+                + "narrowed by whatever the railway is carrying, because that freight is no "
+                + "longer paid abroad. \"Delivered\" adds the railway's own invoice back on "
+                + "top, and is the figure a business actually decides on. A dash means "
+                + "nothing is being railed, so the two are the same number."));
+
+        /* ------------------------------- the bill ------------------------------- */
+        column.getChildren().add(statementHead("The month's freight bill"));
+        column.getChildren().add(statementLine("Cross-border tonnage",
+                String.format("%,.0f tonnes", rail.getTradeTonnes())));
+        column.getChildren().add(statementLine("What it would cost entirely by lorry",
+                money(rail.getTruckBill()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("Billed by the railway, at home",
+                money(rail.getHaulageBilled()),
+                rail.getHaulageBilled() > 0 ? Palette.GOOD : Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...and the rest, paid abroad inside the band",
+                money(Math.max(0, rail.getTruckBill() - rail.getHaulageBilled())),
+                Palette.WARN));
+        column.getChildren().add(statementNote(
+                "The half billed at home stays in the city and is somebody's revenue; the "
+                + "half inside the band leaves it. That is the difference a railway makes to "
+                + "the trade balance, before it makes any difference to the road."));
+
+        /* ------------------------------ the lorries ------------------------------ */
+        column.getChildren().add(statementHead("And who has the lorries to do it"));
+        javafx.scene.layout.GridPane fleets = grid(
+                new double[] {150, 110, 90, 90, 90}, rightAfterFirst(5));
+        gridHead(fleets, "", "tonnes/mo", "needs", "owns", "running at");
+
+        line = 1;
+        boolean anyShort = false;
+        for (Sector s : game.getSectors().all()) {
+            double moves = s.tonnesMoved();
+            if (moves <= 0 && s.vanFleet() <= 0) continue;
+            double ratio = s.getVanRatio();
+            if (ratio < 1) anyShort = true;
+            fleets.add(gridCell(s.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+            fleets.add(gridCell(String.format("%,.0f", moves), Palette.TEXT_HEAD,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            fleets.add(gridCell(String.format("%,.0f", s.vansNeeded()), Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 2, line);
+            fleets.add(gridCell(String.format("%,.0f", s.vanFleet()),
+                    s.vanFleet() + 1e-9 >= s.vansNeeded() ? Palette.TEXT_HEAD : Palette.WARN,
+                    Palette.SIZE_CAPTION, true), 3, line);
+            fleets.add(gridCell(String.format("%.0f%%", ratio * 100),
+                    ratio >= 1 ? Palette.GOOD : Palette.WARN,
+                    Palette.SIZE_CAPTION, true), 4, line);
+            line++;
+        }
+        if (line == 1) {
+            column.getChildren().add(statementNote(
+                    "Nothing standing in this city moves a tonne of anything yet, so nobody "
+                    + "needs a lorry. The first farm, mine or mill changes that."));
+        } else {
+            column.getChildren().add(fleets);
+        }
+        column.getChildren().add(statementNote(String.format(
+                "A vehicle moves about %,.0f tonnes a month and lasts %.0f years. The "
+                + "tonnage is BOTH SIDES of the door - a mill that buys a hundred tonnes of "
+                + "ore and ships eighty of steel runs a hundred and eighty tonnes of lorry "
+                + "movements - and it is counted at nameplate, because a firm buys lorries "
+                + "for the factory it has rather than for the month it is having.",
+                Sector.TONNES_PER_VAN, Sector.VAN_LIFE_MONTHS / 12)));
+
+        if (anyShort) {
+            column.getChildren().add(alert("Somebody is short of lorries",
+                    String.format("A sector cannot put a whole fleet on the road in a month "
+                    + "- it takes about %.0f - so anything that has just built a factory is "
+                    + "running below nameplate until the vehicles arrive. It is not stopped: "
+                    + "a firm short of its own lorries hires haulage and sends fuller loads, "
+                    + "which is worth %.0f%% of nameplate however bad it gets. If this never "
+                    + "clears, the city is not making or importing enough of them.",
+                    Sector.FLEET_DELIVERY_MONTHS, Sector.MIN_VAN_RATE * 100)));
+        }
+    }
+
     private void showServicesStatsMenu() {
         clearMenu("showServicesStatsMenu", () -> showServicesStatsMenu());
 
@@ -16900,6 +17578,36 @@ public class UserInterface extends Application {
         if (dividends > 0 || game.getEquity().getLifetimeDividendsHome() > 0) {
             column.getChildren().add(statementLine("Dividends this month",
                     tightMoney(toDollars(dividends), false), dividends > 0 ? Palette.GOOD : null));
+        }
+
+        /*
+         * AND THE CARS, WHICH ARE THE ONLY THING ON THIS LINE THAT IS NOT MONEY
+         * (2026-09-17).
+         *
+         * A car sits beside savings, debt, shares and the dollars abroad in the
+         * household's own books - it follows the people, it is saved per cell,
+         * a household that leaves takes it - and it is the first durable this
+         * city has ever been able to own. It belongs here because it is a fact
+         * about households; what it is DOING, which is most of what is wrong
+         * with the road, is on Infrastructure > Roads.
+         */
+        if (bal.totalCars() > 0 || game.getHouseholdCarsBought() > 0) {
+            column.getChildren().add(statementLine("Cars owned",
+                    formatter.format(Math.round(bal.totalCars()))
+                            + String.format("  (%.0f%% of households)",
+                                    bal.carsPerHousehold() * 100),
+                    Palette.TEXT_HEAD));
+            if (game.getHouseholdCarsBought() > 0) {
+                column.getChildren().add(statementLine("Bought this month",
+                        formatter.format(Math.round(game.getHouseholdCarsBought()))
+                                + " for " + tightMoney(toDollars(game.getHouseholdCarSpend()), false),
+                        Palette.WARN));
+            }
+            column.getChildren().add(statementNote(
+                    "Bought out of savings past the same cushion a share is, so income "
+                    + "decides who can afford one - and a city with transit that could "
+                    + "carry everybody sees half of its households never bother. What it "
+                    + "costs the road is on Infrastructure."));
         }
 
         // Every cell keeps its own books, so this can be said by household
@@ -22103,6 +22811,30 @@ public class UserInterface extends Application {
             new Tab("land",       Icons.LAND,       "Land office",        this::showLandMenu),
             new Tab("population", Icons.POPULATION, "Population",         this::showPopulationInfoMenu),
             new Tab("services",   Icons.SERVICES,   "Services",           this::showServicesStatsMenu),
+            /*
+             * INFRASTRUCTURE IS ITS OWN TAB (2026-09-17). Jerus: "add a tab
+             * called infrastruture or transporation and basically it shows all
+             * the info about transportation and buses, and even a sub tab for
+             * specific info about the rail sector system."
+             *
+             * Nine batches of transport shipped before this tab existed and
+             * not one of them was on a screen. The road's throughput was a
+             * percentage on a panel with no page behind it; the three streams
+             * it is made of could not be seen at all; the fare was a dial in
+             * TaxPolicy with NOTHING anywhere that could turn it; the railway
+             * had a sector page like any other sector and nothing that said
+             * what it was doing to the band; and the fleets a sector's
+             * operating rate now depends on were invisible, so a player whose
+             * mill was running at 65% had no way to find out why.
+             *
+             * It sits after Services because that is where the eye goes
+             * looking for it - roads and buses are things the city builds for
+             * people - and before the two economies, because the railway is a
+             * business and this tab is where a player finds out whether to
+             * care about it.
+             */
+            new Tab("infrastructure", Icons.INFRASTRUCTURE, "Infrastructure",
+                    this::showInfrastructureMenu),
             new Tab("sector",     Icons.SECTOR,     "Sector economy",     this::showSectorMenu),
             new Tab("government", Icons.GOVERNMENT, "Government economy", this::showGovernmentMenu),
             new Tab("finances",   Icons.FINANCES,   "Finances",           this::showFinanceMenu),
@@ -22148,6 +22880,8 @@ public class UserInterface extends Application {
                 return "population";
             case "showServicesStatsMenu":
                 return "services";
+            case "showInfrastructureMenu":
+                return "infrastructure";
             /*
              * THE UTILITIES' BOOKS AND THE BUILDERS' BOOKS ARE BUSINESS, and
              * light the business tab even though Services links to them.

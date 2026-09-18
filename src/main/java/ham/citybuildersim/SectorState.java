@@ -27,6 +27,17 @@ public final class SectorState {
     /** The three bills of the month and the rate it was taxed at, as set at the top of it. A flow, carried. */
     public double interest, propertyTax, maintenance, taxRate;
 
+    /**
+     * Whether this sector's van fleet is a fact about the sector.
+     *
+     * Absent - and so false - in every save written before 2026-09-17, which
+     * is exactly what the reader needs to know: that city was moving steel
+     * with lorries the game had not invented yet, and Sector.runFleet() gives
+     * it the fleet its plant implies rather than stopping it dead. See
+     * Sector.vansKnown.
+     */
+    public boolean vansKnown;
+
     public Map<String, Double> stock = new LinkedHashMap<>();
     public Map<String, Double> pantry = new LinkedHashMap<>();
     public Map<String, Double> pantryUsed = new LinkedHashMap<>();

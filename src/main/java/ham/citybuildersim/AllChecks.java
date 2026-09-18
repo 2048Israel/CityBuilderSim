@@ -33,7 +33,7 @@ public class AllChecks {
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck",
         "SaveSlotCheck", "SkipReportCheck", "InboxCheck", "BuildMenuCheck",
-        "ConsumptionCheck", "SectorBooksCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "CarCheck", "YearBookCheck", "LongPlaytest"
+        "ConsumptionCheck", "SectorBooksCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "YearBookCheck", "LongPlaytest"
     };
 
     public static void main(String[] args) throws Exception {

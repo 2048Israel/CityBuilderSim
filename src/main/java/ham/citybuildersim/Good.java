@@ -584,7 +584,87 @@ public enum Good {
 
     VANS("Vans and trucks", "van", 72.0, Double.NaN, 4.5, true, Pricing.BAND, false),
 
-    ROLLING_STOCK("Rolling stock", "wagon set", 2400.0, Double.NaN, 150.0, true, Pricing.BAND, false);
+    ROLLING_STOCK("Rolling stock", "wagon set", 2400.0, Double.NaN, 150.0, true, Pricing.BAND, false),
+
+    /* =======================================================================
+       THE FIRST THING A HOUSEHOLD BUYS THAT IT DOES NOT NEED (2026-09-17)
+
+       Jerus: "lets add restuarants as well as luxury stores, these two will
+       absorb some spending as well."
+
+       WHY THERE HAS TO BE ONE. Until today a household could buy food, a home,
+       a car and the city's fees, and nothing else. Food is capped by appetite -
+       Consumption scales every basket by the LESSER of what a household can
+       afford and what it can eat - so a city whose incomes run to two hundred
+       and sixty times subsistence had nowhere to put the other ninety-four per
+       cent of its money. It saved it. For ever. Household net worth reached
+       five thousand months of the city's entire output and was still climbing,
+       and every attempt to fix that in the consumption function failed for the
+       same reason: a drain cannot empty a sealed pipe.
+
+       SO THIS GOOD HAS NO CEILING, and that is the whole of its job. Nobody
+       needs a watch, nobody is full of watches, and a dearer one is simply a
+       dearer one. It is the good income can run into without running into
+       biology.
+
+       AND THE WORLD MAKES IT, which is a decision rather than a shrug. A city
+       that wants luxuries buys them abroad, so wanting them is an IMPORT - the
+       money leaves rather than circulating, and a rich city finally runs a
+       current-account deficit instead of the three-century surplus that four
+       addenda of `why-there-is-no-inflation.md` could not shift. Import
+       substitution, if it ever comes, is then something a player ACHIEVES.
+
+       THE WORLD WILL NOT BUY THEM BACK - NaN, the same as vans and rolling
+       stock and for the reason written at the head of that block: a good with
+       an unbounded export floor is a good the planner builds two hundred and
+       forty plants for. Nobody here makes these yet, so the question is moot
+       today and will not be the day somebody does.
+       ======================================================================= */
+    LUXURIES("Luxury goods", "piece", 9.0, Double.NaN, .35, true, Pricing.BAND, false),
+
+    /**
+     * ...and what a shop sells one for, which is not what it paid.
+     *
+     * TWO GOODS FOR ONE OBJECT, the same construction the food shelf uses:
+     * GROCERIES is what a shop sells and the thirteen foods are what it buys,
+     * and the difference between them is the shop's whole reason to exist.
+     * Here the object does not change on the way through - a watch is a watch -
+     * and what the shop adds is the counter it is sold over.
+     *
+     * SO THE MARGIN IS THE PRICE, and it is the only thing in this pair that
+     * a city can be short of. The world has no shortage of watches. It has a
+     * shortage of shops open on a Tuesday, which is a thing a player builds.
+     * See LuxuryRetail.sellOwnPriced() for the strike.
+     */
+    LUXURY_TRADE("Luxury retail", "piece", Double.NaN, Double.NaN, 0, false, Pricing.SELLER, false),
+
+    /* =======================================================================
+       A MEAL OUT (2026-09-18)
+
+       Jerus asked for restaurants beside the luxury shops, and then chose what
+       makes them different from a second boutique: *a meal out REPLACES
+       groceries*. So this good is not an addition to what a city eats. It is
+       the same food, reaching the same stomach, through a different door.
+
+       WHICH MAKES IT GROCERIES' SIBLING AND NOT LUXURIES'. A watch is imported
+       and a meal cannot be: the food in it is the thirteen things already on
+       the shelf, bought in the same market the shops buy in, at the same
+       prices. A restaurant is a SECOND CHANNEL to a supply the city is already
+       short of - it does not bring in a kilogram that was not there - and that
+       is the whole reason it presses on the food price. Supply against demand,
+       which is the thing Jerus said matters most.
+
+       WHAT IT ADDS IS THE KITCHEN. A shop's coverage is people it can serve a
+       month; a restaurant's is MEALS it can serve a month, and a meal is one
+       ninetieth of a person-month - three a day, thirty days. A city whose
+       shops cannot reach everybody can feed some of them a different way, and
+       a city that builds neither leaves the money where it is.
+
+       SELLER-PRICED, like GROCERIES and LUXURY_TRADE: a meal is not traded
+       with the world - nobody ships a dinner - so the band would be zero wide
+       and the restaurants strike their own margin. See Restaurants.
+       ======================================================================= */
+    MEALS("Restaurant meals", "meal", Double.NaN, Double.NaN, 0, false, Pricing.SELLER, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -722,6 +802,13 @@ public enum Good {
              * weightless and cost nobody a freight bill. A wagon set is a
              * locomotive and what it pulls.
              */
+            // A case of watches is light and dear, which is what makes it a
+            // thing the world ships and not a thing the railway argues about.
+            case "piece":     return .02;
+            // A meal is served where it stands. What it is made of travelled
+            // as the thirteen foods and was counted then; counting it twice
+            // would put a restaurant's dinners on the road as freight.
+            case "meal":      return 0;
             case "car":       return 1.5;
             case "van":       return 3;
             case "wagon set": return 300;
@@ -754,6 +841,13 @@ public enum Good {
                 return Traffic.BULK;
             case GROCERIES: case HOUSING: case BUILDING_WORK:
             case SUPPORT_WORK: case BACK_OFFICE_WORK: case ENGINEERING_WORK:
+            // ...and the retail side of a watch, which is a counter and a till
+            // and travels nowhere. The wholesale LUXURIES it was cut from DO
+            // cross the boundary, and pay for it.
+            case LUXURY_TRADE:
+            // ...and a dinner, which is eaten where it is cooked. The FOOD in
+            // it moved, and paid the road for it on the way to the kitchen.
+            case MEALS:
                 return null;
             default:
                 return Traffic.GOODS;

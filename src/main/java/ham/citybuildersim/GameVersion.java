@@ -49,8 +49,65 @@ public final class GameVersion {
      * units fix, the thirteen foods going live, FOOD's retirement, and a cost
      * model that can price a line making two things. The goods economy is a
      * bigger change than the clock was, and the clock took 0.4.4 to 0.5.0.
+     *
+     * 0.6.5 (2026-09-17) - TRANSPORT, AND THE THINGS THAT MOVE ON IT. Nine
+     * batches under 0.6.0 and every one of them about the same subject: the
+     * freight band decomposed into a world price and a cost of moving, the
+     * road's one load split into commuters, goods and bulk, the three modes
+     * and the fare, the railway as the twelfth sector, the automobile industry
+     * as the thirteenth, households buying cars and the road getting its
+     * teeth, and the sectors buying the lorries they move things with. Then
+     * the screen that finally shows a player any of it.
+     *
+     * Two whole industries, a fifth operating ratio, the first durable a
+     * household in this game has ever been able to own, and a tab. Five points
+     * rather than one: 0.6.1 through 0.6.4 would each have been a fair release
+     * and none of them shipped on its own.
+     *
+     * SAVE_FORMAT did not move for any of it. Every field added since 0.6.0 is
+     * keyed by name or appended to the end of an array whose reader checks its
+     * length, so a 0.6.0 city opens in 0.6.5 with no cars, no fleets and the
+     * rolling stock its track implies - which is exactly what that city was.
      */
-    public static final String VERSION = "0.6.0";
+    /**
+     * 0.6.6 - THE FOURTEENTH SECTOR, AND A RIDE STOPS BEING A MONTH.
+     *
+     * Luxury Retail: boutiques and department stores that import what they
+     * sell, strike their margin against the queue at the door, and give the
+     * household savings a second place to go besides the shelf. The city's
+     * net worth stops diverging and starts oscillating, which is the whole
+     * reason it was built.
+     *
+     * And the fare. It was charged ONCE per rider per month against a constant
+     * that says "a single journey", so a monthly pass cost $2.50 and the buses
+     * could not have paid for themselves at any fare a player would set. Forty
+     * journeys a month now - out and back, twenty days - which is most of the
+     * transit loss the todo list has been carrying as a balance problem.
+     *
+     * SAVE_FORMAT did not move for either. The sector is keyed by name and the
+     * accounts' luxury baseline is appended to an array whose reader checks
+     * its length, so a 0.6.5 city opens with no boutiques and an empty shelf -
+     * which is exactly what that city was.
+     */
+    /**
+     * 0.6.7 - THE FIFTEENTH SECTOR, AND A MEAL OUT IS FOOD.
+     *
+     * Restaurants, the other half of what Jerus asked for beside the luxury
+     * shops, and the half with a rule attached: *a meal out REPLACES
+     * groceries*. So they import nothing. A dinner is the same thirteen foods
+     * off the same shelf at the same prices, which makes the sector a SECOND
+     * DOOR to a supply the city is already short of rather than an addition to
+     * it - and a second buyer in that market, which is what makes the basket
+     * dearer. A meal is one ninetieth of a person-month, three a day and
+     * thirty days, and the hunger measure counts it at what a person-month of
+     * food costs rather than at what the kitchen charged for it.
+     *
+     * SAVE_FORMAT did not move. The sector is keyed by name and the dinners a
+     * household ate are appended to a cell array whose reader checks its
+     * length, so a 0.6.6 city opens with no kitchens and a city that ate in -
+     * which is exactly what that city was.
+     */
+    public static final String VERSION = "0.6.7";
 
     /**
      * The save shape.

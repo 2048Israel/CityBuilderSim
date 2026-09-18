@@ -137,6 +137,14 @@ public class LongPlaytest {
     static double lastUnemployment = 0;
     // The people outside the families, over the run (2026-09-11).
     static double totalEvicted = 0, totalLeftBroke = 0, worstUnhoused = 0, worstOrphans = 0;
+    /**
+     * The second-hand car market over the run (2026-09-17). Counted rather than
+     * asserted, and counted at all because a mechanic that never fires in four
+     * thousand months looks exactly like one that does not exist - which is how
+     * out-migration got shipped inert and how the transit fare was collected
+     * from nobody for a whole batch.
+     */
+    static double usedOffered = 0, usedSold = 0, usedCheapest = 1, usedDearest = 0;
     static int worstUnhousedMonth = 0;
 
     static int monthsAnyTierDeclining = 0;
@@ -352,6 +360,17 @@ public class LongPlaytest {
         {
             Unemployment pool = g.getUnemployment();
             totalEvicted += g.getHouseholdBalance().getEvicted();
+            if (g.getUsedCarsOffered() > 0) {
+                usedOffered += g.getUsedCarsOffered();
+                usedSold += g.getUsedCarsTraded();
+                if (g.getUsedCarsTraded() > 0) {
+                    // The market's own denominator, not today's showroom - see
+                    // HouseholdBalance.getUsedCarShare().
+                    double share = g.getHouseholdBalance().getUsedCarShare();
+                    usedCheapest = Math.min(usedCheapest, share);
+                    usedDearest = Math.max(usedDearest, share);
+                }
+            }
             totalLeftBroke += pool.getLeftWhenBroke();
             double noDoor = pool.getUnhoused();
             for (double v : g.getFamilies().unhousedPeopleByBand()) noDoor += v;
@@ -755,6 +774,45 @@ public class LongPlaytest {
      * "at most 40 roads"; roads stop winning when roads stop being what the
      * city is losing most output to, and that is measured every month.
      */
+    /* =====================================================================
+       WHO IS PLAYING (2026-09-17)
+
+       Jerus asked why the shops run at half rate. The answer turned out to be
+       nothing to do with the shops: measured over six hundred months of the
+       same city, an attentive player takes the operating rate from 0.62 to
+       0.89, hunger from 42% to 22% and sickness from 27.6% to 9.5%, purely by
+       putting up power, water, streets, clinics and cemeteries as the city
+       grows. The model is fine. THE PLAYER WAS THE PROBLEM.
+
+       AND NOT BECAUSE advise() IS BAD - it ranks constraints by the output
+       each shortage is costing, which is the right rule and has its own essay
+       above. It is the RHYTHM. The loop below skips six to a hundred and
+       twenty months at a stretch, averaging fifty-four, and then allows three
+       moves. That is deliberate and the comment there says why: it is the
+       length a person actually clicks. But a city left alone for a century
+       between decisions is permanently behind its own growth, so every number
+       this harness has ever reported was measured in a city in crisis from
+       neglect - which is a fine robustness test and a poor instrument for
+       measuring anything else.
+
+       SO THERE ARE TWO PLAYERS NOW, and the default is unchanged. Without the
+       flag this file plays exactly as it always has, so every ensemble in the
+       project docs stays comparable to the digit - which is the whole reason
+       for a flag rather than a fix. With -Dplaytest.player=attentive it checks
+       in yearly and gets eight moves: still no cleverness, still the same
+       advise(), just somebody who looks at the city more than twice a century.
+       ===================================================================== */
+
+    /** True when this run is played by somebody paying attention. */
+    static final boolean ATTENTIVE = "attentive".equalsIgnoreCase(
+            System.getProperty("playtest.player", "occasional"));
+
+    /** Months the player will let pass before looking, at most. */
+    static int longestSkip() { return ATTENTIVE ? 12 : Integer.MAX_VALUE; }
+
+    /** ...and how many things it will fix when it does look. */
+    static int movesPerLook() { return ATTENTIVE ? 8 : 3; }
+
     static String advise(Game g) {
 
         EconomyManager e = g.getEconomyManager();
@@ -1741,11 +1799,15 @@ public class LongPlaytest {
                     case 4 -> 6;
                     default -> 120;
                 };
+                // ...and an attentive player will not let a century go by. See
+                // the note on ATTENTIVE above; without the flag this is the
+                // same unbounded skip it always was.
+                skip = Math.min(skip, longestSkip());
                 run(g, Math.min(skip, TARGET_MONTHS - g.getMonth()));
 
                 // Look at the city, fix the worst thing, then a few hands-on
                 // months watching what that did - the way anyone plays.
-                for (int move = 0; move < 3; move++) {
+                for (int move = 0; move < movesPerLook(); move++) {
                     if (advise(g) == null) break;
                     run(g, 1);
                 }
@@ -1846,6 +1908,9 @@ public class LongPlaytest {
         /* ---------------------------- the report ---------------------------- */
 
         out.println("=================================================================");
+        out.println("  PLAYED BY: " + (ATTENTIVE
+                ? "somebody paying attention - yearly, eight moves a look"
+                : "somebody who checks in every few decades - the default"));
         out.println("  LONG PLAYTEST - " + g.getMonth() + " months ("
                 + (g.getMonth() / 12) + " years) in " + seconds + "s");
         out.println("=================================================================\n");
@@ -2008,6 +2073,26 @@ public class LongPlaytest {
          * what makes them worth printing: they are the floor a player is
          * measured against.
          */
+        /*
+         * THE SECOND-HAND CAR MARKET (2026-09-17), which is a poverty measure
+         * dressed as a transport one. A household puts the car up when the wage
+         * no longer buys the food and half a year of that gap is more than it
+         * has saved or can borrow, so a run where cars change hands every month
+         * is a run with families in trouble every month - and the SHARE that
+         * found a buyer is the other half of it, because the month everybody is
+         * selling is the month nobody is buying.
+         */
+        out.printf("  the used-car market: %,.0f offered over the run, %,.0f sold"
+                + " (%.0f%% found a buyer), %,.0f households gave one up last month%n",
+                usedOffered, usedSold, usedOffered > 0 ? usedSold / usedOffered * 100 : 0,
+                g.getUsedCarsTraded());
+        if (usedSold > 0) {
+            out.printf("  ...and it went for %.0f%% of a new car at best, %.0f%% at worst"
+                    + " (the floor is %.0f%%, and a city all selling at once reaches it)%n",
+                    usedDearest * 100, usedCheapest * 100,
+                    HouseholdBalance.USED_CAR_FLOOR * 100);
+        }
+
         Healthcare hc = g.getHealthcare();
         out.printf("  healthcare: $%,.0fk a month, %.0f%% covered by fees%n",
                 hc.getGrossCost(), hc.getCostRecovery() * 100);
@@ -2162,11 +2247,44 @@ public class LongPlaytest {
         out.printf("  wages lifted %.1f%%, the floor is worth %s a month in today's money%n",
                 (g.getLabourMarket().getCostOfLiving() - 1) * 100,
                 String.format("%.3f", g.getLabourMarket().cashMinimumWage()));
-        out.printf("  hunger: %.0f%% of people short, shops delivered %.0f%% of what was planned"
-                + " (roads %.0f%%)%n",
+        /*
+         * TWO DELIVERY NUMBERS, AND THE GAP BETWEEN THEM IS THE POINT
+         * (2026-09-17). The first is what the city ASKED for against what it
+         * got; the second is the shops' own performance against the queue they
+         * decided they could serve. This line used to print only the second and
+         * call it "of what was planned", which read as a comfortable three
+         * quarters in a city asking for a hundred and twenty-two times what it
+         * received. A basket is one person-month of food, so the shops cap
+         * demand in PEOPLE - nobody eats twice - and every dollar past that has
+         * nowhere in this game to go. See Retail.getHouseholdShare().
+         */
+        ham.citybuildersim.sectors.Retail shop =
+                (ham.citybuildersim.sectors.Retail) g.getSectors().byKey("Retail");
+        out.printf("  hunger: %.0f%% of people short; the city got %.1f%% of the groceries it asked for"
+                + " (%,.0f baskets wanted, %,d sold to %,d people)%n",
                 g.getHouseholdBalance().getHungerRate() * 100,
-                g.getHouseholdBalance().getDeliveredShare() * 100,
+                shop.getHouseholdShare() * 100, shop.getHouseholdWant(),
+                shop.getProductsSold(), g.getPopulationManager().getPopulation());
+        out.printf("  ...and the shops filled %.0f%% of the queue they could serve at all,"
+                + " running at %.0f%% (roads %.0f%%)%n",
+                shop.getSupplyRatio() * 100, shop.getOperatingRate() * 100,
                 g.getInfrastructureManager().getThroughputRatio() * 100);
+        /*
+         * ...AND THE SECOND DOOR, on the line under the first one because that
+         * is the comparison worth making: a city short of shops can be a city
+         * with kitchens instead, and a city with neither is a city eating at
+         * home whether it wants to or not.
+         */
+        ham.citybuildersim.sectors.Restaurants kitchens = g.getSectors().restaurants();
+        out.printf("  ...and %,.0f meals out, %,.0f asked for against %,d of tables"
+                + " at %.2fx the food (%,.0f person-months fed, %.1f%% of the city)%n",
+                kitchens.getServed(), kitchens.getWanted(), kitchens.seats(),
+                kitchens.getMargin(),
+                kitchens.getServed() * ham.citybuildersim.sectors.Restaurants.PERSON_MONTHS_PER_MEAL,
+                g.getPopulationManager().getPopulation() > 0
+                        ? kitchens.getServed()
+                            * ham.citybuildersim.sectors.Restaurants.PERSON_MONTHS_PER_MEAL
+                            / g.getPopulationManager().getPopulation() * 100 : 0);
         out.printf("  sickness %.1f%% = baseline %.1f%% (coverage %.0f%%) + outbreak %.1f%%"
                 + " + unburied %.1f%% + hunger %.1f%%%s%n",
                 hh.getSickRate() * 100, hh.getBaselineRate() * 100, hh.getCoverage() * 100,

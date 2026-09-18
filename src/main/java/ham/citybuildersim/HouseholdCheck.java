@@ -119,7 +119,7 @@ public class HouseholdCheck {
         // What households pay out IS consumption in the national accounts. If
         // these two ever diverge, one of them is wrong.
         NationalAccounts na = new NationalAccounts();
-        na.update(400, 300, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);   // 400 retail, 300 rent
+        na.update(400, 300, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0); // 400 retail, 300 rent
 
         HouseholdAccounts paired = new HouseholdAccounts();
         paired.update(1000, 150,

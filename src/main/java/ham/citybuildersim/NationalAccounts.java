@@ -136,6 +136,7 @@ public class NationalAccounts {
      */
     private double lastFoodVolume;
     private double lastMaterialUnits;
+    private double lastLuxuryUnits;
 
     /*
      * WORK IN HAND IS NOT AN INVENTORY TERM ANY MORE (2026-09-11).
@@ -155,10 +156,11 @@ public class NationalAccounts {
      * not production.
      */
 
-    /* The two parts of the inventory term, kept so a diagnostic can say which
+    /* The three parts of the inventory term, kept so a diagnostic can say which
        one moved rather than leaving the reader to infer it from the total. */
     private double invFood;
     private double invMaterials;
+    private double invLuxuries;
 
     /**
      * Whether last month's stock is actually known.
@@ -199,12 +201,13 @@ public class NationalAccounts {
                         double investmentConstruction, double investmentInventories,
                         double government, double importsFood, double importsMaterials,
                         double importsRawMaterial, double exports,
-                        double lastMaterialUnits,
+                        double lastMaterialUnits, double lastLuxuryUnits,
                         boolean baselineKnown) {
 
         this.gdp = gdp;
         this.lastFoodVolume = lastFoodVolume;
         this.lastMaterialUnits = lastMaterialUnits;
+        this.lastLuxuryUnits = lastLuxuryUnits;
         this.inventoryBaselineKnown = baselineKnown;
 
         // The components too, not just the total. They are what the national
@@ -234,9 +237,11 @@ public class NationalAccounts {
      */
     public double getLastFoodVolume()    { return lastFoodVolume; }
     public double getLastMaterialUnits() { return lastMaterialUnits; }
+    public double getLastLuxuryUnits()   { return lastLuxuryUnits; }
     public double getInvFood() { return invFood; }
     public double getInventoryFood()         { return invFood; }
     public double getInventoryMaterials()    { return invMaterials; }
+    public double getInventoryLuxuries()     { return invLuxuries; }
     public boolean isBaselineKnown()     { return inventoryBaselineKnown; }
 
     /**
@@ -251,6 +256,7 @@ public class NationalAccounts {
                        double constructionWorkDone,
                        double foodUnits, double foodStockWrittenOff, double foodPrice,
                        double materialUnits, double materialPrice,
+                       double luxuryUnits, double luxuryPrice,
                        double governmentServices,
                        double foodImports, double materialImports,
                        double rawMaterialImports, double exportRevenue) {
@@ -296,7 +302,39 @@ public class NationalAccounts {
              */
             invMaterials = (materialUnits - lastMaterialUnits) * materialPrice;
 
-            investmentInventories = invFood + invMaterials;
+            /* =============================================================
+               AND THE BOUTIQUE'S STOCKROOM IS THE FOURTH TERM (2026-09-17)
+
+               THIRD SIGHTING OF ONE SHAPE. A good a sector HOLDS and has not
+               sold yet needs a line here or the month it arrives is a month of
+               negative output: the city pays the world for it, the payment
+               lands in NX, and nothing anywhere says the city still has the
+               thing it bought. Food got its line, then the materials plant's
+               warehouse, and now the luxury shelf.
+
+               IT SHOWED AS GDP OF -$8,636k IN MONTH 7 of a fresh city, which
+               is one Boutique's three-month stockroom - 960 pieces at $9 -
+               imported in a single month and counted on one side only. Sixty
+               months in a long playtest read negative before this line; one
+               did after it, and that one is the same shape in construction
+               that the rounding note below already describes.
+
+               PRICED AT WHAT THE SHOP PAID, like the materials above: this is
+               one good counted in pieces, so it needs no weighting, and the
+               local price of a good the city only imports IS the landed cost.
+               That is what makes the arrival net to zero - NX takes the
+               landed cost out and this puts the same number back - and leaves
+               the shop's MARGIN as the only thing that scores, in the month
+               it is actually earned, which is what a retailer adds.
+
+               THE RULE, since it is now three: any good a sector can hold and
+               does not consume within the month belongs in this block the day
+               the good is written. Two of the three were found by a negative
+               month rather than by remembering.
+               ============================================================= */
+            invLuxuries = (luxuryUnits - lastLuxuryUnits) * luxuryPrice;
+
+            investmentInventories = invFood + invMaterials + invLuxuries;
         } else {
             investmentInventories = 0;
             inventoryBaselineKnown = true;
@@ -304,6 +342,7 @@ public class NationalAccounts {
 
         lastFoodVolume = foodUnits;
         lastMaterialUnits = materialUnits;
+        lastLuxuryUnits = luxuryUnits;
 
         government = governmentServices;
 
@@ -717,6 +756,7 @@ public class NationalAccounts {
         history.clear();
         lastFoodVolume = 0;
         lastMaterialUnits = 0;
+        lastLuxuryUnits = 0;
         inventoryBaselineKnown = true;   // an empty warehouse is a real baseline
         gdp = 0;
     }
@@ -752,7 +792,7 @@ public class NationalAccounts {
         utilityIncome *= scale;  landSales *= scale;
         propertyTax *= scale;  interestExpense *= scale;
         capitalSpending *= scale;  landPurchases *= scale;
-        invFood *= scale;  invMaterials *= scale;
+        invFood *= scale;  invMaterials *= scale;  invLuxuries *= scale;
 
         /*
          * ...AND THE ROLLING HISTORY, which is ten years of GDP and is what

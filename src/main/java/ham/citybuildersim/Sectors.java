@@ -2,6 +2,8 @@ package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.Agriculture;
 import ham.citybuildersim.sectors.Automotive;
+import ham.citybuildersim.sectors.LuxuryRetail;
+import ham.citybuildersim.sectors.Restaurants;
 import ham.citybuildersim.sectors.BusinessServices;
 import ham.citybuildersim.sectors.Construction;
 import ham.citybuildersim.sectors.FoodIndustry;
@@ -57,7 +59,8 @@ public final class Sectors {
             MATERIALS = "Materials", BUSINESS_SERVICES = "Business Services",
             MANUFACTURING = "Manufacturing", AGRICULTURE = "Agriculture",
             FOOD_PROCESSING = "Food Processing", RAIL = "Rail",
-            AUTOMOTIVE = "Automotive";
+            AUTOMOTIVE = "Automotive", LUXURY_RETAIL = "Luxury Retail",
+            RESTAURANTS = "Restaurants";
 
     /*
      * ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than
@@ -71,7 +74,8 @@ public final class Sectors {
      */
     public static final String[] KEYS = {
         RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING, MATERIALS,
-        BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE, FOOD_PROCESSING, RAIL, AUTOMOTIVE
+        BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE, FOOD_PROCESSING, RAIL, AUTOMOTIVE,
+        LUXURY_RETAIL, RESTAURANTS
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -90,6 +94,8 @@ public final class Sectors {
     private final FoodProcessing foodProcessing;
     private final Rail rail;
     private final Automotive automotive;
+    private final LuxuryRetail luxuryRetail;
+    private final Restaurants restaurants;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -105,6 +111,8 @@ public final class Sectors {
         foodProcessing = add(new FoodProcessing(), buildings, markets);
         rail = add(new Rail(), buildings, markets);
         automotive = add(new Automotive(), buildings, markets);
+        luxuryRetail = add(new LuxuryRetail(), buildings, markets);
+        restaurants = add(new Restaurants(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -197,6 +205,12 @@ public final class Sectors {
      * See sectors.Automotive.
      */
     public Automotive automotive() { return automotive; }
+
+    /** ...and the shops that sell the city its watches. See LuxuryRetail. */
+    public LuxuryRetail luxuryRetail() { return luxuryRetail; }
+
+    /** ...and the kitchens, which sell the city its own food cooked. See Restaurants. */
+    public Restaurants restaurants() { return restaurants; }
 
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {

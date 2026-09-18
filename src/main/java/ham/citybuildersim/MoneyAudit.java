@@ -657,7 +657,34 @@ public final class MoneyAudit {
         out += debit.apply("- households CarImports",
                 g.getHouseholdCarImports(), Scope.TRADE);
         out += debit.apply("- households BroughtHomeSaved", g.getHouseholdBalance().getBroughtHome(), Scope.DOMESTIC);
-        out += debit.apply("- households ForeignInterestReinvested", g.getHouseholdBalance().getForeignInterest(), Scope.FINANCIAL);
+        /*
+         * THE COUPON IS BANKED AT HOME NOW, AND STILL NEEDS ITS OTHER LEG
+         * (2026-09-17). It used to be reinvested abroad; it is paid home - see
+         * HouseholdBalance.investAbroad() - and the first attempt at this
+         * DELETED the debit, on the reasoning that the money no longer leaves.
+         * Thirteen harnesses went red, five of them on the conservation
+         * identity itself.
+         *
+         * WHY THAT WAS WRONG, and it is the thing to remember about this file:
+         * HOUSEHOLD SAVINGS ARE NOT ONE OF THE AUDITED POOLS. Money moving
+         * from abroad into a household's bank balance moves nothing the pool
+         * identity can see, so it has to be declared on BOTH sides or the
+         * credit stands alone and the audit reports money appearing. Every
+         * household foreign flow above is a pair for exactly this reason.
+         *
+         * WHAT CHANGED IS THE SCOPE, not the existence. The balance of payments
+         * reads one side of each pair: the credit is INCOME, because a coupon
+         * earned abroad is a current-account receipt either way. The debit used
+         * to be FINANCIAL - money earned abroad and left there is an outward
+         * investment - and is DOMESTIC now, which is the same treatment
+         * "- households BroughtHomeSaved" gets two lines up, and for the same
+         * reason: the money is at home.
+         *
+         * The SECTORS' coupon is untouched and still rolls, so its own pair
+         * stands above.
+         */
+        out += debit.apply("- households ForeignInterestBanked",
+                g.getHouseholdBalance().getForeignInterest(), Scope.DOMESTIC);
         /*
          * ...AND GOING OUT. A dividend to a household leaves the pools the
          * way a wage does; a dividend to a shareholder abroad is income paid

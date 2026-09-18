@@ -201,6 +201,25 @@ public enum BuildingType {
      * ordinal(), so a constant slipped in above an existing one hands every
      * old save's bill to whoever now holds that ordinal.
      */
-    AUTOMOTIVE
+    AUTOMOTIVE,
+
+    /**
+     * ...and for the ninth time, on the end. See above.
+     *
+     * The shops that sell a city its watches. They make nothing: what they
+     * have is COVERAGE - customers they can serve in a month - and that is the
+     * scarce thing, because the world has no shortage of watches and this city
+     * has a shortage of counters to sell them over.
+     */
+    LUXURY,
+
+    /**
+     * ...and for the tenth time, on the end. See above.
+     *
+     * The kitchens. Coverage here is MEALS a month rather than customers a
+     * month, because a person eats ninety of them and buys one basket - and
+     * the distinction matters the moment anything divides one by the other.
+     */
+    HOSPITALITY
 
 }

@@ -113,6 +113,19 @@ public final class Icons {
           + "M2 18h20"
           + "M11.5 2.4a1 1 0 0 1 1 0l8 4.6A.5.5 0 0 1 20.3 8H3.7a.5.5 0 0 1-.2-1z";
 
+    /**
+     * A route: two waypoints and the road that winds between them.
+     *
+     * Lucide's `route`. Picked over a bus, a lorry or a train because the tab
+     * is not any one of those - it is the roads, the trams, the railway and
+     * the freight on all three, and a picture of a bus would have promised a
+     * screen about buses. The circles are written as arcs; see the note above.
+     */
+    public static final String INFRASTRUCTURE =
+            "M3 19 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0"
+          + "M15 5 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0"
+          + "M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15";
+
     /** A globe. */
     public static final String TRADE =
             "M2 12 a10 10 0 1 0 20 0 a10 10 0 1 0 -20 0"

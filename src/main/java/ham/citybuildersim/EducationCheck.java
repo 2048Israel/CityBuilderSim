@@ -531,9 +531,11 @@ public class EducationCheck {
 
         double bareNone = share(unschooled, WageBand.NONE);
         double taughtNone = share(schooled, WageBand.NONE);
+        double bareHeads = heads(unschooled, WageBand.NONE);
+        double taughtHeads = heads(schooled, WageBand.NONE);
         System.out.printf("   no diploma: %.1f%% of the workforce with no schools, %.1f%% with them"
-                + "  (basic coverage %.0f%% vs %.0f%%)%n",
-                bareNone * 100, taughtNone * 100,
+                + "  (%,.0f people against %,.0f; basic coverage %.0f%% vs %.0f%%)%n",
+                bareNone * 100, taughtNone * 100, bareHeads, taughtHeads,
                 unschooled.getEducation().basicCoverage() * 100,
                 schooled.getEducation().basicCoverage() * 100);
 
@@ -541,8 +543,36 @@ public class EducationCheck {
                 unschooled.getEducation().basicCoverage() < .05);
         assertTrue("fixture: the schooled one really has some",
                 schooled.getEducation().basicCoverage() > .5);
+        /*
+         * A SEVENTH AND NOT A QUARTER, AND THE OLD LEVEL WAS READING THE WRONG
+         * THING. 2026-09-17, found by the car-finance batch: this line asked
+         * for bareNone > .25, the unschooled city came in at 24.2%, and the
+         * harness went red on a change that has nothing whatever to do with
+         * schools. It was right to fire and wrong about why.
+         *
+         * THE SHARE IS DILUTED BY GROWTH. Nobody arrives unskilled, so every
+         * immigrant lands in some other band and pushes this one's SHARE down
+         * without touching its COUNT. The unchanged code walks this same city
+         * through 0.0% at month 12, 7.1% at 96, 14.7% at 150, 22.6% at 200,
+         * 28.8% at 250 and 34.7% at 300: it crosses .25 somewhere around month
+         * 220, and where it happens to sit at month 300 is a statement about
+         * how fast the city grew, not about whether it has schools. A change
+         * that let households finance a car made the city grow faster and put
+         * the reading back under the line, which is the threshold catching the
+         * growth rate rather than the thing this section is named for.
+         *
+         * SO THE TEETH MOVED TO SOMETHING GROWTH CANNOT MOVE: the headcount,
+         * against the schooled city's, twenty to one and usually nearer a
+         * hundred. That is the claim this section actually makes, an immigrant
+         * cannot dilute it, and it does not care how big either city got. The
+         * share stays on as a floor meaning "a large minority and not a
+         * rounding error", which is all it was ever load-bearing for - the
+         * comparison below divides by it.
+         */
         assertTrue("a city with no schools makes its own unskilled adults",
-                bareNone > .25);
+                bareNone > .15);
+        assertTrue("...and against a city with them it is a factor, not a margin",
+                bareHeads > 20 * taughtHeads);
         assertTrue("...and schools are what stop it",
                 taughtNone < bareNone * .6);
         assertTrue("nobody arrived unskilled - not one, in either city",
@@ -627,6 +657,14 @@ public class EducationCheck {
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /**
+     * A band's headcount, which - unlike its share - no amount of immigration
+     * into the OTHER bands can move. See section 11.
+     */
+    static double heads(Game g, WageBand band) {
+        return g.getPopulationManager().workforceByBand()[band.ordinal()];
     }
 
     /** A band's share of the workforce. */

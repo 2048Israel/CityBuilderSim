@@ -1566,6 +1566,134 @@
     "MACHINERY": 80
    },
    "stock": 12
+  },
+  {
+   "id": 69,
+   "name": "Boutique",
+   "category": "LUXURY",
+   "sector": "Luxury Retail",
+   "coverage": 320,
+   "cashCost": 1180,
+   "constructionPoints": 190,
+   "constructionMaterials": 26,
+   "electricity": 9,
+   "water": 1,
+   "jobs": {
+    "NO_DIPLOMA": 2,
+    "DIPLOMA": 4,
+    "COLLEGE_BUSINESS": 1
+   },
+   "land": 6000,
+   "roadLoad": 8,
+   "makes": {
+    "LUXURY_TRADE": 320
+   },
+   "uses": {
+    "LUXURIES": 320
+   },
+   "stock": 960
+  },
+  {
+   "id": 70,
+   "name": "Department Store",
+   "category": "LUXURY",
+   "sector": "Luxury Retail",
+   "coverage": 4200,
+   "cashCost": 21600,
+   "constructionPoints": 2900,
+   "constructionMaterials": 560,
+   "electricity": 130,
+   "water": 18,
+   "jobs": {
+    "NO_DIPLOMA": 34,
+    "DIPLOMA": 46,
+    "COLLEGE_BUSINESS": 9,
+    "UNIV_FINANCE": 2
+   },
+   "land": 90000,
+   "roadLoad": 70,
+   "makes": {
+    "LUXURY_TRADE": 4200
+   },
+   "uses": {
+    "LUXURIES": 4200
+   },
+   "stock": 12600
+  },
+  {
+   "id": 71,
+   "name": "Diner",
+   "category": "HOSPITALITY",
+   "sector": "Restaurants",
+   "coverage": 13500,
+   "cashCost": 1100,
+   "constructionPoints": 280,
+   "constructionMaterials": 40,
+   "electricity": 22,
+   "water": 8,
+   "jobs": {
+    "NO_DIPLOMA": 3,
+    "DIPLOMA": 1
+   },
+   "land": 5000,
+   "roadLoad": 14,
+   "makes": {
+    "MEALS": 13500
+   },
+   "uses": {
+    "GRAINS": 450,
+    "BREAD": 525,
+    "DAIRY_EGGS": 1200,
+    "VEGETABLES": 1050,
+    "FRUIT": 750,
+    "MEAT": 675,
+    "FISH": 180,
+    "FATS": 120,
+    "PROCESSED_MEAT": 150,
+    "READY_MEALS": 225,
+    "BAKERY": 225,
+    "SNACKS": 150,
+    "DRINKS": 1800
+   },
+   "stock": 12000
+  },
+  {
+   "id": 72,
+   "name": "Restaurant",
+   "category": "HOSPITALITY",
+   "sector": "Restaurants",
+   "coverage": 40500,
+   "cashCost": 3600,
+   "constructionPoints": 900,
+   "constructionMaterials": 130,
+   "electricity": 68,
+   "water": 24,
+   "jobs": {
+    "NO_DIPLOMA": 8,
+    "DIPLOMA": 3,
+    "COLLEGE_BUSINESS": 1
+   },
+   "land": 14000,
+   "roadLoad": 42,
+   "makes": {
+    "MEALS": 40500
+   },
+   "uses": {
+    "GRAINS": 1350,
+    "BREAD": 1575,
+    "DAIRY_EGGS": 3600,
+    "VEGETABLES": 3150,
+    "FRUIT": 2250,
+    "MEAT": 2025,
+    "FISH": 540,
+    "FATS": 360,
+    "PROCESSED_MEAT": 450,
+    "READY_MEALS": 675,
+    "BAKERY": 675,
+    "SNACKS": 450,
+    "DRINKS": 5400
+   },
+   "stock": 36000
   }
  ]
 }

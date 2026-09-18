@@ -100,6 +100,15 @@ public abstract class Sector {
         this.key = key;
         this.label = label;
         this.group = group;
+        /*
+         * EVERY SECTOR KEEPS A FLEET, on the base class rather than in thirteen
+         * constructors, because every sector that moves a tonne needs vehicles
+         * and the ones that move none ask for zero of them. Cover of zero
+         * months: the pantry rule sizes a shelf by recent USE and is right for
+         * a mill's crop bill and wrong for capital - bid() below decides this
+         * one, the way sectors.Rail decides its locomotives.
+         */
+        pantry(Good.VANS, 0);
     }
 
     protected final void makes(Good good)  { makes.add(good); }
@@ -306,9 +315,14 @@ public abstract class Sector {
     /* ===================================================================
        UTILISATION
 
-       Four throttles that multiply: a gridlocked city in a brownout is worse
+       FIVE throttles that multiply: a gridlocked city in a brownout is worse
        off than either alone. Sickness cuts output only and never payroll -
        the staff are on the books whether they came in or not (see Health).
+
+       FOUR OF THEM ARRIVE AND ONE IS BOUGHT. Energy, water, road and health
+       are handed to a sector by the city around it; the fifth is its own
+       lorries, and it is the only one a business can do something about with
+       its own money. See THE FLEET below.
        =================================================================== */
 
     protected double energyRatio = 1, waterRatio = 1, roadRatio = 1, healthRatio = 1;
@@ -330,14 +344,193 @@ public abstract class Sector {
     public double getRoadRatio()    { return roadRatio; }
     public double getHealthRatio()  { return healthRatio; }
 
-    /** How much of nameplate actually runs: staffing times the four ratios. */
+    /** How much of nameplate actually runs: staffing times the five ratios. */
     public double getOperatingRate() {
-        return averageFill * energyRatio * waterRatio * roadRatio * healthRatio;
+        return averageFill * energyRatio * waterRatio * roadRatio * healthRatio * getVanRatio();
     }
 
     /** Charged for what was DELIVERED, not asked for - the utility books the same slice. */
     public double getElectricityCost() { return electricity * energyRatio * pricePerWatt; }
     public double getWaterCost()       { return water * waterRatio * pricePerWaterUnit; }
+
+
+    /* ===================================================================
+       THE FLEET (2026-09-17)
+
+       Jerus, asked what vans and trucks should be: "a constraint - a sector
+       with too few vans can't move what it makes; its operating rate falls."
+
+       THE FIFTH THROTTLE, and the first one a business BUYS rather than is
+       handed. Energy, water, road and health all arrive from outside: the city
+       builds the plants, lays the streets and staffs the clinics, and a sector
+       takes whatever it is given. A lorry is the sector's own capital. It
+       decides how many it needs, it pays for them, it replaces them when they
+       wear out, and if it cannot get them its output falls - which is the
+       whole of what makes this a decision rather than a fourth utility.
+
+       AND IT IS WHAT MAKES THE VAN PLANT A BUSINESS. A Commercial Vehicle
+       Plant had no customer until today: vans are deliberately not exportable
+       (see Good.VANS - an unbounded export market at a fixed floor built two
+       hundred and forty of them and shipped thirty-six thousand vans a month
+       to nobody). The city's own industry is the market, and now it exists.
+
+       SIZED FROM A MEASUREMENT. A six-hundred-month city of 106,612 people
+       moves 1,169,640 tonnes a month across its sectors - 83% of it
+       Manufacturing, 13% Heavy Industry, and all of it at nameplate:
+
+           Manufacturing    972,141 t     Automotive      35,532 t
+           Heavy Industry   148,680 t     Retail           5,312 t
+           Mining             5,000 t     Food Processing  2,011 t
+
+       At TONNES_PER_VAN that is a fleet of about ten thousand - one commercial
+       vehicle per eleven people, which is roughly what a heavy-industrial city
+       runs - and a replacement flow of eighty a month for ever, half a plant,
+       with the other half coming from growth. A city that doubles its mills
+       has to buy the lorries to serve them.
+
+       WHERE IT BITES IS GROWTH, NOT THE STANDING BILL. Eighty vans a month at
+       the local price is a rounding error against a $494M GDP. Eight thousand
+       of them, bought at the IMPORT ceiling by a city with no plant of its own,
+       is not - and neither is a sector that builds its factory this year and
+       cannot buy vehicles for it until next.
+       =================================================================== */
+
+    /**
+     * What one vehicle in a sector's fleet moves in a month.
+     *
+     * A MIXED FLEET NUMBER and it should be read as one. The good is "vans and
+     * trucks"; 96% of the tonnage above is steel, ore and fabrication moving in
+     * artics, and the rest is a shop's bread in a van. A hundred and twenty
+     * tonnes is forty loads at the three tonnes Good.tonnesPerUnit() gives a
+     * vehicle - two a working day - and it is the figure that makes the fleet
+     * come out at a believable size for the city rather than a statement about
+     * any one lorry.
+     */
+    public static final double TONNES_PER_VAN = 120;
+
+    /**
+     * How long a working vehicle lasts. Ten years, against a car's fifteen,
+     * and the asymmetry is the point: a lorry is worked and a car is parked.
+     */
+    public static final double VAN_LIFE_MONTHS = 120;
+
+    /* -------------------------------------------------------------------
+       AND THE TWO THAT MAKE IT A CONSTRAINT RATHER THAN A BILL
+
+       Built without these it was measured and it was NOT what Jerus asked
+       for. Vans are importable, and Markets.clear() fills any user's
+       shortfall from the world at the ceiling - so a sector asking for a
+       whole fleet got a whole fleet, in one month, every time. Every ratio
+       in the measured city read 100.0%. That is a capital COST, which is
+       real and worth having, and it is not "a sector with too few vans
+       can't move what it makes".
+
+       What was missing is the obvious thing: you cannot put a thousand
+       lorries on the road in a month. Nobody can deliver them, nobody has
+       hired the drivers. So a fleet is BUILT UP, and a sector that expands
+       faster than it can mobilise runs its new plant below nameplate until
+       the vehicles arrive.
+       ------------------------------------------------------------------- */
+
+    /**
+     * The fastest a sector can put vehicles on the road: this much of the
+     * fleet it needs, a month.
+     *
+     * Eight months from nothing to fully mobile. An established sector adding
+     * a fifth to its plant covers it in a month and a half and barely notices;
+     * one that doubles overnight runs at two thirds for a quarter. That is the
+     * shape wanted - growth is what this touches, not the standing bill.
+     */
+    public static final double FLEET_DELIVERY_MONTHS = 8;
+
+    /**
+     * What a sector with no lorries of its own still gets done.
+     *
+     * THE SAME SHAPE AS THE ROAD'S OWN FLOOR and for the same reason: a
+     * gridlocked city still moves, because people walk and deliveries arrive
+     * late rather than never (see InfrastructureManager.MIN_THROUGHPUT). A
+     * firm short of its own fleet hires haulage, sends fewer and fuller loads,
+     * and asks its customers to collect. It is slower and it is not stopped.
+     *
+     * Higher than the road's 0.35, deliberately: being short of your own
+     * lorries is a much less bad place to be than a city at a standstill.
+     */
+    public static final double MIN_VAN_RATE = .6;
+
+    /**
+     * Whether this sector's fleet is a fact about the sector rather than a fact
+     * about the version it was saved from.
+     *
+     * FALSE IN A SAVE FROM BEFORE VANS EXISTED, and the same flag sectors.Rail
+     * carries for its locomotives, for the same reason and with the same
+     * answer: a city saved this morning has mills and no lorries - not because
+     * it scrapped them but because the game had none - and a ratio of zero
+     * would stop every factory in it dead on the first tick after a load. It
+     * WAS moving steel, so it HAD lorries. Seeded once, saved, and never
+     * seeded again, so a sector that genuinely runs its fleet down is never
+     * handed a new one.
+     */
+    protected boolean vansKnown;
+
+    public boolean isFleetKnown() { return vansKnown; }
+
+    /**
+     * Tonnes a month this sector's standing plant moves, in and out.
+     *
+     * AT NAMEPLATE, NOT AT THE OPERATING RATE, and that is not laziness: the
+     * rate is what this figure is about to decide, so reading it here would be
+     * a circle. It is also the truer statement - a firm buys lorries for the
+     * factory it has, not for the month it is having.
+     */
+    public double tonnesMoved() {
+        double t = 0;
+        for (Good g : makes) t += getCapacity(g) * g.tonnesPerUnit();
+        // The fleet does not haul itself.
+        for (Good g : uses) if (g != Good.VANS) t += getInputAtCapacity(g) * g.tonnesPerUnit();
+        return t;
+    }
+
+    public double vansNeeded() { return tonnesMoved() / TONNES_PER_VAN; }
+
+    /** The vehicles it owns. A pantry good, so it accumulates instead of being consumed. */
+    public double vanFleet() { return getPantry(Good.VANS); }
+
+    /**
+     * The fifth ratio.
+     *
+     * ONE EXACTLY in the two cases that matter, and both are early returns
+     * rather than arithmetic: a sector with nothing to move needs no vehicles
+     * (every service sector in the game), and a sector with vehicles enough
+     * multiplies its rate by a literal 1 rather than by have/need, which is 1
+     * to within an ulp and not 1. An ulp in an operating rate is a different
+     * city - see InfrastructureManager.streamsDiffer() for the twenty minutes
+     * that cost.
+     */
+    public double getVanRatio() {
+        if (!vansKnown) return 1;
+        double need = vansNeeded();
+        if (!(need > 0)) return 1;
+        double have = vanFleet();
+        if (have >= need) return 1;
+        return MIN_VAN_RATE + (1 - MIN_VAN_RATE) * Math.max(0, have / need);
+    }
+
+    /**
+     * A month of wear, and the seeding.
+     *
+     * Called once a month for every sector, at the top of the market pass and
+     * before anything is produced. The wear is why a Commercial Vehicle Plant
+     * has a customer next year as well as this one.
+     */
+    public void runFleet() {
+        if (!vansKnown) {
+            pantry.put(Good.VANS, vansNeeded());   // see vansKnown
+            vansKnown = true;
+            return;                                 // a fleet bought this month is not worn yet
+        }
+        double have = vanFleet();
+        if (have > 0) usePantry(Good.VANS, have / VAN_LIFE_MONTHS);
+    }
 
     /* ===================================================================
        MONEY AND THE BILLS
@@ -1021,6 +1214,18 @@ public abstract class Sector {
      * bring the shelf to its cover, off what left it last month.
      */
     public double bid(Good g) {
+        /*
+         * THE FLEET IS NOT A SHELF. It asks for exactly the gap between the
+         * vehicles its plant needs and the vehicles it has - so a sector that
+         * has enough asks for nothing, one that has just built a factory asks
+         * for a fleet, and the wear in runFleet() turns the difference into a
+         * standing order rather than a single purchase. Same shape as
+         * sectors.Rail's rolling stock and for the same reason.
+         */
+        if (g == Good.VANS) {
+            double need = vansNeeded();
+            return Math.max(0, Math.min(need - vanFleet(), need / FLEET_DELIVERY_MONTHS));
+        }
         if (pantryMonths.containsKey(g)) {
             double target = pantryTarget(g);
             return Math.max(0, target - getPantry(g));
@@ -1439,6 +1644,7 @@ public abstract class Sector {
         for (Map.Entry<Good, Double> e : pantryUsedLastMonth.entrySet()) s.pantryUsed.put(e.getKey().name(), e.getValue());
         s.ledger = SectorState.LedgerState.of(pending);
         s.statement = SectorState.StatementState.of(statement);
+        s.vansKnown = vansKnown;
         s.extras = new LinkedHashMap<>();
         saveExtras(s.extras);
         return s;
@@ -1481,6 +1687,14 @@ public abstract class Sector {
         }
         pending = s.ledger == null ? new Ledger() : s.ledger.toLedger();
         if (s.statement != null) restoreStatement(s.statement.toStatement());
+        /*
+         * FALSE IN A SAVE FROM BEFORE VANS, which is what the flag is for -
+         * see vansKnown. It is a field on SectorState rather than an extra
+         * because extras are a SUBCLASS hook and this is the base class's own
+         * state; writing it through saveExtras() would have depended on every
+         * override remembering to call super, and two of them do not.
+         */
+        vansKnown = s.vansKnown;
         restoreExtras(s.extras == null ? new LinkedHashMap<>() : s.extras);
     }
 
@@ -1515,6 +1729,7 @@ public abstract class Sector {
         java.util.Arrays.fill(wages, 0);
         java.util.Arrays.fill(jobs, 0);
         energyRatio = waterRatio = roadRatio = healthRatio = 1;
+        vansKnown = false;
         resetExtras();
     }
 

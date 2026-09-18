@@ -215,6 +215,58 @@ public class DenominationCheck {
         close("a House costs a hundredth as many dollars",
                 cost(lopped, "House"), cost(plain, "House") / factor, 1e-9);
 
+        /* =================================================================
+           ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT
+
+           Every line above asks whether a money figure was divided. This one
+           asks the opposite question about a figure that is NOT money, and it
+           is the question that catches the harder half of this family.
+
+           deskCanBuy() answers in SHARES. Underneath it are two money
+           quantities - the desk's book limit and what its book is worth - so
+           a reform that divides one and not the other changes an answer that
+           has no business moving at all. bookLimit was the one left behind
+           (2026-09-17), and because it is re-struck in startMonth() AFTER the
+           households settle, a reformed city's desk spent the first half of
+           every month believing it had a hundred times the room it had.
+
+           NOTHING ELSE IN THIS HARNESS SAW IT for as long as it existed. The
+           desk's room only binds when a household is short enough to sell its
+           shares rather than borrow, so the fault sat latent until a change to
+           GDP - a fourteenth sector, as it happens - moved the cancellation
+           under the limit onto the other side of zero. Then it cost 4.2% of
+           household debt in ONE month and a tenth of a percent on every
+           headline figure a decade later.
+
+           A RATIO OF TWO MONEY QUANTITIES IS THE GENERAL SHAPE and this is
+           the assertion for it: if the answer is not in money, a reform must
+           not change it.
+           ================================================================= */
+        double deskBook = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            double was = plain.getExchange().deskCanBuy(plain.getEquity(), c);
+            double is = lopped.getExchange().deskCanBuy(lopped.getEquity(), c);
+            deskBook += Math.max(0, plain.getEquity().getDealerShares(c));
+            close("the desk's room in " + Equity.COMPANIES[c] + " is shares, so it is untouched",
+                    is, was, 1e-9);
+        }
+        /*
+         * THE FIXTURE GUARD IS THE DESK'S BOOK, NOT ITS ROOM, and the
+         * difference is the whole reason the fault survived. This fixture's
+         * desk is FULL: every company's room is zero, because bookAtFair has
+         * reached bookLimit. A guard written on the room would read zero on a
+         * correct build and call the section vacuous - when a full book is
+         * exactly the state that makes the subtraction underneath it a
+         * cancellation, and a cancellation is where a missing scale shows.
+         *
+         * Measured with the scale removed again after this was written: nine
+         * of the fifteen companies went red, each of them at several hundred
+         * shares of room the desk did not have.
+         */
+        assertTrue(String.format(
+                "fixture: the desk had a book to be wrong about (%,.0f shares)", deskBook),
+                deskBook > 0);
+
         /*
          * ...AND SO DOES EVERY LINE THE INCOME STATEMENT OPENS INTO.
          *

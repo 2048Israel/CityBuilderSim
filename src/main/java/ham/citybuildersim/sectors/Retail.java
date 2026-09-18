@@ -195,6 +195,7 @@ public final class Retail extends Sector {
     public int getDemand()              { return rDemand; }
     public int getUnaffordableDemand()  { return Math.max(0, rWantedDemand - rDemand); }
     public int getProductsSold()        { return rProductsSold; }
+    private double rHouseholdWant;
 
     /** What the shops paid for one person-month of food this month: the basket, at the market's prices. */
     public double getFoodPrice() {
@@ -217,9 +218,35 @@ public final class Retail extends Sector {
         return sum;
     }
 
-    /** Sold over demand - what left the shelf against what people came for and could afford. */
+    /**
+     * Sold over demand - what left the shelf against what people came for and
+     * could afford.
+     *
+     * READ WHAT THIS IS BEFORE QUOTING IT. `rDemand` is already
+     * min(coverage, want, affordable), so this is the shops' performance
+     * against a target the shops set. It is the right number for asking "did
+     * the shelf and the throttles keep up with the queue at the door". It is
+     * the WRONG number for asking "did the city get what it wanted", and it
+     * was used for the second for a long time. See getHouseholdShare().
+     */
     public double getSupplyRatio() {
         return rDemand > 0 ? rProductsSold / (double) rDemand : 1;
+    }
+
+    /** What the households asked for this month, in baskets, before any cap. */
+    public double getHouseholdWant() { return rHouseholdWant; }
+
+    /**
+     * ...and the share of it they actually got.
+     *
+     * THE HONEST ONE. The denominator is the money households planned to spend
+     * divided by the shelf price - what they came for - rather than what the
+     * shops decided they could serve. With nothing asked for yet (the founding
+     * month) it is one, which is true: nobody went without.
+     */
+    public double getHouseholdShare() {
+        return rHouseholdWant > 0
+                ? Math.max(0, Math.min(1, rProductsSold / rHouseholdWant)) : 1;
     }
 
     public void setStoreSellPrice(double price) { if (price > 0) storeSellPrice = price; }
@@ -260,6 +287,41 @@ public final class Retail extends Sector {
                     : Math.min(coverage, population);
             affordable = (int) Math.floor(spendingCapacity / storeSellPrice);
         }
+        /*
+         * WHAT THE HOUSEHOLDS ASKED FOR, BEFORE ANY OF THIS CAPPED IT
+         * (2026-09-17), and it is a measurement rather than a rule: nothing
+         * below reads it.
+         *
+         * WHY IT HAD TO EXIST. `rWantedDemand` is already min(coverage, ...),
+         * so every figure this sector reported was a share of a number the
+         * shops had themselves chosen, and getSupplyRatio() - sold over
+         * rDemand - could read a comfortable three quarters while the city
+         * asked for a hundred and twenty-two times what it got. Measured at
+         * month 3,840 of seed 0: households planned 21,446,946 baskets, the
+         * shops could serve 177,760 people, and the summary line said 76%.
+         *
+         * A basket is ONE PERSON-MONTH of food and demand here is counted in
+         * person-months, so a rich household cannot buy a second stomach -
+         * which is correct, and is exactly why the gap is the interesting
+         * number rather than an embarrassment. See getHouseholdShare().
+         *
+         * AND IT IS FLOORED, WHICH IS THE MONEY-CONSTANT FAMILY WEARING ITS
+         * QUIETEST COAT. The first draft divided money by money and left the
+         * fraction, and DenominationCheck came apart 1.5e-06 at a time: the
+         * ratio is scale-invariant in arithmetic and NOT in floating point,
+         * because (a/100)/(b/100) is not bit-identical to a/b. The line this
+         * replaced was sold-over-demand with both sides INTEGERS, which was
+         * exact by luck rather than by design.
+         *
+         * So the count of baskets crosses from the money world into the
+         * physical one at a grain coarser than the dust - a whole basket, the
+         * same construction whole cars and the shops own floor use, and for
+         * the same reason. Twenty-one million baskets do not care about the
+         * fraction; the reformed twin does.
+         */
+        rHouseholdWant = wantedSpend > 0 && storeSellPrice > 0
+                ? Math.floor(wantedSpend / storeSellPrice) : 0;
+
         rWantedDemand = Math.min(coverage, wanted);
         rDemand = Math.min(rWantedDemand, affordable);
 

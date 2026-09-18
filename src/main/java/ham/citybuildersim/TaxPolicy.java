@@ -272,6 +272,56 @@ public class TaxPolicy {
     /** Past this nobody rides at all, as a multiple of the default. */
     public static final double MAX_TRANSIT_FARE = .05;
 
+    /* =======================================================================
+       A RIDE IS NOT A MONTH (2026-09-17)
+
+       Jerus: "the bus fares you got it right? the fact that you were charging
+       2.5 for a month when in fact 2.50 for a month is way way way way too
+       good of a deal lol" - and he is exactly right, and it had been wrong
+       from the hour the fare was written.
+
+       THE CONSTANT SAYS A JOURNEY AND THE ARITHMETIC SAID A MONTH. The city
+       collected getTransitRiders() x getTransitFare(), and a rider is a
+       PERSON: InfrastructureManager documents the figure as "commuters
+       actually carried off the road this month", and the commuter load it is
+       capped against is a headcount - jobs, plus 1.2 per home, straight out
+       of BuildingsTemplate.loadOf(). So a city with fifty thousand people on
+       its trams took a hundred and twenty-five thousand dollars a month for
+       carrying them, every day, all month, and wondered why the buses lost
+       money.
+
+       AND THAT IS THE TRANSIT LOSS. The $5.4M a month the todo list has been
+       carrying as a balance problem was never a balance problem. The wages
+       were priced per month, because a driver is paid per month; the fare was
+       priced per ride and then charged once. One of the two numbers was in
+       the wrong unit and it was not the payroll.
+
+       WHY FORTY. Two journeys a day - out and back, which is what a commuter
+       is - times twenty working days. A monthly pass at the default fare is
+       $100 against an unskilled wage of $3,460, or 2.9% of it, which is about
+       what a real one costs a real low earner. Nothing here is tuned to a
+       target; it is two trips a day and a working month.
+
+       THE DIAL STAYS PER RIDE and that is deliberate. The player sets what a
+       BUS TICKET costs, because that is the number a person on a platform
+       recognises and the number the ridership curve is about - MAX_TRANSIT_FARE
+       is $50 a ride, which is obviously absurd, and is meant to be. The
+       multiplication into a month happens once, here, so that every place
+       that needs the monthly figure asks for it rather than each deriving it.
+       ======================================================================= */
+
+    /** Journeys one commuter makes in a month: out and back, twenty days. */
+    public static final double JOURNEYS_A_MONTH = 40;
+
+    /**
+     * What a month of riding costs one commuter, in thousands.
+     *
+     * The ONE source of the monthly figure. Game bills the households with it
+     * and the national accounts collect it; anything that multiplies a rider
+     * headcount by a fare wants this and not getTransitFare().
+     */
+    public double monthlyFare() { return transitFare * JOURNEYS_A_MONTH; }
+
     private double transitFare = DEFAULT_TRANSIT_FARE;
 
     public double getTransitFare() { return transitFare; }

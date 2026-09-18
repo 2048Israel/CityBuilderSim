@@ -976,7 +976,29 @@ public class EconomyManager {
 
         var retail = sectors.retail();
         var construction = sectors.construction();
-        double retailSales = retail.statement().salesToHouseholds;
+        /*
+         * CONSUMPTION IS WHAT HOUSEHOLDS BOUGHT, AND THAT IS MORE THAN ONE
+         * SECTOR NOW (2026-09-17).
+         *
+         * This read Retail alone, which was true for as long as Retail was the
+         * only thing a household could buy from. The luxury shops broke it in
+         * the worst possible way: their IMPORTS land in net exports, which is
+         * in GDP, and their SALES landed nowhere - so a city that took up
+         * shopping reported NEGATIVE GDP sixty times over a run, worst at
+         * -4,193 with raw imports of 8,636 against exports of 1. The goods
+         * arrived and nobody had bought them.
+         *
+         * Named rather than summed over every sector, because two of the
+         * others sell to households and are not goods consumption: Real Estate
+         * is the housing line right below, and Automotive's cars go through
+         * the market rather than a shop. Anything new that sells over a
+         * counter belongs here the day it is written.
+         */
+        double retailSales = retail.statement().salesToHouseholds
+                + sectors.luxuryRetail().statement().salesToHouseholds
+                // ...and a dinner, which is consumption bought over a counter
+                // like the other two. See the note above.
+                + sectors.restaurants().statement().salesToHouseholds;
         double rentPaid = sectors.realEstate().statement().salesToHouseholds;
 
         /*
@@ -1013,6 +1035,20 @@ public class EconomyManager {
         double foodPrice = foodUnits > 0 ? foodAtLocal / foodUnits : 0;
         double materialPrice = markets.get(Good.MATERIALS).getLocalPrice();
 
+        /*
+         * AND THE LUXURY SHELF, which is one good counted in pieces and needs
+         * no weighting. Summed over every sector rather than off the boutiques
+         * for the same reason the two above are: the accounts want the city's
+         * stock, not one sector's, and a loop cannot forget a sector that
+         * starts holding the good later. See the note in NationalAccounts for
+         * why a month of imports read as negative output without this.
+         */
+        double luxuryUnits = 0;
+        for (Sector s : sectors.all()) {
+            luxuryUnits += s.getStock(Good.LUXURIES) + s.getPantry(Good.LUXURIES);
+        }
+        double luxuryPrice = Math.max(0, markets.get(Good.LUXURIES).getLocalPrice());
+
         double exports = 0, rawImports = 0;
         for (Sector s : sectors.all()) {
             exports += s.statement().exports;
@@ -1025,6 +1061,7 @@ public class EconomyManager {
                 constructionWorkDone,
                 foodUnits, foodWrittenOff, foodPrice,
                 materialUnits, materialPrice,
+                luxuryUnits, luxuryPrice,
                 governmentServices,
                 foodImports, materialImports,
                 rawImports, exports);
@@ -1081,9 +1118,18 @@ public class EconomyManager {
         if (a == null || a.length < 11) return;
         boolean hasUnits = a.length >= 13;
         boolean hasFoodValue = a.length >= 14;
+        /*
+         * SLOT 14 IS THE LUXURY SHELF, appended the day the good was written
+         * (2026-09-17) and read as zero by every file without it - which is
+         * every file older than the sector, and those cities held none. Same
+         * tail-append the food index got in slot 13, and for the same reason:
+         * a reloaded city that thinks last month's stock was zero counts its
+         * whole stockroom as this month's production.
+         */
+        boolean hasLuxury = a.length >= 15;
         nationalAccounts.restore(a[0], hasFoodValue ? a[13] : 0,
                 a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10],
-                hasUnits ? a[12] : 0, hasUnits);
+                hasUnits ? a[12] : 0, hasLuxury ? a[14] : 0, hasUnits);
     }
 
     public double[] getNationalAccountsState() {
@@ -1101,7 +1147,8 @@ public class EconomyManager {
             nationalAccounts.getExports(),
             nationalAccounts.getLastFoodVolume(),
             nationalAccounts.getLastMaterialUnits(),
-            nationalAccounts.getLastFoodVolume()     // slot 13 - see restoreNationalAccounts()
+            nationalAccounts.getLastFoodVolume(),    // slot 13 - see restoreNationalAccounts()
+            nationalAccounts.getLastLuxuryUnits()     // slot 14 - and the same note
         };
     }
 

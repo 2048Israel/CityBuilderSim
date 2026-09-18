@@ -876,6 +876,33 @@ public class ForeignCheck {
          * sector grew the hinge instead of bisecting for it.
          */
         g.getBusinessInvestment().holdSector(Sectors.REAL_ESTATE);
+        /* =================================================================
+           ...AND THE SHOPS AND THE KITCHENS, HELD OUT FOR REAL ESTATE'S OWN
+           REASON (2026-09-18)
+
+           The premise of this whole comparison is that the import side is a
+           FIXED PROGRAMME - a power plant, a water plant and forty roads that
+           get bought whatever they cost - so that what a devaluation changes
+           is the rate and nothing else. Real Estate walked out of that premise
+           by building houses, and was held; these two walked out of it by
+           importing watches.
+
+           AND THE HINGE IS EXACTLY WHERE THE NOTE ABOVE SAID TO LOOK. The
+           per-sector import line is printed rather than asserted so that the
+           next person to find this drifting can see which sector grew it. It
+           read Luxury Retail $138,850k at parity against $65,881k weaker - a
+           $73M swing on a $1,149M programme, which is the whole of the 7.4%
+           the premise was out by. A boutique buys fewer watches when watches
+           get dearer, which is correct behaviour and is not a public works
+           programme.
+
+           Restaurants are held with them. They import almost nothing - $80k
+           against $82k, and a kitchen buys its food at home - but the rule is
+           about what the fixture is FOR, not about how big a sector's number
+           happened to be this year.
+           ================================================================= */
+        g.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
+        g.getBusinessInvestment().holdSector(Sectors.RESTAURANTS);
         g.buildStack(template(g, "House"), 500, false);
         g.buildStack(template(g, "Convenience Store"), 8, false);
         g.buildStack(template(g, "Small Grocery Store"), 3, false);

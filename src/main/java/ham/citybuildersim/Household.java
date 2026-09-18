@@ -106,6 +106,25 @@ public abstract class Household {
     /** ...and what it owes the bank on its revolving credit. */
     double debt;
 
+    /**
+     * Dividends and foreign coupons received since this cell last planned a
+     * month. A STOCK between strikes, and saved, which is why it is here and
+     * not with the working below.
+     *
+     * WHAT IT IS FOR. Both of these used to be paid straight into savings and
+     * seen by nothing else: creditDividend() did `c.savings += each` and the
+     * coupon was rolled abroad. Neither ever touched `disposable`, so neither
+     * ever touched afterFixed, so neither ever touched `want` - a household
+     * owning half the city ate precisely what its wage bought. Measured over
+     * four thousand months, cumulative coupons came to $2,649bn against $584bn
+     * of every wage the city ever paid, and none of it was ever spent by
+     * anybody. See plan().
+     *
+     * THE CASH IS ALREADY IN SAVINGS and this does not move it. This is the
+     * household KNOWING it has the money, which is the part that was missing.
+     */
+    double investmentIncome;
+
     /** Months this cell cannot borrow, after a discharge. A countdown, so a stock. */
     int lockout;
 
@@ -170,6 +189,53 @@ public abstract class Household {
      * wants garages and school runs the ceiling is one constant.
      */
     double cars;
+
+    /**
+     * What this household would spend on luxuries this month, per household.
+     * Within-month working: struck by plan(), spent by Game.luxuryShopping().
+     */
+    double luxuryWant;
+
+    /**
+     * ...and what it would spend eating out, per household. Same shape:
+     * struck by plan(), spent by Game.diningOut().
+     */
+    double mealWant;
+
+    /**
+     * MEALS this household ate out last month, per household.
+     *
+     * A POSITION, NOT WORKING, AND THAT IS THE AWKWARD PART. It is written by
+     * Game.diningOut(), which runs in the second half of the month, and read
+     * by HouseholdBalance.advanceMonth() in the FIRST half of the next one -
+     * where it is added to what the household ate before that is compared
+     * against subsistence. So it crosses a month boundary, which means it has
+     * to survive a save, and it is cleared after the read rather than in
+     * clearWorking().
+     *
+     * A MONTH LATE, AND HONEST FOR THE SAME REASON THE DIVIDEND IS: the line
+     * it joins is already last month's - `ate` is `planned * delivered`, and
+     * planned is the plan the shops sold against. Both halves of what a
+     * household ate therefore come from the same month, which is the property
+     * that actually matters.
+     *
+     * IN MEALS, NOT IN MONEY. What it is worth as subsistence is the meals
+     * times a person-month per meal times what a person-month of food costs,
+     * and the price of a meal - which carries the kitchen's margin - has
+     * nothing to do with how full anybody is. A reform does not divide it;
+     * see redenominate().
+     */
+    double mealsEaten;
+
+    public double mealsEaten() { return mealsEaten; }
+
+    /**
+     * ...and the ones this cell sold into the second-hand market this month,
+     * in total rather than per household. Within-month working, not a stock:
+     * what it is FOR is the statement line that tells a player a family in
+     * this cell had to give up the car. See HouseholdBalance.clearUsedCars().
+     */
+    double carsSold;
 
     /** This month's, per household, in local money: sent abroad, brought home, and earned there (rolled, not paid home). */
     double sentAbroad, broughtHome, foreignInterest;
@@ -385,13 +451,45 @@ public abstract class Household {
     public double planned()     { return planned; }
     public double rate()        { return rate; }
     public double subsistence() { return subsistence; }
+
+    /** What this household would put over a luxury counter this month. */
+    public double luxuryWant()  { return luxuryWant; }
+
+    /** Cars this cell sold second-hand this month, in total. */
+    public double carsSold()    { return carsSold; }
     public double bankrupt()    { return bankrupt; }
 
     /** True when the bank has stopped lending to this cell - ceiling or lockout. */
     public boolean isCutOff()    { return unfunded > 0; }
 
     /** True when this cell is buying less than it wants. */
-    public boolean isGoingShort() { return want > 0 && planned < want - 1e-9; }
+    /**
+     * Whether this household planned to spend less than it wanted to.
+     *
+     * THE TOLERANCE IS RELATIVE, AND IT IS THE TWENTY-FIFTH MONEY CONSTANT
+     * (2026-09-17). It was `planned < want - 1e-9`: an absolute amount of
+     * money, written as a rounding guard, in a codebase where a currency
+     * reform divides every amount by a hundred. A household short by a
+     * billionth of a dollar was "not short" in the plain city and short in the
+     * reformed one - or the other way about, depending which side of the
+     * constant the difference happened to sit.
+     *
+     * IT HAD BEEN HARMLESS AND STOPPED BEING SO. This flag gates the share
+     * offer, where it fires rarely; since 2026-09-17 it also gates buying a
+     * car, and cars are bought by nearly every household nearly every month.
+     * DenominationCheck went red on nine assertions within a year of the
+     * reform - bit-identical the month after it, 9% apart on output a year
+     * later, which is the signature of a discrete decision taken differently
+     * once rather than of an arithmetic that drifts.
+     *
+     * A share of what was wanted is the same statement at any denomination, so
+     * there is nothing left to seed: "short by a billionth of what it asked
+     * for" means the same thing in dollars and in hundredths of them. That is
+     * the better answer than the seeded field the other four of this family
+     * got, and it is available here because this constant was always a
+     * tolerance rather than a threshold.
+     */
+    public boolean isGoingShort() { return want > 0 && planned < want * (1 - 1e-9); }
 
     /** The cell's totals: the per-household figure times the households. */
     public double totalSavings()  { return savings * households; }
@@ -520,10 +618,122 @@ public abstract class Household {
      *
      * @return the plan per household
      */
-    double plan() {
-        want = subsistence
-                + HouseholdBalance.MARGINAL_PROPENSITY * Math.max(0, afterFixed - subsistence);
-        double spendable = Math.max(0, afterFixed) + savings + planningRoom();
+    double plan(double localPerUsd) {
+        /*
+         * INVESTMENT INCOME IS INCOME (2026-09-17).
+         *
+         * Jerus, on being shown the household sector's books: dividends and the
+         * coupon go "into income". They already arrived - creditDividend() and
+         * investAbroad() both put the cash in savings - and what was missing is
+         * that nothing downstream knew. `want` read afterFixed and afterFixed
+         * is wages less the fixed bills; a family living off a portfolio
+         * planned its month as though it had no portfolio.
+         *
+         * A MONTH LATE, AND THAT IS HONEST. Both are credited after the strike,
+         * so what is spent this month is what was received last month - which
+         * is how a dividend actually reaches a household's spending, and how
+         * anybody's budget works.
+         *
+         * AND spendable BELOW NEEDS NO CHANGE, which is the whole reason this
+         * is two lines rather than a rework. The money is in `savings` and
+         * savings are already in the sum: raising want is the household
+         * deciding to draw on what it has. If it draws, settle() sees a gap
+         * and takes it out of savings the way it takes out anything else.
+         */
+        /*
+         * ...AND OUT OF WHAT IT HAS. See HouseholdBalance.WEALTH_SPENT_A_MONTH
+         * for why a term that reads the STOCK is the only thing that can bound
+         * one, and for the two changes that were measured failing to.
+         *
+         * NET WORTH, WHICH INCLUDES THE MONEY ABROAD. Four fifths of these
+         * households' wealth is the world's paper, so a term that only read the
+         * bank balance would be reading a fifth of the fortune and would be
+         * beaten by the compounding. A household owes the debt against it for
+         * the same reason: somebody at their credit ceiling is not wealthy.
+         */
+        double netWorth = Math.max(0,
+                savings + abroad * Math.max(0, localPerUsd) - debt);
+        want = subsistence + HouseholdBalance.MARGINAL_PROPENSITY
+                * Math.max(0, afterFixed + Math.max(0, investmentIncome) - subsistence)
+                + HouseholdBalance.WEALTH_SPENT_A_MONTH * netWorth;
+        /* =================================================================
+           AND THE FORTUNE ALSO ASKS FOR WATCHES (2026-09-17)
+
+           WHERE THIS OUGHT TO LIVE, AND WHY IT DOES NOT YET. `want` above is
+           the GROCERY bill, and the wealth term has no business in it: a
+           household with a hundred million banked asks its grocer for a
+           hundred and twenty-two months of food in one month, which the shops
+           rightly refuse because a basket is one person-month and nobody eats
+           twice. The term belongs here and nowhere else.
+
+           MOVING IT OUT OF `want` BROKE DenominationCheck, AND NOT FOR ITS OWN
+           SAKE. A city and its reformed twin held the same population to the
+           PERSON a decade later and 6e-05 apart on every money figure - a
+           small persistent arithmetic difference, not a decision taken
+           differently. Isolated by putting the term back: green. The mechanism
+           is that a huge `want` had made every household permanently
+           `isGoingShort()`, which switches OFF the share offer and the car
+           purchase entirely; a smaller `want` switches them back ON, and
+           something in one of those paths is reform-sensitive in a fixture
+           that had never once exercised them.
+
+           That is a real bug and it is NOT this one. So this batch adds
+           without subtracting: the grocer keeps a want it cannot fill, which
+           is the fiction already written up in `who-is-playing.md`, and the
+           fortune asks the counter as well. It costs nothing - grocery
+           spending is capped by what the shops SELL, not by what is wanted, so
+           no household pays twice - and the day the share-path divergence is
+           found, the term comes out of `want` and this comment goes with it.
+           ================================================================= */
+        double surplus = Math.max(0, afterFixed + Math.max(0, investmentIncome) - want);
+        luxuryWant = HouseholdBalance.WEALTH_SPENT_A_MONTH * netWorth
+                + HouseholdBalance.LUXURY_SHARE_OF_SURPLUS * surplus;
+        /* =================================================================
+           AND WHAT IT WOULD SPEND EATING OUT (2026-09-18)
+
+           OUT OF THE SAME SURPLUS THE COUNTER IS, AND A SMALLER SHARE OF IT.
+           A household eats out with money it did not need for anything else,
+           which is what the surplus is; it does not eat out with its rent.
+           The two shares together are three quarters of it, so a household
+           that got everything it asked for still banks a quarter.
+
+           AND A WEALTH TERM, WHICH THE FIRST DRAFT LEFT OUT AND SHOULD NOT
+           HAVE. The reasoning for leaving it out was sound - a fortune can
+           absorb an unbounded number of watches and cannot absorb an
+           unbounded number of dinners, because a person eats ninety meals a
+           month whatever they are worth - and the consequence was that the
+           sector had NO DEMAND AT ALL.
+
+           WHY: `want` above already carries the wealth term, so in any city
+           where a household's fortune is large its grocery plan exceeds its
+           income and `surplus` is exactly zero, every month, for everybody. A
+           budget written on the surplus alone is a budget of nothing. Measured
+           over 4,000 months of the default playtest: 0 meals asked for, 0
+           served, the sector written down seventeen times and finishing with
+           $3k to its name, while the boutiques beside it - which have the
+           wealth term - finished on $2.03bn of assets.
+
+           THE CEILING BELONGS WHERE THE PRICE IS KNOWN, not here. The right
+           statement is not "a rich household wants no more dinners", it is "a
+           rich household cannot eat more than a certain number of them", and
+           that is a bound in MEALS - see HouseholdBalance.MOST_MEALS_EATEN_OUT,
+           which applies it at the counter where a meal has a price. Same
+           shape as Consumption's APPETITE on the grocery basket, and for the
+           same reason.
+           ================================================================= */
+        mealWant = HouseholdBalance.MEAL_SHARE_OF_SURPLUS * surplus
+                + HouseholdBalance.MEAL_SHARE_OF_WEALTH
+                        * HouseholdBalance.WEALTH_SPENT_A_MONTH * netWorth;
+        /*
+         * AND THE PAPER ABROAD IS SPENDABLE, which it always was and the plan
+         * never knew. settle()'s waterfall sells it at the month's rate the
+         * moment a household is short - savings, then the paper, then the
+         * shares, then credit - so leaving it out here made the plan cap itself
+         * below what the household could actually pay for, and the wealth term
+         * above would have been a wish rather than a purchase.
+         */
+        double spendable = Math.max(0, afterFixed) + savings
+                + abroad * Math.max(0, localPerUsd) + planningRoom();
         planned = Math.min(want, spendable);
         return planned;
     }
@@ -634,7 +844,8 @@ public abstract class Household {
     void clearWorking() {
         disposable = 0; afterFixed = 0; interest = 0; drawn = 0; unfunded = 0;
         borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; rate = 0;
-        subsistence = 0; bankrupt = 0; dividends = 0; sold = 0;
+        subsistence = 0; bankrupt = 0; dividends = 0; sold = 0; carsSold = 0;
+        luxuryWant = 0; mealWant = 0;
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
         studentBorrowed = 0; studentRepaid = 0; evicted = 0;
     }
@@ -642,7 +853,7 @@ public abstract class Household {
     /** The cell is empty: no position either. */
     void clearAll() {
         savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0; studentDebt = 0;
-        cars = 0;
+        cars = 0; mealsEaten = 0;
         java.util.Arrays.fill(shares, 0);
         clearWorking();
     }
@@ -650,9 +861,35 @@ public abstract class Household {
     /** Everything in money, in the new unit. Rates, counts, months, SHARES and DOLLARS do not move. */
     void redenominate(double scale) {
         savings *= scale;  debt *= scale;  dividends *= scale;  sold *= scale;
+        /*
+         * AND THE MONTH'S INVESTMENT INCOME, which is money like the rest of
+         * this line and was left off it on the first try (2026-09-17).
+         *
+         * DenominationCheck went red on fourteen assertions, all of them a
+         * tenth of a percent or less apart - the signature of a small
+         * persistent difference rather than a threshold taken differently. A
+         * reform divides every amount in the city by a hundred; this field was
+         * left at its old size, so every household in the reformed city planned
+         * its month believing it had a hundred times the dividend it had, and
+         * the two cities parted immediately and gently.
+         *
+         * THE TEST FOR THIS LINE is simply: is the field money? Every new field
+         * that is belongs here the day it is written. That is a cheaper rule
+         * than the twenty-five constants of the other family, and this is its
+         * first sighting.
+         */
+        investmentIncome *= scale;
         disposable *= scale;  afterFixed *= scale;  interest *= scale;
         drawn *= scale;  unfunded *= scale;  borrowed *= scale;  repaid *= scale;
         banked *= scale;  want *= scale;  planned *= scale;  subsistence *= scale;
+        // Money, so it belongs on this line the day it is written. See the
+        // note on investmentIncome above.
+        luxuryWant *= scale;  mealWant *= scale;
+        /*
+         * `mealsEaten` IS NOT HERE, and for `cars`' reason one paragraph down:
+         * it is a COUNT OF DINNERS. A reform divides every amount of money in
+         * the city by a hundred and it does not divide a plate of food.
+         */
         sentAbroad *= scale;  broughtHome *= scale;  foreignInterest *= scale;
         studentDebt *= scale;  studentBorrowed *= scale;  studentRepaid *= scale;
         /*
