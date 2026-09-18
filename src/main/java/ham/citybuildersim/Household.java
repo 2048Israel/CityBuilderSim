@@ -192,13 +192,13 @@ public abstract class Household {
 
     /**
      * What this household would spend on luxuries this month, per household.
-     * Within-month working: struck by plan(), spent by Game.luxuryShopping().
+     * Within-month working: struck by plan(), spent by LuxuryCounter.shop().
      */
     double luxuryWant;
 
     /**
      * ...and what it would spend eating out, per household. Same shape:
-     * struck by plan(), spent by Game.diningOut().
+     * struck by plan(), spent by LuxuryCounter.dine().
      */
     double mealWant;
 
@@ -206,7 +206,7 @@ public abstract class Household {
      * MEALS this household ate out last month, per household.
      *
      * A POSITION, NOT WORKING, AND THAT IS THE AWKWARD PART. It is written by
-     * Game.diningOut(), which runs in the second half of the month, and read
+     * LuxuryCounter.dine(), which runs in the second half of the month, and read
      * by HouseholdBalance.advanceMonth() in the FIRST half of the next one -
      * where it is added to what the household ate before that is compared
      * against subsistence. So it crosses a month boundary, which means it has
@@ -794,7 +794,7 @@ public abstract class Household {
     protected double studentRepayment() { return 0; }
 
     /** What the bank will still lend one of these: the ceiling less what is owed, or nothing. */
-    double creditRoom(double disposablePer) {
+    public double creditRoom(double disposablePer) {
         return lockout > 0 ? 0
                 : Math.max(0, HouseholdBalance.CREDIT_LIMIT_MONTHS
                         * Math.max(0, disposablePer) - debt);

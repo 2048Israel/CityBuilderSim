@@ -178,11 +178,13 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     about 180 files
+src/main/java/ham/citybuildersim/     about 200 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
+    Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
+                                      four mechanics moved out of Game (2026-09-18); the month still calls them
     SimulationEngine.java             the order the month runs in
-    UserInterface.java                every screen
+    ui/                               the window (UserInterface.java), one class per screen, the toolkit, the palette, the icons
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
@@ -217,6 +219,14 @@ rule that follows from it: **a flow cannot be reconstructed from the state a
 month ended in**, which is why the save carries income statements, the VAT
 ledger, inventory in units, wage history, loss streaks, plots consumed, last
 month's household shapes and six months of prisoners.
+
+**The interface is its own package, `ui/`, and the model never imports it.**
+Everything JavaFX lives there; the launcher stays in the root package because
+the jar's main class is named there. `UserInterface.java` is the window — the
+clock, the rail, the strips, the panels, the dialogs — and every tab is a class
+of its own beside it (`BankScreen`, `PolicyScreen`, ...), with the figures and
+pieces they share in `Money`, `Statement`, `Pieces` and `Levers`. The split was
+done on 2026-09-18; `splitting-the-interface.md` in the design notes says how.
 
 **The month now arrives on a clock, not on a click.** `UserInterface` runs an
 `AnimationTimer` at `SECONDS_PER_MONTH = 5.0` and a speed multiplier, paints the
@@ -257,7 +267,7 @@ moving does not mean editing the README:
 
 **Inside the repository**, four documents are generated from the sources and
 committed with them, so that anyone — and in practice any AI session, which
-cannot read a 25,000-line file — can find a thing without opening the file it
+cannot read an 8,000-line file — can find a thing without opening the file it
 is in:
 
 | | |

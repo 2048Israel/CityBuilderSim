@@ -1,0 +1,23 @@
+# Line endings.
+#
+# The tree is edited in NetBeans on Windows and from cloud sessions on Linux,
+# and before this file it was a mix: about 120 files CRLF, 55 LF, each file
+# keeping whichever it was born with. That costs every edit a check of the
+# file's own ending and turns a one-line change into a whole-file diff the
+# moment somebody's editor decides otherwise.
+#
+# The repository stores LF and checks out LF everywhere. NetBeans and javac
+# do not mind; the batch files are the one thing Windows wants CRLF for.
+#
+# ONE-TIME STEP after this file lands, on the PC, in one commit of its own:
+#     git add --renormalize .
+#     git commit -m "Normalise line endings to LF"
+# Every CRLF file shows as modified in that commit and never again.
+
+*               text=auto eol=lf
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.png           binary
+*.jpg           binary
+*.ico           binary
+*.jar           binary

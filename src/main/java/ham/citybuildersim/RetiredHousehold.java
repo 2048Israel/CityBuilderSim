@@ -41,7 +41,7 @@ public class RetiredHousehold extends Household {
     @Override public int grownUps()      { return pensionersIn(shape); }
 
     /** Everyone in the shape who is past the retirement age, whichever band they are in. */
-    static int pensionersIn(FamilyStructure shape) {
+    public static int pensionersIn(FamilyStructure shape) {
         int n = 0;
         for (AgeBand band : AgeBand.values()) {
             if (band.isRetirementAge()) n += shape.membersOf(band);

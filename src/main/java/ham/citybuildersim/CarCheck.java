@@ -575,7 +575,7 @@ public class CarCheck {
          * AND THE MONEY IS A TRANSFER. What the buyers paid is what the sellers
          * got, to the penny, which is what lets the audit see nothing: both
          * pools are household savings. The only cash crossing a boundary is
-         * what a buyer borrowed, and Game.motoring() tells the bank about that.
+         * what a buyer borrowed, and Motoring.month() tells the bank about that.
          */
         double sellerGot = (skint.savings() - skintCashWas) * skint.households();
         double buyerPaid = (buyerCashWas - comfortable.savings()) * comfortable.households();

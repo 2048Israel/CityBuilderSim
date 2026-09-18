@@ -224,7 +224,7 @@ public class Restaurants extends Sector {
      * THE TWO-PASS SHAPE IS THE HOUSE'S, for the reason written at
      * HouseholdBalance.clearUsedCars() and used again for the boutiques:
      * demand depends on the price and the price depends on demand, and every
-     * market in this game breaks that circle the same way. Game.diningOut()
+     * market in this game breaks that circle the same way. LuxuryCounter.dine()
      * runs the two halves.
      *
      * @param wanted meals the households came for, before any cap
@@ -324,7 +324,7 @@ public class Restaurants extends Sector {
      * Same reason as LuxuryRetail's, measured there before it was written
      * here: planMaker() scores a sector on what it has been selling, and a
      * sector with no kitchens has been selling nothing. The signal is the
-     * queue, and Game.diningOut() measures it at the margin's FLOOR whether or
+     * queue, and LuxuryCounter.dine() measures it at the margin's FLOOR whether or
      * not there is anywhere to eat.
      */
     @Override

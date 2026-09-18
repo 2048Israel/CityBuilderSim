@@ -271,7 +271,7 @@ public class RestaurantsCheck {
             cell.planned = 0;                 // nothing was bought at a shop
             cell.subsistence = perCouple;
             if (mealsEach[i] > 0) {
-                // THE REAL PATH: the same call Game.diningOut() makes.
+                // THE REAL PATH: the same call LuxuryCounter.dine() makes.
                 bench.takeMeals(mealsEach[i] * cell.households, ticket[i]);
             }
             final HouseholdBalance b = bench;
@@ -434,7 +434,7 @@ public class RestaurantsCheck {
         report("...and with nobody at the door it does not want one either",
                 !quiet2.build, quiet2.reason);
 
-        // ...and now a queue, measured the way Game.diningOut() measures it:
+        // ...and now a queue, measured the way LuxuryCounter.dine() measures it:
         // at the margin's floor, before anybody has been told a price.
         none.strikeMargin(hungry.getMarkets(), 500_000);
         BusinessInvestment.Decision wanted = none.plan(hungry.getBusinessInvestment(), hungry);

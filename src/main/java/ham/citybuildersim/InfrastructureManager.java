@@ -287,7 +287,7 @@ public class InfrastructureManager {
     private double carOwnership;
 
     /**
-     * Cars per household, 0 to 1, handed over each month by Game. Zero in
+     * Cars per household, 0 to 1, handed over each month by Motoring. Zero in
      * every city that has never bought one, which is every city before today.
      */
     public void setCarOwnership(double perHousehold) {

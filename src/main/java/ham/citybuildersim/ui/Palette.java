@@ -1,4 +1,4 @@
-package ham.citybuildersim;
+package ham.citybuildersim.ui;
 
 /**
  * Every colour, size and spacing this game is allowed to use, in one place.

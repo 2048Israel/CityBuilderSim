@@ -1320,7 +1320,7 @@ public class HouseholdBalance {
        luck is insurable; a downturn is not. Nobody had to write that down.
 
        WHERE IT SITS IN THE MONTH, and this is the part that needed care.
-       motoring() runs AFTER the household ledger, so by the time this clears,
+       Motoring.month() runs AFTER the household ledger, so by the time this clears,
        every cell's month has been struck: afterFixed, savings, subsistence and
        the credit room are all this month's. A household sells when the month
        AHEAD does not add up - when savings and the whole credit line together
@@ -1553,7 +1553,7 @@ public class HouseholdBalance {
              * does, and owes nothing - which is why this change cannot make
              * anybody worse off than the cash rule it replaced. The rest is a
              * loan: the bank's cash goes out of the door the same month
-             * (Game.motoring tells it so), the debt sits in the same ledger the
+             * (Motoring.month tells it so), the debt sits in the same ledger the
              * grocery borrowing does, and the existing waterfall charges the
              * interest and takes the repayments without knowing what the money
              * was for.
@@ -1876,7 +1876,7 @@ public class HouseholdBalance {
      * Clears the month's second-hand market: strikes a price, moves the cars
      * that find a buyer, and pays the households that sold them.
      *
-     * THE TWO-PASS SHAPE IS motoring()'s OWN, and deliberately so. Demand
+     * THE TWO-PASS SHAPE IS Motoring.month()'s OWN, and deliberately so. Demand
      * depends on the price and the price depends on demand, which is a circle
      * every market in this game has had to break: GoodsMarket strikes off an
      * intended demand and then sells at the struck price, and the new-car path
@@ -1888,7 +1888,7 @@ public class HouseholdBalance {
      * fall and sellers' rise by the same figure, both inside the household
      * pool; the only cash that crosses a boundary is what a buyer BORROWED,
      * which leaves the bank and is declared the way a new car's finance already
-     * is. See Game.motoring().
+     * is. See Motoring.month().
      *
      * @param newPrice what a new car costs this month
      * @param ceiling  cars per household this city will own at all
@@ -1997,7 +1997,7 @@ public class HouseholdBalance {
 
     /**
      * ...and what of that a lender advanced, which the bank has to be told
-     * about in the same month. See Game.motoring().
+     * about in the same month. See Motoring.month().
      */
     public double getUsedCarsFinanced() { return lastUsedFinanced; }
 
@@ -2010,7 +2010,7 @@ public class HouseholdBalance {
     /**
      * ...and what of that a lender advanced, which the bank has to be told
      * about in the same month or the money audit sees a pool fall for no
-     * reason. See Game.motoring().
+     * reason. See Motoring.month().
      */
     public double getCarsFinanced() { return lastCarsFinanced; }
 

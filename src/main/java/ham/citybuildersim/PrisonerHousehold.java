@@ -52,7 +52,7 @@ public class PrisonerHousehold extends Household {
     @Override public boolean canInvest() { return false; }
 
     /** No lender lends to somebody inside. */
-    @Override double creditRoom(double disposablePer) { return 0; }
+    @Override public double creditRoom(double disposablePer) { return 0; }
 
     /** ...and they plan nothing: nothing to spend, no room to borrow. */
     @Override protected double planningRoom() { return 0; }

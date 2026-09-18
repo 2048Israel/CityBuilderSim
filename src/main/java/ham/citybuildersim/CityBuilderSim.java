@@ -4,6 +4,8 @@
 
 package ham.citybuildersim;
 
+import ham.citybuildersim.ui.UserInterface;
+
 import javafx.application.Application;
 
 /**

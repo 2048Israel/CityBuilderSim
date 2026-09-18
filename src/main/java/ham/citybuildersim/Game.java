@@ -1178,37 +1178,9 @@ public class Game {
 
 
     /* =====================================================================
-       THE HOUSEHOLDS BUY CARS (2026-09-16)
-
-       The fifth link, and the first time in this game that a household has
-       bought anything except food, a roof and a share.
-
-       WHY IT IS HERE AND NOT IN THE MARKET PASS. Cars clear in the band like
-       everything else, but the households are not a sector and cannot bid in
-       a strike. They take what they want off the makers' shelf at the price
-       the market struck, and import the rest - which is exactly what the CITY
-       does for building material, through the same Markets.draw(). The units
-       count as demand for next month's strike (see Markets.noteDrawn), so the
-       price answers with a month's lag, as materials' does.
-
-       WHY THE TOP OF THE MONTH. Savings are fresh - updateHouseholdAccounts()
-       settled them three lines up - and the makers' shelf holds what last
-       month's production put there. A household buying before the export
-       market opens is domestic demand getting first refusal on a domestic
-       car, which is the right way round and is what the city's own materials
-       draw already does.
-
-       THE PRICE IS QUOTED BEFORE IT IS CHARGED, and that is not a nicety. The
-       shelf is finite: past it every car is an import at the ceiling, so a
-       month that buys more than the city made costs more per car than the
-       market price says. Sizing the demand at the local price and settling it
-       at the blended one would have taken money the households had not agreed
-       to spend - and the clamp that stops savings going negative would have
-       swallowed the difference silently, which is money from nowhere wearing a
-       safety guard. So: quote at what they want, re-ask at what that would
-       cost, buy that, and settle at the blend of what was actually taken -
-       which is never dearer than the figure they were re-asked at, because
-       fewer cars means a smaller imported share.
+       THE HOUSEHOLDS BUY CARS - its own class since 2026-09-18: Motoring.java.
+       The ownership rate carried across a load stays here because the load
+       path reads it.
        ===================================================================== */
 
     /**
@@ -1225,264 +1197,79 @@ public class Game {
      */
     private double carriedCarOwnership = -1;
 
-    private double householdCarsBought;
-    private double householdCarSpend;
-    private double householdCarImports;
-    private double householdCarCredit;
+    /** The households' car market; runs once a month, after the ledger. See Motoring. */
+    private final Motoring motoring = new Motoring();
 
-    /** The second-hand market's month: offered, traded, what it cost and what a lender found. */
-    private double usedCarsTraded, usedCarsOffered, usedCarSpend, usedCarCredit, usedCarPrice;
+    /** The car market, for the screens and the harnesses that read past the getters below. */
+    public Motoring getMotoring() { return motoring; }
 
     /** Cars the households bought this month. */
-    public double getHouseholdCarsBought() { return householdCarsBought; }
+    public double getHouseholdCarsBought() { return motoring.getHouseholdCarsBought(); }
 
     /** ...what they paid for them, and what of that left the country. */
-    public double getHouseholdCarSpend()   { return householdCarSpend; }
-    public double getHouseholdCarImports() { return householdCarImports; }
+    public double getHouseholdCarSpend()   { return motoring.getHouseholdCarSpend(); }
+    public double getHouseholdCarImports() { return motoring.getHouseholdCarImports(); }
 
     /** ...and what of it the bank advanced rather than the household finding. */
-    public double getHouseholdCarCredit()  { return householdCarCredit; }
+    public double getHouseholdCarCredit()  { return motoring.getHouseholdCarCredit(); }
 
     /** Cars that changed hands second-hand this month. */
-    public double getUsedCarsTraded()      { return usedCarsTraded; }
+    public double getUsedCarsTraded()      { return motoring.getUsedCarsTraded(); }
 
     /** ...against what was put up for sale, which in a crash is far more. */
-    public double getUsedCarsOffered()     { return usedCarsOffered; }
+    public double getUsedCarsOffered()     { return motoring.getUsedCarsOffered(); }
 
     /** What one went for. Zero in a month when nobody offered one. */
-    public double getUsedCarPrice()        { return usedCarPrice; }
+    public double getUsedCarPrice()        { return motoring.getUsedCarPrice(); }
 
     /** What the buyers paid for them, all in. */
-    public double getUsedCarSpend()        { return usedCarSpend; }
+    public double getUsedCarSpend()        { return motoring.getUsedCarSpend(); }
 
     /** ...and what of that a lender advanced. */
-    public double getUsedCarCredit()       { return usedCarCredit; }
-
-    private void motoring() {
-
-        InfrastructureManager roads = getInfrastructureManager();
-
-        /*
-         * WHAT THE COMMUTE WAS LIKE, remembered before anything about this
-         * month changes it. Who rides decides the load and the load decides
-         * the ratio, so the ratio a driver answers has to be one from before
-         * the month he is deciding about - see
-         * InfrastructureManager.noteCongestion().
-         */
-        roads.noteCongestion(roads.getThroughputRatio());
-
-        householdCarsBought = 0;
-        householdCarSpend = 0;
-        householdCarImports = 0;
-        householdCarCredit = 0;
-        usedCarsTraded = 0;
-        usedCarsOffered = 0;
-        usedCarSpend = 0;
-        usedCarCredit = 0;
-        usedCarPrice = 0;
-
-        // Fifteen years on, cars are scrapped - whether or not anything can be
-        // bought to replace them. See HouseholdBalance.wearOutCars().
-        householdBalance.wearOutCars();
-
-        GoodsMarket m = getMarkets().get(Good.CARS);
-        double asking = m.getLocalPrice();
-        /*
-         * ...AND HOW MANY BOTHER AT ALL. The other half of Jerus's rule, and a
-         * CEILING on ownership rather than a brake on it: a city whose lines
-         * could carry everybody tops out at half a car per household for ever,
-         * and one that builds those lines after it has motorised watches the
-         * fleet decay to that ceiling as cars wear out. See
-         * HouseholdBalance.TRANSIT_DETERRENT. Transit's effect on the decision
-         * to DRIVE, with a car already bought, is a different mechanism and
-         * lives on the network - see InfrastructureManager.willingToRide().
-         */
-        double ceiling = 1 - HouseholdBalance.TRANSIT_DETERRENT * roads.getTransitCover();
-
-        /*
-         * THE SECOND-HAND MARKET FIRST, and the order is the whole point.
-         *
-         * A household that cannot feed itself next month puts the car up here,
-         * and a household that could never afford a showroom price buys it.
-         * Clearing this BEFORE the new-car pass means the cheap cars go first,
-         * which is what happens: nobody pays forty for a car they can have for
-         * twelve. It also means the families who had to sell have the money in
-         * the bank before the month whose bills they sold it for.
-         *
-         * AND THE BANK IS TOLD, for the same reason it is told about a new one:
-         * a used car bought on credit is the bank's cash leaving for a seller's
-         * account against a debt that did not exist a moment ago. The seller
-         * here is another household rather than a showroom, so the transfer
-         * itself nets to nothing across the household pool and only the
-         * borrowed part crosses a boundary. See HouseholdBalance.clearUsedCars().
-         */
-        usedCarsTraded = householdBalance.clearUsedCars(asking, ceiling);
-        usedCarPrice = householdBalance.getUsedCarPrice();
-        usedCarsOffered = householdBalance.getUsedCarsOffered();
-        usedCarSpend = householdBalance.getUsedCarSpend();
-        usedCarCredit = householdBalance.getUsedCarsFinanced();
-        if (usedCarCredit > 0) bank.lendToHouseholds(usedCarCredit);
-
-        if (asking > 0) {
-            double wanted = householdBalance.carsWanted(asking, ceiling);
-            if (wanted > 0) {
-                Markets.Draw quote = getMarkets().quote(Good.CARS, wanted, getSectors());
-                double perCar = quote.cost() / wanted;
-                double affordable = perCar > 0
-                        ? householdBalance.carsWanted(perCar, ceiling) : 0;
-                if (affordable > 0) {
-                    Markets.Draw took = getMarkets().draw(
-                            Good.CARS, null, Trade.HOUSEHOLDS, affordable, getSectors());
-                    double paid = took.units() > 0 ? took.cost() / took.units() : 0;
-                    householdCarsBought = took.units();
-                    householdCarSpend = householdBalance.takeCars(took.units(), paid, ceiling);
-                    householdCarImports = took.importCost();
-                    /*
-                     * AND THE BANK FINDS THE REST OF IT (2026-09-17).
-                     *
-                     * A financed car is money leaving the bank's own cash for
-                     * a seller's till, against a debt that did not exist a
-                     * moment ago - which is a pool falling, and the audit will
-                     * say so unless the bank is told. It is told HERE rather
-                     * than through totalBorrowed() in the household month,
-                     * because that ran three lines above this and its working
-                     * fields are cleared before the next one. See
-                     * HouseholdBalance.CAR_DEPOSIT.
-                     */
-                    householdCarCredit = householdBalance.getCarsFinanced();
-                    bank.lendToHouseholds(householdCarCredit);
-                }
-            }
-        }
-
-        // ...and the road is told what is now parked on it.
-        roads.setCarOwnership(householdBalance.carsPerHousehold());
-    }
+    public double getUsedCarCredit()       { return motoring.getUsedCarCredit(); }
 
     /* =====================================================================
-       THE LUXURY COUNTER (2026-09-17)
-
-       Jerus: "lets add restuarants as well as luxury stores, these two will
-       absorb some spending as well", and on the pricing, "supply v demand,
-       thats the most important thing."
-
-       THE SHAPE IS motoring()'s, and deliberately: ask the seller a price, ask
-       the households what they will take at it, hand over what the seller
-       actually had, take the money. What is different is that the seller here
-       strikes its price against the QUEUE rather than reading it off a market
-       band - the world has no shortage of watches, so the scarce thing is the
-       shop, and the shop is what a player builds. See LuxuryRetail.
+       THE LUXURY COUNTER (2026-09-17) - its own class since 2026-09-18: LuxuryCounter.java.
        ===================================================================== */
 
-    private double luxuriesSold, luxurySpend, luxuryPrice, luxuryWanted;
-    private double mealsServed, mealSpend, mealPrice, mealsWanted;
+    /** The boutiques and the kitchens; each runs once a month, after the cars. See LuxuryCounter. */
+    private final LuxuryCounter luxuryCounter = new LuxuryCounter();
+
+    /** The luxury counter, for the screens and the harnesses that read past the getters below. */
+    public LuxuryCounter getLuxuryCounter() { return luxuryCounter; }
 
     /** Meals the kitchens served the households this month. */
-    public double getMealsServed()  { return mealsServed; }
+    public double getMealsServed()  { return luxuryCounter.getMealsServed(); }
 
     /** ...and what the households paid for them. */
-    public double getMealSpend()    { return mealSpend; }
+    public double getMealSpend()    { return luxuryCounter.getMealSpend(); }
 
     /** ...at this price a meal, struck against the queue at the door. */
-    public double getMealPrice()    { return mealPrice; }
+    public double getMealPrice()    { return luxuryCounter.getMealPrice(); }
 
     /** ...against this many meals they came for. */
-    public double getMealsWanted()  { return mealsWanted; }
-
-    /**
-     * The month's dining out.
-     *
-     * THE SHAPE IS luxuryShopping()'s, and deliberately: ask the households at
-     * the margin's FLOOR to measure the queue, strike the margin on it, ask
-     * again at what was struck, serve what the tables and the larder allow,
-     * take the money. Every market in this game breaks the circle between a
-     * price and the demand for it the same way.
-     *
-     * WHAT IS DIFFERENT IS THE FOOD. A boutique's stock comes off a ship and
-     * the city can have as much as it will pay for; a kitchen's comes out of
-     * the same thirteen markets the shops buy in, so serving a dinner takes
-     * food off a shelf somebody else was going to eat from. That is the
-     * pressure, and it is the point.
-     */
-    private void diningOut() {
-        mealsServed = 0;
-        mealSpend = 0;
-        mealPrice = 0;
-        mealsWanted = 0;
-
-        ham.citybuildersim.sectors.Restaurants kitchens = getSectors().restaurants();
-        if (kitchens == null) return;
-
-        double food = kitchens.foodCostOfAMeal(getMarkets());
-        if (!(food > 0)) return;
-        double atTheFloor = food * ham.citybuildersim.sectors.Restaurants.MARGIN_FLOOR;
-        mealsWanted = householdBalance.mealsWanted(atTheFloor);
-
-        double price = kitchens.strikeMargin(getMarkets(), mealsWanted);
-        if (!(price > 0)) return;
-        mealPrice = price;
-
-        // ...and now at what was actually struck, which is fewer than came at
-        // the floor: a dear kitchen is a kitchen some people walk past.
-        double affordable = householdBalance.mealsWanted(price);
-        if (!(affordable > 0)) return;
-
-        double served = kitchens.serve(getMarkets(), affordable);
-        if (!(served > 0)) return;
-
-        mealsServed = served;
-        mealSpend = householdBalance.takeMeals(served, price);
-    }
-
+    public double getMealsWanted()  { return luxuryCounter.getMealsWanted(); }
 
     /** Pieces the households bought over a counter this month. */
-    public double getLuxuriesSold()  { return luxuriesSold; }
+    public double getLuxuriesSold()  { return luxuryCounter.getLuxuriesSold(); }
 
     /** ...what they paid for them... */
-    public double getLuxurySpend()   { return luxurySpend; }
+    public double getLuxurySpend()   { return luxuryCounter.getLuxurySpend(); }
 
     /** ...what one went for... */
-    public double getLuxuryPrice()   { return luxuryPrice; }
+    public double getLuxuryPrice()   { return luxuryCounter.getLuxuryPrice(); }
 
     /** ...and how many they came for, which in a city short of shops is more. */
-    public double getLuxuryWanted()  { return luxuryWanted; }
+    public double getLuxuryWanted()  { return luxuryCounter.getLuxuryWanted(); }
 
-    private void luxuryShopping() {
-        luxuriesSold = 0;
-        luxurySpend = 0;
-        luxuryPrice = 0;
-        luxuryWanted = 0;
-
-        ham.citybuildersim.sectors.LuxuryRetail shops = getSectors().luxuryRetail();
-        if (shops == null) return;
-
-        /*
-         * THE QUEUE IS MEASURED IN MONEY AND THE STRIKE NEEDS IT IN PIECES, so
-         * it is asked at the margin's FLOOR - the cheapest the shops could
-         * possibly be. That is the largest honest reading of how many people
-         * came, which is what the position wants: a queue is a queue whatever
-         * the shop ends up charging it.
-         */
-        double landed = Math.max(0, getMarkets().get(Good.LUXURIES).getLocalPrice());
-        if (landed <= 0) landed = Good.LUXURIES.worldImportPrice();
-        double atTheFloor = landed * ham.citybuildersim.sectors.LuxuryRetail.MARGIN_FLOOR;
-        luxuryWanted = householdBalance.luxuriesWanted(atTheFloor);
-
-        double price = shops.strikeMargin(getMarkets(), luxuryWanted);
-        if (!(price > 0)) return;
-        luxuryPrice = price;
-
-        // ...and now at what was actually struck, which is less than came at
-        // the floor: a dear shop is a shop some people walk out of.
-        double affordable = householdBalance.luxuriesWanted(price);
-        if (!(affordable > 0)) return;
-
-        double sold = shops.serve(getMarkets(), affordable);
-        if (!(sold > 0)) return;
-
-        luxuriesSold = sold;
-        luxurySpend = householdBalance.takeLuxuries(sold, price);
-    }
+    /* =====================================================================
+       THE BANK AND THE EXCHANGE, FROM THE MONTH'S SIDE
+       The bank's capital sold as shares and put back by the treasury, the
+       dividends, the exchange's month, the bank re-read off the city, the
+       treasury's foreign-currency dealing, and the land re-read for the
+       investor. These sat under the luxury counter's banner until
+       2026-09-18, when the counter moved out and they were left there.
+       ===================================================================== */
 
     /**
      * Sells the bank's paid-in capital as shares.
@@ -4385,17 +4172,17 @@ public class Game {
          * ...AND THEY SPEND SOME OF IT ON A CAR. After the ledger, because the
          * money it draws on is the money the ledger just settled; before the
          * investor below, because a month of car sales is demand the investor
-         * should be able to see. See motoring().
+         * should be able to see. See Motoring.month().
          */
-        motoring();
+        motoring.month(this);
 
         /*
          * ...AND THEY SPEND THE REST OF IT ON SOMETHING THEY DO NOT NEED.
          * Straight after the cars and for the same reasons: the savings are
          * fresh, and a month of luxury sales is demand the investor below
-         * should be able to see. See luxuryShopping().
+         * should be able to see. See LuxuryCounter.shop().
          */
-        luxuryShopping();
+        luxuryCounter.shop(this);
 
         /*
          * ...AND THE KITCHENS, right after, because they are the same kind of
@@ -4404,7 +4191,7 @@ public class Game {
          * written first; the two budgets are struck separately in
          * Household.plan() and neither can spend the other's.
          */
-        diningOut();
+        luxuryCounter.dine(this);
 
         // Then advance the loans, take back matured principal, and lend to
         // whichever sector the month left short.
@@ -5086,7 +4873,7 @@ public class Game {
          */
         double officers = buildingManager.getStaffedSafetyCapacity(SafetyType.POLICE, fill);
         double[] offenderWeight = new double[householdBalance.cellCount()];
-        Crime.Causes causes = crimeCauses(Crime.coverageOf(officers, cohorts.total()), offenderWeight);
+        Crime.Causes causes = offending.causes(this, Crime.coverageOf(officers, cohorts.total()), offenderWeight);
         crime.advanceMonth(causes, cohorts.total(), officers,
                 buildingManager.getStaffedSafetyCapacity(SafetyType.PRISON, fill),
                 lastAdultMortality + AgeBand.ADULT.monthlyOutflowRate(),
@@ -5097,7 +4884,7 @@ public class Game {
         unemployment.imprison(crime.getPressure() > 0
                 ? crime.getAdmitted() * Math.min(1, causes.poolWeighted() / crime.getPressure()) : 0);
         populationManager.setImprisoned(crime.prisoners());
-        steal(offenderWeight);
+        offending.steal(this, offenderWeight);
 
         double outOfWork = populationManager.getUnemployed();
         double studying = populationManager.getStudyingTotal();
@@ -5300,136 +5087,27 @@ public class Game {
     }
 
     /* =====================================================================
-       WHO IS AT RISK OF OFFENDING (2026-09-11)
-
-       Every adult at liberty, sorted once into Jerus's groups, cell by cell -
-       because the cells are the only place the reasons meet: the pool knows
-       who is out of work, the housing match who has no door and who is
-       crowded, and the household books who is going short. Where a group
-       overlaps another, the higher weight counts:
-
-         no home        the evicted; the families and the seekers with no door  5
-         past EI        out of work with a home, EI run out                      4
-         short of money of what is left, the share that cannot buy a basket     3
-         on EI          out of work with a home, still drawing                   2
-         crowded        of what is left, the share doubled up or flatsharing     2
-         no reason      everybody else                                          .1
-
-       The retired, the orphans and the prisoners are nobody's offenders: the
-       adult band is 18 to 70, and a prisoner is not at liberty.
-
-       Each cell's weight - its adults times their weights, plus what the
-       police are missing - is what the thefts are handed back by.
+       WHO IS AT RISK OF OFFENDING (2026-09-11) - its own class since 2026-09-18: Offending.java.
        ===================================================================== */
 
-    /**
-     * @param coverage   this month's police coverage
-     * @param cellWeight filled in, per cell in the balance's order
-     */
-    Crime.Causes crimeCauses(double coverage, double[] cellWeight) {
-        Crime.Causes city = new Crime.Causes();
-        if (families == null) return city;
-        double fewPolice = Crime.NO_POLICE_WEIGHT * (1 - Math.max(0, Math.min(1, coverage)));
-        double doubled = families.doubledUpShare();
-        java.util.List<Household> cells = householdBalance.cells();
-        for (int i = 0; i < cells.size(); i++) {
-            Household c = cells.get(i);
-            double h = c.households();
-            if (!(h > 0)) continue;
-            double shortShare = shortOfMoney(c);
-            Crime.Causes cell = new Crime.Causes();
+    /** Who is at risk of offending, and the thefts; runs in the crime step of the month. See Offending. */
+    private final Offending offending = new Offending();
 
-            if (c instanceof UnemployedHousehold u) {
-                double noDoor = u.status() == UnemployedHousehold.Status.UNHOUSED ? 1
-                        : families.seekerUnhousedShare(FamilyModel.Seeker.UNEMPLOYED);
-                double housed = h * (1 - noDoor);
-                cell.add(Crime.Cause.NO_HOME, h * noDoor);
-                if (u.status() == UnemployedHousehold.Status.OFF_EI) {
-                    cell.add(Crime.Cause.PAST_EI, housed);
-                } else if (u.status() == UnemployedHousehold.Status.ON_EI) {
-                    // Crowded weighs what EI does, so only going short lifts a claimant.
-                    cell.add(Crime.Cause.SHORT_OF_MONEY, housed * shortShare);
-                    cell.add(Crime.Cause.ON_EI, housed * (1 - shortShare));
-                }
-            } else if (c instanceof StudentHousehold) {
-                sortHoused(cell, h, families.seekerUnhousedShare(FamilyModel.Seeker.STUDENT),
-                        shortShare, families.seekerCrowdedShare(FamilyModel.Seeker.STUDENT));
-            } else if (c.shape() != null && !c.isRetired()) {
-                sortHoused(cell, h * c.shape().membersOf(AgeBand.ADULT),
-                        families.unhousedShareOf(c.shape()), shortShare,
-                        c.shape() == FamilyStructure.SHARED_ADULTS ? 1 : doubled);
-            } else {
-                continue;
-            }
-
-            double weight = cell.weighted() + fewPolice * cell.adults();
-            if (cellWeight != null && i < cellWeight.length) cellWeight[i] = weight;
-            if (c instanceof UnemployedHousehold) cell.addPool(weight);
-            city.add(cell);
-        }
-        return city;
-    }
-
-    /** A cell's adults with a door or without: no home, then short of money, then crowded, then no reason. */
-    private static void sortHoused(Crime.Causes into, double adults, double noDoor,
-                                   double shortShare, double crowded) {
-        double gone = Math.max(0, Math.min(1, noDoor));
-        into.add(Crime.Cause.NO_HOME, adults * gone);
-        double housed = adults * (1 - gone);
-        into.add(Crime.Cause.SHORT_OF_MONEY, housed * shortShare);
-        double rest = housed * (1 - shortShare);
-        into.add(Crime.Cause.CROWDED, rest * crowded);
-        into.add(Crime.Cause.NO_CAUSE, rest * (1 - crowded));
-    }
-
-    /** How far one of a cell's households is from a basket it can afford, 0-1: last month's plan against subsistence. */
-    private static double shortOfMoney(Household c) {
-        return c.subsistence() > 0
-                ? Math.max(0, Math.min(1, 1 - c.planned() / c.subsistence())) : 0;
-    }
-
-    /**
-     * THE THEFTS: taken half from the households by what they have saved and
-     * half from the businesses by what is in their tills, and handed to the
-     * offenders' households by how much of the crime is theirs. Jerus: the
-     * stolen money "goes to the offenders". What the businesses lose leaves
-     * the audit's pools for the households, like a wage; what the households
-     * lose stays among them.
-     */
-    private void steal(double[] offenderWeight) {
-        double wanted = crime.getTheftWanted();
-        double weight = 0;
-        for (double w : offenderWeight) weight += Math.max(0, w);
-        if (!(wanted > 0) || !(weight > 0)) {
-            crime.recordStolen(0, 0);
-            return;
-        }
-        double fromHomes = householdBalance.takeFromSavings(wanted * Crime.FROM_HOUSEHOLDS);
-
-        double till = 0;
-        for (String s : Sectors.KEYS) till += Math.max(0, economyManager.getSectorCash(s));
-        double fromBusinesses = Math.min(wanted * (1 - Crime.FROM_HOUSEHOLDS), till);
-        if (fromBusinesses > 0) {
-            for (String s : Sectors.KEYS) {
-                double held = Math.max(0, economyManager.getSectorCash(s));
-                if (held <= 0) continue;
-                double taken = fromBusinesses * held / till;
-                economyManager.setSectorCash(s, economyManager.getSectorCash(s) - taken);
-                economyManager.recordStolen(s, taken);
-            }
-        }
-        householdBalance.creditByWeight(fromHomes + fromBusinesses, offenderWeight);
-        crime.recordStolen(fromHomes, fromBusinesses);
-    }
+    /** The offenders' sort, for the harnesses that read past the getter below. */
+    public Offending getOffending() { return offending; }
 
     /** The share of the city with no home: the unhoused, and the orphans. */
-    public double unhousedShareOfCity() {
-        double people = cohorts.total();
-        if (people <= 0) return 0;
-        double without = families.getOrphansTotal() + unemployment.getUnhoused();
-        for (double v : families.unhousedPeopleByBand()) without += v;
-        return Math.min(1, without / people);
-    }
+    public double unhousedShareOfCity() { return offending.unhousedShareOfCity(this); }
+
+    /* =====================================================================
+       THE READINGS THE MONTH TAKES OF THE CITY
+       Care coverage, the burial share, the unskilled wage, what a cell pays
+       of a door's rent: small figures the month strikes and hands on, with
+       the build log and the getters for the people-side subsystems among
+       them, and at the end the fields for the money-side ones - the foreign
+       accounts, the hot money, the savings abroad, the equity, the exchange
+       and the price index. Sat under the offending banner until 2026-09-18.
+       ===================================================================== */
 
     /**
      * How much of the people who need a kind of care the city can actually give.
@@ -5630,12 +5308,6 @@ public class Game {
     }
 
     /**
-     * The city's commercial bank - every loan in it, and every default.
-     *
-     * Owned here rather than by EconomyManager because it lends to all three of
-     * them: the sectors, the treasury and the households. See Bank.
-     */
-    /**
      * The city's account with the rest of the world. Phase one: measured, not
      * yet acted on. See ForeignAccounts.
      */
@@ -5681,16 +5353,10 @@ public class Game {
     private final PriceIndex priceIndex = new PriceIndex();
 
     /* =====================================================================
-       WHAT THE CITY EATS
-
-       Loaded once. Consumption owns the thirteen goods, Engel's curve and
-       Bennett's, and knows nothing about this city; what makes the basket
-       THIS city's basket is the incomes handed to it below, cell by cell.
-
-       LOADED, NOT REQUIRED. A city whose consumption.json is missing or
-       unreadable gets an empty model, and cityBasketPerHead() then hands the
-       shops an empty basket - which they read as "no shelf yet" rather than
-       as "nobody eats". A data file must not be able to stop a game.
+       WHAT THE CITY EATS - its own class since 2026-09-18: CityBasket.java.
+       The Consumption model and its lazy loader stay here because the field
+       is Game's: loaded once, on first ask, and a missing consumption.json
+       gets an empty model rather than stopping the game.
        ===================================================================== */
     private final Consumption consumption = new Consumption();
     private boolean consumptionLoaded;
@@ -5701,81 +5367,23 @@ public class Game {
         return consumption;
     }
 
-    /**
-     * Kilograms of each of the thirteen in ONE person-month, averaged over the
-     * city by headcount.
-     *
-     * The shops buy one basket; the city contains many households and they do
-     * not eat the same one. A labourer's month and an elite's month differ in
-     * what they are made of - that is Bennett's law and it is the whole point
-     * of the model - but the shops stock ONE shelf, so what they stock is the
-     * city's average, weighted by the people who will come through the door.
-     *
-     * The rich are not weighted by their money here, deliberately. A shelf
-     * stocked for spending would carry the elite's fish and the elite's fruit
-     * for a city of labourers, and the households at the bottom of the ladder
-     * would find nothing they could afford - which is a real failure mode of
-     * real retail and is NOT what this models today. One person, one place in
-     * the basket.
-     */
-    public java.util.Map<Good, Double> cityBasketPerHead() {
-        java.util.Map<Good, Double> out = new java.util.EnumMap<>(Good.class);
-        getConsumption();
-        if (consumption.items().isEmpty()) return out;
+    /** The basket per head, struck from the household statements each time the shops ask. See CityBasket. */
+    private final CityBasket cityBasket = new CityBasket();
 
-        double rate = foreign == null ? 1 : foreign.getRate();
-        if (householdBalance == null) return referenceBasket();
-        double heads = 0;
-        for (Household cell : householdBalance.cells()) {
-            double homes = cell.households();
-            if (homes < .5) continue;
-            double perHome = cell.headcount();
-            if (perHome <= 0) continue;
-            double people = homes * perHome;
+    /** The basket's maker, for the harnesses that read past the getter below. */
+    public CityBasket getCityBasket() { return cityBasket; }
 
-            double x = consumption.incomeMultiple(cell.disposable() / perHome, rate);
-            if (!(x > 0)) continue;
+    /** Kilograms of each of the thirteen in ONE person-month, averaged over the city by headcount. See CityBasket.perHead(). */
+    public java.util.Map<Good, Double> cityBasketPerHead() { return cityBasket.perHead(this); }
 
-            java.util.Map<String, Double> theirs =
-                    consumption.basket(x, Consumption.timePressure(cell.shape()));
-            for (java.util.Map.Entry<String, Double> e : theirs.entrySet()) {
-                Good g = Good.byName(e.getKey());
-                if (g != null) out.merge(g, e.getValue() * people, Double::sum);
-            }
-            heads += people;
-        }
-        /*
-         * A FOUNDING CITY HAS NO LEDGER TO READ, AND STILL HAS TO EAT.
-         *
-         * cityBasketPerHead() is struck from the household statements, and on
-         * month one there are none - the shops reach their restock before any
-         * household has been settled. The first version of this returned an
-         * empty basket there, so recentUse() was zero for all thirteen goods,
-         * the shops stocked nothing, basketsOnShelf() was nothing, and the
-         * city could not buy a loaf. InfrastructureCheck caught it on the one
-         * assertion that says a shop can be supplied at all.
-         *
-         * So an unmeasured city stocks the reference household's basket. It is
-         * the same fallback the shops already had in another form - recentUse()
-         * has always guessed at coverage before it had a month of sales to go
-         * on - and it is replaced by the real thing the moment one month has
-         * been lived.
-         */
-        if (heads <= 0) return referenceBasket();
-        for (java.util.Map.Entry<Good, Double> e : out.entrySet()) e.setValue(e.getValue() / heads);
-        return out;
-    }
-
-    /** What the file's reference household eats, for a city with no statements yet. */
-    private java.util.Map<Good, Double> referenceBasket() {
-        java.util.Map<Good, Double> out = new java.util.EnumMap<>(Good.class);
-        for (java.util.Map.Entry<String, Double> e
-                : consumption.basket(consumption.referenceMultiple(), 0).entrySet()) {
-            Good g = Good.byName(e.getKey());
-            if (g != null && e.getValue() > 0) out.put(g, e.getValue());
-        }
-        return out;
-    }
+    /* =====================================================================
+       THE WORLD, THE BANK, AND THE FIELDS THE MONTH KEEPS
+       The rest of the world and the rate a year ago, the bank, the figures a
+       save carries across a load, what the city and the sectors spent on
+       buildings, the managers' getters, the labour repricing, the migrants'
+       skills and the month's record in the graph history. Sat under the
+       basket's banner until 2026-09-18.
+       ===================================================================== */
 
     /** The rest of the world, which has its own inflation. See WorldEconomy. */
     private final WorldEconomy world = new WorldEconomy();
@@ -5800,6 +5408,12 @@ public class Game {
 
     public ForeignAccounts getForeignAccounts() { return foreign; }
 
+    /**
+     * The city's commercial bank - every loan in it, and every default.
+     *
+     * Owned here rather than by EconomyManager because it lends to all three of
+     * them: the sectors, the treasury and the households. See Bank.
+     */
     private final Bank bank = new Bank();
     public Bank getBank() { return bank; }
 
@@ -6359,8 +5973,8 @@ public class Game {
     private double foreignInterestPaidThisMonth;
 
     double getForeignDebtRaisedThisMonth()      { return foreignDebtRaisedThisMonth; }
-    double getForeignPrincipalRepaidThisMonth() { return foreignPrincipalRepaidThisMonth; }
-    double getForeignInterestPaidThisMonth()    { return foreignInterestPaidThisMonth; }
+    public double getForeignPrincipalRepaidThisMonth() { return foreignPrincipalRepaidThisMonth; }
+    public double getForeignInterestPaidThisMonth()    { return foreignInterestPaidThisMonth; }
 
     /**
      * A slice of USD principal, repaid.
@@ -6429,7 +6043,7 @@ public class Game {
     private double cityDebtRaisedForBank;
     private double cityDiscountForBank;
     double getCityDebtRaisedThisMonth()      { return cityDebtRaisedThisMonth; }
-    double getCityPrincipalRepaidThisMonth() { return cityPrincipalRepaidThisMonth; }
+    public double getCityPrincipalRepaidThisMonth() { return cityPrincipalRepaidThisMonth; }
 
     /* =======================================================================
        WHAT THE TREASURY ACTUALLY DID

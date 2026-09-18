@@ -145,7 +145,7 @@ public class LuxuryRetail extends Sector {
      * HouseholdBalance.clearUsedCars(): demand depends on the price and the
      * price depends on demand, and every market in this game breaks that
      * circle the same way - strike off the demand that arrived, then sell at
-     * what was struck. Game.luxuryShopping() runs the two halves.
+     * what was struck. LuxuryCounter.shop() runs the two halves.
      *
      * @param wanted pieces the households came for, before any cap
      */
@@ -244,7 +244,7 @@ public class LuxuryRetail extends Sector {
      * went first.
      *
      * THE SIGNAL IS THE QUEUE. `rWanted` is measured whether or not there is
-     * anywhere to spend it - Game.luxuryShopping() asks the households at the
+     * anywhere to spend it - LuxuryCounter.shop() asks the households at the
      * margin's floor before it asks the shops anything - so it is exactly the
      * demand a shop that does not exist yet would serve. Retail's plan() does
      * the same thing against population; this does it against money that

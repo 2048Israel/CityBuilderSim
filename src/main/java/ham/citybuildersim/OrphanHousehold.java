@@ -35,5 +35,5 @@ public class OrphanHousehold extends Household {
     @Override public String label() { return "Orphans, " + band.getLabel().toLowerCase(); }
     @Override public String key()   { return "ORPHAN:" + band.name(); }
 
-    @Override double creditRoom(double disposablePer) { return 0; }
+    @Override public double creditRoom(double disposablePer) { return 0; }
 }

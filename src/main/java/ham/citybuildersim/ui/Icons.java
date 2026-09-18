@@ -1,4 +1,4 @@
-package ham.citybuildersim;
+package ham.citybuildersim.ui;
 
 /**
  * The rail's icons, as vector outlines.
