@@ -2,7 +2,7 @@
 
 A macroeconomic city simulator in Java 21 and JavaFX. You lay out a city; the
 economy underneath it is the game. An age pyramid decides the workforce, a
-labour market prices it, ten private sectors keep their own books and expand on
+labour market prices it, fifteen private sectors keep their own books and expand on
 their own judgement, a commercial bank funds them and cannot lend below what its
 own money costs it, a treasury borrows at a rate the market quotes it, and a
 currency floats against a world that has its own prices and its own inflation.
@@ -17,7 +17,9 @@ Nothing in it is a headline number with a formula behind it. Every dollar that
 leaves a pool arrives in another or crosses the border in a way the audit can
 name, and a harness asserts that to the cent every month of a 333-year run.
 
-**Status:** in development, headed for Steam. Build `0.6.0`, save format `27`.
+**Status:** in development, headed for Steam. The build number is
+`GameVersion.VERSION` and the save format `GameVersion.SAVE_FORMAT`; nothing
+else in the tree states either, this file included.
 
 ---
 
@@ -68,8 +70,9 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **fifty harnesses plus the 4,002-month
-playtest**, which it reports as fifty-one, in about ninety seconds. In
+`AllChecks` runs the lot, one JVM each — **fifty-six harnesses plus the
+4,002-month playtest**, which it reports as fifty-seven, in about two minutes.
+`docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
 
@@ -107,7 +110,7 @@ suite into a record of what the code does rather than what it should do.
 ## `buildings.json` — the balance file
 
 Every building in the game is a row in `src/main/resources/buildings.json` —
-fifty-five of them at present: cash cost, construction points, materials,
+seventy-odd of them: cash cost, construction points, materials,
 maintenance, capacity, footprint in square feet, power and water draw, road load,
 its job mix across the eleven job types, which sector owns it, and what it makes
 and uses.
@@ -175,7 +178,7 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     157 files
+src/main/java/ham/citybuildersim/     about 180 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
     SimulationEngine.java             the order the month runs in
@@ -183,12 +186,17 @@ src/main/java/ham/citybuildersim/     157 files
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the ten sector classes
+    sectors/                          the fifteen sector classes
+    tools/                            the index generators (see below); not part of the game
     *Check.java                       the harnesses
     AllChecks.java                    the runner
     LongPlaytest.java                 4,002 months, audited every one
 src/main/resources/buildings.json     the balance file
+docs/                                 generated indexes of all of the above
 ```
+
+`docs/map/README.md` is the current, exact list: one row per file with its
+size, what it is and how many files use it.
 
 **Adding a sector** is one class extending `Sector`, one key constant, and one
 line in `Sectors.KEYS`. A sector class is a declaration of about twenty lines —
@@ -196,7 +204,7 @@ what it makes, what it uses, what it stocks, and any hook it overrides.
 `sectors/Mining.java` is the shortest one and the shape to copy. Before the
 template the sectors were five handlers in five shapes named by hand in about a
 hundred places; the whole point of it is that the eighth costs an afternoon.
-Three have been added since, and each did.
+Eight have been added since, and each did.
 
 **The order of `Sectors.KEYS` is load-bearing.** Equity's company index, the
 households' share arrays and the audit's pool list all follow it, so a new
@@ -244,7 +252,28 @@ moving does not mean editing the README:
 
 - **The manual:** https://claude.ai/artifact/BkBAN1RDiQTpCj79WPbpCp
   *(currently private to the author)*
-- Per-batch design notes and the running to-do list live alongside it.
+- Per-batch design notes, the running to-do list and the changelog live
+  alongside it, in the claude.ai project.
+
+**Inside the repository**, four documents are generated from the sources and
+committed with them, so that anyone — and in practice any AI session, which
+cannot read a 25,000-line file — can find a thing without opening the file it
+is in:
+
+| | |
+|---|---|
+| `docs/map/` | one page per source file: its banner sections and every method with its line number, and `README.md` there as the index |
+| `docs/dials.md` | every `static final` constant with its value and the sentence above it |
+| `docs/month-order.md` | the month as a numbered list of statements, with where each call goes |
+| `docs/harnesses.md` | what every harness asserts, in its own labels |
+
+`Regenerate maps.bat` rebuilds them after a Clean and Build (it runs
+`ham.citybuildersim.tools.Maps`, a second's work); regenerate after a batch
+and commit `docs/` with it. Two small tools go with them: `tools.Where` finds a
+member or a banner section by name and prints it, `tools.SaveDump` looks
+inside a save file without loading the game. `CLAUDE.md` at the root is the
+briefing an AI session reads first — the standing rules, the working loop and
+where everything is.
 
 Beyond that, the code is the documentation. Class headers carry a `WHY` section
 explaining what the thing replaced and what went wrong with the previous
