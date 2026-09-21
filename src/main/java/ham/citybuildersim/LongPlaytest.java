@@ -189,6 +189,17 @@ public class LongPlaytest {
     static int lastSeatMonth = 0;
     static double serviceExportsRun = 0;
     static double caughtRun = 0, notHeldRun = 0, worstPrisoners = 0, crimeMonths = 0;
+    /**
+     * The currency over the run (2026-09-21): its dearest dollar and when, and
+     * how many months it spent far from parity. The end state says where the
+     * rate finished, and a currency that spent forty years at three times its
+     * parity and came home reads exactly like one that never left.
+     */
+    static double peakRate = 0;
+    static int peakRateMonth = 0, monthsFarFromParity = 0;
+
+    /** How far from parity, as a multiple of it, a weak currency has to be to count as far from it. */
+    static final double FAR_FROM_PARITY = 2.0;
     static int worstCrimeMonth = 0;
     static double lastSickRate = 0;
     static double workLostToIllness = 0;
@@ -568,6 +579,9 @@ public class LongPlaytest {
         caughtRun += crime.getCaught();
         notHeldRun += crime.getNotHeld();
         worstPrisoners = Math.max(worstPrisoners, crime.prisoners());
+        ForeignAccounts fxRun = g.getForeignAccounts();
+        if (fxRun.getRate() > peakRate) { peakRate = fxRun.getRate(); peakRateMonth = g.getMonth(); }
+        if (fxRun.getRate() > FAR_FROM_PARITY * fxRun.getParity()) monthsFarFromParity++;
         if (health.isOutbreak()) {
             monthsInOutbreak++;
             if (!wasInOutbreak) outbreaks++;
@@ -1725,6 +1739,10 @@ public class LongPlaytest {
                 back.getOutwardInvestment().getLastRate(), g.getOutwardInvestment().getLastRate());
         same(month, "...and the financial account the rate is priced on",
                 back.getForeignAccounts().monthlyFinancialAccount(), g.getForeignAccounts().monthlyFinancialAccount());
+        // The vault is kept in dollars since 2026-09-21, in a slot of its own
+        // at the end of the array; the local figure in slot 19 is derived.
+        same(month, "the vault, in dollars, across a save",
+                back.getForeignAccounts().getReservesUsd(), g.getForeignAccounts().getReservesUsd());
         // The register: every company's shares in issue and abroad, and the
         // households' own count of what they hold - three stocks nothing can
         // re-derive from the month a save was taken in.
@@ -2328,10 +2346,17 @@ public class LongPlaytest {
          * them is right.
          */
         WorldEconomy w = g.getWorldEconomy();
-        out.printf("  monetary policy: rate %.2f%% (the rule advises %.2f%% on %.1f%% inflation);"
+        // The rule and the dial, both, when the dial's stop is what binds -
+        // the monetary page's reading since 2026-09-21 (DebtManager.ruleRate).
+        double ruleSays = g.getDebtManager().ruleRate(g.getPriceIndex().inflation());
+        double dialStops = g.getDebtManager().advisedPolicyRate(g.getPriceIndex().inflation());
+        out.printf("  monetary policy: rate %.2f%% (%s on %.1f%% inflation);"
                 + " the rate differential is %+.2f points and pulls the currency %+.2f%n",
                 g.getDebtManager().getPolicyRate() * 100,
-                g.getDebtManager().advisedPolicyRate(g.getPriceIndex().inflation()) * 100,
+                Math.abs(ruleSays - dialStops) > 1e-9
+                        ? String.format("the rule would set %.2f%%, the dial stops at %.2f%%",
+                                ruleSays * 100, dialStops * 100)
+                        : String.format("the rule advises %.2f%%", dialStops * 100),
                 g.getPriceIndex().inflation() * 100,
                 fx.getRateDifferential() * 100, fx.ratePressure());
         // Both instruments, side by side on purpose: the headline is what the
@@ -2341,6 +2366,12 @@ public class LongPlaytest {
                 + " realised %.1f%%/yr; parity is %.3f and the rate is %.3f (%+.0f%% off it)%n",
                 w.getPriceLevel(), w.getInflation() * 100, w.realisedInflation() * 100,
                 fx.getParity(), fx.getRate(), fx.deviationFromParity() * 100);
+        // Averaged as the index compounds, not as a mean of twelve-month
+        // readings: the rate that takes founding prices to these.
+        out.printf("  the currency over the run: its dearest dollar %.3f local (m%d), %d months weaker than"
+                + " %.0fx parity; prices averaged %+.2f%%/yr%n",
+                peakRate, peakRateMonth, monthsFarFromParity, FAR_FROM_PARITY,
+                (Math.pow(Math.max(1e-9, g.getPriceIndex().getIndex()), 12.0 / Math.max(1, g.getMonth())) - 1) * 100);
         out.printf("  the same month, per ForeignAccounts: exports %,.0f  imports %,.0f"
                 + "  interest %,.0f  => current account %,.0f%n",
                 fx.getExports(), fx.tradeImports(), fx.getForeignInterest(),
@@ -2495,11 +2526,14 @@ public class LongPlaytest {
                 + " peak $%,.0fk on a peak spread of %.2f points%n",
                 hot.getLifetimeArrived(), hot.getLifetimeDeparted(), hot.getStopsSuffered(),
                 hot.getPeakStock(), hot.getPeakSpread() * 100);
-        out.printf("  the vault: $%,.0fk held abroad (%s months of imports at $%,.0fk/mo)%n",
-                fx.getReserves(),
+        // Both, since the vault is kept in dollars (2026-09-21): what it IS,
+        // and what it is worth at home today.
+        out.printf("  the vault: %s%,.0fk (%s%,.0fk at today's rate), %s months of imports at %s%,.0fk/mo%n",
+                Currency.FOREIGN_SYMBOL, fx.getReservesUsd(),
+                Currency.QUALIFIED, fx.getReserves(),
                 fx.importCover() == Double.MAX_VALUE ? "inf"
                         : String.format("%.1f", fx.importCover()),
-                fx.monthlyImports());
+                Currency.QUALIFIED, fx.monthlyImports());
         OutwardInvestment abroad = g.getOutwardInvestment();
         out.printf("  abroad, the sectors' own: US$%,.0fk (%s at today's rate), %.0f%% of their wealth wanted"
                 + " on a %.2f-point spread; sent $%,.0fk, brought home $%,.0fk, earned $%,.0fk since founding; peak US$%,.0fk%n",

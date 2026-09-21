@@ -354,7 +354,7 @@ public class ForeignDebtCheck {
          * bond is signed.
          */
         Path uses = Files.createTempDirectory("fxdebt-uses");
-        double spendCash, spendReserves, holdCash, holdReserves, holdNet, proceeds;
+        double spendCash, spendReserves, holdCash, holdReserves, holdNet, holdNetBefore, proceeds;
 
         System.setOut(quiet);
         try {
@@ -370,6 +370,7 @@ public class ForeignDebtCheck {
             Game holder = tradingCity(uses.resolve("hold"));
             cashBefore = holder.getCash();
             resBefore = holder.getForeignAccounts().getReserves();
+            holdNetBefore = holder.getForeignAccounts().netForeignPosition();
             holder.handleForeignLogic("Term", 20_000, 25, 100, true);
             holdCash = holder.getCash() - cashBefore;
             holdReserves = holder.getForeignAccounts().getReserves() - resBefore;
@@ -397,10 +398,18 @@ public class ForeignDebtCheck {
          * reserves counted, the $20,000 of paper that bought them not yet. For
          * one whole month the trade screen said borrowing had made the city
          * richer.
+         *
+         * AGAINST WHERE IT STOOD, NOT AGAINST ZERO, since 2026-09-21: a new
+         * city opens with the founders' US$1B in the vault, so its position is
+         * a billion to the good before it borrows a cent, and "below zero" had
+         * only ever meant "below where it started" because it started at
+         * nothing. The bug this catches still fails it - uncounted paper
+         * reads as the position rising by the whole of the proceeds.
          */
-        out.printf("   net position the instant the bond is signed: %,.0f%n", holdNet);
+        out.printf("   net position the instant the bond is signed: %,.0f, against %,.0f before%n",
+                holdNet, holdNetBefore);
         assertTrue("parking borrowed dollars does not read as getting richer",
-                holdNet < 0);
+                holdNet < holdNetBefore);
 
         /* ============ 5. the window shuts ============ */
         out.println("\n--- and the world stops answering ---");

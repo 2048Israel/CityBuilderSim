@@ -54,6 +54,7 @@ The commercial bank, the central bank that was not built, the float, capital flo
 - `foreign-debt.md` - the city borrows in somebody else's money
 - `exchange-rate-progress.md` - the float, as it was being built
 - `foreign-exchange-design.md` - the exchange rate's design: pressure, drift, reversion
+- `a-reserve-defends-a-currency.md` - the 0.6.9 year book read (a model with no nominal anchor), the vault kept in dollars, the founding reserve, why a reserve damps only a fall, and prices and the rate on the strip, 2026-09-21, 0.6.10
 - `balance-of-payments.md` - the current and capital accounts, and that they must sum
 - `devaluation-elasticities.md` - how exports and imports answer a weaker currency
 - `import-substitution.md` - what the city stops importing as it learns to make it

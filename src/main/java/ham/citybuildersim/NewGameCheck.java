@@ -55,6 +55,20 @@ public class NewGameCheck {
 
         m.put("month", (double) g.getMonth());
         m.put("cash", g.getCash());
+        /*
+         * THE OTHER HALF OF THE ENDOWMENT (2026-09-21): the founders' dollars
+         * in the vault. Founded in buildWorld() beside the cash, so every door
+         * into a new city has to found both - the health rebuild of 2026-09-19
+         * was a manager this list did not reach, and this is the same class of
+         * miss waiting to happen.
+         */
+        ForeignAccounts fx = g.getForeignAccounts();
+        m.put("fx.reservesUsd", fx.getReservesUsd());
+        m.put("fx.reserves", fx.getReserves());
+        m.put("fx.rate", fx.getRate());
+        m.put("fx.lifetimeIntervention", fx.getLifetimeIntervention());
+        m.put("fx.boughtThisMonth", fx.getBoughtThisMonth());
+        m.put("fx.lastVaultRevaluation", fx.getLastVaultRevaluation());
         m.put("income", g.getIncome());
         m.put("materialsUsed", g.getMaterialsUsed());
 
@@ -179,7 +193,12 @@ public class NewGameCheck {
 
         System.out.printf("%d fields captured%n", expected.size());
         assertTrue("it has no people", expected.get("population") == 0);
-        assertTrue("it has its starting cash", expected.get("cash") > 0);
+        assertTrue("it has its starting cash", expected.get("cash") == Game.FOUNDING_CASH);
+        assertTrue("...and the founders' dollars in the vault",
+                expected.get("fx.reservesUsd") == Game.FOUNDING_RESERVE_USD);
+        assertTrue("...bought on day one, at the opening rate",
+                expected.get("fx.lifetimeIntervention")
+                        == Game.FOUNDING_RESERVE_USD * ForeignAccounts.OPENING_RATE);
         assertTrue("it is at month 1", expected.get("month") == 1);
 
         /* ==================== 2. live in one, hard ==================== */
@@ -210,6 +229,9 @@ public class NewGameCheck {
          */
         used.setConstructionSubsidy(250);
         used.restoreConstructionShedding(used.getMonth(), 1200);
+        // ...and a vault the treasury has worked, for the same reason: a
+        // founders' vault that nobody touched is swept by proving 1B == 1B.
+        used.sellForeignCurrency(used.getForeignAccounts().sellableReserves() * .4);
 
         used.simulateMonths(2);
 
@@ -222,6 +244,8 @@ public class NewGameCheck {
         assertTrue("the used city really is used",
                 used.getPopulationManager().getPopulation() > 0
                         && used.getBuildingManager().getStackCount() > 3);
+        assertTrue("...and its vault is not the founders' any more",
+                Math.abs(used.getForeignAccounts().getReservesUsd() - Game.FOUNDING_RESERVE_USD) > 1);
 
         /* ==================== 3. start a new one ==================== */
         System.out.println("\n--- Start New Game ---");
@@ -279,11 +303,21 @@ public class NewGameCheck {
         loader.run();
         loader.buildStack(template(loader, "House"), 60, false);
         loader.simulateMonths(40);
+        loader.buyForeignCurrency(75_000);   // a vault that is not the founders'
         assertTrue("saved", loader.saveGame(3, "to be abandoned").ok);
 
         Game reopened = new Game(files);
         reopened.loadGameSave(3);
         assertTrue("loaded", reopened.getPopulationManager().getPopulation() > 0);
+        /*
+         * The load path runs buildWorld() - which founds a vault - before it
+         * restores the save's own. The save's must be what comes back.
+         */
+        assertTrue("...with the vault it was saved with, not a new city's",
+                Math.abs(reopened.getForeignAccounts().getReservesUsd()
+                        - loader.getForeignAccounts().getReservesUsd()) < 1e-6
+                && Math.abs(reopened.getForeignAccounts().getReservesUsd()
+                        - Game.FOUNDING_RESERVE_USD) > 1);
 
         reopened.newGame();
         Map<String, Double> afterLoadThenNew = snapshot(reopened);

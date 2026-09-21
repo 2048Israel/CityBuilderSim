@@ -14,7 +14,7 @@ requirement.
 
 ## Open these before reading source
 
-The tree is 128,000 lines; `Game.java` alone is 8,000, and the interface is
+The tree is 129,000 lines; `Game.java` alone is 8,000, and the interface is
 nineteen files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
@@ -85,7 +85,7 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; 8,000 lines, 24 banner sections
+        Game.java                  the month, the seam every system meets at; 8,000 lines, 25 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
@@ -145,10 +145,11 @@ Conventions the code is written to, which the indexes rely on:
    batch is not done until this has run. Its mechanical half is
    `tools.Stale`, which `StaleCheck` runs in the suite; the pass is for what
    a tool cannot judge.
-   Which model, Jerus's rule (2026-09-18): an agent runs on Opus by default
-   and on Fable when the job is substantial - a move that has to pass a gate
-   (an identical playtest, a save format), a mechanic, a screen; the docs pass
-   runs on Opus. The orchestrating session keeps the gate either way.
+   Which model, Jerus's rule (2026-09-21): both agents - the implementer and
+   the docs pass - run on Opus, not Fable, whatever the job's size; he does
+   not have the tokens to run Fable for every task. (The 2026-09-18 rule let
+   Fable take the substantial jobs; it is withdrawn.) The orchestrating
+   session keeps the gate either way.
 
 **From a cloud session linked to the PC (Cowork):**
 

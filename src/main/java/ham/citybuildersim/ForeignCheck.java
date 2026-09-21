@@ -24,14 +24,23 @@ import java.nio.file.Path;
  *      payments understating the city's trade, and nothing else in the game
  *      would notice.
  *
- *   2. Is the STOCK the sum of the FLOWS? The reserve is an accumulation, and an
- *      accumulation that has drifted from what it accumulated is two sets of
- *      books wearing one name.
+ *   2. Is the STOCK the sum of the FLOWS? The cumulative balance is an
+ *      accumulation, and an accumulation that has drifted from what it
+ *      accumulated is two sets of books wearing one name. (It was "the
+ *      reserve" when this was written. The vault, split from it since, is
+ *      bought and sold rather than accumulated: sections 5b and 9 to 13.)
  *
  *   3. Does it survive a reload?
  *
  *   4. And - the whole promise of phase one - does the city behave EXACTLY as it
  *      did before any of this went in?
+ *
+ * And since 2026-09-21, sections 9 to 12: is the vault kept in the money it
+ * actually is? Dollars that stay dollars when the currency moves, a local
+ * value that moves with it, a revaluation that is not a flow, a reform that
+ * cannot reach them, and an older save whose vault comes back at the rate it
+ * was saved at. Section 13: does the vault defend the currency without
+ * holding it down?
  */
 public class ForeignCheck {
 
@@ -115,7 +124,7 @@ public class ForeignCheck {
                 if (Math.abs(inSplit) > Math.abs(worstSplit)) worstSplit = inSplit;
                 if (Math.abs(outSplit) > Math.abs(worstSplit)) worstSplit = outSplit;
 
-                // ...and the reserve is the sum of what built it.
+                // ...and the cumulative balance is the sum of what built it.
                 ForeignAccounts f = city.getForeignAccounts();
                 double drift = f.getCumulativeBalance() - f.balanceFromFlows();
                 if (Math.abs(drift) > Math.abs(worstStock)) {
@@ -144,12 +153,25 @@ public class ForeignCheck {
          * not in the treasury's foreign account. That is why a country running
          * a trade surplus can still have no reserves to defend itself with, and
          * it is the distinction the old single field could not express.
+         *
+         * SINCE 2026-09-21 THE FOUNDERS INTERVENE ONCE, on day one: a new city
+         * opens with US$1B bought at the opening rate (Game's THE FOUNDING
+         * RESERVE), booked as the purchase it is. So this city has intervened,
+         * exactly once, and the property is asserted in the form that still
+         * means something: the vault holds precisely the dollars the treasury
+         * bought and not one cent of fifteen years of trade. Had the founding
+         * set the stock without a purchase, a city that never bought anything
+         * would hold a billion abroad and this would be false in both forms.
          */
-        assertTrue("a city that has never intervened holds nothing abroad",
-                fx.getReserves() == 0);
+        close("a city that never intervened holds its founders' dollars",
+                fx.getReservesUsd(), Game.FOUNDING_RESERVE_USD, 1e-9);
+        close("...which is exactly what the treasury bought, on day one",
+                fx.getLifetimeIntervention(),
+                Game.FOUNDING_RESERVE_USD * ForeignAccounts.OPENING_RATE, 1e-9);
         assertTrue("...however much it has traded",
                 Math.abs(fx.getCumulativeBalance()) > 1);
-        close("...so its import cover is nil, honestly", fx.importCover(), 0, 1e-9);
+        assertTrue("...so it has cover from the start, as they meant",
+                fx.importCover() > 0);
 
         assertTrue("the fixture actually traded with anybody at all",
                 fx.getLifetimeExports() > 0 || fx.getLifetimeImports() > 0);
@@ -224,6 +246,8 @@ public class ForeignCheck {
                 back.getCumulativeBalance(), balanceBefore, .005);
         close("...and the vault, which is a different number",
                 back.getReserves(), vaultBefore, .005);
+        close("...in the dollars it is held in, exactly",
+                back.getReservesUsd(), fx.getReservesUsd(), 1e-9);
         assertTrue("...and they really are different",
                 Math.abs(balanceBefore - vaultBefore) > 1);
         close("...and the trade record with it", back.getLifetimeExports(), lifetimeBefore, .005);
@@ -774,8 +798,308 @@ public class ForeignCheck {
         close("a 40% devaluation is a 40% rise in what an import costs",
                 weakPrice / parPrice, 1.40, .02);
 
+        vaultInDollars();
+        reserveDefends();
+
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /**
+     * Sections 9 to 12: the vault kept in dollars (2026-09-21).
+     *
+     * FOUND while checking Jerus's founding reserve, before building it. The
+     * vault was a LOCAL figure at the price paid: buyReserves() added the local
+     * cash spent and getReservesUsd() divided by today's rate, so when the
+     * currency fell a hundredfold a US$1B vault read US$10M and import cover
+     * shrank a hundredfold exactly when it was needed - while the dollar debt
+     * on the same class was revalued every month. A reserve is the one thing
+     * that is supposed to gain when your currency falls. In a method of its
+     * own so its figures cannot collide with main's.
+     */
+    static void vaultInDollars() throws Exception {
+
+        /* ============ 9. the vault is held in dollars ============ */
+        out.println("\n--- and the vault is held in the money it is held in ---");
+
+        /*
+         * Buy US$X at a rate r for rX of local money, let the currency halve
+         * to 2r, and the vault must still hold US$X - worth 2rX at home now,
+         * with rX booked as what the currency did to it. Sell it all and it
+         * raises 2rX: the treasury is rX ahead on its own currency's fall,
+         * which is what a reserve is for.
+         *
+         * In the month's own order: the rate moves, then the vault is valued,
+         * then the treasury trades. revalueVault() is struck right after the
+         * reprice in Game.nextMonth, and nothing moves the rate in between.
+         */
+        final double r = 1.25;             // local per US dollar the day the treasury buys
+        final double usd = 8_000;          // what it buys, in dollars
+        final double usdImports = 2_000;   // a month's imports, in dollars, whatever the rate
+
+        ForeignAccounts fx = new ForeignAccounts();
+        fx.pinRate(r);
+        fx.revalueVault();
+        for (int m = 0; m < 24; m++) {
+            fx.takeMonth(month(usdImports * 1.1 * r, usdImports * r), 50_000);
+        }
+        double balanceBefore = fx.getCumulativeBalance();
+        double flowsBefore = fx.balanceFromFlows();
+
+        fx.startMonth();
+        fx.buyReserves(usd * r);
+        close("rX of local money at rate r buys US$X, and US$X is held",
+                fx.getReservesUsd(), usd, 1e-9);
+        close("...worth rX at home the day it is bought", fx.getReserves(), usd * r, 1e-9);
+        double coverBefore = fx.importCover();
+        close("...X over the dollar import bill, in months of cover",
+                coverBefore, usd / usdImports, 1e-9);
+
+        fx.pinRate(2 * r);
+        fx.revalueVault();
+        close("the currency halves and the vault still holds US$X", fx.getReservesUsd(), usd, 1e-9);
+        close("...now worth 2rX at home", fx.getReserves(), 2 * r * usd, 1e-9);
+        close("...and sellable for 2rX", fx.sellableReserves(), 2 * r * usd, 1e-9);
+        close("...and the move is booked as the vault's revaluation: rX",
+                fx.getLastVaultRevaluation(), r * usd, 1e-9);
+        assertTrue("...positive: a falling currency is a dollar vault's gain",
+                fx.getLastVaultRevaluation() > 0);
+        close("...not a flow: the cumulative balance did not move",
+                fx.getCumulativeBalance(), balanceBefore, 1e-9);
+        close("...nor the flows it is rebuilt from", fx.balanceFromFlows(), flowsBefore, 1e-9);
+
+        /*
+         * COVER DOES NOT MOVE WITH THE CURRENCY, once the import bill has been
+         * struck at the new rate - the same dollar goods, twice the local
+         * money. The old vault, at the price paid, would have read half.
+         */
+        for (int m = 0; m < 400; m++) {
+            fx.takeMonth(month(usdImports * 1.1 * 2 * r, usdImports * 2 * r), 50_000);
+        }
+        out.printf("   cover %.4f months at r and %.4f at 2r; the vault at the price paid would read %.4f%n",
+                coverBefore, fx.importCover(), usd * r / fx.monthlyImports());
+        close("the bill struck at 2r, the cover is what it was at r",
+                fx.importCover(), coverBefore, 1e-6);
+
+        fx.startMonth();
+        double raised = fx.sellReserves(Double.MAX_VALUE);
+        close("sold at 2r, the whole vault raises 2rX of cash", raised, 2 * r * usd, 1e-6);
+        close("...and leaves nothing, not even a division's rounding",
+                fx.getReservesUsd(), 0, 0);
+        close("...so the treasury is rX ahead: the revaluation it saw",
+                raised - usd * r, fx.getLastVaultRevaluation(), 1e-6);
+        close("...as the record says: bought for rX, sold for 2rX",
+                fx.getLifetimeIntervention(), -usd * r, 1e-6);
+        close("and the cumulative balance is still the sum of its flows",
+                fx.getCumulativeBalance(), fx.balanceFromFlows(), 1e-6);
+
+        /* ============ 10. and the move is not money anybody moved ============ */
+        out.println("\n--- and what the currency does to the vault is not a flow ---");
+
+        /*
+         * The same, through a city's month. Nobody can spend a revaluation
+         * until the dollars are sold, and a sale is the only thing that
+         * crosses the audit's edge - so a month in which the currency falls
+         * under a full vault must still reconcile to the cent, with the move
+         * nowhere in it.
+         */
+        Path dir = Files.createTempDirectory("foreigncheck-vault");
+        Game city = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
+        double bought, dollarsBefore, rateBefore, rateAfter;
+        System.setOut(quiet);
+        try {
+            city.run();
+            city.buildStack(template(city, "House"), 40, false);
+            city.buildStack(template(city, "Convenience Store"), 3, false);
+            city.simulateMonths(3);
+            bought = city.buyForeignCurrency(50_000);
+            dollarsBefore = city.getForeignAccounts().getReservesUsd();
+            rateBefore = city.getForeignAccounts().getRate();
+            city.getForeignAccounts().pinRate(rateBefore * 1.6);
+            rateAfter = city.getForeignAccounts().getRate();
+            city.simulateMonths(1);
+        } finally {
+            System.setOut(out);
+        }
+        ForeignAccounts cfx = city.getForeignAccounts();
+        assertTrue("fixture: the treasury bought dollars and the currency fell",
+                bought > 0 && rateAfter > rateBefore);
+        close("a month the currency falls in leaves the dollars alone",
+                cfx.getReservesUsd(), dollarsBefore, 1e-9);
+        close("...and books dollars times the move as its revaluation",
+                cfx.getLastVaultRevaluation(), dollarsBefore * (rateAfter - rateBefore), 1e-6);
+        assertTrue("...and none of it appeared in the audit as money moving",
+                Math.abs(city.getLastMoneyAudit().relative()) < 1e-9);
+
+        /* ============ 11. a reform does not reach the dollars ============ */
+        out.println("\n--- and a currency reform leaves the dollars alone ---");
+
+        /*
+         * Lopping two zeros off the local dollar divides the rate by a
+         * hundred, and every local figure with it. The vault's local value is
+         * its dollars at the rate, so it follows by itself; the dollars are
+         * somebody else's money and no domestic reform can reach them. Scaling
+         * them too would divide the vault twice.
+         */
+        ForeignAccounts reformed = new ForeignAccounts();
+        reformed.pinRate(80);
+        reformed.revalueVault();
+        for (int m = 0; m < 24; m++) {
+            reformed.takeMonth(month(usdImports * 80, usdImports * 80), 5_000_000);
+        }
+        reformed.buyReserves(usd * 80);
+        double localBefore = reformed.getReserves();
+        double coverPre = reformed.importCover();
+        reformed.redenominate(.01);
+        close("lopping two zeros leaves the vault's dollars alone",
+                reformed.getReservesUsd(), usd, 1e-9);
+        close("...and divides their worth at home by the same hundred",
+                reformed.getReserves(), localBefore * .01, 1e-6);
+        close("...so the cover does not move", reformed.importCover(), coverPre, 1e-9);
+        reformed.revalueVault();
+        close("...and the next valuation finds no move to book",
+                reformed.getLastVaultRevaluation(), 0, 1e-9);
+
+        /* ============ 12. an older save ============ */
+        out.println("\n--- and an older save's vault comes back at the rate it was saved at ---");
+
+        /*
+         * Slot 19 keeps its meaning - the vault's local value at the moment of
+         * saving - so an older build reading a new save sees what it always
+         * saw. The dollars ride the end, slot 22. A 0.6.9 save (slots 0 to 21)
+         * has no dollars, and its vault comes back from slot 19 at the rate in
+         * slot 3: the only rate it has, and the one those dollars were worth
+         * that day.
+         */
+        ForeignAccounts saver = new ForeignAccounts();
+        saver.pinRate(1.6);
+        saver.revalueVault();
+        saver.buyReserves(usd * 1.6);
+        saver.pinRate(2.4);
+        saver.revalueVault();
+        double[] now = saver.toSaveArray();
+        close("slot 19 holds the local value, as an older build reads it",
+                now[19], saver.getReserves(), 1e-9);
+        close("...and slot 22 its dollars", now[22], usd, 1e-9);
+
+        ForeignAccounts fromNew = new ForeignAccounts();
+        fromNew.restore(now);
+        close("a save of this shape reloads the dollars exactly",
+                fromNew.getReservesUsd(), usd, 1e-12);
+        close("...and what the currency did to them that month",
+                fromNew.getLastVaultRevaluation(), saver.getLastVaultRevaluation(), 1e-9);
+        fromNew.revalueVault();
+        close("...and the first valuation after it books no phantom move",
+                fromNew.getLastVaultRevaluation(), 0, 1e-9);
+
+        double[] older = java.util.Arrays.copyOf(now, 22);
+        ForeignAccounts fromOld = new ForeignAccounts();
+        fromOld.restore(older);
+        close("a 0.6.9 save's vault comes back at its saved rate",
+                fromOld.getReservesUsd(), older[19] / older[3], 1e-12);
+        close("...which is the same dollars it held that day", fromOld.getReservesUsd(), usd, 1e-9);
+        close("...worth what the old build said they were worth",
+                fromOld.getReserves(), older[19], 1e-9);
+
+        /*
+         * AND NOTHING THE CITY HELD BEFORE THE LOAD. The load path runs
+         * buildWorld() first, which founds a new city's vault; a save that
+         * never had one must not come back with the founders' dollars in it.
+         */
+        ForeignAccounts fromAncient = new ForeignAccounts();
+        fromAncient.buyReserves(250_000);
+        fromAncient.restore(java.util.Arrays.copyOf(now, 19));
+        close("a save older than the vault's slot loads it empty",
+                fromAncient.getReservesUsd(), 0, 0);
+        ForeignAccounts fromNothing = new ForeignAccounts();
+        fromNothing.buyReserves(250_000);
+        fromNothing.restore(null);
+        close("...and so does a save with no foreign accounts at all",
+                fromNothing.getReservesUsd(), 0, 0);
+        close("...with no purchase on its record either",
+                fromNothing.getLifetimeIntervention(), 0, 0);
+    }
+
+    /**
+     * Section 13: the vault damps a fall and nothing else (2026-09-21).
+     *
+     * Jerus: "a reserve defends a currency; it does not hold one down." Damped
+     * both ways, a deep vault muted the surplus and the policy rate - the two
+     * forces that pull a currency back out of an inflation spiral - and the
+     * founding reserve reproduced the year book in three seeds of eight. So:
+     * a deep vault and a month that would weaken the currency, damped by the
+     * cover's absorption; the same vault and a month that would strengthen
+     * it, passed through in full; and the rate's support inside a weakening
+     * month, which shortens the push before the vault damps what is left.
+     */
+    static void reserveDefends() {
+
+        /* ============ 13. the vault defends, it does not hold down ============ */
+        out.println("\n--- and the vault defends the currency, it does not hold it down ---");
+
+        final double trade = 6_000;          // a month's goods, both ways together
+        final double gdp = 40_000;           // so openness is a real fraction, not 1
+
+        ForeignAccounts deficit = new ForeignAccounts();
+        ForeignAccounts surplus = new ForeignAccounts();
+        for (int m = 0; m < ForeignAccounts.SETTLING_MONTHS + 12; m++) {
+            deficit.takeMonth(month(trade / 3, trade * 2 / 3), gdp);
+            surplus.takeMonth(month(trade * 2 / 3, trade / 3), gdp);
+        }
+        // A deep vault in both: twice the cover that earns the most damping.
+        deficit.buyReserves(deficit.monthlyImports() * ForeignAccounts.COMFORTABLE_COVER * 2);
+        surplus.buyReserves(surplus.monthlyImports() * ForeignAccounts.COMFORTABLE_COVER * 2);
+
+        assertTrue("fixture: the deficit city is pushed weaker", deficit.pressure() > 0);
+        assertTrue("fixture: the surplus city is pushed stronger", surplus.pressure() < 0);
+        assertTrue("fixture: both trade a fraction of their output",
+                deficit.getOpenness() > 0 && deficit.getOpenness() < 1);
+        close("fixture: both vaults are deep enough for the most damping",
+                Math.min(deficit.absorption(), surplus.absorption()),
+                ForeignAccounts.MAX_ABSORPTION, 1e-12);
+
+        double down = deficit.effectivePressure();
+        out.printf("   weaker: pressure %+.4f, absorbed %.0f%%, reaches the rate %+.4f%n",
+                deficit.getLastPressure(), deficit.getLastAbsorption() * 100, down);
+        close("a push weaker is damped by the vault's cover",
+                down, deficit.pressure() * (1 - ForeignAccounts.MAX_ABSORPTION)
+                        * deficit.getOpenness(), 1e-12);
+        close("...and the absorption it records is what was applied",
+                deficit.getLastAbsorption(), ForeignAccounts.MAX_ABSORPTION, 1e-12);
+
+        double up = surplus.effectivePressure();
+        out.printf("   stronger: pressure %+.4f, absorbed %.0f%%, reaches the rate %+.4f%n",
+                surplus.getLastPressure(), surplus.getLastAbsorption() * 100, up);
+        close("the same vault passes a push stronger in full",
+                up, surplus.pressure() * surplus.getOpenness(), 1e-12);
+        close("...and records that it absorbed nothing", surplus.getLastAbsorption(), 0, 0);
+        close("...though its cover could have absorbed the most there is",
+                surplus.absorption(), ForeignAccounts.MAX_ABSORPTION, 1e-12);
+
+        /*
+         * THE RATE'S SUPPORT INSIDE A WEAKENING MONTH. A policy rate half the
+         * trade term's worth over the world's: the total is still a push
+         * weaker, so the vault damps it - but only what is left after the
+         * rate has done its part.
+         */
+        double tradeTerm = deficit.pressure();
+        deficit.setRateDifferential(tradeTerm / 2 / ForeignAccounts.RATE_PULL);
+        assertTrue("fixture: the support is half the trade term, unclipped",
+                Math.abs(deficit.ratePressure() + tradeTerm / 2) < 1e-12);
+        double supported = deficit.effectivePressure();
+        close("the rate's support comes off before the vault sees it",
+                deficit.getLastPressure(), tradeTerm / 2, 1e-12);
+        close("...and the vault damps what is left",
+                supported, tradeTerm / 2 * (1 - ForeignAccounts.MAX_ABSORPTION)
+                        * deficit.getOpenness(), 1e-12);
+
+        /* ...and support that outweighs the trade term is a push up: in full. */
+        deficit.setRateDifferential(tradeTerm * 2 / ForeignAccounts.RATE_PULL);
+        double overtaken = deficit.effectivePressure();
+        assertTrue("fixture: support larger than the trade term turns the push",
+                deficit.getLastPressure() < 0);
+        close("support outweighing the deficit reaches the rate in full",
+                overtaken, deficit.getLastPressure() * deficit.getOpenness(), 1e-12);
     }
 
     /** A month whose only foreign flow is the treasury working its own vault. */
@@ -807,6 +1131,20 @@ public class ForeignCheck {
     static Game devaluationCity(Path dir, double rate, double[] food) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         g.run();
+        /*
+         * THE FOUNDERS' DOLLARS BACK INTO THE TREASURY, at the opening rate
+         * and before the pin (2026-09-21). A new city opens with D$2.5B and
+         * US$1B in the vault now, where this fixture was written against
+         * $3.5B of cash - and the fixed programme below is bought out of the
+         * treasury. At 1.40 the weaker city could no longer pay for it: it
+         * built two-thirds of the programme, Construction imported $591M
+         * against the parity city's $896M, and the premise read 0.63. Nothing
+         * about the currency had changed; the ruler had lost its endowment.
+         * Sold here, both cities open exactly as they did before the split -
+         * $3.5B in the treasury, an empty vault - and the question is the
+         * rate again and nothing else.
+         */
+        g.sellForeignCurrency(g.getForeignAccounts().sellableReserves());
         g.getForeignAccounts().pinRate(rate);
         g.getEconomyManager().setExchangeRate(rate);
         g.getLandManager().setOwnedSqFt(30_000_000);

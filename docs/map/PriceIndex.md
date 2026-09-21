@@ -25,7 +25,7 @@
 > spend two thirds of their money on food has a food-weighted index, and it
 > should, because that is whose cost of living this is.
 
-**Used by (4):** [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PolicyScreen](PolicyScreen.md)
+**Used by (5):** [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PolicyScreen](PolicyScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

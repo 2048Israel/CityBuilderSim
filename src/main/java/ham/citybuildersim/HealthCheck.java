@@ -31,7 +31,8 @@ import java.nio.file.Path;
  * fees and not the funerals, nobody pays at 0, and the break-even scale is
  * struck from the city's own figures; (13) a household that cannot pay goes
  * without care rather than without food, the rule in both directions, and a
- * poor city at a high fee is a sicker city that buries more of its people;
+ * poor city at a high fee is a sicker city that buries a larger share of its
+ * people, and of its old, than at the founding fee;
  * (14) a city that can pay is served exactly as it was, at zero tolerance;
  * (15) the premium raises rate times the wage bill into the treasury, shows on
  * the households' statement, and fees 0 with a premium serves the same people
@@ -1121,6 +1122,10 @@ public class HealthCheck {
         double[] pricedOutMonths = new double[scales.length];
         double[] servedInFullMonths = new double[scales.length];
         double[] hungerAtEnd = new double[scales.length];
+        // The people each city had to bury from, month by month: all of them,
+        // and its old (2026-09-21, see the assertions below).
+        double[] personMonths = new double[scales.length];
+        double[] elderMonths = new double[scales.length];
         int window = 96;
         for (int k = 0; k < scales.length; k++) {
             Game town = new Game(files);
@@ -1165,6 +1170,9 @@ public class HealthCheck {
                     deathsOver[k] += town.getCohorts().getLastDeaths();
                     eldersLost[k] += town.getCohorts().getDeaths(AgeBand.SENIOR)
                             + town.getCohorts().getDeaths(AgeBand.ELDER);
+                    personMonths[k] += town.getCohorts().total();
+                    elderMonths[k] += town.getCohorts().get(AgeBand.SENIOR)
+                            + town.getCohorts().get(AgeBand.ELDER);
                     if (hc.getPricedOutTotal() > 0) pricedOutMonths[k]++;
                     if (hc.getPricedOutTotal() == 0) servedInFullMonths[k]++;
                 }
@@ -1198,8 +1206,28 @@ public class HealthCheck {
          */
         assertTrue("...and its baseline sick rate, which coverage sets, is higher for it",
                 meanBaseline[2] > meanBaseline[1]);
-        assertTrue("...and it buries more of its people over the run", deathsOver[2] > deathsOver[1]);
-        assertTrue("...its old first, whom a fee on senior care turns away", eldersLost[2] > eldersLost[1]);
+        /*
+         * AS A SHARE OF ITS PEOPLE, NOT A HEAD COUNT (2026-09-21). The two
+         * cities are not the same size after eight years - the dear one is
+         * sicker, so it has fewer births and loses people - and a count of
+         * burials compares mortality times population. Measured: the count
+         * held on the shipped build by 25 deaths in a thousand, and flipped
+         * with nothing about the clinic changed - the same pristine fixture
+         * with its currency pinned buried 1,014 at 15x against 999 at 1x but
+         * lost 826 elders against 856, from a city that had shrunk to 7,474
+         * people against 13,230; the vault's damping rule flipped the total.
+         * Per person-month, and the old per old person-month, the dear city
+         * buries more on every variant measured.
+         */
+        double deathRate1 = deathsOver[1] / Math.max(1, personMonths[1]);
+        double deathRate2 = deathsOver[2] / Math.max(1, personMonths[2]);
+        double elderRate1 = eldersLost[1] / Math.max(1, elderMonths[1]);
+        double elderRate2 = eldersLost[2] / Math.max(1, elderMonths[2]);
+        System.out.printf("  deaths a year per 1,000: %.2f at x%.2f, %.2f at x%.2f; the old %.2f against %.2f%n",
+                deathRate1 * 12_000, scales[1], deathRate2 * 12_000, scales[2],
+                elderRate1 * 12_000, elderRate2 * 12_000);
+        assertTrue("...and it buries more of its people over the run", deathRate2 > deathRate1);
+        assertTrue("...its old first, whom a fee on senior care turns away", elderRate2 > elderRate1);
         check("with the fee at nothing the same city is served in full, every month",
                 servedInFullMonths[0], window, 0);
         check("...every kind of care", towns[0].getHealthcare().getAffordability(CareType.CHILDCARE)

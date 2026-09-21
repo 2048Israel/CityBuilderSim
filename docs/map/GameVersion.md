@@ -1,4 +1,4 @@
-# GameVersion.java - 663 lines · 4 methods · 4 constants · model
+# GameVersion.java - 708 lines · 4 methods · 4 constants · model
 
 `ham/citybuildersim/GameVersion.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
@@ -44,18 +44,18 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 172 | `GameVersion.VERSION` | `"0.6.9"` | Bump on release. |
-| 631 | `GameVersion.SAVE_FORMAT` | `27` | The save shape. |
-| 634 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
-| 636 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 217 | `GameVersion.VERSION` | `"0.6.10"` | Bump on release. |
+| 676 | `GameVersion.SAVE_FORMAT` | `27` | The save shape. |
+| 679 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
+| 681 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 624 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
-| 638 | 1 | `private GameVersion()` |  |
-| 641 | 3 | `public static String title()` | For the window title. |
-| 651 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
-| 660 | 3 | `public static boolean isFromBeforeSectors(int saveFormat)` | True when a save predates the sector template and so carries nothing this build can read a sector out of. |
+| 40 | 669 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
+| 683 | 1 | `private GameVersion()` |  |
+| 686 | 3 | `public static String title()` | For the window title. |
+| 696 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
+| 705 | 3 | `public static boolean isFromBeforeSectors(int saveFormat)` | True when a save predates the sector template and so carries nothing this build can read a sector out of. |
 

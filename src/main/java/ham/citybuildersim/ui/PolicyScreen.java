@@ -1139,11 +1139,16 @@ final class PolicyScreen {
         /* --------------------------- the price of money --------------------------- */
         if (px.hasRate()) {
             double advised = market.advisedPolicyRate(px.inflation());
+            double rule = market.ruleRate(px.inflation());
             if (Math.abs(advised - market.getPolicyRate()) >= .01) {
+                // The rule's own figure, and the dial's stop when that is
+                // what bounds it - see DebtManager.ruleRate() (2026-09-21).
                 out.add(new String[] {Palette.ACCENT, "The rule disagrees with the dial",
                         String.format("The policy rate is %.2f%% and the rule would set it "
-                        + "at %.2f%%. Inflation is running at %+.1f%% against a %.0f%% "
-                        + "target.", market.getPolicyRate() * 100, advised * 100,
+                        + "at %.2f%%%s. Inflation is running at %+.1f%% against a %.0f%% "
+                        + "target.", market.getPolicyRate() * 100, rule * 100,
+                        Math.abs(rule - advised) > 1e-9
+                                ? String.format(" - the dial stops at %.2f%%", advised * 100) : "",
                         px.inflation() * 100, DebtManager.INFLATION_TARGET * 100)});
             }
         }
@@ -1819,9 +1824,22 @@ final class PolicyScreen {
                 DebtManager.CITY_DISCOUNT * 100,
                 (2 * DebtManager.maxSpreadPerMeasure() - DebtManager.CITY_DISCOUNT) * 100)));
 
+        /*
+         * THE RULE, AND THE DIAL'S STOP, when they are not the same number
+         * (2026-09-21). advised is clamped to the dial; the rule is not. At
+         * 45% inflation this line read 25.00% as though the rule said so, and
+         * the rule says 67.5% - it is the dial that stops. Both, so the player
+         * can see which one is the limit. See DebtManager.ruleRate().
+         */
+        double ruleSays = market.ruleRate(inflation);
         column.getChildren().add(statementLine("What the rule would set",
-                pct2(advised), Math.abs(advised - rate) >= .01
+                pct2(ruleSays), Math.abs(advised - rate) >= .01
                         ? Palette.WARN : Palette.TEXT_MUTED));
+        if (Math.abs(ruleSays - advised) > 1e-9) {
+            column.getChildren().add(statementLine(ruleSays > advised
+                            ? "...but the dial stops at" : "...but the dial cannot go below",
+                    pct2(advised), Palette.WARN));
+        }
         column.getChildren().add(statementLine("Inflation, year on year",
                 px.hasRate() ? String.format("%+.1f%%", inflation * 100) : "not yet",
                 px.hasRate() && Math.abs(inflation - DebtManager.INFLATION_TARGET) > .01

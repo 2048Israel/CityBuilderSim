@@ -409,8 +409,8 @@ public class UserInterface extends Application {
                 + " -fx-border-color: #37474f; -fx-border-width: 0 2 0 0;");
 
         /*
-         * Date, cash and population across the top; the next debt maturities
-         * across the bottom.
+         * Date, population, prices, the rate and cash across the top; the next
+         * debt maturities across the bottom.
          *
          * Both live outside rootMenu for exactly the reason the two side panels
          * do: the menu system clears its own children on every screen change, so
@@ -1381,8 +1381,27 @@ public class UserInterface extends Application {
        THE TWO STRIPS
        ===================================================================== */
 
+    /*
+     * WHERE THE STRIP'S PRICES AND RATE CHANGE COLOUR (2026-09-21). Two
+     * readings, three colours each: the cash trend's muted grey when nothing
+     * needs saying, amber when something is drifting, red when it has gone.
+     */
+
+    /** Inflation within this many points of DebtManager.INFLATION_TARGET, either side, reads in the quiet grey. */
+    static final double STRIP_INFLATION_QUIET = .03;
+
+    /** Inflation past this, or deflation past its negative, reads red: prices are running away, or collapsing. */
+    static final double STRIP_INFLATION_ALARM = .10;
+
+    /** The currency within this of its parity (ForeignAccounts.deviationFromParity) reads grey, and so does one stronger than parity by any amount. */
+    static final double STRIP_RATE_QUIET = .05;
+
+    /** Weaker than parity by more than this reads red: a currency well below what its basket is worth abroad is the thing the player should notice. */
+    static final double STRIP_RATE_ALARM = .25;
+
     /**
-     * Date, month number, cash and population across the top.
+     * Date, month number, cash and population across the top - and, since
+     * 2026-09-21, prices and the exchange rate between the last two.
      *
      * THE MONTH NUMBER STAYS, next to the date rather than instead of it. Every
      * save, log entry, bond maturity and report in this game is keyed to the
@@ -1541,7 +1560,130 @@ public class UserInterface extends Application {
                     default          -> "#ff6b6b";
                 } + ";");
 
-        dateBar.getChildren().addAll(dateBox, gap, ratingLabel, popBox, cashBox);
+        /*
+         * PRICES AND THE RATE, between the people and the money (2026-09-21).
+         *
+         * Jerus, reading his own city's year book: "perhaps also a number
+         * visible on the screen showing both the price index and current
+         * inflation year on year, i think that would be super helpful to the
+         * player, and a proper exchange rate which tells you how many your
+         * coins equals USD or so on."
+         *
+         * His city's prices had gone 399x in twenty-five years and nothing on
+         * the screen he was always looking at said so; the figures lived on
+         * the policy page and the trade page, two clicks from anywhere. Two
+         * small panels in the anchors' shape - figure over caption - and at
+         * the population's weight rather than the anchors', because the date
+         * and the money stay the loudest things on the strip.
+         *
+         * Every figure is a public getter. The strip formats; it does not
+         * recompute - the colours read the model's own target and parity.
+         */
+        PriceIndex prices = game.getPriceIndex();
+        double index = prices.isBased() ? prices.getIndex() : 1;
+        Label indexLabel = new Label(String.format(
+                index < 100 ? "×%.2f" : "×%,.0f", index));
+        indexLabel.setStyle(STRIP_FIGURE + " -fx-text-fill: #cfd8dc;");
+        Label inflationLabel;
+        if (prices.hasRate()) {
+            double inflation = prices.inflation();
+            inflationLabel = new Label(String.format("%+.1f%% a year", inflation * 100));
+            inflationLabel.setStyle(STRIP_CAPTION + " -fx-text-fill: "
+                    + inflationColour(inflation) + ";");
+        } else {
+            inflationLabel = new Label("no year yet");
+            inflationLabel.setStyle(STRIP_CAPTION + " -fx-text-fill: " + STRIP_QUIET + ";");
+        }
+        VBox pricesBox = stripPanel(indexLabel, inflationLabel);
+        Tooltip.install(pricesBox, new Tooltip(String.format(
+                "Prices: what a household's month costs against what it cost at founding.%n"
+                + "Under it, inflation over the last twelve months. The target is %.0f%% a year.",
+                DebtManager.INFLATION_TARGET * 100)));
+
+        /*
+         * THE RATE BOTH WAYS, in the currency's own names. "US$1 = D$100.00"
+         * is how a price board quotes it; "D$1 = US¢1.00" is the question a
+         * player actually has - what is my money worth - and it is the same
+         * number upside down. Cents once a local dollar is worth less than a
+         * US one, so neither line is ever a string of leading zeros.
+         */
+        ForeignAccounts fx = game.getForeignAccounts();
+        double rate = fx.getRate();
+        Label rateLabel = new Label(Currency.FOREIGN_SYMBOL + "1 = " + Currency.QUALIFIED
+                + String.format(rate < .1 ? "%.4f" : "%,.2f", rate));
+        rateLabel.setStyle(STRIP_FIGURE + " -fx-text-fill: " + rateColour(fx) + ";");
+        double oneLocal = fx.toUsd(1);
+        Label rateBack = new Label(Currency.QUALIFIED + "1 = " + (oneLocal < 1
+                ? Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", oneLocal * 100)
+                : Currency.FOREIGN_SYMBOL + String.format("%,.2f", oneLocal)));
+        rateBack.setStyle(STRIP_CAPTION + " -fx-text-fill: " + STRIP_QUIET + ";");
+        VBox rateBox = stripPanel(rateLabel, rateBack);
+        Tooltip.install(rateBox, new Tooltip(String.format(
+                "The exchange rate: what a US dollar costs in %s, and what one of yours buys.%n"
+                + "Parity - where a basket costs the same here and abroad - is %s%.2f;"
+                + " the rate is %s.",
+                Currency.PLURAL, Currency.QUALIFIED, fx.getParity(),
+                Math.abs(fx.deviationFromParity()) * 100 < .5 ? "at parity"
+                        : String.format("%.0f%% %s than it",
+                                Math.abs(fx.deviationFromParity()) * 100,
+                                fx.deviationFromParity() > 0 ? "weaker" : "stronger"))));
+
+        /*
+         * AND WHAT GIVES WAY WHEN THE WINDOW IS NARROW: the population's flow
+         * chips, first and alone. Everything else on the strip keeps its full
+         * width - the two anchors, the rating, the population figure and the
+         * two panels above - and the chips' row may shrink to nothing, its
+         * chips shortening to an ellipsis and the row clipped at its own edge
+         * so nothing it cannot fit is painted over its neighbours. A strip
+         * that keeps the date and the money whole and loses "+12 born" is the
+         * right way round.
+         */
+        for (Region fixed : new Region[] {dateBox, cashBox, pricesBox, rateBox,
+                ratingLabel, popLabel}) {
+            fixed.setMinWidth(Region.USE_PREF_SIZE);
+        }
+        flowRow.setMinWidth(0);
+        javafx.scene.shape.Rectangle flowClip = new javafx.scene.shape.Rectangle();
+        flowClip.widthProperty().bind(flowRow.widthProperty());
+        flowClip.heightProperty().bind(flowRow.heightProperty());
+        flowRow.setClip(flowClip);
+
+        dateBar.getChildren().addAll(dateBox, gap, ratingLabel, popBox, pricesBox, rateBox, cashBox);
+    }
+
+    /** The strip's quiet colour: the cash trend's muted grey. */
+    private static final String STRIP_QUIET = "#78909c";
+
+    /** A small figure on the strip: Courier, so the digits hold their columns, at the population's weight. */
+    private static final String STRIP_FIGURE = "-fx-font-family: 'Courier New'; -fx-font-size: 14px;"
+            + " -fx-font-weight: bold;";
+
+    /** ...and the caption under it, at the size of the anchors' own captions. */
+    private static final String STRIP_CAPTION = "-fx-font-family: 'Courier New'; -fx-font-size: 11px;";
+
+    /** One of the strip's inset panels, figure over caption, in the anchors' shape at a smaller size. */
+    private VBox stripPanel(Label figure, Label caption) {
+        VBox box = new VBox(0);
+        box.setAlignment(Pos.CENTER_RIGHT);
+        box.getChildren().addAll(figure, caption);
+        box.setStyle("-fx-padding: 3 10 4 10; -fx-background-color: #26343b;"
+                + " -fx-background-radius: 4;");
+        return box;
+    }
+
+    /** Grey near the target, amber off it, red once prices run or collapse. See STRIP_INFLATION_QUIET. */
+    private static String inflationColour(double inflation) {
+        if (Math.abs(inflation) > STRIP_INFLATION_ALARM) return "#ff6b6b";
+        if (Math.abs(inflation - DebtManager.INFLATION_TARGET) > STRIP_INFLATION_QUIET) return "#ffb454";
+        return STRIP_QUIET;
+    }
+
+    /** Grey near parity or stronger, amber weaker, red well below it. See STRIP_RATE_QUIET. */
+    private static String rateColour(ForeignAccounts fx) {
+        double weaker = fx.deviationFromParity();
+        if (weaker > STRIP_RATE_ALARM) return "#ff6b6b";
+        if (weaker > STRIP_RATE_QUIET) return "#ffb454";
+        return STRIP_QUIET;
     }
 
 

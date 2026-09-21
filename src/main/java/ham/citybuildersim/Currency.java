@@ -42,6 +42,9 @@ public final class Currency {
     public static final String FOREIGN_CODE   = "USD";
     public static final String FOREIGN_SYMBOL = "US$";
 
+    /** ...and its hundredth, for what one local dollar buys once it is worth less than one of them. */
+    public static final String FOREIGN_CENT_SYMBOL = "US\u00a2";
+
     /** Local money, on a screen with no foreign figure on it. */
     public static String local(String amount) { return SYMBOL + amount; }
 

@@ -168,8 +168,53 @@ public final class GameVersion {
      * its length, so a 0.6.8 city opens on the founding basis at its own
      * share of the wage, no interest and the founding price - which is
      * exactly what that city was.
+     *
+     * 0.6.10 (2026-09-21) - THE INSTRUMENTS.
+     *
+     * Jerus, reading his own city's year book - prices 399 times founding in
+     * twenty-five years, the currency at its guard: "i think we should make
+     * it so that of the 3.5B you start with, 1B is in usd in the reserve, so
+     * you only see 2.5B start with... i think that greatly helps, since 99%
+     * players wont add to reserves most probably cause they have no clue."
+     * And: "perhaps also a number visible on the screen showing both the
+     * price index and current inflation year on year ... and a proper
+     * exchange rate which tells you how many your coins equals USD." Three
+     * things. The top strip carries prices against founding with inflation
+     * year on year under them, and the rate both ways - US$1 = D$x, D$1 =
+     * US cents or dollars - each coloured by how far it has drifted from the
+     * target and from parity. The founding endowment is the same $3.5B,
+     * split: D$2.5B in the treasury and US$1B bought into the vault on day
+     * one. And the monetary page names both figures when the rule would set a
+     * rate the dial cannot reach.
+     *
+     * And the bug found checking the first: THE VAULT WAS HELD IN THE WRONG
+     * CURRENCY. It was a local figure at the price paid, so when the currency
+     * fell a hundredfold a US$1B vault read US$10M and its import cover fell
+     * a hundredfold with it, exactly when it was needed - while the dollar
+     * debt beside it was revalued every month. The vault is kept in dollars
+     * now; its local value is those dollars at today's rate, and the move is
+     * a revaluation line beside it, not cash and not an audit flow.
+     *
+     * And the rule the founding reserve needed. Jerus: "a reserve defends a
+     * currency; it does not hold one down." The vault absorbed the pressure on
+     * the rate both ways, so a deep one muted the surplus and the policy rate
+     * - the two forces that pull a currency back out of an inflation spiral -
+     * and with the founders' dollars in it, three of the ensemble's eight
+     * seeds reproduced the year book that started this: two past 140x
+     * founding with the currency at its guard, one to 11x. It damps a push
+     * weaker only
+     * now, and no seed's prices swung more than 2.81x, against 7.13x at the
+     * worst before any of this went in.
+     *
+     * SAVE_FORMAT did not move. Slot 19 of the foreign accounts keeps its
+     * meaning - the vault's local value when saved, so an older build reads
+     * what it always read - and the dollars and the month's revaluation ride
+     * the end of the array, whose reader checks its length. A 0.6.9 city
+     * opens with its vault at the rate it was saved at, which is the only
+     * rate it has, and without the founders' dollars it never had - which is
+     * exactly what that city was.
      */
-    public static final String VERSION = "0.6.9";
+    public static final String VERSION = "0.6.10";
 
     /**
      * The save shape.

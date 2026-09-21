@@ -91,7 +91,8 @@ public class DebtManager {
     public static final double TAYLOR_WEIGHT = 1.5;
 
     /**
-     * What a rule would set, given this month's inflation.
+     * What a rule would set, given this month's inflation, held inside the
+     * dial's bounds - ruleRate() is the rule before them.
      *
      * INFLATION ONLY, WITH NO OUTPUT GAP, and that is a judgement about this
      * model rather than about monetary policy. A Taylor rule normally carries a
@@ -105,22 +106,49 @@ public class DebtManager {
      * anything on its own.
      */
     public double advisedPolicyRate(double inflation) {
-        double advised = NEUTRAL_RATE + TAYLOR_WEIGHT * (inflation - INFLATION_TARGET);
-        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, advised));
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, ruleRate(inflation)));
     }
 
-    /** ...and why, in words, for the screen. */
+    /**
+     * What the rule itself says, before the dial's bounds (2026-09-21).
+     *
+     * advisedPolicyRate() is clamped to the dial, which is right for anything
+     * that SETS the dial and wrong for a sentence about it: at 45% inflation
+     * the monetary page said "the rule says 25.00%" when the rule says 67.5%
+     * and it is the dial that stops at 25%. A player reading that could not
+     * tell which of the two was the limit. The screens print both when they
+     * differ. The cap is Jerus's and stays (2026-09-21): it lifts when the
+     * money supply gives the rate a channel to work through.
+     */
+    public double ruleRate(double inflation) {
+        return NEUTRAL_RATE + TAYLOR_WEIGHT * (inflation - INFLATION_TARGET);
+    }
+
+    /**
+     * ...and why, in words, for the screen. Past either stop it names both
+     * figures, the rule's and the dial's, because they are then not the same
+     * number and only one of them is the limit.
+     */
     public String adviceReason(double inflation) {
         double advised = advisedPolicyRate(inflation);
         if (Math.abs(inflation - INFLATION_TARGET) < .002) {
             return String.format("Inflation is %.1f%%, on its %.0f%% target. Hold at %.2f%%.",
                     inflation * 100, INFLATION_TARGET * 100, advised * 100);
         }
+        double rule = ruleRate(inflation);
+        String says = rule > MAX_POLICY_RATE
+                ? String.format("the rule would set %.1f%%; the dial stops at %.0f%% until the "
+                        + "money supply is modelled", rule * 100, MAX_POLICY_RATE * 100)
+                : rule < MIN_POLICY_RATE
+                ? String.format("the rule would set %.1f%%; the dial stops at %.0f%%, because no "
+                        + "central bank sets a negative rate by typing one",
+                        rule * 100, MIN_POLICY_RATE * 100)
+                : String.format("the rule says %.2f%%", advised * 100);
         return String.format(
-                "Inflation is %.1f%% against a %.0f%% target, so the rule says %.2f%% "
+                "Inflation is %.1f%% against a %.0f%% target, so %s "
                 + "- %s a point of inflation by %.1f points of rate, which is what it "
                 + "takes to make money genuinely dearer rather than only nominally.",
-                inflation * 100, INFLATION_TARGET * 100, advised * 100,
+                inflation * 100, INFLATION_TARGET * 100, says,
                 inflation > INFLATION_TARGET ? "meeting" : "giving back",
                 TAYLOR_WEIGHT);
     }
@@ -441,8 +469,9 @@ public class DebtManager {
      *
      * THIS REPLACED A RESERVE-COVER TERM, and the reason is worth recording.
      * Cover was the obvious measure and it was wrong twice over: importCover()
-     * returns 0 for any city whose cumulative foreign position is negative,
-     * which is most of them and says nothing about creditworthiness, and it
+     * returned 0 for any city whose cumulative foreign position was negative
+     * (the vault and the cumulative balance were one number then), which was
+     * most of them and said nothing about creditworthiness, and it
      * meant a city with NO foreign debt at all was quoted a 5.6% risk premium
      * for the privilege of not owing anybody anything. Measured, on a fixture
      * that had never borrowed a dollar.

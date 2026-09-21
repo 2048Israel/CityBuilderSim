@@ -1,4 +1,4 @@
-# Currency.java - 58 lines · 5 methods · 8 constants · model
+# Currency.java - 61 lines · 5 methods · 9 constants · model
 
 `ham/citybuildersim/Currency.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
@@ -21,7 +21,7 @@
 > buy a house; they should be made to read one the instant a foreign price is
 > on the same line, because that is the instant it matters.
 
-**Used by (7):** [Denomination](Denomination.md), [FinancesScreen](FinancesScreen.md), [HistoryScreen](HistoryScreen.md), [Money](Money.md), [PolicyScreen](PolicyScreen.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (9):** [Denomination](Denomination.md), [FinancesScreen](FinancesScreen.md), [HistoryScreen](HistoryScreen.md), [LongPlaytest](LongPlaytest.md), [Money](Money.md), [PolicyScreen](PolicyScreen.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Constants
 
@@ -35,15 +35,16 @@
 | 41 | `Currency.FOREIGN_NAME` | `"US dollar"` | The world's money, which the game holds exactly one of. |
 | 42 | `Currency.FOREIGN_CODE` | `"USD"` |  |
 | 43 | `Currency.FOREIGN_SYMBOL` | `"US$"` |  |
+| 46 | `Currency.FOREIGN_CENT_SYMBOL` | `"US\u00a2"` | ...and its hundredth, for what one local dollar buys once it is worth less than one of them. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 25 | 34 | **type** `public final class Currency` | What the city's money is called, and how it is written. |
+| 25 | 37 | **type** `public final class Currency` | What the city's money is called, and how it is written. |
 | 27 | 1 | `private Currency()` |  |
-| 46 | 1 | `public static String local(String amount)` | Local money, on a screen with no foreign figure on it. |
-| 49 | 1 | `public static String qualified(String amount)` | Local money, on a screen that also shows dollars. |
-| 52 | 1 | `public static String foreign(String amount)` | Foreign money, always marked, because it is never the default here. |
-| 55 | 3 | `public static String rateUnit()` | "Danzik dollars per US dollar", as the exchange rate's unit. |
+| 49 | 1 | `public static String local(String amount)` | Local money, on a screen with no foreign figure on it. |
+| 52 | 1 | `public static String qualified(String amount)` | Local money, on a screen that also shows dollars. |
+| 55 | 1 | `public static String foreign(String amount)` | Foreign money, always marked, because it is never the default here. |
+| 58 | 3 | `public static String rateUnit()` | "Danzik dollars per US dollar", as the exchange rate's unit. |
 

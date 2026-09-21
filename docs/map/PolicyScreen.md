@@ -1,4 +1,4 @@
-# PolicyScreen.java - 2,899 lines · 60 methods · 8 constants · interface
+# PolicyScreen.java - 2,917 lines · 60 methods · 8 constants · interface
 
 `ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
@@ -16,7 +16,7 @@
 > stageSlider, dropProposal, pinnedBands) because other screens offer the same
 > levers.
 
-**Uses:** [Palette](Palette.md) (380), [TaxPolicy](TaxPolicy.md) (76), [WageBand](WageBand.md) (24), [Sector](Sector.md) (16), [DebtManager](DebtManager.md) (16), [EconomyManager](EconomyManager.md) (15), [JobType](JobType.md) (11), [Money](Money.md) (11), [CareType](CareType.md) (10), [LabourMarket](LabourMarket.md) (8), [Education](Education.md) (8), [Denomination](Denomination.md) (8), [SectorBooks](SectorBooks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [EducationType](EducationType.md) (6), [Currency](Currency.md) (5), [Sectors](Sectors.md) (4), [FamilyModel](FamilyModel.md) (4), [SalesTaxLedger](SalesTaxLedger.md) (3), [PopulationManager](PopulationManager.md) (3), [PayTier](PayTier.md) (3), [UserInterface](UserInterface.md) (2), [PriceIndex](PriceIndex.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Healthcare](Healthcare.md) (2), [Bank](Bank.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Game](Game.md) (1), [WorldEconomy](WorldEconomy.md) (1)... and 5 more
+**Uses:** [Palette](Palette.md) (381), [TaxPolicy](TaxPolicy.md) (76), [WageBand](WageBand.md) (24), [Sector](Sector.md) (16), [DebtManager](DebtManager.md) (16), [EconomyManager](EconomyManager.md) (15), [JobType](JobType.md) (11), [Money](Money.md) (11), [CareType](CareType.md) (10), [LabourMarket](LabourMarket.md) (8), [Education](Education.md) (8), [Denomination](Denomination.md) (8), [SectorBooks](SectorBooks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [EducationType](EducationType.md) (6), [Currency](Currency.md) (5), [Sectors](Sectors.md) (4), [FamilyModel](FamilyModel.md) (4), [SalesTaxLedger](SalesTaxLedger.md) (3), [PopulationManager](PopulationManager.md) (3), [PayTier](PayTier.md) (3), [UserInterface](UserInterface.md) (2), [PriceIndex](PriceIndex.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Healthcare](Healthcare.md) (2), [Bank](Bank.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Game](Game.md) (1), [WorldEconomy](WorldEconomy.md) (1)... and 5 more
 
 **Used by (2):** [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
@@ -43,36 +43,36 @@
 | 1116 | · · pensions |
 | 1125 | · · subsidies |
 | 1139 | · · the price of money |
-| 1151 | · · the money itself |
-| 1159 | · · at the stops |
-| 1231 | ONE SUBJECT, ITS OWN STRIP |
-| 1315 | THE PIECES A LEVER IS MADE OF |
-| 1421 | TAXES - the two rates |
-| 1497 | · the arithmetic behind it |
-| 1584 | TAXES - by wage band |
-| 1636 | TAXES - by sector |
-| 1640 | WAGES - the floor |
-| 1673 | · · the ladder |
-| 1700 | · · who is pinned |
-| 1725 | · · and the city's own bill |
-| 1769 | MONEY - the policy rate |
-| 1855 | · · prices, in words |
-| 1861 | · · where it has been |
-| 1951 | MONEY - the currency reform |
-| 2078 | PROMISES - the pension |
-| 2129 | · · and what it does to people |
-| 2162 | · · what workers pay |
-| 2194 | · · what seniors receive |
-| 2235 | PROMISES - the schools: the price of a place, who pays it, and the |
-| 2309 | · · the five levers, registered for the one bar |
-| 2325 | · · what a family has to find |
-| 2368 | · · the schools this month |
-| 2383 | · · the price of a place |
-| 2426 | · · the grant |
-| 2506 | · · the loan |
-| 2553 | PROMISES - the out of work and the students (2026-09-11) |
-| 2654 | PROMISES - the clinic's price, and a premium (2026-09-19) |
-| 2827 | PROMISES - the standing subsidies |
+| 1156 | · · the money itself |
+| 1164 | · · at the stops |
+| 1236 | ONE SUBJECT, ITS OWN STRIP |
+| 1320 | THE PIECES A LEVER IS MADE OF |
+| 1426 | TAXES - the two rates |
+| 1502 | · the arithmetic behind it |
+| 1589 | TAXES - by wage band |
+| 1641 | TAXES - by sector |
+| 1645 | WAGES - the floor |
+| 1678 | · · the ladder |
+| 1705 | · · who is pinned |
+| 1730 | · · and the city's own bill |
+| 1774 | MONEY - the policy rate |
+| 1873 | · · prices, in words |
+| 1879 | · · where it has been |
+| 1969 | MONEY - the currency reform |
+| 2096 | PROMISES - the pension |
+| 2147 | · · and what it does to people |
+| 2180 | · · what workers pay |
+| 2212 | · · what seniors receive |
+| 2253 | PROMISES - the schools: the price of a place, who pays it, and the |
+| 2327 | · · the five levers, registered for the one bar |
+| 2343 | · · what a family has to find |
+| 2386 | · · the schools this month |
+| 2401 | · · the price of a place |
+| 2444 | · · the grant |
+| 2524 | · · the loan |
+| 2571 | PROMISES - the out of work and the students (2026-09-11) |
+| 2672 | PROMISES - the clinic's price, and a premium (2026-09-19) |
+| 2845 | PROMISES - the standing subsidies |
 
 ## Constants
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 2867 | **type** `final class PolicyScreen` | The policy tab: the four rows of levers - taxes, wages, money, promises - the staged set every dial writes into, the ladder and the batch preview that show what a proposal would cost before it is applied, and the page... |
+| 33 | 2885 | **type** `final class PolicyScreen` | The policy tab: the four rows of levers - taxes, wages, money, promises - the staged set every dial writes into, the ladder and the batch preview that show what a proposal would cost before it is applied, and the page... |
 | 38 | 1 | `PolicyScreen(UserInterface ui)` |  |
 
 ### THE POLICY TAB (lines 40-98)
@@ -176,7 +176,7 @@
 |---:|---:|---|---|
 | 828 | 90 | `void propertyTaxPage(VBox column)` |  |
 
-### THE LANDING (lines 919-1230)
+### THE LANDING (lines 919-1235)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -185,101 +185,101 @@
 | 1009 | 7 | `double promisesCost()` | What the three promises cost the treasury in a month, net of what they collect. |
 | 1017 | 9 | `int pinnedBands()` |  |
 | 1027 | 23 | `HBox policyVitals()` |  |
-| 1058 | 110 | `java.util.List<String[]> policyFlags()` | The levers that are currently forcing something. |
-| 1169 | 17 | `VBox flagLine(String tone, String heading, String body)` |  |
-| 1187 | 43 | `HBox policyRow(String name, String blurb, String figure, String sub, String tone, String area, String page)` |  |
+| 1058 | 115 | `java.util.List<String[]> policyFlags()` | The levers that are currently forcing something. |
+| 1174 | 17 | `VBox flagLine(String tone, String heading, String body)` |  |
+| 1192 | 43 | `HBox policyRow(String name, String blurb, String figure, String sub, String tone, String area, String page)` |  |
 
-### ONE SUBJECT, ITS OWN STRIP (lines 1231-1314)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1235 | 79 | `void drawPolicyScreen()` |  |
-
-### THE PIECES A LEVER IS MADE OF (lines 1315-1420)
+### ONE SUBJECT, ITS OWN STRIP (lines 1236-1319)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1350 | 48 | `VBox stageSlider(String key, double current, double min, double max, double step, java.util.function.DoubleFunction<String> label)` | The lever itself: a slider that STAGES a change rather than making one. |
-| 1400 | 20 | `HBox applyBar(String label, Runnable apply)` | Apply, or put it back. |
+| 1240 | 79 | `void drawPolicyScreen()` |  |
 
-### TAXES - the two rates (lines 1421-1496)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1440 | 56 | `void farmlandRelief(javafx.scene.layout.VBox column, Game game, TaxPolicy policy, EconomyManager em)` | The one dial that decides whether the city keeps its fields. |
-
-### the arithmetic behind it (lines 1497-1583)
+### THE PIECES A LEVER IS MADE OF (lines 1320-1425)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1499 | 3 | `static double scaled(double amount, double factor)` |  |
-| 1504 | 15 | `double profitFactor(TaxPolicy policy, double from, double to)` | How the profit tax moves with the base rate, weighted by what each sector paid. |
-| 1521 | 13 | `double salesFactor(TaxPolicy policy, double from, double to)` | ...and the sales tax, weighted by what each sector actually sold. |
-| 1543 | 3 | `double wageTaxAtBase(TaxPolicy policy, double base)` | The wage tax, recomputed rather than scaled. |
-| 1553 | 3 | `double wageTaxWith(TaxPolicy policy, WageBand band, double base, double offset)` |  |
-| 1557 | 16 | `double wageTaxWith(TaxPolicy policy, WageBand band, double base, double offset, WageBand onlyBand)` |  |
-| 1575 | 8 | `double payrollIn(WageBand band)` | The payroll a band carries, which is what its rate is charged on. |
+| 1355 | 48 | `VBox stageSlider(String key, double current, double min, double max, double step, java.util.function.DoubleFunction<String> label)` | The lever itself: a slider that STAGES a change rather than making one. |
+| 1405 | 20 | `HBox applyBar(String label, Runnable apply)` | Apply, or put it back. |
 
-### TAXES - by wage band (lines 1584-1635)
+### TAXES - the two rates (lines 1426-1501)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1604 | 31 | `VBox bandLever(String name, String offset, String effective, String note, double signedOffset)` | The heading row of one band or one sector's line: what it is, and where it sits. |
+| 1445 | 56 | `void farmlandRelief(javafx.scene.layout.VBox column, Game game, TaxPolicy policy, EconomyManager em)` | The one dial that decides whether the city keeps its fields. |
 
-### TAXES - by sector (lines 1636-1639)
-
-### WAGES - the floor (lines 1640-1768)
+### the arithmetic behind it (lines 1502-1588)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1656 | 103 | `void minimumWagePage(VBox column)` |  |
-| 1761 | 7 | `double bestWageIn(LabourMarket market, WageBand band)` | The best-paid job somebody in this band can hold. |
+| 1504 | 3 | `static double scaled(double amount, double factor)` |  |
+| 1509 | 15 | `double profitFactor(TaxPolicy policy, double from, double to)` | How the profit tax moves with the base rate, weighted by what each sector paid. |
+| 1526 | 13 | `double salesFactor(TaxPolicy policy, double from, double to)` | ...and the sales tax, weighted by what each sector actually sold. |
+| 1548 | 3 | `double wageTaxAtBase(TaxPolicy policy, double base)` | The wage tax, recomputed rather than scaled. |
+| 1558 | 3 | `double wageTaxWith(TaxPolicy policy, WageBand band, double base, double offset)` |  |
+| 1562 | 16 | `double wageTaxWith(TaxPolicy policy, WageBand band, double base, double offset, WageBand onlyBand)` |  |
+| 1580 | 8 | `double payrollIn(WageBand band)` | The payroll a band carries, which is what its rate is charged on. |
 
-### MONEY - the policy rate (lines 1769-1950)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1782 | 168 | `void policyRatePage(VBox column)` |  |
-
-### MONEY - the currency reform (lines 1951-2077)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1976 | 93 | `void currencyReformPage(VBox column)` | THE CURRENCY REFORM, which is a change of units and says so. |
-| 2071 | 6 | `static String afterName(Denomination unit, double factor)` | What the money would be called after lopping by this factor. |
-
-### PROMISES - the pension (lines 2078-2234)
+### TAXES - by wage band (lines 1589-1640)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2093 | 141 | `void pensionPage(VBox column)` |  |
+| 1609 | 31 | `VBox bandLever(String name, String offset, String effective, String note, double signedOffset)` | The heading row of one band or one sector's line: what it is, and where it sits. |
 
-### PROMISES - the schools: the price of a place, who pays it, and the (lines 2235-2552)
+### TAXES - by sector (lines 1641-1644)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 2268 | 9 | `static String grantWords(TaxPolicy.GrantBasis basis, double amount)` | The grant in words, for a line that names it: "15% of an unskilled wage a month". |
-| 2279 | 8 | `static String basisName(TaxPolicy.GrantBasis basis)` | What a basis is called on its chip. |
-| 2289 | 4 | `static String amountWords(TaxPolicy.GrantBasis basis, double amount)` | How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. |
-| 2294 | 252 | `void schoolsPage(VBox column)` |  |
-| 2548 | 4 | `Lever register(Lever lever)` | A dial on this page, registered so the foot bar can name and apply it. |
-
-### PROMISES - the out of work and the students (2026-09-11) (lines 2553-2653)
+### WAGES - the floor (lines 1645-1773)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2565 | 83 | `void outOfWorkPage(VBox column)` |  |
-| 2649 | 4 | `static String burdenTone(double share)` |  |
+| 1661 | 103 | `void minimumWagePage(VBox column)` |  |
+| 1766 | 7 | `double bestWageIn(LabourMarket market, WageBand band)` | The best-paid job somebody in this band can hold. |
 
-### PROMISES - the clinic's price, and a premium (2026-09-19) (lines 2654-2826)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2673 | 153 | `void healthPage(VBox column)` |  |
-
-### PROMISES - the standing subsidies (lines 2827-2899)
+### MONEY - the policy rate (lines 1774-1968)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2836 | 63 | `void subsidyPage(VBox column)` |  |
+| 1787 | 181 | `void policyRatePage(VBox column)` |  |
+
+### MONEY - the currency reform (lines 1969-2095)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1994 | 93 | `void currencyReformPage(VBox column)` | THE CURRENCY REFORM, which is a change of units and says so. |
+| 2089 | 6 | `static String afterName(Denomination unit, double factor)` | What the money would be called after lopping by this factor. |
+
+### PROMISES - the pension (lines 2096-2252)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2111 | 141 | `void pensionPage(VBox column)` |  |
+
+### PROMISES - the schools: the price of a place, who pays it, and the (lines 2253-2570)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2286 | 9 | `static String grantWords(TaxPolicy.GrantBasis basis, double amount)` | The grant in words, for a line that names it: "15% of an unskilled wage a month". |
+| 2297 | 8 | `static String basisName(TaxPolicy.GrantBasis basis)` | What a basis is called on its chip. |
+| 2307 | 4 | `static String amountWords(TaxPolicy.GrantBasis basis, double amount)` | How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. |
+| 2312 | 252 | `void schoolsPage(VBox column)` |  |
+| 2566 | 4 | `Lever register(Lever lever)` | A dial on this page, registered so the foot bar can name and apply it. |
+
+### PROMISES - the out of work and the students (2026-09-11) (lines 2571-2671)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2583 | 83 | `void outOfWorkPage(VBox column)` |  |
+| 2667 | 4 | `static String burdenTone(double share)` |  |
+
+### PROMISES - the clinic's price, and a premium (2026-09-19) (lines 2672-2844)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2691 | 153 | `void healthPage(VBox column)` |  |
+
+### PROMISES - the standing subsidies (lines 2845-2917)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2854 | 63 | `void subsidyPage(VBox column)` |  |
 

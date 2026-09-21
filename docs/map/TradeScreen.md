@@ -1,4 +1,4 @@
-# TradeScreen.java - 1,715 lines · 26 methods · 5 constants · interface
+# TradeScreen.java - 1,764 lines · 26 methods · 5 constants · interface
 
 `ham/citybuildersim/ui/TradeScreen.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
@@ -11,7 +11,7 @@
 > (tradeArea, tradePage) for the rail, and the services screen borrows
 > bandMeter() for two of its gauges.
 
-**Uses:** [Palette](Palette.md) (261), [ForeignAccounts](ForeignAccounts.md) (24), [CapitalFlows](CapitalFlows.md) (8), [Currency](Currency.md) (4), [UserInterface](UserInterface.md) (2), [Equity](Equity.md) (2), [Good](Good.md) (2), [OutwardInvestment](OutwardInvestment.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Exchange](Exchange.md) (1), [EconomyManager](EconomyManager.md) (1), [WorldEconomy](WorldEconomy.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Palette](Palette.md) (266), [ForeignAccounts](ForeignAccounts.md) (25), [CapitalFlows](CapitalFlows.md) (8), [Currency](Currency.md) (5), [UserInterface](UserInterface.md) (2), [Equity](Equity.md) (2), [Game](Game.md) (2), [Good](Good.md) (2), [OutwardInvestment](OutwardInvestment.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Exchange](Exchange.md) (1), [EconomyManager](EconomyManager.md) (1), [WorldEconomy](WorldEconomy.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -38,16 +38,16 @@
 | 958 | · (untitled) |
 | 987 | · · the hot money |
 | 1022 | · (untitled) |
-| 1116 | · · what it does to the cover |
-| 1177 | THE CURRENCY |
-| 1231 | · · what it means |
-| 1267 | · (untitled) |
-| 1368 | · · what it comes to |
-| 1420 | WHAT WE TRADE |
-| 1450 | · · at what price |
-| 1492 | · · what moved |
-| 1513 | · (untitled) |
-| 1585 | THE THREE QUIET GAUGES |
+| 1162 | · · what it does to the cover |
+| 1223 | THE CURRENCY |
+| 1277 | · · what it means |
+| 1313 | · (untitled) |
+| 1416 | · · what it comes to |
+| 1469 | WHAT WE TRADE |
+| 1499 | · · at what price |
+| 1541 | · · what moved |
+| 1562 | · (untitled) |
+| 1634 | THE THREE QUIET GAUGES |
 
 ## Constants
 
@@ -66,14 +66,14 @@
 | 34 | `private final UserInterface ui` | The window this screen draws into: its game, its root, its clearMenu(). |
 | 66 | `String tradeArea` | null is the landing |
 | 68 | `String tradePage` |  |
-| 1174 | `boolean tradeBuying` |  |
-| 1175 | `double tradeExchange` |  |
+| 1220 | `boolean tradeBuying` |  |
+| 1221 | `double tradeExchange` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 1685 | **type** `final class TradeScreen` | The Trade & the world tab: the landing with its vitals, the month as a river, the reserves, the currency, what we trade, and the three quiet gauges. |
+| 31 | 1734 | **type** `final class TradeScreen` | The Trade & the world tab: the landing with its vitals, the month as a river, the reserves, the currency, what we trade, and the three quiet gauges. |
 | 36 | 1 | `TradeScreen(UserInterface ui)` |  |
 
 ### TRADE & THE WORLD (lines 38-284)
@@ -120,45 +120,45 @@
 |---:|---:|---|---|
 | 960 | 61 | `void reserveCoverPage(VBox column)` |  |
 
-### (untitled) (lines 1022-1176)
+### (untitled) (lines 1022-1222)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1035 | 138 | `void exchangePage(VBox column)` | TURNING RESERVES INTO CASH, AND CASH INTO RESERVES. |
+| 1035 | 184 | `void exchangePage(VBox column)` | TURNING RESERVES INTO CASH, AND CASH INTO RESERVES. |
 
-### THE CURRENCY (lines 1177-1266)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1181 | 85 | `void currencyRatePage(VBox column)` |  |
-
-### (untitled) (lines 1267-1419)
+### THE CURRENCY (lines 1223-1312)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1269 | 137 | `void currencyForcesPage(VBox column)` |  |
-| 1414 | 5 | `void forceLine(VBox column, String label, String value, String tone, String what)` | A reading, and the sentence that says what it means, under it. |
+| 1227 | 85 | `void currencyRatePage(VBox column)` |  |
 
-### WHAT WE TRADE (lines 1420-1512)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1424 | 76 | `void tradeGoodsPage(VBox column)` |  |
-| 1501 | 11 | `int priceRow(javafx.scene.layout.GridPane table, int line, String label, double worldPrice, double rate, boolean earned)` |  |
-
-### (untitled) (lines 1513-1584)
+### (untitled) (lines 1313-1468)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1515 | 69 | `void tradeRecordPage(VBox column)` |  |
+| 1315 | 140 | `void currencyForcesPage(VBox column)` |  |
+| 1463 | 5 | `void forceLine(VBox column, String label, String value, String tone, String what)` | A reading, and the sentence that says what it means, under it. |
 
-### THE THREE QUIET GAUGES (lines 1585-1715)
+### WHAT WE TRADE (lines 1469-1561)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1602 | 4 | `String coverReading(double months)` | Import cover, in words a player can act on. |
-| 1607 | 13 | `VBox coverMeter(ForeignAccounts fx)` |  |
-| 1621 | 14 | `VBox backingMeter(ForeignAccounts fx, CapitalFlows hot)` |  |
-| 1636 | 10 | `VBox parityMeter(ForeignAccounts fx)` |  |
-| 1655 | 60 | `VBox bandMeter(String label, String reading, double at, double[] edges, String[] tones, String note, boolean muted)` | A meter with named bands and the city's mark on it. |
+| 1473 | 76 | `void tradeGoodsPage(VBox column)` |  |
+| 1550 | 11 | `int priceRow(javafx.scene.layout.GridPane table, int line, String label, double worldPrice, double rate, boolean earned)` |  |
+
+### (untitled) (lines 1562-1633)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1564 | 69 | `void tradeRecordPage(VBox column)` |  |
+
+### THE THREE QUIET GAUGES (lines 1634-1764)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1651 | 4 | `String coverReading(double months)` | Import cover, in words a player can act on. |
+| 1656 | 13 | `VBox coverMeter(ForeignAccounts fx)` |  |
+| 1670 | 14 | `VBox backingMeter(ForeignAccounts fx, CapitalFlows hot)` |  |
+| 1685 | 10 | `VBox parityMeter(ForeignAccounts fx)` |  |
+| 1704 | 60 | `VBox bandMeter(String label, String reading, double at, double[] edges, String[] tones, String note, boolean muted)` | A meter with named bands and the city's mark on it. |
 

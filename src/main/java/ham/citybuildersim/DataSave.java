@@ -712,10 +712,12 @@ public class DataSave {
      * is measured against, how many months have been counted into it, and the
      * exchange rate.
      *
-     * All STOCKS. The reserve is the accumulation of every month that has ever
-     * crossed the city's edge and cannot be recovered from the month the save
-     * was taken in; the trailing import figure is an average of months that have
-     * gone. See ForeignAccounts.
+     * All STOCKS, and more than the four named: the cumulative balance is the
+     * accumulation of every month that has ever crossed the city's edge and
+     * cannot be recovered from the month the save was taken in; the trailing
+     * import figure is an average of months that have gone; the vault's dollars
+     * and its revaluation ride the end of the array. The slots are listed at
+     * ForeignAccounts.toSaveArray().
      */
     private double[] foreignAccounts;
 

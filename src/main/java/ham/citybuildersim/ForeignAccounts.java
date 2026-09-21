@@ -37,25 +37,52 @@ package ham.citybuildersim;
  *   4. Capital flows: the carry trade in, sudden stops out, straight into the
  *      bank's deposits.
  *
+ * ALL FOUR ARE BUILT, and the list is kept as the plan it was. The rate
+ * floats (repriceCurrency(), WHAT MOVES THE RATE); the treasury borrows in
+ * dollars (WHAT THE CITY OWES ABROAD, and DebtManager's foreign paper); the
+ * hot money and the carry trade are CapitalFlows.
+ *
  * See claude/foreign-exchange-design.md.
  *
  * ==================== WHAT A RESERVE IS, TODAY ====================
  *
- * A MEASUREMENT, not a pot of money, and that distinction is what keeps phase
- * one honest. The dollars a mill earns exporting steel land in the mill's cash,
- * exactly as they did yesterday; nothing was taken away and put somewhere else.
- * The reserve is the CUMULATIVE NET FOREIGN POSITION - what the city has earned
- * abroad less what it has spent there - and it is deliberately not one of
- * MoneyAudit's pools, because adding the same dollar to a pool as well as to the
- * sector that earned it would create money.
+ * TWO NUMBERS, which were one number until the split (TWO NUMBERS THAT WERE
+ * ONE NUMBER, below).
  *
- * In phase two, when the treasury can actually buy and sell foreign currency to
- * defend a rate, it becomes a real holding and the flows change. Not yet.
+ * THE VAULT is a holding: the US dollars the treasury chose to buy and has
+ * not yet sold. Only the treasury buying and selling moves it (buyReserves(),
+ * sellReserves()), it cannot go below zero, and it is KEPT IN DOLLARS -
+ * reservesUsd - so everything local about it, what it is worth, what can be
+ * sold, the import cover and the net position, is those dollars at today's
+ * rate. When the currency moves the dollars stay put, and the move in their
+ * local value is booked beside the vault as a revaluation (revalueVault()),
+ * in the dollar debt's shape: not cash, and not an audit flow. A new city
+ * opens with the founders' US$1B in it (Game's THE FOUNDING RESERVE), and it
+ * damps the pressure on the rate only when the push would weaken the currency
+ * (A RESERVE DEFENDS A CURRENCY, at effectivePressure()).
  *
- * A NEGATIVE reserve is not a bug. It means the city has bought more abroad than
- * it has sold, and is living on foreign credit that phase three has not modelled
- * yet. A young city importing its construction materials and exporting nothing
- * is exactly that, and the number saying so is the point.
+ * THE RECORD is the cumulative balance: every month's balance of payments,
+ * added up since founding - what the city has earned abroad less what it has
+ * spent there. A MEASUREMENT, not a pot of money. The dollars a mill earns
+ * exporting steel land in the mill's cash, and nothing takes them away and
+ * puts them somewhere else; so it is deliberately not one of MoneyAudit's
+ * pools, because adding the same dollar to a pool as well as to the sector
+ * that earned it would create money - and that is why a city with a surplus
+ * can still have an empty vault. It CAN go negative, and that is not a bug: a
+ * young city importing its construction materials and exporting nothing is
+ * exactly that, and the number saying so is the point. balanceFromFlows() is
+ * its identity.
+ *
+ * THE HISTORY, because each step replaced the one before. In phase one the
+ * reserve WAS the record - a measurement that could go negative, "living on
+ * foreign credit that phase three has not modelled yet" - and it was to
+ * become a real holding once the treasury could buy and sell. When it could,
+ * the one field held both, and the conflation surfaced three times before it
+ * was split. The vault that came out of the split was a LOCAL figure at the
+ * price paid, so a hundredfold fall in the currency turned a US$1B vault into
+ * US$10M and took its import cover down with it - until 2026-09-21, when it
+ * was put in the money it actually is (THE VAULT IS HELD IN DOLLARS, in the
+ * banner TWO NUMBERS THAT WERE ONE NUMBER below).
  */
 public class ForeignAccounts {
 
@@ -207,9 +234,9 @@ public class ForeignAccounts {
      */
     public static final double OPENING_PARITY = 1.00;
 
+    /** Save slot 18. Not derivable: the local level it was struck from is a stock. */
     private double parity = OPENING_PARITY;
 
-    /** Save slot 19. Not derivable: the local level it was struck from is a stock. */
     private double localInflation, worldInflation;
 
     /**
@@ -349,11 +376,15 @@ public class ForeignAccounts {
      * How much of it the reserve absorbs.
      *
      * A city with six months of import cover takes almost none of the hit; one
-     * with nothing takes all of it. Only a SURPLUS position can absorb anything
-     * - a city already in net debt to the world has nothing to spend.
+     * with nothing takes all of it. Only dollars in the vault can absorb
+     * anything - an empty vault has nothing to spend, whatever the city owes or
+     * is owed abroad.
+     *
+     * The vault's CAPACITY: effectivePressure() applies it, and since
+     * 2026-09-21 only to a push that would weaken the currency.
      */
     public double absorption() {
-        if (reserves <= 0) return 0;
+        if (reservesUsd <= 0) return 0;
         double cover = importCover();
         if (cover == Double.MAX_VALUE) return MAX_ABSORPTION;
         return MAX_ABSORPTION * Math.max(0, Math.min(1, cover / COMFORTABLE_COVER));
@@ -399,10 +430,44 @@ public class ForeignAccounts {
         return Math.max(-MAX_RATE_PRESSURE, Math.min(MAX_RATE_PRESSURE, raw));
     }
 
-    /** The pressure that actually reaches the rate this month. */
+    /**
+     * The pressure that actually reaches the rate this month.
+     *
+     * ==================== A RESERVE DEFENDS A CURRENCY ====================
+     *
+     * Jerus, 2026-09-21: "a reserve defends a currency; it does not hold one
+     * down." So the vault absorbs a push only when the push would WEAKEN the
+     * currency - the total, trade term plus the rate's support, positive. A
+     * push the other way, appreciation from a surplus or the support of a
+     * policy rate paid over the world's, passes through undamped.
+     *
+     * IT WAS DAMPED BOTH WAYS, and nobody could see it while the vault was
+     * small. Nothing about a stock of dollars resists a currency rising: a
+     * central bank leans against appreciation by BUYING dollars, which is a
+     * decision, not something its vault does by standing there. Damped both
+     * ways, a deep vault muted the only two forces that pull a currency back
+     * from an inflation spiral - the surplus a weak currency earns, and the
+     * policy rate - and left the drift, which carries the rate up with local
+     * prices and import prices up with the rate. The old vault was held at
+     * the price paid, so its cover fell as the currency fell and the damping
+     * let go when it mattered: a stabiliser by accident, gone the day the
+     * vault was kept in dollars. The founding reserve then gave every young
+     * city hundreds of months of cover and the 0.85 ceiling for decades.
+     *
+     * Measured over the ensemble's eight seeds, founding reserve in: damped
+     * both ways, three of the eight reproduced the year book that started the
+     * batch - prices 141x and 190x founding with the currency at its guard,
+     * and 11x - and the median swing of the price level went from 1.63x to
+     * 3.80x. Damped on the way down only: median 1.60x, none past 2.81x
+     * (the pristine runs' worst was 7.13x), and the dearest dollar 1.65.
+     *
+     * lastAbsorption is what was APPLIED - nothing on a month the currency was
+     * pushed up - so the screens and the save say what the vault did, not
+     * what it could have done. absorption() is still the vault's capacity.
+     */
     public double effectivePressure() {
         lastPressure = pressure() + ratePressure();
-        lastAbsorption = absorption();
+        lastAbsorption = lastPressure > 0 ? absorption() : 0;
         return lastPressure * (1 - lastAbsorption) * openness;
     }
 
@@ -541,8 +606,31 @@ public class ForeignAccounts {
        with the firms that earned them, which is why a country with a trade
        surplus can still run out of reserves. This is what import cover is
        measured against and what a currency defence is fought with.
+
+       THE VAULT IS HELD IN DOLLARS (2026-09-21).
+
+       Jerus, reading his own city's year book - prices 399x founding in 25
+       years, the currency at its 100x guard: "i think we should make it so
+       that of the 3.5B you start with, 1B is in usd in the reserve ... i think
+       that greatly helps, since 99% players wont add to reserves most
+       probably cause they have no clue."
+
+       Checking that first found the vault in the wrong currency. It was a
+       LOCAL figure at the price paid - buyReserves() added the local cash
+       spent, and getReservesUsd() divided by today's rate - so when the
+       currency fell a hundredfold a US$1B vault read US$10M, and import
+       cover, local over local, shrank a hundredfold exactly when it was
+       needed. The dollar DEBT on this same class was revalued every month.
+       Dollar debts got dearer when the currency fell and dollar reserves did
+       not get more valuable, and a reserve is the one thing that is supposed
+       to gain when your currency falls.
+
+       So the stock of truth is the dollars. Everything local - getReserves(),
+       what can be sold, the cover, the net position - is those dollars at
+       today's rate, and the move from one rate to the next is booked as a
+       revaluation line beside the vault (revalueVault()), in the debt's shape.
        ======================================================================= */
-    private double reserves;
+    private double reservesUsd;
 
     /**
      * THE RECORD. Every month's balance of payments, added up since founding.
@@ -573,10 +661,12 @@ public class ForeignAccounts {
      * city's trade rather than about the month it happens to be in - one month's
      * exports depend on whether a mill was staffed that week.
      *
-     * They also give the reserve a checkable definition: it is exactly
-     * lifetime exports, less imports, less interest paid abroad, plus capital
-     * received. ForeignCheck asserts that, which is what makes the stock and the
-     * flows one set of books rather than two.
+     * They also give the cumulative balance a checkable definition: it is
+     * exactly lifetime exports, less imports, less interest paid abroad, plus
+     * capital received. ForeignCheck asserts that, which is what makes the
+     * stock and the flows one set of books rather than two. (Not the vault,
+     * which is bought and sold rather than accumulated - see
+     * balanceFromFlows().)
      */
     private double lifetimeExports;
     private double lifetimeImports;
@@ -586,25 +676,39 @@ public class ForeignAccounts {
     private int monthsOfHistory;
 
     /**
-     * Months of imports the reserve would cover.
-     *
-     * THE HEADLINE NUMBER, and the one the exchange rate will be driven off in
-     * phase two. It is the standard yardstick for reserve adequacy - three
-     * months is the usual rule of thumb - and it is far more legible than the
-     * raw figure, because "forty million" means nothing without knowing what the
-     * city spends abroad.
+     * How many months the trailing figures are averaged over: the import bill
+     * the cover is measured against, and the balances the pressure reads.
      *
      * Measured against a TRAILING AVERAGE of imports rather than last month's,
      * so a single month with no construction going on does not report the city
-     * as spectacularly well covered.
+     * as spectacularly well covered. A rolling mean rather than a window of
+     * months (see takeMonth()), so once it has settled each new month counts
+     * for one part in this many.
      */
     public static final double COVER_WINDOW = 12;
 
+    /**
+     * Months of imports the reserve would cover.
+     *
+     * THE HEADLINE NUMBER, and the one the vault's damping of the rate is
+     * struck off (absorption()). It is the standard yardstick for reserve
+     * adequacy - three months is the usual rule of thumb - and it is far more
+     * legible than the raw figure, because "forty million" means nothing
+     * without knowing what the city spends abroad.
+     */
     public double importCover() {
-        // A city in net debt to the world has no cover, not negative cover.
-        if (reserves <= 0) return 0;
+        // An empty vault is no cover - never negative cover, and not endless
+        // cover on a city with no import bill yet.
+        if (reservesUsd <= 0) return 0;
         if (importsTrailing <= 0) return Double.MAX_VALUE;
-        return reserves / importsTrailing;
+        /*
+         * The vault at TODAY's rate over the import bill in today's money, so
+         * a falling currency moves both halves together and the cover does not
+         * move with it. Imports are dollar goods; so is the vault. It used to
+         * be the vault at the price paid over today's bill, and fell exactly
+         * as fast as the currency did.
+         */
+        return reservesUsd * rate / importsTrailing;
     }
 
     /** The trailing monthly import bill the cover is measured against. */
@@ -743,23 +847,24 @@ public class ForeignAccounts {
     public double getLifetimeRevaluation() { return lifetimeRevaluation; }
 
     /**
-     * The reserve position in dollars.
+     * The reserve position in dollars - the stock itself.
      *
-     * The stock is carried in local money because every flow that built it was,
-     * but what it BUYS is foreign - and a player deciding whether to convert
-     * some of it back into spendable cash needs the figure in the money it is
-     * actually held in.
+     * Since 2026-09-21 this is the figure the vault is KEPT in, not a
+     * translation of it: the money is foreign, so its own unit is the one that
+     * does not move when the currency does. See THE VAULT IS HELD IN DOLLARS,
+     * in the banner TWO NUMBERS THAT WERE ONE NUMBER.
      */
-    public double getReservesUsd() { return rate > 0 ? reserves / rate : 0; }
+    public double getReservesUsd() { return reservesUsd; }
 
     /**
      * Claims abroad less what is owed abroad: the city's net position.
      *
      * The figure a country is actually judged on. A city with deep reserves and
      * deeper dollar debt is not rich, and the reserve line on its own says it
-     * is.
+     * is. Both halves in local money at today's rate: the vault's dollars and
+     * the debt's, which is what makes a falling currency move them together.
      */
-    public double netForeignPosition() { return reserves - foreignDebt; }
+    public double netForeignPosition() { return getReserves() - foreignDebt; }
 
     /** Goods and services sold abroad. */
     public double getExports() { return exports; }
@@ -783,8 +888,11 @@ public class ForeignAccounts {
     /** The month's change in the city's foreign position. */
     public double balance() { return currentAccount() + financialAccount(); }
 
-    /** What the treasury holds in foreign money, and could spend today. */
-    public double getReserves() { return reserves; }
+    /**
+     * What the treasury holds in foreign money, and could spend today - in
+     * local money, at today's rate. The dollars are getReservesUsd().
+     */
+    public double getReserves() { return reservesUsd * rate; }
 
     /** Every month's balance of payments since founding, added up. */
     public double getCumulativeBalance() { return cumulativeBalance; }
@@ -851,10 +959,14 @@ public class ForeignAccounts {
      * financial-account flow in two places at once: here, directly, and again
      * in takeMonth() via financialAccount(). The two cancelled, so buying
      * reserves cost the treasury real cash and built nothing at all.
+     *
+     * THE DOLLARS ARE WHAT IS KEPT, at the rate of the day (2026-09-21); the
+     * two bookkeeping figures stay in local money, because the local cash is
+     * what crossed the audit's edge and what the treasury gave up for them.
      */
     public void buyReserves(double localAmount) {
-        if (localAmount <= 0) return;
-        reserves += localAmount;
+        if (localAmount <= 0 || rate <= 0) return;
+        reservesUsd += localAmount / rate;
         boughtThisMonth += localAmount;
         lifetimeIntervention += localAmount;
     }
@@ -874,19 +986,59 @@ public class ForeignAccounts {
      * the same sale was added back to the stock by takeMonth() a moment later,
      * so the reserves never actually ran out and the ceiling never bound.
      *
+     * The clamp is against what the dollars fetch TODAY (2026-09-21), which is
+     * the whole point of holding them in dollars: sold after the currency has
+     * halved, the same dollars raise twice the local cash they cost. Selling
+     * everything empties the vault exactly rather than leaving the rounding of
+     * a division behind in it.
+     *
      * @return what was actually sold, which is never more than the city had
      */
     public double sellReserves(double localAmount) {
-        double sold = Math.max(0, Math.min(localAmount, Math.max(0, reserves)));
-        if (sold <= 0) return 0;
-        reserves -= sold;
+        double held = sellableReserves();
+        double sold = Math.max(0, Math.min(localAmount, held));
+        if (sold <= 0 || rate <= 0) return 0;
+        reservesUsd = sold >= held ? 0 : Math.max(0, reservesUsd - sold / rate);
         soldThisMonth += sold;
         lifetimeIntervention -= sold;
         return sold;
     }
 
-    /** The most the treasury could sell right now. */
-    public double sellableReserves() { return Math.max(0, reserves); }
+    /** The most the treasury could sell right now, in local money at today's rate. */
+    public double sellableReserves() { return Math.max(0, getReserves()); }
+
+    /* ------------------- what the currency did to the vault -------------------
+     *
+     * THE DEBT'S SHAPE, mirrored rather than reinvented: the dollar stock
+     * times the move in the rate since the vault was last valued, struck once
+     * a month after the reprice, beside takeForeignDebt(). Positive when the
+     * currency fell and the same dollars are worth more at home.
+     *
+     * NOT CASH AND NOT AN AUDIT FLOW. Nobody can spend it until the dollars
+     * are sold, and a sale is the only thing that crosses the audit's edge -
+     * at that day's rate, through sellReserves(). MoneyAudit never sees this
+     * line, exactly as it never sees the debt's.
+     *
+     * Struck off the rate the vault was LAST VALUED at rather than off the
+     * change in its local value, for the reason the debt's is: the local value
+     * also moves when the treasury buys or sells, and a figure captioned "what
+     * the currency did to the vault" must not include what the treasury did.
+     * Within a month the rate does not move - only the reprice moves it - so
+     * every purchase and sale happens at the rate the vault was last valued
+     * at and none of them leaks into the line.
+     */
+    private double lastVaultRate = OPENING_RATE;
+    private double lastVaultRevaluation;
+
+    /** Values the vault at today's rate. Called once a month, after the reprice. */
+    public void revalueVault() {
+        if (rate <= 0) return;
+        lastVaultRevaluation = reservesUsd * (rate - lastVaultRate);
+        lastVaultRate = rate;
+    }
+
+    /** What the currency did to the vault this month, in local money. Positive means worth more. */
+    public double getLastVaultRevaluation() { return lastVaultRevaluation; }
 
     public double getBoughtThisMonth() { return boughtThisMonth; }
     public double getSoldThisMonth()   { return soldThisMonth; }
@@ -934,6 +1086,10 @@ public class ForeignAccounts {
      * restruck on the first tick - except the trailing import bill, which is an
      * average of months that have gone and cannot be recovered from the month
      * the save was taken in.
+     *
+     * That was the first four slots. The array has grown since, and the
+     * comments inside it say why most of the later ones are carried - some of
+     * them flows after all, the ones a screen shows before the first tick.
      */
     public double[] toSaveArray() {
         return new double[] { cumulativeBalance, importsTrailing, monthsOfHistory, rate, forgiven,
@@ -964,23 +1120,55 @@ public class ForeignAccounts {
                  */
                 lastDebtRate, lifetimeRevaluation, repudiated, lifetimeIntervention, parity,
                 /*
-                 * THE VAULT, saved separately since the two were split. Slot 18,
+                 * THE VAULT, saved separately since the two were split. Slot 19,
                  * so an older save restores its single number into the
                  * cumulative balance (slot 0) and starts the vault empty - which
                  * is the right reading of a save written when the two were one
                  * number and only the balance behaviour was ever real.
+                 *
+                 * STILL THE LOCAL VALUE, at the moment of saving, now that the
+                 * vault is kept in dollars (2026-09-21): slot 19 keeps its
+                 * meaning, so an older build reading this save sees exactly
+                 * the figure it always saw. The dollars ride the end, slot 22.
                  */
-                reserves,
+                getReserves(),
                 /*
                  * The financial account's two trailing figures, slots 20 and
                  * 21, since the pressure was struck on the overall balance.
                  * Absent from an older save: both start at zero and settle
                  * within a year, as the current one always did.
                  */
-                financialTrailing, financialGrossTrailing };
+                financialTrailing, financialGrossTrailing,
+                /*
+                 * THE VAULT IN DOLLARS, slot 22 (2026-09-21) - the stock of
+                 * truth. An older save has no slot 22 and its vault comes back
+                 * from slot 19 at the rate it was saved at (slot 3), which is
+                 * the only rate it has: the same dollars it held that day.
+                 */
+                reservesUsd,
+                /*
+                 * ...AND WHAT THE CURRENCY DID TO IT THIS MONTH, slot 23. A
+                 * flow, and the Exchange page shows it beside the vault, so a
+                 * reload that dropped it would open the page on a month in
+                 * which the currency had done nothing. An older save reads as
+                 * nothing done until its first month turns. The rate the vault
+                 * was last valued at is NOT saved: it is struck right after the
+                 * reprice, nothing moves the rate between that and a save, so
+                 * it is always the rate in slot 3.
+                 */
+                lastVaultRevaluation };
     }
 
     public void restore(double[] saved) {
+        /*
+         * FROM NOTHING, NOT FROM THE FOUNDING. buildWorld() founds every new
+         * city with the founders' dollars in the vault, and the load path runs
+         * buildWorld() before it gets here - so a save that carried no vault,
+         * or no foreign accounts at all, would otherwise come back holding
+         * US$1B it never had. Whatever the array does not say is what a city
+         * that never had it holds: nothing.
+         */
+        reset();
         if (saved == null || saved.length < 4) return;   // refused whole
         cumulativeBalance = saved[0];
         importsTrailing = saved[1];
@@ -1009,17 +1197,28 @@ public class ForeignAccounts {
         if (saved.length > 16) repudiated = saved[16];
         if (saved.length > 17) lifetimeIntervention = saved[17];
         if (saved.length > 18) parity = saved[18] > 0 ? saved[18] : OPENING_PARITY;
-        if (saved.length > 19) reserves = Math.max(0, saved[19]);
         if (saved.length > 21) {
             financialTrailing = saved[20];
             financialGrossTrailing = Math.max(0, saved[21]);
         }
+        /*
+         * THE DOLLARS, from slot 22 when the save has them. An older save
+         * kept only the local value (slot 19), and that comes back at the rate
+         * it was saved at (slot 3) - the only rate it has, and the one those
+         * dollars were worth that day. Before slot 19 there was no vault.
+         */
+        if (saved.length > 22)      reservesUsd = Math.max(0, saved[22]);
+        else if (saved.length > 19) reservesUsd = Math.max(0, saved[19]) / rate;
+        lastVaultRate = rate;
+        if (saved.length > 23) lastVaultRevaluation = saved[23];
     }
 
     public void reset() {
         rate = OPENING_RATE;
         pinned = false;
-        reserves = 0;
+        reservesUsd = 0;
+        lastVaultRate = OPENING_RATE;
+        lastVaultRevaluation = 0;
         cumulativeBalance = 0;
         forgiven = 0;
         exportsTrailing = 0;
@@ -1054,7 +1253,9 @@ public class ForeignAccounts {
      *
      * WHAT DOES NOT MOVE: foreignDebtUsd, because it is owed in somebody else's
      * money and no domestic reform can reach it (foreignDebt, its local
-     * translation, moves because the RATE moved). Nor openness, absorption,
+     * translation, moves because the RATE moved). The vault's dollars likewise
+     * (2026-09-21): its local value is those dollars at the rate, and the rate
+     * has already been divided - scaling both would divide it twice. Nor openness, absorption,
      * pressure, the inflation rates or the rate differential - all ratios.
      *
      * The parity moves because it is a rate, not a ratio: it is the level the
@@ -1068,8 +1269,8 @@ public class ForeignAccounts {
         parityBase *= scale;
         parity   *= scale;
         lastDebtRate *= scale;
+        lastVaultRate *= scale;
 
-        reserves          *= scale;
         cumulativeBalance *= scale;
         forgiven          *= scale;
         foreignDebt       *= scale;
@@ -1094,6 +1295,7 @@ public class ForeignAccounts {
         lifetimeIntervention *= scale;
 
         lastRevaluation *= scale;
+        lastVaultRevaluation *= scale;
         lastValuation   *= scale;
         repudiated      *= scale;
         boughtThisMonth *= scale;

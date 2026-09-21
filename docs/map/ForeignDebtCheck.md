@@ -1,4 +1,4 @@
-# ForeignDebtCheck.java - 589 lines · 5 methods · 0 constants · harnesses
+# ForeignDebtCheck.java - 598 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
@@ -40,9 +40,9 @@
 | 213 | · 3. the books balance with dollars on them |
 | 276 | · 4. original sin |
 | 340 | · 4b. and where the dollars actually went |
-| 405 | · 5. the window shuts |
-| 429 | · 6. and the price of walking away |
-| 480 | · 7. across a reload |
+| 414 | · 5. the window shuts |
+| 438 | · 6. and the price of walking away |
+| 489 | · 7. across a reload |
 
 ## Fields (state)
 
@@ -56,10 +56,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 554 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
+| 36 | 563 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
 | 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 57 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 65 | 14 | `static Game tradingCity(Path dir) throws Exception` | A small city that has been going long enough to have a credit record. |
-| 80 | 509 | `public static void main(String[] args) throws Exception` |  |
+| 80 | 518 | `public static void main(String[] args) throws Exception` |  |
 

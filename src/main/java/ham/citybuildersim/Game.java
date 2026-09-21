@@ -269,8 +269,28 @@ public class Game {
          * was 41% of the endowment at $500M and is 41% of it at $3.5B. The
          * founding city can do exactly what it could do this morning, in money
          * that now means what it says.
+         *
+         * ...AND SPLIT ON 2026-09-21: the same $3.5B, D$2.5B of it here and
+         * US$1B in the vault. See THE FOUNDING RESERVE above buildWorld(). The
+         * power plant is 57% of what the treasury opens with rather than 41%,
+         * and still the first thing the endowment buys.
          */
-        this.cash = 3500000;
+        this.cash = FOUNDING_CASH;
+        /*
+         * THE FOUNDERS' DOLLARS, bought on day one at the opening rate and
+         * booked as the purchase they are - buyReserves() carries them in
+         * lifetimeIntervention, so the vault stays "what the treasury chose to
+         * buy and has not yet sold". HERE, beside the cash and after
+         * foreign.reset(), so every door into a city founds both halves of the
+         * endowment together: the constructor, newGame(), and newGame() after
+         * a load. The load path comes through here too, and restore() starts
+         * from an empty vault rather than from this one - a save carries its
+         * own. The first month's startMonth() clears the day's purchase from
+         * the month's bookkeeping long before the audit is struck, so no
+         * month's audit books a flow that happened before month one began:
+         * the treasury simply opens with D$2.5B in it.
+         */
+        foreign.buyReserves(foreign.toLocal(FOUNDING_RESERVE_USD));
         this.population = 0;
         this.jobs = new int[JobType.values().length];
 
@@ -569,6 +589,40 @@ public class Game {
     public double getCash(){
         return cash;
     }
+    /* =====================================================================
+       THE FOUNDING RESERVE (2026-09-21)
+
+       Jerus, reading his own city's year book - prices 399x founding in
+       twenty-five years, the currency at its 100x guard, inflation averaging
+       29% a year: "i think we should make it so that of the 3.5B you start
+       with, 1B is in usd in the reserve, so you only see 2.5B start with...
+       i think that greatly helps, since 99% players wont add to reserves
+       most probably cause they have no clue."
+
+       THE SAME ENDOWMENT, SPLIT. Nothing is given that was not given before:
+       the founders' $3.5B is D$2.5B in the treasury and US$1B bought on day
+       one at the opening rate of 1.00 - booked by buyReserves() exactly as a
+       purchase the treasury made, so lifetimeIntervention carries it and the
+       vault is still "what the treasury chose to buy and has not yet sold".
+       It is in the vault rather than the treasury for the reason a reserve
+       exists at all: import cover damps the pressure to fall from the first
+       month the rate is allowed to move (ForeignAccounts.SETTLING_MONTHS;
+       absorption() - on the way down only, see A RESERVE DEFENDS A
+       CURRENCY, without which this founding reserve reproduced the year
+       book in three seeds of eight), it backs the hot money a young city
+       attracts, and - since the vault is kept in dollars - it is the one
+       thing the city owns that gains when its currency falls.
+       ===================================================================== */
+
+    /** What the founders leave in the treasury, in thousands: D$2.5B, the endowment less the vault. */
+    public static final double FOUNDING_CASH = 2_500_000;
+
+    /** What the founders leave in the vault, in thousands of US dollars: US$1B, bought on day one at the opening rate. */
+    public static final double FOUNDING_RESERVE_USD = 1_000_000;
+
+    /** For this many months the screens say where the vault's first dollars came from; after that they are the city's own. */
+    public static final int FOUNDERS_NOTE_MONTHS = 120;
+
     /* ======================= THE CONSTRUCTION SUBSIDY =======================
      *
      * A monthly retainer that keeps builders on the books between projects.
@@ -3964,6 +4018,13 @@ public class Game {
          */
         debtManager.setExchangeRate(foreign.getRate());
         foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
+        /*
+         * ...AND THE VAULT IS WORTH WHAT IT IS WORTH, the same line in the same
+         * place (2026-09-21): the vault is kept in dollars, so the reprice just
+         * moved its local value, and this books the move as a revaluation - not
+         * cash, not an audit flow. See ForeignAccounts.revalueVault().
+         */
+        foreign.revalueVault();
         debtManager.setTrade(foreign.monthlyExports(), foreign.importCover());
         debtManager.ageForeignStanding();
         checkForeignSolvency();

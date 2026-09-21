@@ -4,7 +4,7 @@ Generated 2026-09-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 206 files, 127,939 lines, 4,935 methods, 721 constants. `GameVersion.VERSION` is "0.6.9", `SAVE_FORMAT` 27.
+**The tree:** 206 files, 128,954 lines, 4,943 methods, 733 constants. `GameVersion.VERSION` is "0.6.10", `SAVE_FORMAT` 27.
 
 ## model (102 files)
 
@@ -30,10 +30,10 @@ Generated 2026-09-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CityCalendar.java](CityCalendar.md) | 145 | 13 | Turns the month counter into a date a person can hold in their head. | 10 |
 | [Consumption.java](Consumption.md) | 539 | 24 | What a household eats, and what changes it. | 5 |
 | [Crime.java](Crime.md) | 522 | 61 | Crime, the police who deter and catch it, and the prisons that hold who they catch. | 12 |
-| [Currency.java](Currency.md) | 58 | 5 | What the city's money is called, and how it is written. | 7 |
-| [DataSave.java](DataSave.md) | 1,341 | 213 | sections: land, ore and the retainer, the shedding warning... | 3 |
+| [Currency.java](Currency.md) | 61 | 5 | What the city's money is called, and how it is written. | 9 |
+| [DataSave.java](DataSave.md) | 1,343 | 213 | sections: land, ore and the retainer, the shedding warning... | 3 |
 | [Debt.java](Debt.md) | 351 | 31 | One piece of city paper. | 14 |
-| [DebtManager.java](DebtManager.md) | 1,017 | 80 | sections: THE POLICY RATE, THE RATE THE FOREIGN PAPER IS VALUED AT... | 18 |
+| [DebtManager.java](DebtManager.md) | 1,046 | 81 | sections: THE POLICY RATE, THE RATE THE FOREIGN PAPER IS VALUED AT... | 18 |
 | [DebtQuote.java](DebtQuote.md) | 162 | 8 | What a loan would cost, worked out BEFORE the player agrees to it. | 5 |
 | [DemolitionLog.java](DemolitionLog.md) | 136 | 10 | What the city has lost, and when. | 6 |
 | [Denomination.java](Denomination.md) | 194 | 12 | The currency's unit, and the power to lop zeros off it. | 3 |
@@ -44,13 +44,13 @@ Generated 2026-09-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Exchange.java](Exchange.md) | 1,006 | 73 | The stock exchange: where a share changes hands, and at what price. | 10 |
 | [FamilyModel.java](FamilyModel.md) | 2,072 | 97 | How the city's people are arranged into households, and what each earns. | 20 |
 | [FamilyStructure.java](FamilyStructure.md) | 119 | 7 | The shapes a household comes in. | 26 |
-| [ForeignAccounts.java](ForeignAccounts.md) | 1,103 | 68 | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. | 15 |
+| [ForeignAccounts.java](ForeignAccounts.md) | 1,305 | 70 | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. | 17 |
 | [Formats.java](Formats.md) | 56 | 6 | The few formats a sector needs to describe itself, without the toolkit. | 16 |
-| [Game.java](Game.md) | 8,169 | 285 | sections: THE CONSTRUCTION SUBSIDY, STANDING POLICY: NEVER LET THIS SECTOR SHRINK... | 88 |
+| [Game.java](Game.md) | 8,230 | 285 | sections: THE FOUNDING RESERVE (2026-09-21), THE CONSTRUCTION SUBSIDY... | 90 |
 | [GameFiles.java](GameFiles.md) | 401 | 31 | Where the game keeps its files, and how it writes them. | 61 |
 | [GameLog.java](GameLog.md) | 220 | 12 | Everything the game prints, written somewhere a player can find it. | 8 |
 | [GamePrefs.java](GamePrefs.md) | 152 | 11 | How the player likes the window, kept between runs. | 1 |
-| [GameVersion.java](GameVersion.md) | 663 | 4 | What build this is, and what shape its saves are. | 7 |
+| [GameVersion.java](GameVersion.md) | 708 | 4 | What build this is, and what shape its saves are. | 7 |
 | [Good.java](Good.md) | 863 | 18 | A thing that can be made, bought, held, imported and exported. | 61 |
 | [GoodsMarket.java](GoodsMarket.md) | 448 | 46 | Where one good clears between whoever makes it and whoever wants it. | 26 |
 | [Health.java](Health.md) | 403 | 20 | How much of the workforce is off sick this month. | 12 |
@@ -83,7 +83,7 @@ Generated 2026-09-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PayTier.java](PayTier.md) | 125 | 5 | The six pay levels a household can be in. | 40 |
 | [PopulationCohorts.java](PopulationCohorts.md) | 561 | 32 | The city's age pyramid, and since the switch, the city's POPULATION. | 21 |
 | [PopulationManager.java](PopulationManager.md) | 938 | 51 | sections: WHO THE WORKFORCE ACTUALLY IS, POPULATION OVERVIEW... | 22 |
-| [PriceIndex.java](PriceIndex.md) | 287 | 16 | What a month costs a household, against what it cost at founding. | 4 |
+| [PriceIndex.java](PriceIndex.md) | 287 | 16 | What a month costs a household, against what it cost at founding. | 5 |
 | [PrisonerHousehold.java](PrisonerHousehold.md) | 79 | 17 | Adults serving a sentence, as one ledger: the prisoners' ledger. | 5 |
 | [RetiredHousehold.java](RetiredHousehold.md) | 51 | 6 | A household with nobody of working age in it: a senior or an elder, alone or as a couple. | 3 |
 | [SafetyType.java](SafetyType.md) | 68 | 4 | What a safety building does: police, or prison cells. | 8 |
@@ -150,13 +150,13 @@ Generated 2026-09-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Palette.java](Palette.md) | 355 | 6 | Every colour, size and spacing this game is allowed to use, in one place. | 16 |
 | [PeopleScreen.java](PeopleScreen.md) | 2,546 | 32 | The People tab and the household screen behind it. | 1 |
 | [Pieces.java](Pieces.md) | 619 | 26 | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals ba... | 0 |
-| [PolicyScreen.java](PolicyScreen.md) | 2,899 | 60 | The policy tab: the four rows of levers - taxes, wages, money, promises - the staged set every dial writes into, the ladder and the batch preview t... | 2 |
+| [PolicyScreen.java](PolicyScreen.md) | 2,917 | 60 | The policy tab: the four rows of levers - taxes, wages, money, promises - the staged set every dial writes into, the ladder and the batch preview t... | 2 |
 | [SectorScreen.java](SectorScreen.md) | 1,299 | 25 | The sector economy: the businesses as a list, and each one's five pages - operations, the income statement with last month beside it, the balance s... | 1 |
 | [ServicesScreen.java](ServicesScreen.md) | 2,550 | 49 | The services tab: the systems the city runs and how well each covers - infrastructure (roads, transit, the railway, freight), safety, health, educa... | 1 |
 | [Statement.java](Statement.md) | 379 | 17 | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages use. | 15 |
-| [SummaryScreen.java](SummaryScreen.md) | 1,611 | 27 | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen... | 1 |
-| [TradeScreen.java](TradeScreen.md) | 1,715 | 26 | The Trade & the world tab: the landing with its vitals, the month as a river, the reserves, the currency, what we trade, and the three quiet gauges. | 1 |
-| [UserInterface.java](UserInterface.md) | 4,037 | 72 | The window: the stage and its theme, the clock and the speed ladder, the two strips, the rail down the left and the inbox, the left panel and the c... | 14 |
+| [SummaryScreen.java](SummaryScreen.md) | 1,632 | 27 | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen... | 1 |
+| [TradeScreen.java](TradeScreen.md) | 1,764 | 26 | The Trade & the world tab: the landing with its vitals, the month as a river, the reserves, the currency, what we trade, and the three quiet gauges. | 1 |
+| [UserInterface.java](UserInterface.md) | 4,179 | 75 | The window: the stage and its theme, the clock and the speed ladder, the two strips, the rail down the left and the inbox, the left panel and the c... | 14 |
 
 ## harnesses (59 files)
 
@@ -183,10 +183,10 @@ Generated 2026-09-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EquityCheck.java](EquityCheck.md) | 348 | 5 | Verifies the share register: who buys, at what price, what they are paid, and that a month with owners in it still adds up. | 0 |
 | [ExchangeCheck.java](ExchangeCheck.md) | 686 | 15 | Verifies the exchange: what the desk quotes, who trades with it and why, what a company does with its surplus, and that a city with a market in it ... | 1 |
 | [FoodProcessingCheck.java](FoodProcessingCheck.md) | 427 | 7 | The third of the shelf that arrives already made. | 0 |
-| [ForeignCheck.java](ForeignCheck.md) | 990 | 9 | The balance of payments, and whether the boundary it is drawn on is honest. | 0 |
-| [ForeignDebtCheck.java](ForeignDebtCheck.md) | 589 | 5 | Borrowing in somebody else's money. | 0 |
+| [ForeignCheck.java](ForeignCheck.md) | 1,328 | 11 | The balance of payments, and whether the boundary it is drawn on is honest. | 0 |
+| [ForeignDebtCheck.java](ForeignDebtCheck.md) | 598 | 5 | Borrowing in somebody else's money. | 0 |
 | [GdpCheck.java](GdpCheck.md) | 405 | 3 | Verifies the national accounts: the identity, growth rates, and the government's books. | 0 |
-| [HealthCheck.java](HealthCheck.md) | 1,448 | 5 | Sickness: what it moves, and - much more importantly - what it does not. | 0 |
+| [HealthCheck.java](HealthCheck.md) | 1,476 | 5 | Sickness: what it moves, and - much more importantly - what it does not. | 0 |
 | [HistoryCheck.java](HistoryCheck.md) | 301 | 6 | Verifies the graph history: recording, alignment, and the round trip. | 0 |
 | [HouseholdCheck.java](HouseholdCheck.md) | 1,299 | 3 | Verifies the residents' books and the demolition log. | 0 |
 | [HouseholdMemoryCheck.java](HouseholdMemoryCheck.md) | 278 | 6 | The households remember: the builder keeps what still fits. | 0 |
@@ -196,12 +196,12 @@ Generated 2026-09-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [InvestCheck.java](InvestCheck.md) | 546 | 6 | Verifies the private investment engine: forecasting, the demand tests, and the brake. | 0 |
 | [LabourCheck.java](LabourCheck.md) | 680 | 8 | Verifies the labour market: who can hold a job, and what it costs. | 0 |
 | [LandCheck.java](LandCheck.md) | 602 | 3 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 0 |
-| [LongPlaytest.java](LongPlaytest.md) | 2,707 | 30 | A city played for four thousand months, the way a person plays. | 4 |
+| [LongPlaytest.java](LongPlaytest.md) | 2,741 | 30 | A city played for four thousand months, the way a person plays. | 4 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 522 | 7 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
 | [MiningCheck.java](MiningCheck.md) | 609 | 7 | Ore, from the band it clears in to whether it makes steel worth building. | 0 |
 | [MonetaryCheck.java](MonetaryCheck.md) | 303 | 4 | Money: what a basket costs, what the world charges, and what the rate does. | 0 |
 | [MoneyCheck.java](MoneyCheck.md) | 219 | 5 | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. | 0 |
-| [NewGameCheck.java](NewGameCheck.md) | 321 | 5 | Does "Start New Game" actually start a new game? | 1 |
+| [NewGameCheck.java](NewGameCheck.md) | 355 | 5 | Does "Start New Game" actually start a new game? | 1 |
 | [OutsideCheck.java](OutsideCheck.md) | 631 | 5 | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). | 0 |
 | [PolicyCheck.java](PolicyCheck.md) | 353 | 5 | The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies. | 0 |
 | [PopulationCheck.java](PopulationCheck.md) | 1,338 | 10 | The demographics: do they hold together, and do they move the city the way they were told to? | 0 |

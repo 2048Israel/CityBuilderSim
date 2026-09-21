@@ -2,7 +2,7 @@
 
 Generated 2026-09-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**58 harness files, 3,292 labelled assertions.** AllChecks runs 58 of them.
+**58 harness files, 3,347 labelled assertions.** AllChecks runs 58 of them.
 
 ## Which harnesses read which class
 
@@ -34,7 +34,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Construction](map/Construction.md) | HousingCheck, InvestCheck, NewGameCheck, RobustnessCheck, SaveFileCheck |
 | [Consumption](map/Consumption.md) | ConsumptionCheck, ForeignCheck |
 | [Crime](map/Crime.md) | CrimeCheck, LongPlaytest |
-| [Currency](map/Currency.md) | **none** |
+| [Currency](map/Currency.md) | LongPlaytest |
 | [DataSave](map/DataSave.md) | PopulationCheck, SaveFileCheck |
 | [Debt](map/Debt.md) | CreditCheck, ForeignDebtCheck, GdpCheck, RestructureCheck, TreasuryCheck |
 | [DebtManager](map/DebtManager.md) | BankCheck, CapitalFlowCheck, CarryTradeCheck, CreditCheck, EquityCheck, ExchangeCheck, ForeignDebtCheck, LongPlaytest, MonetaryCheck, MoneyCheck |
@@ -50,7 +50,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FamilyStructure](map/FamilyStructure.md) | BankCheck, CarCheck, ConsumptionCheck, CrimeCheck, EducationCheck, EquityCheck, ExchangeCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, LongPlaytest, OutsideCheck, PopulationCheck, RestaurantsCheck |
 | [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, WaterCheck |
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
-| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, ForeignCheck, ForeignDebtCheck, LongPlaytest, MonetaryCheck |
+| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, ForeignCheck, ForeignDebtCheck, LongPlaytest, MonetaryCheck, NewGameCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, FoodProcessingCheck, TradeCostCheck |
 | [Game](map/Game.md) | AgricultureCheck, BankCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, ConservationCheck, CreditCheck, CrimeCheck, DeathRecordCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MonetaryCheck, MoneyCheck, NewGameCheck, OutsideCheck, PolicyCheck, PopulationCheck, RailCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorBooksCheck, SicknessCheck, TradeCostCheck, TreasuryCheck, VanCheck, YearBookCheck |
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, BankCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, ConservationCheck, CreditCheck, CrimeCheck, DeathRecordCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MonetaryCheck, MoneyCheck, NewGameCheck, OutsideCheck, PolicyCheck, PopulationCheck, RailCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorBooksCheck, SicknessCheck, TradeCostCheck, TreasuryCheck, VanCheck, YearBookCheck |
@@ -1726,7 +1726,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L410 the sector's till survives the round trip
   - L413 ...and it is still the eleventh name in the equity register
 
-## ForeignCheck.java - 59 labelled assertions
+## ForeignCheck.java - 110 labelled assertions
 
 > The balance of payments, and whether the boundary it is drawn on is honest.
 > 
@@ -1742,75 +1742,131 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L69 1. the rate is pinned**
-  - L73 the exchange rate opens at parity
-  - L74 ...so converting to local money changes nothing
-  - L75 ...and back again likewise
-  - L76 ...and a city with no history owes the world nothing
-- **L80 2. a city that trades**
-  - L148 a city that has never intervened holds nothing abroad
-  - L150 ...however much it has traded
-  - L152 ...so its import cover is nil, honestly
-  - L154 the fixture actually traded with anybody at all
-  - L156 ...and imported, which every city does
-  - L159 every dollar crossing the edge is domestic OR foreign, never both
-  - L161 ...and the reserve is exactly the flows that built it
-  - L175 household flows are counted, but not as trade
-  - L196 ...and large enough that counting them as trade would swamp the balance
-- **L199 3. across a reload**
-  - L221 the fixture's position is actually worth carrying
-  - L223 the cumulative balance reloads exactly
-  - L225 ...and the vault, which is a different number
-  - L227 ...and they really are different
-  - L229 ...and the trade record with it
-  - L230 ...and the import bill the cover is measured against
-  - L232 ...and the exchange rate
-  - L246 the fixture has an openness worth carrying
-  - L247 openness survives the reload
-  - L248 ...and the pressure reading with it
-  - L250 ...and the absorption
-- **L253 4. nothing behaves differently**
-  - L282 two runs of the same city agree on its population
-  - L283 ...and on its treasury, to the cent
-- **L285 5. every unit that leaves the shelf is paid for**
-  - L379 the fixture is genuinely short of something
-  - L381 ...and the shops actually traded
-  - L383 every unit that leaves the shelf is paid for
-  - L394 ...so the shops are not importing to replace goods nobody bought
-- **L397 5b. reserves you sell are reserves you no longer have**
-  - L428 buying reserves actually buys reserves
-  - L433 ...and selling them spends them
-  - L434 ...for exactly what was asked
-  - L453 a reserve stock cannot be sold twice
-  - L454 ...and what is left is nothing
-  - L455 ...and it ran out when it should have
-  - L461 asking for more than the city holds sells what it holds
-  - L463 ...and never lends the difference into existence
-  - L465 ...and a city with nothing sells nothing
-  - L467 ...and the stock never goes negative through selling
-  - L487 a treasury that never bought reserves absorbs nothing
-  - L489 ...however long it has been trading
-  - L493 ...and buying a comfortable buffer is what earns the damping
-- **L496 6. the rate is bounded, and moves the right way**
-  - L520 a sustained deficit weakens the currency
-  - L530 ...and the pressure that did it reads as depreciation pressure
-  - L540 a sustained surplus strengthens it
-  - L541 ...and reads as appreciation pressure
-  - L561 the rate stays a number
-  - L562 ...and inside its bounds, every month of the way
-  - L571 a pinned rate says it is pinned
-  - L572 ...and does not move, however bad the deficit
-- **L574 7. and it comes home**
-  - L598 the fixture actually moved the rate somewhere
-  - L606 balanced trade brings the rate back toward parity
-  - L608 ...and most of the way home
-- **L611 8. a devaluation improves the current account**
-  - L668 the fixture trades enough for the question to mean anything
-  - L757 the fixture sells food abroad at all
-  - L760 the same programme costs the same in the world's money
-  - L773 the fixture has a world price to move at all
-  - L774 a 40% devaluation is a 40% rise in what an import costs
-- **L879 ...AND THE SHOPS AND THE KITCHENS, HELD OUT FOR REAL ESTATE'S OWN**
+- **L78 1. the rate is pinned**
+  - L82 the exchange rate opens at parity
+  - L83 ...so converting to local money changes nothing
+  - L84 ...and back again likewise
+  - L85 ...and a city with no history owes the world nothing
+- **L89 2. a city that trades**
+  - L166 a city that never intervened holds its founders' dollars
+  - L168 ...which is exactly what the treasury bought, on day one
+  - L171 ...however much it has traded
+  - L173 ...so it has cover from the start, as they meant
+  - L176 the fixture actually traded with anybody at all
+  - L178 ...and imported, which every city does
+  - L181 every dollar crossing the edge is domestic OR foreign, never both
+  - L183 ...and the reserve is exactly the flows that built it
+  - L197 household flows are counted, but not as trade
+  - L218 ...and large enough that counting them as trade would swamp the balance
+- **L221 3. across a reload**
+  - L243 the fixture's position is actually worth carrying
+  - L245 the cumulative balance reloads exactly
+  - L247 ...and the vault, which is a different number
+  - L249 ...in the dollars it is held in, exactly
+  - L251 ...and they really are different
+  - L253 ...and the trade record with it
+  - L254 ...and the import bill the cover is measured against
+  - L256 ...and the exchange rate
+  - L270 the fixture has an openness worth carrying
+  - L271 openness survives the reload
+  - L272 ...and the pressure reading with it
+  - L274 ...and the absorption
+- **L277 4. nothing behaves differently**
+  - L306 two runs of the same city agree on its population
+  - L307 ...and on its treasury, to the cent
+- **L309 5. every unit that leaves the shelf is paid for**
+  - L403 the fixture is genuinely short of something
+  - L405 ...and the shops actually traded
+  - L407 every unit that leaves the shelf is paid for
+  - L418 ...so the shops are not importing to replace goods nobody bought
+- **L421 5b. reserves you sell are reserves you no longer have**
+  - L452 buying reserves actually buys reserves
+  - L457 ...and selling them spends them
+  - L458 ...for exactly what was asked
+  - L477 a reserve stock cannot be sold twice
+  - L478 ...and what is left is nothing
+  - L479 ...and it ran out when it should have
+  - L485 asking for more than the city holds sells what it holds
+  - L487 ...and never lends the difference into existence
+  - L489 ...and a city with nothing sells nothing
+  - L491 ...and the stock never goes negative through selling
+  - L511 a treasury that never bought reserves absorbs nothing
+  - L513 ...however long it has been trading
+  - L517 ...and buying a comfortable buffer is what earns the damping
+- **L520 6. the rate is bounded, and moves the right way**
+  - L544 a sustained deficit weakens the currency
+  - L554 ...and the pressure that did it reads as depreciation pressure
+  - L564 a sustained surplus strengthens it
+  - L565 ...and reads as appreciation pressure
+  - L585 the rate stays a number
+  - L586 ...and inside its bounds, every month of the way
+  - L595 a pinned rate says it is pinned
+  - L596 ...and does not move, however bad the deficit
+- **L598 7. and it comes home**
+  - L622 the fixture actually moved the rate somewhere
+  - L630 balanced trade brings the rate back toward parity
+  - L632 ...and most of the way home
+- **L635 8. a devaluation improves the current account**
+  - L692 the fixture trades enough for the question to mean anything
+  - L781 the fixture sells food abroad at all
+  - L784 the same programme costs the same in the world's money
+  - L797 the fixture has a world price to move at all
+  - L798 a 40% devaluation is a 40% rise in what an import costs
+- **L822 9. the vault is held in dollars**
+  - L851 rX of local money at rate r buys US$X, and US$X is held
+  - L853 ...worth rX at home the day it is bought
+  - L855 ...X over the dollar import bill, in months of cover
+  - L860 the currency halves and the vault still holds US$X
+  - L861 ...now worth 2rX at home
+  - L862 ...and sellable for 2rX
+  - L863 ...and the move is booked as the vault's revaluation: rX
+  - L865 ...positive: a falling currency is a dollar vault's gain
+  - L867 ...not a flow: the cumulative balance did not move
+  - L869 ...nor the flows it is rebuilt from
+  - L881 the bill struck at 2r, the cover is what it was at r
+  - L886 sold at 2r, the whole vault raises 2rX of cash
+  - L887 ...and leaves nothing, not even a division's rounding
+  - L889 ...so the treasury is rX ahead: the revaluation it saw
+  - L891 ...as the record says: bought for rX, sold for 2rX
+  - L893 and the cumulative balance is still the sum of its flows
+- **L896 10. and the move is not money anybody moved**
+  - L925 fixture: the treasury bought dollars and the currency fell
+  - L927 a month the currency falls in leaves the dollars alone
+  - L929 ...and books dollars times the move as its revaluation
+  - L931 ...and none of it appeared in the audit as money moving
+- **L934 11. a reform does not reach the dollars**
+  - L954 lopping two zeros leaves the vault's dollars alone
+  - L956 ...and divides their worth at home by the same hundred
+  - L958 ...so the cover does not move
+  - L960 ...and the next valuation finds no move to book
+- **L963 12. an older save**
+  - L981 slot 19 holds the local value, as an older build reads it
+  - L983 ...and slot 22 its dollars
+  - L987 a save of this shape reloads the dollars exactly
+  - L989 ...and what the currency did to them that month
+  - L992 ...and the first valuation after it books no phantom move
+  - L998 a 0.6.9 save's vault comes back at its saved rate
+  - L1000 ...which is the same dollars it held that day
+  - L1001 ...worth what the old build said they were worth
+  - L1012 a save older than the vault's slot loads it empty
+  - L1017 ...and so does a save with no foreign accounts at all
+  - L1019 ...with no purchase on its record either
+- **L1037 13. the vault defends, it does not hold down**
+  - L1053 fixture: the deficit city is pushed weaker
+  - L1054 fixture: the surplus city is pushed stronger
+  - L1055 fixture: both trade a fraction of their output
+  - L1057 fixture: both vaults are deep enough for the most damping
+  - L1064 a push weaker is damped by the vault's cover
+  - L1067 ...and the absorption it records is what was applied
+  - L1073 the same vault passes a push stronger in full
+  - L1075 ...and records that it absorbed nothing
+  - L1076 ...though its cover could have absorbed the most there is
+  - L1087 fixture: the support is half the trade term, unclipped
+  - L1090 the rate's support comes off before the vault sees it
+  - L1092 ...and the vault damps what is left
+  - L1099 fixture: support larger than the trade term turns the push
+  - L1101 support outweighing the deficit reaches the rate in full
+- **L1217 ...AND THE SHOPS AND THE KITCHENS, HELD OUT FOR REAL ESTATE'S OWN**
 
 ## ForeignDebtCheck.java - 54 labelled assertions
 
@@ -1855,41 +1911,41 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L325 a weaker currency makes the NEXT bond dearer too
   - L337 ...and none of it appeared in the audit as money moving
 - **L340 4b. and where the dollars actually went**
-  - L386 converting puts the whole proceeds in the treasury
-  - L387 ...and leaves the reserve position alone
-  - L389 holding puts the whole proceeds in reserves
-  - L390 ...and the treasury does not see a cent of it
-  - L402 parking borrowed dollars does not read as getting richer
-- **L405 5. the window shuts**
-  - L410 a city that owes nothing can always borrow
-  - L416 ...and one drowning in dollars cannot
-  - L417 ...and is told why in words
-  - L421 earning its way out reopens the window
-  - L426 owing dollars and selling nothing shuts it too
-- **L429 6. and the price of walking away**
-  - L443 everything owed abroad is written off
-  - L444 ...so the city owes nothing abroad
-  - L445 ...and the position improves by the whole of it
-  - L447 ...recorded as what it is: money nobody was paid
-  - L450 the window is shut
-  - L451 ...for five years
-  - L453 ...and the price carries a scar
-  - L465 debt-to-exports now says the city is spotless
-  - L467 ...and it still cannot borrow a dollar
-  - L478 ...and says so when asked
-- **L480 7. across a reload**
-  - L524 the fixture has foreign paper worth carrying
-  - L526 the dollars owed reload exactly
-  - L540 ...valued at the rate the city actually has, immediately
-  - L543 ...and the exchange rate reached the instruments
-  - L546 the scar reloads
-  - L548 ...and it is a scar worth reloading
-  - L553 fixture: the live city's window is shut BY THE DEFAULT CLOCK
-  - L556 ...so the window is still shut on the reloaded city
-  - L558 ...and shut for the same reason, not a different one
-  - L561 the lifetime revaluation reloads
-  - L563 ...and what the city walked away from
-  - L582 a reloaded city does not book its whole history as one month
+  - L387 converting puts the whole proceeds in the treasury
+  - L388 ...and leaves the reserve position alone
+  - L390 holding puts the whole proceeds in reserves
+  - L391 ...and the treasury does not see a cent of it
+  - L411 parking borrowed dollars does not read as getting richer
+- **L414 5. the window shuts**
+  - L419 a city that owes nothing can always borrow
+  - L425 ...and one drowning in dollars cannot
+  - L426 ...and is told why in words
+  - L430 earning its way out reopens the window
+  - L435 owing dollars and selling nothing shuts it too
+- **L438 6. and the price of walking away**
+  - L452 everything owed abroad is written off
+  - L453 ...so the city owes nothing abroad
+  - L454 ...and the position improves by the whole of it
+  - L456 ...recorded as what it is: money nobody was paid
+  - L459 the window is shut
+  - L460 ...for five years
+  - L462 ...and the price carries a scar
+  - L474 debt-to-exports now says the city is spotless
+  - L476 ...and it still cannot borrow a dollar
+  - L487 ...and says so when asked
+- **L489 7. across a reload**
+  - L533 the fixture has foreign paper worth carrying
+  - L535 the dollars owed reload exactly
+  - L549 ...valued at the rate the city actually has, immediately
+  - L552 ...and the exchange rate reached the instruments
+  - L555 the scar reloads
+  - L557 ...and it is a scar worth reloading
+  - L562 fixture: the live city's window is shut BY THE DEFAULT CLOCK
+  - L565 ...so the window is still shut on the reloaded city
+  - L567 ...and shut for the same reason, not a different one
+  - L570 the lifetime revaluation reloads
+  - L572 ...and what the city walked away from
+  - L591 a reloaded city does not book its whole history as one month
 
 ## GdpCheck.java - 69 labelled assertions
 
@@ -1995,264 +2051,264 @@ _(this harness does not label its checks through a helper - it prints its findin
 > That rule has been earned five separate times in this codebase: an assertion
 > ...
 
-- **L62 1. the buildings know what they treat**
-  - L73 a hospital is general care
-  - L74 a daycare is childcare
-  - L75 a nursing home is senior care
-  - L76 a house treats nobody
-  - L82 \"Home Daycare\" and \"Nursing Home\" are not the same care
-  - L91 something in the catalogue does
-- **L96 care capacity**
-  - L105 a new city has the doctor it was founded with
-  - L108 ...and a churchyard
-  - L111 ...but nobody founds a city with a crematorium
-  - L120 the childcare endowment is the pyramid's own share of the founding city
-  - L136 ...and senior care's, weighted across both retired bands
-  - L139 an elder needs a whole place and a senior a fraction of one
-  - L143 ...both less than general care, which serves everybody
-  - L161 two hospitals, on top of it
-  - L164 ...and the daycares are not counted with them
-  - L170 a hospital under construction treats nobody
-- **L173 2. coverage sets the baseline**
-  - L178 no beds at all
-  - L182 beds for everybody
-  - L186 half covered is halfway between
-  - L192 surplus beds do not go below the floor
-  - L198 a city with nobody in it is fully covered
-  - L199 ...and is not mid-plague
-- **L201 3. outbreaks actually happen**
-- **L207 outbreaks, over three hundred years**
-  - L224 outbreaks happen at all
-  - L228 ...about as often as the chance says (
-  - L230 ...and each one lasts more than a month
-  - L232 ...but none of them is permanent
-  - L233 no month ever loses more than the cap
-- **L237 an outbreak ends**
-  - L245 found an outbreak to follow
-  - L262 it ended
-  - L263 ...after more than one month
-  - L264 and the city is back to its baseline
-- **L268 what coverage buys**
-  - L280 coverage takes the edge off an outbreak
-  - L281 ...but does not prevent one
-  - L282 ...by exactly the mitigation it claims
-- **L285 4. the same month rolls the same way**
-- **L292 not save-scummable**
-  - L301 two cities living the same months get the same illness
-  - L308 saving mid-outbreak
-  - L311 the save was accepted
-  - L312 the outbreak came back
-  - L314 ...and so did the rate the month was throttled by
-  - L320 a malformed array is refused
-  - L321 ...and nothing was half-read
-  - L322 a save from before sickness is refused too, not read at an offset
-- **L325 5. THE POINT: output falls, nobody does**
-  - L360 a city with no clinics is already ill
-  - L393 fixture: the shops sold something at full health
-  - L403 the workforce is unchanged
-  - L404 the population is unchanged
-  - L405 the wage bill is unchanged
-  - L406 the employer still pays the full payroll
-  - L422 ...and the shops hand over fewer baskets by exactly the sick rate
-  - L426 the mills run slower by the same share
-  - L442 the sites were not moved by the economy's ratio
-  - L454 beds for everybody speeds the sites up
-  - L458 ...by exactly the difference in the sick rate
-- **L462 a city, played and reloaded**
-  - L480 clinics gave the city some coverage
-  - L481 ...so it is healthier than an untreated one
-  - L483 ...but not perfectly healthy
-  - L490 the sick rate came back
-  - L492 ...and the outbreak with it
-  - L494 ...and the coverage the month was priced at
-  - L503 and the sectors were told about it on the load path
-  - L510 ...including the statement it struck under it
-- **L514 6. an unstaffed hospital treats nobody**
-  - L529 fully staffed, a hospital treats its whole capacity
-  - L536 with nobody at all, only the founding doctor is left
-  - L547 ...and losing only its doctors costs it exactly their share of the posts
-- **L554 7. what care does to mortality**
-  - L564 half-covered is exactly today's rate:
-  - L568 no childcare at all
-  - L570 childcare for everybody
-  - L579 no general care at all leaves the adults' rate alone
-  - L581 ...and so does general care for everybody
-  - L583 ...and the teenagers' the same
-  - L585 no senior care at all
-  - L592 children are the drastic ones
-  - L594 ...and seniors are the gentlest
-  - L598 general care does not also treat babies
-  - L600 ...nor seniors
-  - L606 
-  - L611 no childcare, no bonus
-  - L612 childcare for everybody doubles it
-  - L633 ...and the pyramid gets that many more babies
-  - L654 a city with childcare loses far fewer infants
-  - L656 ...and has far more of them
-  - L664 a cared-for city keeps more of its babies
-  - L666 ...and more of its seniors
-- **L669 8. death care**
-  - L677 with savings and plots, everybody is buried
-  - L678 ...and nobody is cremated
-  - L679 ...and the plots are gone for good
-  - L680 ...and the city collected the burial fee
-  - L686 with no savings, everybody is cremated
-  - L687 ...and the ground is untouched
-  - L688 ...which is the cheaper funeral
-  - L694 a full cemetery sends the rest to the oven
-  - L695 ...which takes them
-  - L696 ...and nobody is left waiting
-  - L700 a busy crematorium sends the rest to the ground
-  - L702 ...even though nobody could afford a plot
-  - L703 ...and nobody is left waiting
-  - L708 with neither, they all wait
-  - L709 ...and nothing was collected
-  - L713 a new cemetery clears the backlog and the month together
-  - L715 ...leaving nobody
-  - L720 a city that never builds one stops counting after two years
-- **L724 and it makes people ill**
-  - L731 leaving them where they fell costs output
-  - L732 ...by the weight it claims
-  - L737 however many there are, it is capped
-- **L740 9. senior care draws people in**
-  - L743 no senior care, no bonus
-  - L744 full coverage, the full draw
-  - L757 senior care raises the target by exactly the pull
-- **L761 10. and somebody pays for all of it**
-  - L803 the service costs something
-  - L804 ...most of which is wages
-  - L820 ...and it is a NET DEFICIT business, per the spec
-  - L822 ...with fees nowhere near funding it
-  - L825 the treasury is billed for it
-  - L827 ...and it is on the city's expenditure list
-  - L829 ...and the fees are on its revenue list
-  - L837 and the households paid exactly what the city collected a month ago
-  - L839 ...which is not the same as this month's, so the test means something
-  - L846 ...and the seven tiers add back up to it
-  - L850 healthcare is counted as government output
-  - L861 a bigger bill is a smaller surplus, penny for penny
-  - L873 the graves came back
-  - L875 ...and the backlog
-  - L877 ...and the bill the city was paying
-  - L880 a save from before healthcare had books is refused whole
-- **L883 11. a skip cannot hide an epidemic**
-- **L891 a skip reports what it lived through**
-  - L907 the skip noticed the epidemics
-  - L908 ...and counted every month of them
-  - L910 ...and kept the worst month, which the endpoints cannot show
-  - L912 an untreated city is below full every single month
-  - L917 a healthy month reports no outbreak
-  - L918 ...and nothing left unburied
-- **L920 12. the fee has a dial, and the funerals do not**
-- **L929 the price at the door: the fee scale**
-  - L933 the scale multiplies general care's fee
-  - L935 ...and childcare's
-  - L937 ...and senior care's
-  - L939 ...and NOT the burial fee
-  - L940 ...nor the cremation fee
-  - L941 the founding fee is still the founding fee, unscaled
-  - L944 the dial stops at its ceiling
-  - L946 ...and at nothing
-  - L948 a new city charges the founding fee
-  - L950 ...and no premium
-  - L952 the policy clamps the scale to the same ceiling
-  - L955 ...and the premium to its own
-  - L969 at 0 nobody pays for treatment
-  - L970 ...and everybody is still treated
-  - L971 ...and the funerals still charge
-  - L972 ...so the fees are the funerals alone
-  - L973 ...and nobody was priced out by a fee of nothing
-  - L985 the break-even scale is the gross cost over the fees at 1x
-  - L986 ...and this ward's is inside the dial
-  - L989 at the break-even scale the fees meet the gross cost
-  - L991 ...and the net cost is nothing
-  - L994 below it the service loses money
-  - L995 ...half the fees, at half the scale
-  - L998 above it, it is a business
-  - L999 ...and the recovery rate says so
-  - L1008 fixture: the city's break-even is inside the dial
-  - L1013 the policy's scale reached the service
-  - L1014 at the city's break-even the fees at full service are within a month's drift of the cost
-  - L1019 ...at half of it the service loses money
-  - L1020 ...by about half the cost
-- **L1030 13. who can afford the clinic**
-- **L1043 who can afford the clinic**
-  - L1055 a household with room pays its whole care bill
-  - L1057 ...and skips nothing
-  - L1061 ...and so does one whose room is exactly the bill
-  - L1069 a household short of a basket pays only what fits after eating
-  - L1071 ...which is the share of its people the clinic will see
-  - L1072 ...and the rest of the bill is what it eats instead
-  - L1074 ...so the bill it does pay leaves the basket whole
-  - L1080 a household with nothing pays nothing
-  - L1081 ...and none of its people are served
-  - L1082 ...whatever the fee
-  - L1084 ...and with a fee of nothing it is served in full
-  - L1093 a household that skipped last month's bill is judged on the full one
-  - L1098 ...and settles where it pays what it can, month after month
-  - L1101 ...rather than swinging between served and starving
-  - L1186 fixture: the poor city has somebody at the eat-less step
-  - L1188 fixture: at the dial's top the fee priced somebody out
-  - L1190 at a high fee a poor city serves a smaller share of its people than at the founding fee
-  - L1199 ...and its baseline sick rate, which coverage sets, is higher for it
-  - L1201 ...and it buries more of its people over the run
-  - L1202 ...its old first, whom a fee on senior care turns away
-  - L1203 with the fee at nothing the same city is served in full, every month
-  - L1205 ...every kind of care
-  - L1208 ...and the households who skipped a bill ate with it: the dear city is no hungrier than the free one by more than the price of care
-  - L1214 
-  - L1216 ...and the served are the offered times the share who could pay
-  - L1224 the treatment fees are charged on the people treated
-  - L1225 ...which is less than the same beds would raise at full service
-  - L1233 the buildings' upkeep is the same at a dear fee as at the founding fee
-  - L1235 ...and the service still costs money to run
-- **L1238 14. the unchanged case, at zero tolerance**
-- **L1250 the unchanged case, at zero tolerance**
-  - L1263 in a city that can pay, every household paid its whole care bill
-  - L1265 
-  - L1267 ...and the served are the offered, exactly
-  - L1270 ...and the fees charged are the fees at full service, exactly
-  - L1272 ...and the households were billed exactly what the city collected a month ago, as before
-  - L1274 ...and nobody was priced out
-  - L1275 ...and no bill was skipped
-- **L1277 15. the premium**
-- **L1285 the premium**
-  - L1293 the premium raises exactly the rate times the wage bill
-  - L1295 fixture: which is money
-  - L1296 ...on the same base as the EI premium
-  - L1298 ...and it is on the government's revenue list
-  - L1301 ...inside the revenue total
-  - L1305 ...and reaches the treasury's cash, penny for penny
-  - L1313 the households' statement shows the premium the city collected a month ago
-  - L1319 ...and the rows add back up to it
-  - L1320 ...off the wages, so the retired pay none
-  - L1322 ...and it comes off take-home, like the EI premium
-  - L1328 the money audit saw it as a household-to-treasury flow
-  - L1355 
-  - L1358 the insured city charged no treatment fee
-  - L1359 ...and the fee-funded one did
-  - L1360 the insured city's wage earners paid a premium
-  - L1362 ...and the fee-funded city's paid none
-  - L1363 the gross cost is the same either way: a ward is paid for whether or not its patients are
-- **L1366 16. both dials survive a save, and a reform**
-  - L1376 the fee scale came back
-  - L1377 ...and the premium
-  - L1378 ...and the service charges at the reloaded scale
-  - L1379 ...and the full-service bill the next strike reads came back
-  - L1387 a save from before the dials is still read
-  - L1388 ...at the founding fee
-  - L1389 ...with no premium
-  - L1392 ...and so is the service's state from before the full-service bill
-  - L1394 ...which reads the bill it charged as the bill at full service
-  - L1396 ...and a coverage of 1 until a month strikes it
-  - L1401 ...and the state from before the coverages were kept
-  - L1402 ...which reads the full bill at 1x it carried
-  - L1403 the reloaded service kept the coverage the month read
-  - L1405 ...which is the figure the sick rate read, not the beds
-  - L1412 a currency reform leaves the fee scale alone
-  - L1413 ...and the premium
-  - L1417 ...and the service's scale
-  - L1418 ...while its fees move with the money
+- **L63 1. the buildings know what they treat**
+  - L74 a hospital is general care
+  - L75 a daycare is childcare
+  - L76 a nursing home is senior care
+  - L77 a house treats nobody
+  - L83 \"Home Daycare\" and \"Nursing Home\" are not the same care
+  - L92 something in the catalogue does
+- **L97 care capacity**
+  - L106 a new city has the doctor it was founded with
+  - L109 ...and a churchyard
+  - L112 ...but nobody founds a city with a crematorium
+  - L121 the childcare endowment is the pyramid's own share of the founding city
+  - L137 ...and senior care's, weighted across both retired bands
+  - L140 an elder needs a whole place and a senior a fraction of one
+  - L144 ...both less than general care, which serves everybody
+  - L162 two hospitals, on top of it
+  - L165 ...and the daycares are not counted with them
+  - L171 a hospital under construction treats nobody
+- **L174 2. coverage sets the baseline**
+  - L179 no beds at all
+  - L183 beds for everybody
+  - L187 half covered is halfway between
+  - L193 surplus beds do not go below the floor
+  - L199 a city with nobody in it is fully covered
+  - L200 ...and is not mid-plague
+- **L202 3. outbreaks actually happen**
+- **L208 outbreaks, over three hundred years**
+  - L225 outbreaks happen at all
+  - L229 ...about as often as the chance says (
+  - L231 ...and each one lasts more than a month
+  - L233 ...but none of them is permanent
+  - L234 no month ever loses more than the cap
+- **L238 an outbreak ends**
+  - L246 found an outbreak to follow
+  - L263 it ended
+  - L264 ...after more than one month
+  - L265 and the city is back to its baseline
+- **L269 what coverage buys**
+  - L281 coverage takes the edge off an outbreak
+  - L282 ...but does not prevent one
+  - L283 ...by exactly the mitigation it claims
+- **L286 4. the same month rolls the same way**
+- **L293 not save-scummable**
+  - L302 two cities living the same months get the same illness
+  - L309 saving mid-outbreak
+  - L312 the save was accepted
+  - L313 the outbreak came back
+  - L315 ...and so did the rate the month was throttled by
+  - L321 a malformed array is refused
+  - L322 ...and nothing was half-read
+  - L323 a save from before sickness is refused too, not read at an offset
+- **L326 5. THE POINT: output falls, nobody does**
+  - L361 a city with no clinics is already ill
+  - L394 fixture: the shops sold something at full health
+  - L404 the workforce is unchanged
+  - L405 the population is unchanged
+  - L406 the wage bill is unchanged
+  - L407 the employer still pays the full payroll
+  - L423 ...and the shops hand over fewer baskets by exactly the sick rate
+  - L427 the mills run slower by the same share
+  - L443 the sites were not moved by the economy's ratio
+  - L455 beds for everybody speeds the sites up
+  - L459 ...by exactly the difference in the sick rate
+- **L463 a city, played and reloaded**
+  - L481 clinics gave the city some coverage
+  - L482 ...so it is healthier than an untreated one
+  - L484 ...but not perfectly healthy
+  - L491 the sick rate came back
+  - L493 ...and the outbreak with it
+  - L495 ...and the coverage the month was priced at
+  - L504 and the sectors were told about it on the load path
+  - L511 ...including the statement it struck under it
+- **L515 6. an unstaffed hospital treats nobody**
+  - L530 fully staffed, a hospital treats its whole capacity
+  - L537 with nobody at all, only the founding doctor is left
+  - L548 ...and losing only its doctors costs it exactly their share of the posts
+- **L555 7. what care does to mortality**
+  - L565 half-covered is exactly today's rate:
+  - L569 no childcare at all
+  - L571 childcare for everybody
+  - L580 no general care at all leaves the adults' rate alone
+  - L582 ...and so does general care for everybody
+  - L584 ...and the teenagers' the same
+  - L586 no senior care at all
+  - L593 children are the drastic ones
+  - L595 ...and seniors are the gentlest
+  - L599 general care does not also treat babies
+  - L601 ...nor seniors
+  - L607 
+  - L612 no childcare, no bonus
+  - L613 childcare for everybody doubles it
+  - L634 ...and the pyramid gets that many more babies
+  - L655 a city with childcare loses far fewer infants
+  - L657 ...and has far more of them
+  - L665 a cared-for city keeps more of its babies
+  - L667 ...and more of its seniors
+- **L670 8. death care**
+  - L678 with savings and plots, everybody is buried
+  - L679 ...and nobody is cremated
+  - L680 ...and the plots are gone for good
+  - L681 ...and the city collected the burial fee
+  - L687 with no savings, everybody is cremated
+  - L688 ...and the ground is untouched
+  - L689 ...which is the cheaper funeral
+  - L695 a full cemetery sends the rest to the oven
+  - L696 ...which takes them
+  - L697 ...and nobody is left waiting
+  - L701 a busy crematorium sends the rest to the ground
+  - L703 ...even though nobody could afford a plot
+  - L704 ...and nobody is left waiting
+  - L709 with neither, they all wait
+  - L710 ...and nothing was collected
+  - L714 a new cemetery clears the backlog and the month together
+  - L716 ...leaving nobody
+  - L721 a city that never builds one stops counting after two years
+- **L725 and it makes people ill**
+  - L732 leaving them where they fell costs output
+  - L733 ...by the weight it claims
+  - L738 however many there are, it is capped
+- **L741 9. senior care draws people in**
+  - L744 no senior care, no bonus
+  - L745 full coverage, the full draw
+  - L758 senior care raises the target by exactly the pull
+- **L762 10. and somebody pays for all of it**
+  - L804 the service costs something
+  - L805 ...most of which is wages
+  - L821 ...and it is a NET DEFICIT business, per the spec
+  - L823 ...with fees nowhere near funding it
+  - L826 the treasury is billed for it
+  - L828 ...and it is on the city's expenditure list
+  - L830 ...and the fees are on its revenue list
+  - L838 and the households paid exactly what the city collected a month ago
+  - L840 ...which is not the same as this month's, so the test means something
+  - L847 ...and the seven tiers add back up to it
+  - L851 healthcare is counted as government output
+  - L862 a bigger bill is a smaller surplus, penny for penny
+  - L874 the graves came back
+  - L876 ...and the backlog
+  - L878 ...and the bill the city was paying
+  - L881 a save from before healthcare had books is refused whole
+- **L884 11. a skip cannot hide an epidemic**
+- **L892 a skip reports what it lived through**
+  - L908 the skip noticed the epidemics
+  - L909 ...and counted every month of them
+  - L911 ...and kept the worst month, which the endpoints cannot show
+  - L913 an untreated city is below full every single month
+  - L918 a healthy month reports no outbreak
+  - L919 ...and nothing left unburied
+- **L921 12. the fee has a dial, and the funerals do not**
+- **L930 the price at the door: the fee scale**
+  - L934 the scale multiplies general care's fee
+  - L936 ...and childcare's
+  - L938 ...and senior care's
+  - L940 ...and NOT the burial fee
+  - L941 ...nor the cremation fee
+  - L942 the founding fee is still the founding fee, unscaled
+  - L945 the dial stops at its ceiling
+  - L947 ...and at nothing
+  - L949 a new city charges the founding fee
+  - L951 ...and no premium
+  - L953 the policy clamps the scale to the same ceiling
+  - L956 ...and the premium to its own
+  - L970 at 0 nobody pays for treatment
+  - L971 ...and everybody is still treated
+  - L972 ...and the funerals still charge
+  - L973 ...so the fees are the funerals alone
+  - L974 ...and nobody was priced out by a fee of nothing
+  - L986 the break-even scale is the gross cost over the fees at 1x
+  - L987 ...and this ward's is inside the dial
+  - L990 at the break-even scale the fees meet the gross cost
+  - L992 ...and the net cost is nothing
+  - L995 below it the service loses money
+  - L996 ...half the fees, at half the scale
+  - L999 above it, it is a business
+  - L1000 ...and the recovery rate says so
+  - L1009 fixture: the city's break-even is inside the dial
+  - L1014 the policy's scale reached the service
+  - L1015 at the city's break-even the fees at full service are within a month's drift of the cost
+  - L1020 ...at half of it the service loses money
+  - L1021 ...by about half the cost
+- **L1031 13. who can afford the clinic**
+- **L1044 who can afford the clinic**
+  - L1056 a household with room pays its whole care bill
+  - L1058 ...and skips nothing
+  - L1062 ...and so does one whose room is exactly the bill
+  - L1070 a household short of a basket pays only what fits after eating
+  - L1072 ...which is the share of its people the clinic will see
+  - L1073 ...and the rest of the bill is what it eats instead
+  - L1075 ...so the bill it does pay leaves the basket whole
+  - L1081 a household with nothing pays nothing
+  - L1082 ...and none of its people are served
+  - L1083 ...whatever the fee
+  - L1085 ...and with a fee of nothing it is served in full
+  - L1094 a household that skipped last month's bill is judged on the full one
+  - L1099 ...and settles where it pays what it can, month after month
+  - L1102 ...rather than swinging between served and starving
+  - L1194 fixture: the poor city has somebody at the eat-less step
+  - L1196 fixture: at the dial's top the fee priced somebody out
+  - L1198 at a high fee a poor city serves a smaller share of its people than at the founding fee
+  - L1207 ...and its baseline sick rate, which coverage sets, is higher for it
+  - L1229 ...and it buries more of its people over the run
+  - L1230 ...its old first, whom a fee on senior care turns away
+  - L1231 with the fee at nothing the same city is served in full, every month
+  - L1233 ...every kind of care
+  - L1236 ...and the households who skipped a bill ate with it: the dear city is no hungrier than the free one by more than the price of care
+  - L1242 
+  - L1244 ...and the served are the offered times the share who could pay
+  - L1252 the treatment fees are charged on the people treated
+  - L1253 ...which is less than the same beds would raise at full service
+  - L1261 the buildings' upkeep is the same at a dear fee as at the founding fee
+  - L1263 ...and the service still costs money to run
+- **L1266 14. the unchanged case, at zero tolerance**
+- **L1278 the unchanged case, at zero tolerance**
+  - L1291 in a city that can pay, every household paid its whole care bill
+  - L1293 
+  - L1295 ...and the served are the offered, exactly
+  - L1298 ...and the fees charged are the fees at full service, exactly
+  - L1300 ...and the households were billed exactly what the city collected a month ago, as before
+  - L1302 ...and nobody was priced out
+  - L1303 ...and no bill was skipped
+- **L1305 15. the premium**
+- **L1313 the premium**
+  - L1321 the premium raises exactly the rate times the wage bill
+  - L1323 fixture: which is money
+  - L1324 ...on the same base as the EI premium
+  - L1326 ...and it is on the government's revenue list
+  - L1329 ...inside the revenue total
+  - L1333 ...and reaches the treasury's cash, penny for penny
+  - L1341 the households' statement shows the premium the city collected a month ago
+  - L1347 ...and the rows add back up to it
+  - L1348 ...off the wages, so the retired pay none
+  - L1350 ...and it comes off take-home, like the EI premium
+  - L1356 the money audit saw it as a household-to-treasury flow
+  - L1383 
+  - L1386 the insured city charged no treatment fee
+  - L1387 ...and the fee-funded one did
+  - L1388 the insured city's wage earners paid a premium
+  - L1390 ...and the fee-funded city's paid none
+  - L1391 the gross cost is the same either way: a ward is paid for whether or not its patients are
+- **L1394 16. both dials survive a save, and a reform**
+  - L1404 the fee scale came back
+  - L1405 ...and the premium
+  - L1406 ...and the service charges at the reloaded scale
+  - L1407 ...and the full-service bill the next strike reads came back
+  - L1415 a save from before the dials is still read
+  - L1416 ...at the founding fee
+  - L1417 ...with no premium
+  - L1420 ...and so is the service's state from before the full-service bill
+  - L1422 ...which reads the bill it charged as the bill at full service
+  - L1424 ...and a coverage of 1 until a month strikes it
+  - L1429 ...and the state from before the coverages were kept
+  - L1430 ...which reads the full bill at 1x it carried
+  - L1431 the reloaded service kept the coverage the month read
+  - L1433 ...which is the figure the sick rate read, not the beds
+  - L1440 a currency reform leaves the fee scale alone
+  - L1441 ...and the premium
+  - L1445 ...and the service's scale
+  - L1446 ...while its fees move with the money
 
 ## HistoryCheck.java - 22 labelled assertions
 
@@ -3181,17 +3237,17 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 _(this harness does not label its checks through a helper - it prints its findings; read its header and its sections)_
 
-- **L236 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L910 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L961 AND EVERYTHING THAT IS A PURCHASE.**
-- **L1250 AND THE BEST OF THEM WINS.**
-- **L1828 founding: a few months at a time, by hand**
-- **L1918 then the real rhythm**
-- **L2044 the report**
-- **L2052 ==**
-- **L2138 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L2566 what the advisor tried, and what happened**
-- **L2572 findings**
+- **L247 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
+- **L924 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L975 AND EVERYTHING THAT IS A PURCHASE.**
+- **L1264 AND THE BEST OF THEM WINS.**
+- **L1846 founding: a few months at a time, by hand**
+- **L1936 then the real rhythm**
+- **L2062 the report**
+- **L2070 ==**
+- **L2156 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L2600 what the advisor tried, and what happened**
+- **L2606 findings**
 
 ## ManufacturingCheck.java - 57 labelled assertions
 
@@ -3428,7 +3484,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L211 a city conserves money with hot money flowing
   - L214 ...and nothing moved after the audit struck
 
-## NewGameCheck.java - 13 labelled assertions
+## NewGameCheck.java - 17 labelled assertions
 
 > Does "Start New Game" actually start a new game?
 > 
@@ -3444,24 +3500,28 @@ _(this harness does not label its checks through a helper - it prints its findin
 > of construction cash, $15,402k of business debt, 1,868 units of the previous
 > ...
 
-- **L173 1. what a city that never existed looks like**
-  - L181 it has no people
-  - L182 it has its starting cash
-  - L183 it is at month 1
-- **L185 2. live in one, hard**
-  - L222 the used city really is used
-- **L226 3. start a new one**
-- **L247 4. and it is actually playable**
-  - L251 the building catalogue is loaded
-  - L255 houses can be ordered
-  - L261 and so can shops
-  - L266 months pass
-  - L267 and people move in
-  - L270 its history starts from this city, not the last one
-- **L273 5. a new game after a LOAD, too**
-  - L282 saved
-  - L286 loaded
-  - L305 starting a new game does not delete the save it left
+- **L187 1. what a city that never existed looks like**
+  - L195 it has no people
+  - L196 it has its starting cash
+  - L197 ...and the founders' dollars in the vault
+  - L199 ...bought on day one, at the opening rate
+  - L202 it is at month 1
+- **L204 2. live in one, hard**
+  - L244 the used city really is used
+  - L247 ...and its vault is not the founders' any more
+- **L250 3. start a new one**
+- **L271 4. and it is actually playable**
+  - L275 the building catalogue is loaded
+  - L279 houses can be ordered
+  - L285 and so can shops
+  - L290 months pass
+  - L291 and people move in
+  - L294 its history starts from this city, not the last one
+- **L297 5. a new game after a LOAD, too**
+  - L307 saved
+  - L311 loaded
+  - L316 ...with the vault it was saved with, not a new city's
+  - L339 starting a new game does not delete the save it left
 
 ## OutsideCheck.java - 100 labelled assertions
 

@@ -1083,7 +1083,28 @@ final class SummaryScreen {
                     if (fxPanel.getReserves() > 0) {
                         b.getChildren().add(statLine("  in " + Currency.FOREIGN_CODE,
                                 usd(fxPanel.getReservesUsd())));
+                        /*
+                         * The USD figure is the vault itself since 2026-09-21
+                         * and the local one is what it fetches today; this is
+                         * what the currency did to the second this month.
+                         */
+                        if (Math.abs(fxPanel.getLastVaultRevaluation()) > .005) {
+                            b.getChildren().add(statLine("  currency did",
+                                    (fxPanel.getLastVaultRevaluation() > 0 ? "+" : "−")
+                                            + money(Math.abs(fxPanel.getLastVaultRevaluation())),
+                                    fxPanel.getLastVaultRevaluation() > 0 ? PANEL_GOOD : null));
+                        }
                         b.getChildren().add(panelNote("exchange it to spend it at home"));
+                        // Where it came from, while the city is young - see
+                        // Game's THE FOUNDING RESERVE.
+                        if (ui.game.getMonth() <= Game.FOUNDERS_NOTE_MONTHS) {
+                            double cover = fxPanel.importCover();
+                            b.getChildren().add(panelNote(String.format(
+                                    "the founders left %s here%s", usd(Game.FOUNDING_RESERVE_USD),
+                                    fxPanel.monthlyImports() <= 0 ? ""
+                                            : cover >= 120 ? " - over ten years of imports"
+                                            : String.format(" - %.1f months of imports", cover))));
+                        }
                         if (fxPanel.monthlyImports() > 0) {
                             b.getChildren().add(statLine("Import cover",
                                     String.format("%.1f mo",

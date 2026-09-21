@@ -1,12 +1,46 @@
 # The list — what is open
 
-Updated 2026-09-21 (0.6.9, the price of a place). What shipped is in `changelog.md`,
+Updated 2026-09-21 (0.6.10, a reserve defends a currency). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
 has been away reads the changelog's top block and section 0 here, then works.
 
 ## 0. Do this week — costs nothing, saves weeks
+
+**NEXT, AND IT IS 7.0: THE MONEY SUPPLY.** Jerus, 2026-09-21, reading his
+0.6.9 city's decade book (prices 399x founding in 25 years, the currency at
+its 100x guard, average inflation 29% a year): *"next up we are going to have
+to delve into M2 supply and all, which will be 7.0."* What the decade book
+showed, read against the model's own rules (`ForeignAccounts.repriceCurrency`,
+`LabourMarket.COST_OF_LIVING_PASS_THROUGH`, `PriceIndex`, `Bank.ratePremium`):
+**the model has no nominal anchor.** The currency drifts by the full
+inflation differential every month (`rate *= 1 + (local - world)/12`, unbounded)
+and is pulled toward a parity that itself rises with local prices; imports
+reprice through the rate one for one; wages chase the whole index over two
+years; rent follows the wage; the shelf is cost-plus on both. Every link in
+that ring has a gain of one, so a shock never decays, and every force against
+it is capped - the rate differential's support at 0.8 x 2% a month, the policy
+dial at 25% (the Taylor advice at 45% inflation is 67%), the reserve's
+absorption at 85%. And the money to pay 400x prices is simply created: past
+its capacity the bank funds itself abroad, at 5.5x capacity in that city, so
+lending is limited only by the premium's 18 points. 7.0 is the anchor: a
+central bank that holds an overnight rate by operating in the market (the term
+structure `DebtManager.CITY_DISCOUNT`'s note already promises), reserves that
+constrain the bank's book, and M2 as a series the player can see and the price
+level answers to. Until then, the two cheap questions are whether the PPP drift
+should pass through less than one for one and whether `MAX_POLICY_RATE` should
+be allowed above inflation. Not tuned; Jerus's design. *The second is answered
+(2026-09-21, the same night): the cap stays at 25% until 7.0 — above ~13 points
+over the world a higher rate buys no currency support in this model and only
+reprices credit and the bank's wholesale funding — and the monetary page now
+prints what the rule would set and where the dial stops. The first is still
+open. The vault, the founding reserve and the strip shipped as 0.6.10, see
+`a-reserve-defends-a-currency.md`.*
+
+**And the model rule changed the same day:** both agents - the implementer and
+the docs pass - run on Opus from 2026-09-21; Fable is withdrawn (he does not
+have the tokens to run it for every task). `CLAUDE.md` says so.
 
 **FROM THE STRUCTURE AUDIT, 2026-09-18** (see `the-ai-ergonomics-audit.md`), two
 that take a minute each on the PC:
@@ -99,6 +133,13 @@ price of a place, the grant as a basis and an amount, a rate on the student
 loan — and a new revenue line, "Student loan interest"; 206 files, ~128,000
 lines; save format 27 and 57 harnesses unchanged.** If the manual's open
 questions carry the tuition table's calibration, it is answered by the dial.
+**And 0.6.10 as of 2026-09-21: the top strip's two new panels (prices against
+founding over inflation year on year; the rate both ways, `US$1 = D$x` over
+`D$1 = US¢y`), the founding vault (a new city opens with D$2.5B in the
+treasury and US$1B in the vault, rather than $3.5B of cash), and the vault
+kept in dollars with a monthly revaluation line; a reserve now damps only a
+fall; the monetary page names the rule and the dial's stop apart; 206 files,
+~129,000 lines; save format 27 and 57 harnesses unchanged.**
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -173,7 +214,9 @@ Concretely, in rough order of value:
    screenshot. This is also why the store page comes last.
 
 *(2026-09-06 chipped at 2 and 3: the build menu now prices every row and explains
-every building on hover, and the top strip pronounces the date and cash. See
+every building on hover, and the top strip pronounces the date and cash
+(2026-09-21: and prices and the exchange rate beside them, and the Exchange
+page says the founders left a vault). See
 `build-menu-info-and-receipt.md`. 2026-09-08 rebuilt most of the rest of the UI.
 2026-09-09 gave the Real estate screen two rent markets with a plain-words note
 about what a high family figure beside a low studio one means — the first screen
@@ -1039,6 +1082,23 @@ Ranked by how likely they are to read as "this game is broken".
   the balance carried in), and the freeze is `PrisonerHousehold`'s own now, no
   instalment and no interest, asserted in `EducationCheck` §14. Found
   2026-09-14; the $390 default is still open.
+- **THE DEBT'S MONTHLY REVALUATION IS NOT SAVED.** `ForeignAccounts.lastRevaluation`
+  (~L825, struck in `takeForeignDebt()`) is not in the save array, so after a
+  load the trade and finance pages' "the currency moved it by" line reads
+  nothing until the month turns. The vault's own revaluation is saved (slot 23)
+  since 0.6.10. Found 2026-09-21, `a-reserve-defends-a-currency.md` §7.
+- **A SCREEN WRITES TO THE MODEL.** `TradeScreen.currencyForcesPage()` (~L1320)
+  calls `fx.effectivePressure()`, which writes `lastPressure` and
+  `lastAbsorption`. Harmless today — same state, same values — but the
+  interface is meant to read the model through getters and nothing else.
+  `ForeignAccounts.reset()` also leaves `rateDifferential`, `localInflation`
+  and `worldInflation` from the previous city until the first month turns
+  (the simulation is unaffected). Found 2026-09-21, same note.
+- **A DEFENCE THAT SPENDS RESERVES — for 7.0.** Absorption costs nothing: the
+  vault damps a push weaker in proportion to its cover and is never drawn down
+  by doing it, which is why the default player never sees it work. A defence
+  that sells dollars to hold the rate belongs with the money supply. Same
+  note, §8.
 - **THE TREASURY'S OVERDRAFT HAS NO FLOOR, AND COMPOUNDS TO NaN.** Found
   2026-09-21 by the schools ensemble's first draft: a founding village handed a
   University ($210M, $620k a month of upkeep, on a town of three hundred

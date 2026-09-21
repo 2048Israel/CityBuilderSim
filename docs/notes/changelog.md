@@ -8,6 +8,78 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
+### VERSION 0.6.10 — A RESERVE DEFENDS A CURRENCY — 2026-09-21, DEPLOYED AND VERIFIED, see `a-reserve-defends-a-currency.md`
+
+**Prices and the rate on the strip, a founding vault, and the vault kept in
+dollars.** Jerus, reading his 0.6.9 city's year book (prices 399x founding in
+twenty-five years, the currency at its 100x guard): *"of the 3.5B you start
+with, 1B is in usd in the reserve, so you only see 2.5B start with"*, and *"a
+number visible on the screen showing both the price index and current
+inflation year on year ... and a proper exchange rate which tells you how many
+your coins equals USD"*. The always-visible top strip has two new panels
+between the population and the cash (`UserInterface.refreshDateBar()`): prices
+against founding over inflation year on year, and the rate both ways in the
+currency's own names — `US$1 = D$x` over `D$1 = US¢y` (`Currency.FOREIGN_CENT_SYMBOL`)
+— coloured by four `STRIP_*` dials against the 2% target and against parity;
+every figure through a getter. The endowment is the same $3.5B, split:
+`Game.FOUNDING_CASH` D$2.5B in the treasury and `Game.FOUNDING_RESERVE_USD`
+US$1B bought on day one at the opening rate and booked as the purchase it is
+(`lifetimeIntervention` carries it); the Exchange page and the summary panel
+say where it came from for `FOUNDERS_NOTE_MONTHS` (120). **Found checking it:
+the vault was in the wrong currency.** `ForeignAccounts.reserves` was a local
+figure at the price paid, so a hundredfold fall turned a US$1B vault into
+US$10M and its import cover fell with it, while the dollar debt beside it was
+revalued every month. Now `reservesUsd` is the stock, its local value is
+dollars × rate, cover no longer moves with the currency, and the month's move
+is a revaluation line (`revalueVault()`, not cash, not an audit flow); save
+slot 19 keeps its meaning (the local value when saved), slots 22–23 are
+appended, an older save's vault comes back at the rate it was saved at,
+`SAVE_FORMAT` stays 27, and `restore()` resets first so a save without a vault
+does not inherit the founders'. **And the finding of the batch: two-sided
+absorption.** The vault damped the pressure on the rate both ways, so a deep
+one muted the surplus and the policy rate — the two forces that pull a
+currency out of a spiral — and with the founders' dollars in it three of eight
+seeds reproduced the year book (141x and 190x founding with the currency at
+its guard, and 11x; median price swing 1.63x → 3.80x). Jerus's rule, *"a
+reserve defends a currency; it does not hold one down"*: it damps only a push
+weaker (`ForeignAccounts.effectivePressure()`, `lastAbsorption` is what was
+applied), and the eight seeds went to a median swing of 1.60x, none past 2.81x
+(the pristine worst was 7.13x), the dearest dollar 1.65, sudden stops 8 → 0,
+bank failures 21 → 24, median write-offs $27.3B → $17.8B, population moving
+both ways. The monetary page, its alert and the playtest log print the Taylor
+rule and the dial's 25% stop separately (`DebtManager.ruleRate()`); the cap
+stays until 7.0, Jerus's call. `HealthCheck` §13's two burial comparisons are
+rates now (per person-month, per elder person-month), because the two cities
+end at different sizes. `ForeignCheck` §9–13 new; §2 and §8,
+`ForeignDebtCheck` §4b and `NewGameCheck` restated for a city that opens with
+a vault; the vault is on the playtest's reload comparison. The docs pass
+rewrote `ForeignAccounts`' "WHAT A RESERVE IS, TODAY" (it still described phase
+one) and marked the four phases built, folded the new "THE VAULT IS HELD IN
+DOLLARS" banner into "TWO NUMBERS THAT WERE ONE NUMBER" (it had emptied that
+section in the code map), gave `COVER_WINDOW` its own sentence (the dial index
+had been printing `importCover()`'s), moved a "save slot 19" javadoc to
+`parity` as slot 18, and corrected "the reserve" to "the cumulative balance"
+where the identity is meant (`ForeignAccounts`, `ForeignCheck`). Opus
+implementer, Opus docs pass. Verification: compile-all clean; suite 56 of 57
+with the known line (the implementer's run); `ForeignCheck`, `NewGameCheck`,
+`ForeignDebtCheck` and `HealthCheck` green after the docs pass; the playtest
+byte-identical to its new baseline (0921b) bar the wall clock; `StaleCheck` 0
+firm, 74 soft, none of them this batch's; `BuildMenuCheck` and the strip by
+eye on the PC. After the docs pass the orchestrating session moved
+`Game`'s founding-reserve banner down beside the construction subsidy (it had
+swallowed the constructor and the load path in the code map), corrected the
+0.6.10 paragraph's count (two seeds past 140x, one to 11x), four sentences on
+the Trade tab that were no longer true (cover does not price the next bond
+abroad; absorbing a push never draws the vault down; "four forces" of six), the
+strip's parity tooltip ("0% stronger"), and `DataSave`'s description of the
+foreign array; the whole suite run again on the final tree, 56 of 57 with the
+known line, the playtest byte-identical to 0921b. Files verified on the PC
+byte-for-byte: 15 source files (`Currency`, `DataSave`, `DebtManager`,
+`ForeignAccounts`, `ForeignCheck`, `ForeignDebtCheck`, `Game`, `GameVersion`,
+`HealthCheck`, `LongPlaytest`, `NewGameCheck`, `ui/PolicyScreen`,
+`ui/SummaryScreen`, `ui/TradeScreen`, `ui/UserInterface`), `CLAUDE.md`,
+`docs/notes/` and the regenerated `docs/` (tag 0921d).
+
 ### VERSION 0.6.9 — THE PRICE OF A PLACE — 2026-09-21, DEPLOYED AND VERIFIED, see `the-price-of-a-place.md`
 
 **The student grant becomes a menu, the student loan gets a rate, and a place

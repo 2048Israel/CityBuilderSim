@@ -1051,12 +1051,58 @@ final class TradeScreen {
 
         column.getChildren().add(sentence(tradeBuying
                 ? "Local money out of the treasury, foreign money into the vault. It "
-                + "costs the city cash it could have spent, and it buys cover — which is "
-                + "what makes the next bond abroad cheaper."
+                + "costs the city cash it could have spent, and it buys cover — months of "
+                + "imports the vault could pay for, which is what damps a push against the "
+                + "currency."
                 : "Foreign money out of the vault, local money into the treasury. This is "
                 + "how a treasury gets at money it holds abroad, AND it is everything a "
                 + "central bank has ever been able to do about an exchange rate. Both are "
                 + "true at once.", Palette.TEXT_BODY));
+
+        /*
+         * THE VAULT IN THE MONEY IT IS HELD IN, AND WHAT THE CURRENCY DID TO
+         * IT (2026-09-21). The vault is kept in dollars now, so its dollar
+         * figure is the one that stays put and its local figure is the one
+         * that moves - and the move is booked as a line of its own, the way
+         * the dollar debt's always was. Positive is the currency falling: the
+         * one thing a city owns that gains when its money loses.
+         */
+        column.getChildren().add(statementLine("In the vault",
+                usdFull(fx.getReservesUsd()),
+                fx.getReservesUsd() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("...worth at home, at today's rate",
+                moneyFull(fx.getReserves()), Palette.TEXT_MUTED));
+        double revalued = fx.getLastVaultRevaluation();
+        if (Math.abs(revalued) > .005) {
+            column.getChildren().add(statementLine("The currency moved it this month by",
+                    (revalued > 0 ? "+" : "−") + moneyFull(Math.abs(revalued)),
+                    revalued > 0 ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(statementNote(revalued > 0
+                    ? "The currency fell and the same dollars are worth more at home. Nobody "
+                    + "was paid anything: it is not cash until they are sold, and a sale is "
+                    + "at that day's rate. It is what a reserve is for."
+                    : "The currency rose and the same dollars fetch less at home. Nothing "
+                    + "was spent and nothing left the vault; sold today, this is what they "
+                    + "would raise."));
+        }
+
+        /*
+         * WHERE THE DOLLARS CAME FROM, on a young city. Jerus: "99% players
+         * wont add to reserves most probably cause they have no clue" - so the
+         * page says there is something in the vault the player did not put
+         * there, and what it would carry the city through.
+         */
+        if (ui.game.getMonth() <= Game.FOUNDERS_NOTE_MONTHS && fx.getReservesUsd() > 0) {
+            column.getChildren().add(statementNote(String.format(
+                    "The founders left %s in this vault on the first day, bought at %s%.2f "
+                    + "to the dollar out of the city's endowment. %s",
+                    usdFull(Game.FOUNDING_RESERVE_USD), Currency.QUALIFIED,
+                    ForeignAccounts.OPENING_RATE,
+                    fx.monthlyImports() > 0
+                            ? "What the vault holds now would pay for "
+                            + coverReading(fx.importCover()) + " of what the city buys abroad."
+                            : "The city is not buying anything abroad yet.")));
+        }
 
         double ceiling = tradeBuying ? Math.max(0, ui.game.getCash()) : fx.sellableReserves();
         tradeExchange = Math.max(0, Math.min(tradeExchange, ceiling));
@@ -1280,7 +1326,7 @@ final class TradeScreen {
         double account = fx.monthlyCurrentAccount();
         double capital = fx.monthlyFinancialAccount();
 
-        column.getChildren().add(statementHead("The four forces on the rate"));
+        column.getChildren().add(statementHead("The forces on the rate"));
 
         if (fx.isPinned()) {
             column.getChildren().add(alert("The rate is pinned",
@@ -1290,9 +1336,9 @@ final class TradeScreen {
         }
 
         column.getChildren().add(statementNote(
-                "Four readings decide what the rate does next. The first is the "
-                + "imbalance, the second is how big it is against everything traded, "
-                + "and the last two decide how much of it reaches the rate at all."));
+                "These readings decide what the rate does next. The first is the "
+                + "imbalance, the next how big it is against everything traded, and "
+                + "the rest decide how much of it reaches the rate at all."));
 
         boolean nothing = Math.abs(account) < .5;
         forceLine(column, "The current account, 12 months",
@@ -1351,7 +1397,9 @@ final class TradeScreen {
                 absorbed > .5 ? Palette.WARN : Palette.TEXT_BODY,
                 "How much of the push the vault is taking instead of the rate. "
                 + "Cover buys time, and only time - it does not buy a different "
-                + "answer.");
+                + "answer. And only against a fall: a push the other way passes "
+                + "through the vault in full, because a reserve defends a currency "
+                + "and does not hold one down.");
 
         forceLine(column, "Openness of the economy",
                 String.format("%.0f%%", fx.getOpenness() * 100),
@@ -1400,8 +1448,9 @@ final class TradeScreen {
         column.getChildren().add(statementNote(
                 "The push is what the month is doing to the currency; the pull is the "
                 + "basket dragging it back to what the same goods cost abroad. A city "
-                + "can hold a rate against the push for as long as its reserves last, and "
-                + "no longer - the pull is the only force that does not run out."));
+                + "with dollars in its vault feels less of a push to fall - the deeper "
+                + "the cover, the less - and none of a push to rise; the pull is the force "
+                + "that never lets go."));
     }
 
     /**
