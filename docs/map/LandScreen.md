@@ -1,6 +1,6 @@
 # LandScreen.java - 403 lines · 3 methods · 0 constants · interface
 
-`ham/citybuildersim/ui/LandScreen.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/LandScreen.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The land office: the city's position across the top, the plots on the
 > market as tiles you can compare - price per square foot against what the

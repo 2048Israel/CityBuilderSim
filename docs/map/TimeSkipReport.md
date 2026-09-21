@@ -1,6 +1,6 @@
 # TimeSkipReport.java - 463 lines · 56 methods · 0 constants · model
 
-`ham/citybuildersim/TimeSkipReport.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TimeSkipReport.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > What happened while you were not watching.
 > 

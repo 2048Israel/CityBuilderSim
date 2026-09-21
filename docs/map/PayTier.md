@@ -1,6 +1,6 @@
 # PayTier.java - 125 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/PayTier.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PayTier.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The six pay levels a household can be in.
 > 
@@ -33,7 +33,7 @@
 
 **Uses:** [JobType](JobType.md) (2)
 
-**Used by (39):** [AgricultureCheck](AgricultureCheck.md), [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [Education](Education.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [FamilyModel](FamilyModel.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Household](Household.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [Migration](Migration.md), [OrphanHousehold](OrphanHousehold.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [PopulationManager](PopulationManager.md), [PrisonerHousehold](PrisonerHousehold.md), [RealEstate](RealEstate.md), [RestaurantsCheck](RestaurantsCheck.md), [RetiredHousehold](RetiredHousehold.md), [SocialSecurity](SocialSecurity.md), [StudentHousehold](StudentHousehold.md), [TaxPolicy](TaxPolicy.md), [TradeCostCheck](TradeCostCheck.md), [UnemployedHousehold](UnemployedHousehold.md), [Unemployment](Unemployment.md), [WorkingHousehold](WorkingHousehold.md)
+**Used by (40):** [AgricultureCheck](AgricultureCheck.md), [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [FamilyModel](FamilyModel.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Household](Household.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [Migration](Migration.md), [OrphanHousehold](OrphanHousehold.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [PopulationManager](PopulationManager.md), [PrisonerHousehold](PrisonerHousehold.md), [RealEstate](RealEstate.md), [RestaurantsCheck](RestaurantsCheck.md), [RetiredHousehold](RetiredHousehold.md), [SocialSecurity](SocialSecurity.md), [StudentHousehold](StudentHousehold.md), [TaxPolicy](TaxPolicy.md), [TradeCostCheck](TradeCostCheck.md), [UnemployedHousehold](UnemployedHousehold.md), [Unemployment](Unemployment.md), [WorkingHousehold](WorkingHousehold.md)
 
 ## Sections
 

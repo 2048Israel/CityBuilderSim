@@ -177,6 +177,15 @@ public class Game {
         // construction, and a cleared list is one more thing to remember.
         inbox = new Inbox();
         sectorBooks = new SectorBooks();
+        /*
+         * ...AND THE HEALTH SERVICE AND THE SICK RATE (2026-09-19). Neither was
+         * here, and neither has a reset: a new game after a load kept the old
+         * city's graves, its unburied and last month's bills, and nothing
+         * noticed until the clinic's full-service bill joined the fingerprint
+         * NewGameCheck takes and leaked across the new city on the first run.
+         */
+        health = new Health();
+        healthcare = new Healthcare();
         historyGrapher = new HistoryGrapher();
         debtManager = new DebtManager();
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
@@ -212,6 +221,8 @@ public class Game {
         crime.reset();
         lastOrphanDeaths = 0; lastUnhousedDeaths = 0;
         studentLoansLent = 0; studentLoansRepaid = 0; studentLoansWrittenOff = 0;
+        studentLoanInterest = 0;
+        treasuryJournal.reset(); treasuryRaisedSoFar = 0;
         bank.reset();
         foreign.reset();
         hotMoney.reset();
@@ -969,7 +980,32 @@ public class Game {
         rowPeople[HouseholdAccounts.PRISONERS]  = crime.prisoners();
         rowHomes[HouseholdAccounts.PRISONERS]   = crime.prisoners();
         households.setOutsideMoney(economyManager.getEiPremiums(),
-                economyManager.getEiBenefits(), economyManager.getStudentGrants());
+                economyManager.getEiBenefits(), economyManager.getStudentGrants(),
+                // ...and the health premium, off the same payslips (2026-09-19).
+                economyManager.getHealthPremiums());
+        /*
+         * WHO PAID FOR CARE, AND WHAT THE BILL WOULD HAVE BEEN (2026-09-19).
+         * The clinic's fees are split over the heads who paid - a household
+         * the price turned away last month is not billed for care it did not
+         * get - and the same rows are told the bill at full service, which is
+         * what each household measures its means against below. The scale
+         * is the policy's, told to the service here as well as at the
+         * month's health step, so a reloaded city reads its own scale.
+         */
+        healthcare.setFeeScale(tax.getHealthFeeScale());
+        /*
+         * ...AND THE TWO EDUCATION DIALS THE LEDGER READS (2026-09-21), for
+         * the same reason and at the same place: the loan rate before the
+         * cells settle (or re-strike, on the load path) below, and the
+         * tuition scale before anything reads a fee, so a reloaded city
+         * charges its own price and its own interest from the first read.
+         * The scale is told again at the month's education step; the rate
+         * is told here only, which is every month and the load path both.
+         */
+        householdBalance.setStudentLoanRate(tax.getStudentLoanRate());
+        education.setTuitionScale(tax.getTuitionScale());
+        households.setCarePaid(householdBalance.carePaidShares());
+        households.setCareBills(healthcare.getTreatmentFees(), healthcare.fullTreatmentFees());
         /*
          * What the city took at the barrier, read from the figure it is shown
          * COLLECTING rather than recomputed here - the same one-source rule the
@@ -1073,6 +1109,20 @@ public class Game {
             // At the month's rate, for a household that sells its paper
             // abroad to eat - see Household.settle().
             householdBalance.setExchangeRate(foreign.getRate());
+            /*
+             * ...AND THE TREATMENT BILLS, BY ROW (2026-09-19): what the row
+             * was billed and what it would have been billed had all of its
+             * people paid, for the test of who can afford the clinic next
+             * month. See HouseholdBalance's banner THE PRICE AT THE CLINIC
+             * DOOR.
+             */
+            double[] careBilled = new double[rowCount];
+            double[] careFull = new double[rowCount];
+            for (int r = 0; r < rowCount; r++) {
+                careBilled[r] = households.getRowCareBilled(r);
+                careFull[r] = households.getRowCareFull(r);
+            }
+            householdBalance.setCareBills(careBilled, careFull);
             householdBalance.advanceMonth(families::get, disposable,
                     households.rentPerHousehold(), fees, actualShopping,
                     shops.getStoreSellPrice(), debtManager.getRate(),
@@ -1164,7 +1214,23 @@ public class Game {
             studentLoansLent = householdBalance.totalStudentBorrowed();
             studentLoansRepaid = householdBalance.totalStudentRepaid();
             studentLoansWrittenOff = householdBalance.getStudentDebtTakenAway();
-            cash += studentLoansRepaid - studentLoansLent;
+            /*
+             * ...AND THE INTEREST THE GRADUATES PAID ON THEM (2026-09-21),
+             * Jerus's "you get the interest if there is any". Into the cash
+             * here with the principal, and into the budget as its own
+             * revenue line through EconomyManager, which is why it is NOT in
+             * the journal's line below: a budget line is already in the
+             * bridge's first row, and naming it twice would count it twice.
+             * Nothing at the default rate, and x + 0.0 is x.
+             */
+            studentLoanInterest = householdBalance.totalStudentInterest();
+            cash += studentLoansRepaid - studentLoansLent + studentLoanInterest;
+            economyManager.setStudentLoanInterest(studentLoanInterest);
+            // Principal lent and principal back: neither is a budget line (the
+            // grant is, and so is the interest), so the bridge names it. See
+            // TreasuryJournal.
+            treasuryJournal.record("Lent to students, net of repayments",
+                    studentLoansRepaid - studentLoansLent);
         }
     }
 
@@ -1480,6 +1546,7 @@ public class Game {
         double put = Math.max(0, Math.min(amount, cash));
         if (put <= 0) return 0;
         cash -= put;
+        treasuryJournal.record("Put capital into the bank", -put);
         bank.receiveBailout(put);
         GameLog.note(String.format("The city put $%,.0fk of capital into the bank.", put));
         return put;
@@ -1503,6 +1570,7 @@ public class Game {
         double spend = Math.max(0, Math.min(amount, cash));
         if (spend <= 0) return 0;
         cash -= spend;
+        treasuryJournal.record("Bought reserves", -spend);
         foreign.buyReserves(spend);
         GameLog.note(String.format("The city bought $%,.0fk of foreign currency.", spend));
         return spend;
@@ -1521,6 +1589,7 @@ public class Game {
         double sold = foreign.sellReserves(Math.max(0, amount));
         if (sold <= 0) return 0;
         cash += sold;
+        treasuryJournal.record("Sold reserves", sold);
         GameLog.note(String.format("The city sold $%,.0fk of its reserves.", sold));
         return sold;
     }
@@ -2189,6 +2258,16 @@ public class Game {
         if (cityShare > 0) {
             cash -= cityShare;
             cityMaintenancePaid = cityShare;
+            /*
+             * JOURNALLED, BECAUSE THE BUDGET BALANCE DOES NOT CARRY IT. The
+             * Government screen lists this bill under spending as "Repairs",
+             * but NationalAccounts.getTotalExpenses() has no line for it, so
+             * the surplus the bridge starts from is struck without it and the
+             * bridge's last row held exactly -cityShare every month, in every
+             * city with a road. Named here until the accounts carry it; the
+             * day they do, this line comes out. See TreasuryJournal.
+             */
+            treasuryJournal.record("Repaired the city's own buildings", -cityShare);
         } else {
             cityMaintenancePaid = 0;
         }
@@ -2962,6 +3041,7 @@ public class Game {
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
        cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
+        treasuryRaisedSoFar += quote.cashReceived();
 
         debtManager.updateInterest();
         return "Note issued.\n" + quote.summary();
@@ -3018,6 +3098,7 @@ public class Game {
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
        cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
+        treasuryRaisedSoFar += quote.cashReceived();
 
         debtManager.updateInterest();
         return "Serial bond issued.\n" + quote.summary();
@@ -3172,6 +3253,7 @@ public class Game {
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
        cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
+        treasuryRaisedSoFar += quote.cashReceived();
 
         debtManager.updateInterest();
         return "Term bond issued.\n" + quote.summary();
@@ -3353,6 +3435,7 @@ public class Game {
         double local = quote.cashReceived() * foreign.getRate();
         this.cash += local;
         foreignDebtRaisedThisMonth += local;
+        treasuryRaisedSoFar += local;
 
         /*
          * "Hold as reserves" is not a different kind of accounting. It is the
@@ -4471,6 +4554,15 @@ public class Game {
         
         if (Double.isFinite(tempCash)) {
             cash = tempCash;
+            /*
+             * JOURNALLED, BECAUSE THE BUDGET BALANCE DOES NOT CARRY IT. The
+             * fares arrived in the cash a line above, inside getTaxIncome(),
+             * but NationalAccounts.getTotalRevenue() has no line for them, so
+             * the bridge's last row held exactly +fares every month in a city
+             * with a bus. Named here until the accounts carry it; the day they
+             * do, this line comes out. See TreasuryJournal.
+             */
+            treasuryJournal.record("Took in transit fares", economyManager.getTransitFares());
         } else {
             System.out.println("Cash update blocked due to invalid value.");
         }
@@ -4664,6 +4756,31 @@ public class Game {
                 buildingManager.getStaffedCareCapacity(CareType.GENERAL, fill);
         double servedThisMonth   = cohorts.total();
 
+        /*
+         * ...AND WHAT THE PRICE AT THE DOOR TAKES OFF IT (2026-09-19). Jerus:
+         * a household that cannot pay the clinic's fee goes without care,
+         * not without food. Of the people each kind of care would serve, the
+         * share whose household can pay - struck at this month's household
+         * strike, see careAffordability() - multiplies the coverage, so the
+         * unserved-because-poor are unserved the way the unserved-because-
+         * no-clinic are: in the sick rate, in the swings, in the births.
+         * Multiplying by exactly 1.0 is bit-exact, so a city where everybody
+         * can pay - every city at the founding fee that is not going hungry -
+         * is the city it was.
+         */
+        double[] affordable = new double[CareType.values().length];
+        java.util.Arrays.fill(affordable, 1);
+        for (CareType care : CareType.values()) {
+            if (care.servesTheLiving()) affordable[care.ordinal()] = careAffordability(care);
+        }
+        childcareCoverage *= affordable[CareType.CHILDCARE.ordinal()];
+        seniorCoverage    *= affordable[CareType.SENIOR.ordinal()];
+        generalCoverage   *= affordable[CareType.GENERAL.ordinal()];
+        // ...and the service keeps the three, so a screen shows the coverage
+        // the month read rather than one it worked out from the beds.
+        healthcare.noteCoverage(childcareCoverage, generalCoverage, seniorCoverage);
+
+        // What the beds could do; the service takes the priced-out off it.
         double[] served = new double[CareType.values().length];
         for (CareType care : CareType.values()) {
             if (!care.servesTheLiving()) continue;
@@ -4671,6 +4788,16 @@ public class Game {
                     buildingManager.getStaffedCareCapacity(care, fill),
                     care.populationServed(cohorts));
         }
+        /*
+         * ...AND WHAT THE SICK RATE READS IS THE PEOPLE TREATED, not the beds
+         * built: the people the beds could take, less the ones the fee turned
+         * away, over the people. An empty bed treats nobody who cannot pay
+         * for it, so an overbuilt city with a dear fee is still an unserved
+         * one. With everybody paying this is min(beds, people) over people,
+         * which is the clamped ratio Health struck before, to the bit.
+         */
+        generalCapacity = served[CareType.GENERAL.ordinal()]
+                * affordable[CareType.GENERAL.ordinal()];
 
         /*
          * BOTH ENDS OF A LIFE, and now the beginning of one too.
@@ -4935,10 +5062,10 @@ public class Game {
         families.shareSeekersByAffordability(households.seekerPressure(new double[] {
                 unemployment.getHoused(), families.getSeekers(FamilyModel.Seeker.STUDENT) }));
 
-        // What EI and the grants cost the treasury this month, before the cash moves.
-        economyManager.setOutsidePayments(unemployment.getBenefitsPaid(),
-                families.getSeekers(FamilyModel.Seeker.STUDENT)
-                        * economyManager.getTaxPolicy().getStudentGrantShare() * unskilledWage());
+        // What EI and the grants cost the treasury this month, before the cash
+        // moves. The grant on whatever basis the player chose - see
+        // studentGrantBill(), the one strike every reader shares.
+        economyManager.setOutsidePayments(unemployment.getBenefitsPaid(), studentGrantBill());
 
         /*
          * 6. WHO IS TOO ILL TO WORK.
@@ -4968,11 +5095,14 @@ public class Game {
          * and it is consumed permanently. A crematorium is a machine, and a
          * machine with nobody to run it handles nobody.
          */
+        // At the player's fee scale (2026-09-19), and with the share of each
+        // kind of care's people who could pay - see Healthcare.advanceMonth().
+        healthcare.setFeeScale(economyManager.getTaxPolicy().getHealthFeeScale());
         healthcare.advanceMonth(
                 buildingManager.getCategoryPayroll(BuildingType.HEALTHCARE,
                         populationManager.getWagesPerType(), fill),
                 buildingManager.getUpkeepByCategory(BuildingType.HEALTHCARE),
-                served,
+                served, affordable,
                 cohorts.getLastDeaths(),
                 burialShare(),
                 buildingManager.getCareCapacity(CareType.BURIAL),
@@ -4990,6 +5120,9 @@ public class Game {
          * next month - a person who finished a degree this month is looking for
          * work, not still studying.
          */
+        // At the player's tuition scale (2026-09-21), told here as the clinic's
+        // scale is above, so the fees this step charges are this month's.
+        education.setTuitionScale(economyManager.getTaxPolicy().getTuitionScale());
         education.advanceMonth(
                 buildingManager.getStaffedEducationPlaces(fill),
                 cohorts,
@@ -5101,6 +5234,62 @@ public class Game {
         return Health.coverageOf(
                 buildingManager.getStaffedCareCapacity(care, fill),
                 care.populationServed(cohorts));
+    }
+
+    /**
+     * Of the people a kind of care would serve, the share who live in a
+     * household that can pay its fee (2026-09-19).
+     *
+     * Headcount-weighted over the cells, by the places the care type counts
+     * - a senior needs 0.19 of a place and an elder a whole one, the same
+     * weights CareType.populationServed() divides coverage by - and each
+     * cell's share is what it struck for itself at this month's household
+     * strike, see Household.affordCare(). A city with nobody to serve reads
+     * 1, like the coverage it multiplies: no children is not a childcare
+     * shortage and not a childcare price either. The orphans and the
+     * prisoners pay no fee and are counted as paying.
+     */
+    public double careAffordability(CareType care) {
+        if (care == null || !care.servesTheLiving()) return 1;
+        double heads = 0, paying = 0;
+        for (Household c : householdBalance.cells()) {
+            double n = careHeads(c, care) * c.households();
+            if (n <= 0) continue;
+            heads += n;
+            paying += n * c.carePaid();
+        }
+        return heads > 0 ? paying / heads : 1;
+    }
+
+    /**
+     * The places one household of a cell needs of a kind of care: its
+     * shape's members in the bands the care serves, at the care's places per
+     * head. A cell outside the families is its adult, and the children who
+     * came with an out-of-work parent or a student are apportioned across
+     * the three child bands the way the family model counted them; an
+     * orphan household is one child of its band, and pays nothing.
+     */
+    private double careHeads(Household c, CareType care) {
+        if (c.shape() != null) {
+            double places = 0;
+            for (AgeBand band : AgeBand.values()) {
+                places += c.shape().membersOf(band) * care.placesPerHead(band);
+            }
+            return places;
+        }
+        if (c instanceof OrphanHousehold o) return care.placesPerHead(o.band());
+        double places = care.placesPerHead(AgeBand.ADULT);
+        double kin = c.getDependants();
+        if (kin > 0 && families != null) {
+            double followed = 0, weighted = 0;
+            for (AgeBand band : new AgeBand[] { AgeBand.BABY, AgeBand.CHILD, AgeBand.TEEN }) {
+                double n = families.getOutsideDependants(band);
+                followed += n;
+                weighted += n * care.placesPerHead(band);
+            }
+            places += followed > 0 ? kin * weighted / followed : kin * care.placesPerHead(AgeBand.CHILD);
+        }
+        return places;
     }
 
     /**
@@ -5282,11 +5471,74 @@ public class Game {
     public double getStudentLoansRepaid()     { return studentLoansRepaid; }
     public double getStudentLoansWrittenOff() { return studentLoansWrittenOff; }
 
+    /** Interest the graduates paid the treasury on their loans this month (2026-09-21): revenue, beside the principal above. */
+    private double studentLoanInterest;
+    public double getStudentLoanInterest()    { return studentLoanInterest; }
+
     /** What an unskilled post pays a month, today: EI's cap and the grant are struck against it. */
     private double unskilledWage() {
         double[] wages = populationManager.getWagesPerType();
         return wages != null && wages.length > JobType.NO_DIPLOMA.ordinal()
                 ? wages[JobType.NO_DIPLOMA.ordinal()] : PayTier.UNSKILLED.getMonthlyWage();
+    }
+
+    /** The same wage, for the Schools page to name what a share of it is. */
+    public double getUnskilledWage() { return unskilledWage(); }
+
+    /* -------------------- the price of a place (2026-09-21) --------------------
+     * The grant bill, struck ONCE, here, from the four figures TaxPolicy's
+     * rule needs - the students, the unskilled wage, last month's surplus
+     * and the student body's tuition at today's price - and read by the
+     * treasury's bill in advanceDemographics(), the save's re-strike, and
+     * the Schools page's preview of a basis the player has not chosen yet.
+     *
+     * LAST MONTH'S SURPLUS IS THE BRIDGE'S. It is read from treasurySurplus,
+     * the budget balance takeTreasuryMonth() struck at the bottom of the
+     * last tick - the figure the Government tab calls the balance - and
+     * never recomputed here: NationalAccounts.getBalance() mid-tick is a
+     * month mixed from two, which is exactly why the bridge carries its own.
+     */
+
+    /** The month's grant bill under the city's basis and amount. */
+    public double studentGrantBill() {
+        TaxPolicy tax = economyManager.getTaxPolicy();
+        return studentGrantBillUnder(tax.getGrantBasis(), tax.getGrantAmount());
+    }
+
+    /** ...and under any basis and amount, for a preview: the same rule, the same four figures. */
+    public double studentGrantBillUnder(TaxPolicy.GrantBasis basis, double amount) {
+        return TaxPolicy.grantBill(basis, amount,
+                families.getSeekers(FamilyModel.Seeker.STUDENT), unskilledWage(),
+                treasurySurplus, education.studentBodyTuition());
+    }
+
+    /** What that comes to per student - the bill over this month's students, or nothing with none. */
+    public double grantPerStudentUnder(TaxPolicy.GrantBasis basis, double amount) {
+        double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
+        return students > 0 ? studentGrantBillUnder(basis, amount) / students : 0;
+    }
+
+    /**
+     * Today's grant per student, re-expressed as an amount under another
+     * basis: the number the Schools page starts the amount dial at when a
+     * basis is picked, so picking one changes nothing until the amount is
+     * moved. Nothing to re-express - no students, no wage, no surplus, no
+     * tuition - reads as the basis's own default.
+     */
+    public double grantAmountAs(TaxPolicy.GrantBasis basis) {
+        TaxPolicy tax = economyManager.getTaxPolicy();
+        double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
+        double each = grantPerStudentUnder(tax.getGrantBasis(), tax.getGrantAmount());
+        if (basis == null) basis = TaxPolicy.DEFAULT_GRANT_BASIS;
+        double base;
+        switch (basis) {
+            case FIXED:         base = 1; break;
+            case SURPLUS_SHARE: base = students > 0 ? Math.max(0, treasurySurplus) / students : 0; break;
+            case TUITION_SHARE: base = students > 0 ? education.studentBodyTuition() / students : 0; break;
+            default:            base = unskilledWage(); break;
+        }
+        if (base > 0 && each > 0) return Math.min(tax.maxGrantAmount(basis), each / base);
+        return basis == TaxPolicy.GrantBasis.WAGE_SHARE ? TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE : 0;
     }
 
     /**
@@ -5812,6 +6064,9 @@ public class Game {
         dataSave.setSectorBooks(sectorBooks.thisMonth());
         dataSave.setSectorBooksBefore(sectorBooks.lastMonth());
         dataSave.setTreasuryMonth(treasuryMonthToSave());
+        dataSave.setTreasuryJournal(treasuryJournal.closedLabels(), treasuryJournal.closedAmounts(),
+                treasuryJournal.pendingLabels(), treasuryJournal.pendingAmounts());
+        dataSave.setTreasuryRaisedPending(treasuryRaisedSoFar);
         dataSave.setGovernmentMonth(economyManager.governmentMonthToSave());
         dataSave.setReports(reports);
         dataSave.setGraphs(graphs);
@@ -6053,10 +6308,20 @@ public class Game {
        blank until you have played a month is blank exactly when a returning
        player looks at it.
 
-       AND THE RESIDUAL IS NOT SWALLOWED. treasuryUnexplained() is whatever the
-       three named flows do not account for, and the screen prints it as its own
-       line. A breakdown that quietly absorbs its own gap is worse than no
+       AND THE RESIDUAL IS NOT SWALLOWED. getTreasuryUnexplained() is whatever
+       the three named flows do not account for, and the screen prints it as
+       its own line. A breakdown that quietly absorbs its own gap is worse than no
        breakdown - the same rule the sector cash flow and the sick rate follow.
+
+       AND SINCE 2026-09-18 THE RESIDUAL OPENS. Jerus: "it just says 'everything
+       else' - that should be expandable, cause a lot of times that's where a
+       bunch of important things happen." Every non-budget movement of the cash
+       is written into a TreasuryJournal by name as it happens - capital into
+       the bank, reserves, a buyback, the students' loans, and the two lines
+       the budget balance omits - and the screen opens the row into those
+       lines. What the lines do not explain is getTreasuryResidual(), printed
+       under them as "Not accounted for". See TreasuryJournal for which sites
+       are journalled and why the rest are not.
        ======================================================================= */
 
     private double treasuryOpening;
@@ -6066,12 +6331,40 @@ public class Game {
     private double treasurySurplus;
     private boolean treasuryRecorded;
 
+    /**
+     * What the treasury has raised by issuing paper since the last strike, in
+     * local money - the bridge's own counter, press to press.
+     *
+     * NOT cityDebtRaisedThisMonth + foreignDebtRaisedThisMonth, which is what
+     * the strike read until 2026-09-18 and which is always zero there: every
+     * issue - the player's, from the finance screen, and the emergency note at
+     * the top of nextMonth() - lands before the top-of-tick clear at
+     * `cityDebtRaisedThisMonth = 0`, and nothing issues inside the tick. So the
+     * "Raised by issuing paper" row read $0 on a month the city borrowed
+     * $20M, and the $20M sat in "Everything else". Measured with a probe on
+     * the day the journal was written. Those two counters keep their own job
+     * (the audit's window, and the bank's settlement); this one is read and
+     * cleared in takeTreasuryMonth(), and carried in the save because a city
+     * saved between two presses has already raised what the next strike
+     * counts.
+     */
+    private double treasuryRaisedSoFar;
+
+    /** The named non-budget movements, this month and last. See TreasuryJournal. */
+    private final TreasuryJournal treasuryJournal = new TreasuryJournal();
+
     private void takeTreasuryMonth() {
         treasuryClosing = cash;
-        treasuryRaised  = cityDebtRaisedThisMonth + foreignDebtRaisedThisMonth;
+        treasuryRaised  = treasuryRaisedSoFar;
+        treasuryRaisedSoFar = 0;
         treasuryRepaid  = cityPrincipalRepaidThisMonth + foreignPrincipalRepaidThisMonth;
         treasurySurplus = economyManager.getNationalAccounts().getBalance();
         treasuryRecorded = true;
+        // Struck with the rest: last month's lines become the ones the bridge
+        // shows, and the month in progress opens empty - here, at the bottom
+        // of the tick, so the player's decisions between two presses land in
+        // the window that measures them.
+        treasuryJournal.close();
     }
 
     /** True once a month has closed. False on a city that has never ticked. */
@@ -6087,19 +6380,48 @@ public class Game {
     public double getTreasuryChange() { return treasuryClosing - treasuryOpening; }
 
     /**
-     * Everything the three named flows do not explain.
+     * Everything the three named flows do not explain - the whole of the
+     * bridge's last row, "Everything else the treasury did".
      *
      * NOT A RESIDUAL TO BE HIDDEN, and not zero in this model. It is the rest
-     * of what the treasury did: land the city bought or sold, buildings it paid
-     * for, reserves, capital put into the bank, bonds bought back - none of
-     * which is a budget line - PLUS whatever the government's books date to a
-     * different month from the money. The screen prints it as its own row with
-     * its own name, which is the only honest way to show a total that does not
-     * foot.
+     * of what the treasury did: reserves bought or sold, capital put into the
+     * bank, bonds bought back, the students' loans - none of which is a budget
+     * line - PLUS the two lines the budget balance omits (the city's repair
+     * bill and the transit fares, see TreasuryJournal), PLUS whatever the
+     * government's books date to a different month from the money. Land and
+     * buildings are NOT in it: land bought and sold and buildings paid for are
+     * budget lines, struck over the same window, and the bridge's first row
+     * already carries them. The screen prints this as its own row with its own
+     * name, and since 2026-09-18 opens it into getTreasuryJournal()'s lines
+     * with getTreasuryResidual() as the last of them.
      */
     public double getTreasuryUnexplained() {
         return getTreasuryChange()
                 - (treasurySurplus + treasuryRaised - treasuryRepaid);
+    }
+
+    /**
+     * Last month's journal: the non-budget movements by name, in the order
+     * they happened, signed as the treasury sees them. Empty until a month has
+     * closed, and empty on a month nothing was journalled - in which case the
+     * screen keeps the row shut, because a caret that opens onto the figure
+     * above it is worse than no caret.
+     */
+    public java.util.List<TreasuryJournal.Entry> getTreasuryJournal() {
+        return treasuryJournal.lastMonth();
+    }
+
+    /** The journal itself, for the harnesses that read past the getter above. */
+    public TreasuryJournal getTreasuryJournalBook() { return treasuryJournal; }
+
+    /**
+     * What the journal does not explain: the residual after the three named
+     * rows AND the journal's lines. Timing between the books and the money,
+     * and anything that moves the cash and is not yet journalled - printed as
+     * "Not accounted for" rather than folded in, so that a gap stays a gap.
+     */
+    public double getTreasuryResidual() {
+        return getTreasuryUnexplained() - treasuryJournal.lastMonthTotal();
     }
 
     double[] treasuryMonthToSave() {
@@ -6221,6 +6543,9 @@ public class Game {
         }
 
         cash -= price;
+        // Not a repayment - retire() takes it off the books without touching
+        // cityPrincipalRepaidThisMonth - so the bridge names it here.
+        treasuryJournal.record("Bought back a bond", -price);
 
         // Both sides moved - one bond fewer, and less cash - so the market has
         // to be told before anything reads the rate again.
@@ -6260,6 +6585,7 @@ public class Game {
        cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
        cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
+       treasuryRaisedSoFar += quote.cashReceived();
 
        // The books have changed, so the standing rate has too. Leaving this out
        // let a city borrow and go on being quoted its pre-loan rate until the
@@ -6472,10 +6798,19 @@ public class Game {
     // BOTH retired bands, or the over-85s stop drawing a pension the day the
     // band lands and the city's pension bill silently falls.
     economyManager.setSeniors(cohorts.get(AgeBand.SENIOR) + cohorts.get(AgeBand.ELDER));
-    // The month's EI and grant bills, as the save struck them - see advanceDemographics().
-    economyManager.setOutsidePayments(unemployment.getBenefitsPaid(),
-            families.getSeekers(FamilyModel.Seeker.STUDENT)
-                    * economyManager.getTaxPolicy().getStudentGrantShare() * unskilledWage());
+    /*
+     * The month's EI and grant bills, as the save struck them - see
+     * advanceDemographics(). The grant is re-struck from the same rule the
+     * month used, which reproduces the bill exactly on the founding basis
+     * and the fixed one; on a basis that reads last month's surplus or the
+     * student body's tuition it cannot - the bottom of the tick overwrote
+     * the one and the education step moved the other on - so the bill the
+     * save actually struck comes back over this with the government's
+     * month, below the rebuild (see loadedGovernmentMonth). A flow cannot be
+     * reconstructed from the state a month ended in; this is the figure the
+     * screens have until the carried one lands.
+     */
+    economyManager.setOutsidePayments(unemployment.getBenefitsPaid(), studentGrantBill());
     economyManager.setTotalJobs(populationManager.getTotalJobs());
     economyManager.setTotalWage(populationManager.getTotalWage());
 
@@ -6534,6 +6869,21 @@ public class Game {
      * here.
      */
     economyManager.setHealthcare(healthcare.getGrossCost(), healthcare.getFees());
+    /*
+     * ...AND THE SCHOOLS' (2026-09-21), the SIXTH sighting of the shape the
+     * note above describes, and the one that had been standing next to the
+     * fix the whole time: the health service's books were restored here on
+     * the day the gap was found, the police's beside them, and the schools'
+     * never were. A reloaded city with schools read an education bill of
+     * zero and school fees of zero until its first tick - a month of free
+     * schools on the treasury's books, and next-month income out by the
+     * whole of it. Invisible for as long as the playtest built no school
+     * (it never does on its own); the first ensemble run with schools in it
+     * flagged "income across a save" nine times in 3,650 months. Education
+     * carries the month's payroll, upkeep and fees in its own state, so
+     * this is the same one-line restore the others are.
+     */
+    economyManager.setEducation(education.getGrossCost(), education.getFees());
     // ...and the police and the prisons', from the month Crime carried.
     economyManager.setSafety(crime.getGrossCost());
 
@@ -6942,6 +7292,11 @@ public class Game {
             sectorBooks.restoreFrom(loaded.getSectorBooks(),
                     loaded.getSectorBooksBefore());
             restoreTreasuryMonth(loaded.getTreasuryMonth());
+            // The journal and the raised counter go with it: nothing in the
+            // rebuild re-strikes them, so they are put back here and stay.
+            treasuryJournal.restore(loaded.getTreasuryJournalLabels(), loaded.getTreasuryJournalAmounts(),
+                    loaded.getTreasuryJournalPendingLabels(), loaded.getTreasuryJournalPendingAmounts());
+            treasuryRaisedSoFar = loaded.getTreasuryRaisedPending();
             // Held, not applied: rebuildSimulationState() has not run yet and
             // it ends by re-striking this block. Put back below it.
             loadedGovernmentMonth = loaded.getGovernmentMonth();
@@ -7378,6 +7733,25 @@ public class Game {
          */
         if (loadedGovernmentMonth != null) {
             economyManager.restoreGovernmentMonth(loadedGovernmentMonth);
+            /*
+             * ...AND THE GRANT BILL WITH IT (2026-09-21). The rebuild
+             * re-struck it from the rule, which is exact on the founding
+             * basis and not on one that reads last month's surplus or the
+             * student body's tuition (see the re-strike's note). The block
+             * that just came back carries the bill the month actually
+             * struck, on the slot EI and the grants have had since 2026-09-11,
+             * so that is what the students are handed at the next strike -
+             * the same double, on the founding basis, and the right one on
+             * the others. A block from before that slot keeps the re-strike.
+             */
+            if (loadedGovernmentMonth.length >= NationalAccounts.GOVERNMENT_SLOTS_WITH_GRANTS) {
+                economyManager.setOutsidePayments(unemployment.getBenefitsPaid(),
+                        economyManager.getNationalAccounts().getStudentGrants());
+            }
+            // ...and the interest the graduates paid, which only the block
+            // carries: the Schools page reads it as "received last month".
+            economyManager.setStudentLoanInterest(
+                    economyManager.getNationalAccounts().getStudentLoanInterest());
             loadedGovernmentMonth = null;
         }
 
@@ -7672,6 +8046,8 @@ public class Game {
         cityPrincipalRepaidThisMonth *= scale;
         cityDebtRaisedForBank *= scale;
         cityDiscountForBank *= scale;
+        treasuryRaisedSoFar *= scale;
+        treasuryJournal.redenominate(scale);
 
         economyManager.redenominate(scale);
         bank.redenominate(scale);
@@ -7687,6 +8063,7 @@ public class Game {
         households.redenominate(scale);
         unemployment.redenominate(scale);
         studentLoansLent *= scale;  studentLoansRepaid *= scale;  studentLoansWrittenOff *= scale;
+        studentLoanInterest *= scale;
         labourMarket.redenominate(scale);
         populationManager.redenominate(scale);
         migration.redenominate(scale);

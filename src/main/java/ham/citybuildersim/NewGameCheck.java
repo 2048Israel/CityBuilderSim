@@ -143,6 +143,13 @@ public class NewGameCheck {
 
         m.put("tax.income", e.getTaxPolicy().getIncomeTaxRate());
         m.put("tax.property", e.getTaxPolicy().getPropertyTaxRate());
+        // The clinic's price and premium, and what they did (2026-09-19).
+        m.put("tax.healthFeeScale", e.getTaxPolicy().getHealthFeeScale());
+        m.put("tax.healthPremium", e.getTaxPolicy().getHealthPremiumRate());
+        m.put("care.premiums", e.getHealthPremiums());
+        m.put("care.pricedOut", g.getHealthcare().getPricedOutTotal());
+        m.put("care.fullBill", g.getHealthcare().fullTreatmentFees());
+        m.put("households.carePaid", g.getHouseholdBalance().carePaidShare(0));
 
         m.put("buildings.stacks", (double) b.getStackCount());
         m.put("buildings.footprint", b.getTotalLandFootprint());

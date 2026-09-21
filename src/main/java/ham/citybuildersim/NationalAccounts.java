@@ -519,13 +519,37 @@ public class NationalAccounts {
     private double eiBenefits;
     private double studentGrants;
 
+    /** The health premium off every wage, in; a revenue line beside the EI premium (2026-09-19). See TaxPolicy. */
+    private double healthPremiums;
+
+    /** Interest the graduates paid on their student loans, in; a revenue line beside the premiums (2026-09-21). See TaxPolicy. */
+    private double studentLoanInterest;
+
     public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants) {
+        setOutsideLines(eiPremiums, eiBenefits, studentGrants, 0);
+    }
+
+    /** ...and with the health premium beside them (2026-09-19). */
+    public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants,
+                                double healthPremiums) {
+        setOutsideLines(eiPremiums, eiBenefits, studentGrants, healthPremiums, 0);
+    }
+
+    /** ...and the student loan interest beside those (2026-09-21). */
+    public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants,
+                                double healthPremiums, double studentLoanInterest) {
         this.eiPremiums = eiPremiums;
         this.eiBenefits = eiBenefits;
         this.studentGrants = studentGrants;
+        this.healthPremiums = healthPremiums;
+        this.studentLoanInterest = studentLoanInterest;
     }
 
     public double getEiPremiums()    { return eiPremiums; }
+    /** What the health premium raised this month - a government revenue line, against the health service's cost. */
+    public double getHealthPremiums(){ return healthPremiums; }
+    /** What the graduates paid in interest on their student loans this month - a government revenue line; the principal is not one. */
+    public double getStudentLoanInterest() { return studentLoanInterest; }
     public double getEiBenefits()    { return eiBenefits; }
     public double getStudentGrants() { return studentGrants; }
 
@@ -567,7 +591,8 @@ public class NationalAccounts {
     /* =====================================================================
        THE MONTH THE GOVERNMENT ACTUALLY HAD
 
-       Seventeen numbers, saved and restored as one.
+       Twenty-three numbers, saved and restored as one - seventeen when this
+       note was written, and every one appended since has gone on the END.
 
        WHY THIS IS CARRIED RATHER THAN REBUILT. updateGovernment() is a plain
        setter and every one of its arguments is a FLOW struck inside the tick -
@@ -590,6 +615,9 @@ public class NationalAccounts {
        produced, and fills in properly after one month - which is exactly the
        city it was.
        ===================================================================== */
+    /** The slots a block carries once EI and the grants are on it (2026-09-11): the grant bill is saved[19]. */
+    public static final int GOVERNMENT_SLOTS_WITH_GRANTS = 20;
+
     double[] governmentToSave() {
         return new double[] {
             taxBusiness, taxIndustrial, taxSales, taxWage,
@@ -601,17 +629,28 @@ public class NationalAccounts {
             subsidies,
             eiPremiums, eiBenefits, studentGrants,
             // ...and the police and the prisons, appended 2026-09-11.
-            safetySpending };
+            safetySpending,
+            // ...and the health premium, appended 2026-09-19. An older save
+            // reads zero, which is what that city collected.
+            healthPremiums,
+            // ...and the student loan interest, appended 2026-09-21, for the
+            // premium's reason: an older save reads zero, which is what that
+            // city's graduates were charged.
+            studentLoanInterest };
     }
 
     void restoreGovernment(double[] saved) {
-        // Twenty-one since the police; twenty since EI and the grants;
-        // seventeen from a save before them.
-        if (saved == null || (saved.length != 17 && saved.length != 20 && saved.length != 21)) return;
+        // Twenty-three since the student loan interest; twenty-two since the
+        // health premium; twenty-one since the police; twenty since EI and
+        // the grants; seventeen from a save before them.
+        if (saved == null || (saved.length != 17 && saved.length != 20
+                && saved.length != 21 && saved.length != 22 && saved.length != 23)) return;
         eiPremiums = saved.length >= 20 ? saved[17] : 0;
         eiBenefits = saved.length >= 20 ? saved[18] : 0;
         studentGrants = saved.length >= 20 ? saved[19] : 0;
         safetySpending = saved.length >= 21 ? saved[20] : 0;
+        healthPremiums = saved.length >= 22 ? saved[21] : 0;
+        studentLoanInterest = saved.length >= 23 ? saved[22] : 0;
         taxBusiness = saved[0];   taxIndustrial = saved[1];
         taxSales = saved[2];      taxWage = saved[3];
         utilityIncome = saved[4]; landSales = saved[5];
@@ -719,7 +758,10 @@ public class NationalAccounts {
     public double getTotalRevenue() {
         return taxBusiness + taxIndustrial + taxSales + taxWage
                 + utilityIncome + landSales + propertyTax + contributions
-                + eiPremiums + healthFees + educationFees;
+                + eiPremiums + healthFees + educationFees + healthPremiums
+                // ...and the interest on the student loans (2026-09-21); the
+                // principal repaid is not revenue and is not here.
+                + studentLoanInterest;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -801,6 +843,7 @@ public class NationalAccounts {
         for (int i = 0; i < history.size(); i++) history.set(i, history.get(i) * scale);
         contributions *= scale;  pensions *= scale;
         eiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
+        healthPremiums *= scale;  studentLoanInterest *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;

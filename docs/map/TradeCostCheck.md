@@ -1,6 +1,6 @@
 # TradeCostCheck.java - 534 lines · 6 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TradeCostCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TradeCostCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The wedge between what the world charges and what it pays, and what it is
 > made of.

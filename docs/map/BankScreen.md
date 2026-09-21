@@ -1,6 +1,6 @@
-# BankScreen.java - 1,624 lines · 23 methods · 7 constants · interface
+# BankScreen.java - 1,653 lines · 23 methods · 7 constants · interface
 
-`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The bank tab: the gauge, the two limits, another branch, who owes it, where
 > the money comes from, the books, the rescue, and its history.
@@ -10,7 +10,7 @@
 > shell still reads which page and area are open (bankPage, bankArea) for the
 > rail and the scroll memory.
 
-**Uses:** [Palette](Palette.md) (269), [Bank](Bank.md) (57), [Equity](Equity.md) (4), [HistorySave](HistorySave.md) (4), [UserInterface](UserInterface.md) (2), [DebtManager](DebtManager.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Sectors](Sectors.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Exchange](Exchange.md) (1)
+**Uses:** [Palette](Palette.md) (271), [Bank](Bank.md) (57), [Equity](Equity.md) (4), [HistorySave](HistorySave.md) (4), [UserInterface](UserInterface.md) (2), [DebtManager](DebtManager.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Sectors](Sectors.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Exchange](Exchange.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -49,13 +49,13 @@
 | 1179 | · · and whose money |
 | 1196 | THE BOOKS |
 | 1207 | · · interest, opened by borrower |
-| 1290 | · · the margin |
-| 1311 | · (untitled) |
-| 1350 | · · and how equity moved |
-| 1409 | · AND IF IT FAILED |
-| 1424 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
-| 1496 | ITS HISTORY |
-| 1579 | · · how long it has hurt |
+| 1319 | · · the margin |
+| 1340 | · (untitled) |
+| 1379 | · · and how equity moved |
+| 1438 | · AND IF IT FAILED |
+| 1453 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
+| 1525 | ITS HISTORY |
+| 1608 | · · how long it has hurt |
 
 ## Constants
 
@@ -81,7 +81,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 1595 | **type** `final class BankScreen` | The bank tab: the gauge, the two limits, another branch, who owes it, where the money comes from, the books, the rescue, and its history. |
+| 30 | 1624 | **type** `final class BankScreen` | The bank tab: the gauge, the two limits, another branch, who owes it, where the money comes from, the books, the rescue, and its history. |
 | 35 | 1 | `BankScreen(UserInterface ui)` |  |
 
 ### THE BANK (lines 37-265)
@@ -144,30 +144,30 @@
 |---:|---:|---|---|
 | 1134 | 61 | `void bankFundingPage(VBox column)` |  |
 
-### THE BOOKS (lines 1196-1310)
+### THE BOOKS (lines 1196-1339)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1200 | 110 | `void bankIncomePage(VBox column)` |  |
+| 1200 | 139 | `void bankIncomePage(VBox column)` |  |
 
-### (untitled) (lines 1311-1423)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1313 | 110 | `void bankBalancePage(VBox column)` |  |
-
-### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 1424-1495)
+### (untitled) (lines 1340-1452)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1444 | 51 | `VBox bankRescue()` |  |
+| 1342 | 110 | `void bankBalancePage(VBox column)` |  |
 
-### ITS HISTORY (lines 1496-1624)
+### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 1453-1524)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1512 | 19 | `void bankHistoryPage(VBox column, String page)` |  |
-| 1532 | 23 | `void bankLendingHistory(VBox column, HistorySave h)` |  |
-| 1556 | 37 | `void bankStrainHistory(VBox column, HistorySave h)` |  |
-| 1594 | 30 | `void bankCapitalHistory(VBox column, HistorySave h)` |  |
+| 1473 | 51 | `VBox bankRescue()` |  |
+
+### ITS HISTORY (lines 1525-1653)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1541 | 19 | `void bankHistoryPage(VBox column, String page)` |  |
+| 1561 | 23 | `void bankLendingHistory(VBox column, HistorySave h)` |  |
+| 1585 | 37 | `void bankStrainHistory(VBox column, HistorySave h)` |  |
+| 1623 | 30 | `void bankCapitalHistory(VBox column, HistorySave h)` |  |
 

@@ -512,6 +512,7 @@ public class Bank {
         capitalFromHome = 0;
         dividendsPaid = 0;
         tradingIncome = 0;
+        markChange = 0;
         hotMoneyIn = 0;
         carryLent = carryRepaid = carryInterest = 0;
         hotMoneyOut = 0;
@@ -577,9 +578,22 @@ public class Bank {
      */
     private double tradingIncome;
 
+    /**
+     * The part of the trading result that is the re-mark: every change in
+     * what the inventory is carried at this month, summed. Usually the
+     * largest term in tradingIncome and the one the statement could not
+     * show, so the desk's opened lines did not add up to the figure above
+     * them. Jerus: "the bank, just explain to me the trading desk, cause a
+     * bunch of times it's losing billions of dollars due to the trading
+     * desk." Cleared with tradingIncome; the identity is
+     * tradingIncome = cash sold - cash bought + dividends + buybacks + this.
+     */
+    private double markChange;
+
     /** The exchange re-marks the inventory. The change is income; the level is an asset. */
     public void markSecurities(double value) {
         tradingIncome += value - securities;
+        markChange += value - securities;
         securities = value;
     }
 
@@ -609,6 +623,9 @@ public class Bank {
 
     public double getSecurities()    { return securities; }
     public double getTradingIncome() { return tradingIncome; }
+
+    /** What re-marking the inventory did to this month's trading result. See markChange. */
+    public double getMarkChange()    { return markChange; }
 
     /** How much lighter the weighting makes the book. 0 when nothing is lent. */
     public double weightingRelief() {
@@ -2188,6 +2205,7 @@ public class Bank {
         dividendsPaid     *= scale;
         securities        *= scale;
         tradingIncome     *= scale;
+        markChange        *= scale;
         bailoutReceived   *= scale;
         foundingSettlement *= scale;
         depositInterestToHouseholds *= scale;

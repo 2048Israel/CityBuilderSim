@@ -474,8 +474,10 @@ public class RestaurantsCheck {
         assertTrue("the cell array carries a slot for them",
                 (cells.length - 3) % keyCount == 0
                         && (cells.length - 3) / keyCount == HouseholdBalance.CELL_SLOTS);
+        // By the slot's own name, not "the last one": the share who paid for
+        // care was appended after the meals on 2026-09-19.
         for (int i = 0; i < keyCount; i++) {
-            eatenOut += cells[i * HouseholdBalance.CELL_SLOTS + HouseholdBalance.CELL_SLOTS - 1];
+            eatenOut += cells[i * HouseholdBalance.CELL_SLOTS + HouseholdBalance.CELL_SLOTS_BEFORE_MEALS];
         }
         report("...and the meals are in it", Math.abs(eatenOut - 300) < 1e-9,
                 String.format("%,.2f meals a household, summed over the cells", eatenOut));
@@ -486,11 +488,11 @@ public class RestaurantsCheck {
          * SAVE_FORMAT did not have to move - the same tail-append the cars and
          * the investment income got, and the same test they were given.
          */
-        double[] older = new double[keyCount * (HouseholdBalance.CELL_SLOTS - 1) + 3];
+        double[] older = new double[keyCount * HouseholdBalance.CELL_SLOTS_BEFORE_MEALS + 3];
         System.arraycopy(cells, 0, older, 0, 0);
         for (int i = 0; i < keyCount; i++) {
             System.arraycopy(cells, i * HouseholdBalance.CELL_SLOTS,
-                    older, i * (HouseholdBalance.CELL_SLOTS - 1), HouseholdBalance.CELL_SLOTS - 1);
+                    older, i * HouseholdBalance.CELL_SLOTS_BEFORE_MEALS, HouseholdBalance.CELL_SLOTS_BEFORE_MEALS);
         }
         for (int k = 0; k < 3; k++) {
             older[older.length - 3 + k] = cells[cells.length - 3 + k];

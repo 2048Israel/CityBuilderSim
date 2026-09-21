@@ -1,6 +1,6 @@
 # Exchange.java - 1,006 lines · 73 methods · 23 constants · model
 
-`ham/citybuildersim/Exchange.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Exchange.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The stock exchange: where a share changes hands, and at what price.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [Equity](Equity.md) (37), [Bank](Bank.md) (8), [HouseholdBalance](HouseholdBalance.md) (5), [Household](Household.md) (1)
 
-**Used by (9):** [BankScreen](BankScreen.md), [ExchangeCheck](ExchangeCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (10):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [ExchangeCheck](ExchangeCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
 # Levers.java - 66 lines · 8 methods · 0 constants · interface
 
-`ham/citybuildersim/ui/Levers.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Levers.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The pieces a policy lever is drawn with: its head, the would-be rows that
 > show a staged change against today's figure, and the arithmetic of snapping

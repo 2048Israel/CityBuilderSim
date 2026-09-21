@@ -164,6 +164,15 @@ public class LongPlaytest {
     static double orphanDeathsRun = 0, unhousedDeathsRun = 0;
     static double allDeaths = 0, worstLongSick = 0;
     static int worstLongSickMonth = 0;
+    /**
+     * The price at the clinic door (2026-09-19): person-months lived, so the
+     * deaths can be read per thousand a year; the people the fee turned
+     * away, summed for the mean; and the fees the households skipped, summed
+     * over the run - the summary prints the run's total beside last month's.
+     */
+    static double personMonths = 0, pricedOutSum = 0, careSkippedSum = 0;
+    /** The price of a place (2026-09-21): the interest the graduates paid and the grants paid, summed over the run. */
+    static double studentInterestSum = 0, grantsSum = 0;
     /** Crime (2026-09-11): the rate against Canada's summed for the mean, the worst, and what it did over the run. */
     static double crimeVsSum = 0, worstCrimeVs = 0, coverageSum = 0, killedRun = 0, stolenRun = 0;
 
@@ -480,6 +489,32 @@ public class LongPlaytest {
             out.println(co);
         }
         /*
+         * -Dplaytest.care=true: every month somebody was priced out of care
+         * (2026-09-19), cell by cell - which households skipped the clinic's
+         * bill to eat, what they skipped, and what the clinics did about it.
+         * The instrument that traces a diverging playtest to the households
+         * at the eat-less step.
+         */
+        if (Boolean.getBoolean("playtest.care")) {
+            HouseholdBalance hb = g.getHouseholdBalance();
+            Healthcare hc = g.getHealthcare();
+            if (hc.getPricedOutTotal() > 0 || hb.getCareSkipped() > 0) {
+                out.printf("CARE m%-4d priced out %,.1f (childcare %,.1f / general %,.1f / senior %,.1f)"
+                        + " skipped $%,.3fk | could pay childcare %.4f general %.4f senior %.4f%n",
+                        g.getMonth(), hc.getPricedOutTotal(), hc.getPricedOut(CareType.CHILDCARE),
+                        hc.getPricedOut(CareType.GENERAL), hc.getPricedOut(CareType.SENIOR),
+                        hb.getCareSkipped(), hc.getAffordability(CareType.CHILDCARE),
+                        hc.getAffordability(CareType.GENERAL), hc.getAffordability(CareType.SENIOR));
+                for (Household c : hb.cells()) {
+                    if (c.households() < .5 || c.carePaid() >= 1) continue;
+                    out.printf("     %-38s x%-8.1f paid %.3f of its care bill, skipped $%.4fk each;"
+                            + " spendable $%.3fk against a basket of $%.3fk%n",
+                            c.label(), c.households(), c.carePaid(), c.careSkipped(),
+                            c.spendable(), c.subsistence());
+                }
+            }
+        }
+        /*
          * -Dplaytest.cells=true: the households going short, cell by cell,
          * yearly. The instrument that says WHICH families the budget
          * constraint is biting now that every shape at every tier keeps its
@@ -510,6 +545,11 @@ public class LongPlaytest {
         orphanDeathsRun += g.getLastOrphanDeaths();
         unhousedDeathsRun += g.getLastUnhousedDeaths();
         allDeaths += g.getCohorts().getLastDeaths();
+        personMonths += g.getPopulationManager().getPopulation();
+        pricedOutSum += g.getHealthcare().getPricedOutTotal();
+        careSkippedSum += g.getHouseholdBalance().getCareSkipped();
+        studentInterestSum += g.getStudentLoanInterest();
+        grantsSum += g.getEconomyManager().getStudentGrants();
         double longSick = sickness.peoplePastTwoMonths(g.getCohorts());
         if (longSick > worstLongSick) { worstLongSick = longSick; worstLongSickMonth = g.getMonth(); }
         Crime crime = g.getCrime();
@@ -751,6 +791,48 @@ public class LongPlaytest {
 
     /** Months the player will let pass before looking, at most. */
     static int longestSkip() { return ATTENTIVE ? 12 : Integer.MAX_VALUE; }
+
+    /** -Dplaytest.schools=true: the city builds schools, which the advisor never does. See the founding. */
+    static final boolean SCHOOLS = Boolean.getBoolean("playtest.schools");
+
+    /** Whether any education dial or the schools flag was set, so the summary says what they did. */
+    static boolean educationSet = false;
+
+    /**
+     * Under the schools flag: the basic ladder, then a college, then a
+     * university, each when the city is big enough to carry it, and more of
+     * each as it grows - asked at every stop, so the schools arrive with the
+     * people rather than a quarter-century late.
+     *
+     * PROPORTIONATE, BECAUSE THE FIRST DRAFT WAS NOT. It put one of each up
+     * with the founding, and a University is $210M, three hundred and
+     * sixty-one posts and $620k a month of upkeep on a town of three hundred
+     * people making $1.8M a month: both control seeds went $180M-$290M
+     * overdrawn by month 263 and $3-4B by month 600, and seed 1's overdraft
+     * compounded without bound - $1.4T at month 801, $1,378T at 1,033, and
+     * a NaN at 1,632 - which is a finding about the treasury's floor, filed,
+     * and not what this flag is for. The thresholds below are what a city
+     * can pay for: the ladder from a thousand people, a high school from two
+     * thousand, a college from five, a university from ten, and one more of
+     * each per the people it serves after that.
+     */
+    static void ensureSchools(Game g) {
+        if (!SCHOOLS) return;
+        int people = g.getPopulationManager().getPopulation();
+        ensure(g, "Elementary School", people < 1_000 ? 0 : 1 + people / 10_000);
+        ensure(g, "Middle School", people < 1_000 ? 0 : 1 + people / 10_000);
+        ensure(g, "High School", people < 2_000 ? 0 : 1 + people / 15_000);
+        ensure(g, "Community College", people < 5_000 ? 0 : 1 + people / 40_000);
+        ensure(g, "University", people < 10_000 ? 0 : 1 + people / 40_000);
+    }
+
+    /** What the flag has ordered of each school, so one under construction is not ordered twice. */
+    static final java.util.Map<String, Integer> schoolsOrdered = new java.util.HashMap<>();
+
+    static void ensure(Game g, String name, int want) {
+        int have = Math.max(qty(g, name), schoolsOrdered.getOrDefault(name, 0));
+        if (have < want && build(g, name, want - have)) schoolsOrdered.put(name, want);
+    }
 
     /** ...and how many things it will fix when it does look. */
     static int movesPerLook() { return ATTENTIVE ? 8 : 3; }
@@ -1754,6 +1836,59 @@ public class LongPlaytest {
              * Seed 0 (the default) is the run as it has always been.
              */
             int seed = Integer.getInteger("playtest.seed", 0);
+            /*
+             * THE HEALTH DIALS, FOR THE ENSEMBLE (2026-09-19):
+             * -Dplaytest.healthFee=<scale> and -Dplaytest.healthPremium=<rate>
+             * set the two TaxPolicy dials at the founding and leave them for
+             * the run, so eight seeds at a setting can be laid beside eight
+             * at the default. Unset, the defaults stand and this is a no-op.
+             */
+            String feeScale = System.getProperty("playtest.healthFee");
+            String premium = System.getProperty("playtest.healthPremium");
+            if (feeScale != null) {
+                g.getEconomyManager().getTaxPolicy().setHealthFeeScale(Double.parseDouble(feeScale));
+            }
+            if (premium != null) {
+                g.getEconomyManager().getTaxPolicy().setHealthPremiumRate(Double.parseDouble(premium));
+            }
+            /*
+             * THE PRICE OF A PLACE, FOR THE ENSEMBLE (2026-09-21):
+             * -Dplaytest.tuitionScale=<x>, -Dplaytest.grantBasis=<WAGE_SHARE |
+             * FIXED | SURPLUS_SHARE | TUITION_SHARE>, -Dplaytest.grantAmount=<in
+             * the basis's unit> and -Dplaytest.loanRate=<annual> set the four
+             * education dials at the founding and leave them for the run.
+             *
+             * AND -Dplaytest.schools=true BUILDS THE SCHOOLS, because the
+             * advisor never does: the default run ends its 4,002 months with
+             * "students 0", so a dial on a grant, a loan or a price has
+             * nothing to reach in any seed - a mechanic the fixture never
+             * touches is a mechanic no run has ever tested, the K1 rule the
+             * policy rate above was added under. Under the flag the schools
+             * go up as the city grows big enough to carry them - asked at the
+             * end of the founding and at every stop after it (ensureSchools) -
+             * and the same flag at the default dials is the control. Unset,
+             * none of this runs and the output is the run as it has always
+             * been.
+             */
+            String tuitionScale = System.getProperty("playtest.tuitionScale");
+            String grantBasis = System.getProperty("playtest.grantBasis");
+            String grantAmount = System.getProperty("playtest.grantAmount");
+            String loanRate = System.getProperty("playtest.loanRate");
+            if (tuitionScale != null) {
+                g.getEconomyManager().getTaxPolicy().setTuitionScale(Double.parseDouble(tuitionScale));
+            }
+            if (grantBasis != null || grantAmount != null) {
+                TaxPolicy dials = g.getEconomyManager().getTaxPolicy();
+                TaxPolicy.GrantBasis basis = grantBasis == null ? dials.getGrantBasis()
+                        : TaxPolicy.GrantBasis.valueOf(grantBasis.trim().toUpperCase());
+                double amount = grantAmount == null ? dials.getGrantAmount() : Double.parseDouble(grantAmount);
+                dials.setGrant(basis, amount);
+            }
+            if (loanRate != null) {
+                g.getEconomyManager().getTaxPolicy().setStudentLoanRate(Double.parseDouble(loanRate));
+            }
+            educationSet = tuitionScale != null || grantBasis != null || grantAmount != null
+                    || loanRate != null || SCHOOLS;
             build(g, "House", 40 + seed % 4);
             build(g, "Convenience Store", 3);
             /*
@@ -1776,6 +1911,7 @@ public class LongPlaytest {
             run(g, 5);
             advise(g);
             run(g, 6);
+            ensureSchools(g);
 
             log.add(era(g, "founded, played by hand"));
 
@@ -1803,6 +1939,7 @@ public class LongPlaytest {
                 // same unbounded skip it always was.
                 skip = Math.min(skip, longestSkip());
                 run(g, Math.min(skip, TARGET_MONTHS - g.getMonth()));
+                ensureSchools(g);
 
                 // Look at the city, fix the worst thing, then a few hands-on
                 // months watching what that did - the way anyone plays.
@@ -2095,9 +2232,67 @@ public class LongPlaytest {
         Healthcare hc = g.getHealthcare();
         out.printf("  healthcare: $%,.0fk a month, %.0f%% covered by fees%n",
                 hc.getGrossCost(), hc.getCostRecovery() * 100);
+        /*
+         * THE PRICE AT THE CLINIC DOOR (2026-09-19): the two dials, what the
+         * premium raised, who the fee turned away, the coverage the sick rate
+         * actually read, and the deaths per thousand a year - the figures the
+         * ensemble table is read off.
+         */
+        {
+            TaxPolicy dials = g.getEconomyManager().getTaxPolicy();
+            HouseholdBalance hb = g.getHouseholdBalance();
+            out.printf("  the price at the door: fees x%.2f (break-even x%.2f), premium %.2f%% raised $%,.0fk;"
+                    + " priced out last month %,.0f (childcare %,.0f / general %,.0f / senior %,.0f),"
+                    + " %,.0f a month over the run, fees skipped $%,.0fk last month and $%,.0fk over the run;"
+                    + " could pay: childcare %.0f%% general %.0f%% senior %.0f%%, general coverage %.0f%%;"
+                    + " deaths %.2f per 1,000 a year%n",
+                    dials.getHealthFeeScale(), hc.breakEvenScale(),
+                    dials.getHealthPremiumRate() * 100, g.getEconomyManager().getHealthPremiums(),
+                    hc.getPricedOutTotal(), hc.getPricedOut(CareType.CHILDCARE),
+                    hc.getPricedOut(CareType.GENERAL), hc.getPricedOut(CareType.SENIOR),
+                    monthsObserved > 0 ? pricedOutSum / monthsObserved : 0,
+                    hb.getCareSkipped(), careSkippedSum,
+                    hc.getAffordability(CareType.CHILDCARE) * 100,
+                    hc.getAffordability(CareType.GENERAL) * 100,
+                    hc.getAffordability(CareType.SENIOR) * 100,
+                    g.getHealth().getCoverage() * 100,
+                    personMonths > 0 ? allDeaths / personMonths * 12 * 1000 : 0);
+        }
         out.printf("  funerals: %,.0f buried and %,.0f cremated last month,"
                 + " %,.0f plots used, %,.0f lying unburied%n",
                 hc.getBurials(), hc.getCremations(), hc.getPlotsUsed(), hc.getUnburied());
+        /*
+         * THE PRICE OF A PLACE (2026-09-21): the four dials, who is studying,
+         * who has graduated, what is owed and what the loans brought in -
+         * the figures the setting's ensemble table is read off. Only when an
+         * education property was set, so the default run's output is the
+         * run as it has always been.
+         */
+        if (educationSet) {
+            TaxPolicy dials = g.getEconomyManager().getTaxPolicy();
+            Education schools = g.getEducation();
+            HouseholdBalance hb = g.getHouseholdBalance();
+            double graduated = 0;
+            for (double v : schools.getEverGraduated()) graduated += v;
+            double studying = 0;
+            for (EducationType type : EducationType.values()) {
+                if (type.isAdult()) studying += schools.studentBody(type);
+            }
+            out.printf("  the price of a place: tuition x%.2f, grant %s at %s, loans at %.2f%%;"
+                    + " %,.0f adults studying, %,.0f ever graduated to a higher band;"
+                    + " student debt $%,.0fk owed (%,.0fk by graduates), grants $%,.0fk last month and $%,.0fk over the run,"
+                    + " interest $%,.1fk last month and $%,.0fk over the run; schools %,.0f fees, %,.0f forgiven, hunger %.1f%%%n",
+                    dials.getTuitionScale(), dials.getGrantBasis(),
+                    dials.getGrantBasis() == TaxPolicy.GrantBasis.FIXED
+                            ? String.format("$%,.0f", dials.getGrantAmount() * 1000)
+                            : String.format("%.0f%%", dials.getGrantAmount() * 100),
+                    dials.getStudentLoanRate() * 100,
+                    studying, graduated,
+                    hb.totalStudentDebt(), hb.totalGraduateDebt(),
+                    g.getEconomyManager().getStudentGrants(), grantsSum,
+                    g.getStudentLoanInterest(), studentInterestSum,
+                    schools.getFees(), schools.getSubsidy(), hb.getHungerRate() * 100);
+        }
 
         /*
          * THE BANK, which nobody in this harness ever builds.

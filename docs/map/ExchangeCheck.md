@@ -1,6 +1,6 @@
 # ExchangeCheck.java - 686 lines · 15 methods · 2 constants · harnesses
 
-`ham/citybuildersim/ExchangeCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ExchangeCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Verifies the exchange: what the desk quotes, who trades with it and why,
 > what a company does with its surplus, and that a city with a market in it
@@ -15,6 +15,8 @@
 > the audited month and comes back from a save.
 
 **Uses:** [Exchange](Exchange.md) (69), [Equity](Equity.md) (40), [HouseholdBalance](HouseholdBalance.md) (34), [Bank](Bank.md) (15), [PayTier](PayTier.md) (12), [FamilyStructure](FamilyStructure.md) (8), [OutwardInvestment](OutwardInvestment.md) (4), [Game](Game.md) (4), [Sectors](Sectors.md) (3), [GameFiles](GameFiles.md) (2), [DebtManager](DebtManager.md) (1), [Household](Household.md) (1)
+
+**Used by (1):** [BankCheck](BankCheck.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
 # FamilyModel.java - 2,072 lines · 97 methods · 10 constants · model
 
-`ham/citybuildersim/FamilyModel.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FamilyModel.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > How the city's people are arranged into households, and what each earns.
 > 
@@ -49,7 +49,7 @@
 
 **Uses:** [FamilyStructure](FamilyStructure.md) (84), [AgeBand](AgeBand.md) (47), [PayTier](PayTier.md) (27), [PopulationCohorts](PopulationCohorts.md) (4)
 
-**Used by (19):** [BusinessInvestment](BusinessInvestment.md), [CrimeCheck](CrimeCheck.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HousingCheck](HousingCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [RealEstate](RealEstate.md), [SummaryScreen](SummaryScreen.md)
+**Used by (20):** [BusinessInvestment](BusinessInvestment.md), [CrimeCheck](CrimeCheck.md), [EconomyManager](EconomyManager.md), [EducationCheck](EducationCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HousingCheck](HousingCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [RealEstate](RealEstate.md), [SummaryScreen](SummaryScreen.md)
 
 ## Sections
 

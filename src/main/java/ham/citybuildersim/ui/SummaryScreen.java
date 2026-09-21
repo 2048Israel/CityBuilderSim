@@ -1589,12 +1589,15 @@ final class SummaryScreen {
      *
      * STAFFED, not built, which is the whole reason it is worth a line - a
      * hospital with no doctors is on the BUILDINGS list looking like an asset
-     * while treating nobody, and this is the row that says so.
+     * while treating nobody, and this is the row that says so. The percentage
+     * is the model's own, Healthcare.getCoverage() (2026-09-19): the places
+     * over the people, less whoever the fee turned away, so on a dear month
+     * it reads below the two numbers beside it, which is the point.
      */
     HBox careLine(String label, CareType care, double needed, double[] staffing) {
 
         double places = ui.game.getBuildingManager().getStaffedCareCapacity(care, staffing);
-        double cover = Health.coverageOf(places, needed);
+        double cover = ui.game.getHealthcare().getCoverage(care);
 
         return statLine(label, String.format("%.0f%%  %s/%s", cover * 100,
                         shortNumber(places), shortNumber(needed)),

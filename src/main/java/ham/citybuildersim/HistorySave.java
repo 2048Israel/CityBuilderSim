@@ -214,8 +214,12 @@ public class HistorySave {
     private List<Double> evicted = new ArrayList<>();
     private List<Double> eiPaid = new ArrayList<>();
     private List<Double> eiPremiums = new ArrayList<>();
+    /** The health premium collected, a month at a time - the EI premium's shape (2026-09-19). */
+    private List<Double> healthPremiums = new ArrayList<>();
     private List<Double> studentGrants = new ArrayList<>();
     private List<Double> studentLoansOwed = new ArrayList<>();
+    /** Interest the graduates paid on their student loans, a month at a time - the premiums' shape (2026-09-21). */
+    private List<Double> studentLoanInterest = new ArrayList<>();
 
     /* ------------------------------------------------------------------
        THE LONG SICK, 2026-09-11. How many have been sick more than two
@@ -429,8 +433,10 @@ public class HistorySave {
         evicted.add(round2(game.getHouseholdBalance().getEvicted()));
         eiPaid.add(round2(accounts.getEiBenefits()));
         eiPremiums.add(round2(accounts.getEiPremiums()));
+        healthPremiums.add(round2(accounts.getHealthPremiums()));
         studentGrants.add(round2(accounts.getStudentGrants()));
         studentLoansOwed.add(round2(game.getHouseholdBalance().totalStudentDebt()));
+        studentLoanInterest.add(round2(accounts.getStudentLoanInterest()));
         Sickness sickness = game.getSickness();
         sickPastTwoMonths.add(round2(sickness.peoplePastTwoMonths(pyramid)));
         diedOfIllness.add(round2(sickness.getLastDeaths()));
@@ -589,8 +595,10 @@ public class HistorySave {
         evicted = copy(loaded.evicted);
         eiPaid = copy(loaded.eiPaid);
         eiPremiums = copy(loaded.eiPremiums);
+        healthPremiums = copy(loaded.healthPremiums);
         studentGrants = copy(loaded.studentGrants);
         studentLoansOwed = copy(loaded.studentLoansOwed);
+        studentLoanInterest = copy(loaded.studentLoanInterest);
         sickPastTwoMonths = copy(loaded.sickPastTwoMonths);
         diedOfIllness = copy(loaded.diedOfIllness);
         sickRecovery = copy(loaded.sickRecovery);
@@ -788,8 +796,10 @@ public class HistorySave {
         map.put("evicted", evicted);
         map.put("eiPaid", eiPaid);
         map.put("eiPremiums", eiPremiums);
+        map.put("healthPremiums", healthPremiums);
         map.put("studentGrants", studentGrants);
         map.put("studentLoansOwed", studentLoansOwed);
+        map.put("studentLoanInterest", studentLoanInterest);
         map.put("sickPastTwoMonths", sickPastTwoMonths);
         map.put("diedOfIllness", diedOfIllness);
         map.put("sickRecovery", sickRecovery);
@@ -877,7 +887,7 @@ public class HistorySave {
                 contributions, pensionBill, healthBill,
                 rentPrice,
                 eiPaid, eiPremiums, studentGrants, studentLoansOwed,
-                stolen, safetyBill);
+                stolen, safetyBill, healthPremiums, studentLoanInterest);
 
         // A share's price is money; how many shares there are is not.
         if (sharePrice != null) for (List<Double> s : sharePrice.values()) scaleAll(scale, s);

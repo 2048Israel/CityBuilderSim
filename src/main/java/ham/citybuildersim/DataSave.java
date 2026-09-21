@@ -287,7 +287,47 @@ public class DataSave {
     public double[] getTreasuryMonth()           { return treasuryMonth; }
 
     /**
-     * The government's own month: seventeen revenue and spending lines, saved
+     * The treasury's journal: the non-budget movements by name, last month
+     * (what the bridge shows) and the month in progress, as two pairs of
+     * parallel arrays - a label and its amount in thousands, signed as the
+     * treasury sees it. Two pairs for the same reason sectorBooks has a
+     * "before": the bridge is shown for the month that has ended, and a city
+     * saved between two presses has already moved cash the next strike will
+     * count. See TreasuryJournal.
+     *
+     * Absent from a save written before 2026-09-18, which loads with both
+     * months empty - the right journal for a city whose movements nobody
+     * wrote down - so SAVE_FORMAT does not move.
+     */
+    private String[] treasuryJournalLabels;
+    private double[] treasuryJournalAmounts;
+    private String[] treasuryJournalPendingLabels;
+    private double[] treasuryJournalPendingAmounts;
+
+    /**
+     * What the treasury has raised by issuing paper since the last strike -
+     * Game.treasuryRaisedSoFar - carried for the reason cityCapitalSpending
+     * is: a city saved between two presses has already raised what the next
+     * strike counts. Zero on an older save, which is what its bridge read.
+     */
+    private double treasuryRaisedPending;
+
+    public void setTreasuryJournal(String[] labels, double[] amounts,
+                                   String[] pendingLabels, double[] pendingAmounts) {
+        this.treasuryJournalLabels = labels;
+        this.treasuryJournalAmounts = amounts;
+        this.treasuryJournalPendingLabels = pendingLabels;
+        this.treasuryJournalPendingAmounts = pendingAmounts;
+    }
+    public String[] getTreasuryJournalLabels()         { return treasuryJournalLabels; }
+    public double[] getTreasuryJournalAmounts()        { return treasuryJournalAmounts; }
+    public String[] getTreasuryJournalPendingLabels()  { return treasuryJournalPendingLabels; }
+    public double[] getTreasuryJournalPendingAmounts() { return treasuryJournalPendingAmounts; }
+    public void setTreasuryRaisedPending(double v)     { this.treasuryRaisedPending = v; }
+    public double getTreasuryRaisedPending()           { return treasuryRaisedPending; }
+
+    /**
+     * The government's own month: twenty-three revenue and spending lines, saved
      * and restored as one. See NationalAccounts.governmentToSave() for why
      * every one of them has to be carried rather than rebuilt.
      *

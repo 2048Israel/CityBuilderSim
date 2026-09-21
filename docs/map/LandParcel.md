@@ -1,6 +1,6 @@
 # LandParcel.java - 111 lines · 11 methods · 0 constants · model
 
-`ham/citybuildersim/LandParcel.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandParcel.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > One plot on the market, as the land office lists it.
 > 
@@ -27,7 +27,7 @@
 
 **Uses:** [LandManager](LandManager.md) (1)
 
-**Used by (8):** [Game](Game.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMarket](LandMarket.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md)
+**Used by (9):** [Game](Game.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMarket](LandMarket.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Fields (state)
 

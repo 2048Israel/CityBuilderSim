@@ -1,6 +1,6 @@
 # Stale.java - 627 lines · 26 methods · 14 constants · tools
 
-`ham/citybuildersim/tools/Stale.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/Stale.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Finds the comments and documents that have stopped being true, mechanically.
 > 

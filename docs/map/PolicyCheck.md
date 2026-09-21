@@ -1,6 +1,6 @@
 # PolicyCheck.java - 353 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/PolicyCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies.
 > 

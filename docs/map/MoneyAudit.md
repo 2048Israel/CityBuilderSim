@@ -1,6 +1,6 @@
-# MoneyAudit.java - 760 lines · 23 methods · 2 constants · model
+# MoneyAudit.java - 767 lines · 23 methods · 2 constants · model
 
-`ham/citybuildersim/MoneyAudit.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneyAudit.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Where the money went this month, and whether it all went somewhere.
 > 
@@ -88,7 +88,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 721 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
+| 40 | 728 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
 | 43 | 137 | **type** `public static final class Result` | One month's strike. |
 | 95 | 1 | `public double tradeBalance()` _(in MoneyAudit.Result)_ | Exports less imports. |
 | 98 | 1 | `public double incomeBalance()` _(in MoneyAudit.Result)_ | What the city earns on foreign assets, less what it pays on foreign debts. |
@@ -114,5 +114,5 @@
 | 277 | 16 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
 | 295 | 5 | `public static double pooled(Game g)` | Every dollar the city and its businesses hold, plus the builder's order book. |
 | 309 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
-| 314 | 446 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
+| 314 | 453 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
 

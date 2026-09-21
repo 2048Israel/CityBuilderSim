@@ -88,9 +88,44 @@ public abstract class Household {
      * How long a graduate takes to repay a student loan, in months: nine and
      * a half years, the Canada Student Loan standard term (Alberta Student
      * Aid's repayment page; the six-month grace is not modelled). Interest
-     * free, as Canada loans have been since April 2023.
+     * free by default, as Canada loans have been since April 2023 - and at
+     * whatever rate the player sets since 2026-09-21, see THE LOAN'S RATE.
      */
     public static final double STUDENT_LOAN_MONTHS = 114;
+
+    /* =====================================================================
+       THE LOAN'S RATE (2026-09-21)
+
+       Jerus: "another slider which is the interest rate for the student
+       loans, and idk if real life is like that but have it so that the
+       money is withdrawn from the treasury and then later when they pay it
+       back it's added back, and you get the interest if there is any."
+
+       The money already went out and came back: a student's shortfall is
+       lent by the treasury (StudentHousehold.fundShortfall) and a graduate
+       repays a 114th of the balance a month out of wages
+       (WorkingHousehold.studentRepayment). What was missing was the
+       interest, and it is the Canadian shape: the government carries the
+       interest while the student studies, and a GRADUATE is charged it
+       during repayment. So a student's balance grows only by what they
+       borrow, and a graduate's is charged the month's interest - the
+       balance times TaxPolicy.getStudentLoanRate() over twelve - which the
+       month's payment covers before a 114th of the balance comes off it.
+       Interest is struck and paid in the same month, so the balance itself
+       only ever carries principal and declines exactly as it did before the
+       rate existed; what the household PAYS is the instalment plus the
+       interest, and at a zero rate the arithmetic is bit for bit what it
+       was.
+
+       The interest is the treasury's, as its own revenue line
+       (NationalAccounts.getStudentLoanInterest()), beside the health and EI
+       premiums; the principal keeps arriving through the journal's "Lent to
+       students, net of repayments". A prisoner's loan is frozen with the
+       rest of their debts: no instalment and no interest while inside -
+       PrisonerHousehold says so in its own two overrides. The rate is a
+       city-wide policy told to every cell by HouseholdBalance before it
+       settles, like the rent share.
+       ===================================================================== */
 
     /** The family shape, or null for a household that is not one: the unemployed, a student, an orphan. */
     protected final FamilyStructure shape;
@@ -131,7 +166,9 @@ public abstract class Household {
     /**
      * What one of these households owes the treasury on student loans. A
      * STOCK on the header's terms: borrowed while studying, carried into a
-     * family when they graduate, repaid out of wages there. Interest free.
+     * family when they graduate, repaid out of wages there. Principal only:
+     * the interest a graduate is charged is paid the month it is struck, see
+     * THE LOAN'S RATE.
      */
     double studentDebt;
 
@@ -229,6 +266,78 @@ public abstract class Household {
 
     public double mealsEaten() { return mealsEaten; }
 
+    /* =====================================================================
+       WHO CAN AFFORD THE CLINIC (2026-09-19)
+
+       Jerus: "healthcare should be an adjustable price" - and his decision
+       for the household that cannot pay it: it goes without care, not
+       without food. The tuition trap in Education is the same shape
+       (CAN THEY AFFORD IT?), and this deliberately is NOT its linear
+       falloff, which would shave coverage off every household at any fee
+       and change every city at the default. This is a cliff on the
+       household's own solvency:
+
+         A household pays its care bill out of what its plan says it will
+         have next month AFTER rent, the other bills and a basket for
+         everybody in it - its income, its savings, its paper abroad and the
+         credit still open to it, which is the waterfall's own order. What
+         fits is paid; what would have to come out of the food budget is
+         not, and that share of the household's people goes without care.
+
+       So a household that can still cover its bills out of income, savings,
+       shares or credit pays the whole fee and is served exactly as it was;
+       only a household that has exhausted all of them and would otherwise
+       eat less skips care instead, and eats that much more. The share is
+       struck against the bill the household WOULD face at full service
+       (see HouseholdBalance.setCareBills()) rather than the one it was
+       handed, so a household that skipped last month's bill does not read
+       an empty bill as a bill it can afford and swing between served and
+       starving every other month.
+
+       A POSITION, NOT WORKING, for the same reason mealsEaten is: it is
+       struck at the top of the month and read in the middle of it by
+       Game.careAffordability(), and again at the next month's top by the
+       fee split, so it crosses a save. An old save reads 1: everybody paid,
+       which is what that city did.
+       ===================================================================== */
+
+    /** Of this household's people, the share who paid for care at the last strike: 1 for all of them. */
+    double carePaid = 1;
+
+    /** What one of these households could fund next month: the plan's own figure, kept for the care test. */
+    double spendable;
+
+    /** The care bill this household skipped at the last strike, per household - what it ate instead. */
+    double careSkipped;
+
+    public double carePaid()    { return carePaid; }
+    public double spendable()   { return spendable; }
+    public double careSkipped() { return careSkipped; }
+
+    /**
+     * Decides how much of its care bill this household pays, after the month
+     * is settled and the plan is struck - the rule in the banner above.
+     *
+     * @param fullBill what one of these households would be billed for care
+     *                 at full service, per household
+     * @param paidBill what one of them was actually billed this month, per
+     *                 household - added back, because the plan's spendable is
+     *                 net of it and the question is what is left with no bill
+     * @return the share of the bill it can pay, 0 to 1, which is the share of
+     *         its people who are served
+     */
+    double affordCare(double fullBill, double paidBill) {
+        careSkipped = 0;
+        if (fullBill <= 0) {
+            carePaid = 1;
+            return 1;
+        }
+        double room = spendable + Math.max(0, paidBill) - subsistence;
+        carePaid = Math.max(0, Math.min(1, room / fullBill));
+        careSkipped = (1 - carePaid) * fullBill;
+        return carePaid;
+    }
+
     /**
      * ...and the ones this cell sold into the second-hand market this month,
      * in total rather than per household. Within-month working, not a stock:
@@ -273,8 +382,14 @@ public abstract class Household {
     /** Shares sold this month to cover the shop, per household, in cash. */
     double sold;
 
-    /** Student loan drawn this month, and repaid, per household. */
+    /** Student loan drawn this month, and repaid (principal), per household. */
     double studentBorrowed, studentRepaid;
+
+    /** Interest charged on the student loan this month, per household: paid with the instalment, and the treasury's. See THE LOAN'S RATE. */
+    double studentInterest;
+
+    /** The annual rate the treasury charges a graduate on the loan: the city's one policy, told to every cell by HouseholdBalance before it settles. */
+    double studentLoanRate;
 
     /** Households of this cell that lost their home this month - a count, not money. */
     double evicted;
@@ -409,6 +524,8 @@ public abstract class Household {
     public double studentDebt()     { return studentDebt; }
     public double studentBorrowed() { return studentBorrowed; }
     public double studentRepaid()   { return studentRepaid; }
+    /** The month's interest on the student loan, per household - paid on top of studentRepaid(). */
+    public double studentInterest() { return studentInterest; }
     public double totalStudentDebt(){ return studentDebt * households; }
     public double evicted()         { return evicted; }
     public double rentShare()       { return rentShare; }
@@ -545,8 +662,12 @@ public abstract class Household {
         interest = debt * rate / 12;
 
         /* ---------------- the bills, in order ---------------- */
+        // The student loan: the month's interest on the balance, then the
+        // instalment - see THE LOAN'S RATE. Both are nothing except in a
+        // working family, and the interest is nothing at a zero rate.
+        studentInterest = studentInterestDue();
         studentRepaid = Math.min(studentDebt, studentRepayment());
-        afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid;
+        afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid - studentInterest;
         subsistence = baskets() * foodPricePerHead;
 
         /* ---------------- settle what they actually spent ---------------- */
@@ -555,6 +676,8 @@ public abstract class Household {
         drawn = 0; borrowed = 0; repaid = 0; banked = 0; unfunded = 0; sold = 0;
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
         studentBorrowed = 0; evicted = 0;
+        // Principal only comes off the balance: the interest was charged on
+        // it and paid above, so what is owed never carries it.
         studentDebt -= studentRepaid;
         if (gap > 0) {
             drawn = Math.min(gap, Math.max(0, savings));
@@ -731,7 +854,7 @@ public abstract class Household {
          * below what the household could actually pay for, and the wealth term
          * above would have been a wish rather than a purchase.
          */
-        double spendable = Math.max(0, afterFixed) + savings
+        spendable = Math.max(0, afterFixed) + savings
                 + abroad * Math.max(0, localPerUsd) + planningRoom();
         planned = Math.min(want, spendable);
         return planned;
@@ -746,8 +869,9 @@ public abstract class Household {
                 Math.max(0, riskFreeAnnual) + HouseholdBalance.BASE_SPREAD
                         + HouseholdBalance.RISK_SLOPE * owedMonths);
         interest = debt * rate / 12;
+        studentInterest = studentInterestDue();
         studentRepaid = Math.min(studentDebt, studentRepayment());
-        afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid;
+        afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid - studentInterest;
         subsistence = baskets() * foodPricePerHead;
     }
 
@@ -789,8 +913,18 @@ public abstract class Household {
     /** What the plan may count on borrowing. The credit room, for everyone but a student. */
     protected double planningRoom() { return creditRoom(disposable); }
 
-    /** The month's student-loan repayment, per household. Nothing, except in a working family. */
+    /** The month's student-loan instalment (principal), per household. Nothing, except in a working family. */
     protected double studentRepayment() { return 0; }
+
+    /** The month's interest on the student loan at the city's rate, per household. Nothing, except in a working family. */
+    protected double studentInterestDue() { return studentInterestAt(studentLoanRate); }
+
+    /**
+     * What a month's interest on the loan would be at an annual rate - the
+     * same figure studentInterestDue() charges, for a screen previewing a
+     * rate the city has not set. Nothing, except in a working family.
+     */
+    public double studentInterestAt(double annualRate) { return 0; }
 
     /** What the bank will still lend one of these: the ceiling less what is owed, or nothing. */
     public double creditRoom(double disposablePer) {
@@ -844,15 +978,15 @@ public abstract class Household {
         disposable = 0; afterFixed = 0; interest = 0; drawn = 0; unfunded = 0;
         borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; rate = 0;
         subsistence = 0; bankrupt = 0; dividends = 0; sold = 0; carsSold = 0;
-        luxuryWant = 0; mealWant = 0;
+        luxuryWant = 0; mealWant = 0; spendable = 0; careSkipped = 0;
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
-        studentBorrowed = 0; studentRepaid = 0; evicted = 0;
+        studentBorrowed = 0; studentRepaid = 0; studentInterest = 0; evicted = 0;
     }
 
     /** The cell is empty: no position either. */
     void clearAll() {
         savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0; studentDebt = 0;
-        cars = 0; mealsEaten = 0;
+        cars = 0; mealsEaten = 0; carePaid = 1;
         java.util.Arrays.fill(shares, 0);
         clearWorking();
     }
@@ -884,6 +1018,9 @@ public abstract class Household {
         // Money, so it belongs on this line the day it is written. See the
         // note on investmentIncome above.
         luxuryWant *= scale;  mealWant *= scale;
+        // ...and the plan's spendable and the care bill skipped are money
+        // too; the share who paid (carePaid) is a share and stays.
+        spendable *= scale;  careSkipped *= scale;
         /*
          * `mealsEaten` IS NOT HERE, and for `cars`' reason one paragraph down:
          * it is a COUNT OF DINNERS. A reform divides every amount of money in
@@ -891,6 +1028,9 @@ public abstract class Household {
          */
         sentAbroad *= scale;  broughtHome *= scale;  foreignInterest *= scale;
         studentDebt *= scale;  studentBorrowed *= scale;  studentRepaid *= scale;
+        // Money, so on this line the day it was written; the rate it was
+        // struck at is a ratio and stays.
+        studentInterest *= scale;
         /*
          * `cars` IS NOT HERE AND THAT IS THE POINT. A reform divides every
          * amount of money by a hundred; it does not divide a car park. The

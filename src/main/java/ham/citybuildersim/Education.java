@@ -38,6 +38,14 @@ package ham.citybuildersim;
  *                    raise wages, or pay the tuition - and it is the most
  *                    interesting thing on this page.
  *
+ *                    That is the founding calibration, struck against the
+ *                    wages before the rebalance; against today's the
+ *                    founding price mostly lets them through. Since
+ *                    2026-09-21 the price is the player's own dial
+ *                    (TaxPolicy.getTuitionScale(), default 1, the founding
+ *                    table), and around three times it the trap is back as
+ *                    described - see foundingTuition().
+ *
  * TWO KINDS OF OUTPUT
  *
  * The basic ladder and the colleges raise a person's BAND, which is a level.
@@ -91,6 +99,16 @@ public class Education {
 
        Seeded at construction and re-seeded on load like every other money
        constant, and scaled in redenominate() so a reform needs no re-seed.
+
+       AND THE TABLE IS AT 1x (2026-09-21). Jerus: "make it so that you can
+       tweak the price of tuition as well." What a seat is actually charged
+       at is the table times the player's TaxPolicy.getTuitionScale(), 0 to
+       5, default 1 - handed in by Game every month and after a load, as
+       Healthcare takes its fee scale - and everything that reads a fee reads
+       it through feeFor(): the bill in charge(), the burden in
+       affordability(), the treasury's fee revenue and forgone subsidy, the
+       Schools page's table and the TUITION_SHARE grant. The founding table
+       below never moves; the dial is the player's.
        ===================================================================== */
     private final double[] tuition = new double[EducationType.values().length];
 
@@ -102,9 +120,43 @@ public class Education {
         }
     }
 
-    /** What this city charges for the course today. */
+    /**
+     * The player's multiplier on the tuition table, told to the schools by
+     * Game every month from TaxPolicy and after a load - a policy, so it is
+     * saved there and not here. 1 charges the founding table; 0 charges
+     * nobody.
+     */
+    private double tuitionScale = TaxPolicy.DEFAULT_TUITION_SCALE;
+
+    /** Sets the multiplier every course fee is charged at this month. See TaxPolicy.getTuitionScale(). */
+    public void setTuitionScale(double scale) {
+        tuitionScale = Math.max(0, Math.min(TaxPolicy.MAX_TUITION_SCALE, scale));
+    }
+
+    /** The multiplier the tuition table is charged at. */
+    public double getTuitionScale() { return tuitionScale; }
+
+    /** What this city charges for the course today: the founding fee in today's money, at the player's scale. */
     public double feeFor(EducationType type) {
+        return type == null ? 0 : tuition[type.ordinal()] * tuitionScale;
+    }
+
+    /** The same fee at a scale of 1 - the founding table in today's money - so a screen can re-strike it at a staged scale. */
+    public double feeAtOne(EducationType type) {
         return type == null ? 0 : tuition[type.ordinal()];
+    }
+
+    /**
+     * What the whole adult student body is charged a month at today's price,
+     * before the subsidy: each course's students at its own fee. What a
+     * TUITION_SHARE grant is a share of - see TaxPolicy.grantBill().
+     */
+    public double studentBodyTuition() {
+        double total = 0;
+        for (EducationType type : EducationType.values()) {
+            if (type.isAdult()) total += studentBody(type) * feeFor(type);
+        }
+        return total;
     }
 
     /**
@@ -122,6 +174,14 @@ public class Education {
      * month's pay unsubsidised, which is past MAX_BURDEN and stops everybody,
      * and thirty-two per cent at the default subsidy, which lets about half of
      * them through. The dial has to move something or it is not a decision.
+     *
+     * THIS IS THE FOUNDING PRICE, AND THE DIAL IS THE PLAYER'S (2026-09-21).
+     * The diploma wage the table was struck against, 1.500 above, has been
+     * 4.500 since the rebalance, so at 1x the trap above is mostly quiet;
+     * feeFor() is this times TaxPolicy.getTuitionScale(), and around x3 the
+     * trap is back where this paragraph describes it. The table is not
+     * re-tuned - a balance call is Jerus's, and the scale is what lets him
+     * make it.
      */
     public static double foundingTuition(EducationType type) {
         switch (type) {

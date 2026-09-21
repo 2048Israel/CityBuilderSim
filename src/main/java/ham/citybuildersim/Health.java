@@ -191,7 +191,9 @@ public class Health {
     /**
      * Works out this month's sick rate.
      *
-     * @param generalCareCapacity beds the city has finished building AND staffed
+     * @param generalCareCapacity beds the city has finished building AND staffed -
+     *                            and, since 2026-09-19, less the people the fee
+     *                            turned away: Game passes the people treated
      * @param population          everyone general care is on the hook for
      * @param month               the game month, which seeds the outbreak roll
      * @param unburied            the dead the city has nowhere to put
@@ -304,7 +306,11 @@ public class Health {
      */
     public double getWorkRatio() { return 1 - sickRate; }
 
-    /** Beds per person, capped at 1. */
+    /**
+     * People treated per person, capped at 1 - which since 2026-09-19 is the
+     * staffed beds LESS whoever the clinic's fee turned away, because that is
+     * what Game passes in. See the parameter note on advanceMonth().
+     */
     public double getCoverage() { return coverage; }
 
     /** What the rate would be with no outbreak running. */

@@ -1,6 +1,6 @@
 # ShortTermTBill.java - 125 lines · 13 methods · 0 constants · model
 
-`ham/citybuildersim/ShortTermTBill.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ShortTermTBill.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > A short-term anticipation note: borrow now, repay one lump, no coupon.
 > 
@@ -37,7 +37,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (3):** [DebtManager](DebtManager.md), [Game](Game.md), [RestructureCheck](RestructureCheck.md)
+**Used by (4):** [DebtManager](DebtManager.md), [Game](Game.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Methods, in file order
 

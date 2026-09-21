@@ -1,6 +1,6 @@
 # SimulationEngine.java - 191 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/SimulationEngine.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SimulationEngine.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 

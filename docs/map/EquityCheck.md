@@ -1,6 +1,6 @@
 # EquityCheck.java - 348 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/EquityCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EquityCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Verifies the share register: who buys, at what price, what they are paid,
 > and that a month with owners in it still adds up.

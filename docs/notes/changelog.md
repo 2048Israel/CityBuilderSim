@@ -8,6 +8,118 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
+### VERSION 0.6.9 — THE PRICE OF A PLACE — 2026-09-21, DEPLOYED AND VERIFIED, see `the-price-of-a-place.md`
+
+**The student grant becomes a menu, the student loan gets a rate, and a place
+at school gets a price the player sets.** Jerus: *"grants its just a menu where
+you can choose between a fixed amount, or a percentage of last month's surplus,
+or a % as it is now of living costs, or a % of tuition. and then another slider
+which is the interest rate for the student loans … and also make it so that you
+can tweak the price of tuition as well."* The grant is a basis and an amount —
+`TaxPolicy.GrantBasis` {`WAGE_SHARE` (the founding rule and the default),
+`FIXED`, `SURPLUS_SHARE` (last month's surplus as one pool), `TUITION_SHARE`
+(each student's own course fee)} and one `grantAmount` — struck by one rule,
+`TaxPolicy.grantBill`, that the treasury's bill, the save's re-strike, the
+students' row and the page all call. `TaxPolicy.studentLoanRate` (0–15%,
+default 0) is the Canadian shape: nothing while they study, charged on a
+graduate's balance during repayment and paid with the instalment, so the balance
+stays principal and falls as it did; the interest is the treasury's own revenue
+line, "Student loan interest" (`NationalAccounts` government slot 23), and the
+principal stays on the bridge. `TaxPolicy.tuitionScale` (0–5×, default 1)
+multiplies the founding table wherever a fee is read — and at ×3 the tuition
+trap the `Education` header describes is back (1,718 students at ×1 against
+1,173 at ×3 in a one-university city), the balance call the list carried now
+at the player's hand. The Policy tab's Promises → **Tuition** page is
+**Schools** (`PolicyScreen.schoolsPage()`): five dials on one foot bar, the
+grant dial moved off "Out of work". **At the defaults nothing moves** — the
+seed-0 playtest is byte-identical, and it has never built a school, so
+`LongPlaytest` gained `-Dplaytest.schools=true` and four dial flags: eight
+seeds at the defaults with schools and eight at tuition ×3 / grant 50% of
+tuition / loans 5%, all sixteen clean; at the setting the treasury takes
+$1.1–3.8M a month of interest and fewer study. **Found on the way:** the
+schools' books were never restored on the load path
+(`Game.rebuildSimulationState`, the sixth sighting of that gap — fixed); the
+prisoner's $70 was the balance carried in, and the freeze is explicit now in
+`PrisonerHousehold`; a founding village given a university overdraws the
+treasury without bound, to NaN (the overdraft has no floor — filed, not fixed);
+`HealthCheck`'s "two slots" is `TaxPolicy.STATE_BEFORE_HEALTH`; `stageSlider`
+unstages its own key instead of the whole set; the docs pass found an uncalled
+`TaxPolicy.studentGrantBill(...)` (removed) and the load path's grant-rate
+comment saying both dials were re-told each month when only the scale is.
+`EducationCheck` §13–16 (133 assertions OK); `SaveFileCheck`, `ReadPathCheck`,
+`PolicyCheck`, `YearBookCheck`, `MoneyCheck`, `OutsideCheck`, `TreasuryCheck`,
+`HistoryCheck`, `HealthCheck` extended or green; suite 56 of 57 with the known
+line (`InfrastructureCheck`, "its shops can actually be supplied"),
+`BuildMenuCheck` skipped without JavaFX; compile-all clean; `StaleCheck` 0 firm,
+74 soft, none of them this batch's; `SAVE_FORMAT` 27, every new field a tail
+append. Fable implementer, Opus docs pass, per the rule. Files verified on the
+PC byte-for-byte: 25 source files (the 23 of the batch plus `GameVersion.java`
+and `DataSave.java` from the docs pass), `CLAUDE.md`, `docs/notes/` and the
+regenerated `docs/` (tag 0921a).
+
+### VERSION 0.6.8 — HEALTHCARE HAS A PRICE, AND A PREMIUM — 2026-09-19 (night), DEPLOYED AND VERIFIED, see `the-price-at-the-door.md`
+
+**Two dials on the health service, and the first thing in the game a household
+can be priced out of.** Jerus: *"healthcare should be an adjustable price, all
+the way to even make it a profitable business or the option to make it an
+obligatory insurance payment system."* `TaxPolicy.healthFeeScale` multiplies
+the three care fees 0 to 15× the founding ones (default 1; funerals unscaled)
+and `TaxPolicy.healthPremiumRate` takes up to a tenth of every wage, employee
+side, into the treasury with nothing balancing it — between them the Policy
+tab's new **Promises → Health** page names three corners: free at the point of
+use, a business past the city's own break-even (struck live), or insurance.
+What makes the fee a decision is Jerus's rule for the household that cannot pay:
+**it goes without care, not without food** — a cliff on the household's own
+means, struck against the bill at full service so it settles instead of
+swinging; that share of its people is untreated in the sick rate, the swings
+and the births, and `served` means treated. **What the ensemble said:** at the
+founding fee the cliff catches only households with nothing (the out of work
+past EI, elders on a pension), 0–247 people a month, seed 7 never; the
+eight-seed means moved −12% population, −13% GDP, but two seeds ended inside the
+model's known emptying-out and the other six are flat (+1%, +3%). The ceiling
+went 5 → 15 after the first measurement, because a played city breaks even at
+×7–13 against fees set at founding wages. **Found on the way:** `buildWorld()`
+never rebuilt `health`/`healthcare` (fixed); a hair of borrowing is a discrete
+state (`fundShortfall()` / `investAbroad()`, the within-row re-split dropped
+over it); the People and Summary screens recomputed coverage from beds — now
+`Healthcare.getCoverage(care)`, saved, is what they read (the docs pass found
+it). `HealthCheck` +5 sections; `SaveFileCheck`, `ReadPathCheck`,
+`NewGameCheck`, `RestaurantsCheck`, `BusinessServicesCheck` extended; suite 56
+of 57 with the known line; `SAVE_FORMAT` 27, every new field a tail append.
+Fable implementer, Opus docs pass, per the rule. Shipped with the treasury batch
+below in one deploy.
+
+### THE TREASURY BRIDGE OPENS, AND THE DESK FOOTS — 2026-09-18/19 (night), DEPLOYED AND VERIFIED, behaviour-preserving, see `the-treasury-bridge-opens.md`
+
+**The Government tab's "Everything else the treasury did" row opens into named
+lines, and the bank's trading desk adds up.** Jerus: *"it just says 'everything
+else' — that should be expandable, cause a lot of times that's where a bunch of
+important things happen."* `TreasuryJournal` records every movement of the
+city's cash that is neither a budget line nor paper raised or repaid, where it
+happens, in the player's words — "Put capital into the bank", "Bought
+reserves", "Bought back a bond", "Lent to students, net of repayments" — struck
+press to press, carried in the save for both the month that ended and the one
+in progress; what the lines do not explain prints as "Not accounted for"
+(on a month the city borrows, the first coupon's timing, to the cent). Land and
+buildings stay on the budget's own line and are deliberately not named twice.
+On the bank's statement the desk's opened lines now carry
+`Bank.getMarkChange()` as "Re-marked what it holds", and when the re-mark is
+the bulk of a loss the note says why — which is the answer to *"explain to me
+the trading desk, cause a bunch of times it's losing billions"*: it bids at a
+quote that unfilled demand has pushed to 2–4× fair value, and marks at fair,
+so emigrants selling into a bubble cost it the difference the same day. **What
+it found:** "Raised by issuing paper" had read $0 on every month the city
+borrowed (the counter is cleared before the strike — the bridge has its own
+now); the city's repairs and the transit fares are on the Government screen and
+not in `NationalAccounts`' totals (journalled by name until they are); and,
+not fixed, **the bank never pays for the city's paper** — `cityDebtRaisedForBank`
+is snapshotted after the clear, so `bank.lend()` receives 0 for every city
+bond. `TreasuryCheck` +1 section and a third fixture city; `BankCheck` a new
+section — lines plus re-mark equalled the total in 120 of 120 played months.
+**Playtest byte-identical to the baseline; nothing about how the cash moves
+changed.** Fable, then merged with the health batch and gated again on the
+union (identical to the health tree's run).
+
 ### THE MANUAL AT 0.6.7 — 2026-09-18 (night), PUBLISHED as version 7, see `the-manual-at-0-6-7.md`
 
 **THE PUBLISHED MANUAL IS AT 0.6.7 / FORMAT 27 (version 7, same URL).** Twenty

@@ -15,6 +15,8 @@ What a session reads first, and the records of the whole.
 - `splitting-game.md` - four mechanics out of Game.java (Motoring, LuxuryCounter, Offending, CityBasket), 2026-09-18, playtest byte-identical; and the two-agent experiment - implementer and docs pass - with what it cost and what it needs
 - `the-ai-ergonomics-audit.md` - 2026-09-18: how the repository and these docs are arranged for an AI to work in, what was changed (the generated indexes, CLAUDE.md, this split) and what is recommended next
 - `handoff-after-the-sector-template.md` - the cloud working loop written out for a session that starts cold: staging, build scripts, verify copies, git
+- `the-price-at-the-door.md` - healthcare fees as a dial (0-15x) and an insurance premium off wages, 2026-09-19: the household that goes without care rather than without food, the three corners, the eight-seed ensemble, the break-even that founding fees cannot reach
+- `the-treasury-bridge-opens.md` - the Government tab's "everything else" row opened into a named journal, the desk's re-mark line and why the desk loses, 2026-09-19; the bank that never pays for the city's paper, found on the way
 - `the-manual-at-0-6-7.md` - the manual artifact brought to 0.6.7 (version 7, 2026-09-18): the new transport section, what reading the published page found stale, how three contexts made it, and twenty places where the tree's prose disagrees with the code
 - `the-documentation-catches-up.md` - the manual artifact brought up to 0.5.15; what the manual is and how it is versioned
 - `the-year-book.md` - the year book and decade book the game writes so a run can be read without a save: FLOW/LEVEL/RATE rules, columns
@@ -170,6 +172,7 @@ The pyramid, the households and their books, the labour market, the schools, the
 - `labour-mobility.md` - who moves between jobs and cities
 - `arrivals-have-diplomas.md` - migrants arrive with an education
 - `education-built.md` - schools, tuition, who goes
+- `the-price-of-a-place.md` - the student grant as a menu (a share of the wage, a fixed sum, a share of last month's surplus, a share of tuition; one rule), a rate on the student loan in the Canadian shape, and a price on a place (0-5x), 2026-09-21, 0.6.9; the default playtest that never built a school, the schools' books missing from the load path, the treasury overdraft with no floor
 - `the-parent-who-went-to-school.md` - a parent in school orphans the household unless the same mechanism as a laid-off parent holds it, 2026-09-15
 - `one-definition-of-unemployment.md` - the pool over the labour force less students and prisoners, one definition everywhere, 2026-09-15
 - `the-band-that-was-two-bands.md` - a wage band that had split in two, 2026-09-15

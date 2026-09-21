@@ -1,6 +1,6 @@
 # HistoryCheck.java - 301 lines · 6 methods · 2 constants · harnesses
 
-`ham/citybuildersim/HistoryCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistoryCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Verifies the graph history: recording, alignment, and the round trip. Not
 > part of the game.

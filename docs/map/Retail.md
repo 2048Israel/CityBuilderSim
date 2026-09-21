@@ -1,6 +1,6 @@
 # Retail.java - 621 lines · 46 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/Retail.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Retail.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The shops. Buy food on the food market, keep it on a shelf, sell it to the
 > households as groceries at a price they strike themselves.

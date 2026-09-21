@@ -1,6 +1,6 @@
-# RestaurantsCheck.java - 513 lines · 6 methods · 2 constants · harnesses
+# RestaurantsCheck.java - 515 lines · 6 methods · 2 constants · harnesses
 
-`ham/citybuildersim/RestaurantsCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RestaurantsCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > A meal out is food, and it is the same food.
 > 
@@ -66,11 +66,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 471 | **type** `public class RestaurantsCheck` | A meal out is food, and it is the same food. |
+| 43 | 473 | **type** `public class RestaurantsCheck` | A meal out is food, and it is the same food. |
 | 49 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 54 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 59 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 65 | 5 | `static void quietly(Runnable r)` |  |
 | 74 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 81 | 432 | `public static void main(String[] args) throws Exception` |  |
+| 81 | 434 | `public static void main(String[] args) throws Exception` |  |
 

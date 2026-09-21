@@ -425,9 +425,10 @@ final class GovernmentScreen {
 
              - issuing paper raises cash and is not revenue
              - repaying principal spends cash and is not an expense
-             - land the city buys or sells, buildings it pays for, reserves,
-               capital put into the bank, bonds bought back - the player's own
-               decisions between one month and the next
+             - reserves, capital put into the bank, bonds bought back, the
+               students' loans - the player's own decisions between one month
+               and the next, and none of them a budget line (land and
+               buildings ARE budget lines, and sit in the surplus row)
              - and the books dating a movement to a different month from the
                money (see the note under the table)
 
@@ -437,6 +438,16 @@ final class GovernmentScreen {
            its own row with its own name. A total that quietly absorbs its own
            gap is worse than no total, which is the same rule the sector cash
            flow and the sick rate follow.
+
+           AND THE LAST ROW OPENS (2026-09-18). Jerus: "it just says 'everything
+           else' - that should be expandable, cause a lot of times that's where
+           a bunch of important things happen." The model keeps a
+           TreasuryJournal of every non-budget movement by name, and the row
+           opens into those lines in the bridge's own columns, with "Not
+           accounted for" - Game.getTreasuryResidual() - as the last of them.
+           The same rule one row down: the residual is printed, not folded. A
+           month with nothing journalled keeps the row shut, because a caret
+           that opens onto the figure above it is worse than no caret.
            =================================================================== */
         if (ui.game.hasTreasuryMonth()) {
 
@@ -476,8 +487,18 @@ final class GovernmentScreen {
                     raised, change, raised > 0 ? Palette.ACCENT : null);
             row = bridgeRow(bridge, row, "Principal repaid to lenders",
                     -repaidP, change, repaidP > 0 ? Palette.WARN : null);
-            row = bridgeRow(bridge, row, "Everything else the treasury did",
-                    rest, change, Math.abs(rest) > .5 ? Palette.TEXT_HEAD : null);
+
+            java.util.List<TreasuryJournal.Entry> journal = ui.game.getTreasuryJournal();
+            double residual = ui.game.getTreasuryResidual();
+            if (journal.isEmpty()) {
+                // Nothing to disclose: a plain row, exactly as before.
+                row = bridgeRow(bridge, row, "Everything else the treasury did",
+                        rest, change, Math.abs(rest) > .5 ? Palette.TEXT_HEAD : null);
+            } else {
+                row = bridgeDisclosure(bridge, row, "Everything else the treasury did",
+                        rest, change, Math.abs(rest) > .5 ? Palette.TEXT_HEAD : null,
+                        journal, residual);
+            }
             column.getChildren().add(bridge);
 
             column.getChildren().add(statementTotal("Which is the change",
@@ -485,22 +506,43 @@ final class GovernmentScreen {
                             + tightMoney(toDollars(Math.abs(change)), false),
                     change >= 0 ? Palette.GOOD : Palette.BAD));
 
-            column.getChildren().add(statementNote(
-                    "The last row is everything that moves cash without being a budget "
-                    + "line: land the city bought or sold, buildings it paid for, reserves, "
-                    + "capital put into the bank, bonds bought back \u2014 and any movement "
-                    + "the books date to a different month from the money. It is printed "
-                    + "rather than folded into a total, because a bridge that hides its own "
-                    + "gap is not a bridge."));
+            column.getChildren().add(statementNote(journal.isEmpty()
+                    ? "The last row is everything that moves cash without being a budget "
+                    + "line \u2014 reserves, capital put into the bank, bonds bought back, "
+                    + "the students' loans \u2014 and any movement the books date to a "
+                    + "different month from the money. This month nothing of the kind was "
+                    + "recorded, so the row has nothing to open. It is printed rather than "
+                    + "folded into a total, because a bridge that hides its own gap is not "
+                    + "a bridge."
+                    : "The last row opens into the month's movements that are not a budget "
+                    + "line, each by name: reserves, capital put into the bank, bonds bought "
+                    + "back, the students' loans, and the two the budget balance leaves out "
+                    + "(the city's own repairs and the transit fares). \u201cNot accounted "
+                    + "for\u201d is what is left after them \u2014 timing between the books "
+                    + "and the money, such as a coupon booked the month it is charged and "
+                    + "paid the month after, and anything not yet journalled \u2014 printed "
+                    + "rather than folded in, because a bridge that hides its own gap is not "
+                    + "a bridge."));
 
             if (Math.abs(rest) > Math.abs(booked) && Math.abs(rest) > .5) {
+                TreasuryJournal.Entry biggest = null;
+                for (TreasuryJournal.Entry e : journal) {
+                    if (biggest == null || Math.abs(e.amount()) > Math.abs(biggest.amount())) biggest = e;
+                }
                 column.getChildren().add(alert("Most of the month was not the budget",
                         String.format("%s of the %s the balance moved was something other "
-                        + "than revenue and spending. On a month where the city bought or "
-                        + "sold land, or paid for a building, that is exactly what it "
-                        + "should say \u2014 those are real money and they are not a budget.",
+                        + "than revenue and spending. %s",
                         tightMoney(toDollars(Math.abs(rest))),
-                        tightMoney(toDollars(Math.abs(change))))));
+                        tightMoney(toDollars(Math.abs(change))),
+                        biggest == null
+                                ? "Nothing was journalled, so all of it is unaccounted for "
+                                  + "\u2014 timing between the books and the money, or a "
+                                  + "movement nothing has written down yet."
+                                : String.format("The biggest line is \u201c%s\u201d, %s%s "
+                                  + "\u2014 real money, and not a budget.",
+                                        biggest.label(),
+                                        biggest.amount() >= 0 ? "+" : "\u2212",
+                                        tightMoney(toDollars(Math.abs(biggest.amount())))))));
             }
         }
 
@@ -559,7 +601,14 @@ final class GovernmentScreen {
     /** One row of the treasury bridge: a signed movement and its share of the change. */
     int bridgeRow(javafx.scene.layout.GridPane table, int line,
                           String label, double amount, double change, String tone) {
-        table.add(gridCell(label, Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+        return bridgeRow(table, line, gridCell(label, Palette.TEXT_BODY, Palette.SIZE_CAPTION, false),
+                amount, change, tone);
+    }
+
+    /** The same, with the label cell already made - the disclosure puts a mark in it. */
+    int bridgeRow(javafx.scene.layout.GridPane table, int line,
+                          javafx.scene.Node labelCell, double amount, double change, String tone) {
+        table.add(labelCell, 0, line);
         // A zero movement is written as a zero, not as "+$0" and "-0%" - a sign
         // on nothing reads as a direction, and there was not one.
         boolean nothing = Math.abs(amount) < .5;
@@ -572,6 +621,72 @@ final class GovernmentScreen {
                         : String.format("%.0f%%", amount / change * 100),
                 Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
         return line + 1;
+    }
+
+    /**
+     * Whether the bridge's last row is standing open. Kept on the screen
+     * rather than on the row, because the panel is rebuilt under the player
+     * every month the clock ticks and a row that shut itself each time would
+     * be unreadable at speed.
+     */
+    private boolean bridgeOpen;
+
+    /**
+     * The bridge's last row as a disclosure: closed, the row as it always was;
+     * opened, the journal's lines under it in the same three columns, and a
+     * last line "Not accounted for" carrying the residual.
+     *
+     * Statement.statementDisclosure() is the shape copied - a caret and a word
+     * next to the label, the detail toggled visible AND managed together - but
+     * not the method, because that one builds an HBox and these lines have to
+     * sit in the grid's own columns or the figures stop lining up, which is
+     * the same reason bookLine() puts its mark where it does. The lines are
+     * rows of the same GridPane, hidden as a set; a GridPane lays out only
+     * its managed children, so the shut row takes no room.
+     */
+    int bridgeDisclosure(javafx.scene.layout.GridPane table, int line,
+                         String label, double amount, double change, String tone,
+                         java.util.List<TreasuryJournal.Entry> journal, double residual) {
+
+        Label what = new Label(label);
+        what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+        Label mark = new Label((bridgeOpen ? OPENED : CLOSED) + " which");
+        mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
+        HBox head = new HBox(Palette.GAP, what, mark);
+        head.setAlignment(Pos.CENTER_LEFT);
+        head.setStyle("-fx-cursor: hand;");
+
+        int next = bridgeRow(table, line, head, amount, change, tone);
+        int firstDetail = next;
+
+        for (TreasuryJournal.Entry e : journal) {
+            Label name = gridCell(e.label(), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, false);
+            name.setStyle(name.getStyle() + " -fx-padding: 0 0 0 16;");
+            next = bridgeRow(table, next, name, e.amount(), change, null);
+        }
+        Label left = gridCell("Not accounted for", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, false);
+        left.setStyle(left.getStyle() + " -fx-padding: 0 0 0 16;");
+        next = bridgeRow(table, next, left, residual, change,
+                Math.abs(residual) > .5 ? Palette.TEXT_HEAD : null);
+
+        List<javafx.scene.Node> detail = new ArrayList<>();
+        for (javafx.scene.Node n : table.getChildren()) {
+            Integer at = javafx.scene.layout.GridPane.getRowIndex(n);
+            if (at != null && at >= firstDetail && at < next) detail.add(n);
+        }
+        for (javafx.scene.Node n : detail) {
+            n.setVisible(bridgeOpen);
+            n.setManaged(bridgeOpen);
+        }
+        head.setOnMouseClicked(e -> {
+            bridgeOpen = !bridgeOpen;
+            for (javafx.scene.Node n : detail) {
+                n.setVisible(bridgeOpen);
+                n.setManaged(bridgeOpen);
+            }
+            mark.setText((bridgeOpen ? OPENED : CLOSED) + " which");
+        });
+        return next;
     }
 
     /** One row of the share table: a month, a year, and a percentage of GDP. */
@@ -603,7 +718,8 @@ final class GovernmentScreen {
     static java.util.List<String> revenueNames() {
         return java.util.List.of("Business tax", "Sales tax", "Wage tax",
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
-                "Healthcare fees", "School fees", "Land sold");
+                "Healthcare fees", "School fees", "Land sold", "Health premiums",
+                "Student loan interest");
     }
 
     java.util.List<Double> revenueAmounts(EconomyManager em, NationalAccounts na) {
@@ -617,7 +733,14 @@ final class GovernmentScreen {
                 na.getUtilityIncome(),
                 na.getHealthFees(),
                 na.getEducationFees(),
-                na.getLandSales());
+                na.getLandSales(),
+                // ...and the health premium off every wage (2026-09-19), on the
+                // end so the list and the donut keep their order.
+                na.getHealthPremiums(),
+                // ...and the interest the graduates pay on their student
+                // loans (2026-09-21), on the end for the same reason; the
+                // principal they repay is not revenue and is on the bridge.
+                na.getStudentLoanInterest());
     }
 
     static java.util.List<String> spendingNames() {

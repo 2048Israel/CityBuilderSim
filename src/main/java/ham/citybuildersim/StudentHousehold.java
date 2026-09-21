@@ -10,12 +10,16 @@ package ham.citybuildersim;
  *
  * WHAT A STUDENT LIVES ON, per Jerus: their own savings, a grant, and a
  * student loan. The grant is the Canada Student Grant ($525 a month of study,
- * 2026-27) as a share of the unskilled wage, paid by the treasury. The loan is
- * the treasury's too and, for now, it never runs out - "can't run out, for
- * now" - so where a family would go to the bank's credit line and then go
- * without, a student draws a loan for whatever is still short. They pay their
- * own tuition. The loan is carried into a family when they graduate, and
- * repaid there out of wages; see WorkingHousehold.studentRepayment().
+ * 2026-27) as a share of the unskilled wage, paid by the treasury - by
+ * default; since 2026-09-21 it is whatever TaxPolicy's grant basis and
+ * amount strike (a share of the wage, a fixed sum, a share of last month's
+ * surplus, a share of the course's tuition). The loan is the treasury's too
+ * and, for now, it never runs out - "can't run out, for now" - so where a
+ * family would go to the bank's credit line and then go without, a student
+ * draws a loan for whatever is still short. They pay their own tuition. The
+ * loan is carried into a family when they graduate, and repaid there out of
+ * wages, with interest at the city's rate from then and not before; see
+ * WorkingHousehold.studentRepayment() and Household's THE LOAN'S RATE.
  *
  * They live in a home of their own, like the unemployed - a studio, or five
  * to a home with other students.
@@ -38,7 +42,7 @@ public class StudentHousehold extends Household {
     @Override public String label() { return "Full-time students"; }
     @Override public String key()   { return "STUDENT"; }
 
-    /** The student loan: whatever is still short, from the treasury, at no interest. */
+    /** The student loan: whatever is still short, from the treasury, at no interest while they study. */
     @Override
     protected double fundShortfall(double still, double disposablePer) {
         if (!(still > 0)) return 0;

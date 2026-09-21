@@ -48,6 +48,26 @@ public class PrisonerHousehold extends Household {
     /** Frozen while they are inside. */
     @Override protected boolean debtFrozen() { return true; }
 
+    /*
+     * AND THE STUDENT LOAN IS FROZEN WITH IT (2026-09-21). The header says
+     * every debt is frozen inside, and the loan is a fourth ledger the
+     * freeze never named: it was frozen only because the base class happens
+     * to collect nothing except from a working family, and the moment the
+     * loan carried interest that silence would have become a charge on
+     * somebody with no income. Said here in so many words - no instalment,
+     * no interest - so that the freeze is this class's and not an accident
+     * of the class above it. The balance is carried, not forgiven: a
+     * sentence does not cancel a debt, and it resumes in the working family
+     * they go back to. Filed 2026-09-14 off the People screen as "prisoners
+     * carrying an unfrozen $70 student loan"; the $70 was the balance
+     * carried in, which is right, and nothing was ever collected on it.
+     */
+    /** Nothing comes off the loan while they are inside. */
+    @Override protected double studentRepayment() { return 0; }
+
+    /** ...and nothing is charged on it. */
+    @Override public double studentInterestAt(double annualRate) { return 0; }
+
     /** Held in the ledger. */
     @Override public boolean canInvest() { return false; }
 

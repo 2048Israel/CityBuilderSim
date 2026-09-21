@@ -18,6 +18,24 @@ import java.nio.file.Path;
  * That rule has been earned five separate times in this codebase: an assertion
  * pinned to .06 or to 2.25 tests that nobody edited the harness, not that the
  * mechanic works.
+ *
+ * WHAT THIS HAS TO PROVE, section by section: (1) the buildings know what
+ * they treat and the founding endowment is the pyramid's; (2) coverage sets
+ * the baseline sick rate; (3) outbreaks happen and end; (4) the same month
+ * rolls the same way; (5) output falls and the workforce does not; (6) an
+ * unstaffed hospital treats nobody; (7) what care does to mortality and
+ * births; (8) burial, cremation and the backlog; (9) senior care draws people
+ * in; (10) somebody pays for all of it, and the households paid what the city
+ * collected; (11) a skip reports the epidemic it lived through. And since the
+ * clinic had a price (2026-09-19): (12) the fee scale scales the three care
+ * fees and not the funerals, nobody pays at 0, and the break-even scale is
+ * struck from the city's own figures; (13) a household that cannot pay goes
+ * without care rather than without food, the rule in both directions, and a
+ * poor city at a high fee is a sicker city that buries more of its people;
+ * (14) a city that can pay is served exactly as it was, at zero tolerance;
+ * (15) the premium raises rate times the wage bill into the treasury, shows on
+ * the households' statement, and fees 0 with a premium serves the same people
+ * as fees 1x without one; (16) both dials survive a save and a reform.
  */
 public class HealthCheck {
 
@@ -898,6 +916,509 @@ public class HealthCheck {
         tidy2.sampleMonth(1, 1, 1, 1e9, false, true, 10000, 1, false, 0);
         check("a healthy month reports no outbreak", tidy2.getOutbreaks(), 0, 0);
         check("...and nothing left unburied", tidy2.getPeakUnburied(), 0, 1e-9);
+
+        /* ============ 12. the fee has a dial, and the funerals do not ============ */
+        /*
+         * Jerus (2026-09-19): "healthcare should be an adjustable price, all
+         * the way to even make it a profitable business". The scale sits on
+         * TaxPolicy and reaches the three care fees through feeNow(); the two
+         * funeral fees are the cemetery-against-crematorium design and keep
+         * their own prices. Asserted against the founding constants and the
+         * dial's own ceiling, never a number.
+         */
+        System.out.println("\n--- the price at the door: the fee scale ---");
+
+        Healthcare dear = new Healthcare();
+        dear.setFeeScale(2.5);
+        check("the scale multiplies general care's fee",
+                dear.feeNow(CareType.GENERAL), Healthcare.GENERAL_FEE * 2.5, 1e-12);
+        check("...and childcare's",
+                dear.feeNow(CareType.CHILDCARE), Healthcare.CHILDCARE_FEE * 2.5, 1e-12);
+        check("...and senior care's",
+                dear.feeNow(CareType.SENIOR), Healthcare.SENIOR_FEE * 2.5, 1e-12);
+        check("...and NOT the burial fee", dear.feeNow(CareType.BURIAL), Healthcare.BURIAL_FEE, 0);
+        check("...nor the cremation fee", dear.feeNow(CareType.CREMATION), Healthcare.CREMATION_FEE, 0);
+        check("the founding fee is still the founding fee, unscaled",
+                Healthcare.feeFor(CareType.GENERAL), Healthcare.GENERAL_FEE, 0);
+        dear.setFeeScale(99);
+        check("the dial stops at its ceiling", dear.getFeeScale(), TaxPolicy.MAX_HEALTH_FEE_SCALE, 0);
+        dear.setFeeScale(-1);
+        check("...and at nothing", dear.getFeeScale(), 0, 0);
+        TaxPolicy dial = new TaxPolicy();
+        check("a new city charges the founding fee", dial.getHealthFeeScale(),
+                TaxPolicy.DEFAULT_HEALTH_FEE_SCALE, 0);
+        check("...and no premium", dial.getHealthPremiumRate(), TaxPolicy.DEFAULT_HEALTH_PREMIUM, 0);
+        dial.setHealthFeeScale(99);
+        check("the policy clamps the scale to the same ceiling", dial.getHealthFeeScale(),
+                TaxPolicy.MAX_HEALTH_FEE_SCALE, 0);
+        dial.setHealthPremiumRate(1);
+        check("...and the premium to its own", dial.getHealthPremiumRate(),
+                TaxPolicy.MAX_HEALTH_PREMIUM, 0);
+
+        // A ward: a thousand seen by the doctor, a hundred children, fifty seniors.
+        double[] ward = new double[CareType.values().length];
+        ward[CareType.GENERAL.ordinal()] = 1000;
+        ward[CareType.CHILDCARE.ordinal()] = 100;
+        ward[CareType.SENIOR.ordinal()] = 50;
+        double wardAtOne = 1000 * Healthcare.GENERAL_FEE + 100 * Healthcare.CHILDCARE_FEE
+                + 50 * Healthcare.SENIOR_FEE;
+
+        Healthcare free = new Healthcare();
+        free.setFeeScale(0);
+        free.advanceMonth(100, 50, ward, 10, 1.0, 1000, 0);
+        check("at 0 nobody pays for treatment", free.getTreatmentFees(), 0, 0);
+        check("...and everybody is still treated", free.getServed(CareType.GENERAL), 1000, 0);
+        check("...and the funerals still charge", free.getFuneralFees(), 10 * Healthcare.BURIAL_FEE, 1e-9);
+        check("...so the fees are the funerals alone", free.getFees(), free.getFuneralFees(), 0);
+        check("...and nobody was priced out by a fee of nothing", free.getPricedOutTotal(), 0, 0);
+
+        /*
+         * BREAK-EVEN, struck from the city's own figures: gross cost over what
+         * the three fees raise at 1x on the people the beds could take. A
+         * gross cost of 150 against 40 of fees at 1x is 3.75, inside the dial;
+         * at that scale the treatment fees meet the cost, below it the service
+         * loses money, above it it is a business.
+         */
+        Healthcare even = new Healthcare();
+        even.advanceMonth(100, 50, ward, 0, 1.0, 1000, 0);
+        double be = even.breakEvenScale();
+        check("the break-even scale is the gross cost over the fees at 1x", be, 150 / wardAtOne, 1e-12);
+        assertTrue("...and this ward's is inside the dial", be > 0 && be <= TaxPolicy.MAX_HEALTH_FEE_SCALE);
+        even.setFeeScale(be);
+        even.advanceMonth(100, 50, ward, 0, 1.0, 1000, 0);
+        check("at the break-even scale the fees meet the gross cost",
+                even.getTreatmentFees(), even.getGrossCost(), 1e-9);
+        check("...and the net cost is nothing", even.getNetCost(), 0, 1e-9);
+        even.setFeeScale(be * .5);
+        even.advanceMonth(100, 50, ward, 0, 1.0, 1000, 0);
+        assertTrue("below it the service loses money", even.getNetCost() > 0);
+        check("...half the fees, at half the scale", even.getTreatmentFees(), even.getGrossCost() * .5, 1e-9);
+        even.setFeeScale(Math.min(TaxPolicy.MAX_HEALTH_FEE_SCALE, be * 1.25));
+        even.advanceMonth(100, 50, ward, 0, 1.0, 1000, 0);
+        assertTrue("above it, it is a business", even.getNetCost() < 0);
+        assertTrue("...and the recovery rate says so", even.getCostRecovery() > 1);
+
+        /* ---- and on the played city of section 10, through the policy ---- */
+        Healthcare pc = paid.getHealthcare();
+        TaxPolicy pt = paid.getEconomyManager().getTaxPolicy();
+        double cityBreakEven = pc.breakEvenScale();
+        System.out.printf("  the city: gross $%,.1fk, fees at 1x $%,.1fk on %,.0f people offered care, break-even x%.2f%n",
+                pc.getGrossCost(), pc.fullTreatmentFees(), pc.getOffered(CareType.GENERAL)
+                        + pc.getOffered(CareType.CHILDCARE) + pc.getOffered(CareType.SENIOR), cityBreakEven);
+        assertTrue("fixture: the city's break-even is inside the dial",
+                cityBreakEven > 1 && cityBreakEven <= TaxPolicy.MAX_HEALTH_FEE_SCALE);
+        pt.setHealthFeeScale(cityBreakEven);
+        System.setOut(quiet);
+        try { paid.simulateMonths(1); } finally { System.setOut(out); }
+        check("the policy's scale reached the service", pc.getFeeScale(), cityBreakEven, 0);
+        assertTrue("at the city's break-even the fees at full service are within a month's drift of the cost",
+                Math.abs(pc.fullTreatmentFees() - pc.getGrossCost()) < pc.getGrossCost() * .05);
+        pt.setHealthFeeScale(cityBreakEven * .5);
+        System.setOut(quiet);
+        try { paid.simulateMonths(1); } finally { System.setOut(out); }
+        assertTrue("...at half of it the service loses money", pc.getNetCost() > 0);
+        assertTrue("...by about half the cost", pc.getTreatmentFees() < pc.getGrossCost() * .6);
+        pt.setHealthFeeScale(TaxPolicy.DEFAULT_HEALTH_FEE_SCALE);
+        System.setOut(quiet);
+        try { paid.simulateMonths(1); } finally { System.setOut(out); }
+        // Back at the founding fee: a month's fees, and the month after it
+        // whose statement carries them - section 14 reads both.
+        double feesLastMonth = pc.getFees();
+        System.setOut(quiet);
+        try { paid.simulateMonths(1); } finally { System.setOut(out); }
+
+        /* ============ 13. who can afford the clinic ============ */
+        /*
+         * Jerus's decision 1: "when fees are turned up past what a poor
+         * household can pay, they go without care" - and without care, not
+         * without food. The rule is Household.affordCare(): a household pays
+         * its care bill out of what it will have next month after rent, the
+         * other bills and a basket for everybody in it, counting its income,
+         * its savings, its paper abroad and the credit still open to it; what
+         * would have to come out of the food budget is not paid, and that
+         * share of its people goes untreated. First the rule on one
+         * household, both directions, against the model's own arithmetic;
+         * then a poor city at three prices.
+         */
+        System.out.println("\n--- who can afford the clinic ---");
+
+        HouseholdBalance ledger = new HouseholdBalance();
+        Household family = ledger.cell(FamilyStructure.LARGE_FAMILY, PayTier.UNSKILLED);
+        double basket = family.size() * .40;   // a basket a head at $400
+        // Well off: income after the fixed bills a little over the basket,
+        // and savings besides - the bill fits without touching food.
+        family.savings = 2.0;
+        family.afterFixed = basket + .10;
+        family.subsistence = basket;
+        family.spendable = Math.max(0, family.afterFixed) + family.savings;
+        double bill = .50;
+        check("a household with room pays its whole care bill",
+                family.affordCare(bill, bill), 1, 0);
+        check("...and skips nothing", family.careSkipped(), 0, 0);
+        // Exactly at the line: room equal to the bill still pays it all.
+        family.savings = 0;
+        family.spendable = family.afterFixed;
+        check("...and so does one whose room is exactly the bill",
+                family.affordCare(.10, .10), 1, 0);
+        // Poor: nothing saved, no credit, and income after the bills that
+        // does not reach the basket. It pays what fits after eating.
+        family.afterFixed = basket - .30;          // .30 short of eating, with the bill paid
+        family.spendable = Math.max(0, family.afterFixed);
+        double room = family.spendable + bill - basket;   // what is left with no bill: .20
+        double share = family.affordCare(bill, bill);
+        check("a household short of a basket pays only what fits after eating",
+                share, room / bill, 1e-12);
+        check("...which is the share of its people the clinic will see", family.carePaid(), share, 0);
+        check("...and the rest of the bill is what it eats instead",
+                family.careSkipped(), bill - room, 1e-12);
+        assertTrue("...so the bill it does pay leaves the basket whole",
+                family.spendable + bill - family.carePaid() * bill >= basket - 1e-12);
+        // Destitute: nothing at all, and billed nothing last month either.
+        // It skips the whole bill and is unserved.
+        family.afterFixed = 0;
+        family.spendable = 0;
+        check("a household with nothing pays nothing", family.affordCare(bill, 0), 0, 0);
+        check("...and none of its people are served", family.carePaid(), 0, 0);
+        check("...whatever the fee", family.affordCare(bill * 5, 0), 0, 0);
+        // The same household with a bill of nothing is served in full.
+        check("...and with a fee of nothing it is served in full", family.affordCare(0, 0), 1, 0);
+        // The stability the rule was designed for: a household that skipped
+        // its whole bill last month is measured against the FULL bill, not
+        // the empty one it was handed, so it does not read an empty bill as
+        // affordable and swing between served and starving every other month.
+        double feeFree = basket + .20;             // what it has with no care bill at all
+        family.afterFixed = feeFree;
+        family.spendable = feeFree;
+        double afterSkipping = family.affordCare(bill, 0);
+        check("a household that skipped last month's bill is judged on the full one",
+                afterSkipping, .20 / bill, 1e-12);
+        // Next month it is billed that share, and has that much less.
+        family.spendable = feeFree - bill * afterSkipping;
+        double next = family.affordCare(bill, bill * afterSkipping);
+        check("...and settles where it pays what it can, month after month", next, afterSkipping, 1e-12);
+        // Whereas a cliff on being hungry TODAY would have it pay nothing,
+        // then everything, then nothing: the rule was chosen against that.
+        assertTrue("...rather than swinging between served and starving",
+                next > 0 && next < 1);
+
+        /* ---- a poor city, at three prices ---- */
+        /*
+         * MORE HOMES THAN WORK, so wages sit at the floor and the out of work
+         * fill a row - the crime fixture's shape - and then the savings
+         * drained and the bank shut, once, at the start of the window: a city
+         * of households with nothing behind them, which is what the fee has
+         * to be tested against. Three twins from the same founding, the same
+         * buildings, the same months, at fees of 0, 1x and the dial's top.
+         */
+        System.out.println("  building a poor city three times over...");
+        double[] scales = { 0, TaxPolicy.DEFAULT_HEALTH_FEE_SCALE, TaxPolicy.MAX_HEALTH_FEE_SCALE };
+        Game[] towns = new Game[scales.length];
+        double[] meanAffordable = new double[scales.length];
+        double[] meanSick = new double[scales.length];
+        double[] meanBaseline = new double[scales.length];
+        double[] deathsOver = new double[scales.length];
+        double[] eldersLost = new double[scales.length];
+        double[] pricedOutMonths = new double[scales.length];
+        double[] servedInFullMonths = new double[scales.length];
+        double[] hungerAtEnd = new double[scales.length];
+        int window = 96;
+        for (int k = 0; k < scales.length; k++) {
+            Game town = new Game(files);
+            towns[k] = town;
+            System.setOut(quiet);
+            try {
+                town.run();
+                BuildingManager b = town.getBuildingManager();
+                town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 100_000_000L);
+                b.addStack(b.getTemplateByName("House"), 3000, true);
+                b.addStack(b.getTemplateByName("Convenience Store"), 60, true);
+                b.addStack(b.getTemplateByName("Industrial Bakery"), 30, true);
+                b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+                b.addStack(b.getTemplateByName("Water Treatment Plant"), 2, true);
+                b.addStack(b.getTemplateByName("Paved Road"), 20, true);
+                b.addStack(b.getTemplateByName("Walk-in Clinic"), 6, true);
+                b.addStack(b.getTemplateByName("Childcare Centre"), 8, true);
+                b.addStack(b.getTemplateByName("Home Care Service"), 4, true);
+                town.simulateMonths(48);
+                // The drain: nothing saved, nothing abroad, no shares, and
+                // the bank not lending - the waterfall's every step before
+                // "eat less" already spent.
+                for (Household c : town.getHouseholdBalance().cells()) {
+                    c.savings = 0;
+                    c.abroad = 0;
+                    java.util.Arrays.fill(c.shares, 0);
+                    c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
+                }
+                town.getEconomyManager().getTaxPolicy().setHealthFeeScale(scales[k]);
+                for (int m = 0; m < window; m++) {
+                    town.simulateMonths(1);
+                    Healthcare hc = town.getHealthcare();
+                    double treated = 0, offered = 0;
+                    for (CareType care : CareType.values()) {
+                        if (!care.servesTheLiving()) continue;
+                        treated += hc.getServed(care);
+                        offered += hc.getOffered(care);
+                    }
+                    meanAffordable[k] += offered > 0 ? treated / offered : 1;
+                    meanSick[k] += town.getHealth().getSickRate();
+                    meanBaseline[k] += town.getHealth().getBaselineRate();
+                    deathsOver[k] += town.getCohorts().getLastDeaths();
+                    eldersLost[k] += town.getCohorts().getDeaths(AgeBand.SENIOR)
+                            + town.getCohorts().getDeaths(AgeBand.ELDER);
+                    if (hc.getPricedOutTotal() > 0) pricedOutMonths[k]++;
+                    if (hc.getPricedOutTotal() == 0) servedInFullMonths[k]++;
+                }
+                meanAffordable[k] /= window;
+                meanSick[k] /= window;
+                meanBaseline[k] /= window;
+                hungerAtEnd[k] = town.getHouseholdBalance().getHungerRate();
+            } finally { System.setOut(out); }
+            Healthcare hc = town.getHealthcare();
+            System.out.printf("  fees x%.2f: %,.0f people, served %.1f%% of those offered care over %d months,"
+                    + " sick %.2f%% (baseline %.2f%%), %,.0f died (%,.0f over seventy), priced out in %.0f months,"
+                    + " %,.0f last month (childcare %,.0f / general %,.0f / senior %,.0f), hunger %.0f%%%n",
+                    scales[k], town.getCohorts().total(), meanAffordable[k] * 100, window,
+                    meanSick[k] * 100, meanBaseline[k] * 100, deathsOver[k], eldersLost[k], pricedOutMonths[k],
+                    hc.getPricedOutTotal(), hc.getPricedOut(CareType.CHILDCARE),
+                    hc.getPricedOut(CareType.GENERAL), hc.getPricedOut(CareType.SENIOR),
+                    hungerAtEnd[k] * 100);
+        }
+        assertTrue("fixture: the poor city has somebody at the eat-less step",
+                hungerAtEnd[1] > 0);
+        assertTrue("fixture: at the dial's top the fee priced somebody out",
+                pricedOutMonths[2] > 0);
+        assertTrue("at a high fee a poor city serves a smaller share of its people than at the founding fee",
+                meanAffordable[2] < meanAffordable[1]);
+        /*
+         * SICKER WHERE COVERAGE BITES. The whole sick rate carries the hunger
+         * term too, and a household that skipped its care bill ate with the
+         * money - so the dear city can come out less hungry and the two
+         * effects can net to nothing on the headline figure. The claim that
+         * coverage makes is on the BASELINE rate, which coverage alone sets.
+         */
+        assertTrue("...and its baseline sick rate, which coverage sets, is higher for it",
+                meanBaseline[2] > meanBaseline[1]);
+        assertTrue("...and it buries more of its people over the run", deathsOver[2] > deathsOver[1]);
+        assertTrue("...its old first, whom a fee on senior care turns away", eldersLost[2] > eldersLost[1]);
+        check("with the fee at nothing the same city is served in full, every month",
+                servedInFullMonths[0], window, 0);
+        check("...every kind of care", towns[0].getHealthcare().getAffordability(CareType.CHILDCARE)
+                + towns[0].getHealthcare().getAffordability(CareType.GENERAL)
+                + towns[0].getHealthcare().getAffordability(CareType.SENIOR), 3, 0);
+        assertTrue("...and the households who skipped a bill ate with it: the dear city is no hungrier than the free one by more than the price of care",
+                hungerAtEnd[2] <= hungerAtEnd[0] + .05);
+        {
+            // The priced-out are the people the beds had room for, not the beds.
+            Healthcare hc = towns[2].getHealthcare();
+            for (CareType care : new CareType[] { CareType.CHILDCARE, CareType.GENERAL, CareType.SENIOR }) {
+                check("  " + care.getLabel().toLowerCase() + ": served + priced out = offered",
+                        hc.getServed(care) + hc.getPricedOut(care), hc.getOffered(care), 1e-9);
+                check("  ...and the served are the offered times the share who could pay",
+                        hc.getServed(care), hc.getOffered(care) * hc.getAffordability(care), 1e-9);
+            }
+            // The fee revenue is from the people who paid.
+            double fromPayers = 0;
+            for (CareType care : new CareType[] { CareType.CHILDCARE, CareType.GENERAL, CareType.SENIOR }) {
+                fromPayers += hc.getServed(care) * hc.feeNow(care);
+            }
+            check("the treatment fees are charged on the people treated", hc.getTreatmentFees(), fromPayers, 1e-9);
+            assertTrue("...which is less than the same beds would raise at full service",
+                    hc.getTreatmentFees() < hc.fullTreatmentFees());
+            // ...and the cost of the buildings did not move for it: a ward is
+            // paid for whether it is full or not. The same buildings stand in
+            // both towns, so their upkeep is the same figure; the payroll
+            // follows the staffing of a city the price has made smaller and
+            // is not pinned.
+            Healthcare atOne = towns[1].getHealthcare();
+            check("the buildings' upkeep is the same at a dear fee as at the founding fee",
+                    hc.getUpkeep(), atOne.getUpkeep(), 1e-9);
+            assertTrue("...and the service still costs money to run", hc.getGrossCost() > 0);
+        }
+
+        /* ============ 14. the unchanged case, at zero tolerance ============ */
+        /*
+         * The other half of decision 1, and the half that protects every city
+         * that exists: a household that can still cover its bills out of
+         * income, savings, shares or credit pays the fee and is served exactly
+         * as it was. The rich city of section 10, at the founding fee: every
+         * share is 1 to the bit, the served are the offered to the bit, and
+         * the fees charged are the fees at full service to the bit - so the
+         * multiplications by 1.0 that stand between this batch and the city
+         * as it was are exact, which is the "unchanged case at zero tolerance"
+         * rule of the harness notes.
+         */
+        System.out.println("\n--- the unchanged case, at zero tolerance ---");
+        for (Household c : paid.getHouseholdBalance().cells()) {
+            if (c.households() < .5) continue;
+            if (c.carePaid() != 1) {
+                System.out.printf("  %s x%.0f paid %.6f%n", c.label(), c.households(), c.carePaid());
+            }
+        }
+        double paidCells = 0, allCells = 0;
+        for (Household c : paid.getHouseholdBalance().cells()) {
+            if (c.households() < .5) continue;
+            allCells++;
+            if (c.carePaid() == 1) paidCells++;
+        }
+        check("in a city that can pay, every household paid its whole care bill", paidCells, allCells, 0);
+        for (CareType care : new CareType[] { CareType.CHILDCARE, CareType.GENERAL, CareType.SENIOR }) {
+            check("  " + care.getLabel().toLowerCase() + ": everybody could pay, exactly",
+                    pc.getAffordability(care), 1, 0);
+            check("  ...and the served are the offered, exactly",
+                    pc.getServed(care), pc.getOffered(care), 0);
+        }
+        check("...and the fees charged are the fees at full service, exactly",
+                pc.getTreatmentFees(), pc.fullTreatmentFees(), 0);
+        check("...and the households were billed exactly what the city collected a month ago, as before",
+                paid.getHouseholds().getHealthcare(), feesLastMonth, 0);
+        check("...and nobody was priced out", pc.getPricedOutTotal(), 0, 0);
+        check("...and no bill was skipped", paid.getHouseholdBalance().getCareSkipped(), 0, 0);
+
+        /* ============ 15. the premium ============ */
+        /*
+         * Jerus's decision 2: "the option to make it an obligatory insurance
+         * payment system" - a share of every wage, employee side, into the
+         * treasury as revenue, with the treasury carrying the gap either way.
+         * The base is the whole staffed wage bill, which is the EI premium's
+         * own base (EI's insurable cap is on its benefit, not its premium).
+         */
+        System.out.println("\n--- the premium ---");
+        double rate = .03;
+        pt.setHealthPremiumRate(rate);
+        System.setOut(quiet);
+        try { paid.simulateMonths(1); } finally { System.setOut(out); }
+        EconomyManager pe2 = paid.getEconomyManager();
+        NationalAccounts pn2 = pe2.getNationalAccounts();
+        double premiumThisMonth = pe2.getHealthPremiums();
+        check("the premium raises exactly the rate times the wage bill",
+                premiumThisMonth, rate * paid.getPopulationManager().getTotalWage(), 1e-9);
+        assertTrue("fixture: which is money", premiumThisMonth > 0);
+        check("...on the same base as the EI premium",
+                premiumThisMonth / rate, pe2.getEiPremiums() / pt.getEiPremiumRate(), 1e-6);
+        check("...and it is on the government's revenue list", pn2.getHealthPremiums(), premiumThisMonth, 1e-9);
+        double revenueWith = pn2.getTotalRevenue();
+        pn2.setOutsideLines(pn2.getEiPremiums(), pn2.getEiBenefits(), pn2.getStudentGrants(), 0);
+        check("...inside the revenue total", revenueWith - pn2.getTotalRevenue(), premiumThisMonth, 1e-9);
+        pn2.setOutsideLines(pn2.getEiPremiums(), pn2.getEiBenefits(), pn2.getStudentGrants(), premiumThisMonth);
+        double surplusWith = pe2.getTotalIncome();
+        pt.setHealthPremiumRate(0);
+        check("...and reaches the treasury's cash, penny for penny",
+                surplusWith - pe2.getTotalIncome(), premiumThisMonth, 1e-6);
+        pt.setHealthPremiumRate(rate);
+        pe2.getTaxIncome();
+        // The households' statement is a month behind, by construction - the
+        // same lag section 10 tests the fees through.
+        System.setOut(quiet);
+        try { paid.simulateMonths(1); } finally { System.setOut(out); }
+        check("the households' statement shows the premium the city collected a month ago",
+                paid.getHouseholds().getHealthPremiums(), premiumThisMonth, 1e-9);
+        double premiumRows = 0;
+        for (int r = 0; r < paid.getHouseholds().getRowCount(); r++) {
+            premiumRows += paid.getHouseholds().getRowHealthPremiums(r);
+        }
+        check("...and the rows add back up to it", premiumRows, paid.getHouseholds().getHealthPremiums(), 1e-6);
+        check("...off the wages, so the retired pay none",
+                paid.getHouseholds().getRowHealthPremiums(HouseholdAccounts.RETIRED), 0, 0);
+        check("...and it comes off take-home, like the EI premium",
+                paid.getHouseholds().getDisposableIncome(),
+                paid.getHouseholds().getWages() - paid.getHouseholds().getWageTax()
+                        - paid.getHouseholds().getContributions() - paid.getHouseholds().getEiPremiums()
+                        - paid.getHouseholds().getHealthPremiums() + paid.getHouseholds().getPensions()
+                        + paid.getHouseholds().getEiBenefits() + paid.getHouseholds().getStudentGrants(), 1e-9);
+        assertTrue("the money audit saw it as a household-to-treasury flow",
+                paid.getLastMoneyAudit() != null && paid.getLastMoneyAudit().relative() < 1e-6);
+        pt.setHealthPremiumRate(0);
+
+        /* ---- fees or a premium: the same people served, different payers ---- */
+        /*
+         * Insurance-funded against fee-funded, from one saved city: with fees
+         * 0 and a premium the clinics see the same people as with fees 1x and
+         * no premium, and the money comes from the wage earners in one and
+         * from the patients in the other.
+         */
+        System.setOut(quiet);
+        try { paid.saveGame(3, "two ways to pay"); } finally { System.setOut(out); }
+        Game insured = new Game(files);
+        Game feeFunded = new Game(files);
+        System.setOut(quiet);
+        try {
+            insured.loadGameSave(3);
+            feeFunded.loadGameSave(3);
+            insured.getEconomyManager().getTaxPolicy().setHealthFeeScale(0);
+            insured.getEconomyManager().getTaxPolicy().setHealthPremiumRate(.05);
+            feeFunded.getEconomyManager().getTaxPolicy().setHealthFeeScale(TaxPolicy.DEFAULT_HEALTH_FEE_SCALE);
+            feeFunded.getEconomyManager().getTaxPolicy().setHealthPremiumRate(0);
+            insured.simulateMonths(1);
+            feeFunded.simulateMonths(1);
+        } finally { System.setOut(out); }
+        for (CareType care : new CareType[] { CareType.CHILDCARE, CareType.GENERAL, CareType.SENIOR }) {
+            check("  " + care.getLabel().toLowerCase() + ": fees 0 + premium serves the same people as fees 1x + no premium",
+                    insured.getHealthcare().getServed(care), feeFunded.getHealthcare().getServed(care), 1e-9);
+        }
+        check("the insured city charged no treatment fee", insured.getHealthcare().getTreatmentFees(), 0, 0);
+        assertTrue("...and the fee-funded one did", feeFunded.getHealthcare().getTreatmentFees() > 0);
+        assertTrue("the insured city's wage earners paid a premium",
+                insured.getEconomyManager().getHealthPremiums() > 0);
+        check("...and the fee-funded city's paid none", feeFunded.getEconomyManager().getHealthPremiums(), 0, 0);
+        check("the gross cost is the same either way: a ward is paid for whether or not its patients are",
+                insured.getHealthcare().getGrossCost(), feeFunded.getHealthcare().getGrossCost(), 1e-9);
+
+        /* ============ 16. both dials survive a save, and a reform ============ */
+        System.out.println("\n--- the dials survive a save and a reform ---");
+        pt.setHealthFeeScale(2.25);
+        pt.setHealthPremiumRate(.0125);
+        System.setOut(quiet);
+        try { paid.simulateMonths(1); paid.saveGame(4, "dials"); } finally { System.setOut(out); }
+        Game dialed = new Game(files);
+        System.setOut(quiet);
+        try { dialed.loadGameSave(4); } finally { System.setOut(out); }
+        TaxPolicy dialsBack = dialed.getEconomyManager().getTaxPolicy();
+        check("the fee scale came back", dialsBack.getHealthFeeScale(), 2.25, 0);
+        check("...and the premium", dialsBack.getHealthPremiumRate(), .0125, 0);
+        check("...and the service charges at the reloaded scale", dialed.getHealthcare().getFeeScale(), 2.25, 0);
+        check("...and the full-service bill the next strike reads came back",
+                dialed.getHealthcare().fullTreatmentFees(), pc.fullTreatmentFees(), 1e-9);
+        // The array as a save from before the two health dials wrote it: cut
+        // at the model's own mark rather than two short of today's end, which
+        // stopped being the same thing when the education dials went on after
+        // them (2026-09-21).
+        double[] older = java.util.Arrays.copyOf(pt.getPolicyState(), TaxPolicy.STATE_BEFORE_HEALTH);
+        TaxPolicy fromBefore = new TaxPolicy();
+        assertTrue("a save from before the dials is still read", fromBefore.restorePolicyState(older));
+        check("...at the founding fee", fromBefore.getHealthFeeScale(), TaxPolicy.DEFAULT_HEALTH_FEE_SCALE, 0);
+        check("...with no premium", fromBefore.getHealthPremiumRate(), TaxPolicy.DEFAULT_HEALTH_PREMIUM, 0);
+        double[] healthBefore = java.util.Arrays.copyOf(pc.getState(), Healthcare.STATE_BEFORE_FULL_BILL);
+        Healthcare olderService = new Healthcare();
+        assertTrue("...and so is the service's state from before the full-service bill",
+                olderService.restore(healthBefore));
+        check("...which reads the bill it charged as the bill at full service",
+                olderService.fullTreatmentFees(), pc.getTreatmentFees(), 0);
+        check("...and a coverage of 1 until a month strikes it",
+                olderService.getCoverage(CareType.CHILDCARE) + olderService.getCoverage(CareType.GENERAL)
+                        + olderService.getCoverage(CareType.SENIOR), 3, 0);
+        double[] beforeCoverage = java.util.Arrays.copyOf(pc.getState(), Healthcare.STATE_BEFORE_COVERAGE);
+        Healthcare olderStill = new Healthcare();
+        assertTrue("...and the state from before the coverages were kept", olderStill.restore(beforeCoverage));
+        check("...which reads the full bill at 1x it carried", olderStill.treatmentFeesAtOne(), pc.treatmentFeesAtOne(), 0);
+        check("the reloaded service kept the coverage the month read",
+                dialed.getHealthcare().getCoverage(CareType.GENERAL), pc.getCoverage(CareType.GENERAL), 0);
+        assertTrue("...which is the figure the sick rate read, not the beds",
+                Math.abs(pc.getCoverage(CareType.GENERAL) - paid.getHealth().getCoverage()) < 1e-9);
+        // A reform: both are ratios, and neither moves.
+        TaxPolicy reformed = new TaxPolicy();
+        reformed.setHealthFeeScale(3);
+        reformed.setHealthPremiumRate(.02);
+        reformed.redenominate(.01);
+        check("a currency reform leaves the fee scale alone", reformed.getHealthFeeScale(), 3, 0);
+        check("...and the premium", reformed.getHealthPremiumRate(), .02, 0);
+        Healthcare reformedService = new Healthcare();
+        reformedService.setFeeScale(3);
+        reformedService.redenominate(.01);
+        check("...and the service's scale", reformedService.getFeeScale(), 3, 0);
+        check("...while its fees move with the money",
+                reformedService.feeNow(CareType.GENERAL), Healthcare.GENERAL_FEE * .01 * 3, 1e-15);
+        pt.setHealthFeeScale(TaxPolicy.DEFAULT_HEALTH_FEE_SCALE);
+        pt.setHealthPremiumRate(0);
 
         cleanUp(root);
         System.out.println(fails == 0

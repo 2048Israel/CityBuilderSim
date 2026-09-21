@@ -14,7 +14,7 @@ requirement.
 
 ## Open these before reading source
 
-The tree is 123,000 lines; `Game.java` alone is 7,800, and the interface is
+The tree is 128,000 lines; `Game.java` alone is 8,000, and the interface is
 nineteen files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
@@ -85,7 +85,7 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; 7,800 lines, 24 banner sections
+        Game.java                  the month, the seam every system meets at; 8,000 lines, 24 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the

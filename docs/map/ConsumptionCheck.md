@@ -1,6 +1,6 @@
 # ConsumptionCheck.java - 342 lines · 4 methods · 1 constants · harnesses
 
-`ham/citybuildersim/ConsumptionCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConsumptionCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Verifies the consumption model against the two laws it is shaped to obey,
 > and guards the data file against the Java.

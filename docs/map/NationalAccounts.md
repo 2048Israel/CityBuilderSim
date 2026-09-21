@@ -1,6 +1,6 @@
-# NationalAccounts.java - 810 lines · 71 methods · 1 constants · model
+# NationalAccounts.java - 853 lines · 75 methods · 2 constants · model
 
-`ham/citybuildersim/NationalAccounts.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NationalAccounts.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The city's GDP, measured properly, plus the government's own books.
 > 
@@ -64,7 +64,7 @@
 > 
 > ... (12 more lines in the source)
 
-**Used by (12):** [EconomyManager](EconomyManager.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md)
+**Used by (14):** [EconomyManager](EconomyManager.md), [EducationCheck](EducationCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Sections
 
@@ -73,16 +73,17 @@
 | 84 | · GDP components |
 | 112 | · government income |
 | 302 | · AND THE BOUTIQUE'S STOCKROOM IS THE FOURTH TERM (2026-09-17) |
-| 567 | THE MONTH THE GOVERNMENT ACTUALLY HAD |
-| 633 | · GDP |
-| 670 | · growth |
-| 709 | · government |
+| 591 | THE MONTH THE GOVERNMENT ACTUALLY HAD |
+| 672 | · GDP |
+| 709 | · growth |
+| 748 | · government |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 82 | `NationalAccounts.HISTORY_MONTHS` | `120` |  |
+| 619 | `NationalAccounts.GOVERNMENT_SLOTS_WITH_GRANTS` | `20` | The slots a block carries once EI and the grants are on it (2026-09-11): the grant bill is saved[19]. |
 
 ## Fields (state)
 
@@ -121,23 +122,25 @@
 | 518 | `private double eiPremiums` | EI premiums in; EI benefits and student grants out. |
 | 519 | `private double eiBenefits` |  |
 | 520 | `private double studentGrants` |  |
-| 533 | `private double safetySpending` | The police and the prisons: payroll and upkeep. |
-| 545 | `private double transitFares, transitSpending` | Fares in, the buses' and trams' wage bill out. |
-| 556 | `private double healthFees` | Patient and funeral fees in, the health service's bill out. |
-| 557 | `private double healthSpending` |  |
-| 560 | `private double educationFees` | Tuition in, and what the schools cost. |
-| 561 | `private double educationSpending` |  |
-| 564 | `private double subsidies` | What the city paid to hold a loss-making sector at break-even. |
+| 523 | `private double healthPremiums` | The health premium off every wage, in; a revenue line beside the EI premium (2026-09-19). |
+| 526 | `private double studentLoanInterest` | Interest the graduates paid on their student loans, in; a revenue line beside the premiums (2026-09-21). |
+| 557 | `private double safetySpending` | The police and the prisons: payroll and upkeep. |
+| 569 | `private double transitFares, transitSpending` | Fares in, the buses' and trams' wage bill out. |
+| 580 | `private double healthFees` | Patient and funeral fees in, the health service's bill out. |
+| 581 | `private double healthSpending` |  |
+| 584 | `private double educationFees` | Tuition in, and what the schools cost. |
+| 585 | `private double educationSpending` |  |
+| 588 | `private double subsidies` | What the city paid to hold a loss-making sector at break-even. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 80 | 731 | **type** `public class NationalAccounts` | The city's GDP, measured properly, plus the government's own books. |
+| 80 | 774 | **type** `public class NationalAccounts` | The city's GDP, measured properly, plus the government's own books. |
 
 ### GDP components (lines 84-111)
 
-### government income (lines 112-566)
+### government income (lines 112-590)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -156,80 +159,84 @@
 | 440 | 10 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The same again with healthcare but no schools, for the older callers. |
 | 463 | 11 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The same again, with healthcare. |
 | 486 | 26 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | ...and with what the city paid to keep a sector alive. |
-| 522 | 5 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants)` |  |
-| 528 | 1 | `public double getEiPremiums()` |  |
-| 529 | 1 | `public double getEiBenefits()` |  |
-| 530 | 1 | `public double getStudentGrants()` |  |
-| 534 | 1 | `public void setSafetySpending(double spending)` |  |
-| 535 | 1 | `public double getSafetySpending()` |  |
-| 547 | 4 | `public void setTransitLines(double spending, double fares)` |  |
-| 552 | 1 | `public double getTransitSpending()` |  |
-| 553 | 1 | `public double getTransitFares()` |  |
-| 565 | 1 | `public double getSubsidies()` |  |
+| 528 | 3 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants)` |  |
+| 533 | 4 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants, double healthPremiums)` | ...and with the health premium beside them (2026-09-19). |
+| 539 | 8 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants, double healthPremiums, double studentLo...` | ...and the student loan interest beside those (2026-09-21). |
+| 548 | 1 | `public double getEiPremiums()` |  |
+| 550 | 1 | `public double getHealthPremiums()` | What the health premium raised this month - a government revenue line, against the health service's cost. |
+| 552 | 1 | `public double getStudentLoanInterest()` | What the graduates paid in interest on their student loans this month - a government revenue line; the principal is not one. |
+| 553 | 1 | `public double getEiBenefits()` |  |
+| 554 | 1 | `public double getStudentGrants()` |  |
+| 558 | 1 | `public void setSafetySpending(double spending)` |  |
+| 559 | 1 | `public double getSafetySpending()` |  |
+| 571 | 4 | `public void setTransitLines(double spending, double fares)` |  |
+| 576 | 1 | `public double getTransitSpending()` |  |
+| 577 | 1 | `public double getTransitFares()` |  |
+| 589 | 1 | `public double getSubsidies()` |  |
 
-### THE MONTH THE GOVERNMENT ACTUALLY HAD (lines 567-632)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 593 | 13 | `double[] governmentToSave()` |  |
-| 607 | 18 | `void restoreGovernment(double[] saved)` |  |
-| 626 | 1 | `public double getContributions()` |  |
-| 627 | 1 | `public double getPensions()` |  |
-| 628 | 1 | `public double getHealthFees()` |  |
-| 629 | 1 | `public double getHealthSpending()` |  |
-| 630 | 1 | `public double getEducationFees()` |  |
-| 631 | 1 | `public double getEducationSpending()` |  |
-
-### GDP (lines 633-669)
+### THE MONTH THE GOVERNMENT ACTUALLY HAD (lines 591-671)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 635 | 1 | `public double getConsumption()` |  |
-| 636 | 1 | `public double getInvestment()` |  |
-| 637 | 3 | `public double getNetExports()` |  |
-| 641 | 1 | `public double getConsumptionGoods()` |  |
-| 642 | 1 | `public double getConsumptionHousing()` |  |
-| 643 | 1 | `public double getInvestmentConstruction()` |  |
-| 644 | 1 | `public double getInvestmentInventories()` |  |
-| 645 | 1 | `public double getGovernment()` |  |
-| 646 | 1 | `public double getImportsFood()` |  |
-| 647 | 1 | `public double getImportsMaterials()` |  |
-| 648 | 1 | `public double getImportsRawMaterial()` |  |
-| 649 | 1 | `public double getExports()` |  |
-| 650 | 3 | `public double getTotalImports()` |  |
-| 654 | 1 | `public double getGdp()` |  |
-| 657 | 8 | `public double getAnnualGdp()` | The last twelve months, or as many as there are - not gdp * 12. |
-| 666 | 3 | `public double getGdpPerCapita(int population)` |  |
+| 621 | 20 | `double[] governmentToSave()` |  |
+| 642 | 22 | `void restoreGovernment(double[] saved)` |  |
+| 665 | 1 | `public double getContributions()` |  |
+| 666 | 1 | `public double getPensions()` |  |
+| 667 | 1 | `public double getHealthFees()` |  |
+| 668 | 1 | `public double getHealthSpending()` |  |
+| 669 | 1 | `public double getEducationFees()` |  |
+| 670 | 1 | `public double getEducationSpending()` |  |
 
-### growth (lines 670-708)
+### GDP (lines 672-708)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 678 | 9 | `public double getMonthlyGrowthAnnualised()` | Month on month, as an annual rate. |
-| 689 | 8 | `public double getYearOnYearGrowth()` | This month against the same month a year ago. |
-| 699 | 5 | `public double getTrendGdp()` | Average monthly GDP over the last twelve, to smooth a lumpy month. |
-| 705 | 1 | `public int getMonthsRecorded()` |  |
-| 707 | 1 | `public List<Double> getHistory()` |  |
+| 674 | 1 | `public double getConsumption()` |  |
+| 675 | 1 | `public double getInvestment()` |  |
+| 676 | 3 | `public double getNetExports()` |  |
+| 680 | 1 | `public double getConsumptionGoods()` |  |
+| 681 | 1 | `public double getConsumptionHousing()` |  |
+| 682 | 1 | `public double getInvestmentConstruction()` |  |
+| 683 | 1 | `public double getInvestmentInventories()` |  |
+| 684 | 1 | `public double getGovernment()` |  |
+| 685 | 1 | `public double getImportsFood()` |  |
+| 686 | 1 | `public double getImportsMaterials()` |  |
+| 687 | 1 | `public double getImportsRawMaterial()` |  |
+| 688 | 1 | `public double getExports()` |  |
+| 689 | 3 | `public double getTotalImports()` |  |
+| 693 | 1 | `public double getGdp()` |  |
+| 696 | 8 | `public double getAnnualGdp()` | The last twelve months, or as many as there are - not gdp * 12. |
+| 705 | 3 | `public double getGdpPerCapita(int population)` |  |
 
-### government (lines 709-810)
+### growth (lines 709-747)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 711 | 1 | `public double getTaxBusiness()` |  |
-| 712 | 1 | `public double getTaxIndustrial()` |  |
-| 713 | 1 | `public double getTaxSales()` |  |
-| 714 | 1 | `public double getTaxWage()` |  |
-| 715 | 1 | `public double getUtilityIncome()` |  |
-| 716 | 1 | `public double getLandSales()` |  |
-| 717 | 1 | `public double getPropertyTax()` |  |
-| 719 | 5 | `public double getTotalRevenue()` |  |
-| 725 | 1 | `public double getInterestExpense()` |  |
-| 726 | 1 | `public double getCapitalSpending()` |  |
-| 727 | 1 | `public double getLandPurchases()` |  |
-| 729 | 5 | `public double getTotalExpenses()` |  |
-| 736 | 3 | `public double getBalance()` | Surplus or deficit - what actually moves the city's cash this month. |
-| 741 | 4 | `public double getRevenueToGdp()` | Revenue as a share of output. |
-| 746 | 4 | `public double getDebtToGdp(double debt)` |  |
-| 751 | 8 | `public void reset()` |  |
-| 780 | 29 | `public void redenominate(double scale)` | The month's national accounts, in the new unit. |
+| 717 | 9 | `public double getMonthlyGrowthAnnualised()` | Month on month, as an annual rate. |
+| 728 | 8 | `public double getYearOnYearGrowth()` | This month against the same month a year ago. |
+| 738 | 5 | `public double getTrendGdp()` | Average monthly GDP over the last twelve, to smooth a lumpy month. |
+| 744 | 1 | `public int getMonthsRecorded()` |  |
+| 746 | 1 | `public List<Double> getHistory()` |  |
+
+### government (lines 748-853)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 750 | 1 | `public double getTaxBusiness()` |  |
+| 751 | 1 | `public double getTaxIndustrial()` |  |
+| 752 | 1 | `public double getTaxSales()` |  |
+| 753 | 1 | `public double getTaxWage()` |  |
+| 754 | 1 | `public double getUtilityIncome()` |  |
+| 755 | 1 | `public double getLandSales()` |  |
+| 756 | 1 | `public double getPropertyTax()` |  |
+| 758 | 8 | `public double getTotalRevenue()` |  |
+| 767 | 1 | `public double getInterestExpense()` |  |
+| 768 | 1 | `public double getCapitalSpending()` |  |
+| 769 | 1 | `public double getLandPurchases()` |  |
+| 771 | 5 | `public double getTotalExpenses()` |  |
+| 778 | 3 | `public double getBalance()` | Surplus or deficit - what actually moves the city's cash this month. |
+| 783 | 4 | `public double getRevenueToGdp()` | Revenue as a share of output. |
+| 788 | 4 | `public double getDebtToGdp(double debt)` |  |
+| 793 | 8 | `public void reset()` |  |
+| 822 | 30 | `public void redenominate(double scale)` | The month's national accounts, in the new unit. |
 

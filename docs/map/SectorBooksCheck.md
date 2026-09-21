@@ -1,6 +1,6 @@
 # SectorBooksCheck.java - 256 lines · 4 methods · 1 constants · harnesses
 
-`ham/citybuildersim/SectorBooksCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorBooksCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits every sector's statements, every month. Not part of
 > the game.

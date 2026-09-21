@@ -1,6 +1,6 @@
 # SaveDump.java - 133 lines · 4 methods · 0 constants · tools
 
-`ham/citybuildersim/tools/SaveDump.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/SaveDump.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Looks inside a save without loading the game - or reading the file.
 > 

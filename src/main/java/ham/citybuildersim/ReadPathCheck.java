@@ -81,8 +81,75 @@ public class ReadPathCheck {
         // the treasury's own read - the one that was mutating
         e.getTaxIncome();
         e.getTotalIncome();
+        // ...and the health service's price and premium, as the Health page
+        // and the Services tab read them (2026-09-19)
+        e.getHealthPremiums();
+        e.getNationalAccounts().getHealthPremiums();
+        e.getNationalAccounts().getTotalRevenue();
+        e.getTaxPolicy().getHealthFeeScale();
+        e.getTaxPolicy().getHealthPremiumRate();
+        for (CareType care : CareType.values()) {
+            g.getHealthcare().feesFrom(care);
+            g.getHealthcare().feeNow(care);
+            g.getHealthcare().getServed(care);
+            g.getHealthcare().getOffered(care);
+            g.getHealthcare().getPricedOut(care);
+            g.getHealthcare().getAffordability(care);
+            g.careAffordability(care);
+        }
+        g.getHealthcare().getPricedOutTotal();
+        g.getHealthcare().fullTreatmentFees();
+        g.getHealthcare().getFullFees();
+        g.getHealthcare().breakEvenScale();
+        g.getHealthcare().getCostRecovery();
+        g.getHouseholdBalance().getCareSkipped();
+        g.getHouseholdBalance().carePaidShares();
+        g.getHouseholds().getHealthPremiums();
+        for (int r = 0; r < g.getHouseholds().getRowCount(); r++) {
+            g.getHouseholds().getRowHealthPremiums(r);
+            g.getHouseholds().getRowCareBilled(r);
+            g.getHouseholds().getRowCareFull(r);
+            g.getHouseholds().getRowDisposable(r);
+        }
         e.getExpenses();
         e.getMonthGdp();
+        // ...and the Schools page's five dials and their previews (2026-09-21):
+        // the grant under a basis the city has not chosen, the interest a
+        // rate would bring in, the fee at a scale it has not set
+        e.getStudentLoanInterest();
+        e.getNationalAccounts().getStudentLoanInterest();
+        e.getTaxPolicy().getGrantBasis();
+        e.getTaxPolicy().getGrantAmount();
+        e.getTaxPolicy().getStudentLoanRate();
+        e.getTaxPolicy().getTuitionScale();
+        g.studentGrantBill();
+        g.getUnskilledWage();
+        for (TaxPolicy.GrantBasis basis : TaxPolicy.GrantBasis.values()) {
+            e.getTaxPolicy().maxGrantAmount(basis);
+            g.studentGrantBillUnder(basis, .5);
+            g.grantPerStudentUnder(basis, .5);
+            g.grantAmountAs(basis);
+        }
+        g.getHouseholdBalance().totalGraduateDebt();
+        g.getHouseholdBalance().studentInterestAt(.05);
+        g.getHouseholdBalance().totalStudentInterest();
+        g.getHouseholdBalance().getStudentLoanRate();
+        g.getEducation().studentBodyTuition();
+        g.getEducation().getTuitionScale();
+        for (EducationType course : EducationType.values()) {
+            g.getEducation().feeFor(course);
+            g.getEducation().feeAtOne(course);
+            g.getEducation().outOfPocket(course);
+        }
+
+        // the bridge on the Government tab, and the journal it opens into
+        // (2026-09-18) - the row is read every time the panel is rebuilt
+        g.getTreasuryChange();
+        g.getTreasuryUnexplained();
+        g.getTreasuryJournal();
+        g.getTreasuryResidual();
+        // ...and the desk's re-mark on the bank's statement
+        g.getBank().getMarkChange();
 
         /*
          * calculateSalesTax() used to be read here. It is settleSalesTax() now -

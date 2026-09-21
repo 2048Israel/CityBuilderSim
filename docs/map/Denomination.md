@@ -1,6 +1,6 @@
 # Denomination.java - 194 lines · 12 methods · 3 constants · model
 
-`ham/citybuildersim/Denomination.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Denomination.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The currency's unit, and the power to lop zeros off it.
 > 

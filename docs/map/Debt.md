@@ -1,6 +1,6 @@
 # Debt.java - 351 lines · 31 methods · 0 constants · model
 
-`ham/citybuildersim/Debt.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Debt.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > One piece of city paper.
 > 
@@ -28,7 +28,7 @@
 
 **Uses:** [Game](Game.md) (3)
 
-**Used by (13):** [CreditCheck](CreditCheck.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [LongTermBond](LongTermBond.md), [MediumTermBond](MediumTermBond.md), [RestructureCheck](RestructureCheck.md), [ShortTermTBill](ShortTermTBill.md), [UserInterface](UserInterface.md)
+**Used by (14):** [CreditCheck](CreditCheck.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [LongTermBond](LongTermBond.md), [MediumTermBond](MediumTermBond.md), [RestructureCheck](RestructureCheck.md), [ShortTermTBill](ShortTermTBill.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

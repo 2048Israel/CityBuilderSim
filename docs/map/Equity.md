@@ -1,6 +1,6 @@
 # Equity.java - 795 lines · 72 methods · 16 constants · model
 
-`ham/citybuildersim/Equity.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Equity.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The share register: who owns the city's companies, what they paid for them,
 > and what the companies pay them back.
@@ -66,7 +66,7 @@
 
 **Uses:** [HouseholdBalance](HouseholdBalance.md) (5), [Sectors](Sectors.md) (1)
 
-**Used by (25):** [AgricultureCheck](AgricultureCheck.md), [BankScreen](BankScreen.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Household](Household.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MoneyAudit](MoneyAudit.md), [PeopleScreen](PeopleScreen.md), [RestaurantsCheck](RestaurantsCheck.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (26):** [AgricultureCheck](AgricultureCheck.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Household](Household.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MoneyAudit](MoneyAudit.md), [PeopleScreen](PeopleScreen.md), [RestaurantsCheck](RestaurantsCheck.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

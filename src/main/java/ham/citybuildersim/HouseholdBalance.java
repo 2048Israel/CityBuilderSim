@@ -34,6 +34,12 @@ import java.util.function.ToDoubleFunction;
  *     food short?   savings first, then credit, then go hungry
  *     food spare?   pay down the debt first, then bank it
  *
+ *     ...and the clinic's fee is the one bill that gives way before food
+ *     (2026-09-19): a household that has run through its income, its
+ *     savings, its shares and its credit and would still eat less skips
+ *     the care bill first, and that share of its people goes untreated.
+ *     See Household.affordCare().
+ *
  * Debt before hunger and repayment before saving are both deliberate: they are
  * what a household actually does, and each is the direction that makes the
  * failure arrive slowly enough for the player to see it coming. The waterfall
@@ -387,6 +393,103 @@ public class HouseholdBalance {
         this.outsideDependants = kin == null ? c -> 0 : kin;
     }
 
+    /* =====================================================================
+       THE PRICE AT THE CLINIC DOOR (2026-09-19)
+
+       Jerus: a household that cannot pay the clinic's fee "goes without
+       care", not without food. The rule is one household's and lives in
+       Household.affordCare(); this is where the cells are handed what they
+       need to apply it and where its two consequences land:
+
+         THE SPLIT. The row's health bill follows the heads WHO PAID at the
+         row level - HouseholdAccounts weights each row's people by
+         carePaidShare(), so a row the price turned away is billed less -
+         and within the row it follows heads as it always has. That second
+         half is an approximation, the same one the split has always made,
+         and it is kept deliberately: a re-split of the care part by paying
+         heads within the row was written, and DenominationCheck went red a
+         decade after a reform. The payers' bills rounded differently in
+         the two units, a hair of borrowing came out positive in one twin
+         and exactly zero in the other, and the gate on holding money
+         abroad reads that sign. The bill follows heads; the people it is
+         for are relieved at the row.
+
+         THE TEST. After every cell has settled and planned, each is asked
+         what share of its FULL-SERVICE treatment bill fits after a basket
+         for everybody in it - see the banner in Household. What it answers
+         is read by Game.careAffordability() in the middle of the month, and
+         becomes the share of its people the clinics treat. Treatment only:
+         the funeral levy is on the same line of the statement but a fee of
+         nothing must leave nobody priced out.
+
+       The two bills arrive by row from HouseholdAccounts, through
+       setCareBills(), for the strike that follows; a harness that never
+       calls it gets the books it always got, with everybody served.
+       ===================================================================== */
+
+    /** This month's treatment fees by row, as the households were billed them, or null for a caller that does not price care. */
+    private double[] careBillByRow;
+
+    /** ...and the treatment bill the same rows would have faced at full service. */
+    private double[] careBillFullByRow;
+
+    /** The care bills the households skipped this month, summed over the city: what they ate instead. */
+    private double lastCareSkipped;
+
+    /**
+     * Hands the strike the month's treatment bills, by row: what the
+     * households were billed (HouseholdAccounts.getRowCareBilled) and what
+     * the same rows would have been billed at full service
+     * (getRowCareFull). One strike's worth: advanceMonth() consumes them.
+     */
+    public void setCareBills(double[] treatmentBilled, double[] treatmentAtFullService) {
+        this.careBillByRow = padRows(treatmentBilled);
+        this.careBillFullByRow = padRows(treatmentAtFullService);
+    }
+
+    /**
+     * Of a row's people, the share who paid for care at the last strike -
+     * people-weighted over its cells, 1 for a row with nobody in it. What
+     * HouseholdAccounts splits the next bill by.
+     */
+    public double carePaidShare(int row) {
+        double people = 0, paid = 0;
+        for (Household c : cells) {
+            if (c.row() != row) continue;
+            double n = c.people();
+            people += n;
+            paid += n * c.carePaid;
+        }
+        return people > 0 ? paid / people : 1;
+    }
+
+    /** The same, for every row at once, in row order. */
+    public double[] carePaidShares() {
+        double[] out = new double[ROWS];
+        for (int r = 0; r < ROWS; r++) out[r] = carePaidShare(r);
+        return out;
+    }
+
+    /** What the city's households skipped of their care bills this month, in money - and ate instead. */
+    public double getCareSkipped() { return lastCareSkipped; }
+
+    /* ----------------------- the student loan's rate (2026-09-21) -----------------------
+     * The treasury's annual rate on a graduate's loan, told to every cell
+     * before it settles or re-strikes, as the exchange rate is: a policy,
+     * saved on TaxPolicy and handed in by Game each month and after a load.
+     * A harness that never sets it gets the interest-free loan it always
+     * had. See Household's THE LOAN'S RATE.
+     */
+    private double studentLoanRate = TaxPolicy.DEFAULT_STUDENT_LOAN_RATE;
+
+    /** Sets the annual rate the graduates are charged this month. See TaxPolicy.getStudentLoanRate(). */
+    public void setStudentLoanRate(double annual) {
+        studentLoanRate = Math.max(0, Math.min(TaxPolicy.MAX_STUDENT_LOAN_RATE, annual));
+    }
+
+    /** The annual rate the cells were last told. */
+    public double getStudentLoanRate() { return studentLoanRate; }
+
     /* ------------------------------- the month ------------------------------- */
 
     private double lastWrittenOff;
@@ -577,6 +680,7 @@ public class HouseholdBalance {
         lastEvicted = 0;
         lastTakenAway = 0;
         lastAbroadTakenAway = 0;
+        lastCareSkipped = 0;
         java.util.Arrays.fill(lastSharesTakenAway, 0);
         for (Household c : cells) c.dividends = 0;
         /*
@@ -670,6 +774,20 @@ public class HouseholdBalance {
         /* ---- what each cell is handed, per household ---- */
         double[] disposablePer = splitIncome(fresh, rowDisposable);
         double[] feesPer = splitByPeople(fresh, rowFees);
+        /*
+         * ...AND THE TWO TREATMENT BILLS BESIDE THEM (2026-09-19), per
+         * household by the same heads: what the row was billed for treatment
+         * and what it would have been billed at full service, for the
+         * affordability test at the bottom of the loop. The bill itself is
+         * not re-split here - see the banner on setCareBills() for why the
+         * relief stays at the row.
+         */
+        double[] careBilledPer = careBillByRow == null ? new double[cells.length]
+                : splitByPeople(fresh, careBillByRow);
+        double[] careFullPer = careBillFullByRow == null ? new double[cells.length]
+                : splitByPeople(fresh, careBillFullByRow);
+        careBillByRow = null;
+        careBillFullByRow = null;
         double[] buffer = new double[cells.length];
         for (int i = 0; i < cells.length; i++) {
             buffer[i] = Math.max(0, disposablePer[i]) * OPENING_BUFFER_MONTHS;
@@ -693,6 +811,7 @@ public class HouseholdBalance {
 
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
             double rentDue = rentPerHousehold * c.rentShare;
+            c.studentLoanRate = studentLoanRate;
             c.settle(disposablePer[i], rentDue, feesPer[i], spentPer,
                     foodPricePerHead, riskFreeAnnual, liquidity, localPerUsd);
 
@@ -714,6 +833,17 @@ public class HouseholdBalance {
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
 
             plannedSpend += c.plan(localPerUsd) * c.households;
+
+            /*
+             * AND WHETHER IT CAN AFFORD THE CLINIC (2026-09-19), asked last,
+             * of the plan just struck: what fits after a basket for everybody
+             * is paid, and the rest of its people go without care rather
+             * than without food. See Household.affordCare(). With no bill -
+             * a caller that does not price care, or a fee scale of 0 -
+             * everybody is served.
+             */
+            c.affordCare(careFullPer[i], careBilledPer[i]);
+            lastCareSkipped += c.careSkipped * c.households;
         }
 
         /*
@@ -2364,11 +2494,24 @@ public class HouseholdBalance {
     /** Student loans drawn this month, all students - the treasury's money out. */
     public double totalStudentBorrowed() { return sum(c -> c.studentBorrowed * c.households); }
 
-    /** ...and repaid by graduates, the treasury's money back. */
+    /** ...and repaid by graduates, the treasury's money back: principal, which is what the journal's line carries. */
     public double totalStudentRepaid()   { return sum(c -> c.studentRepaid * c.households); }
+
+    /** ...and the interest the graduates paid on top of it this month: the treasury's revenue. See setStudentLoanRate(). */
+    public double totalStudentInterest() { return sum(c -> c.studentInterest * c.households); }
+
+    /** What a month's interest would come to at an annual rate, on the balances that are charged it - for a screen previewing a rate. */
+    public double studentInterestAt(double annualRate) {
+        return sum(c -> c.studentInterestAt(annualRate) * c.households);
+    }
 
     /** What every household owes the treasury in student loans. */
     public double totalStudentDebt()     { return sum(Household::totalStudentDebt); }
+
+    /** ...and the part of it that is in repayment: the graduates' balances, which the rate is charged on. */
+    public double totalGraduateDebt() {
+        return sum(c -> c instanceof WorkingHousehold ? c.totalStudentDebt() : 0);
+    }
 
     /** Student loans that left the city with graduates who left. The treasury's loss. */
     public double getStudentDebtTakenAway() { return lastStudentDebtTakenAway; }
@@ -2460,6 +2603,7 @@ public class HouseholdBalance {
             c.households = fresh[i];
             if (c.households < .5) { c.clearWorking(); continue; }
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
+            c.studentLoanRate = studentLoanRate;
             c.restrike(disposablePer[i], rentPerHousehold * c.rentShare, feesPer[i],
                     foodPricePerHead, riskFreeAnnual);
             plannedSpend += c.plan(localPerUsd) * c.households;
@@ -2843,8 +2987,18 @@ public class HouseholdBalance {
      */
     public static final int CELL_SLOTS_BEFORE_MEALS = CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_MEALS + 1;
+    /**
+     * ...and the share of the cell's people who paid for care, appended
+     * 2026-09-19.
+     *
+     * A save from before the clinic had a price has households that all
+     * paid, which is exactly true of that city; the reader checks the width
+     * and reads 1 for them, so SAVE_FORMAT does not move.
+     */
+    public static final int CELL_SLOTS_BEFORE_CARE = CELL_SLOTS_BEFORE_MEALS + 1;
+
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, the share who paid for care. */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_CARE + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public String[] cellKeys() {
@@ -2872,6 +3026,7 @@ public class HouseholdBalance {
             out[i++] = c.cars;
             out[i++] = c.investmentIncome;
             out[i++] = c.mealsEaten;
+            out[i++] = c.carePaid;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -2923,11 +3078,12 @@ public class HouseholdBalance {
         final int wasBeforeCars    = wasBeforeStudent + 1;
         final int wasBeforeIncome  = wasBeforeCars + 1;
         final int wasBeforeMeals   = wasBeforeIncome + 1;
-        final int wasFull          = wasBeforeMeals + 1;
+        final int wasBeforeCare    = wasBeforeMeals + 1;
+        final int wasFull          = wasBeforeCare + 1;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != wasFull && slots != wasBeforeMeals
+                || (slots != wasFull && slots != wasBeforeCare && slots != wasBeforeMeals
                     && slots != wasBeforeIncome && slots != wasBeforeCars
                     && slots != wasBeforeStudent && slots != wasBeforeAbroad
                     && slots != wasBeforeShares)) {
@@ -2989,7 +3145,11 @@ public class HouseholdBalance {
             if (slots >= wasBeforeMeals) c.investmentIncome = Math.max(0, saved[i++]);
             // ...and a city from before the kitchens ate out nothing.
             c.mealsEaten = 0;
-            if (slots >= wasFull) c.mealsEaten = Math.max(0, saved[i++]);
+            if (slots >= wasBeforeCare) c.mealsEaten = Math.max(0, saved[i++]);
+            // ...and one from before the clinic had a price paid for all of
+            // its care: 1, which is exactly what that city did.
+            c.carePaid = 1;
+            if (slots >= wasFull) c.carePaid = Math.max(0, Math.min(1, saved[i++]));
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];
@@ -3070,6 +3230,9 @@ public class HouseholdBalance {
         lastAbroadTakenAway = 0;
         lastDepositInterest = 0;
         lastDelivered = 1;
+        lastCareSkipped = 0;
+        careBillByRow = null;
+        careBillFullByRow = null;
         plannedSpend = 0;
         hungryPeople = 0;
         totalPeople = 0;
@@ -3089,6 +3252,7 @@ public class HouseholdBalance {
         localPerUsd *= scale;
         plannedSpend *= scale;
         lastDepositInterest *= scale;
+        lastCareSkipped *= scale;
         forEach(c -> c.redenominate(scale));
     }
 

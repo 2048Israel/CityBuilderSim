@@ -104,8 +104,72 @@ public final class GameVersion {
      * household ate are appended to a cell array whose reader checks its
      * length, so a 0.6.6 city opens with no kitchens and a city that ate in -
      * which is exactly what that city was.
+     *
+     * 0.6.8 (2026-09-19) - THE CLINIC HAS A PRICE, AND THE TREASURY OPENS ITS
+     * LAST ROW.
+     *
+     * Jerus: "healthcare should be an adjustable price, all the way to even
+     * make it a profitable business or the option to make it an obligatory
+     * insurance payment system." Two dials on the policy, in the EI premium's
+     * shape, and a Health page under Promises to set them: a scale on the
+     * three care fees, 0 to 15 with the city's own break-even said on the
+     * screen, and a premium off every wage into the treasury, employee side,
+     * with nothing balancing it. And his rule for the household that cannot
+     * pay the fee after its savings, its shares and its credit: it goes
+     * without care, not without food - the share of its people the clinic
+     * turns away is the share of its bill that would have come out of the
+     * basket, and they are unserved the way people with no clinic are, in the
+     * sick rate, the swings and the births. Beside it, two things the screens
+     * owed him: the treasury bridge's "everything else" row opens into the
+     * month's movements by name, from a journal kept where the cash moves,
+     * and the bank's trading desk shows the re-mark of what it holds as a
+     * line, so the desk's lines foot to its result and a loss says which
+     * half of it was the marking.
+     *
+     * SAVE_FORMAT did not move. The two dials ride the end of the policy
+     * array, the share of a household that paid for care rides the end of the
+     * cell array, the full-service bill and the three coverages the end of
+     * the service's, the premium the end of the accounts' and the statement's,
+     * and the journal goes under its own key - every reader checks its
+     * length, so a 0.6.7 city opens at the founding fee with no premium,
+     * everybody paid, and a treasury row with nothing yet to open - which is
+     * exactly what that city was.
+     *
+     * 0.6.9 (2026-09-21) - THE PRICE OF A PLACE.
+     *
+     * Jerus: "yes grants and government tuition are in the game, but what
+     * about more granularity, so perhaps, grants its just a menu where you
+     * can choose between a fixed amount, or a percentage of last month's
+     * surplus, or a % as it is now of living costs, or a % of tuition. and
+     * then another slider which is the interest rate for the student loans,
+     * and idk if real life is like that but have it so that the money is
+     * withdrawn from the treasury and then later when they pay it back it's
+     * added back, and you get the interest if there is any. ... and also
+     * make it so that you can tweak the price of tuition as well." Three
+     * dials, on a Schools page under Promises where the Tuition page was,
+     * beside the subsidy it already had: the price of a place, a scale on the
+     * founding tuition table from free to five times it; the student grant,
+     * now a basis and an amount - a share of the unskilled wage as it always
+     * was, a fixed sum, a share of last month's surplus as one pool, or a
+     * share of each student's own tuition - struck by one rule,
+     * TaxPolicy.grantBill, that the treasury's bill, the save's re-strike and
+     * the page all call; and a rate on the student loan. The rate is the
+     * Canadian shape: nothing accrues while they study, a graduate's balance
+     * is charged it during repayment, and it is paid with the instalment, so
+     * the balance is only ever principal and falls exactly as it did. The
+     * interest is the treasury's own revenue line, beside the premiums; the
+     * principal keeps coming back through the bridge. And one the load path
+     * had missed since the schools had books: a reloaded city with schools
+     * read its education bill and its fees as nothing until its first month.
+     *
+     * SAVE_FORMAT did not move. The four dials ride the end of the policy
+     * array, the interest line the end of the accounts' government block,
+     * and its monthly series goes under its own key - every reader checks
+     * its length, so a 0.6.8 city opens on the founding basis at its own
+     * share of the wage, no interest and the founding price - which is
+     * exactly what that city was.
      */
-    public static final String VERSION = "0.6.7";
+    public static final String VERSION = "0.6.9";
 
     /**
      * The save shape.

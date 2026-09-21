@@ -29,6 +29,23 @@ import java.nio.file.Path;
  *
  * 3. A LICENCE THAT LEAKS staffs posts out of nothing, which is the
  *    220-doctors bug in a new hat.
+ *
+ * 4. A GRANT STRUCK ON THE WRONG THING looks like a grant (2026-09-21). Four
+ *    bases share one rule, and the founding one has to be the founding bill
+ *    to the bit, a share of the surplus has to read the surplus the bridge
+ *    shows and nothing in a deficit, and a share of tuition has to follow
+ *    the price - each of them a number that would look plausible wrong.
+ *
+ * 5. INTEREST THAT LANDS NOWHERE, OR TWICE. The loan's rate is money out of
+ *    a graduate's wages and into the treasury; it has to be a revenue line
+ *    once, the principal has to stay the journal's, a student and a prisoner
+ *    have to be charged nothing, and at a zero rate the arithmetic has to be
+ *    bit for bit the interest-free loan it was.
+ *
+ * 6. A PRICE THAT ONE READER MISSES. The tuition scale reaches the fee, the
+ *    household's share, the burden, the treasury's revenue and what it
+ *    forgave; a reader that took the founding fee would charge one price
+ *    and record another, and the identity between them is the check.
  */
 public class EducationCheck {
 
@@ -654,6 +671,402 @@ public class EducationCheck {
         assertTrue("nobody is ever written off entirely - the floor holds",
                 Migration.opportunity(0, 1_000_000) == Migration.OPPORTUNITY_FLOOR);
 
+        /* ============ 13. THE GRANT IS A MENU ============
+
+           Jerus, 2026-09-21: "grants its just a menu where you can choose
+           between a fixed amount, or a percentage of last month's surplus, or
+           a % as it is now of living costs, or a % of tuition." Four bases,
+           one rule (TaxPolicy.grantBill), and the default basis at the
+           default share has to be the bill it always was to the bit - the
+           seed-0 playtest is byte-identical on it, and this is the same fact
+           asserted where it can name itself.
+           ================================================================= */
+        System.out.println("\n--- the grant, on four bases ---");
+
+        Game menu = city(GameFiles.scratch("educheck-grant"));
+        quietly(() -> { schools(menu); menu.simulateMonths(150); });
+        TaxPolicy dials = menu.getEconomyManager().getTaxPolicy();
+        EconomyManager mm = menu.getEconomyManager();
+        double students = menu.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
+        double wage = menu.getUnskilledWage();
+        assertTrue("fixture: somebody is studying, and the wage is a wage", students > 10 && wage > 0);
+
+        assertTrue("a new city grants a share of the unskilled wage, the founding rule",
+                dials.getGrantBasis() == TaxPolicy.DEFAULT_GRANT_BASIS
+                        && dials.getGrantAmount() == TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE
+                        && dials.getStudentGrantShare() == TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE);
+        assertTrue("...and at that basis and share the bill is bit for bit the founding expression",
+                menu.studentGrantBill() == students * TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * wage);
+        assertTrue("...which is the bill the month struck and the treasury carries",
+                mm.getStudentGrants() == menu.studentGrantBill());
+        assertTrue("...and what the students' row was handed a month later",
+                Math.abs(menu.getHouseholds().getStudentGrants() - mm.getStudentGrants())
+                        <= Math.max(1e-6, mm.getStudentGrants() * .05));
+
+        // FIXED: an amount a student a month, whoever the wage is paid to.
+        dials.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
+        quietly(() -> menu.simulateMonths(1));
+        double fixedStudents = menu.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
+        assertTrue("a fixed grant pays the amount per student",
+                mm.getStudentGrants() == fixedStudents * .4
+                        && menu.grantPerStudentUnder(TaxPolicy.GrantBasis.FIXED, .4) == .4);
+        quietly(() -> menu.simulateMonths(1));
+        StudentHousehold paidStudents = menu.getHouseholdBalance().students();
+        assertTrue("...and it reaches the students as their income",
+                paidStudents.households() > 0
+                        && Math.abs(paidStudents.disposable() * paidStudents.households()
+                                - fixedStudents * .4) < 1e-6);
+        TaxPolicy reformed = new TaxPolicy();
+        reformed.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
+        reformed.setStudentLoanRate(.05);
+        reformed.setTuitionScale(2.5);
+        reformed.redenominate(.01);
+        assertTrue("...and a currency reform scales it, because it is money",
+                Math.abs(reformed.getGrantAmount() - .004) < 1e-15);
+        assertTrue("...while the loan rate and the tuition scale, being ratios, stay",
+                reformed.getStudentLoanRate() == .05 && reformed.getTuitionScale() == 2.5);
+        TaxPolicy shares = new TaxPolicy();
+        shares.setGrant(TaxPolicy.GrantBasis.TUITION_SHARE, .5);
+        shares.redenominate(.01);
+        assertTrue("...and a share of tuition does not move either",
+                shares.getGrantAmount() == .5);
+        assertTrue("the fixed ceiling is an unskilled wage",
+                new TaxPolicy().maxGrantAmount(TaxPolicy.GrantBasis.FIXED)
+                        == TaxPolicy.MAX_FIXED_GRANT_WAGES * PayTier.UNSKILLED.getMonthlyWage());
+
+        // SURPLUS_SHARE: a share of LAST month's surplus as one pool, split
+        // over this month's students, and read from where the bridge reads it.
+        // The fixture city runs a deficit on three hospitals and forty-seven
+        // schools, so the income tax goes up until the bridge shows a surplus
+        // - the condition has to be caused, not stood next to.
+        dials.setIncomeTaxRate(.5);
+        quietly(() -> menu.simulateMonths(3));
+        double surplusBefore = menu.getTreasurySurplus();
+        assertTrue("fixture: last month ran a surplus, on the bridge", surplusBefore > 0);
+        dials.setGrant(TaxPolicy.GrantBasis.SURPLUS_SHARE, .10);
+        quietly(() -> menu.simulateMonths(1));
+        double poolStudents = menu.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
+        System.out.printf("   last month's surplus $%,.1fk, a tenth of it $%,.1fk over %,.0f students%n",
+                surplusBefore, .10 * Math.max(0, surplusBefore), poolStudents);
+        assertTrue("a surplus share pays a tenth of the surplus the bridge showed, as one pool",
+                mm.getStudentGrants() == .10 * Math.max(0, surplusBefore));
+        assertTrue("...split evenly over this month's students",
+                poolStudents > 0 && Math.abs(menu.grantPerStudentUnder(TaxPolicy.GrantBasis.SURPLUS_SHARE, .10)
+                        - .10 * Math.max(0, menu.getTreasurySurplus()) / poolStudents) < 1e-9);
+        assertTrue("a deficit month pays nothing",
+                TaxPolicy.grantBill(TaxPolicy.GrantBasis.SURPLUS_SHARE, .5, 100, wage, -1_000, 50) == 0);
+        assertTrue("...and so does a surplus with nobody to split it over",
+                TaxPolicy.grantBill(TaxPolicy.GrantBasis.SURPLUS_SHARE, .5, 0, wage, 1_000, 0) == 0);
+
+        // TUITION_SHARE: a share of each student's OWN course fee, at today's price.
+        dials.setGrant(TaxPolicy.GrantBasis.TUITION_SHARE, .5);
+        Education me = menu.getEducation();
+        double bodyAtOne = me.studentBodyTuition();
+        double halfOfTuition = menu.studentGrantBillUnder(TaxPolicy.GrantBasis.TUITION_SHARE, .5);
+        assertTrue("a tuition share is half of what the student body is charged",
+                bodyAtOne > 0 && halfOfTuition == .5 * bodyAtOne);
+        double perCourse = 0;
+        for (EducationType type : EducationType.values()) {
+            if (type.isAdult()) perCourse += me.studentBody(type) * me.feeFor(type);
+        }
+        assertTrue("...each student at their own course's fee",
+                Math.abs(bodyAtOne - perCourse) < 1e-9);
+        // The scale, told to the schools as Game tells it, doubles the body's
+        // tuition before anybody new enrols...
+        dials.setTuitionScale(2);
+        me.setTuitionScale(2);
+        double bodyAtTwo = me.studentBodyTuition();
+        assertTrue("...and it follows the tuition scale: at x2 the body's tuition is double",
+                Math.abs(bodyAtTwo - 2 * bodyAtOne) < 1e-9);
+        // ...and the month strikes its bill from exactly that figure, before
+        // the education step moves the body on.
+        quietly(() -> menu.simulateMonths(1));
+        assertTrue("...so the bill the month struck was half of the scaled tuition",
+                mm.getStudentGrants() == .5 * bodyAtTwo);
+        dials.setTuitionScale(TaxPolicy.DEFAULT_TUITION_SCALE);
+        dials.setStudentGrantShare(TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE);
+        assertTrue("the wage share puts the founding basis back",
+                dials.getGrantBasis() == TaxPolicy.GrantBasis.WAGE_SHARE
+                        && dials.getStudentGrantShare() == TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE);
+
+        /* ============ 14. THE LOAN'S RATE ============
+
+           Jerus: "the money is withdrawn from the treasury and then later
+           when they pay it back it's added back, and you get the interest if
+           there is any." The Canadian shape: nothing while they study,
+           interest on a graduate's balance during repayment, the instalment
+           unchanged, the interest the treasury's as revenue and the principal
+           the journal's. And a prisoner's loan frozen with the rest of their
+           debts - the 2026-09-14 finding, fixed in its own two overrides.
+           ================================================================= */
+        System.out.println("\n--- the loan, at a rate ---");
+
+        int R = HouseholdBalance.ROWS;
+        int unskilled = PayTier.UNSKILLED.ordinal();
+        HouseholdBalance[] twins = new HouseholdBalance[3];   // never told a rate, told 0, told 5%
+        Household[] families = new Household[3];
+        double[] owedEach = new double[3];
+        boolean studentsBorrowedFree = true;
+        for (int t = 0; t < 3; t++) {
+            HouseholdBalance grad = new HouseholdBalance();
+            if (t == 1) grad.setStudentLoanRate(0);
+            if (t == 2) grad.setStudentLoanRate(.05);
+            double[] studentsIn = { 10 };
+            double[] singlesIn = { 0 };
+            grad.setOutsideCensus(c -> c instanceof StudentHousehold ? studentsIn[0] : 0);
+            double[] payG = new double[R];
+            grad.advanceMonth((s, tier) -> 0, payG, .1, new double[R], new double[R], .3, .05, 1);
+            owedEach[t] = grad.students().studentDebt();
+            if (!(owedEach[t] > 0) || grad.students().studentInterest() != 0) studentsBorrowedFree = false;
+            studentsIn[0] = 0;
+            singlesIn[0] = 10;
+            double[] payW = new double[R];
+            payW[unskilled] = 10 * 3.460;
+            grad.advanceMonth((s, tier) -> s == FamilyStructure.SINGLE_ADULT && tier == PayTier.UNSKILLED
+                    ? singlesIn[0] : 0, payW, .1, new double[R], new double[R], .3, .05, 1);
+            twins[t] = grad;
+            families[t] = grad.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        }
+        assertTrue("fixture: the students borrowed, and were charged nothing for it while they studied - at any rate",
+                studentsBorrowedFree);
+        assertTrue("a balance never told a rate is interest free, as it always was",
+                families[0].studentInterest() == 0
+                        && families[0].studentRepaid() == owedEach[0] / Household.STUDENT_LOAN_MONTHS);
+        assertTrue("at 0% the repayment, the balance and the month are bit for bit what they were",
+                families[1].studentRepaid() == families[0].studentRepaid()
+                        && families[1].studentDebt() == families[0].studentDebt()
+                        && families[1].afterFixed() == families[0].afterFixed()
+                        && families[1].studentInterest() == 0);
+        double interestDue = owedEach[2] * .05 / 12;
+        assertTrue("at 5% a graduate is charged the month's interest on the balance",
+                Math.abs(families[2].studentInterest() - interestDue) < 1e-12);
+        assertTrue("...on top of the same principal as before",
+                families[2].studentRepaid() == families[0].studentRepaid());
+        assertTrue("...so the balance falls exactly as it did",
+                families[2].studentDebt() == families[0].studentDebt());
+        assertTrue("...and the month is poorer by exactly the interest",
+                Math.abs((families[0].afterFixed() - families[2].afterFixed()) - interestDue) < 1e-12);
+        assertTrue("the city's interest is every graduate's, summed",
+                Math.abs(twins[2].totalStudentInterest() - 10 * interestDue) < 1e-9
+                        && twins[0].totalStudentInterest() == 0);
+        assertTrue("...and the principal repaid is what it was",
+                twins[2].totalStudentRepaid() == twins[0].totalStudentRepaid());
+        assertTrue("a screen asking what 5% would bring in gets the graduates' balances at the rate over twelve",
+                twins[0].studentInterestAt(.05) > 0
+                        && Math.abs(twins[0].studentInterestAt(.05) - twins[0].totalGraduateDebt() * .05 / 12) < 1e-9
+                        && twins[0].totalGraduateDebt() == twins[0].totalStudentDebt());
+
+        // A prisoner's loan is frozen: no instalment and no interest, and the
+        // balance is carried, not forgiven.
+        HouseholdBalance inside = twins[2];
+        double[] singlesNow = { 5 };
+        double[] prisonersNow = { 5 };
+        inside.setOutsideCensus(c -> c instanceof PrisonerHousehold ? prisonersNow[0] : 0);
+        double[] payHalf = new double[R];
+        payHalf[unskilled] = 5 * 3.460;
+        inside.advanceMonth((s, tier) -> s == FamilyStructure.SINGLE_ADULT && tier == PayTier.UNSKILLED
+                ? singlesNow[0] : 0, payHalf, .1, new double[R], new double[R], .3, .05, 1);
+        PrisonerHousehold jailed = inside.prisoners();
+        double carriedIn = jailed.studentDebt();
+        assertTrue("fixture: five graduates went to prison and their loans went with them",
+                jailed.households() == 5 && carriedIn > 0);
+        assertTrue("a prisoner's student loan is frozen: nothing comes off it inside",
+                jailed.studentRepaid() == 0);
+        assertTrue("...and nothing is charged on it, whatever the rate",
+                jailed.studentInterest() == 0 && jailed.studentInterestAt(.15) == 0);
+        inside.advanceMonth((s, tier) -> s == FamilyStructure.SINGLE_ADULT && tier == PayTier.UNSKILLED
+                ? singlesNow[0] : 0, payHalf, .1, new double[R], new double[R], .3, .05, 1);
+        assertTrue("...so a month later they owe exactly what they came in with",
+                jailed.studentDebt() == carriedIn);
+        assertTrue("...while the graduates still outside kept paying, interest and all",
+                families[2].studentInterest() > 0 && families[2].studentRepaid() > 0);
+
+        // And in a city: the interest lands in the treasury as revenue, to the
+        // penny, on the revenue list, and the journal's line keeps the principal.
+        //
+        // AT A GRANT THAT DOES NOT COVER LIVING. At the founding share of the
+        // wage this fixture's students' grant and savings cover their rent,
+        // their fees and their food, and in its first draft nobody drew the
+        // loan. (The seed-0 playtest's "student loans owed $0k" says nothing
+        // either way: it never builds a school. With schools, some seeds do
+        // borrow at the founding grant.) A fixture must cause the condition:
+        // fifty dollars a month does, and the graduates carry the difference.
+        GameFiles loanFiles = GameFiles.scratch("educheck-loan");
+        Game lender = city(loanFiles);
+        lender.getEconomyManager().getTaxPolicy().setGrant(TaxPolicy.GrantBasis.FIXED, .05);
+        quietly(() -> { schools(lender); lender.simulateMonths(150); });
+        assertTrue("fixture: at a $50 grant the students borrowed, and the graduates owe the treasury",
+                lender.getHouseholdBalance().totalGraduateDebt() > 0
+                        && lender.getStudentLoansLent() > 0);
+        lender.getEconomyManager().getTaxPolicy().setStudentLoanRate(.05);
+        quietly(() -> lender.simulateMonths(1));
+        HouseholdBalance lb = lender.getHouseholdBalance();
+        NationalAccounts ln = lender.getEconomyManager().getNationalAccounts();
+        double interestPaid = lb.totalStudentInterest();
+        System.out.printf("   graduates owe $%,.1fk; a month at 5%% brought in $%,.3fk of interest, $%,.1fk of principal%n",
+                lb.totalGraduateDebt(), interestPaid, lender.getStudentLoansRepaid());
+        assertTrue("the graduates paid interest this month", interestPaid > 0);
+        assertTrue("...which is the treasury's, to the penny", lender.getStudentLoanInterest() == interestPaid
+                && lender.getEconomyManager().getStudentLoanInterest() == interestPaid);
+        assertTrue("...as its own revenue line on the national accounts", ln.getStudentLoanInterest() == interestPaid);
+        assertTrue("...counted in the revenue total",
+                Math.abs(ln.getTotalRevenue() - (ln.getTaxBusiness() + ln.getTaxIndustrial() + ln.getTaxSales()
+                        + ln.getTaxWage() + ln.getUtilityIncome() + ln.getLandSales() + ln.getPropertyTax()
+                        + ln.getContributions() + ln.getEiPremiums() + ln.getHealthFees()
+                        + ln.getEducationFees() + ln.getHealthPremiums() + interestPaid)) < 1e-9);
+        assertTrue("...while the journal's line is principal, net of what was lent",
+                lender.getStudentLoansRepaid() == lb.totalStudentRepaid()
+                        && journalLine(lender, "Lent to students, net of repayments")
+                           == lender.getStudentLoansRepaid() - lender.getStudentLoansLent());
+        assertTrue("...and the month passed the audit with the interest in it",
+                lender.getLastMoneyAudit() != null && Math.abs(lender.getLastMoneyAudit().residual) < .01);
+        assertTrue("...and the ledger was told the city's rate", lb.getStudentLoanRate() == .05);
+
+        /* ============ 15. THE PRICE OF A PLACE ============
+
+           Jerus: "make it so that you can tweak the price of tuition as
+           well." The founding table stays; what a seat is charged at is the
+           table times the scale, and everything that reads a fee reads the
+           scaled one - the household's share, the burden, the treasury's
+           revenue and what it forgave, the identity between them - so that a
+           poor city at x3 is back in the trap the class header describes and
+           at x0 everybody who would go, goes.
+           ================================================================= */
+        System.out.println("\n--- the price of a place ---");
+
+        Education priced = new Education();
+        priced.setTuitionScale(3);
+        boolean feesScale = true, pocketScales = true;
+        for (EducationType type : EducationType.values()) {
+            if (type == EducationType.NONE) continue;
+            if (priced.feeFor(type) != 3 * Education.foundingTuition(type)) feesScale = false;
+            if (Math.abs(priced.outOfPocket(type) - 3 * Education.foundingTuition(type) * (1 - Education.DEFAULT_SUBSIDY)) > 1e-12) pocketScales = false;
+            if (priced.feeAtOne(type) != Education.foundingTuition(type)) feesScale = false;
+        }
+        assertTrue("at x3 every fee is three times the founding table, and the table itself has not moved", feesScale);
+        assertTrue("...and so is what a household pays out of pocket", pocketScales);
+        assertTrue("at x1 the fee is the founding fee, bit for bit",
+                new Education().feeFor(EducationType.UNIVERSITY) == Education.foundingTuition(EducationType.UNIVERSITY));
+        priced.setTuitionScale(99);
+        assertTrue("the schools clamp the scale to the policy's ceiling",
+                priced.getTuitionScale() == TaxPolicy.MAX_TUITION_SCALE);
+
+        /*
+         * A POOR CITY WITH ONE UNIVERSITY, at five years. The fixture the
+         * rest of this harness uses has six colleges and three universities
+         * for a city of twenty thousand, so its seats bind: the price moved
+         * the willing share from .76 to .29 and the student body by nobody,
+         * because a full school admits as many as graduate whatever the
+         * price. One university in the same city is willingness-bound, and
+         * five years in, the wages are still near the ones the table was
+         * struck against - which is what "poor" means here.
+         */
+        Game[] priceCities = new Game[3];
+        double[] scales = { 1, 3, 0 };
+        quietly(() -> {
+            for (int k = 0; k < 3; k++) {
+                priceCities[k] = city(GameFiles.scratch("educheck-price-" + k));
+                build(priceCities[k], "Elementary School", 14);
+                build(priceCities[k], "Middle School", 14);
+                build(priceCities[k], "High School", 10);
+                build(priceCities[k], "University", 1);
+                priceCities[k].getEconomyManager().getTaxPolicy().setTuitionScale(scales[k]);
+                priceCities[k].simulateMonths(60);
+            }
+        });
+        double[] enrolled = new double[3];
+        double[] willing = new double[3];
+        for (int k = 0; k < 3; k++) {
+            enrolled[k] = priceCities[k].getEducation().studentBody(EducationType.UNIVERSITY);
+            willing[k] = priceCities[k].getEducation().willingShare(EducationType.UNIVERSITY,
+                    priceCities[k].getLabourMarket());
+        }
+        Education atOne = priceCities[0].getEducation(), atThree = priceCities[1].getEducation(),
+                atNone = priceCities[2].getEducation();
+        System.out.printf("   at university: %,.0f at x1, %,.0f at x3, %,.0f at x0 (willing %.2f / %.2f / %.2f);"
+                + " fees $%,.1fk / $%,.1fk / $%,.1fk, forgiven $%,.1fk / $%,.1fk / $%,.1fk%n",
+                enrolled[0], enrolled[1], enrolled[2], willing[0], willing[1], willing[2],
+                atOne.getFees(), atThree.getFees(), atNone.getFees(),
+                atOne.getSubsidy(), atThree.getSubsidy(), atNone.getSubsidy());
+        assertTrue("the schools charge at the city's scale", atThree.getTuitionScale() == 3 && atNone.getTuitionScale() == 0);
+        assertTrue("fixture: the price is what decides here - x3 cuts the willing share, not the seats",
+                willing[1] < willing[0] * .6);
+        assertTrue("a poor city at x3 enrols fewer than at x1: the trap is back", enrolled[1] < enrolled[0] * .9);
+        boolean everybodyCan = true;
+        for (EducationType type : EducationType.values()) {
+            if (type.isAdult() && atNone.studyAffordability(type, priceCities[2].getLabourMarket()) != 1) everybodyCan = false;
+        }
+        assertTrue("at x0 everybody who would go can afford to", everybodyCan);
+        assertTrue("...so everybody the cap lets go, goes",
+                willing[2] == Education.MAX_PARTICIPATION && willing[2] > willing[0]);
+        assertTrue("...and more than at x3", enrolled[2] > enrolled[1]);
+        assertTrue("a free place bills nothing and forgoes nothing", atNone.getFees() == 0 && atNone.getSubsidy() == 0);
+        assertTrue("the treasury's fee revenue is the scaled fees households paid",
+                atThree.getFees() > 0
+                        && priceCities[1].getEconomyManager().getEducationFees() == atThree.getFees()
+                        && priceCities[1].getEconomyManager().getNationalAccounts().getEducationFees() == atThree.getFees());
+        for (int k = 0; k < 2; k++) {
+            Education e = priceCities[k].getEducation();
+            double billed = e.getSubsidy() + e.getFees();
+            assertTrue(String.format("the identity holds at x%.0f: forgiven over billed is the subsidy share", scales[k]),
+                    billed > 0 && Math.abs(e.getSubsidy() / billed - e.getTuitionSubsidy()) < 1e-9);
+            assertTrue(String.format("...and at x%.0f the bill is wages and buildings, whatever the price", scales[k]),
+                    Math.abs(e.getGrossCost() - (e.getPayroll() + e.getUpkeep())) < 1e-9);
+        }
+        assertTrue("...and it collects more at the door at x3, from the students it kept",
+                atThree.getFees() / Math.max(1e-9, enrolled[1]) > atOne.getFees() / Math.max(1e-9, enrolled[0]));
+
+        /* ============ 16. ALL THREE SURVIVE A SAVE ============ */
+        System.out.println("\n--- and the three dials survive a save ---");
+
+        // The lender city, whose graduates owe: a tuition-share grant, the
+        // rate and a price, two months, a save, a load.
+        Game kept = lender;
+        TaxPolicy kp = kept.getEconomyManager().getTaxPolicy();
+        kp.setGrant(TaxPolicy.GrantBasis.TUITION_SHARE, .5);
+        kp.setStudentLoanRate(.05);
+        kp.setTuitionScale(2.5);
+        quietly(() -> kept.simulateMonths(2));
+        double billBefore = kept.getEconomyManager().getStudentGrants();
+        double interestBefore = kept.getEconomyManager().getNationalAccounts().getStudentLoanInterest();
+        assertTrue("fixture: a tuition-share grant was struck and interest was charged",
+                billBefore > 0 && interestBefore > 0);
+        assertTrue("the city saved", kept.saveGame(2, "dials").ok);
+        Game reloaded = new Game(loanFiles);
+        quietly(() -> reloaded.loadGameSave(2));
+        assertTrue("...and loaded", reloaded.getLoadFailure() == null);
+        TaxPolicy rp = reloaded.getEconomyManager().getTaxPolicy();
+        assertTrue("the grant's basis and amount came back",
+                rp.getGrantBasis() == TaxPolicy.GrantBasis.TUITION_SHARE && rp.getGrantAmount() == .5);
+        assertTrue("...and the loan rate", rp.getStudentLoanRate() == .05);
+        assertTrue("...and the tuition scale", rp.getTuitionScale() == 2.5);
+        assertTrue("...and the schools charge at it from the first read",
+                reloaded.getEducation().getTuitionScale() == 2.5);
+        assertTrue("...and the ledger knows the rate", reloaded.getHouseholdBalance().getStudentLoanRate() == .05);
+        assertTrue("fixture: the rule re-struck from the reloaded city would not reproduce it - the body moved on",
+                reloaded.studentGrantBill() != billBefore);
+        assertTrue("the bill the month struck came back as the save struck it, not re-derived",
+                reloaded.getEconomyManager().getStudentGrants() == billBefore);
+        assertTrue("...and so did the interest line",
+                reloaded.getEconomyManager().getNationalAccounts().getStudentLoanInterest() == interestBefore);
+        double[] older = java.util.Arrays.copyOf(kp.getPolicyState(), TaxPolicy.STATE_BEFORE_EDUCATION);
+        TaxPolicy fromBefore = new TaxPolicy();
+        assertTrue("a policy array from before the dials is still read", fromBefore.restorePolicyState(older));
+        assertTrue("...as the founding basis at the share its own slot carried, no interest, the founding price",
+                fromBefore.getGrantBasis() == TaxPolicy.GrantBasis.WAGE_SHARE
+                        && fromBefore.getGrantAmount() == older[TaxPolicy.STATE_BEFORE_EI + 2]
+                        && fromBefore.getStudentLoanRate() == TaxPolicy.DEFAULT_STUDENT_LOAN_RATE
+                        && fromBefore.getTuitionScale() == TaxPolicy.DEFAULT_TUITION_SCALE);
+        TaxPolicy wageShared = new TaxPolicy();
+        wageShared.setStudentGrantShare(.25);
+        double[] olderStill = java.util.Arrays.copyOf(wageShared.getPolicyState(), TaxPolicy.STATE_BEFORE_EDUCATION);
+        TaxPolicy readsShare = new TaxPolicy();
+        readsShare.restorePolicyState(olderStill);
+        assertTrue("...and an old save's own wage share is the grant it had",
+                readsShare.getGrantAmount() == .25 && readsShare.getStudentGrantShare() == .25);
+        assertTrue("a wrong shape is still refused whole",
+                !new TaxPolicy().restorePolicyState(new double[TaxPolicy.STATE_SLOTS + 1]));
+
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -665,6 +1078,14 @@ public class EducationCheck {
      */
     static double heads(Game g, WageBand band) {
         return g.getPopulationManager().workforceByBand()[band.ordinal()];
+    }
+
+    /** Last month's journal line by its label, or NaN for none. See section 14. */
+    static double journalLine(Game g, String label) {
+        for (TreasuryJournal.Entry e : g.getTreasuryJournal()) {
+            if (label.equals(e.label())) return e.amount();
+        }
+        return Double.NaN;
     }
 
     /** A band's share of the workforce. */

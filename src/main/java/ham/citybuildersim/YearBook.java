@@ -111,7 +111,9 @@ public final class YearBook {
         flow(m, "evicted", "out-of-work households that lost their home");
         flow(m, "eiPaid", "unemployment benefit paid, in thousands");
         flow(m, "eiPremiums", "unemployment premiums collected, in thousands");
+        flow(m, "healthPremiums", "health premiums collected off wages, in thousands");
         flow(m, "studentGrants", "grants paid to students, in thousands");
+        flow(m, "studentLoanInterest", "interest the graduates paid on their student loans, in thousands");
         flow(m, "diedOfIllness", "people the long sickness killed");
         flow(m, "deathsBabies", "deaths aged 0-5");
         flow(m, "deathsChildren", "deaths aged 6-12");

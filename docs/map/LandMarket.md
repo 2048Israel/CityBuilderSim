@@ -1,6 +1,6 @@
 # LandMarket.java - 680 lines · 24 methods · 17 constants · model
 
-`ham/citybuildersim/LandMarket.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandMarket.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The land office's window: ten plots on offer, and what the next one costs.
 > 

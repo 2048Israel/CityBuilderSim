@@ -1,6 +1,6 @@
 # Motoring.java - 193 lines · 10 methods · 0 constants · model
 
-`ham/citybuildersim/Motoring.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Motoring.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The households' car market: the second-hand pass, then the showroom, with
 > the road told what is parked on it.

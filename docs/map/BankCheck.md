@@ -1,6 +1,6 @@
-# BankCheck.java - 1,095 lines · 4 methods · 0 constants · harnesses
+# BankCheck.java - 1,202 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/BankCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BankCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The commercial bank, and the families it discharges.
 > 
@@ -19,43 +19,52 @@
 >      from nowhere run between two pools inside the city?
 >   3. Does a family that cannot carry its debt get discharged - and does the
 >      bank, not thin air, eat the loss?
+>   4. Does the trading desk's statement add up? Jerus: "the bank, just
+>      explain to me the trading desk, cause a bunch of times it's losing
+>      billions of dollars due to the trading desk." The opened lines have to
+>      sum to the figure above them, and the term that makes them - the
+>      re-mark of what the desk holds - is measured on a fixture that trades
+>      and counted on a played city.
 > 
 > Each of those is measured by CAUSING the condition, never by finding a city
 > that happens to be in it.
 
-**Uses:** [Bank](Bank.md) (65), [Game](Game.md) (11), [HouseholdBalance](HouseholdBalance.md) (8), [FamilyStructure](FamilyStructure.md) (8), [GameFiles](GameFiles.md) (5), [DebtManager](DebtManager.md) (4), [MoneyAudit](MoneyAudit.md) (4), [PayTier](PayTier.md) (4), [Sectors](Sectors.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [BusinessInvestment](BusinessInvestment.md) (1)
+**Uses:** [Bank](Bank.md) (67), [Game](Game.md) (12), [HouseholdBalance](HouseholdBalance.md) (11), [FamilyStructure](FamilyStructure.md) (10), [PayTier](PayTier.md) (7), [Exchange](Exchange.md) (5), [Equity](Equity.md) (5), [DebtManager](DebtManager.md) (5), [GameFiles](GameFiles.md) (5), [Sectors](Sectors.md) (5), [MoneyAudit](MoneyAudit.md) (4), [ExchangeCheck](ExchangeCheck.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BusinessInvestment](BusinessInvestment.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 63 | · 1. the two limits |
-| 94 | · 1b. WHAT TO PAY SAVERS IS A DECISION |
-| 206 | · · ...and it does not open counters either |
-| 262 | · 2. the price of strain |
-| 310 | · 3. the premium reaches the borrower |
-| 339 | · 4. a real city, and its money |
-| 427 | · 5. the save carries the bank's cash |
-| 486 | · 6. a family that cannot carry it |
-| 601 | · 7. and the city opens its own |
-| 852 | · 8. the accounting identities, on a played city |
-| 1036 | · 9. capital is the constraint, and it can run out |
+| 85 | · 1. the two limits |
+| 116 | · 1b. WHAT TO PAY SAVERS IS A DECISION |
+| 228 | · · ...and it does not open counters either |
+| 284 | · 2. the price of strain |
+| 332 | · 3. the premium reaches the borrower |
+| 361 | · 4. a real city, and its money |
+| 449 | · 5. the save carries the bank's cash |
+| 508 | · 6. a family that cannot carry it |
+| 623 | · 7. and the city opens its own |
+| 874 | · 8. the accounting identities, on a played city |
+| 1068 | · 8b. the trading desk's statement foots |
+| 1143 | · 9. capital is the constraint, and it can run out |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 32 | `static int fails` |  |
-| 33 | `static PrintStream out` |  |
-| 34 | `static PrintStream quiet` |  |
+| 38 | `static int fails` |  |
+| 39 | `static PrintStream out` |  |
+| 40 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 1066 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
-| 36 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 41 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 51 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 58 | 1037 | `public static void main(String[] args) throws Exception` |  |
+| 36 | 1167 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
+| 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 57 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 70 | 5 | `static double deskParts(Exchange exchange, Equity register, Bank bank)` | The trading desk's statement as the bank screen opens it, less the re-mark: sold to households and abroad, bought from both, dividends on the inventory, tendered into buybacks - the same getters BankScreen reads, with... |
+| 76 | 3 | `static double deskParts(Game game)` |  |
+| 80 | 1122 | `public static void main(String[] args) throws Exception` |  |
 

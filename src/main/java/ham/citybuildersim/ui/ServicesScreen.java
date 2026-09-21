@@ -1904,15 +1904,16 @@ final class ServicesScreen {
                 pocket <= 0 ? Palette.GOOD : null));
         box.getChildren().add(statementNote(
                 "The subsidy is one dial for every course in the city, on the Policies "
-                + "screen. At nothing, only the top pay tiers attend; at everything, "
-                + "education becomes one of the largest lines on the budget."));
+                + "screen, beside the price of a place, the grant and the loan's rate. At "
+                + "nothing, only the top pay tiers attend; at everything, education becomes "
+                + "one of the largest lines on the budget."));
 
         Button policy = new Button("Set the subsidy  →");
         policy.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
                 + " -fx-background-color: " + Palette.ACCENT_FILL + ";");
         policy.setOnAction(e -> {
             ui.policyScreen.policyArea = "Promises";
-            ui.policyScreen.policyPage = "Tuition";
+            ui.policyScreen.policyPage = "Schools";
             ui.policyScreen.dropProposal();
             ui.policyScreen.showPolicyMenu();
         });
@@ -2217,6 +2218,18 @@ final class ServicesScreen {
                 service.getFuneralFees(), null));
         column.getChildren().add(statementTotal("Fees collected",
                 tightMoney(toDollars(service.getFees()), false), Palette.GOOD));
+        // ...and who the price turned away (2026-09-19): the dial is on the
+        // Policy tab's Health page; this line says what it did.
+        column.getChildren().add(statementNote(service.getPricedOutTotal() > 0
+                ? String.format("Fees at x%.2f the founding fee. %s were priced out of care this month "
+                        + "(childcare %s, general %s, senior %s): a household that cannot pay after its "
+                        + "savings, its shares and its credit goes without care rather than without food.",
+                        service.getFeeScale(), people(service.getPricedOutTotal()),
+                        people(service.getPricedOut(CareType.CHILDCARE)),
+                        people(service.getPricedOut(CareType.GENERAL)),
+                        people(service.getPricedOut(CareType.SENIOR)))
+                : String.format("Fees at x%.2f the founding fee, and nobody was priced out of care this month.",
+                        service.getFeeScale())));
 
         /* ------------------------------ what it costs ------------------------------ */
         column.getChildren().add(statementHead("What it costs"));

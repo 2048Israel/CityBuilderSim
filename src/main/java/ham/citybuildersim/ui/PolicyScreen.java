@@ -21,12 +21,14 @@ import static ham.citybuildersim.ui.Levers.*;
  * show what a proposal would cost before it is applied, and the pages each
  * lever opens.
  *
- * Split out of UserInterface on 2026-09-18: the eighteen banners from THE
- * POLICY TAB to PROMISES - the standing subsidies exactly as they were, the
- * shell's members reached through ui. The shell still reads which area and
- * page are open (policyArea, policyPage) for the rail and the scroll memory,
- * and the staged set (staged, isStaged, taxRaised, applyBar, stageSlider,
- * dropProposal, pinnedBands) because other screens offer the same levers.
+ * Split out of UserInterface on 2026-09-18: the nineteen banners from THE
+ * POLICY TAB to PROMISES - the standing subsidies, the shell's members reached
+ * through ui. Eighteen of them moved exactly as they were; the nineteenth, the
+ * clinic's price and a premium, was added on 2026-09-19. The shell still reads
+ * which area and page are open (policyArea, policyPage) for the rail and the
+ * scroll memory, and the staged set (staged, isStaged, taxRaised, applyBar,
+ * stageSlider, dropProposal, pinnedBands) because other screens offer the same
+ * levers.
  */
 final class PolicyScreen {
 
@@ -51,7 +53,7 @@ final class PolicyScreen {
          WAGES     the minimum wage, which is the floor under every other wage
                    in the city and therefore not a tax screen
          MONEY     the policy rate, and the currency reform
-         PROMISES  pensions, tuition, and what the city will keep alive
+         PROMISES  pensions, the schools, and what the city will keep alive
 
        AND EVERY DIAL IS A PROPOSAL UNTIL IT IS APPLIED. "A before/after
        preview once you've moved the dial" - his call, and the right one. A tax
@@ -92,7 +94,7 @@ final class PolicyScreen {
             {"Everything", "Profit", "Sales", "Wage", "Property"};
     static final String[] POLICY_WAGE_PAGES    = {"The floor"};
     static final String[] POLICY_MONEY_PAGES   = {"The policy rate", "Currency reform"};
-    static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Tuition", "Subsidies"};
+    static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Health", "Schools", "Subsidies"};
 
     /* =====================================================================
        THE STAGED SET.
@@ -358,7 +360,15 @@ final class PolicyScreen {
     }
 
     /** The foot bar: everything pending, what it adds up to, and one button. */
-    VBox stagedBar() {
+    VBox stagedBar() { return stagedBar(true); }
+
+    /**
+     * The same bar with or without the tax total: the Schools page's dials
+     * (2026-09-21) are not taxes, and a bar that footed them to "Tax a month:
+     * no difference" would be answering a question nobody asked. The list
+     * and the one button are what every page shares.
+     */
+    VBox stagedBar(boolean taxes) {
 
         VBox box = new VBox(0);
         box.setMaxWidth(STATEMENT);
@@ -377,18 +387,20 @@ final class PolicyScreen {
         }
         if (listed == 0) return new VBox();
 
-        double now = taxTotalUnder(false);
-        double then = taxTotalUnder(true);
-        box.getChildren().add(wouldTotal("Tax a month",
-                money(now), money(then), then >= now ? Palette.GOOD : Palette.WARN));
-        box.getChildren().add(statementLine("A difference of",
-                signedTight(then - now, false),
-                then >= now ? Palette.GOOD : Palette.BAD));
-        box.getChildren().add(previewCaveat(
-                "Both figures are struck the same way against this month's books - the "
-                + "profit each sector made, the value each added, the payroll each paid "
-                + "and what each is assessed at - so the DIFFERENCE is the answer even "
-                + "where neither matches last month's actual revenue to the dollar."));
+        if (taxes) {
+            double now = taxTotalUnder(false);
+            double then = taxTotalUnder(true);
+            box.getChildren().add(wouldTotal("Tax a month",
+                    money(now), money(then), then >= now ? Palette.GOOD : Palette.WARN));
+            box.getChildren().add(statementLine("A difference of",
+                    signedTight(then - now, false),
+                    then >= now ? Palette.GOOD : Palette.BAD));
+            box.getChildren().add(previewCaveat(
+                    "Both figures are struck the same way against this month's books - the "
+                    + "profit each sector made, the value each added, the payroll each paid "
+                    + "and what each is assessed at - so the DIFFERENCE is the answer even "
+                    + "where neither matches last month's actual revenue to the dollar."));
+        }
 
         final int count = listed;
         Button go = new Button(count == 1 ? "Apply it" : "Apply all " + count);
@@ -777,6 +789,7 @@ final class PolicyScreen {
 
         double pension = policy.getContributionRate();
         double ei = policy.getEiPremiumRate();
+        double health = policy.getHealthPremiumRate();
 
         column.getChildren().add(statementHead("What a payslip actually loses"));
         column.getChildren().add(statementLine("Wage tax, at the city rate",
@@ -785,16 +798,19 @@ final class PolicyScreen {
                 pct2(pension), Palette.TEXT_SPENT));
         column.getChildren().add(statementLine("EI premium",
                 pct2(ei), Palette.TEXT_SPENT));
+        // ...and the health premium, since the clinic had a price (2026-09-19).
+        column.getChildren().add(statementLine("Health premium",
+                pct2(health), Palette.TEXT_SPENT));
         column.getChildren().add(statementTotal("Off a wage in the middle band",
-                pct2(base + pension + ei),
-                base + pension + ei > .45 ? Palette.WARN : Palette.TEXT_HEAD));
+                pct2(base + pension + ei + health),
+                base + pension + ei + health > .45 ? Palette.WARN : Palette.TEXT_HEAD));
         column.getChildren().add(statementNote(
-                "Only the first is a tax and only the first is set here - the other two "
+                "Only the first is a tax and only the first is set here - the other three "
                 + "are promises the city has made and they are charged on the same "
                 + "payroll. A band with a move off the city rate pays that instead of "
-                + "the first line; the other two are flat across every band."));
+                + "the first line; the other three are flat across every band."));
 
-        Label door = new Label("Set the pension contribution and the EI premium  ›");
+        Label door = new Label("Set the pension contribution and the premiums  ›");
         door.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT)
                 + " -fx-cursor: hand; -fx-padding: 2 0 8 0;");
         door.setOnMouseClicked(e -> {
@@ -952,7 +968,7 @@ final class PolicyScreen {
                 Palette.ACCENT, "Money", "The policy rate"));
 
         column.getChildren().add(policyRow("Promises",
-                "pensions, school fees, and the sectors the city will not let fail",
+                "pensions, EI, the clinic's price, school fees, and the sectors the city will not let fail",
                 money(promisesCost()),
                 "a month, out of the treasury",
                 promisesCost() > 0 ? Palette.WARN : Palette.TEXT_SPENT,
@@ -1245,11 +1261,16 @@ final class PolicyScreen {
             }
             case "Promises" -> {
                 switch (policyPage) {
-                    case "Tuition"     -> tuitionPage(column);
+                    case "Schools"     -> schoolsPage(column);
                     case "Subsidies"   -> subsidyPage(column);
                     case "Out of work" -> outOfWorkPage(column);
+                    case "Health"      -> healthPage(column);
                     default            -> pensionPage(column);
                 }
+                // The Schools page registers its five dials so one bar
+                // applies them (2026-09-21); a page that registers nothing
+                // draws nothing here, and keeps its own apply bars.
+                column.getChildren().add(stagedBar(false));
             }
             default -> {
                 switch (policyPage) {
@@ -1315,7 +1336,10 @@ final class PolicyScreen {
      *
      * Dropping the thumb back where it started clears the proposal rather than
      * staging a change of nothing, which is what makes the slider its own
-     * cancel button.
+     * cancel button - ITS OWN, since 2026-09-21: it unstages its key, as
+     * propose() does for a ladder, where it used to drop the whole set. On a
+     * page of one dial that is the same thing; on the Schools page's five it
+     * was one thumb put back throwing four other decisions away.
      *
      * THE REDRAW IS THE CALLER'S SCREEN, not this one. The transit fare is a
      * lever on the Services tab drawn with this same slider, and until
@@ -1352,7 +1376,7 @@ final class PolicyScreen {
 
         Runnable commit = () -> {
             double v = Math.max(min, Math.min(max, snapped(bar.getValue(), min, step)));
-            if (moved(v, current, step)) stage(key, v); else dropProposal();
+            if (moved(v, current, step)) stage(key, v); else unstage(key);
             ui.redraw();   // whichever screen the dial is on - the fare dial lives on Services
         };
         bar.setOnMouseReleased(e -> commit.run());
@@ -2209,28 +2233,87 @@ final class PolicyScreen {
     }
 
     /* =====================================================================
-       PROMISES - tuition
+       PROMISES - the schools: the price of a place, who pays it, and the
+       loan that covers the rest (2026-09-21; the tuition page until then)
 
-       THE DIAL DOES TWO OPPOSITE THINGS AND THAT IS THE DECISION. Every point
-       of subsidy is money out of the treasury and a few more people who can
-       afford to enrol - and the second effect is far larger than the first,
-       because tuition is small against what a school costs to run. So this is
-       not "how much do we spend on education", it is "who is allowed to go",
-       and the budget line is the smaller half of the answer.
+       THE SUBSIDY DOES TWO OPPOSITE THINGS AND THAT IS THE DECISION. Every
+       point of subsidy is money out of the treasury and a few more people
+       who can afford to enrol - and the second effect is far larger than the
+       first, because tuition is small against what a school costs to run. So
+       this is not "how much do we spend on education", it is "who is allowed
+       to go", and the budget line is the smaller half of the answer.
+
+       AND SINCE 2026-09-21 THE PRICE IS A DIAL TOO, WITH THE GRANT AND THE
+       LOAN BESIDE IT. Jerus: "grants its just a menu where you can choose
+       between a fixed amount, or a percentage of last month's surplus, or a
+       % as it is now of living costs, or a % of tuition. and then another
+       slider which is the interest rate for the student loans ... and also
+       make it so that you can tweak the price of tuition as well." Five
+       dials on one page, because they are one decision: what a seat costs,
+       what share of that the city forgives, what a student is handed to
+       live on, and what the loan for the rest costs them afterwards. All
+       five stage into the foot bar and one button applies them; every
+       figure here is a public getter, and the previews are the model's own
+       rule (Game.studentGrantBillUnder, HouseholdBalance.studentInterestAt)
+       asked about a setting the city has not made.
 
        At no subsidy a university place costs a diploma-holder most of a
        month's pay and almost nobody attends: a city can own the buildings,
-       need the graduates, and produce none of them.
+       need the graduates, and produce none of them. At the founding price
+       against today's wages that trap is mostly quiet; around three times
+       it, it is back.
        ===================================================================== */
 
-    void tuitionPage(VBox column) {
+    /** The grant in words, for a line that names it: "15% of an unskilled wage a month". */
+    static String grantWords(TaxPolicy.GrantBasis basis, double amount) {
+        if (basis == null) basis = TaxPolicy.DEFAULT_GRANT_BASIS;
+        return switch (basis) {
+            case FIXED         -> moneyFull(amount) + " a month";
+            case SURPLUS_SHARE -> String.format("%.0f%% of last month's surplus, shared out", amount * 100);
+            case TUITION_SHARE -> String.format("%.0f%% of their course's tuition", amount * 100);
+            default            -> String.format("%.0f%% of an unskilled wage a month", amount * 100);
+        };
+    }
+
+    /** What a basis is called on its chip. */
+    static String basisName(TaxPolicy.GrantBasis basis) {
+        return switch (basis) {
+            case FIXED         -> "a fixed amount";
+            case SURPLUS_SHARE -> "a share of last month's surplus";
+            case TUITION_SHARE -> "a share of tuition";
+            default            -> "a share of the unskilled wage";
+        };
+    }
+
+    /** How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. */
+    static String amountWords(TaxPolicy.GrantBasis basis, double amount) {
+        return basis == TaxPolicy.GrantBasis.FIXED ? moneyFull(amount)
+                : String.format("%.0f%%", amount * 100);
+    }
+
+    void schoolsPage(VBox column) {
 
         Education schools = ui.game.getEducation();
         LabourMarket market = ui.game.getLabourMarket();
+        TaxPolicy policy = ui.game.getEconomyManager().getTaxPolicy();
+        EconomyManager em = ui.game.getEconomyManager();
+        HouseholdBalance bal = ui.game.getHouseholdBalance();
+        FamilyModel families = ui.game.getFamilies();
 
         double share = schools.getTuitionSubsidy();
         double want = staged("tuition", share);
-        boolean staged = isStaged("tuition");
+        double scale = policy.getTuitionScale();
+        double wantScale = staged("tuitionScale", scale);
+        boolean moved = isStaged("tuition") || isStaged("tuitionScale");
+
+        /* -------------------- the five levers, registered for the one bar -------------------- */
+        register(new Lever("tuition", "The city's share of tuition", share, 0, 1, .01,
+                r -> String.format("%.0f%%", r * 100), schools::setTuitionSubsidy));
+        register(new Lever("tuitionScale", "The price of a place", scale,
+                0, TaxPolicy.MAX_TUITION_SCALE, .05, v -> String.format("x%.2f", v),
+                policy::setTuitionScale));
+        register(new Lever("loanRate", "Interest on student loans", policy.getStudentLoanRate(),
+                0, TaxPolicy.MAX_STUDENT_LOAN_RATE, .0025, Money::pct2, policy::setStudentLoanRate));
 
         column.getChildren().add(statementHead("Who pays for school"));
         column.getChildren().add(leverHead(String.format("%.0f%%", share * 100),
@@ -2241,21 +2324,24 @@ final class PolicyScreen {
 
         /* ------------------------ what a family has to find ------------------------ */
         javafx.scene.layout.GridPane burden = grid(
-                new double[] {184, 94, 94, 94, 94},
-                rightAfterFirst(5));
-        gridHead(burden, "", "tuition", "they pay", "of a wage", staged ? "after" : "");
+                new double[] {150, 82, 82, 76, 82, 76},
+                rightAfterFirst(6));
+        gridHead(burden, "", "tuition", "they pay", "of a wage",
+                moved ? "then pay" : "", moved ? "after" : "");
 
         int line = 1;
         for (EducationType type : EducationType.values()) {
             if (type == EducationType.NONE) continue;
 
-            double fee = ui.game.getEducation().feeFor(type);
+            double fee = schools.feeFor(type);
             double pocket = fee * (1 - share);
             WageBand from = type.requires();
             double wage = from == null ? market.getWage(JobType.NO_DIPLOMA)
                                        : bestWageIn(market, from);
             double now = wage > 0 ? pocket / wage : 0;
-            double then = wage > 0 ? fee * (1 - want) / wage : 0;
+            double feeThen = schools.feeAtOne(type) * wantScale;
+            double pocketThen = feeThen * (1 - want);
+            double then = wage > 0 ? pocketThen / wage : 0;
 
             burden.add(gridCell(type.getLabel(), Palette.TEXT_BODY,
                     Palette.SIZE_CAPTION, false), 0, line);
@@ -2265,9 +2351,11 @@ final class PolicyScreen {
                     Palette.SIZE_CAPTION, true), 2, line);
             burden.add(gridCell(String.format("%.0f%%", now * 100), burdenTone(now),
                     Palette.SIZE_CAPTION, true), 3, line);
-            if (staged) {
-                burden.add(gridCell(String.format("%.0f%%", then * 100), burdenTone(then),
+            if (moved) {
+                burden.add(gridCell(unitPrice(pocketThen), Palette.ACCENT,
                         Palette.SIZE_CAPTION, true), 4, line);
+                burden.add(gridCell(String.format("%.0f%%", then * 100), burdenTone(then),
+                        Palette.SIZE_CAPTION, true), 5, line);
             }
             line++;
         }
@@ -2292,18 +2380,32 @@ final class PolicyScreen {
         column.getChildren().add(stageSlider("tuition", share, 0, 1, .01,
                 r -> String.format("%.0f%%", r * 100)));
 
-        if (staged) {
-            double billed = schools.getSubsidy() + schools.getFees();
-            double subsidyThen = billed * want;
-            double feesThen = billed * (1 - want);
-            double netThen = schools.getPayroll() + schools.getUpkeep()
-                    + subsidyThen - feesThen;
+        /* ---------------------------- the price of a place ---------------------------- */
+        column.getChildren().add(statementHead("What a place is priced at"));
+        column.getChildren().add(leverHead(String.format("x%.2f", scale),
+                "The founding tuition table times this, on every course, before the "
+                + "city's share comes off. The table was struck against the wages of "
+                + "its day; against today's the trap in the note above is quiet at x1 "
+                + "and back around x3. Nothing at 0: a free place, and the city forgoes "
+                + "nothing because there is nothing to forgo."));
+        column.getChildren().add(stageSlider("tuitionScale", scale,
+                0, TaxPolicy.MAX_TUITION_SCALE, .05, v -> String.format("x%.2f", v)));
+
+        if (moved) {
+            double billedAtOne = scale > 0 ? (schools.getSubsidy() + schools.getFees()) / scale : 0;
+            double billedThen = billedAtOne * wantScale;
+            double subsidyThen = billedThen * want;
+            double feesThen = billedThen * (1 - want);
+            double netThen = schools.getPayroll() + schools.getUpkeep() - feesThen;
 
             column.getChildren().add(wouldHead());
             column.getChildren().add(wouldBe("The city's share",
                     String.format("%.0f%%", share * 100),
                     String.format("%.0f%%", want * 100),
                     want >= share ? Palette.WARN : Palette.GOOD));
+            column.getChildren().add(wouldBe("The price of a place",
+                    String.format("x%.2f", scale), String.format("x%.2f", wantScale),
+                    wantScale <= scale ? Palette.GOOD : Palette.WARN));
             column.getChildren().add(wouldBe("Tuition the city covers",
                     money(schools.getSubsidy()), money(subsidyThen), Palette.WARN));
             column.getChildren().add(wouldBe("Tuition households pay",
@@ -2312,25 +2414,152 @@ final class PolicyScreen {
                     money(schools.getNetCost()), money(netThen),
                     netThen <= schools.getNetCost() ? Palette.GOOD : Palette.WARN));
             column.getChildren().add(statementNote(
-                    "Against the courses being taken now - and that is the half this "
-                    + "preview cannot do, because the point of the dial is to change who "
-                    + "enrols. A subsidy that opens a course fills it, and the bill "
-                    + "arrives with the students."));
-            column.getChildren().add(applyBar(
-                    String.format("Set the city's share to %.0f%%", want * 100),
-                    () -> schools.setTuitionSubsidy(want)));
+                    "Against the courses being taken now" + (scale <= 0
+                            ? ", and with the place free this month there is no bill to "
+                              + "re-strike from: the figures above are what a price would "
+                              + "collect once the students are billed."
+                            : " - and that is the half this preview cannot do, because "
+                              + "the point of both dials is to change who enrols. A cheaper "
+                              + "place fills a course, and the bill arrives with the students.")));
         }
+
+        /* ------------------------------- the grant ------------------------------- */
+        TaxPolicy.GrantBasis basis = policy.getGrantBasis();
+        double amount = policy.getGrantAmount();
+        double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
+        double grants = em.getStudentGrants();
+
+        column.getChildren().add(statementHead("What a student is granted"));
+        column.getChildren().add(leverHead(grantWords(basis, amount),
+                "To every full-time student, to live on"
+                + (students > 0 ? String.format(" - %s each this month, %s to %s of them.",
+                        moneyFull(ui.game.grantPerStudentUnder(basis, amount)),
+                        money(grants), people(students))
+                        : "; nobody is studying this month.")
+                + " What it does not cover, a student loan does. The unskilled wage it "
+                + "can be a share of is " + moneyFull(ui.game.getUnskilledWage())
+                + " a month; last month's surplus was " + signedTight(ui.game.getTreasurySurplus(), false)
+                + "."));
+
+        // The basis: one chip each, the chosen one lit. Picking one stages
+        // it AND stages today's grant re-expressed in its unit, so the
+        // switch alone changes nothing until the amount is moved.
+        int stagedOrdinal = (int) Math.round(staged("grantBasis", basis.ordinal()));
+        TaxPolicy.GrantBasis wantBasis = TaxPolicy.GrantBasis.values()[
+                Math.max(0, Math.min(TaxPolicy.GrantBasis.values().length - 1, stagedOrdinal))];
+        register(new Lever("grantBasis", "The grant is", basis.ordinal(),
+                0, TaxPolicy.GrantBasis.values().length - 1, 1,
+                v -> basisName(TaxPolicy.GrantBasis.values()[(int) Math.round(v)]),
+                v -> policy.setGrantBasis(TaxPolicy.GrantBasis.values()[(int) Math.round(v)])));
+
+        javafx.scene.layout.FlowPane pick = new javafx.scene.layout.FlowPane(6, 6);
+        pick.setMaxWidth(STATEMENT);
+        pick.setStyle("-fx-padding: 8 0 6 0;");
+        for (TaxPolicy.GrantBasis b : TaxPolicy.GrantBasis.values()) {
+            pick.getChildren().add(stepChip(basisName(b), () -> {
+                unstage("grantBasis");
+                unstage("grantAmount");
+                if (b != basis) {
+                    stage("grantBasis", b.ordinal());
+                    stage("grantAmount", ui.game.grantAmountAs(b));
+                }
+                showPolicyMenu();
+            }, b != wantBasis));
+        }
+        column.getChildren().add(pick);
+
+        // The amount, in the staged basis's unit: the same dial re-ranged.
+        // Its "current" is what today's grant IS in that unit, so a thumb put
+        // back is a grant unchanged.
+        double amountNow = wantBasis == basis ? amount : ui.game.grantAmountAs(wantBasis);
+        double amountMax = policy.maxGrantAmount(wantBasis);
+        double amountStep = wantBasis == TaxPolicy.GrantBasis.FIXED
+                ? Math.max(1e-9, amountMax / 100) : .01;
+        // Applied WITH the basis it was read in, whichever order the bar
+        // reaches the two: an amount set under one basis and clamped by
+        // another's ceiling would be a different number than the one staged.
+        register(new Lever("grantAmount", "...at", amountNow, 0, amountMax, amountStep,
+                v -> amountWords(wantBasis, v), v -> policy.setGrant(wantBasis, v)));
+        column.getChildren().add(stageSlider("grantAmount", amountNow, 0, amountMax, amountStep,
+                v -> amountWords(wantBasis, v)));
+
+        if (isStaged("grantBasis") || isStaged("grantAmount")) {
+            double wantAmount = staged("grantAmount", amountNow);
+            double billThen = ui.game.studentGrantBillUnder(wantBasis, wantAmount);
+            double eachThen = ui.game.grantPerStudentUnder(wantBasis, wantAmount);
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("A student is granted",
+                    grantWords(basis, amount), grantWords(wantBasis, wantAmount), Palette.ACCENT));
+            column.getChildren().add(wouldBe("Each, this month",
+                    moneyFull(ui.game.grantPerStudentUnder(basis, amount)), moneyFull(eachThen),
+                    eachThen >= ui.game.grantPerStudentUnder(basis, amount) ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(wouldTotal("Paid a month",
+                    money(grants), money(billThen), billThen <= grants ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(previewCaveat(
+                    "Against today's students, wage, surplus and courses. A smaller grant "
+                    + "is a bigger student loan, repaid out of wages for nine and a half "
+                    + "years" + (wantBasis == TaxPolicy.GrantBasis.SURPLUS_SHARE
+                            ? "; and a share of the surplus is nothing in a deficit month, "
+                              + "whoever is studying." : ".")));
+        }
+
+        /* ------------------------------- the loan ------------------------------- */
+        double rate = policy.getStudentLoanRate();
+        double owed = bal.totalStudentDebt();
+        double owedByGraduates = bal.totalGraduateDebt();
+        double interestNow = em.getStudentLoanInterest();
+        double principalNow = ui.game.getStudentLoansRepaid();
+
+        column.getChildren().add(statementHead("What the loan costs them afterwards"));
+        column.getChildren().add(leverHead(String.format("%.2f%% a year", rate * 100),
+                "Charged on a graduate's balance while they repay it, and on nothing while "
+                + "they study - the treasury carries the interest until they finish. It "
+                + "arrives as revenue; the loan itself is not on the budget, it is lent and "
+                + "paid back. A prisoner's loan is frozen with the rest of their debts."));
+        column.getChildren().add(statementLine("Owed on student loans today", money(owed), Palette.WARN));
+        column.getChildren().add(statementLine("...of it by graduates, repaying",
+                money(owedByGraduates), Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("Repaid last month", money(principalNow), Palette.GOOD));
+        column.getChildren().add(statementTotal("Interest received last month",
+                money(interestNow), interestNow > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
+        column.getChildren().add(stageSlider("loanRate", rate,
+                0, TaxPolicy.MAX_STUDENT_LOAN_RATE, .0025, Money::pct2));
+        if (isStaged("loanRate")) {
+            double wantRate = staged("loanRate", rate);
+            double interestThen = bal.studentInterestAt(wantRate);
+            double interestAtNow = bal.studentInterestAt(rate);
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("Interest a year",
+                    String.format("%.2f%%", rate * 100), String.format("%.2f%%", wantRate * 100),
+                    wantRate >= rate ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(wouldBe("A month's interest, on today's balances",
+                    money(interestAtNow), money(interestThen), Palette.GOOD));
+            column.getChildren().add(wouldTotal("The graduates pay a month",
+                    money(principalNow + interestAtNow), money(principalNow + interestThen),
+                    wantRate <= rate ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(previewCaveat(
+                    "Against the balances the graduates owe today. The instalment itself does "
+                    + "not change - a 114th of the balance a month - so a rate is money on top "
+                    + "of it, out of the same wages the shops are waiting for."));
+        }
+    }
+
+    /** A dial on this page, registered so the foot bar can name and apply it. */
+    Lever register(Lever lever) {
+        policyLevers.put(lever.key(), lever);
+        return lever;
     }
 
     /* =====================================================================
        PROMISES - the out of work and the students (2026-09-11)
 
-       THREE DIALS, AND THE FIRST TWO ARE THE PENSION'S SHAPE AGAIN. Jerus:
-       EI "like CPP" - a premium off every wage, a benefit to whoever lost a
-       job, and the treasury carrying the gap. The third is the grant a
-       full-time student is paid, here because it is the same kind of promise
-       and because the students live outside the families beside the out of
-       work. Defaults are the real 2026 figures: 1.63%, 55%, $525.
+       TWO DIALS, AND BOTH ARE THE PENSION'S SHAPE AGAIN. Jerus: EI "like
+       CPP" - a premium off every wage, a benefit to whoever lost a job, and
+       the treasury carrying the gap. Defaults are the real 2026 figures:
+       1.63% and 55%. The students' grant was the third dial here until
+       2026-09-21, because it is the same kind of promise; it is on the
+       Schools page now, with the tuition price and the loan's rate it is
+       decided against, and only its cost stays on this page's books.
        ===================================================================== */
 
     void outOfWorkPage(VBox column) {
@@ -2341,21 +2570,20 @@ final class PolicyScreen {
 
         double premium = policy.getEiPremiumRate();
         double benefit = policy.getEiBenefitRate();
-        double grantShare = policy.getStudentGrantShare();
         double collected = em.getEiPremiums();
         double paid = em.getEiBenefits();
         double grants = em.getStudentGrants();
         double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
-        double grantEach = students > 0 ? grants / students : 0;
 
-        column.getChildren().add(statementHead("The three dials"));
+        column.getChildren().add(statementHead("The two dials"));
         column.getChildren().add(statementLine("Workers pay for EI",
                 String.format("%.2f%% of every wage", premium * 100), Palette.WARN));
         column.getChildren().add(statementLine("EI replaces",
                 String.format("%.0f%% of the wage they lost, for twelve months", benefit * 100),
                 Palette.GOOD));
         column.getChildren().add(statementLine("A student is granted",
-                String.format("%.0f%% of an unskilled wage a month", grantShare * 100), Palette.GOOD));
+                grantWords(policy.getGrantBasis(), policy.getGrantAmount()) + " - set on the Schools page",
+                Palette.TEXT_MUTED));
 
         column.getChildren().add(statementHead("What it costs the city"));
         column.getChildren().add(statementLine("Premiums collected", money(collected), Palette.GOOD));
@@ -2369,7 +2597,8 @@ final class PolicyScreen {
         column.getChildren().add(statementNote(
                 "EI only pays the first twelve months, so a long bust costs less in EI than "
                 + "a short one and more in everything else. Student loans are not on this "
-                + "line: they are lent, and graduates pay them back."));
+                + "line: they are lent, and graduates pay them back - with interest, if the "
+                + "Schools page charges any."));
 
         /* ---- the premium ---- */
         column.getChildren().add(statementHead("What workers pay for EI"));
@@ -2415,33 +2644,184 @@ final class PolicyScreen {
             column.getChildren().add(applyBar(String.format("Set EI to %.0f%%", want * 100),
                     () -> policy.setEiBenefitRate(want)));
         }
-
-        /* ---- the grant ---- */
-        column.getChildren().add(statementHead("What a student is granted"));
-        column.getChildren().add(leverHead(String.format("%.0f%%", grantShare * 100),
-                "Of an unskilled wage, a month, to every full-time student"
-                + (grantEach > 0 ? " - " + moneyFull(grantEach) + " each now." : ".")
-                + " What it does not cover, a student loan does."));
-        column.getChildren().add(stageSlider("grant", grantShare,
-                0, TaxPolicy.MAX_STUDENT_GRANT, .01, r -> String.format("%.0f%%", r * 100)));
-        if (isStaged("grant")) {
-            double want = staged("grant", grantShare);
-            double then = grantShare > 0 ? grants * want / grantShare : 0;
-            column.getChildren().add(wouldHead());
-            column.getChildren().add(wouldBe("Granted", String.format("%.0f%%", grantShare * 100),
-                    String.format("%.0f%%", want * 100), want >= grantShare ? Palette.GOOD : Palette.WARN));
-            column.getChildren().add(wouldBe("Paid a month", money(grants), money(then), Palette.WARN));
-            column.getChildren().add(previewCaveat(
-                    "Against today's students. A smaller grant is a bigger student loan, repaid "
-                    + "out of wages for nine and a half years."));
-            column.getChildren().add(applyBar(String.format("Set the grant to %.0f%%", want * 100),
-                    () -> policy.setStudentGrantShare(want)));
-        }
     }
 
     static String burdenTone(double share) {
         return share >= Education.MAX_BURDEN ? Palette.BAD
                 : share >= Education.MAX_BURDEN * .6 ? Palette.WARN : Palette.GOOD;
+    }
+
+    /* =====================================================================
+       PROMISES - the clinic's price, and a premium (2026-09-19)
+
+       Jerus: "healthcare should be an adjustable price, all the way to even
+       make it a profitable business or the option to make it an obligatory
+       insurance payment system." Two dials, in the EI premium's shape: a
+       scale on the three care fees, and a premium off every wage. Between
+       them the page has three corners, and the kicker says which one the
+       player is standing in: free at the point of use and paid from taxes
+       (fees 0, premium 0), a business (fees past the break-even), insurance
+       (fees 0, a premium).
+
+       AND THE PRICE HAS A COST, which is what makes the fee dial a decision
+       rather than a revenue line: a household that cannot pay the fee after
+       its savings, its shares and its credit goes without care rather than
+       without food, and the page says how many did this month and what it
+       did to coverage. See Household.affordCare() and Healthcare.
+       ===================================================================== */
+
+    void healthPage(VBox column) {
+        EconomyManager em = ui.game.getEconomyManager();
+        TaxPolicy policy = em.getTaxPolicy();
+        Healthcare care = ui.game.getHealthcare();
+
+        double scale = policy.getHealthFeeScale();
+        double premium = policy.getHealthPremiumRate();
+        double gross = care.getGrossCost();
+        double fees = care.getTreatmentFees();
+        double funerals = care.getFuneralFees();
+        double raised = em.getHealthPremiums();
+        double treasury = gross - fees - funerals - raised;
+        double breakEven = care.breakEvenScale();
+        double wages = ui.game.getPopulationManager().getTotalWage();
+
+        /* ---- which corner ---- */
+        String corner;
+        if (scale <= 0 && premium <= 0) {
+            corner = "Free at the point of use, paid from taxes: nobody pays at the door and "
+                    + "nobody pays a premium, so the whole cost of the service is the treasury's.";
+        } else if (scale <= 0) {
+            corner = "Insurance: care is free at the door and every wage pays a premium for it. "
+                    + "What the premium does not cover is the treasury's, and what it raises "
+                    + "past the cost is the treasury's too.";
+        } else if (breakEven > 0 && scale >= breakEven) {
+            corner = "A business: at this scale the fees on the people treated meet the "
+                    + "service's whole cost, and past it the clinics turn a profit - and turn "
+                    + "away whoever cannot pay.";
+        } else if (premium > 0) {
+            corner = "A mix: patients pay something at the door, every wage pays a premium, "
+                    + "and the treasury carries the rest.";
+        } else {
+            corner = "Fee-funded, in part: patients pay at the door and the treasury carries "
+                    + "the rest. A household that cannot pay after its savings, its shares and "
+                    + "its credit goes without care rather than without food.";
+        }
+        column.getChildren().add(statementHead("Where the money comes from"));
+        column.getChildren().add(statementNote(corner));
+
+        /* ---- the service this month ---- */
+        column.getChildren().add(statementHead("The service this month"));
+        column.getChildren().add(statementLine("Staff and buildings", signedTight(gross, true), Palette.WARN));
+        column.getChildren().add(statementLine(String.format("Fees, at x%.2f the founding fee", scale),
+                signedTight(fees, false), Palette.GOOD));
+        column.getChildren().add(statementLine("Funeral fees, unscaled", signedTight(funerals, false), Palette.GOOD));
+        column.getChildren().add(statementLine(String.format("Premium at %.2f%% of every wage", premium * 100),
+                signedTight(raised, false), Palette.GOOD));
+        column.getChildren().add(statementTotal("The treasury's share",
+                signedTight(treasury, true), treasury > 0 ? Palette.WARN : Palette.GOOD));
+        column.getChildren().add(statementNote(String.format(
+                "Fees cover %.0f%% of the cost%s. A ward is paid for whether or not its patients "
+                + "are, so the cost does not move with the price; only who pays it does.",
+                care.getCostRecovery() * 100,
+                raised > 0 ? String.format(" and the premium another %.0f%%", gross > 0 ? raised / gross * 100 : 0) : "")));
+
+        /* ---- who was priced out ---- */
+        column.getChildren().add(statementHead("Who was turned away at the door"));
+        double pricedOut = care.getPricedOutTotal();
+        for (CareType kind : new CareType[] {CareType.GENERAL, CareType.CHILDCARE, CareType.SENIOR}) {
+            double out = care.getPricedOut(kind);
+            double could = care.getAffordability(kind);
+            column.getChildren().add(statementLine(kind.getLabel(),
+                    out > 0 ? String.format("%s priced out - coverage cut to %.0f%% of what the beds could do",
+                            people(out), could * 100) : "nobody priced out",
+                    out > 0 ? Palette.BAD : Palette.GOOD));
+        }
+        column.getChildren().add(statementTotal("Priced out of care this month", people(pricedOut),
+                pricedOut > 0 ? Palette.BAD : Palette.GOOD));
+        column.getChildren().add(statementNote(pricedOut > 0
+                ? String.format("They skipped %s of care bills and ate with it. A household pays for "
+                        + "care out of what it has after rent, its other bills and a basket for "
+                        + "everybody in it - its income, its savings, its paper abroad and the "
+                        + "credit still open to it - and what would come out of the food budget "
+                        + "is not paid. They are unserved the way people with no clinic are: in "
+                        + "the sick rate, in the deaths, and in the births.",
+                        money(ui.game.getHouseholdBalance().getCareSkipped()))
+                : "Every household that a clinic had room for could pay its fee this month. The "
+                        + "rule is a cliff on a household's own means, not a slope on the fee: a "
+                        + "household that can still cover its bills out of income, savings, "
+                        + "shares or credit pays, and only one that would otherwise eat less skips "
+                        + "the clinic first."));
+
+        /* ---- the fee dial ---- */
+        column.getChildren().add(statementHead("What a patient pays"));
+        column.getChildren().add(leverHead(String.format("x%.2f", scale),
+                "The founding fee times this, on general care, childcare and senior care. "
+                + (breakEven > 0
+                        ? String.format("This city's fees would meet its whole cost at x%.2f%s. ", breakEven,
+                                breakEven > TaxPolicy.MAX_HEALTH_FEE_SCALE ? ", beyond the dial's reach" : "")
+                        : "")
+                + "Funeral fees are not scaled: the cemetery against the crematorium is its own design."));
+        // A tenth of the founding fee a step: 150 steps from 0 to 15, few
+        // enough for the keys to walk, fine enough to land on a break-even
+        // quoted to a tenth. A twentieth was 300 steps and no more precise
+        // than the preview beside it.
+        column.getChildren().add(stageSlider("healthFee", scale,
+                0, TaxPolicy.MAX_HEALTH_FEE_SCALE, .1, v -> String.format("x%.2f", v)));
+        if (isStaged("healthFee")) {
+            double want = staged("healthFee", scale);
+            double feesThen = care.treatmentFeesAtOne() * want;
+            double treasuryThen = gross - feesThen - funerals - raised;
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("A patient pays", String.format("x%.2f", scale),
+                    String.format("x%.2f", want), want >= scale ? Palette.WARN : Palette.GOOD));
+            for (CareType kind : new CareType[] {CareType.GENERAL, CareType.CHILDCARE, CareType.SENIOR}) {
+                double now = care.feeNow(kind);
+                double then = care.feeAtOne(kind) * want;
+                column.getChildren().add(wouldBe("  " + kind.getLabel().toLowerCase() + ", a head a month",
+                        moneyFull(now), moneyFull(then), Palette.TEXT_HEAD));
+            }
+            column.getChildren().add(wouldBe("Fees a month, if everybody paid",
+                    money(care.fullTreatmentFees()), money(feesThen), Palette.GOOD));
+            column.getChildren().add(wouldTotal("The treasury's share",
+                    signedTight(treasury, true), signedTight(treasuryThen, true),
+                    treasuryThen <= treasury ? Palette.GOOD : Palette.WARN));
+            column.getChildren().add(previewCaveat(
+                    (breakEven > 0 && want >= breakEven
+                            ? "Past this city's break-even: a business. "
+                            : want <= 0 ? "Free at the point of use. " : "")
+                    + "Against this month's patients, and that is the half this preview cannot "
+                    + "do: a dearer fee turns some of them away, and they leave the bill and the "
+                    + "clinic together."));
+            column.getChildren().add(applyBar(String.format("Set the fee to x%.2f", want),
+                    () -> policy.setHealthFeeScale(want)));
+        }
+
+        /* ---- the premium dial ---- */
+        column.getChildren().add(statementHead("What every wage pays"));
+        column.getChildren().add(leverHead(String.format("%.2f%%", premium * 100),
+                "Off every wage in the city, employee side, beside the EI premium - into the "
+                + "treasury as revenue against the service's cost. No employer share, and "
+                + "nothing balances it: a shortfall is the treasury's and so is a surplus."));
+        column.getChildren().add(stageSlider("healthPremium", premium,
+                0, TaxPolicy.MAX_HEALTH_PREMIUM, .0005, Money::pct2));
+        if (isStaged("healthPremium")) {
+            double want = staged("healthPremium", premium);
+            double then = wages * want;
+            column.getChildren().add(wouldHead());
+            column.getChildren().add(wouldBe("Workers pay",
+                    String.format("%.2f%%", premium * 100), String.format("%.2f%%", want * 100),
+                    want >= premium ? Palette.WARN : Palette.GOOD));
+            column.getChildren().add(wouldBe("Raised a month", money(raised), money(then), Palette.GOOD));
+            column.getChildren().add(wouldTotal("The treasury's share",
+                    signedTight(treasury, true), signedTight(gross - fees - funerals - then, true),
+                    then >= raised ? Palette.GOOD : Palette.BAD));
+            column.getChildren().add(previewCaveat(gross > 0
+                    ? String.format("Against this month's payroll. The whole cost is %.2f%% of it.",
+                            gross / Math.max(1e-9, wages) * 100)
+                    : "Against this month's payroll."));
+            column.getChildren().add(applyBar(String.format("Set the health premium to %.2f%%", want * 100),
+                    () -> policy.setHealthPremiumRate(want)));
+        }
     }
 
     /* =====================================================================

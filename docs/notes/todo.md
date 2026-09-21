@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-18 (the structure audit). What shipped is in `changelog.md`,
+Updated 2026-09-21 (0.6.9, the price of a place). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -91,7 +91,14 @@ of 2026-09-15: save format 27, a sixth age band, and 50 harnesses.**~~ **CAUGHT 
 September: five sectors, the transport stack, the vehicles, the interface
 split.**~~ **CAUGHT UP 2026-09-18 (night) at 0.6.7 / format 27, version 7 —
 twenty sections, see `the-manual-at-0-6-7.md`; the found-on-the-way list is
-under Housekeeping.**
+under Housekeeping.** **AND BEHIND AGAIN as of 2026-09-19: 0.6.8 — the two
+health dials and the Health page, the household that goes without care, the
+openable treasury row, the desk's re-mark line; 206 files, ~126,000 lines.**
+**And 0.6.9 as of 2026-09-21: the Schools page (the Tuition page renamed) — the
+price of a place, the grant as a basis and an amount, a rate on the student
+loan — and a new revenue line, "Student loan interest"; 206 files, ~128,000
+lines; save format 27 and 57 harnesses unchanged.** If the manual's open
+questions carry the tuition table's calibration, it is answered by the dial.
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -368,8 +375,24 @@ any seed**. **What it opened:**
   exactly this reason (2026-09-15): with nobody studying, `workforce` and the
   labour force are the same number and the broken rate cannot be told from the
   right one.*
+- **The default playtest has never built a school at all** (2026-09-21): the
+  advisor's list has none, so in 4,002 months the whole education system fires
+  zero times — `students 0`, `grants $0k`, `student loans owed $0k` — and every
+  education dial is inert in the baseline. `-Dplaytest.schools=true` builds
+  them proportionately; a school in the advisor's own list would make the
+  default run exercise it (and move the baseline, so its own batch). See
+  `the-price-of-a-place.md` §5.
 - **A graduate starts repaying the month they finish.** No six-month grace;
-  one more ring.
+  one more ring. *Still none after 2026-09-21: with a rate on the loan, a grace
+  is months with a balance and no instalment, and it has to say whether
+  interest runs in them.*
+- **Interest while studying, as a second shape.** 0.6.9 charges a graduate
+  only (the Canadian shape: the government carries the interest while they
+  study). A loan that accrues from the day it is drawn — the US unsubsidised
+  Direct Loan — would be a second setting on the rate dial.
+- **Whether the founding tuition table should index to wages**, as the pension
+  base does, rather than wait on a scale of up to 5× — the alternative the
+  tuition dial stands in for (2026-09-21).
 
 ### THE SECTOR TEMPLATE — built 2026-09-11, see `the-sector-template.md`
 
@@ -770,6 +793,44 @@ Ranked by how likely they are to read as "this game is broken".
   the single biggest reason the city's households look rich against their food —
   the *poorest* cell holds $7,660 a head a month against an average Canadian's
   ~$2,665. **Not chased yet; it is the next batch.**
+- **THE BANK NEVER PAYS FOR THE CITY'S PAPER.** `Game.java` ~L3601:
+  `cityDebtRaisedForBank = cityDebtRaisedThisMonth` runs after the top-of-tick
+  clear (~L3562), so `bank.lend(...)` (~L3625) receives 0 for every city bond;
+  the bank's `cityBook` still rises and it later receives the principal, so
+  after a $20M issue the bank's cash fell only by its ordinary month.
+  Invisible to `MoneyAudit` because issuance is between windows. Found
+  2026-09-19 while the treasury bridge was opened; a behaviour fix, Jerus's.
+- **TWO BUDGET LINES THE BALANCE OMITS.** The city's own repair bill in
+  spending and the transit fares in revenue — the Government screen lists both,
+  `NationalAccounts.getTotalRevenue()` / `getTotalExpenses()` carry neither —
+  so the surplus figure, the ring's total, the Spending page's total and the
+  `surplus` series are off by them ($2.56M a month in `SaveFileCheck`'s city);
+  the bridge's last row had held exactly −repairs +fares every month.
+  Journalled by name for now; the fix is two lines in `NationalAccounts` and a
+  save slot, and then the two `record()` calls come out. **Transit wages are
+  paid by nobody** beside it: `EconomyManager.getExpenses()` has no
+  `transitBill`. 2026-09-19.
+- **THREE THINGS A NEW CITY OR A REFORM DOES NOT RESET OR SCALE.**
+  `buildWorld()` does not reset `treasuryRecorded` and its siblings (a second
+  new game after a played one opens its first window at the old closing
+  balance); the reform does not scale the carried bridge fields; `LandManager`'s
+  month counters are not saved. And a new city's first treasury window opens at
+  the top of the first tick, so founding purchases show as a residual once.
+  2026-09-19.
+- **THE DEALER BIDS AT ITS OWN BUBBLE PRICE.** The desk quotes up to 5× fair
+  value to draw sellers when it has unfilled demand, then pays that bid to
+  emigrants and marks the shares at fair the same day — most of "the trading
+  desk is losing billions". A bid that tracked fair value while the desk is a
+  net buyer (ask left where demand puts it) would close most of it without
+  touching the conservative mark; one constant and a harness section, measured
+  on eight seeds. Jerus's call, 2026-09-19.
+- **A HAIR OF BORROWING IS A DISCRETE STATE.** `Household.fundShortfall()`
+  clamps a negative `still` but a positive 1e-21 becomes a debt, and
+  `HouseholdBalance.investAbroad()` gates on `debt <= 0`, so a rounding
+  difference between a city and its reformed twin flips whether a household
+  may hold money abroad (the twins parted a decade later on `interest 2.36e-21
+  vs 0.0` in one cell). Why the care relief within a row follows heads rather
+  than paying heads. 2026-09-19.
 - ~~**A FULLY-WRITTEN BRAKE THAT NINE SECTORS IGNORE.**~~ **Stale as of
   2026-09-18, found by the manual pass: `Game.consider()` (L1905) applies
   `servicesItsOwnDebt()` to every sector's decision and declines with "not even
@@ -971,9 +1032,20 @@ Ranked by how likely they are to read as "this game is broken".
 - **A HOUSEHOLD WITH $201,363 PUT BY CAN STILL DEFAULT $390 SHORT.** Read off
   slot 3 at month 2305: every other cell sells its paper abroad and then its
   shares before it borrows, and this kind appears not to be wired into that
-  draw-down path at all. And **a prisoner's $70 student loan was not frozen** —
-  a prisoner's debts are supposed to be, and the student loan is a fourth ledger
-  that was missed. Found 2026-09-14, neither fixed.
+  draw-down path at all. ~~And **a prisoner's $70 student loan was not
+  frozen** — a prisoner's debts are supposed to be, and the student loan is a
+  fourth ledger that was missed.~~ — done 2026-09-21: it was frozen all along
+  (nothing collects a student loan except from a working family; the $70 was
+  the balance carried in), and the freeze is `PrisonerHousehold`'s own now, no
+  instalment and no interest, asserted in `EducationCheck` §14. Found
+  2026-09-14; the $390 default is still open.
+- **THE TREASURY'S OVERDRAFT HAS NO FLOOR, AND COMPOUNDS TO NaN.** Found
+  2026-09-21 by the schools ensemble's first draft: a founding village handed a
+  University ($210M, $620k a month of upkeep, on a town of three hundred
+  making $1.8M a month) went −$286M by month 263, −$1.4T by 801, −$1,378T by
+  1,033 and NaN by 1,632 (control seed 1). The fixture was made proportionate;
+  the pathology is not fixed. What should stop it — a borrowing limit, forced
+  austerity, a default — is a design question. See `the-price-of-a-place.md` §7.
 
 ---
 
@@ -1003,6 +1075,16 @@ What is still open:
   elders rather than absolute**, deliberately — the raw census rates would have
   divided the denominator by ten and handed every existing city full senior care
   overnight. The absolute version remains a separate decision. See the top entry.
+- **NOBODY IS PRICED OUT OF CHILDCARE, AND THAT IS THE DIAL'S LIMIT.** The
+  fee fixture showed the working poor can afford $50 a head, so a fee that
+  prices a family out of a nursery is a fee `healthFeeScale` cannot yet set —
+  the cliff catches only households with nothing, a few dozen to a few hundred
+  people a month at ×1. The ×15 ensemble is still to be measured. 2026-09-19.
+- **THE HEALTH PREMIUM HAS NO EMPLOYER HALF AND NOTHING BALANCES IT** —
+  employee side only, surplus or shortfall the treasury's, per Jerus. An
+  employer share, automatic balancing against the service's cost, and whether
+  the fees should index to wages (the played break-even is ×7–13 because they
+  do not) are three separate decisions. Funerals are unscaled by design.
 - **AN ELDER LIVING ALONE IS THE CELL TO WATCH** now, the way the senior living
   alone was: 75% of the over-85s are alone against 45% of the seniors, and the
   rent-per-cell item in section 2 charges them all the city's average door.
@@ -1055,7 +1137,7 @@ each one Jerus's call, in the order they pay back:
   `computeMonthlyReport()`, `budgetPie()`, `LuxuryRetail.sellOwnPriced()`,
   `Rail.fuelBill()`, `showMiningMenu()`, `tuitionOf()`, `getPlotsLeft()`) — run
   `Stale report.bat` to see them in place.
-- **THE TUITION TABLE WAS CALIBRATED AGAINST THE WAGES BEFORE THE REBALANCE.**
+- ~~**THE TUITION TABLE WAS CALIBRATED AGAINST THE WAGES BEFORE THE REBALANCE.**
   Found while fixing the comment above: `Education.foundingTuition()`'s prose
   measures the university fee against "a diploma wage of 1.500", and the class
   header says a university place "costs a diploma-holder half their monthly
@@ -1069,7 +1151,16 @@ each one Jerus's call, in the order they pay back:
   trap is gone — a balance decision, Jerus's. `EducationCheck` §8 asserts
   only the direction (free tuition graduates more than full price) and its
   own banner repeats "more than half a month's pay", so it passes either way
-  and wants a strength assertion once the fee is decided.
+  and wants a strength assertion once the fee is decided.~~ — done 2026-09-21: the price is the player's dial
+  now, `TaxPolicy.tuitionScale` 0–5×, default 1 (the founding table, unchanged).
+  At ×3 the trap is back as the prose describes it — a one-university city at
+  five years has 1,718 students and 69% of its diploma-holders willing at ×1,
+  1,173 and 26% at ×3, 1,756 and 90% at ×0. `Education`'s class header and
+  `foundingTuition()` say so. Carried forward from it, still open:
+  `EducationCheck` §8 asserts only the direction and its banner still says
+  "more than half a month's pay" (27% at today's wages, ×1) — it wants its
+  strength assertion at ×1 and ×3 now the fee is a dial (§15 asserts the trap
+  on its own fixture).
 - **Prune this list.** Section 2 still carries the built narratives of
   2026-09-10 and 2026-09-11 next to the two open questions that came out of
   them; moved to the changelog and left as lines with pointers, the list is

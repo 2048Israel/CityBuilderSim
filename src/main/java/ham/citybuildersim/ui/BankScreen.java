@@ -1236,10 +1236,20 @@ final class BankScreen {
          * - the spread it earned, the dividends on what it holds, and the
          * change in what its inventory is marked at - is income beside the
          * interest. Opened to show the desk's own book. See Exchange.
+         *
+         * AND IT FOOTS (2026-09-18). Jerus: "the bank, just explain to me the
+         * trading desk, cause a bunch of times it's losing billions of dollars
+         * due to the trading desk." The opened lines did not add up to the
+         * figure above them, because the biggest term - the re-mark of what
+         * the desk holds, which Bank.markSecurities() adds to the trading
+         * result - was not among them. It is now, from Bank.getMarkChange(),
+         * so the lines sum to the total exactly (BankCheck asserts it), and
+         * when the re-mark is the bulk of a loss the note says why.
          */
         VBox desk = new VBox(0);
         Exchange exchange = ui.game.getExchange();
         Equity register = ui.game.getEquity();
+        double reMark = bank.getMarkChange();
         desk.getChildren().add(statementLine("Sold to the households",
                 moneyFull(exchange.getSoldToHouseholds()), Palette.TEXT_MUTED));
         desk.getChildren().add(statementLine("Sold abroad",
@@ -1256,6 +1266,12 @@ final class BankScreen {
                 moneyFull(register.getDividendDeskThisMonth()), Palette.TEXT_MUTED));
         desk.getChildren().add(statementLine("Tendered into buybacks",
                 moneyFull(exchange.getBuybackToDesk()), Palette.TEXT_MUTED));
+        // The line that makes the rest add up: what re-marking the inventory
+        // did to the result. Signed, because it is the one line here that
+        // can go either way.
+        desk.getChildren().add(statementLine("Re-marked what it holds",
+                (reMark < 0 ? "−" : "") + moneyFull(Math.abs(reMark)),
+                reMark < 0 ? Palette.WARN : Palette.TEXT_MUTED));
         desk.getChildren().add(statementLine("What it holds, at the mark",
                 moneyFull(bank.getSecurities()), Palette.TEXT_MUTED));
         StringBuilder positions = new StringBuilder();
@@ -1272,6 +1288,19 @@ final class BankScreen {
                   + " worth, buys what comes and sells what it has - never what it does not."
                 : "On the desk: " + positions + ". Carried at the quote or the register's value, whichever"
                   + " is lower - the desk does not mark its own book up on a quote nobody has paid yet."));
+        /*
+         * WHEN THE RE-MARK IS THE LOSS, say why in one sentence. "Bulk" is
+         * half or more of a losing month; below that the loss is the
+         * trading, and the lines above already say so.
+         */
+        if (bank.getTradingIncome() < 0 && reMark <= bank.getTradingIncome() / 2) {
+            desk.getChildren().add(statementNote(String.format(
+                    "%s of the %s lost is the re-mark, not the trading. The desk carries what it holds"
+                    + " at the quote or the register's value, whichever is lower, so shares bought at a"
+                    + " quote above that value are marked down the day they are bought, and a company"
+                    + " whose value falls marks down everything the desk holds in it.",
+                    moneyFull(-reMark), moneyFull(-bank.getTradingIncome()))));
+        }
         column.getChildren().add(statementDisclosure("The trading desk",
                 (bank.getTradingIncome() >= 0 ? "" : "−") + moneyFull(Math.abs(bank.getTradingIncome())),
                 desk, "what it did"));

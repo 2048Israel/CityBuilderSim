@@ -1,6 +1,6 @@
 # BusinessLoan.java - 72 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/BusinessLoan.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessLoan.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > A fixed-term business loan: interest-only each month, principal repaid in full
 > at maturity.

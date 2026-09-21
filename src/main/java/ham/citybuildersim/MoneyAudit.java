@@ -364,7 +364,14 @@ public final class MoneyAudit {
         // The EI premium, off the same payslips, and the student loans the
         // graduates repaid - households are outside the pools (2026-09-11).
         in += credit.apply("+ e EiPremiums", e.getEiPremiums(), Scope.DOMESTIC);
+        // ...and the health premium off the same payslips (2026-09-19): a
+        // household -> treasury transfer, like the EI premium beside it.
+        in += credit.apply("+ e HealthPremiums", e.getHealthPremiums(), Scope.DOMESTIC);
         in += credit.apply("+ treasury StudentLoansRepaid", g.getStudentLoansRepaid(), Scope.DOMESTIC);
+        // ...and the interest the graduates paid on them (2026-09-21): a
+        // household -> treasury flow like the principal beside it, and a
+        // budget line where the principal is not.
+        in += credit.apply("+ treasury StudentLoanInterest", g.getStudentLoanInterest(), Scope.DOMESTIC);
         in += credit.apply("+ care Fees", care.getFees(), Scope.DOMESTIC);
         in += credit.apply("+ schools Fees", schools.getFees(), Scope.DOMESTIC);
         /*

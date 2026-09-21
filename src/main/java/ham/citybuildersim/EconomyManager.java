@@ -827,12 +827,21 @@ public class EconomyManager {
         totalContributions = SocialSecurity.contributionsOn(totalWage, taxPolicy.getContributionRate());
         // ...and the EI premium, off the same bill, the same way (2026-09-11).
         totalEiPremiums = Math.max(0, totalWage) * taxPolicy.getEiPremiumRate();
+        /*
+         * ...AND THE HEALTH PREMIUM (2026-09-19), off the same bill again:
+         * every wage, employee side, no cap - the EI premium's own base (the
+         * insurable cap is on EI's BENEFIT, not its premium). Revenue against
+         * the health service's cost, with no automatic balancing: a surplus
+         * or a shortfall is the treasury's, per Jerus. Zero at the default,
+         * and x + 0.0 is x, so a city that charges none is the city it was.
+         */
+        totalHealthPremiums = Math.max(0, totalWage) * taxPolicy.getHealthPremiumRate();
         // Property tax and sales tax are NOT recomputed here: the sectors
         // were billed them and bore them, and the city collects the figure
         // the businesses paid.
         return profit + totalWageTax + salesTax + totalPropertyTax
                 + totalContributions + totalEiPremiums + healthcareFees + educationFees
-                + transitFares + totalBankTax;
+                + transitFares + totalBankTax + totalHealthPremiums;
     }
 
     /* ------------------- EI and the student grant (2026-09-11) ------------------- */
@@ -840,6 +849,28 @@ public class EconomyManager {
     private double totalEiPremiums;
     private double eiBenefits;
     private double studentGrants;
+
+    /** The month's health premium off every wage, struck in getTaxIncome() beside the EI premium (2026-09-19). */
+    private double totalHealthPremiums;
+
+    /** What the health premium raised this month, employee side, off the whole wage bill. */
+    public double getHealthPremiums() { return totalHealthPremiums; }
+
+    /**
+     * The interest the graduates paid the treasury on their student loans
+     * this month (2026-09-21): a revenue line beside the premiums, set by
+     * Game off the household ledger the month it is struck. NOT in
+     * getTaxIncome(), because Game moves the cash for it where it moves the
+     * principal - see syncHouseholdAccounts - and a line in both would arrive
+     * twice; the budget carries it through NationalAccounts.
+     */
+    private double studentLoanInterest;
+
+    /** Sets the month's student-loan interest, the treasury's. See Game.getStudentLoanInterest(). */
+    public void setStudentLoanInterest(double interest) { this.studentLoanInterest = Math.max(0, interest); }
+
+    /** What the graduates paid in interest on their student loans this month. */
+    public double getStudentLoanInterest() { return studentLoanInterest; }
 
     /** The month's EI bill and grant bill, set by Game off Unemployment and the students before the cash moves. */
     public void setOutsidePayments(double eiBenefits, double studentGrants) {
@@ -1074,7 +1105,8 @@ public class EconomyManager {
                 healthcareFees, healthcareBill,
                 educationFees, educationBill,
                 subsidiesPaid);
-        nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants);
+        nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants,
+                totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
 
@@ -1097,7 +1129,8 @@ public class EconomyManager {
                 healthcareFees, healthcareBill,
                 educationFees, educationBill,
                 subsidiesPaid);
-        nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants);
+        nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants,
+                totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
     }
@@ -1314,6 +1347,7 @@ public class EconomyManager {
         subsidiesPaid  *= scale;
         totalContributions *= scale;
         totalEiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
+        totalHealthPremiums *= scale;  studentLoanInterest *= scale;
         exchangeRate *= scale;
         pricePerWatt *= scale;
         pricePerWaterUnit *= scale;

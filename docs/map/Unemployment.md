@@ -1,6 +1,6 @@
 # Unemployment.java - 570 lines · 37 methods · 8 constants · model
 
-`ham/citybuildersim/Unemployment.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Unemployment.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The people out of work: how many, who they were, what Employment Insurance
 > pays them, and who has lost their home.

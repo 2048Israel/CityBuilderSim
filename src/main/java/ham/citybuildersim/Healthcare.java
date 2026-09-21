@@ -28,10 +28,13 @@ package ham.citybuildersim;
  * that actually charges it, because healthcare is the first building category
  * whose running cost is the whole point of it.
  *
- * A NET DEFICIT BUSINESS, per Jerus - "patients still pay, just not much". The
- * fees below recover roughly a fifth to a quarter of what the service costs, and
- * they are charged on people SERVED rather than on capacity built, so an empty
- * ward is paid for and collects nothing. Overbuilding is meant to hurt.
+ * A NET DEFICIT BUSINESS AT THE FOUNDING FEES, per Jerus - "patients still pay,
+ * just not much". The fees below recover roughly a fifth to a quarter of what
+ * the service costs, and they are charged on people SERVED rather than on
+ * capacity built, so an empty ward is paid for and collects nothing.
+ * Overbuilding is meant to hurt. Since 2026-09-19 the player can scale those
+ * three fees from nothing to fifteen times them, so the deficit is the DEFAULT
+ * rather than the design - see the banner WHAT PATIENTS PAY.
  */
 public class Healthcare {
 
@@ -106,6 +109,20 @@ public class Healthcare {
        $2,573, so a flat fee makes community care very nearly self-funding and
        institutional care heavily subsidised - which is both true to life and a
        real decision for the player.
+
+       AND THE TABLE IS AT 1x (2026-09-19). The three are the FOUNDING fees;
+       what a patient is actually charged is the founding fee times the
+       player's TaxPolicy.getHealthFeeScale(), 0 to 15, default 1 - so the
+       recovery rates above are the default's at the founding wage. The
+       scale that recovers the whole cost is struck live in breakEvenScale()
+       and it is NOT the reciprocal of the table: the fees are reformed with
+       prices but not with wages, and the labour market has lifted the wage a
+       clinic pays since the table was written, so a played city breaks even
+       at x7 to x13 (x4.85 in HealthCheck's fixture town). Jerus: "healthcare
+       should be an adjustable price, all the way to even make it a
+       profitable business" - the dial's ceiling of 15 is past every measured
+       break-even for that reason, and the screen says where this city's is.
+       The funeral fees below are NOT scaled.
        =================================================================== */
 
     public static final double GENERAL_FEE   = .010;
@@ -116,6 +133,21 @@ public class Healthcare {
     private double generalFee   = GENERAL_FEE;
     private double childcareFee = CHILDCARE_FEE;
     private double seniorFee    = SENIOR_FEE;
+
+    /**
+     * The player's multiplier on the three care fees, handed in by Game every
+     * month from TaxPolicy and after a load - a policy, so it is saved there
+     * and not here. 1 charges the founding fees; 0 charges nobody.
+     */
+    private double careFeeScale = TaxPolicy.DEFAULT_HEALTH_FEE_SCALE;
+
+    /** Sets the multiplier every care fee is charged at this month. See TaxPolicy.getHealthFeeScale(). */
+    public void setFeeScale(double scale) {
+        careFeeScale = Math.max(0, Math.min(TaxPolicy.MAX_HEALTH_FEE_SCALE, scale));
+    }
+
+    /** The multiplier the three care fees are charged at. */
+    public double getFeeScale() { return careFeeScale; }
 
     /* ===================================================================
        THE TWO WAYS TO BURY SOMEBODY
@@ -167,19 +199,36 @@ public class Healthcare {
      * feeFor() above is static and returns the FOUNDING fee, which is right for
      * anything asking what the game's fees are and wrong for anything charging
      * one: after a currency reform they are the same fees expressed in a
-     * different unit. Everything that takes money uses this; the build menu
-     * uses it too, so a quoted revenue is a revenue the building will actually
-     * earn.
+     * different unit, and since 2026-09-19 the three care fees are also the
+     * founding fee times the player's scale. Everything that takes money uses
+     * this; the build menu uses it too, so a quoted revenue is a revenue the
+     * building will actually earn. The two funeral fees carry no scale.
      */
     public double feeNow(CareType care) {
+        if (care == null) return 0;
+        switch (care) {
+            case GENERAL:   return generalFee * careFeeScale;
+            case CHILDCARE: return childcareFee * careFeeScale;
+            case SENIOR:    return seniorFee * careFeeScale;
+            case BURIAL:    return burialFee;
+            case CREMATION: return cremationFee;
+            default:        return 0;
+        }
+    }
+
+    /**
+     * The same five, in today's money and at 1x: what a staged scale previews
+     * against, so the screen multiplies a fee the service owns rather than
+     * deriving one. The two funeral fees carry no scale, so for them this is
+     * feeNow().
+     */
+    public double feeAtOne(CareType care) {
         if (care == null) return 0;
         switch (care) {
             case GENERAL:   return generalFee;
             case CHILDCARE: return childcareFee;
             case SENIOR:    return seniorFee;
-            case BURIAL:    return burialFee;
-            case CREMATION: return cremationFee;
-            default:        return 0;
+            default:        return feeNow(care);
         }
     }
 
@@ -417,6 +466,28 @@ public class Healthcare {
                              double[] served,
                              double deaths, double burialShare,
                              double plotsBuilt, double cremationCapacity) {
+        // Everybody who could be treated is: the old served[] is the new
+        // offered[] with nobody turned away, which the null says.
+        double[] offered = served;
+        advanceMonth(staffedPayroll, upkeep, offered, null, deaths, burialShare,
+                plotsBuilt, cremationCapacity);
+    }
+
+    /**
+     * The same month, with the price at the door (2026-09-19).
+     *
+     * @param offered    people the staffed beds could treat, indexed by
+     *                   CareType.ordinal() - what served[] was before a fee
+     *                   could turn anybody away
+     * @param affordable of the people each care type would serve, the share
+     *                   who live in a household that can pay its fee, by
+     *                   CareType.ordinal(); null means everybody can. See
+     *                   Game.careAffordability() and Household.affordCare().
+     */
+    public void advanceMonth(double staffedPayroll, double upkeep,
+                             double[] offered, double[] affordable,
+                             double deaths, double burialShare,
+                             double plotsBuilt, double cremationCapacity) {
 
         this.payroll = Math.max(0, staffedPayroll);
         this.upkeep = Math.max(0, upkeep);
@@ -431,17 +502,40 @@ public class Healthcare {
          * is the only form of that number anybody can act on. Reporting only:
          * nothing reads this back into the model, and it is not saved, because
          * it is this month's flow like everything else here.
+         *
+         * THE PRICED OUT ARE NOT IN served[] (2026-09-19). What arrives is what
+         * the beds could do; what is treated is that times the share of those
+         * people whose household can pay the fee - and the difference is the
+         * people the price turned away, kept by care type for the screen.
+         * Multiplying by exactly 1.0 is bit-exact, so a city where everybody
+         * can pay is the city it was.
          */
+        java.util.Arrays.fill(this.offered, 0);
         java.util.Arrays.fill(this.served, 0);
-        if (served != null) {
-            for (int i = 0; i < served.length && i < this.served.length; i++) {
-                this.served[i] = Math.max(0, served[i]);
+        java.util.Arrays.fill(this.affordable, 1);
+        if (offered != null) {
+            for (int i = 0; i < offered.length && i < this.offered.length; i++) {
+                this.offered[i] = Math.max(0, offered[i]);
+                if (affordable != null && i < affordable.length) {
+                    this.affordable[i] = clamp(affordable[i]);
+                }
+                this.served[i] = this.offered[i] * this.affordable[i];
             }
         }
 
-        treatmentFees = feeOn(served, CareType.GENERAL, feeNow(CareType.GENERAL))
-                + feeOn(served, CareType.CHILDCARE, feeNow(CareType.CHILDCARE))
-                + feeOn(served, CareType.SENIOR, feeNow(CareType.SENIOR));
+        // Charged on the TREATED - this.served, struck just above from the
+        // offered and the share who could pay - not on the offered[] argument.
+        double[] treated = this.served;
+        treatmentFees = feeOn(treated, CareType.GENERAL, feeNow(CareType.GENERAL))
+                + feeOn(treated, CareType.CHILDCARE, feeNow(CareType.CHILDCARE))
+                + feeOn(treated, CareType.SENIOR, feeNow(CareType.SENIOR));
+        // ...and what the same beds would have raised at 1x with everybody
+        // paying: the same three terms in the same order on the people
+        // offered care, so that at 1x with nobody turned away it is the line
+        // above to the bit. See treatmentFeesAtOne.
+        treatmentFeesAtOne = feeOn(this.offered, CareType.GENERAL, generalFee)
+                + feeOn(this.offered, CareType.CHILDCARE, childcareFee)
+                + feeOn(this.offered, CareType.SENIOR, seniorFee);
 
         settleDeaths(burialShare, plotsBuilt, cremationCapacity);
 
@@ -496,14 +590,118 @@ public class Healthcare {
     /** People treated this month, by kind of care. Reporting only. */
     private final double[] served = new double[CareType.values().length];
 
-    /** How many this kind of care actually saw this month. */
+    /** People the staffed beds could have treated this month, before the fee turned anybody away. Reporting only. */
+    private final double[] offered = new double[CareType.values().length];
+
+    /** Of the people each kind of care would serve, the share whose household could pay its fee. 1 until the price bites. */
+    private final double[] affordable = new double[CareType.values().length];
+    { java.util.Arrays.fill(affordable, 1); }
+
+    /**
+     * How many this kind of care actually TREATED this month: the people the
+     * beds could take, less the ones the fee turned away (2026-09-19). A
+     * priced-out person is not in it, and neither is a person with no bed.
+     */
     public double getServed(CareType care) {
         return care == null || care.ordinal() >= served.length ? 0 : served[care.ordinal()];
     }
 
-    /** ...and what they were charged for it. */
+    /** ...and what they were charged for it - the people who paid, at today's scaled fee. */
     public double feesFrom(CareType care) {
         return getServed(care) * feeNow(care);
+    }
+
+    /**
+     * The coverage the month's population step READ for each kind of care,
+     * by CareType.ordinal(): the staffed beds over the people, clamped, less
+     * the share of those people the fee turned away - the figure the
+     * mortality swings, the births and the sickness ring were struck from.
+     * Kept here so a screen shows the number the model applied rather than
+     * one it worked out from the beds, and SAVED, because a screen reads it
+     * after a load and it cannot be rebuilt from the beds any more.
+     */
+    private final double[] coverage = new double[CareType.values().length];
+    { java.util.Arrays.fill(coverage, 1); }
+
+    /** Game tells the service what coverage the month read, once it has struck it. */
+    public void noteCoverage(double childcare, double general, double senior) {
+        coverage[CareType.CHILDCARE.ordinal()] = clamp(childcare);
+        coverage[CareType.GENERAL.ordinal()]   = clamp(general);
+        coverage[CareType.SENIOR.ordinal()]    = clamp(senior);
+    }
+
+    /**
+     * The coverage the month read for this kind of care - see noteCoverage():
+     * what the beds could do for the people, less whoever the fee turned
+     * away. Not the beds over the people, since 2026-09-19. 1 for a kind of
+     * care with nobody to serve, and for the two that serve the dead.
+     */
+    public double getCoverage(CareType care) {
+        return care == null || care.ordinal() >= coverage.length ? 1 : coverage[care.ordinal()];
+    }
+
+    /** How many this kind of care could have treated this month, had everybody been able to pay. */
+    public double getOffered(CareType care) {
+        return care == null || care.ordinal() >= offered.length ? 0 : offered[care.ordinal()];
+    }
+
+    /** Of the people this kind of care would serve, the share whose household could pay the fee. */
+    public double getAffordability(CareType care) {
+        return care == null || care.ordinal() >= affordable.length ? 1 : affordable[care.ordinal()];
+    }
+
+    /** The people this kind of care had a bed for and turned away at the door for want of the fee. */
+    public double getPricedOut(CareType care) {
+        return Math.max(0, getOffered(care) - getServed(care));
+    }
+
+    /** ...and all of them, across the three kinds of care. */
+    public double getPricedOutTotal() {
+        double total = 0;
+        for (CareType care : CareType.values()) {
+            if (care.servesTheLiving()) total += getPricedOut(care);
+        }
+        return total;
+    }
+
+    /**
+     * What the three care fees would raise at 1x on everybody the beds could
+     * take, in today's money. A FLOW THAT CROSSES THE MONTH: the households
+     * measure their means against it at the NEXT month's strike (see
+     * HouseholdBalance.setCareBills()), so it is saved, or a reloaded city
+     * would test its households against an empty bill and serve everybody
+     * the live one turned away. Kept at 1x so a fee-scale change between
+     * two months is read at the new scale, and so the break-even scale can
+     * be struck from it at any scale, including 0.
+     */
+    private double treatmentFeesAtOne;
+
+    /**
+     * What the treatment fees would have come to had everybody the beds could
+     * take been able to pay: the bill the households are measured against
+     * when they decide whether they can afford care. At a scale of 1 and
+     * everybody paying, exactly getTreatmentFees(), to the bit.
+     */
+    public double fullTreatmentFees() { return treatmentFeesAtOne * careFeeScale; }
+
+    /** The same bill at 1x, whatever the dial says: what a staged scale previews against. */
+    public double treatmentFeesAtOne() { return treatmentFeesAtOne; }
+
+    /** ...and with the funerals, which is the whole bill the households see at full service. */
+    public double getFullFees() { return fullTreatmentFees() + funeralFees; }
+
+    /**
+     * The fee scale at which this city's fees would meet its gross cost, with
+     * everybody the beds could take paying: gross cost over what the three
+     * fees raise at 1x on the people offered care. Zero when nothing is
+     * charged for - a city with no beds has no break-even. Struck live from
+     * this city's buildings rather than from the constants, because a Home
+     * Care Service and a Nursing Home recover very different shares of
+     * themselves at the same fee, and which of them a city built is the
+     * city's own business. Funeral fees are not in it: they are not scaled.
+     */
+    public double breakEvenScale() {
+        return treatmentFeesAtOne > 0 ? getGrossCost() / treatmentFeesAtOne : 0;
     }
 
     public double getPayroll()       { return payroll; }
@@ -655,13 +853,36 @@ public class Healthcare {
             plotsUsed, unburied,
             payroll, upkeep, treatmentFees, funeralFees, fees,
             deaths, burials, cremations,
-            plotsBuilt, cremationCapacity
+            plotsBuilt, cremationCapacity,
+            // The full-service bill at 1x, appended 2026-09-19: read by the
+            // next month's household strike, so it has to cross a save.
+            treatmentFeesAtOne,
+            // ...and the coverage the month read, by the three kinds of care
+            // of the living, appended the same day: a screen shows it after
+            // a load and the beds cannot rebuild it.
+            coverage[CareType.CHILDCARE.ordinal()],
+            coverage[CareType.GENERAL.ordinal()],
+            coverage[CareType.SENIOR.ordinal()]
         };
     }
 
-    /** Refused whole on a length mismatch, per the standing rule. */
+    /** How many figures the state carried before the full-service bill was appended (2026-09-19). */
+    static final int STATE_BEFORE_FULL_BILL = 12;
+
+    /** ...and before the three coverages were, the same day. */
+    static final int STATE_BEFORE_COVERAGE = 13;
+
+    /**
+     * Refused whole on a length mismatch, per the standing rule - the shapes
+     * from before the full-service bill and before the coverages (both
+     * 2026-09-19) are the exceptions, and each restores what it carries: that
+     * city's full bill was the bill it charged, because nobody could be
+     * turned away, and its coverage reads 1 until the first month strikes it.
+     */
     public boolean restore(double[] state) {
-        if (state == null || state.length != getState().length) return false;
+        if (state == null || (state.length != getState().length
+                && state.length != STATE_BEFORE_FULL_BILL
+                && state.length != STATE_BEFORE_COVERAGE)) return false;
 
         int i = 0;
         plotsUsed     = state[i++];
@@ -676,10 +897,17 @@ public class Healthcare {
         cremations    = state[i++];
         plotsBuilt        = state[i++];
         cremationCapacity = state[i++];
+        treatmentFeesAtOne = state.length > i ? state[i++] : treatmentFees;
+        java.util.Arrays.fill(coverage, 1);
+        if (state.length > i) {
+            coverage[CareType.CHILDCARE.ordinal()] = clamp(state[i++]);
+            coverage[CareType.GENERAL.ordinal()]   = clamp(state[i++]);
+            coverage[CareType.SENIOR.ordinal()]    = clamp(state[i]);
+        }
         return true;
     }
 
-    /** The healthcare fees and this month's bill, in the new unit. */
+    /** The healthcare fees and this month's bill, in the new unit. The scale and the shares who paid do not move. */
     public void redenominate(double scale) {
         generalFee   *= scale;
         childcareFee *= scale;
@@ -688,6 +916,7 @@ public class Healthcare {
         cremationFee *= scale;
         payroll *= scale;  upkeep *= scale;  fees *= scale;
         treatmentFees *= scale;  funeralFees *= scale;
+        treatmentFeesAtOne *= scale;
     }
 
 

@@ -193,7 +193,6 @@ public class TaxPolicy {
      * the wage it was measured against and with a currency reform.
      */
     public static final double DEFAULT_STUDENT_GRANT_SHARE = 525.0 / 3_460;
-    private double studentGrantShare = DEFAULT_STUDENT_GRANT_SHARE;
 
     /** A premium past a tenth of a wage is a second income tax. */
     public static final double MAX_EI_PREMIUM = .10;
@@ -201,16 +200,295 @@ public class TaxPolicy {
     /** EI that replaces more than the wage pays people to stay out of work. */
     public static final double MAX_EI_BENEFIT = 1.00;
 
-    /** A grant of more than an unskilled wage is a wage. */
+    /** A grant of more than an unskilled wage is a wage: the ceiling on the WAGE_SHARE basis's share. */
     public static final double MAX_STUDENT_GRANT = 1.00;
 
     public double getEiPremiumRate()     { return eiPremiumRate; }
     public double getEiBenefitRate()     { return eiBenefitRate; }
-    public double getStudentGrantShare() { return studentGrantShare; }
+
+    /**
+     * The share of the unskilled wage a student is granted a month: the
+     * amount under the WAGE_SHARE basis, and nothing under any other, because
+     * under any other there is no such share. See getGrantBasis().
+     */
+    public double getStudentGrantShare() {
+        return grantBasis == GrantBasis.WAGE_SHARE ? grantAmount : 0;
+    }
 
     public void setEiPremiumRate(double rate)     { eiPremiumRate = clamp(rate, MAX_EI_PREMIUM); }
     public void setEiBenefitRate(double share)    { eiBenefitRate = clamp(share, MAX_EI_BENEFIT); }
-    public void setStudentGrantShare(double share){ studentGrantShare = clamp(share, MAX_STUDENT_GRANT); }
+
+    /** The grant as a share of the unskilled wage - the founding basis, at this share. */
+    public void setStudentGrantShare(double share) {
+        grantBasis = GrantBasis.WAGE_SHARE;
+        grantAmount = clamp(share, MAX_STUDENT_GRANT);
+    }
+
+    /* =====================================================================
+       THE PRICE OF A PLACE - THE GRANT'S BASIS, THE LOAN'S RATE AND THE
+       TUITION SCALE (2026-09-21)
+
+       Jerus: "yes grants and government tuition are in the game, but what
+       about more granularity, so perhaps, grants its just a menu where you
+       can choose between a fixed amount, or a percentage of last month's
+       surplus, or a % as it is now of living costs, or a % of tuition. and
+       then another slider which is the interest rate for the student loans,
+       and idk if real life is like that but have it so that the money is
+       withdrawn from the treasury and then later when they pay it back it's
+       added back, and you get the interest if there is any. ... and also
+       make it so that you can tweak the price of tuition as well."
+
+       Three more dials in the EI premium's shape, and the grant's one share
+       becomes a MENU:
+
+         grantBasis, grantAmount   what the grant is a share of, or is, and
+                                   the one number that goes with it. The
+                                   founding rule - a share of the unskilled
+                                   wage, per student per month ("as it is
+                                   now"; Jerus said living costs, and the
+                                   wage is what that has always been struck
+                                   against) - is one of four. The others: a
+                                   fixed amount a month; a share of LAST
+                                   month's budget surplus as one pool split
+                                   over this month's students, nothing in a
+                                   deficit month; a share of each student's
+                                   own course tuition at today's price. The
+                                   amount is in the basis's own unit and has
+                                   a ceiling per basis, below. TaxPolicy
+                                   strikes the bill (grantBill) and Game
+                                   hands it the four figures it needs
+                                   (Game.studentGrantBillUnder); every
+                                   reader - the treasury's bill, the
+                                   save's re-strike, the students' income,
+                                   the Schools page - goes through that one
+                                   method.
+         studentLoanRate           annual, on the treasury's student loans.
+                                   Interest is charged on a GRADUATE's
+                                   balance during repayment only - the
+                                   Canadian shape, the government carrying
+                                   the interest while the student studies -
+                                   and it lands in the treasury as its own
+                                   revenue line, beside the premiums; the
+                                   principal keeps coming back through the
+                                   journal's line as it did. Zero by default,
+                                   as Canada's loans have been since April
+                                   2023. See Household's THE LOAN'S RATE.
+         tuitionScale              a multiplier on the founding tuition table,
+                                   Healthcare's fee scale for the schools. 1
+                                   is the founding price; 0 is free; the
+                                   poverty trap the Education header describes
+                                   returns around x3 against today's wages.
+                                   Education.foundingTuition() stays the
+                                   founding table; what a seat is charged at,
+                                   what a household measures against its wage,
+                                   what the treasury collects and forgoes, and
+                                   the TUITION_SHARE grant all read the scaled
+                                   fee.
+
+       The loan rate and the scale are RATIOS and a currency reform leaves
+       them alone; a FIXED grant is money and is scaled with it. All four
+       ride this class's save array on the end: an old save reads WAGE_SHARE
+       at the share its old slot already carried, no interest and the
+       founding price, which is the game it was.
+       ===================================================================== */
+
+    /** How the student grant is struck: what the one amount is a share of, or is. */
+    public enum GrantBasis {
+        /** A share of the unskilled wage, per student per month - the founding rule, and the default. */
+        WAGE_SHARE,
+        /** A fixed amount per student per month, in thousands: money, so a currency reform scales it. */
+        FIXED,
+        /** A share of last month's budget surplus as ONE POOL, split evenly over this month's students; a deficit month pays nothing. */
+        SURPLUS_SHARE,
+        /** A share of each student's own course tuition at today's price - after the tuition scale, before the subsidy. */
+        TUITION_SHARE
+    }
+
+    /** Where the grant starts: the founding rule, a share of the unskilled wage. */
+    public static final GrantBasis DEFAULT_GRANT_BASIS = GrantBasis.WAGE_SHARE;
+
+    /** A fixed grant of more than one unskilled wage a month is a wage: the FIXED ceiling, in founding unskilled wages, struck against that wage in today's money. */
+    public static final double MAX_FIXED_GRANT_WAGES = 1.00;
+
+    /** The whole of last month's surplus, and no more: the SURPLUS_SHARE ceiling. */
+    public static final double MAX_SURPLUS_GRANT_SHARE = 1.00;
+
+    /** Twice the course's tuition: the TUITION_SHARE ceiling, so a grant can cover the fee and living costs on top. */
+    public static final double MAX_TUITION_GRANT_SHARE = 2.00;
+
+    /** Where the loan rate starts: no interest, as Canada's loans have been since April 2023. */
+    public static final double DEFAULT_STUDENT_LOAN_RATE = 0;
+
+    /** Fifteen per cent a year: past any rate a government has charged a student, and the dial's ceiling. */
+    public static final double MAX_STUDENT_LOAN_RATE = .15;
+
+    /** Where the tuition scale starts: the founding table, unscaled. */
+    public static final double DEFAULT_TUITION_SCALE = 1.0;
+
+    /** Five times the founding table: the trap the Education header describes returns around x3 against today's wages (university 3.60 against a diploma wage of 4.500 is past MAX_BURDEN unsubsidised), so x5 leaves room past it; a ceiling, not a default. */
+    public static final double MAX_TUITION_SCALE = 5.0;
+
+    /**
+     * What the grant is a share of, or is. An old save reads WAGE_SHARE - the
+     * only basis there was.
+     */
+    private GrantBasis grantBasis = DEFAULT_GRANT_BASIS;
+
+    /**
+     * The grant's one number, in the basis's own unit: a share of the wage, a
+     * fixed amount in thousands, a share of the surplus, or a share of the
+     * tuition. An old save reads its wage share into this, from the slot that
+     * always carried it.
+     */
+    private double grantAmount = DEFAULT_STUDENT_GRANT_SHARE;
+
+    /** Annual interest on the treasury's student loans. An old save reads none. */
+    private double studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
+
+    /** The multiplier on the founding tuition table. An old save reads 1. */
+    private double tuitionScale = DEFAULT_TUITION_SCALE;
+
+    public GrantBasis getGrantBasis() { return grantBasis; }
+
+    /** The amount that goes with getGrantBasis(), in that basis's unit. */
+    public double getGrantAmount()    { return grantAmount; }
+
+    /** The annual rate a graduate is charged on the student loan while repaying it. */
+    public double getStudentLoanRate(){ return studentLoanRate; }
+
+    /** The multiplier on the founding tuition table; 1 is the founding price, 0 is free at the point of use. */
+    public double getTuitionScale()   { return tuitionScale; }
+
+    /**
+     * The ceiling on the amount under a basis: a share of a wage up to one
+     * wage, a fixed amount up to an unskilled wage (the founding wage in
+     * today's money, which pensionWageBase carries), the whole surplus, twice
+     * the tuition.
+     */
+    public double maxGrantAmount(GrantBasis basis) {
+        if (basis == null) return MAX_STUDENT_GRANT;
+        switch (basis) {
+            case FIXED:         return MAX_FIXED_GRANT_WAGES * pensionWageBase;
+            case SURPLUS_SHARE: return MAX_SURPLUS_GRANT_SHARE;
+            case TUITION_SHARE: return MAX_TUITION_GRANT_SHARE;
+            default:            return MAX_STUDENT_GRANT;
+        }
+    }
+
+    /** Picks the basis; the amount is clamped to the new basis's ceiling and otherwise left where it was. */
+    public void setGrantBasis(GrantBasis basis) {
+        grantBasis = basis == null ? DEFAULT_GRANT_BASIS : basis;
+        grantAmount = clamp(grantAmount, maxGrantAmount(grantBasis));
+    }
+
+    /** Sets the amount, in the current basis's unit, clamped to its ceiling. */
+    public void setGrantAmount(double amount) {
+        grantAmount = clamp(amount, maxGrantAmount(grantBasis));
+    }
+
+    /** Both at once, so a screen can stage them together. */
+    public void setGrant(GrantBasis basis, double amount) {
+        setGrantBasis(basis);
+        setGrantAmount(amount);
+    }
+
+    public void setStudentLoanRate(double annual) { studentLoanRate = clamp(annual, MAX_STUDENT_LOAN_RATE); }
+    public void setTuitionScale(double scale)     { tuitionScale = clamp(scale, MAX_TUITION_SCALE); }
+
+    /**
+     * The month's grant bill under any basis and amount - the one place the
+     * four rules are written, so the treasury's bill, the save's re-strike,
+     * the students' income and the Schools page's preview cannot disagree.
+     *
+     *   WAGE_SHARE     students x amount x the unskilled wage, in that order:
+     *                  the founding expression, and at the founding share it
+     *                  is bit for bit the bill it always was.
+     *   FIXED          students x amount.
+     *   SURPLUS_SHARE  amount x last month's surplus, as ONE pool - a deficit
+     *                  is a pool of nothing - and nothing at all with nobody
+     *                  to split it over. Per student it is the pool over the
+     *                  students.
+     *   TUITION_SHARE  amount x what the whole student body is charged at
+     *                  today's price, before the subsidy: each student's own
+     *                  course fee, so a medical student is granted more than
+     *                  a college one.
+     *
+     * @param students           full-time students this month
+     * @param unskilledWage      what an unskilled post pays a month, today
+     * @param lastSurplus        last month's budget balance, as the Government
+     *                           tab shows it; negative in a deficit month
+     * @param studentBodyTuition the whole adult student body's tuition a month
+     *                           at today's price, before the subsidy
+     */
+    public static double grantBill(GrantBasis basis, double amount, double students,
+                                   double unskilledWage, double lastSurplus,
+                                   double studentBodyTuition) {
+        if (basis == null) basis = DEFAULT_GRANT_BASIS;
+        switch (basis) {
+            case FIXED:         return students * amount;
+            case SURPLUS_SHARE: return students > 0 ? amount * Math.max(0, lastSurplus) : 0;
+            case TUITION_SHARE: return amount * Math.max(0, studentBodyTuition);
+            default:            return students * amount * unskilledWage;
+        }
+    }
+
+    /* =====================================================================
+       HEALTHCARE HAS A PRICE, AND A PREMIUM (2026-09-19)
+
+       Jerus: "healthcare should be an adjustable price, all the way to even
+       make it a profitable business or the option to make it an obligatory
+       insurance payment system." Two dials in the EI premium's shape:
+
+         healthFeeScale    a multiplier on the three care fees. 0 is care free
+                           at the point of use; the scale that recovers the
+                           service's cost is the city's own (Healthcare
+                           .breakEvenScale(), x7 to x13 in the played cities,
+                           because wages have risen against the founding
+                           fees, and the dial runs to 15 so it is reachable);
+                           past it, a business. FUNERAL FEES ARE NOT
+                           SCALED - the cemetery-against-crematorium design is
+                           its own thing and keeps its own prices.
+         healthPremiumRate a share of every wage, employee side, into the
+                           treasury as revenue. No employer share and no
+                           automatic balancing, per Jerus: what it raises goes
+                           against the service's cost, and the gap either way
+                           is the treasury's.
+
+       Fees 0 and premium 0 is tax-funded care; fees up is fee-funded;
+       fees 0 and a premium is insurance; anything between is a mix. AND A
+       FEE CAN PRICE PEOPLE OUT: a household that cannot pay its care bill
+       after its savings, its shares and its credit goes without care rather
+       than without food - see Household.affordCare() - so a high fee is a
+       sicker city. That is what makes the dial a decision.
+
+       Both are RATIOS, not money, so a currency reform leaves them alone;
+       both ride this class's save array, on the end, and an old save reads
+       1 and 0, which is the game it was.
+       ===================================================================== */
+
+    /** Where the fee scale starts: the founding fees, unscaled. */
+    public static final double DEFAULT_HEALTH_FEE_SCALE = 1.0;
+
+    /** Fifteen times the founding fees: past every played city's break-even (x7 to x13 at today's wages), so the business corner is reachable; a ceiling, not a default. */
+    public static final double MAX_HEALTH_FEE_SCALE = 15.0;
+
+    /** Where the health premium starts: nobody pays one until the player says so. */
+    public static final double DEFAULT_HEALTH_PREMIUM = 0;
+
+    /** A health premium past a tenth of a wage is a second income tax, as the EI premium's ceiling says. */
+    public static final double MAX_HEALTH_PREMIUM = .10;
+
+    private double healthFeeScale = DEFAULT_HEALTH_FEE_SCALE;
+    private double healthPremiumRate = DEFAULT_HEALTH_PREMIUM;
+
+    /** The multiplier on the three care fees; 1 is the founding fee, 0 is free at the point of use. */
+    public double getHealthFeeScale()   { return healthFeeScale; }
+
+    /** The share of every wage the health premium takes, employee side. */
+    public double getHealthPremiumRate(){ return healthPremiumRate; }
+
+    public void setHealthFeeScale(double scale)  { healthFeeScale = clamp(scale, MAX_HEALTH_FEE_SCALE); }
+    public void setHealthPremiumRate(double rate){ healthPremiumRate = clamp(rate, MAX_HEALTH_PREMIUM); }
 
     /**
      * A pension, in TODAY's money.
@@ -238,13 +516,22 @@ public class TaxPolicy {
         pensionWageBase *= scale;
         /*
          * AND THE FARE, because it is a price and not a rate. Every other dial
-         * on this class is a fraction and survives a reform untouched; a fare
-         * is dollars a journey and a reform that left it alone would multiply
-         * the real price of a bus ride by a hundred overnight. Twenty-third of
+         * on this class (bar a FIXED grant, since 2026-09-21 - below) is a
+         * fraction and survives a reform untouched; a fare is dollars a
+         * journey and a reform that left it alone would multiply the real
+         * price of a bus ride by a hundred overnight. Twenty-third of
          * a family this codebase has been finding since September 8th, and the
          * first one caught in the same edit that created the field.
          */
         transitFare *= scale;
+        /*
+         * AND A FIXED GRANT (2026-09-21), for the fare's reason: it is dollars
+         * a student a month, not a share of anything, and a reform that left
+         * it alone would hand every student a hundred times the grant. The
+         * grant's other three bases are shares and do not move; nor do the
+         * loan rate and the tuition scale, which are ratios.
+         */
+        if (grantBasis == GrantBasis.FIXED) grantAmount *= scale;
     }
 
     /* =======================================================================
@@ -531,6 +818,18 @@ public class TaxPolicy {
        SAVE AND RESTORE
        ================================================================== */
 
+    /** The slots a save from before the EI and grant dials carried: the four rates and the wage-band offsets. */
+    public static final int STATE_BEFORE_EI = 4 + WageBand.values().length;
+
+    /** ...and one from before the health dials of 2026-09-19: EI's three, the farmland relief and the fare on top. */
+    public static final int STATE_BEFORE_HEALTH = STATE_BEFORE_EI + 3 + 1 + 1;
+
+    /** ...and one from before the education dials of 2026-09-21: the two health dials on top. */
+    public static final int STATE_BEFORE_EDUCATION = STATE_BEFORE_HEALTH + 2;
+
+    /** This build's array: the grant's basis and amount, the loan rate and the tuition scale on top. */
+    public static final int STATE_SLOTS = STATE_BEFORE_EDUCATION + 4;
+
     /**
      * The city rates and the wage-band offsets as one array, city rates
      * first. ORDER IS THE FORMAT and new fields go on the END. The sector
@@ -542,21 +841,27 @@ public class TaxPolicy {
         int bands = WageBand.values().length;
 
         // 4 rates, one per wage band, the three dials of 2026-09-11, the
-        // farmland relief of 09-13, and the transit fare of 09-16. GROW THIS
-        // WITH EVERY SLOT ADDED BELOW: the first version of the fare wrote to
-        // state[12] of a twelve-long array and took forty-three harnesses down
-        // with it in nineteen seconds, which is the good outcome.
-        double[] state = new double[4 + bands + 3 + 2];
+        // farmland relief of 09-13, the transit fare of 09-16, the two
+        // health dials of 09-19 and the four education dials of 09-21. GROW
+        // THIS WITH EVERY SLOT ADDED BELOW: the first version of the fare
+        // wrote to state[12] of a twelve-long array and took forty-three
+        // harnesses down with it in nineteen seconds, which is the good
+        // outcome.
+        double[] state = new double[STATE_SLOTS];
         int i = 0;
         state[i++] = incomeTaxRate;
         state[i++] = propertyTaxRate;
         state[i++] = contributionRate;
         state[i++] = pensionReplacement;
         for (int b = 0; b < bands; b++) state[i++] = wageOffset[b];
-        // The three dials of 2026-09-11, on the end.
+        // The three dials of 2026-09-11, on the end. The grant's slot has
+        // always meant "the share of the unskilled wage", and still does: it
+        // carries the amount under WAGE_SHARE and nothing under any other
+        // basis, so a build that reads only this slot reads a grant it can
+        // strike and this build reads the basis and its amount from the end.
         state[i++] = eiPremiumRate;
         state[i++] = eiBenefitRate;
-        state[i++] = studentGrantShare;
+        state[i++] = getStudentGrantShare();
         // The farmland dial of 2026-09-13, on the end, for the same reason the
         // three above are on the end: an older save has one fewer slot and
         // keeps the default, which is the behaviour that city had.
@@ -564,20 +869,35 @@ public class TaxPolicy {
         // The fare of 2026-09-16, on the end, for the reason the four above it
         // are on the end: an older save is one slot shorter and keeps the
         // default, which is the city it was.
-        state[i]   = transitFare;
+        state[i++] = transitFare;
+        // The two health dials of 2026-09-19, on the end again: an older save
+        // is two slots shorter and reads the founding fee at 1x and no
+        // premium, which is the game it was.
+        state[i++] = healthFeeScale;
+        state[i++] = healthPremiumRate;
+        // The four education dials of 2026-09-21, on the end: the basis as
+        // its ordinal, its amount, the loan rate and the tuition scale. An
+        // older save is four slots shorter and reads WAGE_SHARE at the share
+        // its grant slot above carries, no interest and the founding price,
+        // which is the game it was.
+        state[i++] = grantBasis.ordinal();
+        state[i++] = grantAmount;
+        state[i++] = studentLoanRate;
+        state[i]   = tuitionScale;
         return state;
     }
 
-    /** @return false if the array is not this build's shape; nothing is changed */
+    /**
+     * @return false if the array is shorter than the oldest shape
+     *         (STATE_BEFORE_EI) or longer than this build's (STATE_SLOTS);
+     *         nothing is changed. Every append has gone on the end, so any
+     *         older save is a PREFIX of this build's array: what is there is
+     *         read in order and every slot past its end keeps its default,
+     *         which is the city that save was.
+     */
     public boolean restorePolicyState(double[] state) {
 
-        int bands = WageBand.values().length;
-        // With the EI and grant dials, or a save from before them - which keeps
-        // the defaults for the three, as the city it was had them.
-        boolean withFare = state != null && state.length == 4 + bands + 3 + 2;
-        boolean withFarm = withFare || (state != null && state.length == 4 + bands + 3 + 1);
-        boolean current = withFarm || (state != null && state.length == 4 + bands + 3);
-        if (state == null || (!current && state.length != 4 + bands)) return false;
+        if (state == null || state.length < STATE_BEFORE_EI || state.length > STATE_SLOTS) return false;
 
         int i = 0;
         setIncomeTaxRate(state[i++]);
@@ -587,16 +907,32 @@ public class TaxPolicy {
         for (WageBand b : WageBand.values()) setWageOffset(b, state[i++]);
         eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
         eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
-        studentGrantShare = DEFAULT_STUDENT_GRANT_SHARE;
+        grantBasis = DEFAULT_GRANT_BASIS;
+        grantAmount = DEFAULT_STUDENT_GRANT_SHARE;
         farmlandRelief = DEFAULT_FARMLAND_RELIEF;
         transitFare = DEFAULT_TRANSIT_FARE;
-        if (current) {
-            setEiPremiumRate(state[i++]);
-            setEiBenefitRate(state[i++]);
-            setStudentGrantShare(state[i++]);
-            if (withFarm) setFarmlandRelief(state[i++]);
-            if (withFare) setTransitFare(state[i]);
+        healthFeeScale = DEFAULT_HEALTH_FEE_SCALE;
+        healthPremiumRate = DEFAULT_HEALTH_PREMIUM;
+        studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
+        tuitionScale = DEFAULT_TUITION_SCALE;
+        if (i < state.length) setEiPremiumRate(state[i++]);
+        if (i < state.length) setEiBenefitRate(state[i++]);
+        // The wage share, as the slot always carried it: WAGE_SHARE at that
+        // share, and the basis and amount four slots on override it when
+        // the save has them.
+        if (i < state.length) setStudentGrantShare(state[i++]);
+        if (i < state.length) setFarmlandRelief(state[i++]);
+        if (i < state.length) setTransitFare(state[i++]);
+        if (i < state.length) setHealthFeeScale(state[i++]);
+        if (i < state.length) setHealthPremiumRate(state[i++]);
+        if (i < state.length) {
+            int ordinal = (int) Math.round(state[i++]);
+            GrantBasis[] bases = GrantBasis.values();
+            grantBasis = ordinal >= 0 && ordinal < bases.length ? bases[ordinal] : DEFAULT_GRANT_BASIS;
         }
+        if (i < state.length) setGrantAmount(state[i++]);
+        if (i < state.length) setStudentLoanRate(state[i++]);
+        if (i < state.length) setTuitionScale(state[i]);
         return true;
     }
 
@@ -645,8 +981,13 @@ public class TaxPolicy {
         pensionReplacement = SocialSecurity.DEFAULT_PENSION_REPLACEMENT;
         eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
         eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
-        studentGrantShare = DEFAULT_STUDENT_GRANT_SHARE;
+        grantBasis = DEFAULT_GRANT_BASIS;
+        grantAmount = DEFAULT_STUDENT_GRANT_SHARE;
+        studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
+        tuitionScale = DEFAULT_TUITION_SCALE;
         farmlandRelief = DEFAULT_FARMLAND_RELIEF;
+        healthFeeScale = DEFAULT_HEALTH_FEE_SCALE;
+        healthPremiumRate = DEFAULT_HEALTH_PREMIUM;
         java.util.Arrays.fill(wageOffset, 0);
         profitOffset.clear();
         salesOffset.clear();

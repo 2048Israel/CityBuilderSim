@@ -1,6 +1,6 @@
-# WorkingHousehold.java - 39 lines · 6 methods · 0 constants · model
+# WorkingHousehold.java - 50 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/WorkingHousehold.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorkingHousehold.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > A household with an earner in it, at one pay tier.
 > 
@@ -29,11 +29,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 17 | 23 | **type** `public class WorkingHousehold extends Household` | A household with an earner in it, at one pay tier. |
+| 17 | 34 | **type** `public class WorkingHousehold extends Household` | A household with an earner in it, at one pay tier. |
 | 21 | 7 | `public WorkingHousehold(FamilyStructure shape, PayTier tier)` |  |
 | 29 | 1 | `public PayTier tier()` |  |
 | 30 | 1 | `public int row()` |  |
 | 31 | 1 | `public boolean isRetired()` |  |
 | 32 | 1 | `public int grownUps()` |  |
-| 38 | 1 | `protected double studentRepayment()` | A graduate's student loan, repaid out of the family's wages over nine and a half years. |
+| 39 | 1 | `protected double studentRepayment()` | A graduate's student loan, repaid out of the family's wages over nine and a half years: a 114th of the balance a month. |
+| 47 | 3 | `public double studentInterestAt(double annualRate)` | ...and the month's interest on it, at the city's annual rate over twelve, paid on top of the instalment. |
 

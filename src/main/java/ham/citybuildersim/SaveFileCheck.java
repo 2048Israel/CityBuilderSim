@@ -969,6 +969,14 @@ public class SaveFileCheck {
         TaxPolicy squeeze = full.getEconomyManager().getTaxPolicy();
         squeeze.setIncomeTaxRate(TaxPolicy.MAX_INCOME_TAX);
         for (WageBand band : WageBand.values()) squeeze.setWageOffset(band, 1);
+        // ...and the clinic's price and premium off their defaults, so a
+        // reload that forgot either would show (2026-09-19).
+        squeeze.setHealthFeeScale(1.75);
+        squeeze.setHealthPremiumRate(.02);
+        // A month at the new dials, so the service has charged at the scale
+        // and the premium has been collected once, whatever the loop below
+        // still has to wait for.
+        full.simulateMonths(1);
 
         /*
          * ...AND THEN UNTIL THE BANK IS ACTUALLY OPEN.
@@ -1052,6 +1060,33 @@ public class SaveFileCheck {
                 full.getEducation().getFees());
         same("the hunger inside the sick rate", back.getHealth().getHungerRate(),
                 full.getHealth().getHungerRate());
+        // The clinic's price and premium, and what they did (2026-09-19).
+        assertTrue("fixture: the health premium really was collected",
+                full.getEconomyManager().getHealthPremiums() > 0);
+        same("the fee scale", back.getEconomyManager().getTaxPolicy().getHealthFeeScale(),
+                full.getEconomyManager().getTaxPolicy().getHealthFeeScale());
+        same("...and the health premium", back.getEconomyManager().getTaxPolicy().getHealthPremiumRate(),
+                full.getEconomyManager().getTaxPolicy().getHealthPremiumRate());
+        same("...the scale the service charges at", back.getHealthcare().getFeeScale(),
+                full.getHealthcare().getFeeScale());
+        same("...what the premium raised", back.getEconomyManager().getNationalAccounts().getHealthPremiums(),
+                full.getEconomyManager().getNationalAccounts().getHealthPremiums());
+        same("...what the households paid of it", back.getHouseholds().getHealthPremiums(),
+                full.getHouseholds().getHealthPremiums());
+        same("...the treatment bill at full service", back.getHealthcare().fullTreatmentFees(),
+                full.getHealthcare().fullTreatmentFees());
+        for (int r = 0; r < full.getHouseholds().getRowCount(); r++) {
+            same("row " + r + " care bill", back.getHouseholds().getRowCareBilled(r),
+                    full.getHouseholds().getRowCareBilled(r));
+            same("row " + r + " health premium", back.getHouseholds().getRowHealthPremiums(r),
+                    full.getHouseholds().getRowHealthPremiums(r));
+        }
+        for (Household c : full.getHouseholdBalance().cells()) {
+            Household again = null;
+            for (Household d : back.getHouseholdBalance().cells()) if (d.key().equals(c.key())) again = d;
+            if (again == null || c.households() < .5) continue;
+            same(c.label() + ": the share who paid for care", again.carePaid(), c.carePaid());
+        }
         same("households doubled up", back.getFamilies().getDoubledUpHouseholds(),
                 full.getFamilies().getDoubledUpHouseholds());
         same("...and the ones a studio turned away",
@@ -1069,6 +1104,26 @@ public class SaveFileCheck {
         same("...and the business tax inside it",
                 back.getEconomyManager().getNationalAccounts().getTaxBusiness(),
                 full.getEconomyManager().getNationalAccounts().getTaxBusiness());
+
+        /*
+         * THE TREASURY'S JOURNAL, since 2026-09-18: last month's non-budget
+         * movements by name, which the bridge on the Government tab opens
+         * into, and the residual under them. A flow, and a list of them, so
+         * a reloaded city cannot rebuild it. This city pays repairs every
+         * month, so the journal has at least one line to lose.
+         */
+        java.util.List<TreasuryJournal.Entry> lived = full.getTreasuryJournal();
+        java.util.List<TreasuryJournal.Entry> loaded = back.getTreasuryJournal();
+        assertTrue("fixture: the treasury's journal had lines in it", !lived.isEmpty());
+        assertTrue("the treasury's journal has as many lines as it had", loaded.size() == lived.size());
+        for (int i = 0; i < Math.min(lived.size(), loaded.size()); i++) {
+            assertTrue("...line " + (i + 1) + " is still \"" + lived.get(i).label() + "\"",
+                    lived.get(i).label().equals(loaded.get(i).label()));
+            same("...and still says " + String.format("%,.2f", lived.get(i).amount()),
+                    loaded.get(i).amount(), lived.get(i).amount());
+        }
+        same("...and what the journal left unexplained",
+                back.getTreasuryResidual(), full.getTreasuryResidual());
 
         cleanUp(root);
 

@@ -1,6 +1,6 @@
 # Money.java - 216 lines · 16 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/Money.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Money.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Every figure the interface prints as money, in one place.
 > 

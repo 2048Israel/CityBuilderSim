@@ -1,6 +1,6 @@
 # Crime.java - 522 lines · 61 methods · 17 constants · model
 
-`ham/citybuildersim/Crime.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Crime.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Crime, the police who deter and catch it, and the prisons that hold who
 > they catch.

@@ -78,18 +78,36 @@ public class HouseholdAccounts {
     private double studentGrants;
 
     /**
+     * THE HEALTH PREMIUM (2026-09-19): a share of every wage into the
+     * treasury, employee side, in the EI premium's shape. Jerus: "the option
+     * to make it an obligatory insurance payment system". Zero until the
+     * player sets one, and a save from before it reads zero.
+     */
+    private double healthPremiums;
+
+    /**
      * The month's EI and grants, from the same figures the treasury books -
      * set before update() or refresh(), which leave them as they are.
      */
     public void setOutsideMoney(double eiPremiums, double eiBenefits, double studentGrants) {
+        setOutsideMoney(eiPremiums, eiBenefits, studentGrants, 0);
+    }
+
+    /** ...and the health premium beside them, from the figure the treasury books (2026-09-19). */
+    public void setOutsideMoney(double eiPremiums, double eiBenefits, double studentGrants,
+                                double healthPremiums) {
         this.eiPremiums = Math.max(0, eiPremiums);
         this.eiBenefits = Math.max(0, eiBenefits);
         this.studentGrants = Math.max(0, studentGrants);
+        this.healthPremiums = Math.max(0, healthPremiums);
     }
 
     public double getEiPremiums()    { return eiPremiums; }
     public double getEiBenefits()    { return eiBenefits; }
     public double getStudentGrants() { return studentGrants; }
+
+    /** What the people paid the treasury as health premium this month, off their wages. */
+    public double getHealthPremiums() { return healthPremiums; }
 
     /**
      * What the people paid the healthcare service this month.
@@ -267,7 +285,8 @@ public class HouseholdAccounts {
      * line; a worker's is this line minus a seventeenth.
      */
     public double getDisposableIncome() {
-        return wages - wageTax - contributions - eiPremiums + pensions + eiBenefits + studentGrants;
+        return wages - wageTax - contributions - eiPremiums - healthPremiums
+                + pensions + eiBenefits + studentGrants;
     }
 
     /**
@@ -398,6 +417,67 @@ public class HouseholdAccounts {
     private final double[] rowDoors         = new double[ROWS];
     /** EI to the out of work, grants to the students. */
     private final double[] rowBenefits      = new double[ROWS];
+    /** The health premium, a slice off the same payslip the EI premium comes off (2026-09-19). */
+    private final double[] rowHealthPremiums = new double[ROWS];
+
+    /* =====================================================================
+       WHO PAID FOR CARE, AND WHO WAS TURNED AWAY (2026-09-19)
+
+       The clinic's fees follow heads, below - but since a household can be
+       priced out of care, not every head paid. HouseholdBalance strikes, per
+       cell, the share of its people who could afford the fee (see
+       Household.affordCare()), and hands it here per row; the fee bill is
+       then split over the heads WHO PAID, so a row of households the price
+       turned away is not billed for the care it did not get. A row's share
+       at 1.0 multiplies to exactly what it was, so a city where everybody
+       pays splits its bill to the bit as before.
+
+       And the TREATMENT bill beside it, twice over, for the test each
+       household makes of its own means next month: what was charged for
+       treatment, split over the heads who paid it, and what would have been
+       charged had every one of them paid, split over every head. Treatment
+       only: the funeral levy is on the same statement line but a fee of
+       nothing must leave nobody priced out, and the dead are not a price at
+       the clinic door.
+       ===================================================================== */
+
+    /** Of each row's people, the share who paid for care last month; null is everybody. */
+    private double[] carePaid;
+
+    /** The treatment fees the households were billed - Healthcare.getTreatmentFees() - and the same at full service. */
+    private double careBilled, careFull;
+
+    /** ...and each by row: the billed over the heads who paid, the full over every head. */
+    private final double[] rowCareBilled = new double[ROWS];
+    private final double[] rowCareFull = new double[ROWS];
+
+    /**
+     * Tells the split who paid for care: the share of each row's people the
+     * clinic's fee did not turn away, from HouseholdBalance.carePaidShare().
+     * Set before updateByTier(); null, or a missing row, means everybody paid.
+     */
+    public void setCarePaid(double[] shareByRow) { this.carePaid = shareByRow; }
+
+    /**
+     * Tells the split the month's treatment bill, from Healthcare: what was
+     * charged (getTreatmentFees) and what would have been at full service
+     * (fullTreatmentFees). Set before updateByTier().
+     */
+    public void setCareBills(double treatmentBilled, double treatmentAtFullService) {
+        this.careBilled = Math.max(0, treatmentBilled);
+        this.careFull = Math.max(0, treatmentAtFullService);
+    }
+
+    private double carePaidOf(int row) {
+        return carePaid == null || row >= carePaid.length ? 1
+                : Math.max(0, Math.min(1, carePaid[row]));
+    }
+
+    /** The treatment fees this row's people were billed, over the heads who paid. */
+    public double getRowCareBilled(int row) { return rowCareBilled[row]; }
+
+    /** The treatment fees this row would have been billed had every one of its people paid. */
+    public double getRowCareFull(int row) { return rowCareFull[row]; }
 
     /**
      * Splits the month across the tiers.
@@ -466,6 +546,9 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowEiPremiums, 0);
         java.util.Arrays.fill(rowBenefits, 0);
         java.util.Arrays.fill(rowDoors, 0);
+        java.util.Arrays.fill(rowHealthPremiums, 0);
+        java.util.Arrays.fill(rowCareBilled, 0);
+        java.util.Arrays.fill(rowCareFull, 0);
 
         // A caller from before the people outside the families had rows hands
         // seven, and one from before the prisons ten; the missing rows are
@@ -488,6 +571,20 @@ public class HouseholdAccounts {
         // prison treats them, on its own upkeep.
         double payingHeads = heads - Math.max(0, peoplePerRow[ORPHANS])
                 - Math.max(0, peoplePerRow[PRISONERS]);
+        /*
+         * ...AND THE HEADS WHO ACTUALLY PAID FOR CARE (2026-09-19): each row's
+         * people times the share of them the fee did not turn away, summed in
+         * the same order and less the same two rows, so that at a share of
+         * exactly 1.0 this is the figure above to the bit.
+         */
+        double[] carePayingPeople = new double[ROWS];
+        double careHeads = 0;
+        for (int r = 0; r < ROWS; r++) {
+            carePayingPeople[r] = peoplePerRow[r] * carePaidOf(r);
+            careHeads += carePayingPeople[r];
+        }
+        double carePayingHeads = careHeads - Math.max(0, carePayingPeople[ORPHANS])
+                - Math.max(0, carePayingPeople[PRISONERS]);
         for (int r = 0; r < ROWS; r++) {
             rowDoors[r] = doorsPerRow != null && r < doorsPerRow.length
                     ? Math.max(0, doorsPerRow[r]) : housePerRow[r];
@@ -544,8 +641,14 @@ public class HouseholdAccounts {
              * to be exact WITH, and inventing one would be an estimate wearing
              * a fact's clothes.
              */
-            rowHealthcare[r] = r == ORPHANS || r == PRISONERS || payingHeads <= 0 ? 0
-                    : healthcare * peoplePerRow[r] / payingHeads;
+            rowHealthcare[r] = r == ORPHANS || r == PRISONERS || carePayingHeads <= 0 ? 0
+                    : healthcare * carePayingPeople[r] / carePayingHeads;
+            // ...and the treatment part of it, over the same heads, and what
+            // it would have been had all of the row's people paid.
+            rowCareBilled[r] = r == ORPHANS || r == PRISONERS || carePayingHeads <= 0 ? 0
+                    : careBilled * carePayingPeople[r] / carePayingHeads;
+            rowCareFull[r] = r == ORPHANS || r == PRISONERS || payingHeads <= 0 ? 0
+                    : careFull * peoplePerRow[r] / payingHeads;
             /*
              * The fare follows the same heads as the clinic's fees, and with
              * the same two exemptions: an orphan and a prisoner pay for
@@ -573,6 +676,9 @@ public class HouseholdAccounts {
             // The EI premium is a slice off the same payslip.
             rowEiPremiums[r] = totalWages > 0
                     ? eiPremiums * (rowWages[r] / totalWages) : 0;
+            // ...and so is the health premium (2026-09-19).
+            rowHealthPremiums[r] = totalWages > 0
+                    ? healthPremiums * (rowWages[r] / totalWages) : 0;
         }
         rowPensions[RETIRED] = pensions;
         rowBenefits[UNEMPLOYED] = eiBenefits;
@@ -754,8 +860,9 @@ public class HouseholdAccounts {
     /* =====================================================================
        THE MONTH'S STATEMENT, CARRIED
 
-       Twelve scalars and eleven row arrays, saved and restored as one, in the
-       order below - new fields go on the END and a wrong length is refused
+       Seventeen scalars and eighteen row arrays - twelve and eleven when this
+       note was written - saved and restored as one, in the order below: new
+       fields go on the END and a wrong length is refused
        whole, the same rule CommercialHandler.getReportState() follows and for
        the same reason: a half-restored statement puts a figure on the wrong
        line of a player's screen.
@@ -787,18 +894,28 @@ public class HouseholdAccounts {
         out[i++] = eiPremiums;    out[i++] = eiBenefits;  out[i++] = studentGrants;
         // ...and the fare, on the END, per the rule at the top of this note.
         out[i++] = fares;
+        // ...and the health premium, on the end after it (2026-09-19). A save
+        // from before it reads zero, which is what that city charged.
+        out[i++] = healthPremiums;
+        // ...and the health premium's row, and the two treatment bills the
+        // next strike measures the households against, on the end (2026-09-19):
+        // the rebuild cannot reproduce their split any more than the rest.
         for (double[] row : new double[][] {
                 rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
                 rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
-                rowEiPremiums, rowBenefits, rowDoors, rowFares }) {
+                rowEiPremiums, rowBenefits, rowDoors, rowFares, rowHealthPremiums,
+                rowCareBilled, rowCareFull }) {
             System.arraycopy(row, 0, out, i, ROWS);
             i += ROWS;
         }
         return out;
     }
 
-    /** Scalars and row arrays in the statement's state since 2026-09-16. */
-    private static final int STATE_SCALARS = 16, STATE_ROWS = 15;
+    /** Scalars and row arrays in the statement's state since 2026-09-19. */
+    private static final int STATE_SCALARS = 17, STATE_ROWS = 18;
+
+    /** ...and the shape before the health premium was a line on it (2026-09-19). */
+    private static final int SCALARS_BEFORE_HEALTH = 16, ROWS_BEFORE_HEALTH = 15;
 
     /** ...and the shape before the transit fare was a line on it (2026-09-16). */
     private static final int SCALARS_BEFORE_FARES = 15, ROWS_BEFORE_FARES = 14;
@@ -823,15 +940,24 @@ public class HouseholdAccounts {
          * fare reads zero - which is exactly true of a city whose fare was
          * being collected from nobody.
          */
+        /*
+         * ...OR THE SHAPE FROM BEFORE THE HEALTH PREMIUM WAS ON IT (2026-09-19),
+         * which every save written before that day is: one scalar and one row
+         * array fewer, and the premium reads zero, which is what that city
+         * charged. The same tail-append the fare got, and the same reading.
+         */
         boolean beforePrison = in != null
-                && (in.length == STATE_SCALARS + Household.ROWS_BEFORE_PRISON * STATE_ROWS
+                && (in.length == SCALARS_BEFORE_HEALTH + Household.ROWS_BEFORE_PRISON * ROWS_BEFORE_HEALTH
                     || in.length == SCALARS_BEFORE_FARES + Household.ROWS_BEFORE_PRISON * ROWS_BEFORE_FARES);
         boolean beforeFares = in != null
                 && (in.length == SCALARS_BEFORE_FARES + ROWS * ROWS_BEFORE_FARES
                     || in.length == SCALARS_BEFORE_FARES + Household.ROWS_BEFORE_PRISON * ROWS_BEFORE_FARES);
+        boolean beforeHealth = beforeFares || beforePrison
+                || (in != null && in.length == SCALARS_BEFORE_HEALTH + ROWS * ROWS_BEFORE_HEALTH);
         boolean older = in != null && in.length == 12 + ROWS_BEFORE_OUTSIDE * 11;
         boolean current = in != null
                 && (in.length == STATE_SCALARS + ROWS * STATE_ROWS
+                    || in.length == SCALARS_BEFORE_HEALTH + ROWS * ROWS_BEFORE_HEALTH
                     || in.length == SCALARS_BEFORE_FARES + ROWS * ROWS_BEFORE_FARES
                     || beforePrison);
         if (!current && !older) return false;
@@ -847,9 +973,11 @@ public class HouseholdAccounts {
         jobsFilled = (int) Math.round(in[i++]);
         eiPremiums = 0; eiBenefits = 0; studentGrants = 0;
         fares = 0;
+        healthPremiums = 0;
         if (current) {
             eiPremiums = in[i++]; eiBenefits = in[i++]; studentGrants = in[i++];
             if (!beforeFares) fares = in[i++];
+            if (!beforeHealth) healthPremiums = in[i++];
         }
         double[][] arrays = !current
                 ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
@@ -858,13 +986,21 @@ public class HouseholdAccounts {
                 ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
                         rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
                         rowEiPremiums, rowBenefits, rowDoors }
+                : beforeHealth
+                ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
+                        rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
+                        rowEiPremiums, rowBenefits, rowDoors, rowFares }
                 : new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
                         rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
-                        rowEiPremiums, rowBenefits, rowDoors, rowFares };
+                        rowEiPremiums, rowBenefits, rowDoors, rowFares, rowHealthPremiums,
+                        rowCareBilled, rowCareFull };
         java.util.Arrays.fill(rowEiPremiums, 0);
         java.util.Arrays.fill(rowBenefits, 0);
         java.util.Arrays.fill(rowDoors, 0);
         java.util.Arrays.fill(rowFares, 0);
+        java.util.Arrays.fill(rowHealthPremiums, 0);
+        java.util.Arrays.fill(rowCareBilled, 0);
+        java.util.Arrays.fill(rowCareFull, 0);
         for (double[] row : arrays) {
             java.util.Arrays.fill(row, 0);
             System.arraycopy(in, i, row, 0, rows);
@@ -888,12 +1024,14 @@ public class HouseholdAccounts {
     public double getRowTuition(int row)       { return rowTuition[row]; }
     public double getRowInterest(int row)      { return rowInterest[row]; }
     public double getRowEiPremiums(int row)    { return rowEiPremiums[row]; }
+    /** The health premium this row's wages carried (2026-09-19). */
+    public double getRowHealthPremiums(int row){ return rowHealthPremiums[row]; }
     /** EI for the out of work, the grant for the students; zero for every other row. */
     public double getRowBenefits(int row)      { return rowBenefits[row]; }
 
     public double getRowDisposable(int row) {
         return rowWages[row] - rowTax[row] - rowContributions[row] - rowEiPremiums[row]
-                + rowPensions[row] + rowBenefits[row];
+                - rowHealthPremiums[row] + rowPensions[row] + rowBenefits[row];
     }
 
     public double getRowSpending(int row) {
@@ -950,18 +1088,26 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowBenefits, 0);
         java.util.Arrays.fill(rowDoors, 0);
         java.util.Arrays.fill(rowFares, 0);
+        java.util.Arrays.fill(rowHealthPremiums, 0);
+        java.util.Arrays.fill(rowCareBilled, 0);
+        java.util.Arrays.fill(rowCareFull, 0);
         tuition = 0;
         fares = 0;
         interest = 0;
+        healthPremiums = 0;
+        careBilled = 0;
+        careFull = 0;
+        carePaid = null;
     }
 
-    /** The households' income statement, in the new unit. Headcounts do not move. */
+    /** The households' income statement, in the new unit. Headcounts and the shares who paid do not move. */
     public void redenominate(double scale) {
         wages *= scale;  wageTax *= scale;  rent *= scale;  shopping *= scale;
         contributions *= scale;  pensions *= scale;
         eiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
         healthcare *= scale;  tuition *= scale;  interest *= scale;
         fares *= scale;
+        healthPremiums *= scale;  careBilled *= scale;  careFull *= scale;
         cumulativeSaving *= scale;
         pensionPerSenior *= scale;
         for (int r = 0; r < ROWS; r++) {
@@ -970,6 +1116,7 @@ public class HouseholdAccounts {
             rowPensions[r] *= scale;  rowHealthcare[r] *= scale;
             rowTuition[r] *= scale;  rowFares[r] *= scale;  rowInterest[r] *= scale;
             rowEiPremiums[r] *= scale;  rowBenefits[r] *= scale;
+            rowHealthPremiums[r] *= scale;  rowCareBilled[r] *= scale;  rowCareFull[r] *= scale;
         }
     }
 

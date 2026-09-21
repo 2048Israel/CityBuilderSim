@@ -1,6 +1,6 @@
 # UtilitiesHandler.java - 487 lines · 44 methods · 3 constants · model
 
-`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 

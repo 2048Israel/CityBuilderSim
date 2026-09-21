@@ -1,6 +1,6 @@
-# PrisonerHousehold.java - 59 lines · 15 methods · 0 constants · model
+# PrisonerHousehold.java - 79 lines · 17 methods · 0 constants · model
 
-`ham/citybuildersim/PrisonerHousehold.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PrisonerHousehold.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Adults serving a sentence, as one ledger: the prisoners' ledger.
 > 
@@ -24,13 +24,13 @@
 
 **Uses:** [PayTier](PayTier.md) (2), [Household](Household.md) (1)
 
-**Used by (4):** [CrimeCheck](CrimeCheck.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [ServicesScreen](ServicesScreen.md)
+**Used by (5):** [CrimeCheck](CrimeCheck.md), [EducationCheck](EducationCheck.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [ServicesScreen](ServicesScreen.md)
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 36 | **type** `public class PrisonerHousehold extends Household` | Adults serving a sentence, as one ledger: the prisoners' ledger. |
+| 24 | 56 | **type** `public class PrisonerHousehold extends Household` | Adults serving a sentence, as one ledger: the prisoners' ledger. |
 | 26 | 3 | `public PrisonerHousehold()` |  |
 | 30 | 1 | `public PayTier tier()` |  |
 | 31 | 1 | `public int row()` |  |
@@ -43,7 +43,9 @@
 | 43 | 1 | `public int stockGroup()` | Most of them were out of work: see UnemployedHousehold.stockGroup(). |
 | 46 | 1 | `protected double baskets()` | The city feeds them. |
 | 49 | 1 | `protected boolean debtFrozen()` | Frozen while they are inside. |
-| 52 | 1 | `public boolean canInvest()` | Held in the ledger. |
-| 55 | 1 | `public double creditRoom(double disposablePer)` | No lender lends to somebody inside. |
-| 58 | 1 | `protected double planningRoom()` | ...and they plan nothing: nothing to spend, no room to borrow. |
+| 66 | 1 | `protected double studentRepayment()` | Nothing comes off the loan while they are inside. |
+| 69 | 1 | `public double studentInterestAt(double annualRate)` | ...and nothing is charged on it. |
+| 72 | 1 | `public boolean canInvest()` | Held in the ledger. |
+| 75 | 1 | `public double creditRoom(double disposablePer)` | No lender lends to somebody inside. |
+| 78 | 1 | `protected double planningRoom()` | ...and they plan nothing: nothing to spend, no room to borrow. |
 

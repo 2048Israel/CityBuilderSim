@@ -23,6 +23,12 @@ import java.nio.file.Path;
  *      from nowhere run between two pools inside the city?
  *   3. Does a family that cannot carry its debt get discharged - and does the
  *      bank, not thin air, eat the loss?
+ *   4. Does the trading desk's statement add up? Jerus: "the bank, just
+ *      explain to me the trading desk, cause a bunch of times it's losing
+ *      billions of dollars due to the trading desk." The opened lines have to
+ *      sum to the figure above them, and the term that makes them - the
+ *      re-mark of what the desk holds - is measured on a fixture that trades
+ *      and counted on a played city.
  *
  * Each of those is measured by CAUSING the condition, never by finding a city
  * that happens to be in it.
@@ -53,6 +59,22 @@ public class BankCheck {
             if (t.getName().equals(name)) return t;
         }
         throw new IllegalStateException("no template named " + name);
+    }
+
+    /**
+     * The trading desk's statement as the bank screen opens it, less the
+     * re-mark: sold to households and abroad, bought from both, dividends on
+     * the inventory, tendered into buybacks - the same getters BankScreen
+     * reads, with the same signs.
+     */
+    static double deskParts(Exchange exchange, Equity register, Bank bank) {
+        return exchange.getSoldToHouseholds() + exchange.getSoldAbroad()
+                - exchange.getBoughtFromHouseholds() - exchange.getBoughtFromAbroad()
+                + register.getDividendDeskThisMonth() + exchange.getBuybackToDesk();
+    }
+
+    static double deskParts(Game game) {
+        return deskParts(game.getExchange(), game.getEquity(), game.getBank());
     }
 
     public static void main(String[] args) throws Exception {
@@ -856,8 +878,8 @@ public class BankCheck {
         double profitTaxedNextMonth = 0;
         Game books = new Game(new GameFiles(booksRoot.resolve("data"), booksRoot.resolve("no-legacy")));
         System.setOut(quiet);
-        double worstBalance = 0, worstArticulation = 0;
-        int worstMonth = 0;
+        double worstBalance = 0, worstArticulation = 0, worstDesk = 0;
+        int worstMonth = 0, deskMonths = 0, reMarkLosses = 0;
         try {
             books.run();
             books.getForeignAccounts().pinRate(1.0);
@@ -907,6 +929,16 @@ public class BankCheck {
                 // A = L + E, every month, no exceptions.
                 double balance = kept.totalAssets() - kept.totalLiabilities() - kept.equity();
                 if (Math.abs(balance) > Math.abs(worstBalance)) worstBalance = balance;
+
+                // ...and the desk's statement, line by line, every month it
+                // did anything - see "the desk foots" below for the identity.
+                double deskGap = kept.getTradingIncome() - deskParts(books) - kept.getMarkChange();
+                if (Math.abs(deskGap) > Math.abs(worstDesk)) worstDesk = deskGap;
+                if (Math.abs(kept.getTradingIncome()) > 1e-9 || Math.abs(kept.getMarkChange()) > 1e-9) {
+                    deskMonths++;
+                    if (kept.getTradingIncome() < 0
+                            && kept.getMarkChange() <= kept.getTradingIncome() / 2) reMarkLosses++;
+                }
 
                 /*
                  * ...AND EQUITY MOVES BY THE MONTH'S PROFIT AND BY NOTHING ELSE,
@@ -1032,6 +1064,81 @@ public class BankCheck {
                 shown.depositInterest() <= shown.interestIncome() + 1e-9);
         assertTrue("...and its staff are on its own books, not the shops'",
                 shown.operatingExpenses() > 0);
+
+        /* ============ 8b. the trading desk's statement foots ============ */
+        out.println("\n--- and the desk's statement adds up to its total ---");
+
+        /*
+         * Jerus: "the bank, just explain to me the trading desk, cause a bunch
+         * of times it's losing billions of dollars due to the trading desk."
+         *
+         * The bank statement opens "The trading desk" into what it sold, what
+         * it bought, the dividends on what it holds and what it tendered into
+         * buybacks - and until 2026-09-18 those did not add up to the figure
+         * above them, because the biggest term was missing: the change in the
+         * mark, which Bank.markSecurities() adds to tradingIncome and nothing
+         * showed. Bank.getMarkChange() is that term, kept by the model rather
+         * than backed out on the screen, and this is the identity:
+         *
+         *   tradingIncome = sold to households + sold abroad
+         *                 - bought from households - bought from abroad
+         *                 + dividends on the inventory + tendered into buybacks
+         *                 + re-marked what it holds
+         *
+         * On a fixture that trades - ExchangeCheck's leavers, borrowed whole:
+         * twenty households emigrate and the desk buys their two thousand
+         * shares at the bid, then re-marks them at the closing quote. Every
+         * term but two is zero there, so the re-mark is read against the
+         * model's own quote and not just against a subtraction.
+         */
+        HouseholdBalance leavers = ExchangeCheck.savers(20.0, 4.0);
+        int RETAIL = Equity.indexOf(Sectors.RETAIL);
+        Equity register = new Equity();
+        register.listIfUnlisted(RETAIL, 10_000, leavers);
+        double[][] fewer = new double[FamilyStructure.values().length][PayTier.values().length];
+        fewer[FamilyStructure.COUPLE.ordinal()][PayTier.UNSKILLED.ordinal()] = 80;
+        double[] income = new double[HouseholdBalance.ROWS];
+        income[PayTier.UNSKILLED.ordinal()] = 80 * 4.0;
+        double[] nothing = new double[HouseholdBalance.ROWS];
+        leavers.advanceMonth((s, t) -> fewer[s.ordinal()][t.ordinal()], income, 0, nothing, nothing, .25, .05, 1);
+        register.followEmigrants(leavers);
+
+        Exchange desk = new Exchange();
+        Bank dealer = ExchangeCheck.bankWith(10_000);
+        double[] bookValue = new double[Equity.COMPANIES.length];
+        bookValue[RETAIL] = 10_000;                          // $1 a share
+        desk.startMonth();
+        desk.takeMonth(register, leavers, dealer, new ExchangeCheck.Firms(), bookValue,
+                DebtManager.WORLD_BASE_RATE, 0);
+
+        double bid = 1.0 * (1 - Exchange.SPREAD / 2);
+        double closingMid = 1.0 * (1 - Exchange.PRESSURE * 2_000 / desk.limit(RETAIL));
+        assertTrue("fixture: the desk traded", desk.getBoughtFromAbroad(RETAIL) > 0);
+        close("the re-mark is the inventory at the closing quote, from nothing",
+                dealer.getMarkChange(), 2_000 * closingMid, 1e-9);
+        close("...and the desk's total is what it paid against that re-mark",
+                dealer.getTradingIncome(), -2_000 * bid + dealer.getMarkChange(), 1e-9);
+        close("the opened lines and the re-mark sum to the total, exactly",
+                deskParts(desk, register, dealer) + dealer.getMarkChange(),
+                dealer.getTradingIncome(), 1e-9);
+
+        // And the field is a flow: the next month opens with it at nothing.
+        dealer.startMonth();
+        close("the re-mark is cleared with the trading result at the top of a month",
+                dealer.getMarkChange(), 0, 1e-12);
+
+        /*
+         * ON THE PLAYED CITY, every month of the twelve years above - a real
+         * desk with real trades, dividends and buybacks in the same month.
+         * Counted, because a mechanic that fires on a fixture and never in a
+         * run is the classic way this suite stops testing anything.
+         */
+        out.printf("   the played city's desk did something in %d of 120 months; in %d of them"
+                + " it lost money and the re-mark was at least half the loss%n",
+                deskMonths, reMarkLosses);
+        assertTrue("fixture: the played city's desk actually traded", deskMonths > 0);
+        close("...and its opened lines and re-mark summed to its total every month",
+                worstDesk, 0, 1e-6);
 
         /* ============ 9. capital is the constraint, and it can run out ============ */
         out.println("\n--- and capital is what lets it lend ---");

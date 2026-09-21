@@ -1,6 +1,6 @@
-# ServicesScreen.java - 2,537 lines · 49 methods · 3 constants · interface
+# ServicesScreen.java - 2,550 lines · 49 methods · 3 constants · interface
 
-`ham/citybuildersim/ui/ServicesScreen.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ServicesScreen.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The services tab: the systems the city runs and how well each covers -
 > infrastructure (roads, transit, the railway, freight), safety, health,
@@ -12,7 +12,7 @@
 > shell still reads which system and page are open (serviceArea, servicePage)
 > for the rail and the scroll memory, and the summary asks it for careCover().
 
-**Uses:** [Palette](Palette.md) (404), [CareType](CareType.md) (39), [InfrastructureManager](InfrastructureManager.md) (24), [EducationType](EducationType.md) (22), [Crime](Crime.md) (14), [Education](Education.md) (13), [Healthcare](Healthcare.md) (12), [BuildingType](BuildingType.md) (12), [BuildingManager](BuildingManager.md) (10), [Rail](Rail.md) (9), [SafetyType](SafetyType.md) (9), [Health](Health.md) (9), [Sickness](Sickness.md) (9), [Traffic](Traffic.md) (8), [AgeBand](AgeBand.md) (7), [TaxPolicy](TaxPolicy.md) (5), [Sector](Sector.md) (5), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [UserInterface](UserInterface.md) (2), [Good](Good.md) (2), [Migration](Migration.md) (2), [WageBand](WageBand.md) (2), [EconomyManager](EconomyManager.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [PrisonerHousehold](PrisonerHousehold.md) (1), [CityCalendar](CityCalendar.md) (1), [PopulationManager](PopulationManager.md) (1)... and 2 more
+**Uses:** [Palette](Palette.md) (404), [CareType](CareType.md) (42), [InfrastructureManager](InfrastructureManager.md) (24), [EducationType](EducationType.md) (22), [Crime](Crime.md) (14), [Education](Education.md) (13), [Healthcare](Healthcare.md) (12), [BuildingType](BuildingType.md) (12), [BuildingManager](BuildingManager.md) (10), [Rail](Rail.md) (9), [SafetyType](SafetyType.md) (9), [Health](Health.md) (9), [Sickness](Sickness.md) (9), [Traffic](Traffic.md) (8), [AgeBand](AgeBand.md) (7), [TaxPolicy](TaxPolicy.md) (5), [Sector](Sector.md) (5), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [UserInterface](UserInterface.md) (2), [Good](Good.md) (2), [Migration](Migration.md) (2), [WageBand](WageBand.md) (2), [EconomyManager](EconomyManager.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [PrisonerHousehold](PrisonerHousehold.md) (1), [CityCalendar](CityCalendar.md) (1), [PopulationManager](PopulationManager.md) (1)... and 2 more
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -53,16 +53,16 @@
 | 1717 | · · the pipeline |
 | 1735 | · · the gates |
 | 1766 | · · the two things that move it |
-| 1924 | UTILITIES |
-| 2145 | THE BOOKS. |
-| 2166 | · HEALTH |
-| 2221 | · · what it costs |
-| 2236 | · · where the money goes |
-| 2296 | · EDUCATION |
-| 2350 | · · what it costs |
-| 2388 | · · where the money goes |
-| 2425 | · UTILITIES |
-| 2497 | · · roads |
+| 1925 | UTILITIES |
+| 2146 | THE BOOKS. |
+| 2167 | · HEALTH |
+| 2234 | · · what it costs |
+| 2249 | · · where the money goes |
+| 2309 | · EDUCATION |
+| 2363 | · · what it costs |
+| 2401 | · · where the money goes |
+| 2438 | · UTILITIES |
+| 2510 | · · roads |
 
 ## Constants
 
@@ -85,7 +85,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 2510 | **type** `final class ServicesScreen` | The services tab: the systems the city runs and how well each covers - infrastructure (roads, transit, the railway, freight), safety, health, education, utilities - two strips picking the system and the part of it, th... |
+| 28 | 2523 | **type** `final class ServicesScreen` | The services tab: the systems the city runs and how well each covers - infrastructure (roads, transit, the railway, freight), safety, health, education, utilities - two strips picking the system and the part of it, th... |
 | 33 | 1 | `ServicesScreen(UserInterface ui)` |  |
 
 ### SERVICES - WHAT THE CITY PROVIDES, AND HOW WELL IT COVERS. (lines 35-94)
@@ -159,7 +159,7 @@
 | 1189 | 199 | `void livingCarePage(VBox column, CareType care)` | One kind of care for living people: what it covers, and what that buys. |
 | 1397 | 89 | `void deathCarePage(VBox column)` | Death care, which is the one service in the game that is a STOCK. |
 
-### EDUCATION (lines 1487-1923)
+### EDUCATION (lines 1487-1924)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -173,42 +173,42 @@
 | 1795 | 16 | `VBox buildingItWouldNeed(EducationType course, LabourMarket market, double back, double afford)` | What a course would need, for a city that has not built one. |
 | 1813 | 18 | `String returnNote(EducationType course, LabourMarket market, double back)` | What the wage return is actually comparing, in words. |
 | 1840 | 42 | `VBox pipelineBars(double[] queue)` | Everybody part way through, as a bar per month. |
-| 1890 | 33 | `VBox tuitionBlock(EducationType course)` | The price of a seat, and the dial that decides who pays it. |
+| 1890 | 34 | `VBox tuitionBlock(EducationType course)` | The price of a seat, and the dial that decides who pays it. |
 
-### UTILITIES (lines 1924-2144)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1934 | 23 | `HBox utilityVitals()` |  |
-| 1958 | 8 | `void utilityPage(VBox column)` |  |
-| 1967 | 53 | `void powerPage(VBox column)` |  |
-| 2021 | 55 | `void waterPage(VBox column)` |  |
-| 2077 | 54 | `void roadsPage(VBox column)` |  |
-| 2136 | 8 | `javafx.scene.layout.FlowPane utilityLinks(BuildingType type)` | Build the plant. |
-
-### THE BOOKS. (lines 2145-2165)
+### UTILITIES (lines 1925-2145)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2162 | 3 | `HBox bookRow(String label, double thousands, String tone)` | One line of a set of books: label, figure, and a colour when it matters. |
+| 1935 | 23 | `HBox utilityVitals()` |  |
+| 1959 | 8 | `void utilityPage(VBox column)` |  |
+| 1968 | 53 | `void powerPage(VBox column)` |  |
+| 2022 | 55 | `void waterPage(VBox column)` |  |
+| 2078 | 54 | `void roadsPage(VBox column)` |  |
+| 2137 | 8 | `javafx.scene.layout.FlowPane utilityLinks(BuildingType type)` | Build the plant. |
 
-### HEALTH (lines 2166-2295)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2168 | 127 | `void healthBooksPage(VBox column)` |  |
-
-### EDUCATION (lines 2296-2424)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2298 | 126 | `void educationBooksPage(VBox column)` |  |
-
-### UTILITIES (lines 2425-2537)
+### THE BOOKS. (lines 2146-2166)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2427 | 92 | `void utilityBooksPage(VBox column)` |  |
-| 2521 | 8 | `Button buildLink(String label, String category, EnumSet<BuildingType> types)` | A button that goes straight to a category of the build list. |
-| 2531 | 6 | `static double sum(double[] values)` | A double[] in one figure - the education arrays are per-type. |
+| 2163 | 3 | `HBox bookRow(String label, double thousands, String tone)` | One line of a set of books: label, figure, and a colour when it matters. |
+
+### HEALTH (lines 2167-2308)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2169 | 139 | `void healthBooksPage(VBox column)` |  |
+
+### EDUCATION (lines 2309-2437)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2311 | 126 | `void educationBooksPage(VBox column)` |  |
+
+### UTILITIES (lines 2438-2550)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2440 | 92 | `void utilityBooksPage(VBox column)` |  |
+| 2534 | 8 | `Button buildLink(String label, String category, EnumSet<BuildingType> types)` | A button that goes straight to a category of the build list. |
+| 2544 | 6 | `static double sum(double[] values)` | A double[] in one figure - the education arrays are per-type. |
 

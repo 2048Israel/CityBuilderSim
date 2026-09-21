@@ -1,6 +1,6 @@
-# HistorySave.java - 898 lines · 27 methods · 0 constants · model
+# HistorySave.java - 908 lines · 27 methods · 0 constants · model
 
-`ham/citybuildersim/HistorySave.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistorySave.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Every month the city has ever lived, one number at a time.
 > 
@@ -53,22 +53,22 @@
 | 187 | · housing |
 | 197 | · school and care |
 | 203 | · outside the families |
-| 220 | · THE LONG SICK, 2026-09-11. How many have been sick more than two |
-| 228 | · THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many |
-| 238 | · WHO DIED, 2026-09-11. The month's dead by age band, and how many of |
-| 254 | · CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a |
-| 276 | · what runs out |
-| 280 | · the market |
-| 303 | RECORDING |
-| 370 | · · the edge |
-| 379 | · · money and credit |
-| 399 | · · the budget |
-| 409 | · · housing |
-| 414 | · · school and care |
-| 420 | · · outside the families |
-| 463 | · · what runs out |
-| 467 | · · the market |
-| 654 | READING |
+| 224 | · THE LONG SICK, 2026-09-11. How many have been sick more than two |
+| 232 | · THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many |
+| 242 | · WHO DIED, 2026-09-11. The month's dead by age band, and how many of |
+| 258 | · CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a |
+| 280 | · what runs out |
+| 284 | · the market |
+| 307 | RECORDING |
+| 374 | · · the edge |
+| 383 | · · money and credit |
+| 403 | · · the budget |
+| 413 | · · housing |
+| 418 | · · school and care |
+| 424 | · · outside the families |
+| 469 | · · what runs out |
+| 473 | · · the market |
+| 662 | READING |
 
 ## Fields (state)
 
@@ -144,38 +144,40 @@
 | 214 | `private List<Double> evicted` |  |
 | 215 | `private List<Double> eiPaid` |  |
 | 216 | `private List<Double> eiPremiums` |  |
-| 217 | `private List<Double> studentGrants` |  |
-| 218 | `private List<Double> studentLoansOwed` |  |
-| 224 | `private List<Double> sickPastTwoMonths` |  |
-| 225 | `private List<Double> diedOfIllness` |  |
-| 226 | `private List<Double> sickRecovery` |  |
-| 236 | `private Map<String, List<Double>> householdsByShape` |  |
-| 244 | `private List<Double> deathsBabies` |  |
-| 245 | `private List<Double> deathsChildren` |  |
-| 246 | `private List<Double> deathsTeens` |  |
-| 247 | `private List<Double> deathsAdults` |  |
-| 248 | `private List<Double> deathsSeniors` |  |
-| 250 | `private List<Double> deathsElders` | The over-85s, since the band was split on 2026-09-15. |
-| 251 | `private List<Double> deathsOrphans` |  |
-| 252 | `private List<Double> deathsUnhoused` |  |
-| 261 | `private List<Double> crimeRate` |  |
-| 262 | `private List<Double> policeCoverage` |  |
-| 263 | `private List<Double> prisoners` |  |
-| 264 | `private List<Double> caughtNotHeld` |  |
-| 265 | `private List<Double> stolen` |  |
-| 266 | `private List<Double> deathsKilled` |  |
-| 267 | `private List<Double> safetyBill` |  |
-| 268 | `private Map<String, List<Double>> crimeByCause` |  |
-| 277 | `private List<Integer> constructionCapacity` |  |
-| 278 | `private List<Double> landUse` |  |
-| 296 | `private Map<String, List<Double>> sharePrice` |  |
-| 297 | `private Map<String, List<Double>> shareValue` |  |
+| 218 | `private List<Double> healthPremiums` | The health premium collected, a month at a time - the EI premium's shape (2026-09-19). |
+| 219 | `private List<Double> studentGrants` |  |
+| 220 | `private List<Double> studentLoansOwed` |  |
+| 222 | `private List<Double> studentLoanInterest` | Interest the graduates paid on their student loans, a month at a time - the premiums' shape (2026-09-21). |
+| 228 | `private List<Double> sickPastTwoMonths` |  |
+| 229 | `private List<Double> diedOfIllness` |  |
+| 230 | `private List<Double> sickRecovery` |  |
+| 240 | `private Map<String, List<Double>> householdsByShape` |  |
+| 248 | `private List<Double> deathsBabies` |  |
+| 249 | `private List<Double> deathsChildren` |  |
+| 250 | `private List<Double> deathsTeens` |  |
+| 251 | `private List<Double> deathsAdults` |  |
+| 252 | `private List<Double> deathsSeniors` |  |
+| 254 | `private List<Double> deathsElders` | The over-85s, since the band was split on 2026-09-15. |
+| 255 | `private List<Double> deathsOrphans` |  |
+| 256 | `private List<Double> deathsUnhoused` |  |
+| 265 | `private List<Double> crimeRate` |  |
+| 266 | `private List<Double> policeCoverage` |  |
+| 267 | `private List<Double> prisoners` |  |
+| 268 | `private List<Double> caughtNotHeld` |  |
+| 269 | `private List<Double> stolen` |  |
+| 270 | `private List<Double> deathsKilled` |  |
+| 271 | `private List<Double> safetyBill` |  |
+| 272 | `private Map<String, List<Double>> crimeByCause` |  |
+| 281 | `private List<Integer> constructionCapacity` |  |
+| 282 | `private List<Double> landUse` |  |
+| 300 | `private Map<String, List<Double>> sharePrice` |  |
+| 301 | `private Map<String, List<Double>> shareValue` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 857 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
+| 42 | 867 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
 
 ### THE AXIS (lines 44-52)
 
@@ -199,60 +201,60 @@
 
 ### school and care (lines 197-202)
 
-### outside the families (lines 203-219)
+### outside the families (lines 203-223)
 
-### THE LONG SICK, 2026-09-11. How many have been sick more than two (lines 220-227)
+### THE LONG SICK, 2026-09-11. How many have been sick more than two (lines 224-231)
 
-### THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many (lines 228-237)
+### THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many (lines 232-241)
 
-### WHO DIED, 2026-09-11. The month's dead by age band, and how many of (lines 238-253)
+### WHO DIED, 2026-09-11. The month's dead by age band, and how many of (lines 242-257)
 
-### CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a (lines 254-275)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 271 | 1 | `public static String crimeKey(Crime.Cause cause)` | The series name the screens ask for, per reason for crime. |
-| 274 | 1 | `public static String householdKey(FamilyStructure shape)` | The series name the screens ask for, per household shape. |
-
-### what runs out (lines 276-279)
-
-### the market (lines 280-302)
+### CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a (lines 258-279)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 300 | 1 | `public static String priceKey(String company)` | The series name the screens ask for, per company. |
-| 301 | 1 | `public static String valueKey(String company)` |  |
+| 275 | 1 | `public static String crimeKey(Crime.Cause cause)` | The series name the screens ask for, per reason for crime. |
+| 278 | 1 | `public static String householdKey(FamilyStructure shape)` | The series name the screens ask for, per household shape. |
 
-### RECORDING (lines 303-653)
+### what runs out (lines 280-283)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 318 | 161 | `public void recordMonth(Game game)` | One month, read off the city itself. |
-| 488 | 6 | `private static double sum(double[] values)` | A whole array in one figure. |
-| 495 | 1 | `private static double round2(double v)` |  |
-| 496 | 1 | `private static double round4(double v)` |  |
-| 509 | 112 | `public void restoreFrom(HistorySave loaded)` | Takes over another history wholesale - the load path. |
-| 623 | 6 | `private static Map<String, List<Double>> copyMap(Map<String, List<Double>> from)` | A map of series, copied list by list, and never null - see copy(). |
-| 640 | 3 | `private static<T> List<T> copy(List<T> from)` | A copy, and never null. |
-| 649 | 4 | `public GameFiles.Result saveHistory(GameFiles files, int slot)` | The graph history. |
-
-### READING (lines 654-898)
+### the market (lines 284-306)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 659 | 1 | `public int months()` | How many months the city has lived. |
-| 661 | 1 | `public List<Integer> getMonth()` |  |
-| 676 | 14 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
-| 697 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
-| 714 | 120 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
-| 836 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
-| 837 | 1 | `public List<Double> getGdp()` |  |
-| 838 | 1 | `public List<Double> getDebt()` |  |
-| 839 | 1 | `public List<Double> getInterestRate()` |  |
-| 840 | 1 | `public List<Integer> getJobs()` |  |
-| 841 | 1 | `public List<Integer> getWorkforce()` |  |
-| 842 | 1 | `public List<Integer> getOutOfWork()` |  |
-| 843 | 1 | `public List<Integer> getPopulation()` |  |
-| 856 | 30 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
-| 888 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
+| 304 | 1 | `public static String priceKey(String company)` | The series name the screens ask for, per company. |
+| 305 | 1 | `public static String valueKey(String company)` |  |
+
+### RECORDING (lines 307-661)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 322 | 163 | `public void recordMonth(Game game)` | One month, read off the city itself. |
+| 494 | 6 | `private static double sum(double[] values)` | A whole array in one figure. |
+| 501 | 1 | `private static double round2(double v)` |  |
+| 502 | 1 | `private static double round4(double v)` |  |
+| 515 | 114 | `public void restoreFrom(HistorySave loaded)` | Takes over another history wholesale - the load path. |
+| 631 | 6 | `private static Map<String, List<Double>> copyMap(Map<String, List<Double>> from)` | A map of series, copied list by list, and never null - see copy(). |
+| 648 | 3 | `private static<T> List<T> copy(List<T> from)` | A copy, and never null. |
+| 657 | 4 | `public GameFiles.Result saveHistory(GameFiles files, int slot)` | The graph history. |
+
+### READING (lines 662-908)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 667 | 1 | `public int months()` | How many months the city has lived. |
+| 669 | 1 | `public List<Integer> getMonth()` |  |
+| 684 | 14 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
+| 705 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
+| 722 | 122 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
+| 846 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
+| 847 | 1 | `public List<Double> getGdp()` |  |
+| 848 | 1 | `public List<Double> getDebt()` |  |
+| 849 | 1 | `public List<Double> getInterestRate()` |  |
+| 850 | 1 | `public List<Integer> getJobs()` |  |
+| 851 | 1 | `public List<Integer> getWorkforce()` |  |
+| 852 | 1 | `public List<Integer> getOutOfWork()` |  |
+| 853 | 1 | `public List<Integer> getPopulation()` |  |
+| 866 | 30 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
+| 898 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
 

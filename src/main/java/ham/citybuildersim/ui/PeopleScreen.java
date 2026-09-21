@@ -369,10 +369,20 @@ final class PeopleScreen {
                 String.format("%.0f%%", health.getCoverage() * 100),
                 health.getCoverage() >= 1 ? Palette.GOOD
                         : health.getCoverage() <= 0 ? Palette.BAD : Palette.WARN));
+        // Treated over people, since the clinic had a price (2026-09-19):
+        // the beds the doctors staff, less whoever the fee turned away. The
+        // beds and the people are the two facts behind it; the priced out are
+        // this month's flow and read 0 until the first tick after a load.
         column.getChildren().add(statementNote(String.format(
-                "%s staffed beds for %s people.",
-                people(bm.getStaffedCareCapacity(CareType.GENERAL, staffing)),
-                people(total))));
+                "%s staffed beds for %s people: the figure is the people treated over the people, "
+                + "not the beds%s",
+                people(bm.getStaffedCareCapacity(CareType.GENERAL, staffing)), people(total),
+                service.getPricedOut(CareType.GENERAL) > 0
+                        ? String.format(" - %s had a bed and were priced out of it this month: a household "
+                                + "that cannot pay after its savings, its shares and its credit goes "
+                                + "without care rather than without food.",
+                                people(service.getPricedOut(CareType.GENERAL)))
+                        : ".")));
         column.getChildren().add(statementLine("...which also cures",
                 String.format("%.0f%% of the sick a month",
                         Sickness.recovery(health.getCoverage()) * 100)));
@@ -427,18 +437,25 @@ final class PeopleScreen {
          *
          * Coverage is STAFFED, not built - a hospital with no doctors treats
          * nobody, and this is the screen where a player would otherwise wonder
-         * why the wards they paid for changed nothing.
+         * why the wards they paid for changed nothing. And since the clinic
+         * had a price (2026-09-19) it is the MODEL'S figure, read through
+         * Healthcare.getCoverage(): the beds over the people, less whoever
+         * the fee turned away - the number the swings and the births below
+         * were actually struck from. Worked out here from the beds, a dear
+         * month would show a kinder city than the one the model ran.
          */
         for (CareType type : new CareType[]{CareType.CHILDCARE, CareType.SENIOR}) {
             double served = type.populationServed(cohorts);
             double beds = bm.getStaffedCareCapacity(type, staffing);
-            double cover = Health.coverageOf(beds, served);
+            double cover = service.getCoverage(type);
+            double pricedOut = service.getPricedOut(type);
 
             column.getChildren().add(statementLine(type.getLabel(),
                     String.format("%.0f%%", cover * 100),
                     cover < .5 ? Palette.WARN : Palette.TEXT_BODY));
-            column.getChildren().add(statementNote(String.format("%s places for %s  ·  %s",
+            column.getChildren().add(statementNote(String.format("%s places for %s%s  ·  %s",
                     people(beds), people(served),
+                    pricedOut > 0 ? String.format(", %s priced out", people(pricedOut)) : "",
                     type == CareType.CHILDCARE
                         ? String.format("infant deaths x%.3f, illness x%.2f, births x%.2f",
                                 Healthcare.mortalityFactor(AgeBand.BABY, cover, .5, 0),
@@ -1350,6 +1367,11 @@ final class PeopleScreen {
                 String.format("EI premiums at %.2f%%",
                         ui.game.getEconomyManager().getTaxPolicy().getEiPremiumRate() * 100),
                 tightMoney(toDollars(-hh.getEiPremiums()), false), Palette.WARN));
+        // ...and the health premium (2026-09-19), off the same payslips.
+        column.getChildren().add(statementLine(
+                String.format("Health premium at %.2f%%",
+                        ui.game.getEconomyManager().getTaxPolicy().getHealthPremiumRate() * 100),
+                tightMoney(toDollars(-hh.getHealthPremiums()), false), Palette.WARN));
         column.getChildren().add(statementLine("EI received",
                 tightMoney(toDollars(hh.getEiBenefits()), false), "#8ed4ff"));
         column.getChildren().add(statementLine("Student grants received",
@@ -2019,6 +2041,12 @@ final class PeopleScreen {
             if (own.studentRepaid() > .005) {
                 panel.getChildren().add(statementLine("...repaid this month",
                         tightMoney(toDollars(own.studentRepaid()), false), Palette.GOOD));
+                // ...and the interest on top of it (2026-09-21), when the
+                // treasury charges any: the Schools page's dial.
+                if (own.studentInterest() > .005) {
+                    panel.getChildren().add(statementLine("...and interest on it",
+                            tightMoney(toDollars(own.studentInterest()), false), Palette.WARN));
+                }
                 panel.getChildren().add(statementNote("At this month's rate it has "
                         + monthsRun(own.studentDebt() / own.studentRepaid())
                         + " left to run."));

@@ -223,8 +223,10 @@ final class HistoryScreen {
         new Trace("evicted",        "Lost their home",    "OUTSIDE THE FAMILIES", "count"),
         new Trace("eiPaid",         "EI paid",            "OUTSIDE THE FAMILIES", "money"),
         new Trace("eiPremiums",     "EI premiums",        "OUTSIDE THE FAMILIES", "money"),
+        new Trace("healthPremiums", "Health premiums",    "OUTSIDE THE FAMILIES", "money"),
         new Trace("studentGrants",  "Student grants",     "OUTSIDE THE FAMILIES", "money"),
         new Trace("studentLoansOwed","Student loans owed","OUTSIDE THE FAMILIES", "money"),
+        new Trace("studentLoanInterest","Student loan interest","OUTSIDE THE FAMILIES", "money"),
     })));
 
     /** One series per household shape, appended after the market. See HistorySave.householdKey(). */

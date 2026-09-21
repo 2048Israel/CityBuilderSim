@@ -1,6 +1,6 @@
 # CareType.java - 133 lines · 6 methods · 1 constants · model
 
-`ham/citybuildersim/CareType.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CareType.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > What a healthcare building actually does.
 > 
@@ -37,7 +37,7 @@
 
 **Uses:** [AgeBand](AgeBand.md) (7), [PopulationCohorts](PopulationCohorts.md) (1)
 
-**Used by (14):** [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [Inbox](Inbox.md), [PeopleScreen](PeopleScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
+**Used by (17):** [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
 
 ## Enum constants
 

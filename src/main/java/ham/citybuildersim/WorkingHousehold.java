@@ -33,7 +33,18 @@ public class WorkingHousehold extends Household {
 
     /**
      * A graduate's student loan, repaid out of the family's wages over nine
-     * and a half years. Interest free. See Household.STUDENT_LOAN_MONTHS.
+     * and a half years: a 114th of the balance a month. See
+     * Household.STUDENT_LOAN_MONTHS.
      */
     @Override protected double studentRepayment() { return studentDebt / STUDENT_LOAN_MONTHS; }
+
+    /**
+     * ...and the month's interest on it, at the city's annual rate over
+     * twelve, paid on top of the instalment. The only household that is
+     * charged any: a student's balance accrues nothing while they study and
+     * a prisoner's is frozen. See Household's THE LOAN'S RATE.
+     */
+    @Override public double studentInterestAt(double annualRate) {
+        return studentDebt * Math.max(0, annualRate) / 12;
+    }
 }

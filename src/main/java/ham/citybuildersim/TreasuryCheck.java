@@ -10,7 +10,7 @@ package ham.citybuildersim;
  * both print a measured cash movement, and a measured figure that is measured
  * wrongly is worse than the estimate it replaced - it looks authoritative.
  *
- * The four things it will not let past:
+ * The six things it will not let past:
  *
  *   1. THE WINDOW CLOSES. Each month's opening balance is the previous month's
  *      closing balance, with no gap. If it ever is not, a month of the player's
@@ -48,6 +48,19 @@ package ham.citybuildersim;
  *          which nothing caught because the dial is off by default. Hence the
  *          second city below, which turns it on.
  *
+ *   6. AND THE ROW OPENS. Since 2026-09-18 the "everything else" row is a
+ *      TreasuryJournal - capital into the bank, reserves, a buyback, the
+ *      students' loans, and the two lines the budget balance omits - with a
+ *      "Not accounted for" line under it. The third city below does each of
+ *      those things between two presses and asserts the line it left, that
+ *      what IS on the budget (land, a building) is not named twice, that the
+ *      bridge still foots with the journal and the residual in it, that the
+ *      residual is smaller than what the journal explained - and what it is:
+ *      the first coupon, booked the month it is charged and paid the month
+ *      after - and that the whole journal comes back from a save line for
+ *      line. The "Raised by issuing paper" row is asserted here too, because
+ *      until this batch it read $0 on every month the city borrowed.
+ *
  * @author Jerus
  */
 public class TreasuryCheck {
@@ -64,6 +77,31 @@ public class TreasuryCheck {
                     what, month, actual, expected);
         }
         fails++;
+    }
+
+    /** A fact that is either so or not, printed either way so the run reads as a list. */
+    static void check(String what, boolean ok) {
+        if (!ok) fails++;
+        System.out.printf("  %-62s %s%n", what, ok ? "OK" : "FAIL");
+    }
+
+    /** The journal line with this label, or null when the month has none. */
+    static TreasuryJournal.Entry line(java.util.List<TreasuryJournal.Entry> journal, String label) {
+        for (TreasuryJournal.Entry e : journal) if (e.label().equals(label)) return e;
+        return null;
+    }
+
+    /** The amount on the journal line with this label, or 0 when there is none. */
+    static double amount(java.util.List<TreasuryJournal.Entry> journal, String label) {
+        TreasuryJournal.Entry e = line(journal, label);
+        return e == null ? 0 : e.amount();
+    }
+
+    static BuildingsTemplate template(Game game, String name) {
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (t.getName().equals(name)) return t;
+        }
+        throw new IllegalStateException("no template named " + name);
     }
 
     public static void main(String[] args) {
@@ -208,6 +246,158 @@ public class TreasuryCheck {
                 reloaded.getTreasuryOpening(), savedClosing);
 
         /* ===================================================================
+           AND THE ROW OPENS.
+
+           Jerus: "it just says 'everything else' - that should be expandable,
+           cause a lot of times that's where a bunch of important things
+           happen." A third city does, between two presses, every one of the
+           things that row is for, and the month is read line by line.
+
+           TICKED ONCE FIRST, on purpose: a new city's first window opens at
+           the cash as it stands at the top of its first tick, so anything
+           bought before that tick is on the first month's budget and not in
+           its window - a residual of exactly the purchase, once, on every new
+           city. Not this section's question; noted in the batch's hand-back.
+           =================================================================== */
+        System.out.println("\n--- and the row that says \"everything else\" opens into lines ---");
+
+        Game opened = new Game(GameFiles.scratch("treasury-journal"));
+        opened.newGame();
+        opened.toggleNextMonth();
+        opened.getLandManager().setOwnedSqFt(opened.getLandManager().getOwnedSqFt() + 50_000_000L);
+
+        // ...between the presses: the player's month.
+        LandParcel plot = opened.getLandListing().get(0);
+        double landCharged = plot.getPrice();
+        check("fixture: the land office listed a plot the city can afford",
+                landCharged > 0 && landCharged < opened.getCash() && opened.buyLandParcel(plot.getId()));
+
+        BuildingsTemplate house = template(opened, "House");
+        double buildingCharged = house.getCashCost() * 10;
+        check("fixture: the city paid for ten houses",
+                opened.buildStack(house, 10, true) == Game.BuildResult.SUCCESS);
+
+        double capitalPut = opened.recapitaliseBank(5_000);
+        double reservesBought = opened.buyForeignCurrency(2_000) + opened.buyForeignCurrency(1_000);
+        double reservesSold = opened.sellForeignCurrency(500);
+        check("fixture: capital went into the bank and reserves were bought twice and sold once",
+                capitalPut == 5_000 && reservesBought == 3_000 && reservesSold == 500);
+
+        // Two issues, so the raised row has something to carry and the
+        // buyback has a bond to retire that is not the one paying the coupon.
+        double raisedForReal = 0;
+        double cashBeforeNote = opened.getCash();
+        opened.handleTBillLogic(10_000, 6, 1000);
+        raisedForReal += opened.getCash() - cashBeforeNote;
+        double cashBeforeBond = opened.getCash();
+        opened.handleMediumBondLogic(20_000, 10, 1000);
+        raisedForReal += opened.getCash() - cashBeforeBond;
+        check("fixture: the city issued a note and a serial bond", raisedForReal > 0);
+
+        Debt note = null;
+        for (Debt d : opened.getDebtManager().getDebt()) if (d instanceof ShortTermTBill) note = d;
+        double boughtBack = note == null ? 0 : opened.repurchaseDebt(note);
+        check("fixture: and bought the note straight back", boughtBack > 0);
+
+        opened.toggleNextMonth();
+        int m = opened.getMonth();
+        java.util.List<TreasuryJournal.Entry> journal = opened.getTreasuryJournal();
+        NationalAccounts books = opened.getEconomyManager().getNationalAccounts();
+        for (TreasuryJournal.Entry e : journal) {
+            System.out.printf("     %-40s %,14.4f%n", e.label(), e.amount());
+        }
+        System.out.printf("     %-40s %,14.4f%n", "Not accounted for", opened.getTreasuryResidual());
+
+        /* ---- what is on the budget is carried by the bridge's first row, not named twice ---- */
+        near("the land is on the budget's own line", m, books.getLandPurchases(), landCharged);
+        check("...so the journal does not name it a second time",
+                line(journal, "Bought land") == null);
+        near("the houses are on the budget's own line", m, books.getCapitalSpending(), buildingCharged);
+        check("...so the journal does not name them a second time",
+                line(journal, "Paid for buildings") == null);
+
+        /* ---- what is not on the budget is in the journal, by name, signed as the treasury saw it ---- */
+        near("the journal carries the capital put into the bank", m,
+                amount(journal, "Put capital into the bank"), -capitalPut);
+        near("...the reserves bought, two purchases folded into one line", m,
+                amount(journal, "Bought reserves"), -reservesBought);
+        near("...the reserves sold, on a line of their own", m,
+                amount(journal, "Sold reserves"), reservesSold);
+        near("...and the bond bought back, for what it cost", m,
+                amount(journal, "Bought back a bond"), -boughtBack);
+        check("...and nothing the treasury did not do",
+                line(journal, "Lent to students, net of repayments") == null);
+
+        /* ---- the raised row carries the issues, which until this batch it did not ---- */
+        near("the paper raised is on the bridge's own row, not in the journal", m,
+                opened.getTreasuryRaised(), raisedForReal);
+
+        /* ---- and the bridge foots, with the journal and the residual in it ---- */
+        double explained = 0;
+        for (TreasuryJournal.Entry e : journal) explained += e.amount();
+        near("the bridge foots through the journal", m,
+                opened.getTreasurySurplus() + opened.getTreasuryRaised() - opened.getTreasuryRepaid()
+                        + explained + opened.getTreasuryResidual(),
+                opened.getTreasuryChange());
+        check("the journal explained more than it left over",
+                Math.abs(opened.getTreasuryResidual()) < Math.abs(explained));
+        /*
+         * AND WHAT IS LEFT OVER IS NAMED HERE TOO. The books charge the first
+         * coupon in the month the bond is issued - processAllDebts() runs after
+         * the cash is struck - and the cash pays it the month after, through
+         * getExpenses(). So the residual on an issue month is the interest
+         * line, exactly, and nothing else: the timing difference the note
+         * under the bridge talks about, measured rather than assumed.
+         */
+        near("...and what it left over is the first coupon's timing, to the cent", m,
+                opened.getTreasuryResidual(), books.getInterestExpense());
+
+        /* ---- and a month that has no journal has no lines, so the row stays shut ---- */
+        Game plain = new Game(GameFiles.scratch("treasury-plain"));
+        plain.newGame();
+        plain.toggleNextMonth();
+        plain.toggleNextMonth();
+        check("a city that did nothing has an empty journal, and the row stays a row",
+                plain.getTreasuryJournal().isEmpty() && !plain.getTreasuryJournalBook().hasLines());
+
+        /* ---- and it comes back from a save, line for line ---- */
+        // A movement between the strike and the save, so the month in
+        // progress has something to lose too - and a note, so the raised
+        // counter has.
+        double lateReserves = opened.buyForeignCurrency(700);
+        double cashBeforeLateNote = opened.getCash();
+        opened.handleTBillLogic(5_000, 6, 1000);
+        double lateRaised = opened.getCash() - cashBeforeLateNote;
+        opened.saveGame(2);
+        Game backAgain = new Game(opened.getGameFiles());
+        backAgain.loadGame(2);
+        java.util.List<TreasuryJournal.Entry> was = journal;
+        java.util.List<TreasuryJournal.Entry> now = backAgain.getTreasuryJournal();
+        boolean lineForLine = was.size() == now.size();
+        for (int i = 0; lineForLine && i < was.size(); i++) {
+            lineForLine = was.get(i).label().equals(now.get(i).label())
+                    && Math.abs(was.get(i).amount() - now.get(i).amount()) <= TOLERANCE;
+        }
+        check("last month's journal survives a save, line for line, in order", lineForLine && !now.isEmpty());
+        near("...and so does the residual under it", m,
+                backAgain.getTreasuryResidual(), opened.getTreasuryResidual());
+        near("...and the paper raised on the row above", m,
+                backAgain.getTreasuryRaised(), opened.getTreasuryRaised());
+        near("...and the month in progress, which the next strike will count", m,
+                amount(backAgain.getTreasuryJournalBook().thisMonth(), "Bought reserves"), -lateReserves);
+        backAgain.toggleNextMonth();
+        near("...so the reserves bought before the save are on the next month's line", backAgain.getMonth(),
+                amount(backAgain.getTreasuryJournal(), "Bought reserves"), -lateReserves);
+        near("...and the note issued before the save is on its raised row", backAgain.getMonth(),
+                backAgain.getTreasuryRaised(), lateRaised);
+
+        // An older save carries no journal at all, and has to load as an empty one.
+        backAgain.getTreasuryJournalBook().restore(null, null, null, null);
+        check("a save from before the journal loads with an empty journal, not a broken one",
+                backAgain.getTreasuryJournal().isEmpty()
+                        && backAgain.getTreasuryJournalBook().thisMonth().isEmpty());
+
+        /* ===================================================================
            THE REPORT.
 
            Not an assertion. The residual row is real money the budget does not
@@ -219,7 +409,7 @@ public class TreasuryCheck {
         System.out.printf("The largest was %,.2f thousand.%n", biggestRest);
 
         System.out.println(fails == 0
-                ? "\nThe treasury bridge closes, foots and survives a save."
+                ? "\nThe treasury bridge closes, foots, opens and survives a save."
                 : "\n" + fails + " FAILED");
 
         if (fails > 0) System.exit(1);

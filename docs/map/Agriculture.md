@@ -1,6 +1,6 @@
 # Agriculture.java - 393 lines · 12 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > The fields, and what they cost the city in ground.
 > 

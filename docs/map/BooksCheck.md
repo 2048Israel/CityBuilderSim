@@ -1,6 +1,6 @@
 # BooksCheck.java - 241 lines · 3 methods · 0 constants · harnesses
 
-`ham/citybuildersim/BooksCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BooksCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Verifies a sector's income statement and balance sheet, off the template.
 > Not part of the game.

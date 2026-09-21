@@ -1,6 +1,6 @@
-# NewGameCheck.java - 314 lines · 5 methods · 0 constants · harnesses
+# NewGameCheck.java - 321 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/NewGameCheck.java` - generated 2026-09-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NewGameCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
 
 > Does "Start New Game" actually start a new game?
 > 
@@ -28,11 +28,11 @@
 
 | line | section |
 |---:|---|
-| 166 | · 1. what a city that never existed looks like |
-| 178 | · 2. live in one, hard |
-| 219 | · 3. start a new one |
-| 240 | · 4. and it is actually playable |
-| 266 | · 5. a new game after a LOAD, too |
+| 173 | · 1. what a city that never existed looks like |
+| 185 | · 2. live in one, hard |
+| 226 | · 3. start a new one |
+| 247 | · 4. and it is actually playable |
+| 273 | · 5. a new game after a LOAD, too |
 
 ## Fields (state)
 
@@ -44,10 +44,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 27 | 288 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
+| 27 | 295 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
 | 31 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 36 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 44 | 116 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
-| 161 | 145 | `public static void main(String[] args) throws Exception` |  |
-| 307 | 7 | `static void cleanUp(Path root)` |  |
+| 44 | 123 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
+| 168 | 145 | `public static void main(String[] args) throws Exception` |  |
+| 314 | 7 | `static void cleanUp(Path root)` |  |
 
