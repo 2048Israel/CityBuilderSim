@@ -1,6 +1,6 @@
 # CentralBankCheck.java - 904 lines · 11 methods · 2 constants · harnesses
 
-`ham/citybuildersim/CentralBankCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CentralBankCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > Proves the central bank's books: that money is made and destroyed on them
 > and nowhere else, every price 0.7.0 hangs off the policy rate, and its two

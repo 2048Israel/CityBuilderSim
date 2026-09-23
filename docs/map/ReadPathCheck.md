@@ -1,6 +1,6 @@
-# ReadPathCheck.java - 544 lines · 5 methods · 0 constants · harnesses
+# ReadPathCheck.java - 545 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ReadPathCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReadPathCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > Reading the city must not change the city.
 > 
@@ -61,10 +61,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 500 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
+| 45 | 501 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
 | 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 56 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 71 | 200 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
-| 272 | 264 | `public static void main(String[] args) throws Exception` |  |
-| 537 | 7 | `static void cleanUp(Path root)` |  |
+| 272 | 265 | `public static void main(String[] args) throws Exception` |  |
+| 538 | 7 | `static void cleanUp(Path root)` |  |
 

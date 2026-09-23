@@ -1168,10 +1168,17 @@ final class SummaryScreen {
         double salesTax = economy.getSalesTax();
         double wageTax = economy.getWageTax();
         double taxTotal = businessTax + industrialTax + salesTax + wageTax;
+        // One income rate while the three are one; each once they have parted (0.7.4).
+        TaxPolicy rates = economy.getTaxPolicy();
+        String atRates = rates.incomeRatesSplit()
+                ? "profit " + formatter.format(rates.getProfitTaxRate() * 100)
+                        + "% · sales " + formatter.format(rates.getSalesTaxRate() * 100)
+                        + "% · wage " + formatter.format(rates.getWageTaxRate() * 100) + "%"
+                : "at " + formatter.format(economy.getTaxRate() * 100) + "%";
 
         body.getChildren().add(panelSection("tax", "TAX", money(taxTotal), null,
                 () -> panelBody(
-                        panelNote("at " + formatter.format(economy.getTaxRate() * 100) + "%"),
+                        panelNote(atRates),
                         statLine("Business", money(businessTax)),
                         statLine("Industrial", money(industrialTax)),
                         statLine("Sales", money(salesTax)),

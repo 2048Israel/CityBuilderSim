@@ -1,6 +1,6 @@
-# PolicyCheck.java - 353 lines · 5 methods · 0 constants · harnesses
+# PolicyCheck.java - 452 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/PolicyCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies.
 > 
@@ -14,7 +14,7 @@
 > dials and checks the result. Section 1 pins the zero case; everything after it
 > moves a dial.
 
-**Uses:** [Sectors](Sectors.md) (40), [WageBand](WageBand.md) (17), [TaxPolicy](TaxPolicy.md) (12), [SalesTaxLedger](SalesTaxLedger.md) (8), [Game](Game.md) (6), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sector](Sector.md) (2)
+**Uses:** [Sectors](Sectors.md) (50), [TaxPolicy](TaxPolicy.md) (24), [WageBand](WageBand.md) (21), [Game](Game.md) (8), [SalesTaxLedger](SalesTaxLedger.md) (8), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sector](Sector.md) (2)
 
 ## Sections
 
@@ -29,6 +29,7 @@
 | 203 | · 7. the subsidy floors a sector and stops the count |
 | 265 | · 8. the money goes somewhere |
 | 283 | · 9. it all survives a save |
+| 375 | · 10. three bases, one per tax (0.7.4) |
 
 ## Fields (state)
 
@@ -40,10 +41,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 21 | 333 | **type** `public class PolicyCheck` | The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies. |
+| 21 | 432 | **type** `public class PolicyCheck` | The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies. |
 | 25 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 32 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 37 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 44 | 297 | `public static void main(String[] args) throws Exception` |  |
-| 348 | 5 | `static double payOneSubsidy(Game city, Sector handler, double loss)` | Runs one subsidy payment against a stated loss. |
+| 44 | 396 | `public static void main(String[] args) throws Exception` |  |
+| 447 | 5 | `static double payOneSubsidy(Game city, Sector handler, double loss)` | Runs one subsidy payment against a stated loss. |
 

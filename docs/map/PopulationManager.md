@@ -1,6 +1,6 @@
 # PopulationManager.java - 938 lines · 51 methods · 1 constants · model
 
-`ham/citybuildersim/PopulationManager.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationManager.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 

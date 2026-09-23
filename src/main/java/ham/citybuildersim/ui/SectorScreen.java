@@ -38,7 +38,8 @@ final class SectorScreen {
     /* =====================================================================
        THE SECTOR ECONOMY.
 
-       Six businesses, each with a real set of books.
+       Every business in the city, each with a real set of books - six when
+       this was written, every sector in Sectors.KEYS now.
 
        WHAT IT WAS: six rows and a click into a wall of Courier. Two of the six
        were wrong - the utilities are a service and are on the Services tab now,
@@ -63,6 +64,9 @@ final class SectorScreen {
     Sector openSector = null;
     static final String SECTOR_HOME   = "Operations";
     String sectorPage = SECTOR_HOME;
+
+    /** Whether every card on the list is open to its second row (0.7.4) - kept while the game runs, like the page, and never saved. */
+    boolean sectorsExpanded = false;
 
     static final String[] SECTOR_PAGES =
             {"Operations", "Income", "Balance sheet", "Cash & debt", "Investors"};
@@ -105,6 +109,33 @@ final class SectorScreen {
                     + "statement behind these rows fills in."));
         }
 
+        /*
+         * SHOW MORE, for every card at once (0.7.4). Jerus: "perhaps a button
+         * in which you can click to expand to show some more info for all at
+         * once while still in that screen." A chip at the top of the list, in
+         * the chip style the policy page's toggles use, that opens every card
+         * to its second row; the state is this screen's, kept while the game
+         * runs and never saved, like the page a sector's books are open at.
+         */
+        Label listSays = new Label("Net income, the last two years of it, and who works there.");
+        listSays.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        Region toggleGap = new Region();
+        HBox.setHgrow(toggleGap, Priority.ALWAYS);
+        HBox toggleRow = new HBox(Palette.GAP, listSays, toggleGap,
+                stepChip(sectorsExpanded ? "Show less" : "Show more", () -> {
+                    sectorsExpanded = !sectorsExpanded;
+                    showSectorMenu();
+                }, false));
+        toggleRow.setAlignment(Pos.CENTER_LEFT);
+        toggleRow.setPrefWidth(STATEMENT);
+        toggleRow.setMaxWidth(STATEMENT);
+        toggleRow.setStyle("-fx-padding: 0 0 6 0;");
+        column.getChildren().add(toggleRow);
+
+        // Every series once, for the sparklines: HistorySave's
+        // netIncome:<sector> since 0.7.4.
+        java.util.Map<String, List<? extends Number>> series = ui.game.getHistorySave().seriesByName();
+
         double total = 0;
         double totalBefore = 0;
         for (Sector sector : ui.game.getSectors().all()) {
@@ -112,7 +143,8 @@ final class SectorScreen {
             SectorBooks.SectorMonth then = books.previous(sector);
             total += now.netIncome();
             totalBefore += then.netIncome();
-            column.getChildren().add(sectorCard(sector, now, then));
+            column.getChildren().add(sectorCard(sector, now, then,
+                    series.get(HistorySave.netIncomeKey(sector.key()))));
         }
 
         column.getChildren().add(statementTotal("All " + numberWord(ui.game.getSectors().size()) + " together",
@@ -135,18 +167,37 @@ final class SectorScreen {
      * The movement is the second figure because the level on its own cannot be
      * read - every one of these is a number nobody has an intuition for, and
      * "down a third" is a fact anybody can act on.
+     *
+     * AND SINCE 0.7.4 A LINE AND A HEAD COUNT. Jerus: "beside each sector to
+     * show some quick info, not only net income and change but also a little
+     * graph of its net income, perhaps how much workers it employs total".
+     * Between the blurb and the figures, the last SPARK_MONTHS of net income
+     * off the history (netIncome:<sector>); under the move, its workers -
+     * Sector.getWorkers(), the posts at the operations page's "Staffed"
+     * share. With the list opened (sectorsExpanded), a second row of five
+     * figures off SectorMonth and the sector. A click anywhere on the card
+     * still opens the books.
      */
-    HBox sectorCard(Sector sector,
-                            SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+    VBox sectorCard(Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then,
+                    List<? extends Number> netIncomeSeries) {
 
         Label name = new Label(sector.label());
         name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
 
+        // Wrapped at a fixed width now that the sparkline sits beside it: a
+        // long blurb takes a second line rather than pushing the figures off.
         Label what = new Label(sectorBlurb(sector));
         what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        what.setWrapText(true);
+        what.setMaxWidth(CARD_LEFT);
 
         VBox left = new VBox(0, name, what);
         left.setAlignment(Pos.CENTER_LEFT);
+        left.setPrefWidth(CARD_LEFT);
+        left.setMinWidth(CARD_LEFT);
+        left.setMaxWidth(CARD_LEFT);
+
+        javafx.scene.Node spark = sparkline(netIncomeSeries);
 
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
@@ -162,27 +213,138 @@ final class SectorScreen {
                 then.isEmpty() ? Palette.TEXT_SPENT
                         : move < 0 ? Palette.BAD : Palette.GOOD));
 
-        VBox right = new VBox(0, figure, change);
+        Label workers = new Label(String.format("%,.0f workers", sector.getWorkers()));
+        workers.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+
+        VBox right = new VBox(0, figure, change, workers);
         right.setAlignment(Pos.CENTER_RIGHT);
 
-        HBox row = new HBox(Palette.GAP, left, gap, right);
+        HBox row = new HBox(Palette.GAP, left, spark, gap, right);
         row.setAlignment(Pos.CENTER_LEFT);
-        row.setPrefWidth(STATEMENT);
-        row.setMaxWidth(STATEMENT);
-        row.setStyle("-fx-padding: 8 12 8 12; -fx-cursor: hand;"
-                + Palette.block(Palette.CONTROL));
-        row.setOnMouseClicked(e -> {
+
+        VBox card = new VBox(0, row);
+        if (sectorsExpanded) card.getChildren().add(sectorCardMore(sector, now));
+        card.setPrefWidth(STATEMENT);
+        card.setMaxWidth(STATEMENT);
+        String rest = "-fx-padding: 8 12 8 12; -fx-cursor: hand;";
+        card.setStyle(rest + Palette.block(Palette.CONTROL));
+        card.setOnMouseClicked(e -> {
             openSector = sector;
             sectorPage = "Operations";
             ui.innerScrollAt.remove("showSectorMenu:body");
             showSectorMenu();
         });
-        row.setOnMouseEntered(e -> row.setStyle("-fx-padding: 8 12 8 12; -fx-cursor: hand;"
+        card.setOnMouseEntered(e -> card.setStyle(rest
                 + Palette.block(Palette.RAISED, Palette.ACCENT)));
-        row.setOnMouseExited(e -> row.setStyle("-fx-padding: 8 12 8 12; -fx-cursor: hand;"
-                + Palette.block(Palette.CONTROL)));
-        VBox.setMargin(row, new javafx.geometry.Insets(0, 0, 6, 0));
-        return row;
+        card.setOnMouseExited(e -> card.setStyle(rest + Palette.block(Palette.CONTROL)));
+        VBox.setMargin(card, new javafx.geometry.Insets(0, 0, 6, 0));
+        return card;
+    }
+
+    /** The width the card's name and blurb are held to, so the sparkline and the figures always have their room (0.7.4). */
+    static final double CARD_LEFT = 280;
+
+    /** The sparkline's width on a sector's card (0.7.4): a word's size, between the blurb and the figures. */
+    static final double SPARK_WIDTH = 90;
+
+    /** ...and its height, a line of caption and a half. */
+    static final double SPARK_HEIGHT = 22;
+
+    /** How many months of net income the sparkline draws (0.7.4): two years. */
+    static final int SPARK_MONTHS = 24;
+
+    /**
+     * A sector's net income as a line (0.7.4): the last SPARK_MONTHS of the
+     * history's netIncome:<sector>, the zero line faint under it, the line
+     * GOOD when the latest month made money and BAD when it did not. No
+     * axes and no labels - the figure beside it is the number - and fewer
+     * than two months is said in words.
+     */
+    javafx.scene.Node sparkline(List<? extends Number> series) {
+
+        List<Double> months = new ArrayList<>();
+        if (series != null) {
+            for (int i = Math.max(0, series.size() - SPARK_MONTHS); i < series.size(); i++) {
+                Number v = series.get(i);
+                if (v != null && Double.isFinite(v.doubleValue())) months.add(v.doubleValue());
+            }
+        }
+        if (months.size() < 2) {
+            Label none = new Label("no history yet");
+            none.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
+            none.setMinWidth(SPARK_WIDTH);
+            none.setPrefWidth(SPARK_WIDTH);
+            return none;
+        }
+
+        // The range always holds zero, so the faint line is always on it.
+        double lo = 0, hi = 0;
+        for (double v : months) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+        final double low = lo, span = hi - lo, pad = 2;
+        final double w = SPARK_WIDTH - 2 * pad, h = SPARK_HEIGHT - 2 * pad;
+        java.util.function.DoubleUnaryOperator y =
+                v -> span <= 0 ? pad + h / 2 : pad + h - (v - low) / span * h;
+
+        javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas(SPARK_WIDTH, SPARK_HEIGHT);
+        javafx.scene.canvas.GraphicsContext g = canvas.getGraphicsContext2D();
+
+        double zero = Math.floor(y.applyAsDouble(0)) + .5;
+        g.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_SPENT, .5));
+        g.setLineWidth(1);
+        g.strokeLine(pad, zero, pad + w, zero);
+
+        double latest = months.get(months.size() - 1);
+        g.setStroke(javafx.scene.paint.Color.web(latest > 0 ? Palette.GOOD : Palette.BAD));
+        g.setLineWidth(1.5);
+        g.beginPath();
+        for (int i = 0; i < months.size(); i++) {
+            double x = pad + w * i / (months.size() - 1);
+            if (i == 0) g.moveTo(x, y.applyAsDouble(months.get(i)));
+            else g.lineTo(x, y.applyAsDouble(months.get(i)));
+        }
+        g.stroke();
+
+        javafx.scene.control.Tooltip.install(canvas, new javafx.scene.control.Tooltip(String.format(
+                "Net income after tax, the last %d months: between %s and %s a month.",
+                months.size(), tightMoney(toDollars(lo)), tightMoney(toDollars(hi)))));
+        return canvas;
+    }
+
+    /**
+     * The card's second row, with the list opened (0.7.4): five figures at the
+     * caption's size - revenue, margin, cash, what it owes, and its workers
+     * against the posts it offers - each off SectorMonth or the sector,
+     * nothing recomputed.
+     */
+    HBox sectorCardMore(Sector sector, SectorBooks.SectorMonth now) {
+        boolean known = !now.isEmpty();
+        HBox more = new HBox(Palette.GAP,
+                moreCell("revenue", known ? tightMoney(toDollars(now.revenue())) + "/mo" : "—",
+                        known ? Palette.TEXT_BODY : Palette.TEXT_SPENT),
+                moreCell("margin", known ? String.format("%.1f%%", now.margin() * 100) : "—",
+                        !known ? Palette.TEXT_SPENT : now.margin() < 0 ? Palette.BAD : Palette.TEXT_BODY),
+                moreCell("cash", known ? tightMoney(toDollars(now.cash())) : "—",
+                        !known ? Palette.TEXT_SPENT : now.cash() < 0 ? Palette.BAD : Palette.TEXT_BODY),
+                moreCell("owes the bank", known ? tightMoney(toDollars(now.bondsPayable())) : "—",
+                        known ? Palette.TEXT_BODY : Palette.TEXT_SPENT),
+                moreCell("posts filled", String.format("%,.0f of %,d",
+                        sector.getWorkers(), sector.getPostsOffered()), Palette.TEXT_BODY));
+        more.setAlignment(Pos.CENTER_LEFT);
+        more.setStyle("-fx-padding: 6 0 0 0;");
+        return more;
+    }
+
+    /** One labelled figure on a card's second row: the word over the figure, a fifth of the card wide. */
+    static VBox moreCell(String word, String figure, String tone) {
+        Label head = new Label(word);
+        head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        Label value = new Label(figure);
+        value.setStyle(Palette.words(Palette.SIZE_CAPTION, tone));
+        VBox cell = new VBox(0, head, value);
+        double wide = (STATEMENT - 24 - 4 * Palette.GAP) / 5;
+        cell.setPrefWidth(wide);
+        cell.setMinWidth(wide);
+        return cell;
     }
 
     /** What the business actually does, in a few words - the sector's own first sentence. */

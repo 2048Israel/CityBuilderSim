@@ -57,6 +57,7 @@ public class YearBookCheck {
         theUnemploymentColumnIsThePool();
         theCurrencyNoteReadsTheRightWay();
         theBookAgreesWithTheModelOnAPlayedCity();
+        theEpisodesAreTheOnesTheFixtureCaused();
 
         System.out.printf("%n%d assertions: %s%n", checks,
                 fails == 0 ? "the year book folds every series by its own rule." : fails + " FAILED");
@@ -463,6 +464,149 @@ public class YearBookCheck {
         yes("the fxRate note says Danzik dollars per US dollar", text.contains("Danzik dollars per US dollar"));
         yes("...and that higher is a fallen currency", text.contains("HIGHER means the currency has fallen"));
         yes("...and never the other way round", !text.contains("US dollars per Danzik dollar"));
+    }
+
+    /* ==================================================================
+       14 - THE NAMED EPISODES ARE THE ONES THE FIXTURE CAUSED, AND ONLY THOSE
+
+       The Reports page marks them under its chart and the book lists them
+       under WHAT HAPPENED, from one list - YearBook.episodes(). So the list is
+       asserted on a hand-built history whose every episode is known:
+
+       - the bank under water for fourteen months, months 11-24;
+       - output growing a dollar a month and losing fourteen dollars of it
+         for good at month 41. The rolling year is compared with the year
+         before, and that comparison falls short only while eleven or twelve
+         of its twelve months carry the loss: 144 of growth less 14 a month
+         of loss is -10, -24, -10 for months 51, 52 and 53, and +4 either side.
+         A recession of exactly three months, which is EPISODE_MIN_MONTHS;
+       - a price index held at 1 and nothing else recorded, so nothing else
+         can fire.
+
+       Then the edges of the rules, each on its own history: a failure one
+       month short of the minimum is nothing, a loss of thirteen (one month
+       below the year before) is neither named nor shaded, two failures a
+       year apart are two names, two in one year are "..., again", and two
+       with less relief than EPISODE_JOIN_MONTHS between them are one.
+       ================================================================== */
+    private static void theEpisodesAreTheOnesTheFixtureCaused() {
+        final int months = 96;
+        final int lossAt = 40;                                  // index; month 41
+        double[] equity = flat(months, 1000);
+        for (int i = 10; i < 24; i++) equity[i] = -50;           // months 11-24, fourteen of them
+        HistorySave h = built(months,
+                new String[] {"bankEquity", "gdp", "priceIndex"},
+                equity, steppedOutput(months, lossAt, 14), flat(months, 1));
+
+        List<YearBook.Episode> got = YearBook.episodes(h);
+        same("the fixture names two episodes and no others", got.size(), 2.0);
+        if (got.size() == 2) {
+            YearBook.Episode bank = got.get(0), slump = got.get(1);
+            same("the first is the bank's", bank.kind(), "financial");
+            same("...named for the year it began",
+                    bank.name(), "Financial crisis of " + CityCalendar.yearOf(11));
+            same("...from the month equity went under", bank.fromMonth(), 11.0);
+            same("...to the last month it was under", bank.toMonth(), 24.0);
+            same("...and its worst is the equity it reached", bank.worst(), -50.0);
+
+            same("the second is the recession", slump.kind(), "recession");
+            same("...named for the year it began",
+                    slump.name(), "Recession of " + CityCalendar.yearOf(51));
+            same("...from the month the year fell short of the one before", slump.fromMonth(), 51.0);
+            same("...for exactly EPISODE_MIN_MONTHS months",
+                    slump.toMonth() - slump.fromMonth() + 1, (double) YearBook.EPISODE_MIN_MONTHS);
+            yes("...and its worst is a fall", slump.worst() < 0);
+        }
+
+        List<int[]> shaded = YearBook.recessions(h);
+        same("the chart shades the same recession and nothing else", shaded.size(), 1.0);
+        if (shaded.size() == 1) {
+            same("...from the month it began", shaded.get(0)[0], 51.0);
+            same("...to the month it ended", shaded.get(0)[1], 53.0);
+        }
+
+        String text = YearBook.years(h);
+        yes("the book lists the crisis, one line with its months",
+                text.contains("Financial crisis of " + CityCalendar.yearOf(11) + " - months 11-24"));
+        yes("...and the recession",
+                text.contains("Recession of " + CityCalendar.yearOf(51) + " - months 51-53"));
+
+        /* ------------------------- the edges ------------------------- */
+        double[] dip = flat(months, 1000);
+        dip[30] = dip[31] = -50;
+        same("a two-month dip under water is not a crisis",
+                YearBook.episodes(built(months, "bankEquity", dip)).size(), 0.0);
+
+        HistorySave blip = built(months, new String[] {"gdp", "priceIndex"},
+                steppedOutput(months, lossAt, 13), flat(months, 1));
+        same("a loss that leaves one month below the year before is not a recession",
+                YearBook.episodes(blip).size(), 0.0);
+        same("...and is not shaded", YearBook.recessions(blip).size(), 0.0);
+
+        double[] twice = flat(months, 1000);
+        for (int i = 5; i <= 7; i++) twice[i] = -50;             // months 6-8
+        for (int i = 17; i <= 19; i++) twice[i] = -50;           // months 18-20, a year on
+        List<YearBook.Episode> two = YearBook.episodes(built(months, "bankEquity", twice));
+        same("two failures a year apart are two episodes", two.size(), 2.0);
+        if (two.size() == 2) {
+            yes("...with two names", !two.get(0).name().equals(two.get(1).name()));
+            same("...the first for its year", two.get(0).name(), "Financial crisis of " + CityCalendar.yearOf(6));
+            same("...the second for its own", two.get(1).name(), "Financial crisis of " + CityCalendar.yearOf(18));
+        }
+
+        double[] again = flat(months, 1000);
+        for (int i = 0; i <= 2; i++) again[i] = -50;             // months 1-3
+        for (int i = 3 + YearBook.EPISODE_JOIN_MONTHS; i <= 5 + YearBook.EPISODE_JOIN_MONTHS; i++) again[i] = -50;
+        List<YearBook.Episode> inOneYear = YearBook.episodes(built(months, "bankEquity", again));
+        same("two failures in one year, EPISODE_JOIN_MONTHS apart, are two episodes", inOneYear.size(), 2.0);
+        if (inOneYear.size() == 2) {
+            same("...and the second is the first's name, again",
+                    inOneYear.get(1).name(), inOneYear.get(0).name() + ", again");
+        }
+
+        double[] joined = flat(months, 1000);
+        for (int i = 0; i <= 2; i++) joined[i] = -50;            // months 1-3
+        int back = 3 + YearBook.EPISODE_JOIN_MONTHS - 1;         // one month less relief
+        for (int i = back; i <= back + 2; i++) joined[i] = -50;
+        List<YearBook.Episode> one = YearBook.episodes(built(months, "bankEquity", joined));
+        same("two failures with less relief than EPISODE_JOIN_MONTHS are one episode", one.size(), 1.0);
+        if (one.size() == 1) {
+            same("...from the first month of the first", one.get(0).fromMonth(), 1.0);
+            same("...to the last month of the second", one.get(0).toMonth(), back + 3.0);
+        }
+    }
+
+    /**
+     * Output growing by one a month from 100, that loses `loss` a month for
+     * good from index `at` on. Every figure is a whole number, so the file's
+     * six decimals carry it exactly.
+     */
+    private static double[] steppedOutput(int months, int at, int loss) {
+        double[] out = new double[months];
+        for (int i = 0; i < months; i++) out[i] = 100 + i - (i >= at ? loss : 0);
+        return out;
+    }
+
+    private static double[] flat(int months, double value) {
+        double[] out = new double[months];
+        java.util.Arrays.fill(out, value);
+        return out;
+    }
+
+    /** A history of `months` months with several series filled in, each as long as the axis. */
+    private static HistorySave built(int months, String[] series, double[]... values) {
+        StringBuilder json = new StringBuilder("{\"month\":[");
+        for (int m = 1; m <= months; m++) json.append(m == 1 ? "" : ",").append(m);
+        json.append("]");
+        for (int s = 0; s < series.length; s++) {
+            json.append(",\"").append(series[s]).append("\":[");
+            for (int i = 0; i < values[s].length; i++) {
+                json.append(i == 0 ? "" : ",").append(String.format(Locale.ROOT, "%.6f", values[s][i]));
+            }
+            json.append("]");
+        }
+        json.append("}");
+        return new Gson().fromJson(json.toString(), HistorySave.class);
     }
 
     /**

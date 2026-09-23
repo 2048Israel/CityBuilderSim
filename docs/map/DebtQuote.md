@@ -1,6 +1,6 @@
 # DebtQuote.java - 162 lines · 8 methods · 1 constants · model
 
-`ham/citybuildersim/DebtQuote.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DebtQuote.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > What a loan would cost, worked out BEFORE the player agrees to it.
 > 

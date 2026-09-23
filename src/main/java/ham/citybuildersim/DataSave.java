@@ -953,6 +953,31 @@ public class DataSave {
     public boolean getPolicyAutopilot()        { return policyAutopilot != null && policyAutopilot; }
 
     /**
+     * How the land office pays (0.7.6) - Game.isLandPaidFromVault(): true out
+     * of the vault's dollars, false converting cash. The player's choice, under
+     * its own key. Null on an older save, which reads as converting - the
+     * default, and the only way land was ever paid for before the toggle.
+     */
+    private Boolean landPaidFromVault;
+
+    public void setLandPaidFromVault(boolean fromVault) { this.landPaidFromVault = fromVault; }
+    public boolean getLandPaidFromVault()               { return landPaidFromVault != null && landPaidFromVault; }
+
+    /**
+     * The inflation target the rule aims at (0.7.4) - DebtManager
+     * .getInflationTarget(). Under its own key, beside the autopilot, because
+     * it is the player's decision and not a position. Boxed so a save
+     * without the key is told apart from a target of 0: an older save reads
+     * null, which is DebtManager.DEFAULT_INFLATION_TARGET - the 2% constant
+     * every city had before the dial.
+     */
+    private Double inflationTarget;
+
+    public void setInflationTarget(double target) { this.inflationTarget = target; }
+    /** The target as saved, or null on a save from before the dial. */
+    public Double getInflationTarget()            { return inflationTarget; }
+
+    /**
      * The central bank's holdings dial (0.7.1): the share of the city's term
      * paper it aims to hold - CentralBank.getTargetShare(). Under its own key
      * rather than in the balance sheet's array, because it is the player's

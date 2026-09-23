@@ -118,8 +118,42 @@ public class DebtManager {
     /** Where the rate sits when nobody is leaning on it either way. */
     public static final double NEUTRAL_RATE = .03;
 
-    /** What the city is trying to hold inflation at. */
-    public static final double INFLATION_TARGET = .02;
+    /** Where the inflation target opens, and what a save from before the dial reads: two per cent, the constant it was until 0.7.4. */
+    public static final double DEFAULT_INFLATION_TARGET = .02;
+
+    /** The top of the target's dial: past ten per cent a year a target stops anchoring anything. */
+    public static final double MAX_INFLATION_TARGET = .10;
+
+    /** The bottom of the target's dial: stable prices to the letter - no central bank aims at falling ones. */
+    public static final double MIN_INFLATION_TARGET = 0;
+
+    /*
+     * THE TARGET IS A DIAL (0.7.4). What the city is trying to hold inflation
+     * at, which the rule below aims at and the strip's colour reads. It was
+     * the constant INFLATION_TARGET, 2%. Jerus: "i want to have the dial not
+     * target 0 inflation, set it so that you can choose what is your
+     * inflation target." The player's, in half points from 0 to 10% on the
+     * monetary page, applied at once like the autopilot beside it; saved
+     * under its own key (DataSave.inflationTarget), and an older save reads
+     * DEFAULT_INFLATION_TARGET - the constant it was.
+     */
+    private double inflationTarget = DEFAULT_INFLATION_TARGET;
+
+    /** What the rule aims inflation at, a fraction a year. */
+    public double getInflationTarget() { return inflationTarget; }
+
+    /** Sets the target, held between MIN_INFLATION_TARGET and MAX_INFLATION_TARGET; not a number leaves it where it was. */
+    public void setInflationTarget(double target) {
+        if (Double.isNaN(target)) return;
+        inflationTarget = Math.max(MIN_INFLATION_TARGET, Math.min(MAX_INFLATION_TARGET, target));
+    }
+
+    /** A target as the screens write it: "2%", or "2.5%" on a half point. */
+    public static String targetWords(double target) {
+        double pct = target * 100;
+        return Math.abs(pct - Math.rint(pct)) < 1e-9
+                ? String.format("%.0f%%", pct) : String.format("%.1f%%", pct);
+    }
 
     /**
      * How hard the advised rate reacts to inflation missing its target.
@@ -161,12 +195,23 @@ public class DebtManager {
      * and it is the dial that stops at 25%. A player reading that could not
      * tell which of the two was the limit. The screens print both when they
      * differ. The cap was Jerus's until the money supply gave the rate a
-     * channel to work through, and lifted to 100% with it in 0.7.2 - so the
-     * two now differ at the floor, when inflation runs under zero,
-     * and at the top only past 66.7% inflation.
+     * channel to work through, and lifted to 100% with it in 0.7.2 - so, at
+     * the default 2% target, the two now differ at the floor, when inflation
+     * runs under zero, and at the top only past 66.7% inflation. Both
+     * thresholds move with the target since 0.7.4, point for point.
      */
     public double ruleRate(double inflation) {
-        return NEUTRAL_RATE + TAYLOR_WEIGHT * (inflation - INFLATION_TARGET);
+        return ruleRate(inflation, inflationTarget);
+    }
+
+    /**
+     * ...and what it would say at a target of the caller's rather than the
+     * dial's (0.7.4): the monetary page's sentence, "at 0% it would set
+     * 10.5%", struck from the rule rather than restated by the screen. Moves
+     * nothing.
+     */
+    public double ruleRate(double inflation, double target) {
+        return NEUTRAL_RATE + TAYLOR_WEIGHT * (inflation - target);
     }
 
     /**
@@ -176,9 +221,10 @@ public class DebtManager {
      */
     public String adviceReason(double inflation) {
         double advised = advisedPolicyRate(inflation);
-        if (Math.abs(inflation - INFLATION_TARGET) < .002) {
-            return String.format("Inflation is %.1f%%, on its %.0f%% target. Hold at %.2f%%.",
-                    inflation * 100, INFLATION_TARGET * 100, advised * 100);
+        String target = targetWords(inflationTarget);
+        if (Math.abs(inflation - inflationTarget) < .002) {
+            return String.format("Inflation is %.1f%%, on its %s target. Hold at %.2f%%.",
+                    inflation * 100, target, advised * 100);
         }
         double rule = ruleRate(inflation);
         String says = rule > MAX_POLICY_RATE
@@ -190,11 +236,11 @@ public class DebtManager {
                         rule * 100, MIN_POLICY_RATE * 100)
                 : String.format("the rule says %.2f%%", advised * 100);
         return String.format(
-                "Inflation is %.1f%% against a %.0f%% target, so %s "
+                "Inflation is %.1f%% against a %s target, so %s "
                 + "- %s a point of inflation by %.1f points of rate, which is what it "
                 + "takes to make money genuinely dearer rather than only nominally.",
-                inflation * 100, INFLATION_TARGET * 100, says,
-                inflation > INFLATION_TARGET ? "meeting" : "giving back",
+                inflation * 100, target, says,
+                inflation > inflationTarget ? "meeting" : "giving back",
                 TAYLOR_WEIGHT);
     }
     private double currentRate = baseRate;

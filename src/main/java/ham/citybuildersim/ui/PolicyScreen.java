@@ -27,8 +27,9 @@ import static ham.citybuildersim.ui.Levers.*;
  * clinic's price and a premium, was added on 2026-09-19. The shell still reads
  * which area and page are open (policyArea, policyPage) for the rail and the
  * scroll memory, and the staged set (staged, isStaged, taxRaised, applyBar,
- * stageSlider, dropProposal, pinnedBands) because other screens offer the same
- * levers.
+ * stagedLadder, dropProposal, pinnedBands) because other screens offer the
+ * same levers. Every dial here is drawn by one class, Ladder (0.7.6), which
+ * replaced the tax pages' taxLadder and everybody else's stageSlider.
  */
 final class PolicyScreen {
 
@@ -48,7 +49,8 @@ final class PolicyScreen {
 
        FOUR ROWS, BY WHAT KIND OF LEVER IT IS - Jerus picked the grouping:
 
-         TAXES     the two city rates, then the wage bands and the sectors that
+         TAXES     a base rate per tax (profit, sales and wage were one city
+                   rate until 0.7.4), then the wage bands and the sectors that
                    move off them
          WAGES     the minimum wage, which is the floor under every other wage
                    in the city and therefore not a tax screen
@@ -164,6 +166,14 @@ final class PolicyScreen {
        Same step, very different bite: 20.00% to 20.25% of income is a one-in-
        eighty change in what income tax raises, while 1.00% to 1.25% of
        assessed value is one in four. The screens say which step they are on.
+
+       AND IT IS A CLASS NOW (0.7.6), ui/Ladder: this banner's taxLadder was
+       the shape, and Jerus asked for it everywhere - "create an object or
+       class of slider, and then whenever you need it you just call that class
+       and plug in the specific sensitivity, max, min and steps". What is left
+       here is the wiring to the staged set: ladderOf() registers a Lever for
+       the foot bar and stages through propose(); stagedLadder(), under THE
+       PIECES A LEVER IS MADE OF, stages a dial that keeps its own apply bar.
        ===================================================================== */
 
     /** A quarter of a point - every rate that moves off the income tax. */
@@ -172,96 +182,50 @@ final class PolicyScreen {
     /** A twentieth of a point - property, where a quarter is a quarter of the tax. */
     static final double STEP_PROPERTY = .0005;
 
-    static final double LADDER_READ = 118;
+    /** The staged key of "Every tax at once" on the Everything page - the one city rate's key, which is what that rate became in 0.7.4. */
+    static final String EVERY_TAX = "income";
 
-    VBox taxLadder(Lever lever) {
+    /** The staged key of one income tax's own base (0.7.4): "base:profit", "base:sales" or "base:wage". */
+    static String baseKey(String tax) { return "base:" + tax; }
 
-        policyLevers.put(lever.key(), lever);
+    /**
+     * The base a preview prices one income tax at: its own lever if staged,
+     * else the every-tax lever if that is, else what it is. The two are never
+     * staged together - a proposal is cleared with the page - but the
+     * precedence is the specific one either way.
+     */
+    double stagedBase(String tax, double current) {
+        return staged(baseKey(tax), staged(EVERY_TAX, current));
+    }
 
-        double at = bounded(staged(lever.key(), lever.current()), lever);
-        boolean off = moved(at, lever.current(), lever.step());
-
-        javafx.scene.control.Slider bar =
-                new javafx.scene.control.Slider(lever.min(), lever.max(), at);
-        bar.setBlockIncrement(lever.step());
-        bar.setMajorTickUnit(Math.max(lever.step(), 1e-9));
-        bar.setMinorTickCount(0);
-        bar.setSnapToTicks(true);
-        double wide = STATEMENT - LADDER_READ - 2 * 28 - 30;
-        bar.setPrefWidth(wide);
-        bar.setMaxWidth(wide);
-
-        Label reading = new Label(lever.read().apply(at));
-        reading.setPrefWidth(LADDER_READ);
-        reading.setMinWidth(LADDER_READ);
-        reading.setAlignment(Pos.CENTER_RIGHT);
-        reading.setStyle(Palette.figure(Palette.SIZE_BODY,
-                off ? Palette.ACCENT : Palette.TEXT_HEAD));
-
-        /*
-         * The reading follows the drag and the COMMIT waits for the release.
-         * Restaging on every pixel would redraw the whole screen under the
-         * pointer, which is both slow and how you lose the thing you were
-         * dragging.
-         */
-        bar.valueProperty().addListener((o, was, now) -> {
-            double v = snapped(now.doubleValue(), lever.min(), lever.step());
-            reading.setText(lever.read().apply(v));
-            reading.setStyle(Palette.figure(Palette.SIZE_BODY,
-                    moved(v, lever.current(), lever.step())
-                            ? Palette.ACCENT : Palette.TEXT_HEAD));
-        });
-        Runnable commit = () -> propose(lever, bar.getValue());
-        bar.setOnMouseReleased(e -> commit.run());
-        bar.setOnKeyReleased(e -> commit.run());
-
-        HBox row = new HBox(10,
-                stepButton("−", at - lever.step() >= lever.min() - 1e-12,
-                        () -> propose(lever, at - lever.step())),
-                bar,
-                stepButton("+", at + lever.step() <= lever.max() + 1e-12,
-                        () -> propose(lever, at + lever.step())),
-                reading);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT);
-
-        Label ends = new Label(lever.read().apply(lever.min())
-                + "   to   " + lever.read().apply(lever.max())
-                + "        one step is " + stepWord(lever.step())
-                + (off ? "        it is " + lever.read().apply(lever.current()) : ""));
-        ends.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                off ? Palette.ACCENT : Palette.TEXT_SPENT));
-
-        VBox box = new VBox(1, row, ends);
-        box.setMaxWidth(STATEMENT);
-        box.setStyle("-fx-padding: 6 0 10 0;");
-        return box;
+    /** Whether anything staged moves this income tax's base: its own lever, or every tax at once. */
+    boolean baseStaged(String tax) {
+        return isStaged(baseKey(tax)) || isStaged(EVERY_TAX);
     }
 
     /**
-     * One notch, in the units the dial is read in.
-     *
-     * PADDING ZERO INLINE. The theme's .button rule carries 6 14 6 14, and on a
-     * button pinned to 28px that leaves the glyph a content box narrower than
-     * nothing - JavaFX draws an ellipsis. setPadding(EMPTY) does not fix it;
-     * only an inline style beats a stylesheet. Third time in the interface,
-     * after the build card's buttons and the shell's round ones.
+     * A registered dial's Ladder, wired to the staged set: the lever goes in
+     * the register the foot bar names and applies from, the thumb sits at
+     * what is staged, and every move goes through propose(). Handed back
+     * unbuilt, so a caller can grey it, narrow it or say its step its own
+     * way before build(); ladder() is the tax pages' finished one.
      */
-    Button stepButton(String glyph, boolean live, Runnable go) {
-        Button button = new Button(glyph);
-        button.setMinSize(28, 28);
-        button.setPrefSize(28, 28);
-        button.setMaxSize(28, 28);
-        button.setDisable(!live);
-        button.setStyle("-fx-padding: 0; -fx-font-size: 14px; -fx-font-weight: bold;"
-                + " -fx-background-radius: 4; -fx-background-insets: 0;"
-                + " -fx-background-color: " + (live ? Palette.CONTROL : Palette.PANEL) + ";"
-                + " -fx-text-fill: " + (live ? Palette.TEXT_HEAD : Palette.TEXT_SPENT) + ";"
-                + (live ? " -fx-cursor: hand;" : ""));
-        button.setOnAction(e -> go.run());
-        return button;
+    Ladder ladderOf(Lever lever) {
+        policyLevers.put(lever.key(), lever);
+        return Ladder.of(lever.min(), lever.max(), lever.step(), lever.read())
+                .current(lever.current())
+                .showing(bounded(staged(lever.key(), lever.current()), lever))
+                .offAtCurrent(isStaged(lever.key()) && changesAtCurrent(lever))
+                .itIs(nowReads(lever))
+                .stages(v -> propose(lever, v));
     }
 
+    /** A tax page's dial, and the farmland relief's: a registered Ladder whose step reads in points. */
+    VBox ladder(Lever lever) {
+        return ladderOf(lever).stepReads(PolicyScreen::stepWord).build();
+    }
+
+    /** How one step reads on a tax page's ends line: in points of the rate. */
     static String stepWord(double step) {
         return step >= .01 ? String.format("%.0f points", step * 100)
                            : String.format("%.2f points", step * 100);
@@ -280,9 +244,30 @@ final class PolicyScreen {
      */
     void propose(Lever lever, double value) {
         double v = bounded(snapped(value, lever.min(), lever.step()), lever);
-        if (moved(v, lever.current(), lever.step())) stage(lever.key(), v);
+        if (moved(v, lever.current(), lever.step()) || changesAtCurrent(lever)) stage(lever.key(), v);
         else unstage(lever.key());
         showPolicyMenu();
+    }
+
+    /**
+     * Whether a lever still changes something at the value it reads as
+     * current (0.7.4): "Every tax at once" once the three income bases have
+     * parted. Its current is the profit rate, and setting all three to it
+     * still moves sales and wage - so it stages there rather than falling
+     * back to "nothing to do". The same for "Every school at once" (0.7.6)
+     * once the nine school kinds' prices have parted: its current is the
+     * first kind's.
+     */
+    boolean changesAtCurrent(Lever lever) {
+        TaxPolicy policy = ui.game.getEconomyManager().getTaxPolicy();
+        return (EVERY_TAX.equals(lever.key()) && policy.incomeRatesSplit())
+                || (EVERY_SCHOOL.equals(lever.key()) && policy.tuitionScalesSplit());
+    }
+
+    /** What a lever reads today, in words: its current value, or "three rates" and "a price per school" for the every-tax and every-school levers once they have parted. */
+    String nowReads(Lever lever) {
+        if (!changesAtCurrent(lever)) return lever.read().apply(lever.current());
+        return EVERY_SCHOOL.equals(lever.key()) ? "a price per school" : "three rates";
     }
 
 
@@ -302,7 +287,10 @@ final class PolicyScreen {
         SalesTaxLedger vat = em.getSalesTaxLedger();
         SectorBooks books = ui.game.getSectorBooks();
 
-        double base = proposed ? staged("income", p.getIncomeTaxRate()) : p.getIncomeTaxRate();
+        // Each income tax at its own base since 0.7.4.
+        double profitBase = proposed ? stagedBase("profit", p.getProfitTaxRate()) : p.getProfitTaxRate();
+        double salesBase  = proposed ? stagedBase("sales", p.getSalesTaxRate()) : p.getSalesTaxRate();
+        double wageBase   = proposed ? stagedBase("wage", p.getWageTaxRate()) : p.getWageTaxRate();
         double prop = proposed ? staged("property", p.getPropertyTaxRate())
                                : p.getPropertyTaxRate();
         double total = 0;
@@ -313,7 +301,7 @@ final class PolicyScreen {
             double bearing = m == null ? 0 : Math.max(0, m.preTaxIncome());
             double pOff = proposed ? staged("profit:" + s.key(), p.getProfitOffset(s))
                                    : p.getProfitOffset(s);
-            total += bearing * clampRate(base + pOff, TaxPolicy.MAX_INCOME_TAX);
+            total += bearing * clampRate(profitBase + pOff, TaxPolicy.MAX_INCOME_TAX);
 
             // Sales moves by the RATIO, not recomputed: this sector's input
             // credits are somebody else's rate and those have not moved.
@@ -321,7 +309,7 @@ final class PolicyScreen {
             double nowRate = p.effectiveSalesRate(s);
             double sOff = proposed ? staged("sales:" + s.key(), p.getSalesOffset(s))
                                    : p.getSalesOffset(s);
-            double atRate = clampRate(base + sOff, TaxPolicy.MAX_INCOME_TAX);
+            double atRate = clampRate(salesBase + sOff, TaxPolicy.MAX_INCOME_TAX);
             total += nowRate > 1e-9 ? net * atRate / nowRate
                                     : vat.getTaxableSales(s.key()) * atRate;
 
@@ -337,7 +325,7 @@ final class PolicyScreen {
             WageBand in = WageBand.of(JobType.values()[i]);
             double off = proposed ? staged("wage:" + in.name(), p.getWageOffset(in))
                                   : p.getWageOffset(in);
-            total += wages[i] * clampRate(base + off, TaxPolicy.MAX_INCOME_TAX);
+            total += wages[i] * clampRate(wageBase + off, TaxPolicy.MAX_INCOME_TAX);
         }
         return total;
     }
@@ -381,7 +369,7 @@ final class PolicyScreen {
             Lever lever = policyLevers.get(entry.getKey());
             if (lever == null) continue;   // not on this page; cannot be described
             box.getChildren().add(wouldBe(lever.name(),
-                    lever.read().apply(lever.current()),
+                    nowReads(lever),
                     lever.read().apply(entry.getValue()), Palette.ACCENT));
             listed++;
         }
@@ -439,21 +427,35 @@ final class PolicyScreen {
        things, and a sector's three offsets were filed together on one row
        whichever of them you had come to look at.
 
-       It is split by which tax it is now. Everything reads; the four act.
+       It is split by which tax it is now. Everything reads, bar the one
+       lever that sets every income tax at once; the four act.
+
+       AND EACH OF THE FOUR HAS ITS OWN RATE (0.7.4). Profit, sales and wage
+       all moved off ONE city rate, so raising sales tax for every sector was
+       fifteen offsets or the city rate, which dragged the other two with it.
+       Jerus: "what about just increasing sale tax for all at the same time?
+       ... i want to be able to do that for every type of tax, even wage tax".
+       Each tax page's top lever is that tax's own base now (baseRateLever),
+       and his old city rate is the Everything page's "Every tax at once".
        ===================================================================== */
 
-    /** Profit, sales and wage all move off the income rate, so it is on all three. */
-    void cityRateLever(VBox column, TaxPolicy policy, String which) {
+    /**
+     * One income tax's own base (0.7.4): the top lever of the profit, sales
+     * and wage pages. Every offset on the page moves off it, and nothing on
+     * the other two pages does. Staged under baseKey(tax) and applied
+     * through the one foot bar like every other dial on the tab.
+     */
+    void baseRateLever(VBox column, String tax, String title, String offsets,
+                       double current, java.util.function.DoubleConsumer apply) {
 
-        double base = policy.getIncomeTaxRate();
-        column.getChildren().add(statementHead("The city rate"));
-        column.getChildren().add(leverHead(pct2(base),
-                "One rate on what every business earns, on the value they add, and on "
-                + "every wage paid. " + which + " moves off this number rather than "
-                + "replacing it - so this dial moves the other two taxes with it."));
-        column.getChildren().add(taxLadder(new Lever("income", "The city rate", base,
+        column.getChildren().add(statementHead(title));
+        column.getChildren().add(leverHead(pct2(current),
+                offsets + " moves off this number, so this one dial moves every one of them "
+                + "at once - and only them: the other two income taxes have rates of their "
+                + "own. \"Every tax at once\", on the Everything page, sets all three."));
+        column.getChildren().add(ladder(new Lever(baseKey(tax), title, current,
                 0, TaxPolicy.MAX_INCOME_TAX, STEP_INCOME,
-                Money::pct2, policy::setIncomeTaxRate)));
+                Money::pct2, apply)));
     }
 
     /* ------------------------------ EVERYTHING ------------------------------ */
@@ -472,16 +474,16 @@ final class PolicyScreen {
 
         column.getChildren().add(statementHead("Where the money comes from"));
         column.getChildren().add(statementNote(
-                "Last month, by tax. Three of the four are the city rate with a move off "
-                + "it; the fourth is charged on what things are worth rather than on "
-                + "anything anybody earned."));
+                "Last month, by tax. Each has a rate of its own, and three of the four a "
+                + "move off it by sector or by band; the fourth is charged on what things "
+                + "are worth rather than on anything anybody earned."));
 
         column.getChildren().add(taxSourceRow("Profit", profit, all,
-                pct2(policy.getIncomeTaxRate()), "on what the sectors earned", "Profit"));
+                pct2(policy.getProfitTaxRate()), "on what the sectors earned", "Profit"));
         column.getChildren().add(taxSourceRow("Sales", sales, all,
-                pct2(policy.getIncomeTaxRate()), "on the value they add", "Sales"));
+                pct2(policy.getSalesTaxRate()), "on the value they add", "Sales"));
         column.getChildren().add(taxSourceRow("Wage", wage, all,
-                pct2(policy.getIncomeTaxRate()), "off every payroll in the city", "Wage"));
+                pct2(policy.getWageTaxRate()), "off every payroll in the city", "Wage"));
         column.getChildren().add(taxSourceRow("Property", prop, all,
                 String.format("%.2f%% a year", policy.getPropertyTaxRate() * 100),
                 "on land and buildings, earning or not", "Property"));
@@ -498,21 +500,42 @@ final class PolicyScreen {
                 "A sector that lost money paid no profit tax at all, which is why the "
                 + "first line falls in a bad month with nobody having touched a rate."));
 
-        cityRateLever(column, policy, "Profit, sales and wage tax each");
+        /*
+         * EVERY TAX AT ONCE (0.7.4) - what the one city rate became once each
+         * income tax had its own. The three bases side by side first, so a
+         * player sees when they have parted, then the ladder that sets all
+         * three to one number (TaxPolicy.setIncomeTaxRate()).
+         */
+        boolean parted = policy.incomeRatesSplit();
+        column.getChildren().add(statementHead("Every tax at once"));
+        column.getChildren().add(statementLine("The profit rate",
+                pct2(policy.getProfitTaxRate()), parted ? Palette.ACCENT : Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("The sales rate",
+                pct2(policy.getSalesTaxRate()), parted ? Palette.ACCENT : Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("The wage rate",
+                pct2(policy.getWageTaxRate()), parted ? Palette.ACCENT : Palette.TEXT_HEAD));
+        column.getChildren().add(leverHead(parted ? "three rates" : pct2(policy.getIncomeTaxRate()),
+                (parted ? "Profit, sales and wage tax have parted - each page moves its own. "
+                        : "Profit, sales and wage tax are one rate today. ")
+                + "This dial sets all three to one number, which is what the single city rate "
+                + "did; every sector's and every band's move rides whichever base is its "
+                + "own, so a sector you have customised keeps its treatment."));
+        column.getChildren().add(ladder(new Lever(EVERY_TAX, "Every tax at once",
+                policy.getIncomeTaxRate(), 0, TaxPolicy.MAX_INCOME_TAX, STEP_INCOME,
+                Money::pct2, policy::setIncomeTaxRate)));
 
-        if (isStaged("income")) {
-            double want = staged("income", policy.getIncomeTaxRate());
-            double base = policy.getIncomeTaxRate();
+        if (isStaged(EVERY_TAX)) {
+            double want = staged(EVERY_TAX, policy.getIncomeTaxRate());
             column.getChildren().add(wouldHead());
             column.getChildren().add(wouldBe("Profit tax", money(profit),
-                    money(scaled(profit, profitFactor(policy, base, want))), null));
+                    money(scaled(profit, profitFactor(policy, policy.getProfitTaxRate(), want))), null));
             column.getChildren().add(wouldBe("Sales tax", money(sales),
-                    money(scaled(sales, salesFactor(policy, base, want))), null));
+                    money(scaled(sales, salesFactor(policy, policy.getSalesTaxRate(), want))), null));
             column.getChildren().add(wouldBe("Wage tax", money(wage),
                     money(wageTaxAtBase(policy, want)), null));
             column.getChildren().add(statementNote(
                     "Property is not on this list: it is charged on value rather than on "
-                    + "income, and the city rate does not reach it."));
+                    + "income, and this dial does not reach it."));
         }
 
         java.util.List<String[]> flags = policyFlags();
@@ -578,7 +601,7 @@ final class PolicyScreen {
         TaxPolicy policy = em.getTaxPolicy();
         NationalAccounts na = em.getNationalAccounts();
         SectorBooks books = ui.game.getSectorBooks();
-        double base = policy.getIncomeTaxRate();
+        double base = policy.getProfitTaxRate();
 
         column.getChildren().add(statementHead("Profit tax"));
         column.getChildren().add(leverHead(money(na.getTaxBusiness() + na.getTaxIndustrial()),
@@ -586,7 +609,8 @@ final class PolicyScreen {
                 + "pays nothing, so this is the half of the city's revenue that falls "
                 + "exactly when the city needs it most."));
 
-        cityRateLever(column, policy, "Every sector's profit rate");
+        baseRateLever(column, "profit", "The profit rate", "Every sector's profit tax",
+                base, policy::setProfitTaxRate);
 
         column.getChildren().add(statementHead("Every sector, and its move off that"));
 
@@ -610,8 +634,8 @@ final class PolicyScreen {
         }
         column.getChildren().add(table);
         column.getChildren().add(statementNote(
-                "A move is in POINTS off the city rate, so a sector left at zero is taxed "
-                + "at exactly " + pct2(base) + " and follows the city rate wherever it "
+                "A move is in POINTS off the profit rate, so a sector left at zero is taxed "
+                + "at exactly " + pct2(base) + " and follows the profit rate wherever it "
                 + "goes. The offsets are capped at "
                 + String.format("%.0f", TaxPolicy.MAX_OFFSET * 100) + " points either way."));
 
@@ -621,8 +645,8 @@ final class PolicyScreen {
             double offset = policy.getProfitOffset(sector);
             final Sector s = sector;
             String key = "profit:" + sector.key();
-            boolean touched = isStaged("income") || isStaged(key);
-            double wantBase = staged("income", base);
+            boolean touched = baseStaged("profit") || isStaged(key);
+            double wantBase = stagedBase("profit", base);
             column.getChildren().add(bandLever(sector.label(), pts(offset),
                     arrow(touched, pct2(policy.effectiveProfitRate(sector)),
                             pct2(clampRate(wantBase + staged(key, offset),
@@ -631,7 +655,7 @@ final class PolicyScreen {
                                 + " of pre-tax income"
                                 : "it made nothing to be taxed on last month",
                     offset));
-            column.getChildren().add(taxLadder(new Lever(key,
+            column.getChildren().add(ladder(new Lever(key,
                     sector.label() + ", profit", offset,
                     -TaxPolicy.MAX_OFFSET, TaxPolicy.MAX_OFFSET, STEP_INCOME,
                     Money::pts, v -> policy.setProfitOffset(s, v))));
@@ -654,7 +678,9 @@ final class PolicyScreen {
                 + "parts pays on the assembly, which is why this raises money from a "
                 + "chain without charging the same dollar twice."));
 
-        cityRateLever(column, policy, "Every sector's sales rate");
+        double base = policy.getSalesTaxRate();
+        baseRateLever(column, "sales", "The sales rate", "Every sector's sales tax",
+                base, policy::setSalesTaxRate);
 
         column.getChildren().add(statementHead("Every sector, and its move off that"));
 
@@ -690,8 +716,8 @@ final class PolicyScreen {
             double offset = policy.getSalesOffset(sector);
             final Sector s = sector;
             String key = "sales:" + sector.key();
-            boolean touched = isStaged("income") || isStaged(key);
-            double wantBase = staged("income", policy.getIncomeTaxRate());
+            boolean touched = baseStaged("sales") || isStaged(key);
+            double wantBase = stagedBase("sales", base);
             column.getChildren().add(bandLever(sector.label(), pts(offset),
                     arrow(touched, pct2(policy.effectiveSalesRate(sector)),
                             pct2(clampRate(wantBase + staged(key, offset),
@@ -701,7 +727,7 @@ final class PolicyScreen {
                                      ? "in refund - its credits exceed what it owes"
                                      : "it sold nothing taxable last month",
                     offset));
-            column.getChildren().add(taxLadder(new Lever(key,
+            column.getChildren().add(ladder(new Lever(key,
                     sector.label() + ", sales", offset,
                     -TaxPolicy.MAX_OFFSET, TaxPolicy.MAX_OFFSET, STEP_INCOME,
                     Money::pts, v -> policy.setSalesOffset(s, v))));
@@ -715,7 +741,7 @@ final class PolicyScreen {
         EconomyManager em = ui.game.getEconomyManager();
         TaxPolicy policy = em.getTaxPolicy();
         NationalAccounts na = em.getNationalAccounts();
-        double base = policy.getIncomeTaxRate();
+        double base = policy.getWageTaxRate();
 
         column.getChildren().add(statementHead("Wage tax"));
         column.getChildren().add(leverHead(money(na.getTaxWage()),
@@ -723,7 +749,8 @@ final class PolicyScreen {
                 + "jobs are grouped by the education they need, which is the only "
                 + "grouping the labour market itself uses."));
 
-        cityRateLever(column, policy, "Every band's rate");
+        baseRateLever(column, "wage", "The wage rate", "Every band's wage tax",
+                base, policy::setWageTaxRate);
 
         column.getChildren().add(statementHead("The eleven jobs, in four bands"));
 
@@ -755,8 +782,8 @@ final class PolicyScreen {
             double payroll = payrollIn(band);
             final WageBand b = band;
             String key = "wage:" + band.name();
-            boolean touched = isStaged("income") || isStaged(key);
-            double wantBase = staged("income", base);
+            boolean touched = baseStaged("wage") || isStaged(key);
+            double wantBase = stagedBase("wage", base);
             column.getChildren().add(bandLever(band.label(), pts(offset),
                     arrow(touched, pct2(policy.effectiveWageRate(band)),
                             pct2(clampRate(wantBase + staged(key, offset),
@@ -765,7 +792,7 @@ final class PolicyScreen {
                                 + " a month, off " + money(payroll) + " of payroll"
                                 : "nobody in the city holds one of these jobs",
                     offset));
-            column.getChildren().add(taxLadder(new Lever(key,
+            column.getChildren().add(ladder(new Lever(key,
                     band.label() + ", wage", offset,
                     -TaxPolicy.MAX_OFFSET, TaxPolicy.MAX_OFFSET, STEP_INCOME,
                     Money::pts, v -> policy.setWageOffset(b, v))));
@@ -792,7 +819,7 @@ final class PolicyScreen {
         double health = policy.getHealthPremiumRate();
 
         column.getChildren().add(statementHead("What a payslip actually loses"));
-        column.getChildren().add(statementLine("Wage tax, at the city rate",
+        column.getChildren().add(statementLine("Wage tax, at the wage rate",
                 pct2(base), Palette.TEXT_HEAD));
         column.getChildren().add(statementLine("Pension contribution",
                 pct2(pension), Palette.TEXT_SPENT));
@@ -807,7 +834,7 @@ final class PolicyScreen {
         column.getChildren().add(statementNote(
                 "Only the first is a tax and only the first is set here - the other three "
                 + "are promises the city has made and they are charged on the same "
-                + "payroll. A band with a move off the city rate pays that instead of "
+                + "payroll. A band with a move off the wage rate pays that instead of "
                 + "the first line; the other three are flat across every band."));
 
         Label door = new Label("Set the pension contribution and the premiums  ›");
@@ -844,7 +871,7 @@ final class PolicyScreen {
         column.getChildren().add(statementTotal("Raised last month", money(na.getPropertyTax()),
                 na.getPropertyTax() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
 
-        column.getChildren().add(taxLadder(new Lever("property", "The property rate", prop,
+        column.getChildren().add(ladder(new Lever("property", "The property rate", prop,
                 0, TaxPolicy.MAX_PROPERTY_TAX, STEP_PROPERTY,
                 r -> String.format("%.2f%%", r * 100), policy::setPropertyTaxRate)));
         column.getChildren().add(statementNote(
@@ -906,7 +933,7 @@ final class PolicyScreen {
                               + " a month, on " + money(assessed) + " assessed"
                             : "it owns nothing the city can assess",
                     offset));
-            column.getChildren().add(taxLadder(new Lever(key,
+            column.getChildren().add(ladder(new Lever(key,
                     sector.label() + ", property", offset,
                     -TaxPolicy.MAX_PROPERTY_TAX, TaxPolicy.MAX_PROPERTY_TAX, STEP_PROPERTY,
                     o -> String.format("%+.2f pts", o * 100),
@@ -945,11 +972,17 @@ final class PolicyScreen {
         column.setAlignment(Pos.TOP_LEFT);
         column.setMaxWidth(Region.USE_PREF_SIZE);
 
+        // Each tax's own rate since 0.7.4: one income figure while the three
+        // are one, all three once they have parted.
         column.getChildren().add(policyRow("Taxes",
-                "the two city rates, and the moves off them by band and by sector",
+                "each tax's own rate, and the moves off it by band and by sector",
                 money(taxRaised()),
-                String.format("%.1f%% on income · %.2f%% a year on property",
-                        policy.getIncomeTaxRate() * 100, policy.getPropertyTaxRate() * 100),
+                policy.incomeRatesSplit()
+                        ? String.format("%.1f / %.1f / %.1f%% on income · %.2f%% on property",
+                                policy.getProfitTaxRate() * 100, policy.getSalesTaxRate() * 100,
+                                policy.getWageTaxRate() * 100, policy.getPropertyTaxRate() * 100)
+                        : String.format("%.1f%% on income · %.2f%% a year on property",
+                                policy.getIncomeTaxRate() * 100, policy.getPropertyTaxRate() * 100),
                 Palette.GOOD, "Taxes", "Everything"));
 
         column.getChildren().add(policyRow("Wages",
@@ -1145,11 +1178,11 @@ final class PolicyScreen {
                 // what bounds it - see DebtManager.ruleRate() (2026-09-21).
                 out.add(new String[] {Palette.ACCENT, "The rule disagrees with the dial",
                         String.format("The policy rate is %.2f%% and the rule would set it "
-                        + "at %.2f%%%s. Inflation is running at %+.1f%% against a %.0f%% "
+                        + "at %.2f%%%s. Inflation is running at %+.1f%% against a %s "
                         + "target.", market.getPolicyRate() * 100, rule * 100,
                         Math.abs(rule - advised) > 1e-9
                                 ? String.format(" - the dial stops at %.2f%%", advised * 100) : "",
-                        px.inflation() * 100, DebtManager.INFLATION_TARGET * 100)});
+                        px.inflation() * 100, DebtManager.targetWords(market.getInflationTarget()))});
             }
         }
 
@@ -1161,14 +1194,31 @@ final class PolicyScreen {
                     + "nothing else.", ui.game.getPriceIndex().getIndex())});
         }
 
-        /* ------------------------------ at the stops ------------------------------ */
-        if (policy.getIncomeTaxRate() >= TaxPolicy.MAX_INCOME_TAX - 1e-9) {
-            out.add(new String[] {Palette.WARN, "Income tax is at its legal maximum",
-                    String.format("%.0f%%. There is no more revenue to be had from this "
-                    + "lever, whatever the budget says.", TaxPolicy.MAX_INCOME_TAX * 100)});
+        /* ------------------------------ at the stops ------------------------------
+         * Each income tax at its own stop since 0.7.4, named: one, two, or
+         * all three together.
+         */
+        java.util.List<String> atStop = new java.util.ArrayList<>();
+        if (policy.getProfitTaxRate() >= TaxPolicy.MAX_INCOME_TAX - 1e-9) atStop.add("profit");
+        if (policy.getSalesTaxRate()  >= TaxPolicy.MAX_INCOME_TAX - 1e-9) atStop.add("sales");
+        if (policy.getWageTaxRate()   >= TaxPolicy.MAX_INCOME_TAX - 1e-9) atStop.add("wage");
+        if (!atStop.isEmpty()) {
+            String which = atStop.size() == 3 ? "Every income tax is"
+                    : atStop.size() == 2 ? capitalised(atStop.get(0)) + " and " + atStop.get(1) + " tax are"
+                    : capitalised(atStop.get(0)) + " tax is";
+            out.add(new String[] {Palette.WARN,
+                    which + " at " + (atStop.size() == 1 ? "its" : "their") + " legal maximum",
+                    String.format("%.0f%%. There is no more revenue to be had from %s, whatever "
+                    + "the budget says.", TaxPolicy.MAX_INCOME_TAX * 100,
+                    atStop.size() == 1 ? "this lever" : "these levers")});
         }
 
         return out;
+    }
+
+    /** "sales" to "Sales", for a flag that opens with a tax's name. */
+    static String capitalised(String word) {
+        return word.isEmpty() ? word : Character.toUpperCase(word.charAt(0)) + word.substring(1);
     }
 
     VBox flagLine(String tone, String heading, String body) {
@@ -1272,9 +1322,10 @@ final class PolicyScreen {
                     case "Health"      -> healthPage(column);
                     default            -> pensionPage(column);
                 }
-                // The Schools page registers its five dials so one bar
-                // applies them (2026-09-21); a page that registers nothing
-                // draws nothing here, and keeps its own apply bars.
+                // The Schools page registers its dials so one bar applies
+                // them (2026-09-21; a price per school kind since 0.7.6); a
+                // page that registers nothing draws nothing here, and keeps
+                // its own apply bars.
                 column.getChildren().add(stagedBar(false));
             }
             default -> {
@@ -1327,78 +1378,41 @@ final class PolicyScreen {
        ===================================================================== */
 
     /**
-     * The lever itself: a slider that STAGES a change rather than making one.
+     * The lever itself: a Ladder (0.7.6) that STAGES a change rather than
+     * making one, for a dial that keeps its own apply bar - the wage floor,
+     * the policy rate, the pension's two, EI's two, the clinic's two, and
+     * the fare on Services.
      *
      * Jerus: "i think the tax should a slider, as well as the other stuff in
      * policy" - and he is right. A rate is a continuous quantity, and a row of
      * step buttons makes the player do arithmetic to get anywhere they can
-     * already see on a scale.
-     *
-     * THE READING TRACKS THE THUMB, THE PREVIEW WAITS FOR THE RELEASE. Rebuilding
-     * the screen on every pixel of a drag would make the drag unusable, so the
-     * figure beside the slider updates live off the value property and only
-     * letting go stages the proposal and redraws the before/after under it.
+     * already see on a scale. Since 0.7.6 it has the step buttons as well,
+     * one step each, because a drag alone cannot land on a step reliably.
      *
      * Dropping the thumb back where it started clears the proposal rather than
      * staging a change of nothing, which is what makes the slider its own
      * cancel button - ITS OWN, since 2026-09-21: it unstages its key, as
-     * propose() does for a ladder, where it used to drop the whole set. On a
-     * page of one dial that is the same thing; on the Schools page's five it
-     * was one thumb put back throwing four other decisions away.
+     * propose() does for a registered lever, where it used to drop the whole
+     * set. On a page of one dial that is the same thing; on the Schools
+     * page's five it was one thumb put back throwing four other decisions
+     * away.
      *
      * THE REDRAW IS THE CALLER'S SCREEN, not this one. The transit fare is a
-     * lever on the Services tab drawn with this same slider, and until
+     * lever on the Services tab drawn with this same dial, and until
      * 2026-09-18 letting go of it redrew the policy screen - the player was
      * carried to a tab the dial is not on. ui.redraw() draws whatever screen
      * registered itself last, which on this tab is showPolicyMenu().
      */
-    VBox stageSlider(String key, double current, double min, double max,
-                             double step, java.util.function.DoubleFunction<String> label) {
-
-        double at = Math.max(min, Math.min(max, staged(key, current)));
-
-        javafx.scene.control.Slider bar = new javafx.scene.control.Slider(min, max, at);
-        bar.setBlockIncrement(step);
-        bar.setMajorTickUnit(Math.max(step, 1e-9));
-        bar.setMinorTickCount(0);
-        bar.setSnapToTicks(true);
-        bar.setPrefWidth(STATEMENT - 170);
-        bar.setMaxWidth(STATEMENT - 170);
-
-        Label reading = new Label(label.apply(at));
-        reading.setPrefWidth(130);
-        reading.setMinWidth(130);
-        reading.setAlignment(Pos.CENTER_RIGHT);
-        reading.setStyle(Palette.figure(Palette.SIZE_BODY, moved(at, current, step)
-                ? Palette.ACCENT : Palette.TEXT_HEAD));
-
-        bar.valueProperty().addListener((o, was, now) -> {
-            double v = snapped(now.doubleValue(), min, step);
-            reading.setText(label.apply(v));
-            reading.setStyle(Palette.figure(Palette.SIZE_BODY, moved(v, current, step)
-                    ? Palette.ACCENT : Palette.TEXT_HEAD));
-        });
-
-        Runnable commit = () -> {
-            double v = Math.max(min, Math.min(max, snapped(bar.getValue(), min, step)));
-            if (moved(v, current, step)) stage(key, v); else unstage(key);
-            ui.redraw();   // whichever screen the dial is on - the fare dial lives on Services
-        };
-        bar.setOnMouseReleased(e -> commit.run());
-        bar.setOnKeyReleased(e -> commit.run());
-
-        HBox row = new HBox(Palette.GAP, bar, reading);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT);
-
-        Label ends = new Label(label.apply(min) + "   to   " + label.apply(max)
-                + (moved(at, current, step) ? "        it is " + label.apply(current) : ""));
-        ends.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
-
-        VBox box = new VBox(0, row, ends);
-        box.setMaxWidth(STATEMENT);
-        box.setStyle("-fx-padding: 6 0 8 0;");
-        return box;
+    VBox stagedLadder(String key, double current, double min, double max,
+                      double step, java.util.function.DoubleFunction<String> label) {
+        return Ladder.of(min, max, step, label)
+                .current(current)
+                .showing(staged(key, current))
+                .stages(v -> {
+                    if (moved(v, current, step)) stage(key, v); else unstage(key);
+                    ui.redraw();   // whichever screen the dial is on - the fare dial lives on Services
+                })
+                .build();
     }
 
     /** Apply, or put it back. Nothing else on this bar. */
@@ -1475,7 +1489,7 @@ final class PolicyScreen {
                     + "whether a field sunk now survives the city reaching it."));
         }
 
-        column.getChildren().add(taxLadder(new Lever("farmland", "Farmland relieved",
+        column.getChildren().add(ladder(new Lever("farmland", "Farmland relieved",
                 relief, 0, 1, .05, r -> String.format("%.0f%%", r * 100),
                 policy::setFarmlandRelief)));
 
@@ -1603,7 +1617,7 @@ final class PolicyScreen {
      *        happened to, and the totals belong once, at the foot.
      *
      *        It also answers a question the old screens could not: stage the
-     *        CITY rate alone and every row on the page shows what that does to
+     *        page's BASE rate alone and every row on the page shows what that does to
      *        it, sector by sector, without touching anything else.
      */
     VBox bandLever(String name, String offset, String effective,
@@ -1736,7 +1750,7 @@ final class PolicyScreen {
         column.getChildren().add(statementTotal("Its own payroll", money(cityPayroll),
                 Palette.WARN));
 
-        column.getChildren().add(stageSlider("floor", floor,
+        column.getChildren().add(stagedLadder("floor", floor,
                 market.getMinSettable(), market.getMaxSettable(),
                 (market.getMaxSettable() - market.getMinSettable()) / 200,
                 Money::unitPrice));
@@ -1843,13 +1857,14 @@ final class PolicyScreen {
                             ? "...but the dial stops at" : "...but the dial cannot go below",
                     pct2(advised), Palette.WARN));
         }
+        // Against the player's target since 0.7.4 - the dial under the autopilot below.
+        double target = market.getInflationTarget();
         column.getChildren().add(statementLine("Inflation, year on year",
                 px.hasRate() ? String.format("%+.1f%%", inflation * 100) : "not yet",
-                px.hasRate() && Math.abs(inflation - DebtManager.INFLATION_TARGET) > .01
+                px.hasRate() && Math.abs(inflation - target) > .01
                         ? Palette.WARN : Palette.GOOD));
         column.getChildren().add(statementLine("...against a target of",
-                String.format("%.0f%%", DebtManager.INFLATION_TARGET * 100),
-                Palette.TEXT_MUTED));
+                DebtManager.targetWords(target), Palette.TEXT_MUTED));
         column.getChildren().add(statementNote(px.hasRate()
                 ? market.adviceReason(inflation)
                 : "There is not yet a year of prices to measure inflation against. The "
@@ -1983,6 +1998,52 @@ final class PolicyScreen {
                         + "will set it there every month, until you take it back.", pct2(advised))));
 
         /*
+         * THE TARGET, AS A DIAL (0.7.4), under the hand that holds the rate,
+         * because the rule is what it moves. Jerus: "i want to have the dial
+         * not target 0 inflation, set it so that you can choose what is your
+         * inflation target." DebtManager.getInflationTarget(), in half
+         * points to MAX_INFLATION_TARGET: chips for the everyday settings and
+         * a ladder for the rest. APPLIED AT ONCE, like the toggle above and
+         * the holdings and the ceiling below, not staged - it moves no price
+         * this month, only what the rule says, and the rule's line above and
+         * the sentence under this redraw on it. Under a head of its own, and
+         * the rate's slider under one after it, so neither dial reads as the
+         * other's.
+         */
+        column.getChildren().add(statementHead("What the rule aims at"));
+        column.getChildren().add(statementLine("The target",
+                DebtManager.targetWords(target) + " a year", Palette.ACCENT));
+        String[] targets = new String[TARGET_STEPS.length];
+        for (int i = 0; i < TARGET_STEPS.length; i++) targets[i] = TARGET_STEPS[i] + "%";
+        column.getChildren().add(chipStrip(targets, DebtManager.targetWords(target),
+                Palette.SIZE_CAPTION, picked -> {
+                    market.setInflationTarget(Integer.parseInt(picked.replace("%", "")) / 100.0);
+                    showPolicyMenu();
+                }));
+        // The ladder beside the chips (0.7.6): half a point a step across the
+        // whole range, applied at once like the chips, landed on the
+        // half-point grid so a run of steps reads 3% and not 3.0000000000000004%.
+        column.getChildren().add(Ladder.of(DebtManager.MIN_INFLATION_TARGET,
+                        DebtManager.MAX_INFLATION_TARGET, TARGET_STEP, DebtManager::targetWords)
+                .current(target)
+                .appliesAtOnce(v -> { market.setInflationTarget(halfPoint(v)); showPolicyMenu(); })
+                .build());
+        // Struck from the rule at both targets - DebtManager.ruleRate(inflation,
+        // target) - on this month's inflation once there is a year of it, and
+        // on 5% as the example until there is.
+        double example = px.hasRate() ? inflation : .05;
+        double otherTarget = target > 1e-9 ? 0 : DebtManager.DEFAULT_INFLATION_TARGET;
+        column.getChildren().add(statementNote(String.format(
+                "The rule aims prices here. At %s with inflation at %.1f%% it sets %.1f%%; at %s "
+                + "it would set %.1f%%. A point of target is %.1f points off the rule's rate at "
+                + "any inflation - the same slope, aimed somewhere else.",
+                DebtManager.targetWords(target), example * 100, market.ruleRate(example) * 100,
+                DebtManager.targetWords(otherTarget), market.ruleRate(example, otherTarget) * 100,
+                DebtManager.TAYLOR_WEIGHT)));
+
+        column.getChildren().add(statementHead("The rate, by hand"));
+
+        /*
          * THE DIAL REACHES 100% (0.7.2): DebtManager.MAX_POLICY_RATE lifted
          * from 25% with the currency's rate channel. A slider across a hundred
          * points puts the everyday range in its first tenth, so the steps a
@@ -1990,7 +2051,7 @@ final class PolicyScreen {
          * 5 to 20 for a warm one, 30 to 100 for a spiral - each staging the
          * rate, which the slider then fine-tunes.
          */
-        column.getChildren().add(stageSlider("policy", rate,
+        column.getChildren().add(stagedLadder("policy", rate,
                 DebtManager.MIN_POLICY_RATE, DebtManager.MAX_POLICY_RATE, .0005,
                 Money::pct2));
         javafx.scene.layout.FlowPane steps = new javafx.scene.layout.FlowPane(6, 6);
@@ -2063,6 +2124,13 @@ final class PolicyScreen {
             cb.setTargetShare(Integer.parseInt(picked.replace("%", "")) / 100.0);
             showPolicyMenu();
         }));
+        // ...and the ladder under the chips (0.7.6), a chip's ten points a
+        // step, applied at once as the chips are.
+        column.getChildren().add(Ladder.of(0, CentralBank.MAX_QE_SHARE, HOLDINGS_STEP,
+                        v -> String.format("%.0f%%", v * 100))
+                .current(cb.getTargetShare())
+                .appliesAtOnce(v -> { cb.setTargetShare(Math.round(v * 100) / 100.0); showPolicyMenu(); })
+                .build());
         column.getChildren().add(statementNote(String.format(
                 "Buying creates the money that pays for it and takes the paper off the bank's "
                 + "book; the long end of the curve bends down in proportion - at %.0f%% the "
@@ -2094,6 +2162,14 @@ final class PolicyScreen {
             cb.setAdvancesCeilingMonths(Integer.parseInt(picked.replace(" months", "")));
             showPolicyMenu();
         }));
+        // ...and the ladder under the chips (0.7.6): a month of revenue a
+        // step over the whole of CentralBank's range, the chips' settings all
+        // on it, applied at once as the chips are.
+        column.getChildren().add(Ladder.of(0, CentralBank.MAX_ADVANCES_CEILING, CEILING_STEP,
+                        PolicyScreen::monthsWords)
+                .current(cb.getAdvancesCeilingMonths())
+                .appliesAtOnce(v -> { cb.setAdvancesCeilingMonths(v); showPolicyMenu(); })
+                .build());
         column.getChildren().add(statementNote(String.format(
                 "When the treasury runs dry the central bank advances the gap in money it "
                 + "makes - printing - up to this many months of the treasury's revenue. Past "
@@ -2108,6 +2184,28 @@ final class PolicyScreen {
 
     /** The advances ceiling's settings, in months of revenue (0.7.2), up to CentralBank.MAX_ADVANCES_CEILING. */
     static final int[] CEILING_STEPS = { 3, 6, 12, 24, 36 };
+
+    /** The inflation targets the chips set at once, in percent (0.7.4): the everyday range, the ladder beside them reaching the rest. */
+    static final int[] TARGET_STEPS = { 0, 1, 2, 3, 4, 5 };
+
+    /** One step of the target's ladder (0.7.4): half a point. */
+    static final double TARGET_STEP = .005;
+
+    /** One step of the holdings' ladder (0.7.6): ten points of the term paper, the chips' own spacing. */
+    static final double HOLDINGS_STEP = .10;
+
+    /** One step of the ceiling's ladder (0.7.6): a month of revenue, the unit the chips are in. */
+    static final double CEILING_STEP = 1;
+
+    /** A ceiling as the ladder reads it: "1 month", "6 months". */
+    static String monthsWords(double months) {
+        return String.format("%.0f month%s", months, Math.abs(months - 1) < 1e-9 ? "" : "s");
+    }
+
+    /** A target on the half-point grid, so a run of steps lands on 3% and not on 3.0000000000000004%. */
+    static double halfPoint(double target) {
+        return Math.round(target / TARGET_STEP) / (1 / TARGET_STEP);
+    }
 
     /* =====================================================================
        MONEY - the currency reform
@@ -2324,7 +2422,7 @@ final class PolicyScreen {
         column.getChildren().add(statementHead("What workers pay in"));
         column.getChildren().add(leverHead(String.format("%.2f%%", contribution * 100),
                 "Off every wage in the city, before the worker sees it."));
-        column.getChildren().add(stageSlider("contrib", contribution,
+        column.getChildren().add(stagedLadder("contrib", contribution,
                 0, TaxPolicy.MAX_CONTRIBUTION, .0025, Money::pct2));
 
         if (isStaged("contrib")) {
@@ -2356,7 +2454,7 @@ final class PolicyScreen {
         column.getChildren().add(statementHead("What seniors receive"));
         column.getChildren().add(leverHead(String.format("%.0f%%", replacement * 100),
                 "Of an unskilled wage, paid flat to every senior in the city."));
-        column.getChildren().add(stageSlider("pension", replacement,
+        column.getChildren().add(stagedLadder("pension", replacement,
                 0, TaxPolicy.MAX_REPLACEMENT, .01,
                 r -> String.format("%.0f%%", r * 100)));
 
@@ -2418,6 +2516,15 @@ final class PolicyScreen {
        rule (Game.studentGrantBillUnder, HouseholdBalance.studentInterestAt)
        asked about a setting the city has not made.
 
+       AND SINCE 0.7.6 THE PRICE IS ONE PER KIND OF SCHOOL. Jerus: "not only
+       can you raise prices but also raise the price for a specific
+       university, and beside the dial it shows the current space, the
+       current students, and the current cost and revenue." The price of a
+       place keeps its every-school dial at the top and has a row per kind
+       under it - its own dial, and its places, students, cost and revenue
+       off the model (schoolPriceRow) - all of them on the one bar. Every
+       dial on the page is a Ladder.
+
        At no subsidy a university place costs a diploma-holder most of a
        month's pay and almost nobody attends: a city can own the buildings,
        need the graduates, and produce none of them. At the founding price
@@ -2464,16 +2571,17 @@ final class PolicyScreen {
         double share = schools.getTuitionSubsidy();
         double want = staged("tuition", share);
         double scale = policy.getTuitionScale();
-        double wantScale = staged("tuitionScale", scale);
-        boolean moved = isStaged("tuition") || isStaged("tuitionScale");
+        boolean split = policy.tuitionScalesSplit();
+        boolean scaleStaged = anyScaleStaged();
+        boolean moved = isStaged("tuition") || scaleStaged;
 
-        /* -------------------- the five levers, registered for the one bar -------------------- */
-        register(new Lever("tuition", "The city's share of tuition", share, 0, 1, .01,
+        /* -------------------- the levers, registered for the one bar -------------------- */
+        Lever shareLever = register(new Lever("tuition", "The city's share of tuition", share, 0, 1, .01,
                 r -> String.format("%.0f%%", r * 100), schools::setTuitionSubsidy));
-        register(new Lever("tuitionScale", "The price of a place", scale,
-                0, TaxPolicy.MAX_TUITION_SCALE, .05, v -> String.format("x%.2f", v),
+        Lever everySchool = register(new Lever(EVERY_SCHOOL, "The price of a place, every school", scale,
+                0, TaxPolicy.MAX_TUITION_SCALE, TUITION_STEP, PolicyScreen::scaleWords,
                 policy::setTuitionScale));
-        register(new Lever("loanRate", "Interest on student loans", policy.getStudentLoanRate(),
+        Lever loanLever = register(new Lever("loanRate", "Interest on student loans", policy.getStudentLoanRate(),
                 0, TaxPolicy.MAX_STUDENT_LOAN_RATE, .0025, Money::pct2, policy::setStudentLoanRate));
 
         column.getChildren().add(statementHead("Who pays for school"));
@@ -2500,7 +2608,8 @@ final class PolicyScreen {
             double wage = from == null ? market.getWage(JobType.NO_DIPLOMA)
                                        : bestWageIn(market, from);
             double now = wage > 0 ? pocket / wage : 0;
-            double feeThen = schools.feeAtOne(type) * wantScale;
+            // At the kind's own staged price (0.7.6), else every school's, else today's.
+            double feeThen = schools.feeAtOne(type) * stagedScaleOf(policy, type);
             double pocketThen = feeThen * (1 - want);
             double then = wage > 0 ? pocketThen / wage : 0;
 
@@ -2538,23 +2647,55 @@ final class PolicyScreen {
         column.getChildren().add(statementTotal("Net cost to the city",
                 signedTight(schools.getNetCost(), true), Palette.WARN));
 
-        column.getChildren().add(stageSlider("tuition", share, 0, 1, .01,
-                r -> String.format("%.0f%%", r * 100)));
+        column.getChildren().add(ladderOf(shareLever).build());
 
         /* ---------------------------- the price of a place ---------------------------- */
         column.getChildren().add(statementHead("What a place is priced at"));
-        column.getChildren().add(leverHead(String.format("x%.2f", scale),
-                "The founding tuition table times this, on every course, before the "
-                + "city's share comes off. The table was struck against the wages of "
-                + "its day; against today's the trap in the note above is quiet at x1 "
-                + "and back around x3. Nothing at 0: a free place, and the city forgoes "
-                + "nothing because there is nothing to forgo."));
-        column.getChildren().add(stageSlider("tuitionScale", scale,
-                0, TaxPolicy.MAX_TUITION_SCALE, .05, v -> String.format("x%.2f", v)));
+        column.getChildren().add(leverHead(split ? "a price per school" : scaleWords(scale),
+                "The founding tuition table times this, before the city's share comes off. "
+                + "The table was struck against the wages of its day; against today's the "
+                + "trap in the note above is quiet at x1 and back around x3. Nothing at 0: a "
+                + "free place, and the city forgoes nothing because there is nothing to "
+                + "forgo. The first dial sets every school at once; each kind below has its "
+                + "own, and the first dial puts them back to one price."));
+        column.getChildren().add(schoolPriceHead("Every school at once"));
+        // Moving every school at once takes back whatever one kind had staged:
+        // it is a price for all nine, and the preview and the bar should say so.
+        column.getChildren().add(ladderOf(everySchool)
+                .stages(v -> {
+                    for (EducationType kind : EducationType.values()) {
+                        if (kind != EducationType.NONE) unstage(schoolKey(kind));
+                    }
+                    propose(everySchool, v);
+                })
+                .build());
+
+        /*
+         * ONE ROW PER KIND (0.7.6). Jerus: "raise the price for a specific
+         * university, and beside the dial it shows the current space, the
+         * current students, and the current cost and revenue." Each kind's
+         * own ladder, staged like the rest, and beside it four figures off the
+         * model: the places its standing buildings seat, the students
+         * Education enrolled in it this month (the whole body in flight, for
+         * an adult course), what its buildings cost the treasury - staffed
+         * payroll and upkeep, Education.getCostOf() - and the tuition its
+         * students paid, getFeesOf(). A kind with nothing standing says so and
+         * its dial is greyed: a price for a school the city does not have
+         * moves nothing today, though every school at once still sets it.
+         */
+        column.getChildren().add(statementNote(
+                "Each kind of school at its own price. Beside each: the places its buildings "
+                + "seat, the students in it this month, what its staff and buildings cost the "
+                + "treasury, and the tuition its students paid."));
+        double[] places = ui.game.getBuildingManager().getBuiltEducationPlaces();
+        for (EducationType kind : EducationType.values()) {
+            if (kind == EducationType.NONE) continue;
+            column.getChildren().add(schoolPriceRow(kind, policy, schools, places[kind.ordinal()]));
+        }
 
         if (moved) {
-            double billedAtOne = scale > 0 ? (schools.getSubsidy() + schools.getFees()) / scale : 0;
-            double billedThen = billedAtOne * wantScale;
+            double billedNow = schools.getSubsidy() + schools.getFees();
+            double billedThen = schools.billedAt(kind -> stagedScaleOf(policy, kind));
             double subsidyThen = billedThen * want;
             double feesThen = billedThen * (1 - want);
             double netThen = schools.getPayroll() + schools.getUpkeep() - feesThen;
@@ -2564,9 +2705,21 @@ final class PolicyScreen {
                     String.format("%.0f%%", share * 100),
                     String.format("%.0f%%", want * 100),
                     want >= share ? Palette.WARN : Palette.GOOD));
-            column.getChildren().add(wouldBe("The price of a place",
-                    String.format("x%.2f", scale), String.format("x%.2f", wantScale),
-                    wantScale <= scale ? Palette.GOOD : Palette.WARN));
+            // Every school at once as one line, then each kind moved on its own.
+            if (isStaged(EVERY_SCHOOL)) {
+                double every = staged(EVERY_SCHOOL, scale);
+                column.getChildren().add(wouldBe(everySchool.name(), nowReads(everySchool),
+                        scaleWords(every), every <= scale ? Palette.GOOD : Palette.WARN));
+            }
+            for (EducationType kind : EducationType.values()) {
+                if (kind == EducationType.NONE || !isStaged(schoolKey(kind))) continue;
+                double priceNow = policy.tuitionScaleOf(kind), priceThen = stagedScaleOf(policy, kind);
+                column.getChildren().add(wouldBe("The price of a place, " + kind.getLabel(),
+                        scaleWords(priceNow), scaleWords(priceThen),
+                        priceThen <= priceNow ? Palette.GOOD : Palette.WARN));
+            }
+            column.getChildren().add(wouldBe("Billed a month, before the city's share",
+                    money(billedNow), money(billedThen), Palette.TEXT_HEAD));
             column.getChildren().add(wouldBe("Tuition the city covers",
                     money(schools.getSubsidy()), money(subsidyThen), Palette.WARN));
             column.getChildren().add(wouldBe("Tuition households pay",
@@ -2575,13 +2728,10 @@ final class PolicyScreen {
                     money(schools.getNetCost()), money(netThen),
                     netThen <= schools.getNetCost() ? Palette.GOOD : Palette.WARN));
             column.getChildren().add(statementNote(
-                    "Against the courses being taken now" + (scale <= 0
-                            ? ", and with the place free this month there is no bill to "
-                              + "re-strike from: the figures above are what a price would "
-                              + "collect once the students are billed."
-                            : " - and that is the half this preview cannot do, because "
-                              + "the point of both dials is to change who enrols. A cheaper "
-                              + "place fills a course, and the bill arrives with the students.")));
+                    "Against the courses being taken now, each kind's students at its own "
+                    + "price - and that is the half this preview cannot do, because the point "
+                    + "of these dials is to change who enrols. A cheaper place fills a course, "
+                    + "and the bill arrives with the students."));
         }
 
         /* ------------------------------- the grant ------------------------------- */
@@ -2639,10 +2789,8 @@ final class PolicyScreen {
         // Applied WITH the basis it was read in, whichever order the bar
         // reaches the two: an amount set under one basis and clamped by
         // another's ceiling would be a different number than the one staged.
-        register(new Lever("grantAmount", "...at", amountNow, 0, amountMax, amountStep,
-                v -> amountWords(wantBasis, v), v -> policy.setGrant(wantBasis, v)));
-        column.getChildren().add(stageSlider("grantAmount", amountNow, 0, amountMax, amountStep,
-                v -> amountWords(wantBasis, v)));
+        column.getChildren().add(ladderOf(new Lever("grantAmount", "...at", amountNow, 0, amountMax, amountStep,
+                v -> amountWords(wantBasis, v), v -> policy.setGrant(wantBasis, v))).build());
 
         if (isStaged("grantBasis") || isStaged("grantAmount")) {
             double wantAmount = staged("grantAmount", amountNow);
@@ -2683,8 +2831,7 @@ final class PolicyScreen {
         column.getChildren().add(statementLine("Repaid last month", money(principalNow), Palette.GOOD));
         column.getChildren().add(statementTotal("Interest received last month",
                 money(interestNow), interestNow > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
-        column.getChildren().add(stageSlider("loanRate", rate,
-                0, TaxPolicy.MAX_STUDENT_LOAN_RATE, .0025, Money::pct2));
+        column.getChildren().add(ladderOf(loanLever).build());
         if (isStaged("loanRate")) {
             double wantRate = staged("loanRate", rate);
             double interestThen = bal.studentInterestAt(wantRate);
@@ -2709,6 +2856,117 @@ final class PolicyScreen {
     Lever register(Lever lever) {
         policyLevers.put(lever.key(), lever);
         return lever;
+    }
+
+    /** The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. */
+    static final String EVERY_SCHOOL = "tuitionScale";
+
+    /** One step of every price-of-a-place ladder: a twentieth of the founding table. */
+    static final double TUITION_STEP = .05;
+
+    /** The staged key of one school kind's own price (0.7.6): "tuitionScale:UNIVERSITY". */
+    static String schoolKey(EducationType kind) { return EVERY_SCHOOL + ":" + kind.name(); }
+
+    /** A tuition scale as the page writes it: "x1.00". */
+    static String scaleWords(double scale) { return String.format("x%.2f", scale); }
+
+    /**
+     * The scale a preview prices one kind of school at: its own lever if
+     * staged, else every school at once if that is, else what it is (0.7.6).
+     * Moving every school at once unstages the kinds, so the two meet only
+     * when a kind was moved after it - and then the kind is the later word.
+     */
+    double stagedScaleOf(TaxPolicy policy, EducationType kind) {
+        return staged(schoolKey(kind), staged(EVERY_SCHOOL, policy.tuitionScaleOf(kind)));
+    }
+
+    /** Whether anything staged moves a price of a place: every school at once, or any kind's own. */
+    boolean anyScaleStaged() {
+        if (isStaged(EVERY_SCHOOL)) return true;
+        for (EducationType kind : EducationType.values()) {
+            if (kind != EducationType.NONE && isStaged(schoolKey(kind))) return true;
+        }
+        return false;
+    }
+
+    /** The small label over a price-of-a-place ladder: which school it prices. */
+    static Label schoolPriceHead(String name) {
+        Label head = new Label(name);
+        head.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_HEAD) + " -fx-padding: 6 0 0 0;");
+        return head;
+    }
+
+    /** How wide the four figures beside a school kind's ladder are held. */
+    static final double SCHOOL_FIGURES = 150;
+
+    /**
+     * One school kind's row: its name and its own ladder on the left, and on
+     * the right the four figures the model holds for it - places, students,
+     * cost and revenue - or "no school" and a greyed dial when nothing of
+     * that kind is standing.
+     */
+    HBox schoolPriceRow(EducationType kind, TaxPolicy policy, Education schools, double places) {
+
+        boolean standing = places > 0;
+        Lever own = new Lever(schoolKey(kind), "The price of a place, " + kind.getLabel(),
+                policy.tuitionScaleOf(kind), 0, TaxPolicy.MAX_TUITION_SCALE, TUITION_STEP,
+                PolicyScreen::scaleWords, v -> policy.setTuitionScaleOf(kind, v));
+        double ladderWide = STATEMENT - SCHOOL_FIGURES - Palette.GAP - 20;
+        /*
+         * AGAINST WHAT THE KIND WOULD OTHERWISE BE CHARGED. With every school
+         * at once staged, a kind left alone takes that price - so its thumb
+         * sits there, and putting it back at today's price is a decision to
+         * stage (this kind stays where it is while the rest move), where
+         * putting it at every school's price is no decision of its own.
+         */
+        double otherwise = staged(EVERY_SCHOOL, own.current());
+        VBox left = new VBox(0, schoolPriceHead(kind.getLabel()),
+                ladderOf(own)
+                        .showing(stagedScaleOf(policy, kind))
+                        .stages(v -> {
+                            if (moved(v, otherwise, TUITION_STEP)) stage(own.key(), v); else unstage(own.key());
+                            showPolicyMenu();
+                        })
+                        .greyed(!standing).wide(ladderWide).build());
+        left.setPrefWidth(ladderWide);
+        left.setMaxWidth(ladderWide);
+
+        VBox right = new VBox(1);
+        right.setPrefWidth(SCHOOL_FIGURES);
+        right.setMinWidth(SCHOOL_FIGURES);
+        right.setMaxWidth(SCHOOL_FIGURES);
+        right.setAlignment(Pos.CENTER_LEFT);
+        if (!standing) {
+            right.getChildren().add(schoolFigure("no school", "", Palette.TEXT_SPENT));
+        } else {
+            right.getChildren().add(schoolFigure("places", people(places), Palette.TEXT_BODY));
+            right.getChildren().add(schoolFigure("students", people(schools.getEnrolled(kind)), Palette.TEXT_BODY));
+            right.getChildren().add(schoolFigure("cost", money(schools.getCostOf(kind)), Palette.WARN));
+            right.getChildren().add(schoolFigure("revenue", money(schools.getFeesOf(kind)), Palette.GOOD));
+        }
+
+        HBox row = new HBox(Palette.GAP, left, right);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPrefWidth(STATEMENT);
+        row.setMaxWidth(STATEMENT);
+        row.setStyle("-fx-padding: 2 10 2 10;" + Palette.block(Palette.PANEL));
+        VBox.setMargin(row, new javafx.geometry.Insets(0, 0, 5, 0));
+        return row;
+    }
+
+    /** One of the four figures beside a school kind's ladder: its word on the left, the figure on the right. */
+    static HBox schoolFigure(String word, String figure, String tone) {
+        Label name = new Label(word);
+        name.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        Label value = new Label(figure);
+        value.setStyle(Palette.figure(Palette.SIZE_CAPTION, tone));
+        HBox line = new HBox(4, name, gap, value);
+        line.setAlignment(Pos.CENTER_LEFT);
+        line.setPrefWidth(SCHOOL_FIGURES);
+        line.setMaxWidth(SCHOOL_FIGURES);
+        return line;
     }
 
     /* =====================================================================
@@ -2765,7 +3023,7 @@ final class PolicyScreen {
         column.getChildren().add(statementHead("What workers pay for EI"));
         column.getChildren().add(leverHead(String.format("%.2f%%", premium * 100),
                 "Off every wage in the city, beside the pension contribution."));
-        column.getChildren().add(stageSlider("eiPremium", premium,
+        column.getChildren().add(stagedLadder("eiPremium", premium,
                 0, TaxPolicy.MAX_EI_PREMIUM, .0005, Money::pct2));
         if (isStaged("eiPremium")) {
             double want = staged("eiPremium", premium);
@@ -2788,7 +3046,7 @@ final class PolicyScreen {
         column.getChildren().add(leverHead(String.format("%.0f%%", benefit * 100),
                 "Of the wage a claimant lost, up to the insured maximum of "
                 + moneyFull(u.getInsuredCap()) + " a month."));
-        column.getChildren().add(stageSlider("eiBenefit", benefit,
+        column.getChildren().add(stagedLadder("eiBenefit", benefit,
                 0, TaxPolicy.MAX_EI_BENEFIT, .01, r -> String.format("%.0f%%", r * 100)));
         if (isStaged("eiBenefit")) {
             double want = staged("eiBenefit", benefit);
@@ -2926,7 +3184,7 @@ final class PolicyScreen {
         // enough for the keys to walk, fine enough to land on a break-even
         // quoted to a tenth. A twentieth was 300 steps and no more precise
         // than the preview beside it.
-        column.getChildren().add(stageSlider("healthFee", scale,
+        column.getChildren().add(stagedLadder("healthFee", scale,
                 0, TaxPolicy.MAX_HEALTH_FEE_SCALE, .1, v -> String.format("x%.2f", v)));
         if (isStaged("healthFee")) {
             double want = staged("healthFee", scale);
@@ -2963,7 +3221,7 @@ final class PolicyScreen {
                 "Off every wage in the city, employee side, beside the EI premium - into the "
                 + "treasury as revenue against the service's cost. No employer share, and "
                 + "nothing balances it: a shortfall is the treasury's and so is a surplus."));
-        column.getChildren().add(stageSlider("healthPremium", premium,
+        column.getChildren().add(stagedLadder("healthPremium", premium,
                 0, TaxPolicy.MAX_HEALTH_PREMIUM, .0005, Money::pct2));
         if (isStaged("healthPremium")) {
             double want = staged("healthPremium", premium);

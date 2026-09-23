@@ -11,8 +11,9 @@ import static ham.citybuildersim.ui.Pieces.*;
 /**
  * The pieces a policy lever is drawn with: its head, the would-be rows that
  * show a staged change against today's figure, and the arithmetic of snapping
- * a slider to its step. The slider itself and the apply bar stay with the
- * policy screen, because they read and write the staged set.
+ * a slider to its step. The dial itself is Ladder (0.7.6), which knows
+ * nothing of the staged set; the wiring to it and the apply bar stay with
+ * the policy screen, because they read and write that set.
  */
 public final class Levers {
 

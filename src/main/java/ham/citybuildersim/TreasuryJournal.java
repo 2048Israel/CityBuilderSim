@@ -25,7 +25,9 @@ import java.util.List;
  * what is left after them - Game.getTreasuryResidual() - is printed as its
  * own line, smaller, still named. Nothing about how the cash moves changes:
  * every record() sits beside a `cash -=` or `cash +=` that was already there
- * (or, since 0.7.0, beside the Game.treasuryPays() that replaced it).
+ * (or, since 0.7.0, beside the Game.treasuryPays() that replaced it) - all
+ * but one: land paid for out of the vault (0.7.6), where no cash moves and
+ * the budget's land line says it did, so the journal carries it back.
  *
  * THE WINDOW IS PRESS TO PRESS, like the bridge's. The month in progress
  * opens where the last one was struck - Game.takeTreasuryMonth(), at the
@@ -77,7 +79,12 @@ import java.util.List;
  *                                         budget lines (NationalAccounts' central bank
  *                                         pair) and are not journalled
  *   paySubsidyIfOwed()        not         budget line (subsidies)
- *   buyLandBlock/Parcel()     not         budget line (land purchases)
+ *   buyLandBlock/Parcel()     not         budget line (land purchases) - EXCEPT the
+ *                                         part paid out of the vault (0.7.6), JOURNALLED
+ *                                         "Bought land with US$... of reserves" at +usd x
+ *                                         rate: the budget carries the land at what it
+ *                                         cost, and no cash paid that part (Game, LAND IS
+ *                                         BOUGHT IN DOLLARS)
  *   retire()                  not         budget line (land purchases, recordBuyback)
  *   buildFor()                not         budget line (land sales, recordSale)
  *   processBuildOrder()       not         budget line (capital spending)

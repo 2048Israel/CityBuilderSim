@@ -1,12 +1,62 @@
 # The list — what is open
 
-Updated 2026-09-23 (0.7.2, 0.7.3 and the manual at 0.7.3 — version 8, and in the tree as `docs/manual.md` — deployed and verified as tag 0922c). What shipped is in `changelog.md`,
+Updated 2026-09-23 (0.7.6 — one ladder for every policy dial, a price per kind of school, real GDP in layers, and land priced in US dollars and paid by converting cash or out of the vault — deployed as tag 0923d; 0.7.4's, 0.7.5's and 0.7.6's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
 has been away reads the changelog's top block and section 0 here, then works.
 
 ## 0. Do this week — costs nothing, saves weeks
+
+- **CHECK 0.7.6'S SCREENS BY EYE ON THE PC** — none of it can run in the
+  cloud; `compile-all` is the only check it has had. The ladder on every
+  page that has one: its width (the reading held at 118, the slider taking
+  what the buttons leave), the ends line ("x to y · one step is z · it is w",
+  and "set at once" on the monetary page's target, holdings and ceiling), the
+  "−" and "+" greying at the ends, the reading in accent off the city's
+  value, the chips still beside the three that had them. The Schools page:
+  "Every school at once" and the nine rows — each ladder beside its four
+  figures, a kind with no school greyed and reading "no school", moving every
+  school at once clearing the per-kind staging, the preview's line per kind
+  moved. The Reports page: the "layers" chip on the real-GDP small chart and
+  on the big chart's reading when real GDP is picked alone; the stacked chart
+  lining up with the line chart (same plot area, the y-axes the same width);
+  the three layer colours against the line; the key and its caption; the
+  crosshair's four part readings; the log chip refusing while the layers are
+  on. The land office: the chip pair, the sentence under it and the receipt
+  after a purchase (a short vault's included), the two prices on each tile,
+  the US$ market cell, "Not enough in the vault or cash". The Exchange page's
+  "Spent on land" lines; the Government tab's "Land bought" opened into its
+  three rows; the history's land axis in US$.
+- **CHECK 0.7.5'S SCREENS BY EYE ON THE PC** — none of it can run in the
+  cloud; `compile-all` is the only check it has had. Jerus, on the Reports
+  page: the default trio on two axes — both plot areas on the same pixels,
+  the right-hand axis on the right, the bottoms level, each line's colour the
+  same as its reading's swatch; the crosshair's line and box (the box flips
+  to the left near the right edge; "(n months averaged)" on a long window);
+  the recession bands behind the lines on all three charts; the episode ticks
+  under the x-axis at the right months, their names on hover, the caption
+  line; "log" — gridlines labelled as real values, the chip greyed with its
+  reason when a line touches zero or three units are picked; "pin" and
+  "unpin", the older pin dropping, the pins surviving a restart and another
+  slot; the picker's groups closed except the picked ones, the filter box
+  keeping the focus through a month's redraw and Enter handing it back; a
+  group opening or a preset pressed leaving the chip under the pointer. On the
+  build page: Enter with three cards pending builds all three, and stops at a
+  refusal with the rest still dialled; Backspace and Delete clear; Enter with
+  nothing pending still presses a focused button; the caption comes and goes;
+  "−" on an empty card reads 0; the licence refusal screen lights Build.
+- **CHECK 0.7.4'S SCREENS BY EYE ON THE PC** — none of them can run in the
+  cloud; `compile-all` is the only check they have had. The monetary page's
+  "What the rule aims at" (the chips, the half-point ladder, the sentence
+  struck at two targets); the strip's third panel at a 1280-wide window (the
+  brief's bar: it must not widen the strip past that, and the date and the
+  money stay the loudest things); the sector list's sparklines, "no history
+  yet", the workers line and "Show more" (the second row's five cells are
+  sized off `STATEMENT`); each tax page's own base lever and the Everything
+  page's three bases and "Every tax at once" (including staging it when the
+  three have parted, where it reads "three rates"); the "at its legal maximum"
+  flag naming one, two or three taxes; the bank page's "It charges".
 
 **NEXT, AND IT IS 7.0: THE MONEY SUPPLY.** Jerus, 2026-09-21, reading his
 0.6.9 city's decade book (prices 399x founding in 25 years, the currency at
@@ -212,6 +262,61 @@ the repository for the first time as `docs/manual.md` (GitHub renders it) and
 `tools.ManualToMarkdown` — see `the-manual-at-0-7-3.md`; its found-on-the-way
 list (sixteen places) is under Housekeeping. The two files and the tool went
 to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
+- **And 0.7.4 as of 2026-09-23 (deployed 2026-09-23, tag 0923a): the inflation target a dial (0–10% in
+  half points, on the monetary page, saved under its own key); a third strip
+  panel with the central bank's, the bank's and the city's rates; the sector
+  list's sparkline, workers and "Show more", on two new history series per
+  sector; a base rate per income tax with "Every tax at once" on the
+  Everything page; 212 files, ~140,500 lines, 805 dials; save format 27
+  unchanged; 60 harnesses.** What the manual now says that is not so: §13's
+  rule table names `INFLATION_TARGET` (it is `DEFAULT_INFLATION_TARGET`, and a
+  dial); §14's strip paragraph has two panels and "the 2% target" (three
+  panels, the player's target); §11 opens "Two city-wide rates, and
+  everything else is an offset … from one of them" and calls income tax three
+  taxes "sharing one dial" (four bases now); §19's list of what went into
+  saves without a bump lacks the target key, the three slots and the two
+  series; §21's "What no harness looks at" names "the strip's two panels", and
+  0.7.4's screens join the unchecked ones. No open question is closed.
+- **And 0.7.5 as of 2026-09-23 (deployed 2026-09-23, tag 0923b): Enter builds what is pending on a
+  build page and Backspace or Delete clears it; the Reports page redrawn — two
+  pinned small charts (real GDP and the population by default, a preference
+  in `settings.json`), the presets, "clear all" and a log switch beside the
+  big chart, "What money costs" on a first visit, two units on two real axes,
+  a crosshair, recessions shaded, named episodes (`YearBook.episodes()`) under
+  the chart and in the year book's WHAT HAPPENED; the picker folded into its
+  groups with a filter; 212 files, ~141,900 lines, 815 dials; save format 27
+  unchanged; 60 harnesses.** What the manual now says that is not so: the
+  build line (0.7.3, already behind at 0.7.4); §19's Reports sentence ("sixty-odd
+  series with one heading per group", one chart — nothing of the pins, the
+  second axis or the episodes); §19's clock paragraph names the space bar and
+  the arrows and not Enter or Backspace on the build page; §20's
+  `YearBookCheck` row lacks the named episodes; §21's "What no harness looks
+  at" names the Reports page, and 0.7.5's screens join the unchecked ones. No
+  open question is closed.
+- **And 0.7.6 as of 2026-09-23 (deployed 2026-09-23, tag 0923d): every
+  policy dial on one ladder (−, a snapping slider, +, the reading, an ends
+  line), the monetary page's target, holdings and ceiling given one beside
+  their chips; a price per kind of school, with a row per kind on the Schools
+  page (places, students, cost, revenue); real GDP drawn in layers — C, I and
+  G stacked, the line over them, net exports the gap — on four new history
+  series; land priced in US dollars and paid at the day's rate, by converting
+  cash (the default) or out of the vault, a toggle at the top of the land
+  office; 213 files, ~144,200 lines, 831 dials; save format 27 unchanged; 60
+  harnesses.** What the manual now says that is not so: the build line;
+  §10's "The price of a place" (one `tuitionScale`, "five dials on one foot
+  bar"); §11's ladder drawing and its ends line, and that it is the tax
+  pages' alone; §11's GDP and §19's Reports sentence say nothing of the
+  layers; §15's "what the city pays" is local money with nothing of dollars,
+  the rate, the toggle or the vault — and its "Ten plots" is nine, older than
+  this batch; §1's step 2 re-prices the land office in local money; §14's
+  vault says nothing of land paid out of it; §19's list of what went in
+  without a bump lacks `landPaidFromVault`, the listing's −105 marker, the
+  price state's fourth slot, `ForeignAccounts` slots 31–36, the nine tuition
+  scales on the policy array's tail, the schools' month by kind and the four
+  GDP series; §20's rows for `EducationCheck`, `HistoryCheck`, `LandCheck` and
+  `ForeignCheck` lack their new sections; §21's "What no harness looks at"
+  gains 0.7.6's screens, and its open questions gain land conversion's
+  missing push (below). No open question is closed.
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -883,6 +988,31 @@ Ranked by how likely they are to read as "this game is broken".
 
 ## 4. Engine truths worth fixing
 
+- **LAND BOUGHT BY CONVERTING PUTS NO PUSH ON THE CURRENCY — open, Jerus's
+  call** (`land-in-dollars.md` §5). The 0.7.6 brief asked that "whatever
+  pressure the exchange puts on the rate when the treasury buys dollars
+  applies here too", and there is none to apply: a treasury purchase of
+  dollars is the financing item below the line (`MoneyAudit`
+  `Scope.RESERVE`), which `pressure()` and `monthDeficitUsd()` never read, so
+  buying reserves has never moved the rate and `ForeignCheck` §14's equality
+  is an equality with nothing. Right for reserves (the dollars stay in the
+  country); arguably wrong for land, where the world sold the city an asset
+  and was paid in dollars the city had to buy — a city that spends its way
+  through a decade of land sees no weakening for it. The fix, if wanted, is
+  small: count the dollars paid abroad for land as an outflow the pressure
+  signal reads (an import-like term in the trailing balance, or a
+  capital-account term of its own), for the converting path only or for both.
+- **Four more, found by 0.7.6 and not its to fix** (`land-in-dollars.md` §5):
+  land is always bought between presses, outside every audit window, and
+  `MoneyAudit` has never declared land, so nothing asserts the moment of
+  purchase (the month after is asserted); a reload clears the month's open
+  land line, so a save made between presses loses that month's land from the
+  budget, as it always did — the dollar figures were kept consistent with
+  that rather than fixed separately; the central bank counts the vault as its
+  asset, so land paid from the vault lowers its equity with no line saying
+  why (selling reserves already does the same); a pre-0.7.6 save's
+  `landPrice` months stay in the old unit if the player reforms the currency
+  after loading.
 - ~~**THE COST MODEL CANNOT PRICE A BUILDING WITH TWO OUTPUTS.**~~ **FIXED
   2026-09-15 by `Sector.costShareOf()`, which splits a line's joint costs across
   its outputs by relative sales value — and it was never only a BUILDING problem:
@@ -1519,6 +1649,13 @@ What is still open:~~ — done
 ---
 
 ## 6. Housekeeping
+
+- **The Services tab's "What tuition raises" table strikes each course's
+  revenue on the screen** — `feeFor(course) × enrolled × (1 − subsidy)` in
+  `ServicesScreen` — where `Education.getFeesOf(type)` has held it since
+  0.7.6. A code change (the screen should read the getter, per the house rule
+  that a screen never recomputes a model figure), found by the 0.7.6 docs
+  pass and left for an implementer.
 
 **THE STRUCTURE, after the audit of 2026-09-18** (`the-ai-ergonomics-audit.md`) —
 each one Jerus's call, in the order they pay back:

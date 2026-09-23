@@ -9,7 +9,7 @@ package ham.citybuildersim;
  * rose 2% per block. That is a slider, not a market: there was never a decision
  * to make beyond "yes" or "later".
  *
- * A listing is a decision. Ten plots are on offer at once, all different sizes,
+ * A listing is a decision. Nine plots are on offer at once, all different sizes,
  * all differently priced, and some of them have iron under them. Buying the
  * cheap one and buying the one with the ore are different moves, and the player
  * has to weigh them against a treasury.
@@ -23,14 +23,24 @@ package ham.citybuildersim;
  * A parcel is IMMUTABLE once listed. What is listed stays listed at the price
  * it was listed at: the city can save up for the big one without it drifting
  * out of reach, and a reload cannot reroll the offers into something better.
+ *
+ * PRICED IN US DOLLARS (0.7.6). Jerus: "when you buy land, make it so that it
+ * costs USD not domestic currency". The seller is the world, as it always
+ * implicitly was, and the world is paid in its own money: the dollar price is
+ * what is fixed at listing, and what the treasury pays in local money is
+ * that price times the rate on the day it buys (localPrice()) - so a weak
+ * currency makes the same plot dear and a strong one cheap.
  */
 public final class LandParcel {
 
     private final int id;
     private final double sizeSqFt;
 
-    /** What the city pays, in thousands. Fixed the moment it is listed. */
-    private final double price;
+    /**
+     * What the city pays, in thousands of US DOLLARS since 0.7.6. Fixed the
+     * moment it is listed; a currency reform cannot reach it.
+     */
+    private final double priceUsd;
 
     /**
      * Iron ore in the ground, in tonnes, across all of this parcel's deposits.
@@ -54,11 +64,11 @@ public final class LandParcel {
      */
     private final int deposits;
 
-    public LandParcel(int id, double sizeSqFt, double price,
+    public LandParcel(int id, double sizeSqFt, double priceUsd,
                       double ironTonnes, int deposits) {
         this.id = id;
         this.sizeSqFt = Math.max(0, sizeSqFt);
-        this.price = Math.max(0, price);
+        this.priceUsd = Math.max(0, priceUsd);
         this.ironTonnes = Math.max(0, ironTonnes);
         this.deposits = Math.max(0, deposits);
     }
@@ -69,21 +79,32 @@ public final class LandParcel {
      * Kept so a save written before deposits were counted restores as the plot
      * the player was actually looking at, rather than being discarded.
      */
-    public LandParcel(int id, double sizeSqFt, double price, double ironTonnes) {
-        this(id, sizeSqFt, price, ironTonnes, ironTonnes > 0 ? 1 : 0);
+    public LandParcel(int id, double sizeSqFt, double priceUsd, double ironTonnes) {
+        this(id, sizeSqFt, priceUsd, ironTonnes, ironTonnes > 0 ? 1 : 0);
     }
 
     public int getId()             { return id; }
     public double getSizeSqFt()    { return sizeSqFt; }
-    public double getPrice()       { return price; }
+    /** The listed price, in thousands of US dollars. */
+    public double getPriceUsd()    { return priceUsd; }
     public double getIronTonnes()  { return ironTonnes; }
     public int getDeposits()       { return deposits; }
 
     public boolean hasIron()       { return ironTonnes > 0 && deposits > 0; }
 
-    /** For comparing offers, which is the whole point of listing ten at once. */
-    public double getPricePerSqFt() {
-        return (sizeSqFt > 0) ? price / sizeSqFt : 0;
+    /**
+     * What the treasury pays for it in local money at this rate - local money
+     * per US dollar, ForeignAccounts.getRate() on the day it buys.
+     */
+    public double localPrice(double rate) { return priceUsd * rate; }
+
+    /**
+     * For comparing offers, which is the whole point of listing nine at once -
+     * in US dollars, like the price; every parcel on the shelf is converted
+     * at the same rate, so the ranking is the same in either money.
+     */
+    public double getUsdPerSqFt() {
+        return (sizeSqFt > 0) ? priceUsd / sizeSqFt : 0;
     }
 
     /** How many city blocks' worth, for a player who thinks in blocks. */
@@ -98,8 +119,8 @@ public final class LandParcel {
      * "1,400,000 t" is a number nobody reads carefully.
      */
     public String describe() {
-        String base = String.format("%,.0f sq ft (%.1f blocks) - $%,.0f",
-                sizeSqFt, getBlocks(), price);
+        String base = String.format("%,.0f sq ft (%.1f blocks) - US$%,.0f",
+                sizeSqFt, getBlocks(), priceUsd);
         if (!hasIron()) return base;
 
         // The site count leads, because it is the number that decides how many

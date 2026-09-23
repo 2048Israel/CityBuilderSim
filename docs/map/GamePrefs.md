@@ -1,6 +1,6 @@
-# GamePrefs.java - 152 lines · 11 methods · 1 constants · model
+# GamePrefs.java - 186 lines · 15 methods · 3 constants · model
 
-`ham/citybuildersim/GamePrefs.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GamePrefs.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > How the player likes the window, kept between runs.
 > 
@@ -25,19 +25,21 @@
 
 **Uses:** [WorldEconomy](WorldEconomy.md) (3), [GameFiles](GameFiles.md) (3), [GameLog](GameLog.md) (2)
 
-**Used by (1):** [UserInterface](UserInterface.md)
+**Used by (2):** [HistoryScreen](HistoryScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 111 | THE FILE |
+| 145 | THE FILE |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 32 | `GamePrefs.FILE` | `"settings.json"` |  |
+| 128 | `GamePrefs.DEFAULT_PINNED_LEFT` | `"realGdp"` | The two small charts pinned at the top of the Reports page, by series name - the name HistorySave and the page's own list know a line by. |
+| 131 | `GamePrefs.DEFAULT_PINNED_RIGHT` | `"population"` | ...and the right-hand one, the population. |
 
 ## Fields (state)
 
@@ -47,12 +49,14 @@
 | 59 | `private boolean panelDashboard` | Which of the two the city panel is showing. |
 | 85 | `private boolean pauseOnEvents` | Whether the clock stops itself when something worth seeing happens. |
 | 103 | `private double worldInflation` | The world the NEXT city is founded into. |
+| 133 | `private String pinnedLeft` |  |
+| 134 | `private String pinnedRight` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 123 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
+| 30 | 157 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
 | 44 | 1 | `public boolean isFullScreen()` |  |
 | 45 | 1 | `public void setFullScreen(boolean value)` |  |
 | 61 | 1 | `public boolean isPanelDashboard()` |  |
@@ -61,12 +65,16 @@
 | 88 | 1 | `public void setPauseOnEvents(boolean value)` |  |
 | 105 | 1 | `public double getWorldInflation()` |  |
 | 106 | 4 | `public void setWorldInflation(double value)` |  |
+| 136 | 3 | `public String getPinnedLeft()` |  |
+| 139 | 3 | `public String getPinnedRight()` |  |
+| 142 | 1 | `public void setPinnedLeft(String key)` |  |
+| 143 | 1 | `public void setPinnedRight(String key)` |  |
 
-### THE FILE (lines 111-152)
+### THE FILE (lines 145-186)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 115 | 3 | `private static Path fileIn(GameFiles files)` |  |
-| 120 | 16 | `public static GamePrefs load(GameFiles files)` | Whatever is on disk, or the defaults. |
-| 143 | 9 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
+| 149 | 3 | `private static Path fileIn(GameFiles files)` |  |
+| 154 | 16 | `public static GamePrefs load(GameFiles files)` | Whatever is on disk, or the defaults. |
+| 177 | 9 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
 

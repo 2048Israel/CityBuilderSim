@@ -162,6 +162,101 @@ public class HistoryCheck {
         }
         System.out.println("  " + checked + " series compared across the reload");
 
+        /* ============ 2b. every sector's two series (0.7.4) ============
+
+           The sector list's sparkline and its head count: netIncome:<sector>,
+           the month's net income after tax off the sector's own statement,
+           and workers:<sector>, its posts filled. Recorded beside the rest,
+           so the net income is the figure SectorBooks files for the same
+           month - the one the list's card prints - and the workers the
+           sector's own Sector.getWorkers().
+           ================================================================= */
+        System.out.println("\n--- every sector's net income and workers, every month ---");
+
+        SectorBooks books = city.getSectorBooks();
+        int sectors = 0;
+        boolean anyEarned = false, anyEmployed = false;
+        for (Sector s : city.getSectors().all()) {
+            List<? extends Number> income = h.seriesByName().get(HistorySave.netIncomeKey(s.key()));
+            List<? extends Number> staff  = h.seriesByName().get(HistorySave.workersKey(s.key()));
+            boolean whole = income != null && staff != null
+                    && income.size() == h.months() && staff.size() == h.months();
+            assertTrue("  " + s.key() + " has both, a value for every month", whole);
+            if (!whole) continue;
+            sectors++;
+            double lastIncome = income.get(income.size() - 1).doubleValue();
+            double lastStaff = staff.get(staff.size() - 1).doubleValue();
+            // Kept to the cent of a thousand, as every money series is.
+            assertTrue("  ...its last month's net income is SectorBooks' for that month",
+                    Math.abs(lastIncome - books.get(s).netIncome()) <= .005 + 1e-9);
+            assertTrue("  ...and its last month's workers are the sector's posts filled",
+                    Math.abs(lastStaff - s.getWorkers()) <= .005 + 1e-9);
+            if (lastIncome != 0) anyEarned = true;
+            if (lastStaff > 0) anyEmployed = true;
+            double[] incomeBack = back.aligned(HistorySave.netIncomeKey(s.key()));
+            double[] staffBack = back.aligned(HistorySave.workersKey(s.key()));
+            assertTrue("  ...and both came back from the save",
+                    incomeBack.length == h.months() && staffBack.length == h.months()
+                    && Math.abs(incomeBack[incomeBack.length - 1] - lastIncome) < 1e-9
+                    && Math.abs(staffBack[staffBack.length - 1] - lastStaff) < 1e-9);
+        }
+        assertTrue("every sector in the city has its two series", sectors == city.getSectors().size());
+        assertTrue("...and some sector earned or lost something, so the income is read", anyEarned);
+        assertTrue("...and some sector employs somebody, so the workers are read", anyEmployed);
+
+        /* ============ 2c. GDP's four parts (0.7.6) ============
+
+           The Reports page draws real GDP in layers - consumption,
+           investment and government stacked, the GDP line over them, the gap
+           net exports - off four series kept beside gdp. A part wired to the
+           wrong getter would still stack into a plausible mountain; the
+           identity is what says it is the right one. Each part is rounded to
+           the history's cent on its own, so the four can miss the rounded
+           sum by four half-cents and the sum's own half - and no more.
+           ================================================================= */
+        System.out.println("\n--- GDP's four parts, every month, adding up ---");
+
+        NationalAccounts na = city.getEconomyManager().getNationalAccounts();
+        assertTrue("the city's own accounts: C+I+G+NX is this month's GDP",
+                Math.abs(na.getConsumption() + na.getInvestment() + na.getGovernment()
+                        + na.getNetExports() - na.getGdp())
+                        <= 1e-9 * Math.max(1, Math.abs(na.getGdp())));
+        for (String part : YearBook.GDP_PARTS) {
+            List<? extends Number> kept = h.seriesByName().get(part);
+            assertTrue("  " + part + " is kept, a value for every month",
+                    kept != null && kept.size() == h.months());
+        }
+        double[] gdpKept = h.aligned("gdp");
+        double[][] parts = new double[YearBook.GDP_PARTS.length][];
+        for (int p = 0; p < parts.length; p++) parts[p] = h.aligned(YearBook.GDP_PARTS[p]);
+        double worstMiss = 0;
+        boolean anyConsumption = false;
+        for (int i = 0; i < h.months(); i++) {
+            double sum = 0;
+            for (double[] part : parts) sum += part[i];
+            worstMiss = Math.max(worstMiss, Math.abs(sum - gdpKept[i]));
+            if (parts[0][i] > 0) anyConsumption = true;
+        }
+        System.out.printf("  the parts miss the kept GDP by at most %.4f (thousands)%n", worstMiss);
+        assertTrue("C+I+G+NX is the month's kept GDP to the cent, every month", worstMiss <= .025 + 1e-9);
+        assertTrue("...and the households bought something, so C is read", anyConsumption);
+        int last = h.months() - 1;
+        assertTrue("the last month's parts are the accounts' own, to the cent",
+                Math.abs(parts[0][last] - na.getConsumption()) <= .005 + 1e-9
+                        && Math.abs(parts[1][last] - na.getInvestment()) <= .005 + 1e-9
+                        && Math.abs(parts[2][last] - na.getGovernment()) <= .005 + 1e-9
+                        && Math.abs(parts[3][last] - na.getNetExports()) <= .005 + 1e-9);
+        double[] yearOfGdp = YearBook.realGdpYear(h);
+        double yearOfParts = 0;
+        for (String part : YearBook.GDP_PARTS) yearOfParts += YearBook.realYear(h, part)[last];
+        double index = h.aligned("priceIndex")[last];
+        System.out.printf("  a year of real GDP %.2f, of its four parts %.2f%n", yearOfGdp[last], yearOfParts);
+        assertTrue("a rolling year of the four in founding money is the year of real GDP",
+                !Double.isNaN(yearOfGdp[last])
+                        && Math.abs(yearOfParts - yearOfGdp[last]) <= 12 * .025 / index + 1e-9);
+        assertTrue("...and no year before twelve months of them",
+                Double.isNaN(YearBook.realYear(h, "consumption")[YearBook.MONTHS_A_YEAR - 2]));
+
         /* ============ 3. A SHORT SERIES LINES UP WITH THE END ============
 
            The one that draws a convincing wrong graph.

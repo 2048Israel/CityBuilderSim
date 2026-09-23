@@ -1,6 +1,6 @@
-# Palette.java - 355 lines · 6 methods · 57 constants · interface
+# Palette.java - 366 lines · 6 methods · 58 constants · interface
 
-`ham/citybuildersim/ui/Palette.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Palette.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > Every colour, size and spacing this game is allowed to use, in one place.
 > 
@@ -31,7 +31,7 @@
 > pass is a change nobody can review and a diff that hides every real edit
 > inside it. The screens adopt this as they are redone, one rail tab at a time.
 
-**Used by (16):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (17):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -44,10 +44,10 @@
 | 144 | WHAT CAN BE PRESSED |
 | 165 | THE CHART |
 | 177 | THE CHART RAMPS |
-| 237 | TYPE |
-| 279 | SPACE |
-| 296 | THE FIXED WIDTHS |
-| 321 | THE THREE THINGS A SCREEN IS BUILT FROM |
+| 248 | TYPE |
+| 290 | SPACE |
+| 307 | THE FIXED WIDTHS |
+| 332 | THE THREE THINGS A SCREEN IS BUILT FROM |
 
 ## Constants
 
@@ -86,36 +86,37 @@
 | 203 | `Palette.REVENUE_RAMP` | `{ "#afd5fe", "#8dbef1", "#6aa6e4", "#468fd6", "#1577c8" }` | Money coming in. |
 | 208 | `Palette.SPENDING_RAMP` | `{ "#efca9f", "#deaf78", "#cd954f", "#bc7a19", "#aa6000" }` | Money going out. |
 | 227 | `Palette.LADDER` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | The three instruments on the maturity ladder, short to long. |
-| 232 | `Palette.RAMP_REST` | `"#5c6b75"` | Everything too small to have its own step. |
-| 235 | `Palette.RING` | `26` | How thick a donut's ring is drawn, and how wide the hole is. |
-| 249 | `Palette.MONO` | `"'Courier New'"` | Figures. |
-| 253 | `Palette.GLYPH` | `"'Segoe UI Symbol', 'Segoe UI', sans-serif"` | Glyphs - the rail, the envelope, the round buttons. |
-| 256 | `Palette.SIZE_HEADLINE` | `28` | The date and the cash: the two figures readable from across the room. |
-| 259 | `Palette.SIZE_TITLE` | `20` | A screen's title. |
-| 262 | `Palette.SIZE_LEAD` | `17` | A figure that is the point of its panel. |
-| 265 | `Palette.SIZE_SECTION` | `14` | A section heading inside a screen. |
-| 268 | `Palette.SIZE_HEADING` | `12` | A panel's own heading. |
-| 271 | `Palette.SIZE_BODY` | `11` | Body text, and the figure in a row. |
-| 274 | `Palette.SIZE_LABEL` | `10` | The label in a row, and a button in a dense list. |
-| 277 | `Palette.SIZE_CAPTION` | `9` | A caption under something, and a unit after something. |
-| 285 | `Palette.GAP_TIGHT` | `4` |  |
-| 286 | `Palette.GAP` | `8` |  |
-| 287 | `Palette.GAP_LOOSE` | `12` |  |
-| 288 | `Palette.GAP_SECTION` | `20` |  |
-| 291 | `Palette.RADIUS` | `4` | Corner of a block, a chip, a control. |
-| 294 | `Palette.RADIUS_TIGHT` | `3` | Corner of something small - a row, a badge. |
-| 304 | `Palette.RAIL` | `46` | The navigation rail, on the city panel's ground. |
-| 307 | `Palette.CITY_PANEL` | `290` | The city panel, not counting the rail. |
-| 310 | `Palette.BUILD_PANEL` | `280` | The construction panel down the right. |
-| 313 | `Palette.STRIP` | `72` | The strip under the stage holding the dome and the time controls. |
-| 316 | `Palette.BUILD_ROW` | `400` | A building row, so the price column lines up down the list. |
-| 319 | `Palette.INBOX` | `470` | The inbox, sized to the 62-character lines the notices are written at. |
+| 238 | `Palette.GDP_LAYERS` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | GDP's three stacked layers on the Reports page (0.7.6) - consumption, investment, government, bottom to top - on the same three validated steps as the maturity ladder, and for the same reason: they are parts of one wh... |
+| 243 | `Palette.RAMP_REST` | `"#5c6b75"` | Everything too small to have its own step. |
+| 246 | `Palette.RING` | `26` | How thick a donut's ring is drawn, and how wide the hole is. |
+| 260 | `Palette.MONO` | `"'Courier New'"` | Figures. |
+| 264 | `Palette.GLYPH` | `"'Segoe UI Symbol', 'Segoe UI', sans-serif"` | Glyphs - the rail, the envelope, the round buttons. |
+| 267 | `Palette.SIZE_HEADLINE` | `28` | The date and the cash: the two figures readable from across the room. |
+| 270 | `Palette.SIZE_TITLE` | `20` | A screen's title. |
+| 273 | `Palette.SIZE_LEAD` | `17` | A figure that is the point of its panel. |
+| 276 | `Palette.SIZE_SECTION` | `14` | A section heading inside a screen. |
+| 279 | `Palette.SIZE_HEADING` | `12` | A panel's own heading. |
+| 282 | `Palette.SIZE_BODY` | `11` | Body text, and the figure in a row. |
+| 285 | `Palette.SIZE_LABEL` | `10` | The label in a row, and a button in a dense list. |
+| 288 | `Palette.SIZE_CAPTION` | `9` | A caption under something, and a unit after something. |
+| 296 | `Palette.GAP_TIGHT` | `4` |  |
+| 297 | `Palette.GAP` | `8` |  |
+| 298 | `Palette.GAP_LOOSE` | `12` |  |
+| 299 | `Palette.GAP_SECTION` | `20` |  |
+| 302 | `Palette.RADIUS` | `4` | Corner of a block, a chip, a control. |
+| 305 | `Palette.RADIUS_TIGHT` | `3` | Corner of something small - a row, a badge. |
+| 315 | `Palette.RAIL` | `46` | The navigation rail, on the city panel's ground. |
+| 318 | `Palette.CITY_PANEL` | `290` | The city panel, not counting the rail. |
+| 321 | `Palette.BUILD_PANEL` | `280` | The construction panel down the right. |
+| 324 | `Palette.STRIP` | `72` | The strip under the stage holding the dome and the time controls. |
+| 327 | `Palette.BUILD_ROW` | `400` | A building row, so the price column lines up down the list. |
+| 330 | `Palette.INBOX` | `470` | The inbox, sized to the 62-character lines the notices are written at. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 321 | **type** `public final class Palette` | Every colour, size and spacing this game is allowed to use, in one place. |
+| 35 | 332 | **type** `public final class Palette` | Every colour, size and spacing this game is allowed to use, in one place. |
 | 37 | 1 | `private Palette()` |  |
 
 ### THE GROUNDS (lines 39-65)
@@ -130,21 +131,21 @@
 
 ### THE CHART (lines 165-176)
 
-### THE CHART RAMPS (lines 177-236)
+### THE CHART RAMPS (lines 177-247)
 
-### TYPE (lines 237-278)
+### TYPE (lines 248-289)
 
-### SPACE (lines 279-295)
+### SPACE (lines 290-306)
 
-### THE FIXED WIDTHS (lines 296-320)
+### THE FIXED WIDTHS (lines 307-331)
 
-### THE THREE THINGS A SCREEN IS BUILT FROM (lines 321-355)
+### THE THREE THINGS A SCREEN IS BUILT FROM (lines 332-366)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 330 | 3 | `public static String fill(String colour)` | "-fx-text-fill: X;" |
-| 335 | 4 | `public static String figure(int size, String colour)` | A figure: monospaced, at a size, in a colour. |
-| 341 | 3 | `public static String words(int size, String colour)` | A word: the platform face, at a size, in a colour. |
-| 346 | 3 | `public static String block(String ground)` | A block of content raised off its ground. |
-| 351 | 4 | `public static String block(String ground, String edge)` | A block with an edge, for when it has to be told from its neighbour. |
+| 341 | 3 | `public static String fill(String colour)` | "-fx-text-fill: X;" |
+| 346 | 4 | `public static String figure(int size, String colour)` | A figure: monospaced, at a size, in a colour. |
+| 352 | 3 | `public static String words(int size, String colour)` | A word: the platform face, at a size, in a colour. |
+| 357 | 3 | `public static String block(String ground)` | A block of content raised off its ground. |
+| 362 | 4 | `public static String block(String ground, String edge)` | A block with an edge, for when it has to be told from its neighbour. |
 

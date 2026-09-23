@@ -1,6 +1,6 @@
 # NationalAccounts.java - 887 lines · 78 methods · 2 constants · model
 
-`ham/citybuildersim/NationalAccounts.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NationalAccounts.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > The city's GDP, measured properly, plus the government's own books.
 > 
@@ -64,7 +64,7 @@
 > 
 > ... (12 more lines in the source)
 
-**Used by (14):** [EconomyManager](EconomyManager.md), [EducationCheck](EducationCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (15):** [EconomyManager](EconomyManager.md), [EducationCheck](EducationCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Sections
 

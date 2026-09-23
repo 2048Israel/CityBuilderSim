@@ -109,6 +109,13 @@ public class Education {
        affordability(), the treasury's fee revenue and forgone subsidy, the
        Schools page's table and the TUITION_SHARE grant. The founding table
        below never moves; the dial is the player's.
+
+       AND A SCALE PER SCHOOL KIND (0.7.6). Jerus: "raise the price for a
+       specific university". The one multiplier is nine, one per kind -
+       TaxPolicy.tuitionScaleOf(), handed in kind by kind the same way - and
+       feeFor() reads the kind's own. setTuitionScale() is every kind at
+       once; getTuitionScale() reads the first. At the default every kind is
+       1, and a fee is the table times 1, bit for bit what it was.
        ===================================================================== */
     private final double[] tuition = new double[EducationType.values().length];
 
@@ -121,24 +128,36 @@ public class Education {
     }
 
     /**
-     * The player's multiplier on the tuition table, told to the schools by
-     * Game every month from TaxPolicy and after a load - a policy, so it is
-     * saved there and not here. 1 charges the founding table; 0 charges
-     * nobody.
+     * The player's multiplier on the tuition table, one per school kind by
+     * EducationType ordinal (0.7.6), told to the schools by Game every month
+     * from TaxPolicy and after a load - a policy, so it is saved there and
+     * not here. 1 charges the founding table; 0 charges nobody.
      */
-    private double tuitionScale = TaxPolicy.DEFAULT_TUITION_SCALE;
+    private final double[] tuitionScales = new double[EducationType.values().length];
+    { java.util.Arrays.fill(tuitionScales, TaxPolicy.DEFAULT_TUITION_SCALE); }
 
-    /** Sets the multiplier every course fee is charged at this month. See TaxPolicy.getTuitionScale(). */
+    /** Sets the multiplier every course fee is charged at this month, every kind at once. See TaxPolicy.setTuitionScale(). */
     public void setTuitionScale(double scale) {
-        tuitionScale = Math.max(0, Math.min(TaxPolicy.MAX_TUITION_SCALE, scale));
+        java.util.Arrays.fill(tuitionScales, Math.max(0, Math.min(TaxPolicy.MAX_TUITION_SCALE, scale)));
     }
 
-    /** The multiplier the tuition table is charged at. */
-    public double getTuitionScale() { return tuitionScale; }
+    /** Sets one kind's multiplier (0.7.6). See TaxPolicy.tuitionScaleOf(). */
+    public void setTuitionScaleOf(EducationType type, double scale) {
+        if (type == null) return;
+        tuitionScales[type.ordinal()] = Math.max(0, Math.min(TaxPolicy.MAX_TUITION_SCALE, scale));
+    }
 
-    /** What this city charges for the course today: the founding fee in today's money, at the player's scale. */
+    /** The multiplier the tuition table is charged at: the first kind's, which is every kind's until they part (0.7.6). */
+    public double getTuitionScale() { return tuitionScales[EducationType.ELEMENTARY.ordinal()]; }
+
+    /** One kind's multiplier (0.7.6). */
+    public double getTuitionScaleOf(EducationType type) {
+        return type == null ? getTuitionScale() : tuitionScales[type.ordinal()];
+    }
+
+    /** What this city charges for the course today: the founding fee in today's money, at the player's scale for that kind. */
     public double feeFor(EducationType type) {
-        return type == null ? 0 : tuition[type.ordinal()] * tuitionScale;
+        return type == null ? 0 : tuition[type.ordinal()] * tuitionScales[type.ordinal()];
     }
 
     /** The same fee at a scale of 1 - the founding table in today's money - so a screen can re-strike it at a staged scale. */
@@ -273,6 +292,19 @@ public class Education {
     private double upkeep;
 
     /**
+     * THE MONTH BY SCHOOL KIND (0.7.6), for the Schools page's row per kind:
+     * the tuition collected from each kind's students - tuitionCollected,
+     * split by what was taught, added to by the same line in charge() - and
+     * what each kind's standing buildings cost the treasury, staffed payroll
+     * plus upkeep, which Game hands in after the month (setCostOf) from the
+     * same wages and fill the total above was struck at. Flows, and saved
+     * with the rest of the month for the reason those were: a freshly loaded
+     * city should not show every school costing nothing.
+     */
+    private final double[] feesOf = new double[EducationType.values().length];
+    private final double[] costOf = new double[EducationType.values().length];
+
+    /**
      * Adults who came out of a course this month, every course counted once:
      * the gross flow out of the student body, where graduates[] is the net
      * movement between bands. HouseholdBalance needs the gross figure - a
@@ -357,6 +389,8 @@ public class Education {
         java.util.Arrays.fill(enrolled, 0);
         tuitionCollected = 0;
         citySubsidyPaid = 0;
+        java.util.Arrays.fill(feesOf, 0);
+        java.util.Arrays.fill(costOf, 0);
         payroll = Math.max(0, staffedPayroll);
         upkeep = Math.max(0, schoolUpkeep);
 
@@ -673,6 +707,7 @@ public class Education {
         double fee = feeFor(type) * Math.max(0, students);
         citySubsidyPaid += fee * tuitionSubsidy;
         tuitionCollected += fee * (1 - tuitionSubsidy);
+        feesOf[type.ordinal()] += fee * (1 - tuitionSubsidy);
     }
 
     private static double cover(double have, double need) {
@@ -749,6 +784,46 @@ public class Education {
     public double getCostRecovery() {
         double gross = getGrossCost();
         return gross > 0 ? tuitionCollected / gross : 0;
+    }
+
+    /**
+     * What one kind's standing buildings cost the treasury this month:
+     * staffed payroll plus upkeep (0.7.6). Across the nine kinds it adds up
+     * to getGrossCost(), which is struck by category rather than by kind -
+     * so to the cent, not to the bit. See setCostOf().
+     */
+    public double getCostOf(EducationType type) { return type == null ? 0 : costOf[type.ordinal()]; }
+
+    /** The tuition households paid for one kind this month (0.7.6); across the kinds, getFees(). */
+    public double getFeesOf(EducationType type) { return type == null ? 0 : feesOf[type.ordinal()]; }
+
+    /**
+     * Hands in one kind's cost for the month: its staffed payroll plus its
+     * upkeep, off BuildingManager.getSchoolPayroll() and getSchoolUpkeep().
+     * Game calls it after advanceMonth(), which clears the nine, with the
+     * wages and fill the month's total was struck at. The screen reads it;
+     * nothing is charged from it - the treasury pays getGrossCost().
+     */
+    public void setCostOf(EducationType type, double payroll, double upkeep) {
+        if (type == null) return;
+        costOf[type.ordinal()] = Math.max(0, payroll) + Math.max(0, upkeep);
+    }
+
+    /**
+     * What this month's students would be billed at another set of scales,
+     * before the subsidy (0.7.6): each kind's enrolled at the founding fee in
+     * today's money times the scale asked for it. At today's scales it is
+     * what was billed - getSubsidy() plus getFees() - so the Schools page can
+     * re-strike the month at a staged price, kind by kind, from the model's
+     * own counts.
+     */
+    public double billedAt(java.util.function.ToDoubleFunction<EducationType> scaleOf) {
+        double total = 0;
+        for (EducationType type : EducationType.values()) {
+            if (type == EducationType.NONE) continue;
+            total += tuition[type.ordinal()] * scaleOf.applyAsDouble(type) * Math.max(0, enrolled[type.ordinal()]);
+        }
+        return total;
     }
 
     public double[] getEverGraduated() { return everGraduated; }
@@ -840,6 +915,7 @@ public class Education {
         int size = everGraduated.length + 1;
         for (double[] queue : inFlight) size += queue.length;
         size += MONTH_FIELDS + coverage.length + enrolled.length + 1;
+        size += costOf.length + feesOf.length;
         double[] out = new double[size];
         int i = 0;
         out[i++] = tuitionSubsidy;
@@ -870,6 +946,10 @@ public class Education {
         // ...and who finished, appended 2026-09-11: the students' loans leave
         // with them the month after. See HouseholdBalance.setGraduates().
         out[i++] = finished;
+        // ...and the month by school kind, appended 0.7.6: what each kind
+        // cost and what its students paid, for the Schools page's rows.
+        for (double v : costOf) out[i++] = v;
+        for (double v : feesOf) out[i++] = v;
         return out;
     }
 
@@ -890,15 +970,19 @@ public class Education {
         finished = 0;
         java.util.Arrays.fill(coverage, 0);
         java.util.Arrays.fill(enrolled, 0);
+        java.util.Arrays.fill(costOf, 0);
+        java.util.Arrays.fill(feesOf, 0);
 
         int shortForm = everGraduated.length + 1;
         int fullForm = shortForm;
         for (double[] queue : inFlight) fullForm += queue.length;
         int withMonth = fullForm + MONTH_FIELDS + coverage.length + enrolled.length;
         int withFinished = withMonth + 1;
+        int withKinds = withFinished + costOf.length + feesOf.length;
 
         if (saved == null || (saved.length != shortForm && saved.length != fullForm
-                && saved.length != withMonth && saved.length != withFinished)) {
+                && saved.length != withMonth && saved.length != withFinished
+                && saved.length != withKinds)) {
             tuitionSubsidy = DEFAULT_SUBSIDY;
             java.util.Arrays.fill(everGraduated, 0);
             return;
@@ -917,7 +1001,13 @@ public class Education {
             for (int k = 0; k < coverage.length; k++) coverage[k] = saved[i++];
             for (int k = 0; k < enrolled.length; k++) enrolled[k] = saved[i++];
         }
-        if (saved.length == withFinished) finished = Math.max(0, saved[i]);
+        if (saved.length >= withFinished) finished = Math.max(0, saved[i++]);
+        // A save from before 0.7.6 has no month by kind, and the rows read
+        // nothing until a month has been played - the totals above are whole.
+        if (saved.length == withKinds) {
+            for (int k = 0; k < costOf.length; k++) costOf[k] = saved[i++];
+            for (int k = 0; k < feesOf.length; k++) feesOf[k] = saved[i++];
+        }
         refreshStudying();
     }
 
@@ -927,6 +1017,8 @@ public class Education {
         citySubsidyPaid  *= scale;
         payroll *= scale;
         upkeep  *= scale;
+        for (int k = 0; k < costOf.length; k++) costOf[k] *= scale;
+        for (int k = 0; k < feesOf.length; k++) feesOf[k] *= scale;
         // ...and the price list itself. See the note on the tuition table.
         for (int i = 0; i < tuition.length; i++) tuition[i] *= scale;
     }

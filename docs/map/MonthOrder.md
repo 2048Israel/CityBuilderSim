@@ -1,6 +1,6 @@
 # MonthOrder.java - 167 lines · 6 methods · 1 constants · tools
 
-`ham/citybuildersim/tools/MonthOrder.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/MonthOrder.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > The month as a numbered list: docs/month-order.md walks the top-level
 > statements of the methods that make up a month, in order, each with its

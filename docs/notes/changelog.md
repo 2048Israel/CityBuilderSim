@@ -8,6 +8,256 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
+### VERSION 0.7.6 — ONE LADDER, THE PRICE OF EACH SCHOOL, GDP IN LAYERS, AND LAND BOUGHT IN DOLLARS — 2026-09-23, DEPLOYED (tag 0923d), see `land-in-dollars.md`
+
+**Four things Jerus asked for in one message — *"ok its good, just one thing"*,
+and then four. Two Opus implementers in turn on one tree: the first three
+changed nothing the model does with a number it already had, the fourth moves
+it; an Opus docs pass after.**
+
+**One ladder for every dial.** `ui/Ladder` is the one class:
+`Ladder.of(min, max, step, reads)`, `.current(v)` (what the city charges),
+`.showing(staged)`, exactly one of `.stages(DoubleConsumer)` or
+`.appliesAtOnce(DoubleConsumer)`, then `.build()`. The buttons move one step,
+the slider snaps to it, the reading goes to the accent colour off what the city
+charges, and the ends line reads "x to y · one step is z · it is w"; the step is
+the sensitivity and there is no second knob. Four optional settings change how
+it is drawn, never how it moves (`stepReads`, `offAtCurrent`/`itIs`, `greyed`,
+`wide`); the reading tracks the thumb and the callback waits for the release.
+`PolicyScreen.taxLadder` and `stageSlider` are gone — `ladderOf(Lever)`,
+`ladder(Lever)` and `stagedLadder` are the wiring. On it: every tax-page dial
+and the farmland relief; the wage floor and the policy rate; the inflation
+target, the holdings and the ceiling, applied at once with their chips kept as
+shortcuts; the pension's two, EI's two, both health dials, the tuition subsidy
+share, the every-school price and one per kind, the grant amount and the
+student loan rate; the fare on Services. Each keeps its key, range, step and
+formatter exactly — `PolicyCheck` did not notice. The standing subsidies
+(switches) and the currency reform (a chip choice) are not dials and got none.
+
+**The price of each school.** The tuition scale is nine, one per kind —
+`TaxPolicy.tuitionScaleOf(type)` / `setTuitionScaleOf(type, scale)` — in the
+shape 0.7.4 gave the income taxes: `setTuitionScale` is every school at once,
+`getTuitionScale` the first kind's, `tuitionScalesSplit()` whether they have
+parted; `Education.feeFor(type)` reads the kind's own. The nine ride the end of
+the policy array (`STATE_BEFORE_SCHOOLS`), a shorter array reading all nine as
+the one scale it carried. **Found on the way**, the trap 0.7.4 found for the
+income rate: the month and the load path told the schools `getTuitionScale()`,
+which would have put nine prices back to one on every load —
+`Game.tellTheSchoolsTheirPrices` hands each kind its own. The Schools page
+keeps "Every school at once" at the top (moving it takes back every kind's
+staging) and has a row per kind under it in `EducationType` order: its own
+staged ladder and four figures off the model — the places its buildings seat,
+the students in it, what its staff and buildings cost
+(`Education.getCostOf`, handed in by the month from `BuildingManager`'s
+per-course payroll and upkeep) and the tuition its students paid
+(`getFeesOf`), each kind's month riding the end of the schools' array. A kind
+with nothing standing says "no school" and its ladder is greyed. The preview
+re-strikes the month kind by kind (`Education.billedAt`). `EducationCheck`
+§17: one kind's price moves only that fee; the every-school setter moves all
+nine; the array round-trips and an old-length array reads nine equal scales;
+the rows add up to the page's totals to the cent; after a load the schools
+charge nine separate prices.
+
+**GDP in layers.** Four history series beside `gdp` — `consumption`,
+`investment`, `government`, `netExports`, off `NationalAccounts`' own getters,
+each with a year-book rule — and `YearBook.real()` / `realYear()` beside
+`realGdpYear()`, deflated the same way, with `YearBook.GDP_PARTS` naming the
+four. A "layers" chip on the real-GDP small chart, and on the big chart's
+reading when real GDP is picked alone, draws a `StackedAreaChart` behind the
+line chart: consumption, investment and government stacked from zero in
+`Palette.GDP_LAYERS` (the maturity ladder's three steps), the real GDP line
+over them in `TEXT_HEAD`, so the gap between the stack's top and the line is
+net exports — a stacked area cannot hold a negative layer, and the caption
+says so. The crosshair reads the four parts; the log chip refuses while the
+layers are on; the toggle is screen state and the pins are unchanged. Older
+saves have no parts until they play a month. `HistoryCheck` §2c: the four
+exist after a month, C+I+G+NX is the month's `gdp` to the cent, a rolling year
+of the four in founding money is the year of real GDP.
+
+**Land is bought in dollars.** Jerus: *"when you buy land, make it so that it
+costs USD not domestic currency … a little toggle at the top to choose … to
+use up your USD reserves or to convert cash into usd exactly to buy the land,
+and the default is that you convert."* `LandMarket` prices every parcel in US
+dollars — the same base and premiums, so at the founding rate of 1.00 every
+number is what it was — fixed at listing; the treasury pays `usd × rate` on the
+day (`LandParcel.localPrice`, `LandManager.buyParcel`, the rate read live
+through a supplier `Game` hands in). What businesses pay the city stays local
+money, so the city's margin on land carries the currency. The `landPrice`
+series and the year book's column are the dollar price since this build, and a
+currency reform no longer clears the land office's board. The chip pair at the
+top of the land office — *Pay by converting cash* (the default) / *Pay from the
+vault* — is `Game.landPaidFromVault`, saved as `landPaidFromVault`, applied at
+once. Converting pays `usd × rate` through `TreasuryLine.LAND` and
+`ForeignAccounts.buyAndSpendDollarsForLand` buys the dollars and hands them over
+in one movement, the vault where it began; from the vault,
+`spendReservesOnLand` moves no local money, `lifetimeIntervention` falls by the
+local price as a sale's would, and the treasury's journal carries "Bought land
+with US$…k of reserves" back against the budget's land line; a short vault
+spends what it holds and converts the rest, and the receipt says so. The
+tiles show both prices, the market cell is in US$, the Exchange page has
+"Spent on land" lines and the Government tab's "Land bought" opens into
+converted, from the vault and bought back. Into the save without a bump: the
+toggle's key, the listing behind a new marker (−105) whose prices are dollars
+(an older listing, and an older price state without its fourth slot, read as
+dollars at the rate of the day it is loaded — `settleLocalPrices`), and
+`ForeignAccounts` slots 31–36. **Found on the way:** the brief's premise that
+buying dollars pushes the rate is wrong — a treasury purchase of dollars is the
+financing item (`Scope.RESERVE`), which `pressure()` never reads, so converting
+for land pushes exactly what a reserve purchase does, which is nothing
+(`ForeignCheck` §14); arguably wrong for land, and open for Jerus (the todo).
+`LandCheck` §12–13 (its older sections restated at the bare office's founding
+rate — premise restated, not moved), `MoneyCheck` (a vault purchase, then 24
+closed months), `ForeignCheck` §14, `NewGameCheck` (the toggle and the counters
+reset), `TreasuryCheck` reads `localPrice`. **The playtest moved, once:** seed 0
+against the first half's run, only the treasury's cash — +$0.1B at m1533,
+growing to $416.2B against $413.8B at m4005 — because the currency ran strong
+(never weaker than 1.00, 0.48 at the end) and the advisor's US$6.60B of land,
+bought over 132 months, cost D$4.13B, 37.4% less than at the founding rate; a
+new line in the playtest's summary says so.
+
+**The docs pass** fixed `GameVersion`'s 0.7.6 entry (it opened "Three things
+Jerus asked for together, none of them a change to what the model does … the
+default run is the run it was, to the byte" over four, the fourth moving the
+run); `ForeignAccounts.redenominate()`'s note, which read as though the land's
+dollars moved in a reform; `YearBook.real()`'s javadoc, whose first sentence —
+the one the map prints — was the heading "GDP IN LAYERS (0.7.6)."; "ten plots"
+where the prose says it in the present, `LISTING_SIZE` having been nine since
+the shelf became a square — `LandMarket`'s header (the map's line),
+`LandParcel`, `LandManager`, `LandScreen`, `Game` and `LandCheck`'s section
+title and label; and `CLAUDE.md`'s line counts (141,900 → 144,200, `Game.java`
+9,300 → 9,500). It left one code change for the implementer: the Services
+tab's "What tuition raises" table still strikes each course's revenue on the
+screen (`feeFor × enrolled × (1 − subsidy)`) where `Education.getFeesOf()`
+now holds it.
+
+Verification: `build-tree.sh` and `compile-all-tree.sh` silent; the suite 59
+of 60 with the known line (`InfrastructureCheck`), `BuildMenuCheck` skipped
+without JavaFX, 149 s — the same count as 0.7.5, no new harness
+(`EducationCheck` §17, `HistoryCheck` §2c, `LandCheck` §12–13, `ForeignCheck`
+§14); `LongPlaytest` seed 0 after the first half byte-identical to
+`playtest-baseline-0923b.txt` bar the wall clock, and after the second the
+movement above and nothing else — the run is the new baseline,
+`playtest-baseline-0923d.txt`; `StaleCheck` and `LandCheck` rerun after the
+docs pass (its edits are comments, `CLAUDE.md` and two harness labels); the
+indexes regenerated; `Stale` 0 firm, 71 soft, the same list as 0.7.5's;
+`SAVE_FORMAT` 27. 213 files, 144,158 lines, 831 constants (815). The deploy
+set is the batch's twenty-nine source files (`ui/Ladder.java` new), `CLAUDE.md`,
+`README.md` and `docs/`. Deployed as tag 0923d.
+
+### VERSION 0.7.5 — ENTER BUILDS; THE REPORTS PAGE, REDRAWN — 2026-09-23, DEPLOYED AND VERIFIED (tag 0923b), see `financial-crisis-of-2045.md`
+
+**Two things Jerus asked for, both in the interface; the month did not move.**
+**Enter builds, Backspace clears:** on a build category page, Enter places
+every card with a quantity, in the page's own order, each through the card's
+own `placeOrder` (which now returns whether it built) — the first refusal puts
+its screen up and the rest stay pending; Backspace or Delete takes every
+quantity on the page back to none (`BuildScreen.buildPending()` /
+`clearPending()`, called from the window's key filter only while
+`handleAllBuildingMenus` is the screen, and the key spent only when it did
+something). The Build button's tooltip says both, and a caption under the grid
+does while anything is pending. **The Reports page, redrawn:** two small pinned
+charts at the top, real GDP (the rolling year) and the population until the
+player pins others — a preference in `GamePrefs` (`pinnedLeft`,
+`pinnedRight`), never in the save, an unknown name falling back to the
+default; the big chart with the presets, "clear all" and a "log" switch in a
+row above it, seeded on a first visit with the new `PRESETS[0]` "What money
+costs" (the rate, the price level, inflation) under the unchanged
+never-re-seed rule; two units on two real axes (a second transparent
+`LineChart` stacked in a `StackPane`, its axis on the right), three or more
+still mapped onto 0–100; a crosshair reading every line at the month under the
+pointer (a bucket's month and average when bucketed); recessions shaded on all
+three charts; the named episodes ticked under the big chart and listed in one
+caption line (oldest first, at most eight). The episodes are
+`YearBook.episodes()`, a pure function of the history, printed in the year
+book's WHAT HAPPENED section too ("Financial crisis of 2045 - months
+540-553"): bank equity under zero ("Financial crisis of"), the rolling year
+of real output below the year before ("Recession of", two years or more
+"Depression of"), the exchange rate above twice a year before ("Currency
+crisis of"), inflation above 25% / below −10% ("The YYYY inflation" /
+"deflation"), the sick rate above 10% ("Epidemic of"), the treasury under zero
+("Treasury crisis of"), unemployment above 20% ("The YYYY slump"); runs under
+`EPISODE_MIN_MONTHS` (3) dropped before runs closer than `EPISODE_JOIN_MONTHS`
+(6) are joined, `DEPRESSION_MONTHS` 24, the second of a name in one year
+"…, again"; `YearBook.recessions()` is the unjoined bands the charts shade.
+Real GDP and inflation are struck once now, in `YearBook` (`realGdp`,
+`realGdpYear`, `inflation`), where the screen and the book had each had a copy.
+The picker folds into its groups — closed unless one of their lines is
+picked, "n of m picked", open state kept while the game runs — with a filter
+box that narrows and opens them, and the chip pressed is held where it was on
+the screen across the rebuild (`holdInPlace`). **Found on the way:** the "−"
+stepper on an empty card stored −1 (`merge` stores the value when the key is
+absent) and read "-1" — `compute` now; the licence refusal screen was missing
+from the rail's `tabFor`, so it lit no tab. Opus implementer, Opus docs pass;
+the docs pass fixed `BuildScreen.placeOrder()`'s "three refusals" (four:
+funding, land, deposit, licence), HistoryScreen's class header ("The text is
+exactly what it was", now past tense), THE RECORD's "Normalising is what
+happens when the units disagree" (annotated for two axes, as THE HISTORY
+SCREEN already was), `historyValues()`' pointer for real GDP's why (it is in
+`realGdp()` and `realGdpYear()`), and `CLAUDE.md`'s line count (141,900).
+Verification: the model and compile-all clean; the suite 59 of 60 with the
+known line (`InfrastructureCheck`), `BuildMenuCheck` skipped without JavaFX —
+the same count as 0.7.4, no new harness (`YearBookCheck` gained section 14,
+54 → 82 labelled assertions); `LongPlaytest` seed 0 byte-identical to
+`playtest-baseline-0923a.txt` bar the wall clock; `StaleCheck` rerun after the
+docs pass (its edits are comments and `CLAUDE.md`); the indexes regenerated;
+`Stale` 0 firm, 71 soft, the same list as 0.7.4's; `SAVE_FORMAT` 27. 212
+files, 141,923 lines, 815 constants (805). The deploy set is `GamePrefs`,
+`GameVersion`, `YearBook`, `YearBookCheck`, `ui/BuildScreen`,
+`ui/HistoryScreen`, `ui/UserInterface`, `CLAUDE.md` and `docs/`. Deployed 2026-09-23 as tag 0923b, every file verified byte-for-byte on the PC.
+The Settings screen's "Keys" list, which the docs pass found naming two keys,
+names all six since the deploy (the orchestrator's fix).
+
+### VERSION 0.7.4 — THE HOUSEKEEPING — 2026-09-23, DEPLOYED AND VERIFIED (tag 0923a), see `every-tax-at-once.md`
+
+**Four small things Jerus asked for in one evening, all player-facing, none a
+model redesign; every new dial opens where the old constant was.** **The
+inflation target is a dial:** `DebtManager.INFLATION_TARGET` becomes the
+player's `inflationTarget` (`DEFAULT_INFLATION_TARGET` 2%, `MIN_` 0 and `MAX_`
+10%), read by `ruleRate()`, `adviceReason()` and the strip's colour and
+tooltip; on the monetary page under the autopilot, applied at once — chips 0–5%
+and a half-point ladder to 10, with the rule struck at the target and at
+another (`ruleRate(inflation, target)`); saved under its own key
+(`DataSave.inflationTarget`, an older save reads 2%);
+`-Dplaytest.inflationTarget` holds it for a run. **Three rates on the strip:**
+a third panel, *the price of money* — the central bank's dial, the bank's
+`lendingRate()` on it ("no bank" / "failed" in red), and the city's
+`DebtManager.getRate()` — three caption-weight lines; and the bank page's "It
+charges", which printed the city's rate, prints the bank's lending rate now.
+**The sector list:** each card draws the last 24 months of net income
+(`SPARK_MONTHS`, a canvas 90×22, green or red on the latest month) and its
+workers (`Sector.getWorkers()`, posts at the "Staffed" share, beside the new
+`getPostsOffered()`); "Show more" opens every card to revenue, margin, cash,
+what it owes the bank and posts filled — screen state, never saved. Two new
+history series per sector, `netIncome:<sector>` (a flow) and
+`workers:<sector>` (a level), with year-book rules. **The taxes by type:**
+profit, sales and wage each have a base of their own (`TaxPolicy`
+`profitTaxRate` / `salesTaxRate` / `wageTaxRate`), every offset riding its
+own tax's base; each tax page's top lever is that base, and the old city rate
+is "Every tax at once" on the Everything page (`setIncomeTaxRate()`, all
+three), with the three bases side by side. **Found on the way:** the load
+path read the old single income key after the policy array and would have
+put a split back together on every load — it reads the key now only when the
+array was not read; the Government tab printed the bank's rate as the income
+rate while `Game` charges it retail's profit rate — it prints retail's now.
+Nothing into saves needed a bump: the target key, three slots on the policy
+array's end (`STATE_BEFORE_SPLIT`), the two series per sector. Opus
+implementer, Opus docs pass; the docs pass fixed `DebtManager.ruleRate()`'s
+javadoc (its floor-and-top thresholds hold at the default target only),
+PolicyScreen's tab header ("the two city rates"), its `bandLever()` note
+("stage the CITY rate alone"), THE FOUR TAXES' "Everything reads" (the page
+has a lever), `TaxPolicy.getPolicyState()`'s "city rates first", SectorScreen's
+"Six businesses", `CLAUDE.md`'s line count (140,500), and added the bank page's
+"It charges" to `GameVersion`'s 0.7.4 entry. Verification: the model and
+compile-all clean; the suite 59 of 60 with the known line
+(`InfrastructureCheck`), `BuildMenuCheck` skipped without JavaFX — the same
+count as 0.7.3, no new harness (`MonetaryCheck`, `PolicyCheck`, `HistoryCheck`
+gained sections); `LongPlaytest` seed 0 byte-identical to
+`playtest-baseline-0922e.txt` bar the wall clock (rerun after the docs pass);
+the indexes regenerated; `Stale` 0 firm, 71 soft, the same list as 0.7.3's;
+`SAVE_FORMAT` 27. 212 files, 140,541 lines, 805 constants (794). The deploy
+set is the batch's nineteen source files plus `ui/BankScreen.java`,
+`CLAUDE.md` and `docs/`. **Deployed 2026-09-23 as tag 0923a, every file verified byte-for-byte on the PC.** The strip's "bank" tooltip was tightened to `lendingRate()`'s own words before the deploy.
+
 ### THE MANUAL AT 0.7.3, AND ITS COPY ON GITHUB — 2026-09-22 (night), PUBLISHED as version 8 (version 9 after the deploy, one clause); the tree copy DEPLOYED AND VERIFIED with 0922c, see `the-manual-at-0-7-3.md`
 
 **THE PUBLISHED MANUAL IS AT 0.7.3 / FORMAT 27 (version 8, same URL), AND FOR

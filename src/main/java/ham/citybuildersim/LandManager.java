@@ -33,6 +33,14 @@ import java.util.Locale;
  * The city does not pay itself for land it builds on: it already owns it, and
  * charging its own budget would just move money from one pocket to the other
  * while inflating GDP.
+ *
+ * IN DOLLARS, AT THE DAY'S RATE (0.7.6). The land office prices its parcels in
+ * US dollars (LandMarket), and what the city pays is the dollar price times
+ * the exchange rate on the day it buys - read live from the foreign accounts
+ * through the supplier Game hands in, so nothing here can hold a stale rate.
+ * A LandManager built bare, as the harnesses build one, reads the founding
+ * rate, at which every number is what it was. What a business pays the city
+ * is local money and does not read the rate at all.
  */
 public class LandManager {
 
@@ -119,8 +127,30 @@ public class LandManager {
      */
     private double pricePerSqFt = DEFAULT_PRICE_PER_SQ_FT;
 
-    /** Ten plots on offer, and what the next one costs. */
+    /** Nine plots on offer, and what the next one costs. */
     private final LandMarket market = new LandMarket();
+
+    /**
+     * Local money per US dollar today - ForeignAccounts.getRate(), read live
+     * (the shape CentralBank reads the vault in). Bare, the founding rate.
+     */
+    private final java.util.function.DoubleSupplier rate;
+
+    /** A land office on its own, at the founding rate - what the harnesses build. */
+    public LandManager() {
+        this(() -> ForeignAccounts.OPENING_RATE);
+    }
+
+    /** The city's land office, converting at the rate this reads. */
+    public LandManager(java.util.function.DoubleSupplier rate) {
+        this.rate = rate == null ? () -> ForeignAccounts.OPENING_RATE : rate;
+    }
+
+    /** The rate the office converts at today; the founding rate if the reading is not a price. */
+    private double rate() {
+        double r = rate.getAsDouble();
+        return r > 0 && Double.isFinite(r) ? r : ForeignAccounts.OPENING_RATE;
+    }
 
     /* ------------------------------ ore ------------------------------
      *
@@ -168,14 +198,23 @@ public class LandManager {
     public double getLandPurchasesThisMonth() { return landPurchasesThisMonth; }
     public double getSqFtBoughtBackThisMonth(){ return sqFtBoughtBackThisMonth; }
 
-    /** What a block's worth of land costs at today's market rate, in thousands. */
+    /** What a block's worth of land costs at today's market rate, in thousands of local money. */
     public double getNextBlockCost() {
         return getAcquisitionCostPerSqFt() * BLOCK_SQ_FT;
     }
 
-    /** Ground price per square foot the city would pay today. */
+    /**
+     * Ground price per square foot the city would pay today, in local money:
+     * the world's dollar price (getGroundUsdPerSqFt()) at today's rate, since
+     * 0.7.6.
+     */
     public double getAcquisitionCostPerSqFt() {
-        return market.getMarketPricePerSqFt();
+        return market.getGroundUsdPerSqFt() * rate();
+    }
+
+    /** The same ground price in the money it is asked in: thousands of US dollars (0.7.6). */
+    public double getGroundUsdPerSqFt() {
+        return market.getGroundUsdPerSqFt();
     }
 
     /* --------------------------- the market --------------------------- */
@@ -196,13 +235,25 @@ public class LandManager {
     /**
      * Buys one listed parcel.
      *
-     * @return what it cost, or 0 if it could not be afforded or is not listed -
-     *         in which case nothing changed and the caller must not spend
+     * In local money at today's rate since 0.7.6: the parcel's dollar price
+     * times the rate is what it costs, what availableCash is weighed against,
+     * and what the month's land purchases carry - the parcel's value on the
+     * city's books is what it cost in local money on the day. Where the local
+     * money comes from - cash converted, or the vault's dollars - is the
+     * caller's (Game.buyLandParcel()); availableCash is what it can pay.
+     *
+     * @return what it cost in local money, or 0 if it could not be afforded or
+     *         is not listed - in which case nothing changed and the caller
+     *         must not spend
      */
     public double buyParcel(int parcelId, double availableCash, int population) {
 
         LandParcel parcel = market.find(parcelId);
-        if (parcel == null || parcel.getPrice() > availableCash) {
+        if (parcel == null) {
+            return 0;
+        }
+        double cost = parcel.localPrice(rate());
+        if (cost > availableCash) {
             return 0;
         }
 
@@ -210,7 +261,7 @@ public class LandManager {
 
         ownedSqFt += parcel.getSizeSqFt();
         blocksPurchased++;
-        landPurchasesThisMonth += parcel.getPrice();
+        landPurchasesThisMonth += cost;
 
         if (parcel.hasIron()) {
             // A parcel is worth as many mines as it has sites, which is not
@@ -225,7 +276,7 @@ public class LandManager {
         // bigger sees the next offer at its new size.
         updateMarket(population);
 
-        return parcel.getPrice();
+        return cost;
     }
 
     /* ------------------------------ ore ------------------------------ */
@@ -344,7 +395,7 @@ public class LandManager {
      * Buys the cheapest thing on offer.
      *
      * The old "annex one block" button, kept working. There are no blocks any
-     * more - there are ten plots of assorted sizes - so the nearest honest
+     * more - there are nine plots of assorted sizes - so the nearest honest
      * equivalent is the cheapest one, which is what a player pressing a button
      * labelled "buy some land" means.
      *
@@ -394,8 +445,9 @@ public class LandManager {
                 formatter.format(getAvailableSqFt()), getAvailableBlocks());
         System.out.printf("Utilisation:        %.1f%%%n", getUtilisation() * 100);
         System.out.println();
-        System.out.printf("Market rate:        $%s /sq ft (a block: $%s)%n",
+        System.out.printf("Market rate:        $%s /sq ft (US$%s; a block: $%s)%n",
                 formatter.format(getAcquisitionCostPerSqFt()),
+                formatter.format(getGroundUsdPerSqFt()),
                 formatter.format(getNextBlockCost()));
         if (ironDeposits > 0) {
             System.out.printf("Iron deposits:      %d, %s tonnes left%n",
@@ -424,7 +476,9 @@ public class LandManager {
      * The city's own land prices and this month's land flows, in the new unit.
      *
      * Square feet are square feet: ownedSqFt, allocatedSqFt and the tonnage in
-     * the ground are REAL quantities and do not move. Only what they cost does.
+     * the ground are REAL quantities and do not move. Only what they cost does
+     * - and since 0.7.6 not the listing's dollar prices, which are the world's
+     * (LandMarket.redenominate()); what they cost here moves with the rate.
      */
     public void redenominate(double scale) {
         pricePerSqFt            *= scale;

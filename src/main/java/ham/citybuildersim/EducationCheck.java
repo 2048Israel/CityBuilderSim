@@ -46,6 +46,14 @@ import java.nio.file.Path;
  *    household's share, the burden, the treasury's revenue and what it
  *    forgave; a reader that took the founding fee would charge one price
  *    and record another, and the identity between them is the check.
+ *
+ * 7. A PRICE PER SCHOOL THAT A LOAD PUTS BACK TOGETHER (0.7.6). The scale is
+ *    nine, one per kind; one kind's move has to reach that kind's fee and no
+ *    other's, the every-school setter has to move all nine, an old array has
+ *    to read nine equal scales, and the load path must tell the schools the
+ *    nine and not the one - the income rate did that to the three bases
+ *    until 0.7.4. And the Schools page's row per kind has to add up to the
+ *    totals it sits under.
  */
 public class EducationCheck {
 
@@ -1070,6 +1078,122 @@ public class EducationCheck {
                 readsShare.getGrantAmount() == .25 && readsShare.getStudentGrantShare() == .25);
         assertTrue("a wrong shape is still refused whole",
                 !new TaxPolicy().restorePolicyState(new double[TaxPolicy.STATE_SLOTS + 1]));
+
+        /* ============ 17. A PRICE PER SCHOOL (0.7.6) ============
+
+           Jerus: "have it so that not only can you raise prices but also
+           raise the price for a specific university, and beside the dial it
+           shows the current space, the current students, and the current
+           cost and revenue." The scale is one per kind, the every-school
+           setter is all nine at once, and the save carries the nine on the
+           end - the shape the income taxes were given in 0.7.4.
+           ================================================================= */
+        System.out.println("\n--- a price per school ---");
+
+        TaxPolicy perKind = new TaxPolicy();
+        perKind.setTuitionScaleOf(EducationType.UNIVERSITY, 2.5);
+        Education byKind = new Education();
+        for (EducationType type : EducationType.values()) byKind.setTuitionScaleOf(type, perKind.tuitionScaleOf(type));
+        boolean onlyThatOne = true;
+        for (EducationType type : EducationType.values()) {
+            if (type == EducationType.NONE) continue;
+            double want = (type == EducationType.UNIVERSITY ? 2.5 : TaxPolicy.DEFAULT_TUITION_SCALE)
+                    * Education.foundingTuition(type);
+            if (byKind.feeFor(type) != want) onlyThatOne = false;
+        }
+        assertTrue("raising the university's price moves its fee and no other kind's", onlyThatOne);
+        assertTrue("...so the nine have parted", perKind.tuitionScalesSplit());
+        assertTrue("...and the every-school reading is the first kind's, unmoved",
+                perKind.getTuitionScale() == TaxPolicy.DEFAULT_TUITION_SCALE
+                        && perKind.tuitionScaleOf(EducationType.ELEMENTARY) == TaxPolicy.DEFAULT_TUITION_SCALE);
+        perKind.setTuitionScaleOf(EducationType.MEDICAL, 99);
+        assertTrue("one kind is held to the policy's ceiling",
+                perKind.tuitionScaleOf(EducationType.MEDICAL) == TaxPolicy.MAX_TUITION_SCALE);
+        perKind.setTuitionScale(3);
+        boolean allNine = true;
+        for (EducationType type : EducationType.values()) {
+            if (type != EducationType.NONE && perKind.tuitionScaleOf(type) != 3) allNine = false;
+        }
+        assertTrue("the every-school setter moves all nine", allNine && !perKind.tuitionScalesSplit());
+
+        int kindIndex = 0;
+        for (EducationType type : EducationType.values()) {
+            if (type != EducationType.NONE) perKind.setTuitionScaleOf(type, .5 + .25 * kindIndex++);
+        }
+        double[] nine = perKind.getPolicyState();
+        TaxPolicy nineBack = new TaxPolicy();
+        assertTrue("the array carries the nine on the end", nine.length == TaxPolicy.STATE_SLOTS
+                && nineBack.restorePolicyState(nine));
+        boolean roundTrip = true;
+        for (EducationType type : EducationType.values()) {
+            if (type != EducationType.NONE && nineBack.tuitionScaleOf(type) != perKind.tuitionScaleOf(type)) roundTrip = false;
+        }
+        assertTrue("...and each kind's scale comes back as it went", roundTrip);
+        double[] beforeSchools = java.util.Arrays.copyOf(nine, TaxPolicy.STATE_BEFORE_SCHOOLS);
+        TaxPolicy oneScale = new TaxPolicy();
+        assertTrue("an array of the old length is still read", oneScale.restorePolicyState(beforeSchools));
+        boolean nineEqual = true;
+        for (EducationType type : EducationType.values()) {
+            if (type != EducationType.NONE
+                    && oneScale.tuitionScaleOf(type) != beforeSchools[TaxPolicy.STATE_BEFORE_SPLIT - 1]) nineEqual = false;
+        }
+        assertTrue("...as nine equal scales, the one its slot carried", nineEqual && !oneScale.tuitionScalesSplit()
+                && oneScale.getTuitionScale() == perKind.getTuitionScale());
+
+        /*
+         * THE ROW PER KIND ADDS UP. The x3 price city above, sixty months
+         * in: what each kind's buildings cost and what each kind's students
+         * paid, against the two totals the page already shows.
+         */
+        Education rows = priceCities[1].getEducation();
+        double costs = 0, fees = 0;
+        for (EducationType type : EducationType.values()) {
+            costs += rows.getCostOf(type);
+            fees += rows.getFeesOf(type);
+        }
+        System.out.printf("   by kind: cost $%,.3fk against $%,.3fk, fees $%,.3fk against $%,.3fk%n",
+                costs, rows.getPayroll() + rows.getUpkeep(), fees, rows.getFees());
+        assertTrue("fixture: the schools cost something and collected something", costs > 0 && fees > 0);
+        assertTrue("the kinds' costs add up to the staff and buildings the page shows, to the cent",
+                Math.abs(costs - (rows.getPayroll() + rows.getUpkeep())) <= 1e-5);
+        assertTrue("...and their fees to the tuition households paid, to the cent",
+                Math.abs(fees - rows.getFees()) <= 1e-5);
+        assertTrue("a kind with no school costs nothing and collects nothing",
+                rows.getCostOf(EducationType.MEDICAL) == 0 && rows.getFeesOf(EducationType.MEDICAL) == 0);
+        assertTrue("...and the university, standing, costs something",
+                rows.getCostOf(EducationType.UNIVERSITY) > 0);
+        assertTrue("the month re-struck at today's scales is what was billed",
+                Math.abs(rows.billedAt(rows::getTuitionScaleOf) - (rows.getSubsidy() + rows.getFees())) <= 1e-5);
+
+        /*
+         * AND THE LOAD PATH TELLS THE SCHOOLS THE NINE. The reloaded lender
+         * city from section 16 charges every school at x2.5; its university
+         * goes to x4, a month is played, and it is saved and loaded again.
+         */
+        TaxPolicy lp = reloaded.getEconomyManager().getTaxPolicy();
+        lp.setTuitionScaleOf(EducationType.UNIVERSITY, 4);
+        quietly(() -> reloaded.simulateMonths(1));
+        Education charged = reloaded.getEducation();
+        assertTrue("the month charges the university at its own price and the college at the city's",
+                charged.feeFor(EducationType.UNIVERSITY) == charged.feeAtOne(EducationType.UNIVERSITY) * 4
+                        && charged.feeFor(EducationType.COLLEGE) == charged.feeAtOne(EducationType.COLLEGE) * 2.5);
+        double uniCost = charged.getCostOf(EducationType.UNIVERSITY), uniFees = charged.getFeesOf(EducationType.UNIVERSITY);
+        assertTrue("the city saved again", reloaded.saveGame(3, "kinds").ok);
+        Game again = new Game(loanFiles);
+        quietly(() -> again.loadGameSave(3));
+        assertTrue("...and loaded", again.getLoadFailure() == null);
+        TaxPolicy ap = again.getEconomyManager().getTaxPolicy();
+        assertTrue("the nine came back parted",
+                ap.tuitionScaleOf(EducationType.UNIVERSITY) == 4 && ap.tuitionScaleOf(EducationType.COLLEGE) == 2.5
+                        && ap.tuitionScalesSplit());
+        assertTrue("...and the load path told the schools the nine, not the one",
+                again.getEducation().getTuitionScaleOf(EducationType.UNIVERSITY) == 4
+                        && again.getEducation().feeFor(EducationType.UNIVERSITY)
+                           == again.getEducation().feeAtOne(EducationType.UNIVERSITY) * 4
+                        && again.getEducation().getTuitionScaleOf(EducationType.COLLEGE) == 2.5);
+        assertTrue("...and the month by kind came back with the save, not zero",
+                uniCost > 0 && again.getEducation().getCostOf(EducationType.UNIVERSITY) == uniCost
+                        && again.getEducation().getFeesOf(EducationType.UNIVERSITY) == uniFees);
 
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");

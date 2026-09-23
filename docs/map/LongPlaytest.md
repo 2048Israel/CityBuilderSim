@@ -1,6 +1,6 @@
-# LongPlaytest.java - 3,263 lines · 37 methods · 21 constants · harnesses
+# LongPlaytest.java - 3,309 lines · 37 methods · 22 constants · harnesses
 
-`ham/citybuildersim/LongPlaytest.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LongPlaytest.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > A city played for four thousand months, the way a person plays.
 > 
@@ -29,7 +29,7 @@
 > problem that starts at month 900 and a problem that starts at month 3 are
 > different problems.
 
-**Uses:** [Game](Game.md) (37), [Good](Good.md) (30), [Sector](Sector.md) (15), [Sectors](Sectors.md) (13), [Crime](Crime.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (12), [CareType](CareType.md) (12), [Equity](Equity.md) (10), [DebtManager](DebtManager.md) (9), [HouseholdBalance](HouseholdBalance.md) (8), [TaxPolicy](TaxPolicy.md) (8), [AgeBand](AgeBand.md) (7), [InfrastructureManager](InfrastructureManager.md) (7), [BusinessDebtManager](BusinessDebtManager.md) (7), [FamilyModel](FamilyModel.md) (6), [ForeignAccounts](ForeignAccounts.md) (6), [UnemployedHousehold](UnemployedHousehold.md) (6), [EconomyManager](EconomyManager.md) (5), [CentralBank](CentralBank.md) (5), [Household](Household.md) (5), [Health](Health.md) (5), [PopulationManager](PopulationManager.md) (4), [BuildingManager](BuildingManager.md) (4), [Bank](Bank.md) (4), [CapitalFlows](CapitalFlows.md) (4), [JobType](JobType.md) (4), [WageBand](WageBand.md) (4), [Unemployment](Unemployment.md) (3), [Retail](Retail.md) (3), [BusinessServices](BusinessServices.md) (3)... and 27 more
+**Uses:** [Game](Game.md) (37), [Good](Good.md) (30), [Sector](Sector.md) (15), [Sectors](Sectors.md) (13), [Crime](Crime.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (12), [CareType](CareType.md) (12), [Equity](Equity.md) (10), [DebtManager](DebtManager.md) (10), [HouseholdBalance](HouseholdBalance.md) (8), [TaxPolicy](TaxPolicy.md) (8), [AgeBand](AgeBand.md) (7), [InfrastructureManager](InfrastructureManager.md) (7), [BusinessDebtManager](BusinessDebtManager.md) (7), [FamilyModel](FamilyModel.md) (6), [ForeignAccounts](ForeignAccounts.md) (6), [UnemployedHousehold](UnemployedHousehold.md) (6), [EconomyManager](EconomyManager.md) (5), [CentralBank](CentralBank.md) (5), [Household](Household.md) (5), [Health](Health.md) (5), [PopulationManager](PopulationManager.md) (4), [BuildingManager](BuildingManager.md) (4), [Bank](Bank.md) (4), [CapitalFlows](CapitalFlows.md) (4), [JobType](JobType.md) (4), [WageBand](WageBand.md) (4), [Unemployment](Unemployment.md) (3), [Retail](Retail.md) (3), [BusinessServices](BusinessServices.md) (3)... and 27 more
 
 **Used by (6):** [DenominationCheck](DenominationCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [LabourCheck](LabourCheck.md), [MonetaryCheck](MonetaryCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [ShadowBasket](ShadowBasket.md)
 
@@ -42,23 +42,24 @@
 | 108 | THE AUDIT |
 | 179 | · A mechanic that is not counted over a real run is a mechanic nobody |
 | 338 | · · AND NOTHING MOVED AFTER THE AUDIT STRUCK. |
-| 868 | THE ADVISOR |
-| 886 | WHO IS PLAYING (2026-09-17) |
-| 928 | THE RATE, HELD (2026-09-21) - the measurement 7.0 turns green |
-| 966 | WAGES AGAINST THE INDEX (2026-09-21) |
-| 985 | THE CITY'S OWN PAPER, FOR THE ENSEMBLE (2026-09-21) |
-| 1004 | THE HOLDINGS DIAL, HELD (0.7.1) |
-| 1021 | THE CEILING, SET (0.7.2) |
-| 1179 | · THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free. |
-| 1234 | · AND EVERYTHING THAT IS A PURCHASE. |
-| 1523 | · AND THE BEST OF THEM WINS. |
-| 1798 | RUNNING MONTHS |
-| 1969 | SAVE / RELOAD, MID-RUN |
-| 2196 | (untitled) |
-| 2227 | · · founding: a few months at a time, by hand |
-| 2317 | · · then the real rhythm |
-| 2460 | · · the report |
-| 2554 | · · BUSINESS SERVICES - and the point of printing it is the MECHANISM, |
+| 873 | THE ADVISOR |
+| 891 | WHO IS PLAYING (2026-09-17) |
+| 933 | THE RATE, HELD (2026-09-21) - the measurement 7.0 turns green |
+| 971 | WAGES AGAINST THE INDEX (2026-09-21) |
+| 990 | THE CITY'S OWN PAPER, FOR THE ENSEMBLE (2026-09-21) |
+| 1009 | THE HOLDINGS DIAL, HELD (0.7.1) |
+| 1026 | THE CEILING, SET (0.7.2) |
+| 1041 | THE TARGET, SET (0.7.4) |
+| 1209 | · THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free. |
+| 1264 | · AND EVERYTHING THAT IS A PURCHASE. |
+| 1553 | · AND THE BEST OF THEM WINS. |
+| 1828 | RUNNING MONTHS |
+| 1999 | SAVE / RELOAD, MID-RUN |
+| 2226 | (untitled) |
+| 2258 | · · founding: a few months at a time, by hand |
+| 2348 | · · then the real rhythm |
+| 2493 | · · the report |
+| 2587 | · · BUSINESS SERVICES - and the point of printing it is the MECHANISM, |
 
 ## Constants
 
@@ -73,18 +74,19 @@
 | 220 | `LongPlaytest.inflationPath` | `new java.util.ArrayList<>()` | Every month's inflation reading, once the index has a year to read, for its median. |
 | 229 | `LongPlaytest.spendPath` | `new java.util.ArrayList<>()` | Every month's spend factor (0.7.3): the share of their spending above subsistence the households planned at, on the month's real deposit rate - HouseholdBalance.getSpendFactor() after the month. |
 | 237 | `LongPlaytest.OLD_DIAL_STOP` | `.25` | The dial's stop before 0.7.2, for counting the months the uncapped dial spends past it. |
-| 916 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasiona...` | True when this run is played by somebody paying attention. |
-| 923 | `LongPlaytest.SCHOOLS` | `Boolean.getBoolean("playtest.schools")` | -Dplaytest.schools=true: the city builds schools, which the advisor never does. |
-| 949 | `LongPlaytest.POLICY_RATE` | `System.getProperty("playtest.policyRate") = = null ? null : Double.valueOf(Sy...` | The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. |
-| 964 | `LongPlaytest.AUTOPILOT` | `Boolean.getBoolean("playtest.autopilot")` | -Dplaytest.autopilot=true (0.7.0): the rule holds the dial from founding, through the game's own autopilot (DebtManager), and the advisor keeps its hands off it. |
-| 983 | `LongPlaytest.WAGES` | `Boolean.getBoolean("playtest.wages")` | -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. |
-| 1002 | `LongPlaytest.BORROW_AT_HOME` | `Boolean.getBoolean("playtest.borrowAtHome")` | -Dplaytest.borrowAtHome=true: the advisor's borrowing goes to the city's own term bonds, never abroad. |
-| 1018 | `LongPlaytest.QE_SHARE` | `System.getProperty("playtest.qeShare") = = null ? null : Double.valueOf(Syste...` | The holdings dial under -Dplaytest.qeShare, or null when nobody sets it. |
-| 1033 | `LongPlaytest.ADVANCES_MONTHS` | `System.getProperty("playtest.advancesMonths") = = null ? null : Double.valueO...` | The advances ceiling under -Dplaytest.advancesMonths, in months of revenue, or null for the default. |
-| 1099 | `LongPlaytest.schoolsOrdered` | `new java.util.HashMap<>()` | What the flag has ordered of each school, so one under construction is not ordered twice. |
-| 1544 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
-| 1753 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
-| 1785 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
+| 921 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasiona...` | True when this run is played by somebody paying attention. |
+| 928 | `LongPlaytest.SCHOOLS` | `Boolean.getBoolean("playtest.schools")` | -Dplaytest.schools=true: the city builds schools, which the advisor never does. |
+| 954 | `LongPlaytest.POLICY_RATE` | `System.getProperty("playtest.policyRate") = = null ? null : Double.valueOf(Sy...` | The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. |
+| 969 | `LongPlaytest.AUTOPILOT` | `Boolean.getBoolean("playtest.autopilot")` | -Dplaytest.autopilot=true (0.7.0): the rule holds the dial from founding, through the game's own autopilot (DebtManager), and the advisor keeps its hands off it. |
+| 988 | `LongPlaytest.WAGES` | `Boolean.getBoolean("playtest.wages")` | -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. |
+| 1007 | `LongPlaytest.BORROW_AT_HOME` | `Boolean.getBoolean("playtest.borrowAtHome")` | -Dplaytest.borrowAtHome=true: the advisor's borrowing goes to the city's own term bonds, never abroad. |
+| 1023 | `LongPlaytest.QE_SHARE` | `System.getProperty("playtest.qeShare") = = null ? null : Double.valueOf(Syste...` | The holdings dial under -Dplaytest.qeShare, or null when nobody sets it. |
+| 1038 | `LongPlaytest.ADVANCES_MONTHS` | `System.getProperty("playtest.advancesMonths") = = null ? null : Double.valueO...` | The advances ceiling under -Dplaytest.advancesMonths, in months of revenue, or null for the default. |
+| 1054 | `LongPlaytest.INFLATION_TARGET` | `System.getProperty("playtest.inflationTarget") = = null ? null : Double.value...` | The inflation target under -Dplaytest.inflationTarget, a fraction a year, or null for the default. |
+| 1129 | `LongPlaytest.schoolsOrdered` | `new java.util.HashMap<>()` | What the flag has ordered of each school, so one under construction is not ordered twice. |
+| 1574 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
+| 1783 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
+| 1815 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
 
 ## Fields (state)
 
@@ -135,32 +137,34 @@
 | 250 | `static double totalDepartures` |  |
 | 251 | `static double totalArrivals` |  |
 | 254 | `static double lastM0` | M0 at the last audit, so the next can say what it moved by. |
-| 926 | `static boolean educationSet` | Whether any education dial or the schools flag was set, so the summary says what they did. |
-| 1043 | `static int monthsDefended, peakDefenceMonth` | THE DEFENCE OVER THE RUN (0.7.2): the dollars the central bank sold defending the currency, in total and in its biggest month, and how many months it sold anything. |
-| 1044 | `static double defendedUsdRun, peakDefenceUsd` |  |
-| 1046 | `static int vaultLowMonth, halfGoneMonth, emptyMonth` | The vault's life: its lowest reading and when, and the first month the founders' dollars were half gone and all but gone - the question the defence's dials are asked. |
-| 1047 | `static double vaultLow` |  |
-| 1050 | `static double lagImplied` | The lag-implied wage index, walked month by month beside the game's own; NaN until the first month. |
-| 1808 | `static int refusedSkips` |  |
-| 1823 | `static int monthsOwing, monthsOwingAtHome, worstStrainMonth, peakCityDebtMonth` | THE CITY'S PAPER AND THE BANK THAT HOLDS IT, over the run (2026-09-21). |
-| 1824 | `static int strainMonths, monthsWithoutCapacity` |  |
-| 1825 | `static double strainSum, worstStrain, peakCityDebt, paperSettledRun` |  |
-| 1833 | `static int monthsAtCeiling, monthsOnAdvances, peakAdvancesMonth, peakArrearsMonth, firstAdvanceMonth` | THE CENTRAL BANK OVER THE RUN (0.7.0): the most the treasury owed it, how long the ceiling bound, and the most the arrears rule left unpaid. |
-| 1834 | `static double peakAdvances, peakArrears` |  |
-| 1843 | `static int monthsHouseholdsBought, monthsDeskBought, monthsCentralBankTraded` | WHO HELD THE CITY'S PAPER OVER THE RUN (0.7.1): what the households paid at the settles and in how many months, what the bank's desk bought back from them and in how many, and what the central bank bought and sold - c... |
-| 1844 | `static double householdsBoughtRun, deskBoughtRun, couponsToHouseholdsRun` |  |
-| 1853 | `static int peakCompressionMonth` | The most the central bank's holdings took off the long end, and when: the twenty-year paper a borrowing seed sells matures inside the run, so by month 4,002 the central bank usually holds none of it and the endpoint's... |
-| 1854 | `static double peakCompression, longRateAtPeak, heldShareAtPeak` |  |
-| 2198 | `static double lifetimeWriteOffs` |  |
-| 2199 | `static double lifetimeBailouts` |  |
-| 2200 | `static int failuresSeen` |  |
-| 2201 | `static double lifetimeHouseholdWriteOffs` |  |
+| 931 | `static boolean educationSet` | Whether any education dial or the schools flag was set, so the summary says what they did. |
+| 1064 | `static int monthsDefended, peakDefenceMonth` | THE DEFENCE OVER THE RUN (0.7.2): the dollars the central bank sold defending the currency, in total and in its biggest month, and how many months it sold anything. |
+| 1065 | `static double defendedUsdRun, peakDefenceUsd` |  |
+| 1073 | `static int monthsLandBought` | THE LAND OFFICE OVER THE RUN (0.7.6): months the city bought land abroad and what it cost in local money at the day's rates - against the dollars ForeignAccounts counts, which is what the same land would have cost at ... |
+| 1074 | `static double landLocalRun` |  |
+| 1076 | `static int vaultLowMonth, halfGoneMonth, emptyMonth` | The vault's life: its lowest reading and when, and the first month the founders' dollars were half gone and all but gone - the question the defence's dials are asked. |
+| 1077 | `static double vaultLow` |  |
+| 1080 | `static double lagImplied` | The lag-implied wage index, walked month by month beside the game's own; NaN until the first month. |
+| 1838 | `static int refusedSkips` |  |
+| 1853 | `static int monthsOwing, monthsOwingAtHome, worstStrainMonth, peakCityDebtMonth` | THE CITY'S PAPER AND THE BANK THAT HOLDS IT, over the run (2026-09-21). |
+| 1854 | `static int strainMonths, monthsWithoutCapacity` |  |
+| 1855 | `static double strainSum, worstStrain, peakCityDebt, paperSettledRun` |  |
+| 1863 | `static int monthsAtCeiling, monthsOnAdvances, peakAdvancesMonth, peakArrearsMonth, firstAdvanceMonth` | THE CENTRAL BANK OVER THE RUN (0.7.0): the most the treasury owed it, how long the ceiling bound, and the most the arrears rule left unpaid. |
+| 1864 | `static double peakAdvances, peakArrears` |  |
+| 1873 | `static int monthsHouseholdsBought, monthsDeskBought, monthsCentralBankTraded` | WHO HELD THE CITY'S PAPER OVER THE RUN (0.7.1): what the households paid at the settles and in how many months, what the bank's desk bought back from them and in how many, and what the central bank bought and sold - c... |
+| 1874 | `static double householdsBoughtRun, deskBoughtRun, couponsToHouseholdsRun` |  |
+| 1883 | `static int peakCompressionMonth` | The most the central bank's holdings took off the long end, and when: the twenty-year paper a borrowing seed sells matures inside the run, so by month 4,002 the central bank usually holds none of it and the endpoint's... |
+| 1884 | `static double peakCompression, longRateAtPeak, heldShareAtPeak` |  |
+| 2228 | `static double lifetimeWriteOffs` |  |
+| 2229 | `static double lifetimeBailouts` |  |
+| 2230 | `static int failuresSeen` |  |
+| 2231 | `static double lifetimeHouseholdWriteOffs` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 3224 | **type** `public class LongPlaytest` | A city played for four thousand months, the way a person plays. |
+| 40 | 3270 | **type** `public class LongPlaytest` | A city played for four thousand months, the way a person plays. |
 
 ### FINDINGS (lines 47-65)
 
@@ -177,85 +181,87 @@
 
 ### THE AUDIT (lines 108-178)
 
-### A mechanic that is not counted over a real run is a mechanic nobody (lines 179-867)
+### A mechanic that is not counted over a real run is a mechanic nobody (lines 179-872)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 240 | 6 | `static double median(java.util.List<Double> path)` | The median of a path, or zero for an empty one. |
-| 256 | 596 | `static void audit(Game g)` |  |
-| 853 | 6 | `static void finiteArray(int month, String what, double[] values)` |  |
-| 860 | 7 | `static void finite(int month, String what, double value)` |  |
+| 256 | 601 | `static void audit(Game g)` |  |
+| 858 | 6 | `static void finiteArray(int month, String what, double[] values)` |  |
+| 865 | 7 | `static void finite(int month, String what, double value)` |  |
 
-### THE ADVISOR (lines 868-885)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 884 | 1 | **type** `record Move(String label, double lost, java.util.function.BooleanSupplier act)` | ONE THING THE CITY COULD DO, AND WHAT IT IS WORTH. |
-
-### WHO IS PLAYING (2026-09-17) (lines 886-927)
+### THE ADVISOR (lines 873-890)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 920 | 1 | `static int longestSkip()` | Months the player will let pass before looking, at most. |
+| 889 | 1 | **type** `record Move(String label, double lost, java.util.function.BooleanSupplier act)` | ONE THING THE CITY COULD DO, AND WHAT IT IS WORTH. |
 
-### THE RATE, HELD (2026-09-21) - the measurement 7.0 turns green (lines 928-965)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 953 | 3 | `static boolean holdsPolicyRate(Game g)` | True once the dial is the flag's rather than the advisor's: the flag is set and the currency may move. |
-
-### WAGES AGAINST THE INDEX (2026-09-21) (lines 966-984)
-
-### THE CITY'S OWN PAPER, FOR THE ENSEMBLE (2026-09-21) (lines 985-1003)
-
-### THE HOLDINGS DIAL, HELD (0.7.1) (lines 1004-1020)
-
-### THE CEILING, SET (0.7.2) (lines 1021-1797)
+### WHO IS PLAYING (2026-09-17) (lines 891-932)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1053 | 5 | `static void walkLag(Game g, double indexHanded)` | One month of the lag, on the index that month was handed. |
-| 1060 | 9 | `static String wageEra(Game g)` | The three figures on one line, for a checkpoint or the end. |
-| 1088 | 9 | `static void ensureSchools(Game g)` | Under the schools flag: the basic ladder, then a college, then a university, each when the city is big enough to carry it, and more of each as it grows - asked at every stop, so the schools arrive with the people rath... |
-| 1101 | 4 | `static void ensure(Game g, String name, int want)` |  |
-| 1107 | 1 | `static int movesPerLook()` | ...and how many things it will fix when it does look. |
-| 1167 | 367 | `static String advise(Game g)` | WHAT THE CITY DOES NEXT, AND WHY THIS IS NOT A LIST OF RULES ANY MORE. |
-| 1554 | 53 | `static void addRoadThrottle(java.util.List<Move> moves, Game g, double lost)` | The road constraint, and every way there is of easing it. |
-| 1617 | 4 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost)` | Adds one building as a way of relieving a constraint worth `lost` a month. |
-| 1626 | 22 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost, double gap)` | how many of the building to order |
-| 1650 | 9 | `static double runningCost(Game g, BuildingsTemplate t)` | What one of these costs the city a month to run, fully staffed at today's wages. |
-| 1661 | 4 | `static boolean wouldPay(Game g, String name, String sector)` | Whether one of these would clear its own running costs, on the private sector's screen. |
-| 1666 | 4 | `static int qty(Game g, String name)` |  |
-| 1675 | 54 | `static boolean build(Game g, String name, int quantity)` | Orders a building the way the screens do: check land, buy some if short, borrow if the treasury cannot cover it, then place the order. |
-| 1756 | 1 | `static double fxRate(Game g)` | Local per USD, for turning a local-money need into a dollar ask. |
-| 1758 | 18 | `static boolean canService(Game g, double extra)` |  |
-| 1787 | 3 | `static void refusal(String why)` |  |
-| 1791 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 925 | 1 | `static int longestSkip()` | Months the player will let pass before looking, at most. |
 
-### RUNNING MONTHS (lines 1798-1968)
+### THE RATE, HELD (2026-09-21) - the measurement 7.0 turns green (lines 933-970)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1856 | 17 | `static void countTheHolders(Game g)` |  |
-| 1874 | 10 | `static void countTheCentralBank(Game g)` |  |
-| 1885 | 13 | `static void countTheCitysPaper(Game g)` |  |
-| 1899 | 69 | `static void run(Game g, int months)` |  |
+| 958 | 3 | `static boolean holdsPolicyRate(Game g)` | True once the dial is the flag's rather than the advisor's: the flag is set and the currency may move. |
 
-### SAVE / RELOAD, MID-RUN (lines 1969-2195)
+### WAGES AGAINST THE INDEX (2026-09-21) (lines 971-989)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 1978 | 211 | `static void roundTrip(Game g, GameFiles files, int slot)` |  |
-| 2190 | 5 | `static void same(int month, String what, double actual, double expected)` |  |
+### THE CITY'S OWN PAPER, FOR THE ENSEMBLE (2026-09-21) (lines 990-1008)
 
-### (untitled) (lines 2196-3263)
+### THE HOLDINGS DIAL, HELD (0.7.1) (lines 1009-1025)
+
+### THE CEILING, SET (0.7.2) (lines 1026-1040)
+
+### THE TARGET, SET (0.7.4) (lines 1041-1827)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2203 | 942 | `public static void main(String[] args) throws Exception` |  |
-| 3153 | 10 | `static String shortTag(String key)` | A sector's name in three or four characters, for the checkpoint line. |
-| 3172 | 17 | `static String creditEra(Game g)` | The business economy at a checkpoint, on one line: per sector its cash, write-downs and months of ban left, then hunger and the shelf. |
-| 3190 | 57 | `static String era(Game g, String label)` |  |
-| 3248 | 7 | `static String money(double v)` |  |
-| 3256 | 7 | `static void cleanUp(Path root)` |  |
+| 1083 | 5 | `static void walkLag(Game g, double indexHanded)` | One month of the lag, on the index that month was handed. |
+| 1090 | 9 | `static String wageEra(Game g)` | The three figures on one line, for a checkpoint or the end. |
+| 1118 | 9 | `static void ensureSchools(Game g)` | Under the schools flag: the basic ladder, then a college, then a university, each when the city is big enough to carry it, and more of each as it grows - asked at every stop, so the schools arrive with the people rath... |
+| 1131 | 4 | `static void ensure(Game g, String name, int want)` |  |
+| 1137 | 1 | `static int movesPerLook()` | ...and how many things it will fix when it does look. |
+| 1197 | 367 | `static String advise(Game g)` | WHAT THE CITY DOES NEXT, AND WHY THIS IS NOT A LIST OF RULES ANY MORE. |
+| 1584 | 53 | `static void addRoadThrottle(java.util.List<Move> moves, Game g, double lost)` | The road constraint, and every way there is of easing it. |
+| 1647 | 4 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost)` | Adds one building as a way of relieving a constraint worth `lost` a month. |
+| 1656 | 22 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost, double gap)` | how many of the building to order |
+| 1680 | 9 | `static double runningCost(Game g, BuildingsTemplate t)` | What one of these costs the city a month to run, fully staffed at today's wages. |
+| 1691 | 4 | `static boolean wouldPay(Game g, String name, String sector)` | Whether one of these would clear its own running costs, on the private sector's screen. |
+| 1696 | 4 | `static int qty(Game g, String name)` |  |
+| 1705 | 54 | `static boolean build(Game g, String name, int quantity)` | Orders a building the way the screens do: check land, buy some if short, borrow if the treasury cannot cover it, then place the order. |
+| 1786 | 1 | `static double fxRate(Game g)` | Local per USD, for turning a local-money need into a dollar ask. |
+| 1788 | 18 | `static boolean canService(Game g, double extra)` |  |
+| 1817 | 3 | `static void refusal(String why)` |  |
+| 1821 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
+
+### RUNNING MONTHS (lines 1828-1998)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1886 | 17 | `static void countTheHolders(Game g)` |  |
+| 1904 | 10 | `static void countTheCentralBank(Game g)` |  |
+| 1915 | 13 | `static void countTheCitysPaper(Game g)` |  |
+| 1929 | 69 | `static void run(Game g, int months)` |  |
+
+### SAVE / RELOAD, MID-RUN (lines 1999-2225)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2008 | 211 | `static void roundTrip(Game g, GameFiles files, int slot)` |  |
+| 2220 | 5 | `static void same(int month, String what, double actual, double expected)` |  |
+
+### (untitled) (lines 2226-3309)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2233 | 958 | `public static void main(String[] args) throws Exception` |  |
+| 3199 | 10 | `static String shortTag(String key)` | A sector's name in three or four characters, for the checkpoint line. |
+| 3218 | 17 | `static String creditEra(Game g)` | The business economy at a checkpoint, on one line: per sector its cash, write-downs and months of ban left, then hunger and the shelf. |
+| 3236 | 57 | `static String era(Game g, String label)` |  |
+| 3294 | 7 | `static String money(double v)` |  |
+| 3302 | 7 | `static void cleanUp(Path root)` |  |
 

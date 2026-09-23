@@ -678,6 +678,11 @@ public class LongPlaytest {
         if (vaultNow < vaultLow) { vaultLow = vaultNow; vaultLowMonth = g.getMonth(); }
         if (halfGoneMonth == 0 && vaultNow < Game.FOUNDING_RESERVE_USD / 2) halfGoneMonth = g.getMonth();
         if (emptyMonth == 0 && vaultNow < Game.FOUNDING_RESERVE_USD / 100) emptyMonth = g.getMonth();
+        // The land office's month, struck with the budget's (0.7.6).
+        if (fxRun.getLandUsdThisMonth() > 0) {
+            monthsLandBought++;
+            landLocalRun += fxRun.getLandLocalThisMonth();
+        }
         double soldUsd = fxRun.getDefenceUsd();
         if (soldUsd > 0) {
             monthsDefended++;
@@ -1033,6 +1038,22 @@ public class LongPlaytest {
     static final Double ADVANCES_MONTHS = System.getProperty("playtest.advancesMonths") == null
             ? null : Double.valueOf(System.getProperty("playtest.advancesMonths"));
 
+    /* =====================================================================
+       THE TARGET, SET (0.7.4)
+
+       The inflation target is the player's dial since 0.7.4
+       (DebtManager.setInflationTarget()), and -Dplaytest.inflationTarget=
+       <fraction> sets it at founding and leaves it, beside the held rate and
+       the autopilot, so an ensemble can hold it: the advisor's rule and the
+       autopilot's both aim at it. Unset, it is
+       DebtManager.DEFAULT_INFLATION_TARGET and the run is the run it always
+       was, to the byte.
+       ===================================================================== */
+
+    /** The inflation target under -Dplaytest.inflationTarget, a fraction a year, or null for the default. */
+    static final Double INFLATION_TARGET = System.getProperty("playtest.inflationTarget") == null
+            ? null : Double.valueOf(System.getProperty("playtest.inflationTarget"));
+
     /*
      * THE DEFENCE OVER THE RUN (0.7.2): the dollars the central bank sold
      * defending the currency, in total and in its biggest month, and how many
@@ -1042,6 +1063,15 @@ public class LongPlaytest {
      */
     static int monthsDefended, peakDefenceMonth;
     static double defendedUsdRun, peakDefenceUsd;
+    /**
+     * THE LAND OFFICE OVER THE RUN (0.7.6): months the city bought land abroad
+     * and what it cost in local money at the day's rates - against the dollars
+     * ForeignAccounts counts, which is what the same land would have cost at
+     * the founding rate of 1.00. The difference is what the currency did to
+     * the price of land.
+     */
+    static int monthsLandBought;
+    static double landLocalRun;
     /** The vault's life: its lowest reading and when, and the first month the founders' dollars were half gone and all but gone - the question the defence's dials are asked. */
     static int vaultLowMonth, halfGoneMonth, emptyMonth;
     static double vaultLow = Double.MAX_VALUE;
@@ -2223,6 +2253,7 @@ public class LongPlaytest {
             g.run();
             if (AUTOPILOT) g.getDebtManager().setAutopilot(true);
             if (ADVANCES_MONTHS != null) g.getCentralBank().setAdvancesCeilingMonths(ADVANCES_MONTHS);
+            if (INFLATION_TARGET != null) g.getDebtManager().setInflationTarget(INFLATION_TARGET);
 
             /* ---------- founding: a few months at a time, by hand ---------- */
             /*
@@ -2410,7 +2441,9 @@ public class LongPlaytest {
                 // the city is.
                 if (stop % 13 == 0) {
                     LandParcel spare = g.getLandManager().getMarket().bestValue();
-                    if (spare != null && spare.getPrice() < g.getCash() * .1) {
+                    // What it costs in local money today (0.7.6): priced in dollars.
+                    if (spare != null && spare.localPrice(g.getForeignAccounts().getRate())
+                            < g.getCash() * .1) {
                         g.buyLandParcel(spare.getId());
                     }
                 }
@@ -2765,6 +2798,12 @@ public class LongPlaytest {
             out.printf("  ...SET BY THE RULE every month by the game's own autopilot"
                     + " (-Dplaytest.autopilot), not by the advisor%n");
         }
+        // Only when set, so an unset run prints the lines it always did.
+        if (INFLATION_TARGET != null) {
+            out.printf("  ...the rule AIMING AT %s inflation, set by -Dplaytest.inflationTarget"
+                    + " (see THE TARGET, SET)%n",
+                    DebtManager.targetWords(g.getDebtManager().getInflationTarget()));
+        }
         // Both instruments, side by side on purpose: the headline is what the
         // band is doing and the realised figure is what the level did. They
         // disagreed for weeks on this line and nobody put them together.
@@ -3073,6 +3112,13 @@ public class LongPlaytest {
                 + " US$%,.0fk%n",
                 defendedUsdRun, monthsDefended, peakDefenceUsd, peakDefenceMonth,
                 cb.getDefendedLifetime(), fx.getReservesUsd());
+        out.printf("  the land office: US$%,.0fk paid abroad over the run in %,d month(s), US$%,.0fk of it"
+                + " out of the vault; $%,.0fk here at the day's rates, %s%n",
+                fx.getLandUsdLifetime(), monthsLandBought, fx.getLandUsdFromVaultLifetime(), landLocalRun,
+                fx.getLandUsdLifetime() <= 0 ? "none bought"
+                        : String.format("%.1f%% %s than at the founding rate", Math.abs(landLocalRun
+                                / fx.getLandUsdLifetime() - 1) * 100,
+                                landLocalRun < fx.getLandUsdLifetime() ? "cheaper" : "dearer"));
         out.printf("  ...the vault at its lowest US$%,.0fk (m%d); half the founders' dollars gone %s; all but a"
                 + " hundredth gone %s%n", vaultLow == Double.MAX_VALUE ? 0 : vaultLow, vaultLowMonth,
                 halfGoneMonth > 0 ? "by month " + halfGoneMonth : "never",

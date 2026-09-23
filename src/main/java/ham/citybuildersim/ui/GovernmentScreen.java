@@ -950,8 +950,11 @@ final class GovernmentScreen {
                     books.get(sector).tax(), total,
                     String.format("%.1f%%", policy.effectiveProfitRate(sector) * 100)));
         }
+        // The rate Game charges the bank at - retail's profit rate, its
+        // counters being retail's - rather than the income rate, which
+        // since 0.7.4 is three rates and missed retail's offset before that.
         box.getChildren().add(payerRow("Bank", ui.game.getEconomyManager().getBankTax(), total,
-                String.format("%.1f%%", policy.getIncomeTaxRate() * 100)));
+                String.format("%.1f%%", policy.effectiveProfitRate(ui.game.getSectors().retail()) * 100)));
         box.getChildren().add(statementNote(
                 "Charged on each company's own profit and never refunded on a loss, so a "
                 + "sector that lost money this month simply paid nothing."));
@@ -987,9 +990,9 @@ final class GovernmentScreen {
         }
         box.getChildren().add(statementNote(String.format(
                 "Banded, so the rate on the right is what each tier actually paid rather "
-                + "than the headline %.0f%%. The bands are set per skill level on the tax "
-                + "policy screen.",
-                ui.game.getEconomyManager().getTaxPolicy().getIncomeTaxRate() * 100)));
+                + "than the headline %.0f%% wage rate. The bands are set per skill level on "
+                + "the tax policy screen.",
+                ui.game.getEconomyManager().getTaxPolicy().getWageTaxRate() * 100)));
         return box;
     }
 
@@ -1302,6 +1305,35 @@ final class GovernmentScreen {
         return box;
     }
 
+    /**
+     * The land line, opened (0.7.6): the land office is paid in US dollars,
+     * and the budget carries it at what it cost in local money on the day -
+     * paid by converting cash, or out of the vault with no cash moving at all
+     * (the land office's toggle). The vault's part is the one the Overview's
+     * journal carries back as "Bought land with US$... of reserves". The rest
+     * of the line is plots bought back from businesses, in local money.
+     */
+    VBox landSpendDetail(double total) {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        double abroad = fx.getLandLocalThisMonth();
+        double fromVault = fx.getLandLocalFromVaultThisMonth();
+        VBox box = new VBox(0);
+        box.getChildren().add(payerRow("Abroad, cash converted", abroad - fromVault, total,
+                usd(fx.getLandUsdThisMonth() - fx.getLandUsdFromVaultThisMonth())));
+        box.getChildren().add(payerRow("Abroad, out of the vault", fromVault, total,
+                usd(fx.getLandUsdFromVaultThisMonth())));
+        box.getChildren().add(payerRow("Bought back from businesses",
+                Math.max(0, total - abroad), total, null));
+        box.getChildren().add(statementNote(String.format(
+                "The land office is paid in US dollars: %s this month, at the rate of the day "
+                + "each plot was bought. Out of the vault, no cash moved - the vault's dollars "
+                + "went instead, and the Overview's journal carries that part back. Plots "
+                + "bought back from businesses that scrapped what stood on them are paid in "
+                + "local money, as they always were.",
+                usdFull(fx.getLandUsdThisMonth()))));
+        return box;
+    }
+
     void spendingPage(VBox column, EconomyManager em, NationalAccounts na) {
 
         double total = na.getTotalExpenses();
@@ -1325,6 +1357,7 @@ final class GovernmentScreen {
                 case "Education"     -> educationSpendDetail(amount);
                 case "Pensions"      -> pensionDetail(amount);
                 case "Debt interest" -> debtServiceDetail(amount);
+                case "Land bought"   -> amount > 0 ? landSpendDetail(amount) : null;
                 default              -> null;
             };
             column.getChildren().add(budgetLine(name, amount, total, annual,

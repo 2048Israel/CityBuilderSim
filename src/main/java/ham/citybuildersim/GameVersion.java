@@ -576,8 +576,207 @@ public final class GameVersion {
      * its last month paid at the bottom is paid again at the top of its first
      * month here, and the out of work are credited it once. Otherwise it is
      * the city it was.
+     *
+     * 0.7.4 (2026-09-23) - THE HOUSEKEEPING: A TARGET, THREE RATES ON THE
+     * STRIP, THE SECTOR LIST, THE TAXES BY TYPE.
+     *
+     * Four small things Jerus asked for in one evening, all of them player-
+     * facing and none of them a model redesign; every new dial opens where
+     * the old constant was, so the default run is the run it was, to the
+     * byte.
+     *
+     * THE INFLATION TARGET IS A DIAL. Jerus: "i want to have the dial not
+     * target 0 inflation, set it so that you can choose what is your
+     * inflation target." DebtManager.INFLATION_TARGET, 2%, becomes the
+     * player's inflationTarget, DEFAULT_INFLATION_TARGET 2% and held
+     * between MIN_ and MAX_INFLATION_TARGET, 0 and 10%; the rule, its
+     * reasons, the strip's colour and its tooltip read it. On the monetary
+     * page under the autopilot, applied at once: chips from 0 to 5% and a
+     * half-point ladder to 10, with the rule struck at the target and at
+     * another in a sentence. A target is the rule's intercept and nothing
+     * else - five points of it are TAYLOR_WEIGHT times five points of rate,
+     * which MonetaryCheck asserts. -Dplaytest.inflationTarget sets it for a
+     * run.
+     *
+     * THREE RATES ON THE STRIP. Jerus: "on the top of the UI the bank rate,
+     * the central bank rate, both should be shown, as well as the rate you
+     * borrow in." A third panel beside prices and the currency: the central
+     * bank's dial, what the bank lends a business at before its own premium
+     * (Bank.lendingRate() on the dial), and what the treasury borrows at -
+     * three short lines at the caption's weight, grey, and "failed" or "no
+     * bank" in red. The bank page's "It charges", which printed the city's
+     * rate, prints the bank's now - the strip's "bank" figure.
+     *
+     * THE SECTOR LIST. Jerus: "a little graph of its net income, perhaps how
+     * much workers it employs total ... a button in which you can click to
+     * expand to show some more info for all at once". Each card draws the
+     * last two years of its net income and says how many work there
+     * (Sector.getWorkers(), the posts at the "Staffed" share); "Show more"
+     * opens every card to revenue, margin, cash, what it owes and its posts
+     * filled. Two history series per sector feed it, netIncome:<sector> and
+     * workers:<sector>, folded by the year book as a flow and a level.
+     *
+     * THE TAXES BY TYPE. Jerus: "what about just increasing sale tax for all
+     * at the same time? currently that's a hassle, i want to be able to do
+     * that for every type of tax, even wage tax". Profit, sales and wage each
+     * have a base of their own now, and every offset moves off its own tax's
+     * base; each tax page's top lever is that base. His one city rate is
+     * "Every tax at once" on the Everything page - TaxPolicy
+     * .setIncomeTaxRate(), which sets all three, and which the playtest's
+     * advisor and an older save still go through. One trap on the way: the
+     * load path read the old single income key after the policy array, and
+     * with three bases that would have put a split back together on every
+     * load; it reads the key now only for a save whose array was not read.
+     *
+     * SAVE_FORMAT did not move. The target is a key of its own,
+     * inflationTarget, that an older save does not have and reads as the 2%
+     * it was; the three bases ride the end of the tax policy array
+     * (TaxPolicy.STATE_BEFORE_SPLIT), and an older, shorter array reads all
+     * three as its one income rate; the two series per sector are new keys
+     * in the history, and an older save has no months of them until it plays
+     * one. A 0.7.3 city opens aiming at 2%, taxing profit, sales and wages
+     * at one rate, and with no sparklines yet - which is exactly what that
+     * city was.
+     *
+     * 0.7.5 (2026-09-23) - ENTER BUILDS, BACKSPACE CLEARS; THE REPORTS PAGE,
+     * REDRAWN.
+     *
+     * One shortcut on the build page. Jerus: "in the building rail, when you
+     * have lets say 3 ready to build, i want to be able to press enter to
+     * build, instead of having to click the green button, you can still click
+     * it, but just a short cut, and backspace/delete to reset it." Enter
+     * places every pending order on the category page showing, in the page's
+     * order, each through the card's own placeOrder - the first refusal puts
+     * its screen up and the rest stay pending; Backspace or Delete takes every
+     * quantity on the page back to none. Neither key is spent when there is
+     * nothing to act on. The Build button's tooltip says both, and so does
+     * one caption under the grid while anything is pending.
+     *
+     * SAVE_FORMAT did not move, and the model did not: the orders on the
+     * cards were never saved, and this is the interface's alone.
+     *
+     * THE REPORTS PAGE, REDRAWN. Jerus: "have it be a collapsable list ...
+     * two graphs always displayed ... the real gdp yearly figure, and the
+     * other is the population ... the bigger one ... defaults to the
+     * borrowing rate, price level and inflation year on year ... 'clear all'
+     * should just be beside the graph", and "pinnable defaults, but not
+     * fixed, and leave goods there, and event marks". Two small charts at the
+     * top, real GDP and the population until the player pins others - a
+     * preference in GamePrefs (pinnedLeft, pinnedRight), not in the save;
+     * then the big chart, its presets, "clear all" and a log switch in a row
+     * above it, seeded on a first visit with "What money costs" (the rate,
+     * the price level, inflation), two units on two real axes rather than
+     * both squashed onto 0-100, a crosshair that reads every line at the
+     * month under the pointer, recessions shaded on all three charts, and
+     * the named episodes ("Financial crisis of 2045") ticked under it. The
+     * episodes are YearBook.episodes(), a pure function of the history that
+     * the year book's WHAT HAPPENED section prints too, so the file and the
+     * chart name the same years; YearBook also became the one place real GDP
+     * and inflation are struck. The picker folds into its groups, closed
+     * until wanted, with a box that finds a line by name; the goods and the
+     * year book stay at the bottom. Nothing is saved that was not before.
+     *
+     * 0.7.6 (2026-09-23) - ONE LADDER FOR EVERY DIAL, THE PRICE OF EACH
+     * SCHOOL, GDP IN LAYERS, AND LAND BOUGHT IN DOLLARS.
+     *
+     * Four things Jerus asked for together. The first three are none of
+     * them a change to what the model does with a number it already had:
+     * every new dial opens where the old one was, so with those three alone
+     * the default run was 0.7.5's, to the byte. The fourth, land bought in
+     * dollars, does change the model, and is at the end.
+     *
+     * ONE LADDER. Jerus: "all the dials in the policy in the promises
+     * section, make them a slider with steps, and a + - on the ends,
+     * basically i think it's better if you create an object or class of
+     * slider, and then whenever you need it you just call that class and
+     * plug in the specific sensitivity, max, min and steps type". The tax
+     * pages had it (PolicyScreen's taxLadder: "-", a snapping slider, "+",
+     * the reading and a line of ends); the floor, the rate, the promises and
+     * the fare had the slider alone, and the target, the holdings and the
+     * ceiling had chips. ui/Ladder is the one class now - Ladder.of(min, max,
+     * step, reads), what the city charges, and either a stage callback (the
+     * foot bar or the page's apply bar makes it real, as before) or an
+     * apply-at-once one (the monetary page's three, by design); the step is
+     * the sensitivity and there is no other knob. Every dial on the policy
+     * tab and the fare on Services is one, each with its key, range, step and
+     * formatter as they were; the chips stay beside the three that had them.
+     *
+     * THE PRICE OF EACH SCHOOL. Jerus: "not only can you raise prices but
+     * also raise the price for a specific university, and beside the dial it
+     * shows the current space, the current students, and the current cost
+     * and revenue." The tuition scale is nine, one per kind of school -
+     * TaxPolicy.tuitionScaleOf() and setTuitionScaleOf() - in the shape the
+     * income taxes were given in 0.7.4: setTuitionScale() is every school at
+     * once, getTuitionScale() the first kind's, tuitionScalesSplit() whether
+     * they have parted; Education.feeFor() reads the kind's own. The Schools
+     * page keeps its every-school dial at the top and has a row per kind
+     * under it: its own dial, and the places its buildings seat, the students
+     * in it, what its staff and buildings cost (Education.getCostOf(), handed
+     * in by the month from BuildingManager's per-course payroll and upkeep)
+     * and the tuition its students paid (getFeesOf()) - a kind with nothing
+     * standing says "no school" and its dial is greyed. The trap on the way
+     * was the one 0.7.4 found: the month and the load path told the schools
+     * getTuitionScale(), which would have put nine prices back to one on
+     * every load; they tell them each kind's now.
+     *
+     * GDP IN LAYERS. Jerus: "have it so the gdp graph can be a toggle, and if
+     * toggled it switches from line to mountain graph ... showing how much is
+     * made up of investments, net exports, government spending". Four history
+     * series beside gdp - consumption, investment, government, netExports,
+     * off NationalAccounts' own getters - and YearBook.real() and realYear()
+     * beside realGdpYear(). A "layers" chip on the real-GDP small chart (and
+     * on the big chart's reading when real GDP is picked alone) stacks
+     * consumption, investment and government from zero with the real GDP
+     * line over them, so the gap is net exports - above the stack when the
+     * city exports more than it imports, below it when not, because a
+     * stacked area cannot hold a negative layer.
+     *
+     * SAVE_FORMAT did not move. The nine scales ride the end of the tax
+     * policy array (TaxPolicy.STATE_BEFORE_SCHOOLS) and an older, shorter
+     * array reads all nine as the one scale its slot carried; each kind's
+     * month - its cost and its fees - rides the end of the schools' array,
+     * and an older one reads none until a month is played; the four parts
+     * are new keys in the history, and an older save has no months of them
+     * until it plays one. A 0.7.5 city opens charging every school the one
+     * price it had, with no layers yet - which is exactly what that city was.
+     *
+     * LAND IS BOUGHT IN DOLLARS, the batch's second half, and the one part
+     * of it that changes the model. Jerus: "when you buy land, make it so
+     * that it costs USD not domestic currency, and basically how it would
+     * work is a little toggle at the top to choose, when you buy land, to use
+     * up your USD reserves or to convert cash into usd exactly to buy the
+     * land, and the default is that you convert." LandMarket prices every
+     * parcel in US dollars - the same base and premiums, now the world's
+     * figures, so at the founding rate every number is what it was - and
+     * the treasury pays usd x rate on the day it buys: a weak currency makes
+     * land dear and a strong one cheap. What businesses pay the city stays
+     * local money, struck exactly as before, so the margin carries the
+     * currency. Game.buyLandParcel() pays one of two ways, the land office's
+     * chip pair (Game.isLandPaidFromVault()): CONVERTING, the default, pays
+     * the local money through TreasuryLine.LAND and has ForeignAccounts buy
+     * exactly the dollars and hand them over in one movement, the vault
+     * where it began; FROM THE VAULT spends reservesUsd and moves no cash,
+     * the journal carrying "Bought land with US$... of reserves" back
+     * against the budget's land line, and a short vault spends what it holds
+     * and converts the rest, the receipt saying so. A treasury's dollars are
+     * the financing item, so converting puts the push on the rate a reserve
+     * purchase of the same dollars would - none (ForeignCheck 14). The
+     * landPrice series and the year book's column are the world's dollar
+     * price since this build, and a currency reform no longer clears the
+     * land office's board: its dollar prices are out of the reform's reach.
+     *
+     * AND THE SAVE: a new key, landPaidFromVault (an older save converts);
+     * the land listing behind a new marker (-105) whose prices are dollars -
+     * an older listing, and an older price state without its fourth slot, are
+     * read as dollars at the rate of the day the save is loaded, so the local
+     * cost the player saw is what it costs that day
+     * (LandMarket.settleLocalPrices()); the office's dollar ground price as
+     * the price state's fourth slot; and the land's dollars - the month
+     * struck, both ways and out of the vault, the same since founding, and
+     * the month's local cost - as ForeignAccounts slots 31-36. Every older
+     * shape reads correctly, so SAVE_FORMAT did not move.
      */
-    public static final String VERSION = "0.7.3";
+    public static final String VERSION = "0.7.6";
 
     /**
      * The save shape.

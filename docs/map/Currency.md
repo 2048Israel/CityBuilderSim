@@ -1,6 +1,6 @@
 # Currency.java - 61 lines · 5 methods · 9 constants · model
 
-`ham/citybuildersim/Currency.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Currency.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > What the city's money is called, and how it is written.
 > 
@@ -21,7 +21,7 @@
 > buy a house; they should be made to read one the instant a foreign price is
 > on the same line, because that is the instant it matters.
 
-**Used by (9):** [Denomination](Denomination.md), [FinancesScreen](FinancesScreen.md), [HistoryScreen](HistoryScreen.md), [LongPlaytest](LongPlaytest.md), [Money](Money.md), [PolicyScreen](PolicyScreen.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (11):** [Denomination](Denomination.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [HistoryScreen](HistoryScreen.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [Money](Money.md), [PolicyScreen](PolicyScreen.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Constants
 

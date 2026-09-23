@@ -312,6 +312,27 @@ public abstract class Sector {
 
     public double getAverageFill() { return averageFill; }
 
+    /**
+     * The posts its buildings offer, as the month's wage pass last counted
+     * them (0.7.4, for the sector list): the total the "Staffed" share on the
+     * operations page is a share of.
+     */
+    public int getPostsOffered() {
+        int total = 0;
+        for (int posts : jobs) total += posts;
+        return total;
+    }
+
+    /**
+     * The posts filled - its workers (0.7.4, for the sector list): the posts
+     * at the operations page's "Staffed" share, getAverageFill(), which is
+     * the filled posts over the posts, so the two cannot disagree. None with
+     * no posts, where the share reads 1.
+     */
+    public double getWorkers() {
+        return getPostsOffered() * averageFill;
+    }
+
     /* ===================================================================
        UTILISATION
 

@@ -1,6 +1,6 @@
 # EducationType.java - 191 lines · 11 methods · 0 constants · model
 
-`ham/citybuildersim/EducationType.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EducationType.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > What a school actually teaches.
 > 
@@ -41,7 +41,7 @@
 
 **Uses:** [WageBand](WageBand.md) (10), [JobType](JobType.md) (7), [AgeBand](AgeBand.md) (3)
 
-**Used by (17):** [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [GovernmentScreen](GovernmentScreen.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [ReadPathCheck](ReadPathCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
+**Used by (19):** [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [ReadPathCheck](ReadPathCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TaxPolicy](TaxPolicy.md)
 
 ## Enum constants
 

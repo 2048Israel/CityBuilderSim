@@ -1,6 +1,6 @@
-# GovernmentScreen.java - 1,602 lines · 39 methods · 1 constants · interface
+# GovernmentScreen.java - 1,635 lines · 40 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > The government tab: the budget as two rings and a balance, what the
 > treasury actually did against the size of the economy, the two lists - who
@@ -13,7 +13,7 @@
 > the shell touches is govPage, which the income dome sets to Overview before
 > it opens the tab.
 
-**Uses:** [Palette](Palette.md) (176), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (11), [NationalAccounts](NationalAccounts.md) (8), [HouseholdAccounts](HouseholdAccounts.md) (6), [EducationType](EducationType.md) (6), [TreasuryJournal](TreasuryJournal.md) (5), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [UserInterface](UserInterface.md) (2), [TreasuryLine](TreasuryLine.md) (2), [CityCalendar](CityCalendar.md) (2), [BuildingManager](BuildingManager.md) (2), [CentralBank](CentralBank.md) (1), [SectorBooks](SectorBooks.md) (1), [Healthcare](Healthcare.md) (1), [Education](Education.md) (1), [Debt](Debt.md) (1)
+**Uses:** [Palette](Palette.md) (176), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (11), [NationalAccounts](NationalAccounts.md) (8), [HouseholdAccounts](HouseholdAccounts.md) (6), [EducationType](EducationType.md) (6), [TreasuryJournal](TreasuryJournal.md) (5), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [UserInterface](UserInterface.md) (2), [TreasuryLine](TreasuryLine.md) (2), [CityCalendar](CityCalendar.md) (2), [BuildingManager](BuildingManager.md) (2), [CentralBank](CentralBank.md) (1), [SectorBooks](SectorBooks.md) (1), [Healthcare](Healthcare.md) (1), [Education](Education.md) (1), [Debt](Debt.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -32,16 +32,16 @@
 | 599 | · · against the size of the economy |
 | 755 | THE TWO LISTS. |
 | 941 | · WHO PAYS WHAT |
-| 1117 | · WHAT IT SPENDS |
-| 1162 | WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON |
-| 1258 | · · and the money that is not on this statement |
-| 1338 | · WHAT THE DEBT IS COSTING |
-| 1387 | · · the term loans |
-| 1414 | · · when the budget line disagrees with the paper |
-| 1460 | · · the two services, as businesses |
-| 1483 | · · the pension gap |
-| 1496 | · THE OUTPUT |
-| 1558 | · · and growth |
+| 1120 | · WHAT IT SPENDS |
+| 1165 | WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON |
+| 1261 | · · and the money that is not on this statement |
+| 1371 | · WHAT THE DEBT IS COSTING |
+| 1420 | · · the term loans |
+| 1447 | · · when the budget line disagrees with the paper |
+| 1493 | · · the two services, as businesses |
+| 1516 | · · the pension gap |
+| 1529 | · THE OUTPUT |
+| 1591 | · · and growth |
 
 ## Constants
 
@@ -61,7 +61,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 1569 | **type** `final class GovernmentScreen` | The government tab: the budget as two rings and a balance, what the treasury actually did against the size of the economy, the two lists - who pays what and what it spends, every revenue line opening into who paid it ... |
+| 34 | 1602 | **type** `final class GovernmentScreen` | The government tab: the budget as two rings and a balance, what the treasury actually did against the size of the economy, the two lists - who pays what and what it spends, every revenue line opening into who paid it ... |
 | 39 | 1 | `GovernmentScreen(UserInterface ui)` |  |
 
 ### THE GOVERNMENT. (lines 41-68)
@@ -107,41 +107,42 @@
 | 918 | 13 | `HBox budgetHead(String left)` | The heading over a budget list: what the three right-hand columns are. |
 | 932 | 8 | `Label head(String text, double width)` |  |
 
-### WHO PAYS WHAT (lines 941-1116)
+### WHO PAYS WHAT (lines 941-1119)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 944 | 16 | `VBox businessTaxDetail(double total)` | Business tax, by the companies that pay it - every sector, and the bank. |
-| 962 | 15 | `VBox salesTaxDetail(double total)` | Sales tax, by the sector that remitted it. |
-| 979 | 16 | `VBox wageTaxDetail(double total)` | Wage tax, by the pay tier that earned the wages. |
-| 997 | 13 | `VBox contributionsDetail(double total)` | Pension contributions, by the tier that paid them. |
-| 1012 | 16 | `VBox propertyTaxDetail(double total)` | Property tax, by the sector it is assessed on. |
-| 1030 | 19 | `VBox healthFeeDetail(double total)` | Healthcare fees, by the kind of care that charged them. |
-| 1051 | 17 | `VBox schoolFeeDetail(double total)` | School fees, by the course. |
-| 1069 | 34 | `void revenuePage(VBox column, EconomyManager em, NationalAccounts na)` |  |
-| 1104 | 12 | `VBox revenueDetail(String name, double amount)` |  |
+| 944 | 19 | `VBox businessTaxDetail(double total)` | Business tax, by the companies that pay it - every sector, and the bank. |
+| 965 | 15 | `VBox salesTaxDetail(double total)` | Sales tax, by the sector that remitted it. |
+| 982 | 16 | `VBox wageTaxDetail(double total)` | Wage tax, by the pay tier that earned the wages. |
+| 1000 | 13 | `VBox contributionsDetail(double total)` | Pension contributions, by the tier that paid them. |
+| 1015 | 16 | `VBox propertyTaxDetail(double total)` | Property tax, by the sector it is assessed on. |
+| 1033 | 19 | `VBox healthFeeDetail(double total)` | Healthcare fees, by the kind of care that charged them. |
+| 1054 | 17 | `VBox schoolFeeDetail(double total)` | School fees, by the course. |
+| 1072 | 34 | `void revenuePage(VBox column, EconomyManager em, NationalAccounts na)` |  |
+| 1107 | 12 | `VBox revenueDetail(String name, double amount)` |  |
 
-### WHAT IT SPENDS (lines 1117-1161)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1120 | 19 | `VBox healthSpendDetail(double total)` | Healthcare spending, by the kind of care it is spent on. |
-| 1141 | 20 | `VBox educationSpendDetail(double total)` | Education spending, by the school it is spent on. |
-
-### WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON (lines 1162-1495)
+### WHAT IT SPENDS (lines 1120-1164)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1193 | 2 | **type** `record PaperKind(String name, int count, double principal, double coupon, String note)` | One kind of paper, totalled. |
-| 1196 | 27 | `java.util.List<PaperKind> paperKinds()` |  |
-| 1225 | 6 | `PaperKind paperKind(String name)` | One kind's row, or an empty one. |
-| 1238 | 48 | `VBox debtServiceDetail(double total)` | The interest line, opened into the paper it is charged on. |
-| 1288 | 16 | `VBox pensionDetail(double total)` | Pensions, and who they go to. |
-| 1305 | 190 | `void spendingPage(VBox column, EconomyManager em, NationalAccounts na)` |  |
+| 1123 | 19 | `VBox healthSpendDetail(double total)` | Healthcare spending, by the kind of care it is spent on. |
+| 1144 | 20 | `VBox educationSpendDetail(double total)` | Education spending, by the school it is spent on. |
 
-### THE OUTPUT (lines 1496-1602)
+### WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON (lines 1165-1528)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1498 | 104 | `void outputPage(VBox column, EconomyManager em, NationalAccounts na)` |  |
+| 1196 | 2 | **type** `record PaperKind(String name, int count, double principal, double coupon, String note)` | One kind of paper, totalled. |
+| 1199 | 27 | `java.util.List<PaperKind> paperKinds()` |  |
+| 1228 | 6 | `PaperKind paperKind(String name)` | One kind's row, or an empty one. |
+| 1241 | 48 | `VBox debtServiceDetail(double total)` | The interest line, opened into the paper it is charged on. |
+| 1291 | 16 | `VBox pensionDetail(double total)` | Pensions, and who they go to. |
+| 1316 | 20 | `VBox landSpendDetail(double total)` | The land line, opened (0.7.6): the land office is paid in US dollars, and the budget carries it at what it cost in local money on the day - paid by converting cash, or out of the vault with no cash moving at all (the ... |
+| 1337 | 191 | `void spendingPage(VBox column, EconomyManager em, NationalAccounts na)` |  |
+
+### THE OUTPUT (lines 1529-1635)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1531 | 104 | `void outputPage(VBox column, EconomyManager em, NationalAccounts na)` |  |
 

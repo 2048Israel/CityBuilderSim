@@ -1,6 +1,6 @@
 # GoodsMarket.java - 448 lines · 46 methods · 3 constants · model
 
-`ham/citybuildersim/GoodsMarket.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoodsMarket.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > Where one good clears between whoever makes it and whoever wants it.
 > 

@@ -1,6 +1,6 @@
-# HistoryCheck.java - 301 lines · 6 methods · 2 constants · harnesses
+# HistoryCheck.java - 396 lines · 6 methods · 2 constants · harnesses
 
-`ham/citybuildersim/HistoryCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistoryCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > Verifies the graph history: recording, alignment, and the round trip. Not
 > part of the game.
@@ -24,7 +24,7 @@
 > The third is the interesting one, because it is the only bug here that
 > produces a graph that looks completely fine.
 
-**Uses:** [Game](Game.md) (8), [HistorySave](HistorySave.md) (6), [GameFiles](GameFiles.md) (2), [Equity](Equity.md) (2)
+**Uses:** [HistorySave](HistorySave.md) (10), [Game](Game.md) (8), [YearBook](YearBook.md) (8), [GameFiles](GameFiles.md) (2), [Equity](Equity.md) (2), [SectorBooks](SectorBooks.md) (1), [Sector](Sector.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
 ## Sections
 
@@ -32,9 +32,11 @@
 |---:|---|
 | 66 | · 1. every series is recorded, every month |
 | 127 | · 2. it survives a save and a reload |
-| 165 | · 3. A SHORT SERIES LINES UP WITH THE END |
-| 243 | · 4. the derived series do not divide by zero |
-| 267 | · 5. a new game forgets it |
+| 165 | · 2b. every sector's two series (0.7.4) |
+| 207 | · 2c. GDP's four parts (0.7.6) |
+| 260 | · 3. A SHORT SERIES LINES UP WITH THE END |
+| 338 | · 4. the derived series do not divide by zero |
+| 362 | · 5. a new game forgets it |
 
 ## Constants
 
@@ -53,11 +55,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 269 | **type** `public class HistoryCheck` | Verifies the graph history: recording, alignment, and the round trip. |
+| 33 | 364 | **type** `public class HistoryCheck` | Verifies the graph history: recording, alignment, and the round trip. |
 | 44 | 4 | `static void quietly(Runnable work)` | Runs a stretch of months without the monthly report burying the results. |
 | 49 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 54 | 6 | `static void close(String label, double a, double b)` |  |
-| 61 | 221 | `public static void main(String[] args) throws Exception` |  |
-| 284 | 9 | `static String dropSeries(String json, String name)` | Removes one "name": [ ... |
-| 294 | 7 | `static void cleanUp(Path root)` |  |
+| 61 | 316 | `public static void main(String[] args) throws Exception` |  |
+| 379 | 9 | `static String dropSeries(String json, String name)` | Removes one "name": [ ... |
+| 389 | 7 | `static void cleanUp(Path root)` |  |
 

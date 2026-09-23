@@ -25,7 +25,13 @@ public class LandCheck {
         System.out.printf("%-52s %s%n", label, ok ? "OK" : "FAIL");
     }
 
-    public static void main(String[] args) {
+    static void quietly(Runnable work) {
+        java.io.PrintStream out = System.out;
+        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+        try { work.run(); } finally { System.setOut(out); }
+    }
+
+    public static void main(String[] args) throws Exception {
 
         /* ==================== 1. what the city starts with ==================== */
         System.out.println("--- opening position ---");
@@ -82,14 +88,15 @@ public class LandCheck {
         check("...and cannot invent land", lm.getOwnedSqFt(), LandManager.STARTING_SQ_FT);
 
         /* ==================== 5. the listing ==================== */
-        System.out.println("\n--- ten plots on offer ---");
+        System.out.println("\n--- nine plots on offer ---");
 
         LandManager buy = new LandManager();
         buy.updateMarket(0);
 
         java.util.List<LandParcel> listing = buy.getListing();
-        check("ten plots are listed", listing.size(), LandMarket.LISTING_SIZE);
+        check("nine plots are listed", listing.size(), LandMarket.LISTING_SIZE);
         check("the ground still costs $0.70/sq ft", buy.getAcquisitionCostPerSqFt(), .0007);
+        check("...which is US$0.70 in the money it is asked in", buy.getGroundUsdPerSqFt(), .0007);
 
         // The point of a listing rather than a price: they have to differ, or
         // there is no decision in it.
@@ -100,7 +107,7 @@ public class LandCheck {
             largest = Math.max(largest, parcel.getSizeSqFt());
             if (parcel.hasIron()) withIron++;
             assertTrue("every plot has a size and a price",
-                    parcel.getSizeSqFt() > 0 && parcel.getPrice() > 0);
+                    parcel.getSizeSqFt() > 0 && parcel.getPriceUsd() > 0);
         }
         assertTrue("the plots are different sizes", largest > smallest * 2);
         System.out.printf("   sizes from %,.0f to %,.0f sq ft, %d with iron%n",
@@ -127,8 +134,10 @@ public class LandCheck {
         LandParcel wanted = buy.getListing().get(3);
         double before = buy.getOwnedSqFt();
 
+        // A bare land office converts at the founding rate, 1.00 (0.7.6).
         double paid = buy.buyParcel(wanted.getId(), 1e9, 0);
-        check("paid exactly what was listed", paid, wanted.getPrice());
+        check("paid exactly what was listed", paid,
+                wanted.localPrice(ForeignAccounts.OPENING_RATE));
         check("owned grew by the plot's size",
                 buy.getOwnedSqFt(), before + wanted.getSizeSqFt());
         check("recorded as a purchase this month", buy.getLandPurchasesThisMonth(), paid);
@@ -142,7 +151,7 @@ public class LandCheck {
         for (LandParcel parcel : listing) {
             if (parcel.getId() == wanted.getId()) continue;
             LandParcel still = buy.getMarket().find(parcel.getId());
-            if (still == null || still.getPrice() != parcel.getPrice()) pricesHeld = false;
+            if (still == null || still.getPriceUsd() != parcel.getPriceUsd()) pricesHeld = false;
         }
         assertTrue("the other offers did not move", pricesHeld);
 
@@ -257,11 +266,11 @@ public class LandCheck {
         if (deposit != null) {
             // A deposit costs more than bare ground of the same size, which is
             // the whole reason it is a decision rather than free money.
-            double bareGround = deposit.getSizeSqFt() * ore.getAcquisitionCostPerSqFt();
+            double bareGround = deposit.getSizeSqFt() * ore.getGroundUsdPerSqFt();
             assertTrue("a deposit costs more than the ground it sits on",
-                    deposit.getPrice() > bareGround);
-            System.out.printf("   %,.0fk tonnes: $%,.0f against $%,.0f for bare ground%n",
-                    deposit.getIronTonnes() / 1000, deposit.getPrice(), bareGround);
+                    deposit.getPriceUsd() > bareGround);
+            System.out.printf("   %,.0fk tonnes: US$%,.0f against US$%,.0f for bare ground%n",
+                    deposit.getIronTonnes() / 1000, deposit.getPriceUsd(), bareGround);
 
             check("no deposits to start with", ore.getIronDeposits(), 0);
             ore.buyParcel(deposit.getId(), 1e9, 0);
@@ -390,7 +399,7 @@ public class LandCheck {
             LandParcel a = written.get(i), b = reloaded.getListing().get(i);
             survived = a.getId() == b.getId()
                     && a.getSizeSqFt() == b.getSizeSqFt()
-                    && a.getPrice() == b.getPrice()
+                    && a.getPriceUsd() == b.getPriceUsd()
                     && a.getIronTonnes() == b.getIronTonnes()
                     && a.getDeposits() == b.getDeposits();
         }
@@ -435,6 +444,27 @@ public class LandCheck {
         check("...while bare ground counts as none",
                 old.getListing().get(0).getDeposits(), 0);
 
+        /*
+         * ...AND ITS PRICES WERE LOCAL MONEY (0.7.6). Read as dollars at the
+         * rate of the day it is loaded - here 2.00, so a $400 plot is a
+         * US$200 one and still costs $400 on the day; a dollar listing, the
+         * one saved above, is left exactly as it was.
+         */
+        check("an older listing's prices wait as written for the loading rate",
+                old.getListing().get(0).getPriceUsd(), 400);
+        check("...and settle as dollars at it, every parcel of them",
+                old.settleLocalPrices(2.0), LandMarket.LISTING_SIZE);
+        check("...so a $400 plot is a US$200 one at 2.00",
+                old.getListing().get(0).getPriceUsd(), 200);
+        check("...and costs what the save said on the day it is loaded",
+                old.getListing().get(4).localPrice(2.0), 404);
+        check("...and settles once: a second call converts nothing",
+                old.settleLocalPrices(2.0), 0);
+        check("a dollar listing is not converted at all",
+                reloaded.settleLocalPrices(2.0), 0);
+        check("...its prices exactly as written",
+                reloaded.getListing().get(0).getPriceUsd(), written.get(0).getPriceUsd());
+
         assertTrue("a length that is neither shape is refused",
                 !new LandMarket().restoreListingState(new double[]{ 5, 1, 2 }));
 
@@ -445,14 +475,15 @@ public class LandCheck {
         broke.updateMarket(0);
         LandParcel offer = broke.getListing().get(0);
 
+        double offerLocal = offer.localPrice(ForeignAccounts.OPENING_RATE);
         check("cannot afford it -> pays nothing",
-                broke.buyParcel(offer.getId(), offer.getPrice() - 1, 0), 0);
+                broke.buyParcel(offer.getId(), offerLocal - 1, 0), 0);
         check("...and gets nothing", broke.getOwnedSqFt(), LandManager.STARTING_SQ_FT);
         check("...and is not recorded", broke.getLandPurchasesThisMonth(), 0);
         assertTrue("...and it is still on offer",
                 broke.getMarket().find(offer.getId()) != null);
         check("exactly enough does buy it",
-                broke.buyParcel(offer.getId(), offer.getPrice(), 0), offer.getPrice());
+                broke.buyParcel(offer.getId(), offerLocal, 0), offerLocal);
 
         /* ==================== 7. selling ==================== */
         System.out.println("\n--- selling to businesses ---");
@@ -596,7 +627,261 @@ public class LandCheck {
         System.out.printf("   $%.2f/resident in a house vs $%.2f in a studio%n",
                 dearHouse, dearFlat);
 
+        inDollars();
+        bothWays();
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ==================================================================
+       12. LAND IS PRICED IN DOLLARS (0.7.6)
+
+       Jerus: "when you buy land, make it so that it costs USD not domestic
+       currency". A land office reading a rate that moves under it: the
+       listing's dollar prices stay put, what they cost here is exactly
+       usd x rate on the day, and what businesses pay does not read the
+       rate at all. Against a twin at the founding rate, so "does not move"
+       is measured against something.
+       ================================================================== */
+    static void inDollars() {
+        System.out.println("\n--- land is priced in dollars; what it costs here is the day's rate ---");
+
+        double[] rate = { ForeignAccounts.OPENING_RATE };
+        LandManager dollars = new LandManager(() -> rate[0]);
+        dollars.updateMarket(0);
+        LandManager atPar = new LandManager();
+        atPar.updateMarket(0);
+        LandParcel held = dollars.getListing().get(2);
+        double heldUsd = held.getPriceUsd();
+
+        rate[0] = 1.6;
+        dollars.updateMarket(0);
+        check("a listed parcel's dollar price does not move when the rate does",
+                dollars.getMarket().find(held.getId()).getPriceUsd(), heldUsd);
+        check("...nor the office's ground price in dollars",
+                dollars.getGroundUsdPerSqFt(), atPar.getGroundUsdPerSqFt());
+        check("...while what it quotes here is that at today's rate",
+                dollars.getAcquisitionCostPerSqFt(), dollars.getGroundUsdPerSqFt() * 1.6);
+        check("...and what businesses pay does not read the rate at all",
+                dollars.getPricePerSqFt(), atPar.getPricePerSqFt());
+        check("...so the margin carries the currency",
+                dollars.getMarginPerSqFt(),
+                dollars.getPricePerSqFt() - dollars.getGroundUsdPerSqFt() * 1.6);
+
+        double paid = dollars.buyParcel(held.getId(), 1e9, 0);
+        check("what a parcel costs is exactly its dollars times the rate", paid, heldUsd * 1.6);
+        check("...and that is what the month's land purchases carry",
+                dollars.getLandPurchasesThisMonth(), heldUsd * 1.6);
+        LandParcel next = dollars.getListing().get(0);
+        check("...and a parcel it cannot pay that for is refused",
+                dollars.buyParcel(next.getId(), next.getPriceUsd() * 1.6 - 1, 0), 0);
+
+        // A reform divides the local money; the dollars are the world's.
+        java.util.List<LandParcel> board = dollars.getListing();
+        double saleBefore = dollars.getPricePerSqFt();
+        double groundBefore = dollars.getGroundUsdPerSqFt();
+        dollars.redenominate(.01);
+        boolean sameBoard = board.size() == dollars.getListing().size();
+        for (int i = 0; sameBoard && i < board.size(); i++) {
+            sameBoard = board.get(i).getId() == dollars.getListing().get(i).getId()
+                    && board.get(i).getPriceUsd() == dollars.getListing().get(i).getPriceUsd();
+        }
+        assertTrue("a currency reform leaves the listing's dollar prices alone", sameBoard);
+        check("...and the office's dollar ground price",
+                dollars.getGroundUsdPerSqFt(), groundBefore);
+        check("...while what businesses pay is reformed with every local price",
+                dollars.getPricePerSqFt(), saleBefore * .01);
+    }
+
+    /* ==================================================================
+       13. THE TWO WAYS TO PAY (0.7.6)
+
+       Jerus: "a little toggle at the top to choose, when you buy land, to
+       use up your USD reserves or to convert cash into usd exactly to buy
+       the land, and the default is that you convert." Two cities founded
+       the same way and ticked once (so the purchase is in an ordinary
+       window, not the founding one), the rate held at 1.60 so local money
+       and dollars differ - and neither currency defends itself with its
+       vault, so the only difference between them is the way they paid.
+       ================================================================== */
+    static Game dollarCity(String label) {
+        Game g = new Game(GameFiles.scratch(label));
+        quietly(() -> { g.newGame(); g.toggleNextMonth(); });
+        g.getForeignAccounts().pinRate(1.6);
+        return g;
+    }
+
+    static double[] moved(double[] before, double[] after) {
+        double[] m = new double[before.length];
+        for (int i = 0; i < m.length; i++) m[i] = after[i] - before[i];
+        return m;
+    }
+
+    static void bothWays() throws Exception {
+        System.out.println("\n--- converting: the treasury buys the dollars and pays them over ---");
+
+        Game convert = dollarCity("landcheck-convert");
+        Game vault = dollarCity("landcheck-vault");
+        assertTrue("fixture: a new city converts by default", !convert.isLandPaidFromVault());
+        vault.setLandPaidFromVault(true);
+
+        LandParcel plot = convert.getLandManager().getMarket().bestValue();
+        double usd = plot.getPriceUsd();
+        double rate = convert.getForeignAccounts().getRate();
+        assertTrue("fixture: both cities list the same plot at the same dollars",
+                vault.getLandManager().getMarket().find(plot.getId()) != null
+                        && vault.getLandManager().getMarket().find(plot.getId()).getPriceUsd() == usd);
+
+        double cash = convert.getCash();
+        double dollarsHeld = convert.getForeignAccounts().getReservesUsd();
+        double bought = convert.getForeignAccounts().getBoughtThisMonth();
+        double[] pools = MoneyAudit.pools(convert);
+        assertTrue("fixture: the plot is bought", convert.buyLandParcel(plot.getId()));
+        double[] shift = moved(pools, MoneyAudit.pools(convert));
+
+        check("converting: the treasury pays usd x rate", convert.getCash(), cash - usd * rate);
+        check("...the vault ends where it began",
+                convert.getForeignAccounts().getReservesUsd(), dollarsHeld);
+        check("...the seller is paid the parcel's dollars",
+                convert.getForeignAccounts().getLandUsdPending(), usd);
+        check("...and nothing was bought for the vault",
+                convert.getForeignAccounts().getBoughtThisMonth(), bought);
+        double others = 0;
+        for (int i = 1; i < shift.length; i++) others += Math.abs(shift[i]);
+        check("...the city's pool fell by exactly that - money across the edge", shift[0], -usd * rate);
+        check("...and no other pool took it", others, 0);
+        assertTrue("...and the receipt names the conversion",
+                convert.getLastLandReceipt().contains("converting"));
+
+        System.out.println("\n--- from the vault: the dollars leave it, and no money moves ---");
+
+        cash = vault.getCash();
+        dollarsHeld = vault.getForeignAccounts().getReservesUsd();
+        double intervention = vault.getForeignAccounts().getLifetimeIntervention();
+        pools = MoneyAudit.pools(vault);
+        assertTrue("fixture: the vault can pay for the plot", dollarsHeld > usd);
+        assertTrue("fixture: the plot is bought", vault.buyLandParcel(plot.getId()));
+        shift = moved(pools, MoneyAudit.pools(vault));
+
+        check("from the vault: the treasury's cash does not move", vault.getCash(), cash);
+        check("...the vault falls by the parcel's dollars",
+                vault.getForeignAccounts().getReservesUsd(), dollarsHeld - usd);
+        check("...its record by their local price, as a sale's would",
+                vault.getForeignAccounts().getLifetimeIntervention(), intervention - usd * rate);
+        double any = 0;
+        for (double d : shift) any += Math.abs(d);
+        check("...and no pool moved at all", any, 0);
+        TreasuryJournal.Entry entry = null;
+        for (TreasuryJournal.Entry e : vault.getTreasuryJournalBook().thisMonth()) {
+            if (e.label().startsWith("Bought land with US$")) entry = e;
+        }
+        assertTrue("...the journal names it", entry != null);
+        check("...at usd x rate, the other way up from the budget's land line",
+                entry == null ? 0 : entry.amount(), usd * rate);
+        assertTrue("...and the receipt says it came out of the vault",
+                vault.getLastLandReceipt().contains("out of the vault"));
+
+        System.out.println("\n--- and each month closes ---");
+
+        quietly(convert::toggleNextMonth);
+        quietly(vault::toggleNextMonth);
+        for (Game g : new Game[] { convert, vault }) {
+            String way = g == convert ? "converting" : "from the vault";
+            assertTrue("the month after land bought " + way + " closes its audit",
+                    Math.abs(g.getLastMoneyAudit().relative()) < 1e-9);
+            assertTrue("...nothing moved after it struck", Math.abs(g.getPostAuditDrift()) < 1e-6);
+            check("...the budget carries the land at usd x rate",
+                    g.getEconomyManager().getNationalAccounts().getLandPurchases(), usd * rate);
+            check("...and the month's dollars paid for it",
+                    g.getForeignAccounts().getLandUsdThisMonth(), usd);
+            check("...which cost here what the budget's line carries",
+                    g.getForeignAccounts().getLandLocalThisMonth(), usd * rate);
+        }
+        check("the vault's part of them, converting", convert.getForeignAccounts()
+                .getLandUsdFromVaultThisMonth(), 0);
+        check("...and from the vault", vault.getForeignAccounts()
+                .getLandUsdFromVaultThisMonth(), usd);
+        check("the bridge leaves the same over either way: the journal carries the vault's",
+                vault.getTreasuryResidual(), convert.getTreasuryResidual());
+
+        System.out.println("\n--- a short vault pays what it holds and converts the rest ---");
+
+        LandParcel dear = vault.getLandManager().getMarket().bestValue();
+        double dearUsd = dear.getPriceUsd();
+        double half = dearUsd / 2;
+        rate = vault.getForeignAccounts().getRate();
+        quietly(() -> vault.sellForeignCurrency(
+                (vault.getForeignAccounts().getReservesUsd() - dearUsd / 2) * vault.getForeignAccounts().getRate()));
+        double held = vault.getForeignAccounts().getReservesUsd();
+        assertTrue("fixture: the vault holds about half the parcel",
+                Math.abs(held - half) < 1e-3 && held < dearUsd);
+        cash = vault.getCash();
+        assertTrue("a purchase never fails for the toggle's sake", vault.buyLandParcel(dear.getId()));
+        check("the vault paid what it held", vault.getForeignAccounts().getReservesUsd(), 0);
+        check("...and the rest was converted from cash", vault.getCash(), cash - (dearUsd - held) * rate);
+        assertTrue("...and the receipt says so",
+                vault.getLastLandReceipt().contains("held only"));
+        System.out.println("   " + vault.getLastLandReceipt());
+
+        System.out.println("\n--- the toggle survives a save, and an older listing reads as dollars ---");
+
+        GameFiles files = GameFiles.scratch("landcheck-save");
+        Game saved = new Game(files);
+        quietly(() -> { saved.newGame(); saved.toggleNextMonth(); });
+        saved.getForeignAccounts().pinRate(1.6);
+        saved.setLandPaidFromVault(true);
+        java.util.List<LandParcel> board = saved.getLandListing();
+        quietly(() -> saved.saveGame(4, "land in dollars"));
+
+        Game[] back = new Game[1];
+        quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
+        assertTrue("fixture: it loads", back[0].getLoadFailure() == null);
+        assertTrue("the toggle survives a save", back[0].isLandPaidFromVault());
+        boolean same = board.size() == back[0].getLandListing().size();
+        for (int i = 0; same && i < board.size(); i++) {
+            same = board.get(i).getPriceUsd() == back[0].getLandListing().get(i).getPriceUsd();
+        }
+        assertTrue("...and a dollar listing comes back to the cent", same);
+        check("...and the office's dollar quote with it",
+                back[0].getLandManager().getGroundUsdPerSqFt(),
+                saved.getLandManager().getGroundUsdPerSqFt());
+
+        /*
+         * AN OLDER SAVE, written by hand from this one: no toggle key, the
+         * listing in the old marker with LOCAL prices that are not this
+         * listing's dollars at any rate (so the reading cannot pass by
+         * accident), and the office's prices three slots long.
+         */
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
+                java.nio.file.Files.readString(files.saveFile(4))).getAsJsonObject();
+        assertTrue("fixture: the save carried the toggle", json.has("landPaidFromVault"));
+        json.remove("landPaidFromVault");
+        com.google.gson.JsonArray listing = json.getAsJsonArray("landListing");
+        listing.set(0, new com.google.gson.JsonPrimitive(-5.0));
+        int parcels = (listing.size() - 2) / 5;
+        for (int i = 0; i < parcels; i++) {
+            listing.set(2 + i * 5 + 2, new com.google.gson.JsonPrimitive(1_000.0 + i * 10));
+        }
+        com.google.gson.JsonArray prices = json.getAsJsonArray("landMarketPrices");
+        double localQuote = prices.get(0).getAsDouble();
+        while (prices.size() > 3) prices.remove(prices.size() - 1);
+        java.nio.file.Files.writeString(files.saveFile(4), json.toString());
+
+        quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
+        Game old = back[0];
+        assertTrue("fixture: the older save loads", old.getLoadFailure() == null);
+        double loadRate = old.getForeignAccounts().getRate();
+        check("fixture: at the rate it was saved at", loadRate, 1.6);
+        assertTrue("an older save converts", !old.isLandPaidFromVault());
+        boolean read = old.getLandListing().size() == parcels;
+        for (int i = 0; read && i < parcels; i++) {
+            read = Math.abs(old.getLandListing().get(i).getPriceUsd() - (1_000.0 + i * 10) / loadRate) < 1e-9;
+        }
+        assertTrue("an older listing's local prices read as dollars at the loading rate", read);
+        check("...so the first costs what the save said, on the day it is loaded",
+                old.getLandListing().get(0).localPrice(loadRate), 1_000);
+        check("...and the office's local quote reads the same way",
+                old.getLandManager().getGroundUsdPerSqFt(), localQuote / loadRate);
     }
 }

@@ -1,6 +1,6 @@
-# EconomyManager.java - 1,401 lines · 184 methods · 3 constants · model
+# EconomyManager.java - 1,402 lines · 184 methods · 3 constants · model
 
-`ham/citybuildersim/EconomyManager.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EconomyManager.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > The private economy: every sector, every market, the credit desk, the
 > tax policy and the national accounts, and the month they run in.
@@ -47,9 +47,9 @@
 | 935 | THE TRANSIT BOOKS (2026-09-16) |
 | 972 | · pensions |
 | 1002 | THE NATIONAL ACCOUNTS |
-| 1226 | CONVENIENCES - the prices the screens and the harnesses ask for by name |
-| 1243 | SAVE AND RESTORE |
-| 1276 | PRINTERS, RESET, THE REFORM |
+| 1227 | CONVENIENCES - the prices the screens and the harnesses ask for by name |
+| 1244 | SAVE AND RESTORE |
+| 1277 | PRINTERS, RESET, THE REFORM |
 
 ## Constants
 
@@ -57,7 +57,7 @@
 |---:|---|---|---|
 | 473 | `EconomyManager.CITY_MAINTAINED` | `{ BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE, ...` | EVERY BUILDING IN THE CITY, BILLED FOR STANDING THERE. |
 | 485 | `EconomyManager.MAINTENANCE_RATE` | `ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12` |  |
-| 1335 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 1336 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -131,7 +131,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 1373 | **type** `public class EconomyManager` | The private economy: every sector, every market, the credit desk, the tax policy and the national accounts, and the month they run in. |
+| 29 | 1374 | **type** `public class EconomyManager` | The private economy: every sector, every market, the credit desk, the tax policy and the national accounts, and the month they run in. |
 
 ### THE CITY'S PARTS (lines 31-61)
 
@@ -390,7 +390,7 @@
 | 999 | 1 | `public void setUtilityIncome(double income)` |  |
 | 1000 | 1 | `public void setDebt(double debt)` |  |
 
-### THE NATIONAL ACCOUNTS (lines 1002-1225)
+### THE NATIONAL ACCOUNTS (lines 1002-1226)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -404,37 +404,37 @@
 | 1210 | 1 | `public double getMonthGdp()` |  |
 | 1211 | 1 | `public double getYearGdp()` |  |
 | 1212 | 1 | `public double getGDP()` |  |
-| 1213 | 1 | `public double getTaxRate()` |  |
-| 1215 | 10 | `public void setPreviousGdp(HistorySave historySave)` |  |
+| 1214 | 1 | `public double getTaxRate()` | The income rate - the three income taxes together, TaxPolicy.getIncomeTaxRate(): the profit rate once they have parted (0.7.4). |
+| 1216 | 10 | `public void setPreviousGdp(HistorySave historySave)` |  |
 
-### CONVENIENCES - the prices the screens and the harnesses ask for by name (lines 1226-1242)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1231 | 1 | `public double getFoodLocalPrice()` | What one person-month of food costs the shops at today's market prices. |
-| 1232 | 1 | `public double getIronLocalPrice()` |  |
-| 1235 | 7 | `public int getFoodUnitsHeld()` | Every warehouse and shelf of food in the city, in KILOGRAMS across the thirteen. |
-
-### SAVE AND RESTORE (lines 1243-1275)
+### CONVENIENCES - the prices the screens and the harnesses ask for by name (lines 1227-1243)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1247 | 1 | `public List<SectorState> getSectorStates()` |  |
-| 1248 | 1 | `public void restoreSectorStates(List<SectorState> s)` |  |
-| 1251 | 13 | `public void restoreSectorBills(List<SectorState> saved)` | The month's bills back over the rebuild's re-derivation, and the total they add to. |
-| 1264 | 1 | `public List<Markets.State> getMarketStates()` |  |
-| 1265 | 1 | `public void restoreMarketStates(List<Markets.State> s)` |  |
-| 1267 | 1 | `public SalesTaxLedger.State getSalesTaxState()` |  |
-| 1270 | 5 | `public boolean restoreSalesTaxState(SalesTaxLedger.State state)` | The month's VAT back, AND the total that came out of it - one fact. |
+| 1232 | 1 | `public double getFoodLocalPrice()` | What one person-month of food costs the shops at today's market prices. |
+| 1233 | 1 | `public double getIronLocalPrice()` |  |
+| 1236 | 7 | `public int getFoodUnitsHeld()` | Every warehouse and shelf of food in the city, in KILOGRAMS across the thirteen. |
 
-### PRINTERS, RESET, THE REFORM (lines 1276-1401)
+### SAVE AND RESTORE (lines 1244-1276)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1280 | 3 | `public void printWageTaxInfo()` |  |
-| 1284 | 35 | `public void printCityStats()` |  |
-| 1320 | 14 | `public void resetEconomyManager()` |  |
-| 1337 | 4 | `static { ... }` |  |
-| 1349 | 47 | `public void redenominate(double scale)` | Every figure the economy manager holds, and every sector and market under it, in the new unit. |
-| 1397 | 4 | `private static void scaleArray(double[] values, double scale)` |  |
+| 1248 | 1 | `public List<SectorState> getSectorStates()` |  |
+| 1249 | 1 | `public void restoreSectorStates(List<SectorState> s)` |  |
+| 1252 | 13 | `public void restoreSectorBills(List<SectorState> saved)` | The month's bills back over the rebuild's re-derivation, and the total they add to. |
+| 1265 | 1 | `public List<Markets.State> getMarketStates()` |  |
+| 1266 | 1 | `public void restoreMarketStates(List<Markets.State> s)` |  |
+| 1268 | 1 | `public SalesTaxLedger.State getSalesTaxState()` |  |
+| 1271 | 5 | `public boolean restoreSalesTaxState(SalesTaxLedger.State state)` | The month's VAT back, AND the total that came out of it - one fact. |
+
+### PRINTERS, RESET, THE REFORM (lines 1277-1402)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1281 | 3 | `public void printWageTaxInfo()` |  |
+| 1285 | 35 | `public void printCityStats()` |  |
+| 1321 | 14 | `public void resetEconomyManager()` |  |
+| 1338 | 4 | `static { ... }` |  |
+| 1350 | 47 | `public void redenominate(double scale)` | Every figure the economy manager holds, and every sector and market under it, in the new unit. |
+| 1398 | 4 | `private static void scaleArray(double[] values, double scale)` |  |
 

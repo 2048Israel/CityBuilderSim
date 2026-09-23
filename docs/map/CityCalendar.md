@@ -1,6 +1,6 @@
 # CityCalendar.java - 145 lines · 13 methods · 4 constants · model
 
-`ham/citybuildersim/CityCalendar.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityCalendar.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > Turns the month counter into a date a person can hold in their head.
 > 
@@ -23,7 +23,7 @@
 > they floor at the epoch rather than counting backwards into 1999. A date is
 > cosmetic; crashing the status bar over one is not.
 
-**Used by (10):** [CalendarCheck](CalendarCheck.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md)
+**Used by (11):** [CalendarCheck](CalendarCheck.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 

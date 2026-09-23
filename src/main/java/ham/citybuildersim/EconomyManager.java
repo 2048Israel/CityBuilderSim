@@ -1210,6 +1210,7 @@ public class EconomyManager {
     public double getMonthGdp() { return nationalAccounts.getGdp(); }
     public double getYearGdp()  { return yearGDP; }
     public double getGDP()      { return GDP; }
+    /** The income rate - the three income taxes together, TaxPolicy.getIncomeTaxRate(): the profit rate once they have parted (0.7.4). */
     public double getTaxRate()  { return taxPolicy.getIncomeTaxRate(); }
 
     public void setPreviousGdp(HistorySave historySave) {

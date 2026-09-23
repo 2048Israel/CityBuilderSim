@@ -109,6 +109,11 @@ public class HistorySave {
     private List<Double> careCoverage = new ArrayList<>();
 
     /* --------------------------- prices --------------------------- */
+    /**
+     * What the world asks the city for a square foot of ground, in thousands
+     * of US DOLLARS since 0.7.6 (LandManager.getGroundUsdPerSqFt()); the
+     * months an older save recorded are local money, and stay as recorded.
+     */
     private List<Double> landPrice = new ArrayList<>();
     private List<Double> foodPrice = new ArrayList<>();
     private List<Double> materialsPrice = new ArrayList<>();
@@ -318,6 +323,48 @@ public class HistorySave {
     public static String priceKey(String company) { return "sharePrice:" + company; }
     public static String valueKey(String company) { return "shareValue:" + company; }
 
+    /* ------------------------- the sectors (0.7.4) -------------------------
+
+       Jerus, on the sector list: "i think it would be pretty for beside each
+       sector to show some quick info, not only net income and change but
+       also a little graph of its net income, perhaps how much workers it
+       employs total". SectorBooks keeps two months and a sparkline wants
+       two years, so the list gets two series per sector the way the share
+       registers have theirs: keyed by the sector's name (Sector.key(), which
+       is its label and the register's company name), from the month it is
+       first recorded - so an older save has none until it plays a month, and
+       aligned() pads the front with "we were not counting".
+
+       The month's net income after tax off the sector's own statement - the
+       figure the list's card shows, SectorBooks' netIncome() - a FLOW, money,
+       so a reform scales it; and its posts filled, Sector.getWorkers(), a
+       LEVEL and a headcount.
+       ------------------------------------------------------------------ */
+    private Map<String, List<Double>> sectorNetIncome = new LinkedHashMap<>();
+    private Map<String, List<Double>> sectorWorkers = new LinkedHashMap<>();
+
+    /** The series name the screens ask for, per sector: the month's net income after tax. */
+    public static String netIncomeKey(String sector) { return "netIncome:" + sector; }
+    /** ...and its posts filled. */
+    public static String workersKey(String sector)   { return "workers:" + sector; }
+
+    /* ------------------------ GDP in layers (0.7.6) ------------------------
+
+       Jerus: "have it so the gdp graph can be a toggle, and if toggled it
+       switches from line to mountain graph ... showing how much is made up
+       of investments, net exports, government spending, aka breaking it
+       down." gdp is C+I+G+NX and only the sum was kept, so the four parts
+       are kept beside it, off NationalAccounts' own getters - consumption,
+       investment, government and net exports - each a FLOW and money, so a
+       reform scales them. They add up to gdp for the month to the cent
+       (each is rounded on its own), and an older save has none of them
+       until it plays a month, which aligned() pads as "not counting".
+       ------------------------------------------------------------------ */
+    private List<Double> consumption = new ArrayList<>();
+    private List<Double> investment = new ArrayList<>();
+    private List<Double> government = new ArrayList<>();
+    private List<Double> netExports = new ArrayList<>();
+
     /* ==================================================================
        RECORDING
        ================================================================== */
@@ -343,6 +390,11 @@ public class HistorySave {
 
         cash.add(round2(game.getCash()));
         gdp.add(round2(economy.getMonthGdp()));
+        // ...and the four parts it is the sum of (0.7.6), off the same accounts.
+        consumption.add(round2(accounts.getConsumption()));
+        investment.add(round2(accounts.getInvestment()));
+        government.add(round2(accounts.getGovernment()));
+        netExports.add(round2(accounts.getNetExports()));
         debt.add(round2(game.getDebtManager().getAllPrincipal()));
         // Four decimals: a rate is a fraction and rounding it to cents would
         // record every rate under 0.5% as zero.
@@ -380,7 +432,7 @@ public class HistorySave {
         sickRate.add(round4(game.getHealth().getSickRate()));
         careCoverage.add(round4(game.getHealth().getCoverage()));
 
-        landPrice.add(Math.round(game.getLandManager().getAcquisitionCostPerSqFt() * 1e6) / 1e6);
+        landPrice.add(Math.round(game.getLandManager().getGroundUsdPerSqFt() * 1e6) / 1e6);
         foodPrice.add(round4(game.getSectors().retail().getFoodPrice()));
         materialsPrice.add(round4(game.getBuildingManager().getConstructionMaterialPrice()));
         orePrice.add(round4(game.getMarkets().get(Good.IRON).exportPrice()));
@@ -502,6 +554,14 @@ public class HistorySave {
             shareValue.computeIfAbsent(company, k -> new ArrayList<>())
                     .add(round4(exchange.fairPerFoundingShare(c)));
         }
+
+        /* ------------------------- the sectors ------------------------- */
+        for (Sector sector : game.getSectors().all()) {
+            sectorNetIncome.computeIfAbsent(sector.key(), k -> new ArrayList<>())
+                    .add(round2(sector.statement().netIncome));
+            sectorWorkers.computeIfAbsent(sector.key(), k -> new ArrayList<>())
+                    .add(round2(sector.getWorkers()));
+        }
     }
 
     /**
@@ -540,6 +600,10 @@ public class HistorySave {
 
         cash = copy(loaded.cash);
         gdp = copy(loaded.gdp);
+        consumption = copy(loaded.consumption);
+        investment = copy(loaded.investment);
+        government = copy(loaded.government);
+        netExports = copy(loaded.netExports);
         debt = copy(loaded.debt);
         interestRate = copy(loaded.interestRate);
         revenue = copy(loaded.revenue);
@@ -651,6 +715,9 @@ public class HistorySave {
 
         sharePrice = copyMap(loaded.sharePrice);
         shareValue = copyMap(loaded.shareValue);
+
+        sectorNetIncome = copyMap(loaded.sectorNetIncome);
+        sectorWorkers = copyMap(loaded.sectorWorkers);
     }
 
     /** A map of series, copied list by list, and never null - see copy(). */
@@ -749,6 +816,10 @@ public class HistorySave {
         Map<String, List<? extends Number>> map = new LinkedHashMap<>();
         map.put("cash", cash);
         map.put("gdp", gdp);
+        map.put("consumption", consumption);
+        map.put("investment", investment);
+        map.put("government", government);
+        map.put("netExports", netExports);
         map.put("debt", debt);
         map.put("interestRate", interestRate);
         map.put("revenue", revenue);
@@ -870,6 +941,13 @@ public class HistorySave {
         if (shareValue != null) {
             for (Map.Entry<String, List<Double>> e : shareValue.entrySet()) map.put(valueKey(e.getKey()), e.getValue());
         }
+        // ...and every sector, by its name (0.7.4).
+        if (sectorNetIncome != null) {
+            for (Map.Entry<String, List<Double>> e : sectorNetIncome.entrySet()) map.put(netIncomeKey(e.getKey()), e.getValue());
+        }
+        if (sectorWorkers != null) {
+            for (Map.Entry<String, List<Double>> e : sectorWorkers.entrySet()) map.put(workersKey(e.getKey()), e.getValue());
+        }
         return map;
     }
 
@@ -897,7 +975,13 @@ public class HistorySave {
     public void redenominate(double scale) {
         scaleAll(scale, cash, gdp, debt, revenue, surplus,
                 totalWage, minimumWage, schoolBill,
-                landPrice, foodPrice, materialsPrice, orePrice);
+                foodPrice, materialsPrice, orePrice);
+        // NOT landPrice, since 0.7.6: it is the world's dollar price of ground,
+        // which no reform reaches (LandMarket.redenominate()). The months an
+        // older save recorded in local money stay as recorded, in the unit
+        // they were recorded in - the year book's note says so.
+        // GDP's four parts (0.7.6), money like the sum they make.
+        scaleAll(scale, consumption, investment, government, netExports);
 
         /*
          * The same reform, applied to everything added since - and the list of
@@ -924,6 +1008,8 @@ public class HistorySave {
         // A share's price is money; how many shares there are is not.
         if (sharePrice != null) for (List<Double> s : sharePrice.values()) scaleAll(scale, s);
         if (shareValue != null) for (List<Double> s : shareValue.values()) scaleAll(scale, s);
+        // A sector's net income is money; its workers are people (0.7.4).
+        if (sectorNetIncome != null) for (List<Double> s : sectorNetIncome.values()) scaleAll(scale, s);
     }
 
     @SafeVarargs

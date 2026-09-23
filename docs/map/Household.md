@@ -1,6 +1,6 @@
 # Household.java - 1,153 lines · 96 methods · 8 constants · model
 
-`ham/citybuildersim/Household.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Household.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > Every household of one shape at one pay tier, as one ledger.
 > 

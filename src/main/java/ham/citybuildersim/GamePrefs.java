@@ -108,6 +108,40 @@ public final class GamePrefs {
                 Math.min(WorldEconomy.MAX_MEAN_INFLATION, value));
     }
 
+    /**
+     * The two small charts pinned at the top of the Reports page, by series
+     * name - the name HistorySave and the page's own list know a line by.
+     *
+     * Jerus, 2026-09-23: "there are two graphs always displayed on the graph
+     * rail, the real gdp yearly figure, and the other is the population", and
+     * then "pinnable defaults, but not fixed". So they default to those two
+     * and the player can swap either for any line the page draws.
+     *
+     * A PREFERENCE, NOT A SAVED FIGURE, for fullScreen's reason: which two
+     * lines a player likes to keep in view is how they read, not a fact about
+     * slot 3, and it follows them from city to city. Never in the save.
+     *
+     * A name the page no longer knows - a series renamed or removed since the
+     * file was written - is the page's to catch, and it falls back to these
+     * defaults (HistoryScreen.pinned()); a missing or blank one is caught here.
+     */
+    public static final String DEFAULT_PINNED_LEFT = "realGdp";
+
+    /** ...and the right-hand one, the population. */
+    public static final String DEFAULT_PINNED_RIGHT = "population";
+
+    private String pinnedLeft = DEFAULT_PINNED_LEFT;
+    private String pinnedRight = DEFAULT_PINNED_RIGHT;
+
+    public String getPinnedLeft() {
+        return pinnedLeft == null || pinnedLeft.isBlank() ? DEFAULT_PINNED_LEFT : pinnedLeft;
+    }
+    public String getPinnedRight() {
+        return pinnedRight == null || pinnedRight.isBlank() ? DEFAULT_PINNED_RIGHT : pinnedRight;
+    }
+    public void setPinnedLeft(String key)  { this.pinnedLeft = key; }
+    public void setPinnedRight(String key) { this.pinnedRight = key; }
+
     /* ===================================================================
        THE FILE
        =================================================================== */

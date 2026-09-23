@@ -1,6 +1,6 @@
 # ShadowBasket.java - 201 lines · 1 methods · 0 constants · model
 
-`ham/citybuildersim/ShadowBasket.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ShadowBasket.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > What a played city WOULD buy, measured against what it spends today.
 > 

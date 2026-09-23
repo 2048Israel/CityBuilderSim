@@ -1324,8 +1324,13 @@ final class BankScreen {
 
         /* ------------------------------ the margin ------------------------------ */
         column.getChildren().add(statementHead("The business, in one line"));
+        // What a business borrows at before its own premium - Bank.lendingRate()
+        // on the dial, the figure the top strip's "bank" line prints (0.7.4).
+        // This line printed the CITY's rate until 0.7.4, which is what the
+        // treasury pays and not what the bank charges; the strip made the two
+        // sit a hand apart, so it says the bank's now.
         column.getChildren().add(statementLine("It charges",
-                String.format("%.2f%%", market.getRate() * 100), Palette.TEXT_HEAD));
+                String.format("%.2f%%", bank.lendingRate(market.getPolicyRate()) * 100), Palette.TEXT_HEAD));
         column.getChildren().add(statementLine("It pays savers",
                 String.format("%.2f%%", bank.depositRate() * 100), Palette.TEXT_MUTED));
         column.getChildren().add(statementLine("Net interest margin",

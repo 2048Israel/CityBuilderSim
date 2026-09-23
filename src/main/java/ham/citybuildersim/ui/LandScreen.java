@@ -16,10 +16,15 @@ import static ham.citybuildersim.ui.Pieces.*;
 import static ham.citybuildersim.ui.Levers.*;
 
 /**
- * The land office: the city's position across the top, the plots on the
- * market as tiles you can compare - price per square foot against what the
- * office charges outside, the best value and the richest deposit flagged - and
- * the economics of the margin underneath.
+ * The land office: how the city pays and the city's position across the top,
+ * the plots on the market as tiles you can compare - price per square foot
+ * against what the office charges outside, the best value and the richest
+ * deposit flagged - and the economics of the margin underneath.
+ *
+ * In US dollars since 0.7.6: every plot shows its dollar price and what that
+ * costs in local money at today's rate, and a chip pair at the top chooses
+ * whether the treasury converts cash for it (the default) or pays out of the
+ * vault.
  *
  * Split out of UserInterface on 2026-09-18: the two banners THE LAND OFFICE
  * and THE STATEMENT (what was left of it once the statement primitives had
@@ -61,12 +66,59 @@ final class LandScreen {
         double free = land.getAvailableSqFt();
         double used = land.getUtilisation();
         double outside = land.getAcquisitionCostPerSqFt();
+        double outsideUsd = land.getGroundUsdPerSqFt();
         double inside = land.getPricePerSqFt();
         double margin = land.getMarginPerSqFt();
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        String here = Currency.QUALIFIED;
 
         Label title = new Label("LAND OFFICE");
         title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
                 + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+
+        /* =================== HOW THE LAND IS PAID FOR (0.7.6) ===================
+         *
+         * Jerus: "a little toggle at the top to choose, when you buy land, to
+         * use up your USD reserves or to convert cash into usd exactly to buy
+         * the land, and the default is that you convert." At the top because
+         * it decides what every Buy button below it does; applied at once and
+         * saved with the city (Game.setLandPaidFromVault()). The sentence under
+         * it says what each way does and what the vault holds, and the last
+         * purchase's receipt - which says so when a short vault was topped up
+         * by converting - sits under that.
+         */
+        final String converting = "Pay by converting cash";
+        final String fromVault = "Pay from the vault";
+        boolean vaultPays = ui.game.isLandPaidFromVault();
+        javafx.scene.layout.FlowPane payWith = chipStrip(new String[] { converting, fromVault },
+                vaultPays ? fromVault : converting, Palette.SIZE_LABEL, name -> {
+                    ui.game.setLandPaidFromVault(fromVault.equals(name));
+                    showLandMenu();
+                });
+        Label how = new Label(vaultPays
+                ? String.format("Land is priced in US dollars. Paying from the vault spends its "
+                        + "dollars and moves no cash; it holds %s (%s at today's rate), and a plot "
+                        + "dearer than that takes all of it and converts the rest from cash.",
+                        usdFull(fx.getReservesUsd()), marked(here, moneyFull(fx.getReserves())))
+                : String.format("Land is priced in US dollars. Converting buys exactly the dollars "
+                        + "a plot costs out of cash, at %s%s to the dollar today, and leaves the "
+                        + "vault's %s where it is.",
+                        here, fxRate(fx.getRate()), usdFull(fx.getReservesUsd())));
+        how.setWrapText(true);
+        how.setMaxWidth(TILE_WIDTH * 3 + TILE_GAP * 2);
+        how.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
+                + " -fx-padding: 4 0 2 0;");
+        VBox paying = new VBox(2, payWith, how);
+        paying.setAlignment(Pos.CENTER);
+        String receipt = ui.game.getLastLandReceipt();
+        if (receipt != null && !receipt.isEmpty()) {
+            Label last = new Label(receipt);
+            last.setWrapText(true);
+            last.setMaxWidth(TILE_WIDTH * 3 + TILE_GAP * 2);
+            last.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY)
+                    + " -fx-padding: 0 0 4 0;");
+            paying.getChildren().add(last);
+        }
 
         /* ===================== WHERE THE CITY STANDS =====================
          *
@@ -80,9 +132,9 @@ final class LandScreen {
         position.setMaxWidth(Region.USE_PREF_SIZE);
         position.setStyle("-fx-padding: 8 6 8 6;" + Palette.block(Palette.PANEL));
 
-        VBox lastCell = limitCell("THEY BUY AT", String.format("$%.2f", inside * 1000),
-                String.format("per sq ft inside  ·  %s$%.2f margin",
-                        margin < 0 ? "-" : "+", Math.abs(margin) * 1000),
+        VBox lastCell = limitCell("THEY BUY AT", String.format("%s%.2f", here, inside * 1000),
+                String.format("per sq ft inside  ·  %s%s%.2f margin",
+                        margin < 0 ? "-" : "+", here, Math.abs(margin) * 1000),
                 margin < 0 ? Palette.BAD : Palette.GOOD);
         lastCell.setStyle("-fx-padding: 0 14 0 14;");
 
@@ -94,8 +146,9 @@ final class LandScreen {
                         used >= .90 ? "businesses will stop building"
                                     : "of everything the city owns",
                         used >= .90 ? Palette.BAD : used >= .75 ? Palette.WARN : Palette.GOOD),
-                limitCell("MARKET RATE", String.format("$%.2f", outside * 1000),
-                        "per sq ft, outside the city", Palette.TEXT_HEAD),
+                limitCell("MARKET RATE", String.format("US$%.2f", outsideUsd * 1000),
+                        String.format("per sq ft outside  ·  %s%.2f today", here, outside * 1000),
+                        Palette.TEXT_HEAD),
                 lastCell);
 
         /* ========================= WHAT IS ON OFFER ========================= */
@@ -142,14 +195,14 @@ final class LandScreen {
          * market rate has moved since; either way, comparing today's plots to a
          * number they were not priced from tells the player nothing.
          *
-         * The going rate ON THIS LISTING does work, because the ten plots were
+         * The going rate ON THIS LISTING does work, because the nine plots were
          * all priced the same way and the question a player actually has is
-         * "which of these ten". The median rather than the mean, so one enormous
+         * "which of these nine". The median rather than the mean, so one enormous
          * ore-bearing plot cannot drag the line it is being judged against.
          */
         double[] rates = new double[market.getListing().size()];
         int at = 0;
-        for (LandParcel parcel : market.getListing()) rates[at++] = parcel.getPricePerSqFt();
+        for (LandParcel parcel : market.getListing()) rates[at++] = parcel.getUsdPerSqFt();
         java.util.Arrays.sort(rates);
         double going = rates.length == 0 ? 0 : rates[rates.length / 2];
 
@@ -178,7 +231,7 @@ final class LandScreen {
          * that button was pretending to be.
          */
         java.util.List<LandParcel> shelf = market.getListing();
-        shelf.sort(java.util.Comparator.comparingDouble(LandParcel::getPricePerSqFt));
+        shelf.sort(java.util.Comparator.comparingDouble(LandParcel::getUsdPerSqFt));
 
         for (int i = 0; i < shelf.size(); i++) {
             LandParcel parcel = shelf.get(i);
@@ -200,19 +253,24 @@ final class LandScreen {
 
         column.getChildren().add(statementHead("What the city makes on it"));
         column.getChildren().add(statementLine("Outside, you buy at",
-                String.format("$%.2f /sq ft", outside * 1000)));
+                String.format("US$%.2f /sq ft  ·  %s%.2f today", outsideUsd * 1000,
+                        here, outside * 1000)));
         column.getChildren().add(statementNote(
-                "Rises with the city — with the land owned, and with the people."));
+                "Rises with the city — with the land owned, and with the people. Asked in US"
+                + " dollars, so a weaker currency makes it dearer here and a stronger one cheaper."));
         column.getChildren().add(statementLine("Inside, they buy at",
-                String.format("$%.2f /sq ft", inside * 1000)));
+                String.format("%s%.2f /sq ft", here, inside * 1000)));
         column.getChildren().add(statementNote(
-                "Supply against demand — the more land standing free, the cheaper."));
+                "Supply against demand — the more land standing free, the cheaper. Local"
+                + " money, and the exchange rate does not reach it."));
         column.getChildren().add(statementTotal("Margin",
-                String.format("$%+.2f /sq ft", margin * 1000),
+                String.format("%s%s%.2f /sq ft", margin < 0 ? "-" : "+", here,
+                        Math.abs(margin) * 1000),
                 margin < 0 ? Palette.BAD : Palette.GOOD));
         column.getChildren().add(statementNote(margin < 0
-                ? "You hold more ground than anyone wants to build on, and are selling"
-                        + " it below what it cost you."
+                ? "You are selling ground for less than it would cost you today - more of it"
+                        + " stands free than anyone wants to build on, or the currency has made"
+                        + " the world's price dear."
                 : "Land is tight enough that the city profits on every sale."));
 
         /* WHAT THE PRICE COMES TO, since "per square foot" is not a number
@@ -224,13 +282,13 @@ final class LandScreen {
         column.getChildren().add(statementHead("What that comes to"));
         if (house != null) {
             column.getChildren().add(statementLine("A house plot",
-                    money(land.priceFor(house.getLandSqFt()))
-                    + "  on " + money(house.getCashCost()) + " to build"));
+                    marked(here, money(land.priceFor(house.getLandSqFt())))
+                    + "  on " + marked(here, money(house.getCashCost())) + " to build"));
         }
         if (plant != null) {
             column.getChildren().add(statementLine("A food plant's plot",
-                    money(land.priceFor(plant.getLandSqFt()))
-                    + "  on " + money(plant.getCashCost()) + " to build"));
+                    marked(here, money(land.priceFor(plant.getLandSqFt())))
+                    + "  on " + marked(here, money(plant.getCashCost())) + " to build"));
         }
         column.getChildren().add(statementNote(
                 "The ground is charged on top of the build, so a cheap building on"
@@ -277,7 +335,7 @@ final class LandScreen {
         VBox all = new VBox(0, offering, smallest, plots, column);
         all.setAlignment(Pos.CENTER);
 
-        ui.rootMenu.getChildren().addAll(title, position, ui.scrolled(all));
+        ui.rootMenu.getChildren().addAll(title, paying, position, ui.scrolled(all));
     }
 
     /* =====================================================================
@@ -322,8 +380,9 @@ final class LandScreen {
     StackPane parcelTile(LandParcel parcel, double going,
                                  boolean best, boolean richest) {
 
-        boolean afford = parcel.getPrice() <= ui.game.getCash();
-        double perSqFt = parcel.getPricePerSqFt();
+        // Affordable the way the toggle pays: the model's answer, not arithmetic here.
+        boolean afford = ui.game.canAffordParcel(parcel);
+        double perSqFt = parcel.getUsdPerSqFt();
         double against = going > 0 ? (going - perSqFt) / going * 100 : 0;
 
         Label size = new Label(formatter.format(parcel.getSizeSqFt()) + " sq ft");
@@ -333,18 +392,29 @@ final class LandScreen {
         Label blocks = new Label(String.format("%.1f blocks", parcel.getBlocks()));
         blocks.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
 
-        Label price = new Label(money(parcel.getPrice()));
+        /*
+         * BOTH PRICES (0.7.6): the dollars it is listed at, which do not move,
+         * and what they cost here at today's rate, which does - "US$1.2M ·
+         * D$1.8M at today's rate".
+         */
+        Label price = new Label(usd(parcel.getPriceUsd()));
         price.setStyle(Palette.figure(Palette.SIZE_SECTION,
                 afford ? Palette.GOOD : Palette.BAD));
+        Label local = new Label("  ·  " + marked(Currency.QUALIFIED,
+                money(parcel.localPrice(ui.game.getForeignAccounts().getRate())))
+                + " at today's rate");
+        local.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        HBox prices = new HBox(0, price, local);
+        prices.setAlignment(Pos.BASELINE_LEFT);
 
         Label rate = new Label(Math.abs(against) < 1
-                ? String.format("$%.2f/sq ft  ·  the going rate", perSqFt * 1000)
-                : String.format("$%.2f/sq ft  ·  %.0f%% %s the going rate",
+                ? String.format("US$%.2f/sq ft  ·  the going rate", perSqFt * 1000)
+                : String.format("US$%.2f/sq ft  ·  %.0f%% %s the going rate",
                         perSqFt * 1000, Math.abs(against), against > 0 ? "under" : "over"));
         rate.setStyle(Palette.words(Palette.SIZE_CAPTION,
                 against >= 0 ? Palette.GOOD : Palette.WARN));
 
-        VBox face = new VBox(1, size, blocks, price, rate);
+        VBox face = new VBox(1, size, blocks, prices, rate);
         face.setStyle("-fx-padding: 8 10 8 10;");
 
         if (parcel.hasIron()) {
@@ -370,7 +440,8 @@ final class LandScreen {
         VBox.setVgrow(push, Priority.ALWAYS);
         face.getChildren().add(push);
 
-        Button buy = new Button(afford ? "Buy this plot" : "Not enough cash");
+        Button buy = new Button(afford ? "Buy this plot"
+                : ui.game.isLandPaidFromVault() ? "Not enough in the vault or cash" : "Not enough cash");
         buy.setDisable(!afford);
         buy.setMaxWidth(Double.MAX_VALUE);
         buy.setStyle(Palette.words(Palette.SIZE_LABEL, "white")

@@ -445,7 +445,7 @@ final class ServicesScreen {
                         TaxPolicy.JOURNEYS_A_MONTH),
                 fare <= 0 ? "nothing" : money(policy.monthlyFare()),
                 fare <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_HEAD));
-        column.getChildren().add(ui.policyScreen.stageSlider("fare", fare, 0,
+        column.getChildren().add(ui.policyScreen.stagedLadder("fare", fare, 0,
                 TaxPolicy.MAX_TRANSIT_FARE, TaxPolicy.MAX_TRANSIT_FARE / 20,
                 r -> r <= 0 ? "free" : unitPrice(r)));
 

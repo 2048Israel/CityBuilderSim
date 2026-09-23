@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * The land office's window: ten plots on offer, and what the next one costs.
+ * The land office's window: nine plots on offer, and what the next one costs.
  *
  * WHY A LISTING RATHER THAN A PRICE
  *
@@ -13,7 +13,7 @@ import java.util.Random;
  * it - the price only went up, so the answer was always "buy now or buy later",
  * and the only thing the player could get wrong was timing.
  *
- * Ten plots at once is a decision. They are different sizes at different prices,
+ * Nine plots at once is a decision. They are different sizes at different prices,
  * and roughly one in five has iron under it, which is worth far more than the
  * ground but costs more up front. Buying the cheap one, buying the big one and
  * buying the one with the ore are three different plays.
@@ -36,6 +36,18 @@ import java.util.Random;
  * can save up for the expensive one without it drifting away. Each parcel is
  * generated from its own id, so reloading a save cannot reroll the offers into
  * something better either.
+ *
+ * WHAT THE CITY PAYS IS US DOLLARS (0.7.6)
+ *
+ * Jerus: "when you buy land, make it so that it costs USD not domestic
+ * currency". The world sells the city its ground, as it always implicitly
+ * did, and is paid in its own money: the base and the premiums are dollar
+ * figures now, a parcel's DOLLAR price is what is frozen at listing, and
+ * what the treasury pays is that times the rate on the day it buys
+ * (LandParcel.localPrice(), Game.buyLandParcel()). At the founding rate of
+ * 1.00 every number is what it was. What BUSINESSES pay the city stays local
+ * money and is struck exactly as before (basePricePerSqFt), and a currency
+ * reform no longer touches the listing (redenominate()).
  */
 public class LandMarket {
 
@@ -56,14 +68,28 @@ public class LandMarket {
     /* ------------------------- what the city pays ------------------------- */
 
     /**
-     * Ground price per square foot before any premium, in thousands.
+     * Ground price per square foot before any premium, in thousands of US dollars.
      *
      * $0.70/sq ft, which is exactly what a block cost before parcels existed
      * ($70,000 for 100,000 sq ft). The opening of the game should feel the same.
+     *
+     * IN THE WORLD'S MONEY SINCE 0.7.6: the seller is outside the city and is
+     * paid in dollars, so no reform reaches this - like every foreign price
+     * (Denomination) - and at the founding rate of 1.00 it is the $0.70 it was.
      */
     private static final double BASE_PRICE_PER_SQ_FT = .0007;
 
-    /** The same, in today's money - reformed with every other price. */
+    /**
+     * The same base in LOCAL money, reformed with every other price - what
+     * the inside price is struck from, and nothing else.
+     *
+     * WHAT BUSINESSES PAY STAYS LOCAL MONEY (0.7.6), struck exactly as it
+     * was: this base, the premiums, the scarcity. The rate does not reach it -
+     * a developer inside the city does not care what the city paid the world
+     * for the ground (what businesses pay, below) - so a fallen currency makes
+     * the city's purchases dear without making its sales dearer, and the
+     * margin (LandManager.getMarginPerSqFt()) carries the difference.
+     */
     private double basePricePerSqFt = BASE_PRICE_PER_SQ_FT;
 
     /* ------------- THE TWO PREMIUMS ADD, THEY DO NOT MULTIPLY -------------
@@ -125,7 +151,7 @@ public class LandMarket {
     private static final double PREMIUM_PER_1000_PEOPLE = .05;
 
     /**
-     * What the seller charges for the ore, per tonne in the ground, in thousands.
+     * What the seller charges for the ore, per tonne in the ground, in thousands of US dollars.
      *
      * $0.40 a tonne against an export price of $320 a tonne, so the ground is
      * changing hands at about a thousandth of what is under it. That sounds
@@ -133,11 +159,11 @@ public class LandMarket {
      * deposit costs $1.2M, and a mine feeding local mills clears about $62k a
      * month, so the ground is roughly a year and a half of the mine's profit.
      * Expensive enough to be a decision, cheap enough to be a good one.
+     *
+     * A dollar price since 0.7.6, like the ground's, and for the same reason
+     * no longer reformed: the per-reform copy that stood beside it went with it.
      */
     private static final double IRON_PRICE_PER_TONNE = .0004;
-
-    /** The same, in today's money. */
-    private double ironPricePerTonne = IRON_PRICE_PER_TONNE;
 
     /**
      * Land a single mine occupies, and therefore the room one deposit needs.
@@ -258,8 +284,19 @@ public class LandMarket {
     private final List<LandParcel> listing = new ArrayList<>();
     private int nextId = 1;
 
-    /** Ground price per square foot right now, before any parcel's ore premium. */
+    /**
+     * Ground price per square foot right now, before any parcel's ore premium,
+     * in LOCAL money at the founding rate - the anchor the inside price is
+     * struck from (basePricePerSqFt), and since 0.7.6 nothing else.
+     */
     private double marketPricePerSqFt = BASE_PRICE_PER_SQ_FT;
+
+    /**
+     * ...and what the world asks for the same ground, in thousands of US
+     * dollars (0.7.6): every parcel listed from now on is priced off this, and
+     * it is the figure the history keeps as landPrice.
+     */
+    private double groundUsdPerSqFt = BASE_PRICE_PER_SQ_FT;
 
     /** What businesses are charged. Derived, not set. */
     private double salePricePerSqFt = BASE_PRICE_PER_SQ_FT * SCARCITY_FLOOR;
@@ -284,9 +321,13 @@ public class LandMarket {
                 (ownedSqFt - LandManager.STARTING_SQ_FT) / LandManager.BLOCK_SQ_FT);
 
         // ADDED, not multiplied. See THE TWO PREMIUMS ADD above.
-        marketPricePerSqFt = basePricePerSqFt
-                * (1 + PREMIUM_PER_BLOCK_OWNED * blocksOwned
-                     + PREMIUM_PER_1000_PEOPLE * population / 1000.0);
+        double premiums = 1 + PREMIUM_PER_BLOCK_OWNED * blocksOwned
+                            + PREMIUM_PER_1000_PEOPLE * population / 1000.0;
+        // The same premiums on both bases: the world's price in dollars, which
+        // the listing is priced from, and the local anchor the inside price
+        // is struck from. Equal at the founding rate and unit.
+        groundUsdPerSqFt   = BASE_PRICE_PER_SQ_FT * premiums;
+        marketPricePerSqFt = basePricePerSqFt * premiums;
 
         // The floor under every plot listed from now on. Existing listings keep
         // the size they were listed at, exactly as they keep their price.
@@ -339,8 +380,15 @@ public class LandMarket {
                 * (pressure / (pressure + SCARCITY_MIDPOINT));
     }
 
-    /** Ground price per square foot the city would pay today, in thousands. */
+    /**
+     * The inside price's anchor: the ground price per square foot in local
+     * money at the founding rate, in thousands. Not what the city pays since
+     * 0.7.6 - that is getGroundUsdPerSqFt() at today's rate.
+     */
     public double getMarketPricePerSqFt() { return marketPricePerSqFt; }
+
+    /** Ground price per square foot the world asks today, in thousands of US dollars (0.7.6). */
+    public double getGroundUsdPerSqFt()   { return groundUsdPerSqFt; }
 
     /** What a business pays the city per square foot, in thousands. */
     public double getSalePricePerSqFt()   { return salePricePerSqFt; }
@@ -351,7 +399,8 @@ public class LandMarket {
        Deterministic in the id, so parcel 47 is the same plot in every session
        and in every reload of the same session. The market price is NOT part of
        that determinism - it is applied at listing time and then frozen into the
-       parcel, which is why what is listed stays listed.
+       parcel, which is why what is listed stays listed. In US dollars since
+       0.7.6: the rate the city will pay it at is the day's, not the listing's.
        =================================================================== */
 
     private LandParcel generate(int id) {
@@ -362,14 +411,14 @@ public class LandMarket {
         int deposits = rollDeposits(random, sizeSqFt);
         double ironTonnes = rollTonnes(random, deposits);
 
-        double price = sizeSqFt * marketPricePerSqFt
-                + ironTonnes * ironPricePerTonne;
+        double priceUsd = sizeSqFt * groundUsdPerSqFt
+                + ironTonnes * IRON_PRICE_PER_TONNE;
 
         // Round to something a player can read. Nobody wants to compare
-        // $103,847 against $98,211.
-        price = Math.round(price / 5) * 5.0;
+        // US$103,847 against US$98,211.
+        priceUsd = Math.round(priceUsd / 5) * 5.0;
 
-        return new LandParcel(id, sizeSqFt, price, ironTonnes, deposits);
+        return new LandParcel(id, sizeSqFt, priceUsd, ironTonnes, deposits);
     }
 
     /**
@@ -490,7 +539,7 @@ public class LandMarket {
     public LandParcel cheapest() {
         LandParcel best = null;
         for (LandParcel parcel : listing) {
-            if (best == null || parcel.getPrice() < best.getPrice()) {
+            if (best == null || parcel.getPriceUsd() < best.getPriceUsd()) {
                 best = parcel;
             }
         }
@@ -502,7 +551,7 @@ public class LandMarket {
         LandParcel best = null;
         for (LandParcel parcel : listing) {
             if (parcel.hasIron()) continue;
-            if (best == null || parcel.getPricePerSqFt() < best.getPricePerSqFt()) {
+            if (best == null || parcel.getUsdPerSqFt() < best.getUsdPerSqFt()) {
                 best = parcel;
             }
         }
@@ -549,7 +598,8 @@ public class LandMarket {
     private static final int FIELDS_PER_PARCEL = 5;
 
     /**
-     * Marks a listing written with deposit counts, and says how wide it is.
+     * Marks a listing written with deposit counts, and says how wide it is -
+     * in LOCAL money, as every listing was until 0.7.6 (USD_LISTING_MARKER).
      *
      * WHY A MARKER RATHER THAN ARITHMETIC. The obvious test is "does the payload
      * divide by five or by four", and it is wrong: a full ten-parcel listing in
@@ -563,17 +613,35 @@ public class LandMarket {
      */
     private static final double LISTING_FORMAT_MARKER = -FIELDS_PER_PARCEL;
 
+    /**
+     * Marks a listing whose prices are US DOLLARS (0.7.6), as wide as the one
+     * before it. A marker rather than a stamp elsewhere in the save, for the
+     * reason the first one is: the array says what it is. Anything carrying
+     * LISTING_FORMAT_MARKER, or no marker at all, was written in local money.
+     */
+    private static final double USD_LISTING_MARKER = -100 - FIELDS_PER_PARCEL;
+
+    /**
+     * Ids restored from an older listing whose prices are still LOCAL money,
+     * waiting for settleLocalPrices() to read them as dollars at the loading
+     * rate - which the load path has only once the foreign accounts are back.
+     */
+    private final java.util.Set<Integer> localIds = new java.util.HashSet<>();
+
+    /** True when the price state came back without a dollar ground price (an older save). */
+    private boolean groundFromLocal;
+
     public double[] getListingState() {
 
         double[] state = new double[2 + listing.size() * FIELDS_PER_PARCEL];
-        state[0] = LISTING_FORMAT_MARKER;
+        state[0] = USD_LISTING_MARKER;
         state[1] = nextId;
 
         int i = 2;
         for (LandParcel parcel : listing) {
             state[i++] = parcel.getId();
             state[i++] = parcel.getSizeSqFt();
-            state[i++] = parcel.getPrice();
+            state[i++] = parcel.getPriceUsd();
             state[i++] = parcel.getIronTonnes();
             state[i++] = parcel.getDeposits();
         }
@@ -588,13 +656,20 @@ public class LandMarket {
      * assumes. Rejecting it instead would throw away the window a player was
      * saving up against, replacing their awaited tract with ten fresh strangers.
      *
-     * @return false if the array is neither shape; nothing is changed
+     * THREE SHAPES since 0.7.6: the dollar listing this build writes, and
+     * the two older ones, whose prices are LOCAL money. Those are restored as
+     * written and remembered (localIds); settleLocalPrices() reads them as
+     * dollars at the rate of the day the save is loaded, once the load path
+     * has that rate.
+     *
+     * @return false if the array is none of the shapes; nothing is changed
      */
     public boolean restoreListingState(double[] state) {
 
         if (state == null || state.length < 1) return false;
 
-        boolean current = state[0] == LISTING_FORMAT_MARKER;
+        boolean usd = state[0] == USD_LISTING_MARKER;
+        boolean current = usd || state[0] == LISTING_FORMAT_MARKER;
         int width = current ? FIELDS_PER_PARCEL : 4;
         int header = current ? 2 : 1;
 
@@ -602,6 +677,7 @@ public class LandMarket {
         if (payload < 0 || payload % width != 0) return false;
 
         listing.clear();
+        localIds.clear();
         nextId = (int) state[header - 1];    // last header slot is nextId, either way
 
         for (int i = header; i + width - 1 < state.length; i += width) {
@@ -610,12 +686,41 @@ public class LandMarket {
                                      state[i + 3], (int) state[i + 4])
                     : new LandParcel((int) state[i], state[i + 1], state[i + 2],
                                      state[i + 3]));
+            if (!usd) localIds.add((int) state[i]);
         }
         // A save written when the shelf held ten. Trim from the back rather
         // than leaving a tenth card the screen has no room for - see
         // LISTING_SIZE. update() refills if this ever runs the other way.
         while (listing.size() > LISTING_SIZE) listing.remove(listing.size() - 1);
         return true;
+    }
+
+    /**
+     * AN OLDER SAVE'S PRICES WERE LOCAL MONEY, and this reads them as US
+     * dollars at the rate of the day the save is loaded (0.7.6): each listed
+     * parcel's price over the rate, so the local cost the player saw is
+     * exactly what it costs on the day of loading - and from then on it is a
+     * dollar price like any other, dearer as the currency falls. The same for
+     * the office's quote, when the price state came back without a dollar
+     * ground price. Called by the load path once the foreign accounts are
+     * back, and by nothing else; a no-op on a dollar listing.
+     *
+     * @return how many parcels were converted
+     */
+    public int settleLocalPrices(double rate) {
+        if (!(rate > 0) || !Double.isFinite(rate)) rate = ForeignAccounts.OPENING_RATE;
+        int converted = 0;
+        for (int i = 0; i < listing.size(); i++) {
+            LandParcel p = listing.get(i);
+            if (!localIds.contains(p.getId())) continue;
+            listing.set(i, new LandParcel(p.getId(), p.getSizeSqFt(), p.getPriceUsd() / rate,
+                    p.getIronTonnes(), p.getDeposits()));
+            converted++;
+        }
+        localIds.clear();
+        if (groundFromLocal) groundUsdPerSqFt = marketPricePerSqFt / rate;
+        groundFromLocal = false;
+        return converted;
     }
 
     /** Smallest parcel the office is currently willing to sell, in blocks. */
@@ -633,9 +738,13 @@ public class LandMarket {
      * price IS restored - so the margin flipped sign on load, from selling
      * below cost to a comfortable profit. Carried now, beside the listing
      * rather than inside it, so the listing's own format need not move.
+     *
+     * The dollar ground price rides the end since 0.7.6 (slot 3); an older
+     * save has three slots, and its local quote is read as dollars at the
+     * loading rate by settleLocalPrices(), like its listing.
      */
     public double[] getPriceState() {
-        return new double[] { marketPricePerSqFt, salePricePerSqFt, minBlocks };
+        return new double[] { marketPricePerSqFt, salePricePerSqFt, minBlocks, groundUsdPerSqFt };
     }
 
     public void restorePriceState(double[] state) {
@@ -643,38 +752,52 @@ public class LandMarket {
         if (state[0] > 0) marketPricePerSqFt = state[0];
         if (state[1] > 0) salePricePerSqFt = state[1];
         if (state[2] > 0) minBlocks = state[2];
+        if (state.length > 3 && state[3] > 0) {
+            groundUsdPerSqFt = state[3];
+            groundFromLocal = false;
+        } else {
+            groundFromLocal = state[0] > 0;
+        }
     }
 
     public void reset() {
         listing.clear();
+        localIds.clear();
+        groundFromLocal = false;
         nextId = 1;
         minBlocks = MIN_BLOCKS;
         marketPricePerSqFt = basePricePerSqFt;
+        groundUsdPerSqFt = BASE_PRICE_PER_SQ_FT;
         salePricePerSqFt = basePricePerSqFt * SCARCITY_FLOOR;
     }
 
     /**
-     * Land prices in the new unit, and a fresh board at the land office.
+     * The office's LOCAL prices in the new unit - the inside price and the
+     * anchor it is struck from - and nothing else.
      *
-     * The listing is CLEARED rather than repriced because LandParcel is
-     * immutable by design - a plot's price is fixed when it is listed and never
-     * moves, which is the whole point of listing it. update() refills the board
-     * within the month at the new prices, which is exactly what a land office
-     * would do the week the currency changed.
+     * THE LISTING IS LEFT ALONE SINCE 0.7.6. It used to be cleared here:
+     * LandParcel is immutable and its price was local money, so a reform could
+     * not reprice it and threw the board away instead, the tract the player
+     * was saving for with it. Parcels are priced in US dollars now, which no
+     * act of this city's parliament can change (Denomination: foreign prices
+     * are the exception), so the board survives the reform as listed, and
+     * what it costs in local money moves because the RATE was divided. The
+     * dollar ground price and the ore's dollar price stay put for the same
+     * reason.
      */
     public void redenominate(double scale) {
         basePricePerSqFt   *= scale;
-        ironPricePerTonne  *= scale;
         marketPricePerSqFt *= scale;
         salePricePerSqFt   *= scale;
-        listing.clear();
     }
 
 
-    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    /**
+     * Re-seeds the money CONSTANTS at a given unit. See Denomination. The
+     * local anchor only: the dollar base and the ore's price are the world's.
+     */
     public void seedConstants(double unit) {
         basePricePerSqFt  = BASE_PRICE_PER_SQ_FT / unit;
-        ironPricePerTonne = IRON_PRICE_PER_TONNE / unit;
     }
 
 }

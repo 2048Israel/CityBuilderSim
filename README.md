@@ -225,7 +225,8 @@ Everything JavaFX lives there; the launcher stays in the root package because
 the jar's main class is named there. `UserInterface.java` is the window — the
 clock, the rail, the strips, the panels, the dialogs — and every tab is a class
 of its own beside it (`BankScreen`, `PolicyScreen`, ...), with the figures and
-pieces they share in `Money`, `Statement`, `Pieces` and `Levers`. The split was
+pieces they share in `Money`, `Statement`, `Pieces` and `Levers`, and every
+dial on the policy tab drawn by one class, `Ladder` (0.7.6). The split was
 done on 2026-09-18; `splitting-the-interface.md` in the design notes says how.
 
 **The month now arrives on a clock, not on a click.** `UserInterface` runs an

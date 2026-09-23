@@ -90,11 +90,13 @@ public class MoneyCheck {
         assertTrue("a founding city conserves money to within 0.01% of what moved",
                 worst.relative() < 1e-4);
 
-        // Heavy industry and mining need a deposit, which the player buys.
+        // Heavy industry and mining need a deposit, which the player buys -
+        // in dollars since 0.7.6, converting cash at the day's rate, so the
+        // treasury is handed exactly that much local money first.
         LandMarket market = g.getLandManager().getMarket();
         for (LandParcel parcel : market.getListing()) {
             if (parcel.getIronTonnes() > 0) {
-                g.getGovernmentInvestor().spend(-parcel.getPrice());
+                g.getGovernmentInvestor().spend(-parcel.localPrice(g.getForeignAccounts().getRate()));
                 g.buyLandParcel(parcel.getId());
                 break;
             }
@@ -130,6 +132,35 @@ public class MoneyCheck {
         assertTrue("...and it really did carry passengers, so the fare was really charged",
                 g.getInfrastructureManager().getTransitRiders() > 0
                         && g.getEconomyManager().getTransitFares() > 0);
+
+        /* ==================================================================
+           AND LAND PAID FOR OUT OF THE VAULT (0.7.6).
+
+           The deposit above was bought the default way - cash converted at
+           the day's rate - and the 240 months after it closed. The other way
+           moves no local money at all: the vault's dollars go to the seller.
+           THE FIXTURE CAUSES IT: the treasury buys the dollars into the vault
+           first, so the vault can pay whatever the parcel costs, and the
+           parcel is bought with the toggle on.
+           ================================================================== */
+        System.out.println("\n--- land bought out of the vault: nothing moves the audit cannot see ---");
+        LandParcel plot = market.bestValue();
+        double plotUsd = plot.getPriceUsd();
+        g.getGovernmentInvestor().spend(-plot.localPrice(g.getForeignAccounts().getRate()) * 2);
+        g.buyForeignCurrency(plot.localPrice(g.getForeignAccounts().getRate()) * 1.5);
+        double cashBefore = g.getCash();
+        double vaultBefore = g.getForeignAccounts().getReservesUsd();
+        g.setLandPaidFromVault(true);
+        boolean bought = g.buyLandParcel(plot.getId());
+        g.setLandPaidFromVault(false);
+        assertTrue("fixture: the vault paid for a parcel and the treasury's cash did not move",
+                bought && g.getCash() == cashBefore
+                        && Math.abs(vaultBefore - g.getForeignAccounts().getReservesUsd() - plotUsd) < 1e-6);
+        worst = play("after land out of the vault, 24 months", g, 24, verbose);
+        assertTrue("a city that paid for land out of the vault conserves money",
+                worst.relative() < 1e-4);
+        assertTrue("...and nothing moved a pool after any month's audit",
+                Math.abs(worstDrift) < .01);
 
         /* ==================== 2. a city under stress ==================== */
         System.out.println("\n--- broke, banned, taxed and importing: still nothing leaks ---");

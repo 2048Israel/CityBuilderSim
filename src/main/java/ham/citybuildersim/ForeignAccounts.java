@@ -51,9 +51,10 @@ package ham.citybuildersim;
  *
  * THE VAULT is a holding: the US dollars the treasury chose to buy and has
  * not yet sold. The treasury buying and selling moves it (buyReserves(),
- * sellReserves()), and since 0.7.2 the central bank selling it to defend the
- * currency (A DEFENCE THAT SPENDS, at effectivePressure()); it cannot go
- * below zero, and it is KEPT IN DOLLARS -
+ * sellReserves()), since 0.7.2 the central bank selling it to defend the
+ * currency (A DEFENCE THAT SPENDS, at effectivePressure()), and since 0.7.6
+ * the land office paid out of it when the player says so
+ * (spendReservesOnLand()); it cannot go below zero, and it is KEPT IN DOLLARS -
  * reservesUsd - so everything local about it, what it is worth, what can be
  * sold, the import cover and the net position, is those dollars at today's
  * rate. When the currency moves the dollars stay put, and the move in their
@@ -842,8 +843,9 @@ public class ForeignAccounts {
        THE VAULT. What the treasury actually holds in foreign money and could
        spend this afternoon. It cannot go below zero, because you cannot spend
        currency you do not have, and the only things that move it are the
-       treasury buying and selling and, since 0.7.2, the central bank selling
-       it in a currency's defence. Export earnings do NOT land here - they land
+       treasury buying and selling, since 0.7.2 the central bank selling it
+       in a currency's defence, and since 0.7.6 land paid for out of it.
+       Export earnings do NOT land here - they land
        with the firms that earned them, which is why a country with a trade
        surplus can still run out of reserves. This is what import cover is
        measured against and what a currency defence is fought with.
@@ -1248,6 +1250,122 @@ public class ForeignAccounts {
     /** The most the treasury could sell right now, in local money at today's rate. */
     public double sellableReserves() { return Math.max(0, getReserves()); }
 
+    /* ================== THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) ==================
+
+       Jerus: "when you buy land, make it so that it costs USD not domestic
+       currency, and basically how it would work is a little toggle at the top
+       to choose, when you buy land, to use up your USD reserves or to convert
+       cash into usd exactly to buy the land, and the default is that you
+       convert." The seller is the world, and these are the two ways the world
+       is paid (Game.buyLandParcel() chooses, off Game.isLandPaidFromVault()):
+
+       CONVERTING, the default: the treasury buys exactly the dollars the
+       parcel costs at today's rate and hands them straight to the seller, in
+       one movement - buyAndSpendDollarsForLand(). The local cash leaves the
+       city (Game pays it through TreasuryLine.LAND, the land line it always
+       went out on); the vault ends where it began. The two intervention
+       figures a reserve purchase moves - boughtThisMonth and
+       lifetimeIntervention - net to nothing on it, because the dollars were
+       bought and spent in the same breath, and they are the only way a
+       treasury purchase of dollars touches the currency: a reserve
+       transaction is the financing item (MoneyAudit, Scope.RESERVE), so
+       pressure() and monthDeficitUsd() read neither, and buying dollars puts
+       no push on the rate here. Converting for land therefore puts exactly
+       the push a reserve purchase of the same dollars would - none - and the
+       only difference between the two is that the reserve purchase leaves the
+       dollars in the vault, where absorption() can see them. ForeignCheck
+       asserts both halves.
+
+       FROM THE VAULT: the dollars leave reservesUsd and no local money moves
+       - spendReservesOnLand(), a capital transaction like the defence's
+       (sellToDefend()): the vault falls, lifetimeIntervention falls by their
+       local price as a sale's would (the vault is still "what the treasury
+       chose to buy and has not yet sold"), no pool moves and the audit
+       declares nothing. A vault too short for the parcel spends what it has
+       and the caller converts the rest.
+
+       THE MONTH IS THE BUDGET'S, press to press: what the land cost in
+       dollars accumulates as it is bought and is struck by strikeLandMonth()
+       where the government's books strike the land's local cost
+       (Game.strikeGovernmentBooks()), so the Exchange page and the Government
+       tab's land line read the same month as the budget's "Land bought".
+       ========================================================================= */
+
+    /** The month in progress: dollars paid for land, and the part of them that came out of the vault. */
+    private double landUsdOpen, landVaultUsdOpen;
+    /**
+     * ...and their local price on the day, all of it and the vault's part: the
+     * part of the budget's land line bought abroad (the rest of that line is
+     * plots bought back from businesses, in local money), and the part of it
+     * no cash paid.
+     */
+    private double landLocalOpen, landVaultLocalOpen;
+    /** The month struck - what the screens show between two presses. Saved (slots 31-32, 35-36). */
+    private double landUsd, landVaultUsd, landLocal, landVaultLocal;
+    /** ...and since founding (slots 33-34). */
+    private double landUsdLifetime, landVaultUsdLifetime;
+
+    /**
+     * Buys exactly these dollars at today's rate and pays them to the land's
+     * seller, in one movement: the vault is untouched, and nothing a reserve
+     * purchase would leave behind is left (see THE LAND OFFICE IS PAID IN
+     * DOLLARS). The caller pays the local cash.
+     *
+     * @return the local money the dollars cost today
+     */
+    public double buyAndSpendDollarsForLand(double usd) {
+        if (!(usd > 0) || !Double.isFinite(usd) || rate <= 0) return 0;
+        landUsdOpen += usd;
+        landUsdLifetime += usd;
+        landLocalOpen += usd * rate;
+        return usd * rate;
+    }
+
+    /**
+     * Pays the land's seller out of the vault: at most what it holds, and
+     * everything it holds empties it exactly. No local money moves.
+     *
+     * @return the dollars actually paid out of the vault; the caller converts
+     *         whatever this falls short of
+     */
+    public double spendReservesOnLand(double usd) {
+        if (!(usd > 0) || !Double.isFinite(usd) || reservesUsd <= 0 || rate <= 0) return 0;
+        double spent = Math.min(usd, reservesUsd);
+        reservesUsd = spent >= reservesUsd ? 0 : reservesUsd - spent;
+        lifetimeIntervention -= spent * rate;
+        landUsdOpen += spent;
+        landVaultUsdOpen += spent;
+        landLocalOpen += spent * rate;
+        landVaultLocalOpen += spent * rate;
+        landUsdLifetime += spent;
+        landVaultUsdLifetime += spent;
+        return spent;
+    }
+
+    /** Strikes the land's month where the government's books strike its local cost. */
+    public void strikeLandMonth() {
+        landUsd = landUsdOpen;
+        landVaultUsd = landVaultUsdOpen;
+        landLocal = landLocalOpen;
+        landVaultLocal = landVaultLocalOpen;
+        landUsdOpen = landVaultUsdOpen = landLocalOpen = landVaultLocalOpen = 0;
+    }
+
+    /** Dollars paid for land in the month last struck, both ways. */
+    public double getLandUsdThisMonth()          { return landUsd; }
+    /** ...of which out of the vault. */
+    public double getLandUsdFromVaultThisMonth() { return landVaultUsd; }
+    /** What the month's land from abroad cost in local money on the day, both ways - the budget's land line less the buybacks. */
+    public double getLandLocalThisMonth()          { return landLocal; }
+    /** ...and the vault's part of it - the part of the budget's land line no cash paid. */
+    public double getLandLocalFromVaultThisMonth() { return landVaultLocal; }
+    /** Dollars paid for land since founding, both ways. */
+    public double getLandUsdLifetime()           { return landUsdLifetime; }
+    /** ...of which out of the vault. */
+    public double getLandUsdFromVaultLifetime()  { return landVaultUsdLifetime; }
+    /** Dollars paid for land since the last strike - the month in progress. */
+    public double getLandUsdPending()            { return landUsdOpen; }
+
     /* ------------------- what the currency did to the vault -------------------
      *
      * THE DEBT'S SHAPE, mirrored rather than reinvented: the dollar stock
@@ -1430,7 +1548,22 @@ public class ForeignAccounts {
                  * city paying nothing over the world in real terms until the
                  * month turned. An older save reads nothing, as it always did.
                  */
-                realRateDifferential, localInflation, worldInflation };
+                realRateDifferential, localInflation, worldInflation,
+                /*
+                 * ...AND THE LAND'S DOLLARS, slots 31-34 (0.7.6): the month
+                 * struck - both ways, and out of the vault - and the same
+                 * since founding. The month is the one the Exchange page and
+                 * the Government tab show between two presses. The month in
+                 * progress is NOT carried: the budget's own land line
+                 * (LandManager's month) is cleared on load, and the dollars
+                 * follow it so the two cannot disagree. An older save reads
+                 * as land never bought in dollars.
+                 */
+                landUsd, landVaultUsd, landUsdLifetime, landVaultUsdLifetime,
+                // ...and the vault's part at its local price, slot 35, and
+                // all of it, slot 36: the Government tab splits the budget's
+                // land line with them.
+                landVaultLocal, landLocal };
     }
 
     public void restore(double[] saved) {
@@ -1496,6 +1629,16 @@ public class ForeignAccounts {
             localInflation = Double.isFinite(saved[29]) ? saved[29] : 0;
             worldInflation = Double.isFinite(saved[30]) ? saved[30] : 0;
         }
+        if (saved.length > 34) {
+            landUsd = Math.max(0, saved[31]);
+            landVaultUsd = Math.max(0, saved[32]);
+            landUsdLifetime = Math.max(0, saved[33]);
+            landVaultUsdLifetime = Math.max(0, saved[34]);
+        }
+        if (saved.length > 36) {
+            landVaultLocal = Math.max(0, saved[35]);
+            landLocal = Math.max(0, saved[36]);
+        }
     }
 
     public void reset() {
@@ -1525,6 +1668,9 @@ public class ForeignAccounts {
         repudiated = 0;
         lifetimeIntervention = 0;
         defenceUsd = defenceLocal = defenceUsdLifetime = 0;
+        landUsdOpen = landVaultUsdOpen = landUsd = landVaultUsd = 0;
+        landLocalOpen = landVaultLocalOpen = landLocal = landVaultLocal = 0;
+        landUsdLifetime = landVaultUsdLifetime = 0;
         /*
          * ...AND THE THREE THE MONTH RE-STRIKES (0.7.1). The rate differential
          * and the two inflation rates are set every month before the currency
@@ -1554,7 +1700,8 @@ public class ForeignAccounts {
      * translation, moves because the RATE moved). The vault's dollars likewise
      * (2026-09-21): its local value is those dollars at the rate, and the rate
      * has already been divided - scaling both would divide it twice; so too
-     * the dollars the defence sold (0.7.2), while the local money they fetched
+     * the dollars the defence sold (0.7.2) and the dollars paid for land
+     * (0.7.6), while the local money the one fetched and the other cost
      * moves. Nor openness, absorption, pressure, the inflation rates or the
      * real rate differential - all ratios.
      *
@@ -1601,6 +1748,10 @@ public class ForeignAccounts {
         boughtThisMonth *= scale;
         soldThisMonth   *= scale;
         defenceLocal    *= scale;   // the dollars do not move; what they fetched is local money
+        landLocalOpen      *= scale;   // ...and the same for what the land cost here (0.7.6)
+        landVaultLocalOpen *= scale;
+        landLocal          *= scale;
+        landVaultLocal     *= scale;
     }
 
 }

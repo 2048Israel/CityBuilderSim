@@ -65,9 +65,10 @@ public final class YearBook {
        THE RULES
 
        One entry per series HistorySave keeps. The dynamic families - crime
-       by cause, households by shape, the share registers - are matched by
-       prefix, because their keys are made from enum names and company names
-       at runtime and cannot be listed here.
+       by cause, households by shape, the share registers, and each sector's
+       net income and workers (0.7.4) - are matched by prefix, because their
+       keys are made from enum names and company names at runtime and cannot
+       be listed here.
        ================================================================== */
 
     /**
@@ -86,6 +87,10 @@ public final class YearBook {
 
         /* ---- flows: a figure FOR the month, so a row is the sum ---- */
         flow(m, "gdp", "GDP by expenditure, C+I+G+NX, in thousands");
+        flow(m, "consumption", "C, the households' final purchases - the shops' sales and the rent - in thousands");
+        flow(m, "investment", "I, construction work done plus the change in stock, in thousands");
+        flow(m, "government", "G, government consumption - what the city's own services cost to provide, in thousands");
+        flow(m, "netExports", "NX, exports less imports - negative when the city imports more, in thousands");
         flow(m, "revenue", "every government receipt, in thousands");
         flow(m, "surplus", "revenue less spending - negative is a deficit, in thousands");
         flow(m, "births", "people born");
@@ -175,7 +180,7 @@ public final class YearBook {
         rate(m, "sickRate", "share of the workforce off sick");
         rate(m, "careCoverage", "general-care coverage");
         rate(m, "sickRecovery", "share of the long sick who got better");
-        rate(m, "landPrice", "what the city pays for land, per square foot in thousands");
+        rate(m, "landPrice", "what the world asks the city for ground, per square foot in thousands of US dollars since 0.7.6 (local money before)");
         rate(m, "foodPrice", "food, per unit in thousands");
         rate(m, "materialsPrice", "construction material, per unit in thousands");
         rate(m, "orePrice", "iron ore at the export floor, per tonne in thousands");
@@ -208,6 +213,8 @@ public final class YearBook {
         m.put("households:", new Rule(Kind.LEVEL, "households of that shape standing"));
         m.put(HistorySave.priceKey(""), new Rule(Kind.RATE, "the dealer's quote per founding share, in thousands"));
         m.put(HistorySave.valueKey(""), new Rule(Kind.RATE, "fair value per founding share, in thousands"));
+        m.put(HistorySave.netIncomeKey(""), new Rule(Kind.FLOW, "that sector's net income after tax - negative is a loss, in thousands"));
+        m.put(HistorySave.workersKey(""), new Rule(Kind.LEVEL, "that sector's posts filled - the people it employs"));
         return m;
     }
 
@@ -370,11 +377,118 @@ public final class YearBook {
         return out;
     }
 
+    /**
+     * Output in FOUNDING money, a month at a time: nominal GDP over the price
+     * index.
+     *
+     * Jerus, 2026-09-14: "for the graphs, i want real gdp, aka a graph that
+     * shows inflation adjusted gdp." Nominal GDP rises when the city makes
+     * more AND when the same things cost more, and those are opposite news.
+     * Divided by the INDEX rather than deflated month by month, because the
+     * index is already a ratio to the founding basket - so this comes out in
+     * the same money every other founding-money figure is quoted in, and is
+     * comparable across a currency reform for the same reason the index is.
+     *
+     * Struck here once (0.7.5) for the book's column, the Reports chart's
+     * line and the recession test, which had been two copies of one division.
+     */
+    public static double[] realGdp(HistorySave h) {
+        return real(h, "gdp");
+    }
+
+    /**
+     * ...and a rolling YEAR of it, which is what the Reports page draws and
+     * what a recession is read off.
+     *
+     * Jerus, 2026-09-14: "make real gdp a rolling figure, not the monthly
+     * snapshot." A single month of this city's output is mostly noise - one
+     * mine opening, one mill shedding a shift - and twelve months summed is
+     * what an economy's output actually means. Summed rather than averaged,
+     * so the number IS a year of output.
+     *
+     * NaN until there are twelve months behind it, deliberately: a "year"
+     * drawn from seven months is not a year, and a line that starts low and
+     * climbs for its first year would look like growth that never happened.
+     * A NaN inside the window poisons that window and nothing else.
+     */
+    public static double[] realGdpYear(HistorySave h) {
+        return rollingYear(realGdp(h));
+    }
+
+    /** Twelve months summed, ending at each month; NaN before the twelfth, and wherever the window holds a NaN. */
+    private static double[] rollingYear(double[] monthly) {
+        double[] out = new double[monthly.length];
+        for (int i = 0; i < monthly.length; i++) {
+            if (i + 1 < MONTHS_A_YEAR) { out[i] = Double.NaN; continue; }
+            double sum = 0;
+            boolean clean = true;
+            for (int k = i - MONTHS_A_YEAR + 1; k <= i; k++) {
+                if (Double.isNaN(monthly[k])) { clean = false; break; }
+                sum += monthly[k];
+            }
+            out[i] = clean ? sum : Double.NaN;
+        }
+        return out;
+    }
+
+    /**
+     * Any money series in FOUNDING money, a month at a time: divided by the
+     * price index the way realGdp() is, so GDP's four parts and GDP itself
+     * are the same money and the layers under the line add up to it. NaN
+     * where either is not recorded, or the index is not positive.
+     *
+     * GDP IN LAYERS (0.7.6). Jerus: "breaking it down" - the Reports page's
+     * real GDP drawn as what it is made of. The four parts are history
+     * series of their own now (HistorySave, GDP in layers), and this and
+     * realYear() put them in the same money as the line: deflated as
+     * realGdp() is, summed as realGdpYear() is.
+     */
+    public static double[] real(HistorySave h, String key) {
+        double[] nominal = h.aligned(key), index = h.aligned("priceIndex");
+        double[] out = new double[nominal.length];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = index[i] > 0 ? nominal[i] / index[i] : Double.NaN;
+        }
+        return out;
+    }
+
+    /**
+     * GDP's four parts, as HistorySave names them (0.7.6): C, I, G and NX, in
+     * the order they stack. Their sum is "gdp" for the month, to the cent.
+     */
+    public static final String[] GDP_PARTS = { "consumption", "investment", "government", "netExports" };
+
+    /**
+     * ...and a rolling YEAR of one of them in founding money (0.7.6), summed
+     * as realGdpYear() is - so a year of consumption, investment, government
+     * and net exports adds up to the year of real GDP it is part of. NaN
+     * until twelve months of it are behind the month, which on a save from
+     * before the parts were kept is twelve months after it first played one.
+     */
+    public static double[] realYear(HistorySave h, String key) {
+        return rollingYear(real(h, key));
+    }
+
+    /**
+     * Inflation YEAR ON YEAR - the price index against its own reading twelve
+     * months earlier, the window PriceIndex uses. A month of this game holds a
+     * harvest and a shipping bill, and the month-on-month rate is mostly
+     * those. The first twelve months have no reading rather than a made-up
+     * zero. The book's column and the chart's line, struck once (0.7.5).
+     */
+    public static double[] inflation(HistorySave h) {
+        double[] index = h.aligned("priceIndex");
+        double[] out = new double[index.length];
+        for (int i = 0; i < out.length; i++) {
+            double then = i >= MONTHS_A_YEAR ? index[i - MONTHS_A_YEAR] : Double.NaN;
+            out[i] = then > 0 ? index[i] / then - 1 : Double.NaN;
+        }
+        return out;
+    }
+
     private static List<Column> columns(HistorySave h) {
         List<Column> out = new ArrayList<>();
 
-        double[] gdp       = h.aligned("gdp");
-        double[] index     = h.aligned("priceIndex");
         double[] arrivals  = h.aligned("arrivals");
         double[] leavers   = h.aligned("departures");
         double[] exports   = h.aligned("exportsAbroad");
@@ -392,19 +506,10 @@ public final class YearBook {
         out.add(new Column("labourForce", Kind.LEVEL, labourForce(h),
                 "people available to work - the workforce less the students and the prisoners"));
 
-        double[] realGdp = new double[n];
-        for (int i = 0; i < n; i++) {
-            realGdp[i] = index[i] > 0 ? gdp[i] / index[i] : Double.NaN;
-        }
-        out.add(new Column("realGdp", Kind.FLOW, realGdp,
+        out.add(new Column("realGdp", Kind.FLOW, realGdp(h),
                 "output in FOUNDING money - nominal GDP divided by the price index"));
 
-        double[] inflation = new double[n];
-        for (int i = 0; i < n; i++) {
-            double then = i >= MONTHS_A_YEAR ? index[i - MONTHS_A_YEAR] : Double.NaN;
-            inflation[i] = then > 0 ? index[i] / then - 1 : Double.NaN;
-        }
-        out.add(new Column("inflation", Kind.RATE, inflation,
+        out.add(new Column("inflation", Kind.RATE, inflation(h),
                 "the price index against its own reading twelve months earlier"));
 
         double[] netMigration = new double[n];
@@ -588,7 +693,7 @@ public final class YearBook {
             }
         }
 
-        out.append('\n').append(episodes(history, cols));
+        out.append('\n').append(whatHappened(history, cols));
         return out.toString();
     }
 
@@ -607,7 +712,7 @@ public final class YearBook {
        an analyst reads first.
        ================================================================== */
 
-    private static String episodes(HistorySave h, List<Column> cols) {
+    private static String whatHappened(HistorySave h, List<Column> cols) {
         StringBuilder out = new StringBuilder();
         Map<String, double[]> by = new LinkedHashMap<>();
         for (Column c : cols) by.put(c.name, c.monthly);
@@ -682,31 +787,51 @@ public final class YearBook {
         spell(out, "  The treasury ", by.get("cash"), axis, v -> v < 0, "overdrawn", false, true);
         spell(out, "  Crime        ", by.get("caughtNotHeld"), axis, v -> v > 0, "caught and let go for want of a cell", true, false);
 
+        // The named episodes - the same list the Reports page marks under its
+        // chart, so the file and the chart agree about what to call a year.
+        String label = "  Named        ";
+        for (Episode e : episodes(h)) {
+            out.append(label).append(e.name()).append(" - months ")
+               .append(e.fromMonth()).append('-').append(e.toMonth()).append('\n');
+            label = "               ";
+        }
+
         return out.toString();
     }
 
     /** A condition, how many months met it, where they were, and its worst reading. */
     private interface Test { boolean holds(double v); }
 
-    private static void spell(StringBuilder out, String label, double[] series, List<Integer> axis,
-                              Test test, String what, boolean worstIsHigh, boolean worstIsLow) {
-        if (series == null || !hasAny(series)) return;
+    /** Index ranges {first, last} of every unbroken run of months where the test held. */
+    private static List<int[]> runsOf(double[] series, Test test) {
         List<int[]> runs = new ArrayList<>();
-        int startIndex = -1, count = 0;
-        double extreme = Double.NaN; int extremeAt = -1;
+        int startIndex = -1;
         for (int i = 0; i < series.length; i++) {
             boolean in = !Double.isNaN(series[i]) && test.holds(series[i]);
             if (in) {
-                count++;
                 if (startIndex < 0) startIndex = i;
-                boolean better = Double.isNaN(extreme)
-                        || (worstIsLow ? series[i] < extreme : series[i] > extreme);
-                if (better) { extreme = series[i]; extremeAt = i; }
             } else if (startIndex >= 0) {
                 runs.add(new int[]{startIndex, i - 1}); startIndex = -1;
             }
         }
         if (startIndex >= 0) runs.add(new int[]{startIndex, series.length - 1});
+        return runs;
+    }
+
+    private static void spell(StringBuilder out, String label, double[] series, List<Integer> axis,
+                              Test test, String what, boolean worstIsHigh, boolean worstIsLow) {
+        if (series == null || !hasAny(series)) return;
+        List<int[]> runs = runsOf(series, test);
+        int count = 0;
+        double extreme = Double.NaN; int extremeAt = -1;
+        for (int[] r : runs) {
+            for (int i = r[0]; i <= r[1]; i++) {
+                count++;
+                boolean better = Double.isNaN(extreme)
+                        || (worstIsLow ? series[i] < extreme : series[i] > extreme);
+                if (better) { extreme = series[i]; extremeAt = i; }
+            }
+        }
         if (count == 0) return;
 
         out.append(label).append(what).append(" in ").append(count)
@@ -729,6 +854,165 @@ public final class YearBook {
             shown++;
         }
         return s.toString();
+    }
+
+    /* ==================================================================
+       THE NAMED EPISODES (0.7.5)
+
+       Jerus, 2026-09-23, on the Reports page: "event marks, if you think
+       that's doable and accurate go for it, perhaps a little name generator
+       if that isn't too hard, for example, if banks failed then 'financial
+       crisis of 2045', or whatever you think is appropriate".
+
+       ACCURATE decides where this lives. An episode is a run of months in
+       which a condition held, read off the saved series - nothing else the
+       game keeps can say when a crisis began and ended, and the notices of
+       2045 were never kept. So it is a pure function of the history, here
+       beside the spells the book already lists, and the Reports page's marks
+       and the book's "Named" lines are one list rather than two that could
+       disagree.
+
+       THE RUNS ARE DROPPED BEFORE THEY ARE JOINED. A run under
+       EPISODE_MIN_MONTHS is noise and goes first; what survives is joined
+       across any relief shorter than EPISODE_JOIN_MONTHS. The other order
+       would let two one-month blips five months apart become an episode that
+       starts at a month the chart does not shade, and the point of the marks
+       is that each one sits at the start of something visible.
+       ================================================================== */
+
+    /** A run shorter than this many months is noise, and is not named - or shaded on the chart. */
+    public static final int EPISODE_MIN_MONTHS = 3;
+
+    /** Two runs with fewer months of relief than this between them are one episode. */
+    public static final int EPISODE_JOIN_MONTHS = 6;
+
+    /** A recession this many months long, or longer, is called a depression. */
+    public static final int DEPRESSION_MONTHS = 24;
+
+    /**
+     * One named stretch of the city's life.
+     *
+     * @param kind      which condition held: financial, recession, depression,
+     *                  currency, inflation, deflation, epidemic, treasury, slump
+     * @param name      what a reader calls it - "Financial crisis of 2045"
+     * @param fromMonth the first month it held, on the history's own axis
+     * @param toMonth   the last month of the episode, relief inside it included
+     * @param worst     the tested series at its worst inside the episode, in
+     *                  that series' own terms (bank equity in thousands, a
+     *                  year-on-year fall as a fraction, an exchange rate's
+     *                  multiple of a year before, a rate as a fraction)
+     */
+    public record Episode(String kind, String name, int fromMonth, int toMonth, double worst) { }
+
+    /**
+     * Every named episode in a history, oldest first.
+     *
+     * THE TABLE IS THE GENERATOR. Jerus asked for the names; each row is a
+     * condition, the series it is read off, which way is worse, and what a
+     * reader would call a run of it, with the year the run began. Two of a
+     * name are told apart by ", again" rather than by a number nobody reads.
+     */
+    public static List<Episode> episodes(HistorySave h) {
+        List<Episode> found = new ArrayList<>();
+        if (h.months() < 1) return found;
+        List<Integer> axis = h.getMonth();
+        double[] inflation = inflation(h);
+
+        //    kind          the series                       the condition      worst is  the name
+        named(found, axis, "financial", h.aligned("bankEquity"), v -> v < 0,     false, "Financial crisis of %d");
+        named(found, axis, "recession", realGrowth(h),           v -> v < 0,     false, "Recession of %d");
+        named(found, axis, "currency",  currencyMove(h),         v -> v > 2,     true,  "Currency crisis of %d");
+        named(found, axis, "inflation", inflation,               v -> v > .25,   true,  "The %d inflation");
+        named(found, axis, "deflation", inflation,               v -> v < -.10,  false, "The %d deflation");
+        named(found, axis, "epidemic",  h.aligned("sickRate"),   v -> v > .10,   true,  "Epidemic of %d");
+        named(found, axis, "treasury",  h.aligned("cash"),       v -> v < 0,     false, "Treasury crisis of %d");
+        named(found, axis, "slump",     unemployment(h),         v -> v > .20,   true,  "The %d slump");
+
+        // A recession that ran two years is a depression, and is called one.
+        for (int i = 0; i < found.size(); i++) {
+            Episode e = found.get(i);
+            if (e.kind().equals("recession") && e.toMonth() - e.fromMonth() + 1 >= DEPRESSION_MONTHS) {
+                found.set(i, new Episode("depression",
+                        String.format(Locale.ROOT, "Depression of %d", CityCalendar.yearOf(e.fromMonth())),
+                        e.fromMonth(), e.toMonth(), e.worst()));
+            }
+        }
+
+        // Oldest first - a stable sort, so two that began the same month keep the table's order.
+        found.sort((a, b) -> Integer.compare(a.fromMonth(), b.fromMonth()));
+
+        // The second of a name in one year is "..., again".
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (int i = 0; i < found.size(); i++) {
+            Episode e = found.get(i);
+            if (!seen.add(e.name())) {
+                found.set(i, new Episode(e.kind(), e.name() + ", again",
+                        e.fromMonth(), e.toMonth(), e.worst()));
+            }
+        }
+        return found;
+    }
+
+    /**
+     * The months to shade on a chart as recession, as {firstMonth, lastMonth}
+     * on the history's axis: every run where the rolling year of real output
+     * was below the year before it, of at least EPISODE_MIN_MONTHS - NOT
+     * joined, because a band is the months themselves and the relief between
+     * two is worth seeing. Each recession episode starts where one of these
+     * does.
+     */
+    public static List<int[]> recessions(HistorySave h) {
+        List<int[]> out = new ArrayList<>();
+        List<Integer> axis = h.getMonth();
+        for (int[] r : runsOf(realGrowth(h), v -> v < 0)) {
+            if (r[1] - r[0] + 1 >= EPISODE_MIN_MONTHS) out.add(new int[]{axis.get(r[0]), axis.get(r[1])});
+        }
+        return out;
+    }
+
+    /** The rolling year of real output against the year before it, as a fraction. */
+    private static double[] realGrowth(HistorySave h) {
+        double[] year = realGdpYear(h);
+        double[] out = new double[year.length];
+        for (int i = 0; i < out.length; i++) {
+            double then = i >= MONTHS_A_YEAR ? year[i - MONTHS_A_YEAR] : Double.NaN;
+            out[i] = then > 0 ? year[i] / then - 1 : Double.NaN;
+        }
+        return out;
+    }
+
+    /** The exchange rate as a multiple of itself a year before - above 2 is a currency that halved. */
+    private static double[] currencyMove(HistorySave h) {
+        double[] fx = h.aligned("fxRate");
+        double[] out = new double[fx.length];
+        for (int i = 0; i < out.length; i++) {
+            double then = i >= MONTHS_A_YEAR ? fx[i - MONTHS_A_YEAR] : Double.NaN;
+            out[i] = then > 0 ? fx[i] / then : Double.NaN;
+        }
+        return out;
+    }
+
+    /** One row of the table: the runs of a condition, dropped, joined and named. */
+    private static void named(List<Episode> found, List<Integer> axis, String kind, double[] series,
+                              Test test, boolean worstIsHigh, String name) {
+        List<int[]> joined = new ArrayList<>();
+        for (int[] r : runsOf(series, test)) {
+            if (r[1] - r[0] + 1 < EPISODE_MIN_MONTHS) continue;
+            int[] last = joined.isEmpty() ? null : joined.get(joined.size() - 1);
+            if (last != null && r[0] - last[1] - 1 < EPISODE_JOIN_MONTHS) last[1] = r[1];
+            else joined.add(new int[]{r[0], r[1]});
+        }
+        for (int[] r : joined) {
+            double worst = Double.NaN;
+            for (int i = r[0]; i <= r[1]; i++) {
+                double v = series[i];
+                if (Double.isNaN(v) || !test.holds(v)) continue;
+                if (Double.isNaN(worst) || (worstIsHigh ? v > worst : v < worst)) worst = v;
+            }
+            int from = axis.get(r[0]);
+            found.add(new Episode(kind, String.format(Locale.ROOT, name, CityCalendar.yearOf(from)),
+                    from, axis.get(r[1]), worst));
+        }
     }
 
     /* ---------------------------- small helpers ---------------------------- */

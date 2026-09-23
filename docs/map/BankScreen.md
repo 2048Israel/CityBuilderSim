@@ -1,6 +1,6 @@
-# BankScreen.java - 1,665 lines · 23 methods · 7 constants · interface
+# BankScreen.java - 1,670 lines · 23 methods · 7 constants · interface
 
-`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > The bank tab: the gauge, the two limits, another branch, who owes it, where
 > the money comes from, the books, the rescue, and its history.
@@ -49,12 +49,12 @@
 | 1194 | THE BOOKS |
 | 1205 | · · interest, opened by borrower |
 | 1325 | · · the margin |
-| 1346 | · (untitled) |
-| 1391 | · · and how equity moved |
-| 1450 | · AND IF IT FAILED |
-| 1465 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
-| 1537 | ITS HISTORY |
-| 1620 | · · how long it has hurt |
+| 1351 | · (untitled) |
+| 1396 | · · and how equity moved |
+| 1455 | · AND IF IT FAILED |
+| 1470 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
+| 1542 | ITS HISTORY |
+| 1625 | · · how long it has hurt |
 
 ## Constants
 
@@ -80,7 +80,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 1636 | **type** `final class BankScreen` | The bank tab: the gauge, the two limits, another branch, who owes it, where the money comes from, the books, the rescue, and its history. |
+| 30 | 1641 | **type** `final class BankScreen` | The bank tab: the gauge, the two limits, another branch, who owes it, where the money comes from, the books, the rescue, and its history. |
 | 35 | 1 | `BankScreen(UserInterface ui)` |  |
 
 ### THE BANK (lines 37-266)
@@ -143,30 +143,30 @@
 |---:|---:|---|---|
 | 1140 | 53 | `void bankFundingPage(VBox column)` |  |
 
-### THE BOOKS (lines 1194-1345)
+### THE BOOKS (lines 1194-1350)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1198 | 147 | `void bankIncomePage(VBox column)` |  |
+| 1198 | 152 | `void bankIncomePage(VBox column)` |  |
 
-### (untitled) (lines 1346-1464)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1348 | 116 | `void bankBalancePage(VBox column)` |  |
-
-### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 1465-1536)
+### (untitled) (lines 1351-1469)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1485 | 51 | `VBox bankRescue()` |  |
+| 1353 | 116 | `void bankBalancePage(VBox column)` |  |
 
-### ITS HISTORY (lines 1537-1665)
+### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 1470-1541)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1553 | 19 | `void bankHistoryPage(VBox column, String page)` |  |
-| 1573 | 23 | `void bankLendingHistory(VBox column, HistorySave h)` |  |
-| 1597 | 37 | `void bankStrainHistory(VBox column, HistorySave h)` |  |
-| 1635 | 30 | `void bankCapitalHistory(VBox column, HistorySave h)` |  |
+| 1490 | 51 | `VBox bankRescue()` |  |
+
+### ITS HISTORY (lines 1542-1670)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1558 | 19 | `void bankHistoryPage(VBox column, String page)` |  |
+| 1578 | 23 | `void bankLendingHistory(VBox column, HistorySave h)` |  |
+| 1602 | 37 | `void bankStrainHistory(VBox column, HistorySave h)` |  |
+| 1640 | 30 | `void bankCapitalHistory(VBox column, HistorySave h)` |  |
 

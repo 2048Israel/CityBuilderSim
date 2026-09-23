@@ -14,8 +14,8 @@ requirement.
 
 ## Open these before reading source
 
-The tree is 138,000 lines; `Game.java` alone is 9,300, and the interface is
-nineteen files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
+The tree is 144,200 lines; `Game.java` alone is 9,500, and the interface is
+twenty files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
 |---|---|
@@ -92,7 +92,7 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; 9,300 lines, 28 banner sections
+        Game.java                  the month, the seam every system meets at; 9,500 lines, 29 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
@@ -103,7 +103,8 @@ These are Jerus's, and they do not move.
         ui/                        the interface: UserInterface.java is the window (4,000 lines: clock, rail,
                                    strips, panels, dialogs), one <Name>Screen.java per tab (split 2026-09-18 -
                                    the project's splitting-the-interface.md), Money/Statement/Pieces/Levers
-                                   (what the screens share), Palette.java, Icons.java. The model never imports it.
+                                   (what the screens share), Ladder.java (every dial, since 0.7.6), Palette.java,
+                                   Icons.java. The model never imports it.
         *Check.java                sixty harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow

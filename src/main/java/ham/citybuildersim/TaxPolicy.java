@@ -26,23 +26,34 @@ package ham.citybuildersim;
  * CITY RATES, AND OFFSETS FROM THEM
  * ======================================================================
  *
- * There are two city-wide rates, and then every band and every sector carries an
- * OFFSET in rate points from one of them. Industry at -0.03 pays three points
- * under whatever the city rate is.
+ * There are four base rates - one per tax: profit, sales, wage and property -
+ * and then every band and every sector carries an OFFSET in rate points from
+ * its own tax's base. Industry at -0.03 on profit pays three points under
+ * whatever the profit rate is.
  *
- * Jerus's call, and it is the right one for a game where the city rate is a
- * lever the player pulls often: raise the city rate and every sector you have
- * customised keeps its relative treatment instead of being silently left behind.
- * The cost is that a rate on screen is arithmetic rather than a number, so every
- * screen shows the offset AND what it resolves to.
+ * Jerus's call, and it is the right one for a game where a base is a lever the
+ * player pulls often: raise it and every sector you have customised keeps its
+ * relative treatment instead of being silently left behind. The cost is that a
+ * rate on screen is arithmetic rather than a number, so every screen shows the
+ * offset AND what it resolves to.
+ *
+ * THREE BASES WHERE THERE WAS ONE (0.7.4). Until 0.7.4 profit, sales and wage
+ * all moved off ONE city income rate, so raising sales tax for every sector
+ * meant fifteen offsets or the city rate, and the city rate dragged profit and
+ * wage with it. Jerus: "what about just increasing sale tax for all at the same
+ * time? currently that's a hassle, i want to be able to do that for every type
+ * of tax, even wage tax". Each of the three has its own base now, and
+ * setIncomeTaxRate() is what his old city rate became: every income tax at
+ * once, all three bases set to one number.
  *
  * RESOLUTION HAPPENS HERE, ONCE. effective*() clamps to [0, max]. No caller
  * adds an offset itself: an offset that escapes clamping is a negative tax rate,
  * which is the city paying businesses to trade, and it would show up as revenue
  * appearing from nowhere three layers away from the line that caused it.
  *
- * DEFAULTS ARE ALL ZERO, which makes every effective rate the city rate and
- * reproduces the single-rate behaviour this replaced, exactly.
+ * DEFAULTS ARE ALL ZERO, and the three bases open equal, which makes every
+ * effective rate the one income rate and reproduces the single-rate behaviour
+ * this replaced, exactly.
  */
 public class TaxPolicy {
 
@@ -66,15 +77,22 @@ public class TaxPolicy {
     public static final double MAX_INCOME_TAX = .60;
 
     /**
-     * How far a band or sector may be moved from the city rate, either way.
+     * How far a band or sector may be moved from its tax's base rate, either way.
      *
-     * Bounded so a single offset cannot express a policy the city rate could not
+     * Bounded so a single offset cannot express a policy the base rate could not
      * express on its own - an offset is a discount or a surcharge, not a
      * separate tax system.
      */
     public static final double MAX_OFFSET = .30;
 
-    private double incomeTaxRate = DEFAULT_INCOME_TAX;
+    /*
+     * THE THREE INCOME BASES (0.7.4), one per tax, where there was one income
+     * rate - see CITY RATES, AND OFFSETS FROM THEM above. Each opens
+     * at DEFAULT_INCOME_TAX, so a new city is the single-rate city it was.
+     */
+    private double profitTaxRate = DEFAULT_INCOME_TAX;
+    private double salesTaxRate = DEFAULT_INCOME_TAX;
+    private double wageTaxRate = DEFAULT_INCOME_TAX;
     private double propertyTaxRate = DEFAULT_PROPERTY_TAX;
 
     /* ==================================================================
@@ -290,6 +308,19 @@ public class TaxPolicy {
        ride this class's save array on the end: an old save reads WAGE_SHARE
        at the share its old slot already carried, no interest and the
        founding price, which is the game it was.
+
+       A SCALE PER SCHOOL WHERE THERE WAS ONE (0.7.6). Jerus: "have it so
+       that not only can you raise prices but also raise the price for a
+       specific university". The one tuition scale is nine now, one per
+       EducationType bar NONE - tuitionScaleOf() and setTuitionScaleOf() -
+       each opening at DEFAULT_TUITION_SCALE and held to MAX_TUITION_SCALE,
+       which is the shape 0.7.4 gave the income taxes (THREE BASES WHERE
+       THERE WAS ONE, under THE CITY RATES): setTuitionScale() is what the
+       one scale became, every school at once, all nine set to one number;
+       getTuitionScale() reads the first of the nine, ELEMENTARY's, and
+       tuitionScalesSplit() says whether they have parted. The old slot in
+       the save array carries getTuitionScale(), and the nine ride the end;
+       an older, shorter array reads all nine as the one scale it carried.
        ===================================================================== */
 
     /** How the student grant is struck: what the one amount is a share of, or is. */
@@ -345,8 +376,25 @@ public class TaxPolicy {
     /** Annual interest on the treasury's student loans. An old save reads none. */
     private double studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
 
-    /** The multiplier on the founding tuition table. An old save reads 1. */
-    private double tuitionScale = DEFAULT_TUITION_SCALE;
+    /**
+     * The multiplier on the founding tuition table, one per school kind by
+     * EducationType ordinal (0.7.6). NONE's slot is never read, set or saved:
+     * a building that teaches nothing has no price. An old save reads 1 on
+     * every kind.
+     */
+    private final double[] tuitionScales = new double[EducationType.values().length];
+    { java.util.Arrays.fill(tuitionScales, DEFAULT_TUITION_SCALE); }
+
+    /** The nine kinds a school can be, in EducationType order: everything bar NONE (0.7.6). */
+    private static final EducationType[] SCHOOL_KINDS = schoolKinds();
+
+    private static EducationType[] schoolKinds() {
+        java.util.List<EducationType> kinds = new java.util.ArrayList<>();
+        for (EducationType type : EducationType.values()) {
+            if (type != EducationType.NONE) kinds.add(type);
+        }
+        return kinds.toArray(new EducationType[0]);
+    }
 
     public GrantBasis getGrantBasis() { return grantBasis; }
 
@@ -356,8 +404,32 @@ public class TaxPolicy {
     /** The annual rate a graduate is charged on the student loan while repaying it. */
     public double getStudentLoanRate(){ return studentLoanRate; }
 
-    /** The multiplier on the founding tuition table; 1 is the founding price, 0 is free at the point of use. */
-    public double getTuitionScale()   { return tuitionScale; }
+    /**
+     * The multiplier on the founding tuition table; 1 is the founding price,
+     * 0 is free at the point of use. EVERY SCHOOL AT ONCE (0.7.6): while the
+     * nine kinds are equal, which they are in any city that has only ever
+     * moved them together, that one scale; once they have parted, the first
+     * kind's, ELEMENTARY's - what the old slot of the save carries for a
+     * reader that knows only one. A caller that means one kind asks
+     * tuitionScaleOf(); a screen that prints "the scale" asks
+     * tuitionScalesSplit() first.
+     */
+    public double getTuitionScale()   { return tuitionScales[SCHOOL_KINDS[0].ordinal()]; }
+
+    /** One school kind's own multiplier (0.7.6); NONE, or null, reads the every-school one. */
+    public double tuitionScaleOf(EducationType type) {
+        return type == null || type == EducationType.NONE ? getTuitionScale()
+                : tuitionScales[type.ordinal()];
+    }
+
+    /** Whether the nine kinds' scales have parted - no longer one number (0.7.6). */
+    public boolean tuitionScalesSplit() {
+        double first = getTuitionScale();
+        for (EducationType type : SCHOOL_KINDS) {
+            if (Math.abs(tuitionScales[type.ordinal()] - first) > 1e-12) return true;
+        }
+        return false;
+    }
 
     /**
      * The ceiling on the amount under a basis: a share of a wage up to one
@@ -393,7 +465,23 @@ public class TaxPolicy {
     }
 
     public void setStudentLoanRate(double annual) { studentLoanRate = clamp(annual, MAX_STUDENT_LOAN_RATE); }
-    public void setTuitionScale(double scale)     { tuitionScale = clamp(scale, MAX_TUITION_SCALE); }
+
+    /**
+     * Every school at once: all nine kinds set to this scale (0.7.6), which
+     * is what the one scale did. The Schools page's top lever, the
+     * playtest's switch and a save from before the split all come through
+     * here, so a city that never parts them is the city it was.
+     */
+    public void setTuitionScale(double scale) {
+        double s = clamp(scale, MAX_TUITION_SCALE);
+        for (EducationType type : SCHOOL_KINDS) tuitionScales[type.ordinal()] = s;
+    }
+
+    /** One school kind's own scale, held to MAX_TUITION_SCALE (0.7.6); NONE, or null, is ignored. */
+    public void setTuitionScaleOf(EducationType type, double scale) {
+        if (type == null || type == EducationType.NONE) return;
+        tuitionScales[type.ordinal()] = clamp(scale, MAX_TUITION_SCALE);
+    }
 
     /**
      * The month's grant bill under any basis and amount - the one place the
@@ -629,8 +717,8 @@ public class TaxPolicy {
      * which was the cleanest registry-conversion candidate in the codebase
      * and the one that would have re-keyed every player's policy the day a
      * seventh sector was inserted anywhere but the end. A name is a name.
-     * An unset sector reads zero, which is the city rate - the same default
-     * the arrays had.
+     * An unset sector reads zero, which is its tax's base rate - the same
+     * default the arrays had.
      */
     private final java.util.Map<String, Double> profitOffset   = new java.util.LinkedHashMap<>();
     private final java.util.Map<String, Double> salesOffset    = new java.util.LinkedHashMap<>();
@@ -638,11 +726,44 @@ public class TaxPolicy {
 
     /* ==================================================================
        THE CITY RATES
+
+       Four bases: profit, sales and wage since 0.7.4 (one income rate
+       before), and property. "The income rate" survives as the three
+       together - getIncomeTaxRate() and setIncomeTaxRate() below.
        ================================================================== */
 
+    /**
+     * The three income taxes TOGETHER - what "the city rate" was until 0.7.4.
+     *
+     * While the three bases are equal, which they are in any city that has
+     * only ever moved them together, that one rate. Once they have parted,
+     * the PROFIT rate: the first of the three, and what slot 0 of the save
+     * carries for a reader that knows only one. A caller that means one tax
+     * asks for it by name; a screen that prints "the income rate" asks
+     * incomeRatesSplit() first and prints each when they have parted.
+     */
     public double getIncomeTaxRate() {
-        return incomeTaxRate;
+        return profitTaxRate;
     }
+
+    /** Whether the three income bases have parted - profit, sales and wage no longer one number. */
+    public boolean incomeRatesSplit() {
+        return Math.abs(profitTaxRate - salesTaxRate) > 1e-12
+                || Math.abs(profitTaxRate - wageTaxRate) > 1e-12;
+    }
+
+    /** What every sector's profit tax moves off (0.7.4). */
+    public double getProfitTaxRate() { return profitTaxRate; }
+
+    /** What every sector's sales tax moves off (0.7.4). */
+    public double getSalesTaxRate()  { return salesTaxRate; }
+
+    /** What every band's wage tax moves off (0.7.4). */
+    public double getWageTaxRate()   { return wageTaxRate; }
+
+    public void setProfitTaxRate(double rate) { profitTaxRate = clamp(rate, MAX_INCOME_TAX); }
+    public void setSalesTaxRate(double rate)  { salesTaxRate = clamp(rate, MAX_INCOME_TAX); }
+    public void setWageTaxRate(double rate)   { wageTaxRate = clamp(rate, MAX_INCOME_TAX); }
 
     /** The annual rate - what the player sets and what the screens show. */
     public double getPropertyTaxRate() {
@@ -654,8 +775,18 @@ public class TaxPolicy {
         return propertyTaxRate / 12;
     }
 
+    /**
+     * Every income tax at once: the profit, sales and wage bases all set to
+     * this rate (0.7.4), which is what the one city rate did. The Everything
+     * page's lever, the playtest's advisor and a save from before the split
+     * all come through here, so a city that never parts them is the city it
+     * was.
+     */
     public void setIncomeTaxRate(double rate) {
-        this.incomeTaxRate = clamp(rate, MAX_INCOME_TAX);
+        double r = clamp(rate, MAX_INCOME_TAX);
+        profitTaxRate = r;
+        salesTaxRate = r;
+        wageTaxRate = r;
     }
 
     /** Takes the ANNUAL rate. */
@@ -701,19 +832,19 @@ public class TaxPolicy {
        EFFECTIVE RATES - the only numbers anything is ever charged at
        ================================================================== */
 
-    /** What wages in this band are taxed at. */
+    /** What wages in this band are taxed at: the wage base and the band's offset. */
     public double effectiveWageRate(WageBand band) {
-        return clamp(incomeTaxRate + wageOffset[band.ordinal()], MAX_INCOME_TAX);
+        return clamp(wageTaxRate + wageOffset[band.ordinal()], MAX_INCOME_TAX);
     }
 
-    /** What this sector's profit is taxed at. */
+    /** What this sector's profit is taxed at: the profit base and the sector's offset. */
     public double effectiveProfitRate(String sector) {
-        return clamp(incomeTaxRate + getProfitOffset(sector), MAX_INCOME_TAX);
+        return clamp(profitTaxRate + getProfitOffset(sector), MAX_INCOME_TAX);
     }
 
-    /** What this sector charges on the value it adds. See SalesTaxLedger. */
+    /** What this sector charges on the value it adds: the sales base and its offset. See SalesTaxLedger. */
     public double effectiveSalesRate(String sector) {
-        return clamp(incomeTaxRate + getSalesOffset(sector), MAX_INCOME_TAX);
+        return clamp(salesTaxRate + getSalesOffset(sector), MAX_INCOME_TAX);
     }
 
     /** ANNUAL property tax rate for this sector. */
@@ -827,14 +958,21 @@ public class TaxPolicy {
     /** ...and one from before the education dials of 2026-09-21: the two health dials on top. */
     public static final int STATE_BEFORE_EDUCATION = STATE_BEFORE_HEALTH + 2;
 
-    /** This build's array: the grant's basis and amount, the loan rate and the tuition scale on top. */
-    public static final int STATE_SLOTS = STATE_BEFORE_EDUCATION + 4;
+    /** ...and one from before the income rate split in three (0.7.4): the grant's basis and amount, the loan rate and the tuition scale on top. */
+    public static final int STATE_BEFORE_SPLIT = STATE_BEFORE_EDUCATION + 4;
+
+    /** ...and one from before the tuition scale split by school (0.7.6): the profit, sales and wage bases on top, each its own slot since 0.7.4. */
+    public static final int STATE_BEFORE_SCHOOLS = STATE_BEFORE_SPLIT + 3;
+
+    /** This build's array: a tuition scale per school kind on top, the nine in EducationType order bar NONE, since 0.7.6. */
+    public static final int STATE_SLOTS = STATE_BEFORE_SCHOOLS + EducationType.values().length - 1;
 
     /**
      * The city rates and the wage-band offsets as one array, city rates
-     * first. ORDER IS THE FORMAT and new fields go on the END. The sector
-     * offsets are NOT in here any more: they are keyed by name and saved as
-     * their own list - see getSectorOffsets().
+     * first - bar the three income bases of 0.7.4, which ride the end like
+     * every field added since. ORDER IS THE FORMAT and new fields go on the
+     * END. The sector offsets are NOT in here any more: they are keyed by
+     * name and saved as their own list - see getSectorOffsets().
      */
     public double[] getPolicyState() {
 
@@ -842,14 +980,18 @@ public class TaxPolicy {
 
         // 4 rates, one per wage band, the three dials of 2026-09-11, the
         // farmland relief of 09-13, the transit fare of 09-16, the two
-        // health dials of 09-19 and the four education dials of 09-21. GROW
-        // THIS WITH EVERY SLOT ADDED BELOW: the first version of the fare
-        // wrote to state[12] of a twelve-long array and took forty-three
-        // harnesses down with it in nineteen seconds, which is the good
-        // outcome.
+        // health dials of 09-19, the four education dials of 09-21, the
+        // three income bases of 0.7.4 and the nine school kinds' tuition
+        // scales of 0.7.6. GROW THIS WITH EVERY SLOT ADDED
+        // BELOW: the first version of the fare wrote to state[12] of a
+        // twelve-long array and took forty-three harnesses down with it in
+        // nineteen seconds, which is the good outcome.
         double[] state = new double[STATE_SLOTS];
         int i = 0;
-        state[i++] = incomeTaxRate;
+        // The one income rate, as every older reader knows it: the three
+        // together while they are equal, the profit rate once they have
+        // parted (getIncomeTaxRate()). The three themselves ride the end.
+        state[i++] = getIncomeTaxRate();
         state[i++] = propertyTaxRate;
         state[i++] = contributionRate;
         state[i++] = pensionReplacement;
@@ -883,7 +1025,21 @@ public class TaxPolicy {
         state[i++] = grantBasis.ordinal();
         state[i++] = grantAmount;
         state[i++] = studentLoanRate;
-        state[i]   = tuitionScale;
+        // The one scale, as every older reader knows it: the nine together
+        // while they are equal, the first kind's once they have parted
+        // (getTuitionScale()). The nine themselves ride the end.
+        state[i++] = getTuitionScale();
+        // The three income bases of 0.7.4, on the end: an older save is three
+        // slots shorter and reads all three as its one income rate in slot 0,
+        // which is the city it was.
+        state[i++] = profitTaxRate;
+        state[i++] = salesTaxRate;
+        state[i++] = wageTaxRate;
+        // The nine school kinds' tuition scales of 0.7.6, on the end in
+        // EducationType order: an older save is nine slots shorter and reads
+        // all nine as the one scale its slot above carries, which is the
+        // city it was.
+        for (EducationType type : SCHOOL_KINDS) state[i++] = tuitionScales[type.ordinal()];
         return state;
     }
 
@@ -900,6 +1056,8 @@ public class TaxPolicy {
         if (state == null || state.length < STATE_BEFORE_EI || state.length > STATE_SLOTS) return false;
 
         int i = 0;
+        // All three income bases at the one rate slot 0 carries; a save from
+        // 0.7.4 on overrides each from the end of the array below.
         setIncomeTaxRate(state[i++]);
         setPropertyTaxRate(state[i++]);
         setContributionRate(state[i++]);
@@ -914,7 +1072,7 @@ public class TaxPolicy {
         healthFeeScale = DEFAULT_HEALTH_FEE_SCALE;
         healthPremiumRate = DEFAULT_HEALTH_PREMIUM;
         studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
-        tuitionScale = DEFAULT_TUITION_SCALE;
+        setTuitionScale(DEFAULT_TUITION_SCALE);
         if (i < state.length) setEiPremiumRate(state[i++]);
         if (i < state.length) setEiBenefitRate(state[i++]);
         // The wage share, as the slot always carried it: WAGE_SHARE at that
@@ -932,7 +1090,15 @@ public class TaxPolicy {
         }
         if (i < state.length) setGrantAmount(state[i++]);
         if (i < state.length) setStudentLoanRate(state[i++]);
-        if (i < state.length) setTuitionScale(state[i]);
+        // Every school at the one scale this slot carries; a save from 0.7.6
+        // on overrides each kind from the end of the array below.
+        if (i < state.length) setTuitionScale(state[i++]);
+        if (i < state.length) setProfitTaxRate(state[i++]);
+        if (i < state.length) setSalesTaxRate(state[i++]);
+        if (i < state.length) setWageTaxRate(state[i++]);
+        for (EducationType type : SCHOOL_KINDS) {
+            if (i < state.length) setTuitionScaleOf(type, state[i++]);
+        }
         return true;
     }
 
@@ -974,7 +1140,7 @@ public class TaxPolicy {
     }
 
     public void reset() {
-        incomeTaxRate = DEFAULT_INCOME_TAX;
+        setIncomeTaxRate(DEFAULT_INCOME_TAX);
         propertyTaxRate = DEFAULT_PROPERTY_TAX;
         transitFare = DEFAULT_TRANSIT_FARE;
         contributionRate = SocialSecurity.DEFAULT_CONTRIBUTION_RATE;
@@ -984,7 +1150,7 @@ public class TaxPolicy {
         grantBasis = DEFAULT_GRANT_BASIS;
         grantAmount = DEFAULT_STUDENT_GRANT_SHARE;
         studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
-        tuitionScale = DEFAULT_TUITION_SCALE;
+        setTuitionScale(DEFAULT_TUITION_SCALE);
         farmlandRelief = DEFAULT_FARMLAND_RELIEF;
         healthFeeScale = DEFAULT_HEALTH_FEE_SCALE;
         healthPremiumRate = DEFAULT_HEALTH_PREMIUM;

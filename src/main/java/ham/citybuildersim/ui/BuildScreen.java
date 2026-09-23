@@ -34,6 +34,8 @@ import static ham.citybuildersim.ui.Levers.*;
  * category is open (buildCategory) for the rail and the scroll memory, and the
  * inbox and the panels send the player into a category through
  * handleAllBuildingMenus(). BuildMenuCheck reads the three card methods.
+ * Since 0.7.5 the shell's key filter also calls buildPending() and
+ * clearPending(): Enter, and Backspace or Delete, on the page showing.
  */
 final class BuildScreen {
 
@@ -272,6 +274,19 @@ final class BuildScreen {
             if (category.name().equals(menuTitle)) buildCategory = menuTitle;
         }
 
+        /*
+         * AND WHICH CARDS ARE ON IT, for the keyboard (see "the keyboard",
+         * after placeOrder). Started again here, before a card is drawn, so
+         * each card below files itself in the order it is laid out and the
+         * caption it keeps up to date is this page's, not the last one's.
+         */
+        pageCards.clear();
+        pageTitle = menuTitle;
+        pageCategories = categories;
+        pendingHint = new Label("↵ builds what is pending · ⌫ clears it");
+        pendingHint.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
+                + " -fx-padding: 6 0 0 0;");
+
         // 1. The four things that decide whether anything you click will happen.
         HBox limits = constraintsBar();
 
@@ -361,6 +376,11 @@ final class BuildScreen {
             }
             buildingsBox.getChildren().add(grid);
         }
+
+        // The two keys, said once, under the grid - and only while something
+        // on the page is pending for them to act on.
+        buildingsBox.getChildren().add(pendingHint);
+        showPendingHint();
 
         /*
          * 3. NO BACK BUTTON. The strip is where you were going, and the rail is
@@ -580,6 +600,7 @@ final class BuildScreen {
             count.setText(String.valueOf(n));
             build.setDisable(n <= 0);
             showIf(resetHolder[0], n > 0);
+            showPendingHint();
             build.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
                     + " -fx-background-color: "
                     + (n > 0 ? Palette.CONFIRM : Palette.CONTROL) + ";");
@@ -613,7 +634,9 @@ final class BuildScreen {
         };
 
         Button less = stepper("−", 24, () -> {
-            orderQty.merge(key, -1, (a, b) -> Math.max(0, a + b));
+            // compute, not merge: merge() STORES the -1 when the card has no
+            // entry yet, so a "-" on an empty card read "-1" until 0.7.5.
+            orderQty.compute(key, (k, v) -> Math.max(0, (v == null ? 0 : v) - 1));
             reprice.run();
         });
         Button more = stepper("+", 24, () -> {
@@ -661,6 +684,15 @@ final class BuildScreen {
             orderQty.remove(key);
             placeOrder(template, n, menuTitle, categories);
         });
+
+        /*
+         * THE SHORTCUT, SAID ON THE BUTTON IT STANDS IN FOR. A disabled
+         * control shows no tooltip, so this is read only while the card has
+         * something for Enter to build.
+         */
+        Tooltip keys = new Tooltip("Enter builds every pending order on this page; Backspace clears them");
+        keys.setShowDelay(Duration.millis(300));
+        build.setTooltip(keys);
 
         HBox steps = new HBox(4, less, count, more, ten, hundred);
         steps.setAlignment(Pos.CENTER_LEFT);
@@ -714,6 +746,7 @@ final class BuildScreen {
         tile.setMaxSize(TILE_WIDTH, TILE_HEIGHT);
         tile.setStyle(Palette.block(Palette.CONTROL, Palette.HAIRLINE));
 
+        pageCards.add(new PageCard(template, reprice));
         reprice.run();
         return tile;
     }
@@ -861,11 +894,15 @@ final class BuildScreen {
      * Placing the order, and everything the city can say back.
      *
      * Lifted out of the old quantity screen unchanged: buildStack is the method
-     * that decides, and the three refusals it can return each have a screen
+     * that decides, and the four refusals it can return each have a screen
      * that explains the refusal and offers the way out of it. The card is a new
      * way to reach this; it is not a new way to buy.
+     *
+     * True when it was built and the page is drawn again; false when the city
+     * said no and the refusal's screen is up instead - which is where Enter's
+     * run of orders stops (buildPending).
      */
-    void placeOrder(BuildingsTemplate template, int quantity,
+    boolean placeOrder(BuildingsTemplate template, int quantity,
                             String menuTitle, EnumSet<BuildingType> categories) {
 
         Game.BuildResult result = ui.game.buildStack(template, quantity, false);
@@ -881,6 +918,98 @@ final class BuildScreen {
         } else if (result == Game.BuildResult.NO_LICENCE) {
             showNoLicenceMenu(template, quantity, menuTitle, categories);
         }
+        return result == Game.BuildResult.SUCCESS;
+    }
+
+    /* ---------------------------- the keyboard ---------------------------- */
+
+    /*
+     * ENTER BUILDS WHAT IS PENDING, BACKSPACE CLEARS IT (0.7.5). Jerus: "in
+     * the building rail, when you have lets say 3 ready to build, i want to be
+     * able to press enter to build, instead of having to click the green
+     * button, you can still click it, but just a short cut, and
+     * backspace/delete to reset it."
+     *
+     * The keys arrive through the window's key filter (UserInterface.start),
+     * which calls the two methods below only while this page is the screen.
+     * They act on the page the player is LOOKING AT and on nothing else:
+     * orderQty is kept by name across every category, so a hundred flats
+     * dialled up on Residential and left there are not built by an Enter
+     * pressed on Healthcare. Each card files itself in pageCards as it is
+     * drawn, so the page's order is the order it is laid out in - under its
+     * group headings, not the catalogue's.
+     */
+
+    /** One card on the page showing now: what it builds, and how it reprices itself in place. */
+    record PageCard(BuildingsTemplate template, Runnable reprice) { }
+
+    /** The cards on the category page showing now, in the order they are laid out; each draw starts it again. */
+    final List<PageCard> pageCards = new ArrayList<>();
+
+    /** Which page those are on, so an order placed from the keyboard comes back to it. */
+    private String pageTitle = BUILD_HOME;
+    private EnumSet<BuildingType> pageCategories = EnumSet.noneOf(BuildingType.class);
+
+    /** The caption under the grid that says the two keys; shown only while something on the page is pending. */
+    private Label pendingHint;
+
+    /**
+     * Every pending order on the page, placed as its own Build button would
+     * place it, in the page's order.
+     *
+     * Through placeOrder, one card at a time, so each order meets the city as
+     * the one before it left it: what the first spent is not there for the
+     * second. The first refusal stops the run - placeOrder has put up the
+     * screen that explains it and offers the way out, and the orders after it
+     * stay on their cards for when the player comes back. True when there was
+     * anything to build, which is when the key is spent.
+     */
+    boolean buildPending() {
+        // A copy, and the page remembered: every success draws the page
+        // again, and pageCards with it.
+        List<PageCard> page = new ArrayList<>(pageCards);
+        String title = pageTitle;
+        EnumSet<BuildingType> categories = pageCategories;
+
+        boolean any = false;
+        for (PageCard card : page) {
+            String key = card.template().getName();
+            int n = orderQty.getOrDefault(key, 0);
+            if (n <= 0) continue;
+            any = true;
+            orderQty.remove(key);
+            if (!placeOrder(card.template(), n, title, categories)) break;
+        }
+        return any;
+    }
+
+    /**
+     * Every quantity on the page back to none - the ↺ on every card at once,
+     * and like it, each card repriced in place rather than the page redrawn
+     * (see REPRICED IN PLACE, in buildingTile). True when something pending
+     * was cleared.
+     */
+    boolean clearPending() {
+        boolean cleared = false;
+        for (PageCard card : pageCards) {
+            Integer n = orderQty.remove(card.template().getName());
+            if (n == null) continue;
+            if (n > 0) cleared = true;
+            card.reprice().run();
+        }
+        return cleared;
+    }
+
+    /** The caption under the grid, shown while any card on the page has a quantity. */
+    void showPendingHint() {
+        boolean any = false;
+        for (PageCard card : pageCards) {
+            if (orderQty.getOrDefault(card.template().getName(), 0) > 0) {
+                any = true;
+                break;
+            }
+        }
+        showIf(pendingHint, any);
     }
 
 

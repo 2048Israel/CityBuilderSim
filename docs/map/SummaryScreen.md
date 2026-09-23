@@ -1,6 +1,6 @@
-# SummaryScreen.java - 1,632 lines · 27 methods · 6 constants · interface
+# SummaryScreen.java - 1,639 lines · 27 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > The left panel's content: the summary and the dashboard - the vitals, the
 > alert block, the six lines that are always worth a glance or the thirteen
@@ -15,7 +15,7 @@
 > the clock; this class owns what is drawn into it, and which sections the
 > player has opened (panelOpen).
 
-**Uses:** [BuildingType](BuildingType.md) (11), [CareType](CareType.md) (11), [EducationType](EducationType.md) (6), [Crime](Crime.md) (6), [InfrastructureManager](InfrastructureManager.md) (5), [Health](Health.md) (5), [Education](Education.md) (4), [PopulationManager](PopulationManager.md) (4), [Healthcare](Healthcare.md) (4), [LandManager](LandManager.md) (4), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [EconomyManager](EconomyManager.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [WageBand](WageBand.md) (3), [UserInterface](UserInterface.md) (2), [Bank](Bank.md) (2), [PolicyScreen](PolicyScreen.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Palette](Palette.md) (2), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [Game](Game.md) (2), [CapitalFlows](CapitalFlows.md) (2), [FamilyModel](FamilyModel.md) (1), [Good](Good.md) (1), [Sector](Sector.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [CityCalendar](CityCalendar.md) (1)
+**Uses:** [BuildingType](BuildingType.md) (11), [CareType](CareType.md) (11), [EducationType](EducationType.md) (6), [Crime](Crime.md) (6), [InfrastructureManager](InfrastructureManager.md) (5), [Health](Health.md) (5), [Education](Education.md) (4), [PopulationManager](PopulationManager.md) (4), [Healthcare](Healthcare.md) (4), [LandManager](LandManager.md) (4), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [EconomyManager](EconomyManager.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [WageBand](WageBand.md) (3), [UserInterface](UserInterface.md) (2), [Bank](Bank.md) (2), [PolicyScreen](PolicyScreen.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Palette](Palette.md) (2), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [Game](Game.md) (2), [CapitalFlows](CapitalFlows.md) (2), [FamilyModel](FamilyModel.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Good](Good.md) (1), [Sector](Sector.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [CityCalendar](CityCalendar.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -45,17 +45,17 @@
 | 1033 | · TRADE - the city's edge, in one line. |
 | 1065 | · THE TWO POCKETS, AND WHICH MONEY EACH IS IN. |
 | 1165 | · TAX |
-| 1180 | · LABOUR - and this is the one Jerus asked for by name. |
-| 1273 | · SCHOOLS |
-| 1309 | · PEOPLE |
-| 1327 | · HEALTH |
-| 1356 | · SAFETY (2026-09-11) |
-| 1386 | · RESOURCES |
-| 1411 | · LAND |
-| 1434 | · SECTOR CASH |
-| 1446 | · BUILDINGS, and this is where the folding pays for itself. |
-| 1515 | · THE VITALS, which are never folded away. |
-| 1547 | · AND WHATEVER IS ACTUALLY WRONG. |
+| 1187 | · LABOUR - and this is the one Jerus asked for by name. |
+| 1280 | · SCHOOLS |
+| 1316 | · PEOPLE |
+| 1334 | · HEALTH |
+| 1363 | · SAFETY (2026-09-11) |
+| 1393 | · RESOURCES |
+| 1418 | · LAND |
+| 1441 | · SECTOR CASH |
+| 1453 | · BUILDINGS, and this is where the folding pays for itself. |
+| 1522 | · THE VITALS, which are never folded away. |
+| 1554 | · AND WHATEVER IS ACTUALLY WRONG. |
 
 ## Constants
 
@@ -79,7 +79,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 32 | 1601 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - the problem list that decides what goes red, and ev... |
+| 32 | 1608 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - the problem list that decides what goes red, and ev... |
 | 37 | 1 | `SummaryScreen(UserInterface ui)` |  |
 
 ### HEADROOM, NOT SATISFACTION (lines 39-110)
@@ -121,7 +121,7 @@
 | 445 | 6 | `void under(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Lower is worse. |
 | 453 | 4 | `void flag(java.util.List<Watch> out, String label, String reading, boolean bad, boolean severe, Runnable go)` | A thing that is simply true or not. |
 
-### SEATS AGAINST WHO WOULD COME. (lines 458-1632)
+### SEATS AGAINST WHO WOULD COME. (lines 458-1639)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -131,8 +131,8 @@
 | 802 | 73 | `java.util.List<Watch> citySymptoms()` | The readings with no dial of their own. |
 | 876 | 49 | `void panelSummaryRows(VBox body)` |  |
 | 927 | 16 | `VBox panelHeading(String text)` | A rule and a caption, dividing the panel's two halves. |
-| 952 | 530 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
-| 1483 | 124 | `void refreshCityPanel()` |  |
-| 1618 | 9 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
-| 1629 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
+| 952 | 537 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
+| 1490 | 124 | `void refreshCityPanel()` |  |
+| 1625 | 9 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
+| 1636 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
 

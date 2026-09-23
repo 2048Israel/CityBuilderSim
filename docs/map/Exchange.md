@@ -1,6 +1,6 @@
 # Exchange.java - 1,006 lines · 73 methods · 23 constants · model
 
-`ham/citybuildersim/Exchange.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Exchange.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > The stock exchange: where a share changes hands, and at what price.
 > 

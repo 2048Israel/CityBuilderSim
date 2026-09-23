@@ -154,6 +154,10 @@ public class NewGameCheck {
         m.put("land.allocated", g.getLandManager().getAllocatedSqFt());
         m.put("land.blocks", (double) g.getLandManager().getBlocksPurchased());
         m.put("land.price", g.getLandManager().getPricePerSqFt());
+        // How the land office pays, and the dollars it has paid (0.7.6).
+        m.put("land.paidFromVault", g.isLandPaidFromVault() ? 1.0 : 0.0);
+        m.put("fx.landUsdLifetime", g.getForeignAccounts().getLandUsdLifetime());
+        m.put("fx.landUsdFromVaultLifetime", g.getForeignAccounts().getLandUsdFromVaultLifetime());
 
         m.put("tax.income", e.getTaxPolicy().getIncomeTaxRate());
         m.put("tax.property", e.getTaxPolicy().getPropertyTaxRate());
@@ -231,6 +235,9 @@ public class NewGameCheck {
         // ...and a vault the treasury has worked, for the same reason: a
         // founders' vault that nobody touched is swept by proving 1B == 1B.
         used.sellForeignCurrency(used.getForeignAccounts().sellableReserves() * .4);
+        // ...and land paid for out of it, with the toggle left on (0.7.6).
+        used.setLandPaidFromVault(true);
+        used.buyLandParcel(used.getLandManager().getMarket().bestValue().getId());
 
         used.simulateMonths(2);
 
@@ -245,6 +252,8 @@ public class NewGameCheck {
                         && used.getBuildingManager().getStackCount() > 3);
         assertTrue("...and its vault is not the founders' any more",
                 Math.abs(used.getForeignAccounts().getReservesUsd() - Game.FOUNDING_RESERVE_USD) > 1);
+        assertTrue("...and it paid for land out of it, and pays that way still",
+                used.isLandPaidFromVault() && used.getForeignAccounts().getLandUsdFromVaultLifetime() > 0);
 
         /* ==================== 3. start a new one ==================== */
         System.out.println("\n--- Start New Game ---");

@@ -791,6 +791,34 @@ public class UserInterface extends Application {
                     redrawScreen.run();
                 }
                 e.consume();
+            } else if (!typing && "handleAllBuildingMenus".equals(currentScreen)
+                    && (e.getCode() == javafx.scene.input.KeyCode.ENTER
+                     || e.getCode() == javafx.scene.input.KeyCode.BACK_SPACE
+                     || e.getCode() == javafx.scene.input.KeyCode.DELETE)) {
+                /*
+                 * ENTER BUILDS, BACKSPACE CLEARS, on the build page. Jerus: "in
+                 * the building rail, when you have lets say 3 ready to build, i
+                 * want to be able to press enter to build, instead of having to
+                 * click the green button, you can still click it, but just a
+                 * short cut, and backspace/delete to reset it."
+                 *
+                 * Only on the category page itself, not the refusal screens the
+                 * build tab also owns (tabFor): there the orders are not on
+                 * the screen to be built or cleared.
+                 *
+                 * Consumed only when it did something, the other way round
+                 * from SPACE: with nothing pending, Enter on a focused button
+                 * should still press it, and Backspace means nothing here.
+                 * With orders pending it is consumed, so Enter does not also
+                 * press whatever was last clicked. What the two keys do is
+                 * BuildScreen's (buildPending, clearPending); the page says
+                 * them in a caption under the grid and the Build button's
+                 * tooltip, for the reason Escape's comment gives above.
+                 */
+                boolean acted = e.getCode() == javafx.scene.input.KeyCode.ENTER
+                        ? buildScreen.buildPending()
+                        : buildScreen.clearPending();
+                if (acted) e.consume();
             }
         });
 
@@ -1387,7 +1415,7 @@ public class UserInterface extends Application {
      * needs saying, amber when something is drifting, red when it has gone.
      */
 
-    /** Inflation within this many points of DebtManager.INFLATION_TARGET, either side, reads in the quiet grey. */
+    /** Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads in the quiet grey. */
     static final double STRIP_INFLATION_QUIET = .03;
 
     /** Inflation past this, or deflation past its negative, reads red: prices are running away, or collapsing. */
@@ -1401,7 +1429,8 @@ public class UserInterface extends Application {
 
     /**
      * Date, month number, cash and population across the top - and, since
-     * 2026-09-21, prices and the exchange rate between the last two.
+     * 2026-09-21, prices and the exchange rate between the last two, and
+     * since 0.7.4 the three rates beside them.
      *
      * THE MONTH NUMBER STAYS, next to the date rather than instead of it. Every
      * save, log entry, bond maturity and report in this game is keyed to the
@@ -1581,6 +1610,8 @@ public class UserInterface extends Application {
          * recompute - the colours read the model's own target and parity.
          */
         PriceIndex prices = game.getPriceIndex();
+        // The player's target since 0.7.4, which the colour and the tooltip read.
+        double target = game.getDebtManager().getInflationTarget();
         double index = prices.isBased() ? prices.getIndex() : 1;
         Label indexLabel = new Label(String.format(
                 index < 100 ? "×%.2f" : "×%,.0f", index));
@@ -1590,7 +1621,7 @@ public class UserInterface extends Application {
             double inflation = prices.inflation();
             inflationLabel = new Label(String.format("%+.1f%% a year", inflation * 100));
             inflationLabel.setStyle(STRIP_CAPTION + " -fx-text-fill: "
-                    + inflationColour(inflation) + ";");
+                    + inflationColour(inflation, target) + ";");
         } else {
             inflationLabel = new Label("no year yet");
             inflationLabel.setStyle(STRIP_CAPTION + " -fx-text-fill: " + STRIP_QUIET + ";");
@@ -1598,8 +1629,9 @@ public class UserInterface extends Application {
         VBox pricesBox = stripPanel(indexLabel, inflationLabel);
         Tooltip.install(pricesBox, new Tooltip(String.format(
                 "Prices: what a household's month costs against what it cost at founding.%n"
-                + "Under it, inflation over the last twelve months. The target is %.0f%% a year.",
-                DebtManager.INFLATION_TARGET * 100)));
+                + "Under it, inflation over the last twelve months. The target is %s a year"
+                + " - yours, on the Policy tab's money page.",
+                DebtManager.targetWords(target))));
 
         /*
          * THE RATE BOTH WAYS, in the currency's own names. "US$1 = D$100.00"
@@ -1643,16 +1675,63 @@ public class UserInterface extends Application {
                                 fx.deviationFromParity() > 0 ? "weaker" : "stronger"))));
 
         /*
+         * THE PRICE OF MONEY, THREE WAYS (0.7.4).
+         *
+         * Jerus: "on the top of the UI the bank rate, the central bank rate,
+         * both should be shown, as well as the rate you borrow in." A third
+         * panel beside the other two, and the three rates in it each a public
+         * getter the strip only formats: the central bank's dial
+         * (DebtManager.getPolicyRate()); what the bank lends a business at
+         * before the business's own premium (Bank.lendingRate() on that dial,
+         * the figure the carry trade reads); and what the treasury borrows at
+         * (DebtManager.getRate(), the year book's interestRate - the note's
+         * rate on the short end, strain and all).
+         *
+         * THREE SHORT LINES AT THE CAPTION'S WEIGHT rather than a figure over
+         * a caption, a word before each in Courier so the figures hold one
+         * column: three figures at the population's weight would be the
+         * loudest panel on the strip, and the date and the money stay the
+         * loudest things. The quiet grey, and red only for a bank that has
+         * failed or is not there - it lends nothing, which is the news.
+         */
+        DebtManager market = game.getDebtManager();
+        Bank lender = game.getBank();
+        double policy = market.getPolicyRate();
+        boolean noBank = lender.getBranches() <= 0;
+        boolean bankFailed = !noBank && lender.isInsolvent();
+        Label centralLine = stripRateLine("central", String.format("%.2f%%", policy * 100), STRIP_QUIET);
+        Label bankLine = stripRateLine("bank",
+                noBank ? "no bank" : bankFailed ? "failed"
+                        : String.format("%.2f%%", lender.lendingRate(policy) * 100),
+                noBank || bankFailed ? "#ff6b6b" : STRIP_QUIET);
+        Label cityLine = stripRateLine("city", String.format("%.2f%%", market.getRate() * 100), STRIP_QUIET);
+        VBox moneyBox = stripPanel(centralLine, bankLine, cityLine);
+        Tooltip.install(moneyBox, new Tooltip(String.format(
+                "The price of money, three ways.%n"
+                + "central - the central bank's policy rate: your dial on the Policy tab,"
+                + " and the floor under every rate in the city.%n"
+                + "bank - what the bank lends a business at before that business's own"
+                + " risk premium: the dial, or its own cost of funds plus a point's margin,"
+                + " whichever is higher, plus its strain.%n"
+                + "city - what the treasury pays to borrow short: the dial plus what the"
+                + " city's own debt costs it.%s",
+                noBank ? String.format("%nThere is no bank in this city, so there is nothing to"
+                        + " lend - build a Commercial Bank.")
+                : bankFailed ? String.format("%nThe bank has failed: it may lend nothing until it is"
+                        + " recapitalised or earns its way back.")
+                : "")));
+
+        /*
          * AND WHAT GIVES WAY WHEN THE WINDOW IS NARROW: the population's flow
          * chips, first and alone. Everything else on the strip keeps its full
          * width - the two anchors, the rating, the population figure and the
-         * two panels above - and the chips' row may shrink to nothing, its
+         * three panels above - and the chips' row may shrink to nothing, its
          * chips shortening to an ellipsis and the row clipped at its own edge
          * so nothing it cannot fit is painted over its neighbours. A strip
          * that keeps the date and the money whole and loses "+12 born" is the
          * right way round.
          */
-        for (Region fixed : new Region[] {dateBox, cashBox, pricesBox, rateBox,
+        for (Region fixed : new Region[] {dateBox, cashBox, pricesBox, rateBox, moneyBox,
                 ratingLabel, popLabel}) {
             fixed.setMinWidth(Region.USE_PREF_SIZE);
         }
@@ -1662,7 +1741,8 @@ public class UserInterface extends Application {
         flowClip.heightProperty().bind(flowRow.heightProperty());
         flowRow.setClip(flowClip);
 
-        dateBar.getChildren().addAll(dateBox, gap, ratingLabel, popBox, pricesBox, rateBox, cashBox);
+        dateBar.getChildren().addAll(dateBox, gap, ratingLabel, popBox, pricesBox, rateBox, moneyBox,
+                cashBox);
     }
 
     /** The strip's quiet colour: the cash trend's muted grey. */
@@ -1675,20 +1755,30 @@ public class UserInterface extends Application {
     /** ...and the caption under it, at the size of the anchors' own captions. */
     private static final String STRIP_CAPTION = "-fx-font-family: 'Courier New'; -fx-font-size: 11px;";
 
-    /** One of the strip's inset panels, figure over caption, in the anchors' shape at a smaller size. */
-    private VBox stripPanel(Label figure, Label caption) {
+    /**
+     * One of the strip's inset panels, in the anchors' shape at a smaller
+     * size: figure over caption, or since 0.7.4 three rate lines stacked.
+     */
+    private VBox stripPanel(Label... lines) {
         VBox box = new VBox(0);
         box.setAlignment(Pos.CENTER_RIGHT);
-        box.getChildren().addAll(figure, caption);
+        box.getChildren().addAll(lines);
         box.setStyle("-fx-padding: 3 10 4 10; -fx-background-color: #26343b;"
                 + " -fx-background-radius: 4;");
         return box;
     }
 
-    /** Grey near the target, amber off it, red once prices run or collapse. See STRIP_INFLATION_QUIET. */
-    private static String inflationColour(double inflation) {
+    /** One line of the price-of-money panel: a word, then the figure, at the caption's size, so the three figures hold one column. */
+    private static Label stripRateLine(String word, String figure, String colour) {
+        Label line = new Label(String.format("%-7s %7s", word, figure));
+        line.setStyle(STRIP_CAPTION + " -fx-text-fill: " + colour + ";");
+        return line;
+    }
+
+    /** Grey near the player's target, amber off it, red once prices run or collapse. See STRIP_INFLATION_QUIET. */
+    private static String inflationColour(double inflation, double target) {
         if (Math.abs(inflation) > STRIP_INFLATION_ALARM) return "#ff6b6b";
-        if (Math.abs(inflation - DebtManager.INFLATION_TARGET) > STRIP_INFLATION_QUIET) return "#ffb454";
+        if (Math.abs(inflation - target) > STRIP_INFLATION_QUIET) return "#ffb454";
         return STRIP_QUIET;
     }
 
@@ -2297,6 +2387,12 @@ public class UserInterface extends Application {
         column.getChildren().add(statementHead("Keys"));
         column.getChildren().add(statementLine("Esc  ·  P", "the game menu"));
         column.getChildren().add(statementLine("F11", "full screen on and off"));
+        // ...and the four the list never carried (0.7.5): a shortcut nothing
+        // announces is a shortcut for people who already know the game.
+        column.getChildren().add(statementLine("Space", "the clock: run and pause"));
+        column.getChildren().add(statementLine("\u2190  \u00b7  \u2192", "the speed, one rung a press"));
+        column.getChildren().add(statementLine("Enter", "on the build tab: place every pending order on the page"));
+        column.getChildren().add(statementLine("Backspace  \u00b7  Delete", "on the build tab: clear them"));
 
         Button back = new Button("Back");
         back.setOnAction(e -> showMainMenu());
@@ -3230,6 +3326,7 @@ public class UserInterface extends Application {
             case "handleAllBuildingMenus":
             case "showNoDepositMenu": case "showNoLandMenu":
             case "showQuickDebtMenu": case "showFundingFellShortMenu":
+            case "showNoLicenceMenu":
                 return "build";
             case "showLandMenu":
                 return "land";

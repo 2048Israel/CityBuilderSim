@@ -228,6 +228,17 @@ public final class Palette {
         REVENUE_RAMP[0], REVENUE_RAMP[2], REVENUE_RAMP[4]
     };
 
+    /**
+     * GDP's three stacked layers on the Reports page (0.7.6) - consumption,
+     * investment, government, bottom to top - on the same three validated
+     * steps as the maturity ladder, and for the same reason: they are parts
+     * of one whole, and one hue says so. The GDP line over them is drawn in
+     * TEXT_HEAD, which no step of this ramp is near.
+     */
+    public static final String[] GDP_LAYERS = {
+        REVENUE_RAMP[0], REVENUE_RAMP[2], REVENUE_RAMP[4]
+    };
+
     /** Everything too small to have its own step. Deliberately colourless. */
     public static final String RAMP_REST = "#5c6b75";
 

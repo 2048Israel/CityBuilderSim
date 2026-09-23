@@ -509,8 +509,9 @@ public class ReadPathCheck {
         out.println("\n--- changing the rate is not a month late ---");
 
         // The two commercial companies together, as the old commercial
-        // statement printed them. Retail alone would not do: the city rate
-        // is also the VAT rate, so doubling it halves the shops' profit
+        // statement printed them. Retail alone would not do: the income rate
+        // sets the VAT rate too (all three bases, since 0.7.4 split them),
+        // so doubling it halves the shops' profit
         // before the profit tax is struck, and the shops' profit tax alone
         // barely moves. The landlords' rent is VAT-exempt, so theirs doubles.
         Sector landlords = g.getSectors().realEstate();

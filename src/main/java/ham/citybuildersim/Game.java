@@ -206,7 +206,9 @@ public class Game {
                 buildingManager,
                 debtManager);
         
-        landManager = new LandManager();
+        // Reading the rate live, so what the office charges in local money is
+        // always today's (0.7.6); a lambda, so foreign is read when it is asked.
+        landManager = new LandManager(() -> foreign.getRate());
         demolitionLog = new DemolitionLog();
         buildLog = new BuildLog();
         cohorts = new PopulationCohorts();
@@ -238,6 +240,9 @@ public class Game {
         bankPrincipalRepaidThisMonth = 0;
         bank.reset();
         foreign.reset();
+        // The land office converts cash until the player says otherwise (0.7.6).
+        landPaidFromVault = false;
+        lastLandReceipt = "";
         // ...and the central bank, founded fresh rather than reset, reading
         // the vault where ForeignAccounts keeps it. See getCentralBank().
         centralBank = new CentralBank(foreign::getReserves);
@@ -394,7 +399,7 @@ public class Game {
                     + " over from the old save folder into " + gameFiles.getDirectory());
         }
 
-        // Ten plots have to be on offer before the player's first turn, not
+        // Nine plots have to be on offer before the player's first turn, not
         // after their first month.
         landManager.updateMarket(populationManager.getPopulation());
 
@@ -861,28 +866,141 @@ public class Game {
 
     /** Buys the cheapest plot on offer, if the city can afford it. */
     public boolean buyLandBlock(){
-        double cost = landManager.buyBlock(cash, populationManager.getPopulation());
-        if (cost <= 0) {
-            return false;
+        LandParcel cheapest = landManager.getMarket().cheapest();
+        if (cheapest == null) {
+            landManager.updateMarket(populationManager.getPopulation());
+            cheapest = landManager.getMarket().cheapest();
         }
-        treasuryPays(TreasuryLine.LAND, cost);
-        return true;
+        return cheapest != null && buyLandParcel(cheapest.getId());
     }
 
+    /* ===================================================================
+       LAND IS BOUGHT IN DOLLARS (0.7.6)
+
+       Jerus: "when you buy land, make it so that it costs USD not domestic
+       currency, and basically how it would work is a little toggle at the
+       top to choose, when you buy land, to use up your USD reserves or to
+       convert cash into usd exactly to buy the land, and the default is that
+       you convert."
+
+       A parcel is priced in US dollars (LandMarket), and the world is paid
+       one of two ways, the toggle's (landPaidFromVault, saved):
+
+       CONVERTING, the default. The treasury pays usd x rate in local money
+       through TreasuryLine.LAND, the line land always went out on - so the
+       budget's "Land bought" and the refusal rule are what they were - and
+       ForeignAccounts.buyAndSpendDollarsForLand() buys exactly those dollars
+       and hands them to the seller in one movement: the vault ends where it
+       began. The local cash left the city; that is the whole of it.
+
+       FROM THE VAULT. ForeignAccounts.spendReservesOnLand() pays the seller
+       out of reservesUsd and no local money moves - a capital transaction
+       like the defence's. The budget still carries the land at usd x rate
+       (its value on the city's books is what it cost in local money on the
+       day), so the journal carries the same amount the other way, "Bought
+       land with US$X of reserves": the bridge from the budget to the cash
+       then closes with nothing left over. A vault too short for the parcel
+       pays what it holds and the rest is converted, and the log says so - a
+       purchase never fails for the toggle's sake, only for want of money.
+
+       NEITHER IS IN AN AUDIT WINDOW, and neither ever was: land is bought
+       between two presses, before the next month's opening pools are read,
+       so MoneyAudit has never carried a land line and needs none. What it
+       would see is what LandCheck asserts on the pools around a purchase -
+       converting, the treasury's pool down by exactly usd x rate and no
+       other pool up (money across the edge); from the vault, no pool moved.
+       =================================================================== */
+
+    /** Whether the land office pays out of the vault rather than converting cash (0.7.6). */
+    private boolean landPaidFromVault;
+
+    /** True when land is paid for out of the vault; false - the default - converts cash. */
+    public boolean isLandPaidFromVault() { return landPaidFromVault; }
+
+    /** The land office's toggle, applied at once to the next purchase. */
+    public void setLandPaidFromVault(boolean fromVault) { this.landPaidFromVault = fromVault; }
+
     /**
-     * Buys one specific listed plot - the land office screen's action.
+     * Buys one specific listed plot - the land office screen's action - in US
+     * dollars at today's rate, paid the way the toggle says. See LAND IS
+     * BOUGHT IN DOLLARS.
      *
      * @return true if it was bought. False means it was not listed or not
      *         affordable, and nothing changed.
      */
     public boolean buyLandParcel(int parcelId){
-        double cost = landManager.buyParcel(
-                parcelId, cash, populationManager.getPopulation());
+        LandParcel parcel = landManager.getMarket().find(parcelId);
+        if (parcel == null) {
+            return false;
+        }
+        double rate = foreign.getRate();
+        double usd = parcel.getPriceUsd();
+        double fromVault = landPaidFromVault ? Math.min(usd, foreign.getReservesUsd()) : 0;
+        double cost = landManager.buyParcel(parcelId, landPayable(parcel),
+                populationManager.getPopulation());
         if (cost <= 0) {
             return false;
         }
-        treasuryPays(TreasuryLine.LAND, cost);
+        double paidFromVault = landPaidFromVault ? foreign.spendReservesOnLand(fromVault) : 0;
+        double converted = usd - paidFromVault;
+        double convertedLocal = 0;
+        if (converted > 0) {
+            convertedLocal = foreign.buyAndSpendDollarsForLand(converted);
+            treasuryPays(TreasuryLine.LAND, convertedLocal);
+        }
+        if (paidFromVault > 0) {
+            treasuryJournal.record(String.format("Bought land with US$%,.0fk of reserves",
+                    paidFromVault), paidFromVault * rate);
+        }
+        String blocks = String.format("%.1f blocks", parcel.getBlocks());
+        if (paidFromVault <= 0) {
+            lastLandReceipt = String.format("Bought %s for US$%,.0fk, converting %s%,.0fk of cash at %s%.4f"
+                    + " to the dollar.", blocks, usd, Currency.QUALIFIED, convertedLocal,
+                    Currency.QUALIFIED, rate);
+        } else if (converted <= 0) {
+            lastLandReceipt = String.format("Bought %s for US$%,.0fk out of the vault, which holds"
+                    + " US$%,.0fk now. No cash moved.", blocks, usd, foreign.getReservesUsd());
+        } else {
+            lastLandReceipt = String.format("Bought %s for US$%,.0fk. The vault held only US$%,.0fk,"
+                    + " so that went and the other US$%,.0fk was converted from %s%,.0fk of cash.",
+                    blocks, usd, paidFromVault, converted, Currency.QUALIFIED, convertedLocal);
+        }
+        lastLandReceiptMonth = month;
+        GameLog.note(lastLandReceipt);
         return true;
+    }
+
+    /**
+     * The most the city can pay for this parcel today, in local money: its
+     * cash, and - paying from the vault - the vault's part of the parcel at
+     * today's rate. Affordable when the treasury can pay the converted part
+     * out of its cash, as a purchase always had to be; the vault's part needs
+     * no cash at all.
+     */
+    private double landPayable(LandParcel parcel) {
+        double fromVault = landPaidFromVault
+                ? Math.min(parcel.getPriceUsd(), foreign.getReservesUsd()) : 0;
+        return Math.max(0, cash) + fromVault * foreign.getRate();
+    }
+
+    /** Whether buyLandParcel() would buy this parcel today, paid the way the toggle says - for the land office's buttons. */
+    public boolean canAffordParcel(LandParcel parcel) {
+        return parcel != null && parcel.localPrice(foreign.getRate()) <= landPayable(parcel);
+    }
+
+    /**
+     * What the last land purchase cost and how it was paid, in the player's
+     * words - the land office shows it under the toggle, and a short vault
+     * says here that the rest was converted. Not saved: it is the answer to
+     * the button just pressed, and a reloaded city has pressed nothing - and
+     * it is the month's, so once the month turns it is gone.
+     */
+    private String lastLandReceipt = "";
+    private int lastLandReceiptMonth;
+
+    /** The last land purchase's receipt, or "" once the month it was made in has turned. */
+    public String getLastLandReceipt() {
+        return lastLandReceiptMonth == month ? lastLandReceipt : "";
     }
 
     /** The plots on offer. */
@@ -1001,6 +1119,20 @@ public class Game {
         syncHouseholdAccounts(false);
     }
 
+    /**
+     * Every school kind's tuition scale, from the policy to the schools
+     * (0.7.6) - at the month's education step and on the load path, where
+     * one scale was told until the nine parted. Telling the schools only
+     * getTuitionScale() would put a city's nine prices back to one on every
+     * load, which is what the one income rate would have done to the three
+     * bases in 0.7.4.
+     */
+    private void tellTheSchoolsTheirPrices(TaxPolicy tax) {
+        for (EducationType kind : EducationType.values()) {
+            if (kind != EducationType.NONE) education.setTuitionScaleOf(kind, tax.tuitionScaleOf(kind));
+        }
+    }
+
     private void syncHouseholdAccounts(boolean accrue){
 
         NationalAccounts na = economyManager.getNationalAccounts();
@@ -1099,7 +1231,7 @@ public class Game {
          * is told here only, which is every month and the load path both.
          */
         householdBalance.setStudentLoanRate(tax.getStudentLoanRate());
-        education.setTuitionScale(tax.getTuitionScale());
+        tellTheSchoolsTheirPrices(tax);
         households.setCarePaid(householdBalance.carePaidShares());
         households.setCareBills(healthcare.getTreatmentFees(), healthcare.fullTreatmentFees());
         /*
@@ -4930,6 +5062,9 @@ public class Game {
         // NationalAccounts.governmentToSave().
         cityCapitalSpending = 0;
         landManager.clearMonth();
+        // ...and what the same land cost in dollars, struck in the same breath
+        // so the Exchange page and the land line read the budget's month (0.7.6).
+        foreign.strikeLandMonth();
     }
 
     private void finalUpdateEconomy(){
@@ -5058,7 +5193,7 @@ public class Game {
     // getters on CommercialHandler are all pure reads - the UI cannot mutate
     // economy state through this.
     private BusinessInvestment businessInvestment;
-    private LandManager landManager = new LandManager();
+    private LandManager landManager = new LandManager(() -> this.foreign.getRate());
 
     /** What businesses have scrapped, so the panel can say what went and when. */
     private DemolitionLog demolitionLog = new DemolitionLog();
@@ -5551,8 +5686,9 @@ public class Game {
          * work, not still studying.
          */
         // At the player's tuition scale (2026-09-21), told here as the clinic's
-        // scale is above, so the fees this step charges are this month's.
-        education.setTuitionScale(economyManager.getTaxPolicy().getTuitionScale());
+        // scale is above, so the fees this step charges are this month's -
+        // kind by kind since 0.7.6, each school at its own price.
+        tellTheSchoolsTheirPrices(economyManager.getTaxPolicy());
         education.advanceMonth(
                 buildingManager.getStaffedEducationPlaces(fill),
                 cohorts,
@@ -5565,6 +5701,19 @@ public class Game {
                 // out, and this month's share of leavers.
                 lastAdultMortality + AgeBand.ADULT.monthlyOutflowRate()
                         + (population > 0 ? migration.getLastDepartures() / population : 0));
+
+        /*
+         * ...AND WHAT EACH KIND OF SCHOOL COST (0.7.6), for the Schools
+         * page's row per kind: the same payroll and upkeep the total above
+         * was struck from, narrowed to the buildings teaching each course,
+         * at the same wages and fill. Read-only - the treasury pays the total.
+         */
+        for (EducationType kind : EducationType.values()) {
+            if (kind == EducationType.NONE) continue;
+            education.setCostOf(kind,
+                    buildingManager.getSchoolPayroll(kind, populationManager.getWagesPerType(), fill),
+                    buildingManager.getSchoolUpkeep(kind));
+        }
 
         populationManager.applyBandFlow(education.getGraduates());
         populationManager.addLicences(education.getLicences());
@@ -6450,6 +6599,10 @@ public class Game {
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setPolicyRate(debtManager.getPolicyRate());
         dataSave.setPolicyAutopilot(debtManager.isAutopilot());
+        // ...and how the land office pays (0.7.6), the player's toggle.
+        dataSave.setLandPaidFromVault(landPaidFromVault);
+        // ...and the target the rule aims at (0.7.4), under its own key.
+        dataSave.setInflationTarget(debtManager.getInflationTarget());
         // The holdings dial, the households' paper ratio, and what a buyback
         // between the presses still has to declare (0.7.1), each under its own key.
         dataSave.setQeTargetShare(centralBank.getTargetShare());
@@ -8151,7 +8304,11 @@ public class Game {
              * keeps the defaults, which are the single city rate applied to
              * everything, which is exactly what that save meant.
              */
-            economyManager.getTaxPolicy().restorePolicyState(loaded.getTaxPolicyState());
+            // Whether the array was read decides whether the one income rate
+            // further down is: it carries the three bases apart since 0.7.4,
+            // and the old single key would put them back together.
+            boolean taxArrayRead =
+                    economyManager.getTaxPolicy().restorePolicyState(loaded.getTaxPolicyState());
             economyManager.getTaxPolicy().restoreSectorOffsets(loaded.getSectorOffsets());
 
             // Format 18 and earlier carry nothing here, and a null restores as a
@@ -8188,6 +8345,14 @@ public class Game {
             }
             economyManager.setBankTax(loaded.getBankTaxCharged());
             foreign.restore(loaded.getForeignAccounts());
+            /*
+             * AN OLDER LISTING WAS PRICED IN LOCAL MONEY (0.7.6), and it is
+             * read as dollars at the rate of the day it is loaded - which is
+             * only known now, with the foreign accounts back - so the local
+             * cost the player saw is what it costs today. A dollar listing is
+             * left alone. See LandMarket.settleLocalPrices().
+             */
+            landManager.getMarket().settleLocalPrices(foreign.getRate());
             // The central bank's books, under their own key. A save from
             // before 0.7.0 has none, and restore() leaves the bank buildWorld()
             // founded - empty - which is that city's central bank: it had not
@@ -8246,6 +8411,12 @@ public class Game {
             if (loaded.getPolicyRate() != null) debtManager.setPolicyRate(loaded.getPolicyRate());
             // ...and whose hand was on it: an older save reads the player's.
             debtManager.setAutopilot(loaded.getPolicyAutopilot());
+            // ...and how the land office pays (0.7.6): an older save converts.
+            landPaidFromVault = loaded.getLandPaidFromVault();
+            // ...and what the rule aims at (0.7.4): an older save has no key
+            // and reads the default - 2%, the constant it was.
+            debtManager.setInflationTarget(loaded.getInflationTarget() != null
+                    ? loaded.getInflationTarget() : DebtManager.DEFAULT_INFLATION_TARGET);
             // ...and the holdings dial beside it (0.7.1), after the balance
             // sheet above, whose restore() founds an empty bank first and
             // carries the setting before the dial. An older save reads 0: a
@@ -8502,7 +8673,11 @@ public class Game {
             landManager.clearMonth();
 
             TaxPolicy policy = economyManager.getTaxPolicy();
-            if (loaded.getIncomeTaxRate() > 0) {
+            // The one income rate, for a save whose policy array was not read
+            // - only there (0.7.4): the array sets the three bases one by one,
+            // and this key, which is all three at the profit rate, would undo
+            // a split. Where the array was read the two agreed until 0.7.4.
+            if (!taxArrayRead && loaded.getIncomeTaxRate() > 0) {
                 policy.setIncomeTaxRate(loaded.getIncomeTaxRate());
             }
             if (loaded.getPropertyTaxRate() > 0) {

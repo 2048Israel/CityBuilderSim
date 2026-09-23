@@ -1115,6 +1115,29 @@ final class TradeScreen {
         }
 
         /*
+         * WHAT THE LAND OFFICE SPENT (0.7.6). Land is priced in US dollars,
+         * and the treasury pays it one of two ways - the land office's
+         * toggle: converting cash, which buys the dollars and hands them
+         * straight over so the vault never sees them, or out of this vault.
+         * The vault's part, the month the budget struck and since founding,
+         * both saved (ForeignAccounts, THE LAND OFFICE IS PAID IN DOLLARS);
+         * the note says what the land cost in dollars altogether.
+         */
+        if (fx.getLandUsdLifetime() > 0) {
+            column.getChildren().add(statementLine("Spent on land this month",
+                    usdFull(fx.getLandUsdFromVaultThisMonth()),
+                    fx.getLandUsdFromVaultThisMonth() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+            column.getChildren().add(statementLine("...and since founding",
+                    usdFull(fx.getLandUsdFromVaultLifetime()), Palette.TEXT_MUTED));
+            column.getChildren().add(statementNote(String.format(
+                    "Land is priced in US dollars. The city paid %s for it this month and %s "
+                    + "since founding; what is above came out of this vault, and the rest was "
+                    + "cash converted at the day's rate, which buys exactly the dollars and pays "
+                    + "them straight over. The land office's toggle chooses which.",
+                    usdFull(fx.getLandUsdThisMonth()), usdFull(fx.getLandUsdLifetime()))));
+        }
+
+        /*
          * WHERE THE DOLLARS CAME FROM, on a young city. Jerus: "99% players
          * wont add to reserves most probably cause they have no clue" - so the
          * page says there is something in the vault the player did not put

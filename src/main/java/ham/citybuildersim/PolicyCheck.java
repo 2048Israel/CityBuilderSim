@@ -285,6 +285,11 @@ public class PolicyCheck {
 
         TaxPolicy before = city.getEconomyManager().getTaxPolicy();
         before.setIncomeTaxRate(.28);
+        // ...and two of the three bases parted from it (0.7.4), so a load
+        // that put them back together - the old single key read after the
+        // array - would show.
+        before.setSalesTaxRate(.09);
+        before.setWageTaxRate(.33);
         before.setPropertyTaxRate(.035);
         before.setWageOffset(WageBand.COLLEGE, -.04);
         before.setProfitOffset(Sectors.MINING, -.06);
@@ -312,6 +317,9 @@ public class PolicyCheck {
 
         TaxPolicy after = reloaded.getEconomyManager().getTaxPolicy();
         check("city income rate",  after.getIncomeTaxRate(), .28);
+        check("...the profit base, which it is once they part", after.getProfitTaxRate(), .28);
+        check("...the sales base, parted from it", after.getSalesTaxRate(), .09);
+        check("...and the wage base, parted too", after.getWageTaxRate(), .33);
         check("city property rate", after.getPropertyTaxRate(), .035);
         check("a wage offset",     after.getWageOffset(WageBand.COLLEGE), -.04);
         check("a profit offset",   after.getProfitOffset(Sectors.MINING), -.06);
@@ -334,6 +342,97 @@ public class PolicyCheck {
                 stale.getIncomeTaxRate(), TaxPolicy.DEFAULT_INCOME_TAX);
         assertTrue("a null policy array is refused too",
                 !stale.restorePolicyState(null));
+
+        /*
+         * ...AND A SAVE FROM BEFORE THE SPLIT (0.7.4): its array is three
+         * slots shorter and carries one income rate in slot 0, and the whole
+         * load path - the array, then the single key Game reads for a save
+         * with no array - has to come back with three equal bases at it.
+         */
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
+                Files.readString(files.saveFile(3))).getAsJsonObject();
+        com.google.gson.JsonArray full = json.getAsJsonArray("taxPolicyState");
+        assertTrue("fixture: the save carried this build's policy array",
+                full != null && full.size() == TaxPolicy.STATE_SLOTS);
+        com.google.gson.JsonArray cut = new com.google.gson.JsonArray();
+        for (int i = 0; i < TaxPolicy.STATE_BEFORE_SPLIT; i++) cut.add(full.get(i));
+        json.add("taxPolicyState", cut);
+        Files.writeString(files.saveFile(3), json.toString());
+        Game unsplit = new Game(files);
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        try {
+            unsplit.loadGameSave(3);
+        } finally {
+            System.setOut(real);
+        }
+        TaxPolicy old = unsplit.getEconomyManager().getTaxPolicy();
+        check("a save from before the split reads its one rate as profit", old.getProfitTaxRate(), .28);
+        check("...as sales", old.getSalesTaxRate(), .28);
+        check("...and as wage", old.getWageTaxRate(), .28);
+        assertTrue("...three equal bases, the city it was", !old.incomeRatesSplit());
+        check("...its offsets kept, riding their own bases", old.effectiveSalesRate(Sectors.RETAIL), .31);
+
+        /* ============ 10. three bases, one per tax (0.7.4) ============ */
+        /*
+         * Jerus: "what about just increasing sale tax for all at the same
+         * time? ... i want to be able to do that for every type of tax, even
+         * wage tax". Profit, sales and wage each move off their own base now,
+         * and setIncomeTaxRate() is his old city rate: all three at once.
+         */
+        System.out.println("\n--- each income tax moves off its own base ---");
+
+        TaxPolicy split = new TaxPolicy();
+        split.setIncomeTaxRate(.20);
+        split.setProfitOffset(Sectors.MINING, -.05);
+        split.setSalesOffset(Sectors.RETAIL, .03);
+        split.setWageOffset(WageBand.UNIVERSITY, .04);
+        assertTrue("fixture: one rate, the three bases equal", !split.incomeRatesSplit());
+
+        split.setSalesTaxRate(.08);
+        check("the sales base moves on its own", split.getSalesTaxRate(), .08);
+        check("...every sector's sales rate follows it", split.effectiveSalesRate(Sectors.MINING), .08);
+        check("...an offset riding it", split.effectiveSalesRate(Sectors.RETAIL), .11);
+        check("...while profit stays where it was", split.effectiveProfitRate(Sectors.RETAIL), .20);
+        check("...and so does wage", split.effectiveWageRate(WageBand.NONE), .20);
+        assertTrue("...and the three have parted", split.incomeRatesSplit());
+
+        split.setWageTaxRate(.30);
+        check("the wage base moves on its own", split.effectiveWageRate(WageBand.DIPLOMA), .30);
+        check("...a band's offset riding it", split.effectiveWageRate(WageBand.UNIVERSITY), .34);
+        check("...and profit is still its own", split.effectiveProfitRate(Sectors.MINING), .15);
+
+        split.setProfitTaxRate(.25);
+        check("the profit base moves on its own", split.effectiveProfitRate(Sectors.MINING), .20);
+        check("...and sales did not follow it", split.effectiveSalesRate(Sectors.MINING), .08);
+        check("...which getIncomeTaxRate() reads once they part", split.getIncomeTaxRate(), .25);
+
+        split.setSalesTaxRate(TaxPolicy.MAX_INCOME_TAX + .2);
+        check("a base stops at MAX_INCOME_TAX", split.getSalesTaxRate(), TaxPolicy.MAX_INCOME_TAX);
+        split.setWageTaxRate(-.1);
+        check("...and at nothing below", split.getWageTaxRate(), 0);
+
+        split.setIncomeTaxRate(.18);
+        check("every tax at once sets the profit base", split.getProfitTaxRate(), .18);
+        check("...and the sales base", split.getSalesTaxRate(), .18);
+        check("...and the wage base", split.getWageTaxRate(), .18);
+        assertTrue("...so they are one rate again", !split.incomeRatesSplit());
+        check("...the offsets still riding their own bases", split.effectiveSalesRate(Sectors.RETAIL), .21);
+
+        split.setProfitTaxRate(.22);
+        split.setSalesTaxRate(.07);
+        split.setWageTaxRate(.31);
+        TaxPolicy trip = new TaxPolicy();
+        assertTrue("the policy array is read back", trip.restorePolicyState(split.getPolicyState()));
+        check("...the profit base with it", trip.getProfitTaxRate(), .22);
+        check("...the sales base", trip.getSalesTaxRate(), .07);
+        check("...and the wage base", trip.getWageTaxRate(), .31);
+
+        TaxPolicy fromBefore = new TaxPolicy();
+        assertTrue("an array of the length before the split is still read", fromBefore.restorePolicyState(
+                java.util.Arrays.copyOf(split.getPolicyState(), TaxPolicy.STATE_BEFORE_SPLIT)));
+        check("...and reads the one rate in slot 0 as all three: profit", fromBefore.getProfitTaxRate(), .22);
+        check("...sales", fromBefore.getSalesTaxRate(), .22);
+        check("...and wage", fromBefore.getWageTaxRate(), .22);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

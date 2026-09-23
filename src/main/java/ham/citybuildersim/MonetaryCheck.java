@@ -22,7 +22,8 @@ import java.nio.file.Path;
  *      player cannot cause and cannot stop.
  *
  *   4. And does the rate DO anything - to credit, to the currency, and to the
- *      city that has to live with it?
+ *      city that has to live with it? And since 0.7.4, does the rule aim
+ *      where the player's target says, and only move its intercept?
  *
  *   5. Does all of it hold in a real city, and survive a reload?
  *
@@ -222,6 +223,43 @@ public class MonetaryCheck {
                 market.adviceReason(.05).contains("target"));
 
         /*
+         * THE TARGET IS A DIAL (0.7.4). The rule aims at the player's target
+         * now, and a target is the rule's intercept and nothing else: the same
+         * inflation aimed five points higher is met with exactly TAYLOR_WEIGHT
+         * times five points less rate, and the slope - the Taylor principle
+         * above - does not move.
+         */
+        out.println("\n--- the target is a dial ---");
+        DebtManager aims = new DebtManager();
+        close("it opens at the target it always had", aims.getInflationTarget(),
+                DebtManager.DEFAULT_INFLATION_TARGET, 0);
+        close("...where the rule is the rule it always was", aims.ruleRate(.05),
+                DebtManager.NEUTRAL_RATE + DebtManager.TAYLOR_WEIGHT * (.05 - DebtManager.DEFAULT_INFLATION_TARGET), 0);
+        aims.setInflationTarget(0);
+        double aimedAtZero = aims.ruleRate(.05);
+        aims.setInflationTarget(.05);
+        double aimedAtFive = aims.ruleRate(.05);
+        out.printf("   at 5%% inflation the rule sets %.2f%% aiming at 0%% and %.2f%% aiming at 5%%%n",
+                aimedAtZero * 100, aimedAtFive * 100);
+        close("the same inflation aimed at 0% and at 5% differs by TAYLOR_WEIGHT x 5 points",
+                aimedAtZero - aimedAtFive, DebtManager.TAYLOR_WEIGHT * .05, 1e-12);
+        close("...and on its target the rule advises neutral, whatever the target is",
+                aimedAtFive, DebtManager.NEUTRAL_RATE, 1e-12);
+        close("...the dial's rule being the rule at that target", aims.ruleRate(.05),
+                aims.ruleRate(.05, .05), 0);
+        close("...and the advice it clamps to the dial reads it too", aims.advisedPolicyRate(.05),
+                DebtManager.NEUTRAL_RATE, 1e-12);
+        aims.setInflationTarget(.035);
+        assertTrue("...and the reason names the target it aims at, half point and all",
+                aims.adviceReason(.05).contains("3.5% target"));
+        aims.setInflationTarget(.5);
+        close("the dial stops at MAX_INFLATION_TARGET", aims.getInflationTarget(),
+                DebtManager.MAX_INFLATION_TARGET, 0);
+        aims.setInflationTarget(-.03);
+        close("...and at MIN_INFLATION_TARGET below", aims.getInflationTarget(),
+                DebtManager.MIN_INFLATION_TARGET, 0);
+
+        /*
          * ...AND IT REACHES THE CURRENCY - in REAL terms since 0.7.2, and
          * uncapped: the rate term was held under the trade term's reach
          * (MAX_RATE_PRESSURE .8, "neither can swamp the trade balance on its
@@ -283,6 +321,10 @@ public class MonetaryCheck {
                 city.getForeignAccounts().getRate() > ForeignAccounts.MIN_RATE * 2
                         && city.getForeignAccounts().getRate() < ForeignAccounts.MAX_RATE / 2);
 
+        // The target off its default before the save (0.7.4), after the
+        // months are played so it changes nothing they did.
+        city.getDebtManager().setInflationTarget(.035);
+
         System.setOut(quiet);
         Game back;
         try {
@@ -311,6 +353,30 @@ public class MonetaryCheck {
          */
         close("...and the year of history the inflation rate is struck from",
                 back.getPriceIndex().inflation(), lived.inflation(), 1e-9);
+
+        /*
+         * ...AND THE TARGET, under its own key (0.7.4) - and a save from
+         * before the dial, which has no key, reads the 2% every city had.
+         */
+        close("...and the inflation target, the player's dial",
+                back.getDebtManager().getInflationTarget(), .035, 0);
+        Path saved = new GameFiles(root.resolve("data"), root.resolve("no-legacy")).saveFile(6);
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
+                Files.readString(saved)).getAsJsonObject();
+        assertTrue("fixture: the save carried the target under its own key", json.has("inflationTarget"));
+        json.remove("inflationTarget");
+        Files.writeString(saved, json.toString());
+        Game beforeTheDial;
+        System.setOut(quiet);
+        try {
+            beforeTheDial = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
+            beforeTheDial.run();
+            beforeTheDial.loadGameSave(6);
+        } finally {
+            System.setOut(out);
+        }
+        close("a save from before the dial reads the default: 2%, the constant it was",
+                beforeTheDial.getDebtManager().getInflationTarget(), DebtManager.DEFAULT_INFLATION_TARGET, 0);
 
         inflationFallsWithTheRate(root);
 

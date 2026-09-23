@@ -1,6 +1,6 @@
-# YearBook.java - 828 lines · 39 methods · 4 constants · model
+# YearBook.java - 1,112 lines · 51 methods · 8 constants · model
 
-`ham/citybuildersim/YearBook.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/YearBook.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
 
 > The run, one line a year - for READING rather than for drawing.
 > 
@@ -39,27 +39,28 @@
 > what lets a harness build a history by hand and assert the arithmetic, and
 > what lets the export run on a loaded slot as happily as on the live game.
 
-**Uses:** [HistorySave](HistorySave.md) (12), [CityCalendar](CityCalendar.md) (3), [GameVersion](GameVersion.md) (2)
+**Uses:** [HistorySave](HistorySave.md) (23), [CityCalendar](CityCalendar.md) (5), [GameVersion](GameVersion.md) (2)
 
-**Used by (3):** [Game](Game.md), [HistoryScreen](HistoryScreen.md), [YearBookCheck](YearBookCheck.md)
+**Used by (4):** [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 64 | THE RULES |
-| 254 | THE DERIVED COLUMNS |
-| 273 | THE DERIVED SERIES THAT TWO SCREENS BOTH WANT |
-| 428 | THE FOLD |
-| 466 | THE FILE |
-| 487 | · · the rows, as index ranges into the month axis |
-| 496 | · · fold everything, then drop what never moved |
-| 511 | · · the preamble |
-| 538 | · · the columns |
-| 558 | · · the table |
-| 571 | · · the extremes |
-| 601 | WHAT HAPPENED |
-| 734 | · small helpers |
+| 261 | THE DERIVED COLUMNS |
+| 280 | THE DERIVED SERIES THAT TWO SCREENS BOTH WANT |
+| 533 | THE FOLD |
+| 571 | THE FILE |
+| 592 | · · the rows, as index ranges into the month axis |
+| 601 | · · fold everything, then drop what never moved |
+| 616 | · · the preamble |
+| 643 | · · the columns |
+| 663 | · · the table |
+| 676 | · · the extremes |
+| 706 | WHAT HAPPENED |
+| 859 | THE NAMED EPISODES (0.7.5) |
+| 1018 | · small helpers |
 
 ## Enum constants
 
@@ -75,99 +76,121 @@
 |---:|---|---|---|
 | 59 | `YearBook.MONTHS_A_YEAR` | `12` |  |
 | 60 | `YearBook.MONTHS_A_DECADE` | `120` |  |
-| 214 | `YearBook.RULES` | `rules()` |  |
-| 215 | `YearBook.PREFIXES` | `prefixRules()` |  |
+| 221 | `YearBook.RULES` | `rules()` |  |
+| 222 | `YearBook.PREFIXES` | `prefixRules()` |  |
+| 459 | `YearBook.GDP_PARTS` | `{ "consumption", "investment", "government", "netExports" }` | GDP's four parts, as HistorySave names them (0.7.6): C, I, G and NX, in the order they stack. |
+| 884 | `YearBook.EPISODE_MIN_MONTHS` | `3` | A run shorter than this many months is noise, and is not named - or shaded on the chart. |
+| 887 | `YearBook.EPISODE_JOIN_MONTHS` | `6` | Two runs with fewer months of relief than this between them are one episode. |
+| 890 | `YearBook.DEPRESSION_MONTHS` | `24` | A recession this many months long, or longer, is called a depression. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 264 | `final String name` |  |
-| 265 | `final Kind kind` |  |
-| 266 | `final double[] monthly` |  |
-| 267 | `final String note` |  |
+| 271 | `final String name` |  |
+| 272 | `final Kind kind` |  |
+| 273 | `final double[] monthly` |  |
+| 274 | `final String note` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 782 | **type** `public final class YearBook` | The run, one line a year - for READING rather than for drawing. |
+| 47 | 1066 | **type** `public final class YearBook` | The run, one line a year - for READING rather than for drawing. |
 | 50 | 8 | **type** `public enum Kind` | How a column's months become one number. |
 | 62 | 1 | `private YearBook()` |  |
 
-### THE RULES (lines 64-253)
+### THE RULES (lines 64-260)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 82 | 1 | **type** `private record Rule(Kind kind, String note)` | What a series IS, and one line saying what it means and in what unit. |
-| 84 | 108 | `private static Map<String, Rule> rules()` |  |
-| 193 | 1 | `private static void flow(Map<String, Rule> m, String k, String note)` |  |
-| 194 | 1 | `private static void level(Map<String, Rule> m, String k, String note)` |  |
-| 195 | 1 | `private static void rate(Map<String, Rule> m, String k, String note)` |  |
-| 205 | 8 | `private static Map<String, Rule> prefixRules()` | The runtime families, matched on the part before the colon. |
-| 225 | 4 | `public static Kind kindOf(String series)` | The rule for a series, or null if nobody has declared one. |
-| 231 | 4 | `public static String noteOf(String series)` | What a series means, in one line, or null if nobody has said. |
-| 236 | 8 | `private static Rule ruleFor(String series)` |  |
-| 246 | 7 | `public static List<String> unruled(HistorySave history)` | Every series in this history that nobody has declared a rule for. |
+| 83 | 1 | **type** `private record Rule(Kind kind, String note)` | What a series IS, and one line saying what it means and in what unit. |
+| 85 | 112 | `private static Map<String, Rule> rules()` |  |
+| 198 | 1 | `private static void flow(Map<String, Rule> m, String k, String note)` |  |
+| 199 | 1 | `private static void level(Map<String, Rule> m, String k, String note)` |  |
+| 200 | 1 | `private static void rate(Map<String, Rule> m, String k, String note)` |  |
+| 210 | 10 | `private static Map<String, Rule> prefixRules()` | The runtime families, matched on the part before the colon. |
+| 232 | 4 | `public static Kind kindOf(String series)` | The rule for a series, or null if nobody has declared one. |
+| 238 | 4 | `public static String noteOf(String series)` | What a series means, in one line, or null if nobody has said. |
+| 243 | 8 | `private static Rule ruleFor(String series)` |  |
+| 253 | 7 | `public static List<String> unruled(HistorySave history)` | Every series in this history that nobody has declared a rule for. |
 
-### THE DERIVED COLUMNS (lines 254-272)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 263 | 9 | **type** `private static final class Column` |  |
-| 268 | 3 | `Column(String name, Kind kind, double[] monthly, String note)` _(in YearBook.Column)_ |  |
-
-### THE DERIVED SERIES THAT TWO SCREENS BOTH WANT (lines 273-427)
+### THE DERIVED COLUMNS (lines 261-279)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 305 | 12 | `public static double[] labourForce(HistorySave h)` | Who is actually available to work: the workforce less the people who are not looking. |
-| 328 | 12 | `public static double[] filledPosts(HistorySave h)` | Posts with somebody in them - the labour force less the pool. |
-| 342 | 11 | `public static double[] unemployment(HistorySave h)` | THE definition of the city's unemployment rate off a history. |
-| 363 | 9 | `public static double[] averageWage(HistorySave h)` | THE definition of the average wage off a history: the wage bill over the posts that are FILLED. |
-| 373 | 54 | `private static List<Column> columns(HistorySave h)` |  |
+| 270 | 9 | **type** `private static final class Column` |  |
+| 275 | 3 | `Column(String name, Kind kind, double[] monthly, String note)` _(in YearBook.Column)_ |  |
 
-### THE FOLD (lines 428-465)
+### THE DERIVED SERIES THAT TWO SCREENS BOTH WANT (lines 280-532)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 433 | 22 | `private static double fold(Column c, int from, int to)` | A row's value for a column, by that column's own rule. |
-| 456 | 9 | `private static double worst(Column c, int from, int to, boolean high)` |  |
+| 312 | 12 | `public static double[] labourForce(HistorySave h)` | Who is actually available to work: the workforce less the people who are not looking. |
+| 335 | 12 | `public static double[] filledPosts(HistorySave h)` | Posts with somebody in them - the labour force less the pool. |
+| 349 | 11 | `public static double[] unemployment(HistorySave h)` | THE definition of the city's unemployment rate off a history. |
+| 370 | 9 | `public static double[] averageWage(HistorySave h)` | THE definition of the average wage off a history: the wage bill over the posts that are FILLED. |
+| 395 | 3 | `public static double[] realGdp(HistorySave h)` | Output in FOUNDING money, a month at a time: nominal GDP over the price index. |
+| 414 | 3 | `public static double[] realGdpYear(HistorySave h)` | ...and a rolling YEAR of it, which is what the Reports page draws and what a recession is read off. |
+| 419 | 14 | `private static double[] rollingYear(double[] monthly)` | Twelve months summed, ending at each month; NaN before the twelfth, and wherever the window holds a NaN. |
+| 446 | 8 | `public static double[] real(HistorySave h, String key)` | Any money series in FOUNDING money, a month at a time: divided by the price index the way realGdp() is, so GDP's four parts and GDP itself are the same money and the layers under the line add up to it. |
+| 468 | 3 | `public static double[] realYear(HistorySave h, String key)` | ...and a rolling YEAR of one of them in founding money (0.7.6), summed as realGdpYear() is - so a year of consumption, investment, government and net exports adds up to the year of real GDP it is part of. |
+| 479 | 9 | `public static double[] inflation(HistorySave h)` | Inflation YEAR ON YEAR - the price index against its own reading twelve months earlier, the window PriceIndex uses. |
+| 489 | 43 | `private static List<Column> columns(HistorySave h)` |  |
 
-### THE FILE (lines 466-600)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 470 | 1 | `public static String years(HistorySave h)` |  |
-| 471 | 1 | `public static String decades(HistorySave h)` |  |
-| 473 | 121 | `private static String write(HistorySave history, int span)` |  |
-| 595 | 1 | `private static int bucket(int month, int span)` |  |
-| 597 | 3 | `private static String mark(Kind k)` |  |
-
-### WHAT HAPPENED (lines 601-733)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 610 | 77 | `private static String episodes(HistorySave h, List<Column> cols)` |  |
-| 689 | 1 | **type** `private interface Test` | A condition, how many months met it, where they were, and its worst reading. |
-| 689 | 1 | `boolean holds(double v)` _(in YearBook.Test)_ |  |
-| 691 | 28 | `private static void spell(StringBuilder out, String label, double[] series, List<Integer> axis, Test test, String what, boolean...` |  |
-| 721 | 12 | `private static String spans(List<int[]> runs, List<Integer> axis)` | Consecutive months collapsed into ranges, and a long list cut off honestly. |
-
-### small helpers (lines 734-828)
+### THE FOLD (lines 533-570)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 736 | 3 | `private static String at(List<Integer> axis, int i)` |  |
-| 740 | 5 | `private static boolean hasAny(double[] v)` |  |
-| 746 | 4 | `private static double firstReal(double[] v)` |  |
-| 751 | 4 | `private static double lastReal(double[] v)` |  |
-| 756 | 5 | `private static double sumOf(double[] v)` |  |
-| 762 | 5 | `private static double meanOf(double[] v)` |  |
-| 768 | 8 | `private static int argBest(double[] v, boolean high)` |  |
-| 777 | 8 | `private static int argFurthestFrom(double[] v, double anchor)` |  |
-| 786 | 3 | `private static String pad(String s, int width)` |  |
-| 790 | 3 | `private static String pct(double fraction)` |  |
-| 803 | 17 | `static String compact(double v)` | Three significant figures, and never a thousands separator. |
-| 821 | 7 | `private static String trim(String s)` |  |
+| 538 | 22 | `private static double fold(Column c, int from, int to)` | A row's value for a column, by that column's own rule. |
+| 561 | 9 | `private static double worst(Column c, int from, int to, boolean high)` |  |
+
+### THE FILE (lines 571-705)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 575 | 1 | `public static String years(HistorySave h)` |  |
+| 576 | 1 | `public static String decades(HistorySave h)` |  |
+| 578 | 121 | `private static String write(HistorySave history, int span)` |  |
+| 700 | 1 | `private static int bucket(int month, int span)` |  |
+| 702 | 3 | `private static String mark(Kind k)` |  |
+
+### WHAT HAPPENED (lines 706-858)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 715 | 86 | `private static String whatHappened(HistorySave h, List<Column> cols)` |  |
+| 803 | 1 | **type** `private interface Test` | A condition, how many months met it, where they were, and its worst reading. |
+| 803 | 1 | `boolean holds(double v)` _(in YearBook.Test)_ |  |
+| 806 | 14 | `private static List<int[]> runsOf(double[] series, Test test)` | Index ranges {first, last} of every unbroken run of months where the test held. |
+| 821 | 23 | `private static void spell(StringBuilder out, String label, double[] series, List<Integer> axis, Test test, String what, boolean...` |  |
+| 846 | 12 | `private static String spans(List<int[]> runs, List<Integer> axis)` | Consecutive months collapsed into ranges, and a long list cut off honestly. |
+
+### THE NAMED EPISODES (0.7.5) (lines 859-1017)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 905 | 1 | **type** `public record Episode(String kind, String name, int fromMonth, int toMonth, double worst)` | One named stretch of the city's life. |
+| 915 | 40 | `public static List<Episode> episodes(HistorySave h)` | Every named episode in a history, oldest first. |
+| 964 | 8 | `public static List<int[]> recessions(HistorySave h)` | The months to shade on a chart as recession, as {firstMonth, lastMonth} on the history's axis: every run where the rolling year of real output was below the year before it, of at least EPISODE_MIN_MONTHS - NOT joined,... |
+| 974 | 9 | `private static double[] realGrowth(HistorySave h)` | The rolling year of real output against the year before it, as a fraction. |
+| 985 | 9 | `private static double[] currencyMove(HistorySave h)` | The exchange rate as a multiple of itself a year before - above 2 is a currency that halved. |
+| 996 | 21 | `private static void named(List<Episode> found, List<Integer> axis, String kind, double[] series, Test test, boolean worstIsHigh...` | One row of the table: the runs of a condition, dropped, joined and named. |
+
+### small helpers (lines 1018-1112)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1020 | 3 | `private static String at(List<Integer> axis, int i)` |  |
+| 1024 | 5 | `private static boolean hasAny(double[] v)` |  |
+| 1030 | 4 | `private static double firstReal(double[] v)` |  |
+| 1035 | 4 | `private static double lastReal(double[] v)` |  |
+| 1040 | 5 | `private static double sumOf(double[] v)` |  |
+| 1046 | 5 | `private static double meanOf(double[] v)` |  |
+| 1052 | 8 | `private static int argBest(double[] v, boolean high)` |  |
+| 1061 | 8 | `private static int argFurthestFrom(double[] v, double anchor)` |  |
+| 1070 | 3 | `private static String pad(String s, int width)` |  |
+| 1074 | 3 | `private static String pct(double fraction)` |  |
+| 1087 | 17 | `static String compact(double v)` | Three significant figures, and never a thousands separator. |
+| 1105 | 7 | `private static String trim(String s)` |  |
 

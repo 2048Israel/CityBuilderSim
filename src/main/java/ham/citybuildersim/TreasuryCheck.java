@@ -268,7 +268,8 @@ public class TreasuryCheck {
 
         // ...between the presses: the player's month.
         LandParcel plot = opened.getLandListing().get(0);
-        double landCharged = plot.getPrice();
+        // In local money at the day's rate: the plot is priced in dollars (0.7.6).
+        double landCharged = plot.localPrice(opened.getForeignAccounts().getRate());
         check("fixture: the land office listed a plot the city can afford",
                 landCharged > 0 && landCharged < opened.getCash() && opened.buyLandParcel(plot.getId()));
 

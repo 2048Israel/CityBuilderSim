@@ -41,7 +41,8 @@ import java.nio.file.Path;
  * cannot reach them, and an older save whose vault comes back at the rate it
  * was saved at. Section 13: does the vault defend the currency without
  * holding it down - and can a screen show the push without rewriting the
- * month's record of it?
+ * month's record of it? Section 14 (0.7.6): does converting cash for land
+ * push the rate exactly as buying the same dollars for the vault would?
  */
 public class ForeignCheck {
 
@@ -814,6 +815,7 @@ public class ForeignCheck {
 
         vaultInDollars();
         reserveDefends();
+        landByConversion();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1149,6 +1151,88 @@ public class ForeignCheck {
                 previewed, deficit.effectivePressure(), 0);
         close("...which is the month's own call, and records what it applied",
                 deficit.getLastAbsorption(), ForeignAccounts.MAX_ABSORPTION, 1e-12);
+    }
+
+    /* ============ 14. land bought by conversion pushes as reserves would ============
+     *
+     * The brief (0.7.6): "whatever pressure the exchange puts on the rate when
+     * the treasury buys dollars applies here too". Read first, and it is none:
+     * a treasury's purchase of dollars is the financing item (Scope.RESERVE),
+     * so neither pressure() nor monthDeficitUsd() reads it - boughtThisMonth
+     * and lifetimeIntervention feed the audit's reserve line and the record,
+     * not the push. The dollars bought for land are bought the same way and
+     * spent at once, so the push is the reserve purchase's exactly, and the
+     * only thing the reserve purchase does that this does not is leave the
+     * dollars where absorption() can see them. CAUSED: three accounts with
+     * one history on a deficit, so there is a push for anything to add to.
+     */
+    static void landByConversion() {
+        out.println("\n--- and land bought by converting pushes the rate as reserves bought would ---");
+
+        final double trade = 6_000, gdp = 40_000;
+        ForeignAccounts control = new ForeignAccounts();
+        ForeignAccounts reserves = new ForeignAccounts();
+        ForeignAccounts land = new ForeignAccounts();
+        for (ForeignAccounts fx : new ForeignAccounts[] { control, reserves, land }) {
+            for (int m = 0; m < ForeignAccounts.SETTLING_MONTHS + 12; m++) {
+                fx.takeMonth(month(trade / 3, trade * 2 / 3), gdp);
+            }
+            fx.buyReserves(fx.monthlyImports() * 2);   // a thin vault, so cover matters
+            fx.pinRate(1.6);                           // any rate but the founding one
+            fx.startMonth();
+        }
+        assertTrue("fixture: the city is pushed weaker", control.pressure() > 0);
+
+        double usd = 1_500;
+        double vaultBefore = control.getReservesUsd();
+        double interventionBefore = control.getLifetimeIntervention();
+        reserves.buyReserves(usd * reserves.getRate());
+        double paid = land.buyAndSpendDollarsForLand(usd);
+
+        close("converting pays the parcel's dollars at today's rate", paid, usd * 1.6, 1e-9);
+        close("converting for land pushes the rate as buying the dollars for the vault does",
+                land.previewRawPressure(), reserves.previewRawPressure(), 0);
+        close("...which is what buying nothing pushes: a treasury's dollars are the financing item",
+                land.previewRawPressure(), control.previewRawPressure(), 0);
+        close("...and it leaves the vault where it began", land.getReservesUsd(), vaultBefore, 0);
+        close("...where the reserve purchase leaves it the parcel's dollars fuller",
+                reserves.getReservesUsd() - vaultBefore, usd, 1e-9);
+        close("...and nets to nothing in the intervention record",
+                land.getLifetimeIntervention(), interventionBefore, 0);
+        close("...and books no reserve purchase for the month",
+                land.getBoughtThisMonth(), 0, 0);
+        close("...while the seller was paid the parcel's dollars",
+                land.getLandUsdPending(), usd, 0);
+        out.printf("   push: control %+.5f, reserves %+.5f, land %+.5f; absorbed %.1f%% / %.1f%% / %.1f%%%n",
+                control.previewRawPressure(), reserves.previewRawPressure(), land.previewRawPressure(),
+                control.previewAbsorption() * 100, reserves.previewAbsorption() * 100,
+                land.previewAbsorption() * 100);
+        close("...so what the vault would absorb is the control's, not the reserve buyer's",
+                land.previewAbsorption(), control.previewAbsorption(), 0);
+
+        /* From the vault: the dollars leave it, at the rate of the day, and nothing else. */
+        double spent = land.spendReservesOnLand(usd);
+        close("paid from the vault, the dollars leave it", land.getReservesUsd(), vaultBefore - usd, 1e-9);
+        close("...and the record falls by their local price, as a sale's would",
+                land.getLifetimeIntervention(), interventionBefore - usd * 1.6, 1e-9);
+        close("...and a vault asked for more than it holds pays what it holds",
+                land.spendReservesOnLand(1e12), vaultBefore - usd, 1e-9);
+        close("...and is empty", land.getReservesUsd(), 0, 0);
+        land.strikeLandMonth();
+        close("the land's month, struck: every dollar paid for it",
+                land.getLandUsdThisMonth(), usd + spent + (vaultBefore - spent), 1e-9);
+        close("...of which out of the vault", land.getLandUsdFromVaultThisMonth(), vaultBefore, 1e-9);
+
+        ForeignAccounts back = new ForeignAccounts();
+        back.restore(land.toSaveArray());
+        close("...and the struck month and the lifetime survive a save",
+                back.getLandUsdThisMonth() + back.getLandUsdFromVaultThisMonth()
+                        + back.getLandUsdLifetime() + back.getLandUsdFromVaultLifetime(),
+                land.getLandUsdThisMonth() + land.getLandUsdFromVaultThisMonth()
+                        + land.getLandUsdLifetime() + land.getLandUsdFromVaultLifetime(), 1e-9);
+        land.redenominate(.01);
+        close("...and a reform does not reach them: they are dollars",
+                land.getLandUsdLifetime(), back.getLandUsdLifetime(), 0);
     }
 
     /** A month whose only foreign flow is the treasury working its own vault. */
