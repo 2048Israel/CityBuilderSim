@@ -149,8 +149,8 @@ public class MoneyCheck {
             policy.setProfitOffset(sector, .25);
             policy.setSalesOffset(sector, .10);
         }
-        // Take the treasury to the edge so emergency notes get issued and
-        // repaid inside the window.
+        // Take the treasury to the edge so the central bank's advances are
+        // drawn and repaid inside the window (emergency notes, before 0.7.0).
         s.setCashForTest(20_000);
 
         worst = play("a stressed city, 180 months", s, 180, verbose);

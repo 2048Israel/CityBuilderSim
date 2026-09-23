@@ -50,8 +50,24 @@ public class CapitalFlows {
      */
     public static final double APPETITE = 3.0;
 
-    /** Excess return above which appetite stops growing. Beyond this it is a warning. */
-    public static final double MAX_SPREAD = .06;
+    /**
+     * Excess return above which appetite stops growing: 25 points since 0.7.2, so a 30% dial in a 5% world actually draws money and cutting it sends that money home (provisional, Jerus's number to settle).
+     *
+     * IT WAS SIX POINTS, and with the currency's rate channel capped at 13
+     * points over the world and the dial at 25% that was consistent: past
+     * six the hot money stopped caring, past thirteen the currency did, and a
+     * higher rate bought nothing but dearer credit. 0.7.2 uncapped the dial
+     * and the channel (DebtManager.MAX_POLICY_RATE, ForeignAccounts, THE REAL
+     * RATE, NOT THE NOMINAL), so the appetite keeps growing with them - and
+     * the departure when the rate is cut is the same appetite in reverse. The
+     * carry trade reads the same clamp and never reaches it: its spread is
+     * the world's rate less the lending rate, two points at the most. The
+     * city's rate it is handed is net of the bank's strain premium, which is
+     * what a strained bank charges and not a return (Game hands it
+     * DebtManager.getRateBeforeStrain(); the credit spreads stay in, since the
+     * country premium already nets the world's charge for them).
+     */
+    public static final double MAX_SPREAD = .25;
 
     /** How much of the gap to its target the stock closes in a month, coming in. */
     public static final double ARRIVAL_SPEED = .08;
@@ -265,7 +281,7 @@ public class CapitalFlows {
 
     /**
      * @param depositRate    what the bank pays savers, annual
-     * @param cityRate       what the city pays on its paper, annual
+     * @param cityRate       what the city pays on its paper, annual, less the bank's strain premium
      * @param worldRate      the world's own price of money
      * @param countryPremium what the world charges this city for its risk
      * @param monthlyGdp     the size of the thing the money is coming to

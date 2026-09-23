@@ -1042,12 +1042,12 @@ final class SummaryScreen {
         double fxDrift = fxPanel.deviationFromParity();
         double fxCa = fxPanel.monthlyCurrentAccount();
         body.getChildren().add(panelSection("trade", "TRADE",
-                String.format("%.3f  \u00b7  %s", fxPanel.getRate(),
+                String.format("%s  \u00b7  %s", fxRate(fxPanel.getRate()),
                         fxCa < 0 ? "deficit" : "surplus"),
                 fxCa < 0 ? PANEL_WARN : null,
                 () -> {
                     VBox b = panelBody(
-                            statLine("Rate", String.format("%.4f", fxPanel.getRate())),
+                            statLine("Rate", fxRate(fxPanel.getRate())),
                             statLine("vs parity",
                                     String.format("%+.1f%%", fxDrift * 100),
                                     Math.abs(fxDrift) > .15 ? PANEL_WARN : null));

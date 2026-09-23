@@ -1,6 +1,6 @@
 # Where.java - 71 lines · 1 methods · 0 constants · tools
 
-`ham/citybuildersim/tools/Where.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/Where.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > Finds a member by name anywhere in the tree and, if asked, prints it.
 > 

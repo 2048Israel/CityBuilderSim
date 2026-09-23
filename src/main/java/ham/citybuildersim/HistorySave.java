@@ -222,6 +222,20 @@ public class HistorySave {
     private List<Double> studentLoanInterest = new ArrayList<>();
 
     /* ------------------------------------------------------------------
+       THE CENTRAL BANK, 0.7.0. The Money page's year and the year book's:
+       M0 (what the central bank owes - every dollar it has made and not
+       taken back), M2 (what the public holds - the bank's deposits plus
+       currency), what the treasury owes it in advances, its reserves
+       liability (M0 less currency, which is none yet, so the two lines lie
+       on each other until somebody holds cash), and the month's remittance.
+       ------------------------------------------------------------------ */
+    private List<Double> m0 = new ArrayList<>();
+    private List<Double> m2 = new ArrayList<>();
+    private List<Double> advancesToTreasury = new ArrayList<>();
+    private List<Double> reserves = new ArrayList<>();
+    private List<Double> remittance = new ArrayList<>();
+
+    /* ------------------------------------------------------------------
        THE LONG SICK, 2026-09-11. How many have been sick more than two
        months, how many died of it, and what share of the sick got better.
        ------------------------------------------------------------------ */
@@ -399,6 +413,13 @@ public class HistorySave {
         bankProfit.add(round2(lender.getNetIncome()));
         bankBranches.add(round2(lender.getBranches()));
         householdSavings.add(round2(game.getHouseholds().getCumulativeSaving()));
+
+        CentralBank cb = game.getCentralBank();
+        m0.add(round2(cb.m0()));
+        m2.add(round2(game.getM2()));
+        advancesToTreasury.add(round2(cb.getAdvancesToTreasury()));
+        reserves.add(round2(cb.getReserves()));
+        remittance.add(round2(cb.getRemitted()));
 
         /* ------------------------ the budget ------------------------ */
         taxWage.add(round2(accounts.getTaxWage()));
@@ -599,6 +620,11 @@ public class HistorySave {
         studentGrants = copy(loaded.studentGrants);
         studentLoansOwed = copy(loaded.studentLoansOwed);
         studentLoanInterest = copy(loaded.studentLoanInterest);
+        m0 = copy(loaded.m0);
+        m2 = copy(loaded.m2);
+        advancesToTreasury = copy(loaded.advancesToTreasury);
+        reserves = copy(loaded.reserves);
+        remittance = copy(loaded.remittance);
         sickPastTwoMonths = copy(loaded.sickPastTwoMonths);
         diedOfIllness = copy(loaded.diedOfIllness);
         sickRecovery = copy(loaded.sickRecovery);
@@ -800,6 +826,11 @@ public class HistorySave {
         map.put("studentGrants", studentGrants);
         map.put("studentLoansOwed", studentLoansOwed);
         map.put("studentLoanInterest", studentLoanInterest);
+        map.put("m0", m0);
+        map.put("m2", m2);
+        map.put("advancesToTreasury", advancesToTreasury);
+        map.put("reserves", reserves);
+        map.put("remittance", remittance);
         map.put("sickPastTwoMonths", sickPastTwoMonths);
         map.put("diedOfIllness", diedOfIllness);
         map.put("sickRecovery", sickRecovery);
@@ -887,7 +918,8 @@ public class HistorySave {
                 contributions, pensionBill, healthBill,
                 rentPrice,
                 eiPaid, eiPremiums, studentGrants, studentLoansOwed,
-                stolen, safetyBill, healthPremiums, studentLoanInterest);
+                stolen, safetyBill, healthPremiums, studentLoanInterest,
+                m0, m2, advancesToTreasury, reserves, remittance);
 
         // A share's price is money; how many shares there are is not.
         if (sharePrice != null) for (List<Double> s : sharePrice.values()) scaleAll(scale, s);

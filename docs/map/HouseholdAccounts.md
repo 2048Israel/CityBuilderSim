@@ -1,6 +1,6 @@
 # HouseholdAccounts.java - 1,123 lines · 84 methods · 10 constants · model
 
-`ham/citybuildersim/HouseholdAccounts.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdAccounts.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The city's residents, treated as one household.
 > 

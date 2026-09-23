@@ -203,6 +203,21 @@ public abstract class Household {
     double abroad;
 
     /**
+     * THE CITY'S OWN PAPER, AT HOME (0.7.1): face held, per household of the
+     * cell, in local money - the fourth asset beside the bank balance, the
+     * shares and the dollars abroad. Jerus: "yes households should be able to
+     * hold." Bought at the settle of an issue when the yield beats what the
+     * bank pays savers, sold back to the bank's desk before the shares when
+     * the household is short, and a little a month when the spread that
+     * brought it in has gone; its coupons and its principal are paid into
+     * savings. A STOCK on the class header's terms - carried, saved, and it
+     * follows the people. What it is worth is its face at the households'
+     * book ratio (HouseholdBalance.getPaperRatio()), one figure a month; the
+     * sum over every cell is DebtManager.householdPrincipal() exactly.
+     */
+    double paper;
+
+    /**
      * CARS THIS HOUSEHOLD OWNS, per household of the cell, 0 to 1 (2026-09-16).
      *
      * A STOCK LIKE THE OTHERS AND NOT LIKE THEM. It sits beside savings, debt,
@@ -279,10 +294,11 @@ public abstract class Household {
 
          A household pays its care bill out of what its plan says it will
          have next month AFTER rent, the other bills and a basket for
-         everybody in it - its income, its savings, its paper abroad and the
-         credit still open to it, which is the waterfall's own order. What
-         fits is paid; what would have to come out of the food budget is
-         not, and that share of the household's people goes without care.
+         everybody in it - its income, its savings, the city's paper it holds
+         (0.7.1), its paper abroad and the credit still open to it, which is
+         the waterfall's own order. What fits is paid; what would have to
+         come out of the food budget is not, and that share of the
+         household's people goes without care.
 
        So a household that can still cover its bills out of income, savings,
        shares or credit pays the whole fee and is served exactly as it was;
@@ -382,6 +398,9 @@ public abstract class Household {
     /** Shares sold this month to cover the shop, per household, in cash. */
     double sold;
 
+    /** The city's paper sold this month - to cover the shop or because the spread went - and its coupons and principal received, per household, in cash (0.7.1). */
+    double paperSold, paperIncome;
+
     /** Student loan drawn this month, and repaid (principal), per household. */
     double studentBorrowed, studentRepaid;
 
@@ -401,6 +420,15 @@ public abstract class Household {
     interface Liquidity {
         /** @return cash raised, per household of the cell */
         double sell(Household cell, double needPer);
+
+        /**
+         * ...and the city's paper, first (0.7.1): sold to the bank's desk at
+         * the households' book ratio for exactly what is short, or everything
+         * held if that is less. Nothing where there is no desk.
+         *
+         * @return cash raised, per household of the cell
+         */
+        default double sellPaper(Household cell, double needPer) { return 0; }
     }
 
     protected Household(FamilyStructure shape) {
@@ -518,6 +546,8 @@ public abstract class Household {
     }
 
     public double households() { return households; }
+    /** Under HouseholdBalance.EMPTY_CELL households: too few to strike, to hold anything or to be paid. */
+    public boolean isEmpty()   { return households < HouseholdBalance.EMPTY_CELL; }
     /** People in the whole cell - its households times what each of them holds. */
     public double people()     { return households * headcount(); }
 
@@ -544,6 +574,11 @@ public abstract class Household {
 
     /** Dollars held abroad, per household. */
     public double abroad()      { return abroad; }
+    /** The city's paper held, per household, at face (0.7.1). */
+    public double paper()       { return paper; }
+    /** ...sold this month, and its coupons and principal received, per household, in cash. */
+    public double paperSold()   { return paperSold; }
+    public double paperIncome() { return paperIncome; }
     public double cars()        { return cars; }
     /** Every car this cell's households own between them. */
     public double totalCars()   { return cars * households; }
@@ -610,6 +645,7 @@ public abstract class Household {
     /** The cell's totals: the per-household figure times the households. */
     public double totalSavings()  { return savings * households; }
     public double totalAbroad()   { return abroad * households; }
+    public double totalPaper()    { return paper * households; }
     public double totalDebt()     { return debt * households; }
     public double totalInterest() { return interest * households; }
     public double totalBorrowed() { return borrowed * households; }
@@ -674,6 +710,7 @@ public abstract class Household {
         double gap = spentPer - afterFixed;
 
         drawn = 0; borrowed = 0; repaid = 0; banked = 0; unfunded = 0; sold = 0;
+        paperSold = 0; paperIncome = 0;
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
         studentBorrowed = 0; evicted = 0;
         // Principal only comes off the balance: the interest was charged on
@@ -683,6 +720,21 @@ public abstract class Household {
             drawn = Math.min(gap, Math.max(0, savings));
             savings -= drawn;
             double still = gap - drawn;
+
+            /*
+             * THEN THE CITY'S PAPER (0.7.1), before the dollars abroad and
+             * the shares: it is the nearer thing to cash - written in the
+             * city's own money, bought back by the bank's desk at the
+             * month's market value, no currency to cross and no mark to
+             * wait for. Sold for exactly what is still short, or all of it.
+             * A crossing out of the pools, declared through the desk's own
+             * counter - see HouseholdBalance.setPaperDesk().
+             */
+            if (still > 0 && paper > 0 && market != null) {
+                double raised = market.sellPaper(this, still);
+                paperSold += raised;
+                still -= raised;
+            }
 
             /*
              * THEN THE PAPER ABROAD, which is liquid: sold at the month's rate
@@ -741,6 +793,25 @@ public abstract class Household {
      * @return the plan per household
      */
     double plan(double localPerUsd) {
+        return plan(localPerUsd, 1, 1);
+    }
+
+    /**
+     * @param paperRatio what a dollar of the city's paper is worth this month
+     *                   (0.7.1): the households' book at the curve over its face
+     */
+    double plan(double localPerUsd, double paperRatio) {
+        return plan(localPerUsd, paperRatio, 1);
+    }
+
+    /**
+     * @param spendFactor the share of its spending above subsistence this
+     *                    household plans (0.7.3): HouseholdBalance
+     *                    .spendFactor() on the month's real deposit rate, 1
+     *                    at no real return - see AND WHAT IT SPENDS ANSWERS
+     *                    THE REAL RATE below
+     */
+    double plan(double localPerUsd, double paperRatio, double spendFactor) {
         /*
          * INVESTMENT INCOME IS INCOME (2026-09-17).
          *
@@ -774,10 +845,36 @@ public abstract class Household {
          * the same reason: somebody at their credit ceiling is not wealthy.
          */
         double netWorth = Math.max(0,
-                savings + abroad * Math.max(0, localPerUsd) - debt);
-        want = subsistence + HouseholdBalance.MARGINAL_PROPENSITY
-                * Math.max(0, afterFixed + Math.max(0, investmentIncome) - subsistence)
-                + HouseholdBalance.WEALTH_SPENT_A_MONTH * netWorth;
+                savings + abroad * Math.max(0, localPerUsd)
+                        + paper * Math.max(0, paperRatio) - debt);
+        /* =================================================================
+           AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3)
+
+           Jerus's design (the-central-bank.md section 9): for the rate to
+           bite at home, a household's saving must answer the real return.
+           The two terms above subsistence are what a household at NO real
+           return would spend; `spendFactor` is the share of them it plans
+           this month - less when saving pays, more when it costs. The dial
+           and the WHY are HouseholdBalance's, under the same title.
+
+           THE WHOLE DISCRETIONARY BUDGET, NOT ONLY THE GROCER'S. The
+           counter and the table below spend out of the SURPLUS, which is
+           income less `want`; scaling `want` alone would have handed what
+           the grocer lost straight to the counter and the table, three
+           quarters of it - and since the grocer's discretionary share is
+           mostly refused past appetite anyway (see
+           LUXURY_SHARE_OF_SURPLUS), a hike would have RAISED what the city
+           spends. So the surplus is struck at no real return and scaled by
+           the same factor, and so is the wealth term wherever it is spent:
+           every dollar above a basket a head answers the one rate, and
+           what is left of the month is saved. At a factor of 1 every line
+           below is the plan as it was, to the bit.
+           ================================================================= */
+        double fromIncome = HouseholdBalance.MARGINAL_PROPENSITY
+                * Math.max(0, afterFixed + Math.max(0, investmentIncome) - subsistence);
+        double fromWealth = HouseholdBalance.WEALTH_SPENT_A_MONTH * netWorth;
+        double wantAtNoReturn = subsistence + fromIncome + fromWealth;
+        want = subsistence + spendFactor * fromIncome + spendFactor * fromWealth;
         /* =================================================================
            AND THE FORTUNE ALSO ASKS FOR WATCHES (2026-09-17)
 
@@ -807,8 +904,11 @@ public abstract class Household {
            no household pays twice - and the day the share-path divergence is
            found, the term comes out of `want` and this comment goes with it.
            ================================================================= */
-        double surplus = Math.max(0, afterFixed + Math.max(0, investmentIncome) - want);
-        luxuryWant = HouseholdBalance.WEALTH_SPENT_A_MONTH * netWorth
+        // ...struck at no real return and scaled like the rest (0.7.3):
+        // see AND WHAT IT SPENDS ANSWERS THE REAL RATE above.
+        double surplus = spendFactor
+                * Math.max(0, afterFixed + Math.max(0, investmentIncome) - wantAtNoReturn);
+        luxuryWant = spendFactor * fromWealth
                 + HouseholdBalance.LUXURY_SHARE_OF_SURPLUS * surplus;
         /* =================================================================
            AND WHAT IT WOULD SPEND EATING OUT (2026-09-18)
@@ -845,7 +945,7 @@ public abstract class Household {
            ================================================================= */
         mealWant = HouseholdBalance.MEAL_SHARE_OF_SURPLUS * surplus
                 + HouseholdBalance.MEAL_SHARE_OF_WEALTH
-                        * HouseholdBalance.WEALTH_SPENT_A_MONTH * netWorth;
+                        * HouseholdBalance.WEALTH_SPENT_A_MONTH * netWorth * spendFactor;
         /*
          * AND THE PAPER ABROAD IS SPENDABLE, which it always was and the plan
          * never knew. settle()'s waterfall sells it at the month's rate the
@@ -855,7 +955,8 @@ public abstract class Household {
          * above would have been a wish rather than a purchase.
          */
         spendable = Math.max(0, afterFixed) + savings
-                + abroad * Math.max(0, localPerUsd) + planningRoom();
+                + abroad * Math.max(0, localPerUsd) + paper * Math.max(0, paperRatio)
+                + planningRoom();
         planned = Math.min(want, spendable);
         return planned;
     }
@@ -876,7 +977,8 @@ public abstract class Household {
     }
 
     /**
-     * What is still short after savings, the paper abroad and the shares:
+     * What is still short after savings, the city's paper, the paper abroad
+     * and the shares:
      * the revolving credit line, up to its ceiling. A student's is a student
      * loan instead, which never runs out - see StudentHousehold.
      *
@@ -979,6 +1081,7 @@ public abstract class Household {
         borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; rate = 0;
         subsistence = 0; bankrupt = 0; dividends = 0; sold = 0; carsSold = 0;
         luxuryWant = 0; mealWant = 0; spendable = 0; careSkipped = 0;
+        paperSold = 0; paperIncome = 0;
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
         studentBorrowed = 0; studentRepaid = 0; studentInterest = 0; evicted = 0;
     }
@@ -986,6 +1089,7 @@ public abstract class Household {
     /** The cell is empty: no position either. */
     void clearAll() {
         savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0; studentDebt = 0;
+        paper = 0;
         cars = 0; mealsEaten = 0; carePaid = 1;
         java.util.Arrays.fill(shares, 0);
         clearWorking();
@@ -994,6 +1098,8 @@ public abstract class Household {
     /** Everything in money, in the new unit. Rates, counts, months, SHARES and DOLLARS do not move. */
     void redenominate(double scale) {
         savings *= scale;  debt *= scale;  dividends *= scale;  sold *= scale;
+        // The city's paper is in the city's money: it moves (0.7.1).
+        paper *= scale;  paperSold *= scale;  paperIncome *= scale;
         /*
          * AND THE MONTH'S INVESTMENT INCOME, which is money like the rest of
          * this line and was left off it on the first try (2026-09-17).

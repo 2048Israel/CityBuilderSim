@@ -205,6 +205,26 @@ public final class Money {
         return "$0";
     }
 
+    /**
+     * An exchange rate - local dollars per US dollar, a ratio and not money,
+     * so it never goes through toDollars().
+     *
+     * AT ANY SIZE SINCE 0.7.3, when the currency's guards became a billion
+     * either way (ForeignAccounts.MAX_RATE and MIN_RATE, numerical guards
+     * only): four decimals where every rate has lived until now, grouped two
+     * past a thousand, whole past a million, and three significant figures
+     * under a ten-thousandth - where "%.4f" printed a currency still worth
+     * something as 0.0000.
+     */
+    public static String fxRate(double rate) {
+        if (!Double.isFinite(rate)) return "–";
+        double a = Math.abs(rate);
+        if (a >= 1e6) return String.format("%,.0f", rate);
+        if (a >= 1e3) return String.format("%,.2f", rate);
+        if (a >= 1e-4 || a == 0) return String.format("%.4f", rate);
+        return new java.math.BigDecimal(rate).round(new java.math.MathContext(3)).toPlainString();
+    }
+
     /** 12.4k rather than 12,400 - the panel is narrow and these are two to a row. */
     public static String shortNumber(double value) {
         if (value >= 1_000_000) return String.format("%.1fM", value / 1_000_000);

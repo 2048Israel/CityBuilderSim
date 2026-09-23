@@ -1,6 +1,6 @@
 # PriceIndex.java - 287 lines · 16 methods · 3 constants · model
 
-`ham/citybuildersim/PriceIndex.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PriceIndex.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > What a month costs a household, against what it cost at founding.
 > 
@@ -25,7 +25,7 @@
 > spend two thirds of their money on food has a food-weighted index, and it
 > should, because that is whose cost of living this is.
 
-**Used by (5):** [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PolicyScreen](PolicyScreen.md), [UserInterface](UserInterface.md)
+**Used by (7):** [CurrencyCheck](CurrencyCheck.md), [Game](Game.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PolicyScreen](PolicyScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

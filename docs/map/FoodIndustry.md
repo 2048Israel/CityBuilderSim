@@ -1,6 +1,6 @@
 # FoodIndustry.java - 98 lines · 6 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/FoodIndustry.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/FoodIndustry.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The mills and the plants that feed the shops.
 > 

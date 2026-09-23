@@ -92,6 +92,114 @@ public abstract class Debt {
         return foreign ? own * exchangeRate : own;
     }
 
+    /* =======================================================================
+       WHO HOLDS IT (0.7.1)
+       =======================================================================
+
+       Jerus, on the holders: "yes households should be able to hold." Until
+       0.7.1 the commercial bank held every dollar of the city's own paper,
+       so a bond was a loan with extra steps. Three holders now, and the split
+       is what makes a bond market rather than a loan: the HOUSEHOLDS, who
+       take a share at the settle when the yield beats the deposit rate and
+       sell back to the bank's desk; the CENTRAL BANK, which buys and sells
+       from the bank's holdings with money it makes (the holdings dial, QE and
+       QT); and the COMMERCIAL BANK, which holds the rest - the residual buyer
+       at issue, and the desk on the way back.
+
+       Kept ON THE PAPER, not beside it, so a serial slice, a coupon, a
+       maturity or a buyback can split by holder without asking anybody
+       else: principal held, in local money, by the two holders who are not
+       the bank, and the bank holds what is left. Domestic paper only - a
+       dollar bond is held abroad, and these read zero on it.
+
+       SAVED WITH THE PAPER. DataSave serialises the debt list whole with Gson,
+       and a key an old save does not carry reads zero: the bank held
+       everything, which is exactly what every bank did before 0.7.1.
+       ======================================================================= */
+
+    /** Principal of this paper the city's households hold, in local money. Zero on an old save: the bank held everything. */
+    protected double householdPrincipal;
+
+    /** ...and the central bank, at face (its open-market holdings). Zero on an old save. */
+    protected double centralBankPrincipal;
+
+    /**
+     * What the buyers still owe for this paper: the cash the treasury received
+     * at issue, which the households and the bank hand over at the next settle
+     * (Game, THE BANK SETTLES). The issue carries what the settle needs on the
+     * paper itself, so a city saved between the issue and the settle still
+     * settles it right. Zero on an old save, whose settle the totals carried.
+     */
+    protected double settleDue;
+
+    /** The market rate it was issued at - the curve's rate for its maturity - which the households weigh against the deposit rate at the settle. Zero on an old save. */
+    protected double issueYield;
+
+    /**
+     * FACE LESS WHAT THE CITY RECEIVED FOR IT, at issue (0.7.1), and the part
+     * of it not yet accreted. The discount is the buyer's interest and it
+     * belongs to the whole life of the paper, so it accretes straight-line
+     * over the months left rather than landing in the settle month - which is
+     * where it landed until 0.7.1: $60M of "interest" in one month of seed 0
+     * borrowing at home, taxed, 45% of it payable to savers
+     * (the-bank-that-never-paid.md section 5). Zero on an old save, whose
+     * discount was booked the month it settled.
+     */
+    protected double issueDiscount;
+    protected double discountLeft;
+
+    public double householdPrincipal()   { return foreign ? 0 : householdPrincipal; }
+    public double centralBankPrincipal() { return foreign ? 0 : centralBankPrincipal; }
+
+    /** What the commercial bank holds: the rest of the principal. Zero on a dollar bond, which is held abroad. */
+    public double bankPrincipal() {
+        return foreign ? 0 : Math.max(0, getOustandingPrincipal() - householdPrincipal - centralBankPrincipal);
+    }
+
+    public double getSettleDue()      { return settleDue; }
+    public double getIssueYield()     { return issueYield; }
+    public double getIssueDiscount()  { return issueDiscount; }
+    public double getDiscountLeft()   { return discountLeft; }
+
+    /** Told at issue what it raised and at what yield. See Game's handle*Logic(). */
+    void markIssued(double received, double yield) {
+        if (foreign) return;
+        settleDue = Math.max(0, received);
+        issueYield = yield;
+        issueDiscount = Math.max(0, getOustandingPrincipal() - received);
+        discountLeft = issueDiscount;
+    }
+
+    /** The settle has taken place: nothing is owed for this paper any more. */
+    void settled() { settleDue = 0; }
+
+    /** Moves face between the holders: positive to the households or the central bank from the bank, negative back to it. */
+    void moveToHouseholds(double face)  { householdPrincipal = Math.max(0, householdPrincipal + face); }
+    void moveToCentralBank(double face) { centralBankPrincipal = Math.max(0, centralBankPrincipal + face); }
+
+    /**
+     * The unaccreted discount that rides on this much face - the part a
+     * holder gives up, or takes on, when that face changes hands.
+     */
+    public double unaccretedOn(double face) {
+        double out = getOustandingPrincipal();
+        return out > 0 && face > 0 ? discountLeft * Math.min(1, face / out) : 0;
+    }
+
+    /**
+     * This month's accretion: what is left of the discount over the months
+     * left, taken off what is left. Straight-line, and exact to the last
+     * month, when the remainder goes whole. Called by DebtManager before the
+     * month's payments, so the holders' shares it is split by are the ones
+     * the month opened with.
+     */
+    double accrete() {
+        if (foreign || discountLeft <= 0) return 0;
+        double step = remainingMonths <= 1 ? discountLeft : discountLeft / remainingMonths;
+        discountLeft = Math.max(0, discountLeft - step);
+        return step;
+    }
+
     public abstract void processMonth(Game game);
 
     public abstract double getIssuePrice();
@@ -160,13 +268,16 @@ public abstract class Debt {
      */
     protected void payPrincipal(Game game, double owed) {
         if (foreign) game.repayForeignPrincipal(owed);
-        else         game.subtractCash(owed);
+        else         game.payDomesticPrincipal(this, owed);
     }
 
-    /** A coupon, likewise. @param owed in the paper's own currency */
+    /**
+     * A coupon, likewise - and at home, split by who holds the paper (0.7.1):
+     * see Game.payDomesticCoupon(). @param owed in the paper's own currency
+     */
     protected void payCoupon(Game game, double owed) {
         if (foreign) game.payForeignInterest(owed);
-        else         game.InterestExpense(owed);
+        else         game.payDomesticCoupon(this, owed);
     }
 
     /** Months of payments still to run. */
@@ -191,7 +302,11 @@ public abstract class Debt {
      * What this paper is worth today, to somebody buying it.
      *
      * The present value of everything it still owes, discounted at the rate the
-     * market is charging the city NOW.
+     * market is charging the city NOW - and since 0.7.1, for the city's own
+     * paper, at the CURVE's rate for the months it has left, which is what
+     * DebtManager.marketValue() hands in: a bond with thirty years to run is
+     * priced at the thirty-year rate, not at the note's. This method takes
+     * the rate it is given, so a fixture can price at anything.
      *
      * WHY THIS IS NOT THE FACE VALUE, which is the whole point of being able to
      * buy it back:
@@ -337,6 +452,13 @@ public abstract class Debt {
         if (!foreign) {
             faceValue *= scale;
             outstandingPrincipal *= scale;
+            // Who holds it, and what is still owed for it, in the new unit;
+            // the yield is a rate and does not move.
+            householdPrincipal *= scale;
+            centralBankPrincipal *= scale;
+            settleDue *= scale;
+            issueDiscount *= scale;
+            discountLeft *= scale;
         }
         exchangeRate *= scale;
         redenominateSchedule(scale);

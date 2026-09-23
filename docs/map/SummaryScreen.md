@@ -1,6 +1,6 @@
 # SummaryScreen.java - 1,632 lines · 27 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The left panel's content: the summary and the dashboard - the vitals, the
 > alert block, the six lines that are always worth a glance or the thirteen

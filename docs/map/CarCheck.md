@@ -1,6 +1,6 @@
 # CarCheck.java - 722 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/CarCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CarCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The cars: who buys one, what it costs them, and what it does to the road.
 > 

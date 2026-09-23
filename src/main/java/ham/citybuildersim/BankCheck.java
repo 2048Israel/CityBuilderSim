@@ -29,6 +29,10 @@ import java.nio.file.Path;
  *      sum to the figure above them, and the term that makes them - the
  *      re-mark of what the desk holds - is measured on a fixture that trades
  *      and counted on a played city.
+ *   5. Does the bank PAY for the city's paper? It held every bond the city
+ *      sold and, until 2026-09-21, had never handed over a dollar for one -
+ *      section 10. Since 0.7.1 it pays for what the households did not take,
+ *      and earns the discount as it accretes rather than the month it settles.
  *
  * Each of those is measured by CAUSING the condition, never by finding a city
  * that happens to be in it.
@@ -225,6 +229,35 @@ public class BankCheck {
         close("a bank short of CAPITAL does not bid for deposits it may not lend",
                 capped.depositInterest(), baselinePay, 1e-9);
 
+        /*
+         * ...AND THE RATE IT QUOTES IS NEVER MORE THAN IT CHARGES (0.7.3). A
+         * founding bank's shape: its own capital at the central bank earning
+         * the policy rate, and a deposit book that has barely opened - $5.7k,
+         * seed 0's first month. The baseline share of what it earned, over
+         * deposits that small, is thousands of per cent a year; since the
+         * households' spending reads this rate, the rate reported stops at
+         * what the bank charges, and the money paid does not move.
+         */
+        Bank opening = new Bank();
+        opening.refresh(1, 5.7, 0, 0, 0, 0);
+        opening.injectCapital(1_000_000);
+        opening.startMonth();
+        opening.fundToCover(.03);
+        double payoutRate = opening.depositInterest() / opening.getDeposits() * 12;
+        System.out.printf("   a bank's first month: paid %,.1f on %,.1f of deposits - %,.0f%% a year;"
+                + " it charges %.2f%%%n", opening.depositInterest(), opening.getDeposits(),
+                payoutRate * 100, opening.lendingRate(.03) * 100);
+        assertTrue("fixture: its payout over its deposits is more than it charges",
+                payoutRate > opening.lendingRate(.03));
+        close("the first month's reported deposit rate is at most the lending rate",
+                opening.depositRate(), opening.lendingRate(.03), 1e-12);
+        assertTrue("...and the month says the quote was capped", opening.isDepositRateCapped());
+        close("...while what it pays its savers is unchanged: the baseline share of what it earned",
+                opening.depositInterest(), opening.getInterestEarned() * Bank.DEPOSIT_PASS_THROUGH, 1e-9);
+        assertTrue("a bank whose payout is under what it charges quotes the payout itself",
+                !earner.isDepositRateCapped()
+                        && Math.abs(earner.depositRate() - earner.depositInterest() / earner.getDeposits() * 12) < 1e-9);
+
         /* ---------------- ...and it does not open counters either ----------------
          *
          * WHY THIS IS ASSERTED ON A CLOSED MONTH AND NOT A LIVE ONE, which is
@@ -376,6 +409,15 @@ public class BankCheck {
         try {
             city.run();
             city.getForeignAccounts().pinRate(1.0);
+            /*
+             * THE DIAL UNDER THE WORLD'S RATE, since 0.7.0, so the carry
+             * section below has a funding currency to find. It used to get one
+             * for free: the city's paper was quoted CITY_DISCOUNT under the
+             * dial, 1% against the world's 2%, and the carry trade was priced
+             * off that. The floor is the policy rate itself now, so the
+             * fixture causes the condition rather than inheriting it.
+             */
+            city.getDebtManager().setPolicyRate(DebtManager.MIN_POLICY_RATE);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
             city.buildStack(template(city, "Industrial Bakery"), 2, false);
@@ -413,9 +455,9 @@ public class BankCheck {
          * cut the bank's capital by the whole principal and resolved it on the
          * first foreign borrower.
          *
-         * This fixture causes one rather than hoping for it - the city runs at
-         * the policy floor, which puts it under the world's rate and makes it
-         * the funding currency the trade needs.
+         * This fixture causes one rather than hoping for it - the dial is set
+         * to its floor above, which puts the city under the world's rate and
+         * makes it the funding currency the trade needs.
          */
         assertTrue("fixture: somebody abroad has actually borrowed",
                 live.getCarryBook() > 0);
@@ -429,8 +471,10 @@ public class BankCheck {
         close("the sector book IS the business lender's principal",
                 live.getSectorBook(),
                 city.getEconomyManager().getBusinessDebtManager().getAllPrincipal(), 1e-6);
-        close("the city book IS the treasury's principal",
-                live.getCityBook(), city.getDebtManager().getAllPrincipal(), 1e-6);
+        // The DOMESTIC principal since 0.7.0: dollar paper is held abroad, and
+        // this line used to assert the bank held it too - see Game.refreshBank().
+        close("the city book IS the treasury's principal at home",
+                live.getCityBook(), city.getDebtManager().getDomesticPrincipal(), 1e-6);
         close("the household book IS what the families owe",
                 live.getHouseholdBook(), city.getHouseholdBalance().bookOwed(), 1e-6);
 
@@ -1052,7 +1096,8 @@ public class BankCheck {
          * world and it turns a profit, pays 1.18% against a 1.00% sovereign,
          * and this failed on a bank doing nothing wrong.
          *
-         * A bank whose reserves are placed at the world's rate can pay its
+         * A bank whose reserves earn a rate of their own - the policy rate at
+         * the central bank since 0.7.0, the world's rate before it - can pay its
          * savers more than it charges its own borrowers and still make money,
          * because lending is not where its income is coming from. That is a
          * real bank and there are several. What it can NEVER do is pay out more
@@ -1196,7 +1241,233 @@ public class BankCheck {
         hollow.receiveBailout(hollow.recapitalisationNeeded());
         assertTrue("...and can lend again once it has it", hollow.capacity() > 0);
 
+        theBankPaysForTheCitysPaper();
+
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ============ 10. the bank pays for the city's paper (2026-09-21) ============
+
+       Jerus, on the central bank that is coming: "the central bank would buy
+       gbonds or sell gbonds from thin air". It can only trade paper with a
+       commercial bank that owns the paper - and this one never paid for it.
+       Every issue lands between two presses; the settlement snapshot was
+       taken after the top-of-month clear, so bank.lend() was handed zero for
+       every bond the city ever sold. The book still rose by the face (it is
+       read off the treasury's principal), the coupons and the principal still
+       came in, and the cash never went out: equity from nothing, and money
+       for the treasury from nowhere. See Game, THE BANK PAYS FOR THE CITY'S
+       PAPER.
+
+       CAUSED: a working city with a bank and no debt, which then issues a
+       note and a serial bond between two presses and turns one month.
+
+       "LESS THE ORDINARY MONTH", STRUCK THE WAY SECTION 8 STRIKES IT. The
+       bank's cash moves for a dozen reasons in any month. Its equity is its
+       cash plus its books plus the desk, less the hot money it owes - so the
+       cash moves by the equity's move, less what went into each book. And
+       section 8 asserts, every month, that the equity moves by net income and
+       capital and nothing else. Put the two together, take out the discount
+       (which is in the net income and is the paper's), and what is left is
+       the month the bank would have had anyway; the paper is the difference.
+       On the old order the bank paid nothing, its equity rose by the face
+       with no income behind it, and the four assertions below that read the
+       settle fail: the cash, the figure the settle reports, the equity, and
+       the reloaded city's settle.
+
+       SINCE 0.7.1 THE BANK IS THE RESIDUAL BUYER: the households take their
+       share at the settle first (Game, THE HOUSEHOLDS TAKE THEIR SHARE), so
+       the bank pays what the treasury received less what they paid, and its
+       book rises by its own face. And the discount ACCRETES: what is taken
+       out of the net income above is the month's accretion on the bank's
+       share, not the whole discount - and the part that pays for the rest of
+       the paper's life sits against the book as unearned, so the equity does
+       not move for it. Carried on through the note's six months, the
+       accretion adds up to the paper's face less what it raised.
+
+       AND THE HOUSEHOLDS HOLD THEIR PAPER THROUGH THE SETTLE, which the
+       arithmetic above needs and which was never asserted until 0.7.2. If
+       the paper yields no more than the bank pays savers, the households
+       sell a tenth of it back to the bank's desk that month
+       (HouseholdBalance.sellPaperForSpread()) - bank cash for paper, in the
+       month under test, and in neither "the ordinary month" nor the settle.
+       The bank raises its deposit rate in the settle month to fund the
+       settle, and with a $10,000k note and a $20,000k serial it raised it to
+       within a fifth of a point of the paper's yield (6.383% against 6.560%)
+       - and past it once the household cells under half a household were
+       emptied (0.7.2): 6.825% against 6.726%, and the desk bought $1,080k
+       back. Half the issue leaves the bank less to fund and
+       the households a quarter of a point (6.359% against 6.615%), and the
+       fixture line after the month says the desk bought nothing.
+       ============================================================ */
+    static void theBankPaysForTheCitysPaper() throws Exception {
+        out.println("\n--- and the bank pays for the city's paper ---");
+
+        Path paperRoot = Files.createTempDirectory("bankcheck-paper");
+        GameFiles paperFiles = new GameFiles(paperRoot.resolve("data"), paperRoot.resolve("no-legacy"));
+        Game city = new Game(paperFiles);
+        System.setOut(quiet);
+        try {
+            city.run();
+            city.getForeignAccounts().pinRate(1.0);
+            // The city section 8 puts up, standing on month one, for its reason:
+            // a city that works, so what is measured is the bank.
+            city.getLandManager().setOwnedSqFt(30_000_000);
+            city.buildStack(template(city, "House"), 400, true);
+            city.buildStack(template(city, "Convenience Store"), 8, true);
+            city.buildStack(template(city, "Small Grocery Store"), 2, true);
+            city.buildStack(template(city, "Bakery"), 1, true);
+            city.buildStack(template(city, "Paved Road"), 20, true);
+            city.buildStack(template(city, "Industrial Bakery"), 2, true);
+            city.buildStack(template(city, "Construction Depot"), 4, true);
+            city.buildStack(template(city, "Coal Power Plant"), 1, true);
+            city.buildStack(template(city, "Water Treatment Plant"), 1, true);
+            city.simulateMonths(24);
+        } finally {
+            System.setOut(out);
+        }
+        Bank bank = city.getBank();
+        assertTrue("fixture: the city has a working bank and owes nothing yet",
+                bank.getBranches() >= 1 && city.getDebtManager().getAllPrincipal() == 0);
+
+        /* ---- between the presses: a note and a serial bond ---- */
+        double treasuryBefore = city.getCash();
+        double faceBefore = city.getDebtManager().getDomesticPrincipal();
+        double cashBefore = bank.getCash();
+        double sectorBefore = bank.getSectorBook(), cityBefore = bank.getCityBook();
+        double householdBefore = bank.getHouseholdBook(), carryBefore = bank.getCarryBook();
+        double securitiesBefore = bank.getSecurities();
+        double hotBefore = Math.max(0, bank.getForeignDeposits());
+        double equityBefore = bank.equity();
+        System.setOut(quiet);
+        try {
+            city.handleTBillLogic(5_000, 6, 1000);
+            city.handleMediumBondLogic(10_000, 10, 1000);
+        } finally {
+            System.setOut(out);
+        }
+        double received = city.getCash() - treasuryBefore;
+        double face = city.getDebtManager().getDomesticPrincipal() - faceBefore;
+        double discount = face - received;
+        out.printf("   the treasury sold $%,.2fk of paper for $%,.2fk (a $%,.2fk discount)%n",
+                face, received, discount);
+        assertTrue("fixture: the city issued a note and a serial bond, below par",
+                received > 0 && discount > 0);
+        close("between the presses the bank has not paid yet", bank.getCash(), cashBefore, 0);
+        close("...and owes the treasury exactly what it received",
+                city.getCityPaperUnsettled(), received, 1e-9);
+
+        /* ---- saved in between, and the reloaded city's bank still pays ---- */
+        Game twin;
+        System.setOut(quiet);
+        try {
+            city.saveGame(3, "paper, unpaid");
+            twin = new Game(paperFiles);
+            twin.loadGameSave(3);
+        } finally {
+            System.setOut(out);
+        }
+        close("a city saved between the issue and the settle still owes its bank's payment",
+                twin.getCityPaperUnsettled(), received, 1e-9);
+
+        /* ---- the month turns ---- */
+        System.setOut(quiet);
+        try {
+            city.simulateMonths(1);
+            twin.getForeignAccounts().pinRate(1.0);
+            twin.simulateMonths(1);
+        } finally {
+            System.setOut(out);
+        }
+
+        close("fixture: the households held their paper through the settle - the desk bought none",
+                bank.getPaperBoughtFromHouseholds(), 0, 0);
+
+        // The bank's share of the principal - what reaches it at the settle.
+        double repaid = city.getBankPrincipalRepaidThisMonth();
+        double explained = bank.getNetIncome()
+                + bank.getCapitalInjected() + bank.getCapitalFromHome()
+                + bank.getBailoutReceived() + bank.getFoundingSettlement()
+                - bank.getDividendsPaid();
+        // The month's accretion on the bank's share (0.7.1): the part of the
+        // discount in this month's net income, which is the paper's.
+        double accreted = city.getDebtManager().getAccretedForBank();
+        double householdsPaid = city.getHouseholdsBoughtPaper();
+        double bankPaid = received - householdsPaid;
+        double ordinary = (explained - accreted)
+                - (bank.getSectorBook() - sectorBefore)
+                - (bank.getHouseholdBook() - householdBefore)
+                - (bank.getCarryBook() - carryBefore)
+                - (bank.getSecurities() - securitiesBefore)
+                + (Math.max(0, bank.getForeignDeposits()) - hotBefore)
+                + repaid;
+        double cashMoved = bank.getCash() - cashBefore;
+        out.printf("   the bank's cash moved $%,.2fk: $%,.2fk the ordinary month, $%,.2fk the paper%n",
+                cashMoved, ordinary, cashMoved - ordinary);
+
+        out.printf("   the households paid $%,.2fk of it at the settle, the bank $%,.2fk%n",
+                householdsPaid, bankPaid);
+        close("the bank's cash fell by exactly what the treasury received less what the households"
+                + " paid, less the ordinary month", cashMoved - ordinary, -bankPaid, 1e-6);
+        close("...which is the figure the settle reports", city.getCityPaperSettled(), bankPaid, 1e-9);
+        close("...and between them the holders paid every dollar the treasury received",
+                city.getCityPaperSettled() + householdsPaid, received, 1e-9);
+        double bankFace = city.getDebtManager().bankPrincipal();
+        close("...its book rose by its own face, less what the city repaid it this month",
+                bank.getCityBook() - cityBefore, bankFace, 1e-6);
+        close("...and its equity by net income and capital, and nothing else - the discount, not the face",
+                bank.equity() - equityBefore - explained, 0, 1e-6);
+
+        close("...and once it has paid it owes nothing for the paper",
+                city.getCityPaperUnsettled(), 0, 0);
+        MoneyAudit.Result audit = city.getLastMoneyAudit();
+        out.printf("   %s%n", audit);
+        assertTrue("MoneyAudit still closes, on the month the bank paid",
+                Math.abs(audit.residual) < .01);
+        close("the reloaded city's bank paid the same, at its settle",
+                twin.getCityPaperSettled(), bankPaid, 1e-9);
+        close("...and its households the same", twin.getHouseholdsBoughtPaper(), householdsPaid, 1e-9);
+        assertTrue("...and its month closes too", Math.abs(twin.getLastMoneyAudit().residual) < .01);
+
+        /* ---- the discount accretes (0.7.1) ---- */
+        Debt note = null, serialBond = null;
+        for (Debt d : city.getDebtManager().getDebt()) {
+            if (d instanceof ShortTermTBill) note = d;
+            if (d instanceof MediumTermBond) serialBond = d;
+        }
+        assertTrue("fixture: the note and the serial are on the books", note != null && serialBond != null);
+        double noteDiscount = note.getIssueDiscount(), serialDiscount = serialBond.getIssueDiscount();
+        close("each piece carries its own discount, which together is face less what it raised",
+                noteDiscount + serialDiscount, discount, 1e-6);
+        double noteShare = note.bankPrincipal() / note.getOustandingPrincipal();
+        double serialShare = serialBond.bankPrincipal() / serialBond.getOustandingPrincipal();
+        double oneMonth = noteShare * noteDiscount / note.getDuration()
+                + serialShare * serialDiscount / serialBond.getDuration();
+        close("the bank's interest in the settle month carries one month of its share of the discount,"
+                + " not the whole", accreted, oneMonth, 1e-6);
+        assertTrue("...which is well short of the whole (the old rule booked all of it)",
+                accreted < .5 * (noteShare * noteDiscount + serialShare * serialDiscount));
+        close("the rest sits against its book, unearned, so its equity did not move for the discount",
+                bank.getUnearnedDiscount(),
+                city.getDebtManager().bankUnearnedDiscount(), 1e-9);
+        close("...and it is exactly the bank's share less what accreted",
+                bank.getUnearnedDiscount(),
+                noteShare * noteDiscount + serialShare * serialDiscount - oneMonth, 1e-6);
+
+        // Through the note's life: the discount runs down a month at a time and
+        // is gone the month the note is repaid.
+        double noteLeftBefore = note.getDiscountLeft();
+        double runsDown = noteDiscount - noteLeftBefore;
+        for (int m = 1; m < note.getDuration(); m++) {
+            double left = note.getDiscountLeft();
+            System.setOut(quiet);
+            try { city.simulateMonths(1); } finally { System.setOut(out); }
+            runsDown += left - note.getDiscountLeft();
+        }
+        close("over the note's life its accretion adds up to its face less what it raised",
+                runsDown, noteDiscount, 1e-6);
+        close("...and nothing of it is left unearned once it is repaid", note.getDiscountLeft(), 0, 1e-9);
+        assertTrue("...and it is off the books", !city.getDebtManager().getDebt().contains(note));
     }
 }

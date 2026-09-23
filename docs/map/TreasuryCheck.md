@@ -1,6 +1,6 @@
-# TreasuryCheck.java - 417 lines · 6 methods · 1 constants · harnesses
+# TreasuryCheck.java - 427 lines · 6 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TreasuryCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits what the screens say the treasury did. Not part of
 > the game.
@@ -76,7 +76,7 @@
 | 199 | · AND IT HAS TO SURVIVE A SAVE. |
 | 243 | · · and the first month back still has no gap |
 | 248 | · AND THE ROW OPENS. |
-| 400 | · THE REPORT. |
+| 410 | · THE REPORT. |
 
 ## Constants
 
@@ -94,11 +94,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 66 | 352 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
+| 66 | 362 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
 | 73 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 83 | 4 | `static void check(String what, boolean ok)` | A fact that is either so or not, printed either way so the run reads as a list. |
 | 89 | 4 | `static TreasuryJournal.Entry line(java.util.List<TreasuryJournal.Entry> journal, String label)` | The journal line with this label, or null when the month has none. |
 | 95 | 4 | `static double amount(java.util.List<TreasuryJournal.Entry> journal, String label)` | The amount on the journal line with this label, or 0 when there is none. |
 | 100 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 107 | 310 | `public static void main(String[] args)` |  |
+| 107 | 320 | `public static void main(String[] args)` |  |
 

@@ -1781,7 +1781,9 @@ final class PolicyScreen {
        textbook.
 
        Jerus picked this over an independent bank with a mandate: "the dial is
-       yours, but the screen shows what a Taylor rule would do".
+       yours, but the screen shows what a Taylor rule would do". Since 0.7.0
+       the player can also hand the dial to the rule - the autopilot - and take
+       it back; see WHOSE HAND IS ON THE DIAL below.
        ===================================================================== */
 
     void policyRatePage(VBox column) {
@@ -1798,10 +1800,11 @@ final class PolicyScreen {
          *
          * This read `rate - WORLD_BASE_RATE` and sat two lines under "The city
          * itself borrows at 1.00%", so the page said the city paid a point over
-         * the world's 2% while its own paper was quoted a point under it. The
-         * carry trade reads the city's rate and the bank's deposit rate, not the
+         * the world's 2% while its own paper was quoted a point under it. Hot
+         * money reads the city's rate and the bank's deposit rate, not the
          * dial (see Game.nextMonth and CapitalFlows), so this is the difference
-         * money actually follows.
+         * money actually follows. (The carry trade reads the bank's lending
+         * rate, struck on the dial itself since 0.7.0.)
          *
          * Worked out here rather than read off ForeignAccounts because that
          * field reads zero on a freshly loaded city until a month has ticked.
@@ -1813,16 +1816,16 @@ final class PolicyScreen {
 
         column.getChildren().add(statementHead("The price of money"));
         column.getChildren().add(leverHead(pct2(rate),
-                "The one number under every other rate in the city. Raising it supports "
-                + "the currency and makes every borrower pay more - that is not a side "
-                + "effect, it is the same act."));
+                "The one number under every other rate in the city. Raising it past "
+                + "inflation supports the currency and makes every borrower pay more - that "
+                + "is not a side effect, it is the same act."));
         column.getChildren().add(statementNote(String.format(
-                "This is the DIAL, not what anybody is charged. The city's own paper is "
-                + "priced from it: %.0f points under when the city owes nothing, and up to "
-                + "%.0f points over when it owes too much against its output and its taxes. "
-                + "The Finances tab takes that apart.",
-                DebtManager.CITY_DISCOUNT * 100,
-                (2 * DebtManager.maxSpreadPerMeasure() - DebtManager.CITY_DISCOUNT) * 100)));
+                "This is what the central bank pays on the bank's reserves, and so the "
+                + "least anybody in the city lends for. The city's own paper is priced "
+                + "from it: at the dial when the city owes nothing, and up to %.0f points "
+                + "over when it owes too much against its output and its taxes. The "
+                + "Finances tab takes that apart.",
+                2 * DebtManager.maxSpreadPerMeasure() * 100)));
 
         /*
          * THE RULE, AND THE DIAL'S STOP, when they are not the same number
@@ -1855,8 +1858,7 @@ final class PolicyScreen {
         column.getChildren().add(statementHead("What it is costing"));
         column.getChildren().add(statementLine("The city itself borrows at",
                 pct2(cityRate), Palette.TEXT_HEAD));
-        column.getChildren().add(statementLine(String.format(
-                "...the dial less %.0f points, plus what it owes", DebtManager.CITY_DISCOUNT * 100),
+        column.getChildren().add(statementLine("...the dial, plus what it owes",
                 pct2(market.floorRate()) + " floor", Palette.TEXT_MUTED));
         column.getChildren().add(statementLine("Savers are paid",
                 pct2(bank.depositRate()), Palette.GOOD));
@@ -1865,10 +1867,41 @@ final class PolicyScreen {
         column.getChildren().add(statementLine("...so the city pays over it",
                 String.format("%+.2f pts", over * 100),
                 over > 0 ? Palette.ACCENT : Palette.TEXT_MUTED));
+        /*
+         * ...AND IN REAL TERMS (0.7.2), which is what the currency answers to
+         * now: Game.realRateDifferential(), the figure the month hands it.
+         */
+        double real = ui.game.realRateDifferential();
+        column.getChildren().add(statementLine("...and the dial, less inflation, over the world's",
+                String.format("%+.2f pts", real * 100), real >= 0 ? Palette.GOOD : Palette.BAD));
         column.getChildren().add(statementNote(
-                "Money follows that difference in, and leaves the day it closes. It is "
-                + "also what the bank's premium is added on top of, so a city with a "
-                + "strained bank pays this rate twice over."));
+                "Hot money follows the first difference in, and leaves the day it closes. "
+                + "The currency follows the second: a dial under inflation is a real rate "
+                + "the world is paid to leave, and it pushes the currency down however high "
+                + "the number on the dial is. The first is also what the bank's premium is "
+                + "added on top of, so a city with a strained bank pays it twice over."));
+        /*
+         * ...AND WHAT SAVERS EARN IN REAL TERMS, AND WHAT THAT DOES TO WHAT
+         * THE HOUSEHOLDS SPEND (0.7.3) - the demand channel. Both are the
+         * model's: Game.realDepositRate() and Game.spendFactor(), the factor
+         * the next month's plan is struck at. See HouseholdBalance's banner
+         * AND WHAT IT SPENDS ANSWERS THE REAL RATE.
+         */
+        double realDeposit = ui.game.realDepositRate();
+        double spend = ui.game.spendFactor();
+        column.getChildren().add(statementLine("Savers earn, after inflation",
+                String.format("%+.2f%%", realDeposit * 100),
+                realDeposit >= 0 ? Palette.GOOD : Palette.BAD));
+        column.getChildren().add(statementLine("...so households spend, above a basket a head",
+                String.format("%.0f%% of what they would at zero", spend * 100),
+                Math.abs(spend - 1) < .005 ? Palette.TEXT_MUTED : spend < 1 ? Palette.ACCENT : Palette.WARN));
+        column.getChildren().add(statementNote(String.format(
+                "Savers earn %+.1f%% real, so households spend %.0f%% of what they would at zero. "
+                + "A deposit rate over inflation pays people to wait, and what they do not spend "
+                + "is demand the shops do not see; one under it pays them to buy now. Only what "
+                + "is above a basket a head moves, and never below %.0f%% or past %.0f%% of it.",
+                realDeposit * 100, spend * 100,
+                HouseholdBalance.SPEND_FLOOR * 100, HouseholdBalance.SPEND_CEILING * 100)));
 
         /* ----------------------------- prices, in words ----------------------------- */
         Denomination unit = ui.game.getDenomination();
@@ -1926,9 +1959,49 @@ final class PolicyScreen {
                     + "divides its base too."));
         }
 
+        /*
+         * WHOSE HAND IS ON THE DIAL (0.7.0). Jerus's autopilot: the rule can
+         * hold the dial, and the page says which hand it is in and what the
+         * rule would set. The toggle is the model's (DebtManager's autopilot,
+         * saved with the rate); applying a rate by hand below takes the dial
+         * back, as it would from any central bank the player owns.
+         */
+        boolean ruleHasIt = market.isAutopilot();
+        column.getChildren().add(statementLine("The dial is in",
+                ruleHasIt ? "the rule's hand" : "your hand",
+                ruleHasIt ? Palette.ACCENT : Palette.TEXT_HEAD));
+        javafx.scene.layout.FlowPane hand = new javafx.scene.layout.FlowPane(6, 6);
+        hand.setMaxWidth(STATEMENT);
+        hand.getChildren().add(stepChip(ruleHasIt ? "take the dial back" : "hand the dial to the rule",
+                () -> { market.setAutopilot(!ruleHasIt); showPolicyMenu(); }, false));
+        column.getChildren().add(hand);
+        column.getChildren().add(statementNote(ruleHasIt
+                ? String.format("Every month, before anything is priced, the central bank sets "
+                        + "the dial where the rule says - %s on this month's prices. Setting a "
+                        + "rate yourself takes the dial back.", pct2(advised))
+                : String.format("The rule would set %s. Hand it the dial and the central bank "
+                        + "will set it there every month, until you take it back.", pct2(advised))));
+
+        /*
+         * THE DIAL REACHES 100% (0.7.2): DebtManager.MAX_POLICY_RATE lifted
+         * from 25% with the currency's rate channel. A slider across a hundred
+         * points puts the everyday range in its first tenth, so the steps a
+         * player reaches for are chips beside it - 0 to 3 for a quiet city,
+         * 5 to 20 for a warm one, 30 to 100 for a spiral - each staging the
+         * rate, which the slider then fine-tunes.
+         */
         column.getChildren().add(stageSlider("policy", rate,
                 DebtManager.MIN_POLICY_RATE, DebtManager.MAX_POLICY_RATE, .0005,
                 Money::pct2));
+        javafx.scene.layout.FlowPane steps = new javafx.scene.layout.FlowPane(6, 6);
+        steps.setMaxWidth(STATEMENT);
+        for (int pct : DIAL_STEPS) {
+            final double at = pct / 100.0;
+            steps.getChildren().add(stepChip(pct + "%",
+                    () -> { stage("policy", at); showPolicyMenu(); },
+                    Math.abs(want - at) > 1e-9));
+        }
+        column.getChildren().add(steps);
 
         if (px.hasRate() && Math.abs(advised - rate) > 1e-9) {
             javafx.scene.layout.FlowPane rule = new javafx.scene.layout.FlowPane(6, 6);
@@ -1961,10 +2034,80 @@ final class PolicyScreen {
                     + "coupon on the book was struck on the day it was issued. It changes "
                     + "what the NEXT one costs, what every business and household is "
                     + "charged, and what savers are paid, all from next month."));
+            // By hand, so it takes the dial from the rule - see DebtManager.takeTheDial().
             column.getChildren().add(applyBar("Set the policy rate to " + pct2(want),
-                    () -> market.setPolicyRate(want)));
+                    () -> market.takeTheDial(want)));
         }
+
+        /* ------------------- THE HOLDINGS DIAL (0.7.1) -------------------
+         * Jerus: "the central bank would buy gbonds or sell gbonds from thin
+         * air basically ... like QE and QT, just like USA does ... to
+         * manipulate the rate accordingly?" Beside the price, the quantity:
+         * the share of the city's term paper the central bank aims to hold,
+         * bought from the bank with money it makes (CentralBank, THE
+         * HOLDINGS DIAL). Applied at once, like the autopilot toggle above; it
+         * moves the book a quarter of the way a month from the next press.
+         */
+        CentralBank cb = ui.game.getCentralBank();
+        column.getChildren().add(statementHead("How much of the city's paper it holds"));
+        column.getChildren().add(statementLine("The dial",
+                String.format("%.0f%% of the term paper", cb.getTargetShare() * 100), Palette.ACCENT));
+        column.getChildren().add(statementLine("It holds",
+                String.format("%s, %.0f%%", money(cb.getPaperHeld()),
+                        market.centralBankShareOfTerm() * 100), Palette.TEXT_HEAD));
+        int settings = (int) Math.round(CentralBank.MAX_QE_SHARE * 10) + 1;
+        String[] shares = new String[settings];
+        for (int i = 0; i < settings; i++) shares[i] = (i * 10) + "%";
+        String now = Math.round(cb.getTargetShare() * 100) + "%";
+        column.getChildren().add(chipStrip(shares, now, Palette.SIZE_CAPTION, picked -> {
+            cb.setTargetShare(Integer.parseInt(picked.replace("%", "")) / 100.0);
+            showPolicyMenu();
+        }));
+        column.getChildren().add(statementNote(String.format(
+                "Buying creates the money that pays for it and takes the paper off the bank's "
+                + "book; the long end of the curve bends down in proportion - at %.0f%% the "
+                + "term premium is gone. The thirty-year rate is %.2f points lower for what it "
+                + "holds now. Selling destroys the money again. It never buys from the "
+                + "treasury: that is printing, and it is the advances' line.",
+                CentralBank.MAX_QE_SHARE * 100, market.compression(360) * 100)));
+
+        /* ------------------- THE CEILING, AS A DIAL (0.7.2) -------------------
+         * Batch B: "the ceiling is small in a small city" - six months of
+         * revenue bound within months of first drawing, and past it Jerus's
+         * rule pays the promises and cuts the rest. The ceiling is the
+         * player's now (CentralBank.setAdvancesCeilingMonths()), beside the
+         * rate and the holdings: how much printing the treasury may lean on
+         * before the arrears rule decides. Applied at once, like the holdings.
+         */
+        column.getChildren().add(statementHead("How far it will advance the treasury"));
+        column.getChildren().add(statementLine("The ceiling",
+                String.format("%.0f months of revenue, %s", cb.getAdvancesCeilingMonths(),
+                        money(cb.ceiling())), Palette.ACCENT));
+        column.getChildren().add(statementLine("The treasury owes it",
+                money(cb.getAdvancesToTreasury()),
+                cb.ceilingBound() ? Palette.BAD : cb.getAdvancesToTreasury() > 0 ? Palette.WARN
+                        : Palette.TEXT_HEAD));
+        String[] months = new String[CEILING_STEPS.length];
+        for (int i = 0; i < CEILING_STEPS.length; i++) months[i] = CEILING_STEPS[i] + " months";
+        String nowMonths = Math.round(cb.getAdvancesCeilingMonths()) + " months";
+        column.getChildren().add(chipStrip(months, nowMonths, Palette.SIZE_CAPTION, picked -> {
+            cb.setAdvancesCeilingMonths(Integer.parseInt(picked.replace(" months", "")));
+            showPolicyMenu();
+        }));
+        column.getChildren().add(statementNote(String.format(
+                "When the treasury runs dry the central bank advances the gap in money it "
+                + "makes - printing - up to this many months of the treasury's revenue. Past "
+                + "it, pensions, EI, health, the schools, wages and debts are still paid, and "
+                + "everything else waits for cash and is owed as arrears. A higher ceiling "
+                + "keeps the lights on longer and prints more doing it; the most is %.0f "
+                + "months.", CentralBank.MAX_ADVANCES_CEILING)));
     }
+
+    /** The policy rates the dial's chips stage, in percent (0.7.2): the everyday range finely, the spiral's coarsely. */
+    static final int[] DIAL_STEPS = { 0, 1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 75, 100 };
+
+    /** The advances ceiling's settings, in months of revenue (0.7.2), up to CentralBank.MAX_ADVANCES_CEILING. */
+    static final int[] CEILING_STEPS = { 3, 6, 12, 24, 36 };
 
     /* =====================================================================
        MONEY - the currency reform
@@ -2060,8 +2203,8 @@ final class PolicyScreen {
         // two units, not an amount of either - so it must not be multiplied
         // into dollars like everything above it.
         column.getChildren().add(wouldBe("US$1 costs",
-                String.format("%,.4f", fx.getRate()),
-                String.format("%,.4f", fx.getRate() / factor), Palette.ACCENT));
+                fxRate(fx.getRate()),
+                fxRate(fx.getRate() / factor), Palette.ACCENT));
         column.getChildren().add(wouldBe("One new one would be worth",
                 "1 of today's", String.format("%,.0f of today's", factor),
                 Palette.TEXT_HEAD));

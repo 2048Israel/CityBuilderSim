@@ -1,6 +1,6 @@
 # SectorState.java - 185 lines · 6 methods · 0 constants · model
 
-`ham/citybuildersim/SectorState.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorState.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > One sector, as a save carries it.
 > 

@@ -150,6 +150,44 @@ public class ReadPathCheck {
         g.getTreasuryResidual();
         // ...and the desk's re-mark on the bank's statement
         g.getBank().getMarkChange();
+        // the trade page's forces on the rate, and what the currency did to
+        // the debt (2026-09-21): the page previews the push rather than asking
+        // the month's own effectivePressure(), which records - ForeignCheck
+        // section 13 causes the case where the two differ
+        g.getForeignAccounts().previewPressure();
+        g.getForeignAccounts().previewRawPressure();
+        g.getForeignAccounts().previewAbsorption();
+        g.getForeignAccounts().getLastPressure();
+        g.getForeignAccounts().getLastAbsorption();
+        g.getForeignAccounts().getLastRevaluation();
+        // the curve and who holds the paper (0.7.1): the borrow page's five
+        // rows, the rate page's premium and compression, the book page's
+        // holders, the money page's holdings and the households' paper
+        DebtManager debt = g.getDebtManager();
+        for (int years : LongTermBond.MATURITIES) {
+            debt.curveRate(years * 12);
+            debt.compression(years * 12);
+            g.quoteLongBond(1_000, years, 100);
+        }
+        debt.curveRate(6);
+        debt.bookValues();
+        debt.householdPrincipal();
+        debt.centralBankPrincipal();
+        debt.bankPrincipal();
+        debt.bankBook();
+        debt.householdBookRatio();
+        debt.householdBookYield();
+        debt.bankUnearnedDiscount();
+        debt.termPrincipal();
+        debt.centralBankShareOfTerm();
+        debt.getTotalMarketValue();
+        for (Debt paper : debt.getDebt()) debt.marketValue(paper);
+        g.getHouseholdBalance().totalPaper();
+        g.getHouseholdBalance().marketValueOfPaper();
+        g.getHouseholdBalance().getPaperRatio();
+        g.getCentralBank().getPaperHeld();
+        g.getCentralBank().stepFor(debt.termPrincipal());
+        g.getBuybackUnsettled();
 
         /*
          * calculateSalesTax() used to be read here. It is settleSalesTax() now -

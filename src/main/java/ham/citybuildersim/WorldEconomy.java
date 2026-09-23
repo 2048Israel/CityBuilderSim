@@ -285,14 +285,16 @@ public class WorldEconomy {
      * What the world's prices ACTUALLY did over the last twelve months, from
      * the level itself.
      *
-     * THE CURRENCY WAS DRIFTING ON THE HEADLINE. ForeignAccounts moves the
-     * rate by (local inflation - world inflation) every month, and Game was
-     * handing it getInflation() for the world's half - a rate the level does
-     * not follow. With local inflation near zero and "world inflation" reading
-     * 3.3%, the currency appreciated about 3.2% a year, for ever, against a
-     * world whose prices were not actually rising. Only the pull toward parity
-     * resisted it, and the equilibrium sat 55% below purchasing-power parity
-     * for the whole of a mature run.
+     * THE CURRENCY WAS DRIFTING ON THE HEADLINE. ForeignAccounts moved the
+     * rate by (local inflation - world inflation) every month (until 0.7.2,
+     * when that drift was deleted and this became the world's half of the
+     * real rate differential instead), and Game was handing it getInflation()
+     * for the world's half - a rate the level does not follow. With local
+     * inflation near zero and "world inflation" reading 3.3%, the currency
+     * appreciated about 3.2% a year, for ever, against a world whose prices
+     * were not actually rising. Only the pull toward parity resisted it, and
+     * the equilibrium sat 55% below purchasing-power parity for the whole of
+     * a mature run.
      *
      * That fell entirely on the two sectors that earn in world money and pay
      * in local money. Their selling price was flat in dollars - steel $853 a

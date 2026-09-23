@@ -192,6 +192,25 @@ public class SkipReportCheck {
         assertTrue("and said so first",
                 broke.getHeadlines().get(0).contains("treasury ran empty"));
 
+        /* ============ 5b. the central bank's advances (0.7.1) ============ */
+        System.out.println("\n--- a treasury on the central bank's advances ---");
+
+        TimeSkipReport advanced = new TimeSkipReport();
+        advanced.beginSkip(10);
+        advanced.snapshot(true, 1, 300, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, null);
+        for (int m = 0; m < 10; m++) {
+            advanced.sampleMonth(1, 1, 100, false, true, 0);
+            advanced.sampleTreasury(m >= 4, m >= 7);
+        }
+        advanced.snapshot(false, 11, 300, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, null);
+        check("six months on advances", advanced.getMonthsOnAdvances(), 6);
+        check("...three of them at the ceiling", advanced.getMonthsAtCeiling(), 3);
+        boolean saysAdvances = false;
+        for (String line : advanced.getHeadlines()) {
+            if (line.contains("central bank's advances for 6 months, 3 of them at the ceiling")) saysAdvances = true;
+        }
+        assertTrue("and the report says it, where it once promised emergency debt", saysAdvances);
+
         /* ==================== 6. nothing to report ==================== */
         System.out.println("\n--- before anything has run ---");
 

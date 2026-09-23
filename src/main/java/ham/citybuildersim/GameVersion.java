@@ -213,8 +213,371 @@ public final class GameVersion {
      * opens with its vault at the rate it was saved at, which is the only
      * rate it has, and without the founders' dollars it never had - which is
      * exactly what that city was.
+     *
+     * 0.6.11 (2026-09-21) - THE GROUND FOR THE CENTRAL BANK.
+     *
+     * Jerus: "i think how it works, is that we implement a central bank, and
+     * basically the central bank would buy gbonds or sell gbonds from thin
+     * air". The design for 7.0 opens on why: the game already has a central
+     * bank, and it is the rest of the world. This version is what has to be
+     * true before one is built, and the number that says what the rate does
+     * without it.
+     *
+     * THE BANK PAYS FOR THE CITY'S PAPER, which it never had. Every bond and
+     * bill is sold between two presses, and the month took the bank's
+     * settlement after the top-of-month clear, so it was handed zero for
+     * every issue - since 0.4.3 at least: the paper went onto its book at
+     * face, the coupons and the principal came in, and its cash never went
+     * out. Equity from nothing, and the treasury's money from nowhere. The
+     * settlement is taken before the clear now; the bank hands over the cash
+     * at the next settle and books the discount, as it does for a business
+     * loan, and until it has, what it owes is carried against its pool in
+     * the money audit. It moves none of the eight seeds, because none of them
+     * ever owes a dollar at home - the advisor borrows only the cheaper
+     * dollars. Sent home by a playtest flag, six seeds sell one term bond
+     * each around month 1,092, their banks now pay $37M to $87M for it where
+     * they paid nothing, and failures, strain and prices move within the
+     * ensemble's weather.
+     *
+     * Wages against the index: the finding of 2026-09-15, wages a third above
+     * the price level they chase, does not reproduce. On the eight seeds the
+     * wage index is the level the two-year lag implies to the last digit at
+     * every checkpoint, and a harness holds it inside the lag's window through
+     * twenty years of steady inflation, a currency reform and a reload. And
+     * the measurement 7.0 has to turn: one founding held at 3%, 10% and 20%
+     * from month 25 to 60 inflates 0.53%, -0.06% and -0.34% a year, through
+     * the currency alone. Beside them, the trade page previews the push on
+     * the rate instead of rewriting the month's record of it, and what the
+     * currency did to the debt survives a reload.
+     *
+     * SAVE_FORMAT did not move. The paper a bank has not yet paid for and its
+     * discount go under two keys of their own, and the debt's revaluation
+     * rides the end of the foreign accounts' array, whose reader checks its
+     * length. A 0.6.10 city opens owing its bank nothing for paper sold
+     * before the save, and with no revaluation until its first month - which
+     * is exactly what that city was.
+     *
+     * 0.7.0 (2026-09-21) - THE CENTRAL BANK'S BOOKS, AND THE FLOOR.
+     *
+     * Jerus: "the feds sheet would show how much debt it holds, like debt to
+     * itself aka money printing." The game had a central bank, and it was
+     * the rest of the world: the bank placed its spare cash abroad at the
+     * world's 2% and funded its shortfalls abroad at the city's own rate plus
+     * two points plus a stretch, so the policy dial only floored the lending
+     * rate on top of a price of money the player did not set. This version
+     * brings the marginal role home, onto a balance sheet the money audit
+     * can see.
+     *
+     * THE BOOKS. A central bank with advances to the bank and to the
+     * treasury, the city's paper (empty until 0.7.1) and the vault on one
+     * side, and reserves and currency - M0 - on the other. Money is made and
+     * destroyed only there, every operation counted and declared to the
+     * audit as money in or out, and the month's made less destroyed is the
+     * change in M0 to the cent. Its profit is remitted to the treasury as a
+     * budget line; a loss is carried and made good first.
+     *
+     * THE FLOOR AND THE WINDOW. The bank's spare cash earns the policy rate
+     * at the central bank, so nothing lends below it, and its shortfalls are
+     * borrowed at the window at the rate plus a point. The city's paper is
+     * priced off the dial itself - the two-point discount under it, "the one
+     * number in this file that does not describe anything real", is gone -
+     * and the carry trade and the bank's deposit bid are priced off the dial
+     * rather than the city's rate, which had counted the strain premium
+     * twice. Savers are paid a share of what reserves earn, so the deposit
+     * rate rises with the dial.
+     *
+     * THE ADVANCES AND THE ARREARS RULE. The emergency note is retired. A
+     * broke treasury is advanced its shortfall at the policy rate, repays it
+     * from cash above zero before anything else, and may owe up to six
+     * months of its revenue; past that, Jerus's rule - "pay promises first,
+     * cut the rest" - pays pensions, EI, health, the schools, its wages and
+     * its debts whatever it takes, pays subsidies, grants and repairs only
+     * from cash it has, owes what it refused as arrears, and does not buy.
+     * Held at 10%, the six seeds that ran dry in 0.6.11 - to $193
+     * quadrillion, and NaN - now end owing their central bank $0.1B to $2.0B
+     * with the audit closed every month; one never runs dry at all. The
+     * dial can be handed to the rule (the autopilot) and taken back, and a
+     * page under Finances shows the books, M0 and M2 and a year of each.
+     *
+     * The eight seeds change by design and stay in the ensemble's weather:
+     * median population 150,500 to 160,500, bank failures 24 to 8 across the
+     * eight, every seed borrowing at the window and none drawing an advance,
+     * the audit clean on every month of all eight.
+     *
+     * SAVE_FORMAT did not move. The central bank and the treasury's arrears
+     * are under keys of their own, the autopilot beside the policy rate, the
+     * government's two new lines on the end of its block, the five money
+     * series appended to the history. A 0.6.11 city founds an empty central
+     * bank - nothing lent, nothing made - runs off any note it still holds,
+     * and reloads a 0% dial at 0% rather than the 3% it used to.
+     *
+     * 0.7.1 (2026-09-22) - THE CURVE AND THE HOLDERS.
+     *
+     * Jerus: "i think we should only be able to issue 10y 20y 30y 40y and
+     * 50y, so less granulity there, serial and tbills are fine tho. and also,
+     * i think that the short term rates, aka the one you choose, those should
+     * be basically the tbill rate, the others change just as in real life".
+     * 0.7.0 made the short end true - a note prices at the dial plus the
+     * credit - and then priced a fifty-year bond at the note's rate, sold
+     * every issue to one buyer, and left the central bank's holdings of the
+     * city's paper empty. This version is the rest of his sentence: the
+     * central bank that would "buy gbonds or sell gbonds from thin air ...
+     * like QE and QT".
+     *
+     * THE CURVE. A term premium over the short end, five entries - 0.50
+     * points at ten years, 0.90 at twenty, 1.15 at thirty, 1.35 at forty,
+     * 1.50 at fifty - rising in a straight line from nothing at a year to the
+     * first and between the entries after it. Every price of the city's own
+     * paper is read off it at the paper's maturity: the quote, the issue, the
+     * buyback, what the paper is worth, and the borrowing page, which lists
+     * it maturity by maturity. Term loans are issued at the five maturities
+     * only, at home and in dollars; serial bonds and notes are as they were.
+     *
+     * THE HOLDERS. Every bond knows who holds it: the households, the central
+     * bank, and the bank for the rest. At the settle the households take a
+     * share of each new issue - a fifth of it per point of spread over the
+     * deposit rate, never more than half - from the savings they can spare,
+     * and hold it in a cell slot of their own. Coupons and principal are paid to
+     * whoever holds them, each declared to the money audit. A household
+     * short of cash sells its paper to the bank's desk before its dollars
+     * and its shares, and once the spread it bought for is gone it sells a
+     * little a month, at the pace the dollars abroad come home; a buyback
+     * pays every holder, and a dollar bond bought back is money that leaves
+     * the city.
+     *
+     * THE HOLDINGS DIAL. Chips on the Policy tab set the share of the city's
+     * term paper the central bank aims to hold, up to half, and the Money
+     * page shows what it holds. It buys from the bank's book, or sells back
+     * into it, at the top of the month, a quarter of the move a month, with
+     * reserves it makes or destroys; the coupons it is paid come back to the
+     * treasury with its profit, and what it holds takes its share of the
+     * premium off the long end - the whole premium at the maximum.
+     *
+     * THE DISCOUNT ACCRETES. What a bank pays under face is interest, and it
+     * is earned over the paper's life a month at a time, not in one lump the
+     * month the paper settles; what is still unearned is carried against its
+     * book. With these, the list 0.7.0 left: a harness holds one press to one
+     * month, the construction subsidy that paid nothing is gone, a failed
+     * bank's window is charged nothing while it is resolved - decided now,
+     * and labelled - and the students' grant is paid in the month it is
+     * credited.
+     *
+     * The eight default seeds move through one thing only: the advisor's
+     * dollar loan asked for twenty-five years, which is refused now, and
+     * takes twenty. Put back at twenty-five, every one of the eight
+     * reproduces 0.7.0 line for line. At twenty they stay in the ensemble's
+     * weather - median population 160,500 to 164,100, bank failures 8 across
+     * the eight as before, the audit closed on every month of all eight. Sent
+     * home by a playtest flag, the households take 38% to half of each issue
+     * at the settle and are paid $6M to $92M of coupons over the run; with the
+     * holdings dial held at 30%, the central bank buys its 30% in four months
+     * on every seed that borrows, takes 0.90 points off the fifty-year - the
+     * premium's thirty fiftieths, exactly - and never sells, because the
+     * twenty-year paper matures on its book.
+     *
+     * SAVE_FORMAT did not move. Who holds a bond, the yield it was sold at
+     * and the discount it has left are fields a 0.7.0 save does not have,
+     * and they read as zero: every bond held by the bank, and nothing left to
+     * accrete - which is right, because 0.7.0 booked the whole discount the
+     * month the paper settled, and paper saved between its issue and its
+     * settle books its discount whole at that settle, as that version would
+     * have. The households' paper is a slot on the end of the cell array,
+     * whose reader takes the length it finds; the dial, the households' book
+     * ratio and a buyback's unsettled payments are keys of their own that
+     * read as 0; the central bank's five new figures ride the end of its
+     * array. A 0.7.0 city opens with its bank holding all its paper, its
+     * households none and its dial at 0% - which is exactly what that city
+     * was.
+     *
+     * 0.7.2 (2026-09-22) - THE CURRENCY UNDER A CENTRAL BANK.
+     *
+     * Jerus: "makes sense, also, i think we need to uncap the rate... but if
+     * we do... what happens to everyone?" The dial stopped at 25% because in
+     * this model a higher rate bought nothing: its support for the currency
+     * saturated thirteen points over the world, the hot money's appetite at
+     * six, while the currency fell by the whole of the city's inflation over
+     * the world's every month, by rule. So the rule goes, the channel opens,
+     * and the dial goes with it.
+     *
+     * THE DRIFT, THE THIRD TIME. Relative PPP stood here first as a level -
+     * the rate pulled toward local prices over the world's, unbounded over
+     * three centuries - then as a drift, the rate moved by the inflation
+     * differential every month, which was the ring Jerus's 0.6.9 year book
+     * closed at 399x. Neither survives as a term. The level is the parity
+     * pull it has been since, and the month's move comes from the capital
+     * account: money goes to the higher REAL rate, the dial less the city's
+     * inflation against the world's rate less the world's. A spiral needs an
+     * outflow to continue, and a credible real rate stops it. The channel's
+     * cap becomes a numerical guard a hundred points out, the hot money's
+     * appetite grows to twenty-five points, and its pull is four, not six -
+     * the one retune the batch allowed itself: at six, a dial left still
+     * while prices started to rise gave the loop a gain half as big again as
+     * the drift it replaced, and one default seed went to the currency's
+     * guard and 115x its founding prices before the player's rule turned it.
+     *
+     * A DEFENCE THAT SPENDS. The vault's absorption cost nothing; not a
+     * dollar ever left it. Now, a month the currency is pushed down and the
+     * city is short of dollars, the central bank sells: the vault's capacity
+     * times the month's own deficit, at most the vault, and what the dollars
+     * meet of the deficit is what damps the push - a vault running low damps
+     * less, an empty one nothing, a rise is never met. It is a capital
+     * transaction of the central bank against the world, booked at the
+     * reprice: the vault falls by the dollars, the central bank's equity by
+     * their local price, and M0 does not move. The local money the world
+     * hands back was the pools' and had left them the month it was spent
+     * abroad, and M0 is a ledger of money the central bank made, which this
+     * never was - the first build retired it anyway and took M0 below
+     * nothing, -$255M on seed 0. Nothing goes through the month's profit or
+     * the audit, no pool moving; the Money page shows it under equity, spent
+     * defending the currency since founding. On the eight default seeds the
+     * founders' billion was more than half spent in all eight, between month
+     * 628 and month 3,747, and six spent all of it.
+     *
+     * THE DIAL, THE CEILING, THE WORLD'S PAPER. The dial reaches 100% - a
+     * guard against a typo, with chips from 0 to 100 beside the slider - and
+     * the autopilot's rule is no longer clamped at 25%. The treasury's
+     * advances ceiling is the player's, three to thirty-six months of
+     * revenue. A dollar bond is valued on the world's curve - the foreign
+     * rate plus the same term premium table - instead of the city's short
+     * rate, and a dollar quote prices its own coupons into what the world
+     * charges; a dollar round trip, which netted the city a fifth of what it
+     * raised in 0.7.1, costs it the issuance and nothing else.
+     *
+     * AND TWO THINGS FOUND ON THE WAY. A household cell the census leaves
+     * under half a household is emptied where its count is written - what it
+     * held folded into its own row, then the city - and nothing pays it:
+     * cells of 1e-15 households had been collecting savings since 0.7.1, and
+     * a reformed city parted from its twin on which cell was one
+     * (HouseholdBalance, A CELL UNDER HALF A HOUSEHOLD IS EMPTY). And the hot
+     * money compares the city's rate without the bank's strain premium,
+     * which is what a strained bank charges and not a return.
+     *
+     * WHAT IT MEASURED. The eight default seeds stay in the weather: median
+     * price swing 1.50x to 1.46x, no month at the currency's guard, the
+     * currency a little stronger (median 0.55 to 0.52), M0 never under
+     * $1.06B, the audit closed on every month. Bank failures rise, 8 to 19
+     * across the eight, and the whole rise is Manufacturing's: a Fabrication
+     * Works borrowed for at two and a half times a young bank's equity,
+     * losing money before its interest, written off - then the restructured
+     * residue a year later, and in some seeds again when it rebuilds. On
+     * 0.7.2's path it takes four seeds' banks down at months 165-167 and
+     * again twelve months on; on 0.7.1's it failed a bank three times, from
+     * month 237. Netting the strain premium out of the hot money's spread
+     * changed none of the nineteen. Held at 30% or 50%, where 0.7.1's
+     * stop at 25% sent the six broke seeds to 190-216x their founding prices
+     * with the currency at its guard, they end at a median swing of 1.9x and
+     * 2.0x, the currency strong - two seeds at 30% with an episode of 13x and
+     * 17x. Held at 10%, none of the six runs dry, so a ceiling of twelve or
+     * twenty-four months changes nothing there. With the rule on the dial
+     * the rate goes past 25% in four seeds, for 24 months in all, to 30.5%
+     * at most, and bank failures fall 27 to 17. One founding held at 3, 10,
+     * 20 and 40% inflates 0.02%, 0.01%, -0.38% and -0.98% a year: the rate
+     * moves inflation through the currency now, and modestly - the
+     * households' saving, 7.0e, is the rest of it.
+     *
+     * SAVE_FORMAT did not move. The ceiling is under a key of its own that an
+     * older save does not have, which reads as the six months every city had;
+     * the defence's month, its lifetime and the real rate the reprice was
+     * handed ride the end of the foreign accounts' array, and what the
+     * central bank has spent defending the currency since founding the end
+     * of its own, both read by length. A 0.7.1 city opens with a vault never
+     * spent - which is exactly what that city was.
+     *
+     * 0.7.3 (2026-09-22) - THE DEMAND CHANNEL.
+     *
+     * The design's sentence, the-central-bank.md section 9: for the rate to
+     * bite at home, a household's saving must answer the real return. Until
+     * now the only household decision that read a rate was where to keep the
+     * money; a hike moved credit and, since 0.7.2, the currency, and not a
+     * dollar of what anybody spent.
+     *
+     * WHAT A HOUSEHOLD SPENDS ABOVE A BASKET ANSWERS THE REAL DEPOSIT RATE.
+     * One dial, HouseholdBalance.SAVING_RESPONSE, provisional 1.0 and
+     * Jerus's to settle: ten points of real return on deposits cut what a
+     * household spends above subsistence by a tenth, ten points negative
+     * raise it by a tenth, held between SPEND_FLOOR a half and SPEND_CEILING
+     * one and a half. One factor a month, struck by Game on
+     * realDepositRate() - the deposit rate less the year's inflation, the
+     * same inflation the parity reads - and handed to every cell's plan: the
+     * propensity's share of income above the basket, the wealth term, and
+     * the surplus the luxury counter and the table spend out of, all by the
+     * same factor, so a hike does not hand what the grocer lost to the
+     * counter. The basket itself never moves. The deposit rate and not the
+     * curve, because it is the return on the money a household is deciding
+     * whether to spend. The monetary page says it: "savers earn X% real, so
+     * households spend Y% of what they would at zero".
+     *
+     * THE ASSERTION. MonetaryCheck section 6 - one founding held at 3, 10,
+     * 20 and 40% from month 25 to 60 - asserts now what it measured since
+     * 0.6.11: inflation falls with the rate, each row no higher than the one
+     * before within the noise a month's delay in the hand makes (0.019
+     * points, against an allowance of 0.05), and the 3% row a point above
+     * the 40% row. At 0.7.2 the rows read +0.02%, +0.01%, -0.38% and -0.98%
+     * a year - 0.996 of a point, and the floor would have failed; at 0.7.3
+     * +0.04%, -0.00%, -0.37% and -0.99%, 1.032. Green, and honestly: the
+     * point is still mostly the currency's. The bank pays savers
+     * Bank.DEPOSIT_PASS_THROUGH of what it earns, so the deposit rate carries
+     * about a quarter of the dial and the factor runs only from 0.99 to 0.88
+     * across the range; and the founding's shelf sits at its floor on every
+     * row, so the food four fifths of the index cannot fall whatever demand
+     * does. SAVING_RESPONSE at 2.0 was measured at 1.145 and not taken.
+     *
+     * THE CURRENCY'S GUARD GOES. Jerus: "Better to have it exceed otherwise
+     * one can just ignore once at 100." ForeignAccounts.MAX_RATE 100 and
+     * MIN_RATE .01 become a billion and a billionth - numerical guards, never
+     * a price - and the reform still scales them. The strip turns its second
+     * line round past a hundredth of a cent, to what a US cent costs - D$1,000
+     * at a rate of 100,000 - and every page that prints a rate goes through
+     * one formatter that reads at any size. None of the thirty-six 0.7.3 runs
+     * measured took a dollar past 3.5 local, and none spent a month at the
+     * guard.
+     *
+     * EI IS PAID WHERE IT IS CREDITED. The out of work were credited at the
+     * top of a month the bill the treasury had paid at the bottom of the one
+     * before - the grant's lag, fixed in 0.7.1 for the grant. Struck on the
+     * pool the month opens with and paid at the top now: the treasury, the
+     * ledger and the audit read one month's one figure. On the eight seeds
+     * it moves the treasury's cash by a tenth of a billion at a checkpoint
+     * and nothing else.
+     *
+     * AND THE BANK QUOTES NO MORE THAN IT CHARGES. The deposit rate is the
+     * payout over the deposits, and the payout is a share of everything the
+     * bank earns, its own capital's placement included - so its first month
+     * quoted 7,567% on $5.7k of deposits, and with the households now
+     * reading the figure every seed's spend factor sat at its floor in month
+     * 3. The rate reported stops at the bank's own lending rate now; what is
+     * paid does not move. It binds in 17 to 236 months of the eight default
+     * runs, from month 2 to month 2,961 - a book lent at older, dearer rates
+     * earns its savers more than the bank charges today.
+     *
+     * WHAT IT MEASURED. The default eight change by design - the factor
+     * runs every month on every household - and every run closed the audit
+     * every month: median population 154,207 to 149,028, the price swing
+     * 1.46x to 1.50x, the index at the end 1.126 to 1.135, bank failures 19
+     * both, and the spend factor at a median of 0.994, its lowest 0.815 to
+     * 0.863 in a deflation between months 274 and 839 - the advisor keeps
+     * the dial low, so savers earn little and the channel idles. Measured
+     * before the cap (it moves the founding months and the months above),
+     * held at 10, 30 and 50% the six broke seeds do not deflate through
+     * demand: the factor's median is 0.99, 0.97 and 0.89, and the median
+     * index at the end 0.960, 1.101 and 1.716 against 0.964, 1.032 and
+     * 1.408. At a held 30 or 50% what is saved compounds at a rate paid in
+     * new money, and the wealth term spends a fixed share of a stock growing
+     * faster than the factor takes off it. Seed 0 held at 20% ends at an
+     * index of 2.64 against 1.10 at 3%. The channel is in; what it can move
+     * is the shelf a scarcity prices, and in this model the shelf is priced
+     * by the shops' coverage or by its floor.
+     *
+     * SAVE_FORMAT did not move, and nothing new is saved: the factor is
+     * struck again every month and on the load path from the deposit rate
+     * and the price index a save already carries, and the month's EI comes
+     * back from the government's month, whose slot it has had since
+     * 2026-09-11. A save from 0.7.2 pays one month's EI twice, once: the bill
+     * its last month paid at the bottom is paid again at the top of its first
+     * month here, and the out of work are credited it once. Otherwise it is
+     * the city it was.
      */
-    public static final String VERSION = "0.6.10";
+    public static final String VERSION = "0.7.3";
 
     /**
      * The save shape.

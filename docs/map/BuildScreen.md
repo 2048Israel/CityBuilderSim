@@ -1,6 +1,6 @@
-# BuildScreen.java - 1,724 lines · 37 methods · 1 constants · interface
+# BuildScreen.java - 1,726 lines · 37 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/BuildScreen.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BuildScreen.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The build tab: the strip of categories across the top, the constraints bar
 > that says what stops a build, the line that says who builds these, and every
@@ -52,7 +52,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 1687 | **type** `final class BuildScreen` | The build tab: the strip of categories across the top, the constraints bar that says what stops a build, the line that says who builds these, and every building as a card - its face, its order line, its stats - with t... |
+| 38 | 1689 | **type** `final class BuildScreen` | The build tab: the strip of categories across the top, the constraints bar that says what stops a build, the line that says who builds these, and every building as a card - its face, its order line, its stats - with t... |
 | 43 | 1 | `BuildScreen(UserInterface ui)` |  |
 
 ### BUILD: THE CATEGORY SCREEN IS GONE TOO. (lines 45-66)
@@ -92,7 +92,7 @@
 | 848 | 11 | `HBox statPair(String label, String value)` | A label and a figure, on one line, inside a stat cover. |
 | 868 | 17 | `void placeOrder(BuildingsTemplate template, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Placing the order, and everything the city can say back. |
 
-### THE STAT CARD (lines 887-1724)
+### THE STAT CARD (lines 887-1726)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -113,7 +113,7 @@
 | 1463 | 31 | `void showNoDepositMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money, the land, and nothing to dig. |
 | 1502 | 42 | `void showNoLicenceMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Nobody licensed to practise in it. |
 | 1553 | 35 | `void showNoLandMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The city has the money and nowhere to put the building. |
-| 1598 | 61 | `void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | "You cannot afford this - borrow for it?" with the terms on the screen. |
-| 1668 | 30 | `void showFundingFellShortMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The note went through and the building still did not. |
-| 1706 | 18 | `String rateStyle(DebtQuote quote)` | Colours a quoted rate by how punishing it is. |
+| 1598 | 63 | `void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | "You cannot afford this - borrow for it?" with the terms on the screen. |
+| 1670 | 30 | `void showFundingFellShortMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The note went through and the building still did not. |
+| 1708 | 18 | `String rateStyle(DebtQuote quote)` | Colours a quoted rate by how punishing it is. |
 

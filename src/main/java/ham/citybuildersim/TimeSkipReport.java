@@ -24,10 +24,14 @@ import java.util.Map;
  *   what got built and what got demolished. Cheap and exact.
  *
  *   EPISODES come from the monthly samples: how many months the city ran short
- *   of power, how long it sat with no land, how often it had to issue emergency
- *   debt. These cannot be reconstructed from the endpoints, because a city that
- *   starves for fifty months and recovers looks identical at both ends to one
- *   that never had a problem.
+ *   of power or water, how long it sat with no land, how many months its
+ *   households went short - and since 0.7.1 how many months the treasury
+ *   lived on the central bank's advances and how many of those at their
+ *   ceiling, which is what replaced the emergency debt this line once said it
+ *   counted (it never did; the note is gone since 0.7.0). These cannot be
+ *   reconstructed from the endpoints, because a
+ *   city that starves for fifty months and recovers looks identical at both
+ *   ends to one that never had a problem.
  *
  * Nothing here computes anything the simulation does not already know. It reads
  * finished figures and remembers them, so no screen built on it can move a
@@ -82,6 +86,10 @@ public class TimeSkipReport {
     private int monthsHouseholdsShort;
     private int monthsNothingBuilt;
 
+    /** Months the treasury owed the central bank advances at the month's end, and of those, months it owed them at the ceiling (0.7.1). */
+    private int monthsOnAdvances;
+    private int monthsAtCeiling;
+
     private double worstEnergyRatio = 1;
     private double worstRoadRatio = 1;
     private int peakPopulation;
@@ -97,6 +105,8 @@ public class TimeSkipReport {
         monthsOutOfLand = 0;
         monthsHouseholdsShort = 0;
         monthsNothingBuilt = 0;
+        monthsOnAdvances = 0;
+        monthsAtCeiling = 0;
         worstEnergyRatio = 1;
         worstRoadRatio = 1;
         peakPopulation = 0;
@@ -219,6 +229,20 @@ public class TimeSkipReport {
         worstEnergyRatio = Math.min(worstEnergyRatio, energyRatio);
         peakPopulation = Math.max(peakPopulation, population);
     }
+
+    /**
+     * The treasury's month with its central bank (0.7.1): whether it ended the
+     * month owing advances, and whether they stood at the ceiling. Sampled
+     * beside sampleMonth(), and its own call so the older one's callers read
+     * as they did.
+     */
+    public void sampleTreasury(boolean onAdvances, boolean atCeiling) {
+        if (onAdvances) monthsOnAdvances++;
+        if (onAdvances && atCeiling) monthsAtCeiling++;
+    }
+
+    public int getMonthsOnAdvances() { return monthsOnAdvances; }
+    public int getMonthsAtCeiling()  { return monthsAtCeiling; }
 
     /* ------------------------------- deltas ------------------------------- */
 
@@ -402,6 +426,13 @@ public class TimeSkipReport {
         if (stoppedEarly()) {
             lines.add("Stopped after " + completed + " of " + requested
                     + " months - the treasury ran empty.");
+        }
+
+        if (monthsOnAdvances > 0) {
+            lines.add(String.format(
+                    "The treasury lived on the central bank's advances for %d month%s%s.",
+                    monthsOnAdvances, monthsOnAdvances == 1 ? "" : "s",
+                    monthsAtCeiling > 0 ? String.format(", %d of them at the ceiling", monthsAtCeiling) : ""));
         }
 
         if (monthsOutOfLand > 0) {

@@ -179,7 +179,12 @@ public class Unemployment {
     public double getDeaths()        { return deaths; }
     public double getAgedOut()       { return agedOut; }
 
-    /** What EI paid this month, in total. The treasury's bill. */
+    /**
+     * The EI bill on the pool as it stands, in total: struck at the end of
+     * each month's step, and struck again at the top of the next one, where
+     * the treasury pays it and the out of work are credited it (0.7.3) - see
+     * restrikeBenefits().
+     */
     public double getBenefitsPaid()  { return benefitsPaid; }
 
     /** What one claimant draws on average this month. */
@@ -393,6 +398,18 @@ public class Unemployment {
         lastFilled = filled == null ? null : filled.clone();
         lastPosts = posts == null ? null : posts.clone();
         started = true;
+    }
+
+    /**
+     * The EI bill struck again on the pool as it stands, at this benefit rate,
+     * and returned (0.7.3): Game pays it at the top of the month, where the
+     * out of work are credited it - on the pool the month opens with, at the
+     * dial as the player left it. On an unchanged dial it is exactly the bill
+     * the last step struck; see Game.payEiBenefits().
+     */
+    public double restrikeBenefits(double benefitRate) {
+        strikeBenefits(benefitRate);
+        return benefitsPaid;
     }
 
     private void strikeBenefits(double benefitRate) {

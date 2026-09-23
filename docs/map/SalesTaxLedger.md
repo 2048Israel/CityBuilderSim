@@ -1,6 +1,6 @@
 # SalesTaxLedger.java - 215 lines · 21 methods · 1 constants · model
 
-`ham/citybuildersim/SalesTaxLedger.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SalesTaxLedger.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The month's sales tax, as tax payable less input tax credits.
 > 

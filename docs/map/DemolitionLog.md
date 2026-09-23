@@ -1,6 +1,6 @@
 # DemolitionLog.java - 136 lines · 10 methods · 2 constants · model
 
-`ham/citybuildersim/DemolitionLog.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DemolitionLog.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > What the city has lost, and when.
 > 

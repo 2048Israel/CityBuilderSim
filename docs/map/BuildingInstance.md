@@ -1,6 +1,6 @@
 # BuildingInstance.java - 40 lines · 4 methods · 0 constants · model
 
-`ham/citybuildersim/BuildingInstance.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingInstance.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 

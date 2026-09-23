@@ -189,10 +189,43 @@ public class RestructureCheck {
          * the cash received, and if market value tracked face rather than the
          * discounted coupons it would cost more to retire than it raised - or,
          * worse, the other way round.
+         *
+         * AND THE DOLLAR TERM LOAN, since 0.7.2, which was a pump. It was
+         * issued at the world's flat rate and bought back at the city's own
+         * short rate (DebtManager.marketValue() valued a dollar bond there),
+         * and its quote left its own coupons out of the service the world
+         * prices - so the buyback read a dearer rate than the issue, and a
+         * thirty-year round trip netted the city a fifth of what it raised. Both
+         * read the world's curve now, with the paper's own service priced into
+         * the quote (DebtManager.quoteForeignRate(Debt, months)), and the round
+         * trip costs the city its issuance and nothing else. ON A CITY THAT
+         * EARNS ABROAD, borrowing little against what it earns, so the world
+         * charges it less than its own short rate - the condition the old
+         * valuation pumped on. Measured on 0.7.1's classes: this fixture's
+         * eight round trips netted the city $7,501k, $938k in the best of
+         * them, on US$5,000k raised each time. A city with no exports, or one
+         * borrowing a lot, is charged more abroad than at home, and there the
+         * old buyback was dearer than the issue and the pump did not show -
+         * the founded city the other three use lost $1,186k.
          */
-        for (String kind : new String[]{"medium", "long", "bill"}) {
+        for (String kind : new String[]{"medium", "long", "bill", "dollar"}) {
 
-            Game pump = founded(root, "pump-" + kind);
+            // The dollar case on ForeignDebtCheck's trading city: one that earns
+            // abroad and has a credit record, the fixture that file proves the
+            // world's pricing on.
+            Game pump;
+            if ("dollar".equals(kind)) {
+                System.setOut(quiet);
+                try { pump = ForeignDebtCheck.tradingCity(root.resolve("pump-" + kind)); }
+                finally { System.setOut(out); }
+            } else {
+                pump = founded(root, "pump-" + kind);
+            }
+            if ("dollar".equals(kind)) {
+                assertTrue("  fixture: the dollar city earns abroad, and the world lends it for less than it lends itself",
+                        pump.getDebtManager().getMonthlyExports() > 0
+                                && pump.getDebtManager().quoteForeignRate(DOLLAR_ASK) < pump.getDebtManager().getRate());
+            }
             pump.setCashForTest(5_000_000);
 
             double start = pump.getCash();
@@ -206,7 +239,12 @@ public class RestructureCheck {
                 try {
                     switch (kind) {
                         case "medium" -> pump.handleMediumBondLogic(200_000, 5, 1000);
-                        case "long"   -> pump.handleLongBondLogic(200_000, 25, 100_000);
+                        // Thirty years since 0.7.1: term loans are issued
+                        // at 10-50 years in tens, and a 25-year ask is
+                        // refused - which left this round trip vacuous.
+                        case "long"   -> pump.handleLongBondLogic(200_000, 30, 100_000);
+                        // Thirty years abroad, converted and spent at home.
+                        case "dollar" -> pump.handleForeignLogic("Term", DOLLAR_ASK, 30, 100, false);
                         default       -> pump.handleTBillLogic(200_000, 12, 1000);
                     }
                 } finally { System.setOut(out); }
@@ -418,7 +456,7 @@ public class RestructureCheck {
             every.run();
             every.handleTBillLogic(50_000, 6, 1000);
             every.handleMediumBondLogic(100_000, 10, 1000);
-            every.handleLongBondLogic(100_000, 25, 1000);
+            every.handleLongBondLogic(100_000, 20, 1000);   // one of the five, since 0.7.1
             every.saveGame(2, "one of each");
         } finally { System.setOut(out); }
 
@@ -471,6 +509,9 @@ public class RestructureCheck {
         } finally { System.setOut(out); }
         return g;
     }
+
+    /** What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. */
+    static final double DOLLAR_ASK = 5_000;
 
     static void cleanUp(Path root) {
         try (var walk = Files.walk(root)) {

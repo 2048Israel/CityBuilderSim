@@ -1,6 +1,6 @@
 # Trade.java - 40 lines · 4 methods · 3 constants · model
 
-`ham/citybuildersim/Trade.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Trade.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > One fill: somebody sold somebody some units of a good at a price.
 > 

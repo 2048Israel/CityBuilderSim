@@ -684,7 +684,12 @@ public class EducationCheck {
         System.out.println("\n--- the grant, on four bases ---");
 
         Game menu = city(GameFiles.scratch("educheck-grant"));
-        quietly(() -> { schools(menu); menu.simulateMonths(150); });
+        quietly(() -> { schools(menu); menu.simulateMonths(149); });
+        // The bill the month will strike, on the students it opens with: it is
+        // struck and paid at the top of the month since 0.7.1, where the
+        // students are credited it, so it is read before the month runs.
+        double openingBill = menu.studentGrantBill();
+        quietly(() -> menu.simulateMonths(1));
         TaxPolicy dials = menu.getEconomyManager().getTaxPolicy();
         EconomyManager mm = menu.getEconomyManager();
         double students = menu.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
@@ -698,19 +703,18 @@ public class EducationCheck {
         assertTrue("...and at that basis and share the bill is bit for bit the founding expression",
                 menu.studentGrantBill() == students * TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * wage);
         assertTrue("...which is the bill the month struck and the treasury carries",
-                mm.getStudentGrants() == menu.studentGrantBill());
-        assertTrue("...and what the students' row was handed a month later",
-                Math.abs(menu.getHouseholds().getStudentGrants() - mm.getStudentGrants())
-                        <= Math.max(1e-6, mm.getStudentGrants() * .05));
+                mm.getStudentGrants() == openingBill);
+        assertTrue("...and what the students' row was handed, the same month (0.7.1: it was the"
+                + " month before)", menu.getHouseholds().getStudentGrants() == mm.getStudentGrants());
 
-        // FIXED: an amount a student a month, whoever the wage is paid to.
+        // FIXED: an amount a student a month, whoever the wage is paid to - to
+        // the students the month opens with (0.7.1).
         dials.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
-        quietly(() -> menu.simulateMonths(1));
         double fixedStudents = menu.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
+        quietly(() -> menu.simulateMonths(1));
         assertTrue("a fixed grant pays the amount per student",
                 mm.getStudentGrants() == fixedStudents * .4
                         && menu.grantPerStudentUnder(TaxPolicy.GrantBasis.FIXED, .4) == .4);
-        quietly(() -> menu.simulateMonths(1));
         StudentHousehold paidStudents = menu.getHouseholdBalance().students();
         assertTrue("...and it reaches the students as their income",
                 paidStudents.households() > 0

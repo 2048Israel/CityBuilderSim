@@ -652,9 +652,186 @@ public class LabourCheck {
                 WageBand.COLLEGE.arrivalCeiling() < 1
                         && WageBand.UNIVERSITY.arrivalCeiling() < WageBand.COLLEGE.arrivalCeiling());
 
+        wagesAgainstTheIndex();
+
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ------------------------------------------------------------------
+     * WAGES AGAINST THE INDEX (2026-09-21).
+     *
+     * A measurement on 2026-09-15 put costOfLiving at 2.648 against a price
+     * index of 1.993 on a played city: every wage a third above the level it
+     * is written to chase, a real-wage gain with nothing behind it,
+     * compounding for the life of the run. The code says ONE indexation -
+     * baseWage() times costOfLiving, which walks DRIFT_PER_MONTH of the way
+     * toward the index every month - and Game's note on the floor records a
+     * second one found and taken out since; the seed-0 playtest's "wages
+     * lifted" tracks its index. So the question is whether any path still
+     * lifts wages past the index, and this asks it of the three the playtest
+     * does not walk: a long steady inflation, a currency reform, and a save
+     * and a reload.
+     *
+     * THE INFLATION IS CAUSED, not found: the currency is pinned and crawled
+     * weaker by CRAWL a month, so every import - and the shelf priced off
+     * them, and the rent priced off the wage - gets dearer month after month.
+     *
+     * THE BAND IS DERIVED FROM THE DIAL, not typed. A lag that closes
+     * DRIFT_PER_MONTH of the gap a month holds 1 - (1 - DRIFT)^N of its
+     * weight on the last N months, so over the last 2 / DRIFT_PER_MONTH of
+     * them - four years, 87% - the wage index is an average of where the
+     * index stood, and cannot sit outside the lowest and highest it stood
+     * there unless the rest of its weight is far away. Wages a third above an
+     * index that has been rising for years is exactly that: outside the band.
+     * ------------------------------------------------------------------ */
+
+    /** How fast the fixture's currency is walked weaker: half a percent a month. */
+    static final double CRAWL = .005;
+
+    /** Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. */
+    static final int INFLATION_MONTHS = 240;
+
+    /** The recurrence, checked month by month on one city: what it was handed and what it did. */
+    static final class LagWatch {
+        final java.util.List<Double> index = new java.util.ArrayList<>();
+        double worstTarget, worstStep;
+        int outsideWindow, windowMonths;
+
+        /** One month, played; the index the month was handed is the one it read at its top. */
+        void month(Game g, Runnable play) {
+            LabourMarket wages = g.getLabourMarket();
+            double handed = g.getPriceIndex().getIndex();
+            double wasCost = wages.getCostOfLiving();
+            play.run();
+            double target = 1 + (handed - 1) * LabourMarket.COST_OF_LIVING_PASS_THROUGH;
+            worstTarget = Math.max(worstTarget, Math.abs(wages.getLivingTarget() - target));
+            worstStep = Math.max(worstStep, Math.abs(wages.getCostOfLiving()
+                    - (wasCost + (wages.getLivingTarget() - wasCost) * LabourMarket.DRIFT_PER_MONTH)));
+            index.add(g.getPriceIndex().getIndex());
+            int window = (int) Math.round(2 / LabourMarket.DRIFT_PER_MONTH);
+            if (index.size() > window) {
+                double low = Double.MAX_VALUE, high = -Double.MAX_VALUE;
+                for (int k = index.size() - 1 - window; k < index.size(); k++) {
+                    low = Math.min(low, index.get(k));
+                    high = Math.max(high, index.get(k));
+                }
+                windowMonths++;
+                if (wages.getCostOfLiving() < low - 1e-12 || wages.getCostOfLiving() > high + 1e-12) {
+                    outsideWindow++;
+                }
+            }
+        }
+    }
+
+    /** The currency one CRAWL weaker, and held there for the month. */
+    static void crawl(Game g) {
+        ForeignAccounts fx = g.getForeignAccounts();
+        fx.pinRate(fx.getRate() * (1 + CRAWL));
+    }
+
+    static void wagesAgainstTheIndex() {
+        System.out.println("\n--- wages against the index they chase ---");
+
+        GameFiles files = GameFiles.scratch("labour-index");
+        Game city = new Game(files);
+        quietly(() -> {
+            city.run();
+            city.getGovernmentInvestor().spend(-2_000_000);
+            city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 200_000_000L);
+            LongPlaytest.build(city, "House", 200);
+            LongPlaytest.build(city, "Convenience Store", 10);
+            LongPlaytest.build(city, "Construction Depot", 4);
+            LongPlaytest.build(city, "Coal Power Plant", 1);
+            LongPlaytest.build(city, "Water Treatment Plant", 1);
+            LongPlaytest.build(city, "Industrial Bakery", 2);
+            LongPlaytest.build(city, "Commercial Bank", 1);
+            LongPlaytest.build(city, "Paved Road", 10);
+            // Long enough for the basket to be based on a city that shops.
+            city.simulateMonths(PriceIndex.SETTLING_MONTHS + 12);
+        });
+        assertTrue("fixture: the basket is based, so there is an index to chase",
+                city.getPriceIndex().isBased());
+
+        /* ---- twenty years of a steady inflation ---- */
+        LagWatch lived = new LagWatch();
+        double indexFrom = city.getPriceIndex().getIndex();
+        for (int m = 0; m < INFLATION_MONTHS; m++) {
+            crawl(city);
+            lived.month(city, () -> quietly(() -> city.simulateMonths(1)));
+        }
+        LabourMarket wages = city.getLabourMarket();
+        double index = city.getPriceIndex().getIndex();
+        double monthly = Math.pow(index / indexFrom, 1.0 / INFLATION_MONTHS) - 1;
+        double settles = LabourMarket.DRIFT_PER_MONTH * (1 + monthly)
+                / (LabourMarket.DRIFT_PER_MONTH + monthly);
+        System.out.printf("   %d months: index %.4f -> %.4f (%.2f%% a year); wage index %.4f,"
+                        + " target %.4f, wages/index %.3f (a steady %.3f%% a month settles the lag at %.3f)%n",
+                INFLATION_MONTHS, indexFrom, index, (Math.pow(1 + monthly, 12) - 1) * 100,
+                wages.getCostOfLiving(), wages.getLivingTarget(), wages.getCostOfLiving() / index,
+                monthly * 100, settles);
+
+        assertTrue("fixture: the crawl really did inflate the basket, steadily",
+                index / indexFrom > Math.pow(1 + CRAWL, INFLATION_MONTHS / 2.0));
+        close("every month wages chased the index the city published",
+                lived.worstTarget, 0, 1e-12);
+        close("...and moved DRIFT_PER_MONTH of the way to it - one indexation, not two",
+                lived.worstStep, 0, 1e-12);
+        assertTrue("so the wage index sits inside the lag's window, every month",
+                lived.windowMonths > 0 && lived.outsideWindow == 0);
+        assertTrue("...which under a rising index is BELOW it, not a third above",
+                wages.getCostOfLiving() < index);
+
+        /* ---- a currency reform: a unit change, which a ratio must not see ---- */
+        double costBefore = wages.getCostOfLiving();
+        double targetBefore = wages.getLivingTarget();
+        double[] reformed = new double[1];
+        quietly(() -> reformed[0] = city.reformCurrencyForTest(100) ? 1 : 0);
+        assertTrue("fixture: the currency was reformed", reformed[0] == 1);
+        close("a reform leaves the wage index where it was", wages.getCostOfLiving(), costBefore, 1e-12);
+        close("...and the level it is walking toward", wages.getLivingTarget(), targetBefore, 1e-12);
+        close("...and the price index it walks toward", city.getPriceIndex().getIndex(), index, 1e-12);
+
+        LagWatch afterReform = new LagWatch();
+        afterReform.index.addAll(lived.index);
+        for (int m = 0; m < 24; m++) {
+            crawl(city);
+            afterReform.month(city, () -> quietly(() -> city.simulateMonths(1)));
+        }
+        close("...and two years on, wages still chase the index the city published",
+                afterReform.worstTarget, 0, 1e-12);
+        close("...a DRIFT_PER_MONTH at a time", afterReform.worstStep, 0, 1e-12);
+        assertTrue("...inside the lag's window", afterReform.outsideWindow == 0);
+
+        /* ---- and a save: the ratio comes back, and keeps its lag ---- */
+        double[] saved = new double[1];
+        quietly(() -> saved[0] = city.saveGame(10, "wages against the index").ok ? 1 : 0);
+        assertTrue("fixture: the reformed city saved", saved[0] == 1);
+        Game back = new Game(files);
+        quietly(() -> back.loadGameSave(10));
+        close("the wage index reloads", back.getLabourMarket().getCostOfLiving(),
+                wages.getCostOfLiving(), 1e-12);
+        close("...and the level it is walking toward", back.getLabourMarket().getLivingTarget(),
+                wages.getLivingTarget(), 1e-12);
+        close("...and the price index it is handed", back.getPriceIndex().getIndex(),
+                city.getPriceIndex().getIndex(), 1e-12);
+
+        back.getForeignAccounts().pinRate(city.getForeignAccounts().getRate());
+        LagWatch reloaded = new LagWatch();
+        reloaded.index.addAll(afterReform.index);
+        for (int m = 0; m < 24; m++) {
+            crawl(back);
+            reloaded.month(back, () -> quietly(() -> back.simulateMonths(1)));
+        }
+        System.out.printf("   reformed and reloaded, two years on: wage index %.4f, index %.4f,"
+                        + " wages/index %.3f%n",
+                back.getLabourMarket().getCostOfLiving(), back.getPriceIndex().getIndex(),
+                back.getLabourMarket().getCostOfLiving() / back.getPriceIndex().getIndex());
+        close("and a reloaded city's wages chase the index it publishes",
+                reloaded.worstTarget, 0, 1e-12);
+        close("...a DRIFT_PER_MONTH at a time", reloaded.worstStep, 0, 1e-12);
+        assertTrue("...inside the lag's window", reloaded.outsideWindow == 0);
     }
 
     static double pct(double[] mix, WageBand band, double total) {

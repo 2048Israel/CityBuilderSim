@@ -25,6 +25,13 @@ public class HouseholdCheck {
         System.out.printf("%-54s %s%n", label, ok ? "OK" : "FAIL");
     }
 
+    /** One stock across every cell: per household times households. */
+    static double across(HouseholdBalance b, java.util.function.ToDoubleFunction<Household> perHousehold) {
+        double total = 0;
+        for (Household c : b.cells()) total += perHousehold.applyAsDouble(c) * c.households();
+        return total;
+    }
+
     public static void main(String[] args) {
 
         /* ==================== 1. the statement ==================== */
@@ -1047,6 +1054,120 @@ public class HouseholdCheck {
                 street.getSavings(U));
         check("...and the row totals survive the seeding", seeded.totalSavings(), street.totalSavings());
 
+        /* ============ A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2) ============
+
+           The census can leave a cell 1e-15 of a household, and the payments
+           used to ask "households > 0" - so the ghost was paid, and a reformed
+           city parted from its twin on which cell happened to be one
+           (DenominationCheck). A cell under HouseholdBalance.EMPTY_CELL is now
+           emptied where its count is written, and what it held goes to the
+           cells that are not empty - its own row first, then the city, pro
+           rata to what each holds. The fixtures PUT a position in a
+           cell and drop the cell under the line; the claim is that it then
+           holds nothing and the city's households hold everything they held.
+           ======================================================================== */
+        System.out.println("\n--- a cell under half a household is empty, and what it held stays ---");
+
+        HouseholdBalance folding = new HouseholdBalance();
+        Household ghost  = folding.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        Household poorer = folding.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        Household richer = folding.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
+        ghost.households = .3;
+        ghost.savings = 10; ghost.debt = 2; ghost.shares[retail] = 10; ghost.abroad = 3;
+        ghost.paper = 5; ghost.cars = 1; ghost.studentDebt = 4;
+        poorer.households = 100;
+        poorer.savings = 4; poorer.debt = 1; poorer.shares[retail] = 2; poorer.paper = 1;
+        richer.households = 50;
+        richer.savings = 6; richer.paper = 2;
+        String[] stockNames = {"savings", "debt", "shares", "dollars abroad", "paper", "cars", "student loans"};
+        java.util.List<java.util.function.ToDoubleFunction<Household>> stockOf = java.util.List.of(
+                c -> c.savings, c -> c.debt, c -> c.shares[retail], c -> c.abroad,
+                c -> c.paper, c -> c.cars, c -> c.studentDebt);
+        double[] heldBefore = new double[stockNames.length];
+        for (int k = 0; k < stockNames.length; k++) heldBefore[k] = across(folding, stockOf.get(k));
+        assertTrue("fixture: a cell of .3 households holds a position",
+                ghost.isEmpty() && folding.holdsAnything(ghost));
+        int foldedCells = folding.foldEmptyCells();
+        assertTrue("the cell under half a household holds nothing", !folding.holdsAnything(ghost));
+        check("...and its count stands: the census's, not ours to round", ghost.households(), .3);
+        check("one cell had something to fold", foldedCells, 1);
+        for (int k = 0; k < stockNames.length; k++) {
+            check("...and the households hold all their " + stockNames[k],
+                    across(folding, stockOf.get(k)), heldBefore[k]);
+        }
+        check("into its own row first: the unskilled couples hold the single's savings",
+                poorer.savings, 4 * (1 + 3.0 / 400));
+        check("...and the skilled couples, a row away, none of it", richer.savings, 6);
+        check("a stock nobody in the row held goes by the row's households",
+                poorer.abroad, .3 * 3 / 100);
+        check("...and none of it across the row's edge", richer.abroad, 0);
+        /*
+         * ...AND A ROW WITH NOBODY LEFT IN IT FOLDS INTO THE CITY: a senior
+         * professional single at .2 of a household, alone in its row.
+         */
+        Household lone = folding.cell(FamilyStructure.SINGLE_ADULT, PayTier.SENIOR_PROFESSIONAL);
+        lone.households = .2;
+        lone.savings = 5;
+        double savedBefore = across(folding, c -> c.savings);
+        double poorerHad = poorer.savings;
+        folding.foldEmptyCells();
+        assertTrue("a cell alone in its row is emptied too", !folding.holdsAnything(lone));
+        check("...into the city, every saver's savings up by 1 in 703",
+                richer.savings, 6 * (1 + 1.0 / 703));
+        check("...the unskilled couples' too", poorer.savings, poorerHad * (1 + 1.0 / 703));
+        check("...and the households hold all their savings", across(folding, c -> c.savings), savedBefore);
+
+        /*
+         * ...AND THROUGH A MONTH, where it happens: a census that drops a cell
+         * holding shares and dollars from a hundred households to .3. The 99.7
+         * who went took their positions with them - nobody grew, so nobody
+         * claimed them - and what the .3 still held is the couples' now.
+         */
+        HouseholdBalance monthly = new HouseholdBalance();
+        double[][] folk = new double[FamilyStructure.values().length][PayTier.values().length];
+        java.util.function.ToDoubleBiFunction<FamilyStructure, PayTier> folkCensus =
+                (s, t) -> folk[s.ordinal()][t.ordinal()];
+        folk[single][U] = 100;
+        folk[couple][U] = 100;
+        double[] wages = new double[R];
+        wages[U] = 300 * 3.0;
+        double[] noShopping = new double[R];
+        for (int m = 0; m < 3; m++) monthly.advanceMonth(folkCensus, wages, .50, noFees, noShopping, .20, .05, 1);
+        Household thinning = monthly.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        Household couples  = monthly.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        thinning.shares[retail] = 10;
+        thinning.abroad = 3;
+        double sharesIn = monthly.sharesHeld(retail);
+        double abroadIn = monthly.totalAbroadUsd();
+        folk[single][U] = .3;
+        wages[U] = 200.3 * 3.0;
+        monthly.advanceMonth(folkCensus, wages, .50, noFees, noShopping, .20, .05, 1);
+        assertTrue("a cell the census leaves at .3 of a household holds nothing after the month",
+                !monthly.holdsAnything(thinning));
+        check("...and the month counted it", monthly.getCellsFolded(), 1);
+        check("the shares: the households' now, plus what left with the 99.7",
+                monthly.sharesHeld(retail) + monthly.getSharesTakenAway(retail), sharesIn);
+        check("...and the .3's are the couples'", couples.shares(retail) * 100, .3 * 10);
+        check("the dollars abroad the same way",
+                monthly.totalAbroadUsd() + monthly.getAbroadTakenAway(), abroadIn);
+
+        /*
+         * ...AND NOTHING PAYS ONE, which is the half that went wrong. The
+         * theft's proceeds are split by a weight per cell and divided by the
+         * count: handed to a cell of 1e-15, a whole share became savings of a
+         * quadrillion times that a household. Weighted to the ghost and the
+         * couples alike, all of it now goes to the couples.
+         */
+        thinning.households = 1e-15;
+        double[] offenders = new double[monthly.cellCount()];
+        offenders[monthly.cells().indexOf(thinning)] = 1;
+        offenders[monthly.cells().indexOf(couples)] = 1;
+        double couplesHad = couples.totalSavings();
+        check("the proceeds are all credited", monthly.creditByWeight(10, offenders), 10);
+        check("...all of them to the households who are there",
+                couples.totalSavings() - couplesHad, 10);
+        assertTrue("...and none to a cell of 1e-15 households", !monthly.holdsAnything(thinning));
+
         /* ============ AND WHEN THEY CANNOT AFFORD A HOME, THEY SHARE ============
 
            Jerus, 2026-09-07: "perhaps poor families start living together."
@@ -1293,7 +1414,199 @@ public class HouseholdCheck {
         assertTrue("the retired row now has an income at all",
                 pens.getRowDisposable(HouseholdAccounts.RETIRED) > 0);
 
+        whatItSpendsAnswersTheRealRate();
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* =====================================================================
+       AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3)
+
+       Jerus's design, the-central-bank.md section 9: for the rate to bite at
+       home, a household's saving must answer the real return. What is
+       proved, every figure against the dials rather than a number:
+
+         - at no real return the plan is the plan as it was, term by term;
+         - at ten points of real return the part above subsistence is exactly
+           1 - SAVING_RESPONSE x .10 of it and subsistence does not move; at
+           ten points negative, exactly 1 + SAVING_RESPONSE x .10;
+         - at eighty points either way the floor and the ceiling bind;
+         - a household that can afford a basket and no more plans the same
+           at any rate;
+         - the counter and the table move with the surplus they spend out
+           of, by the same factor;
+         - the factor handed to the balance reaches every cell's plan, on the
+           month's path and on the load path's re-strike;
+         - and the monetary page's figure, read between presses, is the one
+           the next month's plan is struck at.
+       ===================================================================== */
+    static void whatItSpendsAnswersTheRealRate() {
+        System.out.println("\n--- what a household spends above subsistence answers the real deposit rate ---");
+
+        int R = HouseholdBalance.ROWS;
+        int U = PayTier.UNSKILLED.ordinal();
+        double[][] mix = new double[FamilyStructure.values().length][PayTier.values().length];
+        java.util.function.ToDoubleBiFunction<FamilyStructure, PayTier> census =
+                (s, t) -> mix[s.ordinal()][t.ordinal()];
+        mix[FamilyStructure.COUPLE.ordinal()][U] = 100;
+        double[] income = new double[R], fees = new double[R], spent = new double[R];
+        income[U] = 100 * 4.0;   // well past the rent and the basket: a surplus to spend
+        double rentEach = .60, basket = .25;
+
+        /*
+         * A household with both terms: income past subsistence, and a net
+         * worth - the opening buffer, and six months of banking the half of
+         * its plan the shops did not sell it.
+         */
+        HouseholdBalance saver = new HouseholdBalance();
+        for (int m = 0; m < 6; m++) {
+            saver.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
+            spent[U] = saver.getHouseholds(U) * saver.getPlanned(U) * .5;
+        }
+        Household c = saver.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        double subsistence = c.subsistence();
+        double earned = c.afterFixed + Math.max(0, c.investmentIncome);
+        double worth = Math.max(0, c.savings + c.abroad + c.paper - c.debt);
+        // The plan as it was before 0.7.3, written out from the dials.
+        double wantThen = subsistence + HouseholdBalance.MARGINAL_PROPENSITY
+                * Math.max(0, earned - subsistence) + HouseholdBalance.WEALTH_SPENT_A_MONTH * worth;
+        double surplusThen = Math.max(0, earned - wantThen);
+        double luxuryThen = HouseholdBalance.WEALTH_SPENT_A_MONTH * worth
+                + HouseholdBalance.LUXURY_SHARE_OF_SURPLUS * surplusThen;
+        double mealsThen = HouseholdBalance.MEAL_SHARE_OF_SURPLUS * surplusThen
+                + HouseholdBalance.MEAL_SHARE_OF_WEALTH * HouseholdBalance.WEALTH_SPENT_A_MONTH * worth;
+        assertTrue("fixture: income past the basket, a net worth, and a surplus left over",
+                earned > subsistence && worth > 0 && surplusThen > 0);
+
+        double atZero = HouseholdBalance.spendFactor(0);
+        check("at no real return the factor is one", atZero, 1);
+        c.plan(1, 1, atZero);
+        check("...and the plan is what it was: the grocer's", c.want(), wantThen);
+        check("...the counter's", c.luxuryWant(), luxuryThen);
+        check("...and the table's", c.mealWant, mealsThen);
+
+        for (double real : new double[] { .10, -.10 }) {
+            double f = HouseholdBalance.spendFactor(real);
+            check(String.format("at %+.0f points real the factor is 1 %s SAVING_RESPONSE x .10",
+                    real * 100, real > 0 ? "-" : "+"), f, 1 - HouseholdBalance.SAVING_RESPONSE * real);
+            c.plan(1, 1, f);
+            check("...the part above subsistence is exactly that share of it",
+                    c.want() - c.subsistence(), f * (wantThen - subsistence));
+            check("...and subsistence does not move", c.subsistence(), subsistence);
+            check("...the counter moves with the surplus, by the same share", c.luxuryWant(), f * luxuryThen);
+            check("...and so does the table", c.mealWant, f * mealsThen);
+        }
+
+        assertTrue("fixture: eighty points either way is past the floor and the ceiling",
+                1 - HouseholdBalance.SAVING_RESPONSE * .80 < HouseholdBalance.SPEND_FLOOR
+                        && 1 + HouseholdBalance.SAVING_RESPONSE * .80 > HouseholdBalance.SPEND_CEILING);
+        check("at +80 points the floor binds", HouseholdBalance.spendFactor(.80), HouseholdBalance.SPEND_FLOOR);
+        c.plan(1, 1, HouseholdBalance.spendFactor(.80));
+        check("...and the plan keeps SPEND_FLOOR of what is above subsistence",
+                c.want() - c.subsistence(), HouseholdBalance.SPEND_FLOOR * (wantThen - subsistence));
+        check("at -80 points the ceiling binds", HouseholdBalance.spendFactor(-.80), HouseholdBalance.SPEND_CEILING);
+        c.plan(1, 1, HouseholdBalance.spendFactor(-.80));
+        check("...and the plan asks SPEND_CEILING of it",
+                c.want() - c.subsistence(), HouseholdBalance.SPEND_CEILING * (wantThen - subsistence));
+        check("a rate that is not a number is no return at all", HouseholdBalance.spendFactor(Double.NaN), 1);
+
+        /*
+         * A HOUSEHOLD AT SUBSISTENCE: the first section's couple on $1.00, whose
+         * income after the rent is short of a basket, run until its savings
+         * are gone. Nothing above a basket, so nothing for any rate to move.
+         */
+        HouseholdBalance poorBal = new HouseholdBalance();
+        double[] low = new double[R], spentLow = new double[R];
+        low[U] = 100 * 1.0;
+        for (int m = 0; m < 80; m++) {
+            poorBal.advanceMonth(census, low, rentEach, fees, spentLow, basket, .05, 1);
+            spentLow[U] = poorBal.getHouseholds(U) * poorBal.getPlanned(U);
+        }
+        Household p = poorBal.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        assertTrue("fixture: short of a basket after the rent, with nothing saved",
+                p.afterFixed() < p.subsistence() && p.netWorth() <= 0);
+        p.plan(1, 1, HouseholdBalance.SPEND_FLOOR);
+        double wantAtFloor = p.want(), plannedAtFloor = p.planned();
+        p.plan(1, 1, HouseholdBalance.SPEND_CEILING);
+        check("a household at subsistence plans the same at any rate", p.want(), wantAtFloor);
+        check("...a basket and no more", p.want(), p.subsistence());
+        check("...and can fund the same", p.planned(), plannedAtFloor);
+
+        /*
+         * THROUGH THE BALANCE: two of them in lockstep, one handed a factor.
+         * The month they part settles the same shop - both planned the same
+         * the month before - so everything that differs is the plan.
+         */
+        HouseholdBalance plain = new HouseholdBalance(), handed = new HouseholdBalance();
+        double[] spentPlain = new double[R], spentHanded = new double[R];
+        for (int m = 0; m < 6; m++) {
+            plain.advanceMonth(census, income, rentEach, fees, spentPlain, basket, .05, 1);
+            handed.advanceMonth(census, income, rentEach, fees, spentHanded, basket, .05, 1);
+            spentPlain[U] = plain.getHouseholds(U) * plain.getPlanned(U) * .5;
+            spentHanded[U] = handed.getHouseholds(U) * handed.getPlanned(U) * .5;
+        }
+        check("fixture: two balances in lockstep", handed.getWant(U), plain.getWant(U));
+        double f = HouseholdBalance.spendFactor(.10);
+        handed.setSpendFactor(f);
+        plain.advanceMonth(census, income, rentEach, fees, spentPlain, basket, .05, 1);
+        handed.advanceMonth(census, income, rentEach, fees, spentHanded, basket, .05, 1);
+        check("a balance nobody hands a factor plans at one", plain.getSpendFactor(), 1);
+        check("the one handed a factor plans at it", handed.getSpendFactor(), f);
+        check("...every cell asking that share of what is above subsistence",
+                handed.getWant(U) - handed.getSubsistence(U), f * (plain.getWant(U) - plain.getSubsistence(U)));
+        assertTrue("...so the shops are told of less to sell",
+                handed.getSpendingCapacity() < plain.getSpendingCapacity());
+        plain.planOnly(census, income, rentEach, fees, basket, .05);
+        handed.planOnly(census, income, rentEach, fees, basket, .05);
+        check("...and the load path's re-strike plans at the same factor",
+                handed.getWant(U) - handed.getSubsistence(U), f * (plain.getWant(U) - plain.getSubsistence(U)));
+
+        /*
+         * AND IN A CITY: the monetary page's figure, read between presses, is
+         * the factor the next month's plan is struck at. The playtest's
+         * founding with the dial held at 40% for a year, so that saving pays
+         * and the factor is not one.
+         */
+        java.io.PrintStream loud = System.out;
+        java.io.PrintStream hushed = new java.io.PrintStream(new java.io.OutputStream() {
+            @Override public void write(int b) { }
+        });
+        Game city;
+        double worstAudit = 0;
+        try {
+            java.nio.file.Path root = java.nio.file.Files.createTempDirectory("householdcheck-rate");
+            System.setOut(hushed);
+            city = MonetaryCheck.founding(root, "saving-pays");
+            for (int m = 0; m < 12; m++) {
+                MonetaryCheck.step(city, .40, 0);
+                worstAudit = Math.max(worstAudit, city.getLastMoneyAudit().relative());
+            }
+        } catch (java.io.IOException ex) {
+            System.setOut(loud);
+            assertTrue("a temporary directory for the city: " + ex.getMessage(), false);
+            return;
+        } finally {
+            System.setOut(loud);
+        }
+        double pageReal = city.realDepositRate(), pageFactor = city.spendFactor();
+        System.out.printf("   a year at a dial of 40%%: savers are paid %.2f%%, inflation %+.2f%%,"
+                        + " so %+.2f%% real and a factor of %.4f%n",
+                city.getBank().depositRate() * 100, city.getPriceIndex().inflation() * 100,
+                pageReal * 100, pageFactor);
+        check("the page's real deposit rate is the deposit rate less the year's inflation",
+                pageReal, city.getBank().depositRate() - city.getPriceIndex().inflation());
+        check("...and its factor is the rule's on it", pageFactor, HouseholdBalance.spendFactor(pageReal));
+        assertTrue("fixture: saving pays, so the factor is under one", pageFactor < 1 - 1e-6);
+        System.setOut(hushed);
+        try {
+            MonetaryCheck.step(city, .40, 0);
+        } finally {
+            System.setOut(loud);
+        }
+        worstAudit = Math.max(worstAudit, city.getLastMoneyAudit().relative());
+        check("...and it is the factor the next month's plan was struck at",
+                city.getHouseholdBalance().getSpendFactor(), pageFactor);
+        assertTrue("every month of it passed the money audit", worstAudit < 1e-6);
     }
 }

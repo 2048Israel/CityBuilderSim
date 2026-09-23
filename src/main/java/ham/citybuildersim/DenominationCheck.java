@@ -393,11 +393,14 @@ public class DenominationCheck {
            ================================================================= */
         out.println("\n--- ...and the month after the reform is the same month ---");
 
-        quietly(() -> { plain.simulateMonths(1); lopped.simulateMonths(1); });
+        scanEmpty(plain);
+        scanEmpty(lopped);
+        emptyHeldAfterReform = emptyHolding;
+        stepBoth(plain, lopped, 1);
         sameCity(plain, lopped, factor, 1e-9);
 
         out.println("\n--- ...and the same city a year later ---");
-        quietly(() -> { plain.simulateMonths(11); lopped.simulateMonths(11); });
+        stepBoth(plain, lopped, 11);
         sameCity(plain, lopped, factor, 1e-6);
 
         out.println("\n--- ...and the same city a decade later ---");
@@ -408,7 +411,7 @@ public class DenominationCheck {
          */
         if (Boolean.getBoolean("denom.trace")) {
             for (int m = 0; m < 88; m++) {
-                quietly(() -> { plain.simulateMonths(1); lopped.simulateMonths(1); });
+                stepBoth(plain, lopped, 1);
                 double a = plain.getBank().equity(), b = lopped.getBank().equity() * factor;
                 double ca = plain.getCash(), cb = lopped.getCash() * factor;
                 int pa = plain.getPopulationManager().getPopulation(), pb = lopped.getPopulationManager().getPopulation();
@@ -429,7 +432,7 @@ public class DenominationCheck {
                 }
             }
         } else {
-            quietly(() -> { plain.simulateMonths(88); lopped.simulateMonths(88); });
+            stepBoth(plain, lopped, 88);
         }
 
         out.printf("   plain  pop %,d  GDP %,.2f  rent %.6f  index %.4f%n",
@@ -441,6 +444,26 @@ public class DenominationCheck {
                 lopped.getEconomyManager().getMonthGdp(), rent(lopped),
                 lopped.getPriceIndex().getIndex());
         sameCity(plain, lopped, factor, 1e-6);
+
+        /* ============ 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING ============
+
+           What parted these two cities at month 166 once the currency's rate
+           pull went to four (0.7.2), and on the pristine 0.7.1 tree held money
+           from month 127 on: a household cell the census leaves at 1e-15 of a
+           household, still holding savings and still being paid. Whether a
+           count lands on 1e-15 or on exactly nothing is the fifteenth decimal,
+           which is precisely what a reform by a hundred moves - so the twins
+           paid different ghosts. HouseholdBalance.EMPTY_CELL now empties such
+           a cell where its count is written (HouseholdCheck has the fixture);
+           this is the same claim on a real city, reformed and not, every
+           month: no cell under the line holds anything.
+           ================================================================= */
+        out.println("\n--- ...and no cell under half a household holds anything, reformed or not ---");
+        assertTrue("right after the reform, in either city", emptyHeldAfterReform == 0);
+        out.printf("   %d looks (both cities, after the reform and after every month): a cell under half a household in %d; %,d cells emptied of something%n",
+                looks, looksWithEmpty, cellsFolded);
+        assertTrue("fixture: the census left cells under half a household", looksWithEmpty > 0);
+        assertTrue("...and after no month did one hold anything", emptyHolding == 0);
 
         /* ============ 4. AND NO MONEY WAS MADE OR LOST ============
 
@@ -491,6 +514,35 @@ public class DenominationCheck {
     }
 
     /* ------------------------------ helpers ------------------------------ */
+
+    /** Cells under half a household holding something, counted over every scan. */
+    static int emptyHolding = 0;
+    /** ...and the same, as it stood right after the reform. */
+    static int emptyHeldAfterReform = -1;
+    static int looks = 0, looksWithEmpty = 0, cellsFolded = 0;
+
+    /** Both cities a month at a time, each scanned after every month. */
+    static void stepBoth(Game a, Game b, int months) {
+        for (int m = 0; m < months; m++) {
+            quietly(() -> { a.simulateMonths(1); b.simulateMonths(1); });
+            scanEmpty(a);
+            scanEmpty(b);
+            cellsFolded += a.getHouseholdBalance().getCellsFolded() + b.getHouseholdBalance().getCellsFolded();
+        }
+    }
+
+    /** One look at a city: whether any cell is under half a household, and any of them holding something. */
+    static void scanEmpty(Game g) {
+        HouseholdBalance hb = g.getHouseholdBalance();
+        boolean any = false;
+        for (Household c : hb.cells()) {
+            if (!c.isEmpty()) continue;
+            if (c.households() > 0) any = true;
+            if (hb.holdsAnything(c)) emptyHolding++;
+        }
+        looks++;
+        if (any) looksWithEmpty++;
+    }
 
     /** Reforms regardless of the price-level gate, which is tested separately. */
     static boolean force(Game g, double factor) {

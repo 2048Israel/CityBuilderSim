@@ -1,6 +1,6 @@
-# Unemployment.java - 570 lines · 37 methods · 8 constants · model
+# Unemployment.java - 587 lines · 38 methods · 8 constants · model
 
-`ham/citybuildersim/Unemployment.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Unemployment.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The people out of work: how many, who they were, what Employment Insurance
 > pays them, and who has lost their home.
@@ -76,9 +76,9 @@
 | 103 | · the stocks |
 | 129 | · the month |
 | 137 | · reading |
-| 194 | · the month |
-| 408 | HEALTH: the unhoused, as a share of the adult band |
-| 502 | · saving |
+| 199 | · the month |
+| 425 | HEALTH: the unhoused, as a share of the adult band |
+| 519 | · saving |
 
 ## Constants
 
@@ -91,7 +91,7 @@
 | 89 | `Unemployment.LEAVE_WHEN_BROKE` | `.25` | The share of the evicted who leave the city rather than stay on the street. |
 | 98 | `Unemployment.UNHOUSED_MORTALITY` | `3.7` | How much faster the unhoused die: 3.7x. |
 | 101 | `Unemployment.UNHOUSED_SICKNESS` | `3.7` | ...and how much faster they get sick. |
-| 504 | `Unemployment.STATE_LENGTH` | `EI_MONTHS * 2 + 6 + PayTier.values().length * 2 + 12` |  |
+| 521 | `Unemployment.STATE_LENGTH` | `EI_MONTHS * 2 + 6 + PayTier.values().length * 2 + 12` |  |
 
 ## Fields (state)
 
@@ -112,13 +112,13 @@
 | 133 | `private double deaths, agedOut` |  |
 | 134 | `private double benefitsPaid` |  |
 | 135 | `private double insuredCap` |  |
-| 269 | `private double lastImprisoned` |  |
+| 274 | `private double lastImprisoned` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 503 | **type** `public class Unemployment` | The people out of work: how many, who they were, what Employment Insurance pays them, and who has lost their home. |
+| 68 | 520 | **type** `public class Unemployment` | The people out of work: how many, who they were, what Employment Insurance pays them, and who has lost their home. |
 
 ### the dials (lines 70-102)
 
@@ -126,7 +126,7 @@
 
 ### the month (lines 129-136)
 
-### reading (lines 137-193)
+### reading (lines 137-198)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -148,38 +148,39 @@
 | 177 | 1 | `public double getNewlyUnhoused()` | The evicted who stayed, moved to the unhoused this month. |
 | 179 | 1 | `public double getDeaths()` |  |
 | 180 | 1 | `public double getAgedOut()` |  |
-| 183 | 1 | `public double getBenefitsPaid()` | What EI paid this month, in total. |
-| 186 | 4 | `public double getBenefitPerClaimant()` | What one claimant draws on average this month. |
-| 192 | 1 | `public double getInsuredCap()` | The insured wage this month's cap sits at. |
+| 188 | 1 | `public double getBenefitsPaid()` | The EI bill on the pool as it stands, in total: struck at the end of each month's step, and struck again at the top of the next one, where the treasury pays it and the out of work are credited it (0.7.3) - see restrik... |
+| 191 | 4 | `public double getBenefitPerClaimant()` | What one claimant draws on average this month. |
+| 197 | 1 | `public double getInsuredCap()` | The insured wage this month's cap sits at. |
 
-### the month (lines 194-407)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 197 | 3 | `public void noteEvicted(double households)` | Who the last settle evicted. |
-| 208 | 9 | `public double takeEvicted()` | Moves last month's evicted: a share leave, the rest lose their home. |
-| 234 | 34 | `public double imprison(double adults)` | Out of the pool and into prison, before the month's flows are struck (2026-09-11). |
-| 272 | 1 | `public double getImprisoned()` | Taken from the pool into prison this month. |
-| 275 | 3 | `public void noteArrivals(double adults)` | Adults who arrived this month; they look for work next month. |
-| 291 | 86 | `public void advanceMonth(double pool, double[] filledByTier, double[] postsByTier, double[] wageByTier, double unskilledWage, d...` | The month's flows, the ring, and the bill. |
-| 379 | 11 | `private void reconcile(double pool)` | The groups sum to the pool, whatever rounding or a clamped exit did. |
-| 391 | 6 | `private void remember(double pool, double[] filled, double[] posts)` |  |
-| 398 | 9 | `private void strikeBenefits(double benefitRate)` |  |
-
-### HEALTH: the unhoused, as a share of the adult band (lines 408-501)
+### the month (lines 199-424)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 429 | 17 | `public static double[] blendMortality(double[] factors, double[] uncared, double[] inBand, double[] unhoused, double[] orphans)` | Every band's mortality factor with its unhoused and its orphans blended in: the unhoused at UNHOUSED_MORTALITY times the band's factor, the orphans at the factor the band has with no care at all (or the city's, if tha... |
-| 465 | 25 | `public static double[] attributeDeaths(double[] factors, double[] uncared, double[] inBand, double[] unhoused, double[] orphans...` | WHO AMONG THE MONTH'S DEAD WERE ORPHANS, AND WHO HAD NO HOME. |
-| 497 | 4 | `public static double withUnhoused(double factor, double unhousedShare)` | A band's mortality factor with a share of it unhoused. |
+| 202 | 3 | `public void noteEvicted(double households)` | Who the last settle evicted. |
+| 213 | 9 | `public double takeEvicted()` | Moves last month's evicted: a share leave, the rest lose their home. |
+| 239 | 34 | `public double imprison(double adults)` | Out of the pool and into prison, before the month's flows are struck (2026-09-11). |
+| 277 | 1 | `public double getImprisoned()` | Taken from the pool into prison this month. |
+| 280 | 3 | `public void noteArrivals(double adults)` | Adults who arrived this month; they look for work next month. |
+| 296 | 86 | `public void advanceMonth(double pool, double[] filledByTier, double[] postsByTier, double[] wageByTier, double unskilledWage, d...` | The month's flows, the ring, and the bill. |
+| 384 | 11 | `private void reconcile(double pool)` | The groups sum to the pool, whatever rounding or a clamped exit did. |
+| 396 | 6 | `private void remember(double pool, double[] filled, double[] posts)` |  |
+| 410 | 4 | `public double restrikeBenefits(double benefitRate)` | The EI bill struck again on the pool as it stands, at this benefit rate, and returned (0.7.3): Game pays it at the top of the month, where the out of work are credited it - on the pool the month opens with, at the dia... |
+| 415 | 9 | `private void strikeBenefits(double benefitRate)` |  |
 
-### saving (lines 502-570)
+### HEALTH: the unhoused, as a share of the adult band (lines 425-518)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 506 | 21 | `public double[] toSaveArray()` |  |
-| 529 | 22 | `public boolean restore(double[] saved)` |  |
-| 552 | 11 | `public void reset()` |  |
-| 565 | 5 | `public void redenominate(double scale)` | Wages and the bill in the new unit. |
+| 446 | 17 | `public static double[] blendMortality(double[] factors, double[] uncared, double[] inBand, double[] unhoused, double[] orphans)` | Every band's mortality factor with its unhoused and its orphans blended in: the unhoused at UNHOUSED_MORTALITY times the band's factor, the orphans at the factor the band has with no care at all (or the city's, if tha... |
+| 482 | 25 | `public static double[] attributeDeaths(double[] factors, double[] uncared, double[] inBand, double[] unhoused, double[] orphans...` | WHO AMONG THE MONTH'S DEAD WERE ORPHANS, AND WHO HAD NO HOME. |
+| 514 | 4 | `public static double withUnhoused(double factor, double unhousedShare)` | A band's mortality factor with a share of it unhoused. |
+
+### saving (lines 519-587)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 523 | 21 | `public double[] toSaveArray()` |  |
+| 546 | 22 | `public boolean restore(double[] saved)` |  |
+| 569 | 11 | `public void reset()` |  |
+| 582 | 5 | `public void redenominate(double scale)` | Wages and the bill in the new unit. |
 

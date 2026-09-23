@@ -1,6 +1,6 @@
 # Mining.java - 139 lines · 6 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/Mining.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Mining.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > Iron mines. Its own sector because the ore has a price.
 > 

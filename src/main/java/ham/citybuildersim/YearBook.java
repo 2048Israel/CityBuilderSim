@@ -16,7 +16,7 @@ import java.util.Map;
  * another ai, can be sent that, and doesnt die due to tokens... so that they can
  * analyze the economic situation of the run."
  *
- * The history is every month the city has ever lived across ninety-odd series.
+ * The history is every month the city has ever lived across a hundred-odd series.
  * A 333-year run is forty thousand numbers a series and nobody - person or
  * model - can hold it. Twelve months folded into one row divides it by twelve
  * and loses almost nothing an economy is judged on, because an economy is
@@ -114,6 +114,7 @@ public final class YearBook {
         flow(m, "healthPremiums", "health premiums collected off wages, in thousands");
         flow(m, "studentGrants", "grants paid to students, in thousands");
         flow(m, "studentLoanInterest", "interest the graduates paid on their student loans, in thousands");
+        flow(m, "remittance", "the central bank's profit paid to the treasury, in thousands");
         flow(m, "diedOfIllness", "people the long sickness killed");
         flow(m, "deathsBabies", "deaths aged 0-5");
         flow(m, "deathsChildren", "deaths aged 6-12");
@@ -138,6 +139,10 @@ public final class YearBook {
         level(m, "population", "people alive");
         level(m, "reservesUsd", "the treasury's foreign reserves, in thousands of US dollars");
         level(m, "foreignDebtUsd", "borrowing in someone else's money, in thousands of US dollars");
+        level(m, "m0", "M0: what the central bank owes - every dollar it has made and not taken back, in thousands");
+        level(m, "m2", "M2: what the public holds - the bank's deposits, households', sectors' and foreign, plus currency, in thousands");
+        level(m, "advancesToTreasury", "what the treasury owes the central bank in advances - the printed overdraft, in thousands");
+        level(m, "reserves", "the central bank's reserves liability - M0 less currency, in thousands");
         level(m, "bankDeposits", "deposits the bank has gathered, in thousands");
         level(m, "bankLent", "the bank's loan book, in thousands");
         level(m, "bankEquity", "the bank's capital - negative means it has failed, in thousands");

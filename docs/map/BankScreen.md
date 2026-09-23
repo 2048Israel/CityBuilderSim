@@ -1,6 +1,6 @@
-# BankScreen.java - 1,653 lines · 23 methods · 7 constants · interface
+# BankScreen.java - 1,665 lines · 23 methods · 7 constants · interface
 
-`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The bank tab: the gauge, the two limits, another branch, who owes it, where
 > the money comes from, the books, the rescue, and its history.
@@ -10,7 +10,7 @@
 > shell still reads which page and area are open (bankPage, bankArea) for the
 > rail and the scroll memory.
 
-**Uses:** [Palette](Palette.md) (271), [Bank](Bank.md) (57), [Equity](Equity.md) (4), [HistorySave](HistorySave.md) (4), [UserInterface](UserInterface.md) (2), [DebtManager](DebtManager.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Sectors](Sectors.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Exchange](Exchange.md) (1)
+**Uses:** [Palette](Palette.md) (274), [Bank](Bank.md) (55), [Equity](Equity.md) (4), [HistorySave](HistorySave.md) (4), [UserInterface](UserInterface.md) (2), [DebtManager](DebtManager.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Sectors](Sectors.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [CentralBank](CentralBank.md) (1), [Exchange](Exchange.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -19,155 +19,154 @@
 | line | section |
 |---:|---|
 | 37 | THE BANK |
-| 117 | · · there is no bank |
-| 266 | ONE SUBJECT, ITS OWN STRIP |
-| 330 | THE GAUGE |
-| 371 | · · and in words |
-| 390 | · · what it is measured on |
-| 412 | · · who pays for it |
-| 448 | · · the bands |
-| 469 | · · and the reading |
-| 485 | · · the mark |
-| 496 | · · the ticks |
-| 514 | · · the middle |
-| 586 | THE TWO LIMITS |
-| 630 | · · what a dollar weighs |
-| 659 | · · the ratio |
-| 765 | ANOTHER BRANCH |
-| 811 | · · the verdict |
-| 852 | WHO OWES IT |
-| 899 | · · the businesses, split |
-| 933 | · · and the families |
-| 954 | · (untitled) |
-| 975 | · · by borrower |
-| 1021 | · · and if it failed |
-| 1036 | WHERE THE MONEY COMES FROM |
-| 1062 | · · reached, and out of reach |
-| 1097 | · · whose |
-| 1117 | · · hot money |
-| 1132 | · (untitled) |
-| 1179 | · · and whose money |
-| 1196 | THE BOOKS |
-| 1207 | · · interest, opened by borrower |
-| 1319 | · · the margin |
-| 1340 | · (untitled) |
-| 1379 | · · and how equity moved |
-| 1438 | · AND IF IT FAILED |
-| 1453 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
-| 1525 | ITS HISTORY |
-| 1608 | · · how long it has hurt |
+| 118 | · · there is no bank |
+| 267 | ONE SUBJECT, ITS OWN STRIP |
+| 331 | THE GAUGE |
+| 372 | · · and in words |
+| 391 | · · what it is measured on |
+| 413 | · · who pays for it |
+| 449 | · · the bands |
+| 470 | · · and the reading |
+| 486 | · · the mark |
+| 497 | · · the ticks |
+| 515 | · · the middle |
+| 587 | THE TWO LIMITS |
+| 631 | · · what a dollar weighs |
+| 660 | · · the ratio |
+| 766 | ANOTHER BRANCH |
+| 812 | · · the verdict |
+| 853 | WHO OWES IT |
+| 900 | · · the businesses, split |
+| 934 | · · and the families |
+| 955 | · (untitled) |
+| 976 | · · by borrower |
+| 1022 | · · and if it failed |
+| 1042 | WHERE THE MONEY COMES FROM |
+| 1068 | · · reached, and out of reach |
+| 1103 | · · whose |
+| 1123 | · · hot money |
+| 1138 | · (untitled) |
+| 1194 | THE BOOKS |
+| 1205 | · · interest, opened by borrower |
+| 1325 | · · the margin |
+| 1346 | · (untitled) |
+| 1391 | · · and how equity moved |
+| 1450 | · AND IF IT FAILED |
+| 1465 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
+| 1537 | ITS HISTORY |
+| 1620 | · · how long it has hurt |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 67 | `BankScreen.BANK_HOME` | `"The gauge"` | null is the landing |
-| 70 | `BankScreen.BANK_LEND_PAGES` | `{ "The gauge", "The two limits", "Another branch" }` |  |
-| 72 | `BankScreen.BANK_OWED_PAGES` | `{ "By borrower", "In trouble" }` |  |
-| 73 | `BankScreen.BANK_MONEY_PAGES` | `{ "Deposits", "Funding" }` |  |
-| 74 | `BankScreen.BANK_BOOKS_PAGES` | `{ "Income", "Balance sheet" }` |  |
-| 75 | `BankScreen.BANK_PAST_PAGES` | `{ "Lending", "Strain", "Capital" }` |  |
-| 346 | `BankScreen.GAUGE_MAX` | `2.0` | The top of the gauge's scale, as a multiple of capacity. |
+| 68 | `BankScreen.BANK_HOME` | `"The gauge"` | null is the landing |
+| 71 | `BankScreen.BANK_LEND_PAGES` | `{ "The gauge", "The two limits", "Another branch" }` |  |
+| 73 | `BankScreen.BANK_OWED_PAGES` | `{ "By borrower", "In trouble" }` |  |
+| 74 | `BankScreen.BANK_MONEY_PAGES` | `{ "Deposits", "Funding" }` |  |
+| 75 | `BankScreen.BANK_BOOKS_PAGES` | `{ "Income", "Balance sheet" }` |  |
+| 76 | `BankScreen.BANK_PAST_PAGES` | `{ "Lending", "Strain", "Capital" }` |  |
+| 347 | `BankScreen.GAUGE_MAX` | `2.0` | The top of the gauge's scale, as a multiple of capacity. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 33 | `private final UserInterface ui` | The window this screen draws into: its game, its root, its clearMenu(). |
-| 66 | `String bankArea` | null is the landing |
-| 68 | `String bankPage` |  |
+| 67 | `String bankArea` | null is the landing |
+| 69 | `String bankPage` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 1624 | **type** `final class BankScreen` | The bank tab: the gauge, the two limits, another branch, who owes it, where the money comes from, the books, the rescue, and its history. |
+| 30 | 1636 | **type** `final class BankScreen` | The bank tab: the gauge, the two limits, another branch, who owes it, where the money comes from, the books, the rescue, and its history. |
 | 35 | 1 | `BankScreen(UserInterface ui)` |  |
 
-### THE BANK (lines 37-265)
+### THE BANK (lines 37-266)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 94 | 92 | `void showBankMenu()` | THE BANK. |
-| 188 | 42 | `HBox bankRow(String name, String blurb, String figure, String sub, String tone, String area, String page)` | One subject on the bank's landing page. |
-| 232 | 33 | `HBox bankVitals()` | The four figures that are true of the whole tab. |
+| 95 | 92 | `void showBankMenu()` | THE BANK. |
+| 189 | 42 | `HBox bankRow(String name, String blurb, String figure, String sub, String tone, String area, String page)` | One subject on the bank's landing page. |
+| 233 | 33 | `HBox bankVitals()` | The four figures that are true of the whole tab. |
 
-### ONE SUBJECT, ITS OWN STRIP (lines 266-329)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 270 | 59 | `void drawBankScreen()` |  |
-
-### THE GAUGE (lines 330-585)
+### ONE SUBJECT, ITS OWN STRIP (lines 267-330)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 348 | 78 | `void bankGaugePage(VBox column)` |  |
-| 437 | 99 | `StackPane strainGauge(double strain, double premium, double size)` | An arc with the bands on it, the needle where the bank is, and the premium in the hole. |
-| 538 | 47 | `VBox gaugeKey(Bank bank)` | The three bands, said in words beside the gauge. |
+| 271 | 59 | `void drawBankScreen()` |  |
 
-### THE TWO LIMITS (lines 586-764)
+### THE GAUGE (lines 331-586)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 595 | 85 | `void bankLimitsPage(VBox column)` |  |
-| 681 | 11 | `int weightRow(javafx.scene.layout.GridPane table, int line, String label, double face, double weight)` |  |
-| 706 | 58 | `VBox limitBar(String name, String how, double limit, double book, boolean binds)` | One of the two limits, with the book drawn into it. |
+| 349 | 78 | `void bankGaugePage(VBox column)` |  |
+| 438 | 99 | `StackPane strainGauge(double strain, double premium, double size)` | An arc with the bands on it, the needle where the bank is, and the premium in the hole. |
+| 539 | 47 | `VBox gaugeKey(Bank bank)` | The three bands, said in words beside the gauge. |
 
-### ANOTHER BRANCH (lines 765-851)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 775 | 76 | `void bankBranchPage(VBox column)` |  |
-
-### WHO OWES IT (lines 852-953)
+### THE TWO LIMITS (lines 587-765)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 856 | 97 | `void bankBorrowerPage(VBox column)` |  |
+| 596 | 85 | `void bankLimitsPage(VBox column)` |  |
+| 682 | 11 | `int weightRow(javafx.scene.layout.GridPane table, int line, String label, double face, double weight)` |  |
+| 707 | 58 | `VBox limitBar(String name, String how, double limit, double book, boolean binds)` | One of the two limits, with the book drawn into it. |
 
-### (untitled) (lines 954-1035)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 956 | 79 | `void bankTroublePage(VBox column)` |  |
-
-### WHERE THE MONEY COMES FROM (lines 1036-1131)
+### ANOTHER BRANCH (lines 766-852)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1045 | 86 | `void bankDepositPage(VBox column)` |  |
+| 776 | 76 | `void bankBranchPage(VBox column)` |  |
 
-### (untitled) (lines 1132-1195)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1134 | 61 | `void bankFundingPage(VBox column)` |  |
-
-### THE BOOKS (lines 1196-1339)
+### WHO OWES IT (lines 853-954)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1200 | 139 | `void bankIncomePage(VBox column)` |  |
+| 857 | 97 | `void bankBorrowerPage(VBox column)` |  |
 
-### (untitled) (lines 1340-1452)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1342 | 110 | `void bankBalancePage(VBox column)` |  |
-
-### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 1453-1524)
+### (untitled) (lines 955-1041)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1473 | 51 | `VBox bankRescue()` |  |
+| 957 | 84 | `void bankTroublePage(VBox column)` |  |
 
-### ITS HISTORY (lines 1525-1653)
+### WHERE THE MONEY COMES FROM (lines 1042-1137)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1541 | 19 | `void bankHistoryPage(VBox column, String page)` |  |
-| 1561 | 23 | `void bankLendingHistory(VBox column, HistorySave h)` |  |
-| 1585 | 37 | `void bankStrainHistory(VBox column, HistorySave h)` |  |
-| 1623 | 30 | `void bankCapitalHistory(VBox column, HistorySave h)` |  |
+| 1051 | 86 | `void bankDepositPage(VBox column)` |  |
+
+### (untitled) (lines 1138-1193)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1140 | 53 | `void bankFundingPage(VBox column)` |  |
+
+### THE BOOKS (lines 1194-1345)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1198 | 147 | `void bankIncomePage(VBox column)` |  |
+
+### (untitled) (lines 1346-1464)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1348 | 116 | `void bankBalancePage(VBox column)` |  |
+
+### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 1465-1536)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1485 | 51 | `VBox bankRescue()` |  |
+
+### ITS HISTORY (lines 1537-1665)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1553 | 19 | `void bankHistoryPage(VBox column, String page)` |  |
+| 1573 | 23 | `void bankLendingHistory(VBox column, HistorySave h)` |  |
+| 1597 | 37 | `void bankStrainHistory(VBox column, HistorySave h)` |  |
+| 1635 | 30 | `void bankCapitalHistory(VBox column, HistorySave h)` |  |
 

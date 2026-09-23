@@ -53,7 +53,10 @@ final class TradeScreen {
                        is therefore actually the city's. The exchange control
                        lives here rather than behind a button.
          THE CURRENCY  the rate, how far it has wandered from what the same
-                       basket costs abroad, and the four forces pulling on it.
+                       basket costs abroad, and the four forces on it - the
+                       trade balance, the real rate, the vault's defence and
+                       the pull back to parity (0.7.2; the inflation drift
+                       that was a fifth is gone).
          WHAT WE TRADE what the city sells and buys, and the lifetime record.
 
        AND A RISK PANEL ON THE LANDING, always. Jerus: "both - quiet gauges
@@ -117,8 +120,8 @@ final class TradeScreen {
                 "The reserves", "What is yours"));
 
         column.getChildren().add(tradeRow("The currency",
-                "the rate, and the four things pulling on it",
-                String.format("%.4f", fx.getRate()),
+                "the rate, and the four forces on it: trade, the real rate, the vault, parity",
+                fxRate(fx.getRate()),
                 fx.isPinned() ? "held fixed"
                         : Math.abs(fx.deviationFromParity()) < .005 ? "sitting at parity"
                         : String.format("%.1f%% %s than parity",
@@ -1052,8 +1055,8 @@ final class TradeScreen {
         column.getChildren().add(sentence(tradeBuying
                 ? "Local money out of the treasury, foreign money into the vault. It "
                 + "costs the city cash it could have spent, and it buys cover — months of "
-                + "imports the vault could pay for, which is what damps a push against the "
-                + "currency."
+                + "imports the vault could pay for, which is what the central bank sells "
+                + "to meet a push against the currency."
                 : "Foreign money out of the vault, local money into the treasury. This is "
                 + "how a treasury gets at money it holds abroad, AND it is everything a "
                 + "central bank has ever been able to do about an exchange rate. Both are "
@@ -1084,6 +1087,31 @@ final class TradeScreen {
                     : "The currency rose and the same dollars fetch less at home. Nothing "
                     + "was spent and nothing left the vault; sold today, this is what they "
                     + "would raise."));
+        }
+
+        /*
+         * WHAT THE DEFENCE SPENT (0.7.2). The central bank sells the vault's
+         * dollars when the currency is pushed down on a month the city is
+         * short of them (ForeignAccounts, A DEFENCE THAT SPENDS): capital
+         * spent against the world, off the central bank's equity, and the
+         * local money they fetch does not come here. The month's sale and the
+         * dollars sold since founding, both saved.
+         */
+        if (fx.getDefenceUsdLifetime() > 0) {
+            column.getChildren().add(statementLine("Sold this month defending the currency",
+                    usdFull(fx.getDefenceUsd()),
+                    fx.getDefenceUsd() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+            column.getChildren().add(statementLine("...and since founding",
+                    usdFull(fx.getDefenceUsdLifetime()), Palette.TEXT_MUTED));
+            column.getChildren().add(statementNote(String.format(
+                    "Sold %s this month defending the currency; %s since founding. The "
+                    + "central bank sells when the currency is pushed down on a month the "
+                    + "city is short of dollars - up to %.0f%% of what the month wanted, the "
+                    + "share falling with the cover - and what they fetch is the central "
+                    + "bank's capital spent, not paid to the treasury. That is what the founders' "
+                    + "dollars were for; they are not bought back.",
+                    usdFull(fx.getDefenceUsd()), usdFull(fx.getDefenceUsdLifetime()),
+                    ForeignAccounts.MAX_ABSORPTION * 100)));
         }
 
         /*
@@ -1184,7 +1212,7 @@ final class TradeScreen {
                         : coverAfter < 3 ? Palette.BAD : Palette.TEXT_HEAD));
         column.getChildren().add(statementLine("In " + Currency.FOREIGN_CODE,
                 usdFull(fx.getRate() > 0 ? tradeExchange / fx.getRate() : 0)
-                        + String.format("   at %.4f", fx.getRate()),
+                        + "   at " + fxRate(fx.getRate()),
                 Palette.TEXT_MUTED));
 
         column.getChildren().add(statementNote(
@@ -1231,7 +1259,7 @@ final class TradeScreen {
 
         column.getChildren().add(statementHead("What one of theirs costs"));
 
-        Label rate = new Label(String.format("%.4f", fx.getRate()));
+        Label rate = new Label(fxRate(fx.getRate()));
         rate.setStyle(Palette.figure(Palette.SIZE_TITLE, Palette.TEXT_HEAD));
         column.getChildren().add(rate);
         column.getChildren().add(sentence(Currency.rateUnit()
@@ -1240,9 +1268,9 @@ final class TradeScreen {
         column.getChildren().add(parityMeter(fx));
 
         column.getChildren().add(statementLine("Where the basket says it should be",
-                String.format("%.4f", fx.getParity()), Palette.TEXT_MUTED));
+                fxRate(fx.getParity()), Palette.TEXT_MUTED));
         column.getChildren().add(statementLine("Where it actually is",
-                String.format("%.4f", fx.getRate()), Palette.TEXT_HEAD));
+                fxRate(fx.getRate()), Palette.TEXT_HEAD));
         column.getChildren().add(statementTotal(
                 fx.isPinned() ? "It is held fixed"
                         : Math.abs(drift) < .005 ? "Sitting at parity"
@@ -1316,9 +1344,19 @@ final class TradeScreen {
 
         ForeignAccounts fx = ui.game.getForeignAccounts();
 
-        double pressure  = fx.getLastPressure();
-        double absorbed  = fx.getLastAbsorption();
-        double effective = fx.effectivePressure();
+        /*
+         * ONE READING, AND IT IS THE NEXT MONTH'S (0.7.1): every figure on this
+         * page is what the next reprice will do on the accounts as they stand
+         * now - the pressure, what the vault takes of it, the push and the
+         * pull. It printed the month's RECORDED pressure and absorption
+         * beside this preview's push, and once the month's accounts had moved
+         * the three did not add up to each other. Previews, all of them, and
+         * none records anything: effectivePressure() is the month's own call,
+         * and a page must not rewrite what the month wrote.
+         */
+        double pressure  = fx.previewRawPressure();
+        double absorbed  = fx.previewAbsorption();
+        double effective = fx.previewPressure();
         double push = effective * ForeignAccounts.DRIFT_SPEED;
         double pull = (fx.getParity() - fx.getRate()) * ForeignAccounts.REVERSION
                 / Math.max(.0001, fx.getRate());
@@ -1336,9 +1374,11 @@ final class TradeScreen {
         }
 
         column.getChildren().add(statementNote(
-                "These readings decide what the rate does next. The first is the "
-                + "imbalance, the next how big it is against everything traded, and "
-                + "the rest decide how much of it reaches the rate at all."));
+                "One reading: what the next month does to the rate, on the accounts as "
+                + "they stand today. Four forces: the trade balance, the real rate, the "
+                + "vault's defence against a fall, and the pull back to parity. The "
+                + "city's inflation is not one of them - it reaches the rate through the "
+                + "parity it raises and the trade a dear currency loses."));
 
         boolean nothing = Math.abs(account) < .5;
         forceLine(column, "The current account, 12 months",
@@ -1382,36 +1422,68 @@ final class TradeScreen {
                           + "bought with somebody's dollars first, so it pushes the same "
                           + "way a surplus does.");
 
+        double trade = fx.pressure();
+        forceLine(column, "The trade term",
+                Math.abs(trade) < 1e-9 ? "none"
+                        : String.format("%.1f%% %s", Math.abs(trade) * 100,
+                                trade > 0 ? "weaker" : "stronger"),
+                trade > 0 ? Palette.BAD : trade < 0 ? Palette.GOOD : Palette.TEXT_SPENT,
+                "Both imbalances together, as a share of everything that crosses in "
+                + "either direction. A big number on a small trade is a small push - "
+                + "and a surplus financed by money going back out is no push at all.");
+
+        /*
+         * THE REAL RATE (0.7.2): the differential the last reprice was handed
+         * and what it is worth, with its four halves, so a player can see
+         * that a dial under inflation is a rate the world is paid to leave.
+         */
+        double real = fx.getRealRateDifferential();
+        double worth = fx.ratePressure();
+        forceLine(column, "The real rate, over the world's",
+                String.format("%+.2f pts, worth %.1f%% %s", real * 100, Math.abs(worth) * 100,
+                        worth > 0 ? "weaker" : "stronger"),
+                real >= 0 ? Palette.GOOD : Palette.BAD,
+                String.format("The dial less the city's inflation (%s less %+.1f%%), against the "
+                        + "world's rate less the world's (%s less %+.1f%%). Money goes where it "
+                        + "is paid better in real terms: a dial under inflation is a rate the "
+                        + "world is paid to leave, and the currency falls on the outflow; a dial "
+                        + "over it holds the currency however fast prices are rising.",
+                        pct2(ui.game.getDebtManager().getPolicyRate()), fx.getLocalInflation() * 100,
+                        pct2(DebtManager.WORLD_BASE_RATE), fx.getWorldInflation() * 100));
+
         forceLine(column, "Pressure on the rate",
                 Math.abs(pressure) < 1e-9 ? "none"
                         : String.format("%.1f%% %s", Math.abs(pressure) * 100,
                                 pressure > 0 ? "weaker" : "stronger"),
                 pressure > 0 ? Palette.BAD : pressure < 0 ? Palette.GOOD
                         : Palette.TEXT_SPENT,
-                "Both imbalances together, as a share of everything that crosses in "
-                + "either direction. A big number on a small trade is a small push - "
-                + "and a surplus financed by money going back out is no push at all.");
+                "The two together: what the month would push the currency by before the "
+                + "vault and the openness have had their say.");
 
-        forceLine(column, "Absorbed by the reserves",
-                String.format("%.0f%%", absorbed * 100),
+        /*
+         * THE VAULT'S DEFENCE (0.7.2): what it would sell and meet on these
+         * figures, and - a fact, not a preview - what it did sell at the last
+         * reprice. Its capacity is absorption(); what damps is what is sold.
+         */
+        forceLine(column, "The vault's defence",
+                absorbed > 0 ? String.format("sells %s, %.0f%%", usdFull(fx.previewDefenceUsd()),
+                        absorbed * 100) : "sells nothing",
                 absorbed > .5 ? Palette.WARN : Palette.TEXT_BODY,
-                "How much of the push the vault is taking instead of the rate. "
-                + "Cover buys time, and only time - it does not buy a different "
-                + "answer. And only against a fall: a push the other way passes "
-                + "through the vault in full, because a reserve defends a currency "
-                + "and does not hold one down.");
+                String.format("Against a push to fall, the central bank sells the vault's dollars: "
+                        + "up to %.0f%% of what the month's own accounts are short of (the vault "
+                        + "could do %.0f%% at %s of cover), and what the dollars meet is taken off "
+                        + "the push, at the cost of the central bank's equity. A push to rise is never met, "
+                        + "and a month that is not short of dollars sells none. At the last reprice "
+                        + "it sold %s and met %.0f%% of that month's deficit.",
+                        ForeignAccounts.MAX_ABSORPTION * 100, fx.absorption() * 100,
+                        coverReading(fx.importCover()), usdFull(fx.getDefenceUsd()),
+                        fx.getLastAbsorption() * 100));
 
         forceLine(column, "Openness of the economy",
                 String.format("%.0f%%", fx.getOpenness() * 100),
                 Palette.TEXT_BODY,
                 "Trade measured against output. A city that barely trades barely "
                 + "moves its own rate, whatever the pressure reads.");
-
-        forceLine(column, "The rate differential",
-                String.format("%+.2f pts", fx.getRateDifferential() * 100),
-                fx.getRateDifferential() > 0 ? Palette.GOOD : Palette.TEXT_BODY,
-                "What the city pays over the world for money. Pay more and money "
-                + "comes; it also leaves the day the difference closes.");
 
         /* -------------------------- what it comes to -------------------------- */
 
@@ -1448,9 +1520,9 @@ final class TradeScreen {
         column.getChildren().add(statementNote(
                 "The push is what the month is doing to the currency; the pull is the "
                 + "basket dragging it back to what the same goods cost abroad. A city "
-                + "with dollars in its vault feels less of a push to fall - the deeper "
-                + "the cover, the less - and none of a push to rise; the pull is the force "
-                + "that never lets go."));
+                + "whose central bank sells dollars into a fall feels less of it - while "
+                + "the vault lasts - and none of a push to rise is ever met; the pull is "
+                + "the force that never lets go."));
     }
 
     /**

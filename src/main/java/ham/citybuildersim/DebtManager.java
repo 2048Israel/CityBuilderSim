@@ -8,6 +8,10 @@ import java.util.Iterator;
 import java.util.Locale;
 
 /**
+ * The city's borrowing: every bond, note and dollar bond the treasury owes,
+ * the market that prices the next one, and the policy rate every price of
+ * money in the city is built on - the player's dial, or the rule's with the
+ * autopilot on (0.7.0).
  *
  * @author Jerus
  */
@@ -19,14 +23,17 @@ public class DebtManager {
 
        This was a constant, and it was the most load-bearing constant in the
        game without anybody having decided anything about it. Every price of
-       money in the city is built on it: floorRate() and ceilingRate() are it
-       plus and minus a spread, the city's own borrowing rate sits between them,
-       and Bank.fundToCover() is handed the result and strikes the DEPOSIT rate
-       and the wholesale FUNDING rate off it. Since phase 4 the carry trade
-       reads the gap between those and the world's rate.
+       money in the city is built on it: floorRate() IS it (never less than the
+       bank's own cost of funds), ceilingRate() is it plus both spreads, and
+       the city's own borrowing rate sits between them. Since 0.7.0 it is the
+       rate the CENTRAL BANK pays on the commercial bank's reserves, so
+       Bank.fundToCover() is handed it directly: the bank's spare cash earns
+       it, the window charges it plus CentralBank.WINDOW_PENALTY, and the
+       treasury's advances are charged it. Since phase 4 the carry trade reads
+       the gap between the bank's lending rate and the world's.
 
-       So a central bank does not need new plumbing here. It needs to own this
-       number. Everything downstream already listens.
+       So the central bank did not need new plumbing here. It needed to own
+       this number, and since 0.7.0 it does (CentralBank; autopilot below).
 
        WHAT MOVING IT DOES, in the order the ECB lists the channels:
          - the bank's deposit and lending rates, immediately
@@ -37,13 +44,23 @@ public class DebtManager {
          - and, since this phase, the exchange rate directly
 
        Bounded at both ends because a policy rate is a decision, not a wish: no
-       central bank sets a negative nominal rate by typing one, and past about a
-       fifth the instrument stops transmitting and starts destroying.
+       central bank sets a negative nominal rate by typing one. The top was 25%
+       until 0.7.2, "past about a fifth the instrument stops transmitting and
+       starts destroying" - which in this model was true: the currency's
+       support from a high rate saturated 13 points over the world and the
+       carry appetite at 6, so a higher dial bought nothing but dearer credit.
+       0.7.2 gave the rate its channel (ForeignAccounts, THE REAL RATE, NOT THE
+       NOMINAL; CapitalFlows.MAX_SPREAD) and the dial lost its stop with it.
+       Jerus: "i think we need to uncap the rate... but if we do... what
+       happens to everyone?" - the answer is the-central-bank.md's batch D
+       measurement.
     */
+    /** The floor of the dial: no central bank sets a negative nominal rate by typing one. */
     public static final double MIN_POLICY_RATE = .0;
-    public static final double MAX_POLICY_RATE = .25;
+    /** The top of the dial, 100% a year since 0.7.2 (25% before): a bound that never binds in play, kept so a typo cannot set 2,500%. */
+    public static final double MAX_POLICY_RATE = 1.00;
 
-    /** What the city's central bank charges. The player's dial. */
+    /** What the city's central bank charges. The player's dial - or the rule's, with autopilot on. */
     private double baseRate = .03;
 
     public double getPolicyRate() { return baseRate; }
@@ -52,27 +69,51 @@ public class DebtManager {
         baseRate = Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, rate));
     }
 
+    /* -----------------------------------------------------------------------
+       THE FLOOR IS REAL NOW (0.7.0), AND THE CURVE SITS ON IT (0.7.1).
+
+       Until 0.7.0 the city's own paper was quoted CITY_DISCOUNT - two points -
+       UNDER the policy rate, "the one number in this file that does not
+       describe anything real": the Policy screen read 3.00% and the Finances
+       screen 1.00% on the same morning, and the city borrowed cheaper than
+       its own central bank, which no borrower anywhere does. Jerus found it
+       on the screens, 2026-09-12, and decided: "leave as is for now, much
+       later when we will redesign it realistically aka central bank stepping
+       in to keep it at that rate and longer durations deviating."
+
+       The central bank steps in now. The commercial bank's reserves earn the
+       policy rate, so nobody lends the city less than that, and a note the
+       city sells settles at the policy rate plus the credit spread its own
+       debt measures produce - the T-bill rate, by arbitrage. The discount is
+       deleted and the floor is the dial. The rest of Jerus's sentence,
+       "longer durations deviating", is THE CURVE below (0.7.1): a term premium
+       by maturity on top of this floor, and the central bank's holdings
+       bending the long end down.
+       ----------------------------------------------------------------------- */
+
     /**
-     * WHAT THE CITY'S OWN PAPER IS QUOTED UNDER THE POLICY RATE - and it is the
-     * one number in this file that does not describe anything real.
-     *
-     * A city with no debt is quoted the policy rate LESS this, so the Policy
-     * screen reads 3.00% and the Finances screen 1.00% on the same morning and
-     * the city borrows cheaper than its own central bank, which no borrower
-     * anywhere does. Jerus found it on the screens, 2026-09-12, and decided:
-     * "leave as is for now, much later when we will redesign it realistically
-     * aka central bank stepping in to keep it at that rate and longer durations
-     * deviating."
-     *
-     * So it stands, and it is a NAMED constant now rather than a literal in
-     * four places, because the screens have to be able to say what they are
-     * showing: the Policy page and the Finances breakdown both print it and
-     * both say it is a discount under the dial. What replaces it is a term
-     * structure - an overnight rate the central bank actually holds by
-     * operating in the market, and a spread that grows with maturity - and that
-     * is a batch of its own.
+     * THE AUTOPILOT (0.7.0): whether the rule holds the dial rather than the
+     * player. Jerus's toggle, decided with the floor: when on, the top of
+     * every month sets the dial to advisedPolicyRate() off the price index
+     * before anything is priced (Game.nextMonth()), and the player's hand on
+     * the dial - takeTheDial() - turns it off. Saved beside the rate
+     * (DataSave.policyAutopilot); an old save reads off, which is the hand
+     * that was on the dial when it was saved.
      */
-    public static final double CITY_DISCOUNT = .02;
+    private boolean autopilot;
+
+    public boolean isAutopilot()              { return autopilot; }
+    public void setAutopilot(boolean on)      { this.autopilot = on; }
+
+    /**
+     * The player moves the dial by hand, which takes it back from the rule.
+     * What the screens call; setPolicyRate() is what the rule and a fixture
+     * call, and leaves the toggle alone.
+     */
+    public void takeTheDial(double rate) {
+        autopilot = false;
+        setPolicyRate(rate);
+    }
 
     /** Where the rate sits when nobody is leaning on it either way. */
     public static final double NEUTRAL_RATE = .03;
@@ -102,8 +143,10 @@ public class DebtManager {
      * trustworthy price index and does not have a trustworthy output gap, so
      * the rule uses the one it has.
      *
-     * Advisory. It is shown beside the dial with its reasoning; it never moves
-     * anything on its own.
+     * Advisory unless the rule has the dial. It is shown beside the dial with
+     * its reasoning, and moves nothing on its own - except with the autopilot
+     * on (THE AUTOPILOT, above), when the top of every month sets the dial to
+     * it.
      */
     public double advisedPolicyRate(double inflation) {
         return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, ruleRate(inflation)));
@@ -117,8 +160,10 @@ public class DebtManager {
      * the monetary page said "the rule says 25.00%" when the rule says 67.5%
      * and it is the dial that stops at 25%. A player reading that could not
      * tell which of the two was the limit. The screens print both when they
-     * differ. The cap is Jerus's and stays (2026-09-21): it lifts when the
-     * money supply gives the rate a channel to work through.
+     * differ. The cap was Jerus's until the money supply gave the rate a
+     * channel to work through, and lifted to 100% with it in 0.7.2 - so the
+     * two now differ at the floor, when inflation runs under zero,
+     * and at the top only past 66.7% inflation.
      */
     public double ruleRate(double inflation) {
         return NEUTRAL_RATE + TAYLOR_WEIGHT * (inflation - INFLATION_TARGET);
@@ -137,8 +182,8 @@ public class DebtManager {
         }
         double rule = ruleRate(inflation);
         String says = rule > MAX_POLICY_RATE
-                ? String.format("the rule would set %.1f%%; the dial stops at %.0f%% until the "
-                        + "money supply is modelled", rule * 100, MAX_POLICY_RATE * 100)
+                ? String.format("the rule would set %.1f%%; the dial stops at %.0f%%, a guard "
+                        + "against a typo rather than a policy", rule * 100, MAX_POLICY_RATE * 100)
                 : rule < MIN_POLICY_RATE
                 ? String.format("the rule would set %.1f%%; the dial stops at %.0f%%, because no "
                         + "central bank sets a negative rate by typing one",
@@ -152,7 +197,7 @@ public class DebtManager {
                 inflation > INFLATION_TARGET ? "meeting" : "giving back",
                 TAYLOR_WEIGHT);
     }
-    private double currentRate = baseRate - CITY_DISCOUNT;
+    private double currentRate = baseRate;
     private double GDP;
 
     /**
@@ -183,7 +228,9 @@ public class DebtManager {
      * The most either measure alone can add to the rate.
      *
      * Two measures, five points each, so the spread runs 0 to 10 points over the
-     * floor and the rate runs 1% to 11%. Neither measure can price the city on
+     * floor and the rate from the dial to ten points above it - 3% to 13% at
+     * the default dial, where it ran 1% to 11% while CITY_DISCOUNT stood (until
+     * 0.7.0). Neither measure can price the city on
      * its own: a city with no economy but plenty of revenue, or the reverse, is
      * capped at half the punishment.
      *
@@ -217,7 +264,8 @@ public class DebtManager {
      * ratio precisely when the borrowing is most sensible.
      *
      * MEASURED on a city of 1,256 with $3.6M of annual tax revenue, with the
-     * loan itself priced in:
+     * loan itself priced in - before 0.7.0, on a floor two points under the
+     * dial, so every figure below is two points higher today:
      *
      *      1x revenue  1.05%      30x   2.44%      200x   8.96%
      *      2x revenue  1.10%      50x   3.41%      500x   the 11% ceiling
@@ -243,30 +291,30 @@ public class DebtManager {
 
     }
 
-    public void addShortTermTBill(double faceValue, int months, int monthStarted) {
-        addShortTermTBill(faceValue, months, monthStarted, false);
+    public Debt addShortTermTBill(double faceValue, int months, int monthStarted) {
+        return addShortTermTBill(faceValue, months, monthStarted, false);
     }
 
-    public void addShortTermTBill(double faceValue, int months, int monthStarted, boolean foreign) {
-        book(new ShortTermTBill(faceValue, months, monthStarted, foreign));
+    public Debt addShortTermTBill(double faceValue, int months, int monthStarted, boolean foreign) {
+        return book(new ShortTermTBill(faceValue, months, monthStarted, foreign));
     }
 
-    public void addMediumTermBond(double faceValue, int months, int monthStarted, double rate) {
-        addMediumTermBond(faceValue, months, monthStarted, rate, false);
+    public Debt addMediumTermBond(double faceValue, int months, int monthStarted, double rate) {
+        return addMediumTermBond(faceValue, months, monthStarted, rate, false);
     }
 
-    public void addMediumTermBond(double faceValue, int months, int monthStarted,
+    public Debt addMediumTermBond(double faceValue, int months, int monthStarted,
                                   double rate, boolean foreign) {
-        book(new MediumTermBond(faceValue, months, monthStarted, rate, foreign));
+        return book(new MediumTermBond(faceValue, months, monthStarted, rate, foreign));
     }
 
-    public void addLongTermBond(double faceValue, int months, int monthStarted, double rate) {
-        addLongTermBond(faceValue, months, monthStarted, rate, false);
+    public Debt addLongTermBond(double faceValue, int months, int monthStarted, double rate) {
+        return addLongTermBond(faceValue, months, monthStarted, rate, false);
     }
 
-    public void addLongTermBond(double faceValue, int months, int monthStarted,
+    public Debt addLongTermBond(double faceValue, int months, int monthStarted,
                                 double rate, boolean foreign) {
-        book(new LongTermBond(faceValue, months, monthStarted, rate, foreign));
+        return book(new LongTermBond(faceValue, months, monthStarted, rate, foreign));
     }
 
     /**
@@ -279,9 +327,10 @@ public class DebtManager {
      * and never respond to the currency at all. Silent, and the kind of thing
      * that only shows up when somebody wonders why devaluation did nothing.
      */
-    private void book(Debt paper) {
+    private Debt book(Debt paper) {
         paper.setExchangeRate(exchangeRate);
         debts.add(paper);
+        return paper;
     }
 
     /* =======================================================================
@@ -514,9 +563,31 @@ public class DebtManager {
         return Math.min(MAX_COUNTRY_PREMIUM, MAX_COUNTRY_PREMIUM * risk + defaultScar);
     }
 
-    /** The all-in annual rate on a new USD bond. */
+    /** The all-in annual rate on a new USD bond: the short end of the world's curve (foreignCurveRate()). */
     public double foreignRate() {
         return WORLD_BASE_RATE + countryPremium();
+    }
+
+    /**
+     * THE WORLD'S CURVE (0.7.2): what the world charges this city for dollar
+     * paper of this many months - the foreign rate, plus the SAME term
+     * premium table the city's own curve carries (termPremium()). One curve
+     * shape for both currencies: a lender tying money up for thirty years
+     * wants paying for the thirty years whoever's money it is, and the
+     * world's term premium is not a separate dial. What the city's central
+     * bank holds does not compress it - it holds none of the world's paper.
+     *
+     * WHY (0.7.1's found-on-the-way): a dollar bond was VALUED at the city's
+     * short rate (marketValue() read currentRate) and a dollar term loan
+     * PRICED flat at the world's rate at every maturity. So the player's dial
+     * moved what a dollar bond was worth, which nothing in the world would
+     * do, and a dollar buyback priced off the city's curve rather than the
+     * one it was sold on. Issue and buyback both read this now, which is what
+     * keeps a dollar round trip neutral by construction, as the domestic one
+     * is (RestructureCheck).
+     */
+    public double foreignCurveRate(int months) {
+        return foreignRate() + termPremium(months);
     }
 
     /**
@@ -527,6 +598,43 @@ public class DebtManager {
     public double quoteForeignRate(double extraUsd) {
         return WORLD_BASE_RATE
                 + countryPremiumAt(getForeignPrincipal() + Math.max(0, extraUsd) * exchangeRate);
+    }
+
+    /** ...and at a maturity, on the world's curve (0.7.2): the quote plus the term premium for those months. */
+    public double quoteForeignRate(double extraUsd, int months) {
+        return quoteForeignRate(extraUsd) + termPremium(months);
+    }
+
+    /**
+     * ...and priced with the proposed paper ON THE BOOKS, its own next year
+     * of service included (0.7.2): the rate the world's curve will read for
+     * this paper, at this maturity, the moment it is booked.
+     *
+     * WHY. quoteForeignRate(extraUsd) prices the proposed principal in, and
+     * scales the service the city ALREADY owes by it - so a city with no
+     * dollar paper was quoted a service term of nothing, and the paper, once
+     * booked, was valued with its own coupons in that term. The buyback read
+     * a dearer rate than the issue had. At 0.7.1, with a dollar bond valued at
+     * the city's short rate, a dollar term round trip netted the city 10-22%
+     * of the money raised; on the world's curve alone it still netted
+     * 0.4-1%. Priced this way the issue and the buyback read the same premium
+     * - this is countryPremium() as it will stand, computed before the paper
+     * is booked - so the round trip is neutral by construction, the way the
+     * domestic one is. Game.quoteForeign() walks the fixed point (the coupon
+     * is struck on the rate, and the service on the coupon).
+     *
+     * @param proposed the paper as it would be booked, in dollars, not yet on the books
+     */
+    public double quoteForeignRate(Debt proposed, int months) {
+        if (proposed == null) return foreignCurveRate(months);
+        proposed.setExchangeRate(exchangeRate);
+        double owed = getForeignPrincipal() + proposed.getOustandingPrincipal();
+        double service = nextYearService();
+        double[] flows = proposed.remainingCashFlows();
+        for (int i = 0; i < Math.min(12, flows.length); i++) service += flows[i];
+        double risk = SOLVENCY_WEIGHT * solvencyStressAt(owed) + SERVICE_WEIGHT * serviceStressAt(service);
+        return WORLD_BASE_RATE + Math.min(MAX_COUNTRY_PREMIUM, MAX_COUNTRY_PREMIUM * risk + defaultScar)
+                + termPremium(months);
     }
 
     /**
@@ -631,7 +739,13 @@ public class DebtManager {
         System.out.println("============================================================\n");
     }
 
-    //getters
+    /**
+     * THE CITY'S RATE: the SHORT END of the curve - the note's rate, no term
+     * premium - which is what every screen means by "the city's rate", what
+     * the bank's strain and the advisor read, and what the households' lender
+     * prices off. A term bond is quoted at curveRate() for its maturity
+     * (0.7.1); this one number stays the T-bill rate.
+     */
     public double getRate() {
         return currentRate;
     }
@@ -647,6 +761,17 @@ public class DebtManager {
     private double bankPremium;
     public void setBankPremium(double premium) { this.bankPremium = Math.max(0, premium); }
     public double getBankPremium()             { return bankPremium; }
+
+    /**
+     * The city's rate without the bank's strain in it (0.7.2): what the hot
+     * money compares with the world's (CapitalFlows, MAX_SPREAD). A strained
+     * bank's premium is what the bank charges for its own trouble, not a
+     * return anybody abroad is offered; read as one, a strained bank drew
+     * money in because it was strained. Suspected of 0.7.2's extra bank
+     * failures and measured when it went in: on the eight default seeds it
+     * moved none of them (GameVersion, 0.7.2).
+     */
+    public double getRateBeforeStrain()        { return currentRate - bankPremium; }
 
     /**
      * What the bank pays for the money it lends the city.
@@ -705,6 +830,18 @@ public class DebtManager {
 
     public double getOverdraft()  { return overdraft; }
 
+    /**
+     * What the treasury owes its central bank in advances (0.7.0), pushed in
+     * with the overdraft. Priced like it, because it is the same borrowing a
+     * month later: the overdraft at a month's end is advanced at the top of
+     * the next, and before 0.7.0 it became an emergency note, which was
+     * principal and priced. The market looks at everything the city owes.
+     */
+    private double advances;
+
+    public void setAdvances(double owed) { this.advances = Math.max(0, owed); }
+    public double getAdvances()          { return advances; }
+
     public List<Debt> getDebt() {
         return debts;
     }
@@ -712,9 +849,24 @@ public class DebtManager {
     public void processAllDebts(Game game) {
 
         Iterator<Debt> iterator = debts.iterator();
+        accretedForBank = 0;
 
         while (iterator.hasNext()) {
             Debt debt = iterator.next();
+
+            /*
+             * THE DISCOUNT ACCRETES (0.7.1), a month of it, before the month's
+             * payments move the holders' shares: the bank's part is its
+             * interest at the settle, the households' is theirs at maturity
+             * (their paper is carried at market), and the central bank's was
+             * taken when it bought, at face. See Debt.accrete().
+             */
+            if (!debt.isForeign()) {
+                double out = debt.getOustandingPrincipal();
+                double bankShare = out > 0 ? debt.bankPrincipal() / out : 0;
+                double step = debt.accrete();
+                if (step > 0) accretedForBank += step * bankShare;
+            }
 
             debt.processMonth(game);
 
@@ -744,13 +896,14 @@ public class DebtManager {
     }
 
     /**
-     * Everything the city owes, including what it is overdrawn.
+     * Everything the city owes, including what it is overdrawn and what it
+     * owes the central bank in advances.
      *
      * NOT the same as getAllPrincipal(), which is bonds and bills only. This is
      * what the market is actually looking at when it decides what to charge.
      */
     public double getPricedDebt() {
-        return getAllPrincipal() + Math.max(0, overdraft);
+        return getAllPrincipal() + Math.max(0, overdraft) + advances;
     }
 
     /**
@@ -768,11 +921,11 @@ public class DebtManager {
         return debts.remove(debt);
     }
 
-    /** What every outstanding bond would cost to buy back at today's rate. */
+    /** What every outstanding bond would cost to buy back today: each at the curve's rate for the months it has left (0.7.1). */
     public double getTotalMarketValue() {
         double total = 0;
         for (Debt debt : debts) {
-            total += debt.getMarketValue(currentRate);
+            total += marketValue(debt);
         }
         return total;
     }
@@ -832,11 +985,263 @@ public class DebtManager {
      *         a fact about the money rather than about the borrower.
      */
     private double priceAt(double debt) {
+        return priceAt(debt, 0);
+    }
+
+    /**
+     * ...at a maturity (0.7.1): the same credit judgement, clamped the same
+     * way, plus the term premium for that many months less what the central
+     * bank's holdings compress of it, and the bank's premium outside it all.
+     * The shape is added OUTSIDE the clamp, so a city at the ceiling still has
+     * a curve - the ceiling is what a hopeless borrower pays on its merits,
+     * and the premium is the price of time, which it pays on top. Zero months
+     * is the short end: no premium, no compression, and exactly the figure
+     * the city was quoted before there was a curve.
+     */
+    private double priceAt(double debt, int months) {
         double rate = floorRate()
                 + spreadFor(debt, GDP * 12)
                 + spreadFor(debt, monthlyTaxRevenue * 12);
-        return Math.max(MIN_RATE, Math.min(rate, ceilingRate())) + bankPremium;
+        double credit = Math.max(MIN_RATE, Math.min(rate, ceilingRate()));
+        return credit + termShape(months) + bankPremium;
     }
+
+    /* =======================================================================
+       THE CURVE (0.7.1)
+       =======================================================================
+
+       Jerus: "i think that the short term rates, aka the one you choose,
+       those should be basically the tbill rate, the others change just as in
+       real life."
+
+       Until 0.7.1 a thirty-year bond and a six-month note were priced at the
+       same rate - one number for every maturity, which no market has ever
+       done. A lender who ties money up for thirty years wants paying for the
+       thirty years: inflation might return, rates might rise, the city might
+       change. So:
+
+           rate(months) = policy + termPremium(months) - compression(months)
+                          + credit spread (+ the bank's premium, as ever)
+
+       THE SHORT END IS THE DIAL. A note (3-12 months) carries no premium: it
+       is the T-bill rate, Jerus's "the one you choose", and getRate() - the
+       standing "city's rate" the screens and the bank's strain read - stays
+       exactly that. The premium is a table of five points at the five term
+       maturities, linear between them, linear from nothing at a year to the
+       ten-year point (so a serial bond's final maturity prices on the same
+       curve), and flat past fifty years.
+
+       THE CREDIT SPREAD IS THE SAME AT EVERY MATURITY, so a hike moves the
+       whole curve up in parallel and a city that over-borrows pays more at
+       every point of it. THE COMPRESSION is what the central bank's holdings
+       buy (CentralBank, THE HOLDINGS DIAL): the premium times the share of
+       the city's term paper it holds, over the most it may hold. It never
+       touches the short end, which has no premium to compress, and at the
+       maximum holding the premium is gone.
+
+       EVERY PRICE OF CITY PAPER GOES THROUGH curveRate() or quoteRate() at a
+       maturity: the three quotes hand their duration in, a buyback and the
+       market value of a bond price at the months it has LEFT, the central
+       bank buys at it, the households sell back at it. Issue and buyback off
+       one function is what keeps RestructureCheck's round trip neutral by
+       construction.
+       ======================================================================= */
+
+    /** The premium on ten-year money, in points of annual rate: Jerus's numbers to settle, roughly half a point at ten years. */
+    public static final double TERM_PREMIUM_10Y = .0050;
+
+    /** ...on twenty-year money. */
+    public static final double TERM_PREMIUM_20Y = .0090;
+
+    /** ...on thirty-year money. */
+    public static final double TERM_PREMIUM_30Y = .0115;
+
+    /** ...on forty-year money. */
+    public static final double TERM_PREMIUM_40Y = .0135;
+
+    /** ...on fifty-year money, and on anything longer: the long end, a point and a half over the dial. */
+    public static final double TERM_PREMIUM_50Y = .0150;
+
+    /** The table, at 10, 20, 30, 40 and 50 years - LongTermBond.MATURITIES. */
+    private static final double[] TERM_PREMIUM = {
+            TERM_PREMIUM_10Y, TERM_PREMIUM_20Y, TERM_PREMIUM_30Y, TERM_PREMIUM_40Y, TERM_PREMIUM_50Y };
+
+    /**
+     * What a lender adds for tying money up this many months, before the
+     * central bank compresses any of it.
+     *
+     * Nothing for a year or less - the note, the T-bill. Linear from nothing
+     * at twelve months to TERM_PREMIUM_10Y at ten years, linear between the
+     * table's points, and TERM_PREMIUM_50Y from fifty years on.
+     */
+    public static double termPremium(int months) {
+        if (months <= 12) return 0;
+        if (months <= 120) return TERM_PREMIUM_10Y * (months - 12) / (120.0 - 12);
+        if (months >= 600) return TERM_PREMIUM_50Y;
+        int below = months / 120 - 1;                   // 0 at 10y .. 3 at 40y
+        double at = (months - (below + 1) * 120) / 120.0;
+        return TERM_PREMIUM[below] + (TERM_PREMIUM[below + 1] - TERM_PREMIUM[below]) * at;
+    }
+
+    /**
+     * What the central bank's holdings take off the premium at this many
+     * months: the premium, times the share of the city's term paper it
+     * actually holds (not its target) over CentralBank.MAX_QE_SHARE, times
+     * CentralBank.QE_COMPRESSION. Nothing at the short end, which has no
+     * premium; the whole premium at the maximum holding.
+     */
+    public double compression(int months) {
+        double premium = termPremium(months);
+        if (premium <= 0) return 0;
+        double held = centralBankShareOfTerm();
+        if (held <= 0) return 0;
+        return premium * Math.min(1, held / CentralBank.MAX_QE_SHARE) * CentralBank.QE_COMPRESSION;
+    }
+
+    /** The premium less the compression: the curve's shape over the short end. */
+    private double termShape(int months) {
+        if (months <= 12) return 0;
+        return termPremium(months) - compression(months);
+    }
+
+    /**
+     * THE CURVE: what the city's paper of this many months is worth to a
+     * lender today - the standing rate at that maturity, on what the city owes
+     * now. At twelve months or less it is getRate().
+     */
+    public double curveRate(int months) {
+        return priceAt(getPricedDebt(), months);
+    }
+
+    /**
+     * What this paper would fetch today: the present value of what it still
+     * owes at the curve's rate for the months it has left - the city's curve
+     * for its own paper, the world's (foreignCurveRate()) for a dollar bond
+     * since 0.7.2, which was valued at the city's short rate until then, so
+     * the dial moved it.
+     */
+    public double marketValue(Debt paper) {
+        if (paper == null) return 0;
+        if (paper.isForeign()) return paper.getMarketValue(foreignCurveRate(paper.getRemainingMonths()));
+        return paper.getMarketValue(curveRate(paper.getRemainingMonths()));
+    }
+
+    /** True for the city's own term paper - serial and term, not the notes: what the central bank's dial holds. */
+    public static boolean isTermPaper(Debt paper) {
+        return paper != null && !paper.isForeign() && !(paper instanceof ShortTermTBill);
+    }
+
+    /** The city's own term paper outstanding, at face: the base of the holdings dial. */
+    public double termPrincipal() {
+        double total = 0;
+        for (Debt d : debts) if (isTermPaper(d)) total += d.getOustandingPrincipal();
+        return total;
+    }
+
+    /** The share of it the central bank holds - the compression's measure. Zero with none outstanding. */
+    public double centralBankShareOfTerm() {
+        double term = 0, held = 0;
+        for (Debt d : debts) {
+            if (!isTermPaper(d)) continue;
+            term += d.getOustandingPrincipal();
+            held += d.centralBankPrincipal();
+        }
+        return term > 0 ? held / term : 0;
+    }
+
+    /* ---------------------- who holds it (0.7.1) ---------------------- */
+
+    /** What the city's households hold of its own paper, at face. The sum of every cell's paper; HoldersCheck asserts it. */
+    public double householdPrincipal() {
+        double total = 0;
+        for (Debt d : debts) total += d.householdPrincipal();
+        return total;
+    }
+
+    /** ...the central bank, at face. CentralBank.getPaperHeld() is the same figure from the other side. */
+    public double centralBankPrincipal() {
+        double total = 0;
+        for (Debt d : debts) total += d.centralBankPrincipal();
+        return total;
+    }
+
+    /** ...and the commercial bank: the domestic principal less the other two. What its book carries. */
+    public double bankPrincipal() {
+        double total = 0;
+        for (Debt d : debts) total += d.bankPrincipal();
+        return total;
+    }
+
+    /**
+     * ...of which the paper the bank has PAID for: what its book carries. Paper
+     * sold between two presses is on nobody's book until the settle - the
+     * treasury has the cash, and what the buyers owe is carried against the
+     * bank's pool in MoneyAudit - so a city reloaded between the issue and
+     * the settle carries the same book as the one that was saved.
+     */
+    public double bankBook() {
+        double total = 0;
+        for (Debt d : debts) if (d.getSettleDue() <= 0) total += d.bankPrincipal();
+        return total;
+    }
+
+    /** Each holder's book at the curve: 0 the households, 1 the central bank, 2 the bank. */
+    public double[] bookValues() {
+        double[] out = new double[3];
+        for (Debt d : debts) {
+            if (d.isForeign()) continue;
+            double face = d.getOustandingPrincipal();
+            if (face <= 0) continue;
+            double perFace = marketValue(d) / face;
+            out[0] += d.householdPrincipal() * perFace;
+            out[1] += d.centralBankPrincipal() * perFace;
+            out[2] += d.bankPrincipal() * perFace;
+        }
+        return out;
+    }
+
+    /**
+     * The households' book at market over its face: ONE RATIO A MONTH, which
+     * is what their paper counts for in their net worth and what the desk
+     * pays them for it. At face - 1 - when they hold none.
+     */
+    public double householdBookRatio() {
+        double face = householdPrincipal();
+        return face > 0 ? bookValues()[0] / face : 1;
+    }
+
+    /** What the households' paper yields at today's curve, weighted by what they hold of each piece; the short rate when they hold none. */
+    public double householdBookYield() {
+        double face = 0, weighted = 0;
+        for (Debt d : debts) {
+            double held = d.householdPrincipal();
+            if (held <= 0) continue;
+            face += held;
+            weighted += held * curveRate(d.getRemainingMonths());
+        }
+        return face > 0 ? weighted / face : getRate();
+    }
+
+    /**
+     * The discount the bank has not yet earned on what it holds: every piece's
+     * unaccreted remainder, in the share of its principal the bank holds. The
+     * bank carries it against its book (Bank.setUnearnedDiscount()), so its
+     * equity does not jump at the settle and the discount reaches its income
+     * only as it accretes.
+     */
+    public double bankUnearnedDiscount() {
+        double total = 0;
+        for (Debt d : debts) {
+            if (d.isForeign() || d.getSettleDue() > 0) continue;   // not on its book yet: see bankBook()
+            total += d.unaccretedOn(d.bankPrincipal());
+        }
+        return total;
+    }
+
+    /** This month's accretion on the bank's share, struck in processAllDebts() before the month's payments; handed to the bank at the settle. */
+    private double accretedForBank;
+
+    public double getAccretedForBank() { return accretedForBank; }
 
     /* ===================================================================
        THE RATE, TAKEN APART - for the Finances screen and nothing else.
@@ -863,13 +1268,13 @@ public class DebtManager {
      */
     public double rateAtPolicy(double policy) {
         double floor   = Math.max(MIN_RATE,
-                Math.max(policy - CITY_DISCOUNT, costOfFunds + Bank.MIN_MARGIN));
-        double ceiling = (policy - CITY_DISCOUNT) + 2 * MAX_SPREAD_PER_MEASURE;
+                Math.max(policy, costOfFunds + Bank.MIN_MARGIN));
+        double ceiling = policy + 2 * MAX_SPREAD_PER_MEASURE;
         double rate = floor + gdpSpread() + revenueSpread();
         return Math.max(MIN_RATE, Math.min(rate, ceiling)) + bankPremium;
     }
 
-    /** The floor everybody pays: the policy rate less the city's own spread. */
+    /** The floor everybody pays: the policy rate, or the bank's cost of funds if that is higher. */
     public double baseComponent() { return floorRate(); }
 
     /** What the debt costs against the size of the economy. */
@@ -905,16 +1310,17 @@ public class DebtManager {
     }
 
     /**
-     * What a spotless city pays: the policy rate less CITY_DISCOUNT - see its
-     * note - but never less than the money costs the bank that lends it.
+     * What a spotless city pays: the policy rate - since 0.7.0, see THE FLOOR
+     * IS REAL NOW - but never less than the money costs the bank that lends it.
      *
-     * THE DISCOUNT SURVIVES; IT JUST STOPS BEING A SUBSIDY THE LENDER PAYS.
-     * CITY_DISCOUNT is two points UNDER the policy rate, and this bank funds
-     * itself at two points OVER it. The city therefore borrowed at a
-     * guaranteed four-point loss to its own bank, by construction, on every
-     * dollar the bank's deposits did not cover - and the bank has no say in
-     * how much of it to hold, because Game.refreshBank() sets cityBook to the
-     * whole of getAllPrincipal().
+     * THE DISCOUNT SURVIVED THIS, AND STOPPED BEING A SUBSIDY THE LENDER PAID
+     * (2026-09-13), until 0.7.0 deleted it outright; the note is kept as the
+     * history. CITY_DISCOUNT was two points UNDER the policy rate, and the
+     * bank then funded itself at two points OVER it. The city therefore
+     * borrowed at a guaranteed four-point loss to its own bank, by
+     * construction, on every dollar the bank's deposits did not cover - and
+     * the bank had no say in how much of it to hold, because
+     * Game.refreshBank() set cityBook to the whole of the principal.
      *
      * Measured on Jerus's own save, 2026-09-13: $18.2bn of thirty-year paper
      * issued in month 144 at 0.625% a year, 91.6% of a book yielding 1.307%
@@ -930,12 +1336,12 @@ public class DebtManager {
      */
     public double floorRate() {
         return Math.max(MIN_RATE,
-                Math.max(baseRate - CITY_DISCOUNT, costOfFunds + Bank.MIN_MARGIN));
+                Math.max(baseRate, costOfFunds + Bank.MIN_MARGIN));
     }
 
     /** What a hopeless one pays - both measures maxed out. */
     public double ceilingRate() {
-        return (baseRate - CITY_DISCOUNT) + 2 * MAX_SPREAD_PER_MEASURE;
+        return baseRate + 2 * MAX_SPREAD_PER_MEASURE;
     }
 
     /**
@@ -952,7 +1358,8 @@ public class DebtManager {
          * The city's own paper is priced on its debt against its tax base, and
          * that is still the whole of the credit judgement. What the bank adds
          * is the price of the MONEY, not of the borrower: a city whose bank is
-         * lent out past its deposits is funding itself abroad, and a city with
+         * lent out past its deposits is funding itself at the central bank's
+         * window (abroad, until 0.7.0), and a city with
          * no bank at all is borrowing from strangers who have never heard of
          * it. Eighteen points, at the worst, which is what a founding city with
          * no branch now pays until it builds one. See Bank.ratePremium().
@@ -981,21 +1388,35 @@ public class DebtManager {
      * @param faceOf    given a rate, what the city would end up owing
      */
     public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf) {
+        return quoteRate(requested, faceOf, 0);
+    }
+
+    /**
+     * ...at a maturity (0.7.1): the same fixed point on the curve's rate for
+     * that many months. The three instruments hand their duration in, so the
+     * issue and the buyback price off the same curve - see THE CURVE.
+     */
+    public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf, int months) {
 
         double existing = debtAfterProceedsOf(requested);
-        double rate = priceAt(existing + Math.max(0, requested));
+        double rate = priceAt(existing + Math.max(0, requested), months);
 
         for (int i = 0; i < QUOTE_ITERATIONS; i++) {
             double face = faceOf.applyAsDouble(rate);
             if (!Double.isFinite(face) || face < 0) break;
-            rate = priceAt(existing + face);
+            rate = priceAt(existing + face, months);
         }
         return rate;
     }
 
     /** Straight-line version for instruments whose face value IS the request. */
     public double quoteRate(double requested) {
-        return priceAt(debtAfterProceedsOf(requested) + Math.max(0, requested));
+        return quoteRate(requested, 0);
+    }
+
+    /** ...at a maturity. */
+    public double quoteRate(double requested, int months) {
+        return priceAt(debtAfterProceedsOf(requested) + Math.max(0, requested), months);
     }
 
     /**
@@ -1006,13 +1427,17 @@ public class DebtManager {
      * the hole twice and quote a rate for a balance sheet that will not exist a
      * moment after the money arrives.
      *
-     * The emergency T-Bill is exactly this case: it is issued precisely to
-     * cover the gap, so what it should be priced against is the bonds plus the
-     * bill itself, not the bonds plus the bill plus the gap it is closing.
+     * The emergency T-Bill was exactly this case until 0.7.0: it was issued
+     * precisely to cover the gap, so what it should be priced against is the
+     * bonds plus the bill itself, not the bonds plus the bill plus the gap it
+     * is closing. The central bank's advances are the same case now: cash
+     * above zero repays them first thing, so a note's proceeds clear them
+     * after the overdraft.
      */
     private double debtAfterProceedsOf(double received) {
-        double clearsOverdraft = Math.min(Math.max(0, overdraft), Math.max(0, received));
-        return getAllPrincipal() + Math.max(0, overdraft) - clearsOverdraft;
+        double owedShort = Math.max(0, overdraft) + advances;
+        double clears = Math.min(owedShort, Math.max(0, received));
+        return getAllPrincipal() + owedShort - clears;
     }
 
     public void clearDebts() {

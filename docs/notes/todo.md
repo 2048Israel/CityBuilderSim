@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-21 (0.6.10, a reserve defends a currency). What shipped is in `changelog.md`,
+Updated 2026-09-23 (0.7.2, 0.7.3 and the manual at 0.7.3 — version 8, and in the tree as `docs/manual.md` — deployed and verified as tag 0922c). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -26,17 +26,33 @@ absorption at 85%. And the money to pay 400x prices is simply created: past
 its capacity the bank funds itself abroad, at 5.5x capacity in that city, so
 lending is limited only by the premium's 18 points. 7.0 is the anchor: a
 central bank that holds an overnight rate by operating in the market (the term
-structure `DebtManager.CITY_DISCOUNT`'s note already promises), reserves that
+structure `DebtManager.CITY_DISCOUNT`'s note already promised — built in 0.7.0
+and 0.7.1, and the constant is gone), reserves that
 constrain the bank's book, and M2 as a series the player can see and the price
-level answers to. Until then, the two cheap questions are whether the PPP drift
-should pass through less than one for one and whether `MAX_POLICY_RATE` should
-be allowed above inflation. Not tuned; Jerus's design. *The second is answered
+level answers to. Until then, the two cheap questions are ~~whether the PPP drift
+should pass through less than one for one~~ — closed 2026-09-22 (0.7.2): the
+drift is deleted; the inflation differential reaches the rate only through
+parity and the trade balance — and ~~whether `MAX_POLICY_RATE` should
+be allowed above inflation~~ — done 2026-09-22 (0.7.2): `MAX_POLICY_RATE` is
+1.00, a guard against a typo, and the rate's support reads the real rate
+uncapped. Not tuned; Jerus's design. *~~The second is answered
 (2026-09-21, the same night): the cap stays at 25% until 7.0 — above ~13 points
 over the world a higher rate buys no currency support in this model and only
 reprices credit and the bank's wholesale funding — and the monetary page now
 prints what the rule would set and where the dial stops. The first is still
-open. The vault, the founding reserve and the strip shipped as 0.6.10, see
-`a-reserve-defends-a-currency.md`.*
+open.~~ — superseded 2026-09-22 (0.7.2): the cap is lifted with the channel;
+see `the-currency-off-its-rule.md`. The vault, the founding reserve and the strip shipped as 0.6.10, see
+`a-reserve-defends-a-currency.md`. Batch A (0.6.11) and batch B (0.7.0)
+shipped the ground and the central bank's books and the floor — `CITY_DISCOUNT`
+and its note are gone. Batch C (0.7.1) shipped the curve, the households and
+the central bank as holders of the city's paper, and the holdings dial (QE and
+QT) — see `the-curve-and-the-holders.md`. Batch D (0.7.2) took the currency
+off its rule — the real rate moves it, the vault is spent defending it, the
+dial reaches 100% and the advances ceiling is a dial — see
+`the-currency-off-its-rule.md`. ~~The households' saving response is batch E,
+next~~ — done 2026-09-22 (0.7.3): see `the-demand-channel.md`; the channel is
+in and moves very little, and the next rate that bites needs a shelf priced
+by scarcity against money, or a deposit rate that passes the dial through.*
 
 **And the model rule changed the same day:** both agents - the implementer and
 the docs pass - run on Opus from 2026-09-21; Fable is withdrawn (he does not
@@ -125,7 +141,7 @@ of 2026-09-15: save format 27, a sixth age band, and 50 harnesses.**~~ **CAUGHT 
 September: five sectors, the transport stack, the vehicles, the interface
 split.**~~ **CAUGHT UP 2026-09-18 (night) at 0.6.7 / format 27, version 7 —
 twenty sections, see `the-manual-at-0-6-7.md`; the found-on-the-way list is
-under Housekeeping.** **AND BEHIND AGAIN as of 2026-09-19: 0.6.8 — the two
+under Housekeeping.** ~~**AND BEHIND AGAIN as of 2026-09-19: 0.6.8 — the two
 health dials and the Health page, the household that goes without care, the
 openable treasury row, the desk's re-mark line; 206 files, ~126,000 lines.**
 **And 0.6.9 as of 2026-09-21: the Schools page (the Tuition page renamed) — the
@@ -140,6 +156,62 @@ treasury and US$1B in the vault, rather than $3.5B of cash), and the vault
 kept in dollars with a monthly revaluation line; a reserve now damps only a
 fall; the monetary page names the rule and the dial's stop apart; 206 files,
 ~129,000 lines; save format 27 and 57 harnesses unchanged.**
+**And 0.6.11 as of 2026-09-21 (built; it ships with batch B): the bank pays
+for the city's paper at the settle after the issue, which it never had; the
+trade page's push on the rate is a preview; what the currency did to the debt
+survives a reload; 206 files, ~130,000 lines; save format 27 and 57 harnesses
+unchanged.** If the manual's open questions carry wages running a third above
+the index, it is closed without a fix: it does not reproduce.
+**And 0.7.0 as of 2026-09-21/22 (deployed with 0.6.11): the central
+bank — its balance sheet, M0 as its liabilities, money made and destroyed only
+through its operations; the bank's spare cash earning the policy rate and its
+shortfalls borrowed at the window; the Money page under Finances (M0 and M2, a
+year of each); the autopilot on the monetary page; advances to the treasury
+with a ceiling and Jerus's arrears rule, on the Government tab; `CITY_DISCOUNT`
+gone, so a city that owes nothing is quoted the dial, not two points under it;
+209 files, ~132,000 lines; save format 27 unchanged; 58 harnesses.** If the
+manual's open questions carry the overdraft with no floor, or the city
+borrowing below its own central bank, both are closed.
+**And 0.7.1 as of 2026-09-22 (deployed): the curve — a term premium over the
+dial by maturity, listed on the borrow page one row per maturity and on the
+rate page at thirty years; term loans at 10, 20, 30, 40 or 50 years only; who
+holds the city's paper (the households, the bank, the central bank, abroad)
+on the book page and the households' paper on the household screen; the
+holdings dial (0–50% of the term paper) on the Policy tab's monetary page and
+what it holds on the Money page; the bank's unearned discount on its balance
+sheet; the Government tab's Subsidies line; 210 files, ~135,000 lines; save
+format 27 unchanged; 59 harnesses.** If the manual's open questions carry one
+rate for every maturity, or the bank as the only buyer of the city's paper,
+both are closed. The money chapter is written after batches D and E.
+**And 0.7.2 as of 2026-09-22 (deployed 2026-09-23):
+the currency answers the real rate, not the inflation differential — the
+forces page's four terms (trade, the real rate, the vault's defence, parity)
+and a real-rate line on the monetary page; the vault spent defending the
+currency, on the Exchange page (sold this month and since founding) and under
+the central bank's equity on the Money page; the policy dial to 100% with
+chips from 0 to 100; the advances ceiling a dial, 3 to 36 months, on the
+monetary page; a dollar bond valued on the world's curve; 211 files, ~137,000
+lines; save format 27 unchanged; 60 harnesses.** If the manual's open
+questions carry the currency drifting by the inflation differential, the
+dial's stop at 25%, a reserve that damps for free, or the six-month advances
+ceiling, all four are closed.
+**And 0.7.3 as of 2026-09-22 (deployed 2026-09-23 with 0.7.2): the demand channel — what a household spends above a
+basket a head answers the real deposit rate, printed on the monetary page
+("savers earn X% real, so households spend Y% of what they would at zero");
+the currency's guards a billion either way, so the rate is no longer held at
+100, the strip's second line turned round past a hundredth of a cent ("US¢1 =
+D$1,000") and the screens' rates printed through one formatter; EI paid in
+the month it is credited; the bank's quoted deposit rate no higher than its
+lending rate; 211 files, ~138,000 lines; save format 27 unchanged; 60
+harnesses.** If the manual's open questions carry the currency's guard at
+100, a policy rate that moves no spending, or the transmission left
+unasserted, all are closed.~~ **CAUGHT UP 2026-09-22 (night) at 0.7.3 / format
+27, version 8 — twenty-one sections, the thirteenth the central bank; and in
+the repository for the first time as `docs/manual.md` (GitHub renders it) and
+`docs/manual.html`, generated from the published page by the new
+`tools.ManualToMarkdown` — see `the-manual-at-0-7-3.md`; its found-on-the-way
+list (sixteen places) is under Housekeeping. The two files and the tool went
+to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -757,18 +829,24 @@ Ranked by how likely they are to read as "this game is broken".
   *Slot 3: a quarter above target, zero arrivals for sixty years, and the whole
   natural increase — 200,000 a decade at a birth rate of 26 per thousand —
   leaving. The birth rate is the lever; see the top entries.*
-- **The treasury swings by its whole debt twice a year.** The city's entire
-  borrowing ends up as ONE six-month bill that it rolls for ever: at month 512 it
-  repays $1.44B it does not have, sits $1.4B overdrawn for a month, and the
-  emergency-note path immediately writes a new bill for slightly less. It is
-  `EMERGENCY_NOTE_MONTHS = 6` doing exactly what it says, with nothing to term the
-  debt out — see the long-bond item below.
+- ~~**The treasury swings by its whole debt twice a year.**~~ **Closed
+  2026-09-22 (struck late; 0.7.0 closed it):** the emergency note is retired —
+  `EMERGENCY_NOTE_MONTHS` is gone, a treasury below zero is advanced by its
+  central bank up to a ceiling the player sets, and a save still carrying a
+  note runs it off; see `the-central-bank-opens.md`. *Was:* the city's entire
+  borrowing ended up as ONE six-month bill that it rolled for ever: at month 512
+  it repaid $1.44B it did not have, sat $1.4B overdrawn for a month, and the
+  emergency-note path immediately wrote a new bill for slightly less.
 - **Long bonds are strictly dominated past ~15 years.** At 20y+ they have a
   higher monthly payment *and* a higher all-in cost than a medium bond.
 - **The early risk-free rate is 19%, and it is now blocking a second system.** At
   19% no residential template in the game clears its own financing. Same root as
   the 18-point bankless premium (findings #11).
-- **THE CITY BORROWS TWO POINTS UNDER ITS OWN POLICY RATE.** Jerus, 2026-09-12:
+- ~~**THE CITY BORROWS TWO POINTS UNDER ITS OWN POLICY RATE.**~~ **Closed
+  2026-09-22 (struck late; 0.7.0 closed it):** `CITY_DISCOUNT` is deleted; the
+  city's note prices at the dial plus its spreads and the term premium sits on
+  top for the longer maturities (0.7.1) — the redesign the entry below asked for
+  is built. *Was:* Jerus, 2026-09-12:
   the Policy screen says 3% and Finances says 1% on the same morning, because
   `DebtManager.floorRate()` is the dial less `CITY_DISCOUNT` (.02) and a city
   with no debt sits on that floor. No borrower is cheaper than its own central
@@ -788,7 +866,10 @@ Ranked by how likely they are to read as "this game is broken".
   income it banked, and the figure is carried in the save.
 - **You receive more than you asked for.** Face rounds up to the instrument's
   granularity and proceeds follow the face — ask for $5.0M, get $5.82M. (F1)
-- **Long bonds are gated by a silent $100M minimum face.** (F2)
+- ~~**Long bonds are gated by a silent $100M minimum face.** (F2)~~ **Closed
+  2026-09-22 (struck late; 0.7.0 closed it):** `Game.minimumIssueSize()`
+  replaced the silent floor and the borrow page states the rounding ("Issues
+  round to …").
 - **A broke city cannot skip, only step.** The emergency is exactly where the
   game is slowest to play. (backlog 22)
 - **"Fill %" means job fill, not occupancy.**
@@ -826,7 +907,7 @@ Ranked by how likely they are to read as "this game is broken".
   exception, no log line, 858,000 kg of capacity producing nothing. A harness
   asserting that every good any template makes is declared by its sector would
   cost ten lines and catch the whole class.
-- **WAGES ARE INDEXED A THIRD ABOVE THE PRICE LEVEL THEY CHASE.**
+- ~~**WAGES ARE INDEXED A THIRD ABOVE THE PRICE LEVEL THEY CHASE.**
   `COST_OF_LIVING_PASS_THROUGH` is 1.0 and `LabourMarket.updateCostOfLiving()`
   drifts `costOfLiving` toward `livingTarget = priceIndex` at 1/24 a month, so
   over 240 months the two should converge. Measured 2026-09-15 on a played city:
@@ -835,14 +916,14 @@ Ranked by how likely they are to read as "this game is broken".
   with no productivity behind it, compounding for the life of a run, and it is
   the single biggest reason the city's households look rich against their food —
   the *poorest* cell holds $7,660 a head a month against an average Canadian's
-  ~$2,665. **Not chased yet; it is the next batch.**
-- **THE BANK NEVER PAYS FOR THE CITY'S PAPER.** `Game.java` ~L3601:
+  ~$2,665. **Not chased yet; it is the next batch.**~~ — closed 2026-09-21 without a fix: it does not reproduce on today's code. `LabourCheck`'s "wages against the index" holds `costOfLiving` to the published index a `DRIFT_PER_MONTH` at a time through 240 months of steady inflation, a currency reform and a reload; on all eight seeds every one of the 144 checkpoint readings equals the lag-implied level exactly (`-Dplaytest.wages`), wages over the index between 0.84 and 1.12, above one only while the index is falling. See `the-bank-that-never-paid.md` §2.
+- ~~**THE BANK NEVER PAYS FOR THE CITY'S PAPER.** `Game.java` ~L3601:
   `cityDebtRaisedForBank = cityDebtRaisedThisMonth` runs after the top-of-tick
   clear (~L3562), so `bank.lend(...)` (~L3625) receives 0 for every city bond;
   the bank's `cityBook` still rises and it later receives the principal, so
   after a $20M issue the bank's cash fell only by its ordinary month.
   Invisible to `MoneyAudit` because issuance is between windows. Found
-  2026-09-19 while the treasury bridge was opened; a behaviour fix, Jerus's.
+  2026-09-19 while the treasury bridge was opened; a behaviour fix, Jerus's.~~ — done 2026-09-21 (0.6.11, ships with batch B): the settlement is snapshotted before the top-of-tick clear and zeroed once the bank has paid; what it still owes is carried against its pool in `MoneyAudit` (`Game.getCityPaperUnsettled()`) and saved under two `DataSave` keys. `BankCheck` §10, which fails four ways on the old order. See `the-bank-that-never-paid.md` §1.
 - **TWO BUDGET LINES THE BALANCE OMITS.** The city's own repair bill in
   spending and the transit fares in revenue — the Government screen lists both,
   `NationalAccounts.getTotalRevenue()` / `getTotalExpenses()` carry neither —
@@ -912,13 +993,15 @@ Ranked by how likely they are to read as "this game is broken".
   the UI recomputes from two history series is the same shape**, and the rule is
   the one `PopulationManager.getUnemployed()` already carries: one definition,
   where the model keeps it.
-- **THE CURRENCY DRIFT FEEDS ON THE IMPORT PRICES IT SETS.**
+- ~~**THE CURRENCY DRIFT FEEDS ON THE IMPORT PRICES IT SETS.**
   `ForeignAccounts.repriceCurrency()` moves the rate by the city's own inflation
   (`(localInflation − worldInflation) / 12` a month), and in a city whose basket
   is imports that inflation is the rate's own rise. Slot 3's founding went to
   the 100× ceiling on it; a probe reproduces a permanent doubling of prices from
   one heavy founding order and a 9%-a-year spiral from a broke one. Design, not
-  a bug — see the top entries. Found 2026-09-15.
+  a bug — see the top entries. Found 2026-09-15.~~ — closed 2026-09-22 (0.7.2):
+  the drift is deleted (`ForeignAccounts`, THE DRIFT THAT WAS DELETED); the
+  rate's monthly push is the trade balance and the real rate.
 - **AN ARGMAX OVER QUANTITIES THE MODEL PRICES TO BE EQUAL IS A STEP FUNCTION
   DRIVEN BY DUST.** `Exchange.buyForHouseholds()` sorted companies "best yield
   first" and gave the winner the whole month's unmet demand — but
@@ -1082,30 +1165,312 @@ Ranked by how likely they are to read as "this game is broken".
   the balance carried in), and the freeze is `PrisonerHousehold`'s own now, no
   instalment and no interest, asserted in `EducationCheck` §14. Found
   2026-09-14; the $390 default is still open.
-- **THE DEBT'S MONTHLY REVALUATION IS NOT SAVED.** `ForeignAccounts.lastRevaluation`
+- ~~**THE DEBT'S MONTHLY REVALUATION IS NOT SAVED.** `ForeignAccounts.lastRevaluation`
   (~L825, struck in `takeForeignDebt()`) is not in the save array, so after a
   load the trade and finance pages' "the currency moved it by" line reads
   nothing until the month turns. The vault's own revaluation is saved (slot 23)
-  since 0.6.10. Found 2026-09-21, `a-reserve-defends-a-currency.md` §7.
-- **A SCREEN WRITES TO THE MODEL.** `TradeScreen.currencyForcesPage()` (~L1320)
+  since 0.6.10. Found 2026-09-21, `a-reserve-defends-a-currency.md` §7.~~ — done 2026-09-21 (0.6.11): slot 24 of the foreign accounts' array, asserted in `SaveFileCheck` §12b; `SAVE_FORMAT` stays 27.
+- ~~**A SCREEN WRITES TO THE MODEL.** `TradeScreen.currencyForcesPage()` (~L1320)
   calls `fx.effectivePressure()`, which writes `lastPressure` and
   `lastAbsorption`. Harmless today — same state, same values — but the
   interface is meant to read the model through getters and nothing else.
   `ForeignAccounts.reset()` also leaves `rateDifferential`, `localInflation`
   and `worldInflation` from the previous city until the first month turns
-  (the simulation is unaffected). Found 2026-09-21, same note.
-- **A DEFENCE THAT SPENDS RESERVES — for 7.0.** Absorption costs nothing: the
+  (the simulation is unaffected). Found 2026-09-21, same note.~~ — done 2026-09-21 (0.6.11): `TradeScreen.currencyForcesPage()` reads `ForeignAccounts.previewPressure()`, the same arithmetic without the writes (`ForeignCheck` §13, `ReadPathCheck`). ~~**Still open from the same line:** `ForeignAccounts.reset()` leaves `rateDifferential`, `localInflation` and `worldInflation` from the previous city until the first month turns.~~ — done 2026-09-22 (0.7.1): `reset()` clears the three.
+- ~~**A DEFENCE THAT SPENDS RESERVES — for 7.0.** Absorption costs nothing: the
   vault damps a push weaker in proportion to its cover and is never drawn down
   by doing it, which is why the default player never sees it work. A defence
   that sells dollars to hold the rate belongs with the money supply. Same
-  note, §8.
-- **THE TREASURY'S OVERDRAFT HAS NO FLOOR, AND COMPOUNDS TO NaN.** Found
+  note, §8.~~ — done 2026-09-22 (0.7.2): the central bank sells `absorption()`
+  × the month's own deficit of the vault, at most the vault, against a push to
+  fall; a capital transaction, equity down and M0 unmoved (`CurrencyCheck`
+  §3–4).
+- ~~**THE EMERGENCY NOTE'S FREE MONEY WAS A FLOOR — THE ADVANCES CEILING MOVES
+  INTO BATCH B.** Held at a 10% policy rate (`-Dplaytest.policyRate=0.10`),
+  six of eight seeds run their treasuries dry around months 2,800–3,800,
+  before the fix and after it. Before it, all six survived on emergency notes
+  their bank was handed free, peaking at $0.9–6.1B owed at about 8%. After
+  it the bank really funds them, its strain explodes, the notes price at
+  27–36% (policy, spreads and the 18-point premium) and the debt compounds
+  without limit: $193 quadrillion on seed 0, NaN on seed 6, bank failures
+  16 → 161. The overdraft as advances from the central bank with a ceiling
+  (`the-central-bank.md` §6) moves from batch C into batch B, and 0.6.11
+  ships with it, not before. The same pathology as **THE TREASURY'S
+  OVERDRAFT HAS NO FLOOR** below.~~ — done 2026-09-21/22 (0.7.0): the emergency note is
+  retired; a broke treasury is advanced its gap by the central bank at the
+  policy rate, up to `CentralBank.MAX_ADVANCES_MONTHS` (six) of trailing
+  revenue, and past that Jerus's rule, "pay promises first, cut the rest",
+  through `Game.treasuryPays()`. Held at 10%, the six seeds end owing
+  $0.1–2.0B, finite, the audit closed every month (`CentralBankCheck` §5–6).
+  See `the-central-bank-opens.md`.
+- ~~**A BOND BUYBACK PAYS NOBODY.** `Game.repurchaseDebt()` (~L6663) takes the
+  price out of the treasury, and the bank's book drops by the principal at
+  the next refresh with no cash arriving: a $20,000k buyback cost the bank
+  $20,067k of equity. Before 0.6.11 a round trip cost the bank nothing,
+  because it had paid nothing; now it loses what it paid. The holders
+  (`the-central-bank.md` §5) are who a buyback pays.~~ — done 2026-09-21/22 (0.7.0) for the
+  city's own paper: `Bank.sellPaperBack()` takes the price as cash and drops
+  the book by the principal at once, the difference its gain or loss
+  (`CentralBankCheck` §5). The dollar case stays open — the new line below.
+- ~~**THE BANK'S BOOK INCLUDES THE CITY'S DOLLAR DEBT.** `Game.refreshBank()`
+  hands `bank.refresh()` `debtManager.getAllPrincipal()` (~L1555), which
+  counts foreign paper as well as domestic (`getDomesticPrincipal()` is the
+  one without), and the weighted loop beside it (~L1576) walks the same list:
+  paper the bank never bought. `BankCheck` ~L435 builds the error in ("the
+  city book IS the treasury's principal").~~ — done 2026-09-21/22
+  (0.7.0): `Game.refreshBank()` hands the bank `getDomesticPrincipal()` and
+  the weighted loop skips foreign paper; `BankCheck`'s line is "the city book
+  IS the treasury's principal at home".
+- ~~**A TERM BOND'S WHOLE DISCOUNT IS BOOKED AS INTEREST IN ITS SETTLE MONTH.**
+  `bank.takeDiscount(cityDiscountForBank)` (`Game.java` ~L3747): seed 0
+  borrowing at home sold $148.3M of face for about $88M, and some $60M of
+  "interest" landed in one month, taxed, 45% of it payable to savers. It
+  should accrete over the bond's life. Batch C, with the curve.~~ — done
+  2026-09-22 (0.7.1): each piece of paper carries its own discount
+  (`Debt.getIssueDiscount()`, `getDiscountLeft()`) and accretes it
+  straight-line over its life; the bank earns its share a month at a time and
+  carries the rest as unearned against its book (`Bank.setUnearnedDiscount()`,
+  re-derived at every refresh); `BankCheck` §10.
+- ~~**A POLICY RATE OF EXACTLY 0% RELOADS AS 3%.** `Game.java` ~L7333 restores
+  only a positive rate (`if (loaded.getPolicyRate() > 0)`).~~ — done 2026-09-21/22
+  (0.7.0): `DataSave.policyRate` is boxed and null is the save without the
+  key (`CentralBankCheck` §7).
+- ~~**THE TREASURY'S OVERDRAFT HAS NO FLOOR, AND COMPOUNDS TO NaN.** Found
   2026-09-21 by the schools ensemble's first draft: a founding village handed a
   University ($210M, $620k a month of upkeep, on a town of three hundred
   making $1.8M a month) went −$286M by month 263, −$1.4T by 801, −$1,378T by
   1,033 and NaN by 1,632 (control seed 1). The fixture was made proportionate;
   the pathology is not fixed. What should stop it — a borrowing limit, forced
-  austerity, a default — is a design question. See `the-price-of-a-place.md` §7.
+  austerity, a default — is a design question. See `the-price-of-a-place.md` §7.~~ — done
+  2026-09-21/22 (0.7.0): the advances ceiling and the arrears rule are the
+  floor, and the design question it asked (a borrowing limit, forced
+  austerity, a default) is answered by Jerus's rule.
+- ~~**NO HARNESS CATCHES A DOUBLED CALENDAR.** A `month++` left twice at the top
+  of `nextMonth()` passed the whole suite during batch B; only the playtest's
+  month numbers gave it away. `CalendarCheck` should assert that one press is
+  one month. Batch C. Found 2026-09-21, `the-central-bank-opens.md` §4.~~ —
+  done 2026-09-22 (0.7.1): `CalendarCheck` §7 — one press is one month, five
+  months of a skip five, and `SimulationEngine.simulateMonth()` none.
+- ~~**THE CONSTRUCTION RETAINER IS NEVER PAID.** `Game.constructionSubsidy`
+  (~L663) is set, saved, reset and reformed, and no line of the month reads
+  it; the standing policy replaced it. The docs pass marked the two comments
+  that said otherwise (THE CONSTRUCTION SUBSIDY and `buildWorld()`); the field
+  itself is batch C's — pay it or remove it. Same note.~~ — done 2026-09-22
+  (0.7.1): removed — the field, its save key and its four lines; an old save's
+  key is left unread. The standing policy is the lever
+  (`TreasuryLine.CONSTRUCTION_SUBSIDY`).
+- ~~**THE GOVERNMENT TAB HAS NO SUBSIDIES LINE.** `GovernmentScreen.spendingNames()`
+  (~L799) lists none, though `NationalAccounts.getTotalExpenses()` includes
+  them. Same note.~~ — done 2026-09-22 (0.7.1): `spendingNames()` ends with
+  "Subsidies", read from `NationalAccounts.getSubsidies()`.
+- ~~**STUDENT GRANTS LAG A MONTH.** Households are credited month N−1's bill at
+  the top of month N while the treasury pays month N's; invisible to the audit
+  because the households are outside the pools. Same note.~~ — done
+  2026-09-22 (0.7.1): struck and paid at the top of the month on the students
+  it opens with, where they are credited (`Game.nextMonth()`,
+  `payStudentGrants()`); `OutsideCheck` and `EducationCheck` assert the same
+  month's figure. EI still lags — the new line below.
+- ~~**A DOLLAR-BOND BUYBACK PAYS NOBODY ON THE BOOKS.** `Game.repurchaseDebt()`
+  (~L7070): between presses, the price leaves the treasury and no outflow
+  abroad is declared. The domestic case pays the bank since 0.7.0. Same note.~~
+  — done 2026-09-22 (0.7.1): the price is carried in the treasury's pool
+  (`Game.getBuybackUnsettled()`) and declared the next month as `- city
+  BuybackAbroad`, a financial outflow (`HoldersCheck` §8); and a domestic
+  buyback pays every holder its share.
+- **A FAILED BANK'S HOLE STILL GOES ABROAD — JERUS'S QUESTION.**
+  `Bank.resolveIfFailed()` and `MoneyAudit`'s `+ bank ResolutionLoss` still
+  declare the shortfall as absorbed from outside the city, though the bank's
+  wholesale lender is the central bank's window now, and the window is repaid
+  out of that inflow at the next settle. Who absorbs a failed bank — the
+  central bank as lender of last resort, the depositors, the treasury — is his
+  to decide; the Bank tab's resolution note carries a `TODO(docs)` to follow
+  the answer. Same note.
+- **THE TERM PREMIUM IS PROVISIONAL — JERUS'S NUMBERS.** `DebtManager.TERM_PREMIUM_10Y
+  … 50Y` at 0.50, 0.90, 1.15, 1.35 and 1.50 points were set to have a curve at
+  all; the shape (linear from a year to ten, flat past fifty) is the
+  implementer's reading of the brief. `the-curve-and-the-holders.md` §1.
+- **THE "SPREAD IS GONE" SELL-BACK CAN HARDLY EVER FIRE — JERUS'S QUESTION.**
+  The households' yield is read off today's curve
+  (`DebtManager.householdBookYield()`), which sits on the dial, and the
+  deposit rate is a share of what the bank's book earned, so the paper always
+  out-yields deposits and `HouseholdBalance.sellPaperForSpread()` never sells
+  in a real run; `HoldersCheck` §4 exercises it by handing it a zero yield.
+  Whether the rule should read the coupon locked in at issue is his. Same
+  note, §4. *And 0.7.2 saw it fire: in `BankCheck` §10's settle month the
+  deposit rate rose past the paper's yield (6.825% against 6.726%) once the
+  empty household cells were folded, and the desk bought $1,080k back; the
+  fixture's issue was halved so it holds its premise, with a line that says
+  so. `the-currency-off-its-rule.md` §3.*
+- ~~**A DOLLAR BOND IS VALUED AT THE CITY'S SHORT RATE** (`DebtManager.marketValue()`,
+  read by `quoteRepurchase()`), and a dollar term loan is priced flat at the
+  world rate at every maturity. What the world's paper is worth is open —
+  batch D, with the currency. Same note.~~ — done 2026-09-22 (0.7.2):
+  `DebtManager.foreignCurveRate(months)`, the foreign rate plus the same
+  term-premium table, prices a dollar issue by maturity and values a dollar
+  bond at its remaining months (`ForeignDebtCheck` §8); and the dollar quote
+  prices its own coupons in, which closed a money pump the old pair made
+  (`RestructureCheck` §5's dollar case, failing on 0.7.1).
+- ~~**EI BENEFITS LAG A MONTH, AS THE GRANTS DID.** Households are credited last
+  month's bill at the top of the month; the treasury pays this month's at the
+  bottom. Invisible to the audit because the households are outside the
+  pools. Not touched — the brief named only the grants. Same note.~~ — done
+  2026-09-22 (0.7.3): struck again on the pool the month opens with and paid
+  at the top of the month, where the out of work are credited it
+  (`Game.payEiBenefits()`, `Unemployment.restrikeBenefits()`); `OutsideCheck`
+  §7 reads the closing month and the month after. A 0.7.2 save pays one
+  month's EI twice on its first month. The premiums may carry the same lag —
+  the new line below.
+- **A TIME SKIP HALTS AT CASH ≤ 0** (`Game.java` ~L2481, `SkipReportCheck` "an
+  empty treasury"), but since 0.7.0 `settleTreasury()` advances a broke
+  treasury's shortfall, so the skip stops a city the month would carry. Stop
+  at the ceiling, at arrears, or not at all — Jerus's call. Same note.
+- **DOLLAR-LOAN PROCEEDS LAND IN THE GAP BETWEEN PRESSES.** `foreignDebtRaisedThisMonth`
+  is set when the loan is booked and cleared at the top of the next month
+  before the audit's pools are read, so the inflow is in no month's window.
+  It leaves no residual, and no comment says so. Same note.
+- ~~**THE TRADE TAB'S FORCES PAGE LEAVES OUT THE INFLATION DRIFT** that
+  `ForeignAccounts.repriceCurrency()` applies. Batch D's, with the drift.
+  Same note.~~ — done 2026-09-22 (0.7.2): the drift is deleted; the page shows
+  the four terms that exist — trade, the real rate, the vault's defence,
+  parity.
+- ~~*(small)* `Game.holderShares()` has two branches that compute the same
+  thing (`hh * owed / out` and `owed * hh / out`). Harmless; one line.~~ —
+  done 2026-09-22 (0.7.3): one line.
+- ~~**THE HOLDINGS DIAL FORGETS ITS PACE ON A RELOAD.** Found by the docs pass:
+  the load path set the dial through `setTargetShare()` from the empty bank
+  `restore()` founds, so `previousTarget` read 0 for every reloaded city and
+  a move saved half way through resumed at the slower pace.~~ — done
+  2026-09-22 (0.7.1, before the deploy): `CentralBank.restoreTargetShare()`
+  sets the dial without touching the memory; `CentralBankCheck` §14 turns the
+  dial down mid-move, saves, and asserts the reloaded city steps at the same
+  pace (the old line fails it two ways).
+- **M0 CAN READ SLIGHTLY NEGATIVE FOR ONE MONTH** when a treasury repays every
+  advance and the interest is destroyed at the top of the month and remitted
+  at the top of the next; the identity holds. For the Money page. Same note.
+- ~~**THE CEILING IS SMALL IN A SMALL CITY.** Six months of revenue binds within
+  months of first drawing, and nearly all borrowing after that is for
+  promises, past the ceiling. `MAX_ADVANCES_MONTHS` as a dial on Jerus's page —
+  batch D. Same note.~~ — done 2026-09-22 (0.7.2):
+  `CentralBank.advancesCeilingMonths`, 0 to `MAX_ADVANCES_CEILING` (36),
+  default `DEFAULT_ADVANCES_MONTHS` (6), chips on the monetary page, saved
+  under its own key, `-Dplaytest.advancesMonths` (`CentralBankCheck` §16).
+  Held at 10% on 0.7.2 none of the six broke seeds draws at all.
+- **THE CENTRAL BANK ENDS WITH NEGATIVE EQUITY IN ALL EIGHT DEFAULT SEEDS**
+  (−$1.1B to −$3.3B; 0.7.1 was −$0.2B to −$3.7B): mainly the loss carried from
+  paying interest on reserves, now plus the vault spent defending the
+  currency. Found 2026-09-22, `the-currency-off-its-rule.md` §4.
+- **INTEREST ON RESERVES COMPOUNDS WITHOUT LIMIT AT A HELD EXTREME RATE.** Held
+  at 30% or 50%, M0 reaches 10⁸ to 3×10¹⁴ $B while prices stay near 1: spare
+  cash earning the rate in new money that becomes spare cash. The same
+  mechanism made 0.7.1's quadrillion at 25%. Same note.
+- **MANUFACTURING'S FABRICATION WORKS FAILS THE BANK** on 0.7.2's path —
+  bank failures 8 → 19 on the default eight, and Manufacturing 3 → 14 of
+  them: land comes free at months 127–128, Manufacturing borrows $74M against
+  a bank whose equity is $30M for a plant that loses money before interest,
+  written off at month 166 and the restructured remainder at 178 in seeds
+  0–3, and in some seeds it rebuilds and fails again. The fix belongs in the
+  investment rule (lending past the bank's equity for a plant that loses
+  money before interest; an insolvent sector rebuilding). Same note.
+- **THE ADVISOR REFILLS THE VAULT THE DEFENCE SPENDS** (`LongPlaytest` ~L1191,
+  the war chest): in effect the treasury pays for the defence in a playtest —
+  seed 1 sold US$1.29B of a US$1B vault, and held at 50% seed 1 sold US$625B.
+  Same note.
+- **THE RATE TERM ACTS BEFORE SETTLING.** `ForeignAccounts.pressure()` returns
+  0 before `SETTLING_MONTHS` (~L319) but `ratePressure()` does not, so the
+  real-rate term and the defence act from month 1. Predates the batch. Same
+  note.
+- **THE CENTRAL BANK'S MONTH FLOWS ARE NOT SAVED** (`CentralBank.toSaveArray()`):
+  after a reload the Money page's "this month" lines read zero until the month
+  turns, and `defendedThisMonth` follows the pattern (the foreign accounts'
+  own defence figures are saved, slots 25–27). Same note.
+- **TWO READINGS OF THE REAL RATE.** The Trade tab's forces page reads the
+  differential the last reprice was handed
+  (`ForeignAccounts.getRealRateDifferential()`), the monetary page the live
+  figure (`Game.realRateDifferential()`); they differ between presses when the
+  dial moves. Same note.
+- **`HealthCheck`'S "THE DEAR CITY IS NO HUNGRIER THAN THE FREE ONE"** compares
+  one end-of-run month and passes by chance; averaged over its 96 months the
+  dear city is 7.5 points hungrier. Same note.
+- *(small)* `InfrastructureCheck`'s known line went green on 0.7.2's first
+  build by accident (the shelves 78% against 31% instead of 100% against
+  100%) and red again on the final: the fixture is sensitive to the currency.
+  And for the record: the brief's UIP gaps (+3, −12) assumed a world real rate
+  of +2; with `WORLD_BASE_RATE` .02 and 2% world inflation they are +5 and −10,
+  and `CurrencyCheck` asserts against the constants; seed 0 does not run dry at
+  a held 10% on 0.7.1, as batch B's table had it. Same note.
+- **THE CURRENCY'S NEW NUMBERS ARE PROVISIONAL — JERUS'S.** `ForeignAccounts.RATE_PULL`
+  4 and `CapitalFlows.MAX_SPREAD` .25 (both "Jerus's number to settle"), and
+  whether the defence should answer only a crisis — the founders' billion goes
+  on structural deficits, not crises: all eight default seeds sell more than
+  half of it and six all but 1%, while the playtest's advisor buys it back.
+  `the-currency-off-its-rule.md` §2.
+- **THE FOREIGN-DEFAULT RULE READS ONE MONTH'S CASH.** Found by the docs pass.
+  `Game.checkForeignSolvency()` compares the cash at the bottom of the month
+  with `DEFAULT_OVERDRAFT_YEARS` of revenue, but the central bank advances the
+  whole shortfall at the top of every month, so it trips only on a month whose
+  own bills (a balloon falling due) exceed a year of revenue; a long
+  insolvency accumulates in the advances, which it does not read. Whether it
+  should read them is a design question; marked `TODO(docs)` in the source.
+- ~~*(small)* `MonetaryCheck` §6 sums its own M2 (households and sectors), not
+  `Game.getM2()`, which adds the world's deposits; marked `TODO(docs)`. Decide
+  with batch E, when the section starts asserting.~~ — done 2026-09-22
+  (0.7.3): §6 reads `Game.getM2()` and asserts that inflation falls with the
+  rate — within `MEASUREMENT_NOISE`, and the 3% row `TRANSMISSION_FLOOR`
+  above the 40% row; 1.032 points.
+- **WHO GETS 45% — JERUS'S, AND THE CHEAPEST LEVER THE CHANNEL HAS.** The
+  comment above `Bank.DEPOSIT_PASS_THROUGH` (~L1471, ~L1485) quotes Jerus
+  asking for "55% of interest income" and calls "the 45% it keeps" the margin;
+  the constant (.45) is the savers' share, and `chooseDepositRate()` and the
+  desk's kept margin (~L1803, ~L2250) read it that way. The deposit rate
+  carries about a quarter of the dial because of it. `the-demand-channel.md`
+  §2, §4.
+- **THE DEPOSIT QUOTE'S CAP BINDS BEYOND THE FOUNDING** — 17 to 236 months of
+  each default run, a book lent at older, dearer rates paying savers more than
+  today's lending rate — and every reader of `Bank.depositRate()` (hot money,
+  `investAbroad()`, the take of paper at issue, the cost of funds, the save)
+  sees the capped figure while the payout stands. And the comments disagree:
+  `Bank.fundToCover()`'s new note says "a bank never pays savers a rate above
+  what it charges", `BankCheck` ~L1101 argues a bank whose reserves earn can
+  pay savers more than it charges its borrowers — true of the payout, not the
+  quote. With the 45/55 question. Same note, §4.
+- **THE SHELF DOES NOT ANSWER MONEY** — the structural reason the channel
+  cannot reach the index: `sectors/Retail.java` ~L436 (the floor,
+  `OPENING_SELL_PRICE`) and ~L325 (`rWantedDemand = min(coverage, wanted)`),
+  so the scarcity mark-up reads the shops' coverage and a tenth less want
+  moves no price. The next design. Same note, §2 and §4.
+- **THE RATE GOES NaN IN A CITY WITH NO TRADE** (`ForeignAccounts` ~L798): a
+  founding without the advisor goes NaN at month 26 on 0.7.2 and 0.7.3 alike —
+  `pressure()`, `absorption()` and `realRateDifferential()` read NaN first,
+  and the clamp passes it through. Not traced to the root. Same note.
+- **EI PREMIUMS MAY CARRY THE LAG THE BENEFITS HAD** (`EconomyManager` ~L829,
+  read at `Game` ~L1078): struck at the bottom of the month, read at the top.
+  Same note.
+- **THE LOAD PATH'S RE-STRIKE IS NOT THE SAVED MONTH'S PLAN** (`Game` ~L4164,
+  `HouseholdBalance` ~L920): the spend factor is not saved, and the load path
+  strikes it on the month's closing deposit rate and index — next month's
+  figures — after savings have had their deposit interest. Harmless while the
+  retail capacity is carried, by the design note's reading; the docs pass
+  wrote the exception into the rule's comment. Same note.
+- *(small)* `MonetaryCheck` ~L282 ("the currency is not against a bound") and
+  `ForeignCheck` ~L594 ("inside its bounds, every month of the way") still
+  pass and now assert almost nothing, at a guard of a billion either way.
+  Same note.
+- ~~**THE PEOPLE SCREEN'S "EI PAID THIS MONTH" IS NEXT MONTH'S BILL.** Found by
+  the docs pass: `PeopleScreen` ~L889 read `Unemployment.getBenefitsPaid()`,
+  which since 0.7.3 is the bill struck at the end of the month on the pool it
+  produced — paid at the top of the NEXT press.~~ — done 2026-09-22 (0.7.3,
+  before the deploy): the line reads what the treasury paid,
+  `EconomyManager.getEiBenefits()`; "per claimant" still reads the pool's
+  figure, which is the pool's own.
+- *(small)* **Three loose ends of the unpinned rate, found by the docs pass.**
+  `LongPlaytest`'s player divides a dollar amount by `Math.max(.01,
+  fxRate(g))` (~L1711, ~L2384, ~L2394), a floor from when the rate could not
+  go under .01; `GameVersion`'s 0.7.3 note says every page's rate goes through
+  one formatter, but the strip's tooltip prints parity at `%.2f`; and
+  `Household.plan()`'s eating-out note ("a household that got everything it
+  asked for still banks a quarter") holds as written only at a spend factor
+  of 1 — above it the grocer, the counter and the table all ask more of the
+  same income, and what is banked can be less than a quarter of the surplus.
 
 ---
 
@@ -1114,8 +1479,10 @@ Ranked by how likely they are to read as "this game is broken".
 The buildings, the funding, sickness, mortality, births, death care and the
 warnings are all in. See `healthcare-funded.md`,
 `healthcare-mortality-and-births.md` and `healthcare-panel-and-endowment.md`.
-What is still open:
-
+What is still open:~~ — done
+  2026-09-21/22 (0.7.0): the advances ceiling and the arrears rule are the
+  floor, and the design question it asked (a borrowing limit, forced
+  austerity, a default) is answered by Jerus's rule.
 - **No per-care-type P&L.** Fees and costs are pooled, so you cannot see that a
   Memorial Cemetery breaks even at ~11 burials a month and a Crematorium only at
   92% of its throughput — both true, both invisible.
@@ -1256,6 +1623,34 @@ each one Jerus's call, in the order they pay back:
   block's "dearest thing in the catalogue per acre" is the dearest farm;
   `the-instrument-panel.md` says nine batches and lists eight. Full list with
   lines in `the-manual-at-0-6-7.md` §4.
+- **FOUND BY THE MANUAL PASS, 2026-09-22 — sixteen places, and eight of the
+  twenty above are still in the tree**, none fixed; the first eight are a docs
+  pass's, the rest this list's and the notes'. In the tree: `DebtManager` L949
+  and L959 say "ten points" a measure over `MAX_SPREAD_PER_MEASURE = .05`;
+  `CentralBank.QE_SPEED`'s javadoc, `Game`'s THE HOLDINGS DIAL banner and
+  `PolicyScreen` L2049 describe the QE step as two things (a share of the gap,
+  the larger of two) when `stepFor()` takes the largest of three;
+  `CapitalFlows.MAX_SPREAD`'s javadoc says "a 5% world" over `WORLD_BASE_RATE`
+  .02 (flagged by the 0.7.2 docs pass, still there); `ForeignAccounts.MAX_RATE`'s
+  javadoc says a currency at a thousand "reforms it" when the reform is never
+  automatic and unlocks on the index; `GameVersion`'s 0.7.2 entry says "six
+  spent all of it" for "six all but 1%"; `MonetaryCheck`'s "9,900%" label
+  against `MAX_POLICY_RATE`'s "2,500%"; `BankCheck` ~L1101 and
+  `Bank.fundToCover()`'s note disagree about a bank paying savers more than it
+  charges (payout versus quote); `MonetaryCheck` ~L282 and `ForeignCheck` ~L594
+  assert almost nothing at a guard of 1e9; `LongPlaytest` divides by
+  `Math.max(.01, fxRate)` in three places, a floor from the old guard;
+  `Household.plan()`'s eating-out note holds only at a spend factor of one;
+  the tree says the playtest is 4,002 months in a dozen places and the run
+  reports 4,005 (the front doors now say "4,000-odd"); `docs/dials.md` prints
+  no sentence for 159 of 780 constants, among them dials the manual leans on
+  (the five `Healthcare` fees, `LICENCE_COVER_TO_OPEN`, `MAINTENANCE_RATE`,
+  `CARRY_REPAY_SPEED`, `MEAL_SHARE_OF_SURPLUS`, `MOST_MEALS_EATEN_OUT`,
+  `DEFAULT_FARMLAND_RELIEF`). In the notes: `the-currency-off-its-rule.md` §5's
+  "121 of 144 months with sales" is 0.7.2's figure and `CurrencyCheck` prints
+  116 at 0.7.3 (§2's "two quarters" sentence is corrected in place). In this
+  list: three items §3 carried after 0.7.0 closed them are struck tonight.
+  Full list with lines in `the-manual-at-0-7-3.md` §4.
 - **Do not move the harnesses to their own package yet**: about twenty
   package-private model members at seventy-odd call sites would need a seam.
 - **Sixteen classes no harness names** (`docs/harnesses.md`, as of

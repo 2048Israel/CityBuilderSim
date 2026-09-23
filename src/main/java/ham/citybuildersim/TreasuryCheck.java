@@ -348,9 +348,19 @@ public class TreasuryCheck {
          * getExpenses(). So the residual on an issue month is the interest
          * line, exactly, and nothing else: the timing difference the note
          * under the bridge talks about, measured rather than assumed.
+         *
+         * ...THE BANK'S SHARE OF IT (0.7.3). Since 0.7.1 the households and
+         * the central bank are paid their share of a coupon in the month
+         * (Game, THE HOLDERS ARE PAID), so only the bank's share is a month
+         * late. This fixture's households took none of the paper until
+         * 0.7.3 only because the founding bank quoted them 7,567% on their
+         * deposits, which no issue could beat; with the quote held to what
+         * the bank charges they take a sliver at the settle, and their
+         * coupon is not part of the timing.
          */
-        near("...and what it left over is the first coupon's timing, to the cent", m,
-                opened.getTreasuryResidual(), books.getInterestExpense());
+        near("...and what it left over is the first coupon's timing, to the cent: the bank's share of it", m,
+                opened.getTreasuryResidual(), books.getInterestExpense()
+                        - opened.getCouponsToHouseholds() - opened.getCentralBank().getPaperCoupons());
 
         /* ---- and a month that has no journal has no lines, so the row stays shut ---- */
         Game plain = new Game(GameFiles.scratch("treasury-plain"));

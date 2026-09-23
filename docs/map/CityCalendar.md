@@ -1,6 +1,6 @@
 # CityCalendar.java - 145 lines · 13 methods · 4 constants · model
 
-`ham/citybuildersim/CityCalendar.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityCalendar.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > Turns the month counter into a date a person can hold in their head.
 > 

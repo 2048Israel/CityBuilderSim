@@ -1465,9 +1465,10 @@ public class UserInterface extends Application {
         Label cashLabel = new Label(money(cash));
         cashLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 28px;"
                 + " -fx-font-weight: bold; -fx-text-fill: "
-                // Overdrawn is not a rounding detail - it is being charged the
-                // emergency rate - so it gets the same red as everything else
-                // that is actively costing the player money.
+                // Overdrawn is not a rounding detail - the central bank will
+                // advance it at the policy rate, in money it prints, and past
+                // its ceiling only the promises are paid (0.7.0) - so it gets
+                // the same red as everything else actively costing the player.
                 + (cash < 0 ? "#ff6b6b" : "#8fe0aa") + ";");
 
         // What it is doing, under what it is. A treasury of $300k falling by
@@ -1606,16 +1607,29 @@ public class UserInterface extends Application {
          * player actually has - what is my money worth - and it is the same
          * number upside down. Cents once a local dollar is worth less than a
          * US one, so neither line is ever a string of leading zeros.
+         *
+         * AND PAST A HUNDREDTH OF A CENT THE SECOND LINE TURNS ROUND (0.7.3).
+         * The rate's guard was a hundred until 0.7.3, so a local dollar was
+         * never worth less than a US cent; it is a billion now, and at a rate
+         * of 100,000 "D$1 = US¢0.00" would call a currency worthless that
+         * still buys something. So once one of ours is worth less than a
+         * hundredth of a cent the line says what a US cent costs in ours -
+         * "US¢1 = D$1,000" - which is the same number again, the right way
+         * up for the size it has reached. The first line goes through
+         * Money.fxRate() below a tenth, for the other end.
          */
         ForeignAccounts fx = game.getForeignAccounts();
         double rate = fx.getRate();
         Label rateLabel = new Label(Currency.FOREIGN_SYMBOL + "1 = " + Currency.QUALIFIED
-                + String.format(rate < .1 ? "%.4f" : "%,.2f", rate));
+                + (rate < .1 ? fxRate(rate) : String.format("%,.2f", rate)));
         rateLabel.setStyle(STRIP_FIGURE + " -fx-text-fill: " + rateColour(fx) + ";");
         double oneLocal = fx.toUsd(1);
-        Label rateBack = new Label(Currency.QUALIFIED + "1 = " + (oneLocal < 1
-                ? Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", oneLocal * 100)
-                : Currency.FOREIGN_SYMBOL + String.format("%,.2f", oneLocal)));
+        Label rateBack = new Label(oneLocal >= 1
+                ? Currency.QUALIFIED + "1 = " + Currency.FOREIGN_SYMBOL + String.format("%,.2f", oneLocal)
+                : oneLocal * 100 >= .01
+                ? Currency.QUALIFIED + "1 = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", oneLocal * 100)
+                : Currency.FOREIGN_CENT_SYMBOL + "1 = " + Currency.QUALIFIED
+                        + String.format("%,.0f", 1 / (oneLocal * 100)));
         rateBack.setStyle(STRIP_CAPTION + " -fx-text-fill: " + STRIP_QUIET + ";");
         VBox rateBox = stripPanel(rateLabel, rateBack);
         Tooltip.install(rateBox, new Tooltip(String.format(
@@ -1791,6 +1805,17 @@ public class UserInterface extends Application {
             od.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
                     + " -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
             debtBar.getChildren().add(od);
+        }
+
+        // ...and what the central bank has advanced it (0.7.0): owed, priced
+        // like the overdraft, and not an instrument either.
+        double advanced = game.getCentralBank().getAdvancesToTreasury();
+        if (advanced > 0) {
+            Label cb = new Label(String.format("  + %s advanced by the central bank",
+                    money(advanced)));
+            cb.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+                    + " -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
+            debtBar.getChildren().add(cb);
         }
     }
 

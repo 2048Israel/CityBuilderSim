@@ -24,7 +24,8 @@ import java.util.List;
  * signed as the treasury sees them (+ cash in, - cash out), in thousands, and
  * what is left after them - Game.getTreasuryResidual() - is printed as its
  * own line, smaller, still named. Nothing about how the cash moves changes:
- * every record() sits beside a `cash -=` or `cash +=` that was already there.
+ * every record() sits beside a `cash -=` or `cash +=` that was already there
+ * (or, since 0.7.0, beside the Game.treasuryPays() that replaced it).
  *
  * THE WINDOW IS PRESS TO PRESS, like the bridge's. The month in progress
  * opens where the last one was struck - Game.takeTreasuryMonth(), at the
@@ -47,7 +48,7 @@ import java.util.List;
  * only if it is in neither the budget balance (NationalAccounts.getBalance())
  * nor the bridge's raised/repaid rows, because the bridge already reconciles
  * those and a line here would count them twice. Every `cash -=`/`cash +=` in
- * Game.java, as of 2026-09-18:
+ * Game.java, as of 2026-09-18 and 0.7.0:
  *
  *   recapitaliseBank()        JOURNALLED  "Put capital into the bank" - no budget line
  *   buyForeignCurrency()      JOURNALLED  "Bought reserves" - no budget line
@@ -67,21 +68,33 @@ import java.util.List;
  *   finalUpdateEconomy()      JOURNALLED  "Took in transit fares" - in the cash through
  *                                         getTaxIncome(), not in getTotalRevenue()
  *                                         (measured: the residual was exactly +fares)
+ *   settleTreasury() (0.7.0)  JOURNALLED  "Advanced by the central bank (printed)",
+ *                                         "Repaid the central bank" - financing, like
+ *                                         paper raised and repaid, but not paper; and
+ *                                         "Paid down arrears" - owed from a month whose
+ *                                         budget carried only what was paid then. The
+ *                                         advances' interest and the remittance are
+ *                                         budget lines (NationalAccounts' central bank
+ *                                         pair) and are not journalled
  *   paySubsidyIfOwed()        not         budget line (subsidies)
  *   buyLandBlock/Parcel()     not         budget line (land purchases)
  *   retire()                  not         budget line (land purchases, recordBuyback)
  *   buildFor()                not         budget line (land sales, recordSale)
  *   processBuildOrder()       not         budget line (capital spending)
- *   handleTBillLogic() and the four other issues, issueEmergencyDebt()
- *                             not         the bridge's raised row (Game.treasuryRaisedSoFar)
+ *   handleTBillLogic() and the four other issues (and the emergency note,
+ *   until 0.7.0 retired it)   not         the bridge's raised row (Game.treasuryRaisedSoFar)
  *   subtractCash(), repayForeignPrincipal()
  *                             not         the bridge's repaid row
  *   payForeignInterest()      not         budget line (interest)
- *   finalUpdateEconomy()'s cash = tempCash
- *                             not         the budget's own revenue and spending lines
+ *   finalUpdateEconomy()'s tax take in and lines out (one cash = tempCash
+ *   until 0.7.0)              not         the budget's own revenue and spending lines
  *   the government Investor.spend()
  *                             not         no game path reaches it; ShadowBasket and
- *                                         SaveFileCheck use it as a cash tap
+ *                                         SaveFileCheck use it as a cash tap - and
+ *                                         for that reason one of the two payments
+ *                                         not routed through Game.treasuryPays()
+ *                                         (0.7.0); the other is settleTreasury()'s
+ *                                         repayment of the advances, first by rule
  *   setCashForTest()          not         a fixture's hand
  *
  * The two lines marked "measured" are budget omissions, not the player's

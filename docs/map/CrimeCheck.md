@@ -1,6 +1,6 @@
 # CrimeCheck.java - 333 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/CrimeCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CrimeCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > Crime, the police and the prisons: every claim in
 > claude/crime-has-reasons.md, each with its own cause.

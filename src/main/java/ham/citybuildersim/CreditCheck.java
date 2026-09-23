@@ -456,8 +456,11 @@ public class CreditCheck {
         market.updateInterest();
 
         double clean = market.getRate();
+        // Against the model's floor rather than the 1% it used to be: the
+        // floor is the policy rate since 0.7.0, and was the dial less two
+        // points before it (DebtManager's THE FLOOR IS REAL NOW).
         assertTrue("a debt-free city with no overdraft prices at the floor",
-                Math.abs(clean - .01) < 1e-9);
+                Math.abs(clean - market.floorRate()) < 1e-9);
 
         // 1. the overdraft
         market.setCashPosition(-500_000);
@@ -762,7 +765,10 @@ public class CreditCheck {
         assertTrue("nothing was built by the refusal", yard.getQuantity(road.getId()) == 0);
 
         double gap = price - roadCity.getCash();
-        roadCity.issueEmergencyDebt(gap, Game.EMERGENCY_NOTE_MONTHS);
+        // The build screen's note, as its button books it (since 0.7.0 the
+        // emergency path is the central bank's advance, and the note the
+        // screen offers is an ordinary bill on the screen's own term).
+        roadCity.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, 1000.0);
 
         System.out.printf("   borrowed the $%,.2f gap; cash is now $%,.2f%n",
                 gap, roadCity.getCash());
@@ -934,8 +940,102 @@ public class CreditCheck {
         assertTrue("...and nothing was built on credit it did not have",
                 raised > 0 || banned.getBuildingManager().getTotalStoreCoverage() <= shopsBefore);
 
+        theCurve(city);
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ============ 11. THE CURVE (0.7.1) ============
+
+       Jerus: "the short term rates, aka the one you choose, those should be
+       basically the tbill rate, the others change just as in real life." A
+       debt-free market quotes the note at the dial, and every term above a
+       year at the dial plus the table's premium for it - interpolated
+       linearly from nothing at a year to the ten-year point, and between the
+       table's points. A hike moves every maturity by the hike; debt moves
+       every maturity by the same credit spread. A term loan is issued at
+       10, 20, 30, 40 or 50 years and a 25-year ask is refused; and a bond
+       issued at twenty years is bought back the same month for what it
+       raised, bar the issuance cost - the issue and the buyback price off one
+       curve. Asserted against the constants, not the numbers.
+       ================================================ */
+    static void theCurve(Game city) {
+        System.out.println("\n--- 11. the curve: the dial at the short end, a premium by maturity ---");
+
+        DebtManager bare = new DebtManager();
+        bare.setPolicyRate(.05);
+        bare.setGDP(9_068);
+        bare.setTaxRevenue(1_916);
+        bare.setCashPosition(0);
+        bare.setBankPremium(0);
+        bare.setCostOfFunds(0);
+        bare.updateInterest();
+        int[] rows = {6, 60, 120, 240, 360, 480, 600};
+        double[] clean = new double[rows.length];
+        for (int i = 0; i < rows.length; i++) clean[i] = bare.curveRate(rows[i]);
+
+        check("debt-free, the note quotes exactly the dial", bare.curveRate(6), .05);
+        check("...and getRate() is the note's rate, the short end", bare.getRate(), bare.curveRate(6));
+        check("the 10-year term loan: the dial plus TERM_PREMIUM_10Y", bare.curveRate(120),
+                .05 + DebtManager.TERM_PREMIUM_10Y);
+        check("the 20-year: the dial plus TERM_PREMIUM_20Y", bare.curveRate(240),
+                .05 + DebtManager.TERM_PREMIUM_20Y);
+        check("the 50-year: the dial plus TERM_PREMIUM_50Y", bare.curveRate(600),
+                .05 + DebtManager.TERM_PREMIUM_50Y);
+        check("...and past fifty years the curve holds", bare.curveRate(720), bare.curveRate(600));
+        check("a 5-year serial: the dial plus the 10-year entry, 48 of the 108 months from a year to ten",
+                bare.curveRate(60), .05 + DebtManager.TERM_PREMIUM_10Y * (60 - 12) / (120.0 - 12));
+        check("...a 35-year point halfway between 30 and 40", bare.curveRate(420),
+                .05 + (DebtManager.TERM_PREMIUM_30Y + DebtManager.TERM_PREMIUM_40Y) / 2);
+        check("...and a year-long note carries none", DebtManager.termPremium(12), 0);
+
+        bare.setPolicyRate(.07);
+        bare.updateInterest();
+        boolean parallel = true;
+        for (int i = 0; i < rows.length; i++) {
+            if (Math.abs(bare.curveRate(rows[i]) - clean[i] - .02) > 1e-12) parallel = false;
+        }
+        assertTrue("a hike of two points moves every row by two: the whole curve in parallel", parallel);
+        bare.setPolicyRate(.05);
+
+        bare.addLongTermBond(300_000, 240, 1, .05);
+        bare.updateInterest();
+        double spread = bare.gdpSpread() + bare.revenueSpread();
+        assertTrue("fixture: the debt adds a real credit spread", spread > 1e-4);
+        boolean sameSpread = true;
+        for (int i = 0; i < rows.length; i++) {
+            if (Math.abs(bare.curveRate(rows[i]) - clean[i] - spread) > 1e-12) sameSpread = false;
+        }
+        assertTrue("debt moves every row by the same credit spread", sameSpread);
+
+        // A term the treasury does not issue.
+        int debts = city.getDebtManager().getDebt().size();
+        double cash = city.getCash();
+        String said = city.handleLongBondLogic(5_000, 25, 1000);
+        assertTrue("a 25-year request is refused, in words", LongTermBond.REFUSAL.equals(said));
+        assertTrue("...quoted nothing", city.quoteLongBond(5_000, 25, 1000).isEmpty());
+        assertTrue("...and books nothing", city.getDebtManager().getDebt().size() == debts
+                && city.getCash() == cash);
+        boolean five = true;
+        for (int years : LongTermBond.MATURITIES) {
+            if (city.quoteLongBond(5_000, years, 1000).isEmpty()) five = false;
+        }
+        assertTrue("...while each of the five maturities is quoted", five);
+
+        // Issued at twenty and bought straight back: the same curve both ways.
+        DebtQuote quote = city.quoteLongBond(5_000, 20, 1000);
+        quietly(() -> city.handleLongBondLogic(5_000, 20, 1000));
+        Debt twenty = city.getDebtManager().getDebt().get(city.getDebtManager().getDebt().size() - 1);
+        double price = city.quoteRepurchase(twenty);
+        System.out.printf("   20-year: raised $%,.2fk on $%,.0fk of face at %.3f%%; bought back for $%,.2fk%n",
+                quote.cashReceived(), quote.faceValue(), quote.marketRate() * 100, price);
+        assertTrue("a bond issued at 20 years is bought back the same month for what it raised,"
+                + " bar the issuance cost",
+                Math.abs(price - (quote.cashReceived() + city.costOfIssuance(quote.faceValue()))) <= .01);
+        double paid = city.repurchaseDebt(twenty);
+        assertTrue("...and the buyback takes it off the books at that price",
+                Math.abs(paid - price) < 1e-9 && !city.getDebtManager().getDebt().contains(twenty));
     }
 
     /**

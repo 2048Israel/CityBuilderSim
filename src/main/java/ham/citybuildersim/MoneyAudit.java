@@ -5,14 +5,22 @@ package ham.citybuildersim;
  *
  * THE IDENTITY
  *
- * Every dollar in the game sits in one of a handful of pools: the treasury,
- * the six private sectors' cash, and the construction sector's order book (a
- * build is paid for up front and earned as the work is done, so the unearned
- * part is money the builder holds and has not yet booked). Everything else -
- * households, the lender, other cities, the world - is OUTSIDE, and money only
- * ever crosses that boundary in a known set of ways: wages out, shopping and
- * rent in, imports out, exports in, loans in, repayments and interest out,
- * pensions and subsidies out, fees and wage tax in.
+ * Every dollar in the game sits in one of a handful of pools, as pools()
+ * reads them: the treasury (plus what a buyback between two presses has paid
+ * its holders outside the pools and the next month has not yet declared,
+ * since 0.7.1); every sector's cash, in Sectors.KEYS order; the
+ * construction sector's order book (a build is paid for up front and earned
+ * as the work is done, so the unearned part is money the builder holds and
+ * has not yet booked); and the bank's cash, plus what it owes the central
+ * bank's window and less what it still owes the treasury for the city's paper
+ * (sold between two presses, paid for at the next settle). Everything else -
+ * households, other cities, the world and, since 0.7.0, the central bank - is
+ * OUTSIDE, and money only ever crosses that boundary in a known set of ways:
+ * wages out, shopping and rent in, imports out, exports in, loans in,
+ * repayments and interest out, pensions and subsidies out, fees and wage tax
+ * in, the city's paper bought by households in and its coupons, principal and
+ * buybacks paid to them out (0.7.1) - and money the central bank makes in,
+ * and money paid back to it, which it destroys, out (Scope.MONEY).
  *
  * So for one month tick:
  *
@@ -34,8 +42,9 @@ package ham.citybuildersim;
  * the city collecting a tax - are deliberately not listed. They cancel if both
  * sides booked the same number, and show up as residual if they did not.
  *
- * Struck by Game.nextMonth() every month, always, because it costs forty
- * getter reads; asserted by LongPlaytest and MoneyCheck.
+ * Struck by Game.nextMonth() every month, always, because it costs a few
+ * hundred getter reads; asserted by LongPlaytest and MoneyCheck, and its
+ * central bank lines by CentralBankCheck.
  */
 public final class MoneyAudit {
 
@@ -57,13 +66,14 @@ public final class MoneyAudit {
         /**
          * The pools as this month's strike found them, and as it left them.
          *
-         * Kept so that the NEXT month can check its own opening read against
+         * Kept so that the bottom of the month can check the pools against
          * this month's close. The residual above reconciles within a month and
          * therefore cannot see money that moves in the GAP between two strikes:
          * such money is missing from the flows and already in the pools, the
          * two errors cancel, and the residual stays at $0.00. That is where
-         * hot money sat for the whole life of the mechanic. See the guard in
-         * LongPlaytest.checkMonth() and MoneyCheck.
+         * hot money sat for the whole life of the mechanic. See NOTHING AFTER
+         * THE AUDIT MAY MOVE A POOL, the last thing Game.nextMonth() does, and
+         * its assertions in LongPlaytest.audit() and MoneyCheck.
          */
         public final double[] poolsAtOpen;
         public final double[] poolsAtClose;
@@ -90,6 +100,16 @@ public final class MoneyAudit {
         public final double reserveIn;
         /** ...and bought with it. */
         public final double reserveOut;
+
+        /* ---- and the part of it the central bank made or destroyed (0.7.0) ---- */
+
+        /** Money the central bank made and paid into the pools: advances, interest on reserves, the remittance. */
+        public final double moneyIn;
+        /** ...and money paid back to it, which it destroyed: repayments, and the window's and the advances' interest. */
+        public final double moneyOut;
+
+        /** What the month did to M0, as the audit saw it cross the edge. CentralBankCheck holds it to the bank's own ledger. */
+        public double moneyMade()        { return moneyIn - moneyOut; }
 
         /** Exports less imports. The visible balance. */
         public double tradeBalance()     { return tradeIn - tradeOut; }
@@ -129,12 +149,17 @@ public final class MoneyAudit {
         /** What the treasury did to its own reserve stock this month. */
         public double reserveChange() { return reserveOut - reserveIn; }
 
-        /** ...and everything crossing it that is not. Households, in other words. */
+        /**
+         * ...and everything crossing it that is not. Households, in other
+         * words - and, since 0.7.0, the central bank, which is at home: its
+         * flows are domestic, and moneyIn()/moneyOut() are the part of these
+         * two it made or destroyed.
+         */
         public double domesticIn()  { return inflows - foreignIn(); }
         public double domesticOut() { return outflows - foreignOut(); }
 
         Result(int month, double before, double after, double inflows, double outflows, double residual) {
-            this(month, before, after, inflows, outflows, residual, "", new double[8], null, null);
+            this(month, before, after, inflows, outflows, residual, "", new double[12], null, null);
         }
 
         Result(int month, double before, double after, double inflows, double outflows,
@@ -164,6 +189,8 @@ public final class MoneyAudit {
             this.reserveOut = foreign.length > 9 ? foreign[9] : 0;
             this.valuationIn = foreign[6];
             this.valuationOut = foreign[7];
+            this.moneyIn  = foreign.length > 10 ? foreign[10] : 0;
+            this.moneyOut = foreign.length > 11 ? foreign[11] : 0;
         }
 
         /** Residual as a share of what moved, so a $3 leak in a $3B city reads as 0. */
@@ -247,8 +274,18 @@ public final class MoneyAudit {
      *
      * Still FOREIGN - the money genuinely crosses the city's edge and the
      * domestic/foreign split has to stay exhaustive - just not financial.
+     *
+     *   MONEY     - the central bank (0.7.0): money MADE and paid into the
+     *               pools - an advance, interest on reserves, the remittance -
+     *               and money paid back to it and DESTROYED - a repayment, the
+     *               window's interest, the advances'. A boundary participant
+     *               like the households, and at home like them, so it is
+     *               domestic on the balance of payments; it has a scope of its
+     *               own because the month's MONEY in less out is the change in
+     *               M0, and CentralBankCheck holds the audit to that. See
+     *               CentralBank.
      */
-    public enum Scope { DOMESTIC, TRADE, INCOME, FINANCIAL, VALUATION, RESERVE }
+    public enum Scope { DOMESTIC, TRADE, INCOME, FINANCIAL, VALUATION, RESERVE, MONEY }
 
     /** Label, amount and scope, for one line of the month. */
     private interface Tagged {
@@ -278,7 +315,15 @@ public final class MoneyAudit {
         Sectors sectors = g.getSectors();
         double[] pools = new double[POOL_NAMES.length];
         int i = 0;
-        pools[i++] = g.getCash();
+        /*
+         * THE TREASURY, PLUS WHAT A BUYBACK HAS PAID OUT OF THE POOLS AND THE
+         * MONTH HAS NOT YET DECLARED (0.7.1): the households' share, the
+         * dollar holders' and the central bank's, paid between two presses
+         * and seen leaving in the next month's window - the treasury's end of
+         * the shape the bank's unsettled paper has below. See
+         * Game.repurchaseDebt().
+         */
+        pools[i++] = g.getCash() + g.getBuybackUnsettled();
         for (Sector s : sectors.all()) pools[i++] = s.getCash();
         pools[i++] = sectors.construction().getOrderBookForAudit();
         /*
@@ -286,12 +331,39 @@ public final class MoneyAudit {
          * to a sector or to the treasury is an internal transfer that cancels
          * rather than money arriving from outside. Households are still
          * OUTSIDE, so what the bank lends a family is a real outflow.
+         *
+         * LESS WHAT IT OWES FOR THE CITY'S PAPER, since 2026-09-21, when it
+         * started paying for it. The city sells its bonds between two
+         * presses and the treasury has the cash at once; the bank pays at the
+         * settle at the bottom of the next month. In between, the money is
+         * the treasury's and the bank owes it - so its pool is its cash less
+         * getCityPaperUnsettled(), the same timing difference the builders'
+         * order book is carried for above. Counted this way an issue moves
+         * nothing between the pools and the settle moves nothing either;
+         * counted as bare cash, the settle would read as the bank's money
+         * vanishing inside a month whose window opened after the treasury
+         * had already been paid.
          */
-        pools[i++] = g.getBank().getCash();
+        /*
+         * ...AND PLUS WHAT IT OWES THE CENTRAL BANK'S WINDOW, since 0.7.0. The
+         * bank's cash is its NET position - a negative balance is borrowing,
+         * see Bank's FUNDING SIDE - so the window's loan is already inside it
+         * the day the bank lends past its deposits. The central bank books
+         * the advance once a month at the settle, and it is money made: the
+         * pool is the cash the bank would hold had the advance been paid in,
+         * so the advance moves the pool by exactly what the audit declares as
+         * "+ centralbank AdvancedToBank", and a repayment the other way.
+         */
+        pools[i++] = g.getBank().getCash() + g.getCentralBank().getAdvancesToBank()
+                - g.getCityPaperUnsettled();
         return pools;
     }
 
-    /** Every dollar the city and its businesses hold, plus the builder's order book. */
+    /**
+     * Every dollar in the pools: the city's, its businesses', the builders'
+     * order book, and the bank's - plus what it owes the window, less what it
+     * owes for the city's paper.
+     */
     public static double pooled(Game g) {
         double total = 0;
         for (double p : pools(g)) total += p;
@@ -321,7 +393,7 @@ public final class MoneyAudit {
          * site instead of inferred. `in += credit.apply(...)` cannot quietly
          * become an outflow the way a single tagged helper could.
          */
-        double[] foreign = new double[10];
+        double[] foreign = new double[12];
         Tagged credit = (label, amount, scope) -> {
             note.accept(label, amount);
             switch (scope) {
@@ -330,6 +402,7 @@ public final class MoneyAudit {
                 case FINANCIAL -> foreign[4] += amount;
                 case VALUATION -> foreign[6] += amount;
                 case RESERVE   -> foreign[8] += amount;
+                case MONEY     -> foreign[10] += amount;
                 default        -> { }
             }
             return amount;
@@ -342,6 +415,7 @@ public final class MoneyAudit {
                 case FINANCIAL -> foreign[5] += amount;
                 case VALUATION -> foreign[7] += amount;
                 case RESERVE   -> foreign[9] += amount;
+                case MONEY     -> foreign[11] += amount;
                 default        -> { }
             }
             return amount;
@@ -401,6 +475,13 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ bank RepaidByHouseholds", g.getBank().getRepaidByHouseholds(), Scope.DOMESTIC);
         /*
+         * THE HOUSEHOLDS BUY THE CITY'S PAPER (0.7.1), at the settle of an
+         * issue: their cash is what the bank did not have to pay the treasury
+         * for, so it arrives in the bank's pool from outside the pools, like a
+         * repayment. See Game's THE HOUSEHOLDS TAKE THEIR SHARE.
+         */
+        in += credit.apply("+ households BoughtCityPaper", g.getHouseholdsBoughtPaper(), Scope.DOMESTIC);
+        /*
          * The shareholders' capital when a branch opens - money from outside the
          * city, and the only reason a bank can begin lending at all. A bailout
          * paid by the treasury is NOT here: that is the city's own money moving
@@ -436,7 +517,8 @@ public final class MoneyAudit {
          * ...and what they pay for the privilege, which is earned abroad and so
          * is INCOME rather than domestic interest. It is inside interestEarned
          * as well, because it is interest - so the domestic interest line below
-         * nets it out, exactly as it already nets out the bank's placements.
+         * nets it out, exactly as it already nets out the bank's interest on
+         * reserves (placed abroad, and netted out the same way, before 0.7.0).
          */
         in += credit.apply("+ bank CarryInterest", g.getBank().getCarryInterest(), Scope.INCOME);
         /*
@@ -518,9 +600,12 @@ public final class MoneyAudit {
         // Bank.openBranches(). Signed, because it goes either way.
         in += credit.apply("+ bank FoundingSettlement", g.getBank().getFoundingSettlement(), Scope.VALUATION);
         /*
-         * A failed bank's creditors absorbing the shortfall. They are the
-         * wholesale funders, who are outside the city, so the money the city
-         * keeps and will not repay arrives here. See Bank.resolveIfFailed().
+         * A failed bank's creditors absorbing the shortfall. They were the
+         * wholesale funders abroad until 0.7.0, so the money the city keeps
+         * and will not repay arrives here. It still does, though the bank's
+         * wholesale lender is the central bank's window now and the window is
+         * repaid out of this at the next settle - who absorbs a failed bank
+         * is Jerus's open question. See Bank.resolveIfFailed().
          */
         in += credit.apply("+ bank ResolutionLoss", g.getBank().getResolutionLossThisMonth(), Scope.VALUATION);
         /*
@@ -532,8 +617,8 @@ public final class MoneyAudit {
         in += credit.apply("+ sectors OverdraftForgiven", g.getEconomyManager().getOverdraftForgiven(), Scope.VALUATION);
 
         // What the households paid it: everything earned less the internal
-        // transfers and less the placements, which are declared on their own
-        // line below as income from abroad.
+        // transfers and less its interest on reserves, which is declared on
+        // its own line below as money the central bank made.
         in += credit.apply("+ bank InterestEarned", g.getBank().getInterestEarned()
                 - g.getBank().getInternalInterest() - g.getBank().getPlacementIncome()
                 - g.getBank().getCarryInterest(), Scope.DOMESTIC);
@@ -543,14 +628,30 @@ public final class MoneyAudit {
          * crosses this boundary.
          *
          * The city's own bonds do not appear here at all, and should not: the
-         * bank buys them, so cityDebtRaisedThisMonth goes to bank.lend() and
-         * the money never leaves the audited pools. Foreign paper is bought by
-         * somebody the city has no other relationship with, so the cash really
-         * does arrive from outside - and it is a FINANCIAL flow, not a trade
-         * one, because nothing was sold to earn it.
+         * bank buys them, so what the treasury raised goes to bank.lend() at
+         * the next settle - carried against the bank's pool until then, see
+         * pools() - and the money never leaves the audited pools. Foreign
+         * paper is bought by somebody the city has no other relationship
+         * with, so the cash really does arrive from outside - and it is a
+         * FINANCIAL flow, not a trade one, because nothing was sold to earn it.
          */
         in += credit.apply("+ city ForeignDebtRaised",
                 g.getForeignDebtRaisedThisMonth(), Scope.FINANCIAL);
+
+        /*
+         * THE CENTRAL BANK, since 0.7.0: every dollar it made this month and
+         * paid into a pool. Read off its own counters, which move only in its
+         * own methods, so this list and its ledger are one set of figures and
+         * the audit is what holds the other end - the bank's pool and the
+         * treasury's cash - to them.
+         */
+        CentralBank cb = g.getCentralBank();
+        in += credit.apply("+ centralbank AdvancedToBank", cb.getAdvancedToBank(), Scope.MONEY);
+        in += credit.apply("+ centralbank AdvancedToTreasury", cb.getAdvancedToTreasury(), Scope.MONEY);
+        in += credit.apply("+ centralbank Remittance", cb.getRemitted(), Scope.MONEY);
+        // ...and what it paid the bank for the city's paper it bought, in
+        // money made for it: the holdings dial (0.7.1).
+        in += credit.apply("+ centralbank BoughtPaper", cb.getBoughtPaper(), Scope.MONEY);
 
         double out = 0;
         // Payrolls, as each statement charged them.
@@ -573,8 +674,9 @@ public final class MoneyAudit {
          *   and cancels, so it is not declared here at all.
          *
          *   THE HOT MONEY leaves the COUNTRY, so it is an income outflow on the
-         *   balance of payments, beside the wholesale funding the bank raises
-         *   abroad. Declared here since 2026-09-07; before that it was folded
+         *   balance of payments, where the wholesale funding the bank raised
+         *   abroad also sat until the central bank's window replaced it in
+         *   0.7.0. Declared here since 2026-09-07; before that it was folded
          *   into the sectors' share, which paid foreign savers' interest to
          *   domestic businesses and - in any month where no business had a
          *   positive balance - paid it to nobody at all and destroyed it. See
@@ -594,32 +696,40 @@ public final class MoneyAudit {
         // to the treasury no longer does - see the pools above.
         out += debit.apply("- bank LentToHouseholds", g.getBank().getLentToHouseholds(), Scope.DOMESTIC);
         /*
+         * WHAT THE HOUSEHOLDS WERE PAID FOR AND ON THE CITY'S PAPER (0.7.1).
+         * Every one of these leaves the pools for a household: the desk
+         * buying their paper (the waterfall, the spread gone, a household
+         * leaving the city), the coupon and the principal on their share, and
+         * their share of a bond bought back between the presses, declared the
+         * month after the button was pressed. See Game's THE HOLDERS ARE PAID.
+         */
+        out += debit.apply("- desk PaperBoughtFromHouseholds", g.getBank().getPaperBoughtFromHouseholds(), Scope.DOMESTIC);
+        out += debit.apply("- city CouponsToHouseholds", g.getCouponsToHouseholds(), Scope.DOMESTIC);
+        out += debit.apply("- city PrincipalToHouseholds", g.getPrincipalToHouseholds(), Scope.DOMESTIC);
+        out += debit.apply("- city BuybackToHouseholds", g.getBuybackToHouseholds(), Scope.DOMESTIC);
+        /*
          * WHAT THE BANK PAYS FOR MONEY IT DID NOT HAVE, since 2026-09-07.
          *
          * A negative cash position IS borrowing, and the part of it the city's
-         * own deposits do not cover is funded abroad. That coupon leaves the
-         * city, so it is declared here. The principal is not: the bank's cash
-         * going further negative is already the loan arriving, and the pool
-         * moves with it - declaring it as well would count it twice.
-         */
-        /*
-         * THE BANK'S WHOLESALE FUNDING, SPLIT BY WHOSE MONEY IT IS.
+         * own deposits do not cover was funded abroad until 0.7.0 - declared
+         * as foreign income paid, and from 2026-09-07 split by whose money it
+         * was, because at a book of $156B that one line was $592,109 a month
+         * against $234,348 of exports and ran the currency to its ceiling.
          *
-         * All of it used to be declared INCOME - interest paid to foreign
-         * lenders - and at a book of $156B that single line was $592,109 a
-         * month against $234,348 of exports. The city's whole balance of
-         * payments was one number nobody had chosen, the current account was
-         * negative however well it traded, and the exchange rate ran to its
-         * ceiling. See Bank.fundingCostAbroad().
+         * IT IS THE CENTRAL BANK'S WINDOW NOW, so the coupon goes to the
+         * central bank and is money destroyed; the advance itself moves the
+         * bank's pool (see pools()) and is declared with the central bank's
+         * other lines above. Read off the central bank's counter, which Game
+         * books from the bank's own figure in the same breath.
          */
-        out += debit.apply("- bank FundingCost (abroad)",
-                g.getBank().fundingCostAbroad(), Scope.INCOME);
-        out += debit.apply("- bank FundingCost (at home)",
-                g.getBank().fundingCostAtHome(), Scope.DOMESTIC);
-        // ...and the mirror: what its idle reserves earned abroad. See
-        // Bank.placementIncome. Income, for the same reason the coupon is.
-        in += credit.apply("+ bank Placements (abroad)",
-                g.getBank().getPlacementIncome(), Scope.INCOME);
+        out += debit.apply("- centralbank WindowInterest",
+                cb.getWindowInterest(), Scope.MONEY);
+        // ...and the mirror: what its reserves earned at the central bank, at
+        // the policy rate, in money made to pay it. See Bank.placementIncome.
+        // Placed abroad at the world's rate, and declared as foreign income,
+        // until 0.7.0.
+        in += credit.apply("+ centralbank InterestOnReserves",
+                cb.getInterestOnReserves(), Scope.MONEY);
 
         /*
          * ...AND WHAT IT COSTS TO OWE THEM.
@@ -642,6 +752,10 @@ public final class MoneyAudit {
                 g.getForeignInterestPaidThisMonth(), Scope.INCOME);
         out += debit.apply("- city ForeignPrincipalRepaid",
                 g.getForeignPrincipalRepaidThisMonth(), Scope.FINANCIAL);
+        // ...and a dollar bond bought back between the presses (0.7.1): the
+        // price leaves the country, a financial outflow like the principal.
+        // It used to leave the treasury for nowhere.
+        out += debit.apply("- city BuybackAbroad", g.getBuybackAbroad(), Scope.FINANCIAL);
         // ...and buying them, which is local money leaving to pay for foreign.
         // RESERVE for the same reason: it built nothing, because takeMonth()
         // took it off the stock again the moment the month closed.
@@ -733,6 +847,19 @@ public final class MoneyAudit {
         // out of the pools like a wage. What they took from households never
         // entered them. See Crime.
         out += debit.apply("- crime StolenFromBusinesses", g.getCrime().getStolenFromBusinesses(), Scope.DOMESTIC);
+
+        // ...and what went back to the central bank this month, which it
+        // destroyed. See the credits.
+        out += debit.apply("- centralbank RepaidByBank", cb.getRepaidByBank(), Scope.MONEY);
+        out += debit.apply("- centralbank RepaidByTreasury", cb.getRepaidByTreasury(), Scope.MONEY);
+        out += debit.apply("- centralbank AdvancesInterest", cb.getAdvancesInterest(), Scope.MONEY);
+        // The holdings (0.7.1): paper it sold the bank, the coupons and
+        // principal the treasury paid it on its share, and its share of a
+        // buyback, settled this month - all destroyed.
+        out += debit.apply("- centralbank SoldPaper", cb.getSoldPaper(), Scope.MONEY);
+        out += debit.apply("- centralbank PaperCoupons", cb.getPaperCoupons(), Scope.MONEY);
+        out += debit.apply("- centralbank PaperRedeemed", cb.getPaperRedeemed(), Scope.MONEY);
+        out += debit.apply("- centralbank BoughtBack", cb.getBoughtBack(), Scope.MONEY);
 
         // Suspect internal pairs, for the detail only. A flow that should
         // cancel and does not is where a residual lives.

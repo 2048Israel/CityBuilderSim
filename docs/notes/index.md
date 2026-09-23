@@ -2,7 +2,7 @@
 
 A map of the `claude/*.md` documents in this project, grouped by what they are about, one line each. Written 2026-09-18 for the structure audit, from the titles and the changelog's blocks; the line is a pointer, not a summary - read the note. Newer notes are usually the truer ones: where two disagree, the later date wins, and the changelog says which shipped.
 
-The three files a session needs first are `todo.md` (what is open), `changelog.md` (what shipped, newest first) and this one. The published manual (artifact "CityBuilderSim") is the model written out as a whole.
+The three files a session needs first are `todo.md` (what is open), `changelog.md` (what shipped, newest first) and this one. The published manual (artifact "CityBuilderSim") is the model written out as a whole; since 0.7.3 it is also in the repository as `docs/manual.md` and `docs/manual.html`, generated from the page at each publish.
 
 ## Start here
 
@@ -17,6 +17,7 @@ What a session reads first, and the records of the whole.
 - `handoff-after-the-sector-template.md` - the cloud working loop written out for a session that starts cold: staging, build scripts, verify copies, git
 - `the-price-at-the-door.md` - healthcare fees as a dial (0-15x) and an insurance premium off wages, 2026-09-19: the household that goes without care rather than without food, the three corners, the eight-seed ensemble, the break-even that founding fees cannot reach
 - `the-treasury-bridge-opens.md` - the Government tab's "everything else" row opened into a named journal, the desk's re-mark line and why the desk loses, 2026-09-19; the bank that never pays for the city's paper, found on the way
+- `the-manual-at-0-7-3.md` - the manual artifact brought to 0.7.3 (version 8, 2026-09-22): the new central-bank section, eleven stale places reading the page found, how three Opus contexts made it, sixteen places the prose disagrees with the code, and `tools.ManualToMarkdown` — the manual in the repository as `docs/manual.md` and `docs/manual.html`, generated from the published page
 - `the-manual-at-0-6-7.md` - the manual artifact brought to 0.6.7 (version 7, 2026-09-18): the new transport section, what reading the published page found stale, how three contexts made it, and twenty places where the tree's prose disagrees with the code
 - `the-documentation-catches-up.md` - the manual artifact brought up to 0.5.15; what the manual is and how it is versioned
 - `the-year-book.md` - the year book and decade book the game writes so a run can be read without a save: FLOW/LEVEL/RATE rules, columns
@@ -32,7 +33,7 @@ What a session reads first, and the records of the whole.
 
 ## Money, the bank, the currency and the world
 
-The commercial bank, the central bank that was not built, the float, capital flows and the audit that ties every pool.
+The commercial bank, the central bank (built in 0.7.0; the curve, the holders and the holdings dial in 0.7.1; the currency under it in 0.7.2; the demand channel in 0.7.3), the float, capital flows and the audit that ties every pool.
 
 - `commercial-bank.md` - the bank as a design: deposits, leverage, branches
 - `bank-as-a-bank.md` - the bank made to behave like one: its own cost of money
@@ -55,6 +56,12 @@ The commercial bank, the central bank that was not built, the float, capital flo
 - `exchange-rate-progress.md` - the float, as it was being built
 - `foreign-exchange-design.md` - the exchange rate's design: pressure, drift, reversion
 - `a-reserve-defends-a-currency.md` - the 0.6.9 year book read (a model with no nominal anchor), the vault kept in dollars, the founding reserve, why a reserve damps only a fall, and prices and the rate on the strip, 2026-09-21, 0.6.10
+- `the-central-bank.md` - the design for 7.0: a floor system, households holding the city's paper, QE and QT, the overdraft as advances with a ceiling, M0 and M2 on a page, and the batches A to E, 2026-09-21
+- `the-bank-that-never-paid.md` - batch A of 7.0, the ground: the bank never paid for the city's paper (the snapshot taken after the clear), wages held to the index on the two-year lag, what the policy rate does to inflation measured before the central bank, and the emergency note's free money found holding a floor, 2026-09-21, 0.6.11
+- `the-central-bank-opens.md` - batch B of 7.0, the books and the floor: the central bank's balance sheet (M0 its liabilities, money made and destroyed only there and declared to the audit), the bank's reserves paid the policy rate and its shortfalls lent at the window, `CITY_DISCOUNT` deleted, advances to the treasury with a ceiling and Jerus's arrears rule ("pay promises first, cut the rest"), the autopilot, the Money page with M0 and M2, and the strain premium found counted twice, 2026-09-21/22, 0.7.0
+- `the-curve-and-the-holders.md` - batch C of 7.0, the curve and who holds the paper: a term premium by maturity over the dial (five points, 10 to 50 years) and term loans only at those five, the households, the central bank and the bank as the three holders of the city's paper, the holdings dial (QE and QT) and the compression it buys at the long end, the discount accreted over the paper's life, and batch B's found-on-the-way list closed, 2026-09-22, 0.7.1
+- `the-currency-off-its-rule.md` - batch D of 7.0, the currency under a central bank: the inflation drift deleted and the rate moved by the real rate differential instead (`RATE_PULL` 4, the caps turned into guards), a defence that spends the vault as a capital transaction against the world (M0 unmoved, the central bank's equity down), the dial to 100% and the advances ceiling a dial, the world's paper on its own curve and the dollar-quote money pump closed, and empty household cells folded, 2026-09-22, 0.7.2
+- `the-demand-channel.md` - batch E of 7.0, the households' response and the harness: what a household spends above a basket a head answers the real deposit rate (`SAVING_RESPONSE` 1.0, held between ½ and 1½), `MonetaryCheck` §6 asserting that inflation falls with the rate (1.032 points from 3% to 40%, most of it still the currency's), the exchange rate's guards moved to a billion either way, EI paid in the month it is credited, the bank's deposit quote capped at its lending rate, and why the channel moves so little — a shelf priced by coverage and its floor rather than by money, 2026-09-22, 0.7.3
 - `balance-of-payments.md` - the current and capital accounts, and that they must sum
 - `devaluation-elasticities.md` - how exports and imports answer a weaker currency
 - `import-substitution.md` - what the city stops importing as it learns to make it

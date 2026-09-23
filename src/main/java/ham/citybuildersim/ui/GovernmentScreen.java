@@ -546,6 +546,56 @@ final class GovernmentScreen {
             }
         }
 
+        /* ===================================================================
+           ...AND WHAT IT OWES ITS CENTRAL BANK (0.7.0)
+
+           The overdraft is the central bank's advance now, and the page says
+           it in the words the design uses: what is owed, what was printed for
+           it this month and since founding, the ceiling, and - once the
+           ceiling has bound - what the treasury owes and has not paid, by
+           line. The advance and its repayment are also in the bridge above,
+           by name, in its last row; this is the stock they leave behind.
+           =================================================================== */
+        CentralBank cb = ui.game.getCentralBank();
+        if (cb.getAdvancesToTreasury() > 0 || cb.getPrintedLifetime() > 0 || ui.game.hasArrears()) {
+            column.getChildren().add(statementHead("What it owes its central bank"));
+            column.getChildren().add(statementLine("Advances from the central bank",
+                    tightMoney(toDollars(cb.getAdvancesToTreasury()), false),
+                    cb.ceilingBound() ? Palette.BAD : Palette.TEXT_HEAD));
+            column.getChildren().add(statementLine("...against a ceiling of",
+                    tightMoney(toDollars(cb.ceiling()), false), Palette.TEXT_MUTED));
+            column.getChildren().add(statementLine("Printed this month",
+                    tightMoney(toDollars(cb.getAdvancedToTreasury()), false),
+                    cb.getAdvancedToTreasury() > 0 ? Palette.WARN : Palette.TEXT_MUTED));
+            column.getChildren().add(statementLine("Printed since founding",
+                    tightMoney(toDollars(cb.getPrintedLifetime()), false), Palette.TEXT_MUTED));
+            column.getChildren().add(statementLine("Repaid this month",
+                    tightMoney(toDollars(cb.getRepaidByTreasury()), false), Palette.TEXT_MUTED));
+            column.getChildren().add(statementNote(String.format(
+                    "When the treasury is below zero at the top of a month, the central bank "
+                    + "advances the gap in money it makes, at the policy rate; cash above zero "
+                    + "repays it before anything else. It will advance up to %.0f months of the "
+                    + "treasury's revenue. Past that, pensions, EI, health, the schools, the "
+                    + "city's own wages and its debts are still paid, and everything else is "
+                    + "paid only from cash the treasury actually has.",
+                    ui.game.getCentralBank().getAdvancesCeilingMonths())));
+
+            java.util.Map<TreasuryLine, Double> owed = ui.game.getArrearsByLine();
+            if (!owed.isEmpty()) {
+                column.getChildren().add(statementHead("Owed and unpaid, by line"));
+                for (java.util.Map.Entry<TreasuryLine, Double> line : owed.entrySet()) {
+                    column.getChildren().add(statementLine(line.getKey().label,
+                            tightMoney(toDollars(line.getValue()), false), Palette.BAD));
+                }
+                column.getChildren().add(statementTotal("Owed altogether",
+                        tightMoney(toDollars(ui.game.getArrearsTotal()), false), Palette.BAD));
+                column.getChildren().add(statementNote(
+                        "What the ceiling cut: owed, with no interest on it, and paid down out "
+                        + "of the first cash above zero once the central bank has been repaid "
+                        + "- before anything discretionary is paid again."));
+            }
+        }
+
         /* --------------------- against the size of the economy --------------------- */
         column.getChildren().add(statementHead("Against the size of the economy"));
 
@@ -719,7 +769,7 @@ final class GovernmentScreen {
         return java.util.List.of("Business tax", "Sales tax", "Wage tax",
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
-                "Student loan interest");
+                "Student loan interest", "Central bank remittance");
     }
 
     java.util.List<Double> revenueAmounts(EconomyManager em, NationalAccounts na) {
@@ -740,12 +790,16 @@ final class GovernmentScreen {
                 // ...and the interest the graduates pay on their student
                 // loans (2026-09-21), on the end for the same reason; the
                 // principal they repay is not revenue and is on the bridge.
-                na.getStudentLoanInterest());
+                na.getStudentLoanInterest(),
+                // ...and the central bank's profit, remitted (0.7.0): what the
+                // city paid itself in interest, less what reserves cost.
+                na.getCentralBankRemittance());
     }
 
     static java.util.List<String> spendingNames() {
         return java.util.List.of("Pensions", "EI", "Student grants", "Healthcare", "Education",
-                "Police and prisons", "Buildings", "Repairs", "Land bought", "Debt interest");
+                "Police and prisons", "Buildings", "Repairs", "Land bought", "Debt interest",
+                "Interest to the central bank", "Subsidies");
     }
 
     /*
@@ -770,7 +824,15 @@ final class GovernmentScreen {
                 na.getCapitalSpending(),
                 ui.game.getCityMaintenancePaid(),
                 na.getLandPurchases(),
-                na.getInterestExpense());
+                na.getInterestExpense(),
+                // ...and on the central bank's advances (0.7.0), on the end so
+                // the list and the donut keep their order.
+                na.getCentralBankInterest(),
+                // ...and the standing policy's subsidies (0.7.1): in
+                // getTotalExpenses() since they were first paid, and on no line
+                // of this tab until now, so the lines did not add up to the total
+                // under them in any month a sector was topped up.
+                na.getSubsidies());
     }
 
     /**

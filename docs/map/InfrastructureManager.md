@@ -1,6 +1,6 @@
 # InfrastructureManager.java - 686 lines · 43 methods · 12 constants · model
 
-`ham/citybuildersim/InfrastructureManager.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InfrastructureManager.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The road network: what the city's buildings demand of it, what it can carry,
 > and what happens when the first number passes the second.

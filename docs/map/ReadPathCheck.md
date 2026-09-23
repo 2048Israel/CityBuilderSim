@@ -1,6 +1,6 @@
-# ReadPathCheck.java - 506 lines · 5 methods · 0 constants · harnesses
+# ReadPathCheck.java - 544 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ReadPathCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReadPathCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > Reading the city must not change the city.
 > 
@@ -36,18 +36,18 @@
 > would pass a before/after comparison; one that accumulates shows up as a field
 > that drifts further the more the screens are opened.
 
-**Uses:** [Good](Good.md) (11), [Sector](Sector.md) (6), [Retail](Retail.md) (5), [Game](Game.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [EconomyManager](EconomyManager.md) (2), [CareType](CareType.md) (2), [TaxPolicy](TaxPolicy.md) (2), [EducationType](EducationType.md) (2), [GameFiles](GameFiles.md) (2), [NewGameCheck](NewGameCheck.md) (2), [RealEstate](RealEstate.md) (1), [Mining](Mining.md) (1), [ServicesManager](ServicesManager.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingManager](BuildingManager.md) (1), [LandManager](LandManager.md) (1)
+**Uses:** [Good](Good.md) (11), [Sector](Sector.md) (6), [Retail](Retail.md) (5), [Game](Game.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [EconomyManager](EconomyManager.md) (2), [CareType](CareType.md) (2), [TaxPolicy](TaxPolicy.md) (2), [EducationType](EducationType.md) (2), [GameFiles](GameFiles.md) (2), [NewGameCheck](NewGameCheck.md) (2), [RealEstate](RealEstate.md) (1), [Mining](Mining.md) (1), [ServicesManager](ServicesManager.md) (1), [DebtManager](DebtManager.md) (1), [LongTermBond](LongTermBond.md) (1), [Debt](Debt.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingManager](BuildingManager.md) (1), [LandManager](LandManager.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 242 | · a city with money moving in every sector |
-| 285 | · the FIRST read, which is the hard one |
-| 358 | · read it, and read it again |
-| 385 | · and the specific one item 7 was about |
-| 453 | · the tax the city takes is the tax it shows |
-| 470 | · a rate change reaches the treasury at once |
+| 280 | · a city with money moving in every sector |
+| 323 | · the FIRST read, which is the hard one |
+| 396 | · read it, and read it again |
+| 423 | · and the specific one item 7 was about |
+| 491 | · the tax the city takes is the tax it shows |
+| 508 | · a rate change reaches the treasury at once |
 
 ## Fields (state)
 
@@ -61,10 +61,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 462 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
+| 45 | 500 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
 | 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 56 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 71 | 162 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
-| 234 | 264 | `public static void main(String[] args) throws Exception` |  |
-| 499 | 7 | `static void cleanUp(Path root)` |  |
+| 71 | 200 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
+| 272 | 264 | `public static void main(String[] args) throws Exception` |  |
+| 537 | 7 | `static void cleanUp(Path root)` |  |
 

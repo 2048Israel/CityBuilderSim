@@ -281,9 +281,73 @@ public class HouseholdBalance {
 
        The households are not hoarding because they are misers. They are
        hoarding because there is nothing to buy. That is a supply question and
-       it is the next one - see , which
-       asked half of it before any of this was measured.
+       it is the next one - see the design note
+       claude/the-savings-that-cannot-be-spent.md, which asked half of it
+       before any of this was measured.
        ===================================================================== */
+
+    /* =====================================================================
+       AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3)
+
+       Jerus's design for the central bank, the-central-bank.md section 9:
+       "for the rate to bite at home, a household's saving must answer the
+       real return" - so a hike moves consumption and not only credit.
+
+       WHY. Until this the only household decision that read a rate was where
+       to keep the money: at home or abroad, and since 0.7.1 whether to take
+       the city's paper. A hike moved credit and, since 0.7.2, the currency;
+       it did not move a dollar of what anybody spent. MonetaryCheck section
+       6 measured it - one founding held at 3, 10, 20 and 40%, inflation
+       +0.02, +0.01, -0.38 and -0.98% a year: about a point across the whole
+       range, all of it through the currency.
+
+       WHAT MOVES IS THE DISCRETIONARY PART, AND ONLY THAT. Subsistence is a
+       basket a head, and nobody eats less of it because the bank pays more.
+       Everything above it - the propensity's share of what is left after the
+       bills, the wealth term, and the surplus the luxury counter and the
+       table spend out of - is multiplied by one factor,
+
+           spendFactor = 1 - SAVING_RESPONSE x the real deposit rate,
+
+       held between SPEND_FLOOR and SPEND_CEILING. What is not spent is
+       banked by settle(), which is what saving is.
+
+       WHY THE DEPOSIT RATE AND NOT THE CURVE. The marginal saver's return is
+       what the bank pays on savings: it is paid on every balance, every
+       month, and it is the rate on the money a household is deciding whether
+       to spend. The city's paper is taken at issue only, by the households
+       that take it, and the world's rate is reached through investAbroad()'s
+       own choice, which answers to it already. One rate, one dial.
+
+       REAL, on the same year-on-year inflation the parity and the real rate
+       differential read: Game.realDepositRate(), one definition for the
+       month and for the monetary page. Struck once a month by Game before
+       the households plan and handed in (setSpendFactor()). Nothing is
+       saved - the load path derives it again from the deposit rate and the
+       price index a save restores - and a caller that hands nothing plans at
+       1, which is the model as it was.
+       ===================================================================== */
+
+    /** How hard a household's spending above subsistence answers the real deposit rate: at 1.0 ten points of real return cut it by a tenth and ten points of negative real return raise it by a tenth (provisional - Jerus's number to settle). */
+    public static final double SAVING_RESPONSE = 1.0;
+
+    /** The least share of its spending above subsistence a household keeps however well saving pays: half - no real return makes a household spend nothing above a basket a head. */
+    public static final double SPEND_FLOOR = .5;
+
+    /** The most it spends however badly saving pays: half as much again - no negative real return makes a household spend without limit. */
+    public static final double SPEND_CEILING = 1.5;
+
+    /**
+     * The share of its spending above subsistence a household keeps at this
+     * real deposit rate (annual, a fraction): 1 at zero, less when saving
+     * pays, more when it costs, between SPEND_FLOOR and SPEND_CEILING. A
+     * rate that is not a number is no return at all.
+     */
+    public static double spendFactor(double realDepositRate) {
+        if (!Double.isFinite(realDepositRate)) return 1;
+        return Math.max(SPEND_FLOOR, Math.min(SPEND_CEILING,
+                1 - SAVING_RESPONSE * realDepositRate));
+    }
 
     /**
      * A month's savings a founding city's households already have.
@@ -800,7 +864,7 @@ public class HouseholdBalance {
         plannedSpend = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.households < .5) {
+            if (c.isEmpty()) {
                 // Too few to strike - the position stands, carried for the
                 // month the cell fills, and the working is blank.
                 c.clearWorking();
@@ -832,7 +896,7 @@ public class HouseholdBalance {
             lastWrittenOff += c.discharge();
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
 
-            plannedSpend += c.plan(localPerUsd) * c.households;
+            plannedSpend += c.plan(localPerUsd, paperRatio, spendFactor) * c.households;
 
             /*
              * AND WHETHER IT CAN AFFORD THE CLINIC (2026-09-19), asked last,
@@ -857,12 +921,20 @@ public class HouseholdBalance {
          * above. Clearing it at the top would hand every household a zero.
          *
          * AND THE LOAD PATH MUST REPRODUCE THE SAME PLAN. The restrike loop in
-         * planFromLoad() re-plans without coming through here, so anything
+         * planOnly() re-plans without coming through here, so anything
          * plan() reads has to be a SAVED stock that a reload restores
          * unchanged - which is why investmentIncome is saved and why nothing
          * clears it except this line. A field cleared inside plan() would give
          * one answer live and another on reload, and LongPlaytest compares
          * those two every single month.
+         *
+         * (One input breaks the rule since 0.7.3: the spend factor, which is
+         * not saved. The load path strikes it on the deposit rate and the
+         * index the save restored - the month's closing figures, the ones the
+         * NEXT month's plan is struck at - so a reloaded plan is not the saved
+         * month's to the bit. The design note, the-demand-channel.md section
+         * 4, reads it as harmless because the retail capacity is carried; it
+         * is on the list.)
          */
         for (Household c : cells) c.investmentIncome = 0;
     }
@@ -983,16 +1055,13 @@ public class HouseholdBalance {
     }
 
     /**
-     * Moves every stock with the people, then sets every cell's count.
+     * Every stock a household carries, in the order followThePeople() moves
+     * them and foldEmptyCells() folds them. Adding a stock is adding it here.
      *
-     * Savings, debt, and the shares in each company - the same pool, the same
-     * weights, one at a time. Adding a stock is adding it to the list below;
-     * the arithmetic does not know what it is moving.
-     *
-     * @param fresh  households in each cell now
-     * @param buffer what a newly arrived household of each cell brings, in savings
+     * @param named where to write the two positions the census names - the
+     *              student loan's at [0] and the city's paper's at [1] - or null
      */
-    private void followThePeople(double[] fresh, double[] buffer) {
+    private java.util.List<Stock> stocks(int[] named) {
         java.util.List<Stock> stocks = new java.util.ArrayList<>();
         stocks.add(new Stock() {
             public double get(Household c) { return c.savings; }
@@ -1017,11 +1086,11 @@ public class HouseholdBalance {
         // the city with one who leaves, which the treasury writes off.
         //
         // ITS POSITION IN THE LIST IS NOW NAMED. It used to be "the last one",
-        // read off stocks.size() - 1 inside the loop below, which was true for
+        // read off stocks.size() - 1 inside followThePeople()'s loop, true for
         // exactly as long as it was last. The car that follows it would have
         // silently taken the graduates' census and moved the loans on the
         // plain one - nobody's loan wrong by much, everybody's loan wrong.
-        final int loanSlot = stocks.size();
+        if (named != null) named[0] = stocks.size();
         stocks.add(new Stock() {
             public double get(Household c) { return c.studentDebt; }
             public void set(Household c, double v) { c.studentDebt = v; }
@@ -1031,7 +1100,7 @@ public class HouseholdBalance {
          * reason it is a household stock rather than a city-wide count. A
          * couple who move in together have two cars between them and then one
          * household; five flatmates who split have a car each. Nobody had to
-         * write that down - the pool below does not know what it is moving,
+         * write that down - the pool does not know what it is moving,
          * which is what the note at the top of this section promised the day
          * the shares were added.
          */
@@ -1039,6 +1108,30 @@ public class HouseholdBalance {
             public double get(Household c) { return c.cars; }
             public void set(Household c, double v) { c.cars = v; }
         });
+        // ...and the city's paper (0.7.1), named like the loans, not "the last one".
+        if (named != null) named[1] = stocks.size();
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.paper; }
+            public void set(Household c, double v) { c.paper = v; }
+        });
+        return stocks;
+    }
+
+    /**
+     * Moves every stock with the people, then sets every cell's count.
+     *
+     * Savings, debt, and the shares in each company - the same pool, the same
+     * weights, one at a time. Adding a stock is adding it to stocks();
+     * the arithmetic does not know what it is moving.
+     *
+     * @param fresh  households in each cell now
+     * @param buffer what a newly arrived household of each cell brings, in savings
+     */
+    private void followThePeople(double[] fresh, double[] buffer) {
+        int[] named = new int[2];
+        java.util.List<Stock> stocks = stocks(named);
+        final int loanSlot = named[0];
+        final int paperSlot = named[1];
 
         int n = cells.length;
         double[] before = new double[n];
@@ -1064,6 +1157,22 @@ public class HouseholdBalance {
         // off and not sold: a car that left is simply not here any more, which
         // is why nothing but the road reads this.
         lastCarsTakenAway = left[4 + Equity.COMPANIES.length];
+        /*
+         * ...AND THE CITY'S PAPER IS SOLD ON THE WAY OUT (0.7.1). The shares a
+         * leaver held are held abroad from then on, as far as the register is
+         * concerned; the city's paper is not - it is on the city's own books,
+         * split by holder, and a fourth holder "somewhere else" would be paid
+         * coupons nobody could see. So a household that leaves sells what it
+         * held to the bank's desk at the month's value first, and the cash
+         * leaves with its savings. Without a desk (a bare fixture) it simply
+         * goes, which a bare fixture's paper - none - never notices.
+         */
+        double paperGone = left[paperSlot];
+        if (paperGone > 0 && paperDesk != null) {
+            double cash = paperGone * paperRatio;
+            paperDesk.buy(paperGone, cash);
+            lastTakenAway += cash;
+        }
 
         for (int i = 0; i < n; i++) {
             // A cell that lost households keeps its average: the ones who
@@ -1071,7 +1180,118 @@ public class HouseholdBalance {
             cells[i].households = fresh[i];
             if (fresh[i] <= 0) cells[i].clearAll();
         }
+        // ...and a cell the census left under half a household is emptied
+        // into the rest. See A CELL UNDER HALF A HOUSEHOLD IS EMPTY, below.
+        foldEmptyCells(stocks);
     }
+
+    /* =====================================================================
+       A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2)
+
+       The census hands every cell a count, and a count is a real number: a
+       shape that has all but gone from a tier comes back as 1e-13 of a
+       household, or 1e-16, and whether it lands there or on exactly nothing
+       is floating-point noise. The month already treated such a cell as too
+       few to strike (the clear at a half), but the payments did not: the
+       deposit interest, the theft's proceeds, the tender and the dividends
+       all asked "households > 0", so a cell of 1e-15 households was paid -
+       and creditByWeight() paid it a whole cell's share, divided by that
+       count. On the pristine 0.7.1 tree, after a reform, such cells held
+       savings from month 127 on. Which cell is a ghost differs between two
+       runs of one city at the fifteenth decimal, so a reformed city and its
+       twin parted company on it (DenominationCheck, month 166, 2026-09-22).
+       Households are outside the audit, and nothing else could see it.
+
+       So one threshold, EMPTY_CELL, and one test, Household.isEmpty(), at
+       every site that writes a count or pays a cell. A cell that falls under
+       it is emptied where the count is written, and what it held - savings,
+       debt, shares, dollars abroad, student loans, cars, the city's paper -
+       is folded into the cells that are not empty, so the household ledger
+       conserves. WHERE IT GOES is where the census pool sends a leaver's
+       money: its own stock group first (Household.stockGroup() - the row, the
+       out of work with the unskilled), then the city; within either, pro rata
+       to what each cell already holds of it, and by households where nobody
+       does. The group comes first because the city-wide pro rata alone
+       would be regressive: an unskilled cell's last savings would go mostly to
+       the professionals, who hold most of the savings, every month a small
+       cell dipped under the line. Nothing is carried for the cell: the month it
+       fills again it fills from the pool, like any other cell that grows. Its
+       count stands - the census's, not ours to round.
+       ===================================================================== */
+
+    /** Fewer households than this in a cell and it is empty: it holds nothing and is paid nothing. */
+    public static final double EMPTY_CELL = .5;
+
+    /** Cells the census left under EMPTY_CELL this month that still held something, and were emptied. */
+    private int lastCellsFolded;
+
+    /**
+     * Empties every cell under EMPTY_CELL into the cells that are not. See
+     * the banner above; for the load path and the harnesses.
+     *
+     * @return how many cells held something to fold
+     */
+    int foldEmptyCells() { return foldEmptyCells(stocks(null)); }
+
+    private int foldEmptyCells(java.util.List<Stock> stocks) {
+        lastCellsFolded = 0;
+        boolean anyLive = false;
+        for (Household d : cells) if (!d.isEmpty()) { anyLive = true; break; }
+        if (!anyLive) return 0;             // nobody left to hold it: it stays where it is
+        for (Household c : cells) {
+            if (!c.isEmpty()) continue;
+            boolean held = false;
+            for (Stock s : stocks) {
+                double amount = s.get(c) * c.households;
+                s.set(c, 0);
+                if (amount == 0) continue;
+                held = true;
+                if (!spread(s, amount, c.stockGroup())) spread(s, amount, -1);
+            }
+            if (held) lastCellsFolded++;
+        }
+        return lastCellsFolded;
+    }
+
+    /**
+     * One stock's amount onto the cells that are not empty, in one stock
+     * group (or the whole city, for -1): pro rata to what each holds of it,
+     * or by households when none holds any.
+     *
+     * @return false when the group has no cell that is not empty, and nothing moved
+     */
+    private boolean spread(Stock s, double amount, int group) {
+        double base = 0, live = 0;
+        for (Household d : cells) {
+            if (d.isEmpty() || (group >= 0 && d.stockGroup() != group)) continue;
+            live += d.households;
+            if (s.get(d) > 0) base += s.get(d) * d.households;
+        }
+        if (!(live > 0)) return false;
+        if (base > 0) {
+            double scale = 1 + amount / base;
+            for (Household d : cells) {
+                if (d.isEmpty() || (group >= 0 && d.stockGroup() != group)) continue;
+                if (s.get(d) > 0) s.set(d, s.get(d) * scale);
+            }
+        } else {
+            double each = amount / live;
+            for (Household d : cells) {
+                if (d.isEmpty() || (group >= 0 && d.stockGroup() != group)) continue;
+                s.set(d, s.get(d) + each);
+            }
+        }
+        return true;
+    }
+
+    /** True when the cell holds any stock at all, which an empty cell must not. For the harnesses. */
+    boolean holdsAnything(Household c) {
+        for (Stock s : stocks(null)) if (s.get(c) != 0) return true;
+        return false;
+    }
+
+    /** Cells emptied this month that still held something when the census left them under EMPTY_CELL. */
+    public int getCellsFolded() { return lastCellsFolded; }
 
     /**
      * The graduates' student loans, handed to the working families before the
@@ -1097,14 +1317,14 @@ public class HouseholdBalance {
 
         double weight = 0;
         for (Household c : cells) {
-            if (c instanceof WorkingHousehold && c.households > 0) weight += c.households * c.grownUps();
+            if (c instanceof WorkingHousehold && !c.isEmpty()) weight += c.households * c.grownUps();
         }
         if (weight <= 0) return out;            // nobody working to carry it: it stays with the students
 
         double graduates = Math.min(leaving, s.households);
         double carried = s.studentDebt * graduates;
         for (Household c : cells) {
-            if (c instanceof WorkingHousehold && c.households > 0) {
+            if (c instanceof WorkingHousehold && !c.isEmpty()) {
                 c.studentDebt += carried * c.grownUps() / weight;
             }
         }
@@ -1596,7 +1816,7 @@ public class HouseholdBalance {
          * bars it: a family that cannot buy its groceries this month is not
          * signing a finance agreement this month either.
          */
-        if (c.households < .5 || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (c.isEmpty() || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
         /*
@@ -1757,7 +1977,7 @@ public class HouseholdBalance {
      */
     private double offerOf(int i, double floorPrice) {
         Household c = cells[i];
-        if (c.households < .5 || !(c.cars > 0) || !(floorPrice > 0)) return 0;
+        if (c.isEmpty() || !(c.cars > 0) || !(floorPrice > 0)) return 0;
         double gap = c.subsistence - Math.max(0, c.afterFixed);
         if (gap <= 0) return 0;
         double need = CAR_SALE_HORIZON_MONTHS * gap
@@ -1819,7 +2039,7 @@ public class HouseholdBalance {
      * which is the whole reason this good is here.
      */
     private double luxuryBudgetOf(Household c) {
-        if (c.households < .5 || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (c.isEmpty() || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
         if (!(c.luxuryWant > 0)) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
@@ -1926,7 +2146,7 @@ public class HouseholdBalance {
      * is measured elsewhere.
      */
     private double mealBudgetOf(Household c) {
-        if (c.households < .5 || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (c.isEmpty() || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
         if (!(c.mealWant > 0)) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
@@ -2162,8 +2382,25 @@ public class HouseholdBalance {
         this.exchange = exchange;
         this.register = register;
         this.bank = bank;
-        this.liquidity = exchange == null || register == null || bank == null ? null
-                : (cell, needPer) -> exchange.sellForHousehold(register, bank, cell, needPer);
+        rebuildLiquidity();
+    }
+
+    /**
+     * The waterfall's two sales, in one object: the city's paper to the bank's
+     * desk first (0.7.1), then shares on the exchange. Null with neither, in
+     * which case the waterfall goes from savings to credit as it always did.
+     */
+    private void rebuildLiquidity() {
+        boolean shares = exchange != null && register != null && bank != null;
+        if (!shares && paperDesk == null) { liquidity = null; return; }
+        liquidity = new Household.Liquidity() {
+            @Override public double sell(Household cell, double needPer) {
+                return shares ? exchange.sellForHousehold(register, bank, cell, needPer) : 0;
+            }
+            @Override public double sellPaper(Household cell, double needPer) {
+                return sellPaperToDesk(cell, needPer);
+            }
+        };
     }
 
     /**
@@ -2182,7 +2419,7 @@ public class HouseholdBalance {
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.isEmpty() || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
             double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             if (excess <= 0) continue;
             want[i] = excess * fraction * c.households;
@@ -2220,7 +2457,7 @@ public class HouseholdBalance {
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.isEmpty() || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
             double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             if (excess <= 0) continue;
             left[i] = excess * fraction * c.households;
@@ -2258,7 +2495,7 @@ public class HouseholdBalance {
     public double sharesWanted(double fraction) {
         double total = 0;
         for (Household c : cells) {
-            if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.isEmpty() || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
             double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             if (excess > 0) total += excess * fraction * c.households;
         }
@@ -2275,7 +2512,7 @@ public class HouseholdBalance {
         if (!(fraction > 0) || !(price > 0)) return 0;
         double paid = 0;
         for (Household c : cells) {
-            if (c.households <= 0 || c.shares[company] <= 0) continue;
+            if (c.isEmpty() || c.shares[company] <= 0) continue;
             double sell = c.shares[company] * Math.min(1, fraction);
             // The same clamp as its sibling in Exchange, and for the same
             // reason: a holding is a position and cannot be negative.
@@ -2387,7 +2624,7 @@ public class HouseholdBalance {
         double spread = Math.max(0, worldRate - Math.max(0, depositRate));
         double targetShare = Math.min(OutwardInvestment.MAX_SHARE, spread * OutwardInvestment.APPETITE);
         for (Household c : cells) {
-            if (c.households < .5) continue;
+            if (c.isEmpty()) continue;
 
             /* =============================================================
                THE COUPON IS PAID HOME, NOT ROLLED (2026-09-17)
@@ -2486,6 +2723,247 @@ public class HouseholdBalance {
     /** Dollars that left with the households that left this month. */
     public double getAbroadTakenAway() { return lastAbroadTakenAway; }
 
+    /* =====================================================================
+       THE CITY'S PAPER, AT HOME (0.7.1)
+
+       Jerus, on who holds the city's bonds: "yes households should be able to
+       hold." The fourth thing a household keeps its money in, beside the
+       bank balance, the shares and the dollars abroad - and the one that
+       makes the city's borrowing a bond market rather than a loan from its
+       own bank.
+
+       AT ISSUE. The treasury sells between two presses and the paper settles
+       at the next month; the households take their share there, before the
+       bank pays (Game, THE HOUSEHOLDS TAKE THEIR SHARE). How much: a share of
+       the issue rising with the spread between the paper's yield and what the
+       bank pays savers - the shape investAbroad() gives the world's paper,
+       with its own two dials below - and only what each cell's savings past
+       the cushion can pay, pro rata. The COMMERCIAL BANK IS THE RESIDUAL
+       BUYER, at the quoted yield, as it always was.
+
+       ON THE WAY BACK. The bank's desk buys it back at the month's market
+       value - one ratio, the households' book at the curve over its face
+       (setPaperRatio()), plain, no half-spread: the desk earns or loses the
+       difference against what its book carries the paper at, which is its
+       spread. Three callers: the waterfall, where a household short of money
+       sells its paper BEFORE its shares (paper is the nearer thing to cash);
+       the portfolio choice, where a spread that has gone - the paper yielding
+       no more than the bank pays - sends it home at OutwardInvestment's
+       HOME_SPEED, the pace the dollars come home at; and a household leaving
+       the city, which sells on the way out rather than carrying the city's
+       paper off to wherever it went.
+
+       THE SUM OF EVERY CELL'S PAPER IS DebtManager.householdPrincipal(),
+       exactly: every one of these moves the cells and the paper by the same
+       face, and HoldersCheck and LongPlaytest assert it.
+       ===================================================================== */
+
+    /** The share of an issue the households take, per unit of spread between its yield and the deposit rate: 20 - a fifth of an issue for each point - so two and a half points of spread would take half an issue. */
+    public static final double HOUSEHOLD_PAPER_APPETITE = 20;
+
+    /** ...and never more than this share of one issue: half, because a bond market with no bank in it is no longer the city's bank's market. */
+    public static final double MAX_HOUSEHOLD_PAPER_SHARE = .5;
+
+    /**
+     * Where the households' paper is sold, for what, and what it does to the
+     * paper on the other side. Game's desk books the bank's end and takes the
+     * face off every piece of paper's household share pro rata.
+     */
+    public interface PaperDesk {
+        /** The desk buys this much face of the households' paper for this much cash. */
+        void buy(double face, double cash);
+    }
+
+    private PaperDesk paperDesk;
+
+    public void setPaperDesk(PaperDesk desk) {
+        this.paperDesk = desk;
+        rebuildLiquidity();
+    }
+
+    /**
+     * What a dollar of face of the households' paper is worth this month: the
+     * households' book at the curve over its face (DebtManager
+     * .householdBookRatio()), struck once a month by Game before the
+     * households' strike and SAVED, because the plan reads it and the load
+     * path must re-strike the plan the live path struck. 1 - at face - with
+     * nothing held and on an old save.
+     */
+    private double paperRatio = 1;
+
+    public void setPaperRatio(double ratio) {
+        paperRatio = Double.isFinite(ratio) && ratio > 0 ? ratio : 1;
+    }
+
+    public double getPaperRatio() { return paperRatio; }
+
+    /**
+     * The month's spend factor (0.7.3): what share of its spending above
+     * subsistence every household plans, struck by Game once a month on the
+     * real deposit rate (Game.spendFactor()) before the households plan -
+     * see the banner AND WHAT IT SPENDS ANSWERS THE REAL RATE. NOT saved:
+     * the load path strikes it again from the deposit rate and the price
+     * index the save restores. 1 - the plan as it was - for a caller that
+     * hands nothing.
+     */
+    private double spendFactor = 1;
+
+    public void setSpendFactor(double factor) {
+        spendFactor = Double.isFinite(factor) && factor > 0 ? factor : 1;
+    }
+
+    /** The factor the last plan was struck at. */
+    public double getSpendFactor() { return spendFactor; }
+
+    /** Every cell's paper, at face - DebtManager.householdPrincipal() from the other side. */
+    public double totalPaper() { return sum(Household::totalPaper); }
+
+    /** ...at this month's market value. The neighbour of marketValueOfShares() and totalAbroadValue(). */
+    public double marketValueOfPaper() { return totalPaper() * paperRatio; }
+
+    /** Sold to the desk this month, all households, in cash. */
+    public double totalPaperSold() {
+        double total = 0;
+        for (Household c : cells) total += c.paperSold * c.households;
+        return total;
+    }
+
+    /** Coupons and principal the city paid the households on their paper this month. */
+    public double totalPaperIncome() {
+        double total = 0;
+        for (Household c : cells) total += c.paperIncome * c.households;
+        return total;
+    }
+
+    private static boolean mayBuyPaper(Household c) {
+        return !c.isEmpty() && c.canInvest() && c.debt <= 0 && c.lockout <= 0 && !c.isGoingShort();
+    }
+
+    private double spareFor(Household c) {
+        return Math.max(0, c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
+    }
+
+    /** The share of an issue yielding this much the households would take, before asking whether they can pay. */
+    public static double paperShareAt(double yield, double depositRate) {
+        double spread = Math.max(0, yield - Math.max(0, depositRate));
+        return Math.min(MAX_HOUSEHOLD_PAPER_SHARE, spread * HOUSEHOLD_PAPER_APPETITE);
+    }
+
+    /** What every eligible household could put into paper: savings past the cushion, in total. */
+    public double spareForPaper() {
+        double total = 0;
+        for (Household c : cells) if (mayBuyPaper(c)) total += spareFor(c) * c.households;
+        return total;
+    }
+
+    /**
+     * The households buy at issue: this much cash in total, from each eligible
+     * cell pro rata to what is past its cushion, for this much face per dollar.
+     *
+     * @return the cash paid, which is what the bank does not have to pay
+     */
+    public double buyAtIssue(double cash, double facePerCash) {
+        if (!(cash > 0) || !(facePerCash > 0)) return 0;
+        double spare = spareForPaper();
+        if (spare <= 0) return 0;
+        double take = Math.min(cash, spare);
+        double paid = 0;
+        for (Household c : cells) {
+            if (!mayBuyPaper(c)) continue;
+            double share = spareFor(c) * c.households;
+            if (share <= 0) continue;
+            double each = take * share / spare / c.households;
+            c.savings -= each;
+            c.paper += each * facePerCash;
+            paid += each * c.households;
+        }
+        return paid;
+    }
+
+    /** Pro rata to the paper held: what a dollar of face in the households' book is spread as, cell by cell. */
+    private double paperWeight(Household c, double total) {
+        return total > 0 && !c.isEmpty() ? c.paper * c.households / total : 0;
+    }
+
+    /** A coupon on the households' share, into savings and the month's investment income, pro rata to the paper. Untaxed, as the foreign coupon is. */
+    public void creditPaperCoupon(double total) {
+        if (!(total > 0)) return;
+        double held = totalPaper();
+        if (held <= 0) return;
+        for (Household c : cells) {
+            double w = paperWeight(c, held);
+            if (w <= 0) continue;
+            double each = total * w / c.households;
+            c.savings += each;
+            c.investmentIncome += each;
+            c.paperIncome += each;
+        }
+    }
+
+    /** Principal on their share, into savings with the paper down by the same, pro rata. */
+    public void creditPaperPrincipal(double face) {
+        if (!(face > 0)) return;
+        double held = totalPaper();
+        if (held <= 0) return;
+        for (Household c : cells) {
+            double w = paperWeight(c, held);
+            if (w <= 0) continue;
+            double each = face * w / c.households;
+            c.paper = Math.max(0, c.paper - each);
+            c.savings += each;
+            c.paperIncome += each;
+        }
+    }
+
+    /** A bond bought back: this much of their face off the paper, this much of the price into savings, pro rata. */
+    public void creditPaperBuyback(double face, double price) {
+        double held = totalPaper();
+        if (held <= 0 || !(face > 0)) return;
+        for (Household c : cells) {
+            double w = paperWeight(c, held);
+            if (w <= 0) continue;
+            c.paper = Math.max(0, c.paper - face * w / c.households);
+            c.savings += Math.max(0, price) * w / c.households;
+        }
+    }
+
+    /** One cell sells to the desk for up to needPer a household. @return cash raised, per household */
+    private double sellPaperToDesk(Household c, double needPer) {
+        if (paperDesk == null || !(needPer > 0) || c.paper <= 0 || c.isEmpty()) return 0;
+        double cashPer = Math.min(needPer, c.paper * paperRatio);
+        double facePer = Math.min(c.paper, cashPer / paperRatio);
+        cashPer = facePer * paperRatio;
+        c.paper -= facePer;
+        paperDesk.buy(facePer * c.households, cashPer * c.households);
+        return cashPer;
+    }
+
+    /**
+     * THE SPREAD HAS GONE: when the households' paper yields no more than the
+     * bank pays savers, the target for it is nothing, and they sell a little a
+     * month - HOME_SPEED of it, the pace the dollars abroad come home at -
+     * into savings. A prisoner's money stays where it is. While the spread
+     * lasts they hold what they bought; they buy only at issue.
+     *
+     * @return cash raised
+     */
+    public double sellPaperForSpread(double bookYield, double depositRate) {
+        if (paperDesk == null || bookYield > Math.max(0, depositRate)) return 0;
+        double raised = 0;
+        for (Household c : cells) {
+            if (c.isEmpty() || !c.canInvest() || c.paper <= 0) continue;
+            double facePer = c.paper * OutwardInvestment.HOME_SPEED;
+            if (facePer * paperRatio < minMove) continue;
+            double cashPer = facePer * paperRatio;
+            c.paper -= facePer;
+            c.savings += cashPer;
+            c.paperSold += cashPer;
+            paperDesk.buy(facePer * c.households, cashPer * c.households);
+            raised += cashPer * c.households;
+        }
+        return raised;
+    }
+
     /* ------------------------ the people outside the families ------------------------ */
 
     /** Out-of-work households that lost their home this month. Unemployment moves them. */
@@ -2559,7 +3037,7 @@ public class HouseholdBalance {
     public int getLockout(int row) {
         int longest = 0;
         for (Household c : cells) {
-            if (c.row() == row && c.households >= .5) longest = Math.max(longest, c.lockout);
+            if (c.row() == row && !c.isEmpty()) longest = Math.max(longest, c.lockout);
         }
         return longest;
     }
@@ -2597,16 +3075,21 @@ public class HouseholdBalance {
         double[] disposablePer = splitIncome(fresh, rowDisposable);
         double[] feesPer = splitByPeople(fresh, rowFees);
 
+        // Every count first, then the fold, then the plan - the month's own
+        // order (followThePeople() before the strike). On a city saved by this
+        // build the fold finds nothing; on an older save it empties the ghosts.
+        for (int i = 0; i < cells.length; i++) cells[i].households = fresh[i];
+        foldEmptyCells();
+
         plannedSpend = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            c.households = fresh[i];
-            if (c.households < .5) { c.clearWorking(); continue; }
+            if (c.isEmpty()) { c.clearWorking(); continue; }
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
             c.studentLoanRate = studentLoanRate;
             c.restrike(disposablePer[i], rentPerHousehold * c.rentShare, feesPer[i],
                     foodPricePerHead, riskFreeAnnual);
-            plannedSpend += c.plan(localPerUsd) * c.households;
+            plannedSpend += c.plan(localPerUsd, paperRatio, spendFactor) * c.households;
         }
     }
 
@@ -2675,7 +3158,7 @@ public class HouseholdBalance {
         double base = totalSavings();
         if (base <= 0) return;
         for (Household c : cells) {
-            if (c.savings <= 0 || c.households <= 0) continue;
+            if (c.savings <= 0 || c.isEmpty()) continue;
             double share = c.totalSavings() / base;
             c.savings += total * share / c.households;
         }
@@ -2705,14 +3188,14 @@ public class HouseholdBalance {
         if (!(total > 0)) return 0;
         double base = 0;
         for (Household c : cells) {
-            if (!c.canInvest() || c.households <= 0 || c.savings <= 0) continue;
+            if (!c.canInvest() || c.isEmpty() || c.savings <= 0) continue;
             base += c.savings * c.households;
         }
         if (base <= 0) return 0;
         double taken = Math.min(total, base);
         double share = taken / base;
         for (Household c : cells) {
-            if (!c.canInvest() || c.households <= 0 || c.savings <= 0) continue;
+            if (!c.canInvest() || c.isEmpty() || c.savings <= 0) continue;
             c.savings -= c.savings * share;
         }
         return taken;
@@ -2728,12 +3211,12 @@ public class HouseholdBalance {
         if (!(total > 0) || weight == null || weight.length != cells.length) return 0;
         double sum = 0;
         for (int i = 0; i < cells.length; i++) {
-            if (cells[i].households > 0 && weight[i] > 0) sum += weight[i];
+            if (!cells[i].isEmpty() && weight[i] > 0) sum += weight[i];
         }
         if (sum <= 0) return 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.households <= 0 || !(weight[i] > 0)) continue;
+            if (c.isEmpty() || !(weight[i] > 0)) continue;
             c.savings += total * weight[i] / sum / c.households;
         }
         return total;
@@ -2781,7 +3264,7 @@ public class HouseholdBalance {
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.households < .5 || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.isEmpty() || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double excess = c.savings - cushion;
             if (excess <= 0) continue;
@@ -2816,10 +3299,10 @@ public class HouseholdBalance {
     public void grantFounders(int company, double shares) {
         if (!(shares > 0)) return;
         double weight = 0;
-        for (Household c : cells) if (c.households >= .5) weight += c.households * c.grownUps();
+        for (Household c : cells) if (!c.isEmpty()) weight += c.households * c.grownUps();
         if (weight <= 0) return;
         for (Household c : cells) {
-            if (c.households < .5) continue;
+            if (c.isEmpty()) continue;
             c.shares[company] += shares * c.grownUps() / weight;
         }
     }
@@ -2833,7 +3316,7 @@ public class HouseholdBalance {
         if (!(perShare > 0)) return 0;
         double paid = 0;
         for (Household c : cells) {
-            if (c.households <= 0 || c.shares[company] <= 0) continue;
+            if (c.isEmpty() || c.shares[company] <= 0) continue;
             double each = c.shares[company] * perShare;
             c.savings += each;
             c.dividends += each;
@@ -2997,8 +3480,17 @@ public class HouseholdBalance {
      */
     public static final int CELL_SLOTS_BEFORE_CARE = CELL_SLOTS_BEFORE_MEALS + 1;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, the share who paid for care. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_CARE + 1;
+    /**
+     * ...and the city's paper, appended 2026-09-22 (0.7.1).
+     *
+     * A save from before the households could hold the city's paper has
+     * households that hold none, which is exactly true of that city: the
+     * reader checks the width and reads 0, so SAVE_FORMAT does not move.
+     */
+    public static final int CELL_SLOTS_BEFORE_PAPER = CELL_SLOTS_BEFORE_CARE + 1;
+
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, the share who paid for care, the city's paper. */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_PAPER + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public String[] cellKeys() {
@@ -3027,6 +3519,7 @@ public class HouseholdBalance {
             out[i++] = c.investmentIncome;
             out[i++] = c.mealsEaten;
             out[i++] = c.carePaid;
+            out[i++] = c.paper;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -3079,11 +3572,13 @@ public class HouseholdBalance {
         final int wasBeforeIncome  = wasBeforeCars + 1;
         final int wasBeforeMeals   = wasBeforeIncome + 1;
         final int wasBeforeCare    = wasBeforeMeals + 1;
-        final int wasFull          = wasBeforeCare + 1;
+        final int wasBeforePaper   = wasBeforeCare + 1;
+        final int wasFull          = wasBeforePaper + 1;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != wasFull && slots != wasBeforeCare && slots != wasBeforeMeals
+                || (slots != wasFull && slots != wasBeforePaper
+                    && slots != wasBeforeCare && slots != wasBeforeMeals
                     && slots != wasBeforeIncome && slots != wasBeforeCars
                     && slots != wasBeforeStudent && slots != wasBeforeAbroad
                     && slots != wasBeforeShares)) {
@@ -3149,7 +3644,11 @@ public class HouseholdBalance {
             // ...and one from before the clinic had a price paid for all of
             // its care: 1, which is exactly what that city did.
             c.carePaid = 1;
-            if (slots >= wasFull) c.carePaid = Math.max(0, Math.min(1, saved[i++]));
+            if (slots >= wasBeforePaper) c.carePaid = Math.max(0, Math.min(1, saved[i++]));
+            // ...and one from before the city's paper could be held at home
+            // holds none of it: the bank held everything (0.7.1).
+            c.paper = 0;
+            if (slots >= wasFull) c.paper = Math.max(0, saved[i++]);
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];
@@ -3229,6 +3728,8 @@ public class HouseholdBalance {
         lastGraduated = 0;
         lastAbroadTakenAway = 0;
         lastDepositInterest = 0;
+        paperRatio = 1;
+        spendFactor = 1;
         lastDelivered = 1;
         lastCareSkipped = 0;
         careBillByRow = null;

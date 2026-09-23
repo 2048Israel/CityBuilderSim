@@ -866,13 +866,30 @@ public class EconomyManager {
      */
     private double studentLoanInterest;
 
+    /**
+     * THE CENTRAL BANK'S TWO BUDGET LINES (0.7.0), set by Game where the
+     * central bank settles with the treasury at the top of the month: the
+     * remittance in, the interest on the advances out. NOT in getTaxIncome()
+     * or getExpenses(), for the student-loan interest's reason: Game moves
+     * the cash for both there, and a line in both places would arrive twice.
+     */
+    private double centralBankRemittance, centralBankInterest;
+
+    public void setCentralBankLines(double remittance, double interest) {
+        this.centralBankRemittance = Math.max(0, remittance);
+        this.centralBankInterest = Math.max(0, interest);
+    }
+
+    public double getCentralBankRemittance() { return centralBankRemittance; }
+    public double getCentralBankInterest()   { return centralBankInterest; }
+
     /** Sets the month's student-loan interest, the treasury's. See Game.getStudentLoanInterest(). */
     public void setStudentLoanInterest(double interest) { this.studentLoanInterest = Math.max(0, interest); }
 
     /** What the graduates paid in interest on their student loans this month. */
     public double getStudentLoanInterest() { return studentLoanInterest; }
 
-    /** The month's EI bill and grant bill, set by Game off Unemployment and the students before the cash moves. */
+    /** The month's EI bill and grant bill as the treasury paid them: set by Game where it pays them, at the top of the month (payEiBenefits() since 0.7.3, payStudentGrants() since 0.7.1), and on the load path. */
     public void setOutsidePayments(double eiBenefits, double studentGrants) {
         this.eiBenefits = Math.max(0, eiBenefits);
         this.studentGrants = Math.max(0, studentGrants);
@@ -1109,6 +1126,7 @@ public class EconomyManager {
                 totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
+        nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
 
         GDP = nationalAccounts.getGdp();
     }
@@ -1133,6 +1151,7 @@ public class EconomyManager {
                 totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
+        nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
     }
 
     public double getLastFoodVolume() { return nationalAccounts.getLastFoodVolume(); }
@@ -1348,6 +1367,7 @@ public class EconomyManager {
         totalContributions *= scale;
         totalEiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
         totalHealthPremiums *= scale;  studentLoanInterest *= scale;
+        centralBankRemittance *= scale;  centralBankInterest *= scale;
         exchangeRate *= scale;
         pricePerWatt *= scale;
         pricePerWaterUnit *= scale;

@@ -1,6 +1,6 @@
 # Materials.java - 88 lines · 4 methods · 1 constants · sectors
 
-`ham/citybuildersim/sectors/Materials.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Materials.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The materials plant. THE SEVENTH SECTOR (2026-09-11, Jerus's call).
 > 

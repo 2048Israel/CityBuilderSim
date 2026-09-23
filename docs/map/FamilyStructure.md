@@ -1,6 +1,6 @@
 # FamilyStructure.java - 119 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/FamilyStructure.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FamilyStructure.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The shapes a household comes in.
 > 
@@ -22,7 +22,7 @@
 
 **Uses:** [AgeBand](AgeBand.md) (9)
 
-**Used by (26):** [BankCheck](BankCheck.md), [CarCheck](CarCheck.md), [Consumption](Consumption.md), [ConsumptionCheck](ConsumptionCheck.md), [CrimeCheck](CrimeCheck.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [FamilyModel](FamilyModel.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Household](Household.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HousingCheck](HousingCheck.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [RetiredHousehold](RetiredHousehold.md), [WorkingHousehold](WorkingHousehold.md)
+**Used by (27):** [BankCheck](BankCheck.md), [CarCheck](CarCheck.md), [Consumption](Consumption.md), [ConsumptionCheck](ConsumptionCheck.md), [CrimeCheck](CrimeCheck.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [FamilyModel](FamilyModel.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [HoldersCheck](HoldersCheck.md), [Household](Household.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HousingCheck](HousingCheck.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [RetiredHousehold](RetiredHousehold.md), [WorkingHousehold](WorkingHousehold.md)
 
 ## Sections
 

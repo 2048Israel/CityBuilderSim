@@ -40,7 +40,8 @@ import java.nio.file.Path;
  * value that moves with it, a revaluation that is not a flow, a reform that
  * cannot reach them, and an older save whose vault comes back at the rate it
  * was saved at. Section 13: does the vault defend the currency without
- * holding it down?
+ * holding it down - and can a screen show the push without rewriting the
+ * month's record of it?
  */
 public class ForeignCheck {
 
@@ -162,12 +163,25 @@ public class ForeignCheck {
          * bought and not one cent of fifteen years of trade. Had the founding
          * set the stock without a purchase, a city that never bought anything
          * would hold a billion abroad and this would be false in both forms.
+         *
+         * AND SINCE 0.7.2 THE CENTRAL BANK SPENDS IT, which is what it is for
+         * (ForeignAccounts, A DEFENCE THAT SPENDS): a month the currency is
+         * pushed weaker on a deficit, the vault's dollars are sold against it.
+         * This fixture's fifteen years spend most of the founders' billion -
+         * the measurement batch D was asked for, printed here - so the two
+         * lines were restated, not loosened: the vault is the founders'
+         * dollars less exactly what the defence sold, and the intervention
+         * record is the day-one purchase less exactly what those sales
+         * fetched. Still not one cent of fifteen years of trade in either.
          */
-        close("a city that never intervened holds its founders' dollars",
-                fx.getReservesUsd(), Game.FOUNDING_RESERVE_USD, 1e-9);
-        close("...which is exactly what the treasury bought, on day one",
+        CentralBank books = city.getCentralBank();
+        out.printf("   the defence sold US$%,.0fk of the founders' US$%,.0fk over the fifteen years%n",
+                fx.getDefenceUsdLifetime(), Game.FOUNDING_RESERVE_USD);
+        close("a city that never intervened holds its founders' dollars, less the defence's",
+                fx.getReservesUsd(), Game.FOUNDING_RESERVE_USD - fx.getDefenceUsdLifetime(), 1e-6);
+        close("...and its record is the day-one purchase, less what the defence fetched",
                 fx.getLifetimeIntervention(),
-                Game.FOUNDING_RESERVE_USD * ForeignAccounts.OPENING_RATE, 1e-9);
+                Game.FOUNDING_RESERVE_USD * ForeignAccounts.OPENING_RATE - books.vaultSpent(), 1e-6);
         assertTrue("...however much it has traded",
                 Math.abs(fx.getCumulativeBalance()) > 1);
         assertTrue("...so it has cover from the start, as they meant",
@@ -1031,6 +1045,16 @@ public class ForeignCheck {
      * cover's absorption; the same vault and a month that would strengthen
      * it, passed through in full; and the rate's support inside a weakening
      * month, which shortens the push before the vault damps what is left.
+     * Last, the trade page's preview: previewPressure() leaves the month's
+     * pressure and absorption as recorded, and previews exactly what
+     * effectivePressure() then applies.
+     *
+     * Since 0.7.2 the damping is what the central bank SELLS, as a share of
+     * the month's own deficit (ForeignAccounts, A DEFENCE THAT SPENDS). This
+     * fixture's months are in deficit and its vault is twelve months deep, so
+     * every sale is met in full and the realised absorption is the capacity -
+     * which is why these assertions hold unchanged. What a vault running
+     * short does is CurrencyCheck's section 3.
      */
     static void reserveDefends() {
 
@@ -1077,13 +1101,13 @@ public class ForeignCheck {
                 surplus.absorption(), ForeignAccounts.MAX_ABSORPTION, 1e-12);
 
         /*
-         * THE RATE'S SUPPORT INSIDE A WEAKENING MONTH. A policy rate half the
-         * trade term's worth over the world's: the total is still a push
-         * weaker, so the vault damps it - but only what is left after the
-         * rate has done its part.
+         * THE RATE'S SUPPORT INSIDE A WEAKENING MONTH. A real rate half the
+         * trade term's worth over the world's (the real differential since
+         * 0.7.2): the total is still a push weaker, so the vault damps it -
+         * but only what is left after the rate has done its part.
          */
         double tradeTerm = deficit.pressure();
-        deficit.setRateDifferential(tradeTerm / 2 / ForeignAccounts.RATE_PULL);
+        deficit.setRealRateDifferential(tradeTerm / 2 / ForeignAccounts.RATE_PULL);
         assertTrue("fixture: the support is half the trade term, unclipped",
                 Math.abs(deficit.ratePressure() + tradeTerm / 2) < 1e-12);
         double supported = deficit.effectivePressure();
@@ -1094,12 +1118,37 @@ public class ForeignCheck {
                         * deficit.getOpenness(), 1e-12);
 
         /* ...and support that outweighs the trade term is a push up: in full. */
-        deficit.setRateDifferential(tradeTerm * 2 / ForeignAccounts.RATE_PULL);
+        deficit.setRealRateDifferential(tradeTerm * 2 / ForeignAccounts.RATE_PULL);
         double overtaken = deficit.effectivePressure();
         assertTrue("fixture: support larger than the trade term turns the push",
                 deficit.getLastPressure() < 0);
         close("support outweighing the deficit reaches the rate in full",
                 overtaken, deficit.getLastPressure() * deficit.getOpenness(), 1e-12);
+
+        /*
+         * AND A SCREEN LOOKS WITHOUT RECORDING (2026-09-21). The trade page
+         * printed the push by calling effectivePressure(), which writes the
+         * month's two readings - so opening it after anything had moved the
+         * inputs rewrote the month's record. It calls previewPressure() now.
+         * CAUSED here: the month above recorded a push up with nothing
+         * absorbed; the dial then comes off, so the push the page would print
+         * is a push down that the vault damps - a different pressure AND a
+         * different absorption from the ones recorded.
+         */
+        double recordedPush = deficit.getLastPressure();
+        double recordedAbsorbed = deficit.getLastAbsorption();
+        deficit.setRealRateDifferential(0);
+        double previewed = deficit.previewPressure();
+        assertTrue("fixture: the page's push is not the one the month recorded",
+                Math.abs(deficit.pressure() + deficit.ratePressure() - recordedPush) > 1e-9
+                        && deficit.pressure() + deficit.ratePressure() > 0);
+        close("previewing the push leaves the month's pressure as recorded",
+                deficit.getLastPressure(), recordedPush, 0);
+        close("...and its absorption", deficit.getLastAbsorption(), recordedAbsorbed, 0);
+        close("...and previews exactly what the month will apply",
+                previewed, deficit.effectivePressure(), 0);
+        close("...which is the month's own call, and records what it applied",
+                deficit.getLastAbsorption(), ForeignAccounts.MAX_ABSORPTION, 1e-12);
     }
 
     /** A month whose only foreign flow is the treasury working its own vault. */

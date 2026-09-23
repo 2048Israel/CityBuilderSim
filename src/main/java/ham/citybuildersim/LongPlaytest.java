@@ -200,12 +200,58 @@ public class LongPlaytest {
 
     /** How far from parity, as a multiple of it, a weak currency has to be to count as far from it. */
     static final double FAR_FROM_PARITY = 2.0;
+
+    /*
+     * THE CURRENCY'S GUARD AND THE DIAL'S PATH, over the run (0.7.2). The
+     * months the rate sat at its guard (ForeignAccounts.MAX_RATE - a hundred
+     * until 0.7.3, a billion since: a numerical guard against a rate run to
+     * infinity, which no run is expected to reach - the count is kept as a
+     * measurement and should read zero) and every month's policy rate and
+     * inflation,
+     * for the dial's min / median / max and the months it spent past the old
+     * stop - the figures the uncapped dial is measured in. A path, not an
+     * endpoint: an autopilot that went to 67% for a decade and came home
+     * reads 3% at month 4,002.
+     */
+    static int monthsAtGuard = 0;
+    /** Every month's policy rate, for the dial's min, median and max over the run. */
+    static final java.util.List<Double> dialPath = new java.util.ArrayList<>();
+    /** Every month's inflation reading, once the index has a year to read, for its median. */
+    static final java.util.List<Double> inflationPath = new java.util.ArrayList<>();
+
+    /**
+     * Every month's spend factor (0.7.3): the share of their spending above
+     * subsistence the households planned at, on the month's real deposit
+     * rate - HouseholdBalance.getSpendFactor() after the month. How often the
+     * demand channel fires, and how hard: its min, median and max over the
+     * run, beside the dial's.
+     */
+    static final java.util.List<Double> spendPath = new java.util.ArrayList<>();
+    /** ...its lowest and highest, and the first month each was struck in. */
+    static double spendLow = Double.POSITIVE_INFINITY, spendHigh = Double.NEGATIVE_INFINITY;
+    static int spendLowMonth = 0, spendHighMonth = 0;
+    /** Months the bank's quoted deposit rate was its lending rate instead of its payout (Bank.isDepositRateCapped(), 0.7.3), and the first and last of them. */
+    static int depositCappedMonths = 0, depositCappedFirst = 0, depositCappedLast = 0;
+
+    /** The dial's stop before 0.7.2, for counting the months the uncapped dial spends past it. */
+    static final double OLD_DIAL_STOP = .25;
+
+    /** The median of a path, or zero for an empty one. */
+    static double median(java.util.List<Double> path) {
+        if (path.isEmpty()) return 0;
+        double[] sorted = path.stream().mapToDouble(Double::doubleValue).sorted().toArray();
+        int n = sorted.length;
+        return n % 2 == 1 ? sorted[n / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+    }
     static int worstCrimeMonth = 0;
     static double lastSickRate = 0;
     static double workLostToIllness = 0;
     static int monthsObserved = 0;
     static double totalDepartures = 0;
     static double totalArrivals = 0;
+
+    /** M0 at the last audit, so the next can say what it moved by. NaN until the first. */
+    static double lastM0 = Double.NaN;
 
     static void audit(Game g) {
 
@@ -242,6 +288,51 @@ public class LongPlaytest {
         MoneyAudit.Result money = g.getLastMoneyAudit();
         if (Math.abs(money.residual) > .01 && money.relative() > 1e-7) {
             flag(month, "money was not conserved", money.toString());
+        }
+
+        /*
+         * ...AND THE MONEY THE CENTRAL BANK MADE IS THE MONEY THE AUDIT SAW
+         * (0.7.0). Three figures that must be one, every month: the audit's
+         * MONEY lines in less out, the central bank's own issued less retired,
+         * and what M0 moved by. And a central bank keeps none of its profit:
+         * its equity, the vault aside, is what it owes the treasury less the
+         * loss it is still carrying. The defence (0.7.2) leaves both alone: it
+         * takes the vault and equity down together and M0 not at all
+         * (CentralBank, THE DEFENCE).
+         */
+        CentralBank cb = g.getCentralBank();
+        double made = cb.getIssued() - cb.getRetired();
+        if (Math.abs(money.moneyMade() - made) > .01) {
+            flag(month, "the audit and the central bank disagree about the money made",
+                    String.format("audit $%,.2f, central bank $%,.2f", money.moneyMade(), made));
+        }
+        if (!Double.isNaN(lastM0) && Math.abs((cb.m0() - lastM0) - made) > .01
+                && Math.abs((cb.m0() - lastM0) - made) > 1e-9 * Math.abs(cb.m0())) {
+            flag(month, "M0 moved by something other than the money made",
+                    String.format("M0 moved $%,.2f, made $%,.2f", cb.m0() - lastM0, made));
+        }
+        lastM0 = cb.m0();
+        double kept = cb.equity() - cb.getVault() - (cb.getRemittanceDue() - cb.getLossCarried());
+        if (Math.abs(kept) > .01 && Math.abs(kept) > 1e-9 * Math.max(1, cb.m0())) {
+            flag(month, "the central bank kept a profit", String.format("$%,.2f", kept));
+        }
+
+        /*
+         * ...AND EVERY HOLDER'S TWO BOOKS AGREE (0.7.1): what the cells hold of
+         * the city's paper is what the paper says the households hold, and
+         * what the central bank carries is what the paper says it holds. Two
+         * records of one holding that drift apart are a coupon paid to nobody.
+         */
+        double cellsHold = g.getHouseholdBalance().totalPaper();
+        double paperSays = g.getDebtManager().householdPrincipal();
+        if (Math.abs(cellsHold - paperSays) > 1e-6 * Math.max(1, paperSays)) {
+            flag(month, "the households' paper and the paper disagree",
+                    String.format("cells $%,.4f, paper $%,.4f", cellsHold, paperSays));
+        }
+        double cbSays = g.getDebtManager().centralBankPrincipal();
+        if (Math.abs(cb.getPaperHeld() - cbSays) > 1e-6 * Math.max(1, cbSays)) {
+            flag(month, "the central bank's paper and the paper disagree",
+                    String.format("balance sheet $%,.4f, paper $%,.4f", cb.getPaperHeld(), cbSays));
         }
 
         /* -------------------------------------------------------------------
@@ -582,6 +673,28 @@ public class LongPlaytest {
         ForeignAccounts fxRun = g.getForeignAccounts();
         if (fxRun.getRate() > peakRate) { peakRate = fxRun.getRate(); peakRateMonth = g.getMonth(); }
         if (fxRun.getRate() > FAR_FROM_PARITY * fxRun.getParity()) monthsFarFromParity++;
+        if (fxRun.getRate() >= fxRun.getMaxRate() * (1 - 1e-9)) monthsAtGuard++;
+        double vaultNow = fxRun.getReservesUsd();
+        if (vaultNow < vaultLow) { vaultLow = vaultNow; vaultLowMonth = g.getMonth(); }
+        if (halfGoneMonth == 0 && vaultNow < Game.FOUNDING_RESERVE_USD / 2) halfGoneMonth = g.getMonth();
+        if (emptyMonth == 0 && vaultNow < Game.FOUNDING_RESERVE_USD / 100) emptyMonth = g.getMonth();
+        double soldUsd = fxRun.getDefenceUsd();
+        if (soldUsd > 0) {
+            monthsDefended++;
+            defendedUsdRun += soldUsd;
+            if (soldUsd > peakDefenceUsd) { peakDefenceUsd = soldUsd; peakDefenceMonth = g.getMonth(); }
+        }
+        dialPath.add(g.getDebtManager().getPolicyRate());
+        double spendNow = g.getHouseholdBalance().getSpendFactor();
+        if (spendNow < spendLow) { spendLow = spendNow; spendLowMonth = g.getMonth(); }
+        if (spendNow > spendHigh) { spendHigh = spendNow; spendHighMonth = g.getMonth(); }
+        spendPath.add(spendNow);
+        if (g.getBank().isDepositRateCapped()) {
+            depositCappedMonths++;
+            if (depositCappedFirst == 0) depositCappedFirst = g.getMonth();
+            depositCappedLast = g.getMonth();
+        }
+        if (g.getPriceIndex().hasRate()) inflationPath.add(g.getPriceIndex().inflation());
         if (health.isOutbreak()) {
             monthsInOutbreak++;
             if (!wasInOutbreak) outbreaks++;
@@ -812,6 +925,148 @@ public class LongPlaytest {
     /** Whether any education dial or the schools flag was set, so the summary says what they did. */
     static boolean educationSet = false;
 
+    /* =====================================================================
+       THE RATE, HELD (2026-09-21) - the measurement 7.0 turns green
+
+       Jerus, on the central bank: "the short term rates, aka the one you
+       choose, those should be basically the tbill rate". Before the central
+       bank is built there has to be a number that says what the policy rate
+       does to inflation TODAY, or 7.0 has nothing to turn from red to green.
+
+       -Dplaytest.policyRate=<annual> holds the dial at that rate from the
+       month the currency is allowed to move - the first month past
+       ForeignAccounts.SETTLING_MONTHS - to the end of the run, instead of the
+       advisor's quarter-steps toward the rule; the summary says it was held.
+       The way the education flags hold theirs: set, and left. Unset, the
+       advisor sets the dial as it always has and the run is the run it
+       always was, to the byte. MonetaryCheck section 6 is the same question
+       asked of one founding for five years - and since 0.7.3 it is asserted
+       there, the demand channel in: inflation falls with the rate. Here it is
+       still a measurement, over a whole run.
+       ===================================================================== */
+
+    /** The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. */
+    static final Double POLICY_RATE = System.getProperty("playtest.policyRate") == null
+            ? null : Double.valueOf(System.getProperty("playtest.policyRate"));
+
+    /** True once the dial is the flag's rather than the advisor's: the flag is set and the currency may move. */
+    static boolean holdsPolicyRate(Game g) {
+        return POLICY_RATE != null && g.getMonth() > ForeignAccounts.SETTLING_MONTHS;
+    }
+
+    /**
+     * -Dplaytest.autopilot=true (0.7.0): the rule holds the dial from founding,
+     * through the game's own autopilot (DebtManager), and the advisor keeps
+     * its hands off it. Off by default, which is the run as it always was. A
+     * held rate (-Dplaytest.policyRate) takes the dial back from the rule the
+     * month it starts holding, as a player's hand would.
+     */
+    static final boolean AUTOPILOT = Boolean.getBoolean("playtest.autopilot");
+
+    /* =====================================================================
+       WAGES AGAINST THE INDEX (2026-09-21)
+
+       A measurement on 2026-09-15 put the wage index, costOfLiving, at 2.648
+       against a price index of 1.993 on a played city: wages a third above
+       the level they are written to chase, a free real-wage gain compounding
+       for the life of a run. -Dplaytest.wages=true prints, at every
+       checkpoint and at the end, the three figures that say whether that is
+       still true: costOfLiving, the price index, and the level the two-year
+       lag IMPLIES - this harness's own copy of LabourMarket's recurrence,
+       walked a DRIFT_PER_MONTH of the way each month toward the index the
+       month was handed. A second indexation, a jump on a reform or a load,
+       or any path that moves the wage index without the lag, shows as the
+       two drifting apart. Unset, nothing is computed or printed.
+       ===================================================================== */
+
+    /** -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. */
+    static final boolean WAGES = Boolean.getBoolean("playtest.wages");
+
+    /* =====================================================================
+       THE CITY'S OWN PAPER, FOR THE ENSEMBLE (2026-09-21)
+
+       The fix that makes the bank pay for the city's paper was measured on
+       the eight seeds and moved none of them, because none of them ever
+       owes a dollar at home: the advisor borrows only where the money is
+       cheaper, and the world's is - one dollar bond around month 1,092 in
+       six seeds of eight (3 and 5 never borrow), and an attentive player
+       $2.4B of them. A mechanic the fixture never touches is a mechanic no
+       run has tested (K1). -Dplaytest.borrowAtHome=true sends the same
+       borrowing, at the same moments and for the same money, to the city's
+       own term bond instead - the naive player who never looked at the
+       dollar rate - so the bank has paper to pay for. Unset, the run is the
+       run it always was.
+       ===================================================================== */
+
+    /** -Dplaytest.borrowAtHome=true: the advisor's borrowing goes to the city's own term bonds, never abroad. */
+    static final boolean BORROW_AT_HOME = Boolean.getBoolean("playtest.borrowAtHome");
+
+    /* =====================================================================
+       THE HOLDINGS DIAL, HELD (0.7.1)
+
+       Jerus: "the central bank would buy gbonds or sell gbonds from thin air
+       ... like QE and QT". -Dplaytest.qeShare=<share> sets the central bank's
+       holdings dial - the share of the city's term paper it aims to hold,
+       CentralBank.getTargetShare() - from the month the policy flag holds
+       its rate, the first past ForeignAccounts.SETTLING_MONTHS, to the end of
+       the run: set, and left. It only has paper to buy in a run that issues
+       it at home (-Dplaytest.borrowAtHome). Unset, the dial stays at zero and
+       the run is the run it always was.
+       ===================================================================== */
+
+    /** The holdings dial under -Dplaytest.qeShare, or null when nobody sets it. */
+    static final Double QE_SHARE = System.getProperty("playtest.qeShare") == null
+            ? null : Double.valueOf(System.getProperty("playtest.qeShare"));
+
+    /* =====================================================================
+       THE CEILING, SET (0.7.2)
+
+       Batch B: "the ceiling is small in a small city" - six months of
+       revenue binds within months of first drawing. The ceiling is the
+       player's dial now (CentralBank.setAdvancesCeilingMonths()), and
+       -Dplaytest.advancesMonths=<n> sets it at founding and leaves it, so the
+       broke seeds can be run at 12 and 24. Unset, it is
+       CentralBank.DEFAULT_ADVANCES_MONTHS and the run is the run it always was.
+       ===================================================================== */
+
+    /** The advances ceiling under -Dplaytest.advancesMonths, in months of revenue, or null for the default. */
+    static final Double ADVANCES_MONTHS = System.getProperty("playtest.advancesMonths") == null
+            ? null : Double.valueOf(System.getProperty("playtest.advancesMonths"));
+
+    /*
+     * THE DEFENCE OVER THE RUN (0.7.2): the dollars the central bank sold
+     * defending the currency, in total and in its biggest month, and how many
+     * months it sold anything. The vault at the end says what is left; these
+     * say whether it was ever used, which the vault's endpoint cannot - a
+     * vault spent and rebuilt by the advisor reads like one never touched.
+     */
+    static int monthsDefended, peakDefenceMonth;
+    static double defendedUsdRun, peakDefenceUsd;
+    /** The vault's life: its lowest reading and when, and the first month the founders' dollars were half gone and all but gone - the question the defence's dials are asked. */
+    static int vaultLowMonth, halfGoneMonth, emptyMonth;
+    static double vaultLow = Double.MAX_VALUE;
+
+    /** The lag-implied wage index, walked month by month beside the game's own; NaN until the first month. */
+    static double lagImplied = Double.NaN;
+
+    /** One month of the lag, on the index that month was handed. */
+    static void walkLag(Game g, double indexHanded) {
+        if (Double.isNaN(lagImplied)) return;
+        double target = 1 + (indexHanded - 1) * LabourMarket.COST_OF_LIVING_PASS_THROUGH;
+        lagImplied += (target - lagImplied) * LabourMarket.DRIFT_PER_MONTH;
+    }
+
+    /** The three figures on one line, for a checkpoint or the end. */
+    static String wageEra(Game g) {
+        LabourMarket wages = g.getLabourMarket();
+        double index = g.getPriceIndex().getIndex();
+        return String.format("       wages  costOfLiving %.4f  price index %.4f  lag-implied %.4f"
+                        + " (off by %+.2e)  target %.4f  wages/index %.3f",
+                wages.getCostOfLiving(), index, lagImplied,
+                wages.getCostOfLiving() - lagImplied, wages.getLivingTarget(),
+                index > 0 ? wages.getCostOfLiving() / index : 0);
+    }
+
     /**
      * Under the schools flag: the basic ladder, then a college, then a
      * university, each when the city is big enough to carry it, and more of
@@ -926,9 +1181,10 @@ public class LongPlaytest {
 
            Neither costs a move, because neither is a month's work. Setting a
            subsidy and topping up a reserve are decisions you make while doing
-           something else - and the retainer in particular has to be set BEFORE
-           the depot rule can ever be reached, which is the ordering fault that
-           cost a whole playtest the last time this file was rewritten.
+           something else - and the construction subsidy in particular has to
+           be set BEFORE the depot rule can ever be reached, which is the
+           ordering fault that cost a whole playtest the last time this file
+           was rewritten.
            ================================================================ */
 
         if (!g.isAutoSubsidised(Sectors.CONSTRUCTION)) {
@@ -950,7 +1206,10 @@ public class LongPlaytest {
          * the game the way it is taught rather than better than it is taught.
          */
         DebtManager market = g.getDebtManager();
-        if (g.getPriceIndex().hasRate()) {
+        // ...unless -Dplaytest.policyRate holds it - see THE RATE, HELD - or
+        // the rule has the dial (-Dplaytest.autopilot, see AUTOPILOT).
+        if (g.getPriceIndex().hasRate() && !holdsPolicyRate(g)
+                && !g.getDebtManager().isAutopilot()) {
             double advised = market.advisedPolicyRate(g.getPriceIndex().inflation());
             double now = market.getPolicyRate();
             market.setPolicyRate(now + (advised - now) * .25);
@@ -1449,7 +1708,7 @@ public class LongPlaytest {
                  * the one worth knowing the consequences of.
                  */
                 DebtManager m = g.getDebtManager();
-                if (m.foreignWindowOpen() && m.foreignRate() < m.getRate() * .8) {
+                if (!BORROW_AT_HOME && m.foreignWindowOpen() && m.foreignRate() < m.getRate() * .8) {
                     g.handleForeignLogic("Term", needed / Math.max(.01, fxRate(g)),
                             20, 100, false);
                 } else {
@@ -1548,10 +1807,108 @@ public class LongPlaytest {
 
     static int refusedSkips = 0;
 
+    /*
+     * THE CITY'S PAPER AND THE BANK THAT HOLDS IT, over the run (2026-09-21).
+     *
+     * Until 0.6.11 the bank took every bond the city sold onto its book and
+     * never handed over the money - the settlement was snapshotted after the
+     * top-of-month clear, so it was always zero (see Game, THE BANK PAYS FOR
+     * THE CITY'S PAPER). The endpoint lines cannot show what that did: a city
+     * owes nothing at month 4,002 in most seeds, and the bank's strain at the
+     * end is one month of four thousand. So the run counts the months the
+     * city owed anything, how much at the most, what the bank actually paid
+     * for the paper, and the bank's strain month by month - the four figures
+     * the measurement of the fix is written in.
+     */
+    static int monthsOwing, monthsOwingAtHome, worstStrainMonth, peakCityDebtMonth;
+    static int strainMonths, monthsWithoutCapacity;
+    static double strainSum, worstStrain, peakCityDebt, paperSettledRun;
+
+    /*
+     * THE CENTRAL BANK OVER THE RUN (0.7.0): the most the treasury owed it,
+     * how long the ceiling bound, and the most the arrears rule left unpaid.
+     * Counted a month at a time, because the endpoint of a city that ran dry
+     * for a century and recovered looks like one that never did.
+     */
+    static int monthsAtCeiling, monthsOnAdvances, peakAdvancesMonth, peakArrearsMonth, firstAdvanceMonth;
+    static double peakAdvances, peakArrears;
+
+    /*
+     * WHO HELD THE CITY'S PAPER OVER THE RUN (0.7.1): what the households paid
+     * at the settles and in how many months, what the bank's desk bought back
+     * from them and in how many, and what the central bank bought and sold -
+     * counted a month at a time, because a mechanic nobody counts is a
+     * mechanic nobody knows fired (the README's third rule).
+     */
+    static int monthsHouseholdsBought, monthsDeskBought, monthsCentralBankTraded;
+    static double householdsBoughtRun, deskBoughtRun, couponsToHouseholdsRun;
+
+    /*
+     * The most the central bank's holdings took off the long end, and when:
+     * the twenty-year paper a borrowing seed sells matures inside the run, so
+     * by month 4,002 the central bank usually holds none of it and the
+     * endpoint's compression reads zero. The peak is the figure the holdings
+     * dial is measured by.
+     */
+    static int peakCompressionMonth;
+    static double peakCompression, longRateAtPeak, heldShareAtPeak;
+
+    static void countTheHolders(Game g) {
+        double bought = g.getHouseholdsBoughtPaper();
+        if (bought > 0) { monthsHouseholdsBought++; householdsBoughtRun += bought; }
+        double desk = g.getBank().getPaperBoughtFromHouseholds();
+        if (desk > 0) { monthsDeskBought++; deskBoughtRun += desk; }
+        CentralBank cb = g.getCentralBank();
+        if (cb.getBoughtPaper() > 0 || cb.getSoldPaper() > 0) monthsCentralBankTraded++;
+        couponsToHouseholdsRun += g.getCouponsToHouseholds();
+        DebtManager dm = g.getDebtManager();
+        double off = dm.compression(600);
+        if (off > peakCompression) {
+            peakCompression = off;
+            peakCompressionMonth = g.getMonth();
+            longRateAtPeak = dm.curveRate(600);
+            heldShareAtPeak = dm.centralBankShareOfTerm();
+        }
+    }
+
+    static void countTheCentralBank(Game g) {
+        CentralBank cb = g.getCentralBank();
+        double owed = cb.getAdvancesToTreasury();
+        if (owed > 0) monthsOnAdvances++;
+        if (owed > 0 && firstAdvanceMonth == 0) firstAdvanceMonth = g.getMonth();
+        if (cb.ceilingBound()) monthsAtCeiling++;
+        if (owed > peakAdvances) { peakAdvances = owed; peakAdvancesMonth = g.getMonth(); }
+        double unpaid = g.getArrearsTotal();
+        if (unpaid > peakArrears) { peakArrears = unpaid; peakArrearsMonth = g.getMonth(); }
+    }
+
+    static void countTheCitysPaper(Game g) {
+        DebtManager paper = g.getDebtManager();
+        double owed = paper.getAllPrincipal();
+        if (owed > 0) monthsOwing++;
+        if (paper.getDomesticPrincipal() > 0) monthsOwingAtHome++;
+        if (owed > peakCityDebt) { peakCityDebt = owed; peakCityDebtMonth = g.getMonth(); }
+        paperSettledRun += g.getCityPaperSettled();
+        double strain = g.getBank().strain();
+        if (strain == Double.MAX_VALUE) { monthsWithoutCapacity++; return; }
+        strainSum += strain;
+        strainMonths++;
+        if (strain > worstStrain) { worstStrain = strain; worstStrainMonth = g.getMonth(); }
+    }
+
     static void run(Game g, int months) {
         for (int i = 0; i < months; i++) {
 
             int before = g.getMonth();
+            // The two instruments, both off by default: the dial held for the
+            // month about to run, and the index that month will hand the wages.
+            if (holdsPolicyRate(g)) g.getDebtManager().takeTheDial(POLICY_RATE);
+            if (QE_SHARE != null && g.getMonth() > ForeignAccounts.SETTLING_MONTHS
+                    && g.getCentralBank().getTargetShare() != QE_SHARE) {
+                g.getCentralBank().setTargetShare(QE_SHARE);
+            }
+            double indexHanded = g.getPriceIndex().getIndex();
+            if (WAGES && Double.isNaN(lagImplied)) lagImplied = g.getLabourMarket().getCostOfLiving();
             g.simulateMonths(1);
             lifetimeWriteOffs += g.getBank().getWriteOffs();
             lifetimeHouseholdWriteOffs += g.getHouseholdBalance().getWrittenOff();
@@ -1585,7 +1942,8 @@ public class LongPlaytest {
                 /*
                  * simulateMonths() refuses to run at all while cash <= 0, but
                  * the Next Month button calls nextMonth() directly, which
-                 * issues emergency debt and carries on. So a broke player can
+                 * draws the central bank's advance (an emergency note, before
+                 * 0.7.0) and carries on. So a broke player can
                  * step but cannot skip - and stepping is exactly what they
                  * would do next. Doing the same here rather than giving up,
                  * because a city that cannot pay its bills is a state the game
@@ -1600,6 +1958,10 @@ public class LongPlaytest {
                     return;
                 }
             }
+            if (WAGES) walkLag(g, indexHanded);
+            countTheCitysPaper(g);
+            countTheCentralBank(g);
+            countTheHolders(g);
             audit(g);
         }
     }
@@ -1766,6 +2128,10 @@ public class LongPlaytest {
         }
         same(month, "the bank's securities at the mark across a save",
                 back.getBank().getSecurities(), g.getBank().getSecurities());
+        // Paper sold since the last settle, which the bank pays for at the
+        // next one (2026-09-21) - a stop that borrows and then saves carries it.
+        same(month, "the city's paper its bank has not yet paid for, across a save",
+                back.getCityPaperUnsettled(), g.getCityPaperUnsettled());
         same(month, "what the households hold abroad across a save",
                 back.getHouseholdBalance().totalAbroadUsd(), g.getHouseholdBalance().totalAbroadUsd());
         // The long sick (2026-09-11): the ring is a stock, and so is who it killed last month.
@@ -1797,6 +2163,19 @@ public class LongPlaytest {
                     back.getLabourMarket().getTightness(band),
                     g.getLabourMarket().getTightness(band));
         }
+        /*
+         * WAGES AGAINST THE INDEX, across a save (2026-09-21). The wage index
+         * is a stock walked by a lag, the target it walks toward is struck in
+         * the month, and the price index is restruck from its history - three
+         * places a reload could leave wages chasing a different level from
+         * the one the live city chases. See WAGES AGAINST THE INDEX above.
+         */
+        same(month, "the wage index across a save",
+                back.getLabourMarket().getCostOfLiving(), g.getLabourMarket().getCostOfLiving());
+        same(month, "...the level it is walking toward",
+                back.getLabourMarket().getLivingTarget(), g.getLabourMarket().getLivingTarget());
+        same(month, "...and the price index it is handed",
+                back.getPriceIndex().getIndex(), g.getPriceIndex().getIndex());
 
         if (back.getPopulationManager().getPopulation() != pop) {
             flag(month, "population across a save",
@@ -1842,6 +2221,8 @@ public class LongPlaytest {
         System.setOut(quiet);
         try {
             g.run();
+            if (AUTOPILOT) g.getDebtManager().setAutopilot(true);
+            if (ADVANCES_MONTHS != null) g.getCentralBank().setAdvancesCeilingMonths(ADVANCES_MONTHS);
 
             /* ---------- founding: a few months at a time, by hand ---------- */
             /*
@@ -2002,9 +2383,24 @@ public class LongPlaytest {
                         double ask = Math.max(5_000,
                                 g.getEconomyManager().getMonthGdp() * .5
                                         / Math.max(.01, fxRate(g)));
-                        g.handleForeignLogic("Term", ask, 25, 100, false);
-                        log.add(String.format("  m%-5d borrowed US$%,.0fk abroad at %.2f%%",
-                                g.getMonth(), ask, m.foreignRate() * 100));
+                        /*
+                         * TWENTY YEARS, home or abroad, since 0.7.1: term
+                         * loans are issued at 10, 20, 30, 40 or 50 years
+                         * (LongTermBond.MATURITIES), and the twenty-five this
+                         * asked for until then is refused. Twenty is the term
+                         * the build-funding path above has always used.
+                         */
+                        if (BORROW_AT_HOME) {
+                            // The same money, at home - see THE CITY'S OWN PAPER.
+                            double local = ask * Math.max(.01, fxRate(g));
+                            g.handleLongBondLogic(local, 20, 100);
+                            log.add(String.format("  m%-5d borrowed $%,.0fk at home at %.2f%%",
+                                    g.getMonth(), local, m.getRate() * 100));
+                        } else {
+                            g.handleForeignLogic("Term", ask, 20, 100, false);
+                            log.add(String.format("  m%-5d borrowed US$%,.0fk abroad at %.2f%%",
+                                    g.getMonth(), ask, m.foreignRate() * 100));
+                        }
                     }
                 }
 
@@ -2039,11 +2435,13 @@ public class LongPlaytest {
                 if (g.getMonth() >= nextCheckpoint) {
                     log.add(era(g, "checkpoint"));
                     log.add(creditEra(g));
+                    if (WAGES) log.add(wageEra(g));
                     nextCheckpoint += 250;
                 }
             }
 
             log.add(era(g, "final"));
+            if (WAGES) log.add(wageEra(g));
 
         } catch (Throwable t) {
             System.setOut(out);
@@ -2351,14 +2749,22 @@ public class LongPlaytest {
         double ruleSays = g.getDebtManager().ruleRate(g.getPriceIndex().inflation());
         double dialStops = g.getDebtManager().advisedPolicyRate(g.getPriceIndex().inflation());
         out.printf("  monetary policy: rate %.2f%% (%s on %.1f%% inflation);"
-                + " the rate differential is %+.2f points and pulls the currency %+.2f%n",
+                + " the real rate differential is %+.2f points and pulls the currency %+.2f%n",
                 g.getDebtManager().getPolicyRate() * 100,
                 Math.abs(ruleSays - dialStops) > 1e-9
                         ? String.format("the rule would set %.2f%%, the dial stops at %.2f%%",
                                 ruleSays * 100, dialStops * 100)
                         : String.format("the rule advises %.2f%%", dialStops * 100),
                 g.getPriceIndex().inflation() * 100,
-                fx.getRateDifferential() * 100, fx.ratePressure());
+                fx.getRealRateDifferential() * 100, fx.ratePressure());
+        if (POLICY_RATE != null) {
+            out.printf("  ...HELD at %.2f%% from month %d to the end by -Dplaytest.policyRate,"
+                    + " not set by the advisor's rule (see THE RATE, HELD)%n",
+                    POLICY_RATE * 100, ForeignAccounts.SETTLING_MONTHS + 1);
+        } else if (g.getDebtManager().isAutopilot()) {
+            out.printf("  ...SET BY THE RULE every month by the game's own autopilot"
+                    + " (-Dplaytest.autopilot), not by the advisor%n");
+        }
         // Both instruments, side by side on purpose: the headline is what the
         // band is doing and the realised figure is what the level did. They
         // disagreed for weeks on this line and nobody put them together.
@@ -2372,6 +2778,41 @@ public class LongPlaytest {
                 + " %.0fx parity; prices averaged %+.2f%%/yr%n",
                 peakRate, peakRateMonth, monthsFarFromParity, FAR_FROM_PARITY,
                 (Math.pow(Math.max(1e-9, g.getPriceIndex().getIndex()), 12.0 / Math.max(1, g.getMonth())) - 1) * 100);
+        // The guard and the dial's path (0.7.2): see THE CURRENCY'S GUARD AND THE DIAL'S PATH.
+        int pastOldStop = 0;
+        for (double d : dialPath) if (d > OLD_DIAL_STOP + 1e-9) pastOldStop++;
+        out.printf("  ...at its guard (%.0f local per USD) %d month(s); the dial over the run: min %.2f%%, median %.2f%%,"
+                + " max %.2f%%, %d month(s) above %.0f%%; inflation's median reading %+.1f%%/yr%n",
+                fx.getMaxRate(), monthsAtGuard,
+                dialPath.stream().mapToDouble(Double::doubleValue).min().orElse(0) * 100,
+                median(dialPath) * 100,
+                dialPath.stream().mapToDouble(Double::doubleValue).max().orElse(0) * 100,
+                pastOldStop, OLD_DIAL_STOP * 100, median(inflationPath) * 100);
+        /*
+         * THE DEMAND CHANNEL AND WHAT IT LEAVES SAVED (0.7.3). The spend
+         * factor's path over the run, and the households' saving rate at the
+         * end: everything they hold - savings, the city's paper at their
+         * book, the dollars abroad at the month's rate - over a year of their
+         * disposable income. A stock over a flow, so it says how many years
+         * of income the city's families have put by.
+         */
+        HouseholdBalance putBy = g.getHouseholdBalance();
+        double heldPaper = putBy.totalPaper() * putBy.getPaperRatio();
+        double heldAbroad = putBy.totalAbroadUsd() * fx.getRate();
+        double disposableYear = g.getHouseholds().getDisposableIncome() * 12;
+        out.printf("  the demand channel: savers earn %+.2f%% real at the end, so the households plan %.3f of"
+                        + " what they would spend above a basket at zero; over the run min %.3f, median %.3f,"
+                        + " max %.3f (lowest m%d, highest m%d)%n",
+                g.realDepositRate() * 100, g.spendFactor(),
+                spendPath.isEmpty() ? 1 : spendLow, median(spendPath), spendPath.isEmpty() ? 1 : spendHigh,
+                spendLowMonth, spendHighMonth);
+        out.printf("  ...the bank quoted its lending rate for its deposit rate in %d month(s) (first m%d, last m%d):"
+                        + " its payout over its deposits came to more than it charges%n",
+                depositCappedMonths, depositCappedFirst, depositCappedLast);
+        out.printf("  the households' saving rate: %.2f years of disposable income - $%,.0fk saved, $%,.0fk of"
+                        + " the city's paper, $%,.0fk abroad, against $%,.0fk of disposable income a month%n",
+                disposableYear > 0 ? (putBy.totalSavings() + heldPaper + heldAbroad) / disposableYear : 0,
+                putBy.totalSavings(), heldPaper, heldAbroad, disposableYear / 12);
         out.printf("  the same month, per ForeignAccounts: exports %,.0f  imports %,.0f"
                 + "  interest %,.0f  => current account %,.0f%n",
                 fx.getExports(), fx.tradeImports(), fx.getForeignInterest(),
@@ -2472,6 +2913,8 @@ public class LongPlaytest {
         out.printf("  wages lifted %.1f%%, the floor is worth %s a month in today's money%n",
                 (g.getLabourMarket().getCostOfLiving() - 1) * 100,
                 String.format("%.3f", g.getLabourMarket().cashMinimumWage()));
+        // ...and against the index they chase, under -Dplaytest.wages.
+        if (WAGES) out.println(wageEra(g));
         /*
          * TWO DELIVERY NUMBERS, AND THE GAP BETWEEN THEM IS THE POINT
          * (2026-09-17). The first is what the city ASKED for against what it
@@ -2574,6 +3017,85 @@ public class LongPlaytest {
                 + " %.0f%% of capacity, %.1f points of premium%n",
                 bnk.getBranches(), bnk.getDeposits(), bnk.getBook(),
                 Math.min(999, bnk.strain()) * 100, bnk.ratePremium() * 100);
+        // The run, not the endpoint - see THE CITY'S PAPER AND THE BANK THAT HOLDS IT.
+        out.printf("  the city's paper over the run: owed in %,d month(s) (%,d of them at home),"
+                + " at most $%,.0fk (m%d); the bank handed over $%,.0fk for it;"
+                + " its strain averaged %.2f (worst %.2f, m%d; %d month(s) with no capacity)%n",
+                monthsOwing, monthsOwingAtHome, peakCityDebt, peakCityDebtMonth, paperSettledRun,
+                strainMonths > 0 ? strainSum / strainMonths : 0, worstStrain, worstStrainMonth,
+                monthsWithoutCapacity);
+        /*
+         * WHO HOLDS IT, AND WHAT IT COSTS BY MATURITY (0.7.1): the four holders
+         * at the end at face, what the households bought and sold over the run,
+         * and the curve's two ends - the ten- and fifty-year rates the city
+         * would pay today, and what the central bank's holdings take off the
+         * long end.
+         */
+        DebtManager dm = g.getDebtManager();
+        CentralBank holder = g.getCentralBank();
+        out.printf("  who holds it at the end: households $%,.0fk, the bank $%,.0fk, the central bank"
+                + " $%,.0fk, abroad $%,.0fk (face); the households paid $%,.0fk at %d settle(s),"
+                + " sold $%,.0fk back to the desk in %d month(s) and were paid $%,.0fk of coupons;"
+                + " the central bank traded in %d month(s), bought $%,.0fk and sold $%,.0fk%n",
+                dm.householdPrincipal(), dm.bankPrincipal(), dm.centralBankPrincipal(),
+                dm.getForeignPrincipal(), householdsBoughtRun, monthsHouseholdsBought,
+                deskBoughtRun, monthsDeskBought, couponsToHouseholdsRun, monthsCentralBankTraded,
+                holder.getBoughtPaperLifetime(), holder.getSoldPaperLifetime());
+        out.printf("  the curve at the end: note %.2f%%, 10-year %.2f%%, 50-year %.2f%%;"
+                + " the central bank's holdings take %.3f points off the 50-year (dial %.0f%%,"
+                + " holding %.1f%% of the term paper)%n",
+                dm.curveRate(6) * 100, dm.curveRate(120) * 100, dm.curveRate(600) * 100,
+                dm.compression(600) * 100, holder.getTargetShare() * 100,
+                dm.centralBankShareOfTerm() * 100);
+        out.printf("  the holdings at their most: %.3f points off the 50-year (m%d, holding %.1f%% of the"
+                + " term paper, the 50-year at %.2f%%)%n",
+                peakCompression * 100, peakCompressionMonth, heldShareAtPeak * 100, longRateAtPeak * 100);
+
+        /*
+         * THE CENTRAL BANK (0.7.0): its balance sheet at the end, the money
+         * supply, and what the treasury drew on it and left unpaid over the
+         * run. The two money figures are the Money page's getters.
+         */
+        CentralBank cb = g.getCentralBank();
+        out.printf("  the central bank: M0 $%,.0fk (reserves $%,.0fk, currency $%,.0fk), M2 $%,.0fk;"
+                + " lent the bank $%,.0fk at the window and the treasury $%,.0fk; vault $%,.0fk;"
+                + " equity $%,.0fk (a loss of $%,.0fk carried)%n",
+                cb.m0(), cb.getReserves(), cb.getCurrency(), g.getM2(),
+                cb.getAdvancesToBank(), cb.getAdvancesToTreasury(), cb.getVault(),
+                cb.equity(), cb.getLossCarried());
+        out.printf("  ...made $%,.0fk and destroyed $%,.0fk since founding; paid the bank $%,.0fk"
+                + " on reserves this month at %.2f%%; remitted $%,.0fk to the treasury over the run%n",
+                cb.getIssuedLifetime(), cb.getRetiredLifetime(), cb.getInterestOnReserves(),
+                g.getDebtManager().getPolicyRate() * 100, cb.getRemittedLifetime());
+        // The defence (0.7.2): see THE DEFENCE OVER THE RUN.
+        out.printf("  the defence: sold US$%,.0fk of the vault defending the currency over the run, in %,d"
+                + " month(s), the most US$%,.0fk (m%d); $%,.0fk of the central bank's equity spent on it; the vault ends at"
+                + " US$%,.0fk%n",
+                defendedUsdRun, monthsDefended, peakDefenceUsd, peakDefenceMonth,
+                cb.getDefendedLifetime(), fx.getReservesUsd());
+        out.printf("  ...the vault at its lowest US$%,.0fk (m%d); half the founders' dollars gone %s; all but a"
+                + " hundredth gone %s%n", vaultLow == Double.MAX_VALUE ? 0 : vaultLow, vaultLowMonth,
+                halfGoneMonth > 0 ? "by month " + halfGoneMonth : "never",
+                emptyMonth > 0 ? "by month " + emptyMonth : "never");
+        out.printf("  the treasury's advances: $%,.0fk owed at the end against a ceiling of $%,.0fk"
+                + " (%.0f months of revenue%s);"
+                + " $%,.0fk printed for it since founding; on advances %,d month(s), at the ceiling"
+                + " %,d; at most $%,.0fk (m%d); first drawn %s%n",
+                cb.getAdvancesToTreasury(), cb.ceiling(), cb.getAdvancesCeilingMonths(),
+                ADVANCES_MONTHS != null ? ", set by -Dplaytest.advancesMonths" : ", the default",
+                cb.getPrintedLifetime(),
+                monthsOnAdvances, monthsAtCeiling, peakAdvances, peakAdvancesMonth,
+                firstAdvanceMonth > 0 ? "in month " + firstAdvanceMonth : "never");
+        StringBuilder byLine = new StringBuilder();
+        for (java.util.Map.Entry<TreasuryLine, Double> owedOn : g.getArrearsByLine().entrySet()) {
+            byLine.append(String.format("%s $%,.0fk, ", owedOn.getKey().label, owedOn.getValue()));
+        }
+        out.printf("  arrears: $%,.0fk owed and unpaid at the end%s; refused $%,.0fk and paid down"
+                + " $%,.0fk over the run; at most $%,.0fk (m%d)%n",
+                g.getArrearsTotal(),
+                byLine.length() > 0 ? " (" + byLine.substring(0, byLine.length() - 2) + ")" : "",
+                g.getArrearsRefusedLifetime(), g.getArrearsPaidLifetime(),
+                peakArrears, peakArrearsMonth);
 
         /*
          * CREDIT, BY SECTOR. The bank's line above says what it holds; this

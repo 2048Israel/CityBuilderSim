@@ -545,6 +545,26 @@ public class NationalAccounts {
         this.studentLoanInterest = studentLoanInterest;
     }
 
+    /**
+     * THE CENTRAL BANK'S TWO LINES (0.7.0): its profit remitted to the
+     * treasury, in; the interest the treasury paid it on its advances, out.
+     * Their own setter, for the reason setTransitLines() has one. Game moves
+     * the cash for both where the central bank settles with the treasury, at
+     * the top of the month, and they are here so the budget balance - and
+     * the bridge it starts - carries them.
+     */
+    private double centralBankRemittance, centralBankInterest;
+
+    public void setCentralBankLines(double remittance, double interest) {
+        this.centralBankRemittance = remittance;
+        this.centralBankInterest = interest;
+    }
+
+    /** What the central bank remitted: its profit, which is the interest the city paid itself less what reserves cost. */
+    public double getCentralBankRemittance() { return centralBankRemittance; }
+    /** What the treasury paid the central bank on its advances. */
+    public double getCentralBankInterest()   { return centralBankInterest; }
+
     public double getEiPremiums()    { return eiPremiums; }
     /** What the health premium raised this month - a government revenue line, against the health service's cost. */
     public double getHealthPremiums(){ return healthPremiums; }
@@ -591,7 +611,7 @@ public class NationalAccounts {
     /* =====================================================================
        THE MONTH THE GOVERNMENT ACTUALLY HAD
 
-       Twenty-three numbers, saved and restored as one - seventeen when this
+       Twenty-five numbers, saved and restored as one - seventeen when this
        note was written, and every one appended since has gone on the END.
 
        WHY THIS IS CARRIED RATHER THAN REBUILT. updateGovernment() is a plain
@@ -636,15 +656,23 @@ public class NationalAccounts {
             // ...and the student loan interest, appended 2026-09-21, for the
             // premium's reason: an older save reads zero, which is what that
             // city's graduates were charged.
-            studentLoanInterest };
+            studentLoanInterest,
+            // ...and the central bank's two lines, appended in 0.7.0: an
+            // older save reads zero for both, which is a city with no
+            // central bank yet to pay or be paid by.
+            centralBankRemittance, centralBankInterest };
     }
 
     void restoreGovernment(double[] saved) {
-        // Twenty-three since the student loan interest; twenty-two since the
-        // health premium; twenty-one since the police; twenty since EI and
-        // the grants; seventeen from a save before them.
+        // Twenty-five since the central bank; twenty-three since the student
+        // loan interest; twenty-two since the health premium; twenty-one since
+        // the police; twenty since EI and the grants; seventeen from a save
+        // before them.
         if (saved == null || (saved.length != 17 && saved.length != 20
-                && saved.length != 21 && saved.length != 22 && saved.length != 23)) return;
+                && saved.length != 21 && saved.length != 22 && saved.length != 23
+                && saved.length != 25)) return;
+        centralBankRemittance = saved.length >= 25 ? saved[23] : 0;
+        centralBankInterest   = saved.length >= 25 ? saved[24] : 0;
         eiPremiums = saved.length >= 20 ? saved[17] : 0;
         eiBenefits = saved.length >= 20 ? saved[18] : 0;
         studentGrants = saved.length >= 20 ? saved[19] : 0;
@@ -761,7 +789,10 @@ public class NationalAccounts {
                 + eiPremiums + healthFees + educationFees + healthPremiums
                 // ...and the interest on the student loans (2026-09-21); the
                 // principal repaid is not revenue and is not here.
-                + studentLoanInterest;
+                + studentLoanInterest
+                // ...and the central bank's profit (0.7.0); its advances are
+                // financing, like paper raised, and are not here either.
+                + centralBankRemittance;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -771,7 +802,9 @@ public class NationalAccounts {
     public double getTotalExpenses() {
         return interestExpense + capitalSpending + landPurchases + pensions
                 + eiBenefits + studentGrants
-                + healthSpending + educationSpending + safetySpending + subsidies;
+                + healthSpending + educationSpending + safetySpending + subsidies
+                // ...and the interest on the central bank's advances (0.7.0).
+                + centralBankInterest;
     }
 
     /** Surplus or deficit - what actually moves the city's cash this month. */
@@ -844,6 +877,7 @@ public class NationalAccounts {
         contributions *= scale;  pensions *= scale;
         eiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
         healthPremiums *= scale;  studentLoanInterest *= scale;
+        centralBankRemittance *= scale;  centralBankInterest *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;

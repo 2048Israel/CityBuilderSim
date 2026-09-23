@@ -196,6 +196,8 @@ public class Game {
         economyManager.setOutwardInvestment(outward);
         economyManager.setEquity(equity);
         householdBalance.setMarket(exchange, equity, bank);
+        // ...and the bank's desk for their city paper (0.7.1).
+        householdBalance.setPaperDesk(this::desksBuysHouseholdPaper);
         
         simulationEngine = new SimulationEngine(
                 economyManager,
@@ -223,8 +225,25 @@ public class Game {
         studentLoansLent = 0; studentLoansRepaid = 0; studentLoansWrittenOff = 0;
         studentLoanInterest = 0;
         treasuryJournal.reset(); treasuryRaisedSoFar = 0;
+        // ...and paper the last city sold and its bank has not paid for, which
+        // the next settle would otherwise charge to THIS city's bank. Harmless
+        // while the settle read zero; not since it pays (2026-09-21).
+        cityDebtRaisedThisMonth = cityDiscountThisMonth = 0;
+        cityDebtRaisedForBank = cityDiscountForBank = cityPaperSettled = 0;
+        // The holders' carried figures (0.7.1): a new city owes nobody anything.
+        legacyDiscountDue = 0;
+        buybackToHouseholdsUnsettled = buybackAbroadUnsettled = 0;
+        buybackToHouseholds = buybackAbroad = 0;
+        couponsToHouseholds = principalToHouseholds = householdsBoughtPaper = 0;
+        bankPrincipalRepaidThisMonth = 0;
         bank.reset();
         foreign.reset();
+        // ...and the central bank, founded fresh rather than reset, reading
+        // the vault where ForeignAccounts keeps it. See getCentralBank().
+        centralBank = new CentralBank(foreign::getReserves);
+        arrears.clear();
+        arrearsRefusedThisMonth = arrearsPaidThisMonth = 0;
+        arrearsRefusedLifetime = arrearsPaidLifetime = 0;
         hotMoney.reset();
         outward.reset();
         equity.reset();
@@ -309,19 +328,22 @@ public class Game {
         this.skipFailure = null;
 
         /*
-         * The retainer and the warning about needing one.
+         * The warning about construction shedding.
          *
          * buildWorld() rebuilds every MANAGER, which is what made the
-         * twenty-three-field reset bug go away - but these three live on Game
-         * itself, so nothing was clearing them. A new game inherited the
-         * previous city's construction subsidy and went on paying it every
-         * month, and inherited its shedding warning too.
+         * twenty-three-field reset bug go away - but fields that live on Game
+         * itself are nothing's to clear. A new game once inherited the
+         * previous city's construction retainer and its shedding warning; the
+         * warning is cleared below with the rest. THE RETAINER IS GONE
+         * (0.7.1): it had not been paid since the standing policy replaced it
+         * - set, saved, reset and reformed, and read by no line of the month -
+         * so the field and its save key were removed rather than cleared, and
+         * an old save's key is simply not read. See THE CONSTRUCTION SUBSIDY.
          *
          * NewGameCheck did not catch it because its snapshot did not reach
          * these fields. It does now, which is the actual fix - the list being
          * short is the bug that keeps recurring here, not any one field on it.
          */
-        this.constructionSubsidy = 0;
 
         // Policy is the player's, so a new city starts with none of it: no
         // sector protected, no offsets, both rates at their defaults. Leaving
@@ -582,6 +604,9 @@ public class Game {
     public void toggleNextMonth(){
         nextMonth();
     }
+
+    /** The month's spine, for CalendarCheck: it must not move the calendar itself - the press does. */
+    SimulationEngine getSimulationEngineForTest() { return simulationEngine; }
     
     public int getMonth(){
         return month;
@@ -623,9 +648,9 @@ public class Game {
     /** For this many months the screens say where the vault's first dollars came from; after that they are the city's own. */
     public static final int FOUNDERS_NOTE_MONTHS = 120;
 
-    /* ======================= THE CONSTRUCTION SUBSIDY =======================
+    /* ============= THE CONSTRUCTION SUBSIDY - removed in 0.7.1 =============
      *
-     * A monthly retainer that keeps builders on the books between projects.
+     * A monthly retainer that kept builders on the books between projects.
      *
      * The 4,000-month playtest found that idle construction is loss-making, so
      * it sheds capacity in any lull - including the capacity a player just paid
@@ -633,19 +658,18 @@ public class Game {
      * all four sixty months later, and the city falls back to where it started
      * for the next eight centuries.
      *
-     * This is the lever against that, and it is deliberately not free and not
-     * absolute. The money is real, it is paid every month whether anything is
-     * being built or not, and it protects exactly as much capacity as it covers
-     * the payroll of. Protecting more costs more.
+     * That lever was a retainer, deliberately not free and not absolute: real
+     * money, paid every month whether anything was being built or not,
+     * protecting exactly as much capacity as it covered the payroll of.
+     *
+     * REMOVED IN 0.7.1. Nothing had paid it since the standing policy below
+     * replaced it (found 2026-09-21, the-central-bank-opens.md section 4): the
+     * field was set, saved, reset and reformed, and no line of the month read
+     * it. The field, its save key and its four lines are gone; an old save's
+     * key is left unread, which Gson does without being asked. The standing
+     * policy is the lever now - see TreasuryLine.CONSTRUCTION_SUBSIDY, which
+     * is what it pays the builders through.
      * ==================================================================== */
-
-    private double constructionSubsidy;
-
-    public double getConstructionSubsidy(){ return constructionSubsidy; }
-
-    public void setConstructionSubsidy(double monthlyAmount){
-        this.constructionSubsidy = Math.max(0, monthlyAmount);
-    }
 
     /* ====================================================================
        STANDING POLICY: NEVER LET THIS SECTOR SHRINK
@@ -663,6 +687,14 @@ public class Game {
        over-generous policy arrives as a worse interest rate rather than as a
        silent failure to pay. A policy that quietly stops working when it matters
        most is the failure mode the old retainer already had.
+
+       UNTIL THE CEILING, since 0.7.0. The overdraft is the central bank's
+       advance now, and once the advances reach the ceiling - CentralBank's
+       dial, DEFAULT_ADVANCES_MONTHS of revenue until the player moves it
+       (0.7.2) - a subsidy is a discretionary line: paid from cash at or above
+       zero, the rest owed to the sector as arrears and paid when cash returns -
+       Jerus's rule for a treasury past its ceiling, "pay promises first, cut
+       the rest". See paySubsidyIfOwed() and treasuryPays().
 
        WHY IT IS A CAPITAL CONTRIBUTION, NOT REVENUE. It moves cash from the
        city to the sector and touches neither income statement. The sector's
@@ -743,12 +775,22 @@ public class Game {
 
         double owed = -netIncome;
 
-        cash -= owed;                       // overdrawn if it must be
+        /*
+         * Overdrawn if it must be - UNTIL THE CEILING (0.7.0). A subsidy is a
+         * discretionary line: once the central bank's advances reach the
+         * ceiling (CentralBank.ceiling(), the dial's months of revenue) it is
+         * paid only from cash at or above zero, and the rest is owed to this
+         * sector as arrears. See treasuryPays(). The construction sector's is
+         * the construction subsidy; any other's is a business subsidy.
+         */
+        TreasuryLine line = sector == getSectors().construction()
+                ? TreasuryLine.CONSTRUCTION_SUBSIDY : TreasuryLine.BUSINESS_SUBSIDIES;
+        double paid = treasuryPays(line, owed, sector.key());
         // A plain add: nothing here may compute an amount, or the money the
         // city spent and the money the sector received could differ.
-        sector.addCash(owed);
-        subsidyPaid.put(sector.key(), owed);
-        return owed;
+        sector.addCash(paid);
+        subsidyPaid.put(sector.key(), paid);
+        return paid;
     }
 
     /**
@@ -823,7 +865,7 @@ public class Game {
         if (cost <= 0) {
             return false;
         }
-        cash -= cost;
+        treasuryPays(TreasuryLine.LAND, cost);
         return true;
     }
 
@@ -839,7 +881,7 @@ public class Game {
         if (cost <= 0) {
             return false;
         }
-        cash -= cost;
+        treasuryPays(TreasuryLine.LAND, cost);
         return true;
     }
 
@@ -1159,10 +1201,24 @@ public class Game {
          * row arrays are still what the books show; the cells are what the
          * households are.
          */
+        /*
+         * ...AND WHAT SHARE OF THEIR SPENDING ABOVE SUBSISTENCE THEY PLAN
+         * (0.7.3), struck once a month on the real deposit rate, before the
+         * plan on both paths: the month's own and the load path's re-strike,
+         * which derives it again from the deposit rate and the price index
+         * the save restored - so nothing is saved for it. See
+         * HouseholdBalance's banner AND WHAT IT SPENDS ANSWERS THE REAL RATE.
+         */
+        householdBalance.setSpendFactor(spendFactor());
         if (accrue) {
             // At the month's rate, for a household that sells its paper
             // abroad to eat - see Household.settle().
             householdBalance.setExchangeRate(foreign.getRate());
+            // ...and the month's one ratio for the city's paper at home
+            // (0.7.1): the households' book at the curve over its face, what
+            // it counts for and what the desk pays for it. Saved, because the
+            // plan reads it and the load path re-strikes the plan.
+            householdBalance.setPaperRatio(debtManager.householdBookRatio());
             /*
              * ...AND THE TREATMENT BILLS, BY ROW (2026-09-19): what the row
              * was billed and what it would have been billed had all of its
@@ -1278,7 +1334,9 @@ public class Game {
              * Nothing at the default rate, and x + 0.0 is x.
              */
             studentLoanInterest = householdBalance.totalStudentInterest();
-            cash += studentLoansRepaid - studentLoansLent + studentLoanInterest;
+            cash += studentLoansRepaid + studentLoanInterest;
+            // The loans themselves: lent at enrolment, a promise (0.7.0).
+            treasuryPays(TreasuryLine.STUDENT_LOANS, studentLoansLent);
             economyManager.setStudentLoanInterest(studentLoanInterest);
             // Principal lent and principal back: neither is a budget line (the
             // grant is, and so is the interest), so the bridge names it. See
@@ -1547,8 +1605,19 @@ public class Game {
                 householdBalance.totalSavings(),
                 sectorCash,
                 economyManager.getBusinessDebtManager().getAllPrincipal(),
-                debtManager.getAllPrincipal(),
+                // The city's DOMESTIC paper, since 0.7.0: the bank holds what it
+                // bought. This was getAllPrincipal(), dollar bonds included -
+                // paper sold abroad that the bank never paid for, carried on
+                // its book as an asset and weighed against its capital.
+                // And since 0.7.1 only ITS OWN SHARE of it, of the paper it has
+                // paid for: the households and the central bank hold the rest
+                // (Debt, WHO HOLDS IT), and paper sold between the presses is
+                // on nobody's book until the settle (DebtManager.bankBook()).
+                debtManager.bankBook(),
                 householdBalance.bookOwed());
+        // ...less the discount on it the bank has not yet earned (0.7.1),
+        // re-derived with the book from the paper's own remainders.
+        bank.setUnearnedDiscount(debtManager.bankUnearnedDiscount());
 
         /*
          * ...AND WHAT THAT BOOK WEIGHS.
@@ -1569,7 +1638,9 @@ public class Game {
         }
         double cityWeighted = 0;
         for (Debt paper : debtManager.getDebt()) {
-            cityWeighted += paper.getOustandingPrincipal()
+            if (paper.isForeign()) continue;   // held abroad - see the refresh above
+            if (paper.getSettleDue() > 0) continue;   // not paid for yet - see bankBook()
+            cityWeighted += paper.bankPrincipal()   // its own share (0.7.1)
                     * Bank.RISK_CITY * Bank.maturityWeight(paper.getRemainingMonths());
         }
         bank.setWeightedBook(businessWeighted, cityWeighted,
@@ -1599,7 +1670,7 @@ public class Game {
     public double recapitaliseBank(double amount) {
         double put = Math.max(0, Math.min(amount, cash));
         if (put <= 0) return 0;
-        cash -= put;
+        treasuryPays(TreasuryLine.BANK_CAPITAL, put);
         treasuryJournal.record("Put capital into the bank", -put);
         bank.receiveBailout(put);
         GameLog.note(String.format("The city put $%,.0fk of capital into the bank.", put));
@@ -1623,7 +1694,7 @@ public class Game {
     public double buyForeignCurrency(double amount) {
         double spend = Math.max(0, Math.min(amount, cash));
         if (spend <= 0) return 0;
-        cash -= spend;
+        treasuryPays(TreasuryLine.RESERVE_PURCHASES, spend);
         treasuryJournal.record("Bought reserves", -spend);
         foreign.buyReserves(spend);
         GameLog.note(String.format("The city bought $%,.0fk of foreign currency.", spend));
@@ -1754,7 +1825,7 @@ public class Game {
         double proceeds = landManager.priceFor(landFreed);
 
         if (proceeds > 0 && proceeds <= cash) {
-            cash -= proceeds;
+            treasuryPays(TreasuryLine.LAND, proceeds);
             seller.receive(proceeds);
             landManager.recordBuyback(landFreed);
         } else {
@@ -1824,8 +1895,8 @@ public class Game {
     /**
      * Whether the city should be told construction is dismantling itself.
      *
-     * Only while it is RECENT and the retainer is not already covering the
-     * capacity that is left. A player who has set a subsidy has answered the
+     * Only while it is RECENT and the standing policy is not already covering
+     * the capacity that is left. A player who has set a subsidy has answered the
      * question and should not keep being asked it.
      */
     public boolean isConstructionShedding(){
@@ -2309,8 +2380,19 @@ public class Game {
          * categories never commissioned, which is money from nowhere.
          */
         double cityShare = economyManager.getCityMaintenanceBill();
+        /*
+         * ...UNLESS IT CANNOT (0.7.0). The city's repairs are a discretionary
+         * line: once the central bank's advances reach their ceiling they are
+         * paid only from cash at or above zero, and what is not paid is owed to
+         * the builders as arrears - the work was done. The builders are paid
+         * what the treasury paid now and the rest when the arrears are paid
+         * down, so the money they receive is the money that left.
+         */
+        double repairsOwed = 0;
         if (cityShare > 0) {
-            cash -= cityShare;
+            double paidNow = treasuryPays(TreasuryLine.CITY_REPAIRS, cityShare);
+            repairsOwed = cityShare - paidNow;
+            cityShare = paidNow;
             cityMaintenancePaid = cityShare;
             /*
              * JOURNALLED, BECAUSE THE BUDGET BALANCE DOES NOT CARRY IT. The
@@ -2329,7 +2411,7 @@ public class Game {
         // ...AND THE BANK ITS BRANCHES, out of its own cash, with its payroll.
         bankMaintenanceDue = economyManager.getBankMaintenanceBill();
 
-        builders.receiveMaintenance(bill);
+        builders.receiveMaintenance(bill - repairsOwed);
     }
 
     /**
@@ -2428,6 +2510,9 @@ public class Game {
                         health.getWorkRatio(),
                         health.isOutbreak(),
                         healthcare.getUnburied());
+                // ...and the treasury's month with its central bank (0.7.1).
+                skipReport.sampleTreasury(centralBank.getAdvancesToTreasury() > 0,
+                        centralBank.ceilingBound());
             }
 
         } catch (RuntimeException e) {
@@ -2730,7 +2815,7 @@ public class Game {
             }
 
             // 4. Subtract everything at once
-            cash -= totalCost;
+            treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             cityCapitalSpending += totalCost;
 
             // ...and it lands somewhere now. The construction sector did the
@@ -3000,8 +3085,9 @@ public class Game {
          * year of interest and two years' borrowing was charged one.
          *
          * ShortTermTBill.faceFor() owns the convention now, so the quote, the
-         * rate fixed point and the emergency path in nextMonth() cannot each
-         * have their own version of it - which is exactly what they had.
+         * rate fixed point and the build screen's note (the emergency path in
+         * nextMonth(), until 0.7.0) cannot each have their own version of it -
+         * which is exactly what they had.
          */
         /*
          * SIZED SO THE CITY ACTUALLY RECEIVES WHAT IT ASKED FOR.
@@ -3019,7 +3105,7 @@ public class Game {
          * Jerus found it from the far end - "the tbill is inacted but the roads
          * are not built and you are just left with the cash unspent". Roads are
          * simply the first thing expensive enough to land in the failing range:
-         * the emergency path borrows the exact shortfall, receives a few
+         * the build screen's note borrows the exact shortfall, receives a few
          * hundred less than that, and buildStack() re-tests the price against
          * cash and refuses. Debt issued, nothing built.
          *
@@ -3030,8 +3116,11 @@ public class Game {
          * whose whole job is "how much paper do I need to RAISE this cash", and
          * only the note that was answering it wrong.
          */
+        // On the curve at its own months (0.7.1) - which, for a note of a
+        // year or less, is the short end: no term premium, the T-bill rate.
         double rate = debtManager.quoteRate(requested,
-                r -> Math.ceil(faceForNetProceeds(requested, r, months) / rounding) * rounding);
+                r -> Math.ceil(faceForNetProceeds(requested, r, months) / rounding) * rounding,
+                months);
 
         double faceValue = Math.ceil(
                 faceForNetProceeds(requested, rate, months) / rounding) * rounding;
@@ -3091,7 +3180,8 @@ public class Game {
         DebtQuote quote = quoteTBill(amount, duration, rounding);
         if (quote.isEmpty()) return "Nothing issued.";
 
-        debtManager.addShortTermTBill(quote.faceValue(), duration, month);
+        debtManager.addShortTermTBill(quote.faceValue(), duration, month)
+                .markIssued(quote.cashReceived(), quote.marketRate());
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
        cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
@@ -3117,7 +3207,9 @@ public class Game {
         }
 
         double faceValue = Math.ceil(requestedAmount / rounding) * rounding;
-        double annualRate = debtManager.quoteRate(faceValue);
+        // Priced at its FINAL maturity on the curve (0.7.1): a serial bond's
+        // last slice is the longest money in it.
+        double annualRate = debtManager.quoteRate(faceValue, duration * 12);
         double monthlyInterest = faceValue * (annualRate / 12.0);
         double received = Math.round((faceValue - costOfIssuance(faceValue)) * 100) / 100.0;
 
@@ -3148,7 +3240,8 @@ public class Game {
         DebtQuote quote = quoteMediumBond(requestedAmount, duration, rounding);
         if (quote.isEmpty()) return "Nothing issued.";
 
-        debtManager.addMediumTermBond(quote.faceValue(), duration * 12, month, quote.marketRate());
+        debtManager.addMediumTermBond(quote.faceValue(), duration * 12, month, quote.marketRate())
+                .markIssued(quote.cashReceived(), quote.marketRate());
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
        cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
@@ -3267,13 +3360,25 @@ public class Game {
         priceTheDebtMarket();
         double before = debtManager.getRate();
 
-        if (amount <= 0) {
+        // Only the five (0.7.1): any other term is quoted nothing, and
+        // handleLongBondLogic() says why. See LongTermBond.MATURITIES.
+        if (amount <= 0 || !LongTermBond.isIssuable(duration)) {
             return new DebtQuote("Term", duration, 0, before, before, 0, 0, 0, 0);
         }
 
+        /*
+         * ON THE CURVE AT ITS DURATION (0.7.1). The rate the face is solved at
+         * - and so the one longBondPvPerFace() and faceValueOfLongBond() are
+         * handed, here and in the fixed point - is curveRate(duration * 12)
+         * with the loan priced in: the dial, the credit spread, and the term
+         * premium for those years less what the central bank's holdings
+         * compress of it. The buyback prices the same paper at the same
+         * curve for the months it has left (DebtManager.marketValue()), which
+         * is what keeps RestructureCheck's round trip neutral by construction.
+         */
         final double requested = amount;
         double marketRate = debtManager.quoteRate(requested,
-                r -> faceValueOfLongBond(requested, duration, rounding, r));
+                r -> faceValueOfLongBond(requested, duration, rounding, r), duration * 12);
 
         // Yield curve: long money carries a lower coupon than the medium-term
         // market rate. Small monthly payments are the point of the instrument.
@@ -3298,12 +3403,14 @@ public class Game {
     /** Books a long bond on exactly the terms quoted. */
     public String handleLongBondLogic(double amount, int duration, double rounding) {
 
+        if (!LongTermBond.isIssuable(duration)) return LongTermBond.REFUSAL;
         DebtQuote quote = quoteLongBond(amount, duration, rounding);
         if (quote.isEmpty()) return "Nothing issued.";
 
         // The coupon, not the market rate - a long bond's whole shape is a low
         // monthly payment bought with a redemption premium.
-        debtManager.addLongTermBond(quote.faceValue(), duration * 12, month, quote.couponRate());
+        debtManager.addLongTermBond(quote.faceValue(), duration * 12, month, quote.couponRate())
+                .markIssued(quote.cashReceived(), quote.marketRate());
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
        cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
@@ -3322,7 +3429,10 @@ public class Game {
 
          - the rate comes off DebtManager.foreignRate(), which is the world's
            base plus what the world charges THIS city - and starts below the
-           domestic floor
+           domestic floor - and since 0.7.2 off the world's CURVE at the
+           paper's maturity (DebtManager.foreignCurveRate(): the same term
+           premium table the city's curve carries), where it was flat at every
+           maturity before
          - every figure in the quote is in DOLLARS. The screen converts for
            display; the contract does not
          - the proceeds do not reach the bank, so the treasury has a funding
@@ -3378,6 +3488,15 @@ public class Game {
      * way of earning, is insolvent, and pretending otherwise would let a city
      * carry foreign debt for ever on an overdraft that costs it nothing it
      * cannot borrow again.
+     *
+     * THE CASH IT READS IS ONE MONTH DEEP. It runs at the bottom of the month,
+     * and since 0.7.0 the central bank advances the whole shortfall at the top
+     * of every month, without refusal (settleTreasury()) - so this trips only
+     * on a month whose own bills, a balloon falling due say, come to more than
+     * a year of revenue. A long insolvency accumulates in the advances, which
+     * this does not read. TODO(docs): whether it should - the advances, or the
+     * advances past the ceiling - is a design question the code does not
+     * answer; the rule is as it was.
      */
     private void checkForeignSolvency() {
         if (!debtManager.hasForeignDebt()) return;
@@ -3386,6 +3505,40 @@ public class Game {
         if (cash < -annualRevenue * DEFAULT_OVERDRAFT_YEARS) {
             defaultOnForeignDebt("the treasury could not find the dollars");
         }
+    }
+
+    /**
+     * The city's real rate against the world's, on today's figures (0.7.2):
+     * the dial less the city's inflation, less the world's base rate less the
+     * world's realised inflation - the one definition the month hands the
+     * currency (nextMonth(), before the reprice) and the monetary page reads.
+     */
+    public double realRateDifferential() {
+        return (debtManager.getPolicyRate() - priceIndex.inflation())
+                - (DebtManager.WORLD_BASE_RATE - world.realisedInflation());
+    }
+
+    /**
+     * What savers earn after inflation (0.7.3): the bank's deposit rate less
+     * the year's inflation, the same PriceIndex.inflation() the real rate
+     * differential and the parity read - the one definition the month strikes
+     * the households' spend factor on and the monetary page prints. See
+     * HouseholdBalance's banner AND WHAT IT SPENDS ANSWERS THE REAL RATE.
+     */
+    public double realDepositRate() {
+        return bank.depositRate() - priceIndex.inflation();
+    }
+
+    /**
+     * The share of their spending above subsistence the households plan at
+     * today's real deposit rate (0.7.3): HouseholdBalance.spendFactor() on
+     * realDepositRate(). Struck once a month, where the households plan
+     * (syncHouseholdAccounts()); read between presses it is the factor the
+     * next month's plan will be struck at, because neither the deposit rate
+     * nor the price index moves until the month does.
+     */
+    public double spendFactor() {
+        return HouseholdBalance.spendFactor(realDepositRate());
     }
 
     /** True if anybody abroad will lend the city a dollar today. */
@@ -3403,14 +3556,17 @@ public class Game {
 
         double before = debtManager.foreignRate();
 
-        if (requestedUsd <= 0 || !debtManager.foreignWindowOpen()) {
+        // A dollar term loan is held to the same five maturities (0.7.1).
+        if (requestedUsd <= 0 || !debtManager.foreignWindowOpen()
+                || ("Term".equals(type) && !LongTermBond.isIssuable(duration))) {
             return new DebtQuote(type, duration, 0, before, before, 0, 0, 0, 0);
         }
 
         return switch (type) {
             case "Note" -> {
                 double face = Math.ceil(requestedUsd / rounding) * rounding;
-                double rate = debtManager.quoteForeignRate(face);
+                double rate = selfPricedForeignRate(face, duration, r ->
+                        new ShortTermTBill(face, duration, month, true));
                 double gross = face * (1 - ShortTermTBill.discountFraction(rate, duration));
                 double received = Math.round((gross - costOfIssuance(face)) * 100) / 100.0;
                 yield new DebtQuote("Note", duration, requestedUsd, rate, before,
@@ -3418,7 +3574,10 @@ public class Game {
             }
             case "Serial" -> {
                 double face = Math.ceil(requestedUsd / rounding) * rounding;
-                double rate = debtManager.quoteForeignRate(face);
+                // On the world's curve at its final maturity (0.7.2), as the
+                // domestic serial is on the city's.
+                double rate = selfPricedForeignRate(face, duration * 12, r ->
+                        new MediumTermBond(face, duration * 12, month, r, true));
                 double received = Math.round((face - costOfIssuance(face)) * 100) / 100.0;
                 double coupons = 0;
                 MediumTermBond shape = new MediumTermBond(face, duration * 12, month, rate);
@@ -3430,7 +3589,12 @@ public class Game {
             }
             case "Term" -> {
                 double face = Math.ceil(requestedUsd / rounding) * rounding;
-                double rate = debtManager.quoteForeignRate(face);
+                // On the world's curve at its duration (0.7.2) - the rate the
+                // buyback reads back for the months it has left
+                // (DebtManager.marketValue()), so a round trip is neutral by
+                // construction. It was the flat foreign rate at every term.
+                double rate = selfPricedForeignRate(face, duration * 12, r ->
+                        new LongTermBond(face, duration * 12, month, longBondCouponYield(r, duration), true));
                 double coupon = longBondCouponYield(rate, duration);
                 double received = Math.round(
                         (face * longBondPvPerFace(rate, duration)
@@ -3445,6 +3609,31 @@ public class Game {
     }
 
     /**
+     * THE DOLLAR QUOTE'S FIXED POINT (0.7.2): the rate at which the world's
+     * curve, with this paper booked at that rate's coupon, reads that rate
+     * back - DebtManager.quoteForeignRate(Debt, months), walked from the
+     * principal-only quote until it stops moving. The service term reads the
+     * coupon and the coupon is struck on the rate, so it is a fixed point, and
+     * a contraction: a point of rate moves the premium by a small share of a
+     * point.
+     *
+     * @param shape the paper as it would be booked at a given rate
+     */
+    private double selfPricedForeignRate(double face, int months,
+                                         java.util.function.DoubleFunction<Debt> shape) {
+        double rate = debtManager.quoteForeignRate(face, months);
+        for (int i = 0; i < FOREIGN_QUOTE_ITERATIONS; i++) {
+            double next = debtManager.quoteForeignRate(shape.apply(rate), months);
+            if (Math.abs(next - rate) < 1e-13) return next;
+            rate = next;
+        }
+        return rate;
+    }
+
+    /** The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. */
+    private static final int FOREIGN_QUOTE_ITERATIONS = 50;
+
+    /**
      * Books a USD bond on exactly the terms quoted.
      *
      * @param holdAsReserves true to keep the dollars as reserves; false to sell
@@ -3456,6 +3645,7 @@ public class Game {
         if (!debtManager.foreignWindowOpen()) {
             return "No lender abroad will take this paper: " + debtManager.foreignWindowReason();
         }
+        if ("Term".equals(type) && !LongTermBond.isIssuable(duration)) return LongTermBond.REFUSAL;
 
         DebtQuote quote = quoteForeign(type, requestedUsd, duration, rounding);
         if (quote.isEmpty()) return "Nothing issued.";
@@ -3571,46 +3761,13 @@ public class Game {
     private void nextMonth() {
         updateConstructionCost();
 
-        if (cash < 0) {
-            final double gap = -cash; // The actual negative amount
-
-            /*
-             * Priced like any other borrowing, which it now is.
-             *
-             * The market has to see the hole before it quotes: priceTheDebtMarket()
-             * puts the overdraft on the books, and quoteRate() then walks the
-             * face-value/rate fixed point exactly as the finance screen does.
-             * The bill's proceeds close the gap, so quoteRate() nets the overdraft
-             * back out and prices against bonds-plus-bill - the honest position
-             * a moment after the money lands.
-             *
-             * This is the deliberate consequence of "no free money": an overdraft
-             * is the most desperate borrowing there is, and from the first month
-             * it costs what desperate borrowing costs.
-             */
-            /*
-             * ONE DEFINITION, and this used not to be.
-             *
-             * These twenty lines were a hand-rolled second copy of
-             * issueEmergencyDebt(): its own face formula, its own rounding, its
-             * own four-month term, and - once the note learned to discount on
-             * its own duration - its own now-wrong pricing. The finance screen
-             * and the automatic path would have quoted the same city two
-             * different numbers for the same borrowing.
-             *
-             * Deleted in favour of the real method. This codebase has now been
-             * bitten by a duplicated calculation four separate times (the
-             * materials quote, the business tax, the wage sync, this), and the
-             * pattern is always the same: the copy is fine on the day it is
-             * written and wrong the first time the original changes.
-             *
-             * SIX MONTHS, which is Jerus's call and the right one: long enough
-             * that a city has a real chance to fix the underlying problem or
-             * refinance into something longer, short enough that it still hurts
-             * and still has to be dealt with.
-             */
-            issueEmergencyDebt(gap, EMERGENCY_NOTE_MONTHS);
-        }
+        /*
+         * A TREASURY BELOW ZERO USED TO BORROW HERE, before the month began: an
+         * emergency note for the gap, six months, sold to the bank. It is the
+         * central bank's advance now, drawn further down, once the month's
+         * audit window has opened - see settleTreasury() and THE CENTRAL BANK
+         * AND THE TREASURY, which keeps the note's history.
+         */
         month++;
         monthsSinceAutosave++;
 
@@ -3637,9 +3794,42 @@ public class Game {
          * which is precisely the money Jerus noticed going missing.
          */
         treasuryOpening = treasuryRecorded ? treasuryClosing : cash;
+        /* ===================================================================
+           THE BANK PAYS FOR THE CITY'S PAPER (2026-09-21)
+
+           Jerus, on the central bank that is coming: "the central bank would
+           buy gbonds or sell gbonds from thin air". It cannot trade paper
+           with a commercial bank that never paid for the paper it holds -
+           and this one never had. Every bond and bill the city sells lands
+           between two presses (the finance screen, the build screen's
+           funding, and until 0.7.0 the emergency note), so it is on these two counters
+           when the month begins. The settlement snapshot was taken further
+           down, after the bank's tax and AFTER the clear, so the bank was told
+           about zero every month: its book rose by the face at the next
+           refresh, it collected the coupons and the principal, and it never
+           handed over a dollar. Its equity rose by the face of every issue,
+           from nothing, and the treasury's cash came from nowhere.
+
+           SNAPSHOTTED FIRST, THEN CLEARED - here, rather than clearing later,
+           so the two lines that decide what the bank pays sit beside the
+           clear that would otherwise eat them, and the order is the
+           explanation. The bank hands over the cash at the settle below,
+           exactly as it does for a business loan - since 0.7.1 for what the
+           households did not take, and earning its discount as it accretes
+           rather than booking it there (THE DISCOUNT ACCRETES, below). Until
+           it has, what it owes for the paper is carried against its pool in
+           MoneyAudit (getCityPaperUnsettled()), because the treasury already
+           has the money.
+           =================================================================== */
+        cityDebtRaisedForBank = cityDebtRaisedThisMonth;
+        cityDiscountForBank = cityDiscountThisMonth;
         cityDebtRaisedThisMonth = 0;
         cityDiscountThisMonth = 0;
         cityPrincipalRepaidThisMonth = 0;
+        bankPrincipalRepaidThisMonth = 0;
+        // The holders' month (0.7.1): what the households were paid on their
+        // paper and paid for it. See THE HOLDERS ARE PAID.
+        couponsToHouseholds = principalToHouseholds = householdsBoughtPaper = 0;
         foreignDebtRaisedThisMonth = 0;
         foreignPrincipalRepaidThisMonth = 0;
         foreignInterestPaidThisMonth = 0;
@@ -3657,6 +3847,77 @@ public class Game {
 
         bank.startMonth();
         foreign.startMonth();
+        centralBank.startMonth();
+
+        /*
+         * A BUYBACK BETWEEN THE PRESSES IS DECLARED HERE (0.7.1). The treasury
+         * paid its holders outside the pools when the player pressed the
+         * button, and the pools have carried what it paid them since
+         * (MoneyAudit.pools()); this month's window is where that money is
+         * seen to leave - to the households, abroad, and to the central bank,
+         * which destroys its share now and takes its gain against face into
+         * this month's profit. See Game.repurchaseDebt().
+         */
+        buybackToHouseholds = buybackToHouseholdsUnsettled;
+        buybackAbroad = buybackAbroadUnsettled;
+        buybackToHouseholdsUnsettled = buybackAbroadUnsettled = 0;
+        centralBank.settleRedemptions();
+
+        /*
+         * THE AUTOPILOT (0.7.0), before anything is priced: with the rule's
+         * hand on the dial, the dial goes where the rule says - DebtManager
+         * .advisedPolicyRate() on the year's inflation - and holds where it
+         * is until there is a year of prices to read. Jerus's toggle; the
+         * player's hand on the dial turns it off (DebtManager.takeTheDial()).
+         */
+        if (debtManager.isAutopilot() && priceIndex.hasRate()) {
+            debtManager.setPolicyRate(debtManager.advisedPolicyRate(priceIndex.inflation()));
+        }
+
+        // The central bank settles with the treasury: last month's profit
+        // remitted, the advances' interest charged, repaid from cash above
+        // zero or advanced the shortfall. Inside the audit's window, so every
+        // dollar it makes or destroys is one the month declares. See
+        // settleTreasury().
+        settleTreasury();
+
+        // The holdings dial (0.7.1): the central bank buys or sells the city's
+        // term paper toward its target, after the settle above and before the
+        // market is priced. See THE HOLDINGS DIAL, AT THE TOP OF THE MONTH.
+        openMarketOperation();
+
+        /*
+         * THE STUDENTS' GRANT, PAID IN THE MONTH IT IS CREDITED (0.7.1). The
+         * households' ledger is told the grant at the top of the month
+         * (updateHouseholdAccounts(), through HouseholdAccounts
+         * .setOutsideMoney()), and the treasury used to pay it at the bottom -
+         * a bill struck in the middle of the month on the students the month
+         * then enrolled. So the students were credited last month's payment
+         * while the treasury paid this month's: a month apart, and invisible
+         * to the audit because households are outside its pools (the
+         * bill-and-credit lag on the list since the-central-bank-opens.md
+         * section 4). Struck and paid here now, on the students the month
+         * opens with - the ones the ledger credits a few lines on - so the
+         * figure the treasury pays, the one the students are credited and the
+         * audit's "- e StudentGrants" are one month's one figure. The arrears
+         * rule is unchanged: back pay first, then the bill, both as far as
+         * discretionaryRoom() allows.
+         */
+        payStudentGrants(studentGrantBill());
+        /*
+         * ...AND EI, THE SAME WAY (0.7.3). The out of work are credited at the
+         * top of the month (HouseholdAccounts.setOutsideMoney(), a few lines
+         * on) and the treasury used to pay at the bottom, off a bill struck in
+         * the middle on the pool the month then produced - so the households
+         * were credited last month's bill while the treasury paid this
+         * month's, the lag batch C fixed for the grant and batch D's list
+         * found here. Struck again and paid here now, on the pool the month
+         * opens with, at the dial as the player left it: the figure the
+         * treasury pays, the one the out of work are credited, the budget's
+         * EI line and the audit's "- e EiBenefits" are one month's one figure.
+         * A promise, paid whatever it takes, as it was at the bottom.
+         */
+        payEiBenefits();
 
         /*
          * THE BANK PAYS ITS PROFIT TAX, on the month that has just finished.
@@ -3676,14 +3937,18 @@ public class Game {
          */
         economyManager.setBankTax(bank.chargeTax(
                 economyManager.getTaxPolicy().effectiveProfitRate(getSectors().retail())));
-        cityDebtRaisedForBank = cityDebtRaisedThisMonth;
-        cityDiscountForBank = cityDiscountThisMonth;
 
         startOfMonthUpdate();
         simulationEngine.simulateMonth(this);
         finalUpdateEconomy();
         economyManager.setPreviousGdp(historySave);
         priceTheDebtMarket();
+        // The paper sold between the presses settles to its holders: the
+        // households first, before the month's coupon (0.7.1). The bank pays
+        // for the rest below. See THE HOUSEHOLDS TAKE THEIR SHARE.
+        if (settleProbeForTest != null) settleProbeForTest.accept(false);
+        householdsTakeTheirShare();
+        if (settleProbeForTest != null) settleProbeForTest.accept(true);
         debtManager.processAllDebts(this);
 
         // The government's books, over the same window as the treasury bridge
@@ -3700,14 +3965,32 @@ public class Game {
          * disagree about a month.
          */
         BusinessDebtManager lender = economyManager.getBusinessDebtManager();
-        bank.lend(lender.getLentThisMonth() + cityDebtRaisedForBank);
-        bank.takeRepayment(lender.getRepaidThisMonth() + cityPrincipalRepaidThisMonth);
+        // The residual buyer (0.7.1): what the households did not pay for.
+        cityPaperSettled = cityDebtRaisedForBank - householdsBoughtPaper;
+        bank.lend(lender.getLentThisMonth() + cityDebtRaisedForBank - householdsBoughtPaper);
+        bank.takeRepayment(lender.getRepaidThisMonth() + bankPrincipalRepaidThisMonth);
         /*
-         * The discount on this month's issuance, recognised as it is earned.
-         * Non-cash - the bank's book already carries the paper at face - and
-         * internal, because it is the city that is paying it.
+         * THE DISCOUNT ACCRETES (0.7.1). Face less what the bank paid is its
+         * interest, and it belongs to the paper's whole life: this is the
+         * month's accretion on the bank's share of every piece, struck in
+         * DebtManager.processAllDebts() - non-cash, and internal, because it
+         * is the city that is paying it. The bank carries what it has not yet
+         * earned against its book (Bank.setUnearnedDiscount(), at the
+         * refresh below), so its equity does not jump the month the paper
+         * settles. Until 0.7.1 the whole discount landed here in the settle
+         * month: $60M of "interest" in one month on seed 0 borrowing at home,
+         * taxed, 45% of it payable to savers (the-bank-that-never-paid.md
+         * section 5). legacyDiscountDue is a 0.7.0 save's paper, saved between
+         * its issue and its settle and carrying no discount of its own, which
+         * that save's bank books whole here as it would have.
          */
-        bank.takeDiscount(cityDiscountForBank);
+        bank.takeDiscount(debtManager.getAccretedForBank() + legacyDiscountDue);
+        legacyDiscountDue = 0;
+        // Settled: the bank has paid for the paper, so it owes nothing for it
+        // and MoneyAudit's closing pool is its cash. See THE BANK PAYS FOR THE
+        // CITY'S PAPER at the top of the month.
+        cityDebtRaisedForBank = 0;
+        cityDiscountForBank = 0;
 
         double sectorInterestPaid = 0;
         for (Sector s : getSectors().all()) sectorInterestPaid += s.statement().interest;
@@ -3721,7 +4004,8 @@ public class Game {
          * Last, after every loan has moved and the position has been re-read,
          * because what it needs to fund is whatever it is short by once the
          * month is done. Before the audit looks, because the money it raises
-         * comes from outside the city and the audit has to see it arrive.
+         * is made by the central bank at the window (it came from outside the
+         * city until 0.7.0) and the audit has to see it made.
          */
         /*
          * Its own staff, on its own books.
@@ -3774,8 +4058,18 @@ public class Game {
            The rate they pay is what any good credit pays to borrow here - the
            risk-free plus the bank's own strain premium - through Bank's one
            definition of it, so this and chooseDepositRate() cannot drift apart.
+
+           THE RISK-FREE IS THE POLICY RATE since 0.7.0, which is what the
+           bank's reserves earn at the central bank - nothing lends below it.
+           It was the city's own paper rate, debtManager.getRate(), which had
+           the bank's strain premium already inside it (DebtManager.priceAt()
+           adds it), so lendingRate() added the premium a second time on top:
+           a strained bank quoted the carry trade, and priced its own deposit
+           bid against, a rate carrying the premium twice. The city's paper is
+           priced off the policy rate now too (DebtManager.floorRate()), so
+           the two agree on what money costs before anybody's credit is priced.
            ================================================================= */
-        double carryRate = bank.lendingRate(debtManager.getRate());
+        double carryRate = bank.lendingRate(debtManager.getPolicyRate());
         double carryMoved = hotMoney.carryTakeMonth(
                 carryRate,
                 DebtManager.WORLD_BASE_RATE,
@@ -3806,13 +4100,28 @@ public class Game {
          * takeMonth's formula, lifted out and made side-effect-free), so the
          * forecast cannot drift away from the mechanic it forecasts.
          */
-        final double cityRateNow = debtManager.getRate();
+        // ...net of the bank's strain premium (0.7.2): see DebtManager.getRateBeforeStrain().
+        final double cityRateNow = debtManager.getRateBeforeStrain();
         final double premiumNow = debtManager.countryPremium();
         final double gdpNow = economyManager.getMonthGdp();
         bank.setDepositMarket(rate -> hotMoney.arrivalsAt(
                 rate, cityRateNow, DebtManager.WORLD_BASE_RATE, premiumNow, gdpNow));
 
-        bank.fundToCover(debtManager.getRate());
+        bank.fundToCover(debtManager.getPolicyRate());
+
+        /*
+         * ...AND THE CENTRAL BANK'S END OF IT (0.7.0), off the bank's own two
+         * figures so the two cannot disagree: the policy rate on its reserves,
+         * paid in money made; the window's interest, paid back and destroyed;
+         * and the window itself brought to what the bank now owes past its
+         * deposits - advanced if it reached further, repaid if it came back.
+         * A city with no branch has no bank at the window (its lending is
+         * strangers', priced by the full strain premium - see fundToCover()),
+         * so the window is closed to it.
+         */
+        centralBank.payInterestOnReserves(bank.getPlacementIncome());
+        centralBank.chargeWindow(bank.getFundingCost());
+        centralBank.settleWindow(bank.getBranches() > 0 ? bank.wholesaleFunding() : 0);
 
         // ...and if that left it owing more than it owns, it has failed. Its
         // creditors take the hole; the city has a decision to make.
@@ -3821,6 +4130,10 @@ public class Game {
         // The month is final, so the figure next month's tax is charged on is
         // final too. Carried in the save - see Bank.getProfitLastMonth().
         bank.closeMonth();
+
+        // ...and the central bank's: its profit struck, to be remitted at the
+        // top of next month, or its loss carried. See CentralBank.closeMonth().
+        centralBank.closeMonth();
 
         /*
          * ...AND THE PRICE OF MONEY IS FINAL WITH IT.
@@ -3896,6 +4209,9 @@ public class Game {
         // ...and the households, by the same rule, with what the owners were
         // just paid. See HouseholdBalance.investAbroad().
         householdBalance.investAbroad(bank.depositRate(), DebtManager.WORLD_BASE_RATE, foreign.getRate());
+        // ...and the city's paper, when the spread that brought them in has
+        // gone (0.7.1): home to the bank's desk, a little a month.
+        householdBalance.sellPaperForSpread(debtManager.householdBookYield(), bank.depositRate());
 
         /* =================================================================
            AND THE MONEY THAT IS HERE BECAUSE THE RATE IS GOOD.
@@ -3934,7 +4250,7 @@ public class Game {
         hotMoney.setMonth(month);
         hotMoney.takeMonth(
                 bank.depositRate(),
-                debtManager.getRate(),
+                debtManager.getRateBeforeStrain(),
                 DebtManager.WORLD_BASE_RATE,
                 debtManager.countryPremium(),
                 economyManager.getMonthGdp(),
@@ -3983,25 +4299,40 @@ public class Game {
          */
         /*
          * THE SAME INSTRUMENT FOR BOTH HALVES. Parity is struck from the two
-         * LEVELS, so the drift has to be struck from what the two levels are
-         * DOING - and the world's headline rate is not that; the level is
-         * pulled back to trend and the headline is not. See
+         * LEVELS, so the inflations beside it - the drift's until 0.7.2, the
+         * real rate differential's since - have to be struck from what the two
+         * levels are DOING - and the world's headline rate is not that; the
+         * level is pulled back to trend and the headline is not. See
          * WorldEconomy.realisedInflation() for what handing it the headline
          * did to the exchange rate, and through it to every exporter.
          */
         foreign.setParity(priceIndex.getIndex(), world.getPriceLevel(),
                 priceIndex.inflation(), world.realisedInflation());
         /*
-         * ...AND WHAT THE CITY IS PAYING TO BORROW, AGAINST THE WORLD.
+         * ...AND WHAT THE CITY IS PAYING TO BORROW, AGAINST THE WORLD - IN
+         * REAL TERMS (0.7.2).
          *
-         * The policy rate against the world's base rate. This is the channel
-         * that makes the dial a defence: raise it and the currency is supported
-         * because money comes to be lent here, at the cost of every borrower in
-         * the city paying more. Asia 1997, as a lever.
+         * The city's real rate against the world's: the policy rate less the
+         * city's inflation, against the world's base rate less the world's -
+         * the same two inflations setParity() was just handed, the same
+         * instrument for both halves. This is the channel that makes the dial
+         * a defence: raise it past inflation and the currency is supported
+         * because money comes to be lent here, at the cost of every borrower
+         * in the city paying more. Asia 1997, as a lever. It was the NOMINAL
+         * differential until 0.7.2, and a city inflating at 40% with its dial
+         * at 25% read as paying 23 points over the world when it was paying
+         * 15 under it (ForeignAccounts, THE REAL RATE, NOT THE NOMINAL).
          */
-        foreign.setRateDifferential(
-                debtManager.getPolicyRate() - DebtManager.WORLD_BASE_RATE);
+        foreign.setRealRateDifferential(realRateDifferential());
         foreign.repriceCurrency();
+        /*
+         * ...and what the vault's dollars fetched, if the reprice defended the
+         * currency: the central bank's equity line, booked here, after the
+         * audit, because no pool moves on it - a capital transaction against
+         * the world, the vault down and M0 where it was (CentralBank, THE
+         * DEFENCE).
+         */
+        centralBank.dollarsSold(foreign.getDefenceLocal());
 
         /*
          * ...AND THE CITY'S DOLLAR DEBT IS WORTH WHAT IT IS WORTH.
@@ -4383,8 +4714,8 @@ public class Game {
        constant nobody can justify.
        ===================================================================== */
 
-    /** Term of the note the city is forced into when it cannot pay its bills. */
-    public static final int EMERGENCY_NOTE_MONTHS = 6;
+    /** The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. */
+    public static final int BUILD_NOTE_MONTHS = 6;
 
     /**
      * Bond counsel, rating and printing. Payable however small the deal is.
@@ -4547,16 +4878,19 @@ public class Game {
     /**
      * Hands the debt market everything it prices against.
      *
-     * Three inputs, and the overdraft is the one that used to be missing: the
+     * Four inputs since 0.7.0, when what the treasury owes its central bank
+     * joined them, and the overdraft is the one that used to be missing: the
      * market could not see that the city was in the red, so a city $1.1M
      * overdrawn with no bonds left outstanding was quoted the floor rate. All
-     * three have to be current before updateInterest() or any quote, which is
-     * why this is one call rather than three scattered ones.
+     * four have to be current before updateInterest() or any quote, which is
+     * why this is one call rather than four scattered ones.
      */
     private void priceTheDebtMarket(){
         debtManager.setGDP(economyManager.getMonthGdp());
         debtManager.setTaxRevenue(economyManager.getTaxIncome());
         debtManager.setCashPosition(cash);
+        // ...and what it owes its central bank (0.7.0) - see DebtManager.setAdvances().
+        debtManager.setAdvances(centralBank.getAdvancesToTreasury());
     }
 
     /**
@@ -4585,6 +4919,10 @@ public class Game {
                 landManager.getLandPurchasesThisMonth(),
                 cityInterestPaid + foreignInterestPaidThisMonth);
 
+        // The month's revenue, filed for the ceiling on the central bank's
+        // advances: six months of it, averaged over the last twelve.
+        centralBank.noteRevenue(economyManager.getNationalAccounts().getTotalRevenue());
+
         // Read and cleared in one place, a line apart, so nothing in between
         // can see a half-cleared month and nothing needs a second copy of them.
         // What a SAVE needs is a different question and has a different answer:
@@ -4596,15 +4934,36 @@ public class Game {
 
     private void finalUpdateEconomy(){
         economyManager.setDebt(debtManager.getAllPrincipal());
-        double tempCash = cash;
-        tempCash += economyManager.getTotalIncome();
+        /*
+         * THE MONTH'S BUDGET, LINE BY LINE (0.7.0). This was one figure -
+         * getTotalIncome(), the tax take less everything the city pays out -
+         * added to the cash in one go. Struck at the same point now, before
+         * the markets clear, and paid after them exactly as before, but a line
+         * at a time through treasuryPays(). Every one here is a promise, paid
+         * whatever it takes; the student grant, the one the arrears rule may
+         * cut, is paid at the top of the month since 0.7.1, where the students
+         * are credited it, and EI since 0.7.3 for the same reason - see
+         * nextMonth().
+         */
+        double taxIn      = economyManager.getTaxIncome();
+        double interestOut = economyManager.getInterestAccrued();
+        double pensionsOut = economyManager.getPensionsPaid();
+        // Neither the students' grant nor EI is here any more: both are paid
+        // at the top of the month, where they are credited (0.7.1, 0.7.3) -
+        // see nextMonth().
+        double careOut     = economyManager.getHealthcareBill();
+        double schoolsOut  = economyManager.getEducationBill();
+        double safetyOut   = economyManager.getSafetyBill();
+        double tempCash = cash + taxIn - (interestOut + pensionsOut
+                + careOut + schoolsOut + safetyOut);
         // The utility books what its customers were charged - see
         // UtilitiesHandler.setBilledRevenue().
         servicesManager.getUtilitiesHandler().setBilledRevenue(
                 economyManager.getSectorElectricityCharges(),
                 economyManager.getSectorWaterCharges());
         economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
-        tempCash += servicesManager.getServiceNetIncome();
+        double servicesNet = servicesManager.getServiceNetIncome();
+        tempCash += servicesNet;
         // Every market clears and every maker produces - see Markets.clearMonth().
         // The mines ask the ground through their own hook; see sectors.Mining.
         economyManager.finalEconUpdate(this);
@@ -4614,7 +4973,16 @@ public class Game {
         economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
         
         if (Double.isFinite(tempCash)) {
-            cash = tempCash;
+            // The tax take in, and every line out - the promises whole.
+            // tempCash is the guard it always was: a month whose books do not
+            // come to a finite figure moves no cash at all.
+            cash += taxIn + Math.max(0, servicesNet);
+            treasuryPays(TreasuryLine.INTEREST, interestOut);
+            treasuryPays(TreasuryLine.PENSIONS, pensionsOut);
+            treasuryPays(TreasuryLine.HEALTHCARE, careOut);
+            treasuryPays(TreasuryLine.SCHOOLS, schoolsOut);
+            treasuryPays(TreasuryLine.SAFETY, safetyOut);
+            treasuryPays(TreasuryLine.CITY_SERVICES, Math.max(0, -servicesNet));
             /*
              * JOURNALLED, BECAUSE THE BUDGET BALANCE DOES NOT CARRY IT. The
              * fares arrived in the cash a line above, inside getTaxIncome(),
@@ -5123,10 +5491,11 @@ public class Game {
         families.shareSeekersByAffordability(households.seekerPressure(new double[] {
                 unemployment.getHoused(), families.getSeekers(FamilyModel.Seeker.STUDENT) }));
 
-        // What EI and the grants cost the treasury this month, before the cash
-        // moves. The grant on whatever basis the player chose - see
-        // studentGrantBill(), the one strike every reader shares.
-        economyManager.setOutsidePayments(unemployment.getBenefitsPaid(), studentGrantBill());
+        // EI and the grant are both paid at the top of the month now, where
+        // they are credited (0.7.3 and 0.7.1), and what was paid is kept for
+        // the month's budget and its audit: the bill the pool's step struck
+        // just above is next month's, paid and credited at the top of it -
+        // see payEiBenefits() and payStudentGrants().
 
         /*
          * 6. WHO IS TOO ILL TO WORK.
@@ -5712,6 +6081,46 @@ public class Game {
     private final Bank bank = new Bank();
     public Bank getBank() { return bank; }
 
+    /**
+     * The central bank - the balance sheet money is made on (0.7.0).
+     *
+     * Beside the commercial bank and the foreign accounts because it deals
+     * with both: it takes the bank's spare cash as reserves, lends it at the
+     * window, advances the treasury its overdraft, and lists the vault as its
+     * own asset. NOT final: buildWorld() founds a fresh one, so a new game
+     * after a load cannot inherit the last city's advances - the rule the
+     * health service's rebuild taught on 2026-09-19. See CentralBank.
+     */
+    private CentralBank centralBank = new CentralBank(() -> 0);
+    public CentralBank getCentralBank() { return centralBank; }
+
+    /**
+     * M2: what the public holds - the bank's deposits, the households', the
+     * sectors' and the world's, plus currency, which is none. The Money page's
+     * figure, and one definition of it (0.7.0).
+     *
+     * READ OFF THE STOCKS THEMSELVES, the same three refreshBank() hands the
+     * bank as its deposits, rather than off the bank's copy of them: that copy
+     * is struck at the settle, before the savers are paid and the owners are
+     * paid, so a city saved at the end of the month and reloaded read a
+     * different M2 from the one it was saved with - 3% apart in
+     * CentralBankCheck's city.
+     */
+    public double getM2() {
+        return getHouseholdDeposits() + getSectorDeposits() + bank.getForeignDeposits()
+                + centralBank.getCurrency();
+    }
+
+    /** What the households have banked - their savings, which are their deposits. */
+    public double getHouseholdDeposits() { return householdBalance.totalSavings(); }
+
+    /** What the businesses have banked: each sector's cash, counted only when in credit (an overdraft is a loan, not a negative deposit). */
+    public double getSectorDeposits() {
+        double held = 0;
+        for (String s : Sectors.KEYS) held += Math.max(0, economyManager.getSectorCash(s));
+        return held;
+    }
+
     /** For tests and for the graph screen. */
     public HistorySave getHistorySave(){
         return historySave;
@@ -6028,6 +6437,9 @@ public class Game {
         dataSave.setHousingOccupancy(new double[]{
                 getSectors().realEstate().getOccupiedHomes() });
         dataSave.setForeignAccounts(foreign.toSaveArray());
+        dataSave.setCentralBank(centralBank.toSaveArray());
+        dataSave.setTreasuryArrears(arrears.keySet().toArray(new String[0]),
+                arrears.values().stream().mapToDouble(Double::doubleValue).toArray());
         dataSave.setForeignStanding(debtManager.foreignStandingToSave());
         dataSave.setCapitalFlows(hotMoney.toSaveArray());
         dataSave.setOutwardInvestment(outward.toSaveArray());
@@ -6037,6 +6449,14 @@ public class Game {
         dataSave.setWorldEconomy(world.toSaveArray());
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setPolicyRate(debtManager.getPolicyRate());
+        dataSave.setPolicyAutopilot(debtManager.isAutopilot());
+        // The holdings dial, the households' paper ratio, and what a buyback
+        // between the presses still has to declare (0.7.1), each under its own key.
+        dataSave.setQeTargetShare(centralBank.getTargetShare());
+        // ...and the advances ceiling dial beside it (0.7.2), under its own key.
+        dataSave.setAdvancesCeilingMonths(centralBank.getAdvancesCeilingMonths());
+        dataSave.setHouseholdPaperRatio(householdBalance.getPaperRatio());
+        dataSave.setBuybackUnsettled(buybackToHouseholdsUnsettled, buybackAbroadUnsettled);
         dataSave.setCostOfLiving(labourMarket.getCostOfLiving());
         /*
          * THE MOTORING, in the two figures the road cannot rebuild. The cars
@@ -6056,13 +6476,12 @@ public class Game {
         dataSave.setSubsidisedSectors(getSubsidisedSectors());
         dataSave.setSalesTax(economyManager.getSalesTaxState());
 
-        // The land office's window, the ore under the city, and the retainer.
+        // The land office's window and the ore under the city.
         dataSave.setLandState(
                 landManager.getMarket().getListingState(),
                 landManager.getIronDeposits(),
                 landManager.getIronReserveTonnes());
         dataSave.setLandMarketPrices(landManager.getMarket().getPriceState());
-        dataSave.setConstructionSubsidy(constructionSubsidy);
         dataSave.setConstructionShedding(constructionShedMonth, constructionShedPoints);
 
         dataSave.setNationalAccounts(economyManager.getNationalAccountsState());
@@ -6128,6 +6547,7 @@ public class Game {
         dataSave.setTreasuryJournal(treasuryJournal.closedLabels(), treasuryJournal.closedAmounts(),
                 treasuryJournal.pendingLabels(), treasuryJournal.pendingAmounts());
         dataSave.setTreasuryRaisedPending(treasuryRaisedSoFar);
+        dataSave.setCityPaperUnsettled(getCityPaperUnsettled(), cityDiscountThisMonth + cityDiscountForBank);
         dataSave.setGovernmentMonth(economyManager.governmentMonthToSave());
         dataSave.setReports(reports);
         dataSave.setGraphs(graphs);
@@ -6239,8 +6659,13 @@ public class Game {
     //calculations
     
     public void subtractCash(double amount){
-        cash -= amount;
+        // Principal falling due is a promise (0.7.0): paid whatever the
+        // treasury holds, advances past the ceiling included. See treasuryPays().
+        treasuryPays(TreasuryLine.PRINCIPAL, amount);
         cityPrincipalRepaidThisMonth += amount;
+        // ...to the bank, which is who this reaches at the settle; the other
+        // holders' shares are paid by payDomesticPrincipal() (0.7.1).
+        bankPrincipalRepaidThisMonth += amount;
     }
 
     /* =======================================================================
@@ -6281,7 +6706,7 @@ public class Game {
      */
     public void repayForeignPrincipal(double usd) {
         double local = usd * foreign.getRate();
-        cash -= local;
+        treasuryPays(TreasuryLine.FOREIGN_PRINCIPAL, local);
         foreignPrincipalRepaidThisMonth += local;
     }
 
@@ -6303,17 +6728,22 @@ public class Game {
      */
     public void payForeignInterest(double usd) {
         double local = usd * foreign.getRate();
-        cash -= local;
+        treasuryPays(TreasuryLine.FOREIGN_INTEREST, local);
         foreignInterestPaidThisMonth += local;
     }
 
     /*
-     * THE WORLD'S SIDE OF THE CITY'S DEBT, for MoneyAudit.
+     * WHAT THE CITY HAS SOLD ITS BANK AND THE BANK HAS NOT YET PAID FOR.
      *
-     * Bonds and bills are the one place the treasury's cash moves against the
-     * outside world inside a month tick without going through a statement:
-     * an emergency note raises cash, a maturing slice repays it. Counted here,
-     * zeroed at the top of nextMonth(), never saved.
+     * Every issue lands between two presses - the finance screen, the build
+     * screen's funding (and the emergency note, until 0.7.0) - and
+     * adds what the treasury received here. The top of the next month hands
+     * it to the settlement (cityDebtRaisedForBank) and clears it; see THE
+     * BANK PAYS FOR THE CITY'S PAPER. SAVED since 2026-09-21, with the
+     * discount beside it: a city saved between the issue and the settle has
+     * already been paid for paper its bank has not paid for, and a reload
+     * that dropped the figure would hand the bank the bond for nothing - the
+     * very bug the settlement exists to end, by the load path.
      */
     private double cityDebtRaisedThisMonth;
 
@@ -6327,6 +6757,13 @@ public class Game {
      * out in the wash as equity that had appeared from nowhere: $101.76 in one
      * month of a small city, found by asserting that equity moves by net income
      * and nothing else.
+     *
+     * SINCE 0.7.1 THE PAPER CARRIES ITS OWN DISCOUNT (Debt.getIssueDiscount())
+     * and the bank earns it as it accretes, so the settle no longer books this
+     * figure. It is still kept and saved, under the key batch A gave it, for
+     * what it tells a load: a save from 0.7.0 taken between an issue and its
+     * settle carries paper with no discount of its own, and this is what its
+     * bank is owed at the settle (legacyDiscountDue).
      */
     private double cityDiscountThisMonth;
     private double cityPrincipalRepaidThisMonth;
@@ -6336,12 +6773,280 @@ public class Game {
      *
      * cityDebtRaisedThisMonth is cleared at the top of nextMonth(), so by the
      * time the bank settles at the bottom it holds this month's issuance and
-     * not the one the bank is being told about. Snapshotted rather than read.
+     * not the one the bank is being told about. Snapshotted rather than read -
+     * and snapshotted BEFORE the clear since 2026-09-21, which is the whole of
+     * the fix: from 0.4.3 at least to 0.6.10 the snapshot sat after the
+     * clear and read zero, and the bank never paid for a bond.
+     * Zeroed again once the settle has paid, so what the bank still owes for
+     * paper is exactly getCityPaperUnsettled().
      */
     private double cityDebtRaisedForBank;
     private double cityDiscountForBank;
+
+    /** A 0.7.0 save's discount on paper saved between its issue and its settle, booked whole at the settle as that save's bank would have. Set only by the load path; see cityDiscountThisMonth. */
+    private double legacyDiscountDue;
+
+    /**
+     * What the bank owes the treasury for paper it has taken and not yet
+     * settled: sold between the presses and not yet paid for at the bottom of
+     * a month. MoneyAudit carries it against the bank's pool, because the
+     * treasury already holds the cash - so an issue between two months moves
+     * no money in or out of the city's pools, and neither does the settle.
+     */
+    public double getCityPaperUnsettled() { return cityDebtRaisedThisMonth + cityDebtRaisedForBank; }
+
+    /**
+     * What the bank handed the treasury for its paper at this month's settle.
+     * A flow of the month, read by LongPlaytest as the month ends and by
+     * nothing in the game; zero on a freshly loaded city until the next
+     * settle, which is what a month nobody has struck reads.
+     */
+    private double cityPaperSettled;
+    public double getCityPaperSettled()      { return cityPaperSettled; }
     double getCityDebtRaisedThisMonth()      { return cityDebtRaisedThisMonth; }
     public double getCityPrincipalRepaidThisMonth() { return cityPrincipalRepaidThisMonth; }
+    /** ...of which the commercial bank's share, which is what it takes at the settle (0.7.1). */
+    public double getBankPrincipalRepaidThisMonth() { return bankPrincipalRepaidThisMonth; }
+    private double bankPrincipalRepaidThisMonth;
+
+    /* =======================================================================
+       THE HOLDERS ARE PAID (0.7.1)
+
+       Jerus, on the holders: "yes households should be able to hold." Until
+       0.7.1 every coupon and every dollar of principal on the city's own paper
+       went to the bank, because the bank held all of it. Now a piece of paper
+       says who holds it (Debt, WHO HOLDS IT), and what it pays is split by
+       the shares struck BEFORE the payment:
+
+         - the BANK's share goes the way it always went: the coupon into the
+           month's interest accrual, paid with next month's budget and taken
+           at that settle; the principal to the bank at this one;
+         - the HOUSEHOLDS' share is paid now, from the treasury into their
+           savings - the coupon as investment income, untaxed as the foreign
+           coupon is, the principal with their paper down by the same - and
+           declared to the audit, because households are outside its pools;
+         - the CENTRAL BANK's share is paid now too, and destroyed: its income,
+           remitted back to the treasury the month after - "debt to itself".
+
+       THE TREASURY'S BILL IS THE WHOLE BILL. The government's books are
+       struck on cityInterestPaid, which carries every holder's coupon, the
+       way the foreign coupon is put back on them (payForeignInterest()); and
+       the bridge's repaid row carries every holder's principal.
+       ======================================================================= */
+
+    /** Coupons and principal paid to the households on their paper, and what they paid for it at issue - this month's, for MoneyAudit. */
+    private double couponsToHouseholds, principalToHouseholds, householdsBoughtPaper;
+
+    public double getCouponsToHouseholds()   { return couponsToHouseholds; }
+    public double getPrincipalToHouseholds() { return principalToHouseholds; }
+    public double getHouseholdsBoughtPaper() { return householdsBoughtPaper; }
+
+    /**
+     * Of a payment on this paper, the households' and the central bank's
+     * shares, struck before it: each holder's principal over what is
+     * outstanding, times the payment. One line since 0.7.3 - there were two
+     * branches, for a payment at or past the principal and one under it, and
+     * they were the same product (a floating-point multiply commutes, so
+     * hh x owed and owed x hh are the same double) under a test that chose
+     * between them.
+     */
+    private double[] holderShares(Debt paper, double owed) {
+        double out = paper.getOustandingPrincipal();
+        double hh = paper.householdPrincipal(), cb = paper.centralBankPrincipal();
+        if (!(out > 0) || !(owed > 0) || hh + cb <= 0) return new double[] { 0, 0 };
+        return new double[] { owed * hh / out, owed * cb / out };
+    }
+
+    /** A coupon on the city's own paper, split by holder. See THE HOLDERS ARE PAID. */
+    public void payDomesticCoupon(Debt paper, double owed) {
+        double[] s = holderShares(paper, owed);
+        InterestExpense(owed - s[0] - s[1]);
+        double outside = s[0] + s[1];
+        if (!(outside > 0)) return;
+        double paid = treasuryPays(TreasuryLine.INTEREST, outside);
+        cityInterestPaid += paid;
+        householdBalance.creditPaperCoupon(s[0]);
+        couponsToHouseholds += s[0];
+        centralBank.takeCoupon(s[1]);
+    }
+
+    /** Principal on the city's own paper, split by holder: the bank's through subtractCash(), the rest paid now and taken off their holdings. */
+    public void payDomesticPrincipal(Debt paper, double owed) {
+        double[] s = holderShares(paper, owed);
+        subtractCash(owed - s[0] - s[1]);
+        double outside = s[0] + s[1];
+        if (!(outside > 0)) return;
+        treasuryPays(TreasuryLine.PRINCIPAL, outside);
+        cityPrincipalRepaidThisMonth += outside;
+        paper.moveToHouseholds(-s[0]);
+        paper.moveToCentralBank(-s[1]);
+        householdBalance.creditPaperPrincipal(s[0]);
+        principalToHouseholds += s[0];
+        centralBank.takePrincipal(s[1]);
+    }
+
+    /* ----------------------- the desk, for the households ----------------------- */
+
+    /**
+     * THE BANK BUYS THE HOUSEHOLDS' PAPER (0.7.1), for the waterfall, the
+     * spread gone, or a household on its way out of the city: this much face
+     * for this much cash, off every piece's household share pro rata, onto
+     * the bank's book with the unearned discount riding on it. The cash
+     * leaves the bank's pool for a household - declared by MoneyAudit as
+     * "- desk PaperBoughtFromHouseholds".
+     */
+    private void desksBuysHouseholdPaper(double face, double cash) {
+        double held = debtManager.householdPrincipal();
+        if (!(face > 0) || held <= 0) return;
+        double take = Math.min(face, held);
+        double unearned = 0;
+        for (Debt d : debtManager.getDebt()) {
+            double mine = d.householdPrincipal();
+            if (mine <= 0) continue;
+            double off = mine >= held ? take : take * mine / held;
+            off = Math.min(off, mine);
+            unearned += d.unaccretedOn(off);
+            d.moveToHouseholds(-off);
+        }
+        bank.buyPaperFromHouseholds(cash, take, unearned);
+    }
+
+    /* -------------------- THE HOUSEHOLDS TAKE THEIR SHARE (0.7.1) --------------------
+
+       At the settle of an issue - the month after the treasury sold it -
+       before the bank pays and before the month's coupon, so the first coupon
+       and the first month of the discount are split by the holders the paper
+       settled to. Each piece of paper still owed for (Debt.getSettleDue())
+       is offered at its issue yield; the households want the share of it
+       HouseholdBalance.paperShareAt() gives against the deposit rate, and
+       take what their savings past the cushion can pay, pro rata across the
+       pieces and the cells. Their cash is what the bank does not have to pay:
+       the treasury was paid at issue, so it is the bank's settle that shrinks.
+       Their paper is the face they bought at the issue's price - face times
+       cash over received, so the discount is theirs to earn at maturity.
+       --------------------------------------------------------------------------- */
+    /** A harness's look at the households either side of their share of the settle (HoldersCheck): false before, true after. Null in play. */
+    java.util.function.Consumer<Boolean> settleProbeForTest;
+
+    private double householdsTakeTheirShare() {
+        java.util.List<Debt> settling = new java.util.ArrayList<>();
+        double wanted = 0;
+        double depositRate = bank.depositRate();
+        for (Debt d : debtManager.getDebt()) {
+            if (d.isForeign() || d.getSettleDue() <= 0) continue;
+            settling.add(d);
+            wanted += HouseholdBalance.paperShareAt(d.getIssueYield(), depositRate) * d.getSettleDue();
+        }
+        double paid = 0;
+        if (wanted > 0) {
+            double spare = householdBalance.spareForPaper();
+            double take = Math.min(wanted, spare);
+            if (take > 0) {
+                // The face per dollar is the mix they buy: every settling
+                // piece in proportion to what they want of it.
+                double face = 0;
+                for (Debt d : settling) {
+                    double cash = take * HouseholdBalance.paperShareAt(d.getIssueYield(), depositRate)
+                            * d.getSettleDue() / wanted;
+                    face += d.getOustandingPrincipal() * cash / d.getSettleDue();
+                }
+                paid = householdBalance.buyAtIssue(take, face / take);
+                double scale = take > 0 ? paid / take : 0;
+                for (Debt d : settling) {
+                    double cash = take * HouseholdBalance.paperShareAt(d.getIssueYield(), depositRate)
+                            * d.getSettleDue() / wanted;
+                    d.moveToHouseholds(d.getOustandingPrincipal() * cash / d.getSettleDue() * scale);
+                }
+            }
+        }
+        for (Debt d : settling) d.settled();
+        householdsBoughtPaper += paid;
+        return paid;
+    }
+
+    /* ======================================================================
+       THE HOLDINGS DIAL, AT THE TOP OF THE MONTH (0.7.1)
+
+       Jerus: "the central bank would buy gbonds or sell gbonds from thin air
+       basically ... like QE and QT, just like USA does." Once a month, after
+       the treasury has settled with its central bank (settleTreasury()) and
+       before anything is priced (startOfMonthUpdate()), the central bank
+       moves its holding of the city's term paper toward its dial: the target
+       is CentralBank.getTargetShare() of the term paper outstanding, and the
+       step is at most CentralBank.QE_SPEED of the larger of the dial and the
+       setting before it (CentralBank.stepFor()) - so a move from one setting
+       to another takes four months at most, buying or selling, and exactly
+       four from nothing or to nothing. After last month's settle, so the
+       commercial bank owns everything it sells - paper still owed for
+       (getSettleDue()) is not offered; and before the market is priced, so
+       this month's quotes carry the compression it buys. Pro rata across the
+       bank's term paper when buying and across its own when selling, at the
+       curve's market value.
+       ====================================================================== */
+    private void openMarketOperation() {
+        double term = debtManager.termPrincipal();
+        double held = centralBank.getPaperHeld();
+        double target = centralBank.getTargetShare() * term;
+        double step = centralBank.stepFor(term);
+        double move = Math.max(-step, Math.min(step, target - held));
+        if (Math.abs(move) <= 1e-9 * Math.max(1, term)) return;
+        java.util.List<Debt> pieces = new java.util.ArrayList<>();
+        double pool = 0;
+        for (Debt d : debtManager.getDebt()) {
+            if (!DebtManager.isTermPaper(d)) continue;
+            double available = move > 0
+                    ? (d.getSettleDue() > 0 ? 0 : d.bankPrincipal())
+                    : d.centralBankPrincipal();
+            if (available <= 0) continue;
+            pieces.add(d);
+            pool += available;
+        }
+        double face = Math.min(Math.abs(move), pool);
+        if (!(face > 0)) return;
+        double price = 0, unearned = 0;
+        double[] faceOf = new double[pieces.size()];
+        for (int i = 0; i < pieces.size(); i++) {
+            Debt d = pieces.get(i);
+            double available = move > 0 ? d.bankPrincipal() : d.centralBankPrincipal();
+            double f = face >= pool ? available : face * available / pool;
+            faceOf[i] = f;
+            double out = d.getOustandingPrincipal();
+            price += debtManager.marketValue(d) * f / out;
+            unearned += d.unaccretedOn(f);
+        }
+        for (int i = 0; i < pieces.size(); i++) {
+            pieces.get(i).moveToCentralBank(move > 0 ? faceOf[i] : -faceOf[i]);
+        }
+        if (move > 0) {
+            centralBank.buyPaper(price, face);
+            bank.sellPaperToCentralBank(price, face, unearned);
+        } else {
+            centralBank.sellPaper(price, face);
+            bank.buyPaperFromCentralBank(price, face, unearned);
+        }
+    }
+
+    /* ----------------------- a buyback's holders outside the pools ----------------------- */
+
+    /**
+     * What a buyback between two presses paid the households and the holders
+     * of a dollar bond, carried in the treasury's pool until the next month
+     * declares it leaving (MoneyAudit.pools()) - the shape the bank's unsettled
+     * paper has on the other side. The central bank's share is carried as its
+     * own redemption (CentralBank.getRedemptionDue()). Saved under their own
+     * keys; an old save owes nothing.
+     */
+    private double buybackToHouseholdsUnsettled, buybackAbroadUnsettled;
+    /** ...and declared this month. */
+    private double buybackToHouseholds, buybackAbroad;
+
+    /** What the treasury has paid out of the pools for a buyback and the audit has not yet seen leave. */
+    public double getBuybackUnsettled() {
+        return buybackToHouseholdsUnsettled + buybackAbroadUnsettled + centralBank.getRedemptionDue();
+    }
+
+    public double getBuybackToHouseholds() { return buybackToHouseholds; }
+    public double getBuybackAbroad()       { return buybackAbroad; }
 
     /* =======================================================================
        WHAT THE TREASURY ACTUALLY DID
@@ -6398,8 +7103,8 @@ public class Game {
      *
      * NOT cityDebtRaisedThisMonth + foreignDebtRaisedThisMonth, which is what
      * the strike read until 2026-09-18 and which is always zero there: every
-     * issue - the player's, from the finance screen, and the emergency note at
-     * the top of nextMonth() - lands before the top-of-tick clear at
+     * issue - the player's, from the finance screen, and (until 0.7.0) the
+     * emergency note at the top of nextMonth() - lands before the top-of-tick clear at
      * `cityDebtRaisedThisMonth = 0`, and nothing issues inside the tick. So the
      * "Raised by issuing paper" row read $0 on a month the city borrowed
      * $20M, and the $20M sat in "Everything else". Measured with a probe on
@@ -6549,6 +7254,248 @@ public class Game {
     
     
     /* =====================================================================
+       THE CENTRAL BANK AND THE TREASURY (0.7.0)
+
+       Jerus: "the feds sheet would show how much debt it holds, like debt to
+       itself aka money printing."
+
+       THE OVERDRAFT WAS AN EMERGENCY NOTE until 0.7.0. A treasury below zero
+       at the top of a month issued a six-month note for the gap
+       (issueEmergencyDebt, on EMERGENCY_NOTE_MONTHS - "Jerus's call ... long
+       enough that a city has a real chance to fix the underlying problem or
+       refinance into something longer, short enough that it still hurts"),
+       priced like any other bill and sold to the bank. It had no limit. Until
+       0.6.11 the bank never paid for the notes, and a broke city lived on free
+       money; once it did, the notes priced at 27-36% and a city held at a 10%
+       policy rate compounded to $193 quadrillion - the free number had been
+       the floor (the-bank-that-never-paid.md section 3).
+
+       NOW THE CENTRAL BANK ADVANCES IT. The shortfall at the top of a month is
+       advanced at the policy rate (settleTreasury()), the interest is paid
+       monthly and comes back as the remittance less what reserves cost, and
+       cash above zero repays it first thing, before anything else. The
+       advances stop at the ceiling - the player's dial since 0.7.2, in months
+       of the treasury's trailing revenue (CentralBank.ceiling()) - and past
+       that, Jerus's rule, chosen the night it was written: "pay promises
+       first, cut the rest." Every payment the treasury makes goes through
+       treasuryPays(), which reads TreasuryLine's two flags: a promise is paid
+       whatever it takes, a discretionary line only from cash at or above
+       zero once the ceiling has bound, and what is refused is owed -
+       arrears, interest-free, paid down before anything discretionary once
+       cash returns. A refused purchase is simply not made.
+       A save still carrying an old emergency note reads it and runs it off
+       like any other note.
+       ===================================================================== */
+
+    /**
+     * What the treasury owes and has not paid, by line and by whom it is owed
+     * - "LINE" or "LINE:sector" - in thousands. Saved; an old save has none.
+     */
+    private final java.util.Map<String, Double> arrears = new java.util.LinkedHashMap<>();
+
+    /** This month's arrears: refused and booked, and paid down. For the screens and the playtest. */
+    private double arrearsRefusedThisMonth, arrearsPaidThisMonth;
+
+    /** Refused and paid down since founding, for the playtest's record. Not saved: a count for the run. */
+    private double arrearsRefusedLifetime, arrearsPaidLifetime;
+
+    /**
+     * The treasury's month with its central bank, first thing - inside the
+     * audit's window, so every dollar made or destroyed here is one the month
+     * declares.
+     *
+     * In this order: the interest on last month's advances, a promise; last
+     * month's profit back as the remittance, which is mostly that interest
+     * less what reserves cost; cash above zero repays the advances before
+     * anything else; what is left pays down arrears; and a shortfall is
+     * advanced whole - a promise already paid for it, past the ceiling if it
+     * had to be, because treasuryPays() never let a discretionary line spend
+     * past it. The two budget lines are set here so the government's books
+     * carry them when they are struck at the bottom.
+     */
+    private void settleTreasury() {
+        arrearsRefusedThisMonth = 0;
+        arrearsPaidThisMonth = 0;
+
+        double interest = treasuryPays(TreasuryLine.CENTRAL_BANK_INTEREST,
+                centralBank.advancesInterestDue(debtManager.getPolicyRate()));
+        centralBank.chargeAdvances(interest);
+
+        double remitted = centralBank.remit();
+        cash += remitted;
+        economyManager.setCentralBankLines(remitted, interest);
+
+        if (cash > 0 && centralBank.getAdvancesToTreasury() > 0) {
+            double repaid = centralBank.repayFromTreasury(cash);
+            cash -= repaid;
+            treasuryJournal.record("Repaid the central bank", -repaid);
+        }
+
+        if (cash > 0) payDownArrears();
+
+        if (cash < 0) {
+            double advanced = centralBank.advanceToTreasury(-cash);
+            cash += advanced;
+            treasuryJournal.record("Advanced by the central bank (printed)", advanced);
+        }
+    }
+
+    /**
+     * EVERY PAYMENT THE TREASURY MAKES, through one door (0.7.0).
+     *
+     * A promise is paid in full whatever the treasury holds. A discretionary
+     * line is paid what discretionaryRoom() allows; the rest is refused, and
+     * if the line owes its refusals (TreasuryLine.accruesArrears()) it is
+     * booked as arrears. A purchase's caller checks it can pay before it
+     * buys, so a purchase that reaches here is always paid whole.
+     *
+     * @return what was paid, which the caller hands to whoever was owed it
+     */
+    public double treasuryPays(TreasuryLine line, double amount) {
+        return treasuryPays(line, amount, null);
+    }
+
+    /** ...and with whom a refusal is owed to - a sector's key, or null. */
+    double treasuryPays(TreasuryLine line, double amount, String payee) {
+        if (line == null || !(amount > 0)) return 0;
+        double paid = line.promise ? amount : Math.min(amount, discretionaryRoom());
+        if (!(paid > 0)) paid = 0;
+        cash -= paid;
+        double refused = amount - paid;
+        if (refused > 0 && line.accruesArrears()) {
+            arrears.merge(arrearsKey(line, payee), refused, Double::sum);
+            arrearsRefusedThisMonth += refused;
+            arrearsRefusedLifetime += refused;
+        }
+        return paid;
+    }
+
+    /**
+     * What the treasury may spend on something that is not a promise, now.
+     *
+     * Until the ceiling binds, its cash and whatever the central bank will
+     * still advance it. Once it has - the advances at the ceiling, or arrears
+     * still owed, which is the ceiling having bound and not yet been paid
+     * off - only cash at or above zero.
+     */
+    public double discretionaryRoom() {
+        if (centralBank.ceilingBound() || hasArrears()) return Math.max(0, cash);
+        return Math.max(0, cash + centralBank.headroom());
+    }
+
+    /**
+     * Pays down what is owed, oldest first, out of cash above zero. The
+     * sectors' arrears go to their tills - a transfer, like the subsidy or
+     * the repair bill it was - and the students' are paid with the next grant
+     * (payStudentGrants()), because the grant reaches the households through
+     * their ledger and nowhere else.
+     */
+    private void payDownArrears() {
+        java.util.Iterator<java.util.Map.Entry<String, Double>> it = arrears.entrySet().iterator();
+        while (it.hasNext() && cash > 0) {
+            java.util.Map.Entry<String, Double> owed = it.next();
+            TreasuryLine line = arrearsLine(owed.getKey());
+            if (line == null || line == TreasuryLine.STUDENT_GRANTS) continue;
+            Sector payee = arrearsPayee(owed.getKey());
+            if (payee == null) continue;
+            double paid = treasuryPays(line, Math.min(cash, owed.getValue()));
+            payee.addCash(paid);
+            arrearsPaidThisMonth += paid;
+            arrearsPaidLifetime += paid;
+            treasuryJournal.record("Paid down arrears", -paid);
+            if (owed.getValue() - paid <= 1e-9) it.remove();
+            else owed.setValue(owed.getValue() - paid);
+        }
+    }
+
+    /**
+     * The month's student grants, arrears first. The bill as the students'
+     * ledger will be told it (EconomyManager.setOutsidePayments()) is what
+     * was actually paid, so the households, the budget's grant line and the
+     * audit's "- e StudentGrants" all read one figure - and since 0.7.1 in
+     * the same month: paid at the top of it, a few lines before the ledger is
+     * told.
+     */
+    private double payStudentGrants(double bill) {
+        String key = arrearsKey(TreasuryLine.STUDENT_GRANTS, null);
+        double owed = arrears.getOrDefault(key, 0.0);
+        double backPay = 0;
+        if (owed > 0) {
+            backPay = treasuryPays(TreasuryLine.STUDENT_GRANTS, Math.min(owed, Math.max(0, cash)));
+            if (owed - backPay <= 1e-9) arrears.remove(key);
+            else arrears.put(key, owed - backPay);
+            arrearsPaidThisMonth += backPay;
+            arrearsPaidLifetime += backPay;
+        }
+        double paid = treasuryPays(TreasuryLine.STUDENT_GRANTS, bill);
+        economyManager.setOutsidePayments(economyManager.getEiBenefits(), backPay + paid);
+        return backPay + paid;
+    }
+
+    /**
+     * The month's EI, struck again on the pool the month opens with at the
+     * dial as the player left it (Unemployment.restrikeBenefits()) and paid
+     * in full - a promise - at the top of the month, where the out of work
+     * are credited it (0.7.3). The bill the ledger is told
+     * (EconomyManager.setOutsidePayments()) is what was paid, so the
+     * households, the budget's EI line and the audit's "- e EiBenefits" read
+     * one figure in one month.
+     */
+    private double payEiBenefits() {
+        double bill = unemployment.restrikeBenefits(economyManager.getTaxPolicy().getEiBenefitRate());
+        double paid = treasuryPays(TreasuryLine.EI_BENEFITS, bill);
+        economyManager.setOutsidePayments(paid, economyManager.getStudentGrants());
+        return paid;
+    }
+
+    private static String arrearsKey(TreasuryLine line, String payee) {
+        return payee == null ? line.name() : line.name() + ":" + payee;
+    }
+
+    private static TreasuryLine arrearsLine(String key) {
+        int colon = key.indexOf(':');
+        try {
+            return TreasuryLine.valueOf(colon < 0 ? key : key.substring(0, colon));
+        } catch (IllegalArgumentException unknown) {
+            return null;
+        }
+    }
+
+    /** Whose till an arrear is owed to: the named sector, or the builders for the construction lines. */
+    private Sector arrearsPayee(String key) {
+        int colon = key.indexOf(':');
+        if (colon >= 0) return getSectors().byKey(key.substring(colon + 1));
+        TreasuryLine line = arrearsLine(key);
+        return line == TreasuryLine.CONSTRUCTION_SUBSIDY || line == TreasuryLine.CITY_REPAIRS
+                ? getSectors().construction() : null;
+    }
+
+    /** True while anything is owed and unpaid. */
+    public boolean hasArrears() { return !arrears.isEmpty(); }
+
+    /** Everything owed and unpaid. */
+    public double getArrearsTotal() {
+        double total = 0;
+        for (double v : arrears.values()) total += v;
+        return total;
+    }
+
+    /** Owed and unpaid, by line - the Government tab's list, in TreasuryLine's order. */
+    public java.util.Map<TreasuryLine, Double> getArrearsByLine() {
+        java.util.Map<TreasuryLine, Double> out = new java.util.EnumMap<>(TreasuryLine.class);
+        for (java.util.Map.Entry<String, Double> e : arrears.entrySet()) {
+            TreasuryLine line = arrearsLine(e.getKey());
+            if (line != null) out.merge(line, e.getValue(), Double::sum);
+        }
+        return out;
+    }
+
+    public double getArrearsRefusedThisMonth() { return arrearsRefusedThisMonth; }
+    public double getArrearsPaidThisMonth()    { return arrearsPaidThisMonth; }
+    public double getArrearsRefusedLifetime()  { return arrearsRefusedLifetime; }
+    public double getArrearsPaidLifetime()     { return arrearsPaidLifetime; }
+
+    /* =====================================================================
        BUYING YOUR OWN DEBT BACK
 
        The other half of the finance menu. Issuing turns future payments into
@@ -6556,12 +7503,16 @@ public class Game {
        whatever the paper is actually worth rather than what it says on it.
        ===================================================================== */
 
-    /** What one bond would cost to clear right now, at the standing rate. */
+    /**
+     * What one bond would cost to clear right now: at the curve's rate for the
+     * months it has left (0.7.1) - DebtManager.marketValue(), the same curve
+     * it was issued on, which is what keeps a round trip neutral.
+     */
     public double quoteRepurchase(Debt debt) {
         if (debt == null) return 0;
         priceTheDebtMarket();
         debtManager.updateInterest();
-        return debt.getMarketValue(debtManager.getRate());
+        return debtManager.marketValue(debt);
     }
 
     /** What the city would book as a gain (positive) or loss (negative). */
@@ -6576,10 +7527,11 @@ public class Game {
      * PAID FOR IN CASH, AND ONLY IN CASH. A city that cannot afford this is
      * refused rather than allowed to go overdrawn for it, and that is a rule
      * about what the action MEANS, not a safety check: the overdraft is priced
-     * as principal by the same market (getPricedDebt) and charged the emergency
-     * rate, so borrowing at the worst rate available in order to retire cheaper
-     * paper is strictly worse than doing nothing. Letting the button do it would
-     * be handing the player a trap with a green tick on it.
+     * as principal by the same market (getPricedDebt) - and since 0.7.0 it is
+     * the central bank's advance, which a buyback is a discretionary line
+     * against (TreasuryLine.BUYBACKS) - so borrowing in order to retire paper
+     * is doing the same thing twice with a cost in between. Letting the button
+     * do it would be handing the player a trap with a green tick on it.
      *
      * THE PRICE IS STRUCK ONCE, and the quote the player was shown is the quote
      * they get. Re-pricing after taking the cash would move the rate (cash
@@ -6599,14 +7551,58 @@ public class Game {
             return 0;
         }
 
+        double principal = debt.getOustandingPrincipal();
+        // Who holds it, struck before it comes off the list (0.7.1).
+        double hhFace = debt.householdPrincipal(), cbFace = debt.centralBankPrincipal();
+        double bankFace = debt.bankPrincipal();
+        double bankUnearned = debt.unaccretedOn(bankFace);
         if (!debtManager.retire(debt)) {
             return 0;   // not on the books; do not charge for it
         }
 
-        cash -= price;
+        treasuryPays(TreasuryLine.BUYBACKS, price);
         // Not a repayment - retire() takes it off the books without touching
         // cityPrincipalRepaidThisMonth - so the bridge names it here.
         treasuryJournal.record("Bought back a bond", -price);
+        /*
+         * ...AND EVERY HOLDER IS PAID ITS SHARE (0.7.0, and by holder since
+         * 0.7.1). A buyback used to pay nobody: the cash left the treasury,
+         * the bond came off the list, and the bank's book fell by the
+         * principal at the next refresh with nothing arriving. Now the price
+         * is split by who held the paper, pro rata to principal:
+         *
+         *   - the BANK's share goes to its cash and its book drops by its face
+         *     now, with the discount it had not yet earned on it; the
+         *     difference is its gain or loss (Bank.sellPaperBack());
+         *   - the HOUSEHOLDS' share goes to their savings with their paper
+         *     down by their face;
+         *   - the CENTRAL BANK's share comes off its book at face, and the
+         *     price - money destroyed, the treasury having paid the boundary -
+         *     settles at the top of next month with its gain against face;
+         *   - and a DOLLAR bond's whole price leaves the country.
+         *
+         * The last three are paid out of the pools between two presses, so the
+         * treasury's pool carries what it paid them (getBuybackUnsettled())
+         * until the next month declares it leaving - households, abroad, the
+         * central bank's money destroyed - which is where the audit sees it,
+         * rather than cash leaving the treasury for nowhere (the dollar case
+         * until 0.7.1: the-central-bank-opens.md section 4).
+         */
+        if (debt.isForeign()) {
+            buybackAbroadUnsettled += price;
+            // The stock the world is owed moves now, as it does when one is
+            // issued (handleForeignLogic()); same rate, so no revaluation.
+            foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
+        } else {
+            double hhPrice = principal > 0 ? price * hhFace / principal : 0;
+            double cbPrice = principal > 0 ? price * cbFace / principal : 0;
+            bank.sellPaperBack(price - hhPrice - cbPrice, bankFace, bankUnearned);
+            if (hhFace > 0) {
+                householdBalance.creditPaperBuyback(hhFace, hhPrice);
+                buybackToHouseholdsUnsettled += hhPrice;
+            }
+            if (cbFace > 0) centralBank.paperBoughtBack(cbPrice, cbFace);
+        }
 
         // Both sides moved - one bond fewer, and less cash - so the market has
         // to be told before anything reads the rate again.
@@ -6616,45 +7612,6 @@ public class Game {
         return price;
     }
 
-   /**
-    * The build-funding bill: raises a stated amount of CASH, not face value.
-    *
-    * NOTE: this used to take a face value already grossed up by the caller off
-    * debtManager.getRate() - the STANDING rate, struck before this bill was on
-    * the books. Two things were wrong with that. It priced the loan against a
-    * balance sheet that stopped existing the moment the money arrived, which is
-    * exactly what the repricing was meant to end; and because the screen did the
-    * same sum separately, the number shown to the player and the number booked
-    * were two independent calculations that only happened to agree.
-    *
-    * It takes the cash the city needs now and quotes it like any other bill.
-    *
-    * @param cashNeeded what has to reach the treasury
-    * @return the terms actually struck, so a caller can show them
-    */
-   public DebtQuote issueEmergencyDebt(double cashNeeded, int duration){
-
-       DebtQuote quote = quoteTBill(cashNeeded, duration, 1000.0);
-       if (quote.isEmpty()) return quote;
-
-       System.out.println("A note of $" + formatter.format(quote.faceValue())
-               + " with duration of " + duration
-               + " was issued for $" + formatter.format(quote.cashReceived())
-               + String.format(" at %.2f%%.", quote.marketRate() * 100));
-
-       debtManager.addShortTermTBill(quote.faceValue(), duration, month);
-       cash += quote.cashReceived();
-       cityDebtRaisedThisMonth += quote.cashReceived();
-       cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
-       treasuryRaisedSoFar += quote.cashReceived();
-
-       // The books have changed, so the standing rate has too. Leaving this out
-       // let a city borrow and go on being quoted its pre-loan rate until the
-       // next month tick.
-       debtManager.updateInterest();
-       return quote;
-   }
-    
    /**
     * Set by loadGame() from the save, consumed by the next
     * rebuildSimulationState(). -1 means "recompute", which is what a save from
@@ -6860,8 +7817,11 @@ public class Game {
     // band lands and the city's pension bill silently falls.
     economyManager.setSeniors(cohorts.get(AgeBand.SENIOR) + cohorts.get(AgeBand.ELDER));
     /*
-     * The month's EI and grant bills, as the save struck them - see
-     * advanceDemographics(). The grant is re-struck from the same rule the
+     * The month's EI and grant bills, as the save struck them. EI here is the
+     * pool's own bill, which since 0.7.3 is NEXT month's - the month paid the
+     * bill struck on the pool it opened with (payEiBenefits()) - so on a save
+     * with the government's month the figure the month paid comes back over
+     * this, below. The grant is re-struck from the same rule the
      * month used, which reproduces the bill exactly on the founding basis
      * and the fixed one; on a basis that reads last month's surplus or the
      * student body's tuition it cannot - the bottom of the tick overwrote
@@ -7228,6 +8188,24 @@ public class Game {
             }
             economyManager.setBankTax(loaded.getBankTaxCharged());
             foreign.restore(loaded.getForeignAccounts());
+            // The central bank's books, under their own key. A save from
+            // before 0.7.0 has none, and restore() leaves the bank buildWorld()
+            // founded - empty - which is that city's central bank: it had not
+            // made a dollar yet.
+            centralBank.restore(loaded.getCentralBank());
+            // ...and what the treasury owed and had not paid - nothing, on a
+            // save from before the arrears rule.
+            arrears.clear();
+            String[] owedKeys = loaded.getTreasuryArrearsKeys();
+            double[] owedAmounts = loaded.getTreasuryArrearsAmounts();
+            if (owedKeys != null && owedAmounts != null) {
+                for (int i = 0; i < Math.min(owedKeys.length, owedAmounts.length); i++) {
+                    if (owedKeys[i] != null && owedAmounts[i] > 0
+                            && arrearsLine(owedKeys[i]) != null) {
+                        arrears.put(owedKeys[i], owedAmounts[i]);
+                    }
+                }
+            }
             /*
              * LOAD-PATH PARITY, for the third time on this class.
              *
@@ -7259,7 +8237,26 @@ public class Game {
              * that is not derived from the city's books. A reload that dropped
              * it would quietly reset monetary policy to 3%.
              */
-            if (loaded.getPolicyRate() > 0) debtManager.setPolicyRate(loaded.getPolicyRate());
+            //
+            // WHATEVER WAS SAVED, zero included (0.7.0). This restored only a
+            // positive rate, which is how a save without the key was told
+            // apart from one with it - and so a city whose player had set the
+            // dial to 0% reloaded at 3%. The field is boxed now and null is
+            // the save without the key. See DataSave.getPolicyRate().
+            if (loaded.getPolicyRate() != null) debtManager.setPolicyRate(loaded.getPolicyRate());
+            // ...and whose hand was on it: an older save reads the player's.
+            debtManager.setAutopilot(loaded.getPolicyAutopilot());
+            // ...and the holdings dial beside it (0.7.1), after the balance
+            // sheet above, whose restore() founds an empty bank first and
+            // carries the setting before the dial. An older save reads 0: a
+            // central bank that holds nothing. Not setTargetShare(), which
+            // would record the empty bank's 0 as the setting before.
+            centralBank.restoreTargetShare(loaded.getQeTargetShare());
+            // ...and the advances ceiling (0.7.2), after the same restore(),
+            // which founds the default. An older save has no key and reads
+            // the default - six months, the constant it was.
+            centralBank.setAdvancesCeilingMonths(loaded.getAdvancesCeilingMonths() != null
+                    ? loaded.getAdvancesCeilingMonths() : CentralBank.DEFAULT_ADVANCES_MONTHS);
             hotMoney.restore(loaded.getCapitalFlows());
             hotMoney.setMonth(month);
             bank.setForeignDeposits(hotMoney.getStock());
@@ -7330,7 +8327,6 @@ public class Game {
             }
 
             economyManager.restoreSalesTaxState(loaded.getSalesTax());
-            this.constructionSubsidy = Math.max(0, loaded.getConstructionSubsidy());
 
             // The warning, restored with the crisis that caused it. A save from
             // before this was carried decodes to -1, which isConstructionShedding()
@@ -7358,6 +8354,17 @@ public class Game {
             treasuryJournal.restore(loaded.getTreasuryJournalLabels(), loaded.getTreasuryJournalAmounts(),
                     loaded.getTreasuryJournalPendingLabels(), loaded.getTreasuryJournalPendingAmounts());
             treasuryRaisedSoFar = loaded.getTreasuryRaisedPending();
+            // ...and the paper its bank has not yet paid for, which the next
+            // settle pays (THE BANK PAYS FOR THE CITY'S PAPER). Zero from an
+            // older save, which is what its bank would have paid.
+            cityDebtRaisedThisMonth = loaded.getCityPaperUnsettled();
+            cityDiscountThisMonth = loaded.getCityDiscountUnsettled();
+            cityDebtRaisedForBank = cityDiscountForBank = 0;
+            // What a buyback between the presses still has to declare, and the
+            // households' paper ratio their plan is re-struck on (0.7.1).
+            buybackToHouseholdsUnsettled = loaded.getBuybackToHouseholdsUnsettled();
+            buybackAbroadUnsettled = loaded.getBuybackAbroadUnsettled();
+            householdBalance.setPaperRatio(loaded.getHouseholdPaperRatio());
             // Held, not applied: rebuildSimulationState() has not run yet and
             // it ends by re-striking this block. Put back below it.
             loadedGovernmentMonth = loaded.getGovernmentMonth();
@@ -7561,6 +8568,22 @@ public class Game {
             }
 
             debtManager.setDebt(loadedDebts);
+
+            /*
+             * ...AND WHETHER THE PAPER STILL OWED FOR CARRIES ITS OWN DISCOUNT
+             * (0.7.1). Paper issued by this build knows what it is owed for
+             * (Debt.getSettleDue()) and accretes its own discount; a 0.7.0
+             * save taken between an issue and its settle carries a discount
+             * (cityDiscountThisMonth, read above) and paper that knows
+             * neither, and its bank books that discount whole at the settle,
+             * as it would have.
+             */
+            legacyDiscountDue = 0;
+            if (cityDiscountThisMonth > 0) {
+                boolean carriesItsOwn = false;
+                for (Debt d : loadedDebts) if (d.getSettleDue() > 0) carriesItsOwn = true;
+                if (!carriesItsOwn) legacyDiscountDue = cityDiscountThisMonth;
+            }
 
             // Load business loans. Same shape as the government debts above, in
             // its own array so the two hierarchies never have to be told apart
@@ -7801,12 +8824,20 @@ public class Game {
              * student body's tuition (see the re-strike's note). The block
              * that just came back carries the bill the month actually
              * struck, on the slot EI and the grants have had since 2026-09-11,
-             * so that is what the students are handed at the next strike -
-             * the same double, on the founding basis, and the right one on
-             * the others. A block from before that slot keeps the re-strike.
+             * so that is what the screens read until the next press - the
+             * same double, on the founding basis, and the right one on the
+             * others. A block from before that slot keeps the re-strike.
+             * (Until 0.7.1 it was also what the students were handed at the
+             * next strike; they are paid at the top of the month now, struck
+             * afresh on the students it opens with - see payStudentGrants().)
+             * ...AND THE EI THE MONTH PAID (0.7.3), from the same slots: it
+             * is paid at the top of the month on the pool the month opened
+             * with (payEiBenefits()), so the pool the save carries has
+             * already struck next month's, and the block is the only place
+             * the month's own figure survives.
              */
             if (loadedGovernmentMonth.length >= NationalAccounts.GOVERNMENT_SLOTS_WITH_GRANTS) {
-                economyManager.setOutsidePayments(unemployment.getBenefitsPaid(),
+                economyManager.setOutsidePayments(economyManager.getNationalAccounts().getEiBenefits(),
                         economyManager.getNationalAccounts().getStudentGrants());
             }
             // ...and the interest the graduates paid, which only the block
@@ -8073,7 +9104,6 @@ public class Game {
         denomination.lop(factor);
 
         cash *= scale;
-        constructionSubsidy *= scale;
         constructionShedPoints *= scale;
         lastWriteOff *= scale;
         cityCapitalSpending *= scale;
@@ -8107,11 +9137,29 @@ public class Game {
         cityPrincipalRepaidThisMonth *= scale;
         cityDebtRaisedForBank *= scale;
         cityDiscountForBank *= scale;
+        cityPaperSettled *= scale;
+        // The holders' figures (0.7.1), money like the rest of this block.
+        legacyDiscountDue *= scale;
+        buybackToHouseholdsUnsettled *= scale;
+        buybackAbroadUnsettled *= scale;
+        buybackToHouseholds *= scale;
+        buybackAbroad *= scale;
+        couponsToHouseholds *= scale;
+        principalToHouseholds *= scale;
+        householdsBoughtPaper *= scale;
+        bankPrincipalRepaidThisMonth *= scale;
         treasuryRaisedSoFar *= scale;
         treasuryJournal.redenominate(scale);
 
         economyManager.redenominate(scale);
         bank.redenominate(scale);
+        // The central bank's books and the treasury's arrears (0.7.0), which
+        // are money like everything else here; the ceiling's months and the
+        // window's penalty are not.
+        centralBank.redenominate(scale);
+        arrears.replaceAll((key, owed) -> owed * scale);
+        arrearsRefusedThisMonth *= scale;  arrearsPaidThisMonth *= scale;
+        arrearsRefusedLifetime *= scale;   arrearsPaidLifetime *= scale;
         foreign.redenominate(scale);
         hotMoney.redenominate(scale);
         outward.redenominate(scale);

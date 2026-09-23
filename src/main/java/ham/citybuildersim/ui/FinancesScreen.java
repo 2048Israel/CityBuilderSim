@@ -21,7 +21,8 @@ import static ham.citybuildersim.ui.Levers.*;
 /**
  * The Finances tab: the position, the ladder of what the city owes, debt
  * service, home and abroad, your rate taken apart, the book, buying back,
- * and borrowing - at home or in somebody else's money.
+ * and borrowing - at home or in somebody else's money - and, since 0.7.0,
+ * the money itself: the central bank's books, M0 and M2.
  *
  * Split out of UserInterface on 2026-09-18: the eleven banners from FINANCES
  * to BORROW exactly as they were, the shell's members reached through ui. The
@@ -48,7 +49,7 @@ final class FinancesScreen {
 
        WHAT IT IS: a landing page of rows, each opening into its own strip -
        the same shape as the Sector economy, and for the same reason. Finance
-       is not one screen, it is three subjects that share a vocabulary:
+       is not one screen, it is four subjects that share a vocabulary:
 
          THE POSITION   where the city stands, and why its money costs what it
                         costs. Five pages, because "what do I owe" and "when is
@@ -61,6 +62,8 @@ final class FinancesScreen {
                         re-strikes on every click - because the rate is a
                         function of the size of the ask, which was true and
                         invisible.
+         MONEY          the central bank's books and the money supply, M0
+                        and M2 with a year of each (0.7.0).
 
        THE BANK IS NOT HERE ANY MORE. Jerus: "i think we are going to have 11
        rails, bank is its own thing." It is a rail tab now.
@@ -75,6 +78,8 @@ final class FinancesScreen {
             {"Overview", "The ladder", "Debt service", "Home & abroad", "Your rate"};
     static final String[] BOOK_PAGES   = {"Every piece", "Buy back"};
     static final String[] BORROW_PAGES = {"At home", "Abroad"};
+    /** The central bank's books and the money supply, on one page (0.7.0). */
+    static final String[] MONEY_PAGES  = {"Money"};
 
     /**
      * One kind of paper the city can sell.
@@ -83,24 +88,29 @@ final class FinancesScreen {
      * domestic and three foreign, each passing the same min, max and rounding
      * as literals. They are one table now, so a change to what a term loan is
      * happens once.
+     *
+     * AND THE STEP BETWEEN TERMS (0.7.1): Jerus, "i think we should only be
+     * able to issue 10y 20y 30y 40y and 50y ... serial and tbills are fine
+     * tho." A term loan's chips step by ten (LongTermBond.MATURITIES); the
+     * note's and the serial's by one, as they always did.
      */
     record Instrument(String key, String name, String short_,
-                              int min, int max, double rounding,
+                              int min, int max, int step, double rounding,
                               String unit, String blurb, String colour) { }
 
     static final Instrument[] INSTRUMENTS = {
-        new Instrument("Note", "Notes", "NOTE", 3, 12, 1000, "months",
+        new Instrument("Note", "Notes", "NOTE", 3, 12, 1, 1000, "months",
                 "No coupon at all. The lender pays less than the face and collects the "
                 + "whole face at the end, so it costs nothing monthly and everything at "
                 + "once.", Palette.LADDER[0]),
-        new Instrument("Serial", "Serial bonds", "SERIAL", 1, 10, 10000, "years",
+        new Instrument("Serial", "Serial bonds", "SERIAL", 1, 10, 1, 10000, "years",
                 "A coupon every month on what is still out, and a slice of principal "
                 + "every year. It pays itself off: both the debt and the coupon shrink "
                 + "without you doing anything.", Palette.LADDER[1]),
-        new Instrument("Term", "Term loans", "TERM", 10, 50, 100000, "years",
+        new Instrument("Term", "Term loans", "TERM", 10, 50, 10, 100000, "years",
                 "A coupon every month on the whole face, and the entire face at the end. "
                 + "The smallest monthly payment there is, and the only one with a cliff "
-                + "behind it.", Palette.LADDER[2]),
+                + "behind it. Issued at 10, 20, 30, 40 or 50 years.", Palette.LADDER[2]),
     };
 
     static Instrument instrument(String key) {
@@ -180,13 +190,23 @@ final class FinancesScreen {
                 ledger.atCeiling() ? Palette.BAD : Palette.ACCENT,
                 "Borrow", "At home"));
 
+        CentralBank central = ui.game.getCentralBank();
+        column.getChildren().add(financeRow("Money",
+                "the central bank's books, and how much money the city has",
+                money(central.m0()) + " made",
+                money(ui.game.getM2()) + " held by the public",
+                central.getAdvancesToTreasury() > 0 ? Palette.WARN : Palette.TEXT_HEAD,
+                "Money", "Money"));
+
         /* ------------------------- the standing warnings ------------------------- */
         if (ledger.getOverdraft() > 0) {
             column.getChildren().add(alert("The city is overdrawn",
-                    String.format("%s of it, and the market prices it as principal. An "
-                    + "overdraft is the most desperate borrowing there is and it is charged "
-                    + "as such — it is already in the rate above.",
-                    money(ledger.getOverdraft()))));
+                    String.format("%s of it. At the top of next month the central bank "
+                    + "advances it, at the policy rate, in money it makes. Past %.0f months "
+                    + "of revenue owed, only the city's promises are still paid that way; the "
+                    + "rest waits for cash, and what waits is owed as arrears. The market "
+                    + "prices it as principal meanwhile - it is already in the rate above.",
+                    money(ledger.getOverdraft()), ui.game.getCentralBank().getAdvancesCeilingMonths())));
         }
         if (ledger.atCeiling()) {
             column.getChildren().add(alert("The rate is pinned at the top of the curve",
@@ -316,6 +336,7 @@ final class FinancesScreen {
         String[] pages = switch (financeArea) {
             case "The book" -> BOOK_PAGES;
             case "Borrow"   -> BORROW_PAGES;
+            case "Money"    -> MONEY_PAGES;
             default         -> POSITION_PAGES;
         };
 
@@ -341,6 +362,7 @@ final class FinancesScreen {
                 else                                theBookPage(column);
             }
             case "Borrow" -> borrowPage(column, "Abroad".equals(financePage));
+            case "Money"  -> moneyPage(column);
             default -> {
                 switch (financePage) {
                     case "The ladder"   -> ladderPage(column);
@@ -858,7 +880,7 @@ final class FinancesScreen {
             column.getChildren().add(statementLine("Face, in " + Currency.FOREIGN_CODE,
                     usdFull(ledger.getForeignPrincipalUsd())));
             column.getChildren().add(statementLine("At an exchange rate of",
-                    String.format("%.4f", ledger.getExchangeRate())));
+                    fxRate(ledger.getExchangeRate())));
             column.getChildren().add(statementLine("Which comes to", moneyFull(away)));
 
             if (Math.abs(fx.getLastRevaluation()) > .005) {
@@ -929,8 +951,9 @@ final class FinancesScreen {
 
         int line = 1;
         line = rateRow(t, line, "The floor everybody pays", floor,
-                String.format("%s dial, less %.0f", pct2(ledger.getPolicyRate()),
-                        DebtManager.CITY_DISCOUNT * 100));
+                floor > ledger.getPolicyRate() + 1e-9
+                        ? "what the bank's money costs it"
+                        : "the " + pct2(ledger.getPolicyRate()) + " dial");
         line = rateRow(t, line, "Debt against a year of output", gdpPart,
                 gdpPart <= 0 ? "nothing owed" : "grow, or owe less");
         line = rateRow(t, line, "Debt against a year of tax", revPart,
@@ -942,18 +965,46 @@ final class FinancesScreen {
         column.getChildren().add(statementTotal("What the market quotes",
                 String.format("%.2f%%", total * 100),
                 ledger.atCeiling() ? Palette.BAD : Palette.ACCENT));
+
+        /*
+         * ...AND AT THE LONG END (0.7.1). The figure above is the short end -
+         * the note, the T-bill rate. Thirty-year money pays the term premium
+         * on top of it, less what the central bank's holdings compress of it.
+         */
+        double premium30 = DebtManager.termPremium(360);
+        double comp30 = ledger.compression(360);
+        javafx.scene.layout.GridPane longEnd = grid(
+                new double[] {214, 72, 182},
+                new javafx.geometry.HPos[] {javafx.geometry.HPos.LEFT,
+                                            javafx.geometry.HPos.RIGHT,
+                                            javafx.geometry.HPos.LEFT});
+        gridHead(longEnd, "", "points", "   what moves it");
+        int row = 1;
+        row = rateRow(longEnd, row, "At thirty years, the term premium", premium30,
+                "the price of time, the same for everyone");
+        longEnd.add(gridCell("...less what the central bank holds", Palette.TEXT_BODY,
+                Palette.SIZE_CAPTION, false), 0, row);
+        longEnd.add(gridCell(comp30 > 0 ? String.format("−%.2f", comp30 * 100) : "—",
+                comp30 > 0 ? Palette.GOOD : Palette.TEXT_SPENT, Palette.SIZE_CAPTION, true), 1, row);
+        longEnd.add(gridCell("   the holdings dial, on the Policy tab", Palette.TEXT_MUTED,
+                Palette.SIZE_CAPTION, false), 2, row);
+        column.getChildren().add(longEnd);
+        column.getChildren().add(statementTotal("What thirty-year money costs",
+                pct2(ledger.curveRate(360)), Palette.ACCENT));
         /*
          * WHY THE POLICY SCREEN SAYS SOMETHING ELSE (2026-09-12). Jerus, seeing
-         * 3% on one screen and 1% on the other: one is the dial and the other is
-         * what the market quotes THIS city, and the floor sits under the dial.
-         * Said here rather than left to be worked out.
+         * 3% on one screen and 1% on the other: one was the dial and the other
+         * what the market quoted THIS city, with the floor two points UNDER the
+         * dial. Since 0.7.0 the floor is the dial itself - the bank's reserves
+         * earn it at the central bank, so nobody lends the city less - and the
+         * two screens agree on a city that owes nothing.
          */
         column.getChildren().add(statementNote(String.format(
-                "The Policy tab's %s is the dial the city's central bank sets; this is what "
-                + "the market quotes the city on top of it. The floor is that dial less %.0f "
-                + "points - a city with nothing outstanding is the best credit there is - and "
-                + "everything below it is the city's own record.",
-                pct2(ledger.getPolicyRate()), DebtManager.CITY_DISCOUNT * 100)));
+                "The Policy tab's %s is the rate the city's central bank pays on the "
+                + "bank's reserves, and nobody lends for less than money earns sitting "
+                + "still - so it is the floor here too. Everything below it is the city's "
+                + "own record.",
+                pct2(ledger.getPolicyRate()))));
 
         /* --------------------- how far each measure has run --------------------- */
         column.getChildren().add(statementHead("How much each measure has left to say"));
@@ -973,8 +1024,8 @@ final class FinancesScreen {
                     String.format("%.1f points, and not only to the treasury's — every mill, "
                     + "shop and household borrowing here is paying it too. It is the price "
                     + "of the MONEY rather than of the borrower: a bank lent out past its "
-                    + "deposits is funding itself abroad. The Bank tab has the capacity "
-                    + "figures.", bank * 100)));
+                    + "deposits is borrowing at the central bank's window. The Bank tab "
+                    + "has the capacity figures.", bank * 100)));
         }
 
         if (ledger.getDefaultScar() > 0) {
@@ -1107,6 +1158,32 @@ final class FinancesScreen {
                     + "monthly and the whole face falls due at once.", money(notes))));
         }
 
+        /* ------------------------ who holds it (0.7.1) ------------------------
+         * Jerus: "yes households should be able to hold." The city's paper has
+         * four holders now - the households, the bank, the central bank, and
+         * the world for the dollar bonds - and this is the split, at face.
+         */
+        double atHome = ledger.getDomesticPrincipal();
+        double abroad = ledger.getForeignPrincipal();
+        double owed = atHome + abroad;
+        if (owed > 0) {
+            column.getChildren().add(statementHead("Who holds it"));
+            double[] held = {ledger.householdPrincipal(), ledger.bankPrincipal(),
+                             ledger.centralBankPrincipal(), abroad};
+            String[] who = {"The households", "The bank", "The central bank", "Abroad"};
+            for (int i = 0; i < who.length; i++) {
+                column.getChildren().add(statementLine(who[i], money(held[i])
+                        + String.format("   %.0f%%", held[i] / owed * 100),
+                        held[i] > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
+            }
+            column.getChildren().add(statementNote(
+                    "The households buy their share when an issue settles and it pays them "
+                    + "better than a deposit, and sell to the bank's desk when they are short. "
+                    + "The central bank buys and sells the bank's term paper with money it "
+                    + "makes - the holdings dial on the Policy tab. The bank holds the rest. "
+                    + "Dollar paper is held abroad."));
+        }
+
         column.getChildren().add(statementNote(
                 "The Buy back page prices every one of these at what it is worth today, "
                 + "which is not its face value."));
@@ -1153,11 +1230,12 @@ final class FinancesScreen {
 
         column.getChildren().add(sentence(String.format(
                 "Every bond is priced at what it is worth today: the present value of "
-                + "everything it still owes, discounted at the %.2f%% this city is currently "
-                + "rated at. Above par means getting out costs a premium. Below par means "
-                + "your own paper has become cheap to retire — which happens when your "
-                + "credit has got worse, so it is not the bargain it looks like.",
-                rate * 100), Palette.TEXT_BODY));
+                + "everything it still owes, discounted at the curve's rate for the years it "
+                + "has left - %.2f%% for a note, %.2f%% for thirty-year money. Above par means "
+                + "getting out costs a premium. Below par means your own paper has become cheap "
+                + "to retire — which happens when your credit has got worse, so it is not the "
+                + "bargain it looks like.",
+                rate * 100, ledger.curveRate(360) * 100), Palette.TEXT_BODY));
 
         column.getChildren().add(statementLine("Cash available",
                 moneyFull(ui.game.getCash()),
@@ -1165,7 +1243,10 @@ final class FinancesScreen {
 
         int month = ui.game.getMonth();
         for (Debt debt : paper) {
-            column.getChildren().add(buyBackRow(debt, rate, month));
+            // Each at its own point on the curve (0.7.1); a dollar bond at the
+            // standing rate, as it always was.
+            double at = debt.isForeign() ? rate : ledger.curveRate(debt.getRemainingMonths());
+            column.getChildren().add(buyBackRow(debt, at, month));
         }
 
         column.getChildren().add(statementTotal("All of it, cleared today",
@@ -1276,7 +1357,7 @@ final class FinancesScreen {
        AND THE LADDER IS DRAWN WITH THE NEW BOND IN IT, in green, on top of what
        the city already owes. A term loan's whole appeal is the small monthly
        payment; its whole danger is the year it all comes due, and that year is
-       twenty-five bars to the right of the button you are about to press.
+       twenty or thirty bars to the right of the button you are about to press.
        ===================================================================== */
 
     void borrowPage(VBox column, boolean foreign) {
@@ -1297,6 +1378,8 @@ final class FinancesScreen {
 
         Instrument kit = instrument(borrowType);
         borrowTerm = Math.max(kit.min(), Math.min(kit.max(), borrowTerm));
+        // ...and onto the instrument's step: a term loan at 10, 20, 30, 40 or 50.
+        borrowTerm = kit.min() + Math.round((borrowTerm - kit.min()) / (float) kit.step()) * kit.step();
 
         /* --------------------------- what to sell --------------------------- */
         column.getChildren().add(statementHead(foreign
@@ -1319,12 +1402,42 @@ final class FinancesScreen {
 
         column.getChildren().add(sentence(kit.blurb(), Palette.TEXT_BODY));
 
+        /* --------------------------- the curve (0.7.1) ---------------------------
+         * One line per maturity this instrument offers, at the rate the city
+         * would pay today - for the amount typed, once there is one - so the
+         * player sees the long end sit above the note, and bend down when the
+         * central bank holds term paper. At home only: the world lends at one
+         * rate whatever the term.
+         */
+        if (!foreign) {
+            column.getChildren().add(subHead(borrowAsk > 0
+                    ? "The curve, for " + money(borrowAsk)
+                    : "The curve today"));
+            for (int d = kit.min(); d <= kit.max(); d += kit.step()) {
+                int months = kit.key().equals("Note") ? d : d * 12;
+                double rate = borrowAsk > 0
+                        ? ui.game.quoteDebt(kit.key(), borrowAsk, d, kit.rounding()).marketRate()
+                        : ledger.curveRate(months);
+                double comp = ledger.compression(months);
+                column.getChildren().add(statementLine(d + " " + kit.unit(),
+                        pct2(rate) + (comp > 1e-6
+                                ? String.format("   (%.2f points off for the central bank)", comp * 100)
+                                : ""),
+                        d == borrowTerm ? Palette.ACCENT : Palette.TEXT_BODY));
+            }
+            column.getChildren().add(statementNote(
+                    "The note is the policy rate plus what the city's own debt adds. Longer money "
+                    + "carries a term premium on top - half a point at ten years, a point and a "
+                    + "half at fifty - less whatever the central bank's holdings of term paper "
+                    + "take off it."));
+        }
+
         /* --------------------------- for how long --------------------------- */
         column.getChildren().add(subHead("For how long, in " + kit.unit()));
 
         javafx.scene.layout.FlowPane terms = new javafx.scene.layout.FlowPane(6, 6);
         terms.setMaxWidth(STATEMENT);
-        for (int d = kit.min(); d <= kit.max(); d++) {
+        for (int d = kit.min(); d <= kit.max(); d += kit.step()) {
             final int chosen = d;
             Label chip = new Label(String.valueOf(d));
             boolean on = d == borrowTerm;
@@ -1577,13 +1690,16 @@ final class FinancesScreen {
 
         if (bank.isInsolvent()) {
             return alert("The bank has failed and cannot buy this",
-                    "Anything issued now is funded abroad at the full premium. "
+                    "Anything issued now is funded at the central bank's window and "
+                    + "priced at the full premium. "
                     + "Recapitalise it first — the Bank tab has the figure.");
         }
         if (room <= 0) {
             return alert("There is no bank to buy this",
-                    "Anything issued is funded abroad, at the punitive rate every "
-                    + "borrower in the city is already paying. One branch changes that.");
+                    "The households take what share of it pays them better than a deposit "
+                    + "would, and the rest is funded at the central bank's window, at the "
+                    + "full premium every borrower in a city without a branch already pays. "
+                    + "One branch changes that.");
         }
         if (bank.ratePremium() > 0) {
             return alert("The bank is past comfortable already",
@@ -1598,10 +1714,14 @@ final class FinancesScreen {
         VBox box = new VBox(0);
         box.getChildren().add(statementHead("Who buys this"));
         box.getChildren().add(sentence(String.format(
-                "Your own bank. It is %.0f%% lent out, and treasury paper is risk-weighted "
-                + "at %.0f%%, so it ties up far less of the bank's room than a business loan "
-                + "of the same size. Borrow enough and that changes — for every borrower in "
-                + "the city, not only for the treasury.",
+                "The households first, when it pays them more than the bank does: up to "
+                + "%.0f%% of an issue, out of what they have saved past a cushion, at the "
+                + "settle next month. Then your own bank, for the rest. It is %.0f%% lent "
+                + "out, and treasury paper is risk-weighted at %.0f%%, so it ties up far less "
+                + "of the bank's room than a business loan of the same size. Borrow enough "
+                + "and that changes — for every borrower in the city, not only for the "
+                + "treasury.",
+                HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE * 100,
                 bank.getWeightedBook() / room * 100, Bank.RISK_CITY * 100),
                 Palette.TEXT_BODY));
         box.setMaxWidth(STATEMENT);
@@ -1671,6 +1791,175 @@ final class FinancesScreen {
         back.setOnAction(e -> showFinanceMenu());
 
         ui.rootMenu.getChildren().addAll(title, ui.scrolled(column), back, confirm);
+    }
+
+    /* =====================================================================
+       MONEY (0.7.0)
+
+       Jerus: "the feds sheet would show how much debt it holds, like debt to
+       itself aka money printing ... and that is the M2 supply or what do you
+       think?" This is that sheet, in the player's words: what the central
+       bank holds and owes, what it made and destroyed this month, what it
+       has printed for the treasury and what its profit paid back, and the two
+       money figures with a year of each behind them. Every figure is a
+       getter on CentralBank, Game or Bank; nothing is worked out here.
+       ===================================================================== */
+
+    void moneyPage(VBox column) {
+        CentralBank cb = ui.game.getCentralBank();
+        Bank bank = ui.game.getBank();
+        double policy = ui.game.getDebtManager().getPolicyRate();
+
+        /* ---------------------------- in two sentences ---------------------------- */
+        column.getChildren().add(statementHead("In two sentences"));
+        column.getChildren().add(sentence(String.format(
+                "The central bank has made %s and not taken it back: %s lent to the bank at "
+                + "its window, %s advanced to the treasury, and %s paid out on reserves beyond "
+                + "what it has earned%s.",
+                moneyFull(cb.m0()), moneyFull(cb.getAdvancesToBank()),
+                moneyFull(cb.getAdvancesToTreasury()), moneyFull(cb.getLossCarried()),
+                cb.getRemittanceDue() > 0
+                        ? String.format(", less the %s it owes the treasury at the next press",
+                                moneyFull(cb.getRemittanceDue()))
+                        : ""),
+                Palette.TEXT_BODY));
+        /*
+         * ...AND THE CITY'S PAPER IT HOLDS (0.7.1), in the design's own words:
+         * the holdings dial on the Policy tab, and what it bends.
+         */
+        if (cb.getPaperHeld() > 0 || cb.getTargetShare() > 0) {
+            DebtManager ledger = ui.game.getDebtManager();
+            column.getChildren().add(sentence(String.format(
+                    "It holds %s of the city's own paper, bought with money it made; the "
+                    + "30-year rate is %.2f points lower for it. Its dial aims at %.0f%% of the "
+                    + "city's term paper and it holds %.0f%%.",
+                    moneyFull(cb.getPaperHeld()), ledger.compression(360) * 100,
+                    cb.getTargetShare() * 100, ledger.centralBankShareOfTerm() * 100),
+                    Palette.TEXT_BODY));
+        }
+        column.getChildren().add(sentence(String.format(
+                "%s is chasing goods - everything the public holds at the bank - against a "
+                + "month's output of %s.",
+                moneyFull(ui.game.getM2()),
+                moneyFull(ui.game.getEconomyManager().getMonthGdp())),
+                Palette.TEXT_BODY));
+
+        /* ---------------------------- the balance sheet ---------------------------- */
+        column.getChildren().add(statementHead("What the central bank holds"));
+        column.getChildren().add(statementLine("Lent to the bank at the window",
+                moneyFull(cb.getAdvancesToBank())));
+        column.getChildren().add(statementLine("Advanced to the treasury - printed",
+                moneyFull(cb.getAdvancesToTreasury()),
+                cb.getAdvancesToTreasury() > 0 ? Palette.WARN : Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("The city's paper it holds",
+                moneyFull(cb.getPaperHeld())));
+        column.getChildren().add(statementLine("The vault, at today's rate",
+                moneyFull(cb.getVault())));
+        column.getChildren().add(statementTotal("TOTAL ASSETS",
+                moneyFull(cb.totalAssets()), Palette.TEXT_HEAD));
+
+        column.getChildren().add(statementLine("Reserves - the money it has made",
+                "−" + moneyFull(cb.getReserves()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("Currency in circulation",
+                "−" + moneyFull(cb.getCurrency()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementTotal("TOTAL LIABILITIES - M0",
+                moneyFull(cb.m0()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementTotal("EQUITY", moneyFull(cb.equity()),
+                cb.equity() >= 0 ? Palette.GOOD : Palette.BAD));
+        /*
+         * ...AND WHAT THE DEFENCE SPENT OF IT (0.7.2). Selling the vault's
+         * dollars to hold the currency up is capital spent against the world:
+         * the vault above is smaller by them and equity with it, and M0 does
+         * not move (CentralBank, THE DEFENCE). This line says why equity is
+         * lower; it is not a second deduction.
+         */
+        column.getChildren().add(statementLine("...spent defending the currency since founding",
+                "−" + moneyFull(cb.vaultSpent()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(String.format(
+                "Its liabilities are every dollar it has made and not taken back, which is "
+                + "what M0 is. Nobody here holds cash outside the bank, so all of it is "
+                + "reserves. The commercial bank's own spare cash - %s - is what it is paid "
+                + "the policy rate on, %s a year. The vault is the city's dollars, which a "
+                + "central bank holds; the treasury still buys and sells them, and since "
+                + "0.7.2 the central bank sells them when the currency is pushed down - "
+                + "capital spent, which takes equity down with the vault and leaves M0 "
+                + "where it was.",
+                moneyFull(bank.cashReserves()), pct2(policy))));
+        if (cb.getLossCarried() > 0) {
+            column.getChildren().add(statementNote(String.format(
+                    "It is carrying a loss of %s: what it has paid on reserves beyond what its "
+                    + "loans have earned. Nothing is remitted to the treasury until that is "
+                    + "made good out of profit.", moneyFull(cb.getLossCarried()))));
+        }
+
+        /* ---------------------------- this month ---------------------------- */
+        column.getChildren().add(statementHead("What it did this month"));
+        column.getChildren().add(statementLine("Money made",
+                moneyFull(cb.getIssued()), Palette.ACCENT));
+        column.getChildren().add(statementLine("...of which interest on reserves",
+                moneyFull(cb.getInterestOnReserves()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...lent at the window",
+                moneyFull(cb.getAdvancedToBank()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...printed for the treasury",
+                moneyFull(cb.getAdvancedToTreasury()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...remitted to the treasury",
+                moneyFull(cb.getRemitted()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...paid for the city's paper it bought",
+                moneyFull(cb.getBoughtPaper()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("Money destroyed",
+                "−" + moneyFull(cb.getRetired()), Palette.WARN));
+        column.getChildren().add(statementLine("...of which paid it for paper it sold",
+                "−" + moneyFull(cb.getSoldPaper()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...and the coupons and principal on its paper",
+                "−" + moneyFull(cb.getPaperCoupons() + cb.getPaperRedeemed() + cb.getBoughtBack()),
+                Palette.TEXT_MUTED));
+        column.getChildren().add(statementTotal("M0 moved by",
+                (cb.getIssued() >= cb.getRetired() ? "+" : "−")
+                        + moneyFull(Math.abs(cb.getIssued() - cb.getRetired())),
+                Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("Printed for the treasury since founding",
+                moneyFull(cb.getPrintedLifetime()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("Remitted to the treasury since founding",
+                moneyFull(cb.getRemittedLifetime()), Palette.TEXT_MUTED));
+
+        /* ---------------------------- M0 and M2 ---------------------------- */
+        column.getChildren().add(statementHead("M0 and M2"));
+        column.getChildren().add(statementLine("M0 - what the central bank has made",
+                moneyFull(cb.m0()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("M2 - what the public holds",
+                moneyFull(ui.game.getM2()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("...the households' deposits",
+                moneyFull(ui.game.getHouseholdDeposits()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...the businesses' deposits",
+                moneyFull(ui.game.getSectorDeposits()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...money from abroad on deposit",
+                moneyFull(bank.getForeignDeposits()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...currency",
+                moneyFull(cb.getCurrency()), Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(
+                "M2 is the bank's deposits - the households', the businesses' and the "
+                + "world's - plus currency, which nobody here holds. It grows when the bank "
+                + "lends on into somebody's account or the treasury spends money that was "
+                + "printed for it; it does not grow when the central bank lends to the bank."));
+
+        HistorySave h = ui.game.getHistorySave();
+        if (h.months() >= 2) {
+            column.getChildren().add(statementHead("The last year"));
+            column.getChildren().add(trendChart(
+                    new String[] {"M2", "M0"},
+                    new double[][] {lastYear(h.aligned("m2")), lastYear(h.aligned("m0"))},
+                    new String[] {Palette.ACCENT, Palette.WARN}));
+            column.getChildren().add(trendChart(
+                    new String[] {"Advanced to the treasury"},
+                    new double[][] {lastYear(h.aligned("advancesToTreasury"))},
+                    new String[] {Palette.BAD}));
+        }
+    }
+
+    /** The last twelve months of a series, or all of it if the city is younger. */
+    static double[] lastYear(double[] series) {
+        int from = Math.max(0, series.length - 12);
+        return java.util.Arrays.copyOfRange(series, from, series.length);
     }
 
     /* =====================================================================

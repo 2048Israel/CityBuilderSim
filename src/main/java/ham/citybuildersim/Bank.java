@@ -34,8 +34,8 @@ package ham.citybuildersim;
  *   deep savings and one branch is a city queueing at one counter.
  *
  * Past the tighter of the two the bank does not refuse - it funds the rest
- * abroad and charges for it, which is what a real bank does and what makes the
- * no-bank case fall out of the same formula rather than needing a rule: a city
+ * (at the central bank's window since 0.7.0, abroad before it) and charges
+ * for it, which is what a real bank does and what makes the no-bank case fall out of the same formula rather than needing a rule: a city
  * with no branches has no capacity, is therefore infinitely strained, and pays
  * the maximum premium on everything it borrows. Jerus asked for "credit at a
  * punitive rate" with no bank, and this is that, without a special case.
@@ -267,7 +267,21 @@ public class Bank {
     private double fundingCost;
 
     /**
-     * WHAT THE VAULT EARNS WHILE NOBODY IS BORROWING (2026-09-11).
+     * WHAT ITS SPARE CASH EARNS: THE POLICY RATE, AT THE CENTRAL BANK (0.7.0).
+     *
+     * Its spare cash - cashReserves(), what it has not lent - is its reserves
+     * at the central bank, and it is paid the POLICY RATE on them by the
+     * central bank, in money made for the purpose (CentralBank
+     * .payInterestOnReserves()). That is the floor under every rate in the
+     * city: no bank lends below what it earns by doing nothing, so the dial
+     * is the price of money rather than a suggestion on top of it. And since
+     * what savers are paid is a share of what the bank earns (WHAT TO PAY
+     * SAVERS), the deposit rate rises with the dial through this line.
+     *
+     * IT WAS PLACED ABROAD, AT THE WORLD'S RATE, until 0.7.0 - PLACEMENT_RATE,
+     * which was DebtManager.WORLD_BASE_RATE, declared to the audit as income
+     * from abroad. The rest of this note is how it came to be placed at all,
+     * and stands as history.
      *
      * A bank with money it has not lent does not keep it in a drawer; it
      * places it - overnight, in bills, abroad - at the risk-free rate, and
@@ -288,10 +302,10 @@ public class Bank {
      * rule, and the rule is this: idle reserves are placed at the world's
      * base rate. The mirror of the wholesale funding line, and declared to
      * the audit the same way - income from abroad, the way a foreign
-     * coupon is income to it.
+     * coupon is income to it. (Both lines are the central bank's now, and
+     * declared as money it made and destroyed: Scope.MONEY.)
      */
     private double placementIncome;
-    public static final double PLACEMENT_RATE = DebtManager.WORLD_BASE_RATE;
     private double openingEquity;
 
     /* ------------------------------- the month ------------------------------- */
@@ -382,7 +396,8 @@ public class Bank {
      * Counted in interestEarned like any other, and ALSO in its own counter,
      * because MoneyAudit's "+ bank InterestEarned" line is DOMESTIC and this
      * money crossed a border. The audit subtracts it there and books it as
-     * income, exactly as it already does for the bank's placements abroad.
+     * income, exactly as it did for the bank's placements abroad until they
+     * came home to the central bank in 0.7.0.
      */
     public void takeCarryInterest(double amount) {
         if (amount <= 0) return;
@@ -431,8 +446,9 @@ public class Bank {
      * not make money. Until 2026-09-13 every rate in the city was struck off
      * the RISK-FREE rate - lendingRate() was literally `riskFree +
      * ratePremium()`, and ratePremium() is zero whenever strain is under
-     * EASY_STRAIN. Meanwhile this bank funds itself at riskFree +
-     * FUNDING_SPREAD + FUNDING_STRETCH x reach. So a comfortable bank lent at
+     * EASY_STRAIN. Meanwhile this bank funded itself at riskFree +
+     * FUNDING_SPREAD + FUNDING_STRETCH x reach (the market's price, until
+     * 0.7.0). So a comfortable bank lent at
      * two points BELOW what the money cost it, by construction, on every
      * dollar its deposits did not cover.
      *
@@ -447,8 +463,9 @@ public class Bank {
      *
      * TWO TRANCHES, CHEAPEST FIRST, the same two fundToCover() charges for.
      * Inside what its branches have gathered the next dollar is a saver's and
-     * costs whatever savers are being paid. Past them it is wholesale paper at
-     * the price the market quoted this bank last month.
+     * costs whatever savers are being paid. Past them it is the central bank's
+     * window, at the rate it charged this bank last month (wholesale paper at
+     * the market's price, until 0.7.0).
      *
      * LAST MONTH'S PRICE, deliberately. fundingRate is struck at the bottom of
      * the month, after every loan has moved; a rate quoted this morning cannot
@@ -481,7 +498,7 @@ public class Bank {
      * month to month is not a signal a player can act on, it is noise.
      *
      * The average cost of the money it is using has no such cliff, moves
-     * continuously as the bank reaches further into the market, and is what a
+     * continuously as the bank reaches further past its deposits, and is what a
      * bank's own income statement means by the phrase.
      */
     private double blendedCostOfFunds() {
@@ -513,6 +530,9 @@ public class Bank {
         dividendsPaid = 0;
         tradingIncome = 0;
         markChange = 0;
+        paperGains = 0;
+        paperBoughtFromHouseholds = 0;
+        paperSoldToCentralBank = paperBoughtFromCentralBank = 0;
         hotMoneyIn = 0;
         carryLent = carryRepaid = carryInterest = 0;
         hotMoneyOut = 0;
@@ -634,7 +654,8 @@ public class Bank {
     }
 
     /**
-     * The most the bank can lend before it is funding itself abroad.
+     * The most the bank can lend before it is funding itself at the central
+     * bank's window (abroad, until 0.7.0).
      *
      * The TIGHTER of the two limits above. They fail differently and the player
      * fixes them with different things: a bank short of CAPITAL needs to stop
@@ -715,40 +736,16 @@ public class Bank {
     public double getHotMoneyIn()  { return hotMoneyIn; }
     public double getHotMoneyOut() { return hotMoneyOut; }
 
-    /**
-     * The bank's wholesale funding cost, split by whose money it is.
-     *
-     * THE SAME QUESTION AS injectCapital(), AND IT WAS ANSWERED IN ONE PLACE
-     * AND NOT THE OTHER. Paid-in capital was split between the city's own
-     * savers and foreigners on 2026-09-07, because declaring all of it foreign
-     * had $34.6B of branch capital deciding the balance of payments. The
-     * funding side kept declaring 100% of itself foreign, and grew into a
-     * larger version of exactly the same problem:
-     *
-     *     exports    234,348 a month
-     *     imports    203,910
-     *     interest   592,109      <- this line
-     *
-     * Two and a half times everything the city sold abroad, paid to foreign
-     * creditors, every month, for ever. The current account was therefore
-     * always deeply negative however well the city traded, depreciation
-     * pressure sat at +0.95 on a trade SURPLUS, and the exchange rate ran to
-     * its 4.0 ceiling and stayed there - which is a correct response to the
-     * number it was given and a wrong number.
-     *
-     * A city with $124B on deposit has savers who can fund its bank. The same
-     * curve decides how much of the funding they provide as decides how much of
-     * the capital they own, because it is the same question about the same
-     * city.
+    /*
+     * THE WHOLESALE FUNDING COST WAS SPLIT BY WHOSE MONEY IT WAS until 0.7.0 -
+     * fundingCostAbroad and fundingCostAtHome, on the curve that decides
+     * how much of the bank's capital the city's own savers own
+     * (domesticCapitalShare()). Declaring all of it foreign had put $592,109
+     * a month of interest on the current account against $234,348 of
+     * exports and run the exchange rate to its ceiling; the split fixed that.
+     * The question is gone with the market: the window's interest is paid to
+     * the central bank, all of it at home, and declared as money destroyed.
      */
-    public double fundingCostAbroad() {
-        return fundingCost * (1 - domesticCapitalShare());
-    }
-
-    /** ...and the part paid to lenders down the road. */
-    public double fundingCostAtHome() {
-        return fundingCost * domesticCapitalShare();
-    }
 
     /** The share of the bank's funding that could leave at any time. */
     public double hotFundingShare() {
@@ -870,6 +867,14 @@ public class Bank {
      * abstract about it - so the loss is a real crossing of the audit boundary
      * and is declared. The bank comes out of it owning nothing, owing nothing,
      * and unable to lend a penny until it is given some capital.
+     *
+     * STILL DECLARED AS ABROAD SINCE 0.7.0, though the bank's wholesale
+     * lender is the central bank's window now, not creditors outside the
+     * city: the hole arrives as MoneyAudit's "+ bank ResolutionLoss" from
+     * outside, and the window is repaid out of it at the next settle. Who
+     * should absorb a failed bank now - the central bank as lender of last
+     * resort, the depositors, the treasury - is Jerus's question, open on the
+     * list (the-central-bank-opens.md section 4); the code is as it was.
      */
     public void resolveIfFailed() {
         double shortfall = -equity();
@@ -1213,6 +1218,138 @@ public class Bank {
         internalInterest += amount;
     }
 
+    /**
+     * THE TREASURY BUYS ITS PAPER BACK FROM THE BANK (0.7.0), which is who
+     * holds it: the price arrives as cash, the book drops by the principal at
+     * once rather than at the next refresh, and the difference is the bank's
+     * gain or loss on the sale - a gain when the city pays over face, a loss
+     * when rates have risen and the paper is worth less than the book carries
+     * it at. Until 0.7.0 a buyback paid nobody: the treasury's cash left, the
+     * bond came off the list, and the bank's book fell by the principal at the
+     * next refresh with nothing arriving - a $20,000k buyback cost the bank
+     * $20,067k of equity (the-bank-that-never-paid.md section 5).
+     *
+     * Happens between two presses, like the player's other decisions, so it
+     * is in no month's income statement: it moves equity where it happens, and
+     * the next month opens on it (openingEquity). The weighted book loses the
+     * same share of itself, so capacity is right before the next refresh.
+     *
+     * @return the gain (negative: the loss) on the sale
+     */
+    public double sellPaperBack(double price, double principal) {
+        return sellPaperBack(price, principal, 0);
+    }
+
+    /**
+     * ...and since 0.7.1 at amortised cost: the unearned discount riding on
+     * the face that leaves goes with it, so the gain is the price less what
+     * the book carried the paper at - face less the discount not yet earned.
+     * Only the bank's share of a bond reaches here; the households and the
+     * central bank are paid theirs by Game.repurchaseDebt().
+     */
+    public double sellPaperBack(double price, double principal, double unearned) {
+        double before = cityBook;
+        double off = Math.min(Math.max(0, principal), before);
+        double u = Math.min(Math.max(0, unearned), unearnedDiscount);
+        cash += Math.max(0, price);
+        cityBook = before - off;
+        unearnedDiscount -= u;
+        if (before > 0) cityWeighted *= cityBook / before;
+        double gain = Math.max(0, price) - (off - u);
+        buybackGains += gain;
+        return gain;
+    }
+
+    /* =================== THE CITY'S PAPER CHANGES HANDS (0.7.1) ===================
+     *
+     * Jerus, on the holders: "yes households should be able to hold." The bank
+     * is the desk for the city's paper as it is for the shares: a household
+     * that sells before maturity sells to it, and the central bank's holdings
+     * dial buys from it and sells to it. Each trade moves cash, the book by the
+     * face, and the unearned discount riding on that face at once rather than
+     * at the next refresh; the difference between the price and what the book
+     * carried the paper at - face less the discount not yet earned - is the
+     * month's gain or loss on the city's paper, a line of the income statement
+     * (afterTrading()), because these happen inside the month and the
+     * statement's articulation - equity moves by net income - must see them.
+     * ============================================================================ */
+
+    /** The gain or loss on the city's paper that changed hands this month. */
+    private double paperGains;
+
+    /** What the desk paid households for their paper this month: money leaving the pools for a household, which MoneyAudit declares. */
+    private double paperBoughtFromHouseholds;
+
+    /** What the central bank paid it for paper this month, and what it paid the central bank. */
+    private double paperSoldToCentralBank, paperBoughtFromCentralBank;
+
+    public double getPaperSoldToCentralBank()     { return paperSoldToCentralBank; }
+    public double getPaperBoughtFromCentralBank() { return paperBoughtFromCentralBank; }
+
+    /**
+     * THE UNEARNED DISCOUNT (0.7.1): the part of what the bank paid under face
+     * for the city's paper it has not yet accreted into income, carried as a
+     * liability against the book - so equity does not jump by the discount
+     * the month the paper settles, and it reaches interest income a month at
+     * a time. Re-derived with the book at every refresh (Game.refreshBank(),
+     * DebtManager.bankUnearnedDiscount()), which is why the save needs no slot
+     * for it: the paper carries its own remainder.
+     */
+    private double unearnedDiscount;
+
+    public void setUnearnedDiscount(double amount) { unearnedDiscount = Math.max(0, amount); }
+    public double getUnearnedDiscount()            { return unearnedDiscount; }
+    public double getPaperGains()                  { return paperGains; }
+    public double getPaperBoughtFromHouseholds()   { return paperBoughtFromHouseholds; }
+
+    private void addToCityBook(double face) {
+        double before = cityBook;
+        cityBook = Math.max(0, before + face);
+        if (before > 0) cityWeighted *= cityBook / before;
+        else cityWeighted = cityBook * RISK_CITY;
+    }
+
+    /** A household sells this face to the desk for this price. */
+    public double buyPaperFromHouseholds(double price, double face, double unearned) {
+        if (!(price > 0) || !(face > 0)) return 0;
+        cash -= price;
+        paperBoughtFromHouseholds += price;
+        addToCityBook(face);
+        unearnedDiscount += Math.max(0, unearned);
+        double gain = (face - Math.max(0, unearned)) - price;
+        paperGains += gain;
+        return gain;
+    }
+
+    /** The central bank buys this face from the bank's book, in money it made. */
+    public double sellPaperToCentralBank(double price, double face, double unearned) {
+        if (!(price > 0) || !(face > 0)) return 0;
+        double u = Math.min(Math.max(0, unearned), unearnedDiscount);
+        cash += price;
+        paperSoldToCentralBank += price;
+        addToCityBook(-face);
+        unearnedDiscount -= u;
+        double gain = price - (face - u);
+        paperGains += gain;
+        return gain;
+    }
+
+    /** ...and sells it back: the bank pays, and the face returns to its book. */
+    public double buyPaperFromCentralBank(double price, double face, double unearned) {
+        if (!(price > 0) || !(face > 0)) return 0;
+        cash -= price;
+        paperBoughtFromCentralBank += price;
+        addToCityBook(face);
+        unearnedDiscount += Math.max(0, unearned);
+        double gain = (face - Math.max(0, unearned)) - price;
+        paperGains += gain;
+        return gain;
+    }
+
+    /** Gains less losses on paper the treasury bought back, over the city's life. Not saved: a count for the run. */
+    private double buybackGains;
+    public double getBuybackGains() { return buybackGains; }
+
     /** Principal coming back. Cash, and the book shrinks with it. */
     public void takeRepayment(double amount) {
         if (amount <= 0) return;
@@ -1268,16 +1405,27 @@ public class Bank {
      * owe you money.
      *
      * Now it borrows, and it is charged for borrowing. The cost is what makes
-     * this a constraint rather than free money: a bank reaching further past its
-     * deposits pays more for every dollar it has reached for, so the strain
-     * premium it charges its borrowers is no longer arbitrary - it is passing on
-     * a bill it is actually being sent.
+     * this a constraint rather than free money. Until 0.7.0 a bank reaching
+     * further past its deposits paid more for every dollar it had reached for,
+     * so the strain premium it charged its borrowers was passing on a bill it
+     * was actually being sent; the window's price is flat, and the strain
+     * premium is what still rises with reach (below).
      *
-     * THIS MONEY COMES FROM OUTSIDE THE CITY, which makes the three flows below
-     * real crossings of the audit boundary rather than internal transfers. They
-     * are declared in MoneyAudit. That is the honest reading: a city whose bank
-     * is funding itself in the wholesale market genuinely has more money in it
-     * than a city whose bank is not.
+     * THIS MONEY CAME FROM OUTSIDE THE CITY until 0.7.0, and now it comes from
+     * the CENTRAL BANK'S WINDOW, at the policy rate plus
+     * CentralBank.WINDOW_PENALTY. The window's advance is money made, its
+     * repayment money destroyed and its interest the central bank's income -
+     * all three declared in MoneyAudit under Scope.MONEY, so a city whose bank
+     * borrows at the window genuinely has more money in it than one whose bank
+     * does not, and the audit knows who made it. Abroad is still there as the
+     * carry trade (CapitalFlows), which is now the priced alternative rather
+     * than the marginal source.
+     *
+     * THE WINDOW IS NOT LIMITED in 0.7.0. What bounds what the bank lends is
+     * what bounded it before: the strain premium it has to charge past
+     * EASY_STRAIN, and the capital ratio, which no amount of funding relaxes.
+     * A bank can borrow all it likes at the window; it cannot profitably lend
+     * past either of those.
      */
 
     /*
@@ -1293,7 +1441,9 @@ public class Bank {
      *   is the city's own money doing the work, and it is why a city with deep
      *   savings has a cheap banking system.
      *
-     *   WHOLESALE PAPER for anything beyond that, at a price, from abroad.
+     *   THE WINDOW for anything beyond that, at the policy rate plus
+     *   CentralBank.WINDOW_PENALTY - wholesale paper from abroad, at the
+     *   market's price, until 0.7.0.
      *
      * The first version of this charged the wholesale rate on the WHOLE book,
      * because deposits are a memorandum figure here rather than cash the bank
@@ -1357,8 +1507,13 @@ public class Bank {
      */
     private double depositInterestToForeign;
 
-    /** What savers are being paid. */
+    /** The rate savers are being paid, a year: the month's payout over the deposits, reported no higher than the lending rate since 0.7.3 - in a month isDepositRateCapped() the payout is more than this. */
     public double depositRate() { return depositRate; }
+
+    /** True when this month's payout over the deposits came to more than the bank charges, and the rate reported is its lending rate instead (0.7.3) - see fundToCover(). A flow of the month, not saved. */
+    public boolean isDepositRateCapped() { return depositRateCapped; }
+
+    private boolean depositRateCapped;
 
     public double getDepositInterestToHouseholds() { return depositInterestToHouseholds; }
     public double getDepositInterestToSectors()    { return depositInterestToSectors; }
@@ -1374,12 +1529,17 @@ public class Bank {
         return weighted > 0 ? (interestEarned - depositInterest() - fundingCost) / weighted * 12 : 0;
     }
 
-    /** Over the risk-free rate, for being a bank rather than a treasury. */
-    public static final double FUNDING_SPREAD = .02;
-
-    /** ...and more, the further past its deposits it has reached. */
-    public static final double FUNDING_STRETCH = .06;
-
+    /*
+     * THE PRICE OF WHOLESALE MONEY WAS TWO DIALS until 0.7.0: FUNDING_SPREAD,
+     * two points over the risk-free rate "for being a bank rather than a
+     * treasury", and FUNDING_STRETCH, six points more at a reach of one
+     * deposit book, capped at three - the market charging more the further
+     * past its deposits the bank reached, and the reason the premium it
+     * charged its own borrowers was a bill it was actually sent. Both retired
+     * with the market itself: the window charges the policy rate plus
+     * CentralBank.WINDOW_PENALTY, flat, and the strain premium is what still
+     * rises with reach.
+     */
     private double fundingRate;
 
     /** Everything it owes: the mirror of a negative cash position. */
@@ -1391,19 +1551,17 @@ public class Bank {
      * Measured against what its branches can GATHER, not against everything the
      * city happens to have. A bank cannot fund itself with savings held in
      * somebody's mattress, and a bank with no branches has gathered nothing at
-     * all, so every dollar it has lent is money it went to the market for.
+     * all, so every dollar it has lent is money it went to the window for.
      */
     public double depositFunding() { return Math.min(borrowings(), depositsGathered()); }
 
-    /** ...and the part it had to go to the market for. */
+    /** ...and the part it had to go to the window for. */
     public double wholesaleFunding() { return borrowings() - depositFunding(); }
 
     /**
-     * What the bank is paying for the money it did not have.
-     *
-     * Rises with how far it has reached, not with how much it holds: a bank
-     * funding a tenth of its book in the market is a normal bank, and one
-     * funding twice its deposits is one the market has questions about.
+     * What the bank is paying for the money it did not have: the window's
+     * rate, policy plus CentralBank.WINDOW_PENALTY. Flat since 0.7.0 - see the
+     * note above it on what it used to rise with.
      */
     public double fundingRate() { return fundingRate; }
 
@@ -1418,7 +1576,7 @@ public class Bank {
      *
      * Called once, at the end of the month, after every loan has moved.
      */
-    public void fundToCover(double riskFreeAnnual) {
+    public void fundToCover(double policyAnnual) {
 
         /*
          * WITH NO BRANCHES THERE IS NO BANK, and nothing to charge.
@@ -1435,7 +1593,20 @@ public class Bank {
         if (branches <= 0 || inResolution) {
             // A bank in resolution is not paying anybody. Charging it is what
             // turned a failure into a runaway - see resolveIfFailed().
+            //
+            // NOR THE WINDOW, and that is decided rather than forgotten
+            // (0.7.1): the central bank goes on advancing what a failed bank
+            // owes past its deposits (CentralBank.settleWindow(), from the
+            // month's settle), and charges it no interest while it is in
+            // resolution. The resolution has just set
+            // its equity to zero; a charge on the window's tranche would put
+            // it straight back under the next month, and that month's
+            // failure would charge it again - the same runaway, with the
+            // central bank as the creditor. The advance is a standstill until
+            // the bank earns or is given its way out, which is what a lender
+            // of last resort does for a bank it has resolved.
             depositRate = 0;
+            depositRateCapped = false;
             fundingRate = 0;
             return;
         }
@@ -1448,16 +1619,23 @@ public class Bank {
          * less the deposit-funded part, and both are fixed by the time this
          * runs - so moving it above the depositors changes no arithmetic.
          */
+        /*
+         * THE WINDOW'S PRICE, since 0.7.0: the policy rate plus the penalty,
+         * on the whole of the wholesale tranche. The three-way split below is
+         * untouched - deposits first and free, the window for the rest - and
+         * only the rate it prices changed. See THE FUNDING SIDE.
+         */
+        double policy = Math.max(0, policyAnnual);
         double wholesaleNow = wholesaleFunding();
-        double reachNow = deposits > 0 ? Math.min(3, wholesaleNow / deposits)
-                                       : (wholesaleNow > 0 ? 3 : 0);
-        fundingRate = Math.max(0, riskFreeAnnual) + FUNDING_SPREAD + FUNDING_STRETCH * reachNow;
+        fundingRate = policy + CentralBank.WINDOW_PENALTY;
         fundingCost = wholesaleNow * fundingRate / 12;
 
         // ...and the other side of the same position: what is not lent is
-        // placed. Struck here, banked with the funding below, and counted as
-        // interest income - the savers' share is a share of this too.
-        placementIncome = cashReserves() * PLACEMENT_RATE / 12;
+        // its reserves, and earns the policy rate at the central bank. Struck
+        // here, banked with the funding below, and counted as interest
+        // income - the savers' share is a share of this too, which is how the
+        // dial reaches the deposit rate.
+        placementIncome = cashReserves() * policy / 12;
         interestEarned += placementIncome;
 
         /*
@@ -1469,8 +1647,25 @@ public class Bank {
          * as much more as a forecast of the money a better rate would attract
          * can justify.
          */
-        double onDeposits = chooseDepositRate(riskFreeAnnual);
-        depositRate = deposits > 0 ? onDeposits / deposits * 12 : 0;
+        double onDeposits = chooseDepositRate(policy);
+        /*
+         * ...AND THE RATE IT QUOTES IS NEVER MORE THAN IT CHARGES (0.7.3). The
+         * payout is a share of the bank's whole income, its own capital's
+         * placement included, and the rate is that payout over the deposits -
+         * so in a bank's first month, a payout struck on everything it earns
+         * over a deposit base that has barely opened reads as thousands of
+         * per cent (7,567% on $5.7k, seed 0's founding), and a bank never
+         * pays savers a rate above what it charges. Capped at lendingRate()
+         * on the month's policy rate - the bank's own lending rate, the one
+         * the month quotes the carry trade at - since 0.7.3, when the
+         * households' spending began to answer this figure (HouseholdBalance,
+         * AND WHAT IT SPENDS ANSWERS THE REAL RATE). What is PAID, onDeposits,
+         * is unchanged: only the rate reported moves.
+         */
+        double quoted = deposits > 0 ? onDeposits / deposits * 12 : 0;
+        double charged = lendingRate(policy);
+        depositRateCapped = quoted > charged;
+        depositRate = Math.min(quoted, charged);
 
         /* -------------------------------------------------------------------
            SPLIT THREE WAYS, NOT TWO, AND IT USED TO LOSE MONEY.
@@ -1483,7 +1678,8 @@ public class Bank {
              - the foreign depositors' interest was handed to domestic
                businesses. It is money leaving the country, it belongs on the
                income line of the balance of payments beside the bank's
-               wholesale funding cost, and instead it was an internal transfer
+               wholesale funding cost (abroad, as it then was), and instead it
+               was an internal transfer
                to whoever happened to be holding cash.
 
              - and when NOBODY was holding cash, it simply vanished. Game pays
@@ -1514,10 +1710,12 @@ public class Bank {
                                                  - depositInterestToSectors;
         cash -= onDeposits;
 
-        // Only the market tranche is charged for. The deposits are the city's
+        // Only the window's tranche is charged for. The deposits are the city's
         // own money and cost the bank nothing to use beyond what it pays for
         // them - which is the whole advantage of having somewhere for people to
-        // save. Struck above, banked here - and the placements with it.
+        // save. Struck above, banked here - and the interest on reserves with
+        // it. The central bank's end of both is booked by Game in the same
+        // breath, off these two figures (getFundingCost(), getPlacementIncome()).
         cash -= fundingCost;
         cash += placementIncome;
     }
@@ -1537,8 +1735,9 @@ public class Bank {
           of income and not of the rate.
 
        2. NEVER PAST A NET ZERO INTEREST MARGIN. It will not pay out more
-          interest than it earned, net of what it paid the market for the money
-          it had to go and borrow. This is the rule that makes rule 1 safe:
+          interest than it earned, net of what it paid the window for the
+          money it had to go and borrow (the market, until 0.7.0). This is the
+          rule that makes rule 1 safe:
           paid as a flat share of income with no ceiling at all, a bank whose
           margin had been eaten went on paying anyway, and measured over 4,002
           months that took the city into a housing famine - 27 households with
@@ -1676,8 +1875,9 @@ public class Bank {
     public int getMonthsBidUp()        { return monthsBidUp; }
     public double getLastBidUpGain()   { return lastBidUpGain; }
 
+    /** What the window charged this month, paid to the central bank. */
     public double getFundingCost() { return fundingCost; }
-    /** What the idle reserves earned abroad this month. See placementIncome. */
+    /** What its reserves earned at the central bank this month, at the policy rate. See placementIncome. */
     public double getPlacementIncome() { return placementIncome; }
 
     /* =========================== THE THREE STATEMENTS ===========================
@@ -1712,7 +1912,8 @@ public class Bank {
     public double shortSecurities() { return Math.max(0, -securities); }
 
     /**
-     * What the bank owes: its market funding, and the hot money.
+     * What the bank owes: what it borrowed to fund its book (past its
+     * deposits, at the central bank's window since 0.7.0), and the hot money.
      *
      * WHY FOREIGN DEPOSITS ARE HERE AND HOUSEHOLD ONES ARE NOT, which looks
      * inconsistent and is the opposite:
@@ -1730,8 +1931,14 @@ public class Bank {
      * bank's capital rose every time a foreign fund wired it money. Caught by
      * BankCheck's "equity moves by net income and capital and nothing else",
      * which is the third distinct bug that assertion has found.
+     *
+     * AND THE DISCOUNT IT HAS NOT YET EARNED (0.7.1), against the book: the
+     * city's paper is on the book at face, and what the bank paid under face
+     * is interest it earns over the paper's life, not the day it settles.
      */
-    public double totalLiabilities() { return borrowings() + Math.max(0, foreignDeposits) + shortSecurities(); }
+    public double totalLiabilities() {
+        return borrowings() + Math.max(0, foreignDeposits) + shortSecurities() + unearnedDiscount;
+    }
 
     /**
      * The residual - and, once the two above are written out, simply the book
@@ -1751,7 +1958,7 @@ public class Bank {
     /** What every borrower paid it this month. */
     public double interestIncome()  { return interestEarned; }
 
-    /** ...less what it paid savers and what it paid the market. */
+    /** ...less what it paid savers and what it paid the window. */
     public double netInterestIncome() {
         return interestEarned - depositInterest() - fundingCost;
     }
@@ -1763,7 +1970,7 @@ public class Bank {
     public double operatingExpenses() { return payroll + upkeep; }
 
     /** ...plus what the desk made or lost. */
-    public double afterTrading()    { return afterLosses() + tradingIncome; }
+    public double afterTrading()    { return afterLosses() + tradingIncome + paperGains; }
 
     /** What it made before the city took its share. */
     public double profitBeforeTax() { return afterTrading() - operatingExpenses(); }
@@ -2079,7 +2286,8 @@ public class Bank {
      *
      * It is the OVERFLOW it absorbs, not a flat BOOK_PER_BRANCH: the loans
      * already exist and are already earning: what the branch changes is whether
-     * they are funded here or abroad. Zero when the bank is comfortably inside
+     * they are funded by the city's deposits or at the central bank's window
+     * (abroad, until 0.7.0). Zero when the bank is comfortably inside
      * itself, which is what stops the advisor building banks it does not need.
      */
     public double bookAnotherBranchWouldCarry() {
@@ -2124,6 +2332,7 @@ public class Bank {
         foreignDeposits = 0;
         sectorBook = 0;
         cityBook = 0;
+        unearnedDiscount = 0;
         householdBook = 0;
         sectorWeighted = 0;
         cityWeighted = 0;
@@ -2132,6 +2341,7 @@ public class Bank {
         sectorDeposits = 0;
         fundingRate = 0;
         depositRate = 0;
+        depositRateCapped = false;
         branchesCapitalised = 0;
         inResolution = false;
         failures = 0;
@@ -2176,6 +2386,11 @@ public class Bank {
         sectorWeighted    *= scale;
         cityWeighted       *= scale;
         householdWeighted  *= scale;
+        unearnedDiscount   *= scale;
+        paperGains         *= scale;
+        paperBoughtFromHouseholds *= scale;
+        paperSoldToCentralBank *= scale;
+        paperBoughtFromCentralBank *= scale;
         // The carry book is re-derived from the stock by refreshBank(), so this
         // looks redundant - and is not. DenominationCheck asserts the reform
         // INSTANT is bit-exact, and at that instant no refresh has run yet: an

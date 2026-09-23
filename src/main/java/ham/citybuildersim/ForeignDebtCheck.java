@@ -32,6 +32,13 @@ import java.nio.file.Path;
  *
  *   4. Does the window shut when it should, does a default cost what it is
  *      supposed to cost, and does any of it survive a reload?
+ *
+ *   5. Is the world's paper on the world's curve (0.7.2)? A dollar bond is
+ *      worth what the world would pay for it - the foreign rate plus the
+ *      term premium for the months it has left - not what the city's own
+ *      dial says; the dial moving leaves it where it is, the world's view of
+ *      the city moving does not; and a dollar issue is priced on the same
+ *      curve it is then valued on.
  */
 public class ForeignDebtCheck {
 
@@ -191,7 +198,7 @@ public class ForeignDebtCheck {
              * borrows until it does, within reason.
              */
             for (int k = 0; k < 6; k++) {
-                city.issueEmergencyDebt(city.getCash() * 2, Game.EMERGENCY_NOTE_MONTHS);
+                city.handleTBillLogic(city.getCash() * 2, Game.BUILD_NOTE_MONTHS, 1000.0);
                 city.simulateMonths(1);
                 if (city.getDebtManager().getRate() > city.getDebtManager().foreignRate()) break;
             }
@@ -218,7 +225,7 @@ public class ForeignDebtCheck {
         System.setOut(quiet);
         String booked;
         try {
-            booked = city.handleForeignLogic("Term", 20_000, 25, 100, false);
+            booked = city.handleForeignLogic("Term", 20_000, 20, 100, false);
         } finally {
             System.setOut(out);
         }
@@ -361,9 +368,9 @@ public class ForeignDebtCheck {
             Game spender = tradingCity(uses.resolve("spend"));
             double cashBefore = spender.getCash();
             double resBefore = spender.getForeignAccounts().getReserves();
-            DebtQuote q = spender.quoteForeign("Term", 20_000, 25, 100);
+            DebtQuote q = spender.quoteForeign("Term", 20_000, 20, 100);
             proceeds = q.cashReceived() * spender.getForeignAccounts().getRate();
-            spender.handleForeignLogic("Term", 20_000, 25, 100, false);
+            spender.handleForeignLogic("Term", 20_000, 20, 100, false);
             spendCash = spender.getCash() - cashBefore;
             spendReserves = spender.getForeignAccounts().getReserves() - resBefore;
 
@@ -371,7 +378,7 @@ public class ForeignDebtCheck {
             cashBefore = holder.getCash();
             resBefore = holder.getForeignAccounts().getReserves();
             holdNetBefore = holder.getForeignAccounts().netForeignPosition();
-            holder.handleForeignLogic("Term", 20_000, 25, 100, true);
+            holder.handleForeignLogic("Term", 20_000, 20, 100, true);
             holdCash = holder.getCash() - cashBefore;
             holdReserves = holder.getForeignAccounts().getReserves() - resBefore;
             holdNet = holder.getForeignAccounts().netForeignPosition();
@@ -480,7 +487,7 @@ public class ForeignDebtCheck {
         System.setOut(quiet);
         String refused;
         try {
-            refused = city.handleForeignLogic("Term", 5_000, 25, 100, false);
+            refused = city.handleForeignLogic("Term", 5_000, 20, 100, false);
         } finally {
             System.setOut(out);
         }
@@ -592,7 +599,72 @@ public class ForeignDebtCheck {
                 Math.abs(reloaded.getForeignAccounts().getLastRevaluation())
                         < Math.max(1, back.getForeignPrincipal() * .05));
 
+        theWorldsCurve(root.resolve("curve"));
+
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ============ 8. the world's paper on the world's curve (0.7.2) ============ */
+    static void theWorldsCurve(Path dir) throws Exception {
+        out.println("\n--- and the world's paper is priced on the world's curve ---");
+
+        Game city;
+        System.setOut(quiet);
+        try {
+            city = tradingCity(dir);
+        } finally {
+            System.setOut(out);
+        }
+        DebtManager market = city.getDebtManager();
+        assertTrue("fixture: the world will lend", market.foreignWindowOpen());
+
+        DebtQuote quote = city.quoteForeign("Term", 5_000, 20, 100);
+        System.setOut(quiet);
+        try {
+            city.handleForeignLogic("Term", 5_000, 20, 100, true);
+        } finally {
+            System.setOut(out);
+        }
+        Debt twenty = null;
+        for (Debt d : market.getDebt()) if (d.isForeign()) twenty = d;
+        assertTrue("fixture: a dollar twenty-year on the books",
+                twenty != null && twenty.getRemainingMonths() == 240);
+
+        double worldCurve = market.foreignRate() + DebtManager.termPremium(twenty.getRemainingMonths());
+        out.printf("   the dial %.2f%%, the city's short rate %.2f%%; the world's 20-year %.3f%%"
+                        + " (foreign rate %.3f%% + %.2f points)%n",
+                market.getPolicyRate() * 100, market.getRate() * 100, worldCurve * 100,
+                market.foreignRate() * 100, DebtManager.termPremium(240) * 100);
+        close("the world's curve is the foreign rate plus the city's own term premium table",
+                market.foreignCurveRate(240) - market.foreignRate(), DebtManager.TERM_PREMIUM_20Y, 1e-15);
+        close("...one shape for both currencies, fifty years over ten as on the city's curve",
+                market.foreignCurveRate(600) - market.foreignCurveRate(120),
+                DebtManager.TERM_PREMIUM_50Y - DebtManager.TERM_PREMIUM_10Y, 1e-15);
+        close("a dollar twenty-year is valued on the world's curve",
+                market.marketValue(twenty), twenty.getMarketValue(worldCurve), 1e-9);
+        assertTrue("...not at the city's own rate, which is a different figure",
+                Math.abs(market.marketValue(twenty) - twenty.getMarketValue(market.getRate())) > 1);
+        close("...and it was issued at the rate it is valued at: the round trip is neutral by construction",
+                quote.marketRate(), market.foreignCurveRate(240), 1e-12);
+
+        double value = market.marketValue(twenty);
+        double dial = market.getPolicyRate();
+        market.setPolicyRate(dial + .30);
+        market.updateInterest();
+        assertTrue("fixture: the dial moved the city's own rate", market.getRate() > dial + .25);
+        close("the dial moving does not move a dollar bond's value", market.marketValue(twenty), value, 0);
+        market.setPolicyRate(dial);
+        market.updateInterest();
+
+        double premium = market.countryPremium();
+        double exports = market.getMonthlyExports(), cover = market.getImportCover();
+        market.setTrade(exports / 4, cover);
+        assertTrue("fixture: a city earning a quarter as much abroad is charged more for it",
+                market.countryPremium() > premium);
+        assertTrue("...and the world charging the city more moves it: down",
+                market.marketValue(twenty) < value - 1e-6);
+        market.setTrade(exports, cover);
+        close("...and back when the city's standing is", market.marketValue(twenty), value, 1e-9);
     }
 }

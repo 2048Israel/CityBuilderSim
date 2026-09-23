@@ -1,6 +1,6 @@
-# Money.java - 216 lines · 16 methods · 1 constants · interface
+# Money.java - 236 lines · 17 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/Money.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Money.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > Every figure the interface prints as money, in one place.
 > 
@@ -31,9 +31,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 197 | **type** `public final class Money` | Every figure the interface prints as money, in one place. |
+| 20 | 217 | **type** `public final class Money` | Every figure the interface prints as money, in one place. |
 
-### THE ONE PLACE MODEL MONEY BECOMES A STRING. (lines 22-216)
+### THE ONE PLACE MODEL MONEY BECOMES A STRING. (lines 22-236)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -53,5 +53,6 @@
 | 182 | 3 | `public static String usd(double thousands)` | Foreign money, abbreviated. |
 | 187 | 3 | `public static String usdFull(double thousands)` | ...and with every digit. |
 | 199 | 8 | `public static String unitPrice(double thousands)` | A price small enough that the cents matter - a unit on the shelf, an hourly rate, anything a lopped currency has just made tiny. |
-| 209 | 6 | `public static String shortNumber(double value)` | 12.4k rather than 12,400 - the panel is narrow and these are two to a row. |
+| 219 | 8 | `public static String fxRate(double rate)` | An exchange rate - local dollars per US dollar, a ratio and not money, so it never goes through toDollars(). |
+| 229 | 6 | `public static String shortNumber(double value)` | 12.4k rather than 12,400 - the panel is narrow and these are two to a row. |
 

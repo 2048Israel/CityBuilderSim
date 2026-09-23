@@ -226,6 +226,32 @@ public class CalendarCheck {
         }
         assertTrue("every entry is stamped inside the game's own timeline", sane);
 
+        /* ==================== 7. one press is one month (0.7.1) ====================
+         *
+         * A month++ left twice at the top of nextMonth() passed the whole suite
+         * during 0.7.0's work; only the playtest's month numbers gave it away.
+         * The calendar is the press's to move and nobody else's: one press is
+         * exactly one month, so is each month of a skip, and the spine the
+         * press runs through moves it not at all - a second increment in
+         * either shows here.
+         */
+        System.out.println("\n--- one press is one month ---");
+        int before = g.getMonth();
+        System.setOut(quiet);
+        try { g.toggleNextMonth(); } finally { System.setOut(out); }
+        check("one press of nextMonth() advances the month by exactly one", g.getMonth() - before, 1);
+        before = g.getMonth();
+        System.setOut(quiet);
+        try { g.simulateMonths(5); } finally { System.setOut(out); }
+        check("...five months of a skip, by exactly five", g.getMonth() - before, 5);
+        before = g.getMonth();
+        System.setOut(quiet);
+        try { g.getSimulationEngineForTest().simulateMonth(g); } finally { System.setOut(out); }
+        check("...and SimulationEngine.simulateMonth(), the spine it runs through, by none",
+                g.getMonth() - before, 0);
+        same("...so the date on the status bar did not move with it", CityCalendar.format(g.getMonth()),
+                CityCalendar.format(before));
+
         cleanUp(root);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");

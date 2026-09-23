@@ -521,8 +521,8 @@ public class SaveFileCheck {
         System.out.println("\n--- and the number on the button ---");
 
         // The bug as Jerus reported it: note the income, save, quit, load, and
-        // the income has changed. It is the end-to-end assertion the other nine
-        // sections exist to make possible, and it holds only because every
+        // the income has changed. It is the end-to-end assertion that sections
+        // 1 to 9 exist to make possible, and it holds only because every
         // FLOW - not just every balance - now survives the round trip. An income
         // statement covers a period; it cannot be rebuilt from the instant that
         // period ended.
@@ -814,6 +814,24 @@ public class SaveFileCheck {
         assertEquals("the debt came back",
                 Math.round(paidUp.getDebtManager().getAllPrincipal() * 100),
                 Math.round(indebted.getDebtManager().getAllPrincipal() * 100));
+        /*
+         * ...AND WHO HOLDS IT (0.7.1): the households' paper is a new slot on
+         * every cell and the holders are new fields on every piece of paper.
+         * A slot that made it into the writer and not the reader - or the
+         * other way - reloads a city whose households own a bond nobody is
+         * paying them for.
+         */
+        assertTrue("fixture: the households hold some of it",
+                indebted.getDebtManager().householdPrincipal() > 0);
+        assertEquals("...and still do after the reload, cell by cell",
+                Math.round(paidUp.getHouseholdBalance().totalPaper() * 10000),
+                Math.round(indebted.getHouseholdBalance().totalPaper() * 10000));
+        assertEquals("...which is what the paper says they hold",
+                Math.round(paidUp.getDebtManager().householdPrincipal() * 10000),
+                Math.round(indebted.getDebtManager().householdPrincipal() * 10000));
+        assertEquals("...and the discount still to accrete on it came back",
+                Math.round(paidUp.getDebtManager().getDebt().get(0).getDiscountLeft() * 10000),
+                Math.round(indebted.getDebtManager().getDebt().get(0).getDiscountLeft() * 10000));
         assertEquals("...and so did the interest it had already accrued",
                 Math.round(paidUp.getEconomyManager().getExpenses() * 10000),
                 Math.round(dInterest * 10000));
@@ -832,6 +850,56 @@ public class SaveFileCheck {
         assertEquals("and a month later both cities have paid the same bill",
                 Math.round(paidUp.getCash() * 10000),
                 Math.round(indebted.getCash() * 10000));
+
+        /* ============ 12b. ...AND ONE THAT OWES ABROAD (2026-09-21) ============
+
+           What the currency did to the city's dollar debt this month -
+           ForeignAccounts.getLastRevaluation(), printed by the trade and the
+           finance pages beside what is owed - was struck inside the month and
+           carried by nothing, so a freshly loaded city read "the currency did
+           nothing" beside a debt the rate had just moved. Slot 24 of the
+           foreign accounts' array now.
+
+           The fixture CAUSES a revaluation rather than finding one: the city
+           borrows dollars on its first morning, and is played until a month in
+           which the rate actually moved them - which it cannot do before
+           ForeignAccounts.SETTLING_MONTHS of trade, so that many months first.
+           ================================================================= */
+        System.out.println("\n--- and a city with dollars owed abroad ---");
+
+        GameFiles abroadFiles = new GameFiles(root.resolve("abroad"), root.resolve("no-legacy"));
+        Game abroad = new Game(abroadFiles);
+        java.io.PrintStream shown = System.out;
+        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+        try {
+            abroad.run();
+            abroad.buildStack(template(abroad, "House"), 80, false);
+            abroad.buildStack(template(abroad, "Convenience Store"), 3, false);
+            abroad.handleForeignLogic("Term", 5_000, 30, 100, false);   // one of the five (0.7.1)
+            abroad.simulateMonths(ForeignAccounts.SETTLING_MONTHS + 2);
+            for (int extra = 0; extra < 120
+                    && Math.abs(abroad.getForeignAccounts().getLastRevaluation()) < 1e-6; extra++) {
+                abroad.simulateMonths(1);
+            }
+        } finally {
+            System.setOut(shown);
+        }
+        double revalued = abroad.getForeignAccounts().getLastRevaluation();
+        System.out.printf("   US$%,.0fk owed; the currency moved it by $%,.4fk this month%n",
+                abroad.getDebtManager().getForeignPrincipalUsd(), revalued);
+        assertTrue("fixture: the city really does owe dollars",
+                abroad.getDebtManager().getForeignPrincipalUsd() > 0);
+        assertTrue("fixture: ...and the rate really did move them this month",
+                Math.abs(revalued) > 1e-6);
+
+        assertTrue("saved owing abroad", abroad.saveGame(1, "owes abroad").ok);
+        Game abroadBack = new Game(abroadFiles);
+        abroadBack.loadGameSave(1);
+        same("what the currency did to the debt this month reloads",
+                abroadBack.getForeignAccounts().getLastRevaluation(), revalued);
+        same("...beside the rest of the foreign accounts, which always did",
+                abroadBack.getForeignAccounts().getLifetimeRevaluation(),
+                abroad.getForeignAccounts().getLifetimeRevaluation());
 
         /* ============ 13. AND NOTHING READS ZERO ON A FRESHLY LOADED CITY ============
 

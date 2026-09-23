@@ -1,11 +1,37 @@
 package ham.citybuildersim;
 
 /**
+ * A term loan: a coupon every month on the whole face, and the whole face at
+ * the end - issued only at the five maturities in MATURITIES (0.7.1).
  *
  * @author Jerus
  */
 public class LongTermBond extends Debt {
-    
+
+    /* =======================================================================
+       FIVE MATURITIES (0.7.1)
+
+       Jerus: "i think we should only be able to issue 10y 20y 30y 40y and
+       50y, so less granulity there, serial and tbills are fine tho." A term
+       loan was any whole number of years from ten to fifty, which is forty-one
+       points on a curve nobody could read; a real treasury issues at a
+       handful of benchmark maturities so that each one trades, and the curve
+       is those points. Existing paper keeps its months - a 25-year bond in a
+       save runs off - and only new issues are held to the five.
+       ======================================================================= */
+
+    /** The only terms a term loan is issued at, in years: five benchmark maturities, so the curve is five points a player can read. */
+    public static final int[] MATURITIES = {10, 20, 30, 40, 50};
+
+    /** What the treasury is told when it asks for any other term. */
+    public static final String REFUSAL = "Term loans are issued at 10, 20, 30, 40 or 50 years.";
+
+    /** True for one of the five. */
+    public static boolean isIssuable(int years) {
+        for (int m : MATURITIES) if (m == years) return true;
+        return false;
+    }
+
     private double monthlyCouponRate;
     
     public LongTermBond(double faceValue, int months, int monthStarted, double couponRate) {
@@ -88,7 +114,7 @@ public class LongTermBond extends Debt {
      * lump but pays no coupon, and the serial bond amortises. That makes this
      * the instrument with the redemption cliff, which is its character rather
      * than a flaw - you buy a very low monthly payment and you owe the lot in
-     * twenty-five years. The maturity strip along the bottom of the window
+     * thirty years. The maturity strip along the bottom of the window
      * exists so that is visible for years beforehand rather than on the morning.
      */
     @Override

@@ -122,11 +122,11 @@ public class NewGameCheck {
         m.put("build.unearned", build.getUnearnedRevenue());
         m.put("build.fill", build.getAverageFill());
 
-        // Three fields that live on Game itself rather than on a manager, which
-        // is exactly why buildWorld() was not clearing them: it rebuilds the
+        // Fields that live on Game itself rather than on a manager, which is
+        // exactly why buildWorld() was not clearing them: it rebuilds the
         // managers. A new game was inheriting the previous city's construction
-        // retainer and paying it every month.
-        m.put("build.subsidy", g.getConstructionSubsidy());
+        // retainer and paying it every month - a field removed in 0.7.1, when
+        // it had long stopped being paid - and its shedding warning.
         m.put("build.shedMonth", (double) g.getConstructionShedMonth());
         m.put("build.shedPoints", g.getConstructionShedPoints());
 
@@ -219,15 +219,14 @@ public class NewGameCheck {
         used.getEconomyManager().getTaxPolicy().setIncomeTaxRate(.32);
 
         /*
-         * And a retainer, and a standing warning.
+         * And a standing warning.
          *
-         * Without these two lines the three fields they set are zero in the
-         * lived-in city as well as the fresh one, so the comparison passes by
-         * proving 0 == 0 - which is how the subsidy leaked in the first place
+         * Without this line the two fields it sets are zero in the lived-in
+         * city as well as the fresh one, so the comparison passes by proving
+         * 0 == 0 - which is how the old retainer leaked in the first place
          * while this check was green. A field only counts as swept if the city
          * being swept actually had something in it.
          */
-        used.setConstructionSubsidy(250);
         used.restoreConstructionShedding(used.getMonth(), 1200);
         // ...and a vault the treasury has worked, for the same reason: a
         // founders' vault that nobody touched is swept by proving 1B == 1B.

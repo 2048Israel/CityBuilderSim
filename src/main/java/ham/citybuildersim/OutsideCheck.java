@@ -451,11 +451,16 @@ public class OutsideCheck {
                 g.buildStack(t(g, "Water Treatment Plant"), 1, false);
                 g.buildStack(t(g, "Paved Road"), 4, false);
                 g.buildStack(t(g, "Walk-in Clinic"), 1, false);
-                g.simulateMonths(60);
+                g.simulateMonths(59);
             });
             EconomyManager e = g.getEconomyManager();
             Unemployment u = g.getUnemployment();
-            check("the treasury pays the EI the ring says", e.getEiBenefits(), u.getBenefitsPaid(), 1e-9);
+            // The ring's bill on the pool the sixtieth month opens with: what
+            // the month pays and credits at its top since 0.7.3.
+            double opensWith = u.getBenefitsPaid();
+            quietly(() -> g.simulateMonths(1));
+            check("the treasury pays the EI the ring struck on the pool the month opened with",
+                    e.getEiBenefits(), opensWith, 1e-9);
             check("the premium is the dial times the staffed wage bill",
                     e.getEiPremiums(), e.getTaxPolicy().getEiPremiumRate()
                             * g.getPopulationManager().getTotalWage(), 1e-6);
@@ -495,6 +500,7 @@ public class OutsideCheck {
                     g.getPopulationManager().getTotalJobs(), g.getPopulationManager().getJobsFilled(), u.getPool(),
                     closing == null ? "-" : closing.getName(), biggestJobs);
             assertTrue("fixture: the city has more workers than posts", u.getPool() > 0 && closing != null);
+            double beforeClosing = u.getBenefitsPaid();
             quietly(() -> {
                 if (closing != null) g.getBuildingManager().retire(closing, g.getBuildingManager().getQuantity(closing.getId()));
                 g.simulateMonths(1);
@@ -505,15 +511,35 @@ public class OutsideCheck {
             assertTrue("fixture: the closing cost filled posts",
                     g.getPopulationManager().getJobsFilled() < filledBefore);
             assertTrue("...and put people on EI", u.getJobsLost() > 0 && u.onEi() > 0);
-            check("...and the treasury pays what the ring says", e.getEiBenefits(), u.getBenefitsPaid(), 1e-9);
-            double before = e.getEiBenefits();
-            assertTrue("fixture: there is EI to pay", before > 0);
-            quietly(() -> g.simulateMonths(1));
+            /*
+             * EI IS PAID AND CREDITED IN THE SAME MONTH (0.7.3). Until then the
+             * out of work were credited at the top of a month the bill the
+             * treasury had paid at the bottom of the one before: the same
+             * figure a month apart, invisible to the audit because households
+             * are outside its pools. The closing is what makes it visible - it
+             * moves the bill in the month it happens - so the closing month
+             * and the month after are both read: in each, what the out of
+             * work were credited is what the treasury paid, and what it paid
+             * is the ring's bill on the pool that month opened with.
+             */
             HouseholdAccounts books = g.getHouseholds();
-            check("the out of work were paid last month's EI", books.getRowBenefits(HouseholdAccounts.UNEMPLOYED),
-                    before, 1e-9);
+            check("the closing month pays the EI of the pool it opened with",
+                    e.getEiBenefits(), beforeClosing, 1e-9);
+            check("...and the out of work are credited that figure, the same month",
+                    books.getRowBenefits(HouseholdAccounts.UNEMPLOYED), e.getEiBenefits(), 1e-9);
+            double struck = u.getBenefitsPaid();
+            assertTrue("fixture: the closing moved the bill, so a month's lag would show",
+                    struck > beforeClosing + 1e-6);
+            assertTrue("fixture: there is EI to pay", struck > 0);
+            MoneyAudit.Result closed = g.getLastMoneyAudit();
+            quietly(() -> g.simulateMonths(1));
+            check("the month after pays the bill the closing struck",
+                    e.getEiBenefits(), struck, 1e-9);
+            check("...and the out of work are credited it in the month it is paid",
+                    books.getRowBenefits(HouseholdAccounts.UNEMPLOYED), struck, 1e-9);
             MoneyAudit.Result r = g.getLastMoneyAudit();
-            assertTrue("and the month passes the money audit", r.relative() < 1e-6);
+            assertTrue("and both months pass the money audit",
+                    closed.relative() < 1e-6 && r.relative() < 1e-6);
         }
 
         /* ============ 8. a city with a college: the students' money, and a save ============ */
@@ -528,6 +554,9 @@ public class OutsideCheck {
             double[] graduatedEver = new double[1];
             double[] graduatesMissed = new double[1];
             double[] finishedBefore = new double[1];
+            // The students and the wage each month OPENS with: the grant is
+            // struck on them and paid at the top of the month (0.7.1).
+            double[] grantStudents = new double[1], grantWage = new double[1];
             quietly(() -> {
                 g.newGame();
                 g.getGovernmentInvestor().spend(-900_000_000);
@@ -568,6 +597,8 @@ public class OutsideCheck {
                     double finished = finishedBefore[0];
                     finishedBefore[0] = g.getEducation().getFinished();
                     double studentsBefore = g.getHouseholdBalance().students().households();
+                    grantStudents[0] = g.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
+                    grantWage[0] = g.getPopulationManager().getWagesPerType()[JobType.NO_DIPLOMA.ordinal()];
                     g.simulateMonths(1);
                     double carried = g.getHouseholdBalance().getLastGraduated();
                     graduatedEver[0] += carried;
@@ -590,9 +621,12 @@ public class OutsideCheck {
                     students, graduatedEver[0], lentEver[0], repaidEver[0], hb.totalStudentDebt(),
                     hb.totalStudentDebt() - onStudents);
             assertTrue("fixture: the college has students", students > 10);
+            // ...every student the month opened with, at the wage it opened on:
+            // the grant is struck and paid at the top of the month, where the
+            // students are credited it (0.7.1).
             check("the grant is the dial times the unskilled wage, for every student",
-                    e.getStudentGrants(), students * e.getTaxPolicy().getStudentGrantShare()
-                            * g.getPopulationManager().getWagesPerType()[JobType.NO_DIPLOMA.ordinal()], 1e-6);
+                    e.getStudentGrants(), grantStudents[0] * e.getTaxPolicy().getStudentGrantShare()
+                            * grantWage[0], 1e-6);
             check("the students pay the tuition (Jerus: \"students pay it\")",
                     books.getRowTuition(HouseholdAccounts.STUDENTS), books.getTuition(), 1e-9);
             check("...and no family does", books.getRowTuition(PayTier.UNSKILLED.ordinal()), 0, 0);

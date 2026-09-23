@@ -1,6 +1,6 @@
 # BuildMenuCheck.java - 211 lines · 2 methods · 0 constants · harnesses
 
-`ham/citybuildersim/BuildMenuCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildMenuCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > Verifies that every building in the game can describe itself. Not part of the
 > game.

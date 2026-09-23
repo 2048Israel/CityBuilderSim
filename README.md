@@ -70,8 +70,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **fifty-seven harnesses plus the
-4,002-month playtest**, which it reports as fifty-eight, in about two minutes.
+`AllChecks` runs the lot, one JVM each — **sixty harnesses plus the
+4,000-odd-month playtest**, which it reports as sixty-one, in about three minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
@@ -192,7 +192,7 @@ src/main/java/ham/citybuildersim/     about 200 files
     tools/                            the index generators (see below); not part of the game
     *Check.java                       the harnesses
     AllChecks.java                    the runner
-    LongPlaytest.java                 4,002 months, audited every one
+    LongPlaytest.java                 4,000-odd months, audited every one
 src/main/resources/buildings.json     the balance file
 docs/                                 generated indexes of all of the above
 ```
@@ -261,7 +261,11 @@ separate living manual rather than in this file, so that a headline number
 moving does not mean editing the README:
 
 - **The manual:** https://claude.ai/artifact/BkBAN1RDiQTpCj79WPbpCp
-  *(currently private to the author)*
+  *(currently private to the author)* — and in this repository as
+  [`docs/manual.md`](docs/manual.md), which GitHub renders, and
+  `docs/manual.html`, the page itself, which opens from a clone. Both are
+  generated from the published page at every publish by
+  `tools.ManualToMarkdown`; do not edit them.
 - Per-batch design notes, the running to-do list and the changelog live
   alongside it, in the claude.ai project.
 
@@ -285,7 +289,8 @@ inside a save file without loading the game, and `tools.Stale` says which
 comments and documents have stopped being true — a javadoc with no member under
 it, prose naming a file that is not in the tree, a header that miscounts its
 own banners (`Stale report.bat` prints the list; `StaleCheck` asserts the firm
-half of it in the suite). `CLAUDE.md` at the root is the
+half of it in the suite). A fourth, `tools.ManualToMarkdown`, turns the
+published manual into the two files under `docs/` described above. `CLAUDE.md` at the root is the
 briefing an AI session reads first — the standing rules, the working loop and
 where everything is.
 

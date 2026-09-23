@@ -1,6 +1,6 @@
-# BankCheck.java - 1,202 lines · 6 methods · 0 constants · harnesses
+# BankCheck.java - 1,473 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/BankCheck.java` - generated 2026-09-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BankCheck.java` - generated 2026-09-22 by CodeMap; line numbers are as of that run.
 
 > The commercial bank, and the families it discharges.
 > 
@@ -25,46 +25,57 @@
 >      sum to the figure above them, and the term that makes them - the
 >      re-mark of what the desk holds - is measured on a fixture that trades
 >      and counted on a played city.
+>   5. Does the bank PAY for the city's paper? It held every bond the city
+>      sold and, until 2026-09-21, had never handed over a dollar for one -
+>      section 10. Since 0.7.1 it pays for what the households did not take,
+>      and earns the discount as it accretes rather than the month it settles.
 > 
 > Each of those is measured by CAUSING the condition, never by finding a city
 > that happens to be in it.
 
-**Uses:** [Bank](Bank.md) (67), [Game](Game.md) (12), [HouseholdBalance](HouseholdBalance.md) (11), [FamilyStructure](FamilyStructure.md) (10), [PayTier](PayTier.md) (7), [Exchange](Exchange.md) (5), [Equity](Equity.md) (5), [DebtManager](DebtManager.md) (5), [GameFiles](GameFiles.md) (5), [Sectors](Sectors.md) (5), [MoneyAudit](MoneyAudit.md) (4), [ExchangeCheck](ExchangeCheck.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BusinessInvestment](BusinessInvestment.md) (1)
+**Uses:** [Bank](Bank.md) (71), [Game](Game.md) (16), [HouseholdBalance](HouseholdBalance.md) (11), [FamilyStructure](FamilyStructure.md) (10), [GameFiles](GameFiles.md) (7), [PayTier](PayTier.md) (7), [DebtManager](DebtManager.md) (6), [Exchange](Exchange.md) (5), [Equity](Equity.md) (5), [MoneyAudit](MoneyAudit.md) (5), [Sectors](Sectors.md) (5), [ExchangeCheck](ExchangeCheck.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Debt](Debt.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [ShortTermTBill](ShortTermTBill.md) (1), [MediumTermBond](MediumTermBond.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 85 | · 1. the two limits |
-| 116 | · 1b. WHAT TO PAY SAVERS IS A DECISION |
-| 228 | · · ...and it does not open counters either |
-| 284 | · 2. the price of strain |
-| 332 | · 3. the premium reaches the borrower |
-| 361 | · 4. a real city, and its money |
-| 449 | · 5. the save carries the bank's cash |
-| 508 | · 6. a family that cannot carry it |
-| 623 | · 7. and the city opens its own |
-| 874 | · 8. the accounting identities, on a played city |
-| 1068 | · 8b. the trading desk's statement foots |
-| 1143 | · 9. capital is the constraint, and it can run out |
+| 89 | · 1. the two limits |
+| 120 | · 1b. WHAT TO PAY SAVERS IS A DECISION |
+| 261 | · · ...and it does not open counters either |
+| 317 | · 2. the price of strain |
+| 365 | · 3. the premium reaches the borrower |
+| 394 | · 4. a real city, and its money |
+| 493 | · 5. the save carries the bank's cash |
+| 552 | · 6. a family that cannot carry it |
+| 667 | · 7. and the city opens its own |
+| 918 | · 8. the accounting identities, on a played city |
+| 1113 | · 8b. the trading desk's statement foots |
+| 1188 | · 9. capital is the constraint, and it can run out |
+| 1250 | 10. the bank pays for the city's paper (2026-09-21) |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 38 | `static int fails` |  |
-| 39 | `static PrintStream out` |  |
-| 40 | `static PrintStream quiet` |  |
+| 42 | `static int fails` |  |
+| 43 | `static PrintStream out` |  |
+| 44 | `static PrintStream quiet` |  |
 
-## Methods, in file order
+## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 1167 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
-| 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 57 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 70 | 5 | `static double deskParts(Exchange exchange, Equity register, Bank bank)` | The trading desk's statement as the bank screen opens it, less the re-mark: sold to households and abroad, bought from both, dividends on the inventory, tendered into buybacks - the same getters BankScreen reads, with... |
-| 76 | 3 | `static double deskParts(Game game)` |  |
-| 80 | 1122 | `public static void main(String[] args) throws Exception` |  |
+| 40 | 1434 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
+| 46 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 51 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 61 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 74 | 5 | `static double deskParts(Exchange exchange, Equity register, Bank bank)` | The trading desk's statement as the bank screen opens it, less the re-mark: sold to households and abroad, bought from both, dividends on the inventory, tendered into buybacks - the same getters BankScreen reads, with... |
+| 80 | 3 | `static double deskParts(Game game)` |  |
+| 84 | 1165 | `public static void main(String[] args) throws Exception` |  |
+
+### 10. the bank pays for the city's paper (2026-09-21) (lines 1250-1473)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1304 | 169 | `static void theBankPaysForTheCitysPaper() throws Exception` |  |
 

@@ -254,9 +254,14 @@ public class LabourMarket {
      * emigration - so every currency crisis becomes a death spiral. Real
      * economies get partial pass-through and a long lag.
      *
-     * A THIRD of the price move, reached over about a year. Deliberately not
-     * full: workers never quite catch up, which is what makes a devaluation
-     * genuinely cost something rather than being a unit change.
+     * ALL of the price move now, reached over about two years - see
+     * COST_OF_LIVING_PASS_THROUGH and DRIFT_PER_MONTH below. It was a third,
+     * reached over about a year and deliberately not full, so that a
+     * devaluation cost something rather than being a unit change; the two
+     * dials say why that compounded, and why it is the lag rather than a
+     * share withheld for ever that makes a price rise hurt. LabourCheck's
+     * wagesAgainstTheIndex() holds the recurrence to the index month by
+     * month (2026-09-21).
      */
 
     /**

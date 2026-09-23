@@ -51,7 +51,8 @@ final class BankScreen {
          WHO OWES IT        by borrower and by sector, and who has stopped
                             paying.
          WHERE THE MONEY    what the city has banked, what the branches can
-         COMES FROM         actually reach, and what it had to borrow abroad.
+         COMES FROM         actually reach, and what it borrows at the central
+                            bank's window (abroad, until 0.7.0).
          THE BOOKS          the income statement and the balance sheet, in the
                             language the sector books use.
          ITS HISTORY        the four series HistorySave now keeps: the book
@@ -157,10 +158,10 @@ final class BankScreen {
                 "Who owes it", "By borrower"));
 
         column.getChildren().add(bankRow("Where the money comes from",
-                "savings it can reach, and the market it goes to for the rest",
+                "savings it can reach, and the central bank's window for the rest",
                 money(bank.depositsGathered()),
                 bank.wholesaleFunding() > 0
-                        ? money(bank.wholesaleFunding()) + " borrowed wholesale"
+                        ? money(bank.wholesaleFunding()) + " borrowed at the window"
                         : "funded entirely by deposits",
                 bank.hotFundingShare() > .25 ? Palette.WARN : Palette.TEXT_HEAD,
                 "Where the money comes from", "Deposits"));
@@ -1025,6 +1026,11 @@ final class BankScreen {
                     String.valueOf(bank.getFailures()), Palette.BAD));
             column.getChildren().add(statementLine("Its creditors absorbed",
                     moneyFull(bank.getResolutionLoss()), Palette.BAD));
+            // TODO(docs): since 0.7.0 the bank's wholesale lender is the central
+            // bank's window, not creditors outside the city; the loss is still
+            // booked as crossing the edge (MoneyAudit's "+ bank ResolutionLoss").
+            // Who absorbs a failed bank now is Jerus's open question, and this
+            // sentence follows his answer.
             column.getChildren().add(statementNote(
                     "When a bank loses more than it owns, somebody eats the hole. Here it "
                     + "is the wholesale creditors — who are outside the city, so the loss "
@@ -1141,56 +1147,48 @@ final class BankScreen {
 
         column.getChildren().add(statementHead("What it had to go and borrow"));
 
+        double policy = ui.game.getDebtManager().getPolicyRate();
+
         if (borrowed <= 0) {
             column.getChildren().add(sentence(
-                    "The bank owes nothing. It is holding cash rather than funding a book "
-                    + "with somebody else's money, which is the comfortable end of a very "
-                    + "short spectrum.", Palette.GOOD));
-            column.getChildren().add(statementLine("Cash reserves",
+                    "The bank owes nothing. What it has not lent is its reserves at the "
+                    + "central bank, earning the policy rate — which is the least it will "
+                    + "lend at, because it can earn that by doing nothing.", Palette.GOOD));
+            column.getChildren().add(statementLine("Reserves at the central bank",
                     moneyFull(bank.cashReserves()), Palette.GOOD));
+            column.getChildren().add(statementLine("Earning",
+                    String.format("%.2f%% a year, the policy rate", policy * 100),
+                    Palette.TEXT_HEAD));
+            column.getChildren().add(statementLine("Which paid it this month",
+                    moneyFull(bank.getPlacementIncome()), Palette.GOOD));
             return;
         }
 
         java.util.List<Slice> split = new java.util.ArrayList<>();
         if (cheap > 0) split.add(new Slice("Deposits", cheap, Palette.LADDER[1]));
-        if (dear > 0)  split.add(new Slice("Wholesale", dear, Palette.BAD));
+        if (dear > 0)  split.add(new Slice("The window", dear, Palette.BAD));
         column.getChildren().add(stackedBar(split, STATEMENT - 40));
 
         column.getChildren().add(statementLine("Funded by deposits", moneyFull(cheap),
                 Palette.GOOD));
-        column.getChildren().add(statementLine("Funded in the market", moneyFull(dear),
-                dear > 0 ? Palette.BAD : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("Borrowed at the central bank's window",
+                moneyFull(dear), dear > 0 ? Palette.BAD : Palette.TEXT_SPENT));
         column.getChildren().add(statementTotal("Everything it owes",
                 moneyFull(borrowed), Palette.TEXT_HEAD));
 
-        column.getChildren().add(statementLine("It is paying",
+        column.getChildren().add(statementLine("The window charges",
                 String.format("%.2f%% a year", bank.fundingRate() * 100), Palette.WARN));
         column.getChildren().add(statementLine("Which cost it this month",
                 moneyFull(bank.getFundingCost()), Palette.WARN));
 
         column.getChildren().add(sentence(String.format(
-                "A bank funding a tenth of its book in the market is a normal bank; one "
-                + "funding twice its deposits is one the market has questions about. The "
-                + "rate rises with how far it has reached — %.0f points over the risk-free "
-                + "rate to begin with, and up to %.0f more as it stretches.",
-                Bank.FUNDING_SPREAD * 100, Bank.FUNDING_STRETCH * 100),
+                "Past what its branches can gather, the bank borrows from the central "
+                + "bank at the policy rate plus a %.0f-point penalty, so a dollar of reserves "
+                + "always costs more to borrow than it earns to hold. The window is not "
+                + "rationed: what stops the bank lending more is the strain premium it has "
+                + "to charge and the capital it has to hold, not the money.",
+                CentralBank.WINDOW_PENALTY * 100),
                 Palette.TEXT_BODY));
-
-        /* --------------------------- and whose money --------------------------- */
-        double abroad = bank.fundingCostAbroad();
-        if (abroad > 0) {
-            column.getChildren().add(statementHead("...and to whom"));
-            column.getChildren().add(statementLine("Paid to lenders down the road",
-                    moneyFull(bank.fundingCostAtHome()), Palette.TEXT_MUTED));
-            column.getChildren().add(statementLine("Paid to lenders abroad",
-                    moneyFull(abroad), Palette.WARN));
-            column.getChildren().add(statementNote(String.format(
-                    "%.0f%% of it is found at home, and that share rises as the city's "
-                    + "savings do — a poor country's banks are funded by foreigners "
-                    + "because nobody at home has the savings to fund them. Only the "
-                    + "foreign half leaves the city, and it is on the current account.",
-                    bank.domesticCapitalShare() * 100)));
-        }
     }
 
     /* =====================================================================
@@ -1221,7 +1219,7 @@ final class BankScreen {
 
         column.getChildren().add(statementLine("Paid to savers",
                 "−" + moneyFull(bank.depositInterest()), Palette.WARN));
-        column.getChildren().add(statementLine("Cost of wholesale funding",
+        column.getChildren().add(statementLine("Paid at the central bank's window",
                 "−" + moneyFull(bank.getFundingCost()), Palette.WARN));
         column.getChildren().add(statementTotal("NET INTEREST INCOME",
                 moneyFull(bank.netInterestIncome()),
@@ -1304,6 +1302,14 @@ final class BankScreen {
         column.getChildren().add(statementDisclosure("The trading desk",
                 (bank.getTradingIncome() >= 0 ? "" : "−") + moneyFull(Math.abs(bank.getTradingIncome())),
                 desk, "what it did"));
+        // ...and the city's paper that changed hands (0.7.1): bought from the
+        // households at the desk, sold to or bought from the central bank. The
+        // gain or loss against what the book carried the paper at.
+        if (Math.abs(bank.getPaperGains()) > 1e-9) {
+            column.getChildren().add(statementLine("Gains on the city's paper that changed hands",
+                    (bank.getPaperGains() >= 0 ? "" : "−") + moneyFull(Math.abs(bank.getPaperGains())),
+                    bank.getPaperGains() >= 0 ? Palette.GOOD : Palette.WARN));
+        }
         column.getChildren().add(statementLine("Staff and premises",
                 "−" + moneyFull(bank.operatingExpenses()), Palette.WARN));
         column.getChildren().add(statementTotal("PROFIT BEFORE TAX",
@@ -1345,7 +1351,7 @@ final class BankScreen {
 
         column.getChildren().add(statementHead("What it is standing on"));
 
-        column.getChildren().add(statementLine("Cash reserves",
+        column.getChildren().add(statementLine("Reserves at the central bank",
                 moneyFull(bank.cashReserves())));
         column.getChildren().add(statementLine("Loans",
                 moneyFull(bank.getBook())));
@@ -1356,11 +1362,17 @@ final class BankScreen {
 
         column.getChildren().add(statementLine("Deposits",
                 "−" + moneyFull(bank.depositFunding()), Palette.TEXT_MUTED));
-        column.getChildren().add(statementLine("Wholesale funding",
+        column.getChildren().add(statementLine("Owed at the central bank's window",
                 "−" + moneyFull(bank.wholesaleFunding()), Palette.TEXT_MUTED));
         if (bank.getForeignDeposits() > 0) {
             column.getChildren().add(statementLine("Foreign deposits",
                     "−" + moneyFull(bank.getForeignDeposits()), Palette.WARN));
+        }
+        // The discount on the city's paper it has not yet earned (0.7.1): it
+        // bought under face, and earns the difference a month at a time.
+        if (bank.getUnearnedDiscount() > 0) {
+            column.getChildren().add(statementLine("Discount on the city's paper, not yet earned",
+                    "−" + moneyFull(bank.getUnearnedDiscount()), Palette.TEXT_MUTED));
         }
         column.getChildren().add(statementTotal("TOTAL LIABILITIES",
                 moneyFull(bank.totalLiabilities()), Palette.TEXT_HEAD));

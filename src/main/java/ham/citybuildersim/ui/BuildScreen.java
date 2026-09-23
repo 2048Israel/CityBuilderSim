@@ -1590,10 +1590,10 @@ final class BuildScreen {
      * "You cannot afford this - borrow for it?" with the terms on the screen.
      *
      * NOTE: this used to gross the gap up itself using getRate(), the standing
-     * rate, and hand the resulting face value to issueEmergencyDebt() - which
-     * then grossed it up a second time off the same stale rate. The quote does
-     * both now, priced with the bill included, and the button books precisely
-     * what is printed above it.
+     * rate, and hand the resulting face value to the emergency note (gone
+     * since 0.7.0) - which then grossed it up a second time off the same
+     * stale rate. The quote does both now, priced with the bill included, and
+     * the button books precisely what is printed above it.
      */
     void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats) {
     ui.clearMenu("showQuickDebtMenu", () -> showQuickDebtMenu(selected, quantity, prevTitle, prevCats));
@@ -1601,11 +1601,13 @@ final class BuildScreen {
     double totalCost = ui.game.calculateTotalCost(selected, quantity);
     double gap = totalCost - ui.game.getCash();
 
-    // Matching what the automatic path books when cash runs out - the SAME
-    // duration, not just the same method. This quoted a 3-month bill while the
-    // button below booked the 6-month emergency note, and quoteTBill()
-    // discounts by duration, so the price on screen was not the price paid.
-    DebtQuote quote = ui.game.quoteTBill(gap, Game.EMERGENCY_NOTE_MONTHS, 1000.0);
+    // Matching what the button below books - the SAME duration, not just the
+    // same method. This quoted a 3-month bill while the button booked the
+    // 6-month emergency note, and quoteTBill() discounts by duration, so the
+    // price on screen was not the price paid. The emergency note itself is
+    // gone (0.7.0: the central bank advances a broke treasury); this is the
+    // screen's own note on Game.BUILD_NOTE_MONTHS.
+    DebtQuote quote = ui.game.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, 1000.0);
 
     Label warning = new Label("INSUFFICIENT FUNDS");
     warning.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
@@ -1620,7 +1622,7 @@ final class BuildScreen {
 
     Button confirmDebt = new Button("Issue T-Bill");
     confirmDebt.setOnAction(e -> {
-        ui.game.issueEmergencyDebt(gap, Game.EMERGENCY_NOTE_MONTHS);   // quotes it again, identically
+        ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, 1000.0);   // quotes it again, identically
 
         /*
          * THE RESULT IS LOOKED AT NOW, and that is the more important half of

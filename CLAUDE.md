@@ -14,7 +14,7 @@ requirement.
 
 ## Open these before reading source
 
-The tree is 129,000 lines; `Game.java` alone is 8,000, and the interface is
+The tree is 138,000 lines; `Game.java` alone is 9,300, and the interface is
 nineteen files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
@@ -37,14 +37,21 @@ Three command-line tools for the same purpose:
     java -cp target/classes ham.citybuildersim.tools.Where "THE BANK"           # finds a banner section by its title
     java -cp "target/classes;<gson.jar>" ham.citybuildersim.tools.SaveDump 3 sectors   # looks inside a save without loading it
     java -cp target/classes ham.citybuildersim.tools.Stale                      # which comments and documents have stopped being true; StaleCheck asserts its firm half
+    java -cp target/classes ham.citybuildersim.tools.ManualToMarkdown --wrap page.html docs/manual.html   # the pulled manual as a standalone page, then...
+    java -cp target/classes ham.citybuildersim.tools.ManualToMarkdown docs/manual.html docs/manual.md     # ...as the Markdown GitHub renders
 
 The design record lives outside the repository, in the claude.ai project
 "Leverage & Growth: Java Game": `claude/todo.md` is the list of what is open,
 `claude/changelog.md` what shipped and when (newest first), `claude/index.md`
 a map of the two hundred design notes by subsystem, and the published manual
 (artifact "CityBuilderSim", https://claude.ai/artifact/BkBAN1RDiQTpCj79WPbpCp)
-is the model written out. A session that has been away reads the changelog's
-top and the todo's section 0 before anything else.
+is the model written out. The manual is also in the tree, so that GitHub shows
+it without a link: `docs/manual.md` (GitHub renders it) and `docs/manual.html`
+(the page itself, opens from a clone) are GENERATED from the published page by
+`tools.ManualToMarkdown` at every publish - never edit them; change the page,
+publish, pull it, and run the tool's two lines (`--wrap` first, then the
+Markdown from what it wrote). A session that has been away reads the
+changelog's top and the todo's section 0 before anything else.
 
 ## The standing rules
 
@@ -85,7 +92,7 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; 8,000 lines, 25 banner sections
+        Game.java                  the month, the seam every system meets at; 9,300 lines, 28 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
@@ -97,10 +104,10 @@ These are Jerus's, and they do not move.
                                    strips, panels, dialogs), one <Name>Screen.java per tab (split 2026-09-18 -
                                    the project's splitting-the-interface.md), Money/Statement/Pieces/Levers
                                    (what the screens share), Palette.java, Icons.java. The model never imports it.
-        *Check.java                fifty-seven harnesses, each a main() with static helpers
+        *Check.java                sixty harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
-        LongPlaytest.java          4,002 months, audited every one; also the fixture builder harnesses borrow
-        tools/                     the index generators, the two look-up tools and Stale (the prose check); nothing in the game uses them
+        LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow
+        tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket
 
 A `.java` file at the root that holds only a comment saying MOVED is a stub

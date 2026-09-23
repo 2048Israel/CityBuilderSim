@@ -886,7 +886,13 @@ final class PeopleScreen {
 
         /* ---- EI ---- */
         double premiums = em.getEiPremiums();
-        double paid = u.getBenefitsPaid();
+        // What the treasury PAID this month (0.7.3): the bill is paid at the
+        // top of the month on the pool it opened with, and the pool's own
+        // figure (Unemployment.getBenefitsPaid()) is struck again at the end
+        // of the month on the pool it produced - next month's bill. The two
+        // agreed until 0.7.3; the premiums note below compares against what
+        // was paid.
+        double paid = em.getEiBenefits();
         column.getChildren().add(statementLine("EI paid this month", money(paid),
                 paid > 0 ? Palette.WARN : Palette.TEXT_SPENT));
         if (u.onEi() >= .5) {
@@ -2134,7 +2140,26 @@ final class PeopleScreen {
             }
         }
 
-        double net = put + shares + away - owe;
+        /* ...AND THE CITY'S OWN PAPER (0.7.1): bought when an issue paid more than
+         * the bank, at this month's value - the households' book at the curve
+         * over its face. See HouseholdBalance's THE CITY'S PAPER, AT HOME. */
+        double bonds = 0;
+        if (own.paper() > 0) {
+            bonds = toDollars(own.paper() * bal.getPaperRatio());
+            panel.getChildren().add(statementLine("The city's own paper",
+                    tightMoney(bonds, false) + " (" + tightMoney(toDollars(own.paper()), false)
+                            + " of face)", Palette.GOOD));
+            if (own.paperIncome() > 0) {
+                panel.getChildren().add(statementLine("...paid on it this month",
+                        tightMoney(toDollars(own.paperIncome()), false), Palette.GOOD));
+            }
+            if (own.paperSold() > 0) {
+                panel.getChildren().add(statementLine("...sold to the bank this month",
+                        tightMoney(toDollars(own.paperSold()), false), Palette.WARN));
+            }
+        }
+
+        double net = put + shares + away + bonds - owe;
         panel.getChildren().add(statementTotal("What one of them is worth",
                 tightMoney(net, false), net < 0 ? Palette.BAD : Palette.GOOD));
 
@@ -2146,7 +2171,7 @@ final class PeopleScreen {
          */
         double shortfall = -toDollars(own.afterFixed() - own.want());
         if (shortfall > .005) {
-            double cushion = Math.max(0, put + shares + away);
+            double cushion = Math.max(0, put + shares + away + bonds);
             panel.getChildren().add(statementNote(cushion > .005
                     ? "Short " + tightMoney(shortfall, false) + " a month, with "
                             + monthsRun(cushion / shortfall) + " of cover behind it."

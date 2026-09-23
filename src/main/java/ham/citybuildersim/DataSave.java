@@ -129,7 +129,7 @@ public class DataSave {
      */
     private int workforce = -1;
 
-    /* ------------------------- land, ore and the retainer -------------------
+    /* ------------------------------ land and ore ----------------------------
      *
      * The listing is written out in full rather than regenerated from a seed.
      * Regenerating would be smaller and would tie every existing save to the
@@ -142,8 +142,6 @@ public class DataSave {
     private double[] landMarketPrices;
     private int ironDeposits;
     private double ironReserveTonnes;
-
-    private double constructionSubsidy;
 
     /* ------------------------- the shedding warning -------------------------
      *
@@ -311,6 +309,25 @@ public class DataSave {
      * strike counts. Zero on an older save, which is what its bridge read.
      */
     private double treasuryRaisedPending;
+
+    /**
+     * The city's own paper its bank has taken and not yet paid for, with the
+     * discount on it - Game.getCityPaperUnsettled() - carried since 2026-09-21
+     * because the bank now PAYS for the paper at the settle after the issue,
+     * and a city saved in between has been paid for paper its bank has not
+     * yet paid for. An older save has neither and reads both as zero: its
+     * bank pays nothing for paper issued before that save, which is exactly
+     * what every bank did before 0.6.11, so SAVE_FORMAT does not move.
+     */
+    private double cityPaperUnsettled;
+    private double cityDiscountUnsettled;
+
+    public void setCityPaperUnsettled(double cash, double discount) {
+        this.cityPaperUnsettled = cash;
+        this.cityDiscountUnsettled = discount;
+    }
+    public double getCityPaperUnsettled()    { return cityPaperUnsettled; }
+    public double getCityDiscountUnsettled() { return cityDiscountUnsettled; }
 
     public void setTreasuryJournal(String[] labels, double[] amounts,
                                    String[] pendingLabels, double[] pendingAmounts) {
@@ -587,8 +604,6 @@ public class DataSave {
     public int getIronDeposits()            { return ironDeposits; }
     public double getIronReserveTonnes()    { return ironReserveTonnes; }
 
-    public void setConstructionSubsidy(double amount) { this.constructionSubsidy = amount; }
-    public double getConstructionSubsidy()            { return constructionSubsidy; }
 
     /* -------------------------- policy --------------------------
      *
@@ -715,14 +730,43 @@ public class DataSave {
      * All STOCKS, and more than the four named: the cumulative balance is the
      * accumulation of every month that has ever crossed the city's edge and
      * cannot be recovered from the month the save was taken in; the trailing
-     * import figure is an average of months that have gone; the vault's dollars
-     * and its revaluation ride the end of the array. The slots are listed at
-     * ForeignAccounts.toSaveArray().
+     * import figure is an average of months that have gone; the vault's
+     * dollars, its revaluation and the debt's ride the end of the array. The
+     * slots are listed at ForeignAccounts.toSaveArray().
      */
     private double[] foreignAccounts;
 
     public void setForeignAccounts(double[] state) { this.foreignAccounts = state; }
     public double[] getForeignAccounts()           { return foreignAccounts; }
+
+    /**
+     * The central bank's balance sheet (0.7.0), under its own key: the two
+     * advances, the paper it holds, reserves and currency, the loss it
+     * carries, the remittance it owes, the lifetime totals and the trailing
+     * revenue its ceiling is struck on. The slots are listed at
+     * CentralBank.toSaveArray(). Null on a save from before it existed, which
+     * founds an empty central bank - nothing lent, nothing made - and runs.
+     */
+    private double[] centralBank;
+
+    public void setCentralBank(double[] state) { this.centralBank = state; }
+    public double[] getCentralBank()           { return centralBank; }
+
+    /**
+     * What the treasury owes and has not paid (0.7.0): its arrears, as two
+     * parallel arrays - the ledger's key ("LINE" or "LINE:sector", see
+     * TreasuryLine) and the amount in thousands. Null on an older save, which
+     * owes nothing, because the rule that makes arrears did not exist yet.
+     */
+    private String[] treasuryArrearsKeys;
+    private double[] treasuryArrearsAmounts;
+
+    public void setTreasuryArrears(String[] keys, double[] amounts) {
+        this.treasuryArrearsKeys = keys;
+        this.treasuryArrearsAmounts = amounts;
+    }
+    public String[] getTreasuryArrearsKeys()    { return treasuryArrearsKeys; }
+    public double[] getTreasuryArrearsAmounts() { return treasuryArrearsAmounts; }
 
     /**
      * The city's standing with foreign lenders: the default scar and how long
@@ -882,11 +926,86 @@ public class DataSave {
     public void setDenomination(double[] state) { this.denomination = state; }
     public double[] getDenomination()           { return denomination; }
 
-    /** The policy rate. A decision, not a derivation - so it has to be carried. */
-    private double policyRate;
+    /**
+     * The policy rate. A decision, not a derivation - so it has to be carried.
+     *
+     * BOXED SINCE 0.7.0, so that absent and zero are different answers. It was
+     * a double, and the load path could tell a save without the key from one
+     * whose player had set the dial to 0% only by restoring a POSITIVE rate -
+     * so a 0% dial reloaded as the 3% default. Null now means a save from
+     * before the rate was carried, which keeps the default; anything else,
+     * zero included, is restored as saved.
+     */
+    private Double policyRate;
 
     public void setPolicyRate(double rate) { this.policyRate = rate; }
-    public double getPolicyRate()          { return policyRate; }
+    /** The rate as saved, or null on a save that did not carry one. */
+    public Double getPolicyRate()          { return policyRate; }
+
+    /**
+     * Whether the rule held the dial when this was saved (0.7.0) - see
+     * DebtManager's autopilot. Null on an older save, which reads as off: the
+     * player's hand was on the dial.
+     */
+    private Boolean policyAutopilot;
+
+    public void setPolicyAutopilot(boolean on) { this.policyAutopilot = on; }
+    public boolean getPolicyAutopilot()        { return policyAutopilot != null && policyAutopilot; }
+
+    /**
+     * The central bank's holdings dial (0.7.1): the share of the city's term
+     * paper it aims to hold - CentralBank.getTargetShare(). Under its own key
+     * rather than in the balance sheet's array, because it is the player's
+     * decision and not the bank's position. An old save reads 0: a central
+     * bank that holds nothing, which is what every one did before 0.7.1.
+     */
+    private double qeTargetShare;
+
+    public void setQeTargetShare(double share) { this.qeTargetShare = share; }
+    public double getQeTargetShare()           { return qeTargetShare; }
+
+    /**
+     * The advances ceiling dial (0.7.2): the most the treasury may owe its
+     * central bank, in months of its revenue - CentralBank
+     * .getAdvancesCeilingMonths(). Under its own key, beside the holdings
+     * dial, because it is the player's decision and not the bank's position.
+     * Boxed so a save without the key is told apart from a ceiling of 0: an
+     * older save reads null, which is CentralBank.DEFAULT_ADVANCES_MONTHS -
+     * the constant six months every city had before the dial.
+     */
+    private Double advancesCeilingMonths;
+
+    public void setAdvancesCeilingMonths(double months) { this.advancesCeilingMonths = months; }
+    /** The ceiling as saved, or null on a save from before the dial. */
+    public Double getAdvancesCeilingMonths()            { return advancesCeilingMonths; }
+
+    /**
+     * The month's ratio for the households' city paper (0.7.1): their book at
+     * the curve over its face, which their plan reads - so it is carried, and
+     * the load path re-strikes the plan on the figure the live path used.
+     * Zero on an old save, which the balance reads as 1: those households hold
+     * none, so the figure is never used.
+     */
+    private double householdPaperRatio;
+
+    public void setHouseholdPaperRatio(double ratio) { this.householdPaperRatio = ratio; }
+    public double getHouseholdPaperRatio()           { return householdPaperRatio; }
+
+    /**
+     * What a buyback between two presses paid the households and a dollar
+     * bond's holders and the next month has not yet declared (0.7.1) -
+     * Game.getBuybackUnsettled() less the central bank's share, which rides in
+     * its own array. An old save owes nothing.
+     */
+    private double buybackToHouseholdsUnsettled;
+    private double buybackAbroadUnsettled;
+
+    public void setBuybackUnsettled(double households, double abroad) {
+        this.buybackToHouseholdsUnsettled = households;
+        this.buybackAbroadUnsettled = abroad;
+    }
+    public double getBuybackToHouseholdsUnsettled() { return buybackToHouseholdsUnsettled; }
+    public double getBuybackAbroadUnsettled()       { return buybackAbroadUnsettled; }
 
     /**
      * The commute the city REMEMBERS, which decides how many of its car owners
