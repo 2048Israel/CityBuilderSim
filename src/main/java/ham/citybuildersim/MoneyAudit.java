@@ -475,6 +475,14 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ bank RepaidByHouseholds", g.getBank().getRepaidByHouseholds(), Scope.DOMESTIC);
         /*
+         * ...AND THE ACCOUNT FEES THEY PAID IT (0.7.7), from outside the pools
+         * like the repayments beside them. The loan fees need no line: a
+         * business's is handed from its pool to the bank's and cancels, and a
+         * household's is added to what it owes and moves no cash until it is
+         * repaid, through the line above. See Bank, FEES.
+         */
+        in += credit.apply("+ bank AccountFees", g.getBank().getAccountFees(), Scope.DOMESTIC);
+        /*
          * THE HOUSEHOLDS BUY THE CITY'S PAPER (0.7.1), at the settle of an
          * issue: their cash is what the bank did not have to pay the treasury
          * for, so it arrives in the bank's pool from outside the pools, like a

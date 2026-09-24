@@ -522,47 +522,8 @@ final class SectorScreen {
         return l;
     }
 
-    /** The line a section adds up to: a rule, then the figure at full weight. */
-    VBox bookTotal(String label, double now, double then, boolean known, String tone) {
-
-        Region rule = new Region();
-        rule.setMinHeight(1);
-        rule.setPrefHeight(1);
-        rule.setMaxHeight(1);
-        rule.setMaxWidth(STATEMENT);
-        rule.setPrefWidth(STATEMENT);
-        rule.setStyle("-fx-background-color: " + Palette.HAIRLINE + ";");
-
-        Label what = new Label(label);
-        what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
-                + " -fx-font-weight: bold;");
-
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-
-        Label a = new Label(tightMoney(toDollars(now), false));
-        a.setPrefWidth(BOOK_NOW);
-        a.setMinWidth(BOOK_NOW);
-        a.setAlignment(Pos.CENTER_RIGHT);
-        a.setStyle(Palette.figure(Palette.SIZE_LEAD,
-                tone == null ? Palette.TEXT_HEAD : tone));
-
-        Label b = new Label(known ? tightMoney(toDollars(then), false) : "—");
-        b.setPrefWidth(BOOK_THEN);
-        b.setMinWidth(BOOK_THEN);
-        b.setAlignment(Pos.CENTER_RIGHT);
-        b.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
-
-        HBox row = new HBox(Palette.GAP, what, gap, a, b);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT);
-        row.setPrefWidth(STATEMENT);
-        row.setStyle("-fx-padding: 4 0 6 0;");
-
-        VBox box = new VBox(0, rule, row);
-        box.setMaxWidth(STATEMENT);
-        return box;
-    }
+    /* bookTotal(), the line a section adds up to, moved to Statement on
+       2026-09-23 (0.7.9) when the bank's income statement wanted it too. */
 
     /* -------------------------- THE INCOME STATEMENT -------------------------- */
 
@@ -1030,7 +991,7 @@ final class SectorScreen {
         column.getChildren().add(statementHead("Its owners"));
         Exchange market = ui.game.getExchange();
         double abroad = register.foreignShare(company);
-        double onDesk = register.getShares(company) > 0 ? Math.max(0, register.getDealerShares(company)) / register.getShares(company) : 0;
+        double onDesk = register.deskShare(company);
         column.getChildren().add(statementLine("Held by the city's households",
                 String.format("%.0f%%", Math.max(0, 1 - abroad - onDesk) * 100),
                 abroad < .5 ? Palette.GOOD : null));
@@ -1098,12 +1059,18 @@ final class SectorScreen {
             case NORMAL -> "a normal year: it borrows for its plans";
             case BAD -> "a bad year: it does not go to the market";
         };
+        // The bank's payout is its own capital rule since 0.7.8 (Bank, WHAT IT
+        // DOES WITH ITS PROFIT), not the register's share of a profitable month.
+        Bank lender = ui.game.getBank();
+        String policy = company == Equity.BANK
+                ? String.format("It holds capital to its own target, %.1f%% of its weighted book, and is %s",
+                        lender.capitalTarget() * 100, lender.payoutDecision())
+                : String.format("It wants %.0f%% of its balance sheet as equity and pays out %.0f%% of a"
+                        + " profitable month", register.getTargetEquityShare(company) * 100, Equity.PAYOUT * 100);
         column.getChildren().add(statementNote(String.format(
-                "%s. It wants %.0f%% of its balance sheet as equity and pays out %.0f%% of a"
-                + " profitable month. Raised %s from the households and %s abroad since founding;"
+                "%s. %s. Raised %s from the households and %s abroad since founding;"
                 + " paid them %s and %s.",
-                regime.substring(0, 1).toUpperCase() + regime.substring(1),
-                register.getTargetEquityShare(company) * 100, Equity.PAYOUT * 100,
+                regime.substring(0, 1).toUpperCase() + regime.substring(1), policy,
                 tightMoney(toDollars(register.getLifetimeRaisedHome(company))),
                 tightMoney(toDollars(register.getLifetimeRaisedAbroad(company))),
                 tightMoney(toDollars(register.getLifetimeDividendsHome(company))),
@@ -1168,17 +1135,35 @@ final class SectorScreen {
         column.getChildren().add(bookLine("Kept from trading",
                 now.netIncome(), then.netIncome(), known,
                 now.netIncome() < 0 ? Palette.BAD : Palette.GOOD));
+        // ...plus the stock it built with this month and paid for when it
+        // bought it (0.7.8): a cost in what it kept, and no cash this month.
+        if (now.paidEarlier() != 0 || then.paidEarlier() != 0) {
+            column.getChildren().add(bookLine("Stock used, paid for when bought",
+                    now.paidEarlier(), then.paidEarlier(), known, null));
+        }
         column.getChildren().add(bookLine("Borrowed",
                 now.borrowed(), then.borrowed(), known,
                 now.borrowed() > 0 ? Palette.WARN : null));
         column.getChildren().add(bookLine("Loans repaid",
                 -now.repaid(), -then.repaid(), known, null));
-        if (now.spentOnBuildings() != 0 || then.spentOnBuildings() != 0) {
+        // ...less the part that was scrapped plant's material (0.7.8), which
+        // is its own line: the builders' purchase, or the seller's sale.
+        double premisesNow = now.spentOnBuildings() - now.salvage();
+        double premisesThen = then.spentOnBuildings() - then.salvage();
+        if (premisesNow != 0 || premisesThen != 0) {
             column.getChildren().add(bookLine(
-                    now.spentOnBuildings() >= 0 ? "Spent on its own premises"
-                                                : "Sold buildings back",
-                    -now.spentOnBuildings(), -then.spentOnBuildings(), known,
-                    now.spentOnBuildings() < 0 ? Palette.GOOD : null));
+                    premisesNow >= 0 ? "Spent on its own premises"
+                                     : "Sold buildings back",
+                    -premisesNow, -premisesThen, known,
+                    premisesNow < 0 ? Palette.GOOD : null));
+        }
+        if (now.salvage() != 0 || then.salvage() != 0) {
+            boolean bought = (now.salvage() != 0 ? now.salvage() : then.salvage()) > 0;
+            column.getChildren().add(bookLine(
+                    bought ? "Material bought from scrapped plant"
+                           : "Scrapped plant's material, sold to the builders",
+                    -now.salvage(), -then.salvage(), known,
+                    bought ? null : Palette.GOOD));
         }
         // Sales tax is NOT a line here any more - it is on the income statement
         // above, so it is already inside "What it kept". See SectorBooks.
@@ -1241,14 +1226,26 @@ final class SectorScreen {
         column.getChildren().add(statementHead("What it borrows on"));
         column.getChildren().add(statementLine("It pays",
                 String.format("%.2f%% a year", now.rate() * 100),
-                now.rate() > credit.getRiskFreeRate() * 2 ? Palette.BAD
-                        : now.rate() > credit.getRiskFreeRate() * 1.4
+                now.rate() > credit.getPrimeRate() * 2 ? Palette.BAD
+                        : now.rate() > credit.getPrimeRate() * 1.4
                                 ? Palette.WARN : Palette.GOOD));
+        // Against the bank's prime since 0.7.7 (the city's own rate before):
+        // the spread is what this sector pays over the bank's best borrower -
+        // since 0.7.8 its own expected loss off the curve, and its record.
+        double record = credit.getRecordSurcharge(key);
         column.getChildren().add(statementNote(String.format(
-                "The city itself borrows at %.2f%%, so this sector is paying %.2f points "
-                + "over. The spread is priced off its leverage, not off its profits.",
-                credit.getRiskFreeRate() * 100,
-                credit.getSpread(key) * 100)));
+                "The bank's prime is %.2f%%, so this sector is paying %.2f points "
+                + "over: its own expected loss, %.2f points - %s of its firms default a year "
+                + "at its leverage over its last quarter, %.2f, and the bank loses %.0f%% of what they owe, less the %.1f%% "
+                + "prime already carries%s. A new loan is priced at the leverage it would leave it "
+                + "at, the building it buys counted, not at this one.",
+                credit.getPrimeRate() * 100,
+                credit.getSpread(key) * 100,
+                credit.getRiskSpread(key) * 100,
+                BankScreen.defaultShare(credit.getQuarterDefaultRate(key)),
+                credit.getQuarterLeverage(key),
+                BusinessDebtManager.LOSS_GIVEN_DEFAULT * 100, Bank.BASE_LOSS_RATE * 100,
+                record > 0 ? String.format(" - and %.2f points for its record", record * 100) : "")));
         column.getChildren().add(statementLine("Leverage",
                 String.format("%.2f", now.leverage()),
                 now.leverage() > .7 ? Palette.BAD
@@ -1260,22 +1257,40 @@ final class SectorScreen {
         column.getChildren().add(statementLine("Interest this month",
                 tightMoney(toDollars(credit.getMonthlyInterest(key)), false),
                 credit.getMonthlyInterest(key) > 0 ? Palette.WARN : null));
+        // A sector is many firms (0.7.8): the share of them that default a
+        // year at its leverage, the curve the bank writes the month's slice
+        // off and sets its allowance aside by.
+        if (credit.getPrincipal(key) > 0) {
+            double pd = credit.getDefaultRate(key);
+            column.getChildren().add(statementLine("Its firms that default a year",
+                    BankScreen.defaultShare(pd),
+                    credit.getLeverage(key) >= BusinessDebtManager.INSOLVENCY_TRIGGER ? Palette.BAD
+                            : credit.getLeverage(key) > Bank.SECTOR_WATCH_LEVERAGE ? Palette.WARN : null));
+        }
 
-        if (credit.getWrittenOffTotal(key) > 0) {
+        // Its firms default a few at a time, so there is a figure wherever it
+        // owes much; a total under a dollar is the curve's far tail.
+        if (toDollars(credit.getWrittenOffTotal(key)) >= 1 || credit.getRestructureCount(key) > 0) {
             column.getChildren().add(subHead("What its lenders have lost"));
             column.getChildren().add(statementLine("Written off this month",
                     tightMoney(toDollars(now.writtenOff()), false),
-                    now.writtenOff() > 0 ? Palette.BAD : null));
+                    credit.defaultsAreNews(key) ? Palette.BAD : null));
             column.getChildren().add(statementLine("Written off in all",
                     tightMoney(toDollars(credit.getWrittenOffTotal(key)), false),
                     Palette.BAD));
-            column.getChildren().add(statementLine("Times restructured",
+            column.getChildren().add(statementLine("Times it went under whole",
                     String.valueOf(credit.getRestructureCount(key))));
+            column.getChildren().add(statementNote(String.format(
+                    "Its firms default a few at a time as its leverage rises, and the bank loses "
+                    + "%.0f%% of what they owed; they keep their plant. Going under whole is "
+                    + "having nothing left at all - everything it owed is written off and it is "
+                    + "shut out for a while.", BusinessDebtManager.LOSS_GIVEN_DEFAULT * 100)));
         }
 
         if (credit.isBorrowingBlocked(key)) {
             column.getChildren().add(alert("It cannot borrow", String.format(
-                    "This sector defaulted, and no lender will write it a loan for another "
+                    "This sector went under - it had nothing left, and its loans were written "
+                    + "off whole - and no lender will write it a loan for another "
                     + "%d months. It can still build whatever its own cash covers, and "
                     + "nothing else — which is why a sector that goes under tends to stay "
                     + "small long after the month that broke it.",

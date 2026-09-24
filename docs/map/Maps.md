@@ -1,6 +1,6 @@
 # Maps.java - 30 lines · 1 methods · 0 constants · tools
 
-`ham/citybuildersim/tools/Maps.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/Maps.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Regenerates every generated document in one go: the code map, the dials,
 > the month order and the harness map. This is what `Regenerate maps.bat`

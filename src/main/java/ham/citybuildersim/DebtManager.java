@@ -787,45 +787,32 @@ public class DebtManager {
 
     /**
      * THE CITY'S RATE: the SHORT END of the curve - the note's rate, no term
-     * premium - which is what every screen means by "the city's rate", what
-     * the bank's strain and the advisor read, and what the households' lender
-     * prices off. A term bond is quoted at curveRate() for its maturity
-     * (0.7.1); this one number stays the T-bill rate.
+     * premium - which is what every screen means by "the city's rate" and
+     * what the advisor reads. The households' lender priced off it until
+     * 0.7.7 (Bank.householdRate() since). A term bond is quoted at
+     * curveRate() for its maturity (0.7.1); this one number stays the T-bill
+     * rate.
      */
     public double getRate() {
         return currentRate;
     }
 
-    /**
-     * What the bank's strain is adding to every rate in the city.
-     *
-     * Set once a month from Bank.ratePremium(). Held here rather than reached
-     * for, because the debt market prices in several places and a rate that
-     * changed under a quote half way through would be a quote nobody was
-     * offered.
+    /*
+     * THE BANK'S STRAIN PREMIUM USED TO BE HERE (until 0.7.7): bankPremium,
+     * set once a month from Bank.ratePremium() and added to every price of
+     * the city's paper outside the credit clamp - up to eighteen points, the
+     * whole of it with no branch - with getRateBeforeStrain() taking it back
+     * off for the hot money. The premium is gone (Bank, WHAT A LOAN COSTS),
+     * so the city's paper is its own market price: the dial, its credit
+     * spreads and the term premium, and nothing about how lent out the bank is.
      */
-    private double bankPremium;
-    public void setBankPremium(double premium) { this.bankPremium = Math.max(0, premium); }
-    public double getBankPremium()             { return bankPremium; }
-
-    /**
-     * The city's rate without the bank's strain in it (0.7.2): what the hot
-     * money compares with the world's (CapitalFlows, MAX_SPREAD). A strained
-     * bank's premium is what the bank charges for its own trouble, not a
-     * return anybody abroad is offered; read as one, a strained bank drew
-     * money in because it was strained. Suspected of 0.7.2's extra bank
-     * failures and measured when it went in: on the eight default seeds it
-     * moved none of them (GameVersion, 0.7.2).
-     */
-    public double getRateBeforeStrain()        { return currentRate - bankPremium; }
 
     /**
      * What the bank pays for the money it lends the city.
      *
-     * Set beside the premium, from Bank.marginalCostOfFunds(), and for the
-     * opposite job. The premium is what a STRAINED bank adds; this is what any
-     * bank's money costs at all, and the city's rate may not go under it - see
-     * floorRate().
+     * Set from Bank.marginalCostOfFunds(): what the bank's money costs it at
+     * all, which the city's rate may not go under - see floorRate(). (It was
+     * set beside the strain premium until 0.7.7, and for the opposite job.)
      */
     private double costOfFunds;
     public void setCostOfFunds(double rate) { this.costOfFunds = Math.max(0, rate); }
@@ -1013,22 +1000,16 @@ public class DebtManager {
      *
      * The market always lends. There is a price at which it will do anything.
      *
-     * @return the city's own credit spread, PLUS what the bank charges for
-     *         funds - and the second half has to be here rather than at the one
-     *         call site that sets the standing rate.
-     *
-     *         It was, for about ten minutes. quoteRate() prices a NEW loan by
-     *         iterating priceAt() against the face it would create, so a
-     *         premium added afterwards was in the repurchase price and not in
-     *         the issue price - and a bond bought back at a higher rate than it
-     *         was sold at is worth less than the city received for it. Free
-     *         money, at $567,131 over eight round trips, caught by
-     *         RestructureCheck's "can the city print money with this?" section,
-     *         which exists for exactly this failure and has now caught it twice.
-     *
-     *         Added outside the clamp on purpose: the ceiling is what a
-     *         hopeless city pays on its OWN merits, and the funding premium is
-     *         a fact about the money rather than about the borrower.
+     * @return the city's own credit spread on the floor. Until 0.7.7 it also
+     *         carried the bank's strain premium, and that had to be added HERE
+     *         rather than at the one call site that sets the standing rate: it
+     *         was, for about ten minutes, and quoteRate() - which prices a NEW
+     *         loan by iterating priceAt() against the face it would create -
+     *         then had the premium in the repurchase price and not in the
+     *         issue price. Free money, $567,131 over eight round trips, caught
+     *         by RestructureCheck's "can the city print money with this?"
+     *         section. Whatever a price of the city's paper is made of goes in
+     *         here, for that reason.
      */
     private double priceAt(double debt) {
         return priceAt(debt, 0);
@@ -1037,7 +1018,8 @@ public class DebtManager {
     /**
      * ...at a maturity (0.7.1): the same credit judgement, clamped the same
      * way, plus the term premium for that many months less what the central
-     * bank's holdings compress of it, and the bank's premium outside it all.
+     * bank's holdings compress of it (and the bank's strain premium outside
+     * it all, until 0.7.7).
      * The shape is added OUTSIDE the clamp, so a city at the ceiling still has
      * a curve - the ceiling is what a hopeless borrower pays on its merits,
      * and the premium is the price of time, which it pays on top. Zero months
@@ -1049,7 +1031,7 @@ public class DebtManager {
                 + spreadFor(debt, GDP * 12)
                 + spreadFor(debt, monthlyTaxRevenue * 12);
         double credit = Math.max(MIN_RATE, Math.min(rate, ceilingRate()));
-        return credit + termShape(months) + bankPremium;
+        return credit + termShape(months);
     }
 
     /* =======================================================================
@@ -1067,11 +1049,11 @@ public class DebtManager {
        change. So:
 
            rate(months) = policy + termPremium(months) - compression(months)
-                          + credit spread (+ the bank's premium, as ever)
+                          + credit spread (+ the bank's premium, until 0.7.7)
 
        THE SHORT END IS THE DIAL. A note (3-12 months) carries no premium: it
        is the T-bill rate, Jerus's "the one you choose", and getRate() - the
-       standing "city's rate" the screens and the bank's strain read - stays
+       standing "city's rate" the screens read - stays
        exactly that. The premium is a table of five points at the five term
        maturities, linear between them, linear from nothing at a year to the
        ten-year point (so a serial bond's final maturity prices on the same
@@ -1292,7 +1274,9 @@ public class DebtManager {
     /* ===================================================================
        THE RATE, TAKEN APART - for the Finances screen and nothing else.
 
-       priceAt() is four terms added together, and until these existed the game
+       priceAt() is three terms added together at the short end - the floor
+       and the two spreads; four until 0.7.7, the bank's strain premium the
+       fourth - and until these existed the game
        could tell a player their rate was 1.23% and not one thing about WHY, or
        which of their decisions would move it. A quoted price with no visible
        components is a price a player can only respond to by borrowing less.
@@ -1317,7 +1301,7 @@ public class DebtManager {
                 Math.max(policy, costOfFunds + Bank.MIN_MARGIN));
         double ceiling = policy + 2 * MAX_SPREAD_PER_MEASURE;
         double rate = floor + gdpSpread() + revenueSpread();
-        return Math.max(MIN_RATE, Math.min(rate, ceiling)) + bankPremium;
+        return Math.max(MIN_RATE, Math.min(rate, ceiling));
     }
 
     /** The floor everybody pays: the policy rate, or the bank's cost of funds if that is higher. */
@@ -1352,7 +1336,7 @@ public class DebtManager {
 
     /** True when the quoted rate is pinned at the top of the curve. */
     public boolean atCeiling() {
-        return getRate() >= ceilingRate() + bankPremium - 1e-9;
+        return getRate() >= ceilingRate() - 1e-9;
     }
 
     /**
@@ -1399,16 +1383,11 @@ public class DebtManager {
      */
     public void updateInterest() {
         /*
-         * ...PLUS WHAT THE BANK IS CHARGING FOR BEING STRAINED.
-         *
-         * The city's own paper is priced on its debt against its tax base, and
-         * that is still the whole of the credit judgement. What the bank adds
-         * is the price of the MONEY, not of the borrower: a city whose bank is
-         * lent out past its deposits is funding itself at the central bank's
-         * window (abroad, until 0.7.0), and a city with
-         * no bank at all is borrowing from strangers who have never heard of
-         * it. Eighteen points, at the worst, which is what a founding city with
-         * no branch now pays until it builds one. See Bank.ratePremium().
+         * The city's own paper is priced on its debt against its tax base on
+         * the floor, and that is the whole of it. Until 0.7.7 the bank's
+         * strain premium rode on top - eighteen points at the worst, which a
+         * founding city with no branch paid until it built one - and the
+         * premium is gone (Bank, WHAT A LOAN COSTS).
          */
         currentRate = priceAt(getPricedDebt());
     }

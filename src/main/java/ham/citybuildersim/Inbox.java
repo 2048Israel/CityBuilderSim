@@ -74,6 +74,12 @@ public class Inbox {
                 "The bank has failed",
                 bankBody(game));
 
+        List<String> defaults = defaultsBody(game);
+        take(game, month, "defaults",
+                !defaults.isEmpty(),
+                "Businesses are going bust",
+                defaults);
+
         List<String> health = healthcareBody(game);
         take(game, month, "healthcare",
                 !health.isEmpty(),
@@ -250,9 +256,10 @@ public class Inbox {
         if (!bank.isInsolvent()) return lines;
 
         lines.add("It lost more than it owned. Its creditors have absorbed the");
-        lines.add("loss, but a bank with no capital cannot lend - so every");
-        lines.add("borrower in the city is paying the full premium and the");
-        lines.add("private sector has stopped building.");
+        lines.add("loss, but a bank with no capital cannot lend - no business");
+        lines.add("can borrow to build or to cover a loss, the families can");
+        lines.add("draw on their credit only for its interest, and the private");
+        lines.add("sector has stopped building.");
         lines.add("");
         // TIMES A THOUSAND: the model counts in thousands and this was the one
         // place in the inbox that printed the raw figure with a dollar sign.
@@ -263,6 +270,62 @@ public class Inbox {
         lines.add("It can rebuild its capital out of profits on the loans it");
         lines.add("still holds, but that takes years. Credit is shut until then.");
         return lines;
+    }
+
+    /**
+     * FIRMS GOING BUST (0.7.8). A sector defaults a slice at a time now - a
+     * small flow most months wherever anybody owes much - so the notice is
+     * raised only on what a player should hear about
+     * (BusinessDebtManager.defaultsAreNews()): the backstop, where a whole
+     * sector went under, or a sector past the default point, where half its
+     * firms fail within a year. Empty otherwise, which is the common case.
+     */
+    private static List<String> defaultsBody(Game game) {
+        BusinessDebtManager credit = game.getEconomyManager().getBusinessDebtManager();
+        List<String> lines = new ArrayList<>();
+        List<String> news = new ArrayList<>();
+        for (String s : credit.sectors()) if (credit.defaultsAreNews(s)) news.add(s);
+        if (news.isEmpty()) return lines;
+
+        lines.add(news.size() == 1
+                ? "Firms in one sector went bust this month, and the bank"
+                : String.format("Firms in %d sectors went bust this month, and the bank", news.size()));
+        lines.add("wrote their loans off:");
+        lines.add("");
+        for (String s : news) {
+            if (credit.wasRestructuredThisMonth(s)) {
+                lines.add(String.format("%-16s went under whole - %s written off,", s,
+                        money(credit.getWrittenOffThisMonth(s))));
+                double forgiven = game.getEconomyManager().getOverdraftForgivenThisMonth(s);
+                lines.add(String.format("%-16s %s of unpaid bills forgiven, shut out", "", money(forgiven)));
+                lines.add(String.format("%-16s for %d months", "", credit.getBlockedMonths(s)));
+            } else {
+                lines.add(String.format("%-16s %.1f%% of its debt defaulted, %s written off", s,
+                        credit.getDefaultShareThisMonth(s) * 100, money(credit.getWrittenOffThisMonth(s))));
+                lines.add(String.format("%-16s (%.2fx its assets now: %.0f%% of its firms fail a year)", "",
+                        credit.getLeverage(s), credit.getDefaultRate(s) * 100));
+            }
+        }
+        lines.add("");
+        Bank bank = game.getBank();
+        if (bank.getBranches() > 0) {
+            lines.add(String.format("Of all it wrote off this month, the bank had %s", money(bank.getAllowanceUsed())));
+            lines.add("set aside already; the rest came out of its profit.");
+            lines.add("");
+        }
+        lines.add("A sector keeps losing firms while it owes more than its plant");
+        lines.add("can carry. It stops when it earns its way back or sheds debt.");
+        return lines;
+    }
+
+    /** Thousands - the unit the model counts in - as a player reads money: $1.3M, $450k. */
+    private static String money(double thousands) {
+        double d = thousands * 1000, a = Math.abs(d);
+        String sign = d < 0 ? "-" : "";
+        if (a >= 1e9) return String.format("%s$%.1fB", sign, a / 1e9);
+        if (a >= 1e6) return String.format("%s$%.1fM", sign, a / 1e6);
+        if (a >= 1e4) return String.format("%s$%.0fk", sign, a / 1e3);
+        return String.format("%s$%,.0f", sign, a);
     }
 
     /**

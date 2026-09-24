@@ -295,6 +295,21 @@ public class TimeSkipReport {
         return delta(a -> a.cumulativeWriteOffs);
     }
 
+    /**
+     * WHETHER THE SKIP'S DEFAULTS ARE NEWS (0.7.8). A sector defaults a
+     * slice at a time now, so a little is written off most months wherever
+     * a business owes much, and the summary names the write-offs only when
+     * they came to more than the businesses' debt loses at Bank
+     * .BASE_LOSS_RATE a year - what prime is priced for - over the months
+     * skipped. The skip's own line, over its whole length; the inbox draws
+     * a sharper one a month at a time (BusinessDebtManager.defaultsAreNews()).
+     */
+    public boolean defaultsWereNews() {
+        double owed = Math.max(before == null ? 0 : before.businessDebt,
+                after == null ? 0 : after.businessDebt);
+        return getWriteOffsDuringSkip() > Bank.BASE_LOSS_RATE * completed / 12.0 * owed;
+    }
+
     /** Cash per month, which is the number that says whether this is sustainable. */
     public double getCashPerMonth() {
         return (completed > 0) ? getCashChange() / completed : 0;
@@ -465,7 +480,7 @@ public class TimeSkipReport {
                     + " demolished by their owners.");
         }
 
-        if (getWriteOffsDuringSkip() > 0) {
+        if (defaultsWereNews()) {
             lines.add("Lenders wrote off debt that could not be repaid.");
         }
 

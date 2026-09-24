@@ -554,10 +554,10 @@ public class MiningCheck {
             /*
              * A bank, for the same reason as the roads and the clinic.
              *
-             * Business credit is priced off the bank's strain now, and a city
-             * with no branches has no lending capacity and pays the full
-             * eighteen-point premium on every dollar it borrows - which is the
-             * intended answer to "no bank" and has nothing whatever to do with
+             * Business credit was priced off the bank's strain until 0.7.7, and
+             * a city with no branches had no lending capacity and paid the full
+             * eighteen-point premium on every dollar it borrowed - which was the
+             * intended answer to "no bank" and had nothing whatever to do with
              * the price of ore. Left out, this fixture measured the cost of
              * having no banking system and reported it as the foundry's margin.
              */

@@ -63,7 +63,7 @@ from the code.
    where the class replaced something, a `WHY` paragraph. A new class without
    one gets one, written from the design note — not from a guess.
 
-4. **The record.** In the project (`Leverage & Growth: Java Game`):
+4. **The record.** In the project (`Civic Ledger: Java Game`):
    - `claude/changelog.md`: a block at the top in the house shape —
      `### TITLE — date, state, see doc.md` then one paragraph: what shipped,
      what it found, the verification (compile, `BuildMenuCheck`, the suite's

@@ -1116,9 +1116,9 @@ final class PolicyScreen {
         for (String sector : Sectors.KEYS) {
             if (credit.isBorrowingBlocked(sector)) {
                 out.add(new String[] {Palette.BAD, sector + " cannot borrow",
-                        credit.getBlockedMonths(sector) + " more months of it. A sector in "
-                        + "default cannot build, and a subsidy is the only thing on this "
-                        + "tab that reaches it."});
+                        credit.getBlockedMonths(sector) + " more months of it. A sector that "
+                        + "went under cannot borrow to build, and a subsidy is the only thing on "
+                        + "this tab that reaches it."});
             }
         }
 
@@ -1893,8 +1893,8 @@ final class PolicyScreen {
                 "Hot money follows the first difference in, and leaves the day it closes. "
                 + "The currency follows the second: a dial under inflation is a real rate "
                 + "the world is paid to leave, and it pushes the currency down however high "
-                + "the number on the dial is. The first is also what the bank's premium is "
-                + "added on top of, so a city with a strained bank pays it twice over."));
+                + "the number on the dial is. The first is also what the bank prices every "
+                + "loan up from, so the whole city's credit moves with it."));
         /*
          * ...AND WHAT SAVERS EARN IN REAL TERMS, AND WHAT THAT DOES TO WHAT
          * THE HOUSEHOLDS SPEND (0.7.3) - the demand channel. Both are the
@@ -2083,7 +2083,9 @@ final class PolicyScreen {
                     cityThen >= cityNow ? Palette.BAD : Palette.GOOD));
             column.getChildren().add(wouldBe("Savers are paid",
                     pct2(bank.depositRate()),
-                    pct2(Math.max(0, cityThen) * Bank.DEPOSIT_PASS_THROUGH),
+                    // The bank's chosen share of the dial at its funding position
+                    // today (0.7.7), not the city's rate times a fixed pass-through.
+                    pct2(Math.max(0, want) * bank.depositShare()),
                     cityThen >= cityNow ? Palette.GOOD : Palette.WARN));
             column.getChildren().add(wouldTotal("Over the world's rate",
                     String.format("%+.2f pts", over * 100),

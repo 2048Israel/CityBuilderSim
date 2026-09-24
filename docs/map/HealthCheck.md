@@ -1,6 +1,6 @@
-# HealthCheck.java - 1,476 lines · 5 methods · 0 constants · harnesses
+# HealthCheck.java - 1,524 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HealthCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HealthCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Sickness: what it moves, and - much more importantly - what it does not.
 > 
@@ -36,7 +36,7 @@
 > the households' statement, and fees 0 with a premium serves the same people
 > as fees 1x without one; (16) both dials survive a save and a reform.
 
-**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (89), [Health](Health.md) (47), [AgeBand](AgeBand.md) (39), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (21), [PopulationCohorts](PopulationCohorts.md) (16), [BuildingManager](BuildingManager.md) (8), [Migration](Migration.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [JobType](JobType.md) (5), [Good](Good.md) (4), [TimeSkipReport](TimeSkipReport.md) (4), [Household](Household.md) (4), [EconomyManager](EconomyManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GameFiles](GameFiles.md) (2), [Retail](Retail.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [PopulationManager](PopulationManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1)
+**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (92), [Health](Health.md) (47), [AgeBand](AgeBand.md) (39), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (21), [PopulationCohorts](PopulationCohorts.md) (16), [BuildingManager](BuildingManager.md) (8), [Migration](Migration.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [JobType](JobType.md) (5), [Good](Good.md) (4), [TimeSkipReport](TimeSkipReport.md) (4), [Household](Household.md) (4), [EconomyManager](EconomyManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GameFiles](GameFiles.md) (2), [Retail](Retail.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [PopulationManager](PopulationManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1)
 
 ## Sections
 
@@ -55,9 +55,9 @@
 | 884 | · 11. a skip cannot hide an epidemic |
 | 921 | · 12. the fee has a dial, and the funerals do not |
 | 1031 | · 13. who can afford the clinic |
-| 1266 | · 14. the unchanged case, at zero tolerance |
-| 1305 | · 15. the premium |
-| 1394 | · 16. both dials survive a save, and a reform |
+| 1314 | · 14. the unchanged case, at zero tolerance |
+| 1353 | · 15. the premium |
+| 1442 | · 16. both dials survive a save, and a reform |
 
 ## Fields (state)
 
@@ -69,10 +69,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 1436 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
+| 41 | 1484 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
 | 45 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 57 | 1400 | `public static void main(String[] args) throws Exception` |  |
-| 1459 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
-| 1469 | 7 | `static void cleanUp(Path root)` |  |
+| 57 | 1448 | `public static void main(String[] args) throws Exception` |  |
+| 1507 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
+| 1517 | 7 | `static void cleanUp(Path root)` |  |
 

@@ -26,8 +26,9 @@ import java.util.Map;
  *               in, which is delivered to site the month it is bought and
  *               earned at the next strike (see bill()).
  *   inputs      building material, DRAWN when an order is placed rather than
- *               bid for monthly: the city's yard first, the materials plant
- *               next, the world last. See Markets.draw().
+ *               bid for monthly: the city's yard first, then the builders'
+ *               own stock of scrapped plant's material (0.7.8), the materials
+ *               plant next, the world last. See Markets.draw().
  *   payroll     a firm with no work keeps a core crew and its yard and pays
  *               a quarter of its wages, not all of them and not none.
  *   planning    off the order book, not off population: it expands when the
@@ -212,9 +213,65 @@ public final class Construction extends Sector {
     @Override
     public double bid(Good g) { return 0; }
 
-    /** The builders hold no stock of their own; the yard is the city's and the plant is the plant's. */
+    /*
+     * SALVAGE (0.7.8). The one stock the builders hold: material bought from
+     * plant being scrapped (Game, THE PLANT'S MATERIAL, TO THE BUILDERS), at
+     * the market's price the day it was sold, drawn before anything is bought
+     * (Game.drawMaterials()). Kept in the sector's pantry map, so the save and
+     * the reset carry it; MATERIALS is not declared a pantry good, so nothing
+     * bids for it and a draw is never put into it. On the balance sheet at
+     * the day's price, as every sector's stock is.
+     *
+     * AND A COST WHEN IT IS BUILT WITH (0.7.8, round 3). The purchase is cash
+     * out the day of the sale (on the cash-flow statement with the premises)
+     * and was booked nowhere else, so the builders built with material that
+     * never reached their income statement - their profit was overstated by
+     * it, about $10.2bn over round 2's eight default seeds. Now the stock
+     * carries what they paid for it (salvageCost) and a draw books its share
+     * of that as an input, at average cost, the way a bought-in stock is
+     * expensed as it is used - a cost and no cash, since the cash left at the
+     * sale (Sector.drawPaidStock()). Their own depot's material cost nothing
+     * and draws at nothing; so does stock carried in a save from before this,
+     * which has no cost behind it.
+     */
+
+    /** What the builders paid for the salvage on hand, in money: its cost basis. Saved in the extras. */
+    private double salvageCost;
+
+    /** Units of scrapped plant's material on hand. */
+    public double getSalvage() { return getPantry(Good.MATERIALS); }
+
+    /** ...and what they paid for it. */
+    public double getSalvageCost() { return salvageCost; }
+
+    /** Takes material bought from plant being scrapped into the stock, at what was paid for it (nothing for the builders' own). */
+    public void addSalvage(double units, double paid) {
+        if (!(units > 0)) return;
+        setPantry(Good.MATERIALS, getSalvage() + units);
+        if (paid > 0) salvageCost += paid;
+    }
+
+    /**
+     * Draws from the stock, up to what it holds, and books what the units
+     * drawn cost - their share of the cost basis - as this month's input.
+     *
+     * @return the units drawn
+     */
+    public double takeSalvage(double units) {
+        double have = getSalvage();
+        double taken = Math.max(0, Math.min(units, have));
+        if (taken > 0) {
+            double cost = have > 0 ? salvageCost * (taken / have) : 0;
+            setPantry(Good.MATERIALS, have - taken);
+            salvageCost = getSalvage() > 0 ? Math.max(0, salvageCost - cost) : 0;
+            drawPaidStock("Material from scrapped plant", cost);
+        }
+        return taken;
+    }
+
+    /** Its stock of scrapped plant's material at today's price; the yard is the city's and the plant is the plant's. */
     @Override
-    public double getInventoryValue() { return 0; }
+    public double getInventoryValue() { return getSalvage() * priceOf(Good.MATERIALS); }
 
     /* ===================================================================
        PLANNING - off the order book
@@ -335,6 +392,11 @@ public final class Construction extends Sector {
         Input in = input(Good.MATERIALS);
         lines.add(Line.head("Materials"));
         lines.add(Line.of("From the city's yard", f.count(buildings == null ? 0 : buildings.getConstructionMaterials()) + " on hand"));
+        if (getSalvage() > 0 || (game != null && game.getSalvageUsedThisMonth() > 0)) {
+            lines.add(Line.of("From scrapped plant, its own", f.count(getSalvage()) + " on hand"
+                    + (game != null && game.getSalvageUsedThisMonth() > 0
+                            ? ", " + f.count(game.getSalvageUsedThisMonth()) + " built with this month" : "")));
+        }
         lines.add(Line.of("Bought from the plant", f.units(in.boughtLocal, Good.MATERIALS),
                 in.boughtLocal > 0 ? Line.Tone.GOOD : Line.Tone.NONE));
         lines.add(Line.of("Imported", f.units(in.imported, Good.MATERIALS),
@@ -344,7 +406,8 @@ public final class Construction extends Sector {
                 Line.Tone.MUTED));
         lines.add(Line.note("The public works yard turns out " + BuildingManager.BASE_MATERIALS
                 + " units a month for free and every order takes what it holds the day it is placed; "
-                + "the crews buy the rest as they build, in step with the work - from the plant at "
+                + "the crews buy the rest as they build, in step with the work - first out of the "
+                + "material they bought from buildings being scrapped, then from the plant at "
                 + "the market price, and from the world for what the plant has not got."));
 
         lines.add(Line.head("How it bills"));
@@ -372,6 +435,7 @@ public final class Construction extends Sector {
         extras.put("utilisation", utilisation);
         extras.put("recognisedThisMonth", recognisedThisMonth);
         extras.put("repairsThisMonth", repairsThisMonth);
+        extras.put("salvageCost", salvageCost);
     }
 
     @Override
@@ -381,13 +445,14 @@ public final class Construction extends Sector {
         utilisation = extras.getOrDefault("utilisation", 1.0);
         recognisedThisMonth = extras.getOrDefault("recognisedThisMonth", 0.0);
         repairsThisMonth = extras.getOrDefault("repairsThisMonth", 0.0);
+        salvageCost = extras.getOrDefault("salvageCost", 0.0);
     }
 
     @Override
     protected void resetExtras() {
         unearnedRevenue = backlogPoints = 0;
         utilisation = 1;
-        recognisedThisMonth = repairsThisMonth = 0;
+        recognisedThisMonth = repairsThisMonth = salvageCost = 0;
     }
 
     /** Points and the utilisation are work, not money; the book is money. */
@@ -396,5 +461,6 @@ public final class Construction extends Sector {
         unearnedRevenue *= scale;
         recognisedThisMonth *= scale;
         repairsThisMonth *= scale;
+        salvageCost *= scale;
     }
 }

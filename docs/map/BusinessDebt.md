@@ -1,6 +1,6 @@
 # BusinessDebt.java - 87 lines · 12 methods · 0 constants · model
 
-`ham/citybuildersim/BusinessDebt.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessDebt.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Base class for private-sector borrowing.
 > 
@@ -18,7 +18,7 @@
 > The single exception is principal at maturity, which is a cash movement and
 > not an expense; the manager hands that back to the sector to settle.
 
-**Used by (4):** [BusinessDebtManager](BusinessDebtManager.md), [BusinessLoan](BusinessLoan.md), [DataSave](DataSave.md), [Game](Game.md)
+**Used by (5):** [BankCheck](BankCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessLoan](BusinessLoan.md), [DataSave](DataSave.md), [Game](Game.md)
 
 ## Fields (state)
 

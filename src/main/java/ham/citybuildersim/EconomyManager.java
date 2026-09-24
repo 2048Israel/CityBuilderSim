@@ -377,9 +377,13 @@ public class EconomyManager {
      * Prices this month's business credit and hands every sector its
      * interest bill BEFORE the statements run, so the figures they bank are
      * net of it.
+     *
+     * @param primeRate the bank's prime this month (Bank.prime(), 0.7.7) -
+     *                  every sector's own spread sits on it; the city's
+     *                  rate until 0.7.7
      */
-    public void updateBusinessCredit(double governmentRate) {
-        businessDebtManager.setRiskFreeRate(governmentRate);
+    public void updateBusinessCredit(double primeRate) {
+        businessDebtManager.setPrimeRate(primeRate);
         refreshCreditAssets();
         businessDebtManager.updateRates();
         for (Sector s : sectors.all()) {
@@ -642,9 +646,12 @@ public class EconomyManager {
 
     /**
      * End of the month: work out who is beyond saving and write their debt
-     * down to what their assets support. THE OVERDRAFT A RESTRUCTURE
-     * FORGAVE is put back into the sector's balance here - it arrives from
-     * the creditors who ate it, and MoneyAudit declares it as such.
+     * down to what their assets support - since 0.7.8 each sector's slice of
+     * defaulted firms, and the whole-sector restructure only for a sector
+     * with nothing left (BusinessDebtManager.restructureInsolventSectors()).
+     * THE OVERDRAFT A RESTRUCTURE FORGAVE is put back into the sector's
+     * balance here - it arrives from the creditors who ate it, and
+     * MoneyAudit declares it as such.
      *
      * @return total written off this month
      */
@@ -681,7 +688,9 @@ public class EconomyManager {
         for (Sector s : sectors.all()) {
             double cash = s.getCash() - businessDebtManager.takeMaturedPrincipal(s.key());
             double loss = Math.max(-s.getNetIncome(), 0);
-            cash += businessDebtManager.coverShortfall(s.key(), cash, loss, month);
+            double lent = businessDebtManager.coverShortfall(s.key(), cash, loss, month);
+            // ...less the loan's fee, which the bank keeps back (0.7.7).
+            cash += lent - BusinessDebtManager.feeOn(lent);
             s.setCash(cash);
         }
         pushBalanceSheetInputs();

@@ -1,6 +1,6 @@
 # LandParcel.java - 132 lines · 12 methods · 0 constants · model
 
-`ham/citybuildersim/LandParcel.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandParcel.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > One plot on the market, as the land office lists it.
 > 

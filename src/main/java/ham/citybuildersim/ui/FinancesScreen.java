@@ -429,7 +429,7 @@ final class FinancesScreen {
         column.getChildren().add(statementLine("A spotless city would pay",
                 String.format("%.2f%%", ledger.floorRate() * 100), Palette.TEXT_MUTED));
         column.getChildren().add(statementLine("A hopeless one would pay",
-                String.format("%.2f%%", (ledger.ceilingRate() + ledger.getBankPremium()) * 100),
+                String.format("%.2f%%", ledger.ceilingRate() * 100),
                 Palette.TEXT_MUTED));
 
         column.getChildren().add(sentence(
@@ -928,7 +928,6 @@ final class FinancesScreen {
         double floor = ledger.baseComponent();
         double gdpPart = ledger.gdpSpread();
         double revPart = ledger.revenueSpread();
-        double bank = ledger.getBankPremium();
         double total = ui.game.getInterestRate();
 
         column.getChildren().add(statementHead("Why money costs this city what it does"));
@@ -937,7 +936,6 @@ final class FinancesScreen {
         if (floor > 0)   parts.add(new Slice("The floor", floor, Palette.REVENUE_RAMP[1]));
         if (gdpPart > 0) parts.add(new Slice("Debt vs output", gdpPart, Palette.SPENDING_RAMP[1]));
         if (revPart > 0) parts.add(new Slice("Debt vs revenue", revPart, Palette.SPENDING_RAMP[3]));
-        if (bank > 0)    parts.add(new Slice("The bank", bank, Palette.BAD));
         if (!parts.isEmpty()) {
             column.getChildren().add(stackedBar(parts, STATEMENT - 40));
         }
@@ -958,8 +956,7 @@ final class FinancesScreen {
                 gdpPart <= 0 ? "nothing owed" : "grow, or owe less");
         line = rateRow(t, line, "Debt against a year of tax", revPart,
                 revPart <= 0 ? "nothing owed" : "tax more, or owe less");
-        line = rateRow(t, line, "What the bank adds", bank,
-                bank <= 0 ? "it is comfortable" : "build a branch");
+        // "What the bank adds" was the strain premium's row; 0.7.7 removed it.
         column.getChildren().add(t);
 
         column.getChildren().add(statementTotal("What the market quotes",
@@ -1019,14 +1016,8 @@ final class FinancesScreen {
                 DebtManager.maxSpreadPerMeasure() * 100,
                 DebtManager.fullStressMultiple())));
 
-        if (bank > 0) {
-            column.getChildren().add(alert("The bank is adding to every rate in the city",
-                    String.format("%.1f points, and not only to the treasury's — every mill, "
-                    + "shop and household borrowing here is paying it too. It is the price "
-                    + "of the MONEY rather than of the borrower: a bank lent out past its "
-                    + "deposits is borrowing at the central bank's window. The Bank tab "
-                    + "has the capacity figures.", bank * 100)));
-        }
+        // "The bank is adding to every rate in the city" stood here until 0.7.7,
+        // when the strain premium it reported went (Bank, WHAT A LOAN COSTS).
 
         if (ledger.getDefaultScar() > 0) {
             column.getChildren().add(alert("And a default is still being charged for",
@@ -1678,10 +1669,11 @@ final class FinancesScreen {
      *
      * The bank buys the city's paper, so a bond programme is not only a cost to
      * the treasury - it takes room on the bank's book that the city's own
-     * businesses were going to borrow. Past the point where the bank is
-     * comfortable, every borrower in the city pays a premium the treasury
-     * caused, and until this was on the issuing screen the player saw their own
-     * coupon and not the rate every mill and shop had just been moved to.
+     * businesses were going to borrow. Until 0.7.7, past the point where the
+     * bank was comfortable, every borrower in the city paid a premium the
+     * treasury caused; since then a loan is priced by what it costs the bank
+     * (Bank, WHAT A LOAN COSTS), and a full book shows as strain on the Bank
+     * tab and a branch wanted, not as a dearer rate.
      */
     VBox bankAppetite() {
 
@@ -1690,25 +1682,22 @@ final class FinancesScreen {
 
         if (bank.isInsolvent()) {
             return alert("The bank has failed and cannot buy this",
-                    "Anything issued now is funded at the central bank's window and "
-                    + "priced at the full premium. "
+                    "Anything issued now is funded at the central bank's window. "
                     + "Recapitalise it first — the Bank tab has the figure.");
         }
         if (room <= 0) {
             return alert("There is no bank to buy this",
                     "The households take what share of it pays them better than a deposit "
-                    + "would, and the rest is funded at the central bank's window, at the "
-                    + "full premium every borrower in a city without a branch already pays. "
+                    + "would, and the rest is funded at the central bank's window, the "
+                    + "money every borrower in a city without a branch is already lent. "
                     + "One branch changes that.");
         }
-        if (bank.ratePremium() > 0) {
+        if (bank.strain() > Bank.EASY_STRAIN) {
             return alert("The bank is past comfortable already",
-                    String.format("It is %.0f%% lent out, and every borrower in the city is "
-                    + "paying %.1f points for it. Treasury paper is risk-weighted at %.0f%%, "
-                    + "so it ties up less room than a business loan of the same size — but "
-                    + "it is still room the shops and the mills were going to use.",
-                    bank.getWeightedBook() / room * 100, bank.ratePremium() * 100,
-                    Bank.RISK_CITY * 100));
+                    String.format("It is %.0f%% lent out. Treasury paper is risk-weighted at "
+                    + "%.0f%%, so it ties up less room than a business loan of the same size "
+                    + "— but it is still room the shops and the mills were going to use.",
+                    bank.getWeightedBook() / room * 100, Bank.RISK_CITY * 100));
         }
 
         VBox box = new VBox(0);

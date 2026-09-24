@@ -1,6 +1,6 @@
-# BusinessInvestment.java - 849 lines · 41 methods · 11 constants · model
+# BusinessInvestment.java - 853 lines · 41 methods · 11 constants · model
 
-`ham/citybuildersim/BusinessInvestment.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessInvestment.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Capacity planning for the private sector.
 > 
@@ -47,7 +47,7 @@
 | 238 | RETIREMENT |
 | 440 | THE MAKER'S RULE - the default Sector.plan() |
 | 711 | THE BANK'S BRANCH - not a sector, so its planner lives here |
-| 747 | THE BRAKE |
+| 751 | THE BRAKE |
 
 ## Constants
 
@@ -82,14 +82,14 @@
 | 123 | `public final String reason` |  |
 | 124 | `public final boolean build` |  |
 | 130 | `public final boolean landBlocked` | True when the ONLY thing stopping this was nowhere to put it - the one refusal the player can personally clear, by annexing. |
-| 764 | `private FamilyModel families` | The household mix, so a residential building can be priced on who would actually live in it. |
-| 769 | `private Bank bank` | The bank, so the advisor can see when credit has got dear. |
+| 768 | `private FamilyModel families` | The household mix, so a residential building can be priced on who would actually live in it. |
+| 773 | `private Bank bank` | The bank, so the advisor can see when credit has got dear. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 810 | **type** `public class BusinessInvestment` | Capacity planning for the private sector. |
+| 40 | 814 | **type** `public class BusinessInvestment` | Capacity planning for the private sector. |
 
 ### SECTORS A FIXTURE HAS ASKED TO SIT OUT (2026-09-13) (lines 57-237)
 
@@ -137,24 +137,24 @@
 | 654 | 34 | `public double estimatedMakerProfit(Sector sector, BuildingsTemplate t)` | What one of a maker's templates would clear a month: every good it makes, at the price it would actually get for it, less the inputs it uses at theirs, at the rate the sector's plants actually run, less what the build... |
 | 696 | 14 | `public double standingCostOf(Sector sector, BuildingsTemplate t)` | What a building costs its owner just for standing: the repairs and the property tax, at today's prices and the sector's own rate. |
 
-### THE BANK'S BRANCH - not a sector, so its planner lives here (lines 711-746)
+### THE BANK'S BRANCH - not a sector, so its planner lives here (lines 711-750)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 723 | 23 | `public Decision planBank()` | Whether to open another bank branch. |
+| 723 | 27 | `public Decision planBank()` | Whether to open another bank branch. |
 
-### THE BRAKE (lines 747-849)
+### THE BRAKE (lines 751-853)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 756 | 6 | `public boolean servicesItsOwnDebt(double estimatedMonthlyProfit, double amountBorrowed, double annualRate)` | Whether a project can carry the debt it needs: if the new capacity cannot out-earn the interest on the money that built it, by a margin, the business declines the project even though the lender would fund it. |
-| 765 | 1 | `public void setFamilies(FamilyModel families)` |  |
-| 766 | 1 | `public FamilyModel families()` |  |
-| 770 | 1 | `public void setBank(Bank bank)` |  |
-| 773 | 9 | `public double wageBillFor(BuildingsTemplate t)` | What one of these would cost to staff, at what the city pays today. |
-| 789 | 16 | `public double estimatedMonthlyProfit(String sector, BuildingsTemplate t)` | Rough monthly profit a finished building would add - the screening number the interest test is struck on. |
-| 811 | 3 | `public static double operatingRateOf(double rate)` | A sector's operating rate as a planning figure: what it is, unless the sector has nothing running yet, in which case a plant that does not exist runs at nameplate on paper. |
-| 820 | 11 | `public double runningCostOf(BuildingsTemplate t)` | Wages, power and water for a building that does not exist yet, read off the template and the current schedule rather than off a sector's income statement, because the first mine in a city has no sector to read. |
-| 837 | 8 | `private double totalCostOf(BuildingsTemplate t, int quantity)` | Cash price of a building, matching what Game charges: the cash cost plus any materials that have to be bought beyond the city's yard, at the market price, plus the land. |
-| 846 | 3 | `public double getCostOf(BuildingsTemplate t, int quantity)` |  |
+| 760 | 6 | `public boolean servicesItsOwnDebt(double estimatedMonthlyProfit, double amountBorrowed, double annualRate)` | Whether a project can carry the debt it needs: if the new capacity cannot out-earn the interest on the money that built it, by a margin, the business declines the project even though the lender would fund it. |
+| 769 | 1 | `public void setFamilies(FamilyModel families)` |  |
+| 770 | 1 | `public FamilyModel families()` |  |
+| 774 | 1 | `public void setBank(Bank bank)` |  |
+| 777 | 9 | `public double wageBillFor(BuildingsTemplate t)` | What one of these would cost to staff, at what the city pays today. |
+| 793 | 16 | `public double estimatedMonthlyProfit(String sector, BuildingsTemplate t)` | Rough monthly profit a finished building would add - the screening number the interest test is struck on. |
+| 815 | 3 | `public static double operatingRateOf(double rate)` | A sector's operating rate as a planning figure: what it is, unless the sector has nothing running yet, in which case a plant that does not exist runs at nameplate on paper. |
+| 824 | 11 | `public double runningCostOf(BuildingsTemplate t)` | Wages, power and water for a building that does not exist yet, read off the template and the current schedule rather than off a sector's income statement, because the first mine in a city has no sector to read. |
+| 841 | 8 | `private double totalCostOf(BuildingsTemplate t, int quantity)` | Cash price of a building, matching what Game charges: the cash cost plus any materials that have to be bought beyond the city's yard, at the market price, plus the land. |
+| 850 | 3 | `public double getCostOf(BuildingsTemplate t, int quantity)` |  |
 

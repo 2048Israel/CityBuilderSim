@@ -479,14 +479,23 @@ public class OutsideCheck {
              * every post and leaves a pool; then the business with the most
              * filled posts closes, and its posts go with it.
              */
-            double[] pyramid = g.getCohorts().toSaveArray();
-            pyramid[AgeBand.ADULT.ordinal()] *= 1.5;
-            // Named: this array is as wide as THIS build's band list, and the
-            // nameless path is five bands for ever. Handed over unnamed it was
-            // refused whole, the adults never arrived, and the fixture stopped
-            // causing the condition it exists to cause.
-            g.getCohorts().restore(PopulationCohorts.saveBands(), pyramid);
-            quietly(() -> g.simulateMonths(2));
+            /*
+             * ...AS MANY TIMES AS IT TAKES, up to four (0.7.7). Once was
+             * always barely enough - 26 out of work on 0.7.6's city - and the
+             * 0.7.7 city, whose sixty months had gone a little differently,
+             * filled 1,946 of 2,051 posts after it and had nobody over. The
+             * condition is a pool; the fixture adds adults until there is one.
+             */
+            for (int wave = 0; wave < 4 && u.getPool() <= 0; wave++) {
+                double[] pyramid = g.getCohorts().toSaveArray();
+                pyramid[AgeBand.ADULT.ordinal()] *= 1.5;
+                // Named: this array is as wide as THIS build's band list, and the
+                // nameless path is five bands for ever. Handed over unnamed it was
+                // refused whole, the adults never arrived, and the fixture stopped
+                // causing the condition it exists to cause.
+                g.getCohorts().restore(PopulationCohorts.saveBands(), pyramid);
+                quietly(() -> g.simulateMonths(2));
+            }
             BuildingsTemplate biggest = null;
             int biggestJobs = 0;
             for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {

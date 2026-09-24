@@ -61,6 +61,52 @@ public class ReadPathCheck {
     }
 
     /**
+     * The bank's own fields beside NewGameCheck's (0.7.7): its price is now
+     * struck from records it keeps, and a read that struck it again would
+     * move the price and nothing in the shared snapshot.
+     */
+    static void bankPrint(Game g, Map<String, Double> into) {
+        Bank b = g.getBank();
+        into.put("bank.cash", b.getCash());
+        into.put("bank.depositRate", b.depositRate());
+        into.put("bank.profitLastMonth", b.getProfitLastMonth());
+        into.put("bank.lateProfit", b.lateProfit());
+        into.put("bank.runningCostRate", b.runningCostRate());
+        into.put("bank.expectedLossRate", b.expectedLossRate());
+        into.put("bank.windowShare", b.windowShare());
+        into.put("bank.feeIncome", b.feeIncome());
+        double[] record = b.pricingHistoryToSave();
+        for (int i = 0; i < record.length; i++) into.put("bank.record" + i, record[i]);
+        // ...and 0.7.8's: what it set aside, its target's record, its month.
+        into.put("bank.allowance", b.getAllowance());
+        into.put("bank.openingAllowance", b.getOpeningAllowance());
+        into.put("bank.worstLossRate", b.getWorstLossRate());
+        double[] capital = b.capitalRecordToSave();
+        for (int i = 0; i < capital.length; i++) into.put("bank.capital" + i, capital[i]);
+        double[] lines = b.monthLinesToSave();
+        for (int i = 0; i < lines.length; i++) into.put("bank.line" + i, lines[i]);
+        for (java.util.Map.Entry<String, double[]> e : b.allowanceToSave().entrySet()) {
+            for (int i = 0; i < e.getValue().length; i++) into.put("bank.book." + e.getKey() + i, e.getValue()[i]);
+        }
+        // ...and 0.7.9's: its year of statements and its record of rescues.
+        double[] year = b.statementYearToSave();
+        for (int i = 0; i < year.length; i++) into.put("bank.year" + i, year[i]);
+        double[] solvency = b.solvencyToSave();
+        for (int i = 0; i < solvency.length; i++) into.put("bank.solvency" + i, solvency[i]);
+        into.put("bank.monthKnown", b.isMonthKnown() ? 1.0 : 0.0);
+        // ...and 0.7.8's slices: what each sector owes and has lost, and the
+        // month's defaults, which the Lending page and the notice read.
+        BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+        for (String s : cr.sectors()) {
+            into.put("credit.owed." + s, cr.getPrincipal(s));
+            into.put("credit.lost." + s, cr.getWrittenOffTotal(s));
+            into.put("credit.month." + s, cr.getWrittenOffThisMonth(s));
+            into.put("credit.defaulted." + s, cr.getDefaultedThisMonth(s));
+            into.put("credit.record." + s, (double) cr.getRestructureCount(s));
+        }
+    }
+
+    /**
      * Everything a screen can ask the game, called the way a player browsing
      * would call it.
      *
@@ -150,6 +196,170 @@ public class ReadPathCheck {
         g.getTreasuryResidual();
         // ...and the desk's re-mark on the bank's statement
         g.getBank().getMarkChange();
+        // the bank's price and what it is made of, its savers' share and its
+        // fees (0.7.7) - the Bank tab's build-up reads every one of them
+        double dial = g.getDebtManager().getPolicyRate();
+        g.getBank().prime(dial);
+        g.getBank().householdRate(dial);
+        g.getBank().carryRate(dial);
+        g.getBank().lendingRate(dial);
+        g.getBank().fundsTransferPrice(dial, Bank.PRIME_TERM_MONTHS);
+        g.getBank().capitalCharge(dial, Bank.PRIME_TERM_MONTHS, Bank.RISK_BUSINESS);
+        g.getBank().fundingPosition();
+        g.getBank().depositShare();
+        g.getBank().accountFee(g.getPriceIndex().getIndex());
+        g.getBank().feeIncome();
+        g.getBank().lateProfit();
+        g.getBank().getProfitAfterTaxLastMonth(.15);
+        g.getBank().pricingHistoryToSave();
+        g.getBank().lastMonthToSave();
+        // its capital, what it set aside and what it does with its profit
+        // (0.7.8) - the Bank tab (0.7.9) and the month's lenders read them
+        g.getBank().provisions();
+        g.getBank().getProvisionCharge();
+        g.getBank().getWriteOffsBeyondAllowance();
+        g.getBank().netLoans();
+        g.getBank().capitalTarget();
+        g.getBank().capitalTop();
+        g.getBank().trailingLossRate();
+        g.getBank().targetEquity();
+        g.getBank().topEquity();
+        g.getBank().excessCapital();
+        g.getBank().payoutStance();
+        g.getBank().payoutDecision();
+        g.getBank().dividendDue(g.getBank().getProfitAfterTaxLastMonth(.15));
+        g.getBank().buysBackOwnShares();
+        g.getBank().issuesOwnShares();
+        g.getBank().dividendsOverYear();
+        g.getBank().buybacksOverYear();
+        g.getBank().returnOnEquity();
+        g.getBank().lendingGrowthLimit();
+        g.getBank().lendsOnlyToKeepBorrowersGoing();
+        g.getBank().lendingLimit();
+        g.getBank().lendingStance();
+        g.getBank().headroom();
+        for (String key : Sectors.KEYS) {
+            g.getBank().getStage(key);
+            g.getBank().getSectorAllowance(key);
+            g.getEconomyManager().getBusinessDebtManager().capitalRoom(key);
+            g.getEconomyManager().getBusinessDebtManager().getPrincipalJudged(key);
+            // a sector defaults a slice at a time (0.7.8): the Lending page,
+            // the sector screen, the notice and the playtest read these
+            g.getBank().getWrittenOff(key);
+            g.getEconomyManager().getBusinessDebtManager().getDefaultRate(key);
+            g.getEconomyManager().getBusinessDebtManager().getDefaultedThisMonth(key);
+            g.getEconomyManager().getBusinessDebtManager().getDefaultShareThisMonth(key);
+            g.getEconomyManager().getBusinessDebtManager().wasRestructuredThisMonth(key);
+            g.getEconomyManager().getBusinessDebtManager().defaultsAreNews(key);
+            g.getEconomyManager().getBusinessDebtManager().isInsolvent(key);
+            // ...and round 2's: the price off the curve, the staging, the salvage
+            g.getEconomyManager().getBusinessDebtManager().getRiskSpread(key);
+            g.getEconomyManager().getBusinessDebtManager().getRecordSurcharge(key);
+            g.getEconomyManager().getBusinessDebtManager().projectRate(key, 1_000);
+            g.getEconomyManager().getBusinessDebtManager().leverageAfterProject(key, 1_000);
+            g.getBank().getStageTwoShare(key);
+            g.getSalvageThisMonth(key);
+            // ...and the quarter's (0.7.8)
+            g.getEconomyManager().getBusinessDebtManager().quarterPrincipal(key);
+            g.getEconomyManager().getBusinessDebtManager().quarterAssets(key);
+            g.getEconomyManager().getBusinessDebtManager().getQuarterLeverage(key);
+            g.getEconomyManager().getBusinessDebtManager().getQuarterDefaultRate(key);
+            g.getEconomyManager().getBusinessDebtManager().getStatementCount(key);
+        }
+        g.getEconomyManager().getBusinessDebtManager().getWrittenThisMonth();
+        g.getSalvageThisMonth();
+        g.getSalvageUsedThisMonth();
+        g.getRefusedOnPrice();
+        g.getSectors().construction().getSalvage();
+        g.getSectors().construction().getSalvageCost();
+        g.getEconomyManager().getBusinessDebtManager().getStatementsToSave();
+        g.getBank().allowanceToSave();
+        g.getBank().capitalRecordToSave();
+        g.getBank().monthLinesToSave();
+        g.getHouseholdBalance().lossAllowance();
+        g.getHouseholdBalance().debtInTrouble();
+        g.getHouseholds().getAccountFees();
+        // the Bank tab's redesign (0.7.9): its status, its scorecard, the
+        // ladder, the year of statements, the weight table, its funding and
+        // branches, the equity's movement - every getter it reads
+        Bank bk = g.getBank();
+        bk.status();
+        bk.targetReason();
+        bk.ladder(dial).parts();
+        bk.ladder(dial).saversOverPolicy();
+        bk.ladder(dial).overPrime(g.getInterestRate());
+        bk.getBooksWatched();
+        for (Bank.Line line : Bank.Line.values()) {
+            bk.thisMonth(line);
+            bk.lastMonth(line);
+            bk.overYear(line);
+            bk.averageOverYear(line);
+        }
+        bk.knowsLastMonth();
+        bk.monthsInYear();
+        bk.revenue();
+        bk.getRetained();
+        bk.returnOnEquityOverYear();
+        bk.provisionRateOverYear();
+        bk.netInterestMarginOverYear();
+        bk.costShareOverYear();
+        bk.statementYearToSave();
+        for (Bank.WeightRow row : bk.weightTable()) row.weighted();
+        bk.getInterestFromBusinesses();
+        bk.getInterestFromCity();
+        bk.getInterestFromHouseholds();
+        bk.getDiscountAccreted();
+        bk.getTreasuryBuybackGain();
+        bk.getAllowanceOpened();
+        bk.getBailoutsLifetime();
+        bk.isMonthKnown();
+        bk.getHouseholdDeposits();
+        bk.getSectorDeposits();
+        bk.getDepositsPerBranch();
+        bk.getPaidInPerBranch();
+        bk.branchReach();
+        bk.localDeposits();
+        bk.localDepositsReached();
+        bk.localDepositsBeyondReach();
+        bk.fundingLimit();
+        bk.capacityAnotherBranchWouldAdd();
+        bk.overflowPastComfortable();
+        bk.runningCostPerBranch();
+        bk.keptPerBranch();
+        bk.branchWouldPayForItself();
+        bk.bookAnotherBranchWouldCarry();
+        bk.wantsBranch();
+        bk.equityMovement().residual();
+        bk.solvencyToSave();
+        g.canRecapitaliseBank();
+        g.getHouseholdBalance().averageRate();
+        for (int company = 0; company < Equity.COMPANIES.length; company++) g.getEquity().deskShare(company);
+        g.getExchange().deskSoldToHouseholds();
+        g.getExchange().deskSoldAbroad();
+        g.getExchange().deskBoughtFromHouseholds();
+        g.getExchange().deskBoughtFromAbroad();
+        // ...and the desk held to the bank's capital (0.7.8, round 4): what it
+        // has over its target, and what the capital rule turned away
+        bk.spareCapital();
+        bk.spareCapital(g.getExchange().markToMarket(g.getEquity()));
+        bk.buybackRoom(g.getExchange().markToMarket(g.getEquity()));
+        for (int company = 0; company < Equity.COMPANIES.length; company++) {
+            bk.deskCanCarry(g.getExchange().markToMarket(g.getEquity()),
+                    g.getExchange().bid(company), g.getExchange().mark(company));
+        }
+        g.getExchange().getOwnRefused();
+        g.getExchange().getDeskRefused();
+        for (Exchange.Seller who : Exchange.Seller.values()) {
+            g.getExchange().getOwnRefused(who);
+            g.getExchange().getDeskRefused(who);
+        }
+        HistorySave record = g.getHistorySave();
+        record.monthsUnder("bankCapitalRatio", "bankCapitalTarget");
+        record.monthsUnder("bankCapitalRatio", Bank.CAPITAL_RATIO);
+        record.monthsUnder("bankProfit", 0.0);
+        record.monthsRecorded("bankWriteOffs");
+        record.total("bankWriteOffs");
+        record.worstYear("bankProvisions");
         // the trade page's forces on the rate, and what the currency did to
         // the debt (2026-09-21): the page previews the push rather than asking
         // the month's own effectivePressure(), which records - ForeignCheck
@@ -398,10 +608,12 @@ public class ReadPathCheck {
 
         System.setOut(quiet);
         Map<String, Double> before = NewGameCheck.snapshot(g);
+        bankPrint(g, before);
         for (int i = 0; i < 50; i++) {
             readEverything(g);
         }
         Map<String, Double> after = NewGameCheck.snapshot(g);
+        bankPrint(g, after);
         System.setOut(out);
 
         out.printf("%d fields fingerprinted%n", before.size());

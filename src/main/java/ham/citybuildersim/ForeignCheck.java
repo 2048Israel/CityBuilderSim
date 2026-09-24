@@ -50,6 +50,9 @@ public class ForeignCheck {
     static PrintStream out;
     static PrintStream quiet;
 
+    /** What the last devaluationCity() built from its own scrapped plant, in dollars at the landed price. */
+    static double scrappedPlantBuiltWith;
+
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         out.printf("%-58s %s%n", label, ok ? "OK" : "FAIL");
@@ -95,6 +98,7 @@ public class ForeignCheck {
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
         double worstSplit = 0, worstStock = 0;
+        double yearDomesticOut = 0, yearTrade = 0;
         int worstMonth = 0;
 
         System.setOut(quiet);
@@ -112,6 +116,9 @@ public class ForeignCheck {
             for (int m = 0; m < 180; m++) {
                 city.simulateMonths(1);
                 MoneyAudit.Result r = city.getLastMoneyAudit();
+                // The last year's households' flows and trade balance, for
+                // the swamp assertion below (0.7.7).
+                if (m >= 168) { yearDomesticOut += r.domesticOut(); yearTrade += r.tradeBalance(); }
 
                 /*
                  * THE SPLIT IS EXHAUSTIVE AND DOES NOT OVERLAP.
@@ -230,8 +237,18 @@ public class ForeignCheck {
          * boundary would have been a number about wages wearing a trade
          * balance's name. Measured here it is two orders of magnitude bigger.
          */
+        /*
+         * ...OVER THE LAST YEAR, not the last month, since 0.7.7: the 0.7.7
+         * city's final month carried a one-off shipment - $14,711k of
+         * imports against $1,500-2,900k in each of the thirty months before
+         * it - and a law about the size of a payroll against a trade balance
+         * is not a claim about one delivery. Every one of those thirty months
+         * held it on its own; the year holds it whole.
+         */
+        out.printf("   the last year: $%,.0fk left the pools for households against a trade balance of $%,.0fk%n",
+                yearDomesticOut, yearTrade);
         assertTrue("...and large enough that counting them as trade would swamp the balance",
-                last.domesticOut() > Math.abs(last.tradeBalance()));
+                yearDomesticOut > Math.abs(yearTrade));
 
         /* ================= 3. across a reload ================= */
         out.println("\n--- and it survives a reload ---");
@@ -665,18 +682,21 @@ public class ForeignCheck {
          */
         Path ml = Files.createTempDirectory("foreigncheck-ml");
         double lifeCaPar, lifeCaWeak, lifeImpPar, lifeImpWeak, lifeExpPar, lifeExpWeak;
+        double salvagePar, salvageWeak;
         double[] foodPar, foodWeak;
         System.setOut(quiet);
         try {
             foodPar = new double[2];
             ForeignAccounts par = devaluationCity(ml.resolve("par"), 1.00, foodPar).getForeignAccounts();
             lifeImpPar = par.getLifetimeImports();
+            salvagePar = scrappedPlantBuiltWith;
             lifeExpPar = par.getLifetimeExports();
             lifeCaPar = lifeExpPar - lifeImpPar - par.getLifetimeInterest();
 
             foodWeak = new double[2];
             ForeignAccounts dev = devaluationCity(ml.resolve("dev"), 1.40, foodWeak).getForeignAccounts();
             lifeImpWeak = dev.getLifetimeImports();
+            salvageWeak = scrappedPlantBuiltWith;
             lifeExpWeak = dev.getLifetimeExports();
             lifeCaWeak = lifeExpWeak - lifeImpWeak - dev.getLifetimeInterest();
         } finally {
@@ -790,12 +810,28 @@ public class ForeignCheck {
          * the good the rate can move without a boom behind it - for whoever
          * next changes what this city grows.
          */
-        double usdImpPar = lifeImpPar / 1.00, usdImpWeak = lifeImpWeak / 1.40;
+        /*
+         * ...WHEREVER ITS MATERIAL CAME FROM (0.7.8). A failing sector's plant
+         * is sold to the builders for its material now, and the crews build
+         * from that stock before they buy - so part of the programme can come
+         * out of the city's own scrapped shops and plants instead of from
+         * abroad, and how much depends on how much each city happened to
+         * scrap. That is the rule change reaching this premise, one step along
+         * the chain from the three sectors held out below. Measured on the
+         * build that introduced it: the parity city built 3,743 units from
+         * scrapped plant and the weaker one 524, Construction imported
+         * $815,886k against $848,928k, and the import bill alone read 1.0607.
+         * The programme is the same programme; counted whole - its imports,
+         * plus what it built from scrapped plant at what that material would
+         * have cost to land - it reads 0.9945 (with the sale switched off in
+         * a probe, 1.0034).
+         */
+        double usdImpPar = lifeImpPar / 1.00 + salvagePar, usdImpWeak = lifeImpWeak / 1.40 + salvageWeak;
         out.printf("   food, in dollars: out $%,.0fk in $%,.0fk at parity; out $%,.0fk in $%,.0fk weaker%n",
                 foodPar[0], foodPar[1], foodWeak[0] / 1.40, foodWeak[1] / 1.40);
         assertTrue("the fixture sells food abroad at all", foodPar[0] > 0);
-        out.printf("   the programme, in dollars: $%,.0fk at parity, $%,.0fk weaker (x%.4f)%n",
-                usdImpPar, usdImpWeak, usdImpPar > 0 ? usdImpWeak / usdImpPar : 0);
+        out.printf("   the programme, in dollars: $%,.0fk at parity, $%,.0fk weaker (x%.4f); of it built from scrapped plant $%,.0fk and $%,.0fk%n",
+                usdImpPar, usdImpWeak, usdImpPar > 0 ? usdImpWeak / usdImpPar : 0, salvagePar, salvageWeak);
         close("the same programme costs the same in the world's money",
                 usdImpWeak / usdImpPar, 1.0, .05);
 
@@ -1385,6 +1421,7 @@ public class ForeignCheck {
         g.buildStack(template(g, "Walk-in Clinic"), 4, false);
         g.buildStack(template(g, "Municipal Cemetery"), 1, false);
         double[] bySector = new double[Sectors.KEYS.length];
+        scrappedPlantBuiltWith = 0;
         for (int m = 0; m < 180; m++) {
             g.simulateMonths(1);
             /*
@@ -1403,6 +1440,10 @@ public class ForeignCheck {
             for (int i = 0; i < Sectors.KEYS.length; i++) {
                 bySector[i] += g.getSectors().byKey(Sectors.KEYS[i]).statement().imports;
             }
+            // Material the crews took from scrapped plant rather than import:
+            // valued at what it would have cost to land, in dollars.
+            scrappedPlantBuiltWith += g.getSalvageUsedThisMonth()
+                    * g.getMarkets().get(Good.MATERIALS).importPrice() / rate;
         }
         StringBuilder sb = new StringBuilder("   imports by sector, in dollars: ");
         for (int i = 0; i < Sectors.KEYS.length; i++) {

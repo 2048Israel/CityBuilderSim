@@ -1,6 +1,6 @@
-# CentralBankCheck.java - 904 lines · 11 methods · 2 constants · harnesses
+# CentralBankCheck.java - 909 lines · 11 methods · 2 constants · harnesses
 
-`ham/citybuildersim/CentralBankCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CentralBankCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Proves the central bank's books: that money is made and destroyed on them
 > and nowhere else, every price 0.7.0 hangs off the policy rate, and its two
@@ -29,9 +29,9 @@
 >   3. The window prices at the policy rate plus the penalty, and its
 >      interest is the central bank's - and a failed bank's window debt is
 >      advanced and charged nothing (0.7.1: decided, see Bank.fundToCover()).
->   4. The city's note prices at policy + spreads + the bank's premium, with
->      no discount under the dial, and never under what the money costs the
->      bank.
+>   4. The city's note prices at policy + spreads (+ the bank's strain
+>      premium, until 0.7.7), with no discount under the dial, and never
+>      under what the money costs the bank.
 >   5. A broke treasury draws advances at the policy rate, repays them from
 >      cash first, and the remittance carries the interest back less what
 >      reserves cost - and a buyback pays the bank that held the bond.
@@ -72,17 +72,17 @@
 |---:|---|
 | 118 | ONE MONTH, AUDITED - the identity section 1 asserts, held on every |
 | 171 | · 2. reserves earn the policy rate |
-| 198 | · 3. the window |
-| 249 | · 4. the city's paper |
-| 279 | · the city |
-| 308 | · 1 and 5. every kind of flow |
-| 433 | · 6. the ceiling and the arrears |
-| 499 | · 7. the autopilot |
-| 535 | · 9. the save |
-| 566 | · 8. a currency reform |
-| 590 | · 10. an old save |
-| 638 | 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. |
-| 808 | 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road |
+| 204 | · 3. the window |
+| 255 | · 4. the city's paper |
+| 284 | · the city |
+| 313 | · 1 and 5. every kind of flow |
+| 438 | · 6. the ceiling and the arrears |
+| 504 | · 7. the autopilot |
+| 540 | · 9. the save |
+| 571 | · 8. a currency reform |
+| 595 | · 10. an old save |
+| 643 | 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. |
+| 813 | 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road |
 
 ## Constants
 
@@ -105,31 +105,31 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 820 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
+| 85 | 825 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
 | 91 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 96 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 106 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 113 | 4 | `static void quietly(Runnable r)` |  |
 
-### ONE MONTH, AUDITED - the identity section 1 asserts, held on every (lines 118-637)
+### ONE MONTH, AUDITED - the identity section 1 asserts, held on every (lines 118-642)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 130 | 10 | `static int kindsThisMonth(CentralBank cb)` |  |
 | 142 | 23 | `static int play(Game g)` | Plays a month and holds it to the identities. |
-| 166 | 471 | `public static void main(String[] args) throws Exception` |  |
+| 166 | 476 | `public static void main(String[] args) throws Exception` |  |
 
-### 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. (lines 638-807)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 643 | 1 | `static double shape20(DebtManager m)` | The long end's shape over the note: the premium at twenty years less what the holdings compress. |
-| 645 | 162 | `static void theHoldingsDial(GameFiles files) throws Exception` |  |
-
-### 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road (lines 808-904)
+### 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. (lines 643-812)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 814 | 82 | `static void theCeilingDial(GameFiles files) throws Exception` |  |
-| 898 | 6 | `static double journalAmount(Game g, String label)` | The amount on last month's journal line with this label, or 0. |
+| 648 | 1 | `static double shape20(DebtManager m)` | The long end's shape over the note: the premium at twenty years less what the holdings compress. |
+| 650 | 162 | `static void theHoldingsDial(GameFiles files) throws Exception` |  |
+
+### 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road (lines 813-909)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 819 | 82 | `static void theCeilingDial(GameFiles files) throws Exception` |  |
+| 903 | 6 | `static double journalAmount(Game g, String label)` | The amount on last month's journal line with this label, or 0. |
 

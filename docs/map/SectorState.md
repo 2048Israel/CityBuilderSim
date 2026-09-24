@@ -1,6 +1,6 @@
-# SectorState.java - 185 lines · 6 methods · 0 constants · model
+# SectorState.java - 193 lines · 6 methods · 0 constants · model
 
-`ham/citybuildersim/SectorState.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorState.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > One sector, as a save carries it.
 > 
@@ -43,27 +43,29 @@
 | 94 | `public Map<String, SplitState> sold` |  |
 | 95 | `public Map<String, SplitState> bought` |  |
 | 97 | `public Map<String, Double> otherInputs` | The named non-goods part of the month's purchases. |
-| 140 | `public double revenue, inputs, payroll, electricity, water, maintenance` |  |
-| 141 | `public double operatingIncome, interest, propertyTax, salesTax, preTaxIncome, profitTax, netIncome` |  |
-| 142 | `public double localSales, exports, otherRevenue, salesToHouseholds, localPurchases, imports` |  |
-| 143 | `public Map<String, Double> purchasesBySupplier` |  |
-| 144 | `public Map<String, SplitState> sold` |  |
-| 145 | `public Map<String, SplitState> bought` |  |
-| 146 | `public Map<String, Double> otherParts` |  |
-| 148 | `public Map<String, Double> otherInputs` | The named non-goods part of the input line. |
+| 99 | `public double paidEarlier` | Sector.Ledger.paidEarlier (0.7.8); an older save reads none. |
+| 144 | `public double revenue, inputs, payroll, electricity, water, maintenance` |  |
+| 145 | `public double operatingIncome, interest, propertyTax, salesTax, preTaxIncome, profitTax, netIncome` |  |
+| 146 | `public double localSales, exports, otherRevenue, salesToHouseholds, localPurchases, imports` |  |
+| 147 | `public Map<String, Double> purchasesBySupplier` |  |
+| 148 | `public Map<String, SplitState> sold` |  |
+| 149 | `public Map<String, SplitState> bought` |  |
+| 150 | `public Map<String, Double> otherParts` |  |
+| 152 | `public Map<String, Double> otherInputs` | The named non-goods part of the input line. |
+| 154 | `public double paidEarlier` | Sector.Statement.paidEarlier (0.7.8); an older save reads none. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 164 | **type** `public final class SectorState` | One sector, as a save carries it. |
+| 22 | 172 | **type** `public final class SectorState` | One sector, as a save carries it. |
 | 57 | 3 | **type** `public static final class SplitState` | A good's money in a save: what it sold or bought at home and abroad. |
 | 61 | 10 | `static Map<String, SplitState> splitsOf(Map<Good, Sector.Split> from)` |  |
 | 72 | 12 | `static Map<Good, Sector.Split> splitsTo(Map<String, SplitState> from)` |  |
-| 89 | 48 | **type** `public static final class LedgerState` | The month in progress, unstruck. |
-| 99 | 15 | `static LedgerState of(Sector.Ledger l)` _(in SectorState.LedgerState)_ |  |
-| 115 | 21 | `Sector.Ledger toLedger()` _(in SectorState.LedgerState)_ |  |
-| 139 | 46 | **type** `public static final class StatementState` | The month last struck. |
-| 150 | 16 | `static StatementState of(Sector.Statement t)` _(in SectorState.StatementState)_ |  |
-| 167 | 17 | `Sector.Statement toStatement()` _(in SectorState.StatementState)_ |  |
+| 89 | 52 | **type** `public static final class LedgerState` | The month in progress, unstruck. |
+| 101 | 16 | `static LedgerState of(Sector.Ledger l)` _(in SectorState.LedgerState)_ |  |
+| 118 | 22 | `Sector.Ledger toLedger()` _(in SectorState.LedgerState)_ |  |
+| 143 | 50 | **type** `public static final class StatementState` | The month last struck. |
+| 156 | 17 | `static StatementState of(Sector.Statement t)` _(in SectorState.StatementState)_ |  |
+| 174 | 18 | `Sector.Statement toStatement()` _(in SectorState.StatementState)_ |  |
 

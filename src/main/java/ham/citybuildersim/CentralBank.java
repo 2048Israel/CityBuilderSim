@@ -84,8 +84,8 @@ public final class CentralBank {
 
     /* ------------------------------------------------------------------ the dials */
 
-    /** What the window charges over the policy rate: a point, so borrowing reserves always costs more than holding them earns. */
-    public static final double WINDOW_PENALTY = .01;
+    /** What the window charges over the policy rate: a quarter of a point since 0.7.7 (a point before), the Bank of Canada's own spread - its Bank Rate is the overnight target plus 25 basis points - so borrowing reserves always costs more than holding them earns, and a bank short of money is charged for it without being punished. */
+    public static final double WINDOW_PENALTY = .0025;
 
     /** The most the treasury may owe this bank, in months of its trailing revenue, until the player moves the dial (advancesCeilingMonths): the ceiling a new city opens with and an older save reads; past it the arrears rule decides who is paid. */
     public static final double DEFAULT_ADVANCES_MONTHS = 6;

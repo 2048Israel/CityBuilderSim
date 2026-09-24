@@ -1,6 +1,6 @@
 # Notice.java - 98 lines · 15 methods · 0 constants · model
 
-`ham/citybuildersim/Notice.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Notice.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > One thing the city needs told about, and whether anybody has looked at it.
 > 
@@ -26,7 +26,7 @@
 > resolved - when the condition stopped being true. 0 while it still is. A
 >            resolved notice stays in the list, greyed, for two years.
 
-**Used by (4):** [DataSave](DataSave.md), [Inbox](Inbox.md), [InboxCheck](InboxCheck.md), [UserInterface](UserInterface.md)
+**Used by (6):** [BankCheck](BankCheck.md), [DataSave](DataSave.md), [Inbox](Inbox.md), [InboxCheck](InboxCheck.md), [LongPlaytest](LongPlaytest.md), [UserInterface](UserInterface.md)
 
 ## Fields (state)
 

@@ -1,6 +1,6 @@
-# CapitalFlows.java - 609 lines · 38 methods · 14 constants · model
+# CapitalFlows.java - 609 lines · 37 methods · 14 constants · model
 
-`ham/citybuildersim/CapitalFlows.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CapitalFlows.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Hot money: what comes in chasing a spread, and what happens when it leaves.
 > 
@@ -36,11 +36,11 @@
 | line | section |
 |---:|---|
 | 35 | HOW MUCH WANTS TO COME |
-| 133 | AND WHAT MAKES IT GO |
-| 179 | · state |
-| 191 | THE OTHER DIRECTION (2026-09-12) |
-| 249 | · the month |
-| 251 | WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. |
+| 134 | AND WHAT MAKES IT GO |
+| 180 | · state |
+| 192 | THE OTHER DIRECTION (2026-09-12) |
+| 253 | · the month |
+| 255 | WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. |
 | 302 | · · is anybody panicking |
 | 361 | · · what it is worth |
 | 378 | · · and it moves |
@@ -53,43 +53,43 @@
 | line | constant | value | says |
 |---:|---|---|---|
 | 51 | `CapitalFlows.APPETITE` | `3.0` | Foreign money held, per point of excess return, as a multiple of a year's output. |
-| 70 | `CapitalFlows.MAX_SPREAD` | `.25` | Excess return above which appetite stops growing: 25 points since 0.7.2, so a 30% dial in a 5% world actually draws money and cutting it sends that money home (provisional, Jerus's number to settle). |
-| 73 | `CapitalFlows.ARRIVAL_SPEED` | `.08` | How much of the gap to its target the stock closes in a month, coming in. |
-| 76 | `CapitalFlows.DEPARTURE_SPEED` | `.20` | ...and going out, which is faster, because leaving is always faster. |
-| 90 | `CapitalFlows.MIN_STOCK` | `1` | Below this much foreign money, the flow is not worth modelling. |
-| 126 | `CapitalFlows.MATERIAL_MONTHS` | `.5` | Months of output below which the hot money is too small to break anything. |
-| 159 | `CapitalFlows.PANIC_BACKING` | `.25` | Reserves needed to back the hot money, as a share of it. |
-| 162 | `CapitalFlows.PANIC_DEPRECIATION` | `.12` | A twelve-month fall in the currency past this reads as a run. |
-| 165 | `CapitalFlows.PANIC_MONTHS` | `18` | How long a break lasts before money will look at the city again. |
-| 177 | `CapitalFlows.PANIC_EXIT` | `.33` | The share that leaves each month while confidence is broken. |
-| 230 | `CapitalFlows.CARRY_FULL_SPREAD` | `.02` | At this spread or better, the world wants all the spare book there is. |
-| 233 | `CapitalFlows.CARRY_MAX_SHARE` | `.90` | ...and never quite all of it, because a bank at its limit lends to nobody. |
-| 236 | `CapitalFlows.CARRY_BORROW_SPEED` | `.06` | How fast the book fills, and empties. |
-| 237 | `CapitalFlows.CARRY_REPAY_SPEED` | `.20` |  |
+| 71 | `CapitalFlows.MAX_SPREAD` | `.25` | Excess return above which appetite stops growing: 25 points since 0.7.2, so a 30% dial in a 5% world actually draws money and cutting it sends that money home (provisional, Jerus's number to settle). |
+| 74 | `CapitalFlows.ARRIVAL_SPEED` | `.08` | How much of the gap to its target the stock closes in a month, coming in. |
+| 77 | `CapitalFlows.DEPARTURE_SPEED` | `.20` | ...and going out, which is faster, because leaving is always faster. |
+| 91 | `CapitalFlows.MIN_STOCK` | `1` | Below this much foreign money, the flow is not worth modelling. |
+| 127 | `CapitalFlows.MATERIAL_MONTHS` | `.5` | Months of output below which the hot money is too small to break anything. |
+| 160 | `CapitalFlows.PANIC_BACKING` | `.25` | Reserves needed to back the hot money, as a share of it. |
+| 163 | `CapitalFlows.PANIC_DEPRECIATION` | `.12` | A twelve-month fall in the currency past this reads as a run. |
+| 166 | `CapitalFlows.PANIC_MONTHS` | `18` | How long a break lasts before money will look at the city again. |
+| 178 | `CapitalFlows.PANIC_EXIT` | `.33` | The share that leaves each month while confidence is broken. |
+| 234 | `CapitalFlows.CARRY_FULL_SPREAD` | `.02` | At this spread or better, the world wants all the spare book there is. |
+| 237 | `CapitalFlows.CARRY_MAX_SHARE` | `.90` | ...and never quite all of it, because a bank at its limit lends to nobody. |
+| 240 | `CapitalFlows.CARRY_BORROW_SPEED` | `.06` | How fast the book fills, and empties. |
+| 241 | `CapitalFlows.CARRY_REPAY_SPEED` | `.20` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 93 | `private double minStock` | MIN_STOCK in today's money. |
-| 181 | `private double stock` |  |
-| 182 | `private double target` |  |
-| 183 | `private double spread` |  |
-| 184 | `private double arrived` | this month, gross |
-| 185 | `private double departed` | this month, gross |
-| 186 | `private int panicUntil` | this month, gross |
-| 187 | `private String panicReason` |  |
-| 188 | `private double depositShare` |  |
-| 189 | `private double lifetimeArrived, lifetimeDeparted` |  |
-| 239 | `private double carryStock` |  |
-| 240 | `private double carryTarget` |  |
-| 241 | `private double carrySpread` |  |
-| 242 | `private double carryBorrowed` | this month, gross |
-| 243 | `private double carryRepaid` | this month, gross |
-| 244 | `private double lifetimeCarryBorrowed, lifetimeCarryRepaid, lifetimeCarryInterest` | this month, gross |
-| 245 | `private double peakCarryStock, peakCarrySpread` |  |
-| 246 | `private double peakStock, peakSpread` |  |
-| 247 | `private int stopsSuffered` |  |
+| 94 | `private double minStock` | MIN_STOCK in today's money. |
+| 182 | `private double stock` |  |
+| 183 | `private double target` |  |
+| 184 | `private double spread` |  |
+| 185 | `private double arrived` | this month, gross |
+| 186 | `private double departed` | this month, gross |
+| 187 | `private int panicUntil` | this month, gross |
+| 188 | `private String panicReason` |  |
+| 189 | `private double depositShare` |  |
+| 190 | `private double lifetimeArrived, lifetimeDeparted` |  |
+| 243 | `private double carryStock` |  |
+| 244 | `private double carryTarget` |  |
+| 245 | `private double carrySpread` |  |
+| 246 | `private double carryBorrowed` | this month, gross |
+| 247 | `private double carryRepaid` | this month, gross |
+| 248 | `private double lifetimeCarryBorrowed, lifetimeCarryRepaid, lifetimeCarryInterest` | this month, gross |
+| 249 | `private double peakCarryStock, peakCarrySpread` |  |
+| 250 | `private double peakStock, peakSpread` |  |
+| 251 | `private int stopsSuffered` |  |
 | 535 | `private int lastMonth` | Told the month, so isStopped() can be asked outside takeMonth(). |
 
 ## Methods, in file order, under their sections
@@ -98,27 +98,26 @@
 |---:|---:|---|---|
 | 33 | 577 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
 
-### HOW MUCH WANTS TO COME (lines 35-132)
+### HOW MUCH WANTS TO COME (lines 35-133)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 102 | 3 | `public void seedConstants(double unit)` | Puts the money constants into the city's current unit. |
-| 129 | 3 | `public static double maxStockInMonthsOfOutput()` | The largest position these constants can ever produce, in months of output. |
+| 103 | 3 | `public void seedConstants(double unit)` | Puts the money constants into the city's current unit. |
+| 130 | 3 | `public static double maxStockInMonthsOfOutput()` | The largest position these constants can ever produce, in months of output. |
 
-### AND WHAT MAKES IT GO (lines 133-178)
+### AND WHAT MAKES IT GO (lines 134-179)
 
-### state (lines 179-190)
+### state (lines 180-191)
 
-### THE OTHER DIRECTION (2026-09-12) (lines 191-248)
+### THE OTHER DIRECTION (2026-09-12) (lines 192-252)
 
-### the month (lines 249-250)
+### the month (lines 253-254)
 
-### WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. (lines 251-405)
+### WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. (lines 255-405)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 268 | 6 | `public double stockAt(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp)` |  |
-| 276 | 5 | `public double arrivalsAt(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp)` | How much of that gap actually arrives in the first month. |
+| 275 | 6 | `public double stockAt(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp)` |  |
 | 294 | 111 | `public void takeMonth(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp, double r...` |  |
 
 ### reading (lines 406-407)

@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-23 (0.7.6 — one ladder for every policy dial, a price per kind of school, real GDP in layers, and land priced in US dollars and paid by converting cash or out of the vault — deployed as tag 0923d; 0.7.4's, 0.7.5's and 0.7.6's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-09-24 (0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -8,6 +8,134 @@ has been away reads the changelog's top block and section 0 here, then works.
 
 ## 0. Do this week — costs nothing, saves weeks
 
+- **CHECK 0.7.8'S AND 0.7.9'S SCREENS BY EYE ON THE PC** — none of it can run
+  in the cloud; `build-ui.sh` compiling it is the only check it has had. Open a
+  played city and a fresh one on the Bank tab, and let the clock run a few
+  months on every page.
+  - *The landing.* The status sentence one bold line (two at most), green,
+    amber or red; under it two rows of four cells; the CAPITAL RATIO cell's
+    small bar with three ticks (minimum, target, top) — the cell may be taller
+    than its neighbours, say so if it pushes the bar out of line; captions
+    "the last 12 months", or "the last N months" in a young city. The scroller
+    fills the stage under the scorecard with no outer scrollbar when there is
+    nothing to scroll and no empty band (the chrome is 330 at
+    `showBankMenu()`'s `ui.scrolled(column, 330)`). The five rows each show a
+    headline and a small line, and open their page at its top.
+  - *The ladder.* Bars from one x, growing to the dearest rate; every figure
+    "x.xx% a year"; each caption a signed step in points; the policy-rate row
+    blue with "›", lit on hover, landing on Policy › Money › The policy rate;
+    tooltips on "What a loan's money costs it" and "The carry trade"; sectors
+    only if they owe or are shut out; each sector rung "X on prime: its own
+    expected loss Y - Z of its firms default a year at L× its assets[, and its
+    record W]" on one line at L ≥ 1 with a record — L and Z the last
+    quarter's, which the price is struck on ("...over its last quarter"); a
+    sector just written down whole quotes on its restructured books, not on
+    the quarter before. The quotes grid's leverage column is the quarter's too;
+    the Lending table's is the month's, which the defaults read.
+  - *Every page.* "THE BANK — PAGE", four vitals, the chip strip with the
+    current chip lit. **With the clock running, the page must not change, the
+    scroll must hold, and an opened line must stay open.** "The bank at a
+    glance" and the rail's bank icon both return to the landing.
+  - *Profit.* The two-column statement lines up with the sector pages'; bold
+    totals larger, last month grey; "Interest earned" opens into six rows of
+    two columns that add to the line; "Provisions" three rows and the note;
+    "The trading desk" with "−" on the bought lines; "Kept in the bank" red
+    when negative; the twelve-month block and the ratios under it; a save from
+    before this build shows "—" for last month and "Its first month on
+    record".
+  - *Lending.* "The businesses, one by one": eight columns in the 560px width
+    with nothing overlapping or clipped (owed / pays / leverage / a year /
+    stage 2 / set aside / this month), "owed" the first money column; "a year"
+    reads "under 0.1%", "2.1%", "all" or "—", amber past 0.90 and red from
+    1.50 like leverage; "stage 2" a share ("37%" or "—") in a wide-enough
+    column, amber in stage 2; "this month" red only past the default point or
+    for a sector that went under this month; a shut-out sector's name red, no
+    status column; the note one wrapping paragraph ("under 0.1% at 0.60, 2.1%
+    at 0.90, half at 1.50" … "starting again from the month it is written down
+    whole; the defaults read the month."), nothing about a limit per business
+    or debt held abroad; a sector written down whole not watched or in stage 2
+    in the months after. The families' block only when they owe. "What it has
+    set aside": "a year's expected defaults on a sound borrower, never under
+    0.4%, and a loan's whole term of them on one in trouble". "Who has stopped
+    paying": this month / in total / went under ("never" or "N time(s)") /
+    status; sectors under $1 written off with no backstop or ban left off;
+    "this month" the same after a reload. "How the next loan's rate is built":
+    the grid "" | leverage | its own risk | its record | it pays at widths
+    {150, 70, 100, 80, 110}, each owing sector then the families and the carry
+    trade, the note ending "…a business decides whether to build at that
+    rate."; a sector with no assets shows the whole curve (64.46%) — right by
+    the rule, and may read as a bug. The weight table's five rows, the desk's
+    shares last, and a total equal to "Weighed for risk and term".
+  - *Funding.* "One branch reaches" $250.0M in a city that never reformed, a
+    hundredth after 1:100; within reach plus beyond reach equals the city's own
+    savings; the savers' block explains the share, amber with a "margin could
+    not pay" sentence when rule 2 held it; the funding-mix bar has a key; "What
+    it can carry" reads "nothing - it has failed" for a failed bank; the branch
+    verdict one sentence, "Build a Commercial Bank ›" opening Build ›
+    Commercial.
+  - *Capital & owners.* The wide band bar's three labelled ticks, the target's
+    and the top's labels apart; "It chose the minimum and …" one sentence;
+    "What it does with its profit": the note's last sentence ("Its desk buys
+    its own shares back only with what it holds over its target … at the
+    desk's weight.") wraps, and "Its own shares bought back this month" reads
+    sensibly beside "What it held over its target"; the equity's movement lists
+    only the causes that moved it, then "Not accounted for $0" in grey, then
+    the total — **a red alarm there is a bug to report, with the month**; the
+    owners block with its share-price chart, then the rescues; a failed bank's
+    rescue block at the bottom and at the top of the landing, the button green
+    only when the treasury can cover it.
+  - *History.* Six charts, the rate and capital charts' axes and legends in
+    percentages, not money; months under the target, under the minimum and
+    losing money, each "N of M"; the worst year of provisions; "Nothing to draw
+    yet" under two months.
+  - *No bank, and a failed bank* (the held-10% playtest slot, or a save where
+    it failed): the landing's alerts, the red status sentence, "failed" in the
+    CAPITAL RATIO cells.
+  - *The sector screen.* "Its firms that default a year" only while it owes,
+    amber past 0.9 and red from 1.5; "What its lenders have lost" once $1 is
+    written off, with "Times it went under whole" and the grey note; the "It
+    cannot borrow" alert "This sector went under - it had nothing left…"; the
+    rate note (round 2's long sentence); the cash flow's "Material bought from
+    scrapped plant" (Construction) and "Scrapped plant's material, sold to the
+    builders" (the seller), the premises line alone when there was no sale,
+    and "Stock used, paid for when bought" (Construction, in months it drew
+    salvage); the bank's owners note on its capital policy.
+  - *Construction.* The income statement's inputs line opens to "Material from
+    scrapped plant"; the operations panel's "From scrapped plant, its own: N on
+    hand, M built with this month" and the materials note.
+  - *Elsewhere.* The advisor's "Declined X - not even one would cover its
+    interest at N%, the rate its own risk costs at the debt it would take on",
+    "Sold N X - … (plot back to the city for $Y) (its material to the builders
+    for $Z)" (two brackets on one line), and the two "Holding: the bank is …"
+    lines when its capital refuses a plan; the Policy tab's shut-out line "… A
+    sector that went under cannot borrow to build, and a subsidy is the only
+    thing on this tab that reaches it."; the inbox's "Businesses are going
+    bust" — a two-column body with a 16-character sector column lined up in
+    the inbox's font, three lines for a sector that went under and two for one
+    past the default point, the allowance-and-profit pair only with a bank,
+    "See who owes the bank →" opening Bank › Lending at the top, about once
+    every two to five years in a normal city — and the failed-bank notice's new
+    body; the time-skip report's "Defaults $X written off by lenders", amber
+    only when the skip lost more than `BASE_LOSS_RATE` a year of the
+    businesses' debt, with "Lenders wrote off debt that could not be repaid."
+    only then; the strip's no-bank tooltip (window money) and the branch
+    advisor's no-bank reason.
+- **CHECK 0.7.7'S SCREENS BY EYE ON THE PC** — none of it can run in the
+  cloud; `build-ui.sh` is the only check it has had. ~~The Bank tab: the
+  landing's lead line and its "What it can lend" row (prime on the dial), the
+  vitals' PRIME cell, the gauge (comfortable, nearly full, past what it can
+  carry; prime in the hole; the key's three lines), "What its prime is made
+  of" under it, the no-bank and failed-bank alerts, the Deposits note (35% to
+  90% of the policy rate), the Funding page's "0.25-point penalty", the Income
+  page's Fees line opened into its three, the tax note's late-profit sentence,
+  and the Strain history's prime-against-the-dial chart.~~ — the tab was
+  rebuilt in 0.7.9; the item above covers it (and the strip's no-bank text
+  changed again in 0.7.8). The Summary's THE
+  BANK flag ("n% lent" past capacity) and the dashboard's bank line; the
+  Finances rate page with no bank row, and the issuing page's bank appetite;
+  the sector page's "The bank's prime is"; the Policy page's savers preview and
+  the note under the rates; the strip's "bank" tooltip; the Reports picker's
+  four new traces.
 - **CHECK 0.7.6'S SCREENS BY EYE ON THE PC** — none of it can run in the
   cloud; `compile-all` is the only check it has had. The ladder on every
   page that has one: its width (the reading held at 118, the slider taking
@@ -317,6 +445,74 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
   `ForeignCheck` lack their new sections; §21's "What no harness looks at"
   gains 0.7.6's screens, and its open questions gain land conversion's
   missing push (below). No open question is closed.
+- **And 0.7.7 as of 2026-09-23 (deployed 2026-09-23, tag 0923e): the bank prices a
+  loan from its costs and the strain premium is gone; savers get a rate the
+  bank chooses; an account fee and a loan fee; the window at the dial plus a
+  quarter point; the bank's dividend after tax; four new history series; 213
+  files, ~145,700 lines, 838 dials; save format 27 unchanged; 60 harnesses.**
+  What the manual now says that is not so: the build line; §1's step 3 ("its
+  premium and its cost of funds"); §12's curve formula ("+ the bank's
+  premium") and "what the bank's strain and the advisor read"; §12's Business
+  credit (the city's rate + 1% to 8%, floored on the cost of funds plus a
+  point — prime plus a re-based spread now, and the loan fee); §12's "The bank
+  is somebody" (18 points on every rate; deposits at 45% of interest income
+  and the bid) and "Nothing borrows below what the money costs" (the window at
+  "policy + a point", and `max(riskFree, costOfFunds + MIN_MARGIN) + its own
+  premium` — loans are priced from the funds-transfer price, and the floor
+  stands only under the city's paper); §13's "The rate is a floor"
+  (`WINDOW_PENALTY` one point; savers paid their share of what reserves earn,
+  0.675% at 3% and 2.25% at 10%) and the demand chain's "the deposit rate the
+  bank pays out of what its book and its reserves earn", with `MonetaryCheck`
+  §6's table (1.032 points then, 1.428 now); §19's list of what went in
+  without a bump (`bankPricingHistory`, `bankLateProfit`, the bank's
+  last-month array at nine, the account fee on the household statement's
+  tail, the four series, `bankPremium` no longer written); §20's rows for the
+  harnesses the batch changed. **§21's "Who gets 45%" is closed** — the
+  constant and the quote's cap are gone — and its "spread is gone" sale rests
+  on a deposit rate that is a share of the dial now; §21 gains the batch's
+  opens (below).
+- **And 0.7.8 and 0.7.9 as of 2026-09-24 (deployed 2026-09-24, tag 0924a): the bank keeps its capital like a business — a loss
+  allowance in two stages, its own target of 10.5–16.5%, a payout rule,
+  lending that tightens under its target, its own shares issued and bought
+  back by its capital and booked as capital; a sector defaults a slice at a
+  time off Merton's curve, and the whole-sector restructure is only the
+  backstop; a loan priced off the same curve on the borrower's last quarter; a
+  failing sector's plant sold to the builders for its material; the desk and
+  the buybacks held to the bank's spare capital; the Bank tab rebuilt, a
+  landing and five pages; 213 files, ~151,700 lines, 850 dials; save format 27
+  unchanged; 60 harnesses.** What the manual now says that is not so: the
+  build line and the header's figures; §1's step 13 (no provision after the
+  refresh, no second resolution after the late items, and nothing of the
+  capital rule the month's top hands the lenders); §8's "Capacity retires"
+  (nothing of a retired plant's material sold to the builders, who build from
+  it before they buy); §9's "Forty percent of a positive month is paid out"
+  (not the bank's: nothing under its target, 45% in its band, the excess a
+  twelfth a month, not capped at its cash), and the desk (its own-share trades
+  are capital, bought back only from capital over the target and issued only
+  under it; its book held to the bank's spare capital at `RISK_EQUITY`); §12's
+  Business credit (the curve — prime + max(0, 60% × PD − 0.4%) + the record,
+  at the leverage the loan leaves it, read on the last quarter — and loans for
+  buildings as well as holes) and "The underwriter now leaves a gap" (past
+  1.5× a sector's firms default a slice a month; only a sector with nothing
+  left is written down whole, banned and recorded); "There is no
+  concentration limit" (still none; syndication was tried and removed, and
+  concentration is under every failure now); "The bank is somebody" (no
+  allowance, target, payout or rationing, and "recapitalises to 1.5× the
+  minimum" — a standing bank under the minimum is asked for its own target);
+  §19's Bank tab, and its list of what went in without a bump
+  (`bankAllowance`, `bankCapitalRecord`, `bankMonthLines`,
+  `bankStatementYear`, `creditStatements`, `salvageCost`, `paidEarlier`, the
+  bank's month lines at 50 and its solvency record at 4, six history series);
+  §20's rows for `BankCheck` (§7–17), `CreditCheck`, `MoneyCheck`,
+  `HealthCheck`, `ForeignCheck`, `HistoryCheck`, `YearBookCheck`,
+  `SaveFileCheck` and `ReadPathCheck`. §21's "A concentration limit on the
+  bank" wants rewriting, not closing (it is the measured cause of every
+  remaining failure); "A plant that loses money before interest is still lent
+  for" now meets a price off the curve at the leverage the plant leaves it at —
+  re-measure before closing it; "What no harness looks at" gains 0.7.8's and
+  0.7.9's screens (though `BankCheck` §13 asserts the tab's arithmetic); and
+  §21 gains `ASSET_VOLATILITY`, the quarter's pricing past the default point
+  and `MAX_BUFFER` binding in every seed (section 4).
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -946,7 +1142,9 @@ Ranked by how likely they are to read as "this game is broken".
   higher monthly payment *and* a higher all-in cost than a medium bond.
 - **The early risk-free rate is 19%, and it is now blocking a second system.** At
   19% no residential template in the game clears its own financing. Same root as
-  the 18-point bankless premium (findings #11).
+  the 18-point bankless premium (findings #11). *The bankless premium is gone since 0.7.7 (a city
+  with no bank borrows at the window's price); whether the 19% is still true was
+  not measured.*
 - ~~**THE CITY BORROWS TWO POINTS UNDER ITS OWN POLICY RATE.**~~ **Closed
   2026-09-22 (struck late; 0.7.0 closed it):** `CITY_DISCOUNT` is deleted; the
   city's note prices at the dial plus its spreads and the term premium sits on
@@ -988,6 +1186,126 @@ Ranked by how likely they are to read as "this game is broken".
 
 ## 4. Engine truths worth fixing
 
+- **CONCENTRATION IS WHAT FAILS THE BANK NOW — JERUS'S** (`a-sector-is-many-firms.md`
+  §5, §7). Every remaining failure on 0.7.8 — collapse, stage-2 set-aside or
+  slice — has one sector holding 30–73% of the book, 5–7 times the bank's
+  equity. The levers left: a limit on a sector's share of the book (a bank's
+  industry limit) or Pillar 2's concentration add-on; rescue for shares would
+  make a failure cost the city less. Syndication was the structural answer
+  tried, and removed ("Not doing").
+- **`ASSET_VOLATILITY` 0.25 — the curve's one number, Jerus's to settle**
+  (`BusinessDebtManager`; the Merton/KMV literature 20–35%; 0.20 steeper,
+  0.35 flatter). Not tuned to any result.
+- **`MAX_BUFFER` BINDS IN EVERY SEED**: the worst year is 38–109% of the
+  weighted book, so the target is 16.5% throughout and covers a sixth of it.
+- **THE QUARTER PRICES THE SHORTFALL DESK PAST THE DEFAULT POINT — Jerus's
+  call** (the quarter was his): 1,436 loans over the default eight, 1,435 of
+  them the shortfall desk, which lends on the month's leverage while the price
+  reads the quarter — 73% Luxury Retail on its restock's high month, 20% a
+  sector a large slice had just cut the debt of, 11 past the point on the
+  month's own reading too. Pricing the shortfall desk on the month, or on the
+  lower of the two, would stop it. `BusinessDebtManager`'s quarter banner has
+  the breakdown.
+- **A BANK FAR OVER ITS TARGET CAN STILL BE BROKEN BY ITS DESK'S RE-MARK.**
+  The capital rule holds purchases, not positions: the charge on a share is 15.75%
+  (target × `RISK_EQUITY`) and the quote moves between half and five times
+  fair value, and the inventory grows with the mark and never has to be sold
+  down. 15 failures held at 10%, none in the other runs.
+- *(small, from 0.7.8's rounds)* the desk's own buying lowers the month's
+  closing quote of what it holds (`PRESSURE` × held ÷ limit, ~6% on
+  `BankCheck`'s fixture), so a desk bought to its limit can end the month a
+  hair under target; Luxury Retail pays dividends while losing money and
+  borrowing ($32M in a month with −$206M before tax); a bank recapitalised to
+  exactly `paidInPerBranch` sits on `excessCapital() == 0`, where ULPs flip
+  PAYING and RETURNING — harmless in money, and where round 3's probe and the
+  shipped tree parted; `ui/SectorScreen`'s leverage colours use their own
+  0.5/0.6/0.7 (~L445, ~L1250), not the model's 0.9 and 1.5; the branch
+  advisor's income (`BusinessInvestment.estimatedMonthlyProfit()` ~L797)
+  prices a branch's book at the planning sector's quote, not at prime;
+  `Game.consider()` still files `canFundProject()`'s leverage refusal as a
+  land shortage (`landBlockedSectors`) — only the capital refusal is split out
+  (see the NEVER CLEARS item).
+- **FOUND BY 0.7.9'S IMPLEMENTER, NOT ITS TO FIX:** the Summary's THE BANK
+  flag (`ui/SummaryScreen` ~L738) reads only strain ("n% lent"), not the
+  capital rule that rations credit since 0.7.8 — `bank.status()` or
+  `payoutStance()`; every other screen's opened lines still snap shut on each
+  redraw — `Statement.opens()` is a one-line `Set<String>` field for
+  `SectorScreen`, Finances and the rest; `HistorySave` records
+  `bankCapitalRatio` as 10 when nothing is lent, so those months sit at the
+  chart's ceiling and count as not under target; `Bank.status()` for a failed
+  bank names 12.0% and leaves out `resolutionExitEquity()`'s one-branch floor;
+  `Bank.netInterestMargin()` calls its denominator `weighted` and divides by
+  the face book (the value is right); `Game.recapitaliseBank()` puts in
+  `min(amount, cash)`, so a caller can make a partial rescue — whether the
+  advisor does is unchecked; `BankCheck` §13's played city borrowed nothing for
+  its families in 72 months, so their interest line is caused on a fixture.
+- **FOUND BY THE 0.7.8/0.7.9 DOCS PASS:** ~~the Bank tab's landing rungs, the
+  Lending page's quotes grid and the sector screen's rate note printed the
+  quarter's risk spread beside the month's leverage and default rate~~ —
+  fixed at the gate before the deploy: the three print the quarter's leverage
+  and its default rate (`BusinessDebtManager.getQuarterDefaultRate()`, new,
+  in `ReadPathCheck`'s sweep), and the grid's note says the rate is at the
+  leverage over the last quarter.
+  `ForeignCheck`'s "the same programme costs the same in the world's money"
+  counts the material built from scrapped plant since 0.7.8 — a measurement
+  change, not a premise change (the import bill alone read 1.0607, counted
+  whole 0.9945, and 1.0034 with the sale switched off): review it, as 0.7.7's
+  trailing-year change is. The repository's three mentions of the project's
+  name (`CLAUDE.md`, `docs/notes/README.md`, `docs/docs-pass.md`) were brought
+  to "Civic Ledger: Java Game" at the gate.
+- ~~**THE BANK AS A BUSINESS, BATCHES 2 AND 3 — BUILT IN THE CLOUD, HELD ON
+  JERUS'S ANSWER**~~ — done 2026-09-24: Jerus chose C (a sector's default
+  partial); built as 0.7.8 and 0.7.9 over four rounds and deployed as tag
+  0924a — see `a-sector-is-many-firms.md` and `the-bank-tab.md`. The safety
+  copy in `Claude outputs/bank-0.7.8-0.7.9-held/` is superseded and can be
+  deleted. Rescue for shares, and the government bidding on the exchange,
+  stays a later batch.
+- **HELD AT 10%, SEED 2'S PRICES RAN TO 5.64× FOUNDING.** The recovered bank
+  paid savers its chosen 3.5% over the world's 2%, the households brought
+  their savings home (66% abroad to 0%, US$2.7bn into a city of about 2,000,
+  months 2,280–2,580), and the currency and prices moved with it before it
+  unwound (1.16 at the end). 0.7.3's channel; the root is the deposits the
+  bank counts and does not hold — later work. Note §6.
+- **THE EARLY-GROWTH GAP IS NOT EXPLAINED** — 26,733 against 33,350 at month
+  ~1,300. Not the investment hurdle (measured both ways); the untested lead is
+  Real Estate starting its plans with less of its own cash (0.03 of a unit's
+  cost against 0.07), which fits the 1% fee coming out of every loan. Note §4.
+  *(0.7.8's default eight reach 39,676 at month ~1,300, past 0.7.6's 33,350 —
+  the gap is gone, and still unexplained.)*
+- **A SKILLS TRAP, PATH-DEPENDENT** — seed 3 on the intermediate build stalled
+  at 21,333: growth paused, arrivals stopped, the skilled share fell 0.58 →
+  0.11 and Manufacturing and Automotive refused every plant they could not
+  staff. The playtest never builds a school (the §2 line); the final build does
+  not enter it.
+- **The bank's running costs are 0–7% of its revenue against a real 49–60%,
+  and its fees 0–6% against ~39%** — its payroll is tiny against what it
+  lends. Left as measured.
+- **The city's floor sits above the dial in about half of seed 0's months**
+  (`DebtManager` ~L1365): the bank's blended cost of funds is near zero, so
+  the floor is "the dial or 1%"; `MIN_RATE` never binds.
+- **`Equity`'s share drift** — the households hold a few hundredths of a share
+  more than the register (627,527.663 against .618 on seed 0 from month
+  3,471); the dividend is guarded at the division, the source is open (the
+  register and the cells are moved separately).
+- **`ForeignCheck`'s "outflow swamps trade" reads the trailing year** since
+  0.7.7, because a one-off $14.7M import shipment landed in the fixture's last
+  month — a measurement change, not a premise change. Review it.
+- *(small, the note's §5)* `BusinessDebtManager` ~L77/~L326: a sector's rate
+  is an absolute 1% (`MIN_SPREAD`) until it is first priced *(since 0.7.8
+  `MIN_SPREAD` is gone with the leverage spread and an unpriced sector reads 0
+  until the month's first pricing — the same gap, a different number)*;
+  `HouseholdAccounts` ~L1088: `getRowSpending` leaves out fares;
+  ~~`Bank.redenominate` does not rescale the saved last-month figures; the
+  bank's month flows, its fees included, are not saved (a reloaded Income page
+  reads zero for a month); `Game` ~L4282: a failure caused by the late items
+  shows a month late~~ — done 2026-09-24 (0.7.8); `LongPlaytest` ~L2685: the carry figures are multiplied
+  by a thousand twice; seed 3 has one month of negative GDP (m1012); seed 4
+  has households with no home for sixteen months (749–765).
+- ~~**FOUND BY THE 0.7.7 DOCS PASS — four player-facing strings still describe
+  the strain premium**, and **`CapitalFlows.arrivalsAt()` has no caller**~~ —
+  done 2026-09-24 (0.7.8): `Inbox`, `BusinessInvestment` with `BankCheck`'s
+  reading, `YearBook`'s `bankStrain` and `UserInterface`'s tooltip say what
+  is true, and `arrivalsAt()` is deleted.
 - **LAND BOUGHT BY CONVERTING PUTS NO PUSH ON THE CURRENCY — open, Jerus's
   call** (`land-in-dollars.md` §5). The 0.7.6 brief asked that "whatever
   pressure the exchange puts on the rate when the treasury buys dollars
@@ -1547,22 +1865,14 @@ Ranked by how likely they are to read as "this game is broken".
   (0.7.3): §6 reads `Game.getM2()` and asserts that inflation falls with the
   rate — within `MEASUREMENT_NOISE`, and the 3% row `TRANSMISSION_FLOOR`
   above the 40% row; 1.032 points.
-- **WHO GETS 45% — JERUS'S, AND THE CHEAPEST LEVER THE CHANNEL HAS.** The
-  comment above `Bank.DEPOSIT_PASS_THROUGH` (~L1471, ~L1485) quotes Jerus
-  asking for "55% of interest income" and calls "the 45% it keeps" the margin;
-  the constant (.45) is the savers' share, and `chooseDepositRate()` and the
-  desk's kept margin (~L1803, ~L2250) read it that way. The deposit rate
-  carries about a quarter of the dial because of it. `the-demand-channel.md`
-  §2, §4.
-- **THE DEPOSIT QUOTE'S CAP BINDS BEYOND THE FOUNDING** — 17 to 236 months of
-  each default run, a book lent at older, dearer rates paying savers more than
-  today's lending rate — and every reader of `Bank.depositRate()` (hot money,
-  `investAbroad()`, the take of paper at issue, the cost of funds, the save)
-  sees the capped figure while the payout stands. And the comments disagree:
-  `Bank.fundToCover()`'s new note says "a bank never pays savers a rate above
-  what it charges", `BankCheck` ~L1101 argues a bank whose reserves earn can
-  pay savers more than it charges its borrowers — true of the payout, not the
-  quote. With the 45/55 question. Same note, §4.
+- ~~**WHO GETS 45% — JERUS'S, AND THE CHEAPEST LEVER THE CHANNEL HAS.**~~ —
+  done 2026-09-23 (0.7.7): `DEPOSIT_PASS_THROUGH` is gone; the bank chooses a
+  share of the dial by how it is funded (`Bank.DEPOSIT_SHARE_FLUSH` .35 to
+  `DEPOSIT_SHARE_AT_WINDOW` .90), 0.37–0.44 on average over the eight seeds.
+  See `the-bank-prices-like-a-business.md` §2.
+- ~~**THE DEPOSIT QUOTE'S CAP BINDS BEYOND THE FOUNDING**~~ — done 2026-09-23
+  (0.7.7): the cap went with the income share; the rate reported is what was
+  paid, and a rate chosen under the window's is under prime by construction.
 - **THE SHELF DOES NOT ANSWER MONEY** — the structural reason the channel
   cannot reach the index: `sectors/Retail.java` ~L436 (the floor,
   `OPENING_SELL_PRICE`) and ~L325 (`rWantedDemand = min(coverage, wanted)`),
@@ -2085,6 +2395,21 @@ build. **Windows only**: jpackage does not cross-compile.
 
 ## Not doing, and why
 
+- **Syndicating past a large-exposure limit** (0.7.8, round 3, on Jerus's
+  choice): Basel's 25% of Tier 1 per counterparty with a sector as one
+  connected borrower, the rest of each loan sold abroad at its own rate. 99% of
+  business lending went abroad, interest abroad reached 9–14% of GDP, prices
+  3.9 times founding, and the bank became an arranger with $16–120M of equity
+  that still failed 101 times. Deleted (Jerus, 2026-09-24: *"Drop syndication,
+  keep quarterly"*): a sector is many firms, and Basel's rule is for a firm or
+  a group tied by control, not an industry. (`a-sector-is-many-firms.md` §4.)
+- **A concentration charge with a stress target** (0.7.8, the gate's second
+  version): 68 failures rather than 85, but unemployment 21.5% against 11.8%,
+  $233bn written off against $167bn and GDP 11% lower. Reverted; `Bank
+  .MAX_BUFFER`'s javadoc has the numbers.
+- **Keeping the bank's excess instead of returning it** (0.7.8): two seeds
+  failed 3 times each rather than 14 and 12, and ended with 78,048 and 127,198
+  people against 150,518 and 141,302.
 - **Tuning `MAX_ORDER_MONTHS`.** Rejected on measurement: byte-identical to no
   cap on three land seeds of four. *It is a rule for the makers since the
   template — a plant the builders cannot finish inside a year is not ordered —
@@ -2119,10 +2444,13 @@ build. **Windows only**: jpackage does not cross-compile.
   city ends at 3,400 people and $15,000tn of debt at 42%. Seven borrowers
   cannot be held to a regulator's quarter-of-capital; the bank grows into its
   town by lending. The concentration problem is real and the answer is the
-  owners' equity in the plant, which is where the template put it.
+  owners' equity in the plant, which is where the template put it. *(Tried
+  again as syndication in 0.7.8's round 3, and deleted — above.)*
 - **Raising `MAX_SPREAD` to price risk.** Measured at 12%: the bank got poorer,
   because the borrower paid the extra interest by borrowing it from the same
-  bank. (2026-09-10)
+  bank. (2026-09-10) *(The spread is the curve's since 0.7.8, uncapped; under
+  the shortfall desk's ceiling it charges at most 0.83 points, so the 12%
+  measurement does not bite — `a-sector-is-many-firms.md` §3.)*
 - **Changing `TREND_INFLATION` to fix the currency.** That reintroduces the
   2.4-million-fold price level `WorldEconomy` exists to prevent. The fix was to
   measure inflation from the level, not to change the level. (2026-09-10)

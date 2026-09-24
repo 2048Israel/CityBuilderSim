@@ -33,9 +33,9 @@ import java.util.List;
  *   3. The window prices at the policy rate plus the penalty, and its
  *      interest is the central bank's - and a failed bank's window debt is
  *      advanced and charged nothing (0.7.1: decided, see Bank.fundToCover()).
- *   4. The city's note prices at policy + spreads + the bank's premium, with
- *      no discount under the dial, and never under what the money costs the
- *      bank.
+ *   4. The city's note prices at policy + spreads (+ the bank's strain
+ *      premium, until 0.7.7), with no discount under the dial, and never
+ *      under what the money costs the bank.
  *   5. A broke treasury draws advances at the policy rate, repays them from
  *      cash first, and the remittance carries the interest back less what
  *      reserves cost - and a buyback pays the bank that held the bond.
@@ -184,8 +184,14 @@ public class CentralBankCheck {
         high.injectCapital(50_000);
         high.fundToCover(.10);
         close("...at 10% as at 3%", high.getPlacementIncome(), reservesLow * .10 / 12, 1e-9);
-        close("savers are paid their share of what reserves earn",
-                high.depositInterest(), Bank.DEPOSIT_PASS_THROUGH * high.getPlacementIncome(), 1e-9);
+        // 0.7.7: savers are paid the share of the dial the bank's funding
+        // asks for, moved DEPOSIT_RATE_SPEED of the way from where it was -
+        // nothing, for a bank this new. It was DEPOSIT_PASS_THROUGH of what
+        // the reserves earned.
+        close("savers are paid the share of the dial its funding asks for, a step of the way there",
+                high.depositRate(), Bank.DEPOSIT_RATE_SPEED * high.depositShare() * .10, 1e-12);
+        assertTrue("...out of what its reserves earn",
+                high.depositInterest() <= high.getPlacementIncome() + 1e-9);
         assertTrue("...so the deposit rate rises with the dial",
                 high.depositRate() > low.depositRate() && low.depositRate() > 0);
         out.printf("   deposit rate %.3f%% at a 3%% dial, %.3f%% at 10%%%n",
@@ -247,30 +253,29 @@ public class CentralBankCheck {
         close("...interest-free", lender.getWindowInterest(), 0, 0);
 
         /* ================= 4. the city's paper ================= */
-        out.println("\n--- 4. the city's note prices at policy + spreads + premium ---");
+        out.println("\n--- 4. the city's note prices at policy + spreads ---");
 
         DebtManager market = new DebtManager();
         market.setPolicyRate(.05);
         market.setGDP(9_068);
         market.setTaxRevenue(1_916);
         market.setCashPosition(0);
-        market.setBankPremium(.004);
         market.setCostOfFunds(0);
         market.updateInterest();
         close("the floor is the policy rate itself", market.floorRate(), .05, 1e-12);
-        close("...so a debt-free city is quoted the dial plus the bank's premium",
-                market.getRate(), .05 + .004, 1e-12);
+        close("...so a debt-free city is quoted the dial",
+                market.getRate(), .05, 1e-12);
         market.addLongTermBond(300_000, 240, 1, .05);
         market.updateInterest();
-        close("...and one that owes, the dial plus both spreads plus the premium",
+        close("...and one that owes, the dial plus both spreads",
                 market.getRate(),
-                .05 + market.gdpSpread() + market.revenueSpread() + .004, 1e-12);
+                .05 + market.gdpSpread() + market.revenueSpread(), 1e-12);
         assertTrue("...where the spreads are real, not zero",
                 market.gdpSpread() + market.revenueSpread() > 0);
         close("the ceiling sits on the dial too, not under it",
                 market.ceilingRate(), .05 + 2 * DebtManager.maxSpreadPerMeasure(), 1e-12);
         close("what a different dial would be quoted is the same sum",
-                market.rateAtPolicy(.08), .08 + market.gdpSpread() + market.revenueSpread() + .004,
+                market.rateAtPolicy(.08), .08 + market.gdpSpread() + market.revenueSpread(),
                 1e-12);
         market.setCostOfFunds(.07);
         close("...and nothing lends the city below what the money costs the bank",
@@ -714,8 +719,8 @@ public class CentralBankCheck {
         close("the twenty-year rate sits exactly compression(240) under the table",
                 shape20(ledger), DebtManager.TERM_PREMIUM_20Y - ledger.compression(240), 1e-12);
         close("...and the note carries none of it", ledger.compression(6), 0, 0);
-        close("...so the short end is where it was: the dial, the spreads and the premium",
-                ledger.curveRate(6) - ledger.getBankPremium() - ledger.floorRate()
+        close("...so the short end is where it was: the dial and the spreads",
+                ledger.curveRate(6) - ledger.floorRate()
                         - ledger.gdpSpread() - ledger.revenueSpread(), 0, 1e-12);
 
         /* ---- 12. the coupon on its share ---- */

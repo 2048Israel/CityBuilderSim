@@ -93,6 +93,9 @@ public class UserInterface extends Application {
          CITY OVERVIEW PANEL / THE LEFT PANEL / SUMMARY, OR DASHBOARD            SummaryScreen
          THE SUMMARY IS A PROBLEM LIST NOW. / SEATS AGAINST WHO WOULD COME.      SummaryScreen
 
+       BankScreen was rebuilt in 0.7.9 and holds none of those ten now: its
+       sections run THE BANK AT A GLANCE ... HISTORY (8).
+
        What stayed is in the sections below. The figures, the statement rows,
        the shared pieces and the lever pieces went to Money, Statement, Pieces
        and Levers the same day, in two passes, as public statics behind an
@@ -1682,10 +1685,10 @@ public class UserInterface extends Application {
          * panel beside the other two, and the three rates in it each a public
          * getter the strip only formats: the central bank's dial
          * (DebtManager.getPolicyRate()); what the bank lends a business at
-         * before the business's own premium (Bank.lendingRate() on that dial,
-         * the figure the carry trade reads); and what the treasury borrows at
+         * before the business's own spread (Bank.lendingRate() on that dial,
+         * its prime since 0.7.7); and what the treasury borrows at
          * (DebtManager.getRate(), the year book's interestRate - the note's
-         * rate on the short end, strain and all).
+         * rate on the short end).
          *
          * THREE SHORT LINES AT THE CAPTION'S WEIGHT rather than a figure over
          * a caption, a word before each in Courier so the figures hold one
@@ -1710,13 +1713,15 @@ public class UserInterface extends Application {
                 "The price of money, three ways.%n"
                 + "central - the central bank's policy rate: your dial on the Policy tab,"
                 + " and the floor under every rate in the city.%n"
-                + "bank - what the bank lends a business at before that business's own"
-                + " risk premium: the dial, or its own cost of funds plus a point's margin,"
-                + " whichever is higher, plus its strain.%n"
+                + "bank - the bank's prime, what it lends a business at before that"
+                + " business's own spread: what the money costs it, what running the bank"
+                + " costs per dollar lent, what it expects to lose, and what the capital"
+                + " behind the loan must earn.%n"
                 + "city - what the treasury pays to borrow short: the dial plus what the"
                 + " city's own debt costs it.%s",
-                noBank ? String.format("%nThere is no bank in this city, so there is nothing to"
-                        + " lend - build a Commercial Bank.")
+                noBank ? String.format("%nThere is no bank in this city yet: what it borrows is lent from"
+                        + " outside it, priced as the central bank's window money. Build a Commercial Bank"
+                        + " and the city's own savings fund its loans.")
                 : bankFailed ? String.format("%nThe bank has failed: it may lend nothing until it is"
                         + " recapitalised or earns its way back.")
                 : "")));
@@ -2733,9 +2738,13 @@ public class UserInterface extends Application {
         addChangeLine(econ, "Business debt", skip.getBusinessDebtChange(), true, false);
 
         if (skip.getWriteOffsDuringSkip() > 0) {
+            // Firms default a slice at a time since 0.7.8, so there is a
+            // figure most skips; amber only when it was more than a sound
+            // book loses (TimeSkipReport.defaultsWereNews()).
             Label wo = monoLabel(String.format("%-20s%s written off by lenders",
-                    "Restructuring", money(skip.getWriteOffsDuringSkip())));
-            wo.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ffb454;");
+                    "Defaults", money(skip.getWriteOffsDuringSkip())));
+            wo.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
+                    + (skip.defaultsWereNews() ? "#ffb454" : Palette.TEXT_MUTED) + ";");
             econ.getChildren().add(wo);
         }
         column.getChildren().add(econ);
@@ -3299,8 +3308,10 @@ public class UserInterface extends Application {
              * while it was one screen of statements a player consulted before
              * borrowing. It is not: the bank is the counterparty to every loan
              * in the city, it has its own capital, its own funding, its own
-             * failure mode and its own bailout - and when it is strained every
-             * borrower in the city pays for it. That is a subsystem, and a
+             * failure mode and its own bailout - and what it costs to run and
+             * to fund is in the price of every loan in the city (since 0.7.7;
+             * until then, when it was strained every borrower paid for it).
+             * That is a subsystem, and a
              * subsystem reached by scrolling to the bottom of another screen is
              * a subsystem the player finds once and never again.
              */
@@ -3783,6 +3794,7 @@ public class UserInterface extends Application {
             case "shedding":   return "Go to the builders →";
             case "landlock":   return "Go to the land office →";
             case "bank":       return "Go to the bank →";
+            case "defaults":   return "See who owes the bank →";
             case "healthcare": return "Go and build healthcare →";
             default:           return "Deal with this →";
         }
@@ -3810,6 +3822,9 @@ public class UserInterface extends Application {
                 break;
             case "bank":
                 bankScreen.showBankMenu();
+                break;
+            case "defaults":
+                bankScreen.openPage("Lending");
                 break;
             case "healthcare":
                 buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE));

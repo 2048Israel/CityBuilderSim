@@ -775,8 +775,374 @@ public final class GameVersion {
      * struck, both ways and out of the vault, the same since founding, and
      * the month's local cost - as ForeignAccounts slots 31-36. Every older
      * shape reads correctly, so SAVE_FORMAT did not move.
+     *
+     * 0.7.7 (2026-09-23) - THE BANK PRICES LIKE A BUSINESS.
+     *
+     * Jerus: "lets make banks realistic, and remember, its a business, it
+     * wants to make money." Five changes to one institution, and the first
+     * is a removal.
+     *
+     * THE STRAIN PREMIUM IS GONE. Bank.ratePremium() added nothing to
+     * eighteen points to every rate in the city - business loans, household
+     * credit and the car loans on it, the carry trade, the deposit bid and
+     * the city's own paper - once the bank's book passed 80% of capacity,
+     * and all eighteen with no branch, no equity or a failed bank. A
+     * strained bank raising every rate caused the defaults that strained it
+     * (the-rate-that-stops-the-cranes). strain() stays, as the measure the
+     * branch decision reads; the history's bankPremium series is no longer
+     * recorded.
+     *
+     * A LOAN IS PRICED FROM WHAT IT COSTS (Bank, WHAT A LOAN COSTS). Prime
+     * is four parts: the funds-transfer price - the dial, the window's
+     * quarter point on the share of the bank's money that came from the
+     * window, and DebtManager's term premium for the loan's thirty-six
+     * months; running costs per dollar lent, a trailing year of payroll and
+     * upkeep over the larger of the book and what the capital could carry;
+     * the expected loss of a sound book through the cycle, 0.4% a year
+     * (RBC's 2025 provision rate); and the capital the loan ties up, 11%
+     * of it (the 8% minimum and a three-point buffer) at the 12.5% its
+     * owners ask (Equity's required yield) less the funding it replaces. A business pays prime
+     * plus its own leverage and restructure spread, re-based so that a sound
+     * one pays prime; a household pays the four parts at its risk weight
+     * plus RISK_SLOPE for each month it owes; the carry trade the three
+     * parts without a loss, because it never defaults. The parts are struck
+     * at the close and a loan keeps its rate for its term.
+     *
+     * THE BANK CHOOSES WHAT TO PAY SAVERS: a share of the dial by its
+     * funding position, 35% for a bank flush with reserves and 90% for
+     * one at the window, moved a sixth of the way a month, never under zero
+     * or over the window's rate. And never past net zero: the payout never
+     * takes the bank's interest margin under its payroll and upkeep, and
+     * never exceeds the savers' share of that margin - the deposits are
+     * counted without being held as its cash, so a rate on all of them is
+     * paid on money it earns nothing on. With the margin as the only bound,
+     * the gate's held-10% stress paid savers every dollar a one-branch bank
+     * earned in most months and failed it 184 times over eight seeds
+     * against 0.7.6's 78. 0.7.3's cap (the quote never above the lending
+     * rate) and the bid for hot money went with the rule they belonged to.
+     *
+     * FEES: an account fee for every housed household, $12 a month at
+     * founding prices (Canadian chequing, 2025) and real-indexed, and 1% of
+     * every new business and household loan. The households' books have a
+     * line for the account fee, and the bank's income statement one for
+     * fees. The central bank's window is the dial plus a quarter point (the
+     * Bank of Canada's Bank Rate), not plus one.
+     *
+     * TWO PROFIT BUGS. The bank's dividend was a share of its profit before
+     * tax; it is after tax now. And what the bank booked after its month
+     * closed - the desk's re-mark and dividends, paper bought from the
+     * households - was never taxed or paid out; it is carried into the next
+     * month's (Bank.lateProfit()). And one found on the way: a company's
+     * dividend was divided by its register when the holders held a few
+     * hundredths of a share more, so it overpaid by up to $0.31k a month
+     * from month 3,471 of the default run (Equity.payDividend()).
+     *
+     * THE EXPECTED LOSS IS NOT THE BANK'S OWN RECORD. It was built first
+     * from the bank's write-offs, over five years and then over twenty, and
+     * measured: a whole sector is one borrower here, so the record is lumpy
+     * by construction - a young city's first sector default put it at 11%,
+     * and over the default run's eight seeds the city ended at 122,287
+     * people on average against 148,668, one seed stalled at 32,000. The
+     * orchestrator's call: the through-the-cycle base in prime, the
+     * borrower's own risk in its spread.
+     *
+     * MEASURED over eight seeds as shipped. The default run: four bank
+     * failures (nineteen before); the population at the end 135,993 on
+     * average against 148,668, and 26,733 against 33,350 at month 1,300,
+     * the lowest seed ending at 111,831. On the autopilot: one failure
+     * (thirteen before) and 162,751 people against 156,094. Held at a 10%
+     * dial: forty failures (seventy-eight before). The slower early growth
+     * is not the investment hurdle biting harder - over months 0-1,300 of
+     * four seeds, measured before the savers' second bound went in, the
+     * sectors were quoted less at it than before (7.13% against 7.44%) and
+     * refused fewer plans (3,291 against 4,000); the batch's notes have the
+     * rest.
+     *
+     * SAVE_FORMAT did not move. The bank's pricing record (its trailing
+     * year of costs) and the profit it booked after its close
+     * are new keys, bankPricingHistory and bankLateProfit, that an older
+     * save reads as a record refilling a month at a time and none carried;
+     * the two struck parts and what the book kept ride the end of the bank's
+     * last-month array, which an older, shorter one reads as the defaults
+     * until its first close; the households' account fee rides the end of
+     * their statement (HouseholdAccounts.SCALARS_BEFORE_ACCOUNT_FEES), read
+     * as none from an older one; the four new history series - policyRate,
+     * bankPrime, bankDepositRate, bankFees - fill from the month a city is
+     * next played, and an older history's bankPremium key is skipped.
+     *
+     * 0.7.8 (2026-09-23) - THE BANK AS A BUSINESS WITH ITS CAPITAL.
+     *
+     * Jerus: "lets make banks realistic, and remember, its a business, it
+     * wants to make money" - and of its capital, "the bank chooses". 0.7.7
+     * made it price like one; this makes it keep its capital like one
+     * (Bank, THE BANK AS A BUSINESS WITH ITS CAPITAL). The regulator's
+     * 8% (Bank.CAPITAL_RATIO) is still the only number in it that is the
+     * city's.
+     *
+     * A LOSS ALLOWANCE (simplified IFRS 9). Each sector's business debt and
+     * the families' book hold an allowance: a sound book a year's expected
+     * loss; a borrower in trouble - a sector past
+     * BusinessDebtManager.MAX_LOAN_TO_ASSETS of its assets, a family owing
+     * more than half its credit ceiling in months of income - its lifetime
+     * loss. For a sector both are read off the curve its firms default on
+     * (see A SECTOR DEFAULTS A SLICE AT A TIME below): a year of it, never
+     * under BASE_LOSS_RATE, and past the watch line a loan's term of it; for
+     * the families BASE_LOSS_RATE, and past the line what the discharge would
+     * cost, scaled by how near it they are. A write-off draws the allowance first; the income
+     * statement's provision is the allowance's move plus what it had not set
+     * aside. Net loans are the book less the allowance. Measured over two
+     * seeds before it went in, a sector past the watch line defaulted within
+     * two years half the time and more; one under it, 1.5%. On the two
+     * default seeds traced as shipped, 64-71% of what was written off had
+     * been set aside before the month it was.
+     *
+     * ITS OWN TARGET: the minimum plus the worst year of provisions it has
+     * lived through, never less than the Basel conservation buffer (2.5
+     * points) nor more than the whole Basel stack (Bank.MAX_BUFFER, 8.5
+     * points) - uncapped, seed 0's bank chose 48% and then 108% after two
+     * sector restructures, priced prime at 10-19% through the capital
+     * charge, and stalled the city at 8,348 people. The top of its
+     * band is the target plus 2.5 points. Loans are priced on the target;
+     * the fixed 11% (CAPITAL_BUFFER) is gone.
+     *
+     * WHAT IT DOES WITH ITS PROFIT: nothing paid under the target; 45%
+     * inside the band (RBC paid 43% of 2025's earnings); over the top that
+     * and a twelfth of the excess a month. No longer capped at its cash. Its
+     * desk buys its own shares back only while it is at or over its target
+     * and issues new ones only while it is under it - issuing at the target
+     * too, the first reading sold the households $28-86bn of new bank shares
+     * a seed and paid it straight back, 131-183% of the bank's profit - and
+     * a share issued or bought back is capital now, not trading income:
+     * 0.7.7's seed 0 booked $8.2bn of its own shares sold to the households
+     * as $8.2bn of its $8.65bn trading profit.
+     *
+     * WHAT IT LENDS: freely at or over the target; between the minimum and
+     * the target a borrower's debt may grow 1% x (how far up) / (how far to
+     * go) a month; under the minimum only a business's interest reserve and
+     * a family's month of interest. Game hands the rule to both lending
+     * desks at the top of the month, and the carry trade reads it through
+     * headroom(). The families' credit had never been shut by a failed bank
+     * before; it is now. A standing bank is asked for capital only under
+     * the minimum, and then for enough to reach its target: asked for the
+     * bare minimum, a topped-up bank sat on the line lending nothing new.
+     *
+     * AND 0.7.7's LOOSE ENDS: the bank's month lines are saved, so a reloaded
+     * Income page reads the month it was saved in; Bank.redenominate()
+     * scales them and everything new; a failure caused by what is booked
+     * after the close is resolved that month, not the next; four player
+     * strings that still described the strain premium say what is true; and
+     * CapitalFlows.arrivalsAt(), with no caller since 0.7.7, is deleted.
+     * Six history series - bankCapitalRatio, bankCapitalTarget,
+     * bankAllowance, bankProvisions, bankDividends, bankReturnOnEquity - with
+     * a year-book rule each.
+     *
+     * MEASURED over eight seeds as first built, before the slices below,
+     * against 0.7.7. The default run:
+     * 151,979 people at the end on average against 135,993 (0.7.6: 148,668),
+     * 32,761 at month 1,300 against 26,733, $121bn written off against
+     * $119bn. The bank's growth years: a capital ratio of 21.3% (median of
+     * the seeds' medians) against a target of 16.5%, a return on equity of
+     * 24% where 0.7.7's read 1-2%, 83% of its profit paid out, and it ended
+     * the runs with $0.1-1.9bn of equity where 0.7.7's sat on $24-151bn.
+     * BUT IT FAILED 92 TIMES (0.7.7: 4; 0.7.6: 19). A whole sector is one
+     * borrower, and each seed's worst year cost 47-159% of the weighted
+     * book - through the run, 1.0% of the loans a year against a real
+     * bank's 0.4% - which a bank holding 16.5-19% cannot take; 0.7.7's
+     * survived on the capital it never paid out. On the autopilot: 160,676
+     * against 162,751, 69 failures against 1. Held at a 10% dial: 2,443
+     * against 7,211 and 266 failures against 40 - there the shares it used
+     * to sell at its target had been a buffer, and a bank under its target
+     * pays no dividend, so nobody buys the ones it may still issue.
+     *
+     * TWO WAYS TO SPEND LESS OF IT WERE MEASURED AND NOT SHIPPED. Keeping the
+     * excess instead of returning it: two seeds failed 3 times each and
+     * ended with 78,048 and 127,198 people against 150,518 and 141,302. A
+     * target from the bank's stress test on its largest borrower, uncapped,
+     * with that concentration priced to the borrower past a quarter of its
+     * capital (Bank.MAX_BUFFER has the numbers): 68 failures, but 21.5%
+     * unemployment and $233bn written off. The batch's notes have the rest.
+     *
+     * A SECTOR DEFAULTS A SLICE AT A TIME, the batch's fix (Jerus,
+     * 2026-09-23: "go for option C"). A sector stands for many firms, so each
+     * month the share of its debt whose firms fell through the default point
+     * defaults - Merton's (1974) structural model, the basis of Moody's KMV:
+     * PD(L) = N(ln(L / INSOLVENCY_TRIGGER) / sigma) a year at leverage L,
+     * sigma the firms' asset volatility (BusinessDebtManager.ASSET_VOLATILITY,
+     * 0.25, the literature's typical industrial - Jerus's number to settle),
+     * 1 - (1 - PD)^(1/12) a month - and the bank writes off 60% of it (1 -
+     * RESTRUCTURE_TARGET / INSOLVENCY_TRIGGER), every loan pro rata, the plant
+     * untouched. Next to nothing under 0.6 times its assets, 2% a year at
+     * 0.9, half at 1.5, 88% at 2.0. The whole-sector write-down is kept only
+     * for a sector with nothing left (assets at or below zero), and only it
+     * goes on the record, the surcharge and the ban. The allowance reads the
+     * same curve, and the inbox says "Businesses are going bust" when a
+     * sector goes under whole or past the default point.
+     *
+     * MEASURED over eight seeds, against the first build: IT DID NOT FIX THE
+     * FAILURES. The default run failed 84 times (92), the autopilot 87 (69;
+     * one seed 44 of them) and held at 10% 305 (266); $143bn written off
+     * (121) and $190bn on the autopilot (143). The city grew - 160,437
+     * people at the end on average (151,979), 167,644 on the autopilot
+     * (160,676) - and provisions in growth years read 0.28% of the loans
+     * (0.02%), a real bank's. Of the default run's 84 failures, 58 came the
+     * month the bank set aside its main borrower's lifetime loss as it went
+     * past the watch line - Manufacturing, Real Estate or Automotive, a
+     * median 62% of its whole book, the month's write-offs a twelfth of the
+     * provision - and 25 when the distress rule retired a sector's plant for
+     * nothing and its leverage went from about 1.2 to 5-75 in one to three
+     * months, where the curve takes 60% in a month and the backstop the
+     * rest. A sector is still one leverage: its firms share it, so their
+     * losses are one loss, recognised all at once. The batch's notes have
+     * the trace and what would fix it.
+     *
+     * THREE FIXES ON TOP OF IT (Jerus, 2026-09-23: "Price risk from the
+     * curve, Sell a failing sector's plant, Smooth the loss reserve"). A
+     * business loan is priced at prime plus the borrower's own expected
+     * loss off the same curve over the BASE_LOSS_RATE prime already carries,
+     * LOSS_GIVEN_DEFAULT x PD(L) - BASE_LOSS_RATE, at the leverage the loan
+     * leaves it at, a project's building counted, and the plan is judged at
+     * that rate. The leverage spread (six points a unit, capped at seven) is
+     * gone: nothing under 0.75 times assets, 0.8 points at 0.9, 11 at 1.2,
+     * 30 at 1.5. A plant retired by either rule is sold to the builders for
+     * the material it was built with, at the day's price, as far as their
+     * cash goes, and the crews build from it before they buy. And the
+     * allowance stages a sector's firms, not the sector: the share past the
+     * watch line, N(ln(L / 0.9) / sigma), holds a loan's term of the curve,
+     * the rest a year of it - no cliff at the line.
+     *
+     * MEASURED over eight seeds: IT DID NOT FIX THE FAILURES EITHER. The
+     * default run failed 124 times (84), the autopilot 69 (87), held at 10%
+     * 305 (305); $136bn written off (143). 63 of the 124 are two seeds' last
+     * hundred months, with Luxury Retail 67-99% of the bank's book and
+     * restocking every other month: its assets swung a sixth month to month,
+     * its leverage 1.06 to 1.27 and back, and the allowance on it $227M to
+     * $637M against $590M of equity - the bank failed on every high month.
+     * Each fix alone, in probes: 81, 75 and 91 failures, against 81 for the
+     * first build's rules re-rolled at a rounding difference. The price cut
+     * the loans written past 1.0 times assets by a third, the money lent
+     * there by three quarters, and the bank's return on equity in growth
+     * years by half (10% against 21%): a sound borrower pays prime now. The
+     * sale paid the sellers $10.2bn over the eight seeds, but a building's
+     * material is a quarter to a third of what it cost and the builders had
+     * cash for 30% of what was offered, so the 28 collapses stayed. The early
+     * city came back: 32,463 people at month 1,300 (31,372), 49,479 on the
+     * autopilot (29,892).
+     *
+     * And the load path's last households restore read the save as the
+     * legacy layout and was refused whole on every modern save; it reads
+     * the save's own bands and shapes now (SaveFileCheck found it under the
+     * new pricing).
+     *
+     * SYNDICATION, TRIED AND TAKEN OUT (Jerus, 2026-09-23: "Build
+     * syndication"; 2026-09-24: "Drop syndication, keep quarterly"). The
+     * bank held at most a quarter of its equity of any one sector - Basel's
+     * large-exposure limit, a sector's firms one connected borrower - and
+     * sold the rest of each new loan abroad at its own rate. Over the eight
+     * default seeds it sent 99% of the businesses' borrowing abroad, put the
+     * interest paid abroad at 9-14% of GDP a year and prices at up to 3.9
+     * times founding, and left the bank an arranger with $16-120M of equity
+     * that failed 101 times, on its own-share buybacks (68) and its desk
+     * (28) rather than its loans. It is deleted - the loans' share, the three
+     * audit lines, the screens' column - because a sector is many firms, the
+     * premise its partial defaults are built on, and Basel's rule is for a
+     * firm or a group tied by control, not an industry. Bank keeps the
+     * paragraph, where its lending rules are.
+     *
+     * THE QUARTER STAYS: the allowance, the stage-2 share and a new loan's
+     * price read a sector over its last BusinessDebtManager.STATEMENT_MONTHS
+     * month-ends, the loss struck on what it owes now; the defaults read the
+     * month. A backstop restarts the sector's quarter, as a lender re-rates a
+     * restructured borrower - measured, that moves no loan, because the ban
+     * outlasts the quarter; it corrects the quote, the stage and the watch
+     * list. The builders' material from scrapped plant is a cost when they
+     * build with it, at what they paid.
+     *
+     * AND THE DESK IS HELD TO THE BANK'S CAPITAL (Jerus, 2026-09-24: "Buybacks
+     * only from spare capital", "Trading desk held to its capital"). It buys
+     * the bank's own shares back only with what the bank holds over its
+     * target (Bank.buybackRoom()), and other companies' only while the bank
+     * would still hold its target with them on its books, at the weighted
+     * book's own RISK_EQUITY - a trading book held against capital, Basel's
+     * market-risk requirement (Bank.deskCanCarry()). What it will not buy
+     * stays with the seller: abroad with an emigrant, with the world, or a
+     * household short of money borrows or goes without.
+     *
+     * MEASURED over eight seeds: the default run failed 39 times (round 3:
+     * 101; the same tree without the desk's two limits, 45; round 3's quarter
+     * without syndication, 40), the autopilot 49 (97; 41 without the limits)
+     * and held at 10% 284 (136; 292). Not one failure in the default run or
+     * on the autopilot was a buyback, the desk or running costs: all were
+     * lending - 20 collapses (the distress rule retires a sector's plant and
+     * the backstop writes it down), 14 stage-2 set-asides (a borrower holding
+     * a median 55% of the book past the watch line) and 5 slices, 21 of them
+     * before month 500. Held at 10% the desk's re-mark is 15 of the 284: a
+     * bank far over its target has capital to spare, the charge on a share
+     * is 15.75% of it, and the quote can fall by half. The limits bound: its
+     * own shares in 82 months over the default seeds, turning $106M of them
+     * away; the desk in 5,253, $144bn - 79% of it the world's sales, 21%
+     * emigrants', next to none the households'. The city: 162,273 people at
+     * the end on average, 39,676 at month 1,300; the bank's growth years a
+     * ratio of 19.2% against a target of 16.5%, a return on equity of 13%,
+     * 76% of its profit paid out, provisions 0.4% of its loans (1.1% through
+     * the run); the currency 42-57% under parity; prices peaked at 1.1-1.6
+     * times founding, one seed 3.9 in a boom at month 1,000-1,300.
+     *
+     * SAVE_FORMAT did not move. Three new keys - bankAllowance (each book's
+     * allowance, what it opened the month with, its write-offs and whether
+     * it is watched), bankCapitalRecord (the loss record the target reads,
+     * and the year of dividends and buybacks) and bankMonthLines (the
+     * month's statement) - that an older save reads as missing: the loss
+     * record starts empty (a young bank's target), the month lines as a
+     * month not yet played, and the allowance is set up on load from the
+     * book the save carried, by the same rules, with the month's opening
+     * allowance set equal to it so that it is no provision and moves
+     * nothing in the audit. A sector's allowance entry carries its stage-two
+     * share as a fifth figure since the fixes above; a four-figure entry
+     * reads its watched flag as the whole book or none of it. The quarter's
+     * readings (creditStatements), the builders' cost of their salvage
+     * (salvageCost, an extra) and a statement's stock paid for earlier
+     * (paidEarlier) are new keys an older save reads as none.
+     *
+     * 0.7.9 (2026-09-23) - THE BANK TAB, REDONE.
+     *
+     * Jerus: "a redesign of the bank UI info, cause when you click on bank
+     * you dont even see all the relevant stuff, lets make banks realistic."
+     * The tab opens on whether the bank is healthy and why: its state in a
+     * sentence with the figure that decides it (Bank.status()); a scorecard
+     * - its profit this month and over the year, its return on equity, its
+     * capital ratio on a bar against the minimum, its own target and the top
+     * of its band, its provisions as a share of its loans, its net interest
+     * margin, its costs against what it earns, its loans and its deposits;
+     * and the ladder of its rates, from the policy rate through what savers
+     * get, what a loan's money costs it and prime in its four parts, to what
+     * each borrower pays, every step in points (Bank.ladder()). Behind it
+     * five pages: Profit (the income statement beside last month's, the
+     * interest by who paid it, what it did with the profit, the last twelve
+     * months), Lending, Funding, Capital & owners, and History.
+     *
+     * EVERY FIGURE IS A GETTER (Bank, WHAT THE BANK TAB READS). The old tab
+     * worked out a dozen of its own, and some were wrong: a branch's reach
+     * from the founding constants, a hundred times out after a reform; a
+     * weight table with no term and no desk, which did not foot; a "relief"
+     * that could read negative; "99900.0% capital" with nothing lent; a
+     * leverage warning at 2.0 where the default point is 1.5; an
+     * equity movement without the founding settlement. BankCheck (13)
+     * asserts the ladder's parts are prime, the weight table foots, and the
+     * equity's movement leaves nothing unexplained on a played city.
+     * Opened lines stay open through the clock's redraw (Statement.opens()).
+     *
+     * NOTHING THE BANK DECIDES MOVED. Its interest is booked by who paid it
+     * on the same sum, to the bit, and nothing in the month reads the new
+     * figures.
+     *
+     * SAVE_FORMAT did not move. One new key, bankStatementYear (the months
+     * before the one saved, each filed whole at the top of the month after),
+     * which an older save reads as missing - its year starts with the month
+     * it was saved in. The month's lines gain the interest by who paid it on
+     * the end of their array, and the solvency record what the city has put
+     * into the bank over its life, both read by their length.
      */
-    public static final String VERSION = "0.7.6";
+    public static final String VERSION = "0.7.9";
 
     /**
      * The save shape.

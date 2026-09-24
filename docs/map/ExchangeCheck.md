@@ -1,6 +1,6 @@
-# ExchangeCheck.java - 686 lines · 15 methods · 2 constants · harnesses
+# ExchangeCheck.java - 686 lines · 14 methods · 2 constants · harnesses
 
-`ham/citybuildersim/ExchangeCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ExchangeCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Verifies the exchange: what the desk quotes, who trades with it and why,
 > what a company does with its surplus, and that a city with a market in it
@@ -50,7 +50,6 @@
 | 25 | `static PrintStream quiet` |  |
 | 80 | `final double[] cash` |  |
 | 81 | `final double[] boughtBack` |  |
-| 82 | `boolean flush` |  |
 
 ## Methods, in file order
 
@@ -65,12 +64,11 @@
 | 68 | 1 | `static Household couple(HouseholdBalance hb)` |  |
 | 71 | 6 | `static Bank bankWith(double capital)` | A bank with this much capital, its month open. |
 | 79 | 12 | **type** `static class Firms implements Exchange.Companies` | The companies, as the exchange sees them: a till, a balance sheet, a payroll. |
-| 83 | 1 | `public double cashAvailable(int c, double wanted)` _(in ExchangeCheck.Firms)_ |  |
-| 84 | 1 | `public void payBuyback(int c, double x)` _(in ExchangeCheck.Firms)_ |  |
-| 85 | 1 | `public void paySpecialDividend(int c, double x)` _(in ExchangeCheck.Firms)_ |  |
-| 86 | 1 | `public double assets(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 87 | 1 | `public double equity(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 88 | 1 | `public double monthlyOperatingCost(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 89 | 1 | `public boolean bankFlush()` _(in ExchangeCheck.Firms)_ |  |
+| 82 | 1 | `public double cashAvailable(int c, double wanted)` _(in ExchangeCheck.Firms)_ |  |
+| 83 | 1 | `public void payBuyback(int c, double x)` _(in ExchangeCheck.Firms)_ |  |
+| 84 | 1 | `public void paySpecialDividend(int c, double x)` _(in ExchangeCheck.Firms)_ |  |
+| 85 | 1 | `public double assets(int c)` _(in ExchangeCheck.Firms)_ |  |
+| 86 | 1 | `public double equity(int c)` _(in ExchangeCheck.Firms)_ |  |
+| 87 | 1 | `public double monthlyOperatingCost(int c)` _(in ExchangeCheck.Firms)_ |  |
 | 92 | 594 | `public static void main(String[] args) throws Exception` |  |
 

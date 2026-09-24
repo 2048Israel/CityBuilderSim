@@ -432,7 +432,10 @@ public class CarCheck {
         double debtBefore = buyer.debt();
         double paidOut = lender.takeCars(wanted, priceOne, 1);
         double cashPaid = (cashWas - buyer.savings()) * buyer.households();
-        double borrowed = (buyer.debt() - debtBefore) * buyer.households();
+        double owed = (buyer.debt() - debtBefore) * buyer.households();
+        // What the household owes now is what was lent PLUS the bank's fee on
+        // it, added to the debt (0.7.7); the principal is the rest.
+        double borrowed = owed - lender.getCarLoanFees();
 
         report("...and the seller is paid in full",
                 Math.abs(paidOut - wanted * priceOne) < 1e-6,
@@ -445,6 +448,10 @@ public class CarCheck {
                 String.format("$%,.0f, reported as $%,.0f", borrowed, lender.getCarsFinanced()));
         report("...and the two halves are the whole price",
                 Math.abs(cashPaid + borrowed - paidOut) < 1e-6, "");
+        report("...and the bank's fee on the loan is added to what they owe, a share of it",
+                Math.abs(lender.getCarLoanFees() - Bank.LOAN_FEE * lender.getCarsFinanced()) < 1e-9
+                        && lender.getCarLoanFees() > 0,
+                String.format("$%,.2f on $%,.0f", lender.getCarLoanFees(), lender.getCarsFinanced()));
 
         /*
          * AND A HOUSEHOLD THAT CAN PAY CASH OWES NOTHING, which is what makes

@@ -153,7 +153,11 @@ public final class Motoring {
         usedCarsOffered = householdBalance.getUsedCarsOffered();
         usedCarSpend = householdBalance.getUsedCarSpend();
         usedCarCredit = householdBalance.getUsedCarsFinanced();
-        if (usedCarCredit > 0) bank.lendToHouseholds(usedCarCredit);
+        if (usedCarCredit > 0) {
+            bank.lendToHouseholds(usedCarCredit);
+            // ...and its fee, added to what the buyers owe (0.7.7).
+            bank.bookLoanFees(householdBalance.getUsedCarLoanFees());
+        }
 
         if (asking > 0) {
             double wanted = householdBalance.carsWanted(asking, ceiling);
@@ -183,6 +187,7 @@ public final class Motoring {
                      */
                     householdCarCredit = householdBalance.getCarsFinanced();
                     bank.lendToHouseholds(householdCarCredit);
+                    bank.bookLoanFees(householdBalance.getCarLoanFees());
                 }
             }
         }

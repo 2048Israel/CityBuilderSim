@@ -3,29 +3,52 @@ package ham.citybuildersim.ui;
 import ham.citybuildersim.*;
 import ham.citybuildersim.ui.Pieces.Slice;
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import static ham.citybuildersim.ui.Money.*;
 import static ham.citybuildersim.ui.Statement.*;
 import static ham.citybuildersim.ui.Pieces.*;
 import static ham.citybuildersim.ui.Levers.*;
 
 /**
- * The bank tab: the gauge, the two limits, another branch, who owes it, where
- * the money comes from, the books, the rescue, and its history.
+ * The bank tab: whether the city's bank is healthy and why, on one landing -
+ * a sentence, a scorecard and the ladder of its rates - with its profit, its
+ * lending, its funding, its capital and owners, and its history behind it.
  *
- * Split out of UserInterface on 2026-09-18: the ten banners from THE BANK to
- * ITS HISTORY exactly as they were, the shell's members reached through ui. The
- * shell still reads which page and area are open (bankPage, bankArea) for the
- * rail and the scroll memory.
+ * WHY THIS SHAPE (0.7.9). Jerus: "a redesign of the bank UI info, cause when
+ * you click on bank you dont even see all the relevant stuff, lets make
+ * banks realistic." The tab it replaced was split out of UserInterface on
+ * 2026-09-18 and still opened on the strain premium's questions - a gauge,
+ * the two limits, another branch - after 0.7.7 took the premium away. A
+ * player could not find the bank's rates side by side, its return on its
+ * capital, its capital against a target, its losses as a rate, what it did
+ * with its profit, its account at the central bank, or its owners in one
+ * place; and a dozen of the figures it did print were worked out on the
+ * screen, several of them wrong (the project's the-bank-tab.md has the
+ * list). Every figure is a model getter now - Bank's WHAT THE BANK TAB
+ * READS has the ones this tab asked for.
+ *
+ * ONE WAY TO WRITE EACH KIND OF NUMBER: a rate as "x.xx% a year" (rate()),
+ * a spread between two rates in points to two decimals, as the rates are
+ * (points()), a share or a ratio as "x.x%" (share()), and money through
+ * Money - a flow says "this month", a stock does not.
+ *
+ * The shell reads which page is open (bankArea, bankPage) for the rail and
+ * the scroll memory; the panel is rebuilt on the clock, so the page, the
+ * scroll position (UserInterface.scrolled()) and the lines the player has
+ * opened (openLines) all survive a redraw.
  */
 final class BankScreen {
 
@@ -35,62 +58,64 @@ final class BankScreen {
     BankScreen(UserInterface ui) { this.ui = ui; }
 
     /* =====================================================================
-       THE BANK
+       THE BANK AT A GLANCE
 
-       ITS OWN RAIL TAB NOW, and the redo follows: it was one screen of Courier
-       at the foot of Finances, and it is the counterparty to every loan in the
-       city. What made that indefensible is a single number - ratePremium() -
-       which is added to the rate of every mill, shop, household and bond in the
-       city, and which lived four lines down a monospaced wall with no
-       explanation of what moves it.
-
-       FIVE SUBJECTS, each a row on the landing and its own strip inside:
-
-         WHAT IT CAN LEND   the gauge, the two limits, and what a branch buys.
-                            This is the tab's reason to exist.
-         WHO OWES IT        by borrower and by sector, and who has stopped
-                            paying.
-         WHERE THE MONEY    what the city has banked, what the branches can
-         COMES FROM         actually reach, and what it borrows at the central
-                            bank's window (abroad, until 0.7.0).
-         THE BOOKS          the income statement and the balance sheet, in the
-                            language the sector books use.
-         ITS HISTORY        the four series HistorySave now keeps: the book
-                            against capacity, the strain, the equity and the
-                            profit.
+       One screen that answers "is my bank healthy, and why" without a click:
+       the bank's state in a sentence with the figure that decides it; a
+       scorecard of the eight figures a banker would read first; and the
+       ladder of its rates, from the price of money to what each borrower
+       pays, every step labelled with what it is for. Then the five pages
+       behind it, each with its headline figure.
 
        THE ACTION STAYS AS IT WAS. Jerus: rescue on failure only. Putting
-       capital in whenever you like is a lever the city does not currently have
-       and adding one is a game change rather than a screen change.
+       capital in whenever you like is a lever the city does not have, and
+       adding one is a game change rather than a screen change.
        ===================================================================== */
 
-    String bankArea = null;                  // null is the landing
-    static final String BANK_HOME     = "The gauge";
+    String bankArea = null;                  // null is the landing; BANK_PAGES, the pages behind it
+    static final String BANK_PAGES = "The bank's pages";
+    /** The page behind the landing that is lit until the player picks another; the rail's bank icon resets to it. */
+    static final String BANK_HOME  = "Profit";
     String bankPage = BANK_HOME;
 
-    static final String[] BANK_LEND_PAGES =
-            {"The gauge", "The two limits", "Another branch"};
-    static final String[] BANK_OWED_PAGES  = {"By borrower", "In trouble"};
-    static final String[] BANK_MONEY_PAGES = {"Deposits", "Funding"};
-    static final String[] BANK_BOOKS_PAGES = {"Income", "Balance sheet"};
-    static final String[] BANK_PAST_PAGES  = {"Lending", "Strain", "Capital"};
+    /** The five pages behind the landing, in the chip strip's order. */
+    static final String[] BANK_PAGE_NAMES =
+            {"Profit", "Lending", "Funding", "Capital & owners", "History"};
+
+    /** The lines the player has opened, by label, so a redraw on the clock leaves them open (Statement.opens()). */
+    final Set<String> openLines = new HashSet<>();
+
+    /* ------------------------ one way to write each number ------------------------ */
+
+    /** A rate: "x.xx% a year". */
+    static String rate(double r) { return String.format("%.2f%% a year", r * 100); }
+
+    /** A spread between two rates, signed, to the rates' own two decimals - a quarter point must not print as 0.3. */
+    static String points(double p) {
+        return String.format("%s%.2f points", p < -5e-7 ? "−" : "+", Math.abs(p * 100));
+    }
+
+    /** A share or a ratio that is not a yearly rate: "x.x%". */
+    static String share(double s) { return String.format("%.1f%%", s * 100); }
+
+    /** A default rate, which runs from the curve's far tail to all of it: "under 0.1%" rather than a "0.0%" that reads as none, "x.x%" to 99.9%, then "all". */
+    static String defaultShare(double pd) {
+        if (!(pd > 0)) return "none";
+        if (pd < .001) return "under 0.1%";
+        if (pd > .999) return "all";
+        return share(pd);
+    }
+
+    /** "the last 12 months", or as many as the bank has lived. */
+    static String yearWords(Bank bank) {
+        int n = bank.monthsInYear();
+        return n <= 1 ? "this month" : "the last " + n + " months";
+    }
 
     /**
-     * THE BANK.
-     *
-     * One screen for the one question the player actually has to answer about
-     * it: is the city's credit dear, and if so, which of the two limits is
-     * making it dear. The answer is a different building in each case - another
-     * branch when the counters are full, and nothing at all when the savings
-     * are short, because a counter cannot fix a shortage of savings.
-     *
-     * Written as a statement rather than as a dashboard for the same reason the
-     * household screen was: five boxes of numbers is a screen you read once, and
-     * a set of books is a screen you come back to.
-     *
-     * (The tab's first header, from before the redo the banner above describes;
-     * the one question is still the gauge's. It had sat in the shell with no
-     * method under it, and came to the tab's entry point on 2026-09-18.)
+     * The tab's entry point: the landing, or the page behind it the player
+     * was on. Named for the shell, which calls it from the rail, the inbox
+     * and the summary panel.
      */
     void showBankMenu() {
         ui.clearMenu("showBankMenu", () -> showBankMenu());
@@ -106,10 +131,10 @@ final class BankScreen {
         title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
                 + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
 
-        Label lead = new Label("Every loan in the city is its money, and its strain is in "
-                + "every rate.");
+        Label lead = new Label("Every loan in the city is its money, priced from what it "
+                + "costs the bank to make.");
         lead.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED)
-                + " -fx-padding: 0 0 10 0;");
+                + " -fx-padding: 0 0 6 0;");
 
         VBox column = new VBox(0);
         column.setAlignment(Pos.TOP_LEFT);
@@ -118,76 +143,413 @@ final class BankScreen {
         /* ------------------------- there is no bank ------------------------- */
         if (bank.getBranches() <= 0) {
             column.getChildren().add(alert("There is no bank in this city",
-                    String.format("Every borrower in it is paying %.0f points over the odds, "
-                    + "because the lending is coming from strangers who have never heard of "
-                    + "the place. Build a Commercial Bank — one branch is an equity "
-                    + "injection as well as a building, which is what incorporating a bank "
-                    + "actually is.", Bank.MAX_STRAIN_PREMIUM * 100)));
+                    "Every borrower is lent money from the central bank, priced as a bank "
+                    + "would price it. Build a Commercial Bank: one branch is its owners' "
+                    + "capital as well as a building, and its savers' deposits start "
+                    + "funding the city's loans."));
         }
 
         if (bank.isInsolvent()) {
             column.getChildren().add(alert("The bank has failed",
-                    "It has lost more than it owns, so it may lend nothing and every "
-                    + "borrower in the city is paying the full premium. It can be "
-                    + "recapitalised here — or it can earn its way back out, slowly, on "
-                    + "the book it already has."));
+                    "It lost more than it owned, so it may lend nothing new. It can be "
+                    + "recapitalised here, or earn its way back out, slowly, on the book it "
+                    + "already has."));
             column.getChildren().add(bankRescue());
         }
 
-        double book = bank.getBook();
-        double capacity = bank.capacity();
-        double strain = capacity > 0 ? book / capacity : (book > 0 ? Double.NaN : 0);
-        double premium = bank.ratePremium();
-        double written = bank.getWriteOffs();
+        ladder(column, bank);
 
-        column.getChildren().add(bankRow("What it can lend",
-                "the two limits, the strain, and what one more branch would buy",
-                capacity > 0 ? String.format("%.0f%% used", bank.strain() * 100) : "no capacity",
-                premium > 0
-                        ? String.format("%+.1f points on every rate in the city", premium * 100)
-                        : "adding nothing to anybody's rate",
-                premium > 0 ? Palette.BAD : Palette.GOOD,
-                "What it can lend", "The gauge"));
-
-        column.getChildren().add(bankRow("Who owes it",
-                "the businesses, the treasury and the families — and who has stopped paying",
-                money(book),
-                written > 0 ? money(written) + " written off this month"
-                            : "nothing written off this month",
-                written > 0 ? Palette.WARN : Palette.TEXT_HEAD,
-                "Who owes it", "By borrower"));
-
-        column.getChildren().add(bankRow("Where the money comes from",
-                "savings it can reach, and the central bank's window for the rest",
-                money(bank.depositsGathered()),
+        /* ------------------------------ behind it ------------------------------ */
+        column.getChildren().add(statementHead("Behind it"));
+        HistorySave h = ui.game.getHistorySave();
+        column.getChildren().add(bankRow("Profit",
+                "its income statement, and what it did with the profit",
+                money(bank.getNetIncome()) + " this month",
+                money(bank.overYear(Bank.Line.NET)) + " over " + yearWords(bank),
+                bank.getNetIncome() < 0 ? Palette.BAD : Palette.GOOD, "Profit"));
+        int troubled = bank.getBooksWatched();
+        column.getChildren().add(bankRow("Lending",
+                "who owes it, what it has set aside, how the next loan is priced",
+                money(bank.getBook()) + " lent",
+                troubled > 0 ? troubled + (troubled == 1 ? " borrower" : " borrowers") + " in trouble"
+                        : "every borrower sound",
+                troubled > 0 ? Palette.WARN : Palette.TEXT_HEAD, "Lending"));
+        column.getChildren().add(bankRow("Funding",
+                "deposits, the central bank, and its branches",
+                money(bank.getDeposits()) + " deposited",
                 bank.wholesaleFunding() > 0
-                        ? money(bank.wholesaleFunding()) + " borrowed at the window"
-                        : "funded entirely by deposits",
-                bank.hotFundingShare() > .25 ? Palette.WARN : Palette.TEXT_HEAD,
-                "Where the money comes from", "Deposits"));
+                        ? money(bank.wholesaleFunding()) + " borrowed from the central bank"
+                        : "nothing borrowed from the central bank",
+                bank.wholesaleFunding() > 0 ? Palette.WARN : Palette.TEXT_HEAD, "Funding"));
+        column.getChildren().add(bankRow("Capital & owners",
+                "its capital against its target, its payout, its shares",
+                bank.isInsolvent() ? "failed"
+                        : bank.getWeightedBook() > 0 ? share(bank.capitalRatio()) + " capital" : "nothing lent",
+                bank.payoutDecision(), stanceTone(bank), "Capital & owners"));
+        column.getChildren().add(bankRow("History",
+                "its rates, capital, returns and losses over time",
+                h.months() + (h.months() == 1 ? " month" : " months"),
+                h.months() < 2 ? "a line needs two points" : "recorded",
+                Palette.TEXT_HEAD, "History"));
 
-        column.getChildren().add(bankRow("The books",
-                "what it made this month, and what it is standing on",
-                money(bank.getNetIncome()) + "/mo",
-                String.format("%.1f%% capital against a required %.0f%%",
-                        Math.min(999, bank.capitalRatio()) * 100, Bank.CAPITAL_RATIO * 100),
-                bank.getNetIncome() < 0 ? Palette.BAD : Palette.GOOD,
-                "The books", "Income"));
-
-        int months = ui.game.getHistorySave().months();
-        column.getChildren().add(bankRow("Its history",
-                "how the book, the strain and the capital have moved",
-                months + (months == 1 ? " month" : " months"),
-                months < 2 ? "a line needs two points" : "recorded",
-                Palette.TEXT_HEAD,
-                "Its history", "Lending"));
-
-        ui.rootMenu.getChildren().addAll(title, lead, bankVitals(), ui.scrolled(column, 210));
+        ui.rootMenu.getChildren().addAll(title, lead, statusLine(bank),
+                scorecardTop(bank), scorecardBottom(bank), ui.scrolled(column, 330));
     }
 
-    /** One subject on the bank's landing page. */
-    HBox bankRow(String name, String blurb, String figure, String sub,
-                         String tone, String area, String page) {
+    /** The bank's state in one sentence, in the colour of the news. */
+    Label statusLine(Bank bank) {
+        Label says = new Label(bank.status());
+        says.setWrapText(true);
+        says.setMaxWidth(STATEMENT + 180);
+        says.setStyle(Palette.words(Palette.SIZE_BODY, stanceTone(bank))
+                + " -fx-font-weight: bold; -fx-padding: 0 0 8 0;");
+        return says;
+    }
+
+    /** Good at or over its target, a warning while it rebuilds, bad under the minimum or failed. */
+    static String stanceTone(Bank bank) {
+        return switch (bank.payoutStance()) {
+            case PAYING, RETURNING -> Palette.GOOD;
+            case REBUILDING        -> Palette.WARN;
+            case UNDER_MINIMUM, FAILED -> Palette.BAD;
+            case NO_BANK           -> Palette.TEXT_MUTED;
+        };
+    }
+
+    /* ------------------------------ the scorecard ------------------------------ */
+
+    /** What it earned, what that returns its owners, its capital, and its losses. */
+    HBox scorecardTop(Bank bank) {
+        double roe = bank.returnOnEquityOverYear();
+        double lost = bank.provisionRateOverYear();
+        return vitalsBar(
+                limitCell("PROFIT", money(bank.getNetIncome()),
+                        money(bank.overYear(Bank.Line.NET)) + " over " + yearWords(bank),
+                        bank.getNetIncome() < 0 ? Palette.BAD : Palette.GOOD),
+                limitCell("RETURN ON EQUITY", rate(roe),
+                        String.format("over %s; its owners want %.1f%%", yearWords(bank),
+                                Bank.requiredReturn() * 100),
+                        roe < 0 ? Palette.BAD : roe < Bank.requiredReturn() ? Palette.WARN : Palette.GOOD),
+                capitalCell(bank),
+                limitCell("CREDIT LOSSES", rate(lost),
+                        "set aside, of its loans, " + yearWords(bank),
+                        lost > 2 * Bank.BASE_LOSS_RATE ? Palette.WARN : Palette.TEXT_HEAD));
+    }
+
+    /** Its margin, its costs, and the two sides of its balance sheet a player knows by name. */
+    HBox scorecardBottom(Bank bank) {
+        double nim = bank.netInterestMarginOverYear();
+        double costs = bank.costShareOverYear();
+        return vitalsBar(
+                limitCell("INTEREST MARGIN", rate(nim),
+                        "net, on what it lent, " + yearWords(bank),
+                        nim < 0 ? Palette.BAD : Palette.TEXT_HEAD),
+                limitCell("COSTS", Double.isNaN(costs) ? "—" : share(costs),
+                        Double.isNaN(costs) ? "it earned nothing to set them against"
+                                : "of what it earns, " + yearWords(bank),
+                        Double.isNaN(costs) || costs > 1 ? Palette.BAD : Palette.TEXT_HEAD),
+                limitCell("LENT OUT", money(bank.getBook()), "at face value", Palette.TEXT_HEAD),
+                limitCell("DEPOSITS", money(bank.getDeposits()), "banked with it", Palette.TEXT_HEAD));
+    }
+
+    /**
+     * The capital ratio with its band drawn under it: the minimum, the bank's
+     * own target and the top of its band, and where it stands against them.
+     * limitCell()'s shape, with the bar where its note would start.
+     */
+    VBox capitalCell(Bank bank) {
+        boolean lent = bank.getWeightedBook() > 0;
+
+        Label what = new Label("CAPITAL RATIO");
+        what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+
+        Label figure = new Label(bank.isInsolvent() ? "failed" : lent ? share(bank.capitalRatio()) : "—");
+        figure.setStyle(Palette.figure(Palette.SIZE_SECTION, stanceTone(bank)));
+
+        Label says = new Label(String.format("target %s, minimum %s",
+                share(bank.capitalTarget()), share(Bank.CAPITAL_RATIO)));
+        says.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+
+        VBox cell = new VBox(1, what, figure, capitalBand(bank, 150, false), says);
+        cell.setAlignment(Pos.CENTER_LEFT);
+        cell.setPrefWidth(190);
+        cell.setStyle("-fx-padding: 0 14 0 14;"
+                + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 1 0 0;");
+        return cell;
+    }
+
+    /**
+     * The capital ratio on a bar, with the minimum, the target and the top
+     * of the band marked on it. The scale runs to 1.6 times the top, so the
+     * band sits in the left of it and a well-capitalised bank reads as full;
+     * a ratio past the scale pins at the end and the tooltip says so.
+     */
+    Pane capitalBand(Bank bank, double width, boolean labelled) {
+
+        double min = Bank.CAPITAL_RATIO, target = bank.capitalTarget(), top = bank.capitalTop();
+        double scale = top * 1.6;
+        boolean lent = bank.getWeightedBook() > 0;
+        double ratio = bank.isInsolvent() ? 0 : lent ? bank.capitalRatio() : 0;
+        final double BAR = labelled ? 14 : 7;
+        double tall = labelled ? BAR + 18 : BAR + 4;
+
+        Pane band = new Pane();
+        band.setPrefSize(width, tall);
+        band.setMinSize(width, tall);
+        band.setMaxSize(width, tall);
+
+        Region track = new Region();
+        track.setPrefSize(width, BAR);
+        track.setMinSize(width, BAR);
+        track.setMaxSize(width, BAR);
+        track.setLayoutY(2);
+        track.setStyle("-fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: 2;");
+        band.getChildren().add(track);
+
+        double wide = Math.max(lent ? 2 : 0, Math.min(1, ratio / scale) * width);
+        Region fill = new Region();
+        fill.setPrefSize(wide, BAR);
+        fill.setMinSize(wide, BAR);
+        fill.setMaxSize(wide, BAR);
+        fill.setLayoutY(2);
+        fill.setStyle("-fx-background-color: "
+                + (ratio < min ? Palette.BAD : ratio < target ? Palette.WARN : Palette.GOOD)
+                + "; -fx-background-radius: 2;");
+        band.getChildren().add(fill);
+
+        double[] marks = {min, target, top};
+        String[] names = {"minimum", "its target", "top of its band"};
+        for (int i = 0; i < marks.length; i++) {
+            double x = Math.min(width - 2, marks[i] / scale * width);
+            Region tick = new Region();
+            tick.setPrefSize(2, BAR + 4);
+            tick.setMinSize(2, BAR + 4);
+            tick.setMaxSize(2, BAR + 4);
+            tick.setLayoutX(x);
+            tick.setLayoutY(0);
+            tick.setStyle("-fx-background-color: " + (i == 1 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED) + ";");
+            band.getChildren().add(tick);
+            if (labelled) {
+                Label at = new Label(share(marks[i]));
+                at.setStyle(Palette.figure(Palette.SIZE_CAPTION, i == 1 ? Palette.TEXT_BODY : Palette.TEXT_LABEL)
+                        + " -fx-font-weight: normal;");
+                at.setLayoutX(Math.max(0, Math.min(width - 36, x - 14)));
+                at.setLayoutY(BAR + 5);
+                band.getChildren().add(at);
+            }
+        }
+
+        Tooltip tip = new Tooltip(String.format(
+                "Capital: %s of its risk-weighted book%s\nthe minimum the city requires: %s\n"
+                + "its own target: %s\nthe top of its band: %s",
+                bank.isInsolvent() ? "none - it has failed" : lent ? share(ratio) : "nothing lent",
+                lent && ratio > scale ? " (past the end of this scale)" : "",
+                share(min), share(target), share(top)));
+        tip.setShowDelay(Duration.millis(250));
+        Tooltip.install(band, tip);
+        return band;
+    }
+
+    /* ------------------------------ the rate ladder ------------------------------ */
+
+    /** How wide the ladder's bars run at the highest rate on it. */
+    static final double LADDER_BAR = 190;
+
+    /**
+     * THE LADDER OF ITS RATES, the landing's centrepiece: the policy rate;
+     * what savers get, a share of it; what a prime loan's money costs the
+     * bank; prime, with its four parts; and what each borrower pays - every
+     * rung with its step from the one it is built on, in points. One read of
+     * the model (Bank.ladder()), so every rung is the same moment's.
+     */
+    void ladder(VBox column, Bank bank) {
+
+        double dial = ui.game.getDebtManager().getPolicyRate();
+        Bank.Ladder l = bank.ladder(dial);
+        BusinessDebtManager credit = ui.game.getEconomyManager().getBusinessDebtManager();
+        HouseholdBalance homes = ui.game.getHouseholdBalance();
+        double families = homes == null ? 0 : homes.averageRate();
+        double city = ui.game.getInterestRate();
+
+        List<String> owing = new ArrayList<>();
+        for (String name : Sectors.KEYS) {
+            if (credit.getPrincipal(name) > 0 || credit.isBorrowingBlocked(name)) owing.add(name);
+        }
+
+        // One scale for every bar: the dearest rate on the ladder.
+        double top = Math.max(Math.max(l.prime(), l.carry()), Math.max(families, city));
+        top = Math.max(top, Math.max(l.policy(), l.household()));
+        for (String name : owing) top = Math.max(top, credit.getRate(name));
+
+        column.getChildren().add(statementHead("The ladder of its rates"));
+        column.getChildren().add(statementNote(
+                "From the price of money to what each borrower pays. Every step up is a cost "
+                + "the bank carries; the step down is its margin on a deposit."));
+
+        column.getChildren().add(rung("The policy rate", l.policy(), top, Palette.ACCENT,
+                "set by the central bank - and what the bank's reserves earn there",
+                "Go to the policy rate, which every rate here is built on",
+                () -> {
+                    ui.policyScreen.policyArea = "Money";
+                    ui.policyScreen.policyPage = "The policy rate";
+                    ui.policyScreen.dropProposal();
+                    ui.innerScrollAt.remove("showPolicyMenu:body");
+                    ui.policyScreen.showPolicyMenu();
+                }));
+
+        column.getChildren().add(rung("What savers get", l.savers(), top, Palette.LADDER[0],
+                points(l.saversOverPolicy()) + " on the policy rate. " + saversWhy(l),
+                null, null));
+
+        column.getChildren().add(rung("What a loan's money costs it", l.transfer(), top, Palette.LADDER[1],
+                points(l.transferOverPolicy()) + " on the policy rate: the term premium on a "
+                        + Bank.PRIME_TERM_MONTHS + "-month loan"
+                        + (bank.windowShare() > 0
+                                ? String.format(", and the central bank's %.2f-point penalty on the %.0f%% it borrows there",
+                                        CentralBank.WINDOW_PENALTY * 100, bank.windowShare() * 100)
+                                : ""),
+                "The funds-transfer price: what a dollar lent for a business loan's term costs the "
+                        + "bank - not what its deposits cost it, which is the deposit side's margin.",
+                null));
+
+        column.getChildren().add(rung("Prime", l.prime(), top, Palette.LADDER[2],
+                String.format("%s on that: running the bank %s, loans expected to go bad %s, "
+                        + "the capital a loan ties up %s", points(l.primeOverTransfer()),
+                        points(l.running()), points(l.loss()), points(l.capital())),
+                "What a sound business pays for a new loan. Every other borrower pays its own risk over it.",
+                null));
+
+        /* ------------------------------ the borrowers ------------------------------ */
+        column.getChildren().add(subHead("What each borrower pays to borrow now"));
+        if (owing.isEmpty()) {
+            column.getChildren().add(statementNote(
+                    "No business owes it anything. Each would borrow at prime and its own risk over it."));
+        }
+        for (String name : owing) {
+            boolean shut = credit.isBorrowingBlocked(name);
+            // Its own expected loss over the book's, off the curve at the
+            // leverage its last quarter reads (getRiskSpread(), since 0.7.8's
+            // round 3), and its record (PRICING FROM THE CURVE) - printed with
+            // the default rate and leverage that price is struck on, the
+            // quarter's (getQuarterDefaultRate(), getQuarterLeverage()), so the
+            // price follows from the figures beside it. The Lending table's
+            // leverage column is the month's, which is what the defaults read.
+            double record = credit.getRecordSurcharge(name);
+            column.getChildren().add(rung(name, credit.getRate(name), top, Palette.LADDER[2],
+                    String.format("%s on prime: its own expected loss %s - %s of its firms default a year "
+                            + "at %.2fx its assets over its last quarter%s", points(credit.getSpread(name)),
+                            points(credit.getRiskSpread(name)), defaultShare(credit.getQuarterDefaultRate(name)),
+                            credit.getQuarterLeverage(name),
+                            record > 0 ? ", and its record " + points(record) : "")
+                            + (shut ? String.format(" - shut out for %d more months", credit.getBlockedMonths(name)) : ""),
+                    null, null));
+        }
+        column.getChildren().add(rung("The families", families > 0 ? families : l.household(), top,
+                Palette.SPENDING_RAMP[2],
+                families > 0
+                        ? String.format("%s on prime, on average: their line starts at %s and adds %.2f points "
+                                + "for every month of income a family owes", points(l.overPrime(families)),
+                                rate(l.household()), HouseholdBalance.RISK_SLOPE * 100)
+                        : "what a family's credit line starts from - no family owes it anything",
+                null, null));
+        column.getChildren().add(rung("The carry trade", l.carry(), top, Palette.RAMP_REST,
+                points(l.overPrime(l.carry())) + " on prime: lent short and to borrowers who never "
+                        + "default here, so no term premium and no expected loss",
+                "Foreigners borrowing here to hold the money abroad, while the bank lends cheaper "
+                        + "than the world pays.",
+                null));
+        column.getChildren().add(rung("The city's own paper", city, top, Palette.RAMP_REST,
+                points(l.overPrime(city)) + " on prime: the city's rate, which the market sets on its "
+                        + "credit - the bank does not price it",
+                null, null));
+    }
+
+    /** Why savers get what they get: the share its funding asks for, and whether its margin held them under it. */
+    static String saversWhy(Bank.Ladder l) {
+        String why = l.fundingPosition() <= 0 ? "it holds reserves to spare"
+                : l.fundingPosition() >= 1 ? "it borrows from the central bank"
+                : String.format("it has lent %.0f%% of what its branches gathered", l.fundingPosition() * 100);
+        String said = String.format("It aims to pass on %.0f%% of it, because %s, and moves a sixth "
+                + "of the way there a month.", l.saversShare() * 100, why);
+        if (l.saversHeld()) {
+            said += String.format(" Its margin could not pay the %.2f%% it chose, so savers got less.",
+                    l.saversChose() * 100);
+        }
+        return said;
+    }
+
+    /**
+     * One rung: its name (a link where the rate is set somewhere else), a bar
+     * on the ladder's one scale, the rate, and under them its step from the
+     * rung it is built on and what the step is for.
+     */
+    VBox rung(String name, double value, double top, String colour, String step,
+              String explain, Runnable go) {
+
+        Label who = new Label(go == null ? name : name + "  ›");
+        who.setStyle(Palette.words(Palette.SIZE_BODY, go == null ? Palette.TEXT_BODY : Palette.ACCENT));
+        who.setPrefWidth(190);
+        who.setMinWidth(190);
+        if (explain != null) {
+            Tooltip tip = new Tooltip(explain);
+            tip.setShowDelay(Duration.millis(250));
+            tip.setWrapText(true);
+            tip.setMaxWidth(360);
+            Tooltip.install(who, tip);
+        }
+
+        double wide = top > 0 ? Math.max(2, Math.min(1, Math.max(0, value) / top) * LADDER_BAR) : 2;
+        Region bar = new Region();
+        bar.setPrefSize(wide, 12);
+        bar.setMinSize(wide, 12);
+        bar.setMaxSize(wide, 12);
+        bar.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
+        HBox lane = new HBox(bar);
+        lane.setAlignment(Pos.CENTER_LEFT);
+        lane.setPrefWidth(LADDER_BAR);
+        lane.setMinWidth(LADDER_BAR);
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+
+        Label figure = new Label(rate(value));
+        figure.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+
+        HBox row = new HBox(Palette.GAP, who, lane, gap, figure);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(STATEMENT);
+        row.setPrefWidth(STATEMENT);
+
+        Label under = new Label(step);
+        under.setWrapText(true);
+        under.setMaxWidth(STATEMENT - 16);
+        under.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 0 0 0 14;");
+
+        VBox box = new VBox(1, row, under);
+        box.setMaxWidth(STATEMENT);
+        box.setStyle("-fx-padding: 4 0 4 0;");
+
+        if (go != null) {
+            String rest = box.getStyle();
+            box.setStyle(rest + " -fx-cursor: hand;");
+            box.setOnMouseEntered(e -> box.setStyle(rest + " -fx-cursor: hand;"
+                    + " -fx-background-color: " + Palette.CONTROL + ";"));
+            box.setOnMouseExited(e -> box.setStyle(rest + " -fx-cursor: hand;"));
+            box.setOnMouseClicked(e -> go.run());
+        }
+        return box;
+    }
+
+    /** Opens one page behind the landing, at its top - the landing's rows, and the inbox's "defaults" notice (0.7.8). */
+    void openPage(String page) {
+        bankArea = BANK_PAGES;
+        bankPage = page;
+        ui.innerScrollAt.remove("showBankMenu:body");
+        showBankMenu();
+    }
+
+    /** One page on the landing: what it holds, and its headline. */
+    HBox bankRow(String name, String blurb, String figure, String sub, String tone, String page) {
 
         Label heading = new Label(name);
         heading.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
@@ -216,12 +578,7 @@ final class BankScreen {
         row.setMaxWidth(STATEMENT);
         String rest = "-fx-padding: 10 12 10 12; -fx-cursor: hand;";
         row.setStyle(rest + Palette.block(Palette.CONTROL));
-        row.setOnMouseClicked(e -> {
-            bankArea = area;
-            bankPage = page;
-            ui.innerScrollAt.remove("showBankMenu:body");
-            showBankMenu();
-        });
+        row.setOnMouseClicked(e -> openPage(page));
         row.setOnMouseEntered(e -> row.setStyle(rest
                 + Palette.block(Palette.RAISED, Palette.ACCENT)));
         row.setOnMouseExited(e -> row.setStyle(rest + Palette.block(Palette.CONTROL)));
@@ -229,61 +586,22 @@ final class BankScreen {
         return row;
     }
 
-    /** The four figures that are true of the whole tab. */
-    HBox bankVitals() {
-
-        Bank bank = ui.game.getBank();
-        double capacity = bank.capacity();
-        double premium = bank.ratePremium();
-
-        return vitalsBar(
-                // WEIGHED, and the caption has to say so: the face is $7.2B
-                // against a capacity of $4.3B, which is 167% - and the strain
-                // is 76%, because capacity is measured on the risk-weighted
-                // book. Two true numbers that look like a contradiction.
-                limitCell("LENT OUT", money(bank.getBook()),
-                        capacity > 0
-                                ? String.format("weighed, %.0f%% of capacity", bank.strain() * 100)
-                                : "against no capacity at all",
-                        bank.strain() > Bank.EASY_STRAIN ? Palette.BAD : Palette.TEXT_HEAD),
-                limitCell("IT CAN CARRY", money(capacity),
-                        bank.capacityWith(bank.getBranches()) <= 0 ? "nothing"
-                                : bank.capitalBound() ? "capital is the limit"
-                                : "deposits are the limit",
-                        capacity > 0 ? Palette.TEXT_HEAD : Palette.BAD),
-                limitCell("IT ADDS", String.format("%.1f pts", premium * 100),
-                        "to every rate in the city",
-                        premium > 0 ? Palette.BAD : Palette.GOOD),
-                limitCell("EQUITY", money(bank.equity()),
-                        bank.getWeightedBook() > 0
-                                ? String.format("%.1f%% of its risk-weighted book",
-                                        Math.min(999, bank.capitalRatio()) * 100)
-                                : "nothing lent to weigh it against",
-                        bank.isInsolvent() ? Palette.BAD
-                                : bank.capitalRatio() < Bank.CAPITAL_RATIO * 1.5 ? Palette.WARN
-                                : Palette.GOOD));
-    }
-
     /* =====================================================================
-       ONE SUBJECT, ITS OWN STRIP
+       THE PAGES BEHIND IT
+
+       Five, on one chip strip: its profit; its lending; its funding; its
+       capital and its owners; and its history. Four figures across the top
+       of every one, so a page never loses the state of the whole bank.
        ===================================================================== */
 
     void drawBankScreen() {
 
-        String[] pages = switch (bankArea) {
-            case "Who owes it"                -> BANK_OWED_PAGES;
-            case "Where the money comes from" -> BANK_MONEY_PAGES;
-            case "The books"                  -> BANK_BOOKS_PAGES;
-            case "Its history"                -> BANK_PAST_PAGES;
-            default                           -> BANK_LEND_PAGES;
-        };
-
-        Label title = new Label(bankArea.toUpperCase());
+        Label title = new Label("THE BANK — " + bankPage.toUpperCase());
         title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
                 + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
 
         javafx.scene.layout.FlowPane strip =
-                chipStrip(pages, bankPage, Palette.SIZE_LABEL, name -> {
+                chipStrip(BANK_PAGE_NAMES, bankPage, Palette.SIZE_LABEL, name -> {
                     bankPage = name;
                     ui.innerScrollAt.remove("showBankMenu:body");
                     showBankMenu();
@@ -294,968 +612,220 @@ final class BankScreen {
         column.setAlignment(Pos.TOP_LEFT);
         column.setMaxWidth(Region.USE_PREF_SIZE);
 
-        switch (bankArea) {
-            case "Who owes it" -> {
-                if ("In trouble".equals(bankPage)) bankTroublePage(column);
-                else                               bankBorrowerPage(column);
-            }
-            case "Where the money comes from" -> {
-                if ("Funding".equals(bankPage)) bankFundingPage(column);
-                else                            bankDepositPage(column);
-            }
-            case "The books" -> {
-                if ("Balance sheet".equals(bankPage)) bankBalancePage(column);
-                else                                  bankIncomePage(column);
-            }
-            case "Its history" -> bankHistoryPage(column, bankPage);
-            default -> {
-                switch (bankPage) {
-                    case "The two limits"  -> bankLimitsPage(column);
-                    case "Another branch"  -> bankBranchPage(column);
-                    default                -> bankGaugePage(column);
-                }
-            }
+        switch (bankPage) {
+            case "Lending"          -> lendingPage(column);
+            case "Funding"          -> fundingPage(column);
+            case "Capital & owners" -> capitalPage(column);
+            case "History"          -> historyPage(column);
+            default                 -> profitPage(column);
         }
 
-        Button back = new Button("All of the bank");
+        Button back = new Button("The bank at a glance");
         back.setOnAction(e -> {
             bankArea = null;
             ui.innerScrollAt.remove("showBankMenu:body");
             showBankMenu();
         });
 
-        ui.rootMenu.getChildren().addAll(title, bankVitals(), strip,
+        ui.rootMenu.getChildren().addAll(title, pageVitals(), strip,
                 ui.scrolled(column, 250), back);
     }
 
-    /* =====================================================================
-       THE GAUGE
-
-       ONE PICTURE FOR THE WHOLE TAB. The bank's strain is the number that
-       decides what every borrower in the city pays, and it was four lines of
-       monospace saying "Lent out, as a share  167%". A percentage with no
-       scale behind it cannot say whether 167% is fine or fatal - and the
-       answer is that 80% is where it starts to hurt and 150% is where it has
-       hurt as much as it can.
-
-       So: an arc with the bands drawn on it, the needle where the bank is, and
-       the premium in the middle. The bands are the whole point; the needle
-       alone would be the same number in a rounder shape.
-       ===================================================================== */
-
-    /** The top of the gauge's scale, as a multiple of capacity. */
-    static final double GAUGE_MAX = 2.0;
-
-    void bankGaugePage(VBox column) {
-
+    /** The four figures across the top of every page. */
+    HBox pageVitals() {
         Bank bank = ui.game.getBank();
-        double capacity = bank.capacity();
-        double weighted = bank.getWeightedBook();
-        double strain = bank.strain();
-        double premium = bank.ratePremium();
-
-        column.getChildren().add(statementHead("How hard the bank is working"));
-
-        if (capacity <= 0 && weighted <= 0) {
-            column.getChildren().add(sentence(
-                    "Nothing lent and nothing to lend. Build a branch and this fills in.",
-                    Palette.TEXT_MUTED));
-            return;
-        }
-
-        HBox middle = new HBox(Palette.GAP_SECTION,
-                strainGauge(strain, premium, 260), gaugeKey(bank));
-        middle.setAlignment(Pos.CENTER_LEFT);
-        middle.setMaxWidth(STATEMENT);
-        column.getChildren().add(middle);
-
-        /* --------------------------- and in words --------------------------- */
-        column.getChildren().add(sentence(
-                premium <= 0
-                    ? String.format("The bank is inside itself. It has %s of room before "
-                        + "the premium starts, and while that lasts nobody in the city is "
-                        + "paying anything for the state of its bank.",
-                        money(bank.headroom()))
-                    : strain >= Bank.HARD_STRAIN
-                    ? String.format("The bank is lending half again what it can carry. The "
-                        + "premium is at its maximum of %.0f points and cannot get worse — "
-                        + "which is not good news, it means the price has stopped "
-                        + "responding to the problem.", Bank.MAX_STRAIN_PREMIUM * 100)
-                    : String.format("Past %.0f%% the strain is priced, and it is being "
-                        + "priced: %.1f points on every loan in the city. It reaches its "
-                        + "maximum of %.0f points at %.0f%%.",
-                        Bank.EASY_STRAIN * 100, premium * 100,
-                        Bank.MAX_STRAIN_PREMIUM * 100, Bank.HARD_STRAIN * 100),
-                premium <= 0 ? Palette.GOOD : Palette.BAD_TEXT));
-
-        /* ------------------------ what it is measured on ------------------------ */
-        column.getChildren().add(statementHead("The figures behind it"));
-
-        column.getChildren().add(statementLine("Lent out, at face",
-                moneyFull(bank.getBook())));
-        column.getChildren().add(statementLine("...weighed for risk and term",
-                moneyFull(weighted), Palette.TEXT_HEAD));
-        column.getChildren().add(statementLine("What it can carry",
-                moneyFull(capacity), Palette.TEXT_HEAD));
-        column.getChildren().add(statementTotal("Which is",
-                capacity > 0 ? String.format("%.0f%% of capacity", strain * 100)
-                             : "past any capacity at all",
-                premium > 0 ? Palette.BAD : Palette.GOOD));
-
-        column.getChildren().add(statementNote(String.format(
-                "The strain is measured on the WEIGHTED book, not the face. A treasury "
-                + "bill is sovereign and short, so it weighs %.0f%% of what a business "
-                + "loan does — the bank is holding it instead of cash rather than lending "
-                + "against it. The relief is worth %s today.",
-                Bank.RISK_CITY * 100,
-                money(bank.getBook() - weighted))));
-
-        /* --------------------------- who pays for it --------------------------- */
-        if (premium > 0) {
-            column.getChildren().add(statementHead("What that costs the city"));
-
-            DebtManager market = ui.game.getDebtManager();
-            column.getChildren().add(statementLine("The city's own paper",
-                    String.format("%.2f%%   ·   %.2f%% of it is the bank",
-                            market.getRate() * 100, premium * 100), Palette.BAD));
-            column.getChildren().add(statementNote(
-                    "And the same points are on every business loan and every household "
-                    + "overdraft in the city. This is the one figure on any screen in the "
-                    + "game that moves everybody's costs at once."));
-        }
-    }
-
-    /**
-     * An arc with the bands on it, the needle where the bank is, and the
-     * premium in the hole.
-     *
-     * A HALF CIRCLE rather than a full one, because a gauge that can read past
-     * its own end has to look like it does: the scale stops at twice capacity
-     * and the needle pins there, which is honest about a city with no bank
-     * (strain is infinite) rather than drawing it as a full ring that happens
-     * to have gone round.
-     */
-    StackPane strainGauge(double strain, double premium, double size) {
-
-        javafx.scene.layout.Pane face = new javafx.scene.layout.Pane();
-        face.setPrefSize(size, size * .62);
-        face.setMinSize(size, size * .62);
-        face.setMaxSize(size, size * .62);
-
-        double cx = size / 2;
-        double cy = size * .56;
-        double radius = (size - Palette.RING) / 2;
-
-        /* ------------------------------ the bands ------------------------------ */
-        double[] edges = {0, Bank.EASY_STRAIN, Bank.HARD_STRAIN, GAUGE_MAX};
-        String[] tones = {Palette.GOOD, Palette.WARN, Palette.BAD};
-        String[] names = {"comfortable", "the premium is rising", "as bad as it gets"};
-
-        for (int i = 0; i < 3; i++) {
-            double from = 180 - edges[i] / GAUGE_MAX * 180;
-            double to   = 180 - edges[i + 1] / GAUGE_MAX * 180;
-            javafx.scene.shape.Arc band = new javafx.scene.shape.Arc(
-                    cx, cy, radius, radius, to, from - to);
-            band.setType(javafx.scene.shape.ArcType.OPEN);
-            band.setFill(null);
-            band.setStroke(javafx.scene.paint.Color.web(tones[i]));
-            band.setStrokeWidth(Palette.RING);
-            band.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.BUTT);
-            band.setOpacity(.28);
-            Tooltip.install(band, new Tooltip(String.format("%.0f%%–%.0f%% of capacity: %s",
-                    edges[i] * 100, edges[i + 1] * 100, names[i])));
-            face.getChildren().add(band);
-        }
-
-        /* ---------------------------- and the reading ---------------------------- */
-        double shown = Math.max(0, Math.min(GAUGE_MAX,
-                Double.isFinite(strain) ? strain : GAUGE_MAX));
-        double span = shown / GAUGE_MAX * 180;
-
-        javafx.scene.shape.Arc value = new javafx.scene.shape.Arc(
-                cx, cy, radius, radius, 180 - span, span);
-        value.setType(javafx.scene.shape.ArcType.OPEN);
-        value.setFill(null);
-        value.setStroke(javafx.scene.paint.Color.web(
-                premium <= 0 ? Palette.GOOD
-                        : shown >= Bank.HARD_STRAIN ? Palette.BAD : Palette.WARN));
-        value.setStrokeWidth(Palette.RING - 10);
-        value.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.BUTT);
-        face.getChildren().add(value);
-
-        /* -------------------------------- the mark -------------------------------- */
-        double angle = Math.toRadians(180 - span);
-        javafx.scene.shape.Line needle = new javafx.scene.shape.Line(
-                cx + Math.cos(angle) * (radius - Palette.RING / 2 - 4),
-                cy - Math.sin(angle) * (radius - Palette.RING / 2 - 4),
-                cx + Math.cos(angle) * (radius + Palette.RING / 2 + 4),
-                cy - Math.sin(angle) * (radius + Palette.RING / 2 + 4));
-        needle.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MAX));
-        needle.setStrokeWidth(2.5);
-        face.getChildren().add(needle);
-
-        /* ------------------------------- the ticks ------------------------------- */
-        double[] ticks = {0, Bank.EASY_STRAIN, Bank.HARD_STRAIN, GAUGE_MAX};
-        for (double tick : ticks) {
-            double a = Math.toRadians(180 - tick / GAUGE_MAX * 180);
-            Label mark = new Label(tick >= GAUGE_MAX
-                    ? String.format("%.0f%%+", tick * 100)
-                    : String.format("%.0f%%", tick * 100));
-            mark.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-            // CLAMPED INSIDE THE FACE. The ticks at the two ends sit on the
-            // horizontal, so their labels want to be a centimetre outside the
-            // pane - and a Pane does not grow for a child that is off its own
-            // left edge, it just clips it. The 0% mark was drawn as "%".
-            mark.setLayoutX(Math.max(0, Math.min(size - 34,
-                    cx + Math.cos(a) * (radius + Palette.RING / 2 + 14) - 14)));
-            mark.setLayoutY(cy - Math.sin(a) * (radius + Palette.RING / 2 + 14) - 6);
-            face.getChildren().add(mark);
-        }
-
-        /* ------------------------------- the middle ------------------------------- */
-        Label top = new Label(premium > 0 ? "IT IS ADDING" : "IT IS ADDING");
-        top.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-
-        Label figure = new Label(String.format("%.1f pts", premium * 100));
-        figure.setStyle(Palette.figure(Palette.SIZE_TITLE,
-                premium > 0 ? Palette.BAD : Palette.GOOD));
-
-        Label under = new Label("to every rate");
-        under.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-
-        VBox hole = new VBox(-2, top, figure, under);
-        hole.setAlignment(Pos.CENTER);
-        hole.setTranslateY(size * .10);
-
-        StackPane box = new StackPane(face, hole);
-        StackPane.setAlignment(hole, Pos.CENTER);
-        box.setPrefSize(size, size * .62);
-        box.setMinSize(size, size * .62);
-        box.setMaxSize(size, size * .62);
-        return box;
-    }
-
-    /** The three bands, said in words beside the gauge. */
-    VBox gaugeKey(Bank bank) {
-
-        VBox key = new VBox(6);
-        key.setAlignment(Pos.CENTER_LEFT);
-
-        double strain = bank.strain();
-        double[] edges = {0, Bank.EASY_STRAIN, Bank.HARD_STRAIN, GAUGE_MAX};
-        String[] tones = {Palette.GOOD, Palette.WARN, Palette.BAD};
-        String[] names = {"Comfortable", "Paying for it", "As bad as it gets"};
-        String[] blurbs = {
-            "nothing added to anybody's rate",
-            "the premium rises with every dollar",
-            "the price has stopped responding"
-        };
-
-        for (int i = 0; i < 3; i++) {
-            boolean here = strain >= edges[i]
-                    && (i == 2 || strain < edges[i + 1]);
-
-            Region dot = new Region();
-            dot.setMinSize(10, 10);
-            dot.setPrefSize(10, 10);
-            dot.setMaxSize(10, 10);
-            dot.setStyle("-fx-background-color: " + tones[i] + "; -fx-background-radius: 2;"
-                    + (here ? "" : " -fx-opacity: .35;"));
-
-            Label name = new Label(i == 2
-                    ? String.format("%s  %.0f%% and up", names[i], edges[i] * 100)
-                    : String.format("%s  %.0f–%.0f%%",
-                            names[i], edges[i] * 100, edges[i + 1] * 100));
-            name.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                    here ? Palette.TEXT_HEAD : Palette.TEXT_LABEL)
-                    + (here ? " -fx-font-weight: bold;" : ""));
-
-            Label what = new Label("     " + blurbs[i]);
-            what.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                    here ? Palette.TEXT_MUTED : Palette.TEXT_SPENT));
-
-            HBox head = new HBox(6, dot, name);
-            head.setAlignment(Pos.CENTER_LEFT);
-            key.getChildren().addAll(head, what);
-        }
-
-        key.getChildren().add(bookNote(""));
-        key.getChildren().add(bookNote("the needle is this bank, today"));
-        return key;
+        double dial = ui.game.getDebtManager().getPolicyRate();
+        return vitalsBar(
+                limitCell("PROFIT", money(bank.getNetIncome()), "this month",
+                        bank.getNetIncome() < 0 ? Palette.BAD : Palette.GOOD),
+                limitCell("CAPITAL RATIO",
+                        bank.isInsolvent() ? "failed" : bank.getWeightedBook() > 0 ? share(bank.capitalRatio()) : "—",
+                        "its target " + share(bank.capitalTarget()), stanceTone(bank)),
+                limitCell("PRIME", rate(bank.prime(dial)), "what a sound business pays", Palette.TEXT_HEAD),
+                limitCell("LENT OUT", money(bank.getBook()), "at face value", Palette.TEXT_HEAD));
     }
 
     /* =====================================================================
-       THE TWO LIMITS
+       PROFIT
 
-       Jerus, when this model was written: "i just want it to be what banks
-       do." What banks do is be held back by exactly two things, and which of
-       the two binds decides what the city should do about it - so the screen
-       has to say which, rather than printing both and the smaller one.
+       Its income statement this month against last, every line opening
+       into what it is made of - the interest by who paid it, since 0.7.9
+       (the old page said it "cannot be split further", and it could) -
+       then what it did with the profit, the last twelve months, and the
+       three ratios a bank is read by.
        ===================================================================== */
 
-    void bankLimitsPage(VBox column) {
+    void profitPage(VBox column) {
 
         Bank bank = ui.game.getBank();
+        boolean known = bank.knowsLastMonth();
+
+        column.getChildren().add(statementHead("Its income statement"));
+        column.getChildren().add(bookHead(CityCalendar.format(ui.game.getMonth())));
+
+        VBox byWho = new VBox(0);
+        byWho.getChildren().addAll(
+                line(bank, "From the businesses", Bank.Line.FROM_BUSINESSES, known, false),
+                line(bank, "From the families", Bank.Line.FROM_HOUSEHOLDS, known, false),
+                line(bank, "From the city, on its paper", Bank.Line.FROM_CITY, known, false),
+                line(bank, "The discount on the city's paper, as it is earned", Bank.Line.DISCOUNT, known, false),
+                line(bank, "From the carry trade", Bank.Line.FROM_CARRY, known, false),
+                line(bank, "On its reserves at the central bank", Bank.Line.FROM_RESERVES, known, false));
+        column.getChildren().add(bookLine("Interest earned",
+                bank.thisMonth(Bank.Line.INTEREST), bank.lastMonth(Bank.Line.INTEREST), known,
+                Palette.GOOD_MONEY, byWho, "from whom", openLines));
+        column.getChildren().add(line(bank, "Paid to savers", Bank.Line.SAVERS, known, true));
+        column.getChildren().add(line(bank, "Paid for borrowing overnight from the central bank",
+                Bank.Line.WINDOW, known, true));
+        column.getChildren().add(total(bank, "Net interest income", Bank.Line.NET_INTEREST, known));
+
+        VBox fees = new VBox(0);
+        fees.getChildren().addAll(
+                line(bank, "On the families' accounts", Bank.Line.ACCOUNT_FEES, known, false),
+                line(bank, "On the businesses' new loans", Bank.Line.LOAN_FEES_PAID, known, false),
+                line(bank, "On the families' new borrowing, added to what they owe",
+                        Bank.Line.LOAN_FEES_OWED, known, false));
+        column.getChildren().add(bookLine("Fees",
+                bank.thisMonth(Bank.Line.FEES), bank.lastMonth(Bank.Line.FEES), known,
+                null, fees, "on what", openLines));
 
-        double byCapital = bank.capitalLimit();
-        double byFunding = bank.depositsGathered() * Bank.LEVERAGE;
-        double capacity = bank.capacity();
-        double weighted = bank.getWeightedBook();
-        boolean capitalBinds = bank.capitalBound();
-
-        column.getChildren().add(statementHead("What holds the bank back"));
-
-        column.getChildren().add(limitBar("Its capital",
-                String.format("equity of %s at the required %.0f%%",
-                        money(bank.equity()), Bank.CAPITAL_RATIO * 100),
-                byCapital, weighted, capitalBinds));
-
-        column.getChildren().add(limitBar("The deposits it can reach",
-                String.format("%s gathered, lent %.0f times over",
-                        money(bank.depositsGathered()), Bank.LEVERAGE),
-                byFunding, weighted, !capitalBinds));
-
-        column.getChildren().add(statementTotal("The tighter of the two",
-                moneyFull(capacity), Palette.TEXT_HEAD));
-
-        column.getChildren().add(sentence(capitalBinds
-                ? "CAPITAL is the limit. Another branch would not help much — what this "
-                + "bank needs is to earn, or to be given some. A bank that loses money "
-                + "must lend less, which is what turns a run of write-offs into a credit "
-                + "crunch rather than a bad month."
-                : "DEPOSITS are the limit. The city has savings this bank cannot reach, and "
-                + "reaching them is what branches are actually for. Another counter buys "
-                + "real capacity here.",
-                Palette.TEXT_BODY));
-
-        /* ------------------------- what a dollar weighs ------------------------- */
-        column.getChildren().add(statementHead("What a dollar of the book weighs"));
-
-        javafx.scene.layout.GridPane w = grid(
-                new double[] {206, 110, 120, 130}, rightAfterFirst(4));
-        gridHead(w, "", "at face", "risk weight", "against capacity");
-
-        int line = 1;
-        line = weightRow(w, line, "The treasury", bank.getCityBook(), Bank.RISK_CITY);
-        line = weightRow(w, line, "The businesses", bank.getSectorBook(), Bank.RISK_BUSINESS);
-        line = weightRow(w, line, "The families", bank.getHouseholdBook(), Bank.RISK_HOUSEHOLD);
-        line = weightRow(w, line, "The carry trade", bank.getCarryBook(), Bank.RISK_CARRY);
-        column.getChildren().add(w);
-
-        column.getChildren().add(statementLine("Face value of the book",
-                moneyFull(bank.getBook())));
-        column.getChildren().add(statementTotal("Weighed for risk and term",
-                moneyFull(weighted), Palette.TEXT_HEAD));
-        column.getChildren().add(statementLine("Which is a relief of",
-                String.format("%.0f%%", bank.weightingRelief() * 100), Palette.GOOD));
-
-        column.getChildren().add(statementNote(String.format(
-                "Sovereign paper does not default and short paper repays itself before you "
-                + "have finished worrying about it, so a treasury bill ties up %.0f%% of "
-                + "what a business loan of the same size does — and a loan with under %.0f "
-                + "months to run weighs as little as %.0f%% of its face. A bank holds bills "
-                + "INSTEAD of cash, which is the opposite of treating them as risk.",
-                Bank.RISK_CITY * 100, Bank.LONG_TERM_MONTHS, Bank.SHORTEST_WEIGHT * 100)));
-
-        /* ------------------------------- the ratio ------------------------------- */
-        column.getChildren().add(statementHead("The ratio a regulator reads"));
-        column.getChildren().add(statementLine("Equity", moneyFull(bank.equity()),
-                bank.equity() < 0 ? Palette.BAD : null));
-        column.getChildren().add(statementLine("Against the weighted book",
-                weighted > 0 ? String.format("%.1f%%", Math.min(999, bank.capitalRatio()) * 100)
-                             : "nothing lent",
-                bank.capitalRatio() < Bank.CAPITAL_RATIO ? Palette.BAD
-                        : bank.capitalRatio() < Bank.CAPITAL_RATIO * 1.5 ? Palette.WARN
-                        : Palette.GOOD));
-        column.getChildren().add(statementLine("Required",
-                String.format("%.0f%%", Bank.CAPITAL_RATIO * 100), Palette.TEXT_MUTED));
-
-        if (bank.recapitalisationNeeded() > 0) {
-            column.getChildren().add(alert("It is under its required ratio",
-                    String.format("%s of capital short. Until that is made good — by "
-                    + "earning it or by being given it — the bank cannot lend against the "
-                    + "book it already has, let alone a new one.",
-                    money(bank.recapitalisationNeeded()))));
-        }
-    }
-
-    int weightRow(javafx.scene.layout.GridPane table, int line,
-                          String label, double face, double weight) {
-        table.add(gridCell(label, Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-        table.add(gridCell(money(face), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
-        table.add(gridCell(String.format("%.0f%%", weight * 100),
-                weight < 1 ? Palette.GOOD : Palette.TEXT_MUTED,
-                Palette.SIZE_CAPTION, true), 2, line);
-        table.add(gridCell("up to " + money(face * weight), Palette.TEXT_MUTED,
-                Palette.SIZE_CAPTION, true), 3, line);
-        return line + 1;
-    }
-
-    /**
-     * One of the two limits, with the book drawn into it.
-     *
-     * EACH BAR IS ITS OWN LIMIT rather than both being drawn on a shared
-     * scale, and that was the second attempt. A shared scale is the honest
-     * picture of which limit is bigger - and on a real city it is a full-width
-     * grey bar for the capital next to a two-pixel sliver for the deposits,
-     * which answers a question nobody asked. The question is "has the book run
-     * into this one", so the bar is the limit and the fill is the book.
-     *
-     * The fill runs past the end when it has, because a limit that has been
-     * exceeded is exactly the state worth drawing.
-     */
-    VBox limitBar(String name, String how, double limit,
-                          double book, boolean binds) {
-
-        final double WIDE = STATEMENT - 60;
-        double used = limit > 0 ? book / limit : (book > 0 ? 2 : 0);
-
-        Label label = new Label(name + (binds ? "   \u2190 the binding one" : ""));
-        label.setStyle(Palette.words(Palette.SIZE_BODY,
-                binds ? Palette.WARN : Palette.TEXT_BODY)
-                + (binds ? " -fx-font-weight: bold;" : ""));
-
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-
-        Label figure = new Label(money(limit));
-        figure.setStyle(Palette.figure(Palette.SIZE_BODY,
-                binds ? Palette.WARN : Palette.TEXT_MUTED));
-
-        HBox head = new HBox(Palette.GAP_TIGHT, label, gap, figure);
-        head.setAlignment(Pos.CENTER_LEFT);
-        head.setMaxWidth(STATEMENT);
-
-        Region track = new Region();
-        track.setPrefSize(WIDE, 14);
-        track.setMinSize(WIDE, 14);
-        track.setMaxSize(WIDE, 14);
-        track.setStyle("-fx-background-color: " + Palette.CONTROL
-                + "; -fx-background-radius: 3;");
-
-        // MAX SIZE AS WELL AS PREF. A StackPane stretches its children to its
-        // own width unless they refuse, and a Region that only sets prefWidth
-        // does not refuse - which drew every bar full-width whatever it held.
-        double w = Math.max(2, Math.min(1, used) * WIDE);
-        Region fill = new Region();
-        fill.setPrefSize(w, 14);
-        fill.setMinSize(w, 14);
-        fill.setMaxSize(w, 14);
-        fill.setStyle("-fx-background-color: "
-                + (used > 1 ? Palette.BAD : used > Bank.EASY_STRAIN ? Palette.WARN : Palette.GOOD)
-                + "; -fx-background-radius: 3;");
-        Tooltip.install(fill, new Tooltip(String.format(
-                "the weighted book, %s, is %.0f%% of this limit", moneyFull(book), used * 100)));
-
-        StackPane bar = new StackPane(track, fill);
-        StackPane.setAlignment(fill, Pos.CENTER_LEFT);
-        bar.setMaxWidth(WIDE);
-        bar.setAlignment(Pos.CENTER_LEFT);
-
-        Label caption = new Label(String.format("%s   \u00b7   the book uses %.0f%% of it%s",
-                how, used * 100, used > 1 ? " \u2014 it is past this one" : ""));
-        caption.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                used > 1 ? Palette.BAD : Palette.TEXT_LABEL));
-
-        VBox box = new VBox(2, head, bar, caption);
-        box.setMaxWidth(STATEMENT);
-        box.setStyle("-fx-padding: 6 0 12 0;");
-        return box;
-    }
-
-    /* =====================================================================
-       ANOTHER BRANCH
-
-       The one decision this screen exists to inform, and the one the old
-       screen could not: a branch is worth building when it buys capacity, and
-       it buys nothing at all when capital is what binds. The model already
-       knows the difference - capacityWith() and bookAnotherBranchWouldCarry()
-       are what the advisor uses - and the player could not see either.
-       ===================================================================== */
-
-    void bankBranchPage(VBox column) {
-
-        Bank bank = ui.game.getBank();
-        BuildingsTemplate branch = ui.game.getBuildingManager()
-                .getTemplateByName("Commercial Bank");
-
-        double now = bank.capacity();
-        double after = bank.capacityWith(bank.getBranches() + 1);
-        double buys = Math.max(0, after - now);
-        double carries = bank.bookAnotherBranchWouldCarry();
-
-        column.getChildren().add(statementHead("What one more counter would buy"));
-
-        column.getChildren().add(statementLine("Branches standing",
-                formatter.format(Math.round(bank.getBranches()))));
-        column.getChildren().add(statementLine("It can carry now", moneyFull(now)));
-        column.getChildren().add(statementLine("...and with one more",
-                moneyFull(after), buys > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
-        column.getChildren().add(statementTotal("Which buys",
-                buys > 0 ? moneyFull(buys) + " of capacity" : "nothing at all",
-                buys > 0 ? Palette.GOOD : Palette.BAD));
-
-        if (branch != null) {
-            column.getChildren().add(statementLine("What it costs to build",
-                    moneyFull(branch.getCashCost())));
-            column.getChildren().add(statementLine("...and to run",
-                    moneyFull(branch.getUpkeep()) + " a month", Palette.TEXT_MUTED));
-            column.getChildren().add(statementLine("Shareholders also put in",
-                    moneyFull(Bank.PAID_IN_PER_BRANCH), Palette.GOOD));
-            column.getChildren().add(statementNote(
-                    "Opening a branch is an equity injection as well as a building, which "
-                    + "is what incorporating a bank actually is — and it is why the first "
-                    + "branch in a city is worth building at all. A bank with no capital "
-                    + "has no capacity, and with no capacity it can never earn any."));
-        }
-
-        /* ------------------------------ the verdict ------------------------------ */
-        column.getChildren().add(statementHead("Is it worth it"));
-
-        if (bank.isInsolvent()) {
-            column.getChildren().add(alert("Not while the bank is frozen",
-                    "A failed bank may not lend, so its capacity is nothing and another "
-                    + "counter changes nothing. What it needs is capital. Left to itself an "
-                    + "advisor once built two thousand branches trying to fix this."));
-        } else if (buys <= 0) {
-            column.getChildren().add(alert("A counter cannot fix a shortage of savings",
-                    "The branches already standing can reach every dollar the city has "
-                    + "banked, so another one gathers nothing and adds no capacity. What "
-                    + "raises the ceiling from here is the city saving more, or the bank "
-                    + "earning more capital."));
-        } else if (carries <= 0) {
-            column.getChildren().add(sentence(String.format(
-                    "It would add %s of capacity, and the bank is not short of any. Nothing "
-                    + "is spilling over, so nothing is waiting for the room — build one "
-                    + "when the strain is near %.0f%%, not before.",
-                    money(buys), Bank.BUILD_AT_STRAIN * 100), Palette.TEXT_MUTED));
-        } else {
-            column.getChildren().add(sentence(String.format(
-                    "Yes. %s of the book is spilling past what this bank can comfortably "
-                    + "carry, and a new counter would take %s of it onto the bank's own "
-                    + "account instead of the market's. The private sector starts building "
-                    + "at %.0f%% strain on purpose — a branch takes months to put up, and "
-                    + "waiting for the premium means paying it for the whole of the lead "
-                    + "time.",
-                    money(Math.max(0, bank.getWeightedBook() - now * Bank.EASY_STRAIN)),
-                    money(carries), Bank.BUILD_AT_STRAIN * 100),
-                    Palette.GOOD));
-        }
-
-        if (bank.wantsBranch()) {
-            column.getChildren().add(statementNote(
-                    "The city's own investors think so too — this is the test they use, and "
-                    + "it is currently passing. A Commercial Bank is in the Build tab under "
-                    + "Commercial."));
-        }
-    }
-
-    /* =====================================================================
-       WHO OWES IT
-       ===================================================================== */
-
-    void bankBorrowerPage(VBox column) {
-
-        Bank bank = ui.game.getBank();
-        BusinessDebtManager credit = ui.game.getEconomyManager().getBusinessDebtManager();
-
-        double sector = bank.getSectorBook();
-        double city = bank.getCityBook();
-        double families = bank.getHouseholdBook();
-        double carry = bank.getCarryBook();
-        double all = sector + city + families + carry;
-
-        column.getChildren().add(statementHead("Who owes the bank money"));
-
-        if (all <= 0) {
-            column.getChildren().add(sentence("Nothing is lent out.", Palette.TEXT_MUTED));
-            return;
-        }
-
-        java.util.List<Slice> split = new java.util.ArrayList<>();
-        if (sector > 0)   split.add(new Slice("The businesses", sector, Palette.LADDER[1]));
-        if (city > 0)     split.add(new Slice("The treasury", city, Palette.LADDER[0]));
-        if (families > 0) split.add(new Slice("The families", families, Palette.SPENDING_RAMP[2]));
-        if (carry > 0)    split.add(new Slice("The carry trade", carry, Palette.LADDER[3]));
-        column.getChildren().add(stackedBar(split, STATEMENT - 40));
-
-        column.getChildren().add(statementLine("The businesses", moneyFull(sector)));
-        column.getChildren().add(statementLine("The treasury", moneyFull(city)));
-        column.getChildren().add(statementLine("The families", moneyFull(families)));
-        column.getChildren().add(statementLine("The carry trade", moneyFull(carry)));
-        column.getChildren().add(statementTotal("On the book", moneyFull(all),
-                Palette.TEXT_HEAD));
-
-        column.getChildren().add(statementNote(
-                "The treasury's share is the city's own bonds — the bank is what buys them, "
-                + "which is why a bond programme takes room the shops and mills were going "
-                + "to borrow. It is also the cheapest thing on this list to hold.\n\n"
-                + "The carry trade is foreigners. When the bank lends cheaper than the "
-                + "world pays, it is worth borrowing here and holding the money abroad, "
-                + "and they do. They take what is left after everyone who lives here has "
-                + "borrowed, they pay the same rate a business does, and the currency they "
-                + "sell on the way out is what keeps a trade surplus from lifting the rate "
-                + "forever. They also leave when the gap closes."));
-
-        /* -------------------------- the businesses, split -------------------------- */
-        column.getChildren().add(statementHead("The businesses, one by one"));
-
-        javafx.scene.layout.GridPane t = grid(
-                new double[] {150, 112, 86, 86, 100}, rightAfterFirst(5));
-        gridHead(t, "", "owed", "rate", "leverage", "loans");
-
-        int line = 1;
-        for (String name : Sectors.KEYS) {
-            double owed = credit.getPrincipal(name);
-            if (owed <= 0 && !credit.isBorrowingBlocked(name)) continue;
-
-            boolean blocked = credit.isBorrowingBlocked(name);
-            t.add(gridCell(name, blocked ? Palette.BAD : Palette.TEXT_BODY,
-                    Palette.SIZE_CAPTION, false), 0, line);
-            t.add(gridCell(money(owed), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
-            t.add(gridCell(String.format("%.2f%%", credit.getRate(name) * 100),
-                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
-            t.add(gridCell(String.format("%.2fx", credit.getLeverage(name)),
-                    credit.getLeverage(name) > 2 ? Palette.WARN : Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 3, line);
-            t.add(gridCell(blocked ? "BLOCKED" : String.valueOf(credit.getLoanCount(name)),
-                    blocked ? Palette.BAD : Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 4, line);
-            line++;
-        }
-        column.getChildren().add(t);
-
-        column.getChildren().add(statementNote(String.format(
-                "Each sector is priced on its own leverage, over a risk-free rate of "
-                + "%.2f%%. A business that has borrowed against everything it owns pays "
-                + "for it, and one that has stopped paying is refused — the In trouble "
-                + "page is where that shows.", credit.getRiskFreeRate() * 100)));
-
-        /* --------------------------- and the families --------------------------- */
-        if (families > 0) {
-            HouseholdBalance homes = ui.game.getHouseholdBalance();
-            column.getChildren().add(statementHead("The families"));
-            column.getChildren().add(statementLine("Owed altogether", moneyFull(families)));
-            column.getChildren().add(statementLine("Borrowed this month",
-                    moneyFull(bank.getLentToHouseholds()), Palette.WARN));
-            column.getChildren().add(statementLine("Repaid this month",
-                    moneyFull(bank.getRepaidByHouseholds()), Palette.GOOD));
-            if (homes != null && homes.getWrittenOff() > 0) {
-                column.getChildren().add(statementLine("Discharged in bankruptcy",
-                        moneyFull(homes.getWrittenOff()), Palette.BAD));
-            }
-            column.getChildren().add(statementNote(
-                    "Household credit is revolving — a family that cannot meet its fixed "
-                    + "costs draws on it, and one that never catches up is discharged. It "
-                    + "weighs its full face against the bank's capital, because a family "
-                    + "can be discharged and the money does not come back."));
-        }
-    }
-
-    /* --------------------------------------------------------------------- */
-
-    void bankTroublePage(VBox column) {
-
-        Bank bank = ui.game.getBank();
-        BusinessDebtManager credit = ui.game.getEconomyManager().getBusinessDebtManager();
-
-        column.getChildren().add(statementHead("What the bank is losing"));
-
-        column.getChildren().add(statementLine("Written off this month",
-                moneyFull(bank.getWriteOffs()),
-                bank.getWriteOffs() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
-        column.getChildren().add(statementLine("Written off since the city began",
-                moneyFull(credit.getTotalWrittenOff()), Palette.TEXT_MUTED));
-
-        column.getChildren().add(statementNote(
-                "A write-off costs the book, not the cash — the money left months ago when "
-                + "the loan was made. What it takes is equity, and equity is what decides "
-                + "how much the bank may lend. That is how a run of bad loans becomes a "
-                + "credit crunch rather than a bad month."));
-
-        /* ------------------------------ by borrower ------------------------------ */
-        boolean any = false;
-        javafx.scene.layout.GridPane t = grid(
-                new double[] {150, 106, 106, 100, 92}, rightAfterFirst(5));
-        gridHead(t, "", "this month", "in total", "restructured", "status");
-
-        int line = 1;
-        for (String name : Sectors.KEYS) {
-            double month = credit.getWrittenOffThisMonth(name);
-            double total = credit.getWrittenOffTotal(name);
-            boolean blocked = credit.isBorrowingBlocked(name);
-            if (month <= 0 && total <= 0 && !blocked) continue;
-            any = true;
-
-            t.add(gridCell(name, blocked ? Palette.BAD : Palette.TEXT_BODY,
-                    Palette.SIZE_CAPTION, false), 0, line);
-            t.add(gridCell(month > 0 ? money(month) : "—",
-                    month > 0 ? Palette.BAD : Palette.TEXT_SPENT,
-                    Palette.SIZE_CAPTION, true), 1, line);
-            t.add(gridCell(total > 0 ? money(total) : "—", Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 2, line);
-            t.add(gridCell(String.valueOf(credit.getRestructureCount(name)),
-                    credit.getRestructureCount(name) > 0 ? Palette.WARN : Palette.TEXT_SPENT,
-                    Palette.SIZE_CAPTION, true), 3, line);
-            t.add(gridCell(blocked
-                            ? credit.getBlockedMonths(name) + "mo shut"
-                            : "borrowing",
-                    blocked ? Palette.BAD : Palette.GOOD,
-                    Palette.SIZE_CAPTION, true), 4, line);
-            line++;
-        }
-
-        if (any) {
-            column.getChildren().add(statementHead("Who has stopped paying"));
-            column.getChildren().add(t);
-            column.getChildren().add(statementNote(
-                    "A sector that has been restructured is one whose loans were written "
-                    + "down rather than repaid. It is shut out of new borrowing for a "
-                    + "while afterwards, which is the bank refusing rather than the "
-                    + "business declining."));
-        } else {
-            column.getChildren().add(sentence(
-                    "Nobody is in arrears and nobody is shut out. Every sector that wants "
-                    + "to borrow can.", Palette.GOOD));
-        }
-
-        /* ---------------------------- and if it failed ---------------------------- */
-        if (bank.getFailures() > 0) {
-            column.getChildren().add(statementHead("When the bank itself failed"));
-            column.getChildren().add(statementLine("Times it has failed",
-                    String.valueOf(bank.getFailures()), Palette.BAD));
-            column.getChildren().add(statementLine("Its creditors absorbed",
-                    moneyFull(bank.getResolutionLoss()), Palette.BAD));
-            // TODO(docs): since 0.7.0 the bank's wholesale lender is the central
-            // bank's window, not creditors outside the city; the loss is still
-            // booked as crossing the edge (MoneyAudit's "+ bank ResolutionLoss").
-            // Who absorbs a failed bank now is Jerus's open question, and this
-            // sentence follows his answer.
-            column.getChildren().add(statementNote(
-                    "When a bank loses more than it owns, somebody eats the hole. Here it "
-                    + "is the wholesale creditors — who are outside the city, so the loss "
-                    + "genuinely crosses its edge. The bank comes out owning nothing, owing "
-                    + "nothing, and unable to lend until it has capital again."));
-        }
-    }
-
-    /* =====================================================================
-       WHERE THE MONEY COMES FROM
-
-       The half of a bank nobody thinks about until it is gone. It lends the
-       city's own savings, levered - and it can only lend savings it can
-       REACH, which is what branches are for and what the old screen said in
-       one grey memo line at the bottom of the balance sheet.
-       ===================================================================== */
-
-    void bankDepositPage(VBox column) {
-
-        Bank bank = ui.game.getBank();
-
-        double held = bank.getDeposits();
-        double gathered = bank.depositsGathered();
-        double foreign = bank.getForeignDeposits();
-        double reach = bank.getBranches() * Bank.DEPOSITS_PER_BRANCH;
-
-        column.getChildren().add(statementHead("What the city has banked"));
-
-        if (held <= 0) {
-            column.getChildren().add(sentence(
-                    "Nobody has banked anything yet.", Palette.TEXT_MUTED));
-            return;
-        }
-
-        /* ----------------------- reached, and out of reach ----------------------- */
-        double local = Math.max(0, held - foreign);
-        double reached = Math.min(local, reach);
-        double beyond = Math.max(0, local - reached);
-
-        java.util.List<Slice> split = new java.util.ArrayList<>();
-        if (reached > 0) split.add(new Slice("Reached by the branches", reached,
-                Palette.LADDER[1]));
-        if (foreign > 0) split.add(new Slice("Foreign money", foreign,
-                Palette.SPENDING_RAMP[3]));
-        if (beyond > 0)  split.add(new Slice("Beyond their reach", beyond,
-                Palette.RAMP_REST));
-        column.getChildren().add(stackedBar(split, STATEMENT - 40));
-
-        column.getChildren().add(statementLine("Banked in the city", moneyFull(local)));
-        column.getChildren().add(statementLine("...which the branches can reach",
-                moneyFull(reached), Palette.GOOD));
-        if (beyond > 0) {
-            column.getChildren().add(statementLine("...and which they cannot",
-                    moneyFull(beyond), Palette.WARN));
-        }
-        if (foreign > 0) {
-            column.getChildren().add(statementLine("Foreign money parked here",
-                    moneyFull(foreign), Palette.WARN));
-        }
-        column.getChildren().add(statementTotal("It can fund itself with",
-                moneyFull(gathered), Palette.TEXT_HEAD));
-
-        column.getChildren().add(statementNote(String.format(
-                "One branch reaches %s of a city's savings. A bank cannot fund itself with "
-                + "money kept in somebody's mattress, and %s of branches is what stands "
-                + "between this bank and the rest of it.",
-                money(Bank.DEPOSITS_PER_BRANCH),
-                formatter.format(Math.round(bank.getBranches())))));
-
-        /* -------------------------------- whose -------------------------------- */
-        column.getChildren().add(statementHead("Whose money it is"));
-        column.getChildren().add(statementLine("Paid to savers this month",
-                moneyFull(bank.depositInterest()), Palette.WARN));
-        column.getChildren().add(statementLine("...to the families",
-                moneyFull(bank.getDepositInterestToHouseholds()), Palette.TEXT_MUTED));
-        column.getChildren().add(statementLine("...to the businesses",
-                moneyFull(bank.getDepositInterestToSectors()), Palette.TEXT_MUTED));
-        if (foreign > 0) {
-            column.getChildren().add(statementLine("...and abroad",
-                    moneyFull(bank.getDepositInterestToForeign()), Palette.TEXT_MUTED));
-        }
-        column.getChildren().add(statementLine("At a deposit rate of",
-                String.format("%.2f%%", bank.depositRate() * 100), Palette.ACCENT));
-        column.getChildren().add(statementNote(String.format(
-                "Savers get %.0f%% of what the bank can earn on the money. Paying for "
-                + "deposits is what turns the gap between the two rates into a margin — "
-                + "without it the bank is a shoebox with a licence, and household savings "
-                + "never compound.", Bank.DEPOSIT_PASS_THROUGH * 100)));
-
-        /* ------------------------------- hot money ------------------------------- */
-        if (foreign > 0) {
-            double share = bank.hotFundingShare();
-            column.getChildren().add(alert(
-                    share > .25 ? "A quarter of this bank's funding can leave tomorrow"
-                                : "Some of this funding is foreign",
-                    String.format("%s of what the bank funds itself with is money from "
-                    + "abroad — %.0f%% of the total — and it is here because the rate is "
-                    + "good, not because anybody banks here. It leaves on no notice, and "
-                    + "when it does the bank must find the cash whether it has it or not. "
-                    + "That is what a sudden stop is, and the Trade tab is where it is "
-                    + "priced.", money(foreign), share * 100)));
-        }
-    }
-
-    /* --------------------------------------------------------------------- */
-
-    void bankFundingPage(VBox column) {
-
-        Bank bank = ui.game.getBank();
-
-        double borrowed = bank.borrowings();
-        double cheap = bank.depositFunding();
-        double dear = bank.wholesaleFunding();
-
-        column.getChildren().add(statementHead("What it had to go and borrow"));
-
-        double policy = ui.game.getDebtManager().getPolicyRate();
-
-        if (borrowed <= 0) {
-            column.getChildren().add(sentence(
-                    "The bank owes nothing. What it has not lent is its reserves at the "
-                    + "central bank, earning the policy rate — which is the least it will "
-                    + "lend at, because it can earn that by doing nothing.", Palette.GOOD));
-            column.getChildren().add(statementLine("Reserves at the central bank",
-                    moneyFull(bank.cashReserves()), Palette.GOOD));
-            column.getChildren().add(statementLine("Earning",
-                    String.format("%.2f%% a year, the policy rate", policy * 100),
-                    Palette.TEXT_HEAD));
-            column.getChildren().add(statementLine("Which paid it this month",
-                    moneyFull(bank.getPlacementIncome()), Palette.GOOD));
-            return;
-        }
-
-        java.util.List<Slice> split = new java.util.ArrayList<>();
-        if (cheap > 0) split.add(new Slice("Deposits", cheap, Palette.LADDER[1]));
-        if (dear > 0)  split.add(new Slice("The window", dear, Palette.BAD));
-        column.getChildren().add(stackedBar(split, STATEMENT - 40));
-
-        column.getChildren().add(statementLine("Funded by deposits", moneyFull(cheap),
-                Palette.GOOD));
-        column.getChildren().add(statementLine("Borrowed at the central bank's window",
-                moneyFull(dear), dear > 0 ? Palette.BAD : Palette.TEXT_SPENT));
-        column.getChildren().add(statementTotal("Everything it owes",
-                moneyFull(borrowed), Palette.TEXT_HEAD));
-
-        column.getChildren().add(statementLine("The window charges",
-                String.format("%.2f%% a year", bank.fundingRate() * 100), Palette.WARN));
-        column.getChildren().add(statementLine("Which cost it this month",
-                moneyFull(bank.getFundingCost()), Palette.WARN));
-
-        column.getChildren().add(sentence(String.format(
-                "Past what its branches can gather, the bank borrows from the central "
-                + "bank at the policy rate plus a %.0f-point penalty, so a dollar of reserves "
-                + "always costs more to borrow than it earns to hold. The window is not "
-                + "rationed: what stops the bank lending more is the strain premium it has "
-                + "to charge and the capital it has to hold, not the money.",
-                CentralBank.WINDOW_PENALTY * 100),
-                Palette.TEXT_BODY));
-    }
-
-    /* =====================================================================
-       THE BOOKS
-       ===================================================================== */
-
-    void bankIncomePage(VBox column) {
-
-        Bank bank = ui.game.getBank();
-        DebtManager market = ui.game.getDebtManager();
-
-        column.getChildren().add(statementHead("What it made this month"));
-
-        /* --------------------- interest, opened by borrower --------------------- */
-        VBox who = new VBox(0);
-        who.getChildren().addAll(
-                payerRow("The businesses", bank.getSectorBook(), bank.getBook(), "on the book"),
-                payerRow("The treasury", bank.getCityBook(), bank.getBook(), "on the book"),
-                payerRow("The families", bank.getHouseholdBook(), bank.getBook(), "on the book"),
-                payerRow("The carry trade", bank.getCarryBook(), bank.getBook(), "on the book"));
-        who.getChildren().add(statementNote(
-                "The books those rates are charged on. Interest is collected on all four "
-                + "at once, so it cannot be split further than this without inventing a "
-                + "figure the model does not keep."));
-
-        column.getChildren().add(statementDisclosure("Interest earned",
-                moneyFull(bank.interestIncome()), who, "on what"));
-
-        column.getChildren().add(statementLine("Paid to savers",
-                "−" + moneyFull(bank.depositInterest()), Palette.WARN));
-        column.getChildren().add(statementLine("Paid at the central bank's window",
-                "−" + moneyFull(bank.getFundingCost()), Palette.WARN));
-        column.getChildren().add(statementTotal("NET INTEREST INCOME",
-                moneyFull(bank.netInterestIncome()),
-                bank.netInterestIncome() < 0 ? Palette.BAD : Palette.TEXT_HEAD));
-
-        column.getChildren().add(statementLine("Loans that died",
-                "−" + moneyFull(bank.getWriteOffs()),
-                bank.getWriteOffs() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
         /*
-         * THE TRADING DESK, since the exchange (2026-09-11). The bank makes
-         * the market in the city's shares; what that made or lost this month
-         * - the spread it earned, the dividends on what it holds, and the
-         * change in what its inventory is marked at - is income beside the
-         * interest. Opened to show the desk's own book. See Exchange.
-         *
-         * AND IT FOOTS (2026-09-18). Jerus: "the bank, just explain to me the
-         * trading desk, cause a bunch of times it's losing billions of dollars
-         * due to the trading desk." The opened lines did not add up to the
-         * figure above them, because the biggest term - the re-mark of what
-         * the desk holds, which Bank.markSecurities() adds to the trading
-         * result - was not among them. It is now, from Bank.getMarkChange(),
-         * so the lines sum to the total exactly (BankCheck asserts it), and
-         * when the re-mark is the bulk of a loss the note says why.
+         * PROVISIONS, "money set aside for loans expected to go bad" (0.7.8):
+         * the allowance's move and whatever the month wrote off that it had
+         * not set aside. Opened into the three things it is - this month's.
          */
+        VBox provided = new VBox(0);
+        double charged = bank.getProvisionCharge();
+        provided.getChildren().add(statementLine(charged >= 0 ? "Set aside against the loans, this month"
+                        : "Released, the borrowers having recovered",
+                signed(charged, false), Palette.TEXT_MUTED));
+        provided.getChildren().add(statementLine("Written off against what was set aside",
+                moneyFull(bank.getAllowanceUsed()), Palette.TEXT_MUTED));
+        provided.getChildren().add(statementLine("Written off beyond it",
+                moneyFull(bank.getWriteOffsBeyondAllowance()), Palette.TEXT_MUTED));
+        provided.getChildren().add(statementNote(String.format(
+                "A provision is money set aside for loans expected to go bad: a year's expected loss "
+                + "on a sound borrower, what a default would cost on one in trouble. It holds %s now.",
+                moneyFull(bank.getAllowance()))));
+        column.getChildren().add(bookLine("Provisions for loans expected to go bad",
+                -bank.thisMonth(Bank.Line.PROVISIONS), -bank.lastMonth(Bank.Line.PROVISIONS), known,
+                bank.provisions() > 0 ? Palette.WARN : null, provided, "what", openLines));
+
+        column.getChildren().add(bookLine("The trading desk",
+                bank.thisMonth(Bank.Line.TRADING), bank.lastMonth(Bank.Line.TRADING), known,
+                bank.getTradingIncome() < 0 ? Palette.WARN : null, deskDetail(bank), "what it did", openLines));
+        if (Math.abs(bank.thisMonth(Bank.Line.PAPER_GAINS)) > 1e-9
+                || Math.abs(bank.lastMonth(Bank.Line.PAPER_GAINS)) > 1e-9) {
+            column.getChildren().add(line(bank, "Gains on the city's paper that changed hands",
+                    Bank.Line.PAPER_GAINS, known, false));
+        }
+
+        VBox running = new VBox(0);
+        running.getChildren().addAll(
+                line(bank, "Its staff", Bank.Line.PAYROLL, known, true),
+                line(bank, "Its branches' upkeep", Bank.Line.UPKEEP, known, true));
+        column.getChildren().add(bookLine("Staff and branches",
+                -bank.thisMonth(Bank.Line.COSTS), -bank.lastMonth(Bank.Line.COSTS), known,
+                null, running, "what", openLines));
+        column.getChildren().add(total(bank, "Profit before tax", Bank.Line.PRE_TAX, known));
+        column.getChildren().add(line(bank, "Tax", Bank.Line.TAX, known, true));
+        column.getChildren().add(total(bank, "What it kept", Bank.Line.NET, known));
+        column.getChildren().add(statementNote(String.format(
+                "Tax is paid a month in arrears, on last month's %s of profit: the city's take is "
+                + "struck before the bank knows what it made.", money(bank.getProfitLastMonth()))));
+
+        /* ---------------------------- and what it did with it ---------------------------- */
+        column.getChildren().add(subHead("And what it did with it"));
+        column.getChildren().add(line(bank, "Paid to its shareholders", Bank.Line.DIVIDENDS, known, true));
+        column.getChildren().add(line(bank, "Its own shares, bought back", Bank.Line.BUYBACKS, known, true));
+        column.getChildren().add(total(bank, "Kept in the bank", Bank.Line.RETAINED, known));
+        column.getChildren().add(statementNote(
+                "Its owners are paid on last month's profit, by its capital - "
+                + bank.payoutDecision() + ". The Capital & owners page has the rule."));
+
+        /* ---------------------------- the last twelve months ---------------------------- */
+        int n = bank.monthsInYear();
+        column.getChildren().add(statementHead(n >= Bank.YEAR_MONTHS ? "The last twelve months"
+                : n <= 1 ? "Its first month on record" : "The " + n + " months on record"));
+        year(column, bank, "Net interest income", Bank.Line.NET_INTEREST, false);
+        year(column, bank, "Fees", Bank.Line.FEES, false);
+        year(column, bank, "Provisions", Bank.Line.PROVISIONS, true);
+        year(column, bank, "The trading desk", Bank.Line.TRADING, false);
+        year(column, bank, "Gains on the city's paper", Bank.Line.PAPER_GAINS, false);
+        year(column, bank, "Staff and branches", Bank.Line.COSTS, true);
+        column.getChildren().add(statementTotal("Profit before tax",
+                moneyFull(bank.overYear(Bank.Line.PRE_TAX)), bank.overYear(Bank.Line.PRE_TAX) < 0 ? Palette.BAD : null));
+        year(column, bank, "Tax", Bank.Line.TAX, true);
+        column.getChildren().add(statementTotal("What it kept",
+                moneyFull(bank.overYear(Bank.Line.NET)), bank.overYear(Bank.Line.NET) < 0 ? Palette.BAD : Palette.GOOD));
+        year(column, bank, "Paid to its shareholders", Bank.Line.DIVIDENDS, true);
+        year(column, bank, "Its own shares, bought back", Bank.Line.BUYBACKS, true);
+        column.getChildren().add(statementTotal("Kept in the bank",
+                moneyFull(bank.overYear(Bank.Line.RETAINED)), null));
+
+        /* ------------------------------- as ratios ------------------------------- */
+        column.getChildren().add(subHead("Read as ratios, over " + yearWords(bank)));
+        double nim = bank.netInterestMarginOverYear();
+        column.getChildren().add(statementLine("Net interest margin, on what it lent",
+                rate(nim), nim < 0 ? Palette.BAD : Palette.GOOD));
+        column.getChildren().add(statementLine("...this month alone", rate(bank.netInterestMargin()),
+                Palette.TEXT_MUTED));
+        double costs = bank.costShareOverYear();
+        column.getChildren().add(statementLine("Staff and branches, of what it earns",
+                Double.isNaN(costs) ? "—" : share(costs),
+                Double.isNaN(costs) || costs > 1 ? Palette.BAD : null));
+        double roe = bank.returnOnEquityOverYear();
+        column.getChildren().add(statementLine("Return on its equity", rate(roe),
+                roe < 0 ? Palette.BAD : roe < Bank.requiredReturn() ? Palette.WARN : Palette.GOOD));
+        column.getChildren().add(statementLine("...this month alone", rate(bank.returnOnEquity()),
+                Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("...and what its owners want", rate(Bank.requiredReturn()),
+                Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(
+                "The margin is what it charges less what it pays for its money, on everything lent. "
+                + "Its costs are read against what it earns before them - about half to three-fifths "
+                + "at a real bank."));
+    }
+
+    /** One statement line, this month and last - negated for money going out. */
+    HBox line(Bank bank, String label, Bank.Line which, boolean known, boolean out) {
+        double now = bank.thisMonth(which), then = bank.lastMonth(which);
+        return bookLine(label, out ? -now : now, out ? -then : then, known, null);
+    }
+
+    /** One total, this month and last. */
+    VBox total(Bank bank, String label, Bank.Line which, boolean known) {
+        double now = bank.thisMonth(which);
+        return bookTotal(label, now, bank.lastMonth(which), known, now < 0 ? Palette.BAD : null);
+    }
+
+    /** One line of the year, negated for money going out. */
+    void year(VBox column, Bank bank, String label, Bank.Line which, boolean out) {
+        double v = bank.overYear(which);
+        column.getChildren().add(statementLine(label, moneyFull(out ? -v : v)));
+    }
+
+    /**
+     * THE TRADING DESK, opened (2026-09-18, and so it foots). Jerus: "the
+     * bank, just explain to me the trading desk, cause a bunch of times it's
+     * losing billions of dollars due to the trading desk." The lines sum to
+     * the figure above them - the re-mark of what the desk holds among them
+     * (BankCheck asserts it) - and the bank's own shares are not among them,
+     * which are capital since 0.7.8.
+     */
+    VBox deskDetail(Bank bank) {
         VBox desk = new VBox(0);
         Exchange exchange = ui.game.getExchange();
         Equity register = ui.game.getEquity();
         double reMark = bank.getMarkChange();
         desk.getChildren().add(statementLine("Sold to the households",
-                moneyFull(exchange.getSoldToHouseholds()), Palette.TEXT_MUTED));
+                moneyFull(exchange.deskSoldToHouseholds()), Palette.TEXT_MUTED));
         desk.getChildren().add(statementLine("Sold abroad",
-                moneyFull(exchange.getSoldAbroad()), Palette.TEXT_MUTED));
+                moneyFull(exchange.deskSoldAbroad()), Palette.TEXT_MUTED));
         desk.getChildren().add(statementLine("Bought from the households",
-                "−" + moneyFull(exchange.getBoughtFromHouseholds()), Palette.TEXT_MUTED));
+                signed(exchange.deskBoughtFromHouseholds(), true), Palette.TEXT_MUTED));
         desk.getChildren().add(statementLine("Bought from abroad",
-                "−" + moneyFull(exchange.getBoughtFromAbroad()), Palette.TEXT_MUTED));
+                signed(exchange.deskBoughtFromAbroad(), true), Palette.TEXT_MUTED));
         if (exchange.getEmigrantsPaid() > 0) {
             desk.getChildren().add(statementLine("...of which from families leaving the city",
                     moneyFull(exchange.getEmigrantsPaid()), Palette.TEXT_MUTED));
@@ -1264,251 +834,742 @@ final class BankScreen {
                 moneyFull(register.getDividendDeskThisMonth()), Palette.TEXT_MUTED));
         desk.getChildren().add(statementLine("Tendered into buybacks",
                 moneyFull(exchange.getBuybackToDesk()), Palette.TEXT_MUTED));
-        // The line that makes the rest add up: what re-marking the inventory
-        // did to the result. Signed, because it is the one line here that
-        // can go either way.
         desk.getChildren().add(statementLine("Re-marked what it holds",
-                (reMark < 0 ? "−" : "") + moneyFull(Math.abs(reMark)),
-                reMark < 0 ? Palette.WARN : Palette.TEXT_MUTED));
+                signed(reMark, false), reMark < 0 ? Palette.WARN : Palette.TEXT_MUTED));
         desk.getChildren().add(statementLine("What it holds, at the mark",
                 moneyFull(bank.getSecurities()), Palette.TEXT_MUTED));
         StringBuilder positions = new StringBuilder();
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
-            double held = register.getDealerShares(c);
-            if (held <= 0 || register.getShares(c) <= 0) continue;
+            double held = register.deskShare(c);
+            if (held <= 0) continue;
             if (positions.length() > 0) positions.append(", ");
             positions.append(String.format("%s %.1f%% of the company at %s",
-                    Equity.COMPANIES[c], held / register.getShares(c) * 100,
-                    tightMoney(toDollars(exchange.mark(c)), false)));
+                    Equity.COMPANIES[c], held * 100, tightMoney(toDollars(exchange.mark(c)), false)));
         }
         desk.getChildren().add(statementNote(positions.length() == 0
                 ? "The desk holds nothing. It quotes every company round what the register says a share is"
-                  + " worth, buys what comes and sells what it has - never what it does not."
+                  + " worth, buys what comes and sells what it has."
                 : "On the desk: " + positions + ". Carried at the quote or the register's value, whichever"
                   + " is lower - the desk does not mark its own book up on a quote nobody has paid yet."));
-        /*
-         * WHEN THE RE-MARK IS THE LOSS, say why in one sentence. "Bulk" is
-         * half or more of a losing month; below that the loss is the
-         * trading, and the lines above already say so.
-         */
         if (bank.getTradingIncome() < 0 && reMark <= bank.getTradingIncome() / 2) {
             desk.getChildren().add(statementNote(String.format(
-                    "%s of the %s lost is the re-mark, not the trading. The desk carries what it holds"
-                    + " at the quote or the register's value, whichever is lower, so shares bought at a"
-                    + " quote above that value are marked down the day they are bought, and a company"
-                    + " whose value falls marks down everything the desk holds in it.",
+                    "%s of the %s lost is the re-mark, not the trading: shares bought above the register's"
+                    + " value are marked down the day they are bought, and a company whose value falls"
+                    + " marks down everything the desk holds in it.",
                     moneyFull(-reMark), moneyFull(-bank.getTradingIncome()))));
         }
-        column.getChildren().add(statementDisclosure("The trading desk",
-                (bank.getTradingIncome() >= 0 ? "" : "−") + moneyFull(Math.abs(bank.getTradingIncome())),
-                desk, "what it did"));
-        // ...and the city's paper that changed hands (0.7.1): bought from the
-        // households at the desk, sold to or bought from the central bank. The
-        // gain or loss against what the book carried the paper at.
-        if (Math.abs(bank.getPaperGains()) > 1e-9) {
-            column.getChildren().add(statementLine("Gains on the city's paper that changed hands",
-                    (bank.getPaperGains() >= 0 ? "" : "−") + moneyFull(Math.abs(bank.getPaperGains())),
-                    bank.getPaperGains() >= 0 ? Palette.GOOD : Palette.WARN));
-        }
-        column.getChildren().add(statementLine("Staff and premises",
-                "−" + moneyFull(bank.operatingExpenses()), Palette.WARN));
-        column.getChildren().add(statementTotal("PROFIT BEFORE TAX",
-                moneyFull(bank.profitBeforeTax()),
-                bank.profitBeforeTax() < 0 ? Palette.BAD : Palette.TEXT_HEAD));
-
-        column.getChildren().add(statementLine("Tax",
-                "−" + moneyFull(bank.getTaxPaid()), Palette.WARN));
-        column.getChildren().add(statementTotal("WHAT IT KEPT",
-                moneyFull(bank.getNetIncome()),
-                bank.getNetIncome() < 0 ? Palette.BAD : Palette.GOOD));
-
-        /* ------------------------------ the margin ------------------------------ */
-        column.getChildren().add(statementHead("The business, in one line"));
-        // What a business borrows at before its own premium - Bank.lendingRate()
-        // on the dial, the figure the top strip's "bank" line prints (0.7.4).
-        // This line printed the CITY's rate until 0.7.4, which is what the
-        // treasury pays and not what the bank charges; the strip made the two
-        // sit a hand apart, so it says the bank's now.
-        column.getChildren().add(statementLine("It charges",
-                String.format("%.2f%%", bank.lendingRate(market.getPolicyRate()) * 100), Palette.TEXT_HEAD));
-        column.getChildren().add(statementLine("It pays savers",
-                String.format("%.2f%%", bank.depositRate() * 100), Palette.TEXT_MUTED));
-        column.getChildren().add(statementLine("Net interest margin",
-                String.format("%.2f%% a year on the book", bank.netInterestMargin() * 100),
-                bank.netInterestMargin() < 0 ? Palette.BAD : Palette.GOOD));
-
-        column.getChildren().add(statementNote(String.format(
-                "Tax is charged in arrears, on last month's %s of profit — the city's take "
-                + "is struck before the bank knows what it made, and paying it a month "
-                + "late is the only ordering that keeps the money in one channel.",
-                money(bank.getProfitLastMonth()))));
-
-        column.getChildren().add(statementNote(
-                "A write-off costs the book, not the cash. The money left months ago when "
-                + "the loan was made; what a default takes today is equity."));
+        return desk;
     }
 
-    /* --------------------------------------------------------------------- */
+    /* =====================================================================
+       LENDING
 
-    void bankBalancePage(VBox column) {
+       Who owes it and how sound each borrower is; what it has set aside
+       against them and who has stopped paying; what it lent this month
+       against what its capital allows; how the next loan's rate is built;
+       and what the book weighs against its capital.
+       ===================================================================== */
+
+    void lendingPage(VBox column) {
 
         Bank bank = ui.game.getBank();
+        BusinessDebtManager credit = ui.game.getEconomyManager().getBusinessDebtManager();
+        HouseholdBalance homes = ui.game.getHouseholdBalance();
 
-        column.getChildren().add(statementHead("What it is standing on"));
-
-        column.getChildren().add(statementLine("Reserves at the central bank",
-                moneyFull(bank.cashReserves())));
-        column.getChildren().add(statementLine("Loans",
-                moneyFull(bank.getBook())));
-        column.getChildren().add(statementLine("Shares on the trading desk, at the mark",
-                moneyFull(Math.max(0, bank.getSecurities()))));
-        column.getChildren().add(statementTotal("TOTAL ASSETS",
-                moneyFull(bank.totalAssets()), Palette.TEXT_HEAD));
-
-        column.getChildren().add(statementLine("Deposits",
-                "−" + moneyFull(bank.depositFunding()), Palette.TEXT_MUTED));
-        column.getChildren().add(statementLine("Owed at the central bank's window",
-                "−" + moneyFull(bank.wholesaleFunding()), Palette.TEXT_MUTED));
-        if (bank.getForeignDeposits() > 0) {
-            column.getChildren().add(statementLine("Foreign deposits",
-                    "−" + moneyFull(bank.getForeignDeposits()), Palette.WARN));
-        }
-        // The discount on the city's paper it has not yet earned (0.7.1): it
-        // bought under face, and earns the difference a month at a time.
-        if (bank.getUnearnedDiscount() > 0) {
-            column.getChildren().add(statementLine("Discount on the city's paper, not yet earned",
-                    "−" + moneyFull(bank.getUnearnedDiscount()), Palette.TEXT_MUTED));
-        }
-        column.getChildren().add(statementTotal("TOTAL LIABILITIES",
-                moneyFull(bank.totalLiabilities()), Palette.TEXT_HEAD));
-
-        column.getChildren().add(statementTotal("EQUITY", moneyFull(bank.equity()),
-                bank.isInsolvent() ? Palette.BAD : Palette.GOOD));
-
-        if (bank.getWeightedBook() > 0) {
-            column.getChildren().add(statementLine("Capital ratio",
-                    String.format("%.1f%% against a required %.0f%%",
-                            Math.min(999, bank.capitalRatio()) * 100,
-                            Bank.CAPITAL_RATIO * 100),
-                    bank.capitalRatio() < Bank.CAPITAL_RATIO ? Palette.BAD : Palette.GOOD));
-        }
-
-        /* ------------------------- and how equity moved ------------------------- */
-        column.getChildren().add(statementHead("How the equity moved"));
-
-        double putIn = bank.getCapitalInjected() + bank.getCapitalFromHome()
-                + bank.getBailoutReceived();
-
-        column.getChildren().add(statementLine("At the start of the month",
-                moneyFull(bank.getOpeningEquity())));
-        column.getChildren().add(statementLine("What it kept",
-                (bank.getNetIncome() >= 0 ? "+" : "−")
-                        + moneyFull(Math.abs(bank.getNetIncome())),
-                bank.getNetIncome() < 0 ? Palette.BAD : Palette.GOOD));
-        column.getChildren().add(statementLine("Capital put in",
-                putIn > 0 ? "+" + moneyFull(putIn) : "$0",
-                putIn > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
-        if (bank.getDividendsPaid() > 0) {
-            column.getChildren().add(statementLine("Paid to its shareholders",
-                    "−" + moneyFull(bank.getDividendsPaid()), Palette.WARN));
-        }
-        /*
-         * A FAILED BANK'S MONTH: its creditors absorb the shortfall, which
-         * lifts the equity back to nothing - see Bank.resolveIfFailed(). Not
-         * income and not capital, so it has its own line; without one, every
-         * month in resolution printed the whole loss as "Not accounted for"
-         * and raised the alarm below it. Seen on the PC, 2026-09-11.
-         */
-        double absorbed = bank.getResolutionLossThisMonth();
-        if (absorbed > 0) {
-            column.getChildren().add(statementLine("Absorbed by its creditors",
-                    "+" + moneyFull(absorbed), Palette.BAD));
-        }
-
-        double moved = bank.equity() - bank.getOpeningEquity();
-        double gap = moved - bank.getNetIncome() - putIn + bank.getDividendsPaid() - absorbed;
-        if (Math.abs(gap) > .005) {
-            column.getChildren().add(statementLine("Not accounted for",
-                    (gap >= 0 ? "+" : "−") + moneyFull(Math.abs(gap)), Palette.BAD));
-        }
-        column.getChildren().add(statementTotal("At the end of it",
-                moneyFull(bank.equity()),
-                bank.isInsolvent() ? Palette.BAD : Palette.TEXT_HEAD));
-
-        // the sector screen's block, borrowed on purpose: it reads the game and is
-        // not a pure piece, so it stays the sector screen's until a third screen wants it
-        ui.sectorScreen.ownersBlock(column, Equity.BANK, bank.equity(), bank.getNetIncome());
-
-        if (Math.abs(gap) > .005) {
-            column.getChildren().add(alert("Something moved the book without telling the bank",
-                    String.format("%s of the month's change in equity is not net income and "
-                    + "is not capital. That should be impossible — equity moves by what the "
-                    + "bank earned and what it was given, and by nothing else. Worth "
-                    + "reporting.", money(Math.abs(gap)))));
+        /* ------------------------------ who owes it ------------------------------ */
+        column.getChildren().add(statementHead("Who owes it"));
+        if (bank.getBook() <= 0) {
+            column.getChildren().add(sentence("Nothing is lent out.", Palette.TEXT_MUTED));
         } else {
+            List<Slice> split = new ArrayList<>();
+            if (bank.getSectorBook() > 0)    split.add(new Slice("The businesses", bank.getSectorBook(), Palette.LADDER[1]));
+            if (bank.getCityBook() > 0)      split.add(new Slice("The city's own paper", bank.getCityBook(), Palette.LADDER[0]));
+            if (bank.getHouseholdBook() > 0) split.add(new Slice("The families", bank.getHouseholdBook(), Palette.SPENDING_RAMP[2]));
+            if (bank.getCarryBook() > 0)     split.add(new Slice("The carry trade", bank.getCarryBook(), Palette.RAMP_REST));
+            column.getChildren().add(stackedBar(split, STATEMENT - 40));
+        }
+        column.getChildren().add(statementLine("The businesses", moneyFull(bank.getSectorBook())));
+        column.getChildren().add(statementLine("The city's own paper", moneyFull(bank.getCityBook())));
+        column.getChildren().add(statementLine("The families", moneyFull(bank.getHouseholdBook())));
+        column.getChildren().add(statementLine("The carry trade", moneyFull(bank.getCarryBook())));
+        column.getChildren().add(statementTotal("On the book", moneyFull(bank.getBook()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementNote(
+                "The city's paper is its bonds, which the bank buys. The carry trade is foreigners "
+                + "borrowing here to hold the money abroad while the bank lends cheaper than the world pays."));
+
+        /* ---------------------------- the businesses ---------------------------- */
+        column.getChildren().add(statementHead("The businesses, one by one"));
+        /*
+         * A SECTOR DEFAULTS A SLICE AT A TIME (0.7.8): beside its leverage,
+         * the share of its firms that default a year there (PD, the curve the
+         * slice and the allowance both read), and beside what the bank set
+         * aside, what this month wrote off - the allowance's figure for the
+         * sector, saved with it (Bank.getWrittenOff()). Whether it is shut
+         * out is in its name's colour here and in the table under.
+         */
+        javafx.scene.layout.GridPane t = grid(
+                new double[] {104, 66, 84, 50, 50, 36, 64, 64}, rightAfterFirst(8));
+        gridHead(t, "", "owed", "pays", "leverage", "a year", "stage 2", "set aside", "this month");
+        int row = 1;
+        for (String name : Sectors.KEYS) {
+            double owed = credit.getPrincipal(name);
+            boolean shut = credit.isBorrowingBlocked(name);
+            double lost = bank.getWrittenOff(name);
+            if (owed <= 0 && !shut && bank.getSectorAllowance(name) <= 0 && lost <= 0) continue;
+            double lev = credit.getLeverage(name);
+            double pd = credit.getDefaultRate(name);
+            int stage = bank.getStage(name);
+            double inStage2 = bank.getStageTwoShare(name);
+            String levTone = lev >= BusinessDebtManager.INSOLVENCY_TRIGGER ? Palette.BAD
+                    : lev > Bank.SECTOR_WATCH_LEVERAGE ? Palette.WARN : Palette.TEXT_MUTED;
+            t.add(gridCell(name, shut ? Palette.BAD : Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, row);
+            t.add(gridCell(money(owed), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, row);
+            t.add(gridCell(rate(credit.getRate(name)),
+                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, row);
+            t.add(gridCell(String.format("%.2fx", lev), levTone, Palette.SIZE_CAPTION, true), 3, row);
+            t.add(gridCell(owed > 0 ? defaultShare(pd) : "—", owed > 0 ? levTone : Palette.TEXT_SPENT,
+                    Palette.SIZE_CAPTION, true), 4, row);
+            // The share of its book in stage 2, firm by firm (0.7.8): amber
+            // once most of its firms are past the watch line.
+            t.add(gridCell(owed > 0 ? String.format("%.0f%%", inStage2 * 100) : "—",
+                    stage == 2 ? Palette.WARN : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 5, row);
+            t.add(gridCell(money(bank.getSectorAllowance(name)), Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 6, row);
+            t.add(gridCell(lost > 0 ? money(lost) : "—",
+                    credit.defaultsAreNews(name) ? Palette.BAD : lost > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
+                    Palette.SIZE_CAPTION, true), 7, row);
+            row++;
+        }
+        if (row == 1) {
+            column.getChildren().add(sentence("No business owes it anything.", Palette.TEXT_MUTED));
+        } else {
+            column.getChildren().add(t);
+        }
+        double watch = Bank.SECTOR_WATCH_LEVERAGE, point = BusinessDebtManager.INSOLVENCY_TRIGGER;
+        column.getChildren().add(statementNote(String.format(
+                "\"Pays\" is what its next loan would cost it. Leverage is what a business owes over what "
+                + "it owns, and \"a year\" is the share of its firms that default within a year there - "
+                + "%s at %.2f, %s at %.2f, half at %.2f, where a firm owes more than it could ever repay. "
+                + "Each month the bank writes off %.0f%% of what that month's defaulters owed; they keep "
+                + "their plant, so the business owes less and fewer default the next month. Past %.2f the "
+                + "bank will not lend it more to cover a loss; \"stage 2\" is the share of its firms past "
+                + "that line, on which the bank sets aside a loan's whole term of defaults - half of them "
+                + "at the line itself. Only a business with nothing left at all is written down whole "
+                + "and shut out for a while. The allowance, its stage and the price of the next loan read "
+                + "the business as a lender reads its statements, over its last %d month-ends, starting "
+                + "again from the month it is written down whole; the defaults read the month.",
+                defaultShare(BusinessDebtManager.defaultProbability(watch * 2 / 3)), watch * 2 / 3,
+                defaultShare(BusinessDebtManager.defaultProbability(watch)), watch, point,
+                BusinessDebtManager.LOSS_GIVEN_DEFAULT * 100, watch, BusinessDebtManager.STATEMENT_MONTHS)));
+
+        /* ------------------------------ the families ------------------------------ */
+        column.getChildren().add(statementHead("The families"));
+        if (bank.getHouseholdBook() <= 0 && bank.getHouseholdAllowance() <= 0) {
+            column.getChildren().add(sentence("No family owes it anything.", Palette.TEXT_MUTED));
+        } else {
+            column.getChildren().add(statementLine("Owed altogether", moneyFull(bank.getHouseholdBook())));
+            column.getChildren().add(statementLine(String.format(
+                    "...by families owing more than %.0f months of their income", Bank.HOUSEHOLD_WATCH_MONTHS),
+                    moneyFull(bank.getHouseholdWatchedDebt()),
+                    bank.getHouseholdWatchedDebt() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+            column.getChildren().add(statementLine("Stage", bank.getHouseholdStage() == 2
+                    ? "2 - some are in trouble" : "1 - every family sound",
+                    bank.getHouseholdStage() == 2 ? Palette.WARN : null));
+            column.getChildren().add(statementLine("Set aside against it", moneyFull(bank.getHouseholdAllowance())));
+            column.getChildren().add(statementLine("Drawn this month", moneyFull(bank.getLentToHouseholds())));
+            column.getChildren().add(statementLine("Repaid this month", moneyFull(bank.getRepaidByHouseholds())));
+            if (homes != null && homes.getWrittenOff() > 0) {
+                column.getChildren().add(statementLine("Discharged in bankruptcy this month",
+                        moneyFull(homes.getWrittenOff()), Palette.BAD));
+            }
             column.getChildren().add(statementNote(
-                    "Equity moves by what the bank earned and what it was given, and by "
-                    + "nothing else. The line above is printed even when it is zero, "
-                    + "because a plug nobody checks is a lie."));
+                    "A family's credit line is revolving: it draws on it when it cannot meet its bills, "
+                    + "and one that never catches up is discharged - the bank loses all of it."));
         }
 
-        /* ============================ AND IF IT FAILED ============================ */
+        /* ---------------------------- what it set aside ---------------------------- */
+        column.getChildren().add(statementHead("What it has set aside"));
+        column.getChildren().add(statementLine("Against the businesses", moneyFull(bank.getSectorAllowance())));
+        column.getChildren().add(statementLine("Against the families", moneyFull(bank.getHouseholdAllowance())));
+        column.getChildren().add(statementTotal("The allowance", moneyFull(bank.getAllowance()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("This month's provision", signed(bank.provisions(), false),
+                bank.provisions() > 0 ? Palette.WARN : null));
+        column.getChildren().add(statementLine("Written off this month", moneyFull(bank.getWriteOffs()),
+                bank.getWriteOffs() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
+        HistorySave h = ui.game.getHistorySave();
+        int recorded = h.monthsRecorded("bankWriteOffs");
+        column.getChildren().add(statementLine(String.format("...and over the %d months on record", recorded),
+                moneyFull(h.total("bankWriteOffs")), Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(String.format(
+                "The allowance is money set aside for loans expected to go bad - a year's expected "
+                + "defaults on a sound borrower, never under %.1f%%, and a loan's whole term of them on "
+                + "one in trouble. A write-off is drawn from it first, so a loss reaches the profit as "
+                + "the borrower weakens, not the month it is written off.", Bank.BASE_LOSS_RATE * 100)));
+
+        /* -------------------------- who has stopped paying -------------------------- */
+        /*
+         * Since 0.7.8 most of what is written off is the slices - a business's
+         * firms defaulting a few at a time - and "went under" counts only the
+         * whole-sector backstop, the only default on a borrower's record. A
+         * total under a dollar is left off: a slice that small is the curve's
+         * far tail, not a borrower that stopped paying.
+         */
+        javafx.scene.layout.GridPane trouble = grid(
+                new double[] {150, 100, 100, 96, 90}, rightAfterFirst(5));
+        gridHead(trouble, "", "this month", "in total", "went under", "status");
+        int line = 1;
+        for (String name : Sectors.KEYS) {
+            double month = bank.getWrittenOff(name);
+            double ever = credit.getWrittenOffTotal(name);
+            boolean shut = credit.isBorrowingBlocked(name);
+            int whole = credit.getRestructureCount(name);
+            if (toDollars(ever) < 1 && whole == 0 && !shut) continue;
+            trouble.add(gridCell(name, shut ? Palette.BAD : Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+            trouble.add(gridCell(month > 0 ? money(month) : "—",
+                    credit.defaultsAreNews(name) ? Palette.BAD : month > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
+                    Palette.SIZE_CAPTION, true), 1, line);
+            trouble.add(gridCell(ever > 0 ? money(ever) : "—", Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 2, line);
+            trouble.add(gridCell(whole > 0 ? whole + (whole == 1 ? " time" : " times") : "never",
+                    whole > 0 ? Palette.WARN : Palette.TEXT_SPENT,
+                    Palette.SIZE_CAPTION, true), 3, line);
+            trouble.add(gridCell(shut ? credit.getBlockedMonths(name) + "mo shut" : "borrowing",
+                    shut ? Palette.BAD : Palette.GOOD, Palette.SIZE_CAPTION, true), 4, line);
+            line++;
+        }
+        column.getChildren().add(statementHead("Who has stopped paying"));
+        if (line == 1) {
+            column.getChildren().add(sentence("No business's firms have defaulted, and none is shut out.",
+                    Palette.GOOD));
+        } else {
+            column.getChildren().add(trouble);
+            column.getChildren().add(statementNote(
+                    "What the bank lost as a business's firms defaulted, a few at a time. A business that "
+                    + "went under had nothing left at all: its loans were written off whole, and it is shut "
+                    + "out of new borrowing for a while after - the bank refusing, not the business declining."));
+        }
+
+        /* -------------------------- what it lent this month -------------------------- */
+        column.getChildren().add(statementHead("What it lent this month"));
+        column.getChildren().add(statementLine("To the businesses", moneyFull(credit.getLentThisMonth())));
+        column.getChildren().add(statementLine("Drawn by the families", moneyFull(bank.getLentToHouseholds())));
+        column.getChildren().add(statementLine("To the carry trade", moneyFull(bank.getCarryLent())));
+        String stance = bank.lendingStance();
+        column.getChildren().add(subHead("What its capital lets it lend"));
+        column.getChildren().add(sentence(stance.substring(0, 1).toUpperCase() + stance.substring(1) + ".",
+                stanceTone(bank)));
+        double limit = bank.lendingLimit();
+        if (!Double.isInfinite(limit) && limit > 0) {
+            column.getChildren().add(statementLine("...about this much growth across its book",
+                    moneyFull(limit), Palette.WARN));
+        }
+        column.getChildren().add(statementNote(String.format(
+                "At or over its own target (%s) it lends freely. Between the %s minimum and the target a "
+                + "borrower's debt may grow a little each month - more the nearer the target. Under the "
+                + "minimum it lends only the interest that keeps its borrowers going.",
+                share(bank.capitalTarget()), share(Bank.CAPITAL_RATIO))));
+
+        /* ------------------------ how the next loan is priced ------------------------ */
+        double dial = ui.game.getDebtManager().getPolicyRate();
+        Bank.Ladder l = bank.ladder(dial);
+        column.getChildren().add(statementHead("How the next loan's rate is built"));
+        HBox cost = statementLine("What the money costs it", rate(l.transfer()));
+        Tooltip.install(cost, new Tooltip("The funds-transfer price: the policy rate, the central bank's "
+                + "penalty on the share it borrows there, and the term premium for "
+                + Bank.PRIME_TERM_MONTHS + " months."));
+        column.getChildren().add(cost);
+        column.getChildren().add(statementLine("...running the bank", points(l.running())));
+        column.getChildren().add(statementLine("...the loans expected to go bad", points(l.loss())));
+        column.getChildren().add(statementLine("...the capital a loan ties up", points(l.capital())));
+        column.getChildren().add(statementTotal("Prime", rate(l.prime()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementNote(String.format(
+                "What a sound business pays for a %d-month loan. The capital part is the equity a loan "
+                + "ties up at its %s target, at the %.1f%% its owners want, over what the same money "
+                + "would cost as debt.", Bank.PRIME_TERM_MONTHS, share(bank.capitalTarget()),
+                Bank.requiredReturn() * 100)));
+
+        /*
+         * EACH SECTOR'S OWN EXPECTED LOSS OVER THE BOOK'S (0.7.8): the curve
+         * at the leverage its last quarter reads (getRiskSpread()), less what
+         * prime already carries, and its record apart. The quote is where it
+         * stands; a loan is written at the leverage it leaves it at, which
+         * the note says. The leverage column is the quarter's
+         * (getQuarterLeverage()), the reading the risk beside it is struck on.
+         */
+        javafx.scene.layout.GridPane quotes = grid(new double[] {150, 70, 100, 80, 110}, rightAfterFirst(5));
+        gridHead(quotes, "", "leverage", "its own risk", "its record", "it pays");
+        int q = 1;
+        for (String name : Sectors.KEYS) {
+            if (credit.getPrincipal(name) <= 0) continue;
+            quotes.add(gridCell(name, Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, q);
+            quotes.add(gridCell(String.format("%.2fx", credit.getQuarterLeverage(name)), Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 1, q);
+            quotes.add(gridCell(points(credit.getRiskSpread(name)), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, q);
+            quotes.add(gridCell(credit.getRecordSurcharge(name) > 0 ? points(credit.getRecordSurcharge(name)) : "—",
+                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 3, q);
+            quotes.add(gridCell(rate(credit.getRate(name)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 4, q);
+            q++;
+        }
+        double families = homes == null ? 0 : homes.averageRate();
+        quotes.add(gridCell("The families, on average", Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, q);
+        quotes.add(gridCell(families > 0 ? points(l.overPrime(families)) : "—", Palette.TEXT_MUTED,
+                Palette.SIZE_CAPTION, true), 2, q);
+        quotes.add(gridCell(rate(families > 0 ? families : l.household()), Palette.TEXT_HEAD,
+                Palette.SIZE_CAPTION, true), 4, q++);
+        quotes.add(gridCell("The carry trade", Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, q);
+        quotes.add(gridCell(points(l.overPrime(l.carry())), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, q);
+        quotes.add(gridCell(rate(l.carry()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 4, q);
+        column.getChildren().add(subHead("...and what each borrower pays over it"));
+        column.getChildren().add(quotes);
+        column.getChildren().add(statementNote(String.format(
+                "A business's own risk is its expected loss over the book's: the share of its firms that "
+                + "default a year at its leverage, times the %.0f%% the bank loses on them, less the %.1f%% "
+                + "prime already carries - nothing for a sound one, %s at %.2fx its assets, %s at %.2fx. Its "
+                + "record adds %s a write-down, for up to %d. This is the rate at its leverage over its last "
+                + "quarter, as the bank reads its statements; "
+                + "a loan is written at the leverage it leaves it at, its building counted, and a business "
+                + "decides whether to build at that rate.",
+                BusinessDebtManager.LOSS_GIVEN_DEFAULT * 100, Bank.BASE_LOSS_RATE * 100,
+                points(BusinessDebtManager.expectedLossSpread(Bank.SECTOR_WATCH_LEVERAGE)), Bank.SECTOR_WATCH_LEVERAGE,
+                points(BusinessDebtManager.expectedLossSpread(BusinessDebtManager.INSOLVENCY_TRIGGER)),
+                BusinessDebtManager.INSOLVENCY_TRIGGER,
+                points(BusinessDebtManager.DEFAULT_SURCHARGE), BusinessDebtManager.DEFAULT_SURCHARGE_MAX_COUNT)));
+
+        /* ---------------------------- what the book weighs ---------------------------- */
+        column.getChildren().add(statementHead("What a dollar of the book weighs"));
+        javafx.scene.layout.GridPane w = grid(new double[] {150, 100, 60, 80, 110}, rightAfterFirst(5));
+        gridHead(w, "", "at face", "term", "risk weight", "weighs");
+        int r = 1;
+        for (Bank.WeightRow one : bank.weightTable()) {
+            w.add(gridCell(bookName(one.book()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, r);
+            w.add(gridCell(money(one.face()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, r);
+            w.add(gridCell(String.format("%.2f", one.term()), one.term() < 1 ? Palette.GOOD : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 2, r);
+            w.add(gridCell(String.format("%.0f%%", one.risk() * 100),
+                    one.risk() < 1 ? Palette.GOOD : one.risk() > 1 ? Palette.WARN : Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 3, r);
+            w.add(gridCell(money(one.weighted()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 4, r);
+            r++;
+        }
+        column.getChildren().add(w);
+        column.getChildren().add(statementTotal("Weighed for risk and term",
+                moneyFull(bank.getWeightedBook()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementNote(String.format(
+                "Risk-weighted: each dollar counted by how likely it is to be lost and how long it runs. A "
+                + "city bond weighs %.0f%% of a business loan, and the desk's shares %.0f%%; \"term\" is the "
+                + "share of its face a loan's remaining months count for, as little as %.0f%% for one repaying "
+                + "soon. The bank's capital is measured against this, not the face.",
+                Bank.RISK_CITY * 100, Bank.RISK_EQUITY * 100, Bank.SHORTEST_WEIGHT * 100)));
+    }
+
+    /** What the weight table calls each book. */
+    static String bookName(Bank.Book book) {
+        return switch (book) {
+            case BUSINESSES -> "The businesses";
+            case CITY       -> "The city's own paper";
+            case FAMILIES   -> "The families";
+            case CARRY      -> "The carry trade";
+            case DESK       -> "The desk's shares";
+        };
+    }
+
+    /* =====================================================================
+       FUNDING
+
+       What the city has banked with it and how much of that its branches
+       reach, in today's money (the founding constants, until 0.7.9 - a
+       hundred times out after a currency reform); what it pays savers and
+       why; its account at the central bank; how its lending is funded; what
+       it can carry; and its branches, with the model's own verdict on
+       another one.
+       ===================================================================== */
+
+    void fundingPage(VBox column) {
+
+        Bank bank = ui.game.getBank();
+        double dial = ui.game.getDebtManager().getPolicyRate();
+        Bank.Ladder l = bank.ladder(dial);
+
+        /* ---------------------------- what is banked ---------------------------- */
+        column.getChildren().add(statementHead("What the city has banked with it"));
+        if (bank.getDeposits() <= 0) {
+            column.getChildren().add(sentence("Nobody has banked anything yet.", Palette.TEXT_MUTED));
+        } else {
+            List<Slice> whose = new ArrayList<>();
+            if (bank.getHouseholdDeposits() > 0) whose.add(new Slice("The families", bank.getHouseholdDeposits(), Palette.LADDER[0]));
+            if (bank.getSectorDeposits() > 0)    whose.add(new Slice("The businesses", bank.getSectorDeposits(), Palette.LADDER[1]));
+            if (bank.getForeignDeposits() > 0)   whose.add(new Slice("From abroad", bank.getForeignDeposits(), Palette.SPENDING_RAMP[3]));
+            column.getChildren().add(stackedBar(whose, STATEMENT - 40));
+        }
+        column.getChildren().add(statementLine("The families' savings", moneyFull(bank.getHouseholdDeposits())));
+        column.getChildren().add(statementLine("The businesses' cash in credit", moneyFull(bank.getSectorDeposits())));
+        column.getChildren().add(statementLine("Money from abroad", moneyFull(bank.getForeignDeposits()),
+                bank.getForeignDeposits() > 0 ? Palette.WARN : null));
+        column.getChildren().add(statementTotal("Deposits", moneyFull(bank.getDeposits()), Palette.TEXT_HEAD));
+
+        /* ---------------------------- what it can reach ---------------------------- */
+        column.getChildren().add(statementHead("What its branches can reach"));
+        column.getChildren().add(statementLine("One branch reaches", moneyFull(bank.getDepositsPerBranch())));
+        column.getChildren().add(statementLine(String.format("...so its %s reach",
+                bank.getBranches() == 1 ? "one branch" : formatter.format(Math.round(bank.getBranches())) + " branches"),
+                moneyFull(bank.branchReach())));
+        column.getChildren().add(statementLine("The city's own savings with it", moneyFull(bank.localDeposits())));
+        column.getChildren().add(statementLine("...within its branches' reach", moneyFull(bank.localDepositsReached()),
+                Palette.GOOD));
+        column.getChildren().add(statementLine("...beyond it", moneyFull(bank.localDepositsBeyondReach()),
+                bank.localDepositsBeyondReach() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("...and money from abroad, which needs no branch",
+                moneyFull(bank.getForeignDeposits())));
+        column.getChildren().add(statementTotal("Deposits it can lend against", moneyFull(bank.depositsGathered()),
+                Palette.TEXT_HEAD));
+        column.getChildren().add(statementNote(
+                "A bank cannot lend savings its counters cannot reach. Money wired from abroad needs no "
+                + "counter - and can leave as fast as it came."));
+
+        if (bank.getForeignDeposits() > 0) {
+            double hot = bank.hotFundingShare();
+            column.getChildren().add(alert(
+                    hot > .25 ? "A quarter of its funding can leave tomorrow" : "Some of its funding is foreign",
+                    String.format("%s of what it lends against is money from abroad - %.0f%% of it - here "
+                    + "because the rate is good. It leaves on no notice, and the bank must find the cash "
+                    + "when it does. The Trade tab is where that is priced.",
+                    money(bank.getForeignDeposits()), hot * 100)));
+        }
+
+        /* ---------------------------- what it pays savers ---------------------------- */
+        column.getChildren().add(statementHead("What it pays savers"));
+        column.getChildren().add(statementLine("The policy rate", rate(l.policy())));
+        column.getChildren().add(statementLine("The share of it its funding asks it to pass on",
+                share(l.saversShare())));
+        column.getChildren().add(statementLine("The rate it chose, a sixth of the way there a month",
+                rate(l.saversChose())));
+        column.getChildren().add(statementLine("What savers were paid", rate(l.savers()),
+                l.saversHeld() ? Palette.WARN : Palette.ACCENT));
+        column.getChildren().add(statementNote(saversWhy(l)));
+        column.getChildren().add(statementLine("Paid to the families this month",
+                moneyFull(bank.getDepositInterestToHouseholds())));
+        column.getChildren().add(statementLine("...to the businesses", moneyFull(bank.getDepositInterestToSectors())));
+        if (bank.getDepositInterestToForeign() > 0) {
+            column.getChildren().add(statementLine("...and abroad", moneyFull(bank.getDepositInterestToForeign())));
+        }
+        column.getChildren().add(statementNote(String.format(
+                "A bank flush with reserves passes on about %.0f%% of the policy rate - its next deposit "
+                + "only earns the policy rate at the central bank. One borrowing there passes on %.0f%%, "
+                + "because every deposit it finds saves it the central bank's rate. It never pays savers "
+                + "more than its margin, after its staff and branches, can pay.",
+                Bank.DEPOSIT_SHARE_FLUSH * 100, Bank.DEPOSIT_SHARE_AT_WINDOW * 100)));
+
+        /* ------------------------ its account at the central bank ------------------------ */
+        column.getChildren().add(statementHead("Its account at the central bank"));
+        column.getChildren().add(statementLine("Reserves held there", moneyFull(bank.cashReserves()),
+                bank.cashReserves() > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("...earning the policy rate", rate(l.policy())));
+        column.getChildren().add(statementLine("...which paid it this month", moneyFull(bank.getPlacementIncome())));
+        column.getChildren().add(statementLine("Borrowed overnight from the central bank",
+                moneyFull(bank.wholesaleFunding()), bank.wholesaleFunding() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("...at the window's rate", rate(l.window())));
+        column.getChildren().add(statementLine("...which cost it this month", moneyFull(bank.getFundingCost()),
+                bank.getFundingCost() > 0 ? Palette.WARN : null));
+        column.getChildren().add(statementNote(String.format(
+                "\"The window\" is borrowing overnight from the central bank. It lends a bank whatever it "
+                + "needs, at the policy rate plus a %.2f-point penalty - so what stops a bank lending more "
+                + "is what that money costs, which is in every loan's rate, and its capital, not the money.",
+                CentralBank.WINDOW_PENALTY * 100)));
+
+        /* ---------------------------- how it is funded ---------------------------- */
+        column.getChildren().add(statementHead("How its lending is funded"));
+        List<Slice> mix = new ArrayList<>();
+        if (bank.equity() > 0)            mix.add(new Slice("Its own capital", bank.equity(), Palette.GOOD_MONEY));
+        if (bank.depositFunding() > 0)    mix.add(new Slice("Savers' deposits", bank.depositFunding(), Palette.LADDER[1]));
+        if (bank.getForeignDeposits() > 0) mix.add(new Slice("Money from abroad", bank.getForeignDeposits(), Palette.SPENDING_RAMP[3]));
+        if (bank.wholesaleFunding() > 0)  mix.add(new Slice("The central bank, overnight", bank.wholesaleFunding(), Palette.BAD));
+        if (!mix.isEmpty()) column.getChildren().add(keyedBar(mix, STATEMENT - 40));
+        column.getChildren().add(statementLine("Its own capital", moneyFull(bank.equity()),
+                bank.equity() < 0 ? Palette.BAD : null));
+        column.getChildren().add(statementLine("Savers' deposits it has lent out", moneyFull(bank.depositFunding())));
+        column.getChildren().add(statementLine("Money from abroad", moneyFull(bank.getForeignDeposits())));
+        column.getChildren().add(statementLine("Borrowed overnight from the central bank",
+                moneyFull(bank.wholesaleFunding()), bank.wholesaleFunding() > 0 ? Palette.BAD : null));
+
+        /* ---------------------------- what it can carry ---------------------------- */
+        column.getChildren().add(statementHead("What it can carry"));
+        column.getChildren().add(statementLine(String.format("What its capital carries, at the %s minimum",
+                share(Bank.CAPITAL_RATIO)), moneyFull(bank.capitalLimit())));
+        column.getChildren().add(statementLine(String.format("What its deposits carry, lent %.0f times over",
+                Bank.LEVERAGE), moneyFull(bank.fundingLimit())));
+        column.getChildren().add(statementTotal("The tighter of the two",
+                bank.isInsolvent() ? "nothing - it has failed" : moneyFull(bank.capacity()),
+                bank.isInsolvent() ? Palette.BAD : Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("Its book weighs", moneyFull(bank.getWeightedBook())));
+        if (bank.capacity() > 0) {
+            column.getChildren().add(statementLine("...which is", share(bank.strain()) + " of that",
+                    bank.strain() > 1 ? Palette.BAD : bank.strain() > Bank.EASY_STRAIN ? Palette.WARN : Palette.GOOD));
+        }
+        column.getChildren().add(statementNote(bank.isInsolvent()
+                ? "A failed bank may lend nothing new, so it can carry nothing until it has capital again."
+                : bank.capitalBound()
+                ? "Its capital is the limit: another branch helps only by the capital its owners open it with."
+                : "Its deposits are the limit: another branch reaches more of the city's savings."));
+
+        branches(column, bank);
+    }
+
+    /**
+     * ITS BRANCHES, and whether another would pay - the model's own verdict,
+     * both halves of Bank.wantsBranch(): does it relieve anything (the book
+     * spilling past what the bank comfortably carries), and would it earn its
+     * keep (last month's book per branch at its kept margin, against what a
+     * branch costs to run). Worked out on the screen until 0.7.9, and not the
+     * same way the model did.
+     */
+    void branches(VBox column, Bank bank) {
+
+        BuildingsTemplate branch = ui.game.getBuildingManager().getTemplateByName("Commercial Bank");
+
+        column.getChildren().add(statementHead("Its branches"));
+        column.getChildren().add(statementLine("Standing", formatter.format(Math.round(bank.getBranches()))));
+        column.getChildren().add(statementLine("One more would add", moneyFull(bank.capacityAnotherBranchWouldAdd())
+                + " of what it can carry", bank.capacityAnotherBranchWouldAdd() > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
+        if (branch != null) {
+            column.getChildren().add(statementLine("...costs to build", moneyFull(branch.getCashCost())));
+        }
+        column.getChildren().add(statementLine("...and its owners put in", moneyFull(bank.getPaidInPerBranch()),
+                Palette.GOOD));
+        column.getChildren().add(statementLine("A branch cost to run last month",
+                moneyFull(bank.runningCostPerBranch())));
+        column.getChildren().add(statementLine("...and its share of what the book kept",
+                moneyFull(bank.keptPerBranch()),
+                bank.branchWouldPayForItself() ? Palette.GOOD : Palette.WARN));
+
+        column.getChildren().add(subHead("Would another one pay?"));
+        boolean relieves = bank.bookAnotherBranchWouldCarry() > 0;
+        column.getChildren().add(statementLine("Is anything spilling over?",
+                bank.overflowPastComfortable() > 0
+                        ? "yes - " + money(bank.overflowPastComfortable()) + " of the book"
+                        : "no", relieves ? Palette.GOOD : Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(String.format(
+                "The weighed book past %.0f%% of what it can carry; one more branch would take %s of it "
+                + "onto the bank's own account.", Bank.EASY_STRAIN * 100, money(bank.bookAnotherBranchWouldCarry()))));
+        column.getChildren().add(statementLine("Would it earn its keep?",
+                bank.branchWouldPayForItself() ? "yes" : "no",
+                bank.branchWouldPayForItself() ? Palette.GOOD : Palette.WARN));
+        column.getChildren().add(statementLine(String.format("Is the bank past %.0f%% of what it can carry?",
+                Bank.BUILD_AT_STRAIN * 100), bank.strain() > Bank.BUILD_AT_STRAIN ? "yes" : "no",
+                bank.strain() > Bank.BUILD_AT_STRAIN ? Palette.GOOD : Palette.TEXT_MUTED));
+
+        String verdict;
+        String tone;
+        if (bank.wantsBranch()) {
+            verdict = "Yes. The city's own investors run the same test, and build one when it passes.";
+            tone = Palette.GOOD;
+        } else if (bank.isInsolvent()) {
+            verdict = "No: a failed bank may not lend, so another counter changes nothing. It needs capital.";
+            tone = Palette.BAD;
+        } else if (bank.capacityAnotherBranchWouldAdd() <= 0) {
+            verdict = "No: its branches already reach every dollar the city has banked. A counter cannot "
+                    + "fix a shortage of savings.";
+            tone = Palette.TEXT_MUTED;
+        } else if (!relieves) {
+            verdict = "Not yet: nothing is spilling over, so nothing is waiting for the room.";
+            tone = Palette.TEXT_MUTED;
+        } else if (!bank.branchWouldPayForItself()) {
+            verdict = "No: a branch would cost more to run than its share of the book keeps.";
+            tone = Palette.WARN;
+        } else {
+            verdict = String.format("Not yet: it builds ahead of being full, from %.0f%% of what it can carry.",
+                    Bank.BUILD_AT_STRAIN * 100);
+            tone = Palette.TEXT_MUTED;
+        }
+        column.getChildren().add(sentence(verdict, tone));
+
+        Button build = new Button("Build a Commercial Bank  ›");
+        build.setOnAction(e -> ui.buildScreen.handleAllBuildingMenus("Commercial",
+                EnumSet.of(BuildingType.COMMERCIAL)));
+        HBox act = new HBox(build);
+        act.setAlignment(Pos.CENTER_LEFT);
+        act.setStyle("-fx-padding: 6 0 4 0;");
+        column.getChildren().add(act);
+    }
+
+    /* =====================================================================
+       CAPITAL & OWNERS
+
+       Its capital in its band and why the target is where it is; what its
+       rule does with the month's profit; how its equity moved, every cause
+       named and a residual that must be nothing (Bank.equityMovement(),
+       since 0.7.9 - it left out the founding settlement when the screen
+       worked it out); its share price and who owns it; its rescues.
+       ===================================================================== */
+
+    void capitalPage(VBox column) {
+
+        Bank bank = ui.game.getBank();
+        boolean lent = bank.getWeightedBook() > 0;
+
+        /* ------------------------------ its capital ------------------------------ */
+        column.getChildren().add(statementHead("Its capital"));
+        column.getChildren().add(capitalBand(bank, STATEMENT - 40, true));
+        column.getChildren().add(statementLine("Equity", moneyFull(bank.equity()),
+                bank.equity() < 0 ? Palette.BAD : null));
+        column.getChildren().add(statementLine("Its risk-weighted book", moneyFull(bank.getWeightedBook())));
+        column.getChildren().add(statementTotal("Capital ratio",
+                bank.isInsolvent() ? "failed" : lent ? share(bank.capitalRatio()) : "nothing lent",
+                stanceTone(bank)));
+        column.getChildren().add(statementLine("The minimum the city requires", share(Bank.CAPITAL_RATIO)));
+        column.getChildren().add(statementLine("Its own target", share(bank.capitalTarget()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementNote("It chose " + bank.targetReason() + "."));
+        column.getChildren().add(statementLine("The top of its band", share(bank.capitalTop())));
+        column.getChildren().add(statementNote(String.format(
+                "Past the top it returns the excess to its owners. The band is %.1f points wide - about what "
+                + "Canada's big banks hold over what their regulator expects of them.",
+                Bank.MANAGEMENT_CUSHION * 100)));
+
+        if (bank.payoutStance() == Bank.Payout.UNDER_MINIMUM) {
+            column.getChildren().add(alert("It is under the minimum",
+                    String.format("Under the %s the city requires, it lends only what keeps its borrowers "
+                    + "going until it is back over it - by earning it or by being given it. %s would take "
+                    + "it back to its own target of %s.", share(Bank.CAPITAL_RATIO),
+                    money(bank.recapitalisationNeeded()), share(bank.capitalTarget()))));
+        }
+
+        /* ------------------------ what it does with its profit ------------------------ */
+        column.getChildren().add(statementHead("What it does with its profit"));
+        String decision = bank.payoutDecision();
+        column.getChildren().add(sentence(decision.substring(0, 1).toUpperCase() + decision.substring(1) + ".",
+                stanceTone(bank)));
+        column.getChildren().add(statementLine("Last month's profit after tax, which it pays on",
+                moneyFull(bank.getPayoutProfit())));
+        column.getChildren().add(statementLine("What it held over its target", moneyFull(bank.getPayoutOverTarget())));
+        column.getChildren().add(statementLine("...and past the top of its band", moneyFull(bank.getPayoutExcess())));
+        column.getChildren().add(statementLine("Paid to its shareholders this month", moneyFull(bank.getDividendsPaid()),
+                bank.getDividendsPaid() > 0 ? Palette.GOOD : null));
+        column.getChildren().add(statementLine("...over the last twelve months", moneyFull(bank.dividendsOverYear()),
+                Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("Its own shares bought back this month",
+                moneyFull(bank.getSharesBoughtBack())));
+        column.getChildren().add(statementLine("...over the last twelve months", moneyFull(bank.buybacksOverYear()),
+                Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("New shares issued this month", moneyFull(bank.getSharesIssued())));
+        column.getChildren().add(statementLine("...over " + yearWords(bank), moneyFull(bank.overYear(Bank.Line.ISSUED)),
+                Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(String.format(
+                "Under its target it keeps everything. Inside its band it pays out %.0f%% of its profit after "
+                + "tax, never so much that it would fall under the target; over the top it also returns a "
+                + "twelfth of the excess a month. Its desk buys its own shares back only with what it holds "
+                + "over its target, never taking it under, and issues new ones only while it is under it; it "
+                + "buys other companies' shares only while its capital carries them at the desk's weight.",
+                Bank.PAYOUT_IN_BAND * 100)));
+
+        /* ------------------------------ how its equity moved ------------------------------ */
+        column.getChildren().add(statementHead("How its equity moved this month"));
+        if (!bank.isMonthKnown()) {
+            column.getChildren().add(sentence("Recorded from the next month played: there is no month yet "
+                    + "to read it from.", Palette.TEXT_MUTED));
+        } else {
+            Bank.EquityMovement m = bank.equityMovement();
+            column.getChildren().add(statementLine("At the start of the month", moneyFull(m.opening())));
+            column.getChildren().add(statementLine("What it kept", signed(m.kept(), false),
+                    m.kept() < 0 ? Palette.BAD : Palette.GOOD));
+            moved(column, "Capital from its shareholders", m.fromShareholders(), Palette.GOOD);
+            moved(column, "Capital from the city, in a rescue", m.fromCity(), Palette.GOOD);
+            moved(column, "The founding settlement, taking over the city's loans", m.founding(), null);
+            moved(column, "Paid to its shareholders", -m.dividends(), Palette.WARN);
+            moved(column, "Its own shares bought back", -m.boughtBack(), Palette.WARN);
+            moved(column, "New shares it issued", m.issued(), Palette.GOOD);
+            moved(column, "Absorbed when it failed", m.absorbed(), Palette.BAD);
+            moved(column, "Gain on paper the treasury bought back", m.treasuryBuyback(), null);
+            moved(column, "Set aside when this older save was opened", -m.allowanceOpened(), Palette.WARN);
+            double residual = m.residual();
+            boolean off = Math.abs(residual) > .005;
+            column.getChildren().add(statementLine("Not accounted for", signed(residual, false),
+                    off ? Palette.BAD : Palette.TEXT_SPENT));
+            column.getChildren().add(statementTotal("At the end of it", moneyFull(m.closing()),
+                    bank.isInsolvent() ? Palette.BAD : Palette.TEXT_HEAD));
+            if (off) {
+                column.getChildren().add(alert("Something moved its equity without telling it",
+                        String.format("%s of the month's change in its equity is none of the causes above. "
+                        + "That should be impossible - worth reporting.", money(Math.abs(residual)))));
+            } else {
+                column.getChildren().add(statementNote(
+                        "Equity moves by what it earned, what it was given and what it paid out, and by "
+                        + "nothing else. The unaccounted line is printed even at zero, because a plug "
+                        + "nobody checks is a lie."));
+            }
+        }
+
+        /* -------------------------------- its owners -------------------------------- */
+        // the sector screen's block, borrowed: it reads the game and is not a pure piece
+        ui.sectorScreen.ownersBlock(column, Equity.BANK, bank.equity(), bank.getNetIncome());
+        column.getChildren().add(statementNote(
+                "The treasury holds none of its shares: capital the city puts in during a rescue is given, "
+                + "not bought."));
+
+        /* -------------------------------- its rescues -------------------------------- */
+        column.getChildren().add(statementHead("Its rescues"));
+        column.getChildren().add(statementLine("Times it has failed", String.valueOf(bank.getFailures()),
+                bank.getFailures() > 0 ? Palette.BAD : Palette.GOOD));
+        column.getChildren().add(statementLine("What its creditors absorbed", moneyFull(bank.getResolutionLoss()),
+                bank.getResolutionLoss() > 0 ? Palette.BAD : null));
+        column.getChildren().add(statementLine("What the city has put in", moneyFull(bank.getBailoutsLifetime())));
+        // TODO(docs): since 0.7.0 the bank's wholesale lender is the central
+        // bank's window, not creditors outside the city; the loss is still
+        // booked as crossing the edge (MoneyAudit's "+ bank ResolutionLoss").
+        // Who absorbs a failed bank now is Jerus's open question, and this
+        // sentence follows his answer.
+        column.getChildren().add(statementNote(
+                "When a bank loses more than it owns, somebody eats the hole: here it is booked to its "
+                + "creditors outside the city. It comes out owning nothing, and may not lend until it has "
+                + "capital again - from a rescue, or from its own profit."));
+
         if (bank.isInsolvent()) {
-
             column.getChildren().add(statementHead("The bank has failed"));
-            column.getChildren().add(sentence(
-                    "It has lost more than it owns, so it may lend nothing and every "
-                    + "borrower in the city is paying the full premium. It can earn its way "
-                    + "back out on the book it already has — retained profit is capital "
-                    + "like any other — or the city can put capital in and lift the freeze "
-                    + "today.", Palette.BAD_TEXT));
-
             column.getChildren().add(bankRescue());
         }
+    }
+
+    /** One cause of the equity's movement, printed only when it moved it. */
+    void moved(VBox column, String label, double amount, String tone) {
+        if (Math.abs(amount) < .0005) return;
+        column.getChildren().add(statementLine(label, signed(amount, false), tone));
     }
 
     /* =====================================================================
        THE RESCUE, WHEREVER THE PLAYER IS LOOKING.
 
        Jerus: "when the bank has an issue, and you click go to bank, the
-       recapitalise the bank button is quite hidden, make it so that in the bank
-       section its on the top, not all the way hidden in the balance sheet."
+       recapitalise the bank button is quite hidden, make it so that in the
+       bank section its on the top, not all the way hidden in the balance
+       sheet."
 
-       He is right, and the inbox made it worse rather than better: the notice
-       says "Go to the bank", its button lands on the bank's landing page, and
-       the landing page then said the button was on the balance sheet. Three
-       screens to press one button, and the last hop was a sentence rather than
-       a link.
-
-       So this is ONE block used in TWO places - the top of the landing, where a
-       failed bank is the only thing on that screen worth reading, and the
-       balance sheet, where it is the end of the argument the statement has just
-       made. Two copies of a button that moves money is two places for the guard
-       on the treasury's cash to drift apart, and that guard is the whole safety
-       of it.
+       ONE block used in TWO places - the top of the landing, where a failed
+       bank is the only thing worth reading, and the Capital page. The guard
+       on the treasury's cash is the model's (Game.canRecapitaliseBank(),
+       since 0.7.9), so the two cannot drift apart and nothing else can offer
+       the rescue on a different rule.
        ===================================================================== */
     VBox bankRescue() {
 
-        Bank bank = ui.game.getBank();
-        double needed = bank.recapitalisationNeeded();
+        double needed = ui.game.bankRecapitalisationNeeded();
         double cash = ui.game.getCash();
+        boolean can = ui.game.canRecapitaliseBank();
 
         VBox block = new VBox(0);
         block.setMaxWidth(Region.USE_PREF_SIZE);
 
-        block.getChildren().add(statementLine("To put it back at its ratio",
-                moneyFull(needed), Palette.BAD));
-        block.getChildren().add(statementLine("The treasury holds",
-                moneyFull(cash), cash < needed ? Palette.BAD : Palette.GOOD));
+        block.getChildren().add(statementLine("To put it back on its feet", moneyFull(needed), Palette.BAD));
+        block.getChildren().add(statementLine("The treasury holds", moneyFull(cash),
+                can ? Palette.GOOD : Palette.BAD));
 
         Button rescue = new Button("Recapitalise the bank — " + money(needed));
-        rescue.setDisable(cash < needed);
-        if (cash >= needed) {
-            rescue.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;"
+        rescue.setDisable(!can);
+        if (can) {
+            rescue.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                     + " -fx-padding: 8 18 8 18;");
         }
         rescue.setOnAction(e -> {
-            ui.game.recapitaliseBank(needed);
+            if (!ui.game.canRecapitaliseBank()) return;
+            ui.game.recapitaliseBank(ui.game.bankRecapitalisationNeeded());
             ui.innerScrollAt.remove("showBankMenu:body");
             showBankMenu();
         });
@@ -1518,12 +1579,11 @@ final class BankScreen {
         act.setStyle("-fx-padding: 10 0 4 0;");
         block.getChildren().add(act);
 
-        if (cash < needed) {
+        if (!can) {
             block.getChildren().add(statementNote(
-                    "The treasury cannot cover it today, so the button is dead until it "
-                    + "can. The bank can still earn its way back out on the book it "
-                    + "already has — retained profit is capital like any other — which is "
-                    + "slower and costs the city nothing."));
+                    "The treasury cannot cover it today, so the button is dead until it can. The bank can "
+                    + "still earn its way back out on the book it already has - slower, and it costs the "
+                    + "city nothing."));
         }
 
         /*
@@ -1531,140 +1591,108 @@ final class BankScreen {
          * something that looks free and is not. See Bank.receiveBailout().
          */
         block.getChildren().add(alert("Borrowing to do it has the bank capitalise itself",
-                "The city borrows FROM this bank. Issuing paper to raise the rescue "
-                + "money means the bank buys the bond, the cash comes back to it as "
-                + "capital, and its balance sheet has grown on both sides without "
-                + "anybody putting anything in. It works on the screen and it is not a "
-                + "rescue."));
+                "The city borrows FROM this bank. Issuing paper to raise the rescue money means the "
+                + "bank buys the bond, the cash comes back to it as capital, and its balance sheet has "
+                + "grown on both sides without anybody putting anything in. It works on the screen and "
+                + "it is not a rescue."));
         return block;
     }
 
     /* =====================================================================
-       ITS HISTORY
+       HISTORY
 
-       HistorySave already kept the bank's premium, deposits, book, equity and
-       write-offs; it now also keeps its capacity, its strain, its profit and
-       its branch count, because those four are what make the first five mean
-       anything. A book of $7.2B is a fact; a book of $7.2B against a capacity
-       of $4.3B is a story.
+       Six charts, each on one scale in one unit: its rates; its capital
+       against its target; its return on equity; its provisions against its
+       write-offs; its lending against its deposits and what it could carry;
+       and its fees. Under them the statistics that mean something since
+       0.7.8 - months under its target and under the minimum, its worst
+       year of provisions - asked of the record (HistorySave), where the
+       premium-era ones compared the face book with capacity.
 
-       DRAWN HERE RATHER THAN LINKED TO THE REPORTS TAB on purpose. The big
-       picker chart normalises every line to its own low-to-high so that
-       unrelated series can share an axis - which is right there and wrong
-       here, because the whole point of putting the book next to the capacity
-       is that they are the same units and one is above the other.
+       DRAWN HERE RATHER THAN LINKED TO THE REPORTS TAB on purpose: the big
+       picker chart normalises every line to its own range, and the point of
+       these is that their lines share one.
        ===================================================================== */
 
-    void bankHistoryPage(VBox column, String page) {
+    void historyPage(VBox column) {
 
+        Bank bank = ui.game.getBank();
         HistorySave h = ui.game.getHistorySave();
 
         if (h.months() < 2) {
             column.getChildren().add(statementHead("Nothing to draw yet"));
             column.getChildren().add(sentence(String.format(
-                    "The city has lived %d month%s and a line needs two points. Come back "
-                    + "in a year.", h.months(), h.months() == 1 ? "" : "s"),
-                    Palette.TEXT_MUTED));
+                    "The city has lived %d month%s and a line needs two points. Come back in a year.",
+                    h.months(), h.months() == 1 ? "" : "s"), Palette.TEXT_MUTED));
             return;
         }
 
-        switch (page) {
-            case "Strain"  -> bankStrainHistory(column, h);
-            case "Capital" -> bankCapitalHistory(column, h);
-            default        -> bankLendingHistory(column, h);
-        }
-    }
-
-    void bankLendingHistory(VBox column, HistorySave h) {
-
-        double[] book = h.aligned("bankLent");
-        double[] room = h.aligned("bankCapacity");
-        double[] deposits = h.aligned("bankDeposits");
-
-        column.getChildren().add(statementHead("What it has lent, against what it could"));
+        column.getChildren().add(statementHead("Its rates"));
         column.getChildren().add(trendChart(
-                new String[] {"Lent out", "What it could carry", "Deposits gathered"},
-                new double[][] {book, room, deposits},
+                new String[] {"The policy rate", "What savers got", "Prime"},
+                new double[][] {h.aligned("policyRate"), h.aligned("bankDepositRate"), h.aligned("bankPrime")},
+                new String[] {Palette.TEXT_MUTED, Palette.SERIES[4], Palette.ACCENT},
+                BankScreen::rate));
+        column.getChildren().add(statementNote(
+                "Prime sits over the policy rate by the bank's costs; savers under it by its margin on a deposit."));
+
+        column.getChildren().add(statementHead("Its capital against its target"));
+        column.getChildren().add(trendChart(
+                new String[] {"Capital ratio", "Its target"},
+                new double[][] {h.aligned("bankCapitalRatio"), h.aligned("bankCapitalTarget")},
+                new String[] {Palette.ACCENT, Palette.TEXT_MUTED},
+                BankScreen::share));
+        column.getChildren().add(statementNote(
+                "Recorded to a ceiling of 1,000%: a young bank's capital against a tiny book is enormous, "
+                + "and nothing lent at all is drawn at the ceiling."));
+        int recorded = h.monthsRecorded("bankCapitalRatio");
+        int underTarget = h.monthsUnder("bankCapitalRatio", "bankCapitalTarget");
+        int underMinimum = h.monthsUnder("bankCapitalRatio", Bank.CAPITAL_RATIO);
+        column.getChildren().add(statementLine("Months under its target", underTarget + " of " + recorded,
+                underTarget > 0 ? Palette.WARN : Palette.GOOD));
+        column.getChildren().add(statementLine("Months under the minimum", underMinimum + " of " + recorded,
+                underMinimum > 0 ? Palette.BAD : Palette.GOOD));
+
+        column.getChildren().add(statementHead("Its return on equity"));
+        column.getChildren().add(trendChart(
+                new String[] {"Return on equity"},
+                new double[][] {h.aligned("bankReturnOnEquity")},
+                new String[] {Palette.ACCENT},
+                BankScreen::rate));
+        column.getChildren().add(statementNote(String.format(
+                "Each month's profit at a yearly rate, on the equity it opened with - so it swings; its "
+                + "owners want %.1f%% over time. Recorded between -1,000%% and 1,000%%.",
+                Bank.requiredReturn() * 100)));
+        int losing = h.monthsUnder("bankProfit", 0.0);
+        column.getChildren().add(statementLine("Months it lost money",
+                losing + " of " + h.monthsRecorded("bankProfit"), losing > 0 ? Palette.WARN : Palette.GOOD));
+
+        column.getChildren().add(statementHead("What it set aside, and what it wrote off"));
+        column.getChildren().add(trendChart(
+                new String[] {"Provisions", "Written off"},
+                new double[][] {h.aligned("bankProvisions"), h.aligned("bankWriteOffs")},
+                new String[] {Palette.WARN, Palette.BAD}));
+        column.getChildren().add(statementLine("Its worst year of provisions", moneyFull(h.worstYear("bankProvisions")),
+                Palette.WARN));
+        column.getChildren().add(statementLine("...as its capital target reads it",
+                share(bank.getWorstLossRate()) + " of its risk-weighted book"));
+        column.getChildren().add(statementNote(
+                "It sets money aside as a borrower weakens, so a loss shows here before it is written off. "
+                + "A whole business sector is one borrower in this city, so losses come in lumps."));
+
+        column.getChildren().add(statementHead("What it lent, against what it could"));
+        column.getChildren().add(trendChart(
+                new String[] {"Lent out", "What it could carry", "Deposits"},
+                new double[][] {h.aligned("bankLent"), h.aligned("bankCapacity"), h.aligned("bankDeposits")},
                 new String[] {Palette.LADDER[2], Palette.GOOD, Palette.RAMP_REST}));
         column.getChildren().add(statementNote(
-                "One scale, because all three are money. The months where the blue is "
-                + "above the green are the months the city paid a premium on every loan "
-                + "in it."));
+                "Lent out is at face; what it could carry is measured against the risk-weighted book, "
+                + "so a book of city bonds can sit above the green line and still leave room."));
 
-        double[] branches = h.aligned("bankBranches");
-        column.getChildren().add(statementHead("And how many counters it had"));
+        column.getChildren().add(statementHead("Its fees"));
         column.getChildren().add(trendChart(
-                new String[] {"Branches"},
-                new double[][] {branches},
+                new String[] {"Fees a month"},
+                new double[][] {h.aligned("bankFees")},
                 new String[] {Palette.ACCENT}));
-    }
-
-    void bankStrainHistory(VBox column, HistorySave h) {
-
-        double[] strain = h.aligned("bankStrain");
-        double[] premium = h.aligned("bankPremium");
-
-        column.getChildren().add(statementHead("How hard it has been working"));
-        column.getChildren().add(trendChart(
-                new String[] {"Book against capacity"},
-                new double[][] {strain},
-                new String[] {Palette.WARN}));
-        column.getChildren().add(statementNote(String.format(
-                "A ratio, not money: 1.00 is lending exactly what it can carry. The "
-                + "premium starts at %.2f and is fully bitten at %.2f. Recorded to a "
-                + "ceiling of 10, because a city with no bank has infinite strain and an "
-                + "infinity flattens every other point into the axis.",
-                Bank.EASY_STRAIN, Bank.HARD_STRAIN)));
-
-        column.getChildren().add(statementHead("...and what that cost everybody"));
-        column.getChildren().add(trendChart(
-                new String[] {"Points on every rate in the city"},
-                new double[][] {premium},
-                new String[] {Palette.BAD}));
-
-        /* ------------------------ how long it has hurt ------------------------ */
-        int bitten = 0;
-        double worst = 0;
-        for (double p : premium) {
-            if (Double.isNaN(p)) continue;
-            if (p > 0) bitten++;
-            worst = Math.max(worst, p);
-        }
-        column.getChildren().add(statementLine("Months with a premium",
-                bitten + " of " + h.months(), bitten > 0 ? Palette.WARN : Palette.GOOD));
-        column.getChildren().add(statementLine("The worst it got",
-                String.format("%.1f points", worst * 100),
-                worst > 0 ? Palette.BAD : Palette.GOOD));
-    }
-
-    void bankCapitalHistory(VBox column, HistorySave h) {
-
-        double[] equity = h.aligned("bankEquity");
-        double[] profit = h.aligned("bankProfit");
-        double[] losses = h.aligned("bankWriteOffs");
-
-        column.getChildren().add(statementHead("What it owns"));
-        column.getChildren().add(trendChart(
-                new String[] {"Equity"},
-                new double[][] {equity},
-                new String[] {Palette.GOOD}));
-        column.getChildren().add(statementNote(
-                "Equity is capacity: at the required ratio every dollar of it lets the "
-                + "bank carry about twelve of risk-weighted book. A month where this line "
-                + "falls is a month the city's whole credit ceiling came down with it."));
-
-        column.getChildren().add(statementHead("What it earned, and what it lost"));
-        column.getChildren().add(trendChart(
-                new String[] {"Profit a month", "Written off"},
-                new double[][] {profit, losses},
-                new String[] {Palette.ACCENT, Palette.BAD}));
-
-        int lossMonths = 0;
-        for (double p : profit) {
-            if (!Double.isNaN(p) && p < 0) lossMonths++;
-        }
-        column.getChildren().add(statementLine("Months it lost money",
-                lossMonths + " of " + h.months(),
-                lossMonths > 0 ? Palette.WARN : Palette.GOOD));
     }
 }

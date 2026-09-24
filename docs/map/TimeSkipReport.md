@@ -1,6 +1,6 @@
-# TimeSkipReport.java - 494 lines · 59 methods · 0 constants · model
+# TimeSkipReport.java - 509 lines · 60 methods · 0 constants · model
 
-`ham/citybuildersim/TimeSkipReport.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TimeSkipReport.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > What happened while you were not watching.
 > 
@@ -33,6 +33,8 @@
 > finished figures and remembers them, so no screen built on it can move a
 > single number in the game.
 
+**Uses:** [Bank](Bank.md) (1)
+
 **Used by (4):** [Game](Game.md), [HealthCheck](HealthCheck.md), [SkipReportCheck](SkipReportCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
@@ -43,8 +45,8 @@
 | 118 | · capture |
 | 247 | · deltas |
 | 249 | · health, sampled |
-| 325 | · buildings |
-| 389 | · episodes |
+| 340 | · buildings |
+| 404 | · episodes |
 
 ## Fields (state)
 
@@ -87,14 +89,14 @@
 | 254 | `private int monthsSick` |  |
 | 255 | `private double worstWorkRatio` |  |
 | 256 | `private double peakUnburied` |  |
-| 329 | `public final String name` |  |
-| 330 | `public final int change` |  |
+| 344 | `public final String name` |  |
+| 345 | `public final int change` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 455 | **type** `public class TimeSkipReport` | What happened while you were not watching. |
+| 40 | 470 | **type** `public class TimeSkipReport` | What happened while you were not watching. |
 | 43 | 19 | **type** `private static class Snapshot` | A city, at one instant. |
 
 ### episodes (lines 72-117)
@@ -117,7 +119,7 @@
 
 ### deltas (lines 247-248)
 
-### health, sampled (lines 249-324)
+### health, sampled (lines 249-339)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -150,38 +152,39 @@
 | 290 | 1 | `public double getEndRentBurden()` |  |
 | 291 | 1 | `public double getStartSavingRate()` |  |
 | 294 | 3 | `public double getWriteOffsDuringSkip()` | Debt the lenders wrote off during the skip. |
-| 299 | 3 | `public double getCashPerMonth()` | Cash per month, which is the number that says whether this is sustainable. |
-| 303 | 3 | `public double getPopulationPerMonth()` |  |
-| 308 | 7 | `public double getPopulationGrowthRate()` | Population growth over the whole skip, annualised. |
-| 316 | 1 | **type** `private interface Field` |  |
-| 316 | 1 | `double of(Snapshot s)` _(in TimeSkipReport.Field)_ |  |
-| 318 | 6 | `private double delta(Field f)` |  |
+| 307 | 5 | `public boolean defaultsWereNews()` | WHETHER THE SKIP'S DEFAULTS ARE NEWS (0.7.8). |
+| 314 | 3 | `public double getCashPerMonth()` | Cash per month, which is the number that says whether this is sustainable. |
+| 318 | 3 | `public double getPopulationPerMonth()` |  |
+| 323 | 7 | `public double getPopulationGrowthRate()` | Population growth over the whole skip, annualised. |
+| 331 | 1 | **type** `private interface Field` |  |
+| 331 | 1 | `double of(Snapshot s)` _(in TimeSkipReport.Field)_ |  |
+| 333 | 6 | `private double delta(Field f)` |  |
 
-### buildings (lines 325-388)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 328 | 11 | **type** `public static class BuildingChange` | A building type whose count moved, and by how much. |
-| 332 | 4 | `BuildingChange(String name, int change)` _(in TimeSkipReport.BuildingChange)_ |  |
-| 337 | 1 | `public boolean isGain()` _(in TimeSkipReport.BuildingChange)_ |  |
-| 349 | 23 | `public List<BuildingChange> getBuildingChanges()` | Everything whose count moved, biggest change first. |
-| 373 | 7 | `public int getBuildingsGained()` |  |
-| 381 | 7 | `public int getBuildingsLost()` |  |
-
-### episodes (lines 389-494)
+### buildings (lines 340-403)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 391 | 1 | `public int getMonthsShortOfPower()` |  |
-| 392 | 1 | `public int getMonthsShortOfWater()` |  |
-| 393 | 1 | `public int getMonthsCongested()` |  |
-| 394 | 1 | `public double getWorstRoadRatio()` |  |
-| 395 | 1 | `public int getMonthsOutOfLand()` |  |
-| 396 | 1 | `public int getMonthsHouseholdsShort()` |  |
-| 397 | 1 | `public int getMonthsNothingBuilt()` |  |
-| 398 | 1 | `public double getWorstEnergyRatio()` |  |
-| 399 | 1 | `public int getPeakPopulation()` |  |
-| 402 | 3 | `public boolean shrankFromPeak()` | True when the city ended smaller than its high-water mark. |
-| 407 | 3 | `public double getIdleShare()` | Share of the skip spent with nothing on any building site. |
-| 419 | 75 | `public List<String> getHeadlines()` | The things worth putting in front of the player, in plain sentences. |
+| 343 | 11 | **type** `public static class BuildingChange` | A building type whose count moved, and by how much. |
+| 347 | 4 | `BuildingChange(String name, int change)` _(in TimeSkipReport.BuildingChange)_ |  |
+| 352 | 1 | `public boolean isGain()` _(in TimeSkipReport.BuildingChange)_ |  |
+| 364 | 23 | `public List<BuildingChange> getBuildingChanges()` | Everything whose count moved, biggest change first. |
+| 388 | 7 | `public int getBuildingsGained()` |  |
+| 396 | 7 | `public int getBuildingsLost()` |  |
+
+### episodes (lines 404-509)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 406 | 1 | `public int getMonthsShortOfPower()` |  |
+| 407 | 1 | `public int getMonthsShortOfWater()` |  |
+| 408 | 1 | `public int getMonthsCongested()` |  |
+| 409 | 1 | `public double getWorstRoadRatio()` |  |
+| 410 | 1 | `public int getMonthsOutOfLand()` |  |
+| 411 | 1 | `public int getMonthsHouseholdsShort()` |  |
+| 412 | 1 | `public int getMonthsNothingBuilt()` |  |
+| 413 | 1 | `public double getWorstEnergyRatio()` |  |
+| 414 | 1 | `public int getPeakPopulation()` |  |
+| 417 | 3 | `public boolean shrankFromPeak()` | True when the city ended smaller than its high-water mark. |
+| 422 | 3 | `public double getIdleShare()` | Share of the skip spent with nothing on any building site. |
+| 434 | 75 | `public List<String> getHeadlines()` | The things worth putting in front of the player, in plain sentences. |
 

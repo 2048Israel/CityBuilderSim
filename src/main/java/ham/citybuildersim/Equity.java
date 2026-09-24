@@ -110,7 +110,7 @@ public class Equity {
 
     /* ------------------------------- the dials ------------------------------- */
 
-    /** The share of a positive month's net income paid to the owners. */
+    /** The share of a positive month's net income paid to the owners - every company's but the bank's, which pays by its own capital rule since 0.7.8 (Bank.dividendDue()). */
     public static final double PAYOUT = .40;
 
     /** A founding share: a thousand dollars, in the game's thousands. */
@@ -173,6 +173,20 @@ public class Equity {
 
     /** What the world wants over its own rate to buy a share here, annual. */
     public static final double FOREIGN_PREMIUM = .03;
+
+    /**
+     * The earnings yield the market prices a company here on: what a dollar
+     * of its yearly income has to earn its owners for them to hold the share
+     * at book. priceOf() values the earnings at PAYOUT x income over the
+     * world's rate plus FOREIGN_PREMIUM, so the same valuation read the other
+     * way up is (worldRate + FOREIGN_PREMIUM) / PAYOUT - 12.5% a year at the
+     * defaults. The bank prices the capital a loan ties up at this since
+     * 0.7.7 (Bank.capitalCharge()): it lends to earn what its shares are
+     * priced on, one method rather than a second number.
+     */
+    public static double requiredYield(double worldRate) {
+        return (Math.max(0, worldRate) + FOREIGN_PREMIUM) / PAYOUT;
+    }
 
     public enum Regime { NEW, GOOD, NORMAL, BAD }
 
@@ -539,7 +553,20 @@ public class Equity {
         Listing l = listings[company];
         if (paid <= 0 || l.shares <= 0) return 0;
 
-        double perShare = paid / l.shares;
+        /*
+         * ...OVER EVERY SHARE SOMEBODY IS PAID ON, which is the register's
+         * count unless the households' own count has drifted past it (0.7.7).
+         * A few hundredths of a share of drift - seed 0 of the 0.7.7 playtest
+         * had the households holding 627,527.663 of a company the register
+         * had issued 627,527.618 of - paid them more than the company paid
+         * out, since `abroad` below cannot go under nothing: money from
+         * nowhere, 0.005 to 0.31 a month from month 3,471, the whole of that
+         * run's audit residual. Divided over what is actually held, the split
+         * never pays out more than it was handed. Where the drift comes from
+         * is open (the register and the cells are moved separately).
+         */
+        double held = households == null ? 0 : households.sharesHeld(company);
+        double perShare = paid / Math.max(l.shares, held + l.dealerShares + l.foreignShares);
         double home = households == null ? 0 : households.creditDividend(company, perShare);
         // The desk is paid on what it holds - and PAYS on what it is short,
         // like any short seller: the holders of the shares it sold and does
@@ -677,6 +704,12 @@ public class Equity {
     public double foreignShare(int company) {
         Listing l = listings[company];
         return l.shares > 0 ? l.foreignShares / l.shares : 0;
+    }
+
+    /** Share of the company on the bank's trading desk, 0-1: what the desk is long over what is in issue - nothing while it is short. The Bank tab and the owners' block read it (0.7.9). */
+    public double deskShare(int company) {
+        Listing l = listings[company];
+        return l.shares > 0 ? Math.max(0, l.dealerShares) / l.shares : 0;
     }
 
     public double getOfferedThisMonth(int company)      { return listings[company].offered; }

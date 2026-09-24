@@ -1118,8 +1118,8 @@ final class BuildScreen {
                         + "deposits and brings %s of shareholders' capital with it, which "
                         + "is what lets the bank lend.",
                         money(Bank.DEPOSITS_PER_BRANCH), money(Bank.PAID_IN_PER_BRANCH)));
-                out.add("Every borrower in the city pays a premium while the bank is "
-                        + "stretched; a branch is what relieves it.");
+                out.add("A bank past its capacity has no room for the city's next "
+                        + "borrower; a branch is what makes room.");
                 break;
 
             case ELECTRICITY:

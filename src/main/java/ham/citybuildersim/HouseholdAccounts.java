@@ -160,6 +160,32 @@ public class HouseholdAccounts {
 
     public double getFares() { return fares; }
 
+    /* ---------------------- THE BANK'S ACCOUNT FEE (0.7.7) ----------------------
+     * A month's fee on every housed household (Bank, FEES), its own line on
+     * these books beside the fees above. Set by row, from
+     * HouseholdBalance.accountFeesByRow() - the same census, emptiness and
+     * fee the cells are charged at when they settle - BEFORE update() or
+     * refresh(), so the saving and the running total see it; updateByTier()
+     * leaves the rows as they were set. Carried in the statement's state.
+     */
+    private double accountFees;
+    private final double[] rowAccountFees = new double[Household.ROWS];
+
+    /** What each row's households pay the bank in account fees this month. Null charges nobody. */
+    public void setAccountFees(double[] byRow) {
+        java.util.Arrays.fill(rowAccountFees, 0);
+        accountFees = 0;
+        if (byRow == null) return;
+        for (int r = 0; r < Math.min(byRow.length, rowAccountFees.length); r++) {
+            rowAccountFees[r] = Math.max(0, byRow[r]);
+            accountFees += rowAccountFees[r];
+        }
+    }
+
+    /** What the people paid the bank in account fees this month. */
+    public double getAccountFees() { return accountFees; }
+    public double getRowAccountFees(int row) { return rowAccountFees[row]; }
+
     private int population;
     private int workforce;
     private int jobsFilled;
@@ -299,7 +325,7 @@ public class HouseholdAccounts {
      * were paying school fees out of savings they did not have.
      */
     public double getSpending() {
-        return rent + shopping + healthcare + tuition + fares + interest;
+        return rent + shopping + healthcare + tuition + fares + interest + accountFees;
     }
 
     /** Income less tax less everything paid out. Negative means living beyond it. */
@@ -838,10 +864,12 @@ public class HouseholdAccounts {
 
         // Healthcare and tuition follow heads, like the shop; the interest a
         // household pays follows its OWN tier's debt, which is the one figure
-        // here that is not a per-head share of a city total.
+        // here that is not a per-head share of a city total - and the bank's
+        // account fee, a household's, is its tier's per household (0.7.7).
         double feesDue = people * feesPerHead()
                 + (rowHouseholds[tier.ordinal()] > 0
-                        ? rowInterest[tier.ordinal()] / rowHouseholds[tier.ordinal()] : 0);
+                        ? (rowInterest[tier.ordinal()] + rowAccountFees[tier.ordinal()])
+                                / rowHouseholds[tier.ordinal()] : 0);
         double shop = people * shoppingPerHead();
 
         return new Statement(homes, people, income, tax, rentDue, feesDue, shop,
@@ -860,7 +888,7 @@ public class HouseholdAccounts {
     /* =====================================================================
        THE MONTH'S STATEMENT, CARRIED
 
-       Seventeen scalars and eighteen row arrays - twelve and eleven when this
+       Eighteen scalars and nineteen row arrays since 0.7.7 - twelve and eleven when this
        note was written - saved and restored as one, in the order below: new
        fields go on the END and a wrong length is refused
        whole, the same rule CommercialHandler.getReportState() follows and for
@@ -897,22 +925,28 @@ public class HouseholdAccounts {
         // ...and the health premium, on the end after it (2026-09-19). A save
         // from before it reads zero, which is what that city charged.
         out[i++] = healthPremiums;
+        // ...and the bank's account fee, on the end (0.7.7).
+        out[i++] = accountFees;
         // ...and the health premium's row, and the two treatment bills the
         // next strike measures the households against, on the end (2026-09-19):
-        // the rebuild cannot reproduce their split any more than the rest.
+        // the rebuild cannot reproduce their split any more than the rest -
+        // and the account fee's row after them (0.7.7).
         for (double[] row : new double[][] {
                 rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
                 rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
                 rowEiPremiums, rowBenefits, rowDoors, rowFares, rowHealthPremiums,
-                rowCareBilled, rowCareFull }) {
+                rowCareBilled, rowCareFull, rowAccountFees }) {
             System.arraycopy(row, 0, out, i, ROWS);
             i += ROWS;
         }
         return out;
     }
 
-    /** Scalars and row arrays in the statement's state since 2026-09-19. */
-    private static final int STATE_SCALARS = 17, STATE_ROWS = 18;
+    /** Scalars and row arrays in the statement's state since 0.7.7. */
+    private static final int STATE_SCALARS = 18, STATE_ROWS = 19;
+
+    /** ...and the shape before the bank's account fee was a line on it (0.7.7). */
+    private static final int SCALARS_BEFORE_ACCOUNT_FEES = 17, ROWS_BEFORE_ACCOUNT_FEES = 18;
 
     /** ...and the shape before the health premium was a line on it (2026-09-19). */
     private static final int SCALARS_BEFORE_HEALTH = 16, ROWS_BEFORE_HEALTH = 15;
@@ -954,9 +988,18 @@ public class HouseholdAccounts {
                     || in.length == SCALARS_BEFORE_FARES + Household.ROWS_BEFORE_PRISON * ROWS_BEFORE_FARES);
         boolean beforeHealth = beforeFares || beforePrison
                 || (in != null && in.length == SCALARS_BEFORE_HEALTH + ROWS * ROWS_BEFORE_HEALTH);
+        /*
+         * ...OR THE SHAPE FROM BEFORE THE BANK'S ACCOUNT FEE WAS ON IT (0.7.7),
+         * which every save written before that batch is: one scalar and one
+         * row array fewer, and the fee reads zero - which is what that city's
+         * bank charged.
+         */
+        boolean beforeAccountFees = beforeHealth
+                || (in != null && in.length == SCALARS_BEFORE_ACCOUNT_FEES + ROWS * ROWS_BEFORE_ACCOUNT_FEES);
         boolean older = in != null && in.length == 12 + ROWS_BEFORE_OUTSIDE * 11;
         boolean current = in != null
                 && (in.length == STATE_SCALARS + ROWS * STATE_ROWS
+                    || in.length == SCALARS_BEFORE_ACCOUNT_FEES + ROWS * ROWS_BEFORE_ACCOUNT_FEES
                     || in.length == SCALARS_BEFORE_HEALTH + ROWS * ROWS_BEFORE_HEALTH
                     || in.length == SCALARS_BEFORE_FARES + ROWS * ROWS_BEFORE_FARES
                     || beforePrison);
@@ -974,10 +1017,12 @@ public class HouseholdAccounts {
         eiPremiums = 0; eiBenefits = 0; studentGrants = 0;
         fares = 0;
         healthPremiums = 0;
+        accountFees = 0;
         if (current) {
             eiPremiums = in[i++]; eiBenefits = in[i++]; studentGrants = in[i++];
             if (!beforeFares) fares = in[i++];
             if (!beforeHealth) healthPremiums = in[i++];
+            if (!beforeAccountFees) accountFees = in[i++];
         }
         double[][] arrays = !current
                 ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
@@ -990,10 +1035,15 @@ public class HouseholdAccounts {
                 ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
                         rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
                         rowEiPremiums, rowBenefits, rowDoors, rowFares }
+                : beforeAccountFees
+                ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
+                        rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
+                        rowEiPremiums, rowBenefits, rowDoors, rowFares, rowHealthPremiums,
+                        rowCareBilled, rowCareFull }
                 : new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
                         rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest,
                         rowEiPremiums, rowBenefits, rowDoors, rowFares, rowHealthPremiums,
-                        rowCareBilled, rowCareFull };
+                        rowCareBilled, rowCareFull, rowAccountFees };
         java.util.Arrays.fill(rowEiPremiums, 0);
         java.util.Arrays.fill(rowBenefits, 0);
         java.util.Arrays.fill(rowDoors, 0);
@@ -1001,6 +1051,7 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowHealthPremiums, 0);
         java.util.Arrays.fill(rowCareBilled, 0);
         java.util.Arrays.fill(rowCareFull, 0);
+        java.util.Arrays.fill(rowAccountFees, 0);
         for (double[] row : arrays) {
             java.util.Arrays.fill(row, 0);
             System.arraycopy(in, i, row, 0, rows);
@@ -1036,7 +1087,7 @@ public class HouseholdAccounts {
 
     public double getRowSpending(int row) {
         return rowRent[row] + rowShopping[row] + rowHealthcare[row]
-                + rowTuition[row] + rowInterest[row];
+                + rowTuition[row] + rowInterest[row] + rowAccountFees[row];
     }
 
     public double getRowSaving(int row) {
@@ -1091,6 +1142,8 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowHealthPremiums, 0);
         java.util.Arrays.fill(rowCareBilled, 0);
         java.util.Arrays.fill(rowCareFull, 0);
+        java.util.Arrays.fill(rowAccountFees, 0);
+        accountFees = 0;
         tuition = 0;
         fares = 0;
         interest = 0;
@@ -1108,6 +1161,7 @@ public class HouseholdAccounts {
         healthcare *= scale;  tuition *= scale;  interest *= scale;
         fares *= scale;
         healthPremiums *= scale;  careBilled *= scale;  careFull *= scale;
+        accountFees *= scale;
         cumulativeSaving *= scale;
         pensionPerSenior *= scale;
         for (int r = 0; r < ROWS; r++) {
@@ -1117,6 +1171,7 @@ public class HouseholdAccounts {
             rowTuition[r] *= scale;  rowFares[r] *= scale;  rowInterest[r] *= scale;
             rowEiPremiums[r] *= scale;  rowBenefits[r] *= scale;
             rowHealthPremiums[r] *= scale;  rowCareBilled[r] *= scale;  rowCareFull[r] *= scale;
+            rowAccountFees[r] *= scale;
         }
     }
 

@@ -1,6 +1,6 @@
 # MiningCheck.java - 609 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/MiningCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MiningCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Ore, from the band it clears in to whether it makes steel worth building.
 > 

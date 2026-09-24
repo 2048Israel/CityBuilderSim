@@ -67,6 +67,7 @@ public final class SectorBooks {
 
             /* -------------------------- cash flow -------------------------- */
             double openingCash,
+            /** What its loans handed it this month: the principal less the fee the bank kept back (0.7.7). */
             double borrowed,
             double repaid,
             double fromTheCity,     // subsidy paid into the sector's own books
@@ -159,7 +160,29 @@ public final class SectorBooks {
              * the end of the record for the reason foreignAssets is: an older
              * save reads zero here, which is what was stolen from that city.
              */
-            double stolen) {
+            double stolen,
+
+            /* ------------------------ and its scrapped plant ------------------------ */
+            /**
+             * The PART of spentOnBuildings that was scrapped plant's material
+             * (0.7.8): what the builders paid for it, positive, and what the
+             * seller was paid, negative - Game, THE PLANT'S MATERIAL, TO THE
+             * BUILDERS. Already inside spentOnBuildings, so unexplained() does
+             * not take it again; named so the screen can say which it was. At
+             * the end of the record: an older save reads zero here.
+             */
+            double salvage,
+
+            /* ------------------------ and stock paid for earlier ------------------------ */
+            /**
+             * The part of this month's inputs drawn from stock it paid cash
+             * for in an earlier month (0.7.8, round 3; Sector.Ledger
+             * .paidEarlier): the builders' material from scrapped plant, at
+             * cost. A cost in netIncome and no cash this month, so the cash
+             * flow adds it back - the working-capital line a real statement
+             * carries. At the end of the record: an older save reads zero.
+             */
+            double paidEarlier) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -185,7 +208,7 @@ public final class SectorBooks {
          * the Services screen for the same rule.
          */
         public double unexplained() {
-            return cash - (openingCash + netIncome
+            return cash - (openingCash + netIncome + paidEarlier
                     + borrowed - repaid + fromTheCity + forgiven + depositInterest
                     - investedAbroad
                     + equityRaised - dividendsPaid - sharesBoughtBack
@@ -205,7 +228,7 @@ public final class SectorBooks {
                     0, 0, 0, false,
                     0, 0, 0,
                     0, 0, 0,
-                    0, 0);
+                    0, 0, 0, 0);
         }
 
         public boolean isEmpty() {
@@ -296,7 +319,9 @@ public final class SectorBooks {
                 sheet.getBuildings(),
                 sheet.getBondsPayable(),
                 opening,
-                credit.getLentThisMonth(key),
+                // What it was HANDED: the principal less the loan's fee,
+                // which the bank kept back (0.7.7) - the cash that arrived.
+                credit.getLentThisMonth(key) - credit.getFeesThisMonth(key),
                 credit.getRepaidThisMonth(key),
                 game.getSubsidyPaid(sector),
                 economy.getOverdraftForgivenThisMonth(key),
@@ -315,7 +340,9 @@ public final class SectorBooks {
                 economy.getDividendsPaid(key),
                 economy.getSharesBoughtBack(key),
                 st.maintenance,
-                economy.getStolen(key));
+                economy.getStolen(key),
+                game.getSalvageThisMonth(key),
+                st.paidEarlier);
     }
 
     /* ===================================================================
@@ -387,6 +414,6 @@ public final class SectorBooks {
                 m.rate(), m.leverage(), m.writtenOff() * s, m.blocked(),
                 m.foreignAssets() * s, m.investedAbroad() * s, m.foreignInterest() * s,
                 m.equityRaised() * s, m.dividendsPaid() * s, m.sharesBoughtBack() * s,
-                m.maintenance() * s, m.stolen() * s);
+                m.maintenance() * s, m.stolen() * s, m.salvage() * s, m.paidEarlier() * s);
     }
 }

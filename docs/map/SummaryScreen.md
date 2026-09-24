@@ -1,6 +1,6 @@
-# SummaryScreen.java - 1,639 lines · 27 methods · 6 constants · interface
+# SummaryScreen.java - 1,638 lines · 27 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > The left panel's content: the summary and the dashboard - the vitals, the
 > alert block, the six lines that are always worth a glance or the thirteen
@@ -27,35 +27,35 @@
 | 111 | CITY OVERVIEW PANEL |
 | 123 | THE LEFT PANEL |
 | 249 | SUMMARY, OR DASHBOARD |
-| 390 | THE SUMMARY IS A PROBLEM LIST NOW. |
-| 458 | SEATS AGAINST WHO WOULD COME. |
-| 582 | · · the networks |
-| 613 | · · the care |
-| 656 | · · the schools |
-| 676 | · · and the schools above them |
-| 679 | · · the police |
-| 691 | · · the housing |
-| 702 | · · the ground |
-| 729 | · · the money |
-| 748 | · · the promises |
-| 881 | · · what needs you |
-| 909 | · · the symptoms |
-| 968 | · ECONOMY |
-| 993 | · BANK |
-| 1033 | · TRADE - the city's edge, in one line. |
-| 1065 | · THE TWO POCKETS, AND WHICH MONEY EACH IS IN. |
-| 1165 | · TAX |
-| 1187 | · LABOUR - and this is the one Jerus asked for by name. |
-| 1280 | · SCHOOLS |
-| 1316 | · PEOPLE |
-| 1334 | · HEALTH |
-| 1363 | · SAFETY (2026-09-11) |
-| 1393 | · RESOURCES |
-| 1418 | · LAND |
-| 1441 | · SECTOR CASH |
-| 1453 | · BUILDINGS, and this is where the folding pays for itself. |
-| 1522 | · THE VITALS, which are never folded away. |
-| 1554 | · AND WHATEVER IS ACTUALLY WRONG. |
+| 391 | THE SUMMARY IS A PROBLEM LIST NOW. |
+| 459 | SEATS AGAINST WHO WOULD COME. |
+| 583 | · · the networks |
+| 614 | · · the care |
+| 657 | · · the schools |
+| 677 | · · and the schools above them |
+| 680 | · · the police |
+| 692 | · · the housing |
+| 703 | · · the ground |
+| 730 | · · the money |
+| 751 | · · the promises |
+| 884 | · · what needs you |
+| 912 | · · the symptoms |
+| 971 | · ECONOMY |
+| 996 | · BANK |
+| 1032 | · TRADE - the city's edge, in one line. |
+| 1064 | · THE TWO POCKETS, AND WHICH MONEY EACH IS IN. |
+| 1164 | · TAX |
+| 1186 | · LABOUR - and this is the one Jerus asked for by name. |
+| 1279 | · SCHOOLS |
+| 1315 | · PEOPLE |
+| 1333 | · HEALTH |
+| 1362 | · SAFETY (2026-09-11) |
+| 1392 | · RESOURCES |
+| 1417 | · LAND |
+| 1440 | · SECTOR CASH |
+| 1452 | · BUILDINGS, and this is where the folding pays for itself. |
+| 1521 | · THE VITALS, which are never folded away. |
+| 1553 | · AND WHATEVER IS ACTUALLY WRONG. |
 
 ## Constants
 
@@ -66,7 +66,7 @@
 | 150 | `SummaryScreen.PANEL_GOOD` | `"#5fd68a"` |  |
 | 151 | `SummaryScreen.PANEL_WARN` | `"#ffb454"` |  |
 | 152 | `SummaryScreen.PANEL_BAD` | `"#ff6b6b"` |  |
-| 376 | `SummaryScreen.PANEL_SECTIONS` | `{ "econ", "bank", "trade", "tax", "labour", "school", "people", "health", "sa...` | Every section key, so open-all does not have to be kept in step by hand. |
+| 377 | `SummaryScreen.PANEL_SECTIONS` | `{ "econ", "bank", "trade", "tax", "labour", "school", "people", "health", "sa...` | Every section key, so open-all does not have to be kept in step by hand. |
 
 ## Fields (state)
 
@@ -79,7 +79,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 32 | 1608 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - the problem list that decides what goes red, and ev... |
+| 32 | 1607 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - the problem list that decides what goes red, and ev... |
 | 37 | 1 | `SummaryScreen(UserInterface ui)` |  |
 
 ### HEADROOM, NOT SATISFACTION (lines 39-110)
@@ -101,38 +101,38 @@
 | 198 | 43 | `VBox panelSection(String key, String heading, String summary, String tone, java.util.function.Supplier<VBox> detail)` | A row that hides something, and says so. |
 | 243 | 5 | `VBox panelBody(javafx.scene.Node...rows)` | A section's detail, built from rows. |
 
-### SUMMARY, OR DASHBOARD (lines 249-389)
+### SUMMARY, OR DASHBOARD (lines 249-390)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 283 | 10 | `HBox panelModeSwitch()` |  |
-| 294 | 16 | `Label panelModeChip(String text, boolean on, boolean dashboard)` |  |
-| 326 | 22 | `VBox summaryRow(String heading, String value, String tone, Runnable go)` | One row of the summary: what it is, and what it reads. |
-| 350 | 16 | `HBox panelFoldAll()` | Open everything, or close it. |
-| 367 | 7 | `Label foldLink(String text, Runnable act)` |  |
-| 382 | 7 | `Label panelNote(String text)` | A caption inside an open section - a sub-heading, or a note. |
+| 284 | 10 | `HBox panelModeSwitch()` |  |
+| 295 | 16 | `Label panelModeChip(String text, boolean on, boolean dashboard)` |  |
+| 327 | 22 | `VBox summaryRow(String heading, String value, String tone, Runnable go)` | One row of the summary: what it is, and what it reads. |
+| 351 | 16 | `HBox panelFoldAll()` | Open everything, or close it. |
+| 368 | 7 | `Label foldLink(String text, Runnable act)` |  |
+| 383 | 7 | `Label panelNote(String text)` | A caption inside an open section - a sub-heading, or a note. |
 
-### THE SUMMARY IS A PROBLEM LIST NOW. (lines 390-457)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 434 | 1 | **type** `record Watch(String label, String reading, int level, double near, Runnable go)` | One thing being watched. |
-| 437 | 6 | `void over(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Higher is worse. |
-| 445 | 6 | `void under(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Lower is worse. |
-| 453 | 4 | `void flag(java.util.List<Watch> out, String label, String reading, boolean bad, boolean severe, Runnable go)` | A thing that is simply true or not. |
-
-### SEATS AGAINST WHO WOULD COME. (lines 458-1639)
+### THE SUMMARY IS A PROBLEM LIST NOW. (lines 391-458)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 490 | 37 | `void seatsWanted(java.util.List<Watch> out)` |  |
-| 535 | 22 | `void network(java.util.List<Watch> out, String label, double demand, double supply, double ratio)` | One network: how much of its capacity is spoken for, and whether it is still meeting demand. |
-| 565 | 228 | `java.util.List<Watch> watchAll()` | Everything with a lever, measured against its own line. |
-| 802 | 73 | `java.util.List<Watch> citySymptoms()` | The readings with no dial of their own. |
-| 876 | 49 | `void panelSummaryRows(VBox body)` |  |
-| 927 | 16 | `VBox panelHeading(String text)` | A rule and a caption, dividing the panel's two halves. |
-| 952 | 537 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
-| 1490 | 124 | `void refreshCityPanel()` |  |
-| 1625 | 9 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
-| 1636 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
+| 435 | 1 | **type** `record Watch(String label, String reading, int level, double near, Runnable go)` | One thing being watched. |
+| 438 | 6 | `void over(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Higher is worse. |
+| 446 | 6 | `void under(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Lower is worse. |
+| 454 | 4 | `void flag(java.util.List<Watch> out, String label, String reading, boolean bad, boolean severe, Runnable go)` | A thing that is simply true or not. |
+
+### SEATS AGAINST WHO WOULD COME. (lines 459-1638)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 491 | 37 | `void seatsWanted(java.util.List<Watch> out)` |  |
+| 536 | 22 | `void network(java.util.List<Watch> out, String label, double demand, double supply, double ratio)` | One network: how much of its capacity is spoken for, and whether it is still meeting demand. |
+| 566 | 230 | `java.util.List<Watch> watchAll()` | Everything with a lever, measured against its own line. |
+| 805 | 73 | `java.util.List<Watch> citySymptoms()` | The readings with no dial of their own. |
+| 879 | 49 | `void panelSummaryRows(VBox body)` |  |
+| 930 | 16 | `VBox panelHeading(String text)` | A rule and a caption, dividing the panel's two halves. |
+| 955 | 533 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
+| 1489 | 124 | `void refreshCityPanel()` |  |
+| 1624 | 9 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
+| 1635 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
 

@@ -60,6 +60,17 @@ package ham.citybuildersim;
  * city with a dead bank has no market: an emigrant takes their shares with
  * them, as before there was one.
  *
+ * AND IT BUYS ONLY ON THE CAPITAL ITS BANK HAS TO SPARE (0.7.8, round 4) -
+ * a trading book held against capital, Basel's market-risk requirement
+ * (Bank.deskCanCarry()), at the weight the bank's weighted book already
+ * gives it; and it buys the bank's own shares back only with what the bank
+ * holds over its target (Bank.buybackRoom()). What it will not buy follows
+ * the path a dead bank's market already had, seller by seller (Seller):
+ * an emigrant's shares stay abroad with them, paid their dividends there; the
+ * world keeps its shares and asks again next month; a household short of
+ * money raises less from its shares and the waterfall goes on to credit and
+ * then to going without (Household.settle()). It sells as before.
+ *
  * ==================== WHO TRADES, AND WHY ====================
  *
  * In this order each month, all at the month's quotes:
@@ -369,6 +380,8 @@ public class Exchange {
         }
         ownBoughtThisMonth = 0;
         ownSoldThisMonth = 0;
+        java.util.Arrays.fill(ownRefused, 0);
+        java.util.Arrays.fill(deskRefused, 0);
         householdBuying = 0;
         bestBuy = -1;
     }
@@ -449,21 +462,77 @@ public class Exchange {
        whoever traded is the caller's business.
        ===================================================================== */
 
-    /** Shares the desk will still buy in this company: up to its capacity, and none of its own unless flush. */
+    /**
+     * Shares the desk will still buy in this company: the tighter of its
+     * dealing limits (dealingRoom()) and its bank's capital (capitalRoom()).
+     */
     double deskCanBuy(Equity register, int c) {
+        return Math.min(dealingRoom(register, c), capitalRoom(register, c));
+    }
+
+    /** ...its dealing limits alone: up to its capacity, and of its own only while the bank is at or over its capital target (Bank.buysBackOwnShares()), at the buyback pace. */
+    private double dealingRoom(Equity register, int c) {
         if (!open) return 0;
         if (c == Equity.BANK) {
             // Its own shares are a buyback, and a buyback is paced like any
-            // company's: only when flush, and never more than the pace a
-            // month. Unpaced, the world sold a loss-making bank back its own
-            // capital at a tenth a month - $23M of $32M in a year, measured.
-            if (!bankFlush) return 0;
+            // company's: never more than the pace a month. Unpaced, the world
+            // sold a loss-making bank back its own capital at a tenth a
+            // month - $23M of $32M in a year, measured. And since 0.7.8 only
+            // while the bank is at or over its own capital target (Bank
+            // .buysBackOwnShares()): it was whenever it held twice the
+            // minimum, whatever it wanted to hold. And since round 4 never
+            // past what it holds over that target (capitalRoom()).
+            if (dealer == null || !ownSharesTrade(register) || !dealer.buysBackOwnShares()) return 0;
             return Math.max(0, BUYBACK_PACE / 12 * register.getShares(c) - ownBoughtThisMonth);
         }
         double room = Math.max(0, CAPACITY * limit[c] - register.getDealerShares(c));
 
         double bookRoom = Math.max(0, bookLimit - bookAtFair(register)) / fair[c];
         return Math.min(room, bookRoom);
+    }
+
+    /**
+     * ...and its bank's capital alone (0.7.8, round 4): of its own shares,
+     * what the bank holds over its target at the bid (Bank.buybackRoom());
+     * of any other company's, what that capital carries at the weight the
+     * weighted book gives the desk (Bank.deskCanCarry()). Both read the
+     * desk's inventory at the mark now, not the securities line, which lags
+     * the month's deals until the close re-marks it. No limit while no bank
+     * has dealt through the desk yet - a fixture's exchange, or a loaded
+     * city's before its first month or sale.
+     */
+    private double capitalRoom(Equity register, int c) {
+        if (dealer == null) return Double.POSITIVE_INFINITY;
+        double inventory = markToMarket(register);
+        if (c == Equity.BANK) return bid(c) > 0 ? dealer.buybackRoom(inventory) / bid(c) : 0;
+        return dealer.deskCanCarry(inventory, bid(c), mark(c));
+    }
+
+    /**
+     * Who was selling when the desk would not buy for want of capital: an
+     * emigrant on the way out, the world, or a household short of money.
+     */
+    public enum Seller { EMIGRANT, WORLD, HOUSEHOLD }
+
+    /**
+     * What the desk would have bought, at the bid, and did not because its
+     * bank's capital would not carry it - of the bank's own shares, and of
+     * other companies' - by who was selling. Flows of the month.
+     */
+    private final double[] ownRefused = new double[Seller.values().length];
+    private final double[] deskRefused = new double[Seller.values().length];
+
+    /**
+     * The shares the desk takes of an offer: the tighter of its limits, and
+     * what the capital rule alone turned away is counted against the seller.
+     */
+    private double deskTakes(Equity register, int c, double shares, Seller who) {
+        double dealing = Math.min(shares, dealingRoom(register, c));
+        if (!(dealing > 0)) return 0;
+        double taken = Math.max(0, Math.min(dealing, capitalRoom(register, c)));
+        double[] refused = c == Equity.BANK ? ownRefused : deskRefused;
+        if (taken < dealing) refused[who.ordinal()] += (dealing - taken) * bid(c);
+        return taken;
     }
 
     /** What the desk holds in every company at fair value. */
@@ -485,7 +554,16 @@ public class Exchange {
     private double bookLimit;
     private double ownBoughtThisMonth;
 
-    private boolean bankFlush;
+    /**
+     * The bank the desk is, for its own shares: whether it buys them back
+     * (Bank.buysBackOwnShares()) and whether it issues them
+     * (Bank.issuesOwnShares()), read off it live at every deal since 0.7.8 -
+     * the rule is the bank's own, so the same state gives the same answer on
+     * a live city and a reloaded one. Until 0.7.8 a flag, "flush", read once
+     * a month through Companies and never saved. Set by every entry that
+     * trades: takeMonth() and a household's distress sale.
+     */
+    private Bank dealer;
 
     /**
      * The desk buys shares from a household: the household's cell is debited
@@ -497,7 +575,7 @@ public class Exchange {
         shares = Math.min(shares, deskCanBuy(register, c));
         if (!open || shares <= 0) return 0;
         double cash = shares * bid(c);
-        bank.deskPays(cash);
+        payForShares(bank, c, cash);
         register.deskBuysFromHouseholds(c, shares);
         if (c == Equity.BANK) ownBoughtThisMonth += shares;
         boughtFromHouseholds[c] += cash;
@@ -515,7 +593,7 @@ public class Exchange {
     double deskSellsToHouseholds(Equity register, Bank bank, int c, double cash) {
         if (!open || cash <= 0) return 0;
         double shares = cash / ask(c);
-        bank.deskReceives(cash);
+        takeForShares(bank, c, cash);
         register.deskSellsToHouseholds(c, shares);
         if (c == Equity.BANK) ownSoldThisMonth += shares;
         soldToHouseholds[c] += cash;
@@ -525,10 +603,10 @@ public class Exchange {
     }
 
     private double deskBuysFromAbroad(Equity register, Bank bank, int c, double shares, boolean emigrant) {
-        shares = Math.min(shares, deskCanBuy(register, c));
+        shares = deskTakes(register, c, shares, emigrant ? Seller.EMIGRANT : Seller.WORLD);
         if (!open || shares <= 0) return 0;
         double cash = shares * bid(c);
-        bank.deskPays(cash);
+        payForShares(bank, c, cash);
         register.deskBuysFromAbroad(c, shares);
         if (c == Equity.BANK) ownBoughtThisMonth += shares;
         boughtFromAbroad[c] += cash;
@@ -541,13 +619,51 @@ public class Exchange {
     private double deskSellsAbroad(Equity register, Bank bank, int c, double shares) {
         if (!open || shares <= 0) return 0;
         double cash = shares * ask(c);
-        bank.deskReceives(cash);
+        takeForShares(bank, c, cash);
         register.deskSellsAbroad(c, shares);
         if (c == Equity.BANK) ownSoldThisMonth += shares;
         soldAbroad[c] += cash;
         volume[c] += shares;
         lifetimeVolume += shares;
         return cash;
+    }
+
+    /*
+     * THE BANK'S OWN SHARES ARE CAPITAL, NOT TRADING (0.7.8). Bought back,
+     * they are cancelled and the bank's equity falls by what it paid; issued,
+     * it rises by what it was paid - Bank.buyBackOwnShares() and
+     * issueOwnShares(), beside the dividend, and not the desk's trading
+     * result. Until 0.7.8 both went through deskPays()/deskReceives(), so an
+     * issue was booked as income: on seed 0 of the 0.7.7 playtest the net
+     * $8.2bn of shares the desk issued was nearly all of the bank's $8.65bn
+     * of "trading income" over the run. The exchange's own counters
+     * (soldToHouseholds and the rest) still carry them, which is where the
+     * audit reads the crossing.
+     */
+    /**
+     * ...AND NEVER ON A RECORD THAT IS NEW OR BAD - the register's own
+     * reading of the bank's last twelve months (Equity.getRegime()), which the
+     * old "flush" test carried and the capital rule keeps: a bank in its first
+     * year, or losing money in half the months of one, neither buys its own
+     * shares back nor sells new ones through its desk. Measured without it on
+     * MonetaryCheck's founding: a bank still in its first year bought its own
+     * shares from the households and emigrants while over the top of its
+     * band, and holding the dial a month later moved the 40% row's inflation
+     * by 0.059 points against an allowance of 0.05 (0.005 with it).
+     */
+    private static boolean ownSharesTrade(Equity register) {
+        Equity.Regime regime = register.getRegime(Equity.BANK);
+        return regime != Equity.Regime.NEW && regime != Equity.Regime.BAD;
+    }
+
+    private void payForShares(Bank bank, int c, double cash) {
+        if (c == Equity.BANK) bank.buyBackOwnShares(cash);
+        else bank.deskPays(cash);
+    }
+
+    private void takeForShares(Bank bank, int c, double cash) {
+        if (c == Equity.BANK) bank.issueOwnShares(cash);
+        else bank.deskReceives(cash);
     }
 
     /* =====================================================================
@@ -565,8 +681,6 @@ public class Exchange {
         double assets(int company);
         double equity(int company);
         double monthlyOperatingCost(int company);
-        /** True when the bank may buy its own shares: capital well past what it must hold. */
-        boolean bankFlush();
     }
 
     /**
@@ -580,7 +694,7 @@ public class Exchange {
                           Companies companies, double[] book, double worldRate,
                           double depositRate) {
 
-        bankFlush = companies.bankFlush();
+        dealer = bank;
         quote(register, book, bank.equity(), worldRate);
         if (!open) {
             // No dealer, no market. Leavers keep their shares abroad, as before.
@@ -727,17 +841,24 @@ public class Exchange {
 
     /**
      * Shares the desk can still sell in this company: what it holds, and
-     * nothing it does not. Its own shares it can always issue, at the pace of
-     * a buyback - selling its own shares is raising capital, not going short.
+     * nothing it does not. Its own shares it issues at the pace of a buyback
+     * while the bank is under its capital target (Bank.issuesOwnShares()) -
+     * selling its own shares is raising capital, not going short.
      */
     private double deskCanSell(Equity register, int c) {
         if (c == Equity.BANK) {
             // Issuing its own shares is raising capital, and a bank in
             // trouble raises it through its branches, not by printing
             // shares at a price near nothing: a dead bank issued a hundred
-            // billion of them for pennies. Only when flush, at the pace of a
-            // buyback.
-            if (!open || !bankFlush) return 0;
+            // billion of them for pennies. Since 0.7.8 only while it stands
+            // and is UNDER its own capital target (Bank.issuesOwnShares()) -
+            // raising what it is short of, never what it would pay straight
+            // back; it was whenever it held twice the minimum. At the pace of
+            // a buyback. What a buyer could not have while the bank holds
+            // what it wants is unfilled demand, which lifts its quote
+            // (noteUnfilled()), and the households' money goes to the next
+            // company on their list.
+            if (!open || dealer == null || !ownSharesTrade(register) || !dealer.issuesOwnShares()) return 0;
             return Math.max(0, BUYBACK_PACE / 12 * register.getShares(c) - ownSoldThisMonth);
         }
         return Math.max(0, register.getDealerShares(c));
@@ -822,6 +943,7 @@ public class Exchange {
      */
     double sellForHousehold(Equity register, Bank bank, Household cell, double needPer) {
         if (!open || needPer <= 0 || cell.households() <= 0) return 0;
+        dealer = bank;
         double worth = 0;
         for (int c = 0; c < n; c++) worth += cell.shares[c] * bid(c);
         if (worth <= 0) return 0;
@@ -829,7 +951,7 @@ public class Exchange {
         double raised = 0;
         for (int c = 0; c < n; c++) {
             if (cell.shares[c] <= 0) continue;
-            double sell = Math.min(cell.shares[c] * share * cell.households(), deskCanBuy(register, c));
+            double sell = deskTakes(register, c, cell.shares[c] * share * cell.households(), Seller.HOUSEHOLD);
             if (sell <= 0) continue;
             double cash = deskBuysFromHousehold(register, bank, c, sell);
             /*
@@ -871,6 +993,14 @@ public class Exchange {
     /** ...and what of that, this month's and earlier, the quote still carries. */
     public double getDemand(int c)               { return demand[c]; }
     public double getHouseholdBuying()           { return householdBuying; }
+    /** Of the bank's own shares, what the desk turned away this month for want of capital over the bank's target, at the bid, from this seller (0.7.8, round 4). */
+    public double getOwnRefused(Seller who)      { return ownRefused[who.ordinal()]; }
+    /** ...and of other companies' shares, for want of capital to carry them. */
+    public double getDeskRefused(Seller who)     { return deskRefused[who.ordinal()]; }
+    /** ...every seller together. */
+    public double getOwnRefused()                { return sum(ownRefused); }
+    /** ...every seller together. */
+    public double getDeskRefused()               { return sum(deskRefused); }
     /** This month's split factor: 100 for a hundred-for-one, .01 for a consolidation, 0 for none. */
     public double getSplit(int c)                { return split[c]; }
     /** Shares today for one share at the founding. */
@@ -888,6 +1018,21 @@ public class Exchange {
     public double getEmigrantsPaid()        { return sum(emigrantsPaid); }
     public double getBuybackToHouseholds()  { return sum(buybackToHouseholds); }
     public double getBuybackToDesk()        { return sum(buybackToDesk); }
+
+    /**
+     * The desk's trading in the city's shares, the bank's own left out
+     * (0.7.9): each total less the bank's line, because its own shares are
+     * capital since 0.7.8 (Bank.buyBackOwnShares()), not the desk's trading.
+     * The Bank tab's desk lines, which foot to Bank.getTradingIncome() with
+     * the dividends, the buybacks tendered and the re-mark.
+     */
+    public double deskSoldToHouseholds()     { return getSoldToHouseholds() - getSoldToHouseholds(Equity.BANK); }
+    /** ...sold abroad. */
+    public double deskSoldAbroad()           { return getSoldAbroad() - getSoldAbroad(Equity.BANK); }
+    /** ...bought from the households. */
+    public double deskBoughtFromHouseholds() { return getBoughtFromHouseholds() - getBoughtFromHouseholds(Equity.BANK); }
+    /** ...and bought from abroad. */
+    public double deskBoughtFromAbroad()     { return getBoughtFromAbroad() - getBoughtFromAbroad(Equity.BANK); }
     public double getBuybackAbroad()        { return sum(buybackAbroad); }
     public double getSpecialDividend()      { return sum(specialDividend); }
     public double getVolume()               { return sum(volume); }
@@ -1002,5 +1147,6 @@ public class Exchange {
             buybackToHouseholds[c] *= scale; buybackToDesk[c] *= scale; buybackAbroad[c] *= scale;
             specialDividend[c] *= scale;
         }
+        for (int i = 0; i < ownRefused.length; i++) { ownRefused[i] *= scale; deskRefused[i] *= scale; }
     }
 }

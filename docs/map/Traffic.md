@@ -1,6 +1,6 @@
 # Traffic.java - 60 lines · 3 methods · 0 constants · model
 
-`ham/citybuildersim/Traffic.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Traffic.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > The three things that move, which used to be one number.
 > 

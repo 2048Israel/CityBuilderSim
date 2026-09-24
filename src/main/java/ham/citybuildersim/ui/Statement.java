@@ -13,7 +13,9 @@ import static ham.citybuildersim.ui.Levers.*;
 
 /**
  * The rows a statement is built from: a head, a line, a note, a total, a
- * disclosure that opens, and the two-column book the sector pages use.
+ * disclosure that opens, and the two-column book the sector pages and the
+ * bank's income statement use - its lines able to stay open through the
+ * clock's redraw since 0.7.9 (opens()).
  *
  * Static for the same reason as Money: they hold no state and every screen
  * uses them, so they belong to no screen. Called unqualified through an
@@ -198,6 +200,15 @@ public final class Statement {
     /** A statement line that opens into its parts. `word` is the one-word hint on the mark. */
     public static VBox bookLine(String label, double now, double then, boolean known, String tone,
                           VBox detail, String word) {
+        return bookLine(label, now, then, known, tone, detail, word, null);
+    }
+
+    /**
+     * ...and remembers whether it was open: see opens(). `open` is the
+     * screen's set of the lines it has open, by label; null remembers nothing.
+     */
+    public static VBox bookLine(String label, double now, double then, boolean known, String tone,
+                          VBox detail, String word, java.util.Set<String> open) {
 
         HBox row = bookLine(label, now, then, known, tone);
         VBox box = new VBox(0, row);
@@ -217,16 +228,83 @@ public final class Statement {
         row.getChildren().add(1, mark);
         row.setStyle("-fx-padding: 3 0 3 0; -fx-cursor: hand;");
 
-        detail.setVisible(false);
-        detail.setManaged(false);
         detail.setStyle("-fx-padding: 1 0 6 16;");
-        row.setOnMouseClicked(e -> {
-            boolean open = !detail.isVisible();
-            detail.setVisible(open);
-            detail.setManaged(open);
-            mark.setText((open ? OPENED : CLOSED) + " " + word);
-        });
+        opens(row, mark, word, detail, label, open);
         box.getChildren().add(detail);
+        return box;
+    }
+
+    /**
+     * A row that opens its detail - DRAWN AS THE SCREEN LAST LEFT IT (0.7.9).
+     *
+     * Every screen is rebuilt on the clock, so a line that was drawn closed
+     * every time snapped shut each month while the player was reading what
+     * it had opened into. A screen that minds keeps a set of the lines it
+     * has open, by key, and hands it in: a line in the set is drawn open, and
+     * opening or closing one updates the set. Null is the old behaviour -
+     * drawn closed, remembered nowhere.
+     */
+    static void opens(javafx.scene.Node row, Label mark, String word, VBox detail,
+                      String key, java.util.Set<String> open) {
+        boolean shown = open != null && open.contains(key);
+        detail.setVisible(shown);
+        detail.setManaged(shown);
+        mark.setText((shown ? OPENED : CLOSED) + " " + word);
+        row.setOnMouseClicked(e -> {
+            boolean now = !detail.isVisible();
+            detail.setVisible(now);
+            detail.setManaged(now);
+            mark.setText((now ? OPENED : CLOSED) + " " + word);
+            if (open != null) {
+                if (now) open.add(key);
+                else open.remove(key);
+            }
+        });
+    }
+
+    /**
+     * The line a section adds up to: a rule, then this month's figure at full
+     * weight and last month's quieter beside it. The sector books' first; in
+     * the toolkit since the bank's income statement wanted it too (0.7.9).
+     */
+    public static VBox bookTotal(String label, double now, double then, boolean known, String tone) {
+
+        Region rule = new Region();
+        rule.setMinHeight(1);
+        rule.setPrefHeight(1);
+        rule.setMaxHeight(1);
+        rule.setMaxWidth(STATEMENT);
+        rule.setPrefWidth(STATEMENT);
+        rule.setStyle("-fx-background-color: " + Palette.HAIRLINE + ";");
+
+        Label what = new Label(label);
+        what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
+                + " -fx-font-weight: bold;");
+
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+
+        Label a = new Label(tightMoney(toDollars(now), false));
+        a.setPrefWidth(BOOK_NOW);
+        a.setMinWidth(BOOK_NOW);
+        a.setAlignment(Pos.CENTER_RIGHT);
+        a.setStyle(Palette.figure(Palette.SIZE_LEAD,
+                tone == null ? Palette.TEXT_HEAD : tone));
+
+        Label b = new Label(known ? tightMoney(toDollars(then), false) : "—");
+        b.setPrefWidth(BOOK_THEN);
+        b.setMinWidth(BOOK_THEN);
+        b.setAlignment(Pos.CENTER_RIGHT);
+        b.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
+
+        HBox row = new HBox(Palette.GAP, what, gap, a, b);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(STATEMENT);
+        row.setPrefWidth(STATEMENT);
+        row.setStyle("-fx-padding: 4 0 6 0;");
+
+        VBox box = new VBox(0, rule, row);
+        box.setMaxWidth(STATEMENT);
         return box;
     }
 
@@ -246,9 +324,12 @@ public final class Statement {
 
     /** As above, naming what opening it shows. */
     public static VBox statementDisclosure(String label, String value, VBox detail, String hint) {
+        return statementDisclosure(label, value, detail, hint, null);
+    }
 
-        detail.setVisible(false);
-        detail.setManaged(false);
+    /** ...and remembering whether it was open: see opens(). */
+    public static VBox statementDisclosure(String label, String value, VBox detail, String hint,
+                                           java.util.Set<String> open) {
 
         Label what = new Label(label);
         what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
@@ -267,12 +348,7 @@ public final class Statement {
         row.setMaxWidth(STATEMENT);
         row.setPrefWidth(STATEMENT);
         row.setStyle("-fx-padding: 3 0 3 0; -fx-cursor: hand;");
-        row.setOnMouseClicked(e -> {
-            boolean open = !detail.isVisible();
-            detail.setVisible(open);
-            detail.setManaged(open);
-            mark.setText((open ? OPENED : CLOSED) + " " + hint);
-        });
+        opens(row, mark, hint, detail, label, open);
 
         return new VBox(0, row, detail);
     }

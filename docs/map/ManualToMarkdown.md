@@ -1,6 +1,6 @@
 # ManualToMarkdown.java - 1,522 lines · 82 methods · 14 constants · tools
 
-`ham/citybuildersim/tools/ManualToMarkdown.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/ManualToMarkdown.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > The published manual as two files the repository keeps: docs/manual.md,
 > which GitHub renders when it is clicked, and docs/manual.html, the page

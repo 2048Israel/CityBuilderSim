@@ -33,72 +33,140 @@ public class CreditCheck {
     public static void main(String[] args) throws Exception {
 
         /* ==================== 1. pricing ==================== */
-        System.out.println("--- pricing: govt rate + spread, spread capped at 8pts ---");
+        /*
+         * PRIME PLUS THE BORROWER'S OWN SPREAD, since 0.7.7. The spread was
+         * struck over the city's rate with a one-point floor - "nobody borrows
+         * at sovereign" - and prime carries what that point stood for (the
+         * bank's costs and the base expected loss), so it comes off: a
+         * debt-free business pays prime.
+         *
+         * THE SPREAD IS THE CURVE'S SINCE 0.7.8 (Jerus: "Price risk from the
+         * curve"): the borrower's own expected loss, LOSS_GIVEN_DEFAULT x
+         * PD(L), over the BASE_LOSS_RATE prime already carries, at the
+         * leverage the loan leaves it at - no longer a line in leverage
+         * capped at MAX_SPREAD - MIN_SPREAD. This section asserted the line
+         * and its cap; it asserts the curve now, against the class's own
+         * functions, and the points where the two meant the same thing (no
+         * debt pays prime; a loan prices itself in; a borrower with nothing
+         * is not a good credit) are asserted as they were.
+         */
+        System.out.println("--- pricing: prime + the borrower's own expected loss, off the curve ---");
 
+        double lgd = BusinessDebtManager.LOSS_GIVEN_DEFAULT, base = Bank.BASE_LOSS_RATE;
         BusinessDebtManager m = new BusinessDebtManager();
-        m.setRiskFreeRate(.01);
+        m.setPrimeRate(.01);
         m.setAssets(IND, 100000);
         m.updateRates();
 
-        // No debt: the best credit a sector can have, still 1pt over government.
-        check("no debt -> min spread", m.getSpread(IND), .01);
-        check("no debt -> rate", m.getRate(IND), .02);
+        // No debt: the best credit a sector can have pays prime and nothing over it.
+        check("no debt -> no spread over prime", m.getSpread(IND), 0);
+        check("no debt -> rate is prime", m.getRate(IND), .01);
 
-        // debt/assets = 0.5 -> spread = 1% + 6%*0.5 = 4%
+        // debt/assets = 0.5 -> its expected loss there, over prime: nothing,
+        // because half its assets is far under the curve's knee.
         m.issueLoan(IND, 50000, 1);
         m.setAssets(IND, 100000);
         m.updateRates();
         check("leverage 0.5", m.getLeverage(IND), .5);
-        check("leverage 0.5 -> spread", m.getSpread(IND), .04);
-        check("leverage 0.5 -> rate", m.getRate(IND), .05);
+        check("leverage 0.5 -> spread, its expected loss over the book's",
+                m.getSpread(IND), Math.max(0, lgd * BusinessDebtManager.defaultProbability(.5) - base));
+        check("...which at half its assets is nothing", m.getSpread(IND), 0);
+        check("leverage 0.5 -> rate", m.getRate(IND), .01);
 
-        // Push leverage past the cap: spread must stop at 8pts, not keep climbing.
+        // Push leverage past the old cap: the spread is the curve's, uncapped.
         m.issueLoan(IND, 150000, 1);
         m.setAssets(IND, 100000);
         m.updateRates();
         check("leverage now 2.0", m.getLeverage(IND), 2.0);
-        check("spread capped", m.getSpread(IND), .08);
-        check("rate capped at govt + 8", m.getRate(IND), .09);
+        double at2 = lgd * BusinessDebtManager.defaultProbability(2.0) - base;
+        check("at 2.0 the spread is LGD x PD(2.0) less BASE_LOSS_RATE, uncapped", m.getSpread(IND), at2);
+        check("rate is prime + that", m.getRate(IND), .01 + at2);
 
-        // The cap is on the SPREAD, so a higher government rate carries through.
-        m.setRiskFreeRate(.20);
+        // The spread is the borrower's risk, so a higher prime carries through
+        // and the risk part does not move with it.
+        m.setPrimeRate(.20);
         m.updateRates();
-        check("govt 20% -> business 28%", m.getRate(IND), .28);
+        check("prime 20% -> business 20% + the same spread", m.getRate(IND), .20 + at2);
 
         // Insolvent: owes money against non-positive assets. Worst case.
-        m.setRiskFreeRate(.01);
+        m.setPrimeRate(.01);
         m.setAssets(IND, -5000);
         m.updateRates();
-        check("negative assets -> spread at ceiling", m.getSpread(IND), .08);
+        check("negative assets -> the whole curve, LGD less BASE_LOSS_RATE", m.getSpread(IND), lgd - base);
 
         // An empty or insolvent business with NO debt is not a good credit
         // either. The first version returned the minimum spread here, which is
         // how the insolvent food industry came to borrow $49,611 at 2%.
         BusinessDebtManager broke = new BusinessDebtManager();
-        broke.setRiskFreeRate(.01);
+        broke.setPrimeRate(.01);
         broke.setAssets(IND, -22815);
         broke.updateRates();
-        check("no debt but insolvent -> ceiling", broke.getSpread(IND), .08);
+        check("no debt but insolvent -> the whole curve, not prime", broke.getSpread(IND), lgd - base);
         check("...and the loan is written at that rate",
-                broke.issueLoan(IND, 49611, 1).getAnnualRate(), .09);
+                broke.issueLoan(IND, 49611, 1).getAnnualRate(), .01 + lgd - base);
 
         // A loan must be priced including itself, not off the balance sheet from
         // before it existed - otherwise every sector's first loan is the cheapest
         // one it will ever get, however large.
         BusinessDebtManager fresh = new BusinessDebtManager();
-        fresh.setRiskFreeRate(.01);
+        fresh.setPrimeRate(.01);
         fresh.setAssets(IND, 100000);
         fresh.updateRates();
-        check("quoted rate before borrowing", fresh.getRate(IND), .02);
-        // borrowing 100,000 against 100,000 of assets is leverage 1.0 -> 7%
+        check("quoted rate before borrowing", fresh.getRate(IND), .01);
+        // borrowing 100,000 against 100,000 of assets is leverage 1.0
         check("but a big loan prices itself in",
-                fresh.issueLoan(IND, 100000, 1).getAnnualRate(), .08);
+                fresh.issueLoan(IND, 100000, 1).getAnnualRate(),
+                .01 + lgd * BusinessDebtManager.defaultProbability(1.0) - base);
+
+        /*
+         * ...AND A PROJECT'S LOAN COUNTS ITS BUILDING (0.7.8), at the loan's
+         * value, the way canFundProject() reads the deal: the same 100,000
+         * borrowed for a building leaves the sector at 100,000 over 200,000.
+         * A shortfall loan's proceeds cover losses already on its books, so
+         * it counts none. And the rate a project is JUDGED at is the one it
+         * would be written at, not today's quote - Game.consider() reads
+         * projectRate(), which is the brake on building up the curve.
+         */
+        BusinessDebtManager builder = new BusinessDebtManager();
+        builder.setPrimeRate(.01);
+        builder.setAssets(IND, 100000);
+        builder.issueLoan(IND, 30000, 1);
+        builder.updateRates();
+        double quoted = builder.getRate(IND);
+        double project = 500000;
+        double leverageAfter = (30000 + project) / (100000 + project);
+        check("a project's loan is priced at the leverage it leaves the sector at, its building counted",
+                builder.projectRate(IND, project),
+                .01 + Math.max(0, lgd * BusinessDebtManager.defaultProbability(leverageAfter) - base));
+        check("...which is the leverage canFundProject() reads after the deal",
+                builder.leverageAfterProject(IND, project), leverageAfter);
+        assertTrue("...dearer than today's quote when it takes the sector up the curve",
+                builder.projectRate(IND, project) > quoted);
+        double judged = builder.projectRate(IND, project);
+        check("...and the loan is written at exactly the rate it was judged at",
+                builder.issueProjectLoan(IND, project, 2).getAnnualRate(), judged);
+        BusinessDebtManager shortOne = new BusinessDebtManager();
+        shortOne.setPrimeRate(.01);
+        shortOne.setAssets(IND, 100000);
+        check("a shortfall loan counts no building: what it will owe over what it owns",
+                shortOne.issueLoan(IND, 80000, 1).getAnnualRate(),
+                .01 + Math.max(0, lgd * BusinessDebtManager.defaultProbability(.8) - base));
+
+        /* ---------- ...and it pays its fee out of the proceeds (0.7.7) ---------- */
+        check("a loan's fee is Bank.LOAN_FEE of its principal",
+                BusinessDebtManager.feeOn(100000), 100000 * Bank.LOAN_FEE);
+        check("...counted for the month, for the bank to collect at the settle",
+                fresh.getFeesThisMonth(), BusinessDebtManager.feeOn(100000));
+        check("...and against the sector that borrowed",
+                fresh.getFeesThisMonth(IND), BusinessDebtManager.feeOn(100000));
+        fresh.startAuditMonth();
+        check("...and cleared with the month", fresh.getFeesThisMonth(), 0);
 
         /* ==================== 2. rate is fixed at issue ==================== */
         System.out.println("\n--- a loan keeps the rate it was written at ---");
 
         BusinessDebtManager m2 = new BusinessDebtManager();
-        m2.setRiskFreeRate(.01);
+        m2.setPrimeRate(.01);
         m2.setAssets(IND, 1000000);
         m2.updateRates();
         BusinessLoan cheap = m2.issueLoan(IND, 10000, 1);
@@ -116,17 +184,19 @@ public class CreditCheck {
         System.out.println("\n--- shortfall borrowing: hole + 3 months of the loss ---");
 
         BusinessDebtManager m3 = new BusinessDebtManager();
-        m3.setRiskFreeRate(.01);
+        m3.setPrimeRate(.01);
         m3.setAssets(IND, 50000);
         m3.updateRates();
 
         check("solvent sector borrows nothing", m3.coverShortfall(IND, 5000, 0, 1), 0);
         check("...and has no debt", m3.getPrincipal(IND), 0);
 
-        // $1,000 overdrawn, losing $200/month -> 1000 + 3*200 = 1600
+        // $1,000 overdrawn, losing $200/month -> 1000 + 3*200 = 1600 in hand,
+        // borrowed grossed up for the loan's fee, which comes out of it (0.7.7)
         double lent = m3.coverShortfall(IND, -1000, 200, 1);
-        check("borrowed hole + buffer", lent, 1600);
-        check("principal on the books", m3.getPrincipal(IND), 1600);
+        check("handed hole + buffer, the fee kept back", lent - BusinessDebtManager.feeOn(lent), 1600);
+        check("principal on the books: that, grossed up for the fee", m3.getPrincipal(IND),
+                1600 / (1 - Bank.LOAN_FEE));
         check("one loan, not many", m3.getLoanCount(IND), 1);
 
         /* ---------- ...and it stops at the borrower's own insolvency line ----------
@@ -145,7 +215,7 @@ public class CreditCheck {
          * and then asked for more.
          */
         BusinessDebtManager m3b = new BusinessDebtManager();
-        m3b.setRiskFreeRate(.01);
+        m3b.setPrimeRate(.01);
         m3b.setAssets(IND, 1000);
         m3b.updateRates();
 
@@ -169,12 +239,23 @@ public class CreditCheck {
         double capped = m3b.coverShortfall(IND, -100000, 0, 1);
         check("a loan is capped at the ceiling, not at what was asked", capped, ceiling);
         check("...so the principal sits exactly on it", m3b.getPrincipal(IND), ceiling);
-        assertTrue("...and the borrower is solvent there", !m3b.isInsolvent(IND));
+        /*
+         * "SOLVENT" SINCE 0.7.8 is short of the default point: a sector past
+         * INSOLVENCY_TRIGGER is no longer written down whole (isInsolvent() is
+         * the backstop's, a sector with nothing left), it has half its firms
+         * default within a year. The gap below is what keeps a borrower at the
+         * ceiling short of that line - the premise, asserted against the line
+         * itself rather than against a predicate that no longer reads it.
+         */
+        assertTrue("...and the borrower is short of the default point there",
+                m3b.getLeverage(IND) < BusinessDebtManager.INSOLVENCY_TRIGGER
+                        && m3b.getDefaultRate(IND) < .5);
 
-        // The gap: lose a third of the assets at the ceiling and still be solvent.
+        // The gap: lose a third of the assets at the ceiling and still be short of the line.
         m3b.setAssets(IND, 1000 * (2.0 / 3));
-        assertTrue("a borrower at the ceiling survives a one-third fall in assets",
-                !m3b.isInsolvent(IND));
+        assertTrue("a borrower at the ceiling survives a one-third fall in assets, short of the default point",
+                m3b.getLeverage(IND) < BusinessDebtManager.INSOLVENCY_TRIGGER
+                        && m3b.getDefaultRate(IND) < .5);
         m3b.setAssets(IND, 1000);
 
         /*
@@ -188,9 +269,10 @@ public class CreditCheck {
          */
         double interestDue = m3b.getMonthlyInterest(IND);
         assertTrue("fixture: the borrower at the ceiling owes interest this month", interestDue > 0);
-        check("at the ceiling, the desk advances this month's interest and no more",
-                m3b.coverShortfall(IND, -5000, 0, 2), interestDue);
-        check("...so the books moved by exactly that", m3b.getPrincipal(IND), ceiling + interestDue);
+        double advanced = m3b.coverShortfall(IND, -5000, 0, 2);
+        check("at the ceiling, the desk hands over this month's interest and no more, its fee on top",
+                advanced - BusinessDebtManager.feeOn(advanced), interestDue);
+        check("...so the books moved by exactly that", m3b.getPrincipal(IND), ceiling + advanced);
         check("...and there is nothing left to lend for losses", m3b.borrowingRoom(IND), 0);
         double atCeiling = m3b.getPrincipal(IND);
 
@@ -209,7 +291,7 @@ public class CreditCheck {
          * and $5.05bn of business credit was written inside them.
          */
         BusinessDebtManager m3s = new BusinessDebtManager();
-        m3s.setRiskFreeRate(.01);
+        m3s.setPrimeRate(.01);
         m3s.setAssets(IND, 1000);
         m3s.updateRates();
         m3s.setLendingOpen(false);
@@ -220,7 +302,7 @@ public class CreditCheck {
 
         // ...and a sector with nothing behind it gets nothing.
         BusinessDebtManager m3c = new BusinessDebtManager();
-        m3c.setRiskFreeRate(.01);
+        m3c.setPrimeRate(.01);
         m3c.setAssets(IND, 0);
         m3c.updateRates();
         check("a sector with no assets at all cannot borrow a penny",
@@ -236,10 +318,13 @@ public class CreditCheck {
          * it. See BusinessDebtManager.exclusionFor().
          *
          * Driven through restructure() rather than by reading the helper, so
-         * the fixture tests the path the game takes.
+         * the fixture tests the path the game takes - and, since 0.7.8, with
+         * the assets gone below nothing, because only the backstop counts a
+         * default on the record: a sector past the line with assets standing
+         * loses a slice a month and keeps its record (BankCheck (14)).
          */
         BusinessDebtManager m3d = new BusinessDebtManager();
-        m3d.setRiskFreeRate(.01);
+        m3d.setPrimeRate(.01);
         m3d.setAssets(IND, 1000);
         m3d.updateRates();
 
@@ -250,7 +335,7 @@ public class CreditCheck {
             m3d.setAssets(IND, 1000);
             for (int wait = 0; wait < 40; wait++) m3d.advanceBlocks();  // clear the ban
             m3d.coverShortfall(IND, -100000, 0, attempt * 100 + 1);
-            m3d.setAssets(IND, 100);
+            m3d.setAssets(IND, -100);
             assertTrue("fixture: attempt " + (attempt + 1)
                     + " really did leave it insolvent", m3d.isInsolvent(IND));
             m3d.restructure(IND);
@@ -275,9 +360,14 @@ public class CreditCheck {
          * three write-downs behind it: the second has to pay more.
          */
         BusinessDebtManager spotless = new BusinessDebtManager();
-        spotless.setRiskFreeRate(.01);
+        spotless.setPrimeRate(.01);
         spotless.setAssets(IND, 1000);
         spotless.updateRates();
+        // The backstop leaves nothing owing (RESTRUCTURE_TARGET of no assets),
+        // so both are handed the same loan - the 60 a write-down to
+        // RESTRUCTURE_TARGET of 100 used to leave - to be priced at a real
+        // leverage rather than at none.
+        m3d.issueLoan(IND, 60, 301);
         spotless.issueLoan(IND, m3d.getPrincipal(IND), 1);
         m3d.setAssets(IND, 1000);
         m3d.updateRates();
@@ -299,7 +389,7 @@ public class CreditCheck {
          * ban is one episode, not a default a month.
          */
         BusinessDebtManager m3e = new BusinessDebtManager();
-        m3e.setRiskFreeRate(.01);
+        m3e.setPrimeRate(.01);
         m3e.setAssets(IND, 1000);
         m3e.updateRates();
         m3e.coverShortfall(IND, -100000, 0, 1);             // to the ceiling: 900
@@ -335,7 +425,7 @@ public class CreditCheck {
         System.out.println("\n--- 36-month term, then rollover ---");
 
         BusinessDebtManager m4 = new BusinessDebtManager();
-        m4.setRiskFreeRate(.01);
+        m4.setPrimeRate(.01);
         m4.setAssets(IND, 50000);
         m4.updateRates();
         m4.issueLoan(IND, 12000, 1);
@@ -356,9 +446,13 @@ public class CreditCheck {
         // shortfall check writes a replacement.
         double cash = 500 - due;
         assertTrue("balloon took cash negative", cash < 0);
-        cash += m4.coverShortfall(IND, cash, 0, 37);
+        // The sector is handed the loan less its fee, as the game hands it
+        // (EconomyManager.settleBusinessCredit(), 0.7.7).
+        double rolled = m4.coverShortfall(IND, cash, 0, 37);
+        cash += rolled - BusinessDebtManager.feeOn(rolled);
         check("refinanced back to zero", cash, 0);
-        check("new loan on the books", m4.getPrincipal(IND), 11500);
+        check("new loan on the books, grossed up for its fee", m4.getPrincipal(IND),
+                11500 / (1 - Bank.LOAN_FEE));
         check("matures 36 months later", m4.getLoans(IND).get(0).getMaturityMonth(), 73);
 
         /* ==================== 5. cash conservation ==================== */
@@ -368,7 +462,7 @@ public class CreditCheck {
         // expense, so cash moves by net income. If the debt manager ALSO took it
         // out of cash, the sector would pay twice.
         BusinessDebtManager m5 = new BusinessDebtManager();
-        m5.setRiskFreeRate(.01);
+        m5.setPrimeRate(.01);
         m5.setAssets(IND, 100000);
         m5.updateRates();
         m5.issueLoan(IND, 24000, 1);
@@ -416,7 +510,7 @@ public class CreditCheck {
         // This is the case the 3-month buffer exists for. Without it the sector
         // writes a new loan every single month.
         BusinessDebtManager m6 = new BusinessDebtManager();
-        m6.setRiskFreeRate(.01);
+        m6.setPrimeRate(.01);
         double sectorCash = 0;
         double monthlyLoss = 300;
 
@@ -434,7 +528,13 @@ public class CreditCheck {
                 m6.getLoanCount(IND), m6.getPrincipal(IND), m6.getRate(IND) * 100);
         assertTrue("cash never left negative", sectorCash >= -1e-9);
         assertTrue("loan count stayed readable (<20, not 60)", m6.getLoanCount(IND) < 20);
-        assertTrue("rate stayed inside the cap", m6.getRate(IND) <= .01 + .08 + 1e-9);
+        // No cap since 0.7.8: under the shortfall desk's ceiling the curve
+        // charges at most its expected loss there, and that is the guard.
+        check("its rate is the curve's at its leverage", m6.getRate(IND),
+                .01 + BusinessDebtManager.expectedLossSpread(m6.getLeverage(IND)));
+        assertTrue("...under what the curve charges at the shortfall ceiling",
+                m6.getRate(IND) <= .01 + BusinessDebtManager.expectedLossSpread(
+                        BusinessDebtManager.MAX_LOAN_TO_ASSETS) + 1e-9);
 
         /* ============ the CITY's debt market, repriced ============ */
         System.out.println("\n--- there is no free money ---");
@@ -577,13 +677,13 @@ public class CreditCheck {
         /*
          * And a bank, because this section is about the CURVE.
          *
-         * The rate a borrower is quoted is the curve plus whatever the bank's
-         * strain adds, and a city with no branches has no capacity and sits at
-         * the full premium - which pushes every quote here through the ceiling
-         * and turns onCurve() below into a permanent failure. The premium is
-         * real and is tested elsewhere; what is being measured here is what the
-         * city's own debt load does to its price, so the bank is built and left
-         * unstrained.
+         * Until 0.7.7 the rate a borrower was quoted was the curve plus
+         * whatever the bank's strain added, and a city with no branches had no
+         * capacity and sat at the full premium - which pushed every quote here
+         * through the ceiling and turned onCurve() below into a permanent
+         * failure. The premium is gone (Bank, WHAT A LOAN COSTS) and the bank
+         * stays: what is being measured here is what the city's own debt load
+         * does to its price, so the bank is built and left unstrained.
          */
         city.buildStack(template(city, "Commercial Bank"), 1, false);
         city.simulateMonths(60);
@@ -968,7 +1068,6 @@ public class CreditCheck {
         bare.setGDP(9_068);
         bare.setTaxRevenue(1_916);
         bare.setCashPosition(0);
-        bare.setBankPremium(0);
         bare.setCostOfFunds(0);
         bare.updateInterest();
         int[] rows = {6, 60, 120, 240, 360, 480, 600};

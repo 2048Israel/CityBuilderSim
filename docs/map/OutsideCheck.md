@@ -1,6 +1,6 @@
-# OutsideCheck.java - 665 lines · 5 methods · 0 constants · harnesses
+# OutsideCheck.java - 674 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/OutsideCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OutsideCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > The people outside the families: the out of work, the students, the
 > unhoused and the orphans (2026-09-11).
@@ -26,7 +26,7 @@
 | 323 | · 5. the books |
 | 413 | · 6. health |
 | 438 | · 7. a real city: the treasury and the books agree |
-| 545 | · 8. a city with a college: the students' money, and a save |
+| 554 | · 8. a city with a college: the students' money, and a save |
 
 ## Fields (state)
 
@@ -38,10 +38,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 16 | 650 | **type** `public class OutsideCheck` | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). |
+| 16 | 659 | **type** `public class OutsideCheck` | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). |
 | 20 | 5 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 26 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 31 | 5 | `static void quietly(Runnable work)` |  |
 | 37 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
-| 44 | 621 | `public static void main(String[] args)` |  |
+| 44 | 630 | `public static void main(String[] args)` |  |
 

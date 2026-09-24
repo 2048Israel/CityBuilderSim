@@ -1,6 +1,6 @@
 # SafetyType.java - 68 lines · 4 methods · 0 constants · model
 
-`ham/citybuildersim/SafetyType.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SafetyType.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > What a safety building does: police, or prison cells.
 > 

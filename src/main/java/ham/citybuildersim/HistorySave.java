@@ -147,7 +147,12 @@ public class HistorySave {
        ------------------------------------------------------------------ */
     private List<Double> priceIndex = new ArrayList<>();
     private List<Double> businessDebt = new ArrayList<>();
-    private List<Double> bankPremium = new ArrayList<>();
+    /*
+     * bankPremium WAS HERE until 0.7.7: the points the strained bank added to
+     * every rate in the city. The premium is gone, so the series is: a save's
+     * history that still carries the key loads as it always did - Gson skips
+     * a key no field is named for - and the series is not written again.
+     */
     private List<Double> bankDeposits = new ArrayList<>();
     private List<Double> bankLent = new ArrayList<>();
     private List<Double> bankEquity = new ArrayList<>();
@@ -155,9 +160,10 @@ public class HistorySave {
 
     /* ------------------- what the bank could carry, and how hard -------------------
 
-       Added for the Bank tab. The five above say what the bank IS; these four
-       say whether it is in trouble, which is a different question and the one
-       every rate in the city turns on.
+       Added for the Bank tab. The four above (five, with bankPremium, until
+       0.7.7) say what the bank IS; these four say whether it is in trouble,
+       which is a different question - and until 0.7.7 the one every rate in
+       the city turned on.
 
        STRAIN IS A RATIO and BRANCHES ARE A COUNT, so neither is scaled by a
        currency reform - see redenominate(). Capacity and profit are money and
@@ -172,6 +178,38 @@ public class HistorySave {
     private List<Double> bankProfit = new ArrayList<>();
     private List<Double> bankBranches = new ArrayList<>();
     private List<Double> householdSavings = new ArrayList<>();
+
+    /* ------------------------ the price of money (0.7.7) ------------------------
+
+       The dial and the bank's three prices, a month each. policyRate is the
+       one that was missing longest: a player whose autopilot moved the dial
+       could see every rate it moved and never the dial itself. bankPrime is
+       what a sound business pays (Bank.prime()), bankDepositRate what savers
+       were paid, and bankFees the month's fee income, which is money and moves
+       with a reform; the other three are rates and do not. An older history
+       starts them empty, padded with NaN like every late series.
+       ------------------------------------------------------------------------------ */
+    private List<Double> policyRate = new ArrayList<>();
+    private List<Double> bankPrime = new ArrayList<>();
+    private List<Double> bankDepositRate = new ArrayList<>();
+    private List<Double> bankFees = new ArrayList<>();
+
+    /* ------------------------ the bank's capital (0.7.8) ------------------------
+
+       What it holds and what it does with it, a month each: its capital
+       ratio (equity over the weighted book, clamped at ten like the strain,
+       and ten with nothing lent), the target it chose, the allowance it has
+       set aside against its loans, the month's provision, the dividend it
+       paid, and its return on the equity it opened the month with, a year.
+       The allowance, the provision and the dividend are money and move with
+       a reform; the three rates do not. An older history starts them empty.
+       ------------------------------------------------------------------------------ */
+    private List<Double> bankCapitalRatio = new ArrayList<>();
+    private List<Double> bankCapitalTarget = new ArrayList<>();
+    private List<Double> bankAllowance = new ArrayList<>();
+    private List<Double> bankProvisions = new ArrayList<>();
+    private List<Double> bankDividends = new ArrayList<>();
+    private List<Double> bankReturnOnEquity = new ArrayList<>();
 
     /* --------------------------- the budget ---------------------------
 
@@ -451,7 +489,6 @@ public class HistorySave {
         businessDebt.add(round2(economy.getBusinessDebtManager().getTotalPrincipal()));
 
         Bank lender = game.getBank();
-        bankPremium.add(round4(lender.ratePremium()));
         bankDeposits.add(round2(lender.depositsGathered()));
         bankLent.add(round2(lender.getBook()));
         bankEquity.add(round2(lender.equity()));
@@ -465,6 +502,20 @@ public class HistorySave {
         bankProfit.add(round2(lender.getNetIncome()));
         bankBranches.add(round2(lender.getBranches()));
         householdSavings.add(round2(game.getHouseholds().getCumulativeSaving()));
+
+        double policy = game.getDebtManager().getPolicyRate();
+        policyRate.add(round4(policy));
+        bankPrime.add(round4(lender.prime(policy)));
+        bankDepositRate.add(round4(lender.depositRate()));
+        bankFees.add(round2(lender.feeIncome()));
+        bankCapitalRatio.add(round4(lender.getWeightedBook() > 0 ? Math.min(10, lender.capitalRatio()) : 10));
+        bankCapitalTarget.add(round4(lender.capitalTarget()));
+        bankAllowance.add(round2(lender.getAllowance()));
+        bankProvisions.add(round2(lender.provisions()));
+        bankDividends.add(round2(lender.getDividendsPaid()));
+        // Clamped at ten times, like the ratio: a month's income over a
+        // sliver of equity is not a return anybody earns.
+        bankReturnOnEquity.add(round4(Math.max(-10, Math.min(10, lender.returnOnEquity()))));
 
         CentralBank cb = game.getCentralBank();
         m0.add(round2(cb.m0()));
@@ -644,7 +695,6 @@ public class HistorySave {
 
         priceIndex = copy(loaded.priceIndex);
         businessDebt = copy(loaded.businessDebt);
-        bankPremium = copy(loaded.bankPremium);
         bankDeposits = copy(loaded.bankDeposits);
         bankLent = copy(loaded.bankLent);
         bankEquity = copy(loaded.bankEquity);
@@ -654,6 +704,16 @@ public class HistorySave {
         bankProfit = copy(loaded.bankProfit);
         bankBranches = copy(loaded.bankBranches);
         householdSavings = copy(loaded.householdSavings);
+        policyRate = copy(loaded.policyRate);
+        bankPrime = copy(loaded.bankPrime);
+        bankDepositRate = copy(loaded.bankDepositRate);
+        bankFees = copy(loaded.bankFees);
+        bankCapitalRatio = copy(loaded.bankCapitalRatio);
+        bankCapitalTarget = copy(loaded.bankCapitalTarget);
+        bankAllowance = copy(loaded.bankAllowance);
+        bankProvisions = copy(loaded.bankProvisions);
+        bankDividends = copy(loaded.bankDividends);
+        bankReturnOnEquity = copy(loaded.bankReturnOnEquity);
 
         taxWage = copy(loaded.taxWage);
         taxProperty = copy(loaded.taxProperty);
@@ -789,6 +849,66 @@ public class HistorySave {
         return out;
     }
 
+    /* ------------------- a series' record, counted (0.7.9) -------------------
+     *
+     * What the Bank tab's history page states under its charts - the months
+     * the bank's capital stood under its target and under the minimum, and
+     * its worst year of provisions - asked of the record rather than worked
+     * out on the screen. Months a series was not recorded in count for
+     * nothing, for aligned()'s reason.
+     * --------------------------------------------------------------------- */
+
+    /** Months in which both series were recorded and the first stood under the second: the bank's months under its capital target (bankCapitalRatio against bankCapitalTarget). */
+    public int monthsUnder(String series, String line) {
+        double[] a = aligned(series), b = aligned(line);
+        int n = 0;
+        for (int i = 0; i < a.length; i++) {
+            if (!Double.isNaN(a[i]) && !Double.isNaN(b[i]) && a[i] < b[i]) n++;
+        }
+        return n;
+    }
+
+    /** ...and under a fixed level: its months under the city's minimum. */
+    public int monthsUnder(String series, double level) {
+        int n = 0;
+        for (double v : aligned(series)) if (!Double.isNaN(v) && v < level) n++;
+        return n;
+    }
+
+    /** Months a series was recorded in. */
+    public int monthsRecorded(String series) {
+        int n = 0;
+        for (double v : aligned(series)) if (!Double.isNaN(v)) n++;
+        return n;
+    }
+
+    /** A flow added up over the months it was recorded. */
+    public double total(String series) {
+        double sum = 0;
+        for (double v : aligned(series)) if (!Double.isNaN(v)) sum += v;
+        return sum;
+    }
+
+    /**
+     * A flow's worst year: the largest sum of any twelve months in a row since
+     * it was first recorded - over fewer than twelve, what there is. Nothing
+     * with nothing recorded.
+     */
+    public double worstYear(String series) {
+        double[] a = aligned(series);
+        int from = 0;
+        while (from < a.length && Double.isNaN(a[from])) from++;
+        if (from >= a.length) return 0;
+        int window = 12;
+        double sum = 0, worst = -Double.MAX_VALUE;
+        for (int i = from; i < a.length; i++) {
+            sum += Double.isNaN(a[i]) ? 0 : a[i];
+            if (i - window >= from) sum -= Double.isNaN(a[i - window]) ? 0 : a[i - window];
+            if (i - from + 1 >= window || i == a.length - 1) worst = Math.max(worst, sum);
+        }
+        return worst;
+    }
+
     /**
      * A monthly series summed from its first recorded month, for the running
      * totals of the dead. The months before a series was recorded stay NaN -
@@ -857,7 +977,6 @@ public class HistorySave {
 
         map.put("priceIndex", priceIndex);
         map.put("businessDebt", businessDebt);
-        map.put("bankPremium", bankPremium);
         map.put("bankDeposits", bankDeposits);
         map.put("bankLent", bankLent);
         map.put("bankEquity", bankEquity);
@@ -867,6 +986,16 @@ public class HistorySave {
         map.put("bankProfit", bankProfit);
         map.put("bankBranches", bankBranches);
         map.put("householdSavings", householdSavings);
+        map.put("policyRate", policyRate);
+        map.put("bankPrime", bankPrime);
+        map.put("bankDepositRate", bankDepositRate);
+        map.put("bankFees", bankFees);
+        map.put("bankCapitalRatio", bankCapitalRatio);
+        map.put("bankCapitalTarget", bankCapitalTarget);
+        map.put("bankAllowance", bankAllowance);
+        map.put("bankProvisions", bankProvisions);
+        map.put("bankDividends", bankDividends);
+        map.put("bankReturnOnEquity", bankReturnOnEquity);
 
         map.put("taxWage", taxWage);
         map.put("taxProperty", taxProperty);
@@ -989,7 +1118,10 @@ public class HistorySave {
          *
          * reservesUsd and foreignDebtUsd are owed and held in somebody else's
          * money, which a domestic reform cannot reach. priceIndex is a ratio of
-         * two baskets and a reform divides both. bankPremium is a rate. homes,
+         * two baskets and a reform divides both. policyRate, bankPrime and
+         * bankDepositRate are rates (bankPremium was, until 0.7.7), and so
+         * are the bank's capital ratio, its target and its return on equity
+         * (0.7.8); its allowance, provisions and dividends are money. homes,
          * households, students, graduates, licences, unburied and
          * constructionCapacity are counts of things, and landUse is a share -
          * none of them is money at all.
@@ -997,7 +1129,8 @@ public class HistorySave {
         scaleAll(scale, fxRate, currentAccount, exportsAbroad, importsAbroad,
                 businessDebt, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
-                householdSavings,
+                householdSavings, bankFees,
+                bankAllowance, bankProvisions, bankDividends,
                 taxWage, taxProperty, taxSales, taxBusiness, taxIndustrial,
                 contributions, pensionBill, healthBill,
                 rentPrice,

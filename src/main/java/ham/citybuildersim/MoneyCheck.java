@@ -188,14 +188,29 @@ public class MoneyCheck {
         assertTrue("a stressed city conserves money to within 0.01% of what moved",
                 worst.relative() < 1e-4);
 
-        // Bankrupt retail by hand and let the restructure and its ban run.
+        /*
+         * Bankrupt retail by hand and let the restructure and its ban run.
+         *
+         * SINCE 0.7.8 THE WHOLE-SECTOR RESTRUCTURE IS THE BACKSTOP'S ALONE, a
+         * sector with nothing left, so the fixture takes retail there: a
+         * loan, and unpaid bills past everything else it owns, which the
+         * restructure forgives - money in from outside the city, the case
+         * the audit has to see. It used to hand retail the loan's cash and
+         * set its assets to -1, which never stuck (the month's check reads
+         * the assets off the balance sheet again before it judges); what
+         * restructured it was its debt passing 1.5 times its assets later,
+         * the second way in, which is a slice a month now - BankCheck (14)
+         * audits those.
+         */
         BusinessDebtManager credit = s.getEconomyManager().getBusinessDebtManager();
         credit.issueLoan(Sectors.RETAIL, 5_000_000, s.getMonth());
-        s.getEconomyManager().setSectorCash(Sectors.RETAIL,
-                s.getEconomyManager().getSectorCash(Sectors.RETAIL) + 5_000_000);
-        credit.setAssets(Sectors.RETAIL, -1);
+        double retailOwnsBesidesItsTill = credit.getAssets(Sectors.RETAIL) - credit.getCash(Sectors.RETAIL);
+        s.getEconomyManager().setSectorCash(Sectors.RETAIL, -Math.max(0, retailOwnsBesidesItsTill) - 100_000);
+        int wholeBefore = credit.getRestructureCount(Sectors.RETAIL);
 
         worst = play("through a restructure, 60 months", s, 60, verbose);
+        assertTrue("fixture: retail went under whole, and was restructured",
+                credit.getRestructureCount(Sectors.RETAIL) > wholeBefore);
         assertTrue("a restructure moves no cash the audit cannot see",
                 worst.relative() < 1e-4);
 

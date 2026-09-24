@@ -18,35 +18,30 @@ import java.util.Map;
  * this file instead of another object to wire up. Each sector still gets its own
  * rate - the rate is per sector, the bookkeeping is shared.
  *
- * PRICING
+ * PRICING (0.7.7; the borrower's part from the curve since 0.7.8)
  *
- *     rate = government rate + credit spread
+ *     rate = the bank's prime + this borrower's own expected loss over the
+ *            book's + its record
  *
- * The government rate is the risk-free floor: no private borrower is safer than
- * the city that can tax them. The spread is driven by leverage - debt to total
- * assets - which mirrors how DebtManager prices the city off debt-to-GDP. Both
- * ask the same question of the same shape: how much is owed against how much
- * there is to pay with.
- *
- *     spread = MIN_SPREAD + SPREAD_PER_DEBT_TO_ASSETS * (debt / assets)
- *
- * clamped to [MIN_SPREAD, MAX_SPREAD]. A debt-free business still pays
- * MIN_SPREAD over the city, because it is still not the city. A business whose
- * debts exceed its assets pays the ceiling and no more - the cap is what stops
- * a bad month from compounding into an unrecoverable one.
- *
- * Capping the SPREAD rather than the total rate keeps the two systems coupled:
- * if city borrowing drives the risk-free rate up, business credit follows it up
- * rather than compressing to nothing against a fixed ceiling.
+ * PRIME is the bank's: what money, running the bank, the expected loss and the
+ * capital a loan ties up cost it, for a sound business (Bank.prime(), WHAT A
+ * LOAN COSTS). Until 0.7.7 the base was the city's own rate - with the bank's
+ * strain premium in it - floored on the bank's cost of funds plus a point.
+ * The spread is THIS borrower's: since 0.7.8 its own expected loss off the
+ * curve its firms default on, over the through-the-cycle loss prime already
+ * carries, at the leverage the loan leaves it at - see PRICING FROM THE
+ * CURVE. A loan keeps the rate it was written at for its LOAN_TERM_MONTHS.
  *
  * ORIGINATION
  *
- * Loans are underwritten automatically when a sector cannot cover its month.
- * Buildings are paid for out of city cash, so a business never borrows to
- * expand; the only thing it needs credit for is a shortfall. Before this
- * existed, a sector's cash simply went negative with no lender, no interest and
- * no liability on its balance sheet - the food industry was $48,011.82 overdrawn
- * at month 170 and paying nothing for the privilege.
+ * Loans are underwritten automatically when a sector cannot cover its month
+ * (the shortfall desk, coverShortfall()), and for a building a sector's
+ * investor plans and cannot pay for out of its own cash (the investment desk,
+ * canFundProject() and issueProjectLoan(), the building counted as the
+ * collateral). Before this existed, a sector's cash simply went negative with
+ * no lender, no interest and no liability on its balance sheet - the food
+ * industry was $48,011.82 overdrawn at month 170 and paying nothing for the
+ * privilege.
  */
 public class BusinessDebtManager {
 
@@ -67,18 +62,68 @@ public class BusinessDebtManager {
         SECTORS = keys.clone();
         for (String sector : SECTORS) {
             assets.putIfAbsent(sector, 0.0);
-            rates.putIfAbsent(sector, MIN_SPREAD);
+            rates.putIfAbsent(sector, 0.0);
             maturedPrincipal.putIfAbsent(sector, 0.0);
         }
     }
 
     public String[] sectors() { return SECTORS.clone(); }
 
-    /** Floor over the government rate. Nobody borrows at sovereign. */
-    private static final double MIN_SPREAD = .01;
+    /* =======================================================================
+       PRICING FROM THE CURVE (0.7.8)
 
-    /** Ceiling over the government rate - the "even worst case, not too bad" cap. */
-    private static final double MAX_SPREAD = .08;
+       Jerus, 2026-09-23: "Price risk from the curve". A borrower pays prime
+       and, over it, its own expected loss past the book's:
+
+           rate = prime + max(0, LOSS_GIVEN_DEFAULT x PD(L) - Bank.BASE_LOSS_RATE)
+                        + DEFAULT_SURCHARGE x its record
+
+       PD(L) is the curve its firms default on (defaultProbability()), and L
+       is THE LEVERAGE THE LOAN LEAVES IT AT: after a shortfall loan, what it
+       will owe over the assets it has (the proceeds cover losses already on
+       its books); after a project, what it will owe over its assets and the
+       building, counted at the loan's value as canFundProject() counts it -
+       both on its last quarter's statements, the deal on top, since round 3
+       (THE BANK READS A BORROWER FROM ITS LAST QUARTER, below).
+       Prime already carries BASE_LOSS_RATE, the loss of a sound book, so a
+       sound borrower pays prime; one at the watch line pays 0.83 points over
+       it, one at 1.2 10.8, one at the default point 29.6.
+
+       WHAT IT REPLACED. The spread was a line in leverage: SPREAD_PER_DEBT_TO_
+       ASSETS, six points a unit, from MIN_SPREAD's one point to MAX_SPREAD's
+       eight - Jerus's "even worst case, not too bad" cap - re-based on prime
+       in 0.7.7 so that it ran from nothing to seven points over it. The cap
+       was what stopped a bad month compounding, and the todo's "Not doing"
+       has why the spread was never made dearer (the 12% measurement): the
+       shortfall borrower paid the extra interest by borrowing it.
+       That does not bite here: under the shortfall desk's ceiling
+       (MAX_LOAN_TO_ASSETS, 0.9) the curve charges at most 0.83 points over
+       prime - less than the old line's 5.4 there - and past it the desk lends
+       only the month's interest. What the curve charges past the ceiling is
+       the projects', and a project is judged at the rate it would be written
+       at (Game.consider()), which is the brake: a building that takes a
+       sector to 1.2 has to earn prime and eleven points. Until 0.7.8 the
+       seven-point cap sat under the curve's own expected loss from about 1.15
+       times its assets, and the bank lent there at a price its own curve said
+       lost money.
+       ======================================================================= */
+
+    /** A borrower's own expected loss over the book's, at this leverage: LOSS_GIVEN_DEFAULT x PD(L) less Bank.BASE_LOSS_RATE, never below nothing - the part of its rate that is its risk. */
+    public static double expectedLossSpread(double leverage) {
+        return Math.max(0, LOSS_GIVEN_DEFAULT * defaultProbability(leverage) - Bank.BASE_LOSS_RATE);
+    }
+
+    /**
+     * The leverage a price is read at: what is owed over the assets, and the
+     * whole curve against no assets at all, owing or not - a business with
+     * nothing is not a good credit, it is an empty one. (The first version of
+     * the old spread returned its minimum there, so the insolvent food
+     * industry borrowed $49,611 at 2%.)
+     */
+    static double pricingLeverage(double principal, double assets) {
+        if (!(assets > 0)) return Double.POSITIVE_INFINITY;
+        return Math.max(0, principal) / assets;
+    }
 
     /* =======================================================================
        INSOLVENCY
@@ -93,9 +138,21 @@ public class BusinessDebtManager {
 
        A lender in that position stops lending and takes a haircut, so that is
        what happens now.
+
+       Since 0.7.8 A SECTOR DEFAULTS A SLICE AT A TIME (see the section of
+       that name below): the line is where a FIRM defaults, and a sector - many
+       firms - loses the share of its debt whose firms fell through it each
+       month. The whole-sector write-down is the backstop, for a sector with
+       nothing left at all.
        ======================================================================= */
 
-    /** Debt above this multiple of assets is not getting repaid, and both sides know it. */
+    /**
+     * The default point: a firm owing more than this multiple of its assets
+     * is not getting repaid, and both sides know it. Since 0.7.8 it is where
+     * a FIRM defaults - T in defaultProbability() - and a sector at it has
+     * half its firms default within a year; until then it was where the
+     * whole sector was written down, overnight.
+     */
     public static final double INSOLVENCY_TRIGGER = 1.5;
 
     /**
@@ -131,8 +188,176 @@ public class BusinessDebtManager {
      */
     public static final double MAX_LOAN_TO_ASSETS = 0.9;
 
-    /** What a restructured borrower is left owing, as a multiple of its assets. */
-    private static final double RESTRUCTURE_TARGET = .6;
+    /** What a restructured borrower is left owing, as a multiple of its assets. Public since 0.7.8: what a default costs the bank is read off this - LOSS_GIVEN_DEFAULT for a firm, and the backstop's Bank.lossIfDefaulted() for a sector with nothing left. */
+    public static final double RESTRUCTURE_TARGET = .6;
+
+    /* =======================================================================
+       A SECTOR DEFAULTS A SLICE AT A TIME (0.7.8)
+
+       Jerus, 2026-09-23: "go for option C" - a sector stands for many firms,
+       so when it is in trouble only its weakest part goes bust, a slice at a
+       time, instead of 60% of the whole sector overnight.
+
+       Until then a sector was one borrower. The month its debt passed
+       INSOLVENCY_TRIGGER times its assets, all of it was written down to
+       RESTRUCTURE_TARGET of them, and the bank lost 37-185% of its weighted
+       book in its worst year - a whole sector is one borrower, and no real
+       capital level holds a loss that size (batch 2's record: 92 failures on
+       the default eight seeds, where 0.7.7 had 4, because it no longer kept
+       capital it never paid out).
+
+       THE RULE is Merton's (1974) structural model of default, the basis of
+       Moody's KMV "expected default frequency". A firm defaults when its
+       assets fall below what it owes; with its assets moving with volatility
+       sigma, the chance of that within a year is
+
+           PD(L) = N( ln(L / T) / sigma )
+
+       L is the sector's debt over its assets as the month's check reads them
+       (after the balance-sheet refresh), T the default point
+       INSOLVENCY_TRIGGER, N the standard normal CDF (normalCdf()), sigma
+       ASSET_VOLATILITY. The sector's own books carry the common shock - its
+       trade, its prices, its losses; sigma is the spread of fortunes among
+       the firms inside it. With many firms that spread averages out, so the
+       flow is deterministic: no random numbers, and the playtest stays
+       reproducible.
+
+       Each month the share of the sector's debt that defaults is the monthly
+       hazard h = 1 - (1 - PD)^(1/12), and the bank loses LOSS_GIVEN_DEFAULT
+       of it: principal x h x LOSS_GIVEN_DEFAULT, every loan of the sector
+       written down pro rata (defaultSlice()). The firms that defaulted keep
+       their plant - a write-down, not a liquidation, as the restructure
+       always was - so the sector's assets stand, its debt falls, its leverage
+       falls and next month's hazard with it. A sector that keeps losing money
+       keeps rising into the hazard; one that stabilises drains out of it.
+
+       What it gives at ASSET_VOLATILITY = 0.25, printed by BankCheck (14)
+       from these functions:
+
+           leverage   default a year   a month   lost a year, of its debt
+             0.30         0.00%          0.00%        0.00%
+             0.50         0.00%          0.00%        0.00%
+             0.70         0.11%          0.01%        0.07%
+             0.90         2.05%          0.17%        1.23%
+             1.10        10.74%          0.94%        6.44%
+             1.30        28.35%          2.74%       17.01%
+             1.50        50.00%          5.61%       30.00%
+             2.00        87.51%         15.91%       52.50%
+             3.00        99.72%         38.76%       59.83%
+
+       ("lost a year" is LOSS_GIVEN_DEFAULT x PD: what a sector held at that
+       leverage loses; one that is not held drains down the table.)
+
+       THE WHOLE-SECTOR RESTRUCTURE STAYS AS THE BACKSTOP, for the case where
+       every firm is under water at once: assets at or below zero with debt or
+       an overdraft (isInsolvent()). There, restructure() runs as it always
+       did - written down to RESTRUCTURE_TARGET of its assets (nothing), the
+       overdraft forgiven, the record counted, the ban. Only that counts
+       toward the record, the surcharge and the ban: a slice does not, because
+       the price already charges a sector in trouble its expected loss (PRICING
+       FROM THE CURVE).
+       ======================================================================= */
+
+    /**
+     * The one-year volatility of a firm's assets: sigma in PD(L), the spread
+     * of fortunes among the firms inside a sector. The Merton/KMV literature
+     * estimates it for non-financial firms at commonly 20-35% a year, a
+     * typical industrial about 25%. A number with an argument behind it, not
+     * a measurement of this city, and not tuned to any result here: at 0.20
+     * the curve is steeper (fewer defaults under the line, more past it), at
+     * 0.35 flatter. Jerus's number to settle.
+     */
+    public static final double ASSET_VOLATILITY = .25;
+
+    /** The horizon a default probability is quoted over, in months: one year, the convention of KMV's EDF and of every rating agency's default rate. A convention, not a dial. */
+    public static final int DEFAULT_HORIZON_MONTHS = 12;
+
+    /**
+     * What the bank loses on a dollar that defaults: a defaulting firm sits
+     * at the default point, owing INSOLVENCY_TRIGGER times its assets, and
+     * the restructure rule leaves it owing RESTRUCTURE_TARGET of them - so
+     * 1 - 0.6 / 1.5 = 60%. Derived from those two, not a number of its own.
+     */
+    public static final double LOSS_GIVEN_DEFAULT = 1 - RESTRUCTURE_TARGET / INSOLVENCY_TRIGGER;
+
+    /**
+     * The standard normal cumulative distribution, N(x): Hart's (1968)
+     * double-precision rational approximation as Graeme West gives it
+     * ("Better approximations to cumulative normal functions", Wilmott,
+     * 2005), with a continued fraction past 7.07 standard deviations.
+     * Deterministic, and the one place the game computes it. Measured against
+     * the exact erfc on a 0.001 grid over +/-40: absolute error at most
+     * 2.3e-16, and relative error in the lower tail under 1e-8 - so even
+     * the smallest default rates it gives are right to eight figures.
+     * BankCheck (14) asserts it against N(0), N(1.96) and N(-1).
+     */
+    public static double normalCdf(double x) {
+        if (Double.isNaN(x)) return Double.NaN;
+        double a = Math.abs(x);
+        double tail;
+        if (a > 37) {
+            tail = 0;
+        } else {
+            double e = Math.exp(-a * a / 2);
+            if (a < 7.07106781186547) {
+                double b = 3.52624965998911e-02 * a + 0.700383064443688;
+                b = b * a + 6.37396220353165;
+                b = b * a + 33.912866078383;
+                b = b * a + 112.079291497871;
+                b = b * a + 221.213596169931;
+                b = b * a + 220.206867912376;
+                tail = e * b;
+                b = 8.83883476483184e-02 * a + 1.75566716318264;
+                b = b * a + 16.064177579207;
+                b = b * a + 86.7807322029461;
+                b = b * a + 296.564248779674;
+                b = b * a + 637.333633378831;
+                b = b * a + 793.826512519948;
+                b = b * a + 440.413735824752;
+                tail = tail / b;
+            } else {
+                double b = a + 0.65;
+                b = a + 4 / b;
+                b = a + 3 / b;
+                b = a + 2 / b;
+                b = a + 1 / b;
+                tail = e / b / 2.506628274631;
+            }
+        }
+        return x > 0 ? 1 - tail : tail;
+    }
+
+    /**
+     * PD(L): the share of a sector's firms - weighted by what they owe - that
+     * default within a year at this leverage, N(ln(L / INSOLVENCY_TRIGGER) /
+     * ASSET_VOLATILITY). Nothing with no debt; all of it against no assets at
+     * all (L infinite). THE ONE CURVE: the month's slice, the bank's
+     * allowance and the Bank tab all read it.
+     */
+    public static double defaultProbability(double leverage) {
+        if (!(leverage > 0)) return 0;
+        if (Double.isInfinite(leverage)) return 1;
+        return normalCdf(Math.log(leverage / INSOLVENCY_TRIGGER) / ASSET_VOLATILITY);
+    }
+
+    /** ...over this many months instead of a year: 1 - (1 - PD)^(months / DEFAULT_HORIZON_MONTHS), for a borrower held at this leverage. Written through log1p so the smallest rates keep their figures. */
+    public static double defaultProbability(double leverage, double months) {
+        if (!(months > 0)) return 0;
+        double pd = defaultProbability(leverage);
+        if (pd >= 1) return 1;
+        return -Math.expm1(Math.log1p(-pd) * months / DEFAULT_HORIZON_MONTHS);
+    }
+
+    /** h: the share of a sector's debt that defaults in one month at this leverage - the monthly hazard of PD(L). */
+    public static double monthlyDefaultShare(double leverage) {
+        return defaultProbability(leverage, 1);
+    }
+
+    /** A sector's leverage for the curve: what it owes over its assets, infinite when it owes anything against nothing. */
+    static double leverageOf(double principal, double assets) {
+        if (!(principal > 0)) return 0;
+        return assets > 0 ? principal / assets : Double.POSITIVE_INFINITY;
+    }
 
     /**
      * Months a sector cannot borrow after being restructured.
@@ -177,12 +402,10 @@ public class BusinessDebtManager {
         return BORROWING_BLOCKED_MONTHS * Math.max(1, defaultsSoFar);
     }
 
-    /** Extra annual interest per 1.0 of debt-to-assets. */
-    private static final double SPREAD_PER_DEBT_TO_ASSETS = .06;
-
     /**
-     * Extra annual interest per prior write-down, on top of the leverage
-     * spread and outside its cap, up to DEFAULT_SURCHARGE_MAX_COUNT of them.
+     * Extra annual interest per prior write-down, on top of the borrower's
+     * expected loss, up to DEFAULT_SURCHARGE_MAX_COUNT of them.
+     * (Outside the old leverage spread's cap too, until 0.7.8 took the cap.)
      *
      * DEFAULTING USED TO CUT THE RATE. restructure() reprices off the
      * post-write-down leverage and the borrower's record never entered the
@@ -191,10 +414,12 @@ public class BusinessDebtManager {
      * lender eight times was quoted less than one that had never missed. The
      * record is what a lender prices; here it was only what it banned on.
      */
-    private static final double DEFAULT_SURCHARGE = .01;
-    private static final int DEFAULT_SURCHARGE_MAX_COUNT = 3;
+    public static final double DEFAULT_SURCHARGE = .01;
+    /** The most write-downs DEFAULT_SURCHARGE is charged for: a record adds three points at the most. */
+    public static final int DEFAULT_SURCHARGE_MAX_COUNT = 3;
 
-    private static final int LOAN_TERM_MONTHS = 36;
+    /** How long a business loan runs, interest only, before its principal is due: three years, and it keeps the rate it was written at for all of them. Prime is struck at this term (Bank.PRIME_TERM_MONTHS). */
+    public static final int LOAN_TERM_MONTHS = 36;
 
     /**
      * Borrow enough to cover the hole plus this many months of the current loss.
@@ -208,7 +433,8 @@ public class BusinessDebtManager {
 
     private List<BusinessDebt> loans = new ArrayList<>();
 
-    private double riskFreeRate;
+    /** Prime: the bank's rate for a sound business this month, which every sector's own spread sits on (see PRICING). */
+    private double primeRate;
 
     /** Written off this month, and over the whole game, per sector. */
     private final Map<String, Double> writtenOffThisMonth = new LinkedHashMap<>();
@@ -259,6 +485,25 @@ public class BusinessDebtManager {
     private double lentThisMonth;
     private double repaidThisMonth;
 
+    /**
+     * THE LOAN FEE (0.7.7): Bank.LOAN_FEE of every loan written, paid out of
+     * its proceeds - the borrower is handed the principal less this, and the
+     * bank's cash takes it at the month's settle beside the lending
+     * (Game.nextMonth()). Both ends are pools, so the audit sees a transfer
+     * that cancels. Per sector too, so a sector's cash flow statement can
+     * show what it actually received (SectorBooks).
+     */
+    private double feesThisMonth;
+    private final Map<String, Double> feesBySector = new LinkedHashMap<>();
+
+    /** What a loan of this principal pays up front: Bank.LOAN_FEE of it. */
+    public static double feeOn(double principal) {
+        return Math.max(0, principal) * Bank.LOAN_FEE;
+    }
+
+    public double getFeesThisMonth() { return feesThisMonth; }
+    public double getFeesThisMonth(String sector) { return feesBySector.getOrDefault(sector, 0.0); }
+
     /*
      * THE SAME TWO FIGURES, PER SECTOR.
      *
@@ -288,32 +533,30 @@ public class BusinessDebtManager {
         repaidThisMonth = 0;
         lentBySector.clear();
         repaidBySector.clear();
+        feesThisMonth = 0;
+        feesBySector.clear();
+        writtenThisMonth.clear();
     }
 
     public BusinessDebtManager() {
         for (String sector : SECTORS) {
             assets.put(sector, 0.0);
-            rates.put(sector, MIN_SPREAD);
+            rates.put(sector, 0.0);   // unpriced until the month's first pricing
             maturedPrincipal.put(sector, 0.0);
         }
     }
 
-    //setters
-    public void setRiskFreeRate(double rate) {
-        this.riskFreeRate = rate;
-    }
-
     /**
-     * What the bank pays for the money it is about to lend.
-     *
-     * Pushed in by Game each month beside the strain premium, from
-     * Bank.marginalCostOfFunds(). Held rather than reached for, for the same
-     * reason the premium is: a rate that moved half way through a quote would
-     * be a quote nobody was offered.
+     * Prime, pushed in by Game each month from Bank.prime() before anything
+     * is priced (0.7.7; the city's rate before it). Held rather than reached
+     * for: a rate that moved half way through a quote would be a quote
+     * nobody was offered. The bank's cost of funds used to be pushed in
+     * beside it as a floor, and prime is built on the bank's funds-transfer
+     * price now, so there is nothing left for a floor to do.
      */
-    private double costOfFunds;
-    public void setCostOfFunds(double rate) { this.costOfFunds = Math.max(0, rate); }
-    public double getCostOfFunds()          { return costOfFunds; }
+    public void setPrimeRate(double rate) {
+        this.primeRate = rate;
+    }
 
     /** Total assets from that sector's balance sheet - the denominator of leverage. */
     public void setAssets(String sector, double totalAssets) {
@@ -327,8 +570,9 @@ public class BusinessDebtManager {
         }
     }
 
+    /** The quote: the curve at the leverage the sector's last quarter of statements reads (getQuarterLeverage()), and the whole curve against no assets (pricingLeverage()). */
     private double priceSector(String sector) {
-        return priceSector(sector, 0);
+        return priceSector(sector, 0, 0);
     }
 
     /**
@@ -338,67 +582,100 @@ public class BusinessDebtManager {
      *                       this a sector's FIRST loan always priced as though
      *                       it had no debt, i.e. at the cheapest rate available,
      *                       however much it was borrowing.
+     * @param extraAssets    what the borrowing adds to the assets the lender
+     *                       counts: nothing for a shortfall loan, whose proceeds
+     *                       cover losses already on the books; the loan's own
+     *                       value for a project, whose building is the
+     *                       collateral - read the way canFundProject() reads
+     *                       it, against what it owns now if that is anything.
+     *
+     * BOTH ON THE LAST QUARTER'S STATEMENTS (0.7.8, round 3): what it owed and
+     * what it owned averaged over the last STATEMENT_MONTHS month-end readings
+     * (quarterPrincipal(), quarterAssets()), the deal added on top. Loans
+     * written earlier in the same month are in neither until the month's own
+     * reading - at most a shortfall loan and one project a month a sector.
      */
-    private double priceSector(String sector, double extraPrincipal) {
+    private double priceSector(String sector, double extraPrincipal, double extraAssets) {
 
-        double principal = getPrincipal(sector) + extraPrincipal;
-        double totalAssets = assets.getOrDefault(sector, 0.0);
-
-        double spread;
-
-        if (totalAssets <= 0) {
-            // Nothing to lend against, or liabilities already exceed what there
-            // is - which is where the food industry sits. Worst case, and this
-            // has to be checked BEFORE the debt-free case: a business with no
-            // debt and no assets is not a good credit, it is an empty one. The
-            // first version returned the minimum spread here, so the insolvent
-            // food industry borrowed $49,611 at 2%.
-            spread = MAX_SPREAD;
-        } else {
-            // Zero debt against real assets falls out of this as MIN_SPREAD, so
-            // it needs no special case of its own.
-            double debtToAssets = principal / totalAssets;
-            spread = MIN_SPREAD + SPREAD_PER_DEBT_TO_ASSETS * debtToAssets;
-        }
-
-        spread = Math.max(MIN_SPREAD, Math.min(spread, MAX_SPREAD));
-
-        // The record, priced. Outside the cap on purpose: the cap is what stops
-        // a bad MONTH compounding; a bad HISTORY is not a month.
-        spread += DEFAULT_SURCHARGE
-                * Math.min(getRestructureCount(sector), DEFAULT_SURCHARGE_MAX_COUNT);
+        double principal = quarterPrincipal(sector) + extraPrincipal;
+        double totalAssets = extraAssets > 0
+                ? Math.max(0, quarterAssets(sector)) + extraAssets
+                : quarterAssets(sector);
 
         /*
-         * ...OVER WHICHEVER IS DEARER, THE CITY'S PAPER OR THE BANK'S MONEY.
+         * THIS BORROWER'S OWN RISK, and only its own: its expected loss off
+         * the curve over the loss prime already carries - see PRICING FROM
+         * THE CURVE. Counting BASE_LOSS_RATE again would price the same risk
+         * twice.
+         */
+        double spread = expectedLossSpread(pricingLeverage(principal, totalAssets));
+
+        // The record, priced: a bad HISTORY is not a leverage.
+        spread += recordSurcharge(sector);
+
+        /*
+         * ...OVER PRIME, which is what the money and the bank cost (0.7.7).
          *
          * A credit spread says what the BORROWER's risk is worth. It says
          * nothing about what the money cost, and until 2026-09-13 nothing else
-         * did either: this returned riskFreeRate + spread, so a best-credit
-         * sector borrowed at the city's own rate plus one point while the bank
-         * funding the loan paid two points over policy for the dollars. The
-         * lender lost a point on its best customers and made it up nowhere.
-         *
-         * The floor is normally slack - the city's rate already carries the
-         * bank's strain premium, so a stretched bank lifts this through
-         * riskFreeRate - and it binds in exactly the case that was bleeding:
-         * a bank comfortable enough to charge no premium that is still funding
-         * itself in the market. See Bank.marginalCostOfFunds().
+         * did either: this returned the city's rate plus the spread, while the
+         * bank funding the loan paid two points over policy for the dollars.
+         * From then until 0.7.7 it was floored on the bank's cost of funds
+         * plus Bank.MIN_MARGIN. Prime is built on the bank's funds-transfer
+         * price and its costs, so the floor went with the base it propped up.
          */
-        return Math.max(riskFreeRate, costOfFunds + Bank.MIN_MARGIN) + spread;
+        return primeRate + spread;
     }
 
     //getters
     /** What NEW borrowing costs this sector today. Existing loans keep their own rate. */
     public double getRate(String sector) {
-        return rates.getOrDefault(sector, riskFreeRate + MIN_SPREAD);
+        return rates.getOrDefault(sector, primeRate);
     }
 
+    /** What this sector pays over prime: its own expected loss and record. */
     public double getSpread(String sector) {
-        return getRate(sector) - riskFreeRate;
+        return getRate(sector) - primeRate;
     }
 
-    public double getRiskFreeRate() {
-        return riskFreeRate;
+    /** ...the first part of it: its own expected loss over the book's, at the leverage its last quarter reads (expectedLossSpread(), quarterPrincipal() over quarterAssets()). */
+    public double getRiskSpread(String sector) {
+        return expectedLossSpread(pricingLeverage(quarterPrincipal(sector), quarterAssets(sector)));
+    }
+
+    /** ...and the second: DEFAULT_SURCHARGE a write-down on its record, up to DEFAULT_SURCHARGE_MAX_COUNT of them. */
+    public double getRecordSurcharge(String sector) {
+        return recordSurcharge(sector);
+    }
+
+    private double recordSurcharge(String sector) {
+        return DEFAULT_SURCHARGE * Math.min(getRestructureCount(sector), DEFAULT_SURCHARGE_MAX_COUNT);
+    }
+
+    /**
+     * WHAT A PROJECT LOAN OF THIS SIZE WOULD BE WRITTEN AT (0.7.8): the curve
+     * at the leverage it leaves the sector at, the building counted at the
+     * loan's value - the rate issueProjectLoan() writes, and the one
+     * Game.consider() judges a building by. Not today's quote, which is the
+     * curve where the sector stands before it borrows.
+     */
+    public double projectRate(String sector, double amount) {
+        return priceSector(sector, Math.max(0, amount), Math.max(0, amount));
+    }
+
+    /**
+     * ...and the leverage that loan is priced at: the last quarter's
+     * statements with the deal on top, the building counted. With no
+     * statements yet it is the leverage canFundProject() reads after the deal.
+     */
+    public double leverageAfterProject(String sector, double amount) {
+        double a = Math.max(0, amount);
+        return pricingLeverage(quarterPrincipal(sector) + a, Math.max(0, quarterAssets(sector)) + a);
+    }
+
+    /** Prime, as the bank set it this month. */
+    public double getPrimeRate() {
+        return primeRate;
     }
 
     public double getLeverage(String sector) {
@@ -562,7 +839,14 @@ public class BusinessDebtManager {
         }
 
         double buffer = Math.max(monthlyLoss, 0) * BUFFER_MONTHS;
-        double amount = -cash + buffer;
+        /*
+         * ...GROSSED UP FOR THE LOAN'S FEE (0.7.7), which comes out of what
+         * the sector is handed: it borrows enough to be handed the hole and
+         * the buffer. Without it a loan that exactly fills a hole leaves the
+         * fee as a new one, and a sector with nothing coming in borrows the
+         * fee on the fee every month after.
+         */
+        double amount = (-cash + buffer) / (1 - Bank.LOAN_FEE);
 
         /* =====================================================================
            ...AND NOBODY LENDS PAST THE CEILING
@@ -574,9 +858,10 @@ public class BusinessDebtManager {
            not of whether this loan can be repaid.
 
            Which left this class enforcing one half of its own rule.
-           restructure() calls a sector insolvent the moment its principal
-           passes assets x INSOLVENCY_TRIGGER and writes it down to
-           RESTRUCTURE_TARGET; underwriting knew nothing about either number and
+           restructure() called a sector insolvent the moment its principal
+           passed assets x INSOLVENCY_TRIGGER and wrote it down to
+           RESTRUCTURE_TARGET (the slice's default point since 0.7.8);
+           underwriting knew nothing about either number and
            would cheerfully lend straight through the line, so the cycle was:
            lend past insolvency -> write off 60% of it -> block for twelve
            months -> lend past insolvency again.
@@ -619,7 +904,11 @@ public class BusinessDebtManager {
          */
         if (amount > room) {
             double interestDue = Math.max(0, getMonthlyInterest(sector));
-            double reserve = Math.min(interestDue, roomUnder(sector, INSOLVENCY_TRIGGER));
+            // ...and it keeps a borrower going, so the bank's capital rule
+            // does not reach it (0.7.8): a bank under its minimum still funds
+            // the interest on the loans it has - see setCapitalRule().
+            double reserve = Math.min(interestDue / (1 - Bank.LOAN_FEE),
+                    ceilingRoom(sector, INSOLVENCY_TRIGGER));
             room = Math.max(room, Math.min(amount, reserve));
         }
 
@@ -637,16 +926,19 @@ public class BusinessDebtManager {
     /**
      * How much more this sector may borrow today, from either desk.
      *
-     * THE ONE DEFINITION OF THE CEILING. The shortfall desk above and the
-     * investment desk (Game's Investor.canBorrow) both ask this, so a sector
-     * cannot be refused the money to keep the lights on and then lent the
-     * money to expand. Until 2026-09-10 the investment path enforced the ban
+     * THE ONE DEFINITION OF THE CEILING. The shortfall desk above asks this,
+     * and the investment desk (Game's Investor.canBorrow) asks
+     * canFundProject(), which holds the same ban and the same shut lender
+     * against the line after the deal, so a sector cannot be refused the
+     * money to keep the lights on and then lent the money to expand. Until
+     * 2026-09-10 the investment path enforced the ban
      * and not the ceiling: measured over 4,000 months, fifteen investment
      * loans were written past it, by $563M in total, the worst at 1.84 times
      * assets against a 1.50 rule.
      *
      * Zero while the sector is barred, and zero while the lender itself is
-     * shut - see lendingOpen.
+     * shut - see lendingOpen. And since 0.7.8 no more than the bank's capital
+     * rule lets the sector's debt grow this month (capitalRoom()).
      */
     public double borrowingRoom(String sector) {
         return roomUnder(sector, MAX_LOAN_TO_ASSETS);
@@ -684,14 +976,207 @@ public class BusinessDebtManager {
         if (!lendingOpen) return false;
         if (isBorrowingBlocked(sector)) return false;
         double assetsAfter = Math.max(0, getAssets(sector)) + amount;
-        return getPrincipal(sector) + amount <= assetsAfter * INSOLVENCY_TRIGGER;
+        if (getPrincipal(sector) + amount > assetsAfter * INSOLVENCY_TRIGGER) return false;
+        // ...and what the bank's capital lets it lend this month (0.7.8): a
+        // building is new lending, never keeping a borrower going.
+        if (keepGoingOnly || amount > capitalRoom(sector)) {
+            refusedForCapital.add(sector);
+            return false;
+        }
+        return true;
     }
 
+    /** The ceiling at this multiple of assets, and the bank's capital rule on top of it. */
     private double roomUnder(String sector, double multiple) {
+        return Math.min(ceilingRoom(sector, multiple), capitalRoom(sector));
+    }
+
+    /** The ceiling alone: nothing while the lender is shut or the sector barred. */
+    private double ceilingRoom(String sector, double multiple) {
         if (!lendingOpen) return 0;
         if (isBorrowingBlocked(sector)) return 0;
         double ceiling = Math.max(0, getAssets(sector)) * multiple;
         return Math.max(0, ceiling - getPrincipal(sector));
+    }
+
+    /* =====================================================================
+       ...AND WHAT THE BANK'S CAPITAL LETS IT LEND (0.7.8)
+
+       Until 0.7.8 the only thing between the bank and a loan was whether it
+       had failed (lendingOpen): a standing bank lent whatever the ceilings
+       allowed however thin its capital, and a failed one lent nothing - a
+       cliff, with nothing on the slope. The bank's capital rule is the
+       slope (Bank, WHAT IT LENDS): Game hands it here at the top of every
+       month, before a loan is written, as the most a borrower's debt may
+       grow this month - no limit at or over the bank's target, nothing under
+       its minimum, and in between a rate that rises from nothing to no
+       limit. Measured against what the sector owed when the rule was set,
+       so a loan that matures this month may be refinanced whatever the rule
+       says (the book does not grow), and a restructure writes nothing new.
+       What keeps a borrower going is outside it - the interest reserve in
+       coverShortfall() - and a new building is never that. A harness that
+       builds this class on its own gets no limit, which is what it had.
+       ===================================================================== */
+
+    private double capitalGrowth = Double.POSITIVE_INFINITY;
+    private boolean keepGoingOnly;
+    private final Map<String, Double> principalAtRule = new LinkedHashMap<>();
+    /** Sectors whose project the capital rule refused this month, so the investor can say so. */
+    private final java.util.Set<String> refusedForCapital = new java.util.HashSet<>();
+
+    /**
+     * The bank's capital rule for the month, from Bank.lendingGrowthLimit()
+     * and lendsOnlyToKeepBorrowersGoing(). Records what every sector owes as
+     * the month's base.
+     */
+    public void setCapitalRule(double monthlyGrowth, boolean keepGoingOnly) {
+        this.capitalGrowth = Double.isNaN(monthlyGrowth) ? 0 : Math.max(0, monthlyGrowth);
+        this.keepGoingOnly = keepGoingOnly;
+        principalAtRule.clear();
+        for (String s : SECTORS) principalAtRule.put(s, getPrincipal(s));
+        refusedForCapital.clear();
+    }
+
+    /**
+     * What the bank's capital lets this sector borrow this month, over what
+     * it owes now: its debt when the rule was set, grown by the month's
+     * limit (none under the minimum), less what it owes - so what matured is
+     * room to refinance. Unlimited with no limit.
+     */
+    public double capitalRoom(String sector) {
+        if (!keepGoingOnly && Double.isInfinite(capitalGrowth)) return Double.POSITIVE_INFINITY;
+        double base = principalAtRule.getOrDefault(sector, getPrincipal(sector));
+        double growth = keepGoingOnly ? 0 : capitalGrowth;
+        return Math.max(0, base * (1 + growth) - getPrincipal(sector));
+    }
+
+    /** The month's limit on a borrower's growth, a share a month: infinite with none. */
+    public double getCapitalGrowth() { return keepGoingOnly ? 0 : capitalGrowth; }
+
+    /** True when the bank lends only to keep its borrowers going this month. */
+    public boolean isKeepGoingOnly() { return keepGoingOnly; }
+
+    /** True when the capital rule refused this sector a project this month. */
+    public boolean wasRefusedForCapital(String sector) { return refusedForCapital.contains(sector); }
+
+    /* =====================================================================
+       THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8, round 3)
+
+       Jerus, 2026-09-23: "the bank reads a borrower's debt level from its last
+       quarter's average, like real statements, not one month's stock swing."
+       A lender rates a borrower off its statements, quarterly, not off one
+       month's balance - and a sector that buys two months of stock at once
+       swings a sixth of its assets from one month to the next (round 2's
+       Luxury Retail, whose allowance flipped $227M to $637M on it).
+
+       So the bank's READINGS of a sector - its allowance and the share in
+       stage 2 (Game.provideForLosses()), and the price of a new loan
+       (priceSector()) - use its leverage over the last STATEMENT_MONTHS
+       month-end readings: the average of what it owed over the average of
+       what it owned. THE DEFAULT HAZARD DOES NOT: firms fail on what they
+       actually owe against what they actually have, not on a report, so the
+       slice and the backstop keep the month's own leverage. Nor do the
+       lending ceilings, which are the month's own.
+
+       The readings are state a reload cannot rebuild, so they are saved,
+       per sector by name. Until a sector has one, the readings are what it
+       owes and owns now - a harness that builds this class alone reads the
+       month, as it always did.
+
+       A BACKSTOP RESTARTS THE QUARTER (Jerus, 2026-09-24: "keep quarterly").
+       A whole-sector restructure is a credit event, and a lender re-rates
+       the borrower on its restructured books from then on: restructure()
+       drops the sector's readings, so it reads its month until the next
+       month-end files the first of a new quarter. A slice restarts nothing -
+       it is continuous and small. Measured, the restart moves no loan and
+       no failure: the backstop shuts the sector out for
+       BORROWING_BLOCKED_MONTHS or more, by which time its old readings have
+       gone of themselves. What it changes is what the bank shows - the
+       quote, the stage and the watch list, which read a sector owing
+       nothing as past the watch line for two months without it.
+
+       WHAT THE QUARTER DOES PRICE PAST THE DEFAULT POINT. Of the 1,436
+       loans the eight default seeds priced past it (round 2, on the month's
+       own reading: 81), 1,435 came from the shortfall desk
+       (coverShortfall()), which lends on the month's own leverage while the
+       price reads the quarter: 73% to Luxury Retail, mostly on the high
+       month of its two-month restock, its assets then more than a quarter
+       over the quarter's average of them; 20% to an industrial sector a
+       large slice had just cut the debt of, its quarter still reading the
+       debt; 11 were past the point on the month's own reading too. Measured
+       on a probe, 2026-09-24; no rule moved.
+       ===================================================================== */
+
+    /** How many month-end readings the bank averages a borrower over: a quarter, as a real lender reads its statements. */
+    public static final int STATEMENT_MONTHS = 3;
+
+    /** Each sector's last month-end readings, oldest first: {owed, owned, owed, owned, ...}, at most STATEMENT_MONTHS pairs. */
+    private final Map<String, double[]> statements = new LinkedHashMap<>();
+
+    /** One month-end reading of a sector: what it owed and what it owned, as the bank read them (Game.sectorPositions()). */
+    public void recordStatement(String sector, double owed, double owned) {
+        if (sector == null || !Double.isFinite(owed) || !Double.isFinite(owned)) return;
+        double[] was = statements.get(sector);
+        int keep = was == null ? 0 : Math.min(was.length / 2, STATEMENT_MONTHS - 1);
+        double[] now = new double[2 * (keep + 1)];
+        if (keep > 0) System.arraycopy(was, was.length - 2 * keep, now, 0, 2 * keep);
+        now[2 * keep] = owed;
+        now[2 * keep + 1] = owned;
+        statements.put(sector, now);
+    }
+
+    /** What the sector owed, averaged over its last quarter of readings - what it owes now, with none. */
+    public double quarterPrincipal(String sector) {
+        double[] r = statements.get(sector);
+        if (r == null || r.length < 2) return getPrincipal(sector);
+        double total = 0;
+        for (int i = 0; i < r.length; i += 2) total += r[i];
+        return total / (r.length / 2);
+    }
+
+    /** ...and what it owned. */
+    public double quarterAssets(String sector) {
+        double[] r = statements.get(sector);
+        if (r == null || r.length < 2) return getAssets(sector);
+        double total = 0;
+        for (int i = 1; i < r.length; i += 2) total += r[i];
+        return total / (r.length / 2);
+    }
+
+    /** The leverage the bank reads the sector at: its quarter's average debt over its average assets, 0 with no assets. */
+    public double getQuarterLeverage(String sector) {
+        double a = quarterAssets(sector);
+        return a > 0 ? quarterPrincipal(sector) / a : 0;
+    }
+
+    /** The sector's default rate a year at the leverage its last quarter reads (getQuarterLeverage()) - the reading its price is struck on (getRiskSpread()), which the screens print beside that price. */
+    public double getQuarterDefaultRate(String sector) {
+        return defaultProbability(getQuarterLeverage(sector));
+    }
+
+    /** How many readings a sector has, up to STATEMENT_MONTHS. */
+    public int getStatementCount(String sector) {
+        double[] r = statements.get(sector);
+        return r == null ? 0 : r.length / 2;
+    }
+
+    /** The readings, for the save: a copy, by sector name. */
+    public Map<String, double[]> getStatementsToSave() {
+        Map<String, double[]> out = new LinkedHashMap<>();
+        for (Map.Entry<String, double[]> e : statements.entrySet()) out.put(e.getKey(), e.getValue().clone());
+        return out;
+    }
+
+    /** ...and back on load. A save from before has none, and each sector reads its month until it has its own. A malformed entry is dropped whole. */
+    public void restoreStatements(Map<String, double[]> saved) {
+        statements.clear();
+        if (saved == null) return;
+        for (Map.Entry<String, double[]> e : saved.entrySet()) {
+            double[] v = e.getValue();
+            if (e.getKey() == null || v == null || v.length < 2 || v.length % 2 != 0
+                    || v.length > 2 * STATEMENT_MONTHS) continue;
+            statements.put(e.getKey(), v.clone());
+        }
     }
 
     /** Game tells the lender each month whether the bank behind it is standing. */
@@ -703,13 +1188,49 @@ public class BusinessDebtManager {
         return lendingOpen;
     }
 
+    /**
+     * Writes a loan of this principal - a shortfall loan, priced at what the
+     * sector will owe over the assets it has. The borrower is owed the
+     * principal LESS its fee - feeOn(faceValue), which the caller keeps back
+     * from what it hands the sector and the bank collects at the settle.
+     */
     public BusinessLoan issueLoan(String sector, double faceValue, int month) {
+        return write(sector, faceValue, month, 0, false);
+    }
+
+    /** ...a project's: priced with the building it buys counted in the assets, at the loan's value (projectRate()). */
+    public BusinessLoan issueProjectLoan(String sector, double faceValue, int month) {
+        return write(sector, faceValue, month, faceValue, true);
+    }
+
+    /**
+     * One loan written this month: to whom, how much, the leverage it left
+     * the borrower at, the rate it was written at, and whether it bought a
+     * building (0.7.8, for the playtest's count of loans written past the
+     * watch line and the default point). A month's flow, read in the month,
+     * and not saved.
+     */
+    public record Written(String sector, double amount, double leverage, double rate, boolean project) { }
+
+    private final List<Written> writtenThisMonth = new ArrayList<>();
+
+    /** Every loan written this month, in the order written. */
+    public List<Written> getWrittenThisMonth() { return java.util.Collections.unmodifiableList(writtenThisMonth); }
+
+    private BusinessLoan write(String sector, double faceValue, int month, double extraAssets, boolean project) {
+        double rate = priceSector(sector, faceValue, extraAssets);
+        double totalAssets = extraAssets > 0
+                ? Math.max(0, quarterAssets(sector)) + extraAssets : quarterAssets(sector);
+        writtenThisMonth.add(new Written(sector, faceValue,
+                pricingLeverage(quarterPrincipal(sector) + faceValue, totalAssets), rate, project));
         BusinessLoan loan = new BusinessLoan(
-                sector, faceValue, LOAN_TERM_MONTHS, month,
-                priceSector(sector, faceValue));
+                sector, faceValue, LOAN_TERM_MONTHS, month, rate);
         loans.add(loan);
         lentThisMonth += faceValue;
         lentBySector.merge(sector, faceValue, Double::sum);
+        double fee = feeOn(faceValue);
+        feesThisMonth += fee;
+        feesBySector.merge(sector, fee, Double::sum);
 
         // A new loan changes the sector's leverage, so the next one prices off
         // the new position rather than the one before this loan existed.
@@ -822,28 +1343,33 @@ public class BusinessDebtManager {
     }
 
     /**
-     * Is this sector's debt beyond what its assets could ever cover?
+     * Is every firm in this sector under water at once - the backstop's case?
      *
-     * Two ways in. The loan book past the line - principal over
-     * INSOLVENCY_TRIGGER times assets, or any principal at all against
-     * nothing. And, since 2026-09-10, AN OVERDRAFT THAT OUTWEIGHS EVERYTHING
-     * THE SECTOR OWNS: the balance sheet's assets already carry the cash, so
-     * assets at or below zero with cash below zero is a firm whose unpaid
-     * bills exceed its plant, whether or not it ever signed a loan. Before
-     * this a sector with no loans could run -$13bn for ever and never be
-     * called anything.
+     * ASSETS AT OR BELOW ZERO, against any principal at all or AN OVERDRAFT
+     * (since 2026-09-10): the balance sheet's assets already carry the cash,
+     * so assets at or below zero with cash below zero is a sector whose
+     * unpaid bills exceed its plant, whether or not it ever signed a loan.
+     * Before that a sector with no loans could run -$13bn for ever and never
+     * be called anything.
+     *
+     * Until 0.7.8 there was a second way in: the loan book past the line,
+     * principal over INSOLVENCY_TRIGGER times positive assets. That is no
+     * longer a whole-sector event - it is the high end of the month's slice
+     * (defaultSlice(): at 1.5 times its assets 5.6% of a sector's debt
+     * defaults a month, at 2.0 about 16%, at 3.0 about 39%).
      */
     public boolean isInsolvent(String sector) {
-        double principal = getPrincipal(sector);
-        double totalAssets = getAssets(sector);
-        if (totalAssets <= 0) {
-            return principal > 0 || getCash(sector) < 0;
-        }
-        return principal > 0 && principal > totalAssets * INSOLVENCY_TRIGGER;
+        if (getAssets(sector) > 0) return false;
+        return getPrincipal(sector) > 0 || getCash(sector) < 0;
     }
 
     /**
-     * Writes a sector's debt down to what its assets can support.
+     * THE BACKSTOP: writes a sector with nothing left down to what its assets
+     * can support - RESTRUCTURE_TARGET of nothing - forgives its overdraft,
+     * counts the default on its record and shuts it out for exclusionFor().
+     * Only a sector that isInsolvent(); since 0.7.8 a sector past the line
+     * with assets still standing loses its defaulted firms' share instead
+     * (defaultSlice()).
      *
      * Call once a month, AFTER the balance sheets have been refreshed - the
      * whole judgement is principal against assets, so acting on last month's
@@ -908,6 +1434,17 @@ public class BusinessDebtManager {
         writtenOffTotal.put(sector, getWrittenOffTotal(sector) + writeOff);
         restructures.put(sector, getRestructureCount(sector) + 1);
         blockedMonths.put(sector, exclusionFor(getRestructureCount(sector)));
+        restructuredThisMonth.add(sector);
+        /*
+         * ...AND ITS QUARTER RESTARTS (0.7.8, round 4). A lender re-rates a
+         * borrower after a credit event on its restructured books; the months
+         * before stop counting. Left in, the quarter read the debt just
+         * written off for two more months - in the sector's quote, its stage
+         * and the watch list; not in a loan, since the ban above outlasts
+         * the quarter. A slice does not restart it: it is continuous and
+         * small. See THE BANK READS A BORROWER FROM ITS LAST QUARTER.
+         */
+        statements.remove(sector);
 
         // Less debt against the same assets is better credit on the leverage
         // leg - and a fresh default is worse credit on the record leg, which
@@ -918,18 +1455,127 @@ public class BusinessDebtManager {
         return writeOff;
     }
 
-    /** Restructures whoever needs it. @return total written off this month. */
+    /**
+     * THE MONTH'S DEFAULTS, every sector: the backstop for a sector with
+     * nothing left (restructure()), and for every other the slice of its
+     * debt whose firms fell through the default point (defaultSlice()).
+     * @return total written off this month.
+     */
     public double restructureInsolventSectors() {
 
         double total = 0;
         for (String sector : SECTORS) {
             writtenOffThisMonth.put(sector, 0.0);
         }
+        defaultedThisMonth.clear();
+        defaultShareThisMonth.clear();
+        restructuredThisMonth.clear();
 
         for (String sector : SECTORS) {
             total += restructure(sector);
+            total += defaultSlice(sector);
         }
+        // What each owes as the rule judged it, for the bank's allowance (0.7.8).
+        principalJudged.clear();
+        for (String sector : SECTORS) principalJudged.put(sector, getPrincipal(sector));
         return total;
+    }
+
+    /**
+     * THE SLICE: the share of this sector's debt whose firms fell through the
+     * default point this month, monthlyDefaultShare() of it at the leverage
+     * the month's check reads (principal over getAssets(), struck after the
+     * balance-sheet refresh), written off at LOSS_GIVEN_DEFAULT. Every loan of
+     * the sector is written down pro rata, as restructure() does, and booked
+     * through the same writtenOffThisMonth/writtenOffTotal the bank reads.
+     * Its assets are untouched - the defaulted firms keep their plant - so its
+     * leverage falls. Not on its record, not surcharged, no ban: see A SECTOR
+     * DEFAULTS A SLICE AT A TIME. Nothing for a sector with no debt, and
+     * nothing for one with no assets, which is the backstop's.
+     *
+     * @return the amount written off
+     */
+    public double defaultSlice(String sector) {
+        double principal = getPrincipal(sector);
+        double totalAssets = getAssets(sector);
+        if (!(principal > 0) || !(totalAssets > 0)) return 0;
+        double share = monthlyDefaultShare(principal / totalAssets);
+        double writeOff = principal * share * LOSS_GIVEN_DEFAULT;
+        if (!(writeOff > 0)) return 0;
+        double scale = 1 - share * LOSS_GIVEN_DEFAULT;
+        for (BusinessDebt loan : loans) {
+            if (loan.getSector().equals(sector)) {
+                loan.writeDown(scale);
+            }
+        }
+        defaultedThisMonth.put(sector, principal * share);
+        defaultShareThisMonth.put(sector, share);
+        writtenOffThisMonth.put(sector, getWrittenOffThisMonth(sector) + writeOff);
+        writtenOffTotal.put(sector, getWrittenOffTotal(sector) + writeOff);
+        // Less debt against the same assets: its price off the curve falls with it.
+        rates.put(sector, priceSector(sector));
+        return writeOff;
+    }
+
+    /*
+     * The month's defaults, per sector, for the notice and the playtest -
+     * struck by restructureInsolventSectors() and read in the same month
+     * (Inbox.takeMonth()), so not saved: the bank's own record of the
+     * month's write-off by sector is (Bank.getWrittenOff(String)).
+     */
+    private final Map<String, Double> defaultedThisMonth = new LinkedHashMap<>();
+    private final Map<String, Double> defaultShareThisMonth = new LinkedHashMap<>();
+    private final java.util.Set<String> restructuredThisMonth = new java.util.LinkedHashSet<>();
+
+    /** The debt whose firms defaulted this month in the slice, before what the bank recovers - the write-off is LOSS_GIVEN_DEFAULT of it. */
+    public double getDefaultedThisMonth(String sector) { return defaultedThisMonth.getOrDefault(sector, 0.0); }
+
+    /** The share of the sector's debt that defaulted this month in the slice, h. */
+    public double getDefaultShareThisMonth(String sector) { return defaultShareThisMonth.getOrDefault(sector, 0.0); }
+
+    /** True when the backstop wrote this sector down whole this month. */
+    public boolean wasRestructuredThisMonth(String sector) { return restructuredThisMonth.contains(sector); }
+
+    /** The sector's default rate a year at its leverage now, PD(L) - what the Bank tab shows beside its leverage. All of it against no assets. */
+    public double getDefaultRate(String sector) {
+        return defaultProbability(leverageOf(getPrincipal(sector), getAssets(sector)));
+    }
+
+    /**
+     * WHETHER THIS MONTH'S DEFAULTS ARE NEWS: the backstop, or a slice at
+     * least the share that defaults a month at the default point itself -
+     * monthlyDefaultShare(INSOLVENCY_TRIGGER), 5.6% of its debt, where half
+     * the sector's firms fail within a year: the sector as a whole is past
+     * the line. Derived from Jerus's constant, not a number of its own.
+     *
+     * The first line tried was a slice costing more in a month than a sound
+     * borrower's year of expected loss (Bank.BASE_LOSS_RATE, a leverage of
+     * about 1.06). Measured on the default eight seeds it was true in 1,303-
+     * 2,749 of 4,001 months and raised the notice 40-858 times a run, which
+     * is a log, not news. At the default point: true in 530-717 months,
+     * raised 63-188 times (the backstop alone, 22-29). Under the line the
+     * slice is the trickle a book past the watch line loses, and the bank
+     * has set it aside (Bank.sectorAllowance()).
+     */
+    public boolean defaultsAreNews(String sector) {
+        return wasRestructuredThisMonth(sector)
+                || getDefaultShareThisMonth(sector) >= monthlyDefaultShare(INSOLVENCY_TRIGGER);
+    }
+
+    /**
+     * What each sector owed when the month's insolvency check judged it,
+     * against the assets it judged it on (getAssets(), struck at the same
+     * check). The bank's month-end reading of a sector - the newest of the
+     * quarter its allowance and its price read - is that, with whatever it
+     * has borrowed since on both sides (Game.sectorPositions()).
+     * Not saved: the load path does not provide, and a sector not judged
+     * this month reads what it owes now.
+     */
+    private final Map<String, Double> principalJudged = new LinkedHashMap<>();
+
+    public double getPrincipalJudged(String sector) {
+        Double judged = principalJudged.get(sector);
+        return judged != null ? judged : getPrincipal(sector);
     }
 
     /** Counts down the borrowing bans. Call once a month. */
@@ -958,21 +1604,26 @@ public class BusinessDebtManager {
             cashBalance.put(sector, 0.0);
             overdraftForgiven.put(sector, 0.0);
         }
+        defaultedThisMonth.clear();
+        defaultShareThisMonth.clear();
+        restructuredThisMonth.clear();
+        // ...and the quarter's readings (0.7.8).
+        statements.clear();
     }
 
     //printers
     public void printBusinessDebtInfo(int currentMonth) {
 
         System.out.println("\n=============== PRIVATE SECTOR CREDIT ===============");
-        System.out.printf("Government (risk-free) rate: %.2f%%%n", riskFreeRate * 100);
+        System.out.printf("The bank's prime: %.2f%%%n", primeRate * 100);
 
         for (String sector : SECTORS) {
             System.out.printf("%n%s%n", sector.toUpperCase());
             System.out.printf("  Outstanding Principal:  $%s%n", formatter.format(getPrincipal(sector)));
             System.out.printf("  Monthly Interest:       $%s%n", formatter.format(getMonthlyInterest(sector)));
             System.out.printf("  Leverage (debt/assets): %.2f%n", getLeverage(sector));
-            System.out.printf("  New Borrowing Rate:     %.2f%%  (govt %.2f%% + %.2f%% spread)%n",
-                    getRate(sector) * 100, riskFreeRate * 100, getSpread(sector) * 100);
+            System.out.printf("  New Borrowing Rate:     %.2f%%  (prime %.2f%% + %.2f%% spread)%n",
+                    getRate(sector) * 100, primeRate * 100, getSpread(sector) * 100);
             System.out.printf("  Rate on Existing Debt:  %.2f%%%n", getEffectiveRate(sector) * 100);
             System.out.printf("  Loans Outstanding:      %d%n", getLoanCount(sector));
 
@@ -1010,6 +1661,15 @@ public class BusinessDebtManager {
         writtenOffThisMonth.replaceAll((sector, off) -> off * scale);
         writtenOffTotal.replaceAll((sector, off) -> off * scale);
         assets.replaceAll((sector, value) -> value * scale);
+        // ...and 0.7.8's two bases: what each owed when the capital rule was
+        // set and when the insolvency check judged it. Money, like the rest.
+        principalAtRule.replaceAll((sector, owed) -> owed * scale);
+        principalJudged.replaceAll((sector, owed) -> owed * scale);
+        // ...and the month's defaulted debt; its share is a share.
+        defaultedThisMonth.replaceAll((sector, owed) -> owed * scale);
+        writtenThisMonth.replaceAll(w -> new Written(w.sector(), w.amount() * scale, w.leverage(), w.rate(), w.project()));
+        // ...and the quarter's readings, which are money.
+        for (double[] r : statements.values()) for (int i = 0; i < r.length; i++) r[i] *= scale;
     }
 
 }

@@ -1,6 +1,6 @@
 # NationalAccounts.java - 887 lines · 78 methods · 2 constants · model
 
-`ham/citybuildersim/NationalAccounts.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NationalAccounts.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > The city's GDP, measured properly, plus the government's own books.
 > 

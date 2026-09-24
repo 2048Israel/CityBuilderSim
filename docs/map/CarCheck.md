@@ -1,6 +1,6 @@
-# CarCheck.java - 722 lines · 6 methods · 0 constants · harnesses
+# CarCheck.java - 729 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/CarCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CarCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > The cars: who buys one, what it costs them, and what it does to the road.
 > 
@@ -45,7 +45,7 @@
 > See claude/the-fifth-link.md, HouseholdBalance's cars section and
 > InfrastructureManager's.
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (40), [InfrastructureManager](InfrastructureManager.md) (22), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [Traffic](Traffic.md) (4), [Game](Game.md) (4), [Good](Good.md) (3), [GameFiles](GameFiles.md) (2), [BuildingManager](BuildingManager.md) (1), [Equity](Equity.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (40), [InfrastructureManager](InfrastructureManager.md) (22), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [Traffic](Traffic.md) (4), [Game](Game.md) (4), [Good](Good.md) (3), [GameFiles](GameFiles.md) (2), [BuildingManager](BuildingManager.md) (1), [Bank](Bank.md) (1), [Equity](Equity.md) (1)
 
 ## Sections
 
@@ -57,7 +57,7 @@
 | 244 | · 4, 5, 6. IN A CITY |
 | 358 | · WHY THE BAR IS 95% AND NOT 100%, and why it is not the plateau this |
 | 403 | · THE DEPOSIT AND THE LOAN (2026-09-17) |
-| 500 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
+| 507 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
 
 ## Fields (state)
 
@@ -69,11 +69,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 676 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
+| 47 | 683 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
 | 51 | 7 | `static void quietly(Runnable r)` |  |
 | 59 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 64 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 70 | 3 | `static boolean same(double a, double b)` | Bitwise. |
 | 74 | 8 | `static InfrastructureManager network()` |  |
-| 83 | 639 | `public static void main(String[] args)` |  |
+| 83 | 646 | `public static void main(String[] args)` |  |
 

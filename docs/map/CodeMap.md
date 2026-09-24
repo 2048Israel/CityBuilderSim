@@ -1,6 +1,6 @@
 # CodeMap.java - 177 lines · 3 methods · 0 constants · tools
 
-`ham/citybuildersim/tools/CodeMap.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/CodeMap.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > The code map: docs/map/README.md, one row per file, and docs/map/NAME.md
 > for every file, listing its banner sections and every member with the

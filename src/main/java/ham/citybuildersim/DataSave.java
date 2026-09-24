@@ -196,6 +196,14 @@ public class DataSave {
     private java.util.Map<String, Integer> restructureCounts;
     private java.util.Map<String, Integer> blockedMonths;
 
+    /*
+     * The last quarter of month-end readings the bank rates each sector on
+     * (0.7.8, round 3: BusinessDebtManager, THE BANK READS A BORROWER FROM ITS
+     * LAST QUARTER), by sector name: {owed, owned, ...}, oldest first. Null on
+     * an older save - each sector reads its month until it has readings.
+     */
+    private java.util.Map<String, double[]> creditStatements;
+
     /** The city's own yard, in units. */
     private int constructionMaterials;
     private int population;
@@ -823,8 +831,10 @@ public class DataSave {
     public double[] getExchange()           { return exchange; }
 
     /**
-     * How often the bank has failed, what its creditors ate, and whether it is
-     * frozen right now.
+     * How often the bank has failed, what its creditors ate, whether it is
+     * frozen right now, and - on the end since 0.7.9 - what the city has put
+     * into it in rescues over its life, which a shorter record counts from
+     * the load.
      *
      * Not derivable from the sheet - see Bank.solvencyToSave(). Null on a save
      * written before 2026-09-10, which restores as a bank with no record, which
@@ -869,6 +879,80 @@ public class DataSave {
 
     public void setBankLastMonth(double[] state) { this.bankLastMonth = state; }
     public double[] getBankLastMonth()           { return bankLastMonth; }
+
+    /**
+     * The record the bank's loan prices are struck from (0.7.7): a year of
+     * payroll and upkeep beside the book they served - flows, which no
+     * month's end state can give back. See Bank.pricingHistoryToSave(). Null on an
+     * older save: the rings start empty and refill a month at a time, and the
+     * struck prices themselves come back in bankLastMonth.
+     */
+    private double[] bankPricingHistory;
+
+    public void setBankPricingHistory(double[] state) { this.bankPricingHistory = state; }
+    public double[] getBankPricingHistory()           { return bankPricingHistory; }
+
+    /**
+     * What the bank earned after its month's close (0.7.7) - the desk's
+     * re-mark, its dividends, the paper it bought from the households -
+     * which the next month's taxed profit carries. See Bank.lateProfit(). An
+     * older save reads zero: that month's late profit is not taxed, which is
+     * what every month was before.
+     */
+    private double bankLateProfit;
+
+    public void setBankLateProfit(double value) { this.bankLateProfit = value; }
+    public double getBankLateProfit()           { return bankLateProfit; }
+
+    /**
+     * What the bank has set aside against its books (0.7.8), book by book -
+     * each sector's name and Bank.HOUSEHOLD_BOOK to {the allowance, what it
+     * held when the month opened, what the month wrote off, whether it is in
+     * trouble, and for a sector the share of its book in stage 2}. See
+     * Bank.allowanceToSave(). A stock the provision moves
+     * every month and no end-of-month state can rebuild the way it was
+     * struck. Null on an older save: the load path sets one up from the
+     * borrowers as they stand, with no provision (Bank.openAllowance()).
+     */
+    private java.util.Map<String, double[]> bankAllowance;
+
+    public void setBankAllowance(java.util.Map<String, double[]> state) { this.bankAllowance = state; }
+    public java.util.Map<String, double[]> getBankAllowance()           { return bankAllowance; }
+
+    /**
+     * The record the bank's capital target is struck from (0.7.8): its worst
+     * year of provisions and the rings of the last year's provisions and
+     * weighted book, and the owners' year of dividends and buybacks. See
+     * Bank.capitalRecordToSave(). Null on an older save: a bank with no
+     * record, which holds the standard buffer until it has a year of one.
+     */
+    private double[] bankCapitalRecord;
+
+    public void setBankCapitalRecord(double[] state) { this.bankCapitalRecord = state; }
+    public double[] getBankCapitalRecord()           { return bankCapitalRecord; }
+
+    /**
+     * The bank's month, line by line (0.7.8): every flow its income
+     * statement, its equity's movement and its funding page read. See
+     * Bank.monthLinesToSave(). A reloaded city's Income page read zero until
+     * a month was played. Null on an older save, which still does, once.
+     */
+    private double[] bankMonthLines;
+
+    public void setBankMonthLines(double[] state) { this.bankMonthLines = state; }
+    public double[] getBankMonthLines()           { return bankMonthLines; }
+
+    /**
+     * The bank's year of statements (0.7.9): the months before the one saved,
+     * each filed whole at the top of the month after - what the Bank tab's
+     * last-month column and its last twelve months are read from. A flow
+     * no end of month can give back; see Bank.statementYearToSave(). Absent
+     * from an older save, whose year starts with the month it was saved in.
+     */
+    private double[] bankStatementYear;
+
+    public void setBankStatementYear(double[] state) { this.bankStatementYear = state; }
+    public double[] getBankStatementYear()           { return bankStatementYear; }
 
     /**
      * The price basket, its weights, and a year of readings.
@@ -1413,6 +1497,11 @@ public class DataSave {
         this.blockedMonths = months;
     }
     public java.util.Map<String, Integer> getBlockedMonths() { return blockedMonths; }
+
+    public void setCreditStatements(java.util.Map<String, double[]> statements) {
+        this.creditStatements = statements;
+    }
+    public java.util.Map<String, double[]> getCreditStatements() { return creditStatements; }
 
     public void setNationalAccounts(double[] state) { this.nationalAccounts = state; }
     public double[] getNationalAccounts()           { return nationalAccounts; }

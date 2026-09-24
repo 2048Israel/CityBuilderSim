@@ -1,6 +1,6 @@
 # WorkingHousehold.java - 50 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/WorkingHousehold.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorkingHousehold.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > A household with an earner in it, at one pay tier.
 > 

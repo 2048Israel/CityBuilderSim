@@ -1,6 +1,6 @@
-# Motoring.java - 193 lines · 10 methods · 0 constants · model
+# Motoring.java - 198 lines · 10 methods · 0 constants · model
 
-`ham/citybuildersim/Motoring.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Motoring.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > The households' car market: the second-hand pass, then the showroom, with
 > the road told what is parked on it.
@@ -71,7 +71,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 139 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it. |
+| 55 | 144 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it. |
 | 66 | 1 | `public double getHouseholdCarsBought()` | Cars the households bought this month. |
 | 69 | 1 | `public double getHouseholdCarSpend()` | ...what they paid for them, and what of that left the country. |
 | 70 | 1 | `public double getHouseholdCarImports()` |  |
@@ -81,5 +81,5 @@
 | 82 | 1 | `public double getUsedCarPrice()` | What one went for. |
 | 85 | 1 | `public double getUsedCarSpend()` | What the buyers paid for them, all in. |
 | 88 | 1 | `public double getUsedCarCredit()` | ...and what of that a lender advanced. |
-| 91 | 102 | `void month(Game game)` | The car market's month. |
+| 91 | 107 | `void month(Game game)` | The car market's month. |
 

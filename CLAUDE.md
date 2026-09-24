@@ -14,7 +14,7 @@ requirement.
 
 ## Open these before reading source
 
-The tree is 144,200 lines; `Game.java` alone is 9,500, and the interface is
+The tree is 151,700 lines; `Game.java` alone is 9,800, and the interface is
 twenty files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
@@ -41,7 +41,7 @@ Three command-line tools for the same purpose:
     java -cp target/classes ham.citybuildersim.tools.ManualToMarkdown docs/manual.html docs/manual.md     # ...as the Markdown GitHub renders
 
 The design record lives outside the repository, in the claude.ai project
-"Leverage & Growth: Java Game": `claude/todo.md` is the list of what is open,
+"Civic Ledger: Java Game": `claude/todo.md` is the list of what is open,
 `claude/changelog.md` what shipped and when (newest first), `claude/index.md`
 a map of the two hundred design notes by subsystem, and the published manual
 (artifact "CityBuilderSim", https://claude.ai/artifact/BkBAN1RDiQTpCj79WPbpCp)
@@ -92,7 +92,7 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; 9,500 lines, 29 banner sections
+        Game.java                  the month, the seam every system meets at; 9,800 lines, 30 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the

@@ -1,6 +1,6 @@
-# MonetaryCheck.java - 620 lines · 10 methods · 5 constants · harnesses
+# MonetaryCheck.java - 623 lines · 10 methods · 5 constants · harnesses
 
-`ham/citybuildersim/MonetaryCheck.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MonetaryCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Money: what a basket costs, what the world charges, and what the rate does.
 > 
@@ -51,11 +51,11 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 463 | `MonetaryCheck.HELD_RATES` | `{.03,.10,.20,.40 }` | The policy rates the one founding is held at, from month 25: the three of the baseline, and since 0.7.2 a fourth at 40% - past the old stop of the dial (25% until 0.7.2), the uncapped case. |
-| 466 | `MonetaryCheck.MEASURED_MONTHS` | `60` | How long each run is: five years, the last three of them at the held rate. |
-| 469 | `MonetaryCheck.HELD_FROM` | `ForeignAccounts.SETTLING_MONTHS + 1` | The month the dial is held from: the first in which the currency may move. |
-| 472 | `MonetaryCheck.MEASUREMENT_NOISE` | `.0005` | How far apart two runs of the one founding may read, in inflation a year, when only the dial's timing moves: 0.05 points - measured at 0.7.3 by holding each row's dial from month 26 instead of 25, the largest differen... |
-| 475 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. |
+| 466 | `MonetaryCheck.HELD_RATES` | `{.03,.10,.20,.40 }` | The policy rates the one founding is held at, from month 25: the three of the baseline, and since 0.7.2 a fourth at 40% - past the old stop of the dial (25% until 0.7.2), the uncapped case. |
+| 469 | `MonetaryCheck.MEASURED_MONTHS` | `60` | How long each run is: five years, the last three of them at the held rate. |
+| 472 | `MonetaryCheck.HELD_FROM` | `ForeignAccounts.SETTLING_MONTHS + 1` | The month the dial is held from: the first in which the currency may move. |
+| 475 | `MonetaryCheck.MEASUREMENT_NOISE` | `.0005` | How far apart two runs of the one founding may read, in inflation a year, when only the dial's timing moves: 0.05 points - measured at 0.7.3 by holding each row's dial from month 26 instead of 25, the largest differen... |
+| 478 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. |
 
 ## Fields (state)
 
@@ -69,20 +69,20 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 583 | **type** `public class MonetaryCheck` | Money: what a basket costs, what the world charges, and what the rate does. |
+| 38 | 586 | **type** `public class MonetaryCheck` | Money: what a basket costs, what the world charges, and what the rate does. |
 | 44 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 49 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 59 | 327 | `public static void main(String[] args) throws Exception` |  |
 
-### 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured (lines 387-620)
+### 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured (lines 387-623)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 478 | 3 | `static void step(Game g, double heldRate)` | One month, as the playtest steps it: a broke city steps rather than skips. |
-| 483 | 6 | `static void step(Game g, double heldRate, int heldFrom)` | ...holding the dial from a month of the caller's: the noise run holds it a month late. |
-| 491 | 16 | `static Game founding(Path root, String label)` | The playtest's founding (seed 0), to the month before the dial is held. |
-| 509 | 8 | `static double[] fingerprint(Game g)` | What the founding looks like the month before the dial moves - equal across the runs, or they are not one founding. |
-| 523 | 14 | `static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city)` | One run of the founding at a held rate: the dial held from heldFrom to MEASURED_MONTHS, and inflation over the held months as an annual rate. |
-| 538 | 75 | `static void inflationFallsWithTheRate(Path root)` |  |
-| 614 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 481 | 3 | `static void step(Game g, double heldRate)` | One month, as the playtest steps it: a broke city steps rather than skips. |
+| 486 | 6 | `static void step(Game g, double heldRate, int heldFrom)` | ...holding the dial from a month of the caller's: the noise run holds it a month late. |
+| 494 | 16 | `static Game founding(Path root, String label)` | The playtest's founding (seed 0), to the month before the dial is held. |
+| 512 | 8 | `static double[] fingerprint(Game g)` | What the founding looks like the month before the dial moves - equal across the runs, or they are not one founding. |
+| 526 | 14 | `static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city)` | One run of the founding at a held rate: the dial held from heldFrom to MEASURED_MONTHS, and inflation over the held months as an annual rate. |
+| 541 | 75 | `static void inflationFallsWithTheRate(Path root)` |  |
+| 617 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

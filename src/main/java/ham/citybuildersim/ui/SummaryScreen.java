@@ -273,11 +273,12 @@ final class SummaryScreen {
        something a display mode gets to hide.
 
        SUMMARY IS NOT A FIXED SIX. Two of them earn a place only when they are
-       saying something - the bank's premium and how far the currency has run -
-       because both are quiet taxes on everything the city does and neither is
-       an emergency, so the red alert block above will never carry them. A
-       player who lives in Summary would otherwise never learn that every loan
-       in the city got dearer.
+       saying something - the bank (its premium until 0.7.7, its strain and
+       its failure since) and how far the currency has run - because neither
+       is an emergency, so the red alert block above will never carry them.
+       Both went in as quiet taxes on everything the city does: a player who
+       lives in Summary would otherwise never learn that every loan in the
+       city got dearer. The bank's tax was its premium, which 0.7.7 took out.
        ===================================================================== */
 
     HBox panelModeSwitch() {
@@ -732,12 +733,14 @@ final class SummaryScreen {
         flag(out, "TREASURY", cash < 0 ? "overdrawn" : "in hand",
                 cash < spending, cash < 0, ui.financesScreen::showFinanceMenu);
 
+        // Until 0.7.7 the warning was the strain premium on every rate; with the
+        // premium gone, a bank past its capacity is the thing worth a glance.
         flag(out, "THE BANK", bank.isInsolvent() ? "failed"
                         : bank.getBranches() <= 0 ? "there is none"
-                        : bank.ratePremium() > 0
-                                ? String.format("+%.0f pts on every rate", bank.ratePremium() * 100)
+                        : bank.strain() > 1
+                                ? String.format("%.0f%% lent", bank.strain() * 100)
                                 : "lending",
-                bank.isInsolvent() || bank.getBranches() <= 0 || bank.ratePremium() > 0,
+                bank.isInsolvent() || bank.getBranches() <= 0 || bank.strain() > 1,
                 bank.isInsolvent() || bank.getBranches() <= 0,
                 ui.bankScreen::showBankMenu);
 
@@ -992,26 +995,22 @@ final class SummaryScreen {
 
         /* ================= BANK =================
          *
-         * Under ECONOMY because it is the price of money, and its collapsed
-         * line is the only thing about it that matters at a glance: what it is
-         * adding to every rate in the city. Red when it is adding anything at
-         * all, which is the whole signal - a strained bank taxes every borrower
-         * quietly, and before this the player's only clue was that everything
-         * had got dearer at once.
+         * Under ECONOMY because it is the price of money. Its collapsed line
+         * was what the bank added to every rate in the city until 0.7.7, when
+         * the strain premium went (Bank, WHAT A LOAN COSTS); now it is how
+         * full the bank is and its prime, red when the book is past capacity.
          */
         Bank bankPanel = ui.game.getBank();
-        double bankPremium = bankPanel.ratePremium();
+        double bankPrime = bankPanel.prime(ui.game.getDebtManager().getPolicyRate());
         double bankCapacity = bankPanel.capacity();
         body.getChildren().add(panelSection("bank", "BANK",
                 bankPanel.isInsolvent() ? "INSOLVENT"
                         : bankPanel.getBranches() <= 0
-                        ? "none  \u00b7  +" + formatter.format(bankPremium * 100) + " pts"
-                        : String.format("%.0f%% lent  \u00b7  %s", bankCapacity > 0
+                        ? "none  \u00b7  prime " + String.format("%.2f%%", bankPrime * 100)
+                        : String.format("%.0f%% lent  \u00b7  prime %.2f%%", bankCapacity > 0
                                 ? bankPanel.getWeightedBook() / bankCapacity * 100 : 0,
-                                bankPremium > 0
-                                        ? "+" + formatter.format(bankPremium * 100) + " pts"
-                                        : "no premium"),
-                bankPremium > 0 ? "#ff8a7a" : null,
+                                bankPrime * 100),
+                bankPanel.strain() > 1 ? "#ff8a7a" : null,
                 () -> {
                     VBox b = panelBody(
                             statLine("Branches", formatter.format(bankPanel.getBranches())),

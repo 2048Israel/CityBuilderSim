@@ -2022,10 +2022,13 @@ public class BuildingManager {
            One building, and every loan in the city goes through it - the
            sectors', the treasury's bonds and the households' credit alike. What
            it buys is not a service the way a clinic or a school is: it is the
-           price of borrowing. A city with no branch pays eighteen points over
-           the odds on everything it owes, because a bank with no capacity is
-           infinitely strained and Bank.ratePremium() falls straight out of
-           that - no special case for "there is no bank".
+           price of borrowing. Until 0.7.7 a city with no branch paid eighteen
+           points over the odds on everything it owed, because a bank with no
+           capacity is infinitely strained and Bank.ratePremium() fell straight
+           out of that. Since then a loan is priced from what it costs (Bank,
+           WHAT A LOAN COSTS), and a city with no branch is lent the central
+           bank's window money at that price; a branch brings the savers'
+           deposits and the capital that let the bank lend on its own.
 
            It is also the first real employer of UNIV_FINANCE. There were
            sixty-four such posts in the whole building set before this and

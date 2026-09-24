@@ -421,9 +421,12 @@ public class MonetaryCheck {
        one-month offset of the dial does, and no more (SAVING_RESPONSE at 2.0
        was measured at 1.145):
          - the deposit rate carries about a quarter of the dial - 1.4% at 3%,
-           11% at 40%, because the bank pays savers Bank.DEPOSIT_PASS_THROUGH
-           of what it earns and not the dial - so the spend factor only runs
-           from 0.99 to 0.88 across the whole range;
+           11% at 40%, because the bank paid savers Bank.DEPOSIT_PASS_THROUGH
+           of what it earned and not the dial - so the spend factor only runs
+           from 0.99 to 0.88 across the whole range (as measured before
+           0.7.7; since then the bank chooses a share of the dial by its
+           funding, Bank.depositShare(), and the figures in the table this
+           prints are the current ones);
          - the shelf is at its floor, Retail.OPENING_SELL_PRICE, by month 60
            on every row, so the food four fifths of the index cannot fall
            whatever demand does; what separates the rows is rent, which

@@ -1,6 +1,6 @@
 # Palette.java - 366 lines · 6 methods · 58 constants · interface
 
-`ham/citybuildersim/ui/Palette.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Palette.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > Every colour, size and spacing this game is allowed to use, in one place.
 > 

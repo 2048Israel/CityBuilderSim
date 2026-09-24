@@ -1,6 +1,6 @@
-# PolicyScreen.java - 3,318 lines · 75 methods · 17 constants · interface
+# PolicyScreen.java - 3,320 lines · 75 methods · 17 constants · interface
 
-`ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > The policy tab: the four rows of levers - taxes, wages, money, promises -
 > the staged set every dial writes into, the ladder and the batch preview that
@@ -17,7 +17,7 @@
 > same levers. Every dial here is drawn by one class, Ladder (0.7.6), which
 > replaced the tax pages' taxLadder and everybody else's stageSlider.
 
-**Uses:** [Palette](Palette.md) (398), [TaxPolicy](TaxPolicy.md) (80), [WageBand](WageBand.md) (24), [DebtManager](DebtManager.md) (21), [EducationType](EducationType.md) (21), [Sector](Sector.md) (16), [EconomyManager](EconomyManager.md) (15), [JobType](JobType.md) (11), [Money](Money.md) (11), [CareType](CareType.md) (10), [Education](Education.md) (9), [LabourMarket](LabourMarket.md) (8), [Denomination](Denomination.md) (8), [Ladder](Ladder.md) (7), [SectorBooks](SectorBooks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [CentralBank](CentralBank.md) (6), [Currency](Currency.md) (5), [Sectors](Sectors.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [FamilyModel](FamilyModel.md) (4), [SalesTaxLedger](SalesTaxLedger.md) (3), [PopulationManager](PopulationManager.md) (3), [PayTier](PayTier.md) (3), [UserInterface](UserInterface.md) (2), [PriceIndex](PriceIndex.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Healthcare](Healthcare.md) (2), [Bank](Bank.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (2)... and 7 more
+**Uses:** [Palette](Palette.md) (398), [TaxPolicy](TaxPolicy.md) (80), [WageBand](WageBand.md) (24), [DebtManager](DebtManager.md) (21), [EducationType](EducationType.md) (21), [Sector](Sector.md) (16), [EconomyManager](EconomyManager.md) (15), [JobType](JobType.md) (11), [Money](Money.md) (11), [CareType](CareType.md) (10), [Education](Education.md) (9), [LabourMarket](LabourMarket.md) (8), [Denomination](Denomination.md) (8), [Ladder](Ladder.md) (7), [SectorBooks](SectorBooks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [CentralBank](CentralBank.md) (6), [Currency](Currency.md) (5), [Sectors](Sectors.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [FamilyModel](FamilyModel.md) (4), [SalesTaxLedger](SalesTaxLedger.md) (3), [PopulationManager](PopulationManager.md) (3), [PayTier](PayTier.md) (3), [UserInterface](UserInterface.md) (2), [PriceIndex](PriceIndex.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Healthcare](Healthcare.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (2), [Game](Game.md) (1)... and 7 more
 
 **Used by (2):** [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
@@ -59,23 +59,23 @@
 | 1788 | MONEY - the policy rate |
 | 1921 | · · prices, in words |
 | 1927 | · · where it has been |
-| 2103 | · · THE HOLDINGS DIAL (0.7.1) |
-| 2142 | · · THE CEILING, AS A DIAL (0.7.2) |
-| 2210 | MONEY - the currency reform |
-| 2337 | PROMISES - the pension |
-| 2388 | · · and what it does to people |
-| 2421 | · · what workers pay |
-| 2453 | · · what seniors receive |
-| 2494 | PROMISES - the schools: the price of a place, who pays it, and the |
-| 2578 | · · the levers, registered for the one bar |
-| 2594 | · · what a family has to find |
-| 2638 | · · the schools this month |
-| 2652 | · · the price of a place |
-| 2737 | · · the grant |
-| 2815 | · · the loan |
-| 2972 | PROMISES - the out of work and the students (2026-09-11) |
-| 3073 | PROMISES - the clinic's price, and a premium (2026-09-19) |
-| 3246 | PROMISES - the standing subsidies |
+| 2105 | · · THE HOLDINGS DIAL (0.7.1) |
+| 2144 | · · THE CEILING, AS A DIAL (0.7.2) |
+| 2212 | MONEY - the currency reform |
+| 2339 | PROMISES - the pension |
+| 2390 | · · and what it does to people |
+| 2423 | · · what workers pay |
+| 2455 | · · what seniors receive |
+| 2496 | PROMISES - the schools: the price of a place, who pays it, and the |
+| 2580 | · · the levers, registered for the one bar |
+| 2596 | · · what a family has to find |
+| 2640 | · · the schools this month |
+| 2654 | · · the price of a place |
+| 2739 | · · the grant |
+| 2817 | · · the loan |
+| 2974 | PROMISES - the out of work and the students (2026-09-11) |
+| 3075 | PROMISES - the clinic's price, and a premium (2026-09-19) |
+| 3248 | PROMISES - the standing subsidies |
 
 ## Constants
 
@@ -89,15 +89,15 @@
 | 180 | `PolicyScreen.STEP_INCOME` | `.0025` | A quarter of a point - every rate that moves off the income tax. |
 | 183 | `PolicyScreen.STEP_PROPERTY` | `.0005` | A twentieth of a point - property, where a quarter is a quarter of the tax. |
 | 186 | `PolicyScreen.EVERY_TAX` | `"income"` | The staged key of "Every tax at once" on the Everything page - the one city rate's key, which is what that rate became in 0.7.4. |
-| 2183 | `PolicyScreen.DIAL_STEPS` | `{ 0, 1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 75, 100 }` | The policy rates the dial's chips stage, in percent (0.7.2): the everyday range finely, the spiral's coarsely. |
-| 2186 | `PolicyScreen.CEILING_STEPS` | `{ 3, 6, 12, 24, 36 }` | The advances ceiling's settings, in months of revenue (0.7.2), up to CentralBank.MAX_ADVANCES_CEILING. |
-| 2189 | `PolicyScreen.TARGET_STEPS` | `{ 0, 1, 2, 3, 4, 5 }` | The inflation targets the chips set at once, in percent (0.7.4): the everyday range, the ladder beside them reaching the rest. |
-| 2192 | `PolicyScreen.TARGET_STEP` | `.005` | One step of the target's ladder (0.7.4): half a point. |
-| 2195 | `PolicyScreen.HOLDINGS_STEP` | `.10` | One step of the holdings' ladder (0.7.6): ten points of the term paper, the chips' own spacing. |
-| 2198 | `PolicyScreen.CEILING_STEP` | `1` | One step of the ceiling's ladder (0.7.6): a month of revenue, the unit the chips are in. |
-| 2862 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
-| 2865 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
-| 2900 | `PolicyScreen.SCHOOL_FIGURES` | `150` | How wide the four figures beside a school kind's ladder are held. |
+| 2185 | `PolicyScreen.DIAL_STEPS` | `{ 0, 1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 75, 100 }` | The policy rates the dial's chips stage, in percent (0.7.2): the everyday range finely, the spiral's coarsely. |
+| 2188 | `PolicyScreen.CEILING_STEPS` | `{ 3, 6, 12, 24, 36 }` | The advances ceiling's settings, in months of revenue (0.7.2), up to CentralBank.MAX_ADVANCES_CEILING. |
+| 2191 | `PolicyScreen.TARGET_STEPS` | `{ 0, 1, 2, 3, 4, 5 }` | The inflation targets the chips set at once, in percent (0.7.4): the everyday range, the ladder beside them reaching the rest. |
+| 2194 | `PolicyScreen.TARGET_STEP` | `.005` | One step of the target's ladder (0.7.4): half a point. |
+| 2197 | `PolicyScreen.HOLDINGS_STEP` | `.10` | One step of the holdings' ladder (0.7.6): ten points of the term paper, the chips' own spacing. |
+| 2200 | `PolicyScreen.CEILING_STEP` | `1` | One step of the ceiling's ladder (0.7.6): a month of revenue, the unit the chips are in. |
+| 2864 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
+| 2867 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
+| 2902 | `PolicyScreen.SCHOOL_FIGURES` | `150` | How wide the four figures beside a school kind's ladder are held. |
 
 ## Fields (state)
 
@@ -113,7 +113,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 3285 | **type** `final class PolicyScreen` | The policy tab: the four rows of levers - taxes, wages, money, promises - the staged set every dial writes into, the ladder and the batch preview that show what a proposal would cost before it is applied, and the page... |
+| 34 | 3287 | **type** `final class PolicyScreen` | The policy tab: the four rows of levers - taxes, wages, money, promises - the staged set every dial writes into, the ladder and the batch preview that show what a proposal would cost before it is applied, and the page... |
 | 39 | 1 | `PolicyScreen(UserInterface ui)` |  |
 
 ### THE POLICY TAB (lines 41-100)
@@ -253,60 +253,60 @@
 | 1675 | 103 | `void minimumWagePage(VBox column)` |  |
 | 1780 | 7 | `double bestWageIn(LabourMarket market, WageBand band)` | The best-paid job somebody in this band can hold. |
 
-### MONEY - the policy rate (lines 1788-2209)
+### MONEY - the policy rate (lines 1788-2211)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1803 | 378 | `void policyRatePage(VBox column)` |  |
-| 2201 | 3 | `static String monthsWords(double months)` | A ceiling as the ladder reads it: "1 month", "6 months". |
-| 2206 | 3 | `static double halfPoint(double target)` | A target on the half-point grid, so a run of steps lands on 3% and not on 3.0000000000000004%. |
+| 1803 | 380 | `void policyRatePage(VBox column)` |  |
+| 2203 | 3 | `static String monthsWords(double months)` | A ceiling as the ladder reads it: "1 month", "6 months". |
+| 2208 | 3 | `static double halfPoint(double target)` | A target on the half-point grid, so a run of steps lands on 3% and not on 3.0000000000000004%. |
 
-### MONEY - the currency reform (lines 2210-2336)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2235 | 93 | `void currencyReformPage(VBox column)` | THE CURRENCY REFORM, which is a change of units and says so. |
-| 2330 | 6 | `static String afterName(Denomination unit, double factor)` | What the money would be called after lopping by this factor. |
-
-### PROMISES - the pension (lines 2337-2493)
+### MONEY - the currency reform (lines 2212-2338)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2352 | 141 | `void pensionPage(VBox column)` |  |
+| 2237 | 93 | `void currencyReformPage(VBox column)` | THE CURRENCY REFORM, which is a change of units and says so. |
+| 2332 | 6 | `static String afterName(Denomination unit, double factor)` | What the money would be called after lopping by this factor. |
 
-### PROMISES - the schools: the price of a place, who pays it, and the (lines 2494-2971)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2536 | 9 | `static String grantWords(TaxPolicy.GrantBasis basis, double amount)` | The grant in words, for a line that names it: "15% of an unskilled wage a month". |
-| 2547 | 8 | `static String basisName(TaxPolicy.GrantBasis basis)` | What a basis is called on its chip. |
-| 2557 | 4 | `static String amountWords(TaxPolicy.GrantBasis basis, double amount)` | How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. |
-| 2562 | 292 | `void schoolsPage(VBox column)` |  |
-| 2856 | 4 | `Lever register(Lever lever)` | A dial on this page, registered so the foot bar can name and apply it. |
-| 2868 | 1 | `static String schoolKey(EducationType kind)` | The staged key of one school kind's own price (0.7.6): "tuitionScale:UNIVERSITY". |
-| 2871 | 1 | `static String scaleWords(double scale)` | A tuition scale as the page writes it: "x1.00". |
-| 2879 | 3 | `double stagedScaleOf(TaxPolicy policy, EducationType kind)` | The scale a preview prices one kind of school at: its own lever if staged, else every school at once if that is, else what it is (0.7.6). |
-| 2884 | 7 | `boolean anyScaleStaged()` | Whether anything staged moves a price of a place: every school at once, or any kind's own. |
-| 2893 | 5 | `static Label schoolPriceHead(String name)` | The small label over a price-of-a-place ladder: which school it prices. |
-| 2908 | 48 | `HBox schoolPriceRow(EducationType kind, TaxPolicy policy, Education schools, double places)` | One school kind's row: its name and its own ladder on the left, and on the right the four figures the model holds for it - places, students, cost and revenue - or "no school" and a greyed dial when nothing of that kin... |
-| 2958 | 13 | `static HBox schoolFigure(String word, String figure, String tone)` | One of the four figures beside a school kind's ladder: its word on the left, the figure on the right. |
-
-### PROMISES - the out of work and the students (2026-09-11) (lines 2972-3072)
+### PROMISES - the pension (lines 2339-2495)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2984 | 83 | `void outOfWorkPage(VBox column)` |  |
-| 3068 | 4 | `static String burdenTone(double share)` |  |
+| 2354 | 141 | `void pensionPage(VBox column)` |  |
 
-### PROMISES - the clinic's price, and a premium (2026-09-19) (lines 3073-3245)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3092 | 153 | `void healthPage(VBox column)` |  |
-
-### PROMISES - the standing subsidies (lines 3246-3318)
+### PROMISES - the schools: the price of a place, who pays it, and the (lines 2496-2973)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3255 | 63 | `void subsidyPage(VBox column)` |  |
+| 2538 | 9 | `static String grantWords(TaxPolicy.GrantBasis basis, double amount)` | The grant in words, for a line that names it: "15% of an unskilled wage a month". |
+| 2549 | 8 | `static String basisName(TaxPolicy.GrantBasis basis)` | What a basis is called on its chip. |
+| 2559 | 4 | `static String amountWords(TaxPolicy.GrantBasis basis, double amount)` | How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. |
+| 2564 | 292 | `void schoolsPage(VBox column)` |  |
+| 2858 | 4 | `Lever register(Lever lever)` | A dial on this page, registered so the foot bar can name and apply it. |
+| 2870 | 1 | `static String schoolKey(EducationType kind)` | The staged key of one school kind's own price (0.7.6): "tuitionScale:UNIVERSITY". |
+| 2873 | 1 | `static String scaleWords(double scale)` | A tuition scale as the page writes it: "x1.00". |
+| 2881 | 3 | `double stagedScaleOf(TaxPolicy policy, EducationType kind)` | The scale a preview prices one kind of school at: its own lever if staged, else every school at once if that is, else what it is (0.7.6). |
+| 2886 | 7 | `boolean anyScaleStaged()` | Whether anything staged moves a price of a place: every school at once, or any kind's own. |
+| 2895 | 5 | `static Label schoolPriceHead(String name)` | The small label over a price-of-a-place ladder: which school it prices. |
+| 2910 | 48 | `HBox schoolPriceRow(EducationType kind, TaxPolicy policy, Education schools, double places)` | One school kind's row: its name and its own ladder on the left, and on the right the four figures the model holds for it - places, students, cost and revenue - or "no school" and a greyed dial when nothing of that kin... |
+| 2960 | 13 | `static HBox schoolFigure(String word, String figure, String tone)` | One of the four figures beside a school kind's ladder: its word on the left, the figure on the right. |
+
+### PROMISES - the out of work and the students (2026-09-11) (lines 2974-3074)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2986 | 83 | `void outOfWorkPage(VBox column)` |  |
+| 3070 | 4 | `static String burdenTone(double share)` |  |
+
+### PROMISES - the clinic's price, and a premium (2026-09-19) (lines 3075-3247)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3094 | 153 | `void healthPage(VBox column)` |  |
+
+### PROMISES - the standing subsidies (lines 3248-3320)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3257 | 63 | `void subsidyPage(VBox column)` |  |
 

@@ -1005,9 +1005,10 @@ public class SaveFileCheck {
          * what made them lose. The squeeze exists to cause HUNGER and it does;
          * what it also does is make every sector in the city too poor to
          * borrow, and a bank with no borrowers earns nothing, and a bank that
-         * earns nothing pays its savers nothing - chooseDepositRate() pays a
-         * share of the month's INTEREST INCOME and never more than leaves the
-         * bank at net zero. So "somebody is hungry" and "savers are being paid"
+         * earns nothing pays its savers nothing - chooseDepositRate() never
+         * pays out more than leaves the bank at net zero (and until 0.7.7 it
+         * paid a share of the month's INTEREST INCOME). So "somebody is
+         * hungry" and "savers are being paid"
          * were being asked of the same city at the same moment, and one of them
          * is the other's opposite.
          *
@@ -1116,6 +1117,114 @@ public class SaveFileCheck {
 
         same("what savers are paid", back.getBank().depositRate(),
                 full.getBank().depositRate());
+
+        /*
+         * WHAT A LOAN COSTS, STRUCK AT THE CLOSE (0.7.7). The bank prices
+         * every loan from four parts, two of them struck when the month
+         * closed from flows no reloaded city can re-read - the share of its
+         * funding at the window and a trailing year of running costs - so
+         * the save carries the parts and the year of costs,
+         * and a reloaded city quotes the prime the live one does. And the
+         * profit the bank booked after its close, which next month's tax
+         * and dividend count, is a flow with the same problem.
+         */
+        double dial = full.getDebtManager().getPolicyRate();
+        assertTrue("fixture: the bank really had a price with every part in it",
+                full.getBank().runningCostRate() > 0 && full.getBank().expectedLossRate() > 0
+                        && full.getBank().capitalCharge(dial, Bank.PRIME_TERM_MONTHS, Bank.RISK_BUSINESS) > 0);
+        same("the bank's prime", back.getBank().prime(dial), full.getBank().prime(dial));
+        same("...what a household pays it", back.getBank().householdRate(dial),
+                full.getBank().householdRate(dial));
+        same("...what the carry trade is lent at", back.getBank().carryRate(dial),
+                full.getBank().carryRate(dial));
+        same("...its running costs per dollar lent", back.getBank().runningCostRate(),
+                full.getBank().runningCostRate());
+        same("...what it expects to lose", back.getBank().expectedLossRate(),
+                full.getBank().expectedLossRate());
+        same("...and how much of its money came from the window", back.getBank().windowShare(),
+                full.getBank().windowShare());
+        double[] recordLived = full.getBank().pricingHistoryToSave();
+        double[] recordBack = back.getBank().pricingHistoryToSave();
+        boolean recordSame = recordLived.length == recordBack.length;
+        for (int i = 0; recordSame && i < recordLived.length; i++) {
+            recordSame = Math.abs(recordLived[i] - recordBack[i]) < 1e-9;
+        }
+        assertTrue("its year of costs came back whole", recordSame);
+        same("the profit it booked after its close", back.getBank().lateProfit(),
+                full.getBank().lateProfit());
+        /*
+         * WHAT IT SET ASIDE, THE TARGET IT CHOSE AND ITS MONTH (0.7.8). The
+         * allowance is a stock the month's provision struck from borrowers as
+         * they stood then; the target is struck from a record of provisions
+         * no end of month can rebuild; and the month's statement lines are
+         * flows - a reloaded Income page read zeroes until a month was played.
+         */
+        Bank livedBank = full.getBank(), backBank = back.getBank();
+        assertTrue("fixture: the bank really had set something aside", livedBank.getAllowance() > 0);
+        same("what the bank has set aside against its loans", backBank.getAllowance(), livedBank.getAllowance());
+        /*
+         * THE QUARTER (0.7.8): the readings the bank rates a sector on are
+         * saved by name - so every sector's quarter and the borrower's own
+         * risk a new loan is priced at come back as they were. (Not the whole
+         * quote: prime is struck again on the load path before the bank is
+         * back, and next month's top prices it afresh.)
+         */
+        BusinessDebtManager liveCredit = full.getEconomyManager().getBusinessDebtManager();
+        BusinessDebtManager backCredit = back.getEconomyManager().getBusinessDebtManager();
+        for (String k : liveCredit.sectors()) {
+            same("  " + k + ": its quarter's debt, as the bank reads it", backCredit.quarterPrincipal(k), liveCredit.quarterPrincipal(k));
+            same("  ...and its assets", backCredit.quarterAssets(k), liveCredit.quarterAssets(k));
+            same("  ...and the risk its next loan is priced at, over prime", backCredit.getRiskSpread(k), liveCredit.getRiskSpread(k));
+        }
+        same("the builders' salvage at what they paid for it", back.getSectors().construction().getSalvageCost(),
+                full.getSectors().construction().getSalvageCost());
+        same("...the month's provision", backBank.provisions(), livedBank.provisions());
+        same("...the capital target it chose", backBank.capitalTarget(), livedBank.capitalTarget());
+        same("...its interest income, on the reloaded Profit page", backBank.interestIncome(), livedBank.interestIncome());
+        same("...its fees", backBank.feeIncome(), livedBank.feeIncome());
+        same("...its profit before tax", backBank.profitBeforeTax(), livedBank.profitBeforeTax());
+        same("...what it kept", backBank.getNetIncome(), livedBank.getNetIncome());
+        same("...what it paid its owners, this month and over the year", backBank.getDividendsPaid()
+                + backBank.dividendsOverYear(), livedBank.getDividendsPaid() + livedBank.dividendsOverYear());
+        same("...and the equity it opened the month with", backBank.getOpeningEquity(), livedBank.getOpeningEquity());
+        for (String record : new String[]{ "lines", "capital" }) {
+            double[] a = record.equals("lines") ? livedBank.monthLinesToSave() : livedBank.capitalRecordToSave();
+            double[] b = record.equals("lines") ? backBank.monthLinesToSave() : backBank.capitalRecordToSave();
+            boolean whole = a.length == b.length;
+            for (int i = 0; whole && i < a.length; i++) whole = Math.abs(a[i] - b[i]) < 1e-9;
+            assertTrue("its month's " + record + (record.equals("lines") ? "" : " record") + " came back whole", whole);
+        }
+        java.util.Map<String, double[]> booksLived = livedBank.allowanceToSave(), booksBack = backBank.allowanceToSave();
+        boolean booksWhole = booksLived.keySet().equals(booksBack.keySet());
+        for (String k : booksLived.keySet()) {
+            if (!booksWhole) break;
+            booksWhole = java.util.Arrays.equals(booksLived.get(k), booksBack.get(k));
+        }
+        assertTrue("...and its allowance, book by book", booksWhole);
+        /*
+         * ...AND ITS YEAR OF STATEMENTS (0.7.9). The Bank tab's last-month
+         * column and its last twelve months are read from months that no end
+         * of month can give back; so is the interest by who paid it, which
+         * rides the month's lines above.
+         */
+        assertTrue("fixture: the bank had last month on file", livedBank.knowsLastMonth());
+        same("last month's profit, beside this month's, on the reloaded Bank tab",
+                backBank.lastMonth(Bank.Line.NET), livedBank.lastMonth(Bank.Line.NET));
+        same("...the last twelve months' interest", backBank.overYear(Bank.Line.INTEREST),
+                livedBank.overYear(Bank.Line.INTEREST));
+        same("...this month's interest from the businesses", backBank.getInterestFromBusinesses(),
+                livedBank.getInterestFromBusinesses());
+        assertTrue("...and its year of statements came back whole",
+                java.util.Arrays.equals(backBank.statementYearToSave(), livedBank.statementYearToSave()));
+        // ...and the account fee in the households' books, a line of its own.
+        assertTrue("fixture: the households really paid account fees",
+                full.getHouseholds().getAccountFees() > 0);
+        same("what the households paid in account fees", back.getHouseholds().getAccountFees(),
+                full.getHouseholds().getAccountFees());
+        for (int r = 0; r < full.getHouseholds().getRowCount(); r++) {
+            same("tier " + r + " account fees", back.getHouseholds().getRowAccountFees(r),
+                    full.getHouseholds().getRowAccountFees(r));
+        }
         same("what the dial paid out", back.getTotalSubsidyPaid(),
                 full.getTotalSubsidyPaid());
         same("the schools' payroll", back.getEducation().getPayroll(),

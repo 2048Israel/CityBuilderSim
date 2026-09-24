@@ -1,6 +1,6 @@
 # LabourMarket.java - 729 lines · 36 methods · 12 constants · model
 
-`ham/citybuildersim/LabourMarket.java` - generated 2026-09-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LabourMarket.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
 > What labour costs, and why it costs that.
 > 

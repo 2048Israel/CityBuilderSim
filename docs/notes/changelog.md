@@ -8,7 +8,280 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
-### VERSION 0.7.6 — ONE LADDER, THE PRICE OF EACH SCHOOL, GDP IN LAYERS, AND LAND BOUGHT IN DOLLARS — 2026-09-23, DEPLOYED (tag 0923d), see `land-in-dollars.md`
+### VERSION 0.7.9 — THE BANK TAB — 2026-09-23/24, DEPLOYED AND VERIFIED (tag 0924a), see `the-bank-tab.md`
+
+**Batch 3 of the bank as a business (`the-bank-as-a-business-plan.md` §3),
+one deploy with 0.7.8 (below).** Jerus: *"a redesign of the bank UI info,
+cause when you click on bank you dont even see all the relevant stuff, lets
+make banks realistic."* An Opus implementer, the docs pass shared with 0.7.8,
+the orchestrating session keeping the gate.
+
+**The landing answers "is my bank healthy, and why" without a click**: a
+status sentence with the figure that decides it (`Bank.status()` — healthy,
+rebuilding, under its minimum, failed, or no bank); a scorecard of eight
+(profit this month and over twelve, return on equity against the owners'
+12.5%, the capital ratio on a bar against the minimum, its own target and the
+top of its band, credit losses as a share of loans, net interest margin, costs
+over revenue, lent out, deposits); and the rate ladder, from the policy rate
+through what savers get, the funds-transfer price and prime in its parts to a
+rung for every borrower (`Bank.ladder()`), every step in points. Five pages
+behind it on one chip strip: **Profit**, **Lending**, **Funding**, **Capital &
+owners**, **History**. **Every figure is a model getter** (`Bank`'s WHAT THE
+BANK TAB READS; `Game.canRecapitaliseBank()`; `HistorySave.monthsUnder()`,
+`monthsRecorded()`, `total()`, `worstYear()`; `HouseholdBalance.averageRate()`;
+`Equity.deskShare()`; `Exchange.deskSoldToHouseholds()` and its three
+siblings): the interest by who paid it (`takeInterest(fromCity,
+fromBusinesses)`, the same sum to the bit), a year of the bank's month
+statements filed whole at the next month's start (`Bank.Line`, `lastMonth()`,
+`overYear()`), the weight table footing to the weighted book with the desk on
+it, the funding figures in today's money, and the equity's movement cause by
+cause with a residual that must read zero. **Found wrong on the old tab, each
+fixed**: per-branch figures in founding money (a reform's factor out); a
+weight table with no term and no desk, which did not foot, and a "relief" that
+read negative; "99900.0% capital" with nothing lent; the under-minimum alert
+on the wrong line; a leverage warning at 2.0 against a default point of 1.5;
+"interest cannot be split further"; a premium-era history note; "Deposits" in
+three meanings; "capital is the limit" beside a failed bank's $0. The toolkit
+gained `Statement.opens()` (an opened line stays open through the clock's
+redraw — the Bank tab only, so far), a formatter on `Pieces.trendChart()`, and
+`Statement.bookTotal()`, moved there from `SectorScreen`. `BankCheck` §(13)
+asserts the arithmetic the tab reads: the ladder's parts are prime at six
+dials, the weight table foots, the equity's residual is zero every month of a
+72-month played city with a treasury buyback and a rescue between presses,
+and the year is the last twelve months read. **Nothing the bank decides
+moved**: the playtest was byte-identical before and after the tab (seed 0, and
+seed 3 held at 10%). One new save key, `bankStatementYear`; the bank's month
+lines grow 44 → 50 and its solvency record 3 → 4, both read by length;
+`SAVE_FORMAT` 27 unchanged. Nothing in the tab has been rendered —
+`build-ui.sh` compiling it is the only check it has had (section 0).
+
+**The docs pass** (one for both versions) regenerated the indexes and made the
+prose agree with the batch: in `Bank`, WHAT A LOAN COSTS still priced a
+business on "its own leverage" and gave the carry trade prime (it pays
+`carryRate()`), `expectedLossRate()` and `MAX_BUFFER` said in the present that
+a whole sector is one borrower, `expectedLossRate()` promised "the allowance
+the next batch gives it" and `strain()` that "batch 2's capital will" read it,
+`SECTOR_WATCH_LEVERAGE` read as a whole-sector line where the allowance stages
+firms, `sectorAllowance()` dated the first build's stage 2 "until 0.7.8", and
+an older save's Income page is the Profit page now; in `BusinessDebtManager`
+the class header said a business never borrows to expand, PRICING FROM THE
+CURVE did not say the price reads the quarter, `priceSector()` named a
+`quarterLeverage()` that is `getQuarterLeverage()`, `borrowingRoom()` said the
+investment desk asks it (it asks `canFundProject()`) and left out the capital
+rule, and `getPrincipalJudged()` described the reading before the quarter;
+`BankCheck`'s banner for sections 7–11 had been left above section 17 when
+section 13 went in, and is back over its methods, its header's questions gain
+the capital (7–12) and the slices (14–16), and a syndication mention and an
+Income-page label went (the label in `SaveFileCheck` too); `Game
+.recapitaliseBank()` still said a failed bank puts "the maximum premium" on
+every borrower (0.7.7's pass missed it), and AND THE BANK EATS IT and
+`EconomyManager.settleInsolvency()` name the slices; `GameVersion`'s 0.7.9
+entry ("where the restructure starts at 1.5"); `DataSave`'s allowance (five
+figures) and solvency (the rescues) javadocs; `HistorySave`'s bank-series
+counts and its present-tense premium; `Equity.PAYOUT` (every company's but the
+bank's); `ReadPathCheck`'s "next page"; `UserInterface`'s record of the split
+(BankScreen's ten banners are gone); `BankScreen`'s header, sentences for
+`BANK_HOME` and `BANK_PAGE_NAMES` (blank in `docs/dials.md`), and a
+`TODO(docs)` on the quarter and the month side by side, fixed at the gate
+(below); `Statement`'s
+header; and `CLAUDE.md`'s counts (145,700 → 151,700 lines, `Game.java` 9,500 →
+9,800).
+
+Verification, both versions: `build.sh` and `build-ui.sh` silent; the suite 60
+of 60 against its baseline of 60 of 60, `BuildMenuCheck` skipped without
+JavaFX, 145 s, rerun after the docs pass; no new harness (`BankCheck` gains
+§(7)–(17), `HistoryCheck` §2e, `YearBookCheck` §4c); `Stale` 0 firm, 89 soft —
+0.7.7's 86, less the old tab's `ratePremium()`, plus four past-tense mentions
+of the deleted `CapitalFlows.arrivalsAt()`; line endings kept; the indexes
+regenerated. 213 files, 151,659 lines, 850 constants (838). The deploy set is
+the implementers' 38 files, `EconomyManager` (a comment from the docs pass),
+`CLAUDE.md` and `docs/`, with the gate's own display fix (the quotes print the quarter's leverage and default rate they are struck on, `BusinessDebtManager.getQuarterDefaultRate()`) and the project's new name in `CLAUDE.md`, `docs/notes/README.md` and `docs/docs-pass.md`: built and gated in the cloud, deployed as tag 0924a, 262 files written to the PC and every one read back byte-identical.
+
+### VERSION 0.7.8 — THE BANK KEEPS ITS CAPITAL, AND A SECTOR IS MANY FIRMS — 2026-09-23/24, DEPLOYED AND VERIFIED (tag 0924a), see `a-sector-is-many-firms.md`
+
+**Batch 2 of the bank as a business (`the-bank-as-a-business-plan.md` §3),
+and the four rounds it took to stand up; one deploy with 0.7.9 (above).**
+Jerus, of its capital: *"the bank chooses."* An Opus implementer through all
+four rounds, an Opus docs pass, the orchestrating session keeping the gate.
+
+**The bank keeps its capital like a business** (`Bank`, THE BANK AS A BUSINESS
+WITH ITS CAPITAL): a loss allowance in IFRS 9's two stages — a year's expected
+loss on a sound book, the lifetime loss on a borrower in trouble, write-offs
+drawn against it first, the provision its move plus what it had not set aside,
+net loans on the balance sheet; its own capital target, the 8% minimum plus
+the larger of the 2.5-point conservation buffer and the worst year of
+provisions it has lived through, capped at the whole Basel stack (`MAX_BUFFER`,
+8.5 points — uncapped, one restructure put the target at 48–108% and stalled a
+city at 8,348 people); a payout rule — nothing under the target, 45% of profit
+after tax inside its band (RBC paid 43%), the excess over the top a twelfth a
+month, and the cap at its cash gone; lending that tightens between the minimum
+and the target (`lendingGrowthLimit()`, 1% × x/(1−x) a month) and, under the
+minimum, lends only what keeps borrowers going — a business's interest
+reserve, a family's month of interest — the families' credit gated by the
+bank's state for the first time; and its own shares issued only under the
+target and bought back at or over it, booked as capital, not trading income
+(0.7.7's seed 0 booked $8.2bn of them as $8.65bn of desk profit). A standing
+bank is asked for capital only under the minimum, and then for its target.
+**As first built it failed 92 times over the default eight (0.7.7: 4)**: a
+whole sector was one borrower, and one restructure cost the bank 37–185% of its
+weighted book in its worst year. Jerus chose option C (*"go for option C"*).
+
+**A sector defaults a slice at a time** (`BusinessDebtManager`, A SECTOR
+DEFAULTS A SLICE AT A TIME): a sector is many firms, and each month the share
+of its debt whose firms fell through the default point defaults — Merton's
+structural model, PD(L) = N(ln(L/1.5)/σ) a year, σ = `ASSET_VOLATILITY` 0.25
+(the one new number, Jerus's to settle), 1 − (1 − PD)^(1/12) a month — written
+off at 60% (`LOSS_GIVEN_DEFAULT`, 1 − 0.6/1.5, from Jerus's two constants),
+every loan pro rata, the plant untouched. The whole-sector restructure is the
+backstop only for a sector with nothing left, and only it goes on the record,
+the surcharge and the ban. The allowance reads the same curve, staged firm by
+firm (the share past the 0.9 watch line holds a loan's term of it). **A loan is
+priced by the curve** — prime + max(0, 60% × PD(L) − `BASE_LOSS_RATE`) + the
+record, at the leverage the loan leaves the borrower at, a project's building
+counted — and `Game.consider()` judges a plan at the rate it would be written
+at; the leverage spread and its 8-point cap are gone, with Jerus's agreement
+(3,452 plans declined on price over the default eight). **The bank reads a
+borrower from its last quarter** (`STATEMENT_MONTHS`, saved as
+`creditStatements`, restarted by a backstop); the defaults read the month. **A
+failing sector's buildings are sold to Construction for their material**, at
+the day's price as far as the builders' cash goes, and booked as an input when
+they build with it. **Buybacks come only from capital over the target**
+(`Bank.buybackRoom()`), and **the desk buys other companies' shares only while
+the bank would still hold its target with them on its books**, at `RISK_EQUITY`
+(`Bank.deskCanCarry()`, Basel's market-risk requirement). **Syndication** past
+Basel's large-exposure limit, built in round 3 on Jerus's choice, sent 99% of
+business lending abroad and left an arranger that failed 101 times, and is
+deleted; a WHY paragraph in `Bank` after `lendingStance()` keeps the reason.
+Also: 0.7.7's loose ends — the bank's month lines, allowance and capital
+record saved, `Bank.redenominate()` scaling last month's figures, a failure
+caused after the close resolved in its own month, the four player-facing
+premium strings corrected, `CapitalFlows.arrivalsAt()` deleted; six history
+series (`bankCapitalRatio`, `bankCapitalTarget`, `bankAllowance`,
+`bankProvisions`, `bankDividends`, `bankReturnOnEquity`) with year-book rules;
+the inbox's "Businesses are going bust"; the time-skip report's defaults amber
+only past a sound book's loss. New save keys `bankAllowance`,
+`bankCapitalRecord`, `bankMonthLines`, `creditStatements` and the extras
+`salvageCost` and `paidEarlier`; `SAVE_FORMAT` 27 unchanged.
+
+**What it measured** (round 4, shipped), eight seeds: the default run failed
+39 times (1–7 a seed; 0.7.7 4), ended with 162,273 people (135,993) and 39,676
+at month ~1,300 (26,733, and past 0.7.6's 33,350), wrote off $163.2bn,
+unemployment 16.0%, clean 8/8; the autopilot 49 failures, 180,349 people,
+$341.1bn written off — the slices trickle where a restructure used to land
+once — 5/8 clean (one negative-GDP month each); held at 10%, 284 failures in a
+town that never grows past ~3,000 people, 0/8 clean on the usual households
+with no home. The bank in growth years: capital 19.2% against a 16.5% target,
+return on equity 13.0% (RBC 16.3%), 76% of profit paid out, provisions 0.41% of
+loans (RBC 0.43%) and 1.09% through the run; its worst year 38–109% of the
+weighted book, so the target sits at `MAX_BUFFER` in every seed. Every
+remaining failure is a lending loss — 20 collapses, 14 stage-2 set-asides, 5
+slices on the default run — and under all of them one sector holds 30–73% of
+the book. The two capital limits bind (its own shares in 82 months, $106M
+turned away; the desk in 5,253, $144bn, 79% of it the world's; dividends paid
+abroad $21.2bn → $49.6bn) and move the failure count by less than the seeds'
+noise (a last-bit rounding difference moves it by about 3). Found on the way:
+the load path's last household restore read every modern save in the legacy
+layout and was refused (fixed); `HealthCheck`'s fee twins and `MoneyCheck`'s
+restructure fixture had stopped causing their conditions (the fixtures fixed,
+no tolerance moved); `Companies.bankFlush()` read false after a reload
+(replaced by the bank's own rule, read live); `EducationCheck`'s revenue sum
+left out the central bank's remittance; `ForeignCheck`'s programme counts the
+material built from scrapped plant now (a measurement change, for review); and
+the opens in the list's section 4.
+
+### VERSION 0.7.7 — THE BANK PRICES LIKE A BUSINESS — 2026-09-23, DEPLOYED AND VERIFIED (tag 0923e), see `the-bank-prices-like-a-business.md`
+
+**Batch 1 of the bank as a business (`the-bank-as-a-business-plan.md`).**
+Jerus: *"lets make banks realistic, and remember, its a business, it wants to
+make money."* An Opus implementer, an Opus docs pass, the orchestrating session
+keeping the gate.
+
+**The strain premium is gone** from every rate it reached — business loans,
+household credit and car finance, the carry trade, the deposit bid, the city's
+own paper — and `Bank.ratePremium()`, `isStrained()`, `MAX_STRAIN_PREMIUM`,
+`HARD_STRAIN`, `DebtManager`'s `bankPremium` and `getRateBeforeStrain()` and
+the `bankPremium` history series with it; `strain()` stays as a measure.
+**A loan is priced from its costs** (`Bank`, WHAT A LOAN COSTS): the
+funds-transfer price (the dial, the window's penalty on the share of the bank's
+money that is the window's, the curve's term premium), the running costs (a
+trailing year of payroll and upkeep over the larger of the book and what the
+capital could carry), the expected loss (`BASE_LOSS_RATE`, 0.4% through the
+cycle — the bank's own write-off record was built twice and measured as a
+disaster twice, the note's §3) and a capital charge (the weight × 11% × the
+owners' 12.5%, `Equity.requiredYield()`, over the funds-transfer price). Prime
+is the four for a sound business at 36 months; a sector pays prime plus its own
+leverage and restructure spread, re-based so a sound one pays prime; a
+household the four at its weight plus `RISK_SLOPE` a month owed
+(`HouseholdBalance.BASE_SPREAD` gone); the carry trade the three without a loss
+(`Bank.carryRate()`). **Savers get a rate the bank chooses**: 0.35 of the dial
+flush with reserves, toward 0.90 at the window, a sixth of the way a month,
+never past the margin after running costs nor the savers' share of the margin —
+the second bound the gate's catch (held at 10%, the first finished build failed
+the bank 184 times against 0.7.6's 78). `DEPOSIT_PASS_THROUGH`, the bid for hot
+money and 0.7.3's quote cap are gone. **Fees**: $12 a month on every housed
+household at founding prices, real-indexed, its own line on the household books
+and declared to `MoneyAudit`; 1% of new lending, out of a business loan's
+proceeds (grossed up) and added to a household's or a car loan's debt. **The
+window** charges the dial plus a quarter point (`WINDOW_PENALTY` .0025).
+**Two profit bugs**: the bank's dividend and the register's income are after
+tax, and what it books after its close is carried into the next month's taxed
+profit, and saved. New series `policyRate`, `bankPrime`, `bankDepositRate`,
+`bankFees`; new save keys `bankPricingHistory` and `bankLateProfit`;
+`SAVE_FORMAT` 27 unchanged. The Bank tab had the least edits that keep it true
+(prime where the premium was, a Fees line on the Income page); its redesign is
+batch 3.
+
+**What it measured**, eight seeds against 0.7.6: mean population at the end
+135,993 against 148,668 (the lowest seed 111,831), 26,733 against 33,350 at
+month ~1,300; GDP a month $769.0M against $743.8M; bank failures 4 against 19;
+written off $119.3bn against $102.8bn; unemployment at the end 17.4% against
+13.3%; one seed with a finding (seed 2, households with no home, months
+779–789). Savers get 0.37–0.44 of the dial on average; prime runs 1.7–2.0
+points over it in calm years. Autopilot on: one failure against thirteen. Held
+at 10%: forty against seventy-eight, and one new stress finding — seed 2's
+prices to 5.64× founding when the recovered bank paid savers over the world's
+rate and US$2.7bn came home. `MonetaryCheck` §6 passes with its premise
+unchanged (1.428 points across the range). Found on the way:
+`Equity.payDividend` overpaid when the households held a few hundredths of a
+share more than the register (fixed at the division; where the drift comes
+from is open); `ForeignCheck`'s swamp assertion reads the trailing year, a
+measurement change for review; `OutsideCheck` adds adults in waves until a
+pool exists; nine smaller items in the note's §5.
+
+**The docs pass** regenerated the indexes and made the prose agree with the
+batch: `Bank`'s present-tense premium and income-share sentences (the reserves
+note, the founding bank's clean books, the funding side, `fundToCover()`'s
+no-bank note, the saved prices, `getProfitLastMonth()`, and rule 2's "the
+second two"); `DataSave`'s pricing-record javadoc, which still described the
+five years of write-offs the batch deleted; `CapitalFlows` (the forecast
+`arrivalsAt()` served, which has no caller now, and `takeMonth()`'s
+`cityRate`); `DebtManager` ("four terms", "the bank's strain read");
+`Game` (the business lender's base rate on the load path, two present-tense
+premiums); `Household.settle()`'s fees and `HouseholdBalance.advanceMonth()`'s
+rate; `GameVersion`'s 0.7.7 entry ("35% for a bank its own deposits fund" →
+flush with reserves); a sentence for `BusinessDebtManager
+.DEFAULT_SURCHARGE_MAX_COUNT`, blank in `docs/dials.md` since it was written;
+the present-tense premium in `BankCheck` (question 1, the reload note, the
+unbanked town) with a banner for its sections (3)–(6), `CreditCheck`,
+`SaveFileCheck`, `MiningCheck` and `LongPlaytest`; the same in `UserInterface`,
+`SummaryScreen` and `BankScreen`; and `CLAUDE.md`'s line count (144,200 →
+145,700). Four player-facing strings still describe the premium and are left
+for an implementer (the list).
+
+Verification: `build.sh` and `build-ui.sh` silent; the suite 60 of 60 with
+`BuildMenuCheck` skipped without JavaFX, 149 s (0.7.6's baseline 59 of 60 —
+`InfrastructureCheck`'s known line passes on this build, as it did on one
+intermediate build and not another, so it stays on the list), no new harness
+(`BankCheck` §(1)–(6), `HistoryCheck` §2d and §3b, `YearBookCheck` §4b);
+`StaleCheck` rerun after the docs pass; `Stale` 0 firm, 86 soft — 0.7.6's 71
+and fifteen that name the removed members in past-tense history; line endings
+kept; the indexes regenerated. 213 files, 145,656 lines, 838 constants (831).
+The deploy set is the batch's forty source files, `MiningCheck` (a comment
+from the docs pass), `CLAUDE.md` and `docs/`: built and gated in the cloud while
+the PC was off, deployed as tag 0923e when it came back, 90 files written to the
+PC and every one read back byte-identical.
+
+### VERSION 0.7.6 — ONE LADDER, THE PRICE OF EACH SCHOOL, GDP IN LAYERS, AND LAND BOUGHT IN DOLLARS — 2026-09-23, DEPLOYED AND VERIFIED (tag 0923d), see `land-in-dollars.md`
 
 **Four things Jerus asked for in one message — *"ok its good, just one thing"*,
 and then four. Two Opus implementers in turn on one tree: the first three
@@ -142,7 +415,8 @@ docs pass (its edits are comments, `CLAUDE.md` and two harness labels); the
 indexes regenerated; `Stale` 0 firm, 71 soft, the same list as 0.7.5's;
 `SAVE_FORMAT` 27. 213 files, 144,158 lines, 831 constants (815). The deploy
 set is the batch's twenty-nine source files (`ui/Ladder.java` new), `CLAUDE.md`,
-`README.md` and `docs/`. Deployed as tag 0923d.
+`README.md` and `docs/`. Deployed as tag 0923d, 72 files written to the PC and
+every one read back byte-identical.
 
 ### VERSION 0.7.5 — ENTER BUILDS; THE REPORTS PAGE, REDRAWN — 2026-09-23, DEPLOYED AND VERIFIED (tag 0923b), see `financial-crisis-of-2045.md`
 

@@ -1127,6 +1127,13 @@ public class HealthCheck {
         double[] personMonths = new double[scales.length];
         double[] elderMonths = new double[scales.length];
         int window = 96;
+        // What the beds could do for each twin, month by month, apart from the
+        // fee (0.7.8, round 3): the share of the people general care serves
+        // that its staffed places could take, and the coverage the month read.
+        double[] bedCover = new double[scales.length];
+        double[] coverRead = new double[scales.length];
+        double[] peakPeople = new double[scales.length];
+        final int clinics = 10;   // see TEN CLINICS below
         for (int k = 0; k < scales.length; k++) {
             Game town = new Game(files);
             towns[k] = town;
@@ -1141,7 +1148,21 @@ public class HealthCheck {
                 b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
                 b.addStack(b.getTemplateByName("Water Treatment Plant"), 2, true);
                 b.addStack(b.getTemplateByName("Paved Road"), 20, true);
-                b.addStack(b.getTemplateByName("Walk-in Clinic"), 6, true);
+                /*
+                 * TEN CLINICS, 25,000 PLACES, more than any of the three twins
+                 * ever holds (0.7.8, round 3). With six (15,000) the beds ran
+                 * short in every twin and by a different amount in each -
+                 * measured on round 2's build, where this went red: the
+                 * dear city, which the fee makes smaller, had a place for 97.8%
+                 * of its people against the founding fee's 93.7% - a gap wider
+                 * than the fee's own, 91.1% served against 94.8% - and its
+                 * baseline came out LOWER (4.27% against 4.35%): the fixture
+                 * was measuring the size of the cities, not the fee. With a
+                 * place for everyone in each twin the beds are the same and
+                 * the fee is the difference, which the assertions below hold
+                 * it to before they read the baseline.
+                 */
+                b.addStack(b.getTemplateByName("Walk-in Clinic"), clinics, true);
                 b.addStack(b.getTemplateByName("Childcare Centre"), 8, true);
                 b.addStack(b.getTemplateByName("Home Care Service"), 4, true);
                 town.simulateMonths(48);
@@ -1167,6 +1188,10 @@ public class HealthCheck {
                     meanAffordable[k] += offered > 0 ? treated / offered : 1;
                     meanSick[k] += town.getHealth().getSickRate();
                     meanBaseline[k] += town.getHealth().getBaselineRate();
+                    double wouldServe = CareType.GENERAL.populationServed(town.getCohorts());
+                    bedCover[k] += wouldServe > 0 ? Math.min(1, hc.getOffered(CareType.GENERAL) / wouldServe) : 1;
+                    coverRead[k] += hc.getCoverage(CareType.GENERAL);
+                    peakPeople[k] = Math.max(peakPeople[k], town.getCohorts().total());
                     deathsOver[k] += town.getCohorts().getLastDeaths();
                     eldersLost[k] += town.getCohorts().getDeaths(AgeBand.SENIOR)
                             + town.getCohorts().getDeaths(AgeBand.ELDER);
@@ -1204,6 +1229,29 @@ public class HealthCheck {
          * effects can net to nothing on the headline figure. The claim that
          * coverage makes is on the BASELINE rate, which coverage alone sets.
          */
+        /*
+         * ...AND THE FIXTURE CAUSES WHAT IT MEASURES (0.7.8, round 3): the
+         * same clinics in every twin, with a place for more people than any
+         * of them holds, so the beds are not what differs - what they could
+         * take differs between the dear city and the founding fee's by less
+         * than the fee turns away - and the coverage each twin's month read
+         * is lower at the dial's top. Then the baseline, which that coverage
+         * alone sets.
+         */
+        for (int k = 0; k < scales.length; k++) {
+            bedCover[k] /= window;
+            coverRead[k] /= window;
+        }
+        System.out.printf("  the beds took %.2f%% of those general care serves at x%.2f and %.2f%% at x%.2f; the fee left coverage at %.2f%% and %.2f%%%n",
+                bedCover[1] * 100, scales[1], bedCover[2] * 100, scales[2], coverRead[1] * 100, coverRead[2] * 100);
+        double places = clinics
+                * (double) towns[0].getBuildingManager().getTemplateByName("Walk-in Clinic").getCapacity();
+        assertTrue("fixture: the same clinics in every twin, a place for more people than any of them holds",
+                places > Math.max(peakPeople[0], Math.max(peakPeople[1], peakPeople[2])));
+        assertTrue("fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away",
+                bedCover[2] - bedCover[1] < meanAffordable[1] - meanAffordable[2]);
+        assertTrue("...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top",
+                coverRead[2] < coverRead[1]);
         assertTrue("...and its baseline sick rate, which coverage sets, is higher for it",
                 meanBaseline[2] > meanBaseline[1]);
         /*

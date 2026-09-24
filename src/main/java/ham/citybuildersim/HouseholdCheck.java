@@ -638,6 +638,12 @@ public class HouseholdCheck {
         assertTrue("SAVINGS GO FIRST", bal.getSavings(U) < savingsBefore);
         assertTrue("...and nothing is borrowed while there are savings",
                 bal.getDebt(U) == 0);
+        // With nothing owed the line's rate is the bank's household rate it
+        // was handed, and nothing over it (0.7.7: it was the city's rate plus
+        // HouseholdBalance.BASE_SPREAD, three points).
+        double rateWhenClear = bal.getRate(U);
+        assertTrue("...and with nothing owed its line is priced at the bank's household rate, no more",
+                Math.abs(rateWhenClear - .05) < 1e-12);
 
         // Run it until the savings are gone.
         for (int m = 0; m < 40; m++) {
@@ -649,7 +655,7 @@ public class HouseholdCheck {
         assertTrue("...at a rate over the risk-free one",
                 bal.getRate(U) > .05 + 1e-9);
         assertTrue("...which climbs with what they already owe",
-                bal.getRate(U) > .05 + HouseholdBalance.BASE_SPREAD);
+                bal.getRate(U) > rateWhenClear + HouseholdBalance.RISK_SLOPE * 1e-3);
         assertTrue("...and never past the cap",
                 bal.getRate(U) <= HouseholdBalance.MAX_RATE + 1e-9);
 
@@ -919,8 +925,10 @@ public class HouseholdCheck {
         leaving.advanceMonth(townCensus, thin, 1.0, noFees, eat, .25, .05, 1);
         check("twenty households leaving in debt write it off against the bank",
                 leaving.getWrittenOff(), 20 * debtEach);
+        // ...plus the month: what they drew, and since 0.7.7 the bank's fee on
+        // it, which is added to what they owe.
         check("...and the ones who stayed still owe what they owed, plus the month",
-                broke.debt() - broke.borrowed() + broke.repaid(), debtEach);
+                broke.debt() - broke.borrowed() - broke.loanFee() + broke.repaid(), debtEach);
 
         /*
          * ARRIVALS NOBODY RELEASED BRING THE BUFFER, NOT THE NEIGHBOURS' MONEY.

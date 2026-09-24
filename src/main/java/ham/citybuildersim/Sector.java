@@ -788,6 +788,18 @@ public abstract class Sector {
          */
         public final Map<String, Double> otherInputs = new LinkedHashMap<>();
 
+        /**
+         * ...AND STOCK IT PAID FOR EARLIER (0.7.8): an input drawn this month
+         * out of stock the sector bought in an earlier month and paid cash for
+         * then - the builders' material from scrapped plant, booked at what
+         * they paid for it as they build with it (Construction.takeSalvage()).
+         * A cost on the income statement, named in otherInputs like any input
+         * that is not a market purchase, and NOT cash: the money left when the
+         * stock was bought, so bank() adds it back and the cash moves by the
+         * month's net income less nothing twice. See drawPaidStock().
+         */
+        public double paidEarlier;
+
         public Split soldOf(Good g)   { return sold.computeIfAbsent(g, k -> new Split()); }
         public Split boughtOf(Good g) { return bought.computeIfAbsent(g, k -> new Split()); }
         /** Sold to households in particular - consumption, in the national accounts. */
@@ -802,7 +814,7 @@ public abstract class Sector {
         public double revenue() { return localSales + exports + otherRevenue; }
 
         void clear() {
-            localSales = exports = otherRevenue = imports = salesToHouseholds = 0;
+            localSales = exports = otherRevenue = imports = salesToHouseholds = paidEarlier = 0;
             purchasesBySupplier.clear();
             unitsSold.clear();
             unitsBought.clear();
@@ -819,6 +831,7 @@ public abstract class Sector {
          */
         void scale(double s) {
             localSales *= s; exports *= s; otherRevenue *= s; imports *= s; salesToHouseholds *= s;
+            paidEarlier *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
             for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
             for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
@@ -907,6 +920,17 @@ public abstract class Sector {
     }
 
     /**
+     * An input drawn from stock the sector paid for in an earlier month, at
+     * what it paid (0.7.8): a cost this month, named, and no cash - see
+     * Ledger.paidEarlier.
+     */
+    protected final void drawPaidStock(String what, double cost) {
+        if (!(cost > 0) || !Double.isFinite(cost)) return;
+        pending.paidEarlier += cost;
+        pending.otherInputs.merge(what == null ? "Stock" : what, cost, Double::sum);
+    }
+
+    /**
      * ...and one bought from the WORLD: an import with no good behind it.
      *
      * THE RAILWAY'S FUEL, and it is here rather than on the goods market
@@ -967,9 +991,12 @@ public abstract class Sector {
          * at strike() like everything else here. See Ledger.otherInputs.
          */
         public Map<String, Double> otherInputs = new LinkedHashMap<>();
+        /** The part of inputs drawn from stock paid for in an earlier month - see Ledger.paidEarlier. In inputs, and added back to the cash at bank(). */
+        public double paidEarlier;
 
         void scale(double s) {
             revenue *= s; inputs *= s; payroll *= s; electricity *= s; water *= s; maintenance *= s;
+            paidEarlier *= s;
             operatingIncome *= s; interest *= s; propertyTax *= s; salesTax *= s;
             preTaxIncome *= s; profitTax *= s; netIncome *= s;
             localSales *= s; exports *= s; otherRevenue *= s; salesToHouseholds *= s;
@@ -1010,7 +1037,8 @@ public abstract class Sector {
         s.sold = copyOf(pending.sold);
         s.bought = copyOf(pending.bought);
         s.otherInputs = new LinkedHashMap<>(pending.otherInputs);
-        s.inputs = pending.purchases();
+        s.paidEarlier = pending.paidEarlier;
+        s.inputs = pending.purchases() + pending.paidEarlier;
         // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
         s.otherParts = nameOtherRevenue();
         s.payroll = getPayroll();
@@ -1040,7 +1068,9 @@ public abstract class Sector {
         s.preTaxIncome = s.operatingIncome - s.interest - s.propertyTax - s.salesTax;
         s.profitTax = Math.max(s.preTaxIncome * taxRate, 0);
         s.netIncome = s.preTaxIncome - s.profitTax;
-        cash += s.netIncome;
+        // ...less nothing twice: stock paid for when it was bought is a cost
+        // this month and no cash this month (Ledger.paidEarlier).
+        cash += s.netIncome + s.paidEarlier;
         pending.clear();
         for (Output o : outputs.values()) {
             o.soldLocal = 0; o.exported = 0; o.writtenOff = 0; o.offered = 0; o.withheld = 0;
@@ -1077,6 +1107,7 @@ public abstract class Sector {
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherParts);
         s.otherInputs = saved.otherInputs == null
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherInputs);
+        s.paidEarlier = saved.paidEarlier;
     }
 
     /* ===================================================================
