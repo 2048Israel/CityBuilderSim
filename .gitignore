@@ -33,3 +33,9 @@ Desktop.ini
 
 # --- Logs ---
 *.log
+
+# --- Claude's scratch ---
+# Screenshots, patches, held copies and notes a Cowork session leaves on the
+# PC for Jerus to look at. The code is in src/, the record in the claude.ai
+# project; nothing here is either.
+Claude outputs/
