@@ -1141,8 +1141,145 @@ public final class GameVersion {
      * it was saved in. The month's lines gain the interest by who paid it on
      * the end of their array, and the solvency record what the city has put
      * into the bank over its life, both read by their length.
+     *
+     * 0.7.10 (2026-09-24) - FOUNDING A CITY: A SMALLER ENDOWMENT, AND A
+     * SCREEN TO FOUND IT ON.
+     *
+     * Jerus: "lets reduce the cash the city starts with, both the foreign usd
+     * and the starting cash ... cause the city should borrow right". A city
+     * founds on D$100M in the treasury and US$25M in the vault
+     * (Game.FOUNDING_CASH, FOUNDING_RESERVE_USD), where it had D$2.5B and
+     * US$1B. The endowment founds the village and pays for one of the first
+     * big works, and the city borrows for the rest - the way long-lived
+     * public works are financed, over the asset's life, so that the people
+     * who use the plant pay for it. The vault is years of a young city's
+     * imports against the IMF's three months. A trace of 0.7.9 found the old
+     * treasury never drawn below D$2.467B in thirty years, and the old vault
+     * effectively empty by month 1,140 with no harm done.
+     *
+     * And "a small thing at the start of the game where you choose the name
+     * of the city and the currency ... (with option to just start at
+     * default)". Start New Game opens a screen to found a city on
+     * (FoundingScreen): its name; its money, named after it - Arden gives the
+     * Arden dollar, A$, ARD - or by hand, a name and a three-letter code; what
+     * the founders leave, on four presets - Lean, Standard, Wealthy (the old
+     * start) and Custom - each with what it buys at a new city's invoices
+     * (Game.whatItBuys()); and the world's inflation, moved there from
+     * Settings, the only moment it ever acted. "Found with defaults" is the
+     * old one click. The choices are a record on the city (Founding): set by
+     * the one founding path, saved, never changed. The city's money is read
+     * through the game rather than five static finals in Currency, so one
+     * city's name cannot leak into another's; the window's title and the slot
+     * list name the city.
+     *
+     * Two things the founding path had wrong, found on the way: a new game
+     * after a load kept the loaded city's world, and the menu set the world's
+     * mean after the world was reset, so the first year's realised inflation
+     * was back-cast at the previous city's mean. Both are the founding's now,
+     * set before the reset.
+     *
+     * Forty-two fixtures in twenty-five harnesses had been bought out of the
+     * old treasury without saying so - a coal plant, a water plant and four
+     * hundred houses on a D$100M city are refused, or a free-placed city's
+     * running costs run the treasury dry and simulateMonths() stops short.
+     * Only ten went red; an audit of every refused order and every refused
+     * month found the rest. Each is handed the treasury it was written
+     * against, the Wealthy preset's, explicitly, through setCashForTest().
+     *
+     * And the build screen offers a twenty-year bond beside its six-month
+     * note (Game.BUILD_BOND_YEARS). On D$100M the INSUFFICIENT FUNDS page is
+     * how a player pays for a first big work, and the note was its only
+     * offer: the whole face back in six months, out of a treasury that was
+     * short to begin with. A water plant bought on it left the treasury
+     * D$16.2M overdrawn when the note matured, ten months on the central
+     * bank's advances; on a twenty-year bond sized to the gap it never fell
+     * below D$0.5M. Jerus chose to offer both - a long-lived asset paid for
+     * with long-lived debt. The bond is sized so the cash it brings covers the
+     * gap, the fees paid out of its face (Game.quoteLongBondForCash(), the
+     * long bond's counterpart of the note's faceForNetProceeds()), rather
+     * than guessed; the page shows each offer's rate, face, cash, monthly
+     * cost and what happens at the end, the bond first, and each button
+     * books exactly the quote above it. The founding screen says the rest is
+     * borrowed there.
+     *
+     * SAVE_FORMAT did not move. Eight new keys - cityName, the currency's
+     * five names, foundingCash and foundingReserveUsd - which a save from
+     * before 0.7.10 reads as missing: it loads as Danzik, in the Danzik
+     * dollar (DZD, D$), founded with D$2.5B and US$1B, which is what it was.
+     * Its cash and its vault are its own either way.
+     *
+     * 0.7.11 (2026-09-24) - THE LANDLORDS BORROW ON INSURED MORTGAGES.
+     *
+     * A high rate cut the supply of homes much harder than it cut the demand
+     * for them, and a trace of 0.7.10 found why: the landlords financed
+     * housing on the same 36-month interest-only bullet as a mill, tested at
+     * 1.25 times gross rent over the interest on the whole cost at their own
+     * risk's rate. On autopilot their maturing loans went unrolled, the hole
+     * in their till was added to every building's loan, and nothing was built
+     * for two hundred months with the city 37% short of homes; held at a 10%
+     * dial nothing was built for 333 years. Jerus chose what a landlord
+     * borrows on, on Canada's terms: "Mortgages", "CMHC (Canada)", "Keep it"
+     * (the rent floor), "Insured by the city".
+     *
+     * A residential building is bought with at least 15% of the landlord's
+     * own funds - its till, what it holds abroad, and what its owners are
+     * asked for when those fall short - and a Mortgage for the rest: at most
+     * 85% of the cost, CMHC's 5.00% premium and the 0.75% forty-year
+     * surcharge added to the loan and paid to the treasury, at a rate fixed
+     * for ten years (the bank's ten-year funds-transfer price and its running
+     * costs, no loss - Bank.insuredMortgageRate(); round 2 below adds the
+     * capital the leverage ratio ties up), paid down
+     * as a level annuity over forty and renewed at the day's rate at each
+     * term's end. The lender's test replaces the old interest test for these
+     * orders: the building's rent less its repairs and property tax must
+     * cover the payment 1.20 times. When a landlord's debt is written down,
+     * every instrument falls pro rata and the treasury pays the bank what
+     * came off the insured mortgages - a promise, like a coupon - so the bank
+     * weighs them at nothing (Basel III's sovereign-guaranteed 0%), sets
+     * nothing aside against them, and its capital rule does not ration them
+     * while the risk weights are what binds (round 2 below).
+     * Everything else keeps its 36-month loan. The Bank tab has the mortgages,
+     * their row in the weight table and their rung on the ladder; the
+     * landlords' screen their mortgages beside their other debt; the budget
+     * the premiums and the claims.
+     *
+     * AND ONE KNIFE-EDGE IT UNCOVERED: a bank that bought its shares back
+     * down to its capital target exactly then issued new ones or not on the
+     * last bit of a subtraction (Bank.OWN_ISSUE_DEAD_BAND).
+     *
+     * ROUND 2, THE BANK AROUND THE MORTGAGES. Measured, the first round's
+     * bank lost the landlords' margin and their capital. Its equity at year
+     * 100 was half the 0.7.10 bank's, and it failed five times as often.
+     * Jerus chose four answers:
+     *   - "Basel leverage ratio": equity of at least 3% of everything the
+     *     bank has lent, whatever it weighs (Bank.LEVERAGE_RATIO_MIN). Every
+     *     comparison of its capital with a requirement reads the larger of
+     *     the two, and its own target and band scale in the proportion it
+     *     chose on the risk side. The insured mortgage's rate carries the
+     *     capital the requirement ties up (Bank.capitalPerDollar()). When
+     *     the leverage requirement binds, the capital rule rations the
+     *     mortgages with the rest.
+     *   - "Close losing branches": the branch test in reverse. After two
+     *     years of a book that does not keep its branches' staff, one closes
+     *     a month, never the last, by a retired building's path
+     *     (Bank.closesBranch()). A bank under its minimum no longer opens a
+     *     branch for the capital the opening brings.
+     *   - "Pay out after principal": a sector's dividend is Equity.PAYOUT
+     *     of its income less the principal that fell due in the month, and
+     *     its buyback cushion counts its interest and principal.
+     *   - "Keep asking the owners": the down payment's raise stays, with
+     *     its reasons written down (Game.consider()).
+     * The count of months without cover is carried in the bank's last-month
+     * record, which an older save reads without.
+     *
+     * SAVE_FORMAT did not move. A mortgage is saved in the business debts
+     * typed "MORTGAGE", which an older save has none of, and its loans load
+     * as they were; three new keys (mortgageRepaid, insurancePremiums,
+     * insuranceClaims) an older save reads as none; and the government's
+     * month gains its two lines on the end of an array whose reader checks
+     * its length, so an older block reads the two as zero.
      */
-    public static final String VERSION = "0.7.9";
+    public static final String VERSION = "0.7.11";
 
     /**
      * The save shape.

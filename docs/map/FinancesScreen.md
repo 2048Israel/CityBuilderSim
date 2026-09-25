@@ -1,4 +1,4 @@
-# FinancesScreen.java - 1,991 lines · 31 methods · 7 constants · interface
+# FinancesScreen.java - 1,993 lines · 31 methods · 7 constants · interface
 
 `ham/citybuildersim/ui/FinancesScreen.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -87,7 +87,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 1958 | **type** `final class FinancesScreen` | The Finances tab: the position, the ladder of what the city owes, debt service, home and abroad, your rate taken apart, the book, buying back, and borrowing - at home or in somebody else's money - and, since 0.7.0, th... |
+| 34 | 1960 | **type** `final class FinancesScreen` | The Finances tab: the position, the ladder of what the city owes, debt service, home and abroad, your rate taken apart, the book, buying back, and borrowing - at home or in somebody else's money - and, since 0.7.0, th... |
 | 39 | 1 | `FinancesScreen(UserInterface ui)` |  |
 
 ### FINANCES (lines 41-134)
@@ -179,10 +179,10 @@
 | 1797 | 150 | `void moneyPage(VBox column)` |  |
 | 1949 | 4 | `static double[] lastYear(double[] series)` | The last twelve months of a series, or all of it if the city is younger. |
 
-### THE DEBT RESULT (lines 1954-1991)
+### THE DEBT RESULT (lines 1954-1993)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1963 | 8 | `String executeDebtLogic(String type, double amount, int duration, double rounding)` |  |
-| 1973 | 18 | `void showDebtResultMenu(String summary)` | Shows the terms the player just agreed to. |
+| 1965 | 8 | `String executeDebtLogic(String type, double amount, int duration, double rounding)` |  |
+| 1975 | 18 | `void showDebtResultMenu(String summary)` | Shows the terms the player just agreed to. |
 

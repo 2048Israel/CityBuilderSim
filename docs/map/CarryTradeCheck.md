@@ -1,4 +1,4 @@
-# CarryTradeCheck.java - 297 lines · 5 methods · 0 constants · harnesses
+# CarryTradeCheck.java - 301 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CarryTradeCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -34,7 +34,7 @@
 >      years. A carry trade that does not reach the financial account is that
 >      bug again, and section 5 is the assertion that would have caught it.
 
-**Uses:** [CapitalFlows](CapitalFlows.md) (22), [DebtManager](DebtManager.md) (6), [ForeignAccounts](ForeignAccounts.md) (4), [MoneyAudit](MoneyAudit.md) (3), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1)
+**Uses:** [CapitalFlows](CapitalFlows.md) (22), [DebtManager](DebtManager.md) (6), [ForeignAccounts](ForeignAccounts.md) (4), [MoneyAudit](MoneyAudit.md) (3), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1)
 
 ## Sections
 
@@ -58,10 +58,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 257 | **type** `public class CarryTradeCheck` | The carry trade: the other side of hot money, and the bank's first borrower. |
+| 41 | 261 | **type** `public class CarryTradeCheck` | The carry trade: the other side of hot money, and the bank's first borrower. |
 | 47 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 52 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 63 | 7 | `static CapitalFlows settle(double lendingRate, double premium, double headroom, int months)` | Run a stock to rest against a fixed rate, premium and headroom. |
-| 71 | 217 | `public static void main(String[] args) throws Exception` |  |
-| 290 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double borrowedOut)` | A month at the city's edge, with an outflow on the financial account. |
+| 71 | 221 | `public static void main(String[] args) throws Exception` |  |
+| 294 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double borrowedOut)` | A month at the city's edge, with an outflow on the financial account. |
 

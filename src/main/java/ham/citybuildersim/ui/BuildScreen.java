@@ -1723,82 +1723,158 @@ final class BuildScreen {
      * since 0.7.0) - which then grossed it up a second time off the same
      * stale rate. The quote does both now, priced with the bill included, and
      * the button books precisely what is printed above it.
+     *
+     * TWO OFFERS SINCE 0.7.10: a bond for Game.BUILD_BOND_YEARS beside the
+     * note, each sized so the cash it brings covers the gap, each with its
+     * rate, its face, its cash, what it costs a month and in all, and what
+     * happens at the end. Every figure is the model's - the gap is
+     * Game.buildFundingGap(), the rest is on the two quotes - and each button
+     * books exactly the quote printed above it.
      */
     void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats) {
-    ui.clearMenu("showQuickDebtMenu", () -> showQuickDebtMenu(selected, quantity, prevTitle, prevCats));
+        ui.clearMenu("showQuickDebtMenu", () -> showQuickDebtMenu(selected, quantity, prevTitle, prevCats));
 
-    double totalCost = ui.game.calculateTotalCost(selected, quantity);
-    double gap = totalCost - ui.game.getCash();
+        double gap = ui.game.buildFundingGap(selected, quantity);
 
-    // Matching what the button below books - the SAME duration, not just the
-    // same method. This quoted a 3-month bill while the button booked the
-    // 6-month emergency note, and quoteTBill() discounts by duration, so the
-    // price on screen was not the price paid. The emergency note itself is
-    // gone (0.7.0: the central bank advances a broke treasury); this is the
-    // screen's own note on Game.BUILD_NOTE_MONTHS.
-    DebtQuote quote = ui.game.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, 1000.0);
+        // Matching what the button below books - the SAME duration, not just the
+        // same method. This quoted a 3-month bill while the button booked the
+        // 6-month emergency note, and quoteTBill() discounts by duration, so the
+        // price on screen was not the price paid. The emergency note itself is
+        // gone (0.7.0: the central bank advances a broke treasury); this is the
+        // screen's own note on Game.BUILD_NOTE_MONTHS.
+        DebtQuote note = ui.game.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, 1000.0);
+        DebtQuote bond = ui.game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
 
-    Label warning = new Label("INSUFFICIENT FUNDS");
-    warning.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        Label warning = new Label("INSUFFICIENT FUNDS");
+        warning.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
 
-    Label details = new Label(String.format(
-        "Funding Required: %s%n%s",
-        money(gap), quote.summary()));
-    details.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
-
-    Label impact = new Label(quote.creditImpact());
-    impact.setStyle(rateStyle(quote));
-
-    Button confirmDebt = new Button("Issue T-Bill");
-    confirmDebt.setOnAction(e -> {
-        ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, 1000.0);   // quotes it again, identically
+        VBox need = new VBox(0,
+                statementLine("Funding required", money(gap), Palette.BAD),
+                statementNote(String.format("%,d x %s costs %s, and the treasury holds %s.",
+                        quantity, selected.getName(),
+                        money(ui.game.calculateTotalCost(selected, quantity)),
+                        money(ui.game.getCash()))));
 
         /*
-         * THE RESULT IS LOOKED AT NOW, and that is the more important half of
-         * this fix.
-         *
-         * This line used to be a bare call. The note was issued, the build was
-         * asked for, and whatever it answered was thrown away - so when the
-         * proceeds came up a few hundred short of the price (see
-         * Game.faceForNetProceeds) the city took on debt, built nothing, and
-         * returned to a menu that said nothing at all. Jerus found it in play:
-         * "the tbill is inacted but the roads are not built and you are just
-         * left with the cash unspent."
-         *
-         * The sizing bug is fixed, so the last branch should now be
-         * unreachable. It stays anyway. A refusal that is not read is a refusal
-         * that is silent, and silence is what made a plain arithmetic error
-         * look like a mystery.
+         * THE BOND FIRST, because it is the offer this page recommends. What
+         * the page sells is always a building, and a building outlives either
+         * loan: the matching principle says a long-lived asset is paid for with
+         * long-lived debt, so the people who use it over the years pay for it
+         * over the years. The note asks for the whole face back in six months,
+         * out of a treasury that was short of the price to begin with - on the
+         * D$100M founding (0.7.10) a water plant bought that way left the
+         * treasury D$16.2M overdrawn when the note matured, ten months on the
+         * central bank's advances, where on this bond it never fell below
+         * D$0.5M and never touched them. The note stays, second, for a gap
+         * the next six months' revenue will cover, and both offers print their
+         * whole cost so the player can weigh six months' credit against
+         * twenty years'.
          */
+        VBox bondOffer = fundingOffer(Game.BUILD_BOND_YEARS + "-year bond", bond,
+                pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
+                String.format("Paid over %d years: the coupon every month, then the whole %s at the end.",
+                        bond.duration(), money(bond.faceValue())),
+                "Issue the " + Game.BUILD_BOND_YEARS + "-year bond",
+                () -> {
+                    ui.game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);   // quotes it again, identically
+                    buildOnTheLoan(selected, quantity, prevTitle, prevCats, "bond");
+                });
+
+        VBox noteOffer = fundingOffer(Game.BUILD_NOTE_MONTHS + "-month note", note,
+                pct2(note.marketRate()) + " a year, taken as a discount",
+                String.format("Falls due in %d months: the whole %s at once, out of the treasury.",
+                        note.duration(), money(note.faceValue())),
+                "Issue the " + Game.BUILD_NOTE_MONTHS + "-month note",
+                () -> {
+                    ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, 1000.0);   // quotes it again, identically
+                    buildOnTheLoan(selected, quantity, prevTitle, prevCats, "note");
+                });
+
+        Button cancel = new Button("Cancel Build");
+        cancel.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
+
+        ui.rootMenu.getChildren().addAll(warning, need, bondOffer, noteOffer, cancel);
+    }
+
+    /**
+     * One of the funding page's offers: its rate, its face, the cash it
+     * brings, what it costs a month and in all, and what happens at the end -
+     * every figure off the quote - then what asking this much does to the
+     * city's rate, and its button.
+     */
+    private VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd,
+                              String action, Runnable issue) {
+
+        Label impact = new Label(quote.creditImpact());
+        impact.setStyle(rateStyle(quote));
+
+        Button go = new Button(action);
+        go.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
+                + " -fx-background-color: " + Palette.CONFIRM + ";");
+        go.setOnAction(e -> issue.run());
+
+        VBox offer = new VBox(0,
+                statementHead(name),
+                statementLine("Rate", rate),
+                statementLine("Face - what the city owes", money(quote.faceValue())),
+                statementLine("Cash it brings", money(quote.cashReceived()), Palette.GOOD),
+                statementLine("Monthly cost", quote.monthlyInterest() > 0
+                        ? money(quote.monthlyInterest()) + " a month"
+                        : "none - it pays no coupon"),
+                statementLine("Cost of the credit, all in", money(quote.totalCost())),
+                statementNote(atTheEnd),
+                impact,
+                go);
+        return offer;
+    }
+
+    /**
+     * Either offer's money is in: the order is placed again, and whatever it
+     * answers is shown.
+     *
+     * THE RESULT IS LOOKED AT NOW, and that is the more important half of
+     * this fix.
+     *
+     * This line used to be a bare call. The note was issued, the build was
+     * asked for, and whatever it answered was thrown away - so when the
+     * proceeds came up a few hundred short of the price (see
+     * Game.faceForNetProceeds) the city took on debt, built nothing, and
+     * returned to a menu that said nothing at all. Jerus found it in play:
+     * "the tbill is inacted but the roads are not built and you are just
+     * left with the cash unspent."
+     *
+     * The sizing bug is fixed, so the last branch should now be
+     * unreachable - for the bond too (Game.quoteLongBondForCash). It stays
+     * anyway. A refusal that is not read is a refusal that is silent, and
+     * silence is what made a plain arithmetic error look like a mystery.
+     */
+    private void buildOnTheLoan(BuildingsTemplate selected, int quantity,
+                                String prevTitle, EnumSet<BuildingType> prevCats, String paper) {
         switch (ui.game.buildStack(selected, quantity, false)) {
             case SUCCESS    -> handleAllBuildingMenus(prevTitle, prevCats);
             case NO_LAND    -> showNoLandMenu(selected, quantity, prevTitle, prevCats);
             case NO_DEPOSIT -> showNoDepositMenu(selected, quantity, prevTitle, prevCats);
             case NO_LICENCE -> showNoLicenceMenu(selected, quantity, prevTitle, prevCats);
-            // NOT back to this screen. Re-offering a T-Bill to a city that has
-            // just bought one and is still short would loop the player through
-            // the same button forever, borrowing every time.
-            default         -> showFundingFellShortMenu(selected, quantity, prevTitle, prevCats);
+            // NOT back to the funding page. Re-offering a loan to a city that
+            // has just taken one and is still short would loop the player
+            // through the same button forever, borrowing every time.
+            default         -> showFundingFellShortMenu(selected, quantity, prevTitle, prevCats, paper);
         }
-    });
-
-    Button cancel = new Button("Cancel Build");
-    cancel.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
-
-    ui.rootMenu.getChildren().addAll(warning, details, impact, confirmDebt, cancel);
-}
+    }
 
     /**
-     * The note went through and the building still did not.
+     * The loan went through and the building still did not.
      *
      * Should be unreachable. It exists because the state it describes - debt on
      * the books, nothing built, cash sitting in the treasury - is a state the
      * player CAN end up in and could not previously be told about, and a screen
      * that says what happened is worth more than an assertion that it cannot.
+     *
+     * @param paper which of the page's two offers was taken, "note" or "bond"
      */
     void showFundingFellShortMenu(BuildingsTemplate selected, int quantity,
-                                          String prevTitle, EnumSet<BuildingType> prevCats) {
-        ui.clearMenu("showFundingFellShortMenu", () -> showFundingFellShortMenu(selected, quantity, prevTitle, prevCats));
+                                          String prevTitle, EnumSet<BuildingType> prevCats, String paper) {
+        ui.clearMenu("showFundingFellShortMenu", () -> showFundingFellShortMenu(selected, quantity, prevTitle, prevCats, paper));
 
         Label heading = new Label("THE MONEY IS IN, THE BUILDING IS NOT");
         heading.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold; -fx-font-size: 14px;");
@@ -1806,17 +1882,17 @@ final class BuildScreen {
         double price = ui.game.calculateTotalCost(selected, quantity);
 
         Label what = new Label(String.format(
-                "The note was issued and the cash is in the treasury, but %d x %s"
+                "The " + paper + " was issued and the cash is in the treasury, but %d x %s"
                 + " still costs more than the city is holding.%n%n"
                 + "  Price now      %s%n"
                 + "  Cash on hand   %s%n"
                 + "  Still short    %s%n%n"
-                + "Nothing was built and nothing beyond the note was spent. Order a"
+                + "Nothing was built and nothing beyond the " + paper + " was spent. Order a"
                 + " smaller batch, or borrow again from the finance screen where you"
                 + " can choose the size yourself.",
                 quantity, selected.getName(),
                 money(price), money(ui.game.getCash()),
-                money(Math.max(0, price - ui.game.getCash()))));
+                money(ui.game.buildFundingGap(selected, quantity))));
         what.setWrapText(true);
         what.setMaxWidth(460);
         what.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;");

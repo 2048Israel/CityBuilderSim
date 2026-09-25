@@ -87,6 +87,10 @@ import java.util.List;
  *                                         BOUGHT IN DOLLARS)
  *   retire()                  not         budget line (land purchases, recordBuyback)
  *   buildFor()                not         budget line (land sales, recordSale)
+ *   mortgageInvestor() (0.7.11) not       budget line (mortgage insurance premiums)
+ *   runPrivateInvestment()'s claims (0.7.11)
+ *                             not         budget line (mortgage insurance claims),
+ *                                         paid through treasuryPays()
  *   processBuildOrder()       not         budget line (capital spending)
  *   handleTBillLogic() and the four other issues (and the emergency note,
  *   until 0.7.0 retired it)   not         the bridge's raised row (Game.treasuryRaisedSoFar)

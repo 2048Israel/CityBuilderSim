@@ -249,6 +249,10 @@ public class RailCheck {
 
         quietly(() -> {
             game.newGame();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            game.setCashForTest(Founding.WEALTHY_CASH);
             /*
              * THE RAILWAY IS HELD, so what stands is what this harness laid and
              * nothing else. The first version let the investor build too, and

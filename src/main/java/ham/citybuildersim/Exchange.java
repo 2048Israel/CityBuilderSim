@@ -171,7 +171,12 @@ public class Exchange {
     /** ...into a yield at least this far over the deposit rate, annual. */
     public static final double HOUSEHOLD_PREMIUM = .01;
 
-    /** A company keeps this many months of operating cost before it buys back. */
+    /**
+     * A company keeps this many months of its costs before it buys back:
+     * operating cost and, since round 2 of 0.7.11, its debt service - the
+     * interest and the principal it repaid (Companies.monthlyDebtService()).
+     * Jerus: "The cash buffer counts the loan payments too."
+     */
     public static final double BUYBACK_CUSHION_MONTHS = 6;
 
     /** Equity this far past target before a company buys back, as a share of assets. */
@@ -495,7 +500,8 @@ public class Exchange {
      * ...and its bank's capital alone (0.7.8, round 4): of its own shares,
      * what the bank holds over its target at the bid (Bank.buybackRoom());
      * of any other company's, what that capital carries at the weight the
-     * weighted book gives the desk (Bank.deskCanCarry()). Both read the
+     * weighted book gives the desk, and since round 2 of 0.7.11 within its
+     * leverage target too (Bank.deskCanCarry()). Both read the
      * desk's inventory at the mark now, not the securities line, which lags
      * the month's deals until the close re-marks it. No limit while no bank
      * has dealt through the desk yet - a fixture's exchange, or a loaded
@@ -681,6 +687,13 @@ public class Exchange {
         double assets(int company);
         double equity(int company);
         double monthlyOperatingCost(int company);
+        /**
+         * ...and what its debt costs it a month: the interest on its
+         * statement and the principal it repaid (0.7.11, round 2). The
+         * cushion counts it with the operating cost, because a payment is
+         * money out of the till as surely as a wage.
+         */
+        double monthlyDebtService(int company);
     }
 
     /**
@@ -748,7 +761,9 @@ public class Exchange {
             if (assets <= 0) continue;
             double excess = equity - (register.getTargetEquityShare(c) + OVER_TARGET) * assets;
             if (excess <= assets * MIN_EXCESS) continue;
-            double cushion = BUYBACK_CUSHION_MONTHS * Math.max(0, companies.monthlyOperatingCost(c));
+            // ...its debt service counted with its costs (0.7.11, round 2).
+            double cushion = BUYBACK_CUSHION_MONTHS * (Math.max(0, companies.monthlyOperatingCost(c))
+                    + Math.max(0, companies.monthlyDebtService(c)));
             double worth = register.getOutstanding(c) * fair[c];
             double cap = Math.min(excess, BUYBACK_PACE / 12 * worth);
             double cash = companies.cashAvailable(c, cap + cushion) - cushion;

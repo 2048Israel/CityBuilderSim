@@ -20,7 +20,9 @@ package ham.citybuildersim;
  *
  * ==================== WHAT A REFORM IS ====================
  *
- * One new Danzik dollar is worth `unit` founding Danzik dollars. It starts at
+ * One new dollar of the city's money is worth `unit` founding ones - one new
+ * Arden dollar is `unit` founding Arden dollars (the city names its money since
+ * 0.7.10; Currency). It starts at
  * one and multiplies by ten, a hundred or a thousand each time the player
  * reforms. Everything nominal - every price, wage, balance, debt, reserve and
  * exchange rate in the city - is divided by the same factor at the same moment,
@@ -150,16 +152,19 @@ public class Denomination {
      * Turkish lira. A player who has lopped twice should be able to tell at a
      * glance that the $3.00 loaf on their screen is not the $3.00 loaf of two
      * centuries ago.
+     *
+     * Of the city's own money (0.7.10): the reform renames whatever the city
+     * was founded with, so it is handed the city's Currency.
      */
-    public String name() {
-        if (reforms <= 0) return Currency.NAME;
-        return ordinal(reforms + 1) + " " + Currency.NAME;
+    public String name(Currency money) {
+        if (reforms <= 0) return money.name();
+        return ordinal(reforms + 1) + " " + money.name();
     }
 
     /** What one of today's dollars is worth in founding money, for the screen. */
-    public String describeUnit() {
-        if (reforms <= 0) return "founding " + Currency.NAME + "s";
-        return String.format("1 = %,.0f founding %ss", unit, Currency.NAME);
+    public String describeUnit(Currency money) {
+        if (reforms <= 0) return "founding " + money.plural();
+        return String.format("1 = %,.0f founding %s", unit, money.plural());
     }
 
     private static String ordinal(int n) {

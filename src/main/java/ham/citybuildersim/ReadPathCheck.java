@@ -103,7 +103,35 @@ public class ReadPathCheck {
             into.put("credit.month." + s, cr.getWrittenOffThisMonth(s));
             into.put("credit.defaulted." + s, cr.getDefaultedThisMonth(s));
             into.put("credit.record." + s, (double) cr.getRestructureCount(s));
+            // ...and the landlords' insured mortgages (0.7.11): what is owed on
+            // them, what their payments took this month, and what the insurance
+            // paid the bank - this month and over the city's life.
+            into.put("credit.mortgages." + s, cr.getMortgagePrincipal(s));
+            into.put("credit.mortgageRepaid." + s, cr.getMortgageRepaidThisMonth(s));
+            into.put("credit.claimed." + s, cr.getInsuredWrittenOffThisMonth(s));
+            into.put("credit.claimedEver." + s, cr.getInsuredWrittenOffTotal(s));
+            into.put("credit.premiums." + s, cr.getPremiumsThisMonth(s));
         }
+        into.put("credit.premiumsEver", cr.getPremiumsTotal());
+        into.put("credit.insuredRate", cr.getInsuredMortgageRate());
+        for (Mortgage m : cr.getMortgages()) {
+            into.put("mortgage." + System.identityHashCode(m) + ".owed", m.getOutstandingPrincipal());
+            into.put("mortgage." + System.identityHashCode(m) + ".rate", m.getAnnualRate());
+            into.put("mortgage." + System.identityHashCode(m) + ".term", (double) m.getRemainingMonths());
+            into.put("mortgage." + System.identityHashCode(m) + ".left", (double) m.getAmortizationLeft());
+        }
+        into.put("bank.mortgageBook", b.getMortgageBook());
+        into.put("bank.insuranceClaims", b.getInsuranceClaims());
+        // ...and round 2's: its leverage ratio against its requirements, and
+        // how long its book has not kept its branches' staff.
+        into.put("bank.exposure", b.exposure());
+        into.put("bank.leverageRatio", Math.min(1e6, b.leverageRatio()));
+        into.put("bank.minimumEquity", b.minimumEquity());
+        into.put("bank.targetEquity", b.targetEquity());
+        into.put("bank.uncoveredMonths", (double) b.getUncoveredMonths());
+        into.put("credit.insuredRationed", cr.isInsuredRationed() ? 1.0 : 0.0);
+        into.put("budget.mortgagePremiums", g.getEconomyManager().getNationalAccounts().getMortgagePremiums());
+        into.put("budget.mortgageClaims", g.getEconomyManager().getNationalAccounts().getMortgageClaims());
     }
 
     /**
@@ -268,6 +296,61 @@ public class ReadPathCheck {
         }
         g.getEconomyManager().getBusinessDebtManager().getWrittenThisMonth();
         g.getSalvageThisMonth();
+        // ...and the landlords' insured mortgages (0.7.11): the Bank tab's
+        // mortgage block, its weight table and ladder, the landlords' screen,
+        // the Government tab's two lines and the advisor's reasons
+        BusinessDebtManager lender = g.getEconomyManager().getBusinessDebtManager();
+        g.getBank().insuredMortgageRate(dial);
+        g.getBank().capitalCharge(dial, Mortgage.MORTGAGE_TERM_MONTHS, Bank.RISK_INSURED_MORTGAGE);
+        g.getBank().ladder(dial);
+        g.getBank().weightTable();
+        g.getBank().getMortgageBook();
+        g.getBank().getInsuranceClaims();
+        lender.getInsuredMortgageRate();
+        lender.getMortgages();
+        lender.getMortgagePrincipal();
+        lender.getInsuredPrincipal();
+        lender.getMortgagePayment();
+        lender.getMortgageRate();
+        lender.getMortgageRepaidThisMonth();
+        lender.getMortgagesRenewingWithin(12);
+        lender.allMortgagesInsured();
+        lender.getPremiumsThisMonth();
+        lender.getPremiumsTotal();
+        lender.getInsuredWrittenOffThisMonth();
+        lender.getInsuredWrittenOffTotal();
+        lender.getMortgagesWrittenThisMonth();
+        lender.getRenewedThisMonth();
+        lender.getFallenDueThisMonth();
+        for (String key : Sectors.KEYS) {
+            lender.getMortgages(key);
+            lender.getMortgageCount(key);
+            lender.getMortgagePrincipal(key);
+            lender.getInsuredPrincipal(key);
+            lender.getUninsuredPrincipal(key);
+            lender.getMortgagePayment(key);
+            lender.getMortgageRate(key);
+            lender.getNextRenewalMonth(key);
+            lender.getMortgageRepaidThisMonth(key);
+            lender.getInsuredWrittenOffThisMonth(key);
+            lender.getInsuredWrittenOffTotal(key);
+            lender.getPremiumsThisMonth(key);
+        }
+        for (Mortgage m : lender.getMortgages()) {
+            m.getMonthlyPayment();
+            m.getNextRenewalMonth();
+            m.getPaidOffMonth();
+            m.getMonthlyInterestExpense();
+        }
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(re.key())) {
+            e.housingCarry(t);
+            e.housingBuildHurdle(t);
+        }
+        e.getNationalAccounts().getMortgagePremiums();
+        e.getNationalAccounts().getMortgageClaims();
+        e.getNationalAccounts().getTotalExpenses();
+        g.getRefusedByLender();
+        g.getHeldForDownPayment();
         g.getSalvageUsedThisMonth();
         g.getRefusedOnPrice();
         g.getSectors().construction().getSalvage();
@@ -329,6 +412,24 @@ public class ReadPathCheck {
         bk.branchWouldPayForItself();
         bk.bookAnotherBranchWouldCarry();
         bk.wantsBranch();
+        // ...and round 2 of 0.7.11's: the leverage ratio and the branch test
+        // in reverse, as the Bank tab reads them.
+        bk.exposure();
+        bk.leverageRatio();
+        bk.leverageTarget();
+        bk.leverageTop();
+        bk.minimumEquity();
+        bk.leverageBinds();
+        bk.bindingRatio();
+        bk.bindingMinimum();
+        bk.bindingTarget();
+        bk.bindingTop();
+        bk.capitalPerDollar(Bank.RISK_INSURED_MORTGAGE);
+        bk.branchesCoverTheirStaff();
+        bk.closesBranch();
+        bk.getUncoveredMonths();
+        bk.status();
+        g.getBranchesClosed();
         bk.equityMovement().residual();
         bk.solvencyToSave();
         g.canRecapitaliseBank();
@@ -379,6 +480,8 @@ public class ReadPathCheck {
             debt.compression(years * 12);
             g.quoteLongBond(1_000, years, 100);
         }
+        // ...and the build screen's bond, sized to the cash it brings (0.7.10)
+        g.quoteLongBondForCash(1_000, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
         debt.curveRate(6);
         debt.bookValues();
         debt.householdPrincipal();
@@ -398,6 +501,24 @@ public class ReadPathCheck {
         g.getCentralBank().getPaperHeld();
         g.getCentralBank().stepFor(debt.termPrincipal());
         g.getBuybackUnsettled();
+        // how the city was founded (0.7.10): the founders' note, the window's
+        // title and every screen that writes the city's money read these, and
+        // the founding screen asks what each preset would buy - of the live
+        // city's catalogue, which it must not touch
+        g.getFounding();
+        g.getCityName();
+        g.getFoundingCash();
+        g.getFoundingReserveUsd();
+        Currency money = g.getCurrency();
+        money.describe();
+        money.rateUnit();
+        money.qualified("1");
+        for (Founding.Preset p : Founding.Preset.values()) {
+            if (p != Founding.Preset.CUSTOM) g.whatItBuys(p.cash(), p.reserveUsd());
+        }
+        for (double m : WorldEconomy.FOUNDING_CHOICES) WorldEconomy.settledLevelAt(m);
+        g.getDenomination().name(money);
+        g.getDenomination().describeUnit(money);
 
         /*
          * calculateSalesTax() used to be read here. It is settleSalesTax() now -
@@ -463,6 +584,10 @@ public class ReadPathCheck {
         g.getSectors().construction().getAverageFill();
         g.getConstructionOutput();
         g.quoteBuild(template(g, "House"), 1);
+        // ...and what the build screen's funding page is sized to (0.7.10),
+        // for an order the city can pay for and one it cannot
+        g.buildFundingGap(template(g, "House"), 1);
+        g.buildFundingGap(template(g, "Water Treatment Plant"), 1_000);
 
         // land, ore and every market
         g.getLandManager().getAvailableSqFt();
@@ -513,6 +638,14 @@ public class ReadPathCheck {
             b.addStack(template(g, "Paved Road"), 3, true);
             b.addStack(template(g, "Steel Foundry"), 1, true);
             b.addStack(template(g, "Iron Mine"), 1, true);
+
+            // ...and a landlord's insured mortgage on the books (0.7.11), by the
+            // fixture's hand - a claim, no money moved - so the reads below take
+            // in every figure the mortgage block and the landlords' screen show,
+            // on a mortgage two years into its term.
+            BusinessDebtManager lender = g.getEconomyManager().getBusinessDebtManager();
+            lender.setInsuredMortgageRate(g.getBank().insuredMortgageRate(g.getDebtManager().getPolicyRate()));
+            lender.issueMortgage(Sectors.REAL_ESTATE, 50_000, g.getMonth());
 
             g.simulateMonths(24);
         } finally {

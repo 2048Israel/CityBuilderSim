@@ -104,6 +104,36 @@ public class Bank {
     public static final double CAPITAL_RATIO = .08;
 
     /**
+     * Equity a bank must hold against everything it has lent, whatever that
+     * weighs: 3%, Basel III's leverage ratio (0.7.11, round 2). The rule is
+     * Tier 1 capital of at least 3% of the exposure measure, which is the
+     * on-balance-sheet assets at their accounting value with no risk weight
+     * at all (BCBS, "Basel III leverage ratio framework and disclosure
+     * requirements", January 2014; LEV20 and LEV30 in the consolidated
+     * framework). OSFI applies it in Canada at 3%, and 3.5% for the six
+     * domestic systemically important banks; this is Basel's 3%.
+     *
+     * THE BACKSTOP TO THE RISK WEIGHTS, and built for the case round 1 of
+     * this batch found. Jerus: "Basel leverage ratio." The landlords'
+     * insured mortgages weigh nothing (RISK_INSURED_MORTGAGE). So a bank
+     * whose book was mostly mortgages held its capital against almost
+     * nothing and paid itself down to that. Measured, its equity at year
+     * 100 was half the 0.7.10 bank's and at year 200 a sixth, and it failed
+     * 219 times against 42 over the eight default seeds.
+     *
+     * Every requirement the bank compares its capital to is now the larger
+     * of the two, minimumEquity(). Its own target and band scale with it in
+     * the proportion it chose on the risk side (leverageTarget()).
+     *
+     * A FLOOR WEIGHT, IN EFFECT: LEVERAGE_RATIO_MIN / CAPITAL_RATIO is 37.5%.
+     * A dollar lent never ties up less capital than a dollar weighing that,
+     * which is how the insured mortgage's price carries capital
+     * (capitalPerDollar()). Every other loan here weighs 100% and is
+     * unchanged.
+     */
+    public static final double LEVERAGE_RATIO_MIN = .03;
+
+    /**
      * How much of a city's savings one branch can gather.
      *
      * $253M, which is US deposits over US branches - about $18tn across roughly
@@ -189,6 +219,23 @@ public class Bank {
      */
     public static final double RISK_CARRY = 1.00;
 
+    /**
+     * An insured mortgage (0.7.11): 0%. The city insures it as the Government
+     * of Canada backs CMHC, and under the Basel III final standard (CRE20) an
+     * exposure guaranteed by the sovereign in its own currency takes the
+     * sovereign's weight, which is nothing - the reason a CMHC-insured
+     * mortgage weighs nothing at a Canadian bank. For comparison, the same
+     * loan uninsured - income-producing residential real estate at 80-90% of
+     * its value - would weigh 60% there. So under the risk weights it ties
+     * up no capital. Since round 2 of 0.7.11 the leverage ratio still asks
+     * equity of it, as of every dollar lent: its price carries the capital
+     * that ties up at the bank's leverage target (capitalPerDollar(),
+     * insuredMortgageRate()), and the capital rule rations it while the
+     * leverage requirement is the larger (BusinessDebtManager, THE
+     * LANDLORDS' MORTGAGES).
+     */
+    public static final double RISK_INSURED_MORTGAGE = 0.0;
+
     /** What a loan repaying tomorrow weighs against one repaying never. */
     public static final double SHORTEST_WEIGHT = .40;
 
@@ -241,6 +288,18 @@ public class Bank {
     private double sectorBook;
     private double cityBook;
     private double householdBook;
+
+    /**
+     * The insured mortgages inside sectorBook (0.7.11): part of what the
+     * businesses owe, weighed at RISK_INSURED_MORTGAGE rather than
+     * RISK_BUSINESS, so the weight table shows them as their own row. Set
+     * by Game.refreshBank() beside the book, off the loans themselves.
+     */
+    private double mortgageBook;
+    private double mortgageWeighted;
+
+    /** What the treasury paid it this month on insured mortgages the month's defaults wrote down (0.7.11): cash for a claim on its book, so no income and no loss. */
+    private double insuranceClaims;
 
     /** The same three, weighted for risk and remaining term. What CAPACITY sees. */
     private double sectorWeighted;
@@ -340,6 +399,8 @@ public class Bank {
         this.sectorWeighted = this.sectorBook;
         this.cityWeighted = this.cityBook;
         this.householdWeighted = this.householdBook;
+        this.mortgageBook = 0;
+        this.mortgageWeighted = 0;
     }
 
     /**
@@ -355,6 +416,35 @@ public class Bank {
         this.cityWeighted = Math.max(0, city);
         this.householdWeighted = Math.max(0, household);
     }
+
+    /**
+     * ...and the insured mortgages inside the businesses' book (0.7.11), which
+     * the weight table shows at RISK_INSURED_MORTGAGE. Game.refreshBank()
+     * sets it with the weighted book; a Bank built by hand holds none.
+     */
+    public void setMortgageBook(double insured, double weighted) {
+        this.mortgageBook = Math.max(0, Math.min(insured, sectorBook));
+        this.mortgageWeighted = Math.max(0, Math.min(weighted, sectorWeighted));
+    }
+
+    /** The insured mortgages it holds, part of getSectorBook(). */
+    public double getMortgageBook() { return mortgageBook; }
+
+    /**
+     * THE CITY PAYS AN INSURED LOSS (0.7.11): cash from the treasury for the
+     * part of a borrower's write-down that came off an insured mortgage. Its
+     * book loses that balance at the next refresh; the cash replaces it, so
+     * neither its income nor its equity moves - the loss is the insurer's.
+     * A transfer between two pools, which the money audit sees cancel.
+     */
+    public void receiveInsuranceClaim(double amount) {
+        if (!(amount > 0)) return;
+        cash += amount;
+        insuranceClaims += amount;
+    }
+
+    /** What the treasury paid it on insured mortgages this month. */
+    public double getInsuranceClaims() { return insuranceClaims; }
 
     /* ---------------------------------------------------------------- carry */
 
@@ -454,8 +544,12 @@ public class Bank {
        off the curve and its record (BusinessDebtManager.priceSector(),
        PRICING FROM THE CURVE, since 0.7.8), a household the four at
        RISK_HOUSEHOLD plus its months of income owed (Household.settle()),
-       and the carry trade the three without the expected loss, at RISK_CARRY
-       and short (carryRate()). The city's own paper is NOT
+       the carry trade the three without the expected loss, at RISK_CARRY
+       and short (carryRate()), and since 0.7.11 a landlord's insured
+       mortgage the funds-transfer price at ten years and the running costs,
+       insured so no loss, and - weighing nothing - only the capital the
+       leverage ratio asks of every dollar lent (round 2; capitalPerDollar(),
+       insuredMortgageRate()). The city's own paper is NOT
        priced here: it keeps its market price, the dial plus its own credit
        spreads (DebtManager.priceAt()).
 
@@ -586,16 +680,36 @@ public class Bank {
 
     /**
      * THE CAPITAL CHARGE: the equity a loan of this risk ties up at the
-     * bank's own capital target (capitalTarget(), since 0.7.8; the minimum
-     * plus a fixed three points before it), times what that equity costs
-     * over what the same money would have cost as debt - requiredReturn()
-     * less the funds-transfer price. Never below zero: past a policy rate of
-     * 12.5% the owners' money would be the cheaper money, and a bank does not
-     * lend under the cost of its borrowing because of it.
+     * bank's own capital target (capitalPerDollar(); the target is
+     * capitalTarget() since 0.7.8, and before that the minimum plus a fixed
+     * three points), times what that equity costs over what the same money
+     * would have cost as debt - requiredReturn() less the funds-transfer
+     * price. Never below zero: past a policy rate of 12.5% the owners' money
+     * would be the cheaper money, and a bank does not lend under the cost of
+     * its borrowing because of it.
      */
     public double capitalCharge(double policyAnnual, int months, double riskWeight) {
-        return Math.max(0, riskWeight) * capitalTarget()
+        return capitalPerDollar(riskWeight)
                 * Math.max(0, requiredReturn() - fundsTransferPrice(policyAnnual, months));
+    }
+
+    /**
+     * THE EQUITY A DOLLAR LENT TIES UP at the bank's own target: its risk
+     * weight times capitalTarget(), and never less than the leverage
+     * requirement on the same dollar, leverageTarget() (0.7.11, round 2).
+     * The leverage requirement counts a dollar whatever it weighs, so a
+     * loan that weighs nothing still needs the owners' money behind it.
+     * Jerus: "The bank keeps equity against its mortgages and prices that
+     * capital into the mortgage rate."
+     *
+     * Only the insured mortgage reaches the floor: every other loan weighs
+     * 100%, and 100% of the target is more than leverageTarget(), which is
+     * 37.5% of it (LEVERAGE_RATIO_MIN / CAPITAL_RATIO). This is the one
+     * formula, not a second one - the weight times the ratio, floored at the
+     * leverage requirement per dollar.
+     */
+    public double capitalPerDollar(double riskWeight) {
+        return Math.max(Math.max(0, riskWeight) * capitalTarget(), leverageTarget());
     }
 
     /** A loan of this term and risk weight: the four parts, added up. */
@@ -607,6 +721,29 @@ public class Bank {
     /** PRIME: what a sound business pays - the four parts at RISK_BUSINESS, for a business loan's term. */
     public double prime(double policyAnnual) {
         return loanRate(policyAnnual, PRIME_TERM_MONTHS, RISK_BUSINESS);
+    }
+
+    /**
+     * AN INSURED MORTGAGE (0.7.11): what the money costs for its term -
+     * the funds-transfer price at Mortgage.MORTGAGE_TERM_MONTHS, the curve's
+     * ten-year point - running the bank, and the capital it ties up; no
+     * expected loss, because the loan is insured. The same parts prime is
+     * built of, as the carry trade's price is (carryRate()); no second
+     * formula. What the landlord's own risk is worth does not enter it - its
+     * leverage, its curve, its record - because the lender does not carry
+     * it; the landlord's defaults are still its own
+     * (BusinessDebtManager.defaultSlice()).
+     *
+     * THE CAPITAL PART SINCE ROUND 2 of 0.7.11. It weighs
+     * RISK_INSURED_MORTGAGE, nothing, so under the risk weights alone the
+     * charge was nothing. Under the leverage ratio a dollar of it still
+     * needs leverageTarget() of equity (capitalPerDollar()), at the owners'
+     * return over the money's cost: a few tenths of a point.
+     */
+    public double insuredMortgageRate(double policyAnnual) {
+        int term = Mortgage.MORTGAGE_TERM_MONTHS;
+        return fundsTransferPrice(policyAnnual, term) + runningCostRate()
+                + capitalCharge(policyAnnual, term, RISK_INSURED_MORTGAGE);
     }
 
     /** What a household's credit line starts from: the four parts at RISK_HOUSEHOLD, revolving, so no term premium. Household.settle() adds its months of income owed. */
@@ -798,6 +935,7 @@ public class Bank {
         repaidByHouseholds = 0;
         fundingCost = 0;
         placementIncome = 0;
+        insuranceClaims = 0;
         depositInterestToHouseholds = 0;
         depositInterestToSectors = 0;
         depositInterestToForeign = 0;
@@ -976,11 +1114,17 @@ public class Bank {
      *
      *     x <= spare / (price - mark + capitalTarget() x RISK_EQUITY x mark)
      *
-     * where spare is spareCapital(inventory). The divisor is positive
+     * where spare is its spare capital on the weighted book
+     * (spareOnRisk(inventory)). The divisor is positive
      * whenever the target's weight on a share, capitalTarget() x RISK_EQUITY
      * (at least 15.75% at the game's dials), is more than half the spread:
      * the bid is never under the mark by more than that (Exchange.bid(),
      * mark()).
+     *
+     * ...AND ON THE LEVERAGE TARGET since round 2 of 0.7.11: the same
+     * inequality with the exposure in place of the weighted book and
+     * leverageTarget() in place of capitalTarget() x RISK_EQUITY, on
+     * spareOnLeverage(inventory). The tighter of the two holds.
      *
      * Until 0.7.8's round 4 the desk's inventory was weighted against capital
      * but not limited by it: its limits were shares of the bank's equity at
@@ -999,10 +1143,22 @@ public class Bank {
      * @return shares; none when it has no capital to spare
      */
     public double deskCanCarry(double inventory, double price, double mark) {
-        double spare = spareCapital(inventory);
+        double spare = spareOnRisk(inventory);
         if (!(spare > 0)) return 0;
         double perShare = price - mark + capitalTarget() * RISK_EQUITY * Math.max(0, mark);
-        return perShare > 0 ? spare / perShare : Double.POSITIVE_INFINITY;
+        double onRisk = perShare > 0 ? spare / perShare : Double.POSITIVE_INFINITY;
+        /*
+         * ...AND ON THE LEVERAGE TARGET (0.7.11, round 2): the same
+         * inequality with the exposure in place of the weighted book. A
+         * share adds its mark to the exposure unweighted, so
+         *     x <= spareL / (price - mark + leverageTarget() x mark).
+         * The tighter of the two holds.
+         */
+        double spareL = spareOnLeverage(inventory);
+        if (!(spareL > 0)) return 0;
+        double perShareL = price - mark + leverageTarget() * Math.max(0, mark);
+        double onLeverage = perShareL > 0 ? spareL / perShareL : Double.POSITIVE_INFINITY;
+        return Math.min(onRisk, onLeverage);
     }
 
     /** How much lighter the weighting makes the book. 0 when nothing is lent. */
@@ -1111,9 +1267,26 @@ public class Bank {
         return all > 0 ? Math.min(1, Math.max(0, foreignDeposits) / all) : 0;
     }
 
-    /** What its capital supports, on the risk-weighted book. */
+    /** What its capital supports, on the risk-weighted book - at the book's present mix, under the larger of the two requirements since round 2 of 0.7.11 (weightedBookSupportedBy()). */
     public double capitalLimit() {
-        return Math.max(0, equity()) / CAPITAL_RATIO;
+        return weightedBookSupportedBy(equity());
+    }
+
+    /**
+     * THE WEIGHTED BOOK THIS MUCH EQUITY SUPPORTS: equity over CAPITAL_RATIO
+     * while the risk-based minimum is the larger. When the leverage
+     * requirement is the larger (0.7.11, round 2), the book grows at the mix
+     * it has, so the weighted book the equity supports is the one at which
+     * the leverage minimum would be met:
+     *     weighted x equity / minimumEquity().
+     * Capacity and strain read it, and so does the value of another branch
+     * (capacityWith()). With nothing weighted there is no mix to hold, and
+     * it is equity over CAPITAL_RATIO as it was.
+     */
+    private double weightedBookSupportedBy(double equity) {
+        double weighted = getWeightedBook();
+        if (leverageBinds() && weighted > 0) return Math.max(0, equity) * weighted / minimumEquity();
+        return Math.max(0, equity) / CAPITAL_RATIO;
     }
 
     /** True when it is the capital that binds rather than the funding. */
@@ -1272,7 +1445,8 @@ public class Bank {
      * with zero buffer - see RESOLUTION_EXIT_BUFFER.
      */
     public double resolutionExitEquity() {
-        double byBook = getWeightedBook() * CAPITAL_RATIO * RESOLUTION_EXIT_BUFFER;
+        // The larger of the two minimums since round 2 of 0.7.11.
+        double byBook = minimumEquity() * RESOLUTION_EXIT_BUFFER;
         /*
          * ...AND NEVER LESS THAN ONE BRANCH'S CAPITAL. The ratio is struck on
          * the book, so a bank that has lost its book along with its equity
@@ -1318,9 +1492,10 @@ public class Bank {
      */
     public double recapitalisationNeeded() {
         if (!inResolution && equity() > 0) {
-            double weighted = getWeightedBook();
-            if (equity() >= weighted * CAPITAL_RATIO) return 0;
-            return Math.max(0, weighted * capitalTarget() - equity());
+            // The larger of the two minimums and the larger of the two
+            // targets since round 2 of 0.7.11 (minimumEquity()).
+            if (equity() >= minimumEquity()) return 0;
+            return Math.max(0, targetEquity() - equity());
         }
         return Math.max(0, resolutionExitEquity() - equity());
     }
@@ -2475,6 +2650,9 @@ public class Bank {
         lastInterest = interestEarned;
         lastBook     = getBook();
         lastKept     = netInterestIncome() + feeIncome();
+        // A month the book did not keep its branches' staff, on those same
+        // figures: the branch test in reverse (0.7.11, round 2; closesBranch()).
+        uncoveredMonths = branchesCoverTheirStaff() ? 0 : uncoveredMonths + 1;
         // The year of losses the capital target is sized on (0.7.8), before
         // the prices, whose capital charge reads the target.
         recordLosses();
@@ -2534,7 +2712,10 @@ public class Bank {
                              fundingRate, lastCostOfFunds,
                              // ...and 0.7.7's: what the book kept, and the
                              // two struck parts of every loan's price.
-                             lastKept, lastWindowShare, lastRunningCost };
+                             lastKept, lastWindowShare, lastRunningCost,
+                             // ...and round 2 of 0.7.11's: how long the book
+                             // has not kept its branches' staff.
+                             uncoveredMonths };
     }
 
     /*
@@ -2576,6 +2757,9 @@ public class Bank {
         if (state.length < 9) return;
         lastWindowShare = state[7];
         lastRunningCost = state[8];
+        // A save from before round 2 of 0.7.11 starts the count again: its
+        // bank waits the fuse out from the load.
+        uncoveredMonths = state.length < 10 ? 0 : (int) state[9];
     }
 
     /** Restored from the save, so next month taxes the right figure. */
@@ -2694,6 +2878,14 @@ public class Bank {
          once, at the top of the month, and hands it to the desks that lend:
          BusinessDebtManager.setCapitalRule(), HouseholdBalance
          .setCapitalRule(), and the carry trade through headroom().
+
+       TWO MINIMUMS SINCE ROUND 2 OF 0.7.11. CAPITAL_RATIO is no longer the
+       only number in them that is the city's: LEVERAGE_RATIO_MIN asks for
+       equity against everything the bank has lent, whatever it weighs.
+       Every minimum and target above is the larger of the risk-based one
+       and the leverage one (minimumEquity(), targetEquity(); the leverage
+       ratio, below), and the lending that tightens between them reads the
+       measure that binds.
        ===================================================================== */
 
     /* ---------------------------- the allowance ---------------------------- */
@@ -3058,6 +3250,86 @@ public class Bank {
     /** ...and the top of its band. */
     public double capitalTop() { return capitalTarget() + MANAGEMENT_CUSHION; }
 
+    /* --------------------- the leverage ratio (0.7.11, round 2) --------------------- */
+
+    /**
+     * THE EXPOSURE MEASURE the leverage ratio is struck on: everything on
+     * its balance sheet at the value the sheet carries it at, whatever it
+     * weighs - totalAssets(). That is:
+     *   - the loans, net of the allowance (netLoans()), insured mortgages
+     *     and the city's paper included;
+     *   - the carry book;
+     *   - the desk's shares;
+     *   - its cash, which is its reserves at the central bank.
+     * Basel counts every one of those. Loans go in net of specific
+     * provisions (LEV30), and central-bank reserves go in too, apart from
+     * the temporary exemptions some jurisdictions granted. The families'
+     * savings are not on this sheet (THE THREE STATEMENTS says why), so they
+     * are not here either.
+     *
+     * One simplification, on the safe side: the city's paper is at face,
+     * with the discount not yet earned carried as a liability
+     * (totalLiabilities()) rather than netted against it. So the exposure is
+     * that discount larger than an accountant's.
+     */
+    public double exposure() { return Math.max(0, totalAssets()); }
+
+    /** Equity over the exposure measure: the leverage ratio a regulator reads. Infinite with nothing on the sheet. */
+    public double leverageRatio() {
+        double e = exposure();
+        return e > 0 ? equity() / e : Double.MAX_VALUE;
+    }
+
+    /**
+     * ITS OWN LEVERAGE TARGET: LEVERAGE_RATIO_MIN scaled by the buffer it
+     * chose on the risk side - LEVERAGE_RATIO_MIN x capitalTarget() /
+     * CAPITAL_RATIO. Derived, not a new number. A bank that holds twice
+     * the risk-based minimum as its target holds twice the leverage minimum
+     * too. The two requirements then keep the same proportion between
+     * minimum and target, so whichever binds at the minimum binds at the
+     * target and at the top of the band as well.
+     */
+    public double leverageTarget() { return LEVERAGE_RATIO_MIN * capitalTarget() / CAPITAL_RATIO; }
+
+    /** ...and the top of its band on the same measure: LEVERAGE_RATIO_MIN x capitalTop() / CAPITAL_RATIO. */
+    public double leverageTop() { return LEVERAGE_RATIO_MIN * capitalTop() / CAPITAL_RATIO; }
+
+    /**
+     * THE MINIMUM THE CITY REQUIRES, IN MONEY: the larger of the risk-based
+     * one, CAPITAL_RATIO of the weighted book, and the leverage one,
+     * LEVERAGE_RATIO_MIN of the exposure. It - and the target and band
+     * struck on the same two measures (targetEquity(), topEquity()) - is
+     * what every comparison the bank makes with a requirement reads:
+     *   - failure and the under-minimum regime (payoutStance(),
+     *     lendsOnlyToKeepBorrowersGoing(), recapitalisationNeeded(),
+     *     resolutionExitEquity());
+     *   - its target and band (targetEquity(), topEquity());
+     *   - the payout and the two spare-capital limits (dividendDue(),
+     *     buybackRoom(), deskCanCarry());
+     *   - the lending that tightens under target (lendingGrowthLimit());
+     *   - what its capital supports (capitalLimit()).
+     */
+    public double minimumEquity() {
+        return Math.max(CAPITAL_RATIO * getWeightedBook(), LEVERAGE_RATIO_MIN * exposure());
+    }
+
+    /** True when the leverage requirement is the larger - when a bank's zero-weighted assets are what its capital is short against. */
+    public boolean leverageBinds() {
+        return LEVERAGE_RATIO_MIN * exposure() > CAPITAL_RATIO * getWeightedBook();
+    }
+
+    /** Its capital as a ratio on the measure that binds: the leverage ratio when leverageBinds(), the risk-based capitalRatio() otherwise - the figure the Bank tab's bar and status read. */
+    public double bindingRatio() { return leverageBinds() ? leverageRatio() : capitalRatio(); }
+
+    /** The minimum on the binding measure: LEVERAGE_RATIO_MIN or CAPITAL_RATIO. */
+    public double bindingMinimum() { return leverageBinds() ? LEVERAGE_RATIO_MIN : CAPITAL_RATIO; }
+
+    /** Its target on the binding measure: leverageTarget() or capitalTarget(). */
+    public double bindingTarget() { return leverageBinds() ? leverageTarget() : capitalTarget(); }
+
+    /** ...and the top of its band on it: leverageTop() or capitalTop(). */
+    public double bindingTop() { return leverageBinds() ? leverageTop() : capitalTop(); }
+
     /* ------------------------ what it does with profit ------------------------ */
 
     /** The share of its profit after tax a bank inside its band pays its owners: 45%, inside the 40-50% payout range Canada's big banks target; RBC paid 43% of its 2025 earnings. */
@@ -3069,8 +3341,14 @@ public class Bank {
     /** What the bank does with its profit, as its capital stands. */
     public enum Payout { NO_BANK, FAILED, UNDER_MINIMUM, REBUILDING, PAYING, RETURNING }
 
-    /** The equity its target calls for on the book it has. */
-    public double targetEquity() { return capitalTarget() * getWeightedBook(); }
+    /**
+     * The equity its target calls for on the book it has: the larger of its
+     * target on the weighted book and its leverage target on the exposure
+     * (0.7.11, round 2 - minimumEquity() says why).
+     */
+    public double targetEquity() {
+        return Math.max(capitalTarget() * getWeightedBook(), leverageTarget() * exposure());
+    }
 
     /**
      * The equity at the top of its band - and NEVER LESS THAN WHAT ITS
@@ -3081,7 +3359,8 @@ public class Bank {
      * the year it opens.
      */
     public double topEquity() {
-        return Math.max(capitalTop() * getWeightedBook(), branches * paidInPerBranch);
+        return Math.max(Math.max(capitalTop() * getWeightedBook(), leverageTop() * exposure()),
+                branches * paidInPerBranch);
     }
 
     /** What it holds past the top of its band: what it returns, a twelfth a month. Nothing for a failed bank or no bank. */
@@ -3094,8 +3373,9 @@ public class Bank {
     public Payout payoutStance() {
         if (branches <= 0) return Payout.NO_BANK;
         if (isInsolvent()) return Payout.FAILED;
-        double weighted = getWeightedBook();
-        if (weighted > 0 && equity() < CAPITAL_RATIO * weighted) return Payout.UNDER_MINIMUM;
+        // Under the larger of the two minimums since round 2 of 0.7.11.
+        double minimum = minimumEquity();
+        if (minimum > 0 && equity() < minimum) return Payout.UNDER_MINIMUM;
         if (equity() < targetEquity()) return Payout.REBUILDING;
         return excessCapital() > 0 ? Payout.RETURNING : Payout.PAYING;
     }
@@ -3206,7 +3486,7 @@ public class Bank {
      */
     public boolean buysBackOwnShares() {
         if (branches <= 0 || isInsolvent()) return false;
-        return getWeightedBook() <= 0 || equity() >= targetEquity();
+        return targetEquity() <= 0 || equity() >= targetEquity();
     }
 
     /**
@@ -3218,11 +3498,24 @@ public class Bank {
      * them and paid it straight back as dividends - 131-183% of the bank's
      * profit over the growth years. A board does not raise equity to hand it
      * back. Read at every deal, like the buyback.
+     *
+     * UNDER IT BY MORE THAN ROUNDING (0.7.11): a desk that has bought its
+     * shares back spends exactly what it holds over its target
+     * (buybackRoom()), which leaves its equity ON the target, and whether it
+     * then issued to the next buyer was decided by the last bit of a
+     * subtraction. OWN_ISSUE_DEAD_BAND is that bit. Found by
+     * DenominationCheck's twins, which parted on it the month their bank
+     * first sat at its target - the landlords' insured mortgages weigh
+     * nothing, so the weighted book it is measured against shrank to where
+     * its equity was.
      */
     public boolean issuesOwnShares() {
         if (branches <= 0 || isInsolvent()) return false;
-        return getWeightedBook() > 0 && equity() < targetEquity();
+        return targetEquity() > 0 && equity() < targetEquity() * (1 - OWN_ISSUE_DEAD_BAND);
     }
+
+    /** How far under its target, as a share of it, the bank must be before it issues its own shares: a billionth - rounding, not a rule - so a buyback that stopped exactly on the target does not turn into an issue on the last bit (issuesOwnShares()). */
+    public static final double OWN_ISSUE_DEAD_BAND = 1e-9;
 
     /**
      * WHAT IT HOLDS OVER ITS TARGET: its equity less targetEquity(), with the
@@ -3235,10 +3528,27 @@ public class Bank {
      * Negative when it is under its target.
      */
     public double spareCapital(double inventory) {
+        return Math.min(spareOnRisk(inventory), spareOnLeverage(inventory));
+    }
+
+    /** Its spare capital against its target on the weighted book, the inventory carried at `inventory`. */
+    private double spareOnRisk(double inventory) {
         double inv = Math.max(0, inventory);
         double equityNow = equity() - Math.max(0, securities) + inv;
         double weightedNow = getWeightedBook() - Math.abs(securities) * RISK_EQUITY + Math.abs(inventory) * RISK_EQUITY;
         return equityNow - capitalTarget() * weightedNow;
+    }
+
+    /**
+     * ...and against its leverage target on the exposure (0.7.11, round 2).
+     * A share it holds is an asset at the mark, so the inventory moves the
+     * exposure one for one, and it moves equity the same way.
+     */
+    private double spareOnLeverage(double inventory) {
+        double inv = Math.max(0, inventory);
+        double equityNow = equity() - Math.max(0, securities) + inv;
+        double exposureNow = Math.max(0, exposure() - Math.max(0, securities) + inv);
+        return equityNow - leverageTarget() * exposureNow;
     }
 
     /** ...on the books as they stand: equity() less targetEquity(). */
@@ -3300,6 +3610,20 @@ public class Bank {
     public double lendingGrowthLimit() {
         if (branches <= 0) return Double.POSITIVE_INFINITY;
         if (isInsolvent()) return 0;
+        /*
+         * ON THE MEASURE THAT BINDS (0.7.11, round 2): the leverage ratio
+         * between LEVERAGE_RATIO_MIN and leverageTarget() when the leverage
+         * requirement is the larger, the risk-based ratio between the two it
+         * always read otherwise. The two keep the same proportion
+         * (leverageTarget()), so x means the same thing on either.
+         */
+        if (leverageBinds()) {
+            double ratio = leverageRatio(), target = leverageTarget();
+            if (ratio >= target) return Double.POSITIVE_INFINITY;
+            if (ratio <= LEVERAGE_RATIO_MIN) return 0;
+            double x = (ratio - LEVERAGE_RATIO_MIN) / (target - LEVERAGE_RATIO_MIN);
+            return RATIONED_GROWTH * x / (1 - x);
+        }
         double weighted = getWeightedBook();
         if (weighted <= 0) return Double.POSITIVE_INFINITY;
         double ratio = equity() / weighted;
@@ -3314,14 +3638,17 @@ public class Bank {
     public boolean lendsOnlyToKeepBorrowersGoing() {
         if (branches <= 0) return false;
         if (isInsolvent()) return true;
-        double weighted = getWeightedBook();
-        return weighted > 0 && equity() < CAPITAL_RATIO * weighted;
+        // Under the larger of the two minimums (0.7.11, round 2).
+        double minimum = minimumEquity();
+        return minimum > 0 && equity() < minimum;
     }
 
     /** The growth of the book the capital rule allows this month, in money: infinite when it lends freely. */
     public double lendingLimit() {
         double g = lendingGrowthLimit();
-        return Double.isInfinite(g) ? Double.POSITIVE_INFINITY : g * getWeightedBook();
+        // ...on the book the binding measure counts (0.7.11, round 2).
+        return Double.isInfinite(g) ? Double.POSITIVE_INFINITY
+                : g * (leverageBinds() ? exposure() : getWeightedBook());
     }
 
     /** ...in words. */
@@ -3563,6 +3890,19 @@ public class Bank {
          * deposits; a bank that may not lend has no use for more of them.
          */
         if (inResolution) return false;
+        /*
+         * ...AND A BANK UNDER ITS MINIMUM NEEDS CAPITAL, NOT COUNTERS EITHER
+         * (0.7.11, round 2). The trap branchWouldPayForItself() describes was
+         * still open. A bank under its minimum is bound by its capital, so
+         * its strain is past 1 and every branch it opens is worth the
+         * PAID_IN_PER_BRANCH the opening brings (capacityWith()). The test
+         * below then passed whenever the book it had kept its staff: the
+         * owners were recapitalising a bank one building at a time. A bank
+         * under its minimum is put back by its owners (issuesOwnShares())
+         * or the city (recapitalisationNeeded()), not by building branches.
+         * The minimum is the larger of the two, the leverage one included.
+         */
+        if (lendsOnlyToKeepBorrowersGoing()) return false;
         if (bookAnotherBranchWouldCarry() <= 0) return false;
         if (branches <= 0) return getWeightedBook() > 0;
         if (!branchWouldPayForItself()) return false;
@@ -3639,6 +3979,66 @@ public class Bank {
         return keptPerBranch() > runningCost;
     }
 
+    /* ----------------- a branch that does not pay is closed (0.7.11, round 2) ----------------- */
+
+    /**
+     * Closed months in a row the book must fail to keep its branches' staff
+     * before the bank closes one: BusinessInvestment.DISTRESS_LOSS_MONTHS,
+     * the two years a landlord or a maker loses money before it sells
+     * plant it is using - the city's distress fuse, not a new number.
+     */
+    public static final int BRANCH_CLOSE_MONTHS = BusinessInvestment.DISTRESS_LOSS_MONTHS;
+
+    /** Closed months in a row the book has not kept its branches' staff (branchesCoverTheirStaff()); struck at closeMonth(), carried in lastMonthToSave(). */
+    private int uncoveredMonths;
+
+    /**
+     * Whether what the book kept last month covers what its branches cost -
+     * branchWouldPayForItself()'s own two inputs, keptPerBranch() against
+     * runningCostPerBranch(), read the other way. True with no branch, or
+     * with nothing known to cost yet.
+     */
+    public boolean branchesCoverTheirStaff() {
+        if (branches <= 0) return true;
+        double runningCost = runningCostPerBranch();
+        if (runningCost <= 0) return true;
+        return keptPerBranch() >= runningCost;
+    }
+
+    /**
+     * THE BRANCH TEST RUN IN REVERSE, AND IT WAS MISSING. Jerus: "Close
+     * losing branches." Opening a branch asks whether the book the branches
+     * carry pays a counter's staff (branchWouldPayForItself()). Nothing ever
+     * asked it again, so a branch opened on a book that later shrank stood
+     * forever. Round 1 of this batch measured it: seed 3's bank had opened
+     * 85 branches while its capital was short. Its book then fell to $1.4bn,
+     * 93% of it insured mortgages. The branches' $13.9M a month of payroll
+     * stood against $2.0M of interest, and it failed every three months
+     * with no loan lost.
+     *
+     * So the same inputs are read each month at the close. When the book has
+     * not kept the branches' staff for BRANCH_CLOSE_MONTHS closed months in a
+     * row, a branch closes. Game.runRetirement() closes one a month for as
+     * long as that holds, by the path any retired building takes: the plot
+     * back to the city and the material to the builders. The payroll and
+     * one branch's reach of the city's savings go with it.
+     *
+     * NOTHING MOVES ON THE CAPITAL: what the branch was founded with is not
+     * handed back, and returning capital is the payout rule's business
+     * (dividendDue()). So a branch opened later where one closed brings no
+     * new capital (openBranches() counts past branchesCapitalised) - the
+     * closed one's never left.
+     *
+     * THE LAST BRANCH IS NEVER CLOSED while the bank stands: a bank is a
+     * branch.
+     */
+    public boolean closesBranch() {
+        return branches > 1 && uncoveredMonths >= BRANCH_CLOSE_MONTHS;
+    }
+
+    /** Closed months in a row the book has not kept its branches' staff. */
+    public int getUncoveredMonths() { return uncoveredMonths; }
+
     /**
      * The loan book one more branch would take onto the bank's own account.
      *
@@ -3676,7 +4076,7 @@ public class Bank {
     public double capacityWith(double branchCount) {
         double newBranches = Math.max(0, branchCount - branchesCapitalised);
         double equityThen = equity() + newBranches * paidInPerBranch;
-        double capital = Math.max(0, equityThen) / CAPITAL_RATIO;
+        double capital = weightedBookSupportedBy(equityThen);
         double funding = Math.min(Math.max(0, deposits),
                 Math.max(0, branchCount) * depositsPerBranch) * LEVERAGE;
         return Math.min(capital, funding);
@@ -3698,6 +4098,9 @@ public class Bank {
         double room = Math.max(0, capacity() * EASY_STRAIN - getWeightedBook());
         if (branches > 0) {
             room = Math.min(room, Math.max(0, Math.max(0, equity()) / capitalTarget() - getWeightedBook()));
+            // ...and on the leverage target (0.7.11, round 2): a dollar lent
+            // abroad is a dollar of exposure, weighing RISK_CARRY or not.
+            room = Math.min(room, Math.max(0, Math.max(0, equity()) / leverageTarget() - exposure()));
         }
         return room;
     }
@@ -3707,9 +4110,13 @@ public class Bank {
     public void reset() {
         cash = 0;
         branches = 0;
+        uncoveredMonths = 0;
         deposits = 0;
         foreignDeposits = 0;
         sectorBook = 0;
+        mortgageBook = 0;
+        mortgageWeighted = 0;
+        insuranceClaims = 0;
         cityBook = 0;
         unearnedDiscount = 0;
         householdBook = 0;
@@ -3790,6 +4197,9 @@ public class Bank {
         sectorDeposits    *= scale;
         foreignDeposits   *= scale;
         sectorBook        *= scale;
+        mortgageBook      *= scale;
+        mortgageWeighted  *= scale;
+        insuranceClaims   *= scale;
         cityBook          *= scale;
         householdBook     *= scale;
         sectorWeighted    *= scale;
@@ -4201,12 +4611,17 @@ public class Bank {
      * margin held the savers under the rate it chose; what a prime loan's
      * money costs it (the funds-transfer price) and the three costs over it;
      * prime; what a household's credit line starts from; what the carry
-     * trade pays; and the window's rate. The Bank tab's centrepiece.
+     * trade pays; the window's rate; and (0.7.11) what an insured mortgage's
+     * money costs it for its ten years and the rate it is written at - the
+     * same running costs over it, no loss, and since round 2 the capital
+     * its leverage requirement ties up (mortgageCapital). The Bank tab's
+     * centrepiece.
      */
     public record Ladder(double policy, double savers, double saversChose, double saversShare,
                          double fundingPosition, boolean saversHeld,
                          double transfer, double running, double loss, double capital, double prime,
-                         double household, double carry, double window) {
+                         double household, double carry, double window,
+                         double mortgageTransfer, double mortgage, double mortgageCapital) {
         /** Savers' rate less the policy rate: under it by the bank's margin on a deposit. */
         public double saversOverPolicy()   { return savers - policy; }
         /** The funds-transfer price over the policy rate: the window's penalty on its share, and the term premium. */
@@ -4217,6 +4632,10 @@ public class Bank {
         public double parts()              { return transfer + running + loss + capital; }
         /** A borrower's rate over prime: the step each borrower's rung is labelled with - its own risk, or for the carry trade the costs it does not carry. */
         public double overPrime(double rate) { return rate - prime; }
+        /** An insured mortgage's money over the policy rate: the window's penalty on its share, and the ten-year term premium. */
+        public double mortgageTransferOverPolicy() { return mortgageTransfer - policy; }
+        /** An insured mortgage's rate over its money: running the bank, and the capital its leverage requirement ties up (round 2). */
+        public double mortgageOverTransfer() { return mortgage - mortgageTransfer; }
     }
 
     /** The ladder at this policy rate. */
@@ -4227,7 +4646,10 @@ public class Bank {
                 fundsTransferPrice(policyAnnual, term), runningCostRate(), expectedLossRate(),
                 capitalCharge(policyAnnual, term, RISK_BUSINESS), prime(policyAnnual),
                 householdRate(policyAnnual), carryRate(policyAnnual),
-                Math.max(0, policyAnnual) + CentralBank.WINDOW_PENALTY);
+                Math.max(0, policyAnnual) + CentralBank.WINDOW_PENALTY,
+                fundsTransferPrice(policyAnnual, Mortgage.MORTGAGE_TERM_MONTHS),
+                insuredMortgageRate(policyAnnual),
+                capitalCharge(policyAnnual, Mortgage.MORTGAGE_TERM_MONTHS, RISK_INSURED_MORTGAGE));
     }
 
     /* ------------------------------ in words ------------------------------ */
@@ -4240,28 +4662,34 @@ public class Bank {
      * minimum and lending only to keep its borrowers going; failed; or no
      * bank at all. payoutStance() is the classification, because the same
      * capital decides what it pays out and what it lends.
+     *
+     * ON THE MEASURE THAT BINDS since round 2 of 0.7.11: "of everything it
+     * has lent" and the leverage figures when the leverage requirement is
+     * the larger (leverageBinds()), "of its risk-weighted book" otherwise.
      */
     public String status() {
-        double ratio = getWeightedBook() > 0 ? capitalRatio() : Double.NaN;
+        boolean onLeverage = leverageBinds();
+        String measure = onLeverage ? "everything it has lent (the leverage ratio)" : "its risk-weighted book";
+        double ratio = onLeverage ? leverageRatio() : getWeightedBook() > 0 ? capitalRatio() : Double.NaN;
         return switch (payoutStance()) {
             case NO_BANK -> "There is no bank: every loan in the city is funded at the central bank's"
                     + " window and priced as a bank would price it. A Commercial Bank founds one.";
             case FAILED -> String.format("Failed: it lost more than it owned, and lends nothing new until"
-                    + " its capital is back to %.1f%% of its risk-weighted book - from a rescue, or"
-                    + " from its own profit.", CAPITAL_RATIO * RESOLUTION_EXIT_BUFFER * 100);
+                    + " its capital is back to %.1f%% of %s - from a rescue, or"
+                    + " from its own profit.", bindingMinimum() * RESOLUTION_EXIT_BUFFER * 100, measure);
             case UNDER_MINIMUM -> String.format("Under the minimum, and lending only to keep its borrowers"
-                    + " going: its capital is %.1f%% of its risk-weighted book, where the city requires %.1f%%.",
-                    ratio * 100, CAPITAL_RATIO * 100);
-            case REBUILDING -> String.format("Rebuilding its capital, and lending carefully: %.1f%% of its"
-                    + " risk-weighted book against the %.1f%% it aims for, so a borrower's debt may grow"
-                    + " %.2f%% this month.", ratio * 100, capitalTarget() * 100, lendingGrowthLimit() * 100);
+                    + " going: its capital is %.1f%% of %s, where the city requires %.1f%%.",
+                    ratio * 100, measure, bindingMinimum() * 100);
+            case REBUILDING -> String.format("Rebuilding its capital, and lending carefully: %.1f%% of"
+                    + " %s against the %.1f%% it aims for, so a borrower's debt may grow"
+                    + " %.2f%% this month.", ratio * 100, measure, bindingTarget() * 100, lendingGrowthLimit() * 100);
             case PAYING, RETURNING -> Double.isNaN(ratio)
                     ? "Healthy, and lending freely - with nothing lent yet to weigh its capital against."
-                    : String.format("Healthy, and lending freely: its capital is %.1f%% of its risk-weighted"
-                    + " book, over the %.1f%% it aims for%s.", ratio * 100, capitalTarget() * 100,
+                    : String.format("Healthy, and lending freely: its capital is %.1f%% of %s,"
+                    + " over the %.1f%% it aims for%s.", ratio * 100, measure, bindingTarget() * 100,
                     payoutStance() == Payout.RETURNING
                             ? String.format(", and it is returning what it holds past %.1f%% to its owners",
-                                    capitalTop() * 100)
+                                    bindingTop() * 100)
                             : "");
         };
     }
@@ -4287,8 +4715,8 @@ public class Bank {
 
     /* ---------------------------- what its book weighs ---------------------------- */
 
-    /** The five things on its books that capacity weighs: the four it lends on and the desk's shares. */
-    public enum Book { BUSINESSES, CITY, FAMILIES, CARRY, DESK }
+    /** The six things on its books that capacity weighs: the four it lends on, the insured mortgages inside the businesses' (0.7.11), and the desk's shares. */
+    public enum Book { BUSINESSES, CITY, FAMILIES, CARRY, DESK, MORTGAGES }
 
     /**
      * One row of what the book weighs: its face; the share of it its
@@ -4298,10 +4726,18 @@ public class Bank {
      */
     public record WeightRow(Book book, double face, double term, double risk, double weighted) { }
 
-    /** Every row, the desk's shares included: the weighted column foots to getWeightedBook(). */
+    /**
+     * Every row, the desk's shares included: the weighted column foots to
+     * getWeightedBook(). The businesses' row is what they owe that nobody
+     * insures; the insured mortgages are their own row since 0.7.11, at
+     * RISK_INSURED_MORTGAGE - weighed at nothing, inside the businesses'
+     * weighted book, which Game.refreshBank() walks loan by loan.
+     */
     public java.util.List<WeightRow> weightTable() {
         return java.util.List.of(
-                weightRow(Book.BUSINESSES, sectorBook, RISK_BUSINESS, sectorWeighted),
+                weightRow(Book.BUSINESSES, sectorBook - mortgageBook, RISK_BUSINESS,
+                        sectorWeighted - mortgageWeighted),
+                weightRow(Book.MORTGAGES, mortgageBook, RISK_INSURED_MORTGAGE, mortgageWeighted),
                 weightRow(Book.CITY, cityBook, RISK_CITY, cityWeighted),
                 weightRow(Book.FAMILIES, householdBook, RISK_HOUSEHOLD, householdWeighted),
                 weightRow(Book.CARRY, carryBook, RISK_CARRY, carryBook * RISK_CARRY),

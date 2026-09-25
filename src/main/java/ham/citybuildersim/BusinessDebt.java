@@ -14,8 +14,12 @@ package ham.citybuildersim;
  *
  * So a BusinessDebt only ever advances its own clock. The manager reports the
  * interest, the income statement expenses it, and cash follows from net income.
- * The single exception is principal at maturity, which is a cash movement and
- * not an expense; the manager hands that back to the sector to settle.
+ * The single exception is principal as it falls due - a loan's at maturity, a
+ * Mortgage's a little every month (0.7.11) - which is a cash movement and not
+ * an expense; the manager hands that back to the sector to settle.
+ *
+ * Two kinds: BusinessLoan, the bullet every sector borrows on, and Mortgage,
+ * the insured, amortizing loan a landlord buys a residential building with.
  */
 public abstract class BusinessDebt {
 

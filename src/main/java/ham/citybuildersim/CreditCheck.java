@@ -670,6 +670,10 @@ public class CreditCheck {
 
         Game city = new Game(files);
         city.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        city.setCashForTest(Founding.WEALTHY_CASH);
         city.buildStack(template(city, "House"), 200, false);
         city.buildStack(template(city, "Convenience Store"), 5, false);
         city.buildStack(template(city, "Industrial Bakery"), 2, false);
@@ -787,10 +791,16 @@ public class CreditCheck {
         /*
          * AND THE BONDS ARE DIFFERENT ON PURPOSE.
          *
-         * A serial or term bond is issued at PAR: the face is what the player
-         * asked for and the city receives par less fees, which is what issuing
-         * at par means. Asserted here so nobody later "fixes" them to match the
-         * note and quietly changes what those two instruments are.
+         * A serial bond is issued at PAR: the face is what the player asked for
+         * and the city receives par less fees, which is what issuing at par
+         * means. A term bond is issued at a discount, its face solved so that
+         * what it is WORTH at issue is what the player asked for, and the city
+         * receives that less fees. Neither is sized to the cash that arrives.
+         * Asserted here, for the serial, so nobody later "fixes" it to match
+         * the note and quietly changes what the instrument is. (The build
+         * screen's bond, 0.7.10, does ask the note's question of a term bond,
+         * through a quote of its own - Game.quoteLongBondForCash(), held by
+         * NewGameCheck section 11 - and quoteLongBond() is unchanged.)
          */
         DebtQuote serial = notes.quoteMediumBond(100_000, 10, 10000.0);
         assertTrue("a serial bond's face IS the request",

@@ -1,4 +1,4 @@
-# HouseholdCheck.java - 1,620 lines · 5 methods · 0 constants · harnesses
+# HouseholdCheck.java - 1,624 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/HouseholdCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -10,7 +10,7 @@
 > people can be shown paying a different rent from the one landlords are shown
 > receiving, the statement is worse than useless.
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (89), [PayTier](PayTier.md) (73), [FamilyStructure](FamilyStructure.md) (53), [HouseholdAccounts](HouseholdAccounts.md) (36), [Household](Household.md) (35), [SocialSecurity](SocialSecurity.md) (15), [FamilyModel](FamilyModel.md) (12), [DemolitionLog](DemolitionLog.md) (9), [TaxPolicy](TaxPolicy.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (8), [RealEstate](RealEstate.md) (6), [UnemployedHousehold](UnemployedHousehold.md) (6), [Equity](Equity.md) (5), [WageBand](WageBand.md) (3), [StudentHousehold](StudentHousehold.md) (3), [RetiredHousehold](RetiredHousehold.md) (3), [Game](Game.md) (3), [BuildingType](BuildingType.md) (3), [MonetaryCheck](MonetaryCheck.md) (3), [NationalAccounts](NationalAccounts.md) (2), [BuildingManager](BuildingManager.md) (2), [Statement](Statement.md) (2), [JobType](JobType.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [Sectors](Sectors.md) (1), [GameFiles](GameFiles.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (89), [PayTier](PayTier.md) (73), [FamilyStructure](FamilyStructure.md) (53), [HouseholdAccounts](HouseholdAccounts.md) (36), [Household](Household.md) (35), [SocialSecurity](SocialSecurity.md) (15), [FamilyModel](FamilyModel.md) (12), [DemolitionLog](DemolitionLog.md) (9), [TaxPolicy](TaxPolicy.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (8), [RealEstate](RealEstate.md) (6), [UnemployedHousehold](UnemployedHousehold.md) (6), [Equity](Equity.md) (5), [WageBand](WageBand.md) (3), [StudentHousehold](StudentHousehold.md) (3), [RetiredHousehold](RetiredHousehold.md) (3), [Game](Game.md) (3), [BuildingType](BuildingType.md) (3), [MonetaryCheck](MonetaryCheck.md) (3), [NationalAccounts](NationalAccounts.md) (2), [BuildingManager](BuildingManager.md) (2), [Statement](Statement.md) (2), [JobType](JobType.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [Sectors](Sectors.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1)
 
 ## Sections
 
@@ -30,9 +30,9 @@
 | 730 | · SIXTY-EIGHT CELLS, AND THE MONEY FOLLOWS THE PEOPLE |
 | 1065 | · A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2) |
 | 1179 | · AND WHEN THEY CANNOT AFFORD A HOME, THEY SHARE |
-| 1275 | · THIS CITY IS NO LONGER POOR, AND THAT IS NOT A FAILURE (2026-09-09). |
-| 1315 | · A HOME IS A SIZE, AND A HOUSEHOLD HAS TO FIT |
-| 1431 | AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) |
+| 1279 | · THIS CITY IS NO LONGER POOR, AND THAT IS NOT A FAILURE (2026-09-09). |
+| 1319 | · A HOME IS A SIZE, AND A HOUSEHOLD HAS TO FIT |
+| 1435 | AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) |
 
 ## Fields (state)
 
@@ -44,15 +44,15 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 1609 | **type** `public class HouseholdCheck` | Verifies the residents' books and the demolition log. |
+| 12 | 1613 | **type** `public class HouseholdCheck` | Verifies the residents' books and the demolition log. |
 | 16 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 23 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 29 | 5 | `static double across(HouseholdBalance b, java.util.function.ToDoubleFunction<Household> perHousehold)` | One stock across every cell: per household times households. |
-| 35 | 1395 | `public static void main(String[] args)` |  |
+| 35 | 1399 | `public static void main(String[] args)` |  |
 
-### AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) (lines 1431-1620)
+### AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) (lines 1435-1624)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1452 | 168 | `static void whatItSpendsAnswersTheRealRate()` |  |
+| 1456 | 168 | `static void whatItSpendsAnswersTheRealRate()` |  |
 

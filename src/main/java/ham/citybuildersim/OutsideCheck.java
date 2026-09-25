@@ -441,6 +441,10 @@ public class OutsideCheck {
             Game g = new Game(GameFiles.scratch("outsidecheck"));
             quietly(() -> {
                 g.run();
+                // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+                // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+                // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+                g.setCashForTest(Founding.WEALTHY_CASH);
                 g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 100_000_000L);
                 // More homes than posts, so the city has people out of work,
                 // and one mill whose closing takes posts that are filled.

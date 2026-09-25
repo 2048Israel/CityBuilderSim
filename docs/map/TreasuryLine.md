@@ -1,4 +1,4 @@
-# TreasuryLine.java - 110 lines · 2 methods · 0 constants · model
+# TreasuryLine.java - 119 lines · 2 methods · 0 constants · model
 
 `ham/citybuildersim/TreasuryLine.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -44,29 +44,30 @@
 | 58 | `TreasuryLine.SAFETY` | The police and the prisons - the city's own wages again. |
 | 61 | `TreasuryLine.CITY_SERVICES` | The utilities and transit, when they cost more than they collect: the city's own wages and running costs. |
 | 64 | `TreasuryLine.STUDENT_LOANS` | Student loans lent: the ledger lent it at enrolment, so refusing the cash would leave a student owing money never received. |
-| 67 | `TreasuryLine.CONSTRUCTION_SUBSIDY` | The standing policy's top-up of the builders to break-even - the construction subsidy. |
-| 70 | `TreasuryLine.BUSINESS_SUBSIDIES` | The standing policy's top-up of any other protected sector to break-even. |
-| 73 | `TreasuryLine.STUDENT_GRANTS` | Grants to students: a policy the city chose and can owe. |
-| 76 | `TreasuryLine.CITY_REPAIRS` | The city's share of the repair bill on its own buildings: work done, and owed to the builders if it cannot be paid. |
-| 79 | `TreasuryLine.LAND` | Land the city buys, from the land office or back from a sector; refused, it stays unbought. |
-| 82 | `TreasuryLine.BUILDINGS` | Buildings the city orders; refused, they are not ordered. |
-| 85 | `TreasuryLine.BANK_CAPITAL` | Capital put into the commercial bank. |
-| 88 | `TreasuryLine.RESERVE_PURCHASES` | Foreign currency bought for the vault. |
-| 91 | `TreasuryLine.BUYBACKS` | A bond bought back before it is due. |
+| 73 | `TreasuryLine.MORTGAGE_INSURANCE_CLAIMS` | What the city's mortgage insurance pays the bank when a landlord's insured mortgage is written down (0.7.11): a guarantee, and the reason the bank weighs the loan at nothing - a claim the insurer might not pay would n... |
+| 76 | `TreasuryLine.CONSTRUCTION_SUBSIDY` | The standing policy's top-up of the builders to break-even - the construction subsidy. |
+| 79 | `TreasuryLine.BUSINESS_SUBSIDIES` | The standing policy's top-up of any other protected sector to break-even. |
+| 82 | `TreasuryLine.STUDENT_GRANTS` | Grants to students: a policy the city chose and can owe. |
+| 85 | `TreasuryLine.CITY_REPAIRS` | The city's share of the repair bill on its own buildings: work done, and owed to the builders if it cannot be paid. |
+| 88 | `TreasuryLine.LAND` | Land the city buys, from the land office or back from a sector; refused, it stays unbought. |
+| 91 | `TreasuryLine.BUILDINGS` | Buildings the city orders; refused, they are not ordered. |
+| 94 | `TreasuryLine.BANK_CAPITAL` | Capital put into the commercial bank. |
+| 97 | `TreasuryLine.RESERVE_PURCHASES` | Foreign currency bought for the vault. |
+| 100 | `TreasuryLine.BUYBACKS` | A bond bought back before it is due. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 94 | `public final String label` | The player's words for it, for the Government tab's arrears list and the playtest. |
-| 97 | `public final boolean promise` | Paid whatever the treasury holds, past the ceiling if it must be. |
-| 100 | `public final boolean purchase` | Refused, it is simply not made; nothing is owed. |
+| 103 | `public final String label` | The player's words for it, for the Government tab's arrears list and the playtest. |
+| 106 | `public final boolean promise` | Paid whatever the treasury holds, past the ceiling if it must be. |
+| 109 | `public final boolean purchase` | Refused, it is simply not made; nothing is owed. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 83 | **type** `public enum TreasuryLine` | Every kind of payment the treasury makes, and whether it is a promise. |
-| 102 | 5 | `TreasuryLine(String label, boolean promise, boolean purchase)` |  |
-| 109 | 1 | `public boolean accruesArrears()` | True for a discretionary line whose refusal is owed as arrears. |
+| 28 | 92 | **type** `public enum TreasuryLine` | Every kind of payment the treasury makes, and whether it is a promise. |
+| 111 | 5 | `TreasuryLine(String label, boolean promise, boolean purchase)` |  |
+| 118 | 1 | `public boolean accruesArrears()` | True for a discretionary line whose refusal is owed as arrears. |
 

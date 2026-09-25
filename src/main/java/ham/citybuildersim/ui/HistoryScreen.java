@@ -1556,7 +1556,7 @@ final class HistoryScreen {
         for (String key : historyPicked) {
             if (traceFor(key).unit().equals(unit)) { only = traceFor(key).label(); on++; }
         }
-        return (on == 1 ? only : unitName(unit)) + (log ? ", log scale" : "");
+        return (on == 1 ? only : unitName(unit, ui.game.getCurrency())) + (log ? ", log scale" : "");
     }
 
     /**
@@ -1943,14 +1943,14 @@ final class HistoryScreen {
         return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * power;
     }
 
-    /** What the y-axis is measured in, when every line agrees. */
-    static String unitName(String unit) {
+    /** What the y-axis is measured in, when every line agrees - the rate in this city's own money (0.7.10). */
+    static String unitName(String unit, Currency money) {
         return switch (unit) {
             case "money"     -> "dollars a month";
             case "percent"   -> "per cent";
             case "count"     -> "how many";
             case "ratio"     -> "times";
-            case "rate"      -> Currency.rateUnit();
+            case "rate"      -> money.rateUnit();
             case "usd"       -> "US dollars";
             case "index"     -> "index, founding = 1";
             case "land"      -> "US dollars a square foot";

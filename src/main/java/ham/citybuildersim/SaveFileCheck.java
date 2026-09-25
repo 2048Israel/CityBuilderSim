@@ -250,6 +250,11 @@ public class SaveFileCheck {
         data.setLandOwned(4000000);
         data.setIncomeTaxRate(.15);
         data.setPropertyTaxRate(.015);
+        // ...and how the city was founded (0.7.10): a name, money named by
+        // hand, and figures no preset has, so nothing can pass by default.
+        Founding arden = Founding.custom("Arden", 62_500, 12_500, .02)
+                .withCurrency(Currency.typed("Arden crown", "ARC"));
+        data.setFounding(arden);
 
         GameFiles.Result wrote = data.saveGame(trip, 1);
         assertTrue("DataSave wrote itself", wrote.ok);
@@ -264,6 +269,24 @@ public class SaveFileCheck {
         assertEquals("household savings survived", read.getHouseholdSavings(), -2200.5);
         assertEquals("land survived", read.getLandOwned(), 4000000.0);
         assertEquals("tax rates survived", read.getPropertyTaxRate(), .015);
+        Founding readBack = read.getFounding(.02);
+        assertEquals("the city's name survived", readBack.getCityName(), "Arden");
+        assertEquals("...its money, all five of its names", readBack.getCurrency(), arden.getCurrency());
+        assertEquals("...the treasury it was founded with", readBack.getCash(), 62_500.0);
+        assertEquals("...and the vault", readBack.getReserveUsd(), 12_500.0);
+        assertEquals("...and the world's mean is handed back, not saved twice",
+                readBack.getMeanInflation(), .02);
+        assertEquals("the slot list reads the same name off the same file",
+                trip.readHeader(1).getCityName(), "Arden");
+        DataSave older = gson.fromJson("{\"cash\": 5.0}", DataSave.class);
+        Founding before0710 = older.getFounding(WorldEconomy.LEGACY_MEAN_INFLATION);
+        assertTrue("a save with none of the eight reads as the founding every city had before 0.7.10",
+                before0710.getCityName().equals(Founding.DEFAULT_CITY_NAME)
+                        && before0710.getCurrency().equals(Currency.DANZIK)
+                        && before0710.getCash() == Founding.WEALTHY_CASH
+                        && before0710.getReserveUsd() == Founding.WEALTHY_RESERVE_USD);
+        assertTrue("...and its header says Danzik", new com.google.gson.Gson()
+                .fromJson("{\"month\": 3}", SaveHeader.class).getCityName().equals(Founding.DEFAULT_CITY_NAME));
 
         // The transient path fields that used to live on DataSave were dropped;
         // make sure nothing crept into the file that should not be in it.
@@ -690,6 +713,10 @@ public class SaveFileCheck {
 
         Game growing = new Game(growingFiles);
         growing.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        growing.setCashForTest(Founding.WEALTHY_CASH);
         growing.buildStack(template(growing, "House"), 300, false);
         growing.buildStack(template(growing, "Convenience Store"), 6, false);
         growing.buildStack(template(growing, "Industrial Bakery"), 1, false);
@@ -938,6 +965,10 @@ public class SaveFileCheck {
         Game full = new Game(new GameFiles(root.resolve("everything"),
                 root.resolve("no-legacy")));
         full.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        full.setCashForTest(Founding.WEALTHY_CASH);
         full.getGovernmentInvestor().spend(-2_000_000);
         full.getLandManager().setOwnedSqFt(full.getLandManager().getOwnedSqFt() + 200_000_000L);
         for (String[] order : new String[][] {
@@ -1118,6 +1149,14 @@ public class SaveFileCheck {
         same("what savers are paid", back.getBank().depositRate(),
                 full.getBank().depositRate());
 
+        // How the city was founded (0.7.10), read through the game's getters.
+        assertEquals("the founding record reads the same: the name", back.getCityName(), full.getCityName());
+        assertEquals("...the money", back.getCurrency(), full.getCurrency());
+        same("...the treasury it was founded with", back.getFoundingCash(), full.getFoundingCash());
+        same("...the vault", back.getFoundingReserveUsd(), full.getFoundingReserveUsd());
+        same("...and the world it was founded into", back.getFounding().getMeanInflation(),
+                full.getFounding().getMeanInflation());
+
         /*
          * WHAT A LOAN COSTS, STRUCK AT THE CLOSE (0.7.7). The bank prices
          * every loan from four parts, two of them struck when the month
@@ -1176,6 +1215,40 @@ public class SaveFileCheck {
             same("  ...and its assets", backCredit.quarterAssets(k), liveCredit.quarterAssets(k));
             same("  ...and the risk its next loan is priced at, over prime", backCredit.getRiskSpread(k), liveCredit.getRiskSpread(k));
         }
+        /*
+         * THE LANDLORDS' MORTGAGES (0.7.11): each one whole - its balance, the
+         * rate it was written at for its term, the term and the amortization
+         * left - so the next payment and the next renewal are the live
+         * city's; and the flows and records no reloaded city can re-read: the
+         * principal the month's payments took, the insurance's premiums and
+         * claims over the city's life, and the budget's two lines.
+         */
+        String landlords = Sectors.REAL_ESTATE;
+        assertTrue("fixture: the city's landlords owe insured mortgages, and paid them down this month",
+                !liveCredit.getMortgages(landlords).isEmpty() && liveCredit.getMortgageRepaidThisMonth(landlords) > 0);
+        same("what the landlords owe on their mortgages", backCredit.getMortgagePrincipal(landlords),
+                liveCredit.getMortgagePrincipal(landlords));
+        same("...at the rate each was written at for its term", backCredit.getMortgageRate(landlords),
+                liveCredit.getMortgageRate(landlords));
+        same("...their next payment", backCredit.getMortgagePayment(landlords), liveCredit.getMortgagePayment(landlords));
+        same("...their next renewal", backCredit.getNextRenewalMonth(landlords), liveCredit.getNextRenewalMonth(landlords));
+        same("...the principal the month's payments took", backCredit.getMortgageRepaidThisMonth(landlords),
+                liveCredit.getMortgageRepaidThisMonth(landlords));
+        same("...the premiums the insurance has taken over the city's life", backCredit.getPremiumsTotal(),
+                liveCredit.getPremiumsTotal());
+        same("...and the claims it has paid", backCredit.getInsuredWrittenOffTotal(), liveCredit.getInsuredWrittenOffTotal());
+        same("...the budget's premium line", back.getEconomyManager().getNationalAccounts().getMortgagePremiums(),
+                full.getEconomyManager().getNationalAccounts().getMortgagePremiums());
+        same("...and its claims line", back.getEconomyManager().getNationalAccounts().getMortgageClaims(),
+                full.getEconomyManager().getNationalAccounts().getMortgageClaims());
+        same("...and the bank's book of them", back.getBank().getMortgageBook(), full.getBank().getMortgageBook());
+        // ...and round 2's: the months its book has not kept its branches'
+        // staff (Bank.lastMonthToSave(); MortgageCheck section 11 saves a
+        // city with the streak running), and what its leverage ratio reads.
+        same("...how long the bank's book has not kept its branches' staff",
+                back.getBank().getUncoveredMonths(), full.getBank().getUncoveredMonths());
+        same("...and its capital against everything it has lent", back.getBank().leverageRatio(),
+                full.getBank().leverageRatio());
         same("the builders' salvage at what they paid for it", back.getSectors().construction().getSalvageCost(),
                 full.getSectors().construction().getSalvageCost());
         same("...the month's provision", backBank.provisions(), livedBank.provisions());

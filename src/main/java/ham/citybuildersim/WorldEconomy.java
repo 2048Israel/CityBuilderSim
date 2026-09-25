@@ -78,6 +78,31 @@ public class WorldEconomy {
     public static final double MIN_MEAN_INFLATION = .0;
     public static final double MAX_MEAN_INFLATION = .08;
 
+    /**
+     * The worlds the founding screen offers, as its five chips: none, the
+     * default, twice it, the mean every city grew up in before 2026-09-13
+     * (LEGACY_MEAN_INFLATION), and five. On Settings until 0.7.10, which moved
+     * them to the screen a city is founded on - the only moment they act.
+     */
+    public static final double[] FOUNDING_CHOICES = { 0, DEFAULT_MEAN_INFLATION, .02, .0333, .05 };
+
+    /**
+     * Where the world's price level settles at a given mean.
+     *
+     * Closed form, because the level IS a closed form: advanceMonth()
+     * compounds at the mean and pulls back toward a flat trend, so it rests
+     * where `mean/12 x L = TREND_PULL x (L - 1)` - the block above, the same
+     * arithmetic that predicted 1.84, 1.37 and 1.15 before any of them were
+     * measured. The founding screen's note under the chips; in the
+     * interface's window until 0.7.10, which is a screen computing a model
+     * figure, so it lives here now.
+     */
+    public static double settledLevelAt(double mean) {
+        double monthly = Math.pow(1 + Math.max(0, mean), 1.0 / 12) - 1;
+        double denom = TREND_PULL - monthly;
+        return denom <= 1e-9 ? 99 : TREND_PULL / denom;
+    }
+
     private double meanInflation = DEFAULT_MEAN_INFLATION;
 
     /**
@@ -86,9 +111,10 @@ public class WorldEconomy {
      * AT FOUNDING ONLY - Jerus: "in settings have it be adjustable but only in
      * game start". The world a city grew up in is a fact about that city, not a
      * preference somebody can change in year two: every price, every wage and
-     * the whole exchange rate history were struck against it. So GamePrefs
-     * carries the choice, newGame() applies it, the save carries it, and
-     * nothing moves it afterwards.
+     * the whole exchange rate history were struck against it. So the founding
+     * screen carries the choice (on Settings, in GamePrefs, until 0.7.10),
+     * the founding applies it (Game.buildWorld(), from Founding), the save
+     * carries it, and nothing moves it afterwards.
      */
     public void setMeanInflation(double mean) {
         meanInflation = Math.max(MIN_MEAN_INFLATION, Math.min(MAX_MEAN_INFLATION, mean));

@@ -226,6 +226,13 @@ public class CrimeCheck {
         for (Game g : new Game[] {bare, policed}) {
             quietly(() -> {
                 g.run();
+                // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings
+                // are placed free, but their running costs - the coal plant's unbilled
+                // draw, the city's own services - come out of the treasury month after
+                // month, and on the D$100M a city founds with since 0.7.10 it ran dry
+                // and simulateMonths() stopped. Given the D$2.5B it assumed, the
+                // Wealthy preset's, explicitly.
+                g.setCashForTest(Founding.WEALTHY_CASH);
                 BuildingManager b = g.getBuildingManager();
                 g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 100_000_000L);
                 // Big enough that the founding constabulary is a sliver of it,

@@ -472,6 +472,16 @@ public final class MoneyAudit {
          * The bank funds them out of its own cash, so all four of those lines -
          * lent, repaid, interest, principal - are transfers between two pools
          * and cancel. What is left is what actually crosses the city's edge.
+         *
+         * SO DO THE LANDLORDS' INSURED MORTGAGES (0.7.11), all four of their
+         * flows, and so none has a line here: the funding (the bank lends the
+         * principal at the settle, beside every loan), the premium (out of
+         * that principal to the treasury as the mortgage is written), the
+         * principal each payment takes (from the landlord's till to the bank
+         * with every repayment), and a claim (the treasury to the bank, when
+         * a write-down takes an insured balance - pool to pool, as a rescue
+         * is). Every one leaves one pool and arrives in another the same
+         * month; the residual is what says so.
          */
         in += credit.apply("+ bank RepaidByHouseholds", g.getBank().getRepaidByHouseholds(), Scope.DOMESTIC);
         /*

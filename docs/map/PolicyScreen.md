@@ -17,7 +17,7 @@
 > same levers. Every dial here is drawn by one class, Ladder (0.7.6), which
 > replaced the tax pages' taxLadder and everybody else's stageSlider.
 
-**Uses:** [Palette](Palette.md) (398), [TaxPolicy](TaxPolicy.md) (80), [WageBand](WageBand.md) (24), [DebtManager](DebtManager.md) (21), [EducationType](EducationType.md) (21), [Sector](Sector.md) (16), [EconomyManager](EconomyManager.md) (15), [JobType](JobType.md) (11), [Money](Money.md) (11), [CareType](CareType.md) (10), [Education](Education.md) (9), [LabourMarket](LabourMarket.md) (8), [Denomination](Denomination.md) (8), [Ladder](Ladder.md) (7), [SectorBooks](SectorBooks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [CentralBank](CentralBank.md) (6), [Currency](Currency.md) (5), [Sectors](Sectors.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [FamilyModel](FamilyModel.md) (4), [SalesTaxLedger](SalesTaxLedger.md) (3), [PopulationManager](PopulationManager.md) (3), [PayTier](PayTier.md) (3), [UserInterface](UserInterface.md) (2), [PriceIndex](PriceIndex.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Healthcare](Healthcare.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (2), [Game](Game.md) (1)... and 7 more
+**Uses:** [Palette](Palette.md) (398), [TaxPolicy](TaxPolicy.md) (80), [WageBand](WageBand.md) (24), [DebtManager](DebtManager.md) (21), [EducationType](EducationType.md) (21), [Sector](Sector.md) (16), [EconomyManager](EconomyManager.md) (15), [JobType](JobType.md) (11), [Money](Money.md) (11), [CareType](CareType.md) (10), [Education](Education.md) (9), [LabourMarket](LabourMarket.md) (8), [Denomination](Denomination.md) (8), [Ladder](Ladder.md) (7), [SectorBooks](SectorBooks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [CentralBank](CentralBank.md) (6), [Sectors](Sectors.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [FamilyModel](FamilyModel.md) (4), [SalesTaxLedger](SalesTaxLedger.md) (3), [PopulationManager](PopulationManager.md) (3), [PayTier](PayTier.md) (3), [UserInterface](UserInterface.md) (2), [PriceIndex](PriceIndex.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Healthcare](Healthcare.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (2), [Game](Game.md) (1), [Bank](Bank.md) (1)... and 7 more
 
 **Used by (2):** [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
@@ -266,7 +266,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 2237 | 93 | `void currencyReformPage(VBox column)` | THE CURRENCY REFORM, which is a change of units and says so. |
-| 2332 | 6 | `static String afterName(Denomination unit, double factor)` | What the money would be called after lopping by this factor. |
+| 2332 | 6 | `static String afterName(Denomination unit, double factor, Currency money)` | What the city's money would be called after lopping by this factor. |
 
 ### PROMISES - the pension (lines 2339-2495)
 

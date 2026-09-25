@@ -211,6 +211,10 @@ public class CarryTradeCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             city.buildStack(city.getBuildingManager().getTemplateByName("House"), 400, false);
             city.buildStack(city.getBuildingManager()

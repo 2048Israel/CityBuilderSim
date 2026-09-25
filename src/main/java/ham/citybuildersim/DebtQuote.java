@@ -19,8 +19,9 @@ import java.util.Locale;
  * A quote that is computed separately from the deal is a second definition of
  * the deal, and second definitions drift. So the quote is not a preview of the
  * arithmetic - it IS the arithmetic. Game.quoteTBill()/quoteMediumBond()/
- * quoteLongBond() work the terms out and return one of these; the matching
- * handle*Logic() then books exactly the numbers in the record it was handed and
+ * quoteLongBond() - and quoteLongBondForCash(), the build screen's bond
+ * (0.7.10) - work the terms out and return one of these; the matching
+ * handle*() then books exactly the numbers in the record it was handed and
  * computes nothing of its own. There is no path by which the screen can promise
  * one thing and the ledger record another.
  *

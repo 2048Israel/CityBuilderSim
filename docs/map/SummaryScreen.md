@@ -1,4 +1,4 @@
-# SummaryScreen.java - 1,638 lines · 27 methods · 6 constants · interface
+# SummaryScreen.java - 1,641 lines · 27 methods · 6 constants · interface
 
 `ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -15,7 +15,7 @@
 > the clock; this class owns what is drawn into it, and which sections the
 > player has opened (panelOpen).
 
-**Uses:** [BuildingType](BuildingType.md) (11), [CareType](CareType.md) (11), [EducationType](EducationType.md) (6), [Crime](Crime.md) (6), [InfrastructureManager](InfrastructureManager.md) (5), [Health](Health.md) (5), [Education](Education.md) (4), [PopulationManager](PopulationManager.md) (4), [Healthcare](Healthcare.md) (4), [LandManager](LandManager.md) (4), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [EconomyManager](EconomyManager.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [WageBand](WageBand.md) (3), [UserInterface](UserInterface.md) (2), [Bank](Bank.md) (2), [PolicyScreen](PolicyScreen.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Palette](Palette.md) (2), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [Game](Game.md) (2), [CapitalFlows](CapitalFlows.md) (2), [FamilyModel](FamilyModel.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Good](Good.md) (1), [Sector](Sector.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [CityCalendar](CityCalendar.md) (1)
+**Uses:** [BuildingType](BuildingType.md) (11), [CareType](CareType.md) (11), [EducationType](EducationType.md) (6), [Crime](Crime.md) (6), [InfrastructureManager](InfrastructureManager.md) (5), [Health](Health.md) (5), [Education](Education.md) (4), [PopulationManager](PopulationManager.md) (4), [Healthcare](Healthcare.md) (4), [LandManager](LandManager.md) (4), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [EconomyManager](EconomyManager.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [WageBand](WageBand.md) (3), [UserInterface](UserInterface.md) (2), [Bank](Bank.md) (2), [PolicyScreen](PolicyScreen.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Palette](Palette.md) (2), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [CapitalFlows](CapitalFlows.md) (2), [FamilyModel](FamilyModel.md) (1), [Game](Game.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Good](Good.md) (1), [Sector](Sector.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [CityCalendar](CityCalendar.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -44,18 +44,18 @@
 | 996 | · BANK |
 | 1032 | · TRADE - the city's edge, in one line. |
 | 1064 | · THE TWO POCKETS, AND WHICH MONEY EACH IS IN. |
-| 1164 | · TAX |
-| 1186 | · LABOUR - and this is the one Jerus asked for by name. |
-| 1279 | · SCHOOLS |
-| 1315 | · PEOPLE |
-| 1333 | · HEALTH |
-| 1362 | · SAFETY (2026-09-11) |
-| 1392 | · RESOURCES |
-| 1417 | · LAND |
-| 1440 | · SECTOR CASH |
-| 1452 | · BUILDINGS, and this is where the folding pays for itself. |
-| 1521 | · THE VITALS, which are never folded away. |
-| 1553 | · AND WHATEVER IS ACTUALLY WRONG. |
+| 1167 | · TAX |
+| 1189 | · LABOUR - and this is the one Jerus asked for by name. |
+| 1282 | · SCHOOLS |
+| 1318 | · PEOPLE |
+| 1336 | · HEALTH |
+| 1365 | · SAFETY (2026-09-11) |
+| 1395 | · RESOURCES |
+| 1420 | · LAND |
+| 1443 | · SECTOR CASH |
+| 1455 | · BUILDINGS, and this is where the folding pays for itself. |
+| 1524 | · THE VITALS, which are never folded away. |
+| 1556 | · AND WHATEVER IS ACTUALLY WRONG. |
 
 ## Constants
 
@@ -79,7 +79,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 32 | 1607 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - the problem list that decides what goes red, and ev... |
+| 32 | 1610 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - the problem list that decides what goes red, and ev... |
 | 37 | 1 | `SummaryScreen(UserInterface ui)` |  |
 
 ### HEADROOM, NOT SATISFACTION (lines 39-110)
@@ -121,7 +121,7 @@
 | 446 | 6 | `void under(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Lower is worse. |
 | 454 | 4 | `void flag(java.util.List<Watch> out, String label, String reading, boolean bad, boolean severe, Runnable go)` | A thing that is simply true or not. |
 
-### SEATS AGAINST WHO WOULD COME. (lines 459-1638)
+### SEATS AGAINST WHO WOULD COME. (lines 459-1641)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -131,8 +131,8 @@
 | 805 | 73 | `java.util.List<Watch> citySymptoms()` | The readings with no dial of their own. |
 | 879 | 49 | `void panelSummaryRows(VBox body)` |  |
 | 930 | 16 | `VBox panelHeading(String text)` | A rule and a caption, dividing the panel's two halves. |
-| 955 | 533 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
-| 1489 | 124 | `void refreshCityPanel()` |  |
-| 1624 | 9 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
-| 1635 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
+| 955 | 536 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
+| 1492 | 124 | `void refreshCityPanel()` |  |
+| 1627 | 9 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
+| 1638 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
 

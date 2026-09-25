@@ -23,6 +23,12 @@ import java.util.Map;
  * A test that checks the same handful of things the reset already handled would
  * have passed throughout. So this sweeps everything it can reach and fails on
  * ANY difference, including fields that do not exist yet.
+ *
+ * AND WHAT A CITY IS FOUNDED WITH (0.7.10), sections 6-11: since Start New
+ * Game founds a city from a record - its name, its money, a treasury, a vault
+ * and a world (Founding) - the same question is asked of every door into a
+ * city, and of the endowment's job against the catalogue's own costs. The
+ * list is in the section's banner, FOUNDING A CITY.
  */
 public class NewGameCheck {
 
@@ -55,6 +61,18 @@ public class NewGameCheck {
 
         m.put("month", (double) g.getMonth());
         m.put("cash", g.getCash());
+        /*
+         * HOW IT WAS FOUNDED (0.7.10): the record - its name and its money as
+         * one fingerprint, the treasury and the vault it opened with - and the
+         * world's mean, which newGame() after a load kept from the loaded city
+         * until 0.7.10 made it a founding choice. Section 9 founds cities that
+         * differ in every one of them; here they are swept with the rest.
+         */
+        m.put("founding.cash", g.getFoundingCash());
+        m.put("founding.reserveUsd", g.getFoundingReserveUsd());
+        m.put("founding.names", (double) (g.getCityName() + "|" + g.getCurrency().describe()
+                + "|" + g.getCurrency().plural() + "|" + g.getCurrency().symbol()).hashCode());
+        m.put("world.mean", g.getWorldEconomy().getMeanInflation());
         /*
          * THE OTHER HALF OF THE ENDOWMENT (2026-09-21): the founders' dollars
          * in the vault. Founded in buildWorld() beside the cash, so every door
@@ -148,6 +166,12 @@ public class NewGameCheck {
         m.put("credit.principal", e.getBusinessDebtManager().getTotalPrincipal());
         m.put("credit.writtenOff", e.getBusinessDebtManager().getTotalWrittenOff());
         m.put("credit.loans", (double) e.getBusinessDebtManager().getLoans().size());
+        // ...and the landlords' insured mortgages and the city's insurance book (0.7.11).
+        m.put("credit.mortgages", e.getBusinessDebtManager().getMortgagePrincipal());
+        m.put("credit.mortgageRepaid", e.getBusinessDebtManager().getMortgageRepaidThisMonth());
+        m.put("credit.premiumsEver", e.getBusinessDebtManager().getPremiumsTotal());
+        m.put("credit.claimsEver", e.getBusinessDebtManager().getInsuredWrittenOffTotal());
+        m.put("bank.mortgageBook", g.getBank().getMortgageBook());
         m.put("cityDebts", (double) g.getDebtManager().getDebt().size());
 
         m.put("land.owned", g.getLandManager().getOwnedSqFt());
@@ -210,6 +234,10 @@ public class NewGameCheck {
 
         Game used = new Game(files);
         used.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        used.setCashForTest(Founding.WEALTHY_CASH);
         used.buildStack(template(used, "House"), 200, false);
         used.buildStack(template(used, "Convenience Store"), 5, false);
         used.buildStack(template(used, "Industrial Bakery"), 2, false);
@@ -254,6 +282,11 @@ public class NewGameCheck {
                 Math.abs(used.getForeignAccounts().getReservesUsd() - Game.FOUNDING_RESERVE_USD) > 1);
         assertTrue("...and it paid for land out of it, and pays that way still",
                 used.isLandPaidFromVault() && used.getForeignAccounts().getLandUsdFromVaultLifetime() > 0);
+        // ...and its landlords owe insured mortgages the city has taken premiums on (0.7.11),
+        // so the sweep of the lender's and the insurance's records is not 0 == 0.
+        assertTrue("...and its landlords owe insured mortgages, and have paid the city premiums on them",
+                used.getEconomyManager().getBusinessDebtManager().getMortgagePrincipal() > 0
+                        && used.getEconomyManager().getBusinessDebtManager().getPremiumsTotal() > 0);
 
         /* ==================== 3. start a new one ==================== */
         System.out.println("\n--- Start New Game ---");
@@ -347,10 +380,472 @@ public class NewGameCheck {
         assertTrue("starting a new game does not delete the save it left",
                 !files.slotIsEmpty(3));
 
+        /* ============ 6-11. FOUNDING A CITY (0.7.10) ============ */
+        founding(files);
+
         cleanUp(root);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* =====================================================================
+       6-11. FOUNDING A CITY (0.7.10)
+
+       Start New Game founds a city from a record now - its name, its money, a
+       treasury, a vault and a world (Founding) - and every door into a city
+       founds from one. What that has to prove:
+
+          6. the defaults are exactly the constants and the Standard preset IS
+             them; every preset and a custom founding opens with exactly its
+             figures, the vault bought at the opening rate, and lives its
+             first month with the audit closed; a city at either end of the
+             custom bounds runs; a founding outside them is refused;
+          7. the name, the money and the founding survive a save and a load,
+             and a save from before 0.7.10 loads as Danzik, the Danzik dollar,
+             D$2.5B and US$1B;
+          8. the money named after the city - Arden gives the Arden dollar,
+             A$, ARD - and by hand, with the edges; the world's code is never
+             derived and never accepted;
+          9. a second city founded in the same process carries nothing of the
+             first, and the first is still itself;
+         10. the world is chosen at founding, at each of the screen's values;
+         11. the endowment's job, against the catalogue's own costs - and the
+             rest borrowed on the build screen's bond (0.7.10): quoted for the
+             gap, its cash covering it by no more than a granule and the
+             fees, landing exactly that, on the books at BUILD_BOND_YEARS, the
+             plant built; the page's note still quoted beside it.
+       ===================================================================== */
+    static void founding(GameFiles files) throws Exception {
+
+        /* ---------------------------------------------------------------- 6 */
+        System.out.println("\n--- 6. founding: the defaults, the presets and a custom city ---");
+
+        Founding d = Founding.defaults();
+        assertTrue("the defaults are the two constants",
+                d.getCash() == Game.FOUNDING_CASH && d.getReserveUsd() == Game.FOUNDING_RESERVE_USD);
+        assertTrue("...in the default world, Danzik, its money named after it",
+                d.getMeanInflation() == WorldEconomy.DEFAULT_MEAN_INFLATION
+                        && d.getCityName().equals(Founding.DEFAULT_CITY_NAME)
+                        && d.getCurrency().equals(Currency.fromCityName(Founding.DEFAULT_CITY_NAME)));
+        assertTrue("the Standard preset is the constants",
+                Founding.Preset.STANDARD.cash() == Game.FOUNDING_CASH
+                        && Founding.Preset.STANDARD.reserveUsd() == Game.FOUNDING_RESERVE_USD
+                        && Founding.Preset.of(Game.FOUNDING_CASH, Game.FOUNDING_RESERVE_USD) == Founding.Preset.STANDARD);
+        assertTrue("...and Lean and Wealthy are their own constants",
+                Founding.Preset.LEAN.cash() == Founding.LEAN_CASH
+                        && Founding.Preset.LEAN.reserveUsd() == Founding.LEAN_RESERVE_USD
+                        && Founding.Preset.WEALTHY.cash() == Founding.WEALTHY_CASH
+                        && Founding.Preset.WEALTHY.reserveUsd() == Founding.WEALTHY_RESERVE_USD);
+
+        Game plain = quietly(() -> { Game g = new Game(files); g.run(); return g; });
+        assertTrue("a city founded on the defaults opens with exactly them",
+                plain.getCash() == Game.FOUNDING_CASH
+                        && plain.getForeignAccounts().getReservesUsd() == Game.FOUNDING_RESERVE_USD
+                        && plain.getFoundingCash() == Game.FOUNDING_CASH
+                        && plain.getFoundingReserveUsd() == Game.FOUNDING_RESERVE_USD);
+        assertTrue("...named Danzik, in money named after it",
+                plain.getCityName().equals(Founding.DEFAULT_CITY_NAME)
+                        && plain.getCurrency().equals(Currency.fromCityName(Founding.DEFAULT_CITY_NAME)));
+
+        java.util.List<Founding> cities = new java.util.ArrayList<>();
+        for (Founding.Preset p : Founding.Preset.values()) {
+            if (p != Founding.Preset.CUSTOM) {
+                cities.add(Founding.named(Founding.DEFAULT_CITY_NAME, p, WorldEconomy.DEFAULT_MEAN_INFLATION));
+            }
+        }
+        cities.add(Founding.custom("Arden", 37_500, 5_000, WorldEconomy.DEFAULT_MEAN_INFLATION));
+        cities.add(Founding.custom("Arden", Founding.MIN_CASH, Founding.MIN_RESERVE_USD, WorldEconomy.DEFAULT_MEAN_INFLATION));
+        cities.add(Founding.custom("Arden", Founding.MAX_CASH, Founding.MAX_RESERVE_USD, WorldEconomy.DEFAULT_MEAN_INFLATION));
+        boolean opened = true, atTheRate = true, lived = true;
+        for (Founding f : cities) {
+            assertTrue("   fixture: " + f.getPreset().label() + " is a founding", f.problem() == null);
+            Game g = quietly(() -> { Game c = new Game(files, f); c.run(); return c; });
+            ForeignAccounts fx = g.getForeignAccounts();
+            boolean exact = g.getCash() == f.getCash() && fx.getReservesUsd() == f.getReserveUsd()
+                    && g.getFoundingCash() == f.getCash() && g.getFoundingReserveUsd() == f.getReserveUsd();
+            boolean rate = fx.getRate() == ForeignAccounts.OPENING_RATE
+                    && fx.getLifetimeIntervention() == f.getReserveUsd() * ForeignAccounts.OPENING_RATE;
+            quietly(() -> g.simulateMonths(1));
+            boolean month = g.getMonth() == 2 && audited(g);
+            System.out.printf("   %-8s $%,12.0fk and US$%,10.0fk: opened %s, month one %s%n",
+                    f.getPreset().label(), f.getCash(), f.getReserveUsd(), exact && rate ? "exact" : "WRONG",
+                    month ? "audited" : "NOT CLOSED");
+            opened &= exact;
+            atTheRate &= rate;
+            lived &= month;
+        }
+        assertTrue("each preset and a custom founding opens with exactly its treasury and vault", opened);
+        assertTrue("...the vault bought at the opening rate, booked as the purchase it is", atTheRate);
+        assertTrue("...and lives its first month with the audit closed", lived);
+
+        // The ends of the bounds, played: every figure inside them founds a city that runs.
+        for (Founding f : new Founding[] {
+                Founding.custom("Arden", Founding.MIN_CASH, Founding.MIN_RESERVE_USD, WorldEconomy.DEFAULT_MEAN_INFLATION),
+                Founding.custom("Arden", Founding.MAX_CASH, Founding.MAX_RESERVE_USD, WorldEconomy.DEFAULT_MEAN_INFLATION) }) {
+            Game g = quietly(() -> { Game c = new Game(files, f); c.run(); return c; });
+            boolean placed = g.buildStack(template(g, "House"), 10, false) == Game.BuildResult.SUCCESS
+                    && g.buildStack(template(g, "Convenience Store"), 1, false) == Game.BuildResult.SUCCESS;
+            boolean everyMonth = true;
+            for (int m = 0; m < 24; m++) {
+                quietly(() -> g.simulateMonths(1));
+                everyMonth &= audited(g);
+            }
+            System.out.printf("   at $%,.0fk and US$%,.0fk: ten houses and a shop %s; month %d, %d people, $%,.0fk left%n",
+                    f.getCash(), f.getReserveUsd(), placed ? "placed" : "REFUSED", g.getMonth(),
+                    g.getPopulationManager().getPopulation(), g.getCash());
+            assertTrue("a city at the " + (f.getCash() == Founding.MIN_CASH ? "floor" : "ceiling")
+                    + " of the bounds places ten houses and a shop", placed);
+            assertTrue("...and runs two years, every month audited", g.getMonth() == 25 && everyMonth);
+        }
+
+        Game again = quietly(() -> { Game g = new Game(files); g.run(); g.newGame(cities.get(0)); return g; });
+        assertTrue("newGame() with a founding - the menu's door - founds exactly it",
+                again.getCash() == cities.get(0).getCash()
+                        && again.getForeignAccounts().getReservesUsd() == cities.get(0).getReserveUsd());
+
+        boolean refused;
+        try {
+            new Game(files, Founding.custom("Arden", 0, Founding.MIN_RESERVE_USD, WorldEconomy.DEFAULT_MEAN_INFLATION));
+            refused = false;
+        } catch (IllegalArgumentException e) {
+            refused = true;
+        }
+        assertTrue("an empty treasury is not a city: refused at the door", refused);
+        assertTrue("...as is one under the floor or over the ceiling",
+                Founding.custom("Arden", Founding.MIN_CASH * .99, 0, WorldEconomy.DEFAULT_MEAN_INFLATION).problem() != null
+                        && Founding.custom("Arden", Founding.MAX_CASH * 1.01, 0, WorldEconomy.DEFAULT_MEAN_INFLATION).problem() != null);
+        assertTrue("...and a vault below nothing or over its ceiling",
+                Founding.custom("Arden", Game.FOUNDING_CASH, -1, WorldEconomy.DEFAULT_MEAN_INFLATION).problem() != null
+                        && Founding.custom("Arden", Game.FOUNDING_CASH, Founding.MAX_RESERVE_USD * 1.01,
+                                WorldEconomy.DEFAULT_MEAN_INFLATION).problem() != null);
+        assertTrue("...and a city with no name, or a name too long for the title",
+                Founding.custom("  ", Game.FOUNDING_CASH, 0, WorldEconomy.DEFAULT_MEAN_INFLATION).problem() != null
+                        && Founding.custom("A".repeat(Founding.MAX_CITY_NAME_LENGTH + 1), Game.FOUNDING_CASH, 0,
+                                WorldEconomy.DEFAULT_MEAN_INFLATION).problem() != null);
+
+        /* ---------------------------------------------------------------- 7 */
+        System.out.println("\n--- 7. the name, the money and the founding survive a save and a load ---");
+
+        Founding arden = Founding.custom("Arden", 62_500, 12_500, .02)
+                .withCurrency(Currency.typed("Arden crown", "arc"));
+        Game saved = quietly(() -> {
+            Game g = new Game(files, arden);
+            g.run();
+            g.buildStack(template(g, "House"), 20, false);
+            g.buildStack(template(g, "Convenience Store"), 2, false);
+            g.simulateMonths(14);
+            return g;
+        });
+        assertTrue("fixture: Arden, in its crown, founded and lived in", saved.getMonth() == 15
+                && saved.getCityName().equals("Arden") && saved.getCurrency().code().equals("ARC"));
+        assertTrue("saved", quietly(() -> saved.saveGame(5, "Arden")).ok);
+        Game back = quietly(() -> { Game g = new Game(files); g.loadGameSave(5); return g; });
+        assertTrue("the city's name comes back", back.getCityName().equals("Arden"));
+        assertTrue("...and its money, whole: name, plural, code and both symbols",
+                back.getCurrency().equals(saved.getCurrency()));
+        assertTrue("...and the treasury and vault it was founded with, not what it has now",
+                back.getFoundingCash() == 62_500 && back.getFoundingReserveUsd() == 12_500
+                        && back.getCash() != back.getFoundingCash());
+        assertTrue("...and the world it was founded into, which the world's own save carries",
+                back.getFounding().getMeanInflation() == .02 && back.getWorldEconomy().getMeanInflation() == .02);
+        assertTrue("the slot list names the city", "Arden".equals(files.readHeader(5).getCityName()));
+
+        String[] foundingKeys = { "cityName", "currencyName", "currencyPlural", "currencyCode",
+                "currencySymbol", "currencyQualified", "foundingCash", "foundingReserveUsd" };
+        com.google.gson.JsonObject json = com.google.gson.JsonParser
+                .parseString(Files.readString(files.saveFile(5))).getAsJsonObject();
+        boolean carried = true;
+        for (String key : foundingKeys) {
+            carried &= json.has(key);
+            json.remove(key);
+        }
+        assertTrue("fixture: the save carried all eight of the founding's keys", carried);
+        Files.writeString(files.saveFile(6), json.toString());
+        Files.copy(files.historyFile(5), files.historyFile(6), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        Game old = quietly(() -> { Game g = new Game(files); g.loadGameSave(6); return g; });
+        assertTrue("fixture: the stripped save loads", old.getLoadFailure() == null && old.getMonth() == saved.getMonth());
+        assertTrue("a save from before 0.7.10 loads as Danzik", old.getCityName().equals(Founding.DEFAULT_CITY_NAME));
+        assertTrue("...in the Danzik dollar, every city's before: Danzik dollars, DZD, $ and D$",
+                old.getCurrency().equals(Currency.DANZIK) && Currency.DANZIK.plural().equals("Danzik dollars")
+                        && Currency.DANZIK.code().equals("DZD") && Currency.DANZIK.symbol().equals("$")
+                        && Currency.DANZIK.qualifiedSymbol().equals("D$"));
+        assertTrue("...founded with D$2.5B and US$1B, the Wealthy preset's",
+                old.getFoundingCash() == Founding.WEALTHY_CASH && old.getFoundingReserveUsd() == Founding.WEALTHY_RESERVE_USD);
+        assertTrue("...and otherwise the city it was: its own cash and vault",
+                old.getCash() == back.getCash()
+                        && old.getForeignAccounts().getReservesUsd() == back.getForeignAccounts().getReservesUsd());
+        assertTrue("...and the slot list says Danzik too", Founding.DEFAULT_CITY_NAME.equals(files.readHeader(6).getCityName()));
+
+        /* ---------------------------------------------------------------- 8 */
+        System.out.println("\n--- 8. a currency named after its city, and one named by hand ---");
+
+        Currency ard = Currency.fromCityName("Arden");
+        assertTrue("Arden gives the Arden dollar, the Arden dollars", ard.name().equals("Arden dollar")
+                && ard.plural().equals("Arden dollars"));
+        assertTrue("...A$ beside a US dollar and $ alone, ARD", ard.qualifiedSymbol().equals("A$")
+                && ard.symbol().equals(Currency.SYMBOL) && ard.code().equals("ARD"));
+        String[][] edges = {
+                { "Zürich", "ZUR", "Z$" },     // an accent folds to its letter
+                { "Ørsted", "RST", "Ø$" },     // a letter with no A-Z under it is skipped for the code, kept as the initial
+                { "St. Ives", "STI", "S$" },   // spaces and stops are not letters
+                { "Ur", "URX", "U$" },         // short: padded with ISO's X
+                { "Москва", "XXX", "М$" },     // no A-Z at all: XXX, ISO's "no currency"
+                { "Usdane", "USA", "U$" },     // the world's code is skipped for the next letter
+                { "U.S.D.", "USX", "U$" },     // ...or padded when there is none
+                { "  arden  ", "ARD", "A$" },  // trimmed, and upper-cased
+        };
+        boolean edgesHold = true;
+        for (String[] e : edges) {
+            Currency c = Currency.fromCityName(e[0]);
+            boolean ok = c.code().equals(e[1]) && c.qualifiedSymbol().equals(e[2]);
+            System.out.printf("   %-10s -> %s, %s  %s%n", e[0], c.code(), c.qualifiedSymbol(), ok ? "" : "(expected " + e[1] + ", " + e[2] + ")");
+            edgesHold &= ok;
+        }
+        assertTrue("the edges: accents, other scripts, stops, short names and the world's code", edgesHold);
+        boolean neverUsd = true;
+        for (String name : new String[] { "USD", "usd", "U S D", "Usdington", "Usd", "U-s-d", "Ü.S.D" }) {
+            neverUsd &= !Currency.fromCityName(name).code().equals(Currency.FOREIGN_CODE);
+        }
+        assertTrue("the world's code is never derived", neverUsd);
+
+        Currency crown = Currency.typed("crown", "arc");
+        assertTrue("typed by hand: its name, an s for the plural, and the code upper-cased",
+                crown != null && crown.name().equals("crown") && crown.plural().equals("crowns") && crown.code().equals("ARC"));
+        assertTrue("...written $ alone and its initial and $ beside a US dollar",
+                crown.symbol().equals(Currency.SYMBOL) && crown.qualifiedSymbol().equals("C$"));
+        Currency pesos = Currency.typed("pesos", "PES");
+        assertTrue("...a name that ends in s is its own plural", pesos != null && pesos.plural().equals("pesos"));
+        assertTrue("the world's code is never accepted, in any case",
+                Currency.codeProblem(Currency.FOREIGN_CODE) != null && Currency.codeProblem("usd") != null
+                        && Currency.typed("crown", Currency.FOREIGN_CODE) == null);
+        assertTrue("...nor a code that is not exactly three letters A to Z",
+                Currency.codeProblem("AR") != null && Currency.codeProblem("ARDE") != null
+                        && Currency.codeProblem("AR1") != null && Currency.codeProblem("ÅRD") != null
+                        && Currency.codeProblem("ARD") == null);
+        assertTrue("...nor a name with no letter in it", Currency.nameProblem("") != null
+                && Currency.nameProblem("123") != null && Currency.nameProblem("crown") == null);
+        assertTrue("a founding in the world's money is no founding",
+                Founding.custom("Arden", Game.FOUNDING_CASH, 0, WorldEconomy.DEFAULT_MEAN_INFLATION)
+                        .withCurrency(new Currency("dollar", "dollars", Currency.FOREIGN_CODE, "$", "U$")).problem() != null);
+        assertTrue("the foreign money stays the US dollar, US$, USD",
+                Currency.FOREIGN_NAME.equals("US dollar") && Currency.FOREIGN_SYMBOL.equals("US$")
+                        && Currency.FOREIGN_CODE.equals("USD"));
+
+        /* ---------------------------------------------------------------- 9 */
+        System.out.println("\n--- 9. a second city carries nothing of the first ---");
+
+        Game first = quietly(() -> { Game g = new Game(files, arden); g.run(); g.simulateMonths(3); return g; });
+        Game second = quietly(() -> { Game g = new Game(files); g.run(); return g; });
+        assertTrue("a city founded on the defaults beside Arden is Danzik, in its own money",
+                isDefault(second));
+        assertTrue("...and Arden is still Arden, in its crown, with its own founding",
+                first.getCityName().equals("Arden") && first.getCurrency().equals(arden.getCurrency())
+                        && first.getFoundingCash() == 62_500 && first.getWorldEconomy().getMeanInflation() == .02);
+        quietly(() -> first.newGame());
+        assertTrue("Start New Game on Arden's own object founds Danzik on the defaults, nothing of Arden's",
+                isDefault(first));
+        Game reloaded = quietly(() -> { Game g = new Game(files); g.loadGameSave(5); g.newGame(); return g; });
+        assertTrue("...and after loading Arden: its name, its money and its world all left behind",
+                isDefault(reloaded));
+
+        /* --------------------------------------------------------------- 10 */
+        System.out.println("\n--- 10. the world is chosen at founding ---");
+
+        boolean everyChip = true, backcast = true, defaultOffered = false;
+        for (double m : WorldEconomy.FOUNDING_CHOICES) {
+            Game w = quietly(() -> { Game g = new Game(files,
+                    Founding.named(Founding.DEFAULT_CITY_NAME, Founding.Preset.STANDARD, m)); g.run(); return g; });
+            everyChip &= w.getWorldEconomy().getMeanInflation() == m && w.getFounding().getMeanInflation() == m;
+            backcast &= Math.abs(w.getWorldEconomy().realisedInflation() - m) < 1e-12;
+            defaultOffered |= m == WorldEconomy.DEFAULT_MEAN_INFLATION;
+        }
+        assertTrue("founding at each of the screen's worlds sets the world's mean", everyChip);
+        assertTrue("...and back-casts its first year at that mean", backcast);
+        assertTrue("...and the default is among them", defaultOffered);
+        double far = WorldEconomy.FOUNDING_CHOICES[WorldEconomy.FOUNDING_CHOICES.length - 1];
+        Game switched = quietly(() -> {
+            Game g = new Game(files, Founding.named(Founding.DEFAULT_CITY_NAME, Founding.Preset.STANDARD, far));
+            g.run();
+            g.simulateMonths(2);
+            g.newGame(Founding.named(Founding.DEFAULT_CITY_NAME, Founding.Preset.STANDARD, 0));
+            return g;
+        });
+        assertTrue("a new city after a " + far * 100 + "% one is back-cast at its own world, not the last city's",
+                switched.getWorldEconomy().getMeanInflation() == 0
+                        && Math.abs(switched.getWorldEconomy().realisedInflation()) < 1e-12);
+
+        /* --------------------------------------------------------------- 11 */
+        System.out.println("\n--- 11. the endowment's job, against the catalogue ---");
+
+        Founding.Buys buys = plain.whatItBuys(Game.FOUNDING_CASH, Game.FOUNDING_RESERVE_USD);
+        System.out.printf("   Standard: $%,.0fk; the village $%,.0fk, leaving $%,.0fk%n",
+                Game.FOUNDING_CASH, buys.village(), buys.leftAfterVillage());
+        for (Founding.Work w : buys.works()) {
+            System.out.printf("   %-24s $%,10.0fk  %s%n", w.name(), w.cost(),
+                    w.fitsInCash() ? "in cash" : String.format("a bond for $%,.0fk", w.bondNeeded()));
+        }
+
+        // The getter is the invoice: a new city is charged exactly this for the village.
+        Game v = quietly(() -> { Game g = new Game(files); g.run(); return g; });
+        v.getLandManager().setOwnedSqFt(30_000_000);
+        double before = v.getCash();
+        boolean villagePlaced = true;
+        for (String[] order : Founding.VILLAGE) {
+            villagePlaced &= v.buildStack(template(v, order[0]), Integer.parseInt(order[1]), false)
+                    == Game.BuildResult.SUCCESS;
+        }
+        assertTrue("fixture: a new city places the founding village", villagePlaced);
+        close("...and is charged for it exactly what whatItBuys() says", before - v.getCash(), buys.village(), 1e-6);
+        double worstWork = 0;
+        for (Founding.Work w : buys.works()) {
+            worstWork = Math.max(worstWork, Math.abs(v.quoteBuild(template(v, w.name()), 1).total - w.cost()));
+        }
+        close("...and quoted for each first work exactly what it says, the yard spent", worstWork, 0, 1e-6);
+
+        StringBuilder fit = new StringBuilder();
+        for (Founding.Work w : buys.inCash()) fit.append(fit.length() == 0 ? "" : ", ").append(w.name());
+        System.out.println("   in cash after the village, each on its own: " + (fit.length() == 0 ? "none" : fit));
+        assertTrue("(a) the Standard treasury pays for the village and at least one of the first works",
+                !buys.inCash().isEmpty());
+        // The brief's two examples, measured and printed rather than asserted - see the project's founding-a-city.md.
+        double water = cost(buys, "Water Treatment Plant"), school = cost(buys, "Elementary School"),
+               police = cost(buys, "Police Station");
+        System.out.printf("   ...the water plant alone: $%,.0fk against $%,.0fk left - %s%n",
+                water, buys.leftAfterVillage(), water <= buys.leftAfterVillage() ? "fits" : "does NOT fit");
+        System.out.printf("   ...a school and a police station: $%,.0fk against $%,.0fk left - %s%n",
+                school + police, buys.leftAfterVillage(),
+                school + police <= buys.leftAfterVillage() ? "fits" : "does NOT fit");
+
+        boolean restNeedABond = !buys.inCash().isEmpty();
+        for (Founding.Work w : buys.inCash()) {
+            double others = 0;
+            for (Founding.Work o : buys.works()) if (o != w) others += o.cost();
+            restNeedABond &= others > buys.leftAfterVillage() - w.cost();
+        }
+        assertTrue("(b) ...and not the others as well: after any one of them, the rest need a bond", restNeedABond);
+
+        /*
+         * (c) the city borrows for the rest, from the build screen, and gets
+         * it - on the page's bond (0.7.10), as its button books it:
+         * quoteLongBondForCash() for Game.buildFundingGap(), at
+         * BUILD_BOND_YEARS in BUILD_BOND_GRANULE. This used to ask
+         * quoteLongBond() for the gap and five per cent, a guess: its cash
+         * passed the gap by D$1.0M. The bond is sized now, so the bound below
+         * is the model's own - a face rounded up by less than one granule, and
+         * the fees, which come out of the face and never out of the gap.
+         */
+        quietly(() -> v.simulateMonths(12));
+        BuildingsTemplate plant = template(v, "Water Treatment Plant");
+        Game.BuildResult asked = v.buildStack(plant, 1, false);
+        assertTrue("(c) fixture: a year on, the water plant is more than its treasury holds",
+                asked == Game.BuildResult.NEEDS_FUNDING);
+        double gap = v.buildFundingGap(plant, 1);
+        close("(c) the page's gap is the plant's invoice less the treasury",
+                gap, v.calculateTotalCost(plant, 1) - v.getCash(), 0);
+        assertTrue("(c) the page's bond is at one of the five maturities",
+                LongTermBond.isIssuable(Game.BUILD_BOND_YEARS));
+
+        // The page's other offer, quoted only - a quote books nothing - so the
+        // note is held to the very gap the bond is. Its own path, borrowing
+        // for roads and getting them, is CreditCheck's, and unchanged.
+        DebtQuote note = v.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, 1000.0);
+        assertTrue("(c) the page's note is still quoted: six months, covering the gap",
+                "Note".equals(note.instrument()) && note.duration() == Game.BUILD_NOTE_MONTHS
+                        && note.cashReceived() >= gap);
+
+        DebtQuote quote = v.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        double over = quote.cashReceived() - gap;
+        double bound = Game.BUILD_BOND_GRANULE + v.costOfIssuance(quote.faceValue());
+        System.out.printf("   month %d: short $%,.0fk%n", v.getMonth(), gap);
+        System.out.printf("   the note: $%,.0fk of face at %.2f%%, brings $%,.0fk, all due in %d months%n",
+                note.faceValue(), note.marketRate() * 100, note.cashReceived(), note.duration());
+        System.out.printf("   the %d-year bond: $%,.0fk of face at %.2f%% (coupon %.2f%%), brings $%,.0fk,"
+                        + " $%,.2fk over the gap (bound $%,.2fk), $%,.0fk a month%n",
+                quote.duration(), quote.faceValue(), quote.marketRate() * 100, quote.couponRate() * 100,
+                quote.cashReceived(), over, bound, quote.monthlyInterest());
+        assertTrue("(c) a Standard city short of the water plant is quoted the bond",
+                !quote.isEmpty() && "Term".equals(quote.instrument())
+                        && quote.duration() == Game.BUILD_BOND_YEARS);
+        assertTrue("...whose cash covers the gap", over >= 0);
+        assertTrue("...by no more than one issue granule plus the fees", over <= bound);
+        // ...and not by the luck of one size: the cent the note's proceeds
+        // were rounded short by (CreditCheck section 9) is met here too.
+        int missed = 0;
+        for (int years : LongTermBond.MATURITIES) {
+            for (double ask : new double[]{50, 1_000, 20_000, gap, 205_000, 5_000_000}) {
+                DebtQuote q = v.quoteLongBondForCash(ask, years, Game.BUILD_BOND_GRANULE);
+                double by = q.cashReceived() - ask;
+                if (by < 0 || by > Game.BUILD_BOND_GRANULE + v.costOfIssuance(q.faceValue())) missed++;
+            }
+        }
+        assertTrue("...and so at every maturity and size, not this one alone", missed == 0);
+
+        int paperBefore = v.getDebtManager().getDebt().size();
+        double cashBefore = v.getCash();
+        quietly(() -> v.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+        assertTrue("(c) a new city borrowing for it gets it: the bond issues",
+                v.getDebtManager().getDebt().size() == paperBefore + 1);
+        close("...and lands exactly the cash it was quoted", v.getCash() - cashBefore, quote.cashReceived(), 1e-6);
+        Debt paper = v.getDebtManager().getDebt().get(v.getDebtManager().getDebt().size() - 1);
+        assertTrue("...on the books as a term bond of BUILD_BOND_YEARS, at the face quoted",
+                paper instanceof LongTermBond && paper.getDuration() == Game.BUILD_BOND_YEARS * 12
+                        && paper.getFaceValue() == quote.faceValue());
+        assertTrue("...and the plant is ordered", v.buildStack(plant, 1, false) == Game.BuildResult.SUCCESS);
+        boolean closedEveryMonth = true;
+        int waited = 0;
+        while (v.getBuildingManager().countByName("Water Treatment Plant") < 1 && waited < 600) {
+            quietly(() -> v.simulateMonths(1));
+            closedEveryMonth &= audited(v);
+            waited++;
+        }
+        System.out.printf("   built in %d months, the audit closed every one: %s%n", waited, closedEveryMonth);
+        assertTrue("...and built", v.getBuildingManager().countByName("Water Treatment Plant") == 1);
+        assertTrue("...and every month of it the audit closed", closedEveryMonth);
+    }
+
+    /** A first work's invoice, by name. */
+    static double cost(Founding.Buys buys, String name) {
+        for (Founding.Work w : buys.works()) if (w.name().equals(name)) return w.cost();
+        throw new IllegalStateException(name);
+    }
+
+    /** Everything a founding on the defaults is, and nothing a previous city was. */
+    static boolean isDefault(Game g) {
+        return g.getCityName().equals(Founding.DEFAULT_CITY_NAME)
+                && g.getCurrency().equals(Currency.fromCityName(Founding.DEFAULT_CITY_NAME))
+                && g.getFoundingCash() == Game.FOUNDING_CASH && g.getFoundingReserveUsd() == Game.FOUNDING_RESERVE_USD
+                && g.getCash() == Game.FOUNDING_CASH
+                && g.getForeignAccounts().getReservesUsd() == Game.FOUNDING_RESERVE_USD
+                && g.getWorldEconomy().getMeanInflation() == WorldEconomy.DEFAULT_MEAN_INFLATION;
+    }
+
+    /** The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. */
+    static boolean audited(Game g) {
+        MoneyAudit.Result money = g.getLastMoneyAudit();
+        boolean conserved = Math.abs(money.residual) <= .01 || money.relative() <= 1e-7;
+        return conserved && Math.abs(g.getPostAuditDrift()) <= .01;
+    }
+
+    static void close(String label, double actual, double expected, double tol) {
+        boolean ok = Math.abs(actual - expected) <= tol;
+        if (!ok) fails++;
+        System.out.printf("%-58s %s%s%n", label, ok ? "OK" : "FAIL",
+                ok ? "" : String.format("  %,.6f != %,.6f", actual, expected));
+    }
+
+    static final java.io.PrintStream REAL_OUT = System.out;
+    static final java.io.PrintStream QUIET = new java.io.PrintStream(java.io.OutputStream.nullOutputStream());
+
+    /** Runs a piece of the city with the game's own narration off. */
+    static <T> T quietly(java.util.function.Supplier<T> work) {
+        System.setOut(QUIET);
+        try { return work.get(); } finally { System.setOut(REAL_OUT); }
+    }
+
+    static void quietly(Runnable work) {
+        System.setOut(QUIET);
+        try { work.run(); } finally { System.setOut(REAL_OUT); }
     }
 
     static void cleanUp(Path root) {

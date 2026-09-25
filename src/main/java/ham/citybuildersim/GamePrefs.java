@@ -87,26 +87,16 @@ public final class GamePrefs {
     public boolean isPauseOnEvents()            { return pauseOnEvents; }
     public void setPauseOnEvents(boolean value) { this.pauseOnEvents = value; }
 
-    /**
-     * The world the NEXT city is founded into.
-     *
-     * A PREFERENCE RATHER THAN A SAVED FIGURE, and the one setting here that
-     * does not take effect while you look at it. Jerus: "in settings have it be
-     * adjustable but only in game start." The world a city grew up in is a fact
-     * about that city - every price, wage and month of its exchange rate was
-     * struck against it - so changing this moves the next founding and nothing
-     * about the city on screen.
-     *
-     * Defaults to WorldEconomy.DEFAULT_MEAN_INFLATION. An older settings.json
-     * has no such field and Gson leaves the default in place.
+    /*
+     * THE WORLD THE NEXT CITY IS FOUNDED INTO was a preference here, shown on
+     * Settings, until 0.7.10 - "worldInflation". It is chosen on the founding
+     * screen now, with the city's name and its money, which is the only moment
+     * it ever acted (see WorldEconomy.setMeanInflation()), so the field is
+     * gone rather than kept: a choice made each time a city is founded is not
+     * a preference about the window. An older settings.json still carries the
+     * key; Gson ignores a key the class does not have, and the next save of
+     * the file drops it.
      */
-    private double worldInflation = WorldEconomy.DEFAULT_MEAN_INFLATION;
-
-    public double getWorldInflation() { return worldInflation; }
-    public void setWorldInflation(double value) {
-        this.worldInflation = Math.max(WorldEconomy.MIN_MEAN_INFLATION,
-                Math.min(WorldEconomy.MAX_MEAN_INFLATION, value));
-    }
 
     /**
      * The two small charts pinned at the top of the Reports page, by series

@@ -15,7 +15,7 @@
 > happened while they were not watching. Each one carries the month it happened
 > so the panel can say how long ago it was.
 
-**Used by (6):** [BuildLog](BuildLog.md), [CalendarCheck](CalendarCheck.md), [DataSave](DataSave.md), [Game](Game.md), [HouseholdCheck](HouseholdCheck.md), [UserInterface](UserInterface.md)
+**Used by (7):** [BuildLog](BuildLog.md), [CalendarCheck](CalendarCheck.md), [DataSave](DataSave.md), [Game](Game.md), [HouseholdCheck](HouseholdCheck.md), [MortgageCheck](MortgageCheck.md), [UserInterface](UserInterface.md)
 
 ## Constants
 

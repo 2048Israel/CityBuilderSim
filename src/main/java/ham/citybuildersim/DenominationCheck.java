@@ -126,6 +126,10 @@ public class DenominationCheck {
         Game g = new Game(GameFiles.scratch(name));
         quietly(() -> {
             g.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
             LongPlaytest.build(g, "House", 400);
@@ -166,9 +170,12 @@ public class DenominationCheck {
         d.lop(100);
         close("lopping two zeros makes a dollar a hundred old ones", d.getUnit(), 100, 1e-12);
         close("...so a founding price reads as a hundredth", d.money(30), .30, 1e-12);
-        assertTrue("...and the money gets a new name", d.name().startsWith("second"));
+        // ...of whatever the city named its money (0.7.10): a city founded as Arden.
+        Currency arden = Currency.fromCityName("Arden");
+        assertTrue("...and the money gets a new name", d.name(arden).startsWith("second"));
+        assertTrue("...the city's own money's, renamed", d.name(arden).equals("second " + arden.name()));
         d.lop(1000);
-        assertTrue("...and again", d.name().startsWith("third"));
+        assertTrue("...and again", d.name(arden).startsWith("third"));
         close("the unit compounds", d.getUnit(), 100_000, 1e-9);
 
         Denomination big = new Denomination();

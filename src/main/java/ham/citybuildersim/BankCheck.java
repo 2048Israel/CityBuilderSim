@@ -721,6 +721,10 @@ public class BankCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             city.getForeignAccounts().pinRate(1.0);
             /*
              * THE DIAL UNDER THE WORLD'S RATE, since 0.7.0, so the carry
@@ -996,6 +1000,10 @@ public class BankCheck {
         int branchesBuilt;
         try {
             unattended.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            unattended.setCashForTest(Founding.WEALTHY_CASH);
             /*
              * ...AND THEN THE CITY'S OWN BANK IS PULLED DOWN.
              *
@@ -1147,6 +1155,10 @@ public class BankCheck {
         double windowShareWhenNew;
         try {
             trading.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            trading.setCashForTest(Founding.WEALTHY_CASH);
             trading.getForeignAccounts().pinRate(1.0);
             /*
              * Standing on month one, with roads and food - the same reason
@@ -1266,6 +1278,10 @@ public class BankCheck {
         int feeMonths = 0, loanFeeMonths = 0, dividendMonths = 0, lateMonths = 0;
         try {
             books.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            books.setCashForTest(Founding.WEALTHY_CASH);
             books.getForeignAccounts().pinRate(1.0);
             /*
              * A CITY THAT WORKS, STANDING ON MONTH ONE (2026-09-10).
@@ -1665,6 +1681,11 @@ public class BankCheck {
          * what they are: the rule, exactly, on the borrowers as the load
          * reads them; and, book by book, the saved bank's own allowance
          * wherever the curve does not read the borrower's assets.
+         *
+         * THE RULE SINCE 0.7.11 strikes the loss on what nobody insures - an
+         * insured mortgage carries no allowance - read at the curve on the
+         * borrower's whole debt (Game.bankReadings()): this city's landlords
+         * owe insured mortgages, so the rule is asked with both.
          */
         BusinessDebtManager creditAtLoad = old077.getEconomyManager().getBusinessDebtManager();
         double byRule = old077.getHouseholdBalance().lossAllowance();
@@ -1673,7 +1694,7 @@ public class BankCheck {
         int flatBooks = 0;
         for (String k : creditAtLoad.sectors()) {
             double owedNow = creditAtLoad.getPrincipal(k), assetsNow = creditAtLoad.getAssets(k);
-            byRule += Bank.sectorAllowance(owedNow, assetsNow);
+            byRule += Bank.sectorAllowance(creditAtLoad.getUninsuredPrincipal(k), owedNow, assetsNow);
             // A book the curve does not read the assets of, by the load's own
             // reading: even a loan's term of its defaults under BASE_LOSS_RATE,
             // so a year and a lifetime are both BASE_LOSS_RATE, whatever the
@@ -2094,6 +2115,10 @@ public class BankCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             city.getForeignAccounts().pinRate(1.0);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -2198,6 +2223,10 @@ public class BankCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             city.getForeignAccounts().pinRate(1.0);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -2724,6 +2753,10 @@ public class BankCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             city.buildStack(template(city, "House"), 400, true);
             city.buildStack(template(city, "Convenience Store"), 8, true);
@@ -3259,6 +3292,10 @@ public class BankCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             city.getForeignAccounts().pinRate(1.0);
             // The city section 8 puts up, standing on month one, for its reason:
             // a city that works, so what is measured is the bank.

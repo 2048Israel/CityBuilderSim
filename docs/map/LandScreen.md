@@ -17,7 +17,7 @@
 > gone to Statement.java - the plot tile) exactly as they were, the shell's
 > members reached through ui. The shell only ever calls showLandMenu().
 
-**Uses:** [Palette](Palette.md) (69), [LandParcel](LandParcel.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (3), [UserInterface](UserInterface.md) (2), [Currency](Currency.md) (2), [LandManager](LandManager.md) (1), [LandMarket](LandMarket.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [Palette](Palette.md) (69), [LandParcel](LandParcel.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (3), [UserInterface](UserInterface.md) (2), [LandManager](LandManager.md) (1), [LandMarket](LandMarket.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Sectors](Sectors.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 

@@ -769,7 +769,7 @@ final class GovernmentScreen {
         return java.util.List.of("Business tax", "Sales tax", "Wage tax",
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
-                "Student loan interest", "Central bank remittance");
+                "Student loan interest", "Central bank remittance", "Mortgage insurance premiums");
     }
 
     java.util.List<Double> revenueAmounts(EconomyManager em, NationalAccounts na) {
@@ -793,13 +793,16 @@ final class GovernmentScreen {
                 na.getStudentLoanInterest(),
                 // ...and the central bank's profit, remitted (0.7.0): what the
                 // city paid itself in interest, less what reserves cost.
-                na.getCentralBankRemittance());
+                na.getCentralBankRemittance(),
+                // ...and the premiums the landlords paid on the mortgages the
+                // city insures (0.7.11), on the end for the same reason.
+                na.getMortgagePremiums());
     }
 
     static java.util.List<String> spendingNames() {
         return java.util.List.of("Pensions", "EI", "Student grants", "Healthcare", "Education",
                 "Police and prisons", "Buildings", "Repairs", "Land bought", "Debt interest",
-                "Interest to the central bank", "Subsidies");
+                "Interest to the central bank", "Subsidies", "Mortgage insurance claims");
     }
 
     /*
@@ -832,7 +835,10 @@ final class GovernmentScreen {
                 // getTotalExpenses() since they were first paid, and on no line
                 // of this tab until now, so the lines did not add up to the total
                 // under them in any month a sector was topped up.
-                na.getSubsidies());
+                na.getSubsidies(),
+                // ...and what the mortgage insurance paid the bank (0.7.11), on
+                // the end.
+                na.getMortgageClaims());
     }
 
     /**
@@ -1113,8 +1119,42 @@ final class GovernmentScreen {
             case "Pension contributions"-> contributionsDetail(amount);
             case "Healthcare fees"      -> healthFeeDetail(amount);
             case "School fees"          -> schoolFeeDetail(amount);
+            case "Mortgage insurance premiums" -> mortgageInsuranceDetail();
             default                     -> null;
         };
+    }
+
+    /**
+     * THE CITY'S MORTGAGE INSURANCE (0.7.11), opened from either of its two
+     * lines: the premiums taken this month and what they were on, what the
+     * insurance paid the bank, and the book over the city's life - does the
+     * city make or lose money insuring housing. Every figure a getter.
+     */
+    VBox mortgageInsuranceDetail() {
+        BusinessDebtManager credit = ui.game.getEconomyManager().getBusinessDebtManager();
+        NationalAccounts na = ui.game.getEconomyManager().getNationalAccounts();
+        VBox box = new VBox(0);
+        box.getChildren().add(statementLine("Mortgages written this month",
+                String.valueOf(credit.getMortgagesWrittenThisMonth())));
+        box.getChildren().add(statementLine("Premiums taken", tightMoney(toDollars(na.getMortgagePremiums()), false)));
+        box.getChildren().add(statementLine("Claims paid the bank", tightMoney(toDollars(na.getMortgageClaims()), false),
+                na.getMortgageClaims() > 0 ? Palette.WARN : null));
+        box.getChildren().add(statementLine("Premiums since founding",
+                tightMoney(toDollars(credit.getPremiumsTotal()), false)));
+        box.getChildren().add(statementLine("Claims since founding",
+                tightMoney(toDollars(credit.getInsuredWrittenOffTotal()), false)));
+        double net = credit.getPremiumsTotal() - credit.getInsuredWrittenOffTotal();
+        box.getChildren().add(statementLine(net >= 0 ? "The insurance is ahead by" : "The insurance is behind by",
+                tightMoney(toDollars(Math.abs(net)), false), net >= 0 ? Palette.GOOD : Palette.BAD));
+        box.getChildren().add(statementLine("Insured mortgages outstanding",
+                tightMoney(toDollars(credit.getInsuredPrincipal()), false)));
+        box.getChildren().add(statementNote(String.format(
+                "The landlords pay the city %.2f%% of every mortgage it insures - CMHC's premium on "
+                + "rental housing, added to the loan - and when a landlord's debt is written down the city "
+                + "pays the bank what came off its mortgages, whatever the treasury holds: a guarantee is "
+                + "a promise. A premium is booked the month it is paid, where CMHC would earn it over "
+                + "the life of the loan.", Mortgage.premiumRate() * 100)));
+        return box;
     }
 
     /* ------------------------------ WHAT IT SPENDS ------------------------------ */
@@ -1358,6 +1398,7 @@ final class GovernmentScreen {
                 case "Pensions"      -> pensionDetail(amount);
                 case "Debt interest" -> debtServiceDetail(amount);
                 case "Land bought"   -> amount > 0 ? landSpendDetail(amount) : null;
+                case "Mortgage insurance claims" -> mortgageInsuranceDetail();
                 default              -> null;
             };
             column.getChildren().add(budgetLine(name, amount, total, annual,

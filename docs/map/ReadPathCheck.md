@@ -1,4 +1,4 @@
-# ReadPathCheck.java - 757 lines · 6 methods · 0 constants · harnesses
+# ReadPathCheck.java - 890 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/ReadPathCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -36,18 +36,18 @@
 > would pass a before/after comparison; one that accumulates shows up as a field
 > that drifts further the more the screens are opened.
 
-**Uses:** [Good](Good.md) (11), [Bank](Bank.md) (9), [Sector](Sector.md) (6), [Game](Game.md) (5), [Retail](Retail.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [EconomyManager](EconomyManager.md) (2), [CareType](CareType.md) (2), [TaxPolicy](TaxPolicy.md) (2), [EducationType](EducationType.md) (2), [Equity](Equity.md) (2), [Exchange](Exchange.md) (2), [GameFiles](GameFiles.md) (2), [NewGameCheck](NewGameCheck.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [RealEstate](RealEstate.md) (1), [Mining](Mining.md) (1), [ServicesManager](ServicesManager.md) (1), [Sectors](Sectors.md) (1), [HistorySave](HistorySave.md) (1), [DebtManager](DebtManager.md) (1), [LongTermBond](LongTermBond.md) (1), [Debt](Debt.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingManager](BuildingManager.md) (1), [LandManager](LandManager.md) (1)
+**Uses:** [Bank](Bank.md) (11), [Good](Good.md) (11), [Game](Game.md) (7), [Sector](Sector.md) (6), [Retail](Retail.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (3), [Mortgage](Mortgage.md) (3), [Sectors](Sectors.md) (3), [Founding](Founding.md) (3), [EconomyManager](EconomyManager.md) (2), [CareType](CareType.md) (2), [TaxPolicy](TaxPolicy.md) (2), [EducationType](EducationType.md) (2), [Equity](Equity.md) (2), [Exchange](Exchange.md) (2), [WorldEconomy](WorldEconomy.md) (2), [GameFiles](GameFiles.md) (2), [NewGameCheck](NewGameCheck.md) (2), [RealEstate](RealEstate.md) (1), [Mining](Mining.md) (1), [ServicesManager](ServicesManager.md) (1), [HistorySave](HistorySave.md) (1), [DebtManager](DebtManager.md) (1), [LongTermBond](LongTermBond.md) (1), [Debt](Debt.md) (1), [Currency](Currency.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingManager](BuildingManager.md) (1), [LandManager](LandManager.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 490 | · a city with money moving in every sector |
-| 533 | · the FIRST read, which is the hard one |
-| 606 | · read it, and read it again |
-| 635 | · and the specific one item 7 was about |
-| 703 | · the tax the city takes is the tax it shows |
-| 720 | · a rate change reaches the treasury at once |
+| 615 | · a city with money moving in every sector |
+| 666 | · the FIRST read, which is the hard one |
+| 739 | · read it, and read it again |
+| 768 | · and the specific one item 7 was about |
+| 836 | · the tax the city takes is the tax it shows |
+| 853 | · a rate change reaches the treasury at once |
 
 ## Fields (state)
 
@@ -61,11 +61,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 713 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
+| 45 | 846 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
 | 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 56 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 68 | 40 | `static void bankPrint(Game g, Map<String, Double> into)` | The bank's own fields beside NewGameCheck's (0.7.7): its price is now struck from records it keeps, and a read that struck it again would move the price and nothing in the shared snapshot. |
-| 117 | 364 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
-| 482 | 267 | `public static void main(String[] args) throws Exception` |  |
-| 750 | 7 | `static void cleanUp(Path root)` |  |
+| 68 | 68 | `static void bankPrint(Game g, Map<String, Double> into)` | The bank's own fields beside NewGameCheck's (0.7.7): its price is now struck from records it keeps, and a read that struck it again would move the price and nothing in the shared snapshot. |
+| 145 | 461 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
+| 607 | 275 | `public static void main(String[] args) throws Exception` |  |
+| 883 | 7 | `static void cleanUp(Path root)` |  |
 

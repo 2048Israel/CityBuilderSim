@@ -42,6 +42,18 @@ public class YearBookCheck {
     /** What storing the pool as a whole person can lose on a figure derived from it. */
     private static final double HALF_A_PERSON = 0.51;
 
+    /**
+     * The money a hand-built history is written in (0.7.10). A book is the
+     * city's, and names the city's money (Currency); these histories have no
+     * city behind them, so they are written for one founded as Arden - a
+     * name that is not the Danzik every city was, so section 12 can tell a
+     * book that names its city's money from one that still says Danzik.
+     */
+    private static final Currency ARDEN = Currency.fromCityName("Arden");
+
+    private static String years(HistorySave h)   { return YearBook.years(h, ARDEN); }
+    private static String decades(HistorySave h) { return YearBook.decades(h, ARDEN); }
+
     public static void main(String[] args) {
 
         everySeriesHasARule();
@@ -113,7 +125,7 @@ public class YearBookCheck {
        ================================================================== */
     private static void aFlowIsAdded() {
         HistorySave h = built(24, "gdp", ramp(24));
-        String text = YearBook.years(h);
+        String text = years(h);
 
         // 1+2+...+12 and 13+14+...+24, against the arithmetic rather than a literal.
         same("year 1 gdp is its twelve months added", cell(text, "gdp", 1), sum(1, 12));
@@ -126,7 +138,7 @@ public class YearBookCheck {
        ================================================================== */
     private static void aLevelIsTheLastMonth() {
         HistorySave h = built(24, "population", ramp(24));
-        String text = YearBook.years(h);
+        String text = years(h);
 
         same("year 1 population is December's", cell(text, "population", 1), 12.0);
         same("year 2 population is December's", cell(text, "population", 2), 24.0);
@@ -144,7 +156,7 @@ public class YearBookCheck {
         double[] rate = new double[24];
         for (int i = 0; i < 24; i++) rate[i] = (i + 1) / 100.0;
         HistorySave h = built(24, "sickRate", rate);
-        String text = YearBook.years(h);
+        String text = years(h);
 
         same("year 1 sick rate is the mean of its months", cell(text, "sickRate", 1), sum(1, 12) / 12 / 100.0);
         same("the year's worst month is kept", cell(text, "sickRate.hi", 1), 0.12);
@@ -165,12 +177,12 @@ public class YearBookCheck {
         double[] rate = new double[24];
         for (int i = 0; i < 24; i++) rate[i] = (i + 1) / 1000.0;
         for (String price : new String[]{"policyRate", "bankPrime", "bankDepositRate"}) {
-            String text = YearBook.years(built(24, price, rate));
+            String text = years(built(24, price, rate));
             same("year 1 " + price + " is the mean of its months",
                     cell(text, price, 1), sum(1, 12) / 12 / 1000.0);
             yes(price + " is marked as a rate", text.contains(String.format("%-22s[~]", price)));
         }
-        String fees = YearBook.years(built(24, "bankFees", ramp(24)));
+        String fees = years(built(24, "bankFees", ramp(24)));
         same("year 2 bankFees is its twelve months added", cell(fees, "bankFees", 2), sum(13, 24));
         yes("bankFees is marked as a flow", fees.contains(String.format("%-22s[+]", "bankFees")));
     }
@@ -189,17 +201,17 @@ public class YearBookCheck {
         double[] rate = new double[24];
         for (int i = 0; i < 24; i++) rate[i] = (i + 1) / 1000.0;
         for (String ratio : new String[]{"bankCapitalRatio", "bankCapitalTarget", "bankReturnOnEquity"}) {
-            String text = YearBook.years(built(24, ratio, rate));
+            String text = years(built(24, ratio, rate));
             same("year 1 " + ratio + " is the mean of its months",
                     cell(text, ratio, 1), sum(1, 12) / 12 / 1000.0);
             yes(ratio + " is marked as a rate", text.contains(String.format("%-22s[~]", ratio)));
         }
         for (String flow : new String[]{"bankProvisions", "bankDividends"}) {
-            String text = YearBook.years(built(24, flow, ramp(24)));
+            String text = years(built(24, flow, ramp(24)));
             same("year 2 " + flow + " is its twelve months added", cell(text, flow, 2), sum(13, 24));
             yes(flow + " is marked as a flow", text.contains(String.format("%-22s[+]", flow)));
         }
-        String allowance = YearBook.years(built(24, "bankAllowance", ramp(24)));
+        String allowance = years(built(24, "bankAllowance", ramp(24)));
         same("year 2 bankAllowance is December's", cell(allowance, "bankAllowance", 2), 24);
         yes("bankAllowance is marked as a level", allowance.contains(String.format("%-22s[=]", "bankAllowance")));
     }
@@ -218,7 +230,7 @@ public class YearBookCheck {
         double[] late = new double[18];
         for (int i = 0; i < 18; i++) late[i] = 100;
         HistorySave h = built(24, "stolen", late);
-        String text = YearBook.years(h);
+        String text = years(h);
 
         yes("a flow row missing months is blank", blank(text, "stolen", 1));
         same("and the complete row is the sum", cell(text, "stolen", 2), 1200.0);
@@ -231,7 +243,7 @@ public class YearBookCheck {
        ================================================================== */
     private static void aShortLastRowSaysSo() {
         HistorySave h = built(25, "gdp", ramp(25));
-        String text = YearBook.years(h);
+        String text = years(h);
 
         same("a full year covers twelve months", cell(text, "n", 1), (double) YearBook.MONTHS_A_YEAR);
         same("the stub year says it is one month", cell(text, "n", 3), 1.0);
@@ -243,7 +255,7 @@ public class YearBookCheck {
        ================================================================== */
     private static void decadesAreTenYears() {
         HistorySave h = built(130, "gdp", ramp(130));
-        String text = YearBook.decades(h);
+        String text = decades(h);
 
         same("a full decade covers ten years of months",
                 cell(text, "n", 1), (double) YearBook.MONTHS_A_DECADE);
@@ -264,7 +276,7 @@ public class YearBookCheck {
         for (int i = 0; i < 24; i++) equity[i] = 1000;
         equity[6] = -50;                       // month 7, and nothing else
         HistorySave h = built(24, "bankEquity", equity);
-        String text = YearBook.years(h);
+        String text = years(h);
 
         yes("the episode list names the failure", text.contains("equity under water in 1 month"));
         yes("and says which month it was", text.contains("month 7"));
@@ -298,7 +310,7 @@ public class YearBookCheck {
              */
             HistorySave h = built(24, "gdp", ramp(24));
             int rows = 0;
-            for (String line : YearBook.years(h).split("\n")) {
+            for (String line : years(h).split("\n")) {
                 if (!line.contains("\t") || !Character.isDigit(line.charAt(0))) continue;
                 rows++;
                 yes("no comma in a data row: " + line, !line.contains(","));
@@ -352,7 +364,7 @@ public class YearBookCheck {
         // A history with the pool: 100 adults, 20 studying, 70 posts of which
         // 65 filled, 15 out of work - 15 over a labour force of 80, and NOT
         // (100 - 70) / 100, which is what the first edition would have said.
-        String text = YearBook.years(history(100, 20, 70, 15));
+        String text = years(history(100, 20, 70, 15));
         same("with the pool recorded, the pool over the labour force",
                 cell(text, "unemployment", 1), 15.0 / 80.0);
         yes("the column says what it is", text.contains("people out of work over the labour force"));
@@ -360,7 +372,7 @@ public class YearBookCheck {
         // An old history, no pool recorded: the labour force less the posts,
         // 10 over 80 - the students still come out of the denominator.
         same("without the pool, the labour force less the posts, over the labour force",
-                cell(YearBook.years(history(100, 20, 70, -1)), "unemployment", 1), 10.0 / 80.0);
+                cell(years(history(100, 20, 70, -1)), "unemployment", 1), 10.0 / 80.0);
     }
 
     /* ==================================================================
@@ -511,13 +523,24 @@ public class YearBookCheck {
        number is a weaker currency. The first edition's note said the
        opposite, and a reader who believed it would have read slot 3's
        founding collapse to 100 as a hundredfold appreciation.
+
+       AND IN THE CITY'S OWN MONEY (0.7.10). Every city was Danzik and its
+       money the Danzik dollar, so the note said so in a literal; a city names
+       its money now (Currency), and the book is written in whichever it
+       named. Asserted on a book written for Arden: its plural, both in the
+       preamble and in the column's note, and the Danzik dollar nowhere.
        ================================================================== */
     private static void theCurrencyNoteReadsTheRightWay() {
         HistorySave h = built(12, "fxRate", ramp(12));
-        String text = YearBook.years(h);
-        yes("the fxRate note says Danzik dollars per US dollar", text.contains("Danzik dollars per US dollar"));
+        String text = years(h);
+        String per = ARDEN.plural() + " per US dollar";
+        yes("the fxRate note says the city's dollars per US dollar", text.contains(per));
+        yes("...in the preamble and in the column's own note",
+                text.indexOf(per) >= 0 && text.indexOf(per, text.indexOf(per) + 1) > 0);
         yes("...and that higher is a fallen currency", text.contains("HIGHER means the currency has fallen"));
-        yes("...and never the other way round", !text.contains("US dollars per Danzik dollar"));
+        yes("...and never the other way round", !text.contains("US dollars per " + ARDEN.name()));
+        yes("...and never another city's money: no Danzik in Arden's book", !text.contains("Danzik"));
+        yes("...nor the rule's placeholder, which the book writes out", !text.contains(YearBook.MONEY));
     }
 
     /* ==================================================================
@@ -579,7 +602,7 @@ public class YearBookCheck {
             same("...to the month it ended", shaded.get(0)[1], 53.0);
         }
 
-        String text = YearBook.years(h);
+        String text = years(h);
         yes("the book lists the crisis, one line with its months",
                 text.contains("Financial crisis of " + CityCalendar.yearOf(11) + " - months 11-24"));
         yes("...and the recession",

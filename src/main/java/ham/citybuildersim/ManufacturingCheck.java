@@ -361,6 +361,13 @@ public class ManufacturingCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings
+            // are placed free, but their running costs - and three years of a
+            // quadrupled wage floor below - come out of the treasury month after
+            // month, and on the D$100M a city founds with since 0.7.10 it ran dry
+            // and simulateMonths() stopped short: 26 of the 36 months never ran.
+            // Given the D$2.5B it assumed, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             BuildingManager b = city.getBuildingManager();
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 400_000_000L);
             b.addStack(b.getTemplateByName("House"), 2000, true);

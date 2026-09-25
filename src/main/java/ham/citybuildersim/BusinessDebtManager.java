@@ -42,6 +42,12 @@ import java.util.Map;
  * no lender, no interest and no liability on its balance sheet - the food
  * industry was $48,011.82 overdrawn at month 170 and paying nothing for the
  * privilege.
+ *
+ * AND THE LANDLORDS' BUILDINGS ON INSURED MORTGAGES (0.7.11): a residential
+ * order is funded by a Mortgage, not a loan - issueMortgage(), tested by
+ * canFundMortgage(), priced at the insured rate Game pushes in with prime,
+ * paid down every month and renewed at each term's end in processMonth().
+ * See THE LANDLORDS' MORTGAGES below.
  */
 public class BusinessDebtManager {
 
@@ -418,7 +424,7 @@ public class BusinessDebtManager {
     /** The most write-downs DEFAULT_SURCHARGE is charged for: a record adds three points at the most. */
     public static final int DEFAULT_SURCHARGE_MAX_COUNT = 3;
 
-    /** How long a business loan runs, interest only, before its principal is due: three years, and it keeps the rate it was written at for all of them. Prime is struck at this term (Bank.PRIME_TERM_MONTHS). */
+    /** How long a business loan runs, interest only, before its principal is due: three years, and it keeps the rate it was written at for all of them. Prime is struck at this term (Bank.PRIME_TERM_MONTHS). A landlord's building is on a Mortgage since 0.7.11. */
     public static final int LOAN_TERM_MONTHS = 36;
 
     /**
@@ -435,6 +441,9 @@ public class BusinessDebtManager {
 
     /** Prime: the bank's rate for a sound business this month, which every sector's own spread sits on (see PRICING). */
     private double primeRate;
+
+    /** The insured mortgage's rate this month (Bank.insuredMortgageRate()), pushed in by Game beside prime: what a new mortgage is written at and a term renews at. */
+    private double insuredMortgageRate;
 
     /** Written off this month, and over the whole game, per sector. */
     private final Map<String, Double> writtenOffThisMonth = new LinkedHashMap<>();
@@ -536,6 +545,14 @@ public class BusinessDebtManager {
         feesThisMonth = 0;
         feesBySector.clear();
         writtenThisMonth.clear();
+        // ...and the month's mortgages (0.7.11): the premiums written and
+        // the principal the payments took. See THE LANDLORDS' MORTGAGES.
+        premiumsThisMonth = 0;
+        premiumsBySector.clear();
+        mortgageRepaidBySector.clear();
+        mortgagesWrittenThisMonth = 0;
+        renewedThisMonth = 0;
+        fallenDueThisMonth = 0;
     }
 
     public BusinessDebtManager() {
@@ -556,6 +573,16 @@ public class BusinessDebtManager {
      */
     public void setPrimeRate(double rate) {
         this.primeRate = rate;
+    }
+
+    /** The insured mortgage's rate, pushed in by Game with prime (Bank.insuredMortgageRate()). */
+    public void setInsuredMortgageRate(double rate) {
+        this.insuredMortgageRate = rate;
+    }
+
+    /** What a new insured mortgage is written at this month, and what a term that ends renews at. */
+    public double getInsuredMortgageRate() {
+        return insuredMortgageRate;
     }
 
     /** Total assets from that sector's balance sheet - the denominator of leverage. */
@@ -800,6 +827,47 @@ public class BusinessDebtManager {
             BusinessDebt loan = iterator.next();
             loan.processMonth();
 
+            /*
+             * A MORTGAGE PAYS DOWN EVERY MONTH (0.7.11): the principal its
+             * payment took is due now, parked with what matured and settled
+             * against the landlord's till the same way. Paid off, it closes.
+             * At the end of its term it renews at the day's insured rate -
+             * routine, the loan being insured - unless the lender cannot
+             * write it: a failed bank lends nothing (lendingOpen), and then
+             * the balance falls due whole, which is what a maturing loan
+             * does today when the shortfall desk cannot roll it.
+             */
+            if (loan instanceof Mortgage m) {
+                String sector = m.getSector();
+                double paid = m.takePrincipalPaid();
+                if (paid > 0) {
+                    maturedPrincipal.merge(sector, paid, Double::sum);
+                    mortgageRepaidBySector.merge(sector, paid, Double::sum);
+                }
+                if (m.isPaidOff()) {
+                    double left = m.close();
+                    if (left > 0) {
+                        maturedPrincipal.merge(sector, left, Double::sum);
+                        mortgageRepaidBySector.merge(sector, left, Double::sum);
+                    }
+                    iterator.remove();
+                } else if (m.isTermEnded()) {
+                    if (lendingOpen) {
+                        m.renew(insuredMortgageRate);
+                        renewedThisMonth++;
+                        renewedLifetime++;
+                    } else {
+                        double due = m.close();
+                        maturedPrincipal.merge(sector, due, Double::sum);
+                        mortgageRepaidBySector.merge(sector, due, Double::sum);
+                        fallenDueThisMonth++;
+                        fallenDueLifetime++;
+                        iterator.remove();
+                    }
+                }
+                continue;
+            }
+
             if (loan.isMatured()) {
                 String sector = loan.getSector();
                 maturedPrincipal.put(sector,
@@ -1000,6 +1068,368 @@ public class BusinessDebtManager {
     }
 
     /* =====================================================================
+       THE LANDLORDS' MORTGAGES (0.7.11)
+
+       Jerus, 2026-09-24: "Mortgages", on "CMHC (Canada)" terms, "Insured by
+       the city". A residential building is bought with a Mortgage: the
+       landlord puts at least 15% of the cost from its own funds, the lender
+       advances the rest - at most Mortgage.MORTGAGE_MAX_LOAN_TO_COST of the
+       cost - with CMHC's premium added to it and paid to the treasury, at
+       the insured rate, paid down over Mortgage.MORTGAGE_AMORTIZATION_MONTHS
+       and renewed every Mortgage.MORTGAGE_TERM_MONTHS. The lender's test is
+       the building's net operating income against the payment
+       (Mortgage.MORTGAGE_DEBT_COVERAGE), asked in Game.consider(), which
+       also trims the order to what the landlord's own funds can put down.
+
+       THE SAME DESK, THE SAME BOOK, THE SAME FEE. A mortgage is funded as a
+       project loan is: written here, the principal counted in the month's
+       lending (the bank pays it out at the settle), Bank.LOAN_FEE of the
+       principal kept back from what the borrower is handed. What differs is
+       where the premium goes - to the treasury, out of the principal, so the
+       landlord is handed the loan less the fee (getPremiumsThisMonth(), and
+       SectorBooks takes it off what the sector received).
+
+       WHAT THE BANK'S CAPITAL RULE DOES WITH THEM: nothing while the
+       risk-based requirement is the one that binds. An insured mortgage
+       weighs nothing, so under the risk weights it ties up no capital, and
+       the rule that rations a bank short of capital (setCapitalRule(),
+       capitalRoom()) does not reach it. Until this batch the rule read a
+       sector's WHOLE debt. A landlord's mortgage would then have been
+       refused by a bank under its minimum as though it were new risk, and
+       would have used up the room its shortfall loans had; every payment
+       would have made room for new uninsured lending. The rule reads
+       uninsured debt alone (getUninsuredPrincipal()).
+
+       ...AND EVERYTHING WHEN THE LEVERAGE RATIO BINDS (round 2). The
+       leverage requirement counts a dollar lent whatever it weighs
+       (Bank.LEVERAGE_RATIO_MIN). When it is the larger, a mortgage uses
+       the very capital the bank is short of, like any loan. Then the rule
+       reads the whole debt, mortgages included, and canFundMortgage() asks
+       it (setCapitalRule(), insuredRationed). Rationing everyone else
+       while the mortgages that put the bank there went on unrationed would
+       put the whole squeeze on the other borrowers.
+
+       What canFundMortgage() asks besides is what canFundProject() asks of
+       every desk: the lender open, no ban, and the borrower not left past
+       the default point after the deal, the building counted.
+       ===================================================================== */
+
+    /** The premiums added to the mortgages written this month, and by sector: the treasury's revenue line. */
+    private double premiumsThisMonth;
+    private final Map<String, Double> premiumsBySector = new LinkedHashMap<>();
+
+    /**
+     * THE PRINCIPAL THE MORTGAGES' PAYMENTS TOOK THIS MONTH, by sector - part
+     * of getRepaidThisMonth(), and the figure the Bank tab and the landlords'
+     * screen show beside the payment. A flow read the month after it is
+     * struck, so it is saved (getMortgageRepaidToSave()).
+     */
+    private final Map<String, Double> mortgageRepaidBySector = new LinkedHashMap<>();
+
+    /** The month's mortgages written, renewed, and fallen due because the lender could not renew them - and the same over the run, for the playtest (not saved, a count for the run). */
+    private int mortgagesWrittenThisMonth, renewedThisMonth, fallenDueThisMonth;
+    private int renewedLifetime, fallenDueLifetime;
+
+    /**
+     * WHAT THE INSURANCE PAID THIS MONTH, by sector: what the month's
+     * write-downs took off insured mortgages. The treasury pays it to the
+     * bank (Game.runPrivateInvestment(), TreasuryLine.MORTGAGE_INSURANCE_
+     * CLAIMS), so the bank books only the rest of the write-off as its loss.
+     * Struck by restructureInsolventSectors() with writtenOffThisMonth; and
+     * the same over the city's life, which is state - saved with the
+     * write-off totals, for the reason they are.
+     */
+    private final Map<String, Double> insuredWrittenOffThisMonth = new LinkedHashMap<>();
+    private final Map<String, Double> insuredWrittenOffTotal = new LinkedHashMap<>();
+
+    /** The premiums written over the city's life. State, saved: the insurance book's other side. */
+    private double premiumsTotal;
+
+    /** The reason canFundMortgage() last refused, or null. */
+    private String mortgageRefusal;
+
+    /** canFundMortgage()'s refusal when the bank behind the lender has failed (lendingOpen). */
+    public static final String MORTGAGE_BANK_SHUT = "the bank is shut";
+    /** ...when the sector is serving a borrowing ban. */
+    public static final String MORTGAGE_BANNED = "borrowing ban";
+    /** ...when the loan would be more than Mortgage.MORTGAGE_MAX_LOAN_TO_COST of the cost - the down payment, Mortgage.Decision.DOWN_PAYMENT. */
+    public static final String MORTGAGE_DOWN_PAYMENT = Mortgage.Decision.DOWN_PAYMENT;
+    /** ...when the deal would leave the borrower owing past INSOLVENCY_TRIGGER times what it owns. */
+    public static final String MORTGAGE_PAST_DEFAULT_POINT = "past the default point";
+    /** ...when the bank's capital rule has no room for it: only while the leverage requirement binds (round 2; setCapitalRule()). */
+    public static final String MORTGAGE_CAPITAL = "the bank's capital";
+    /** ...when there is nothing to borrow. */
+    public static final String MORTGAGE_NOTHING = "nothing to borrow";
+
+    /**
+     * Whether the lender will write a mortgage for this shortfall on a
+     * building of this cost: open, the sector not barred, the loan no more
+     * than Mortgage.MORTGAGE_MAX_LOAN_TO_COST of the cost, and the borrower
+     * not past the default point after the deal, the building counted at the
+     * mortgage's principal as canFundProject() counts it. The bank's capital
+     * rule only while the leverage requirement binds - see THE LANDLORDS'
+     * MORTGAGES.
+     *
+     * @param shortfall what the order costs past the landlord's till
+     * @param cost      what the order costs
+     */
+    public boolean canFundMortgage(String sector, double shortfall, double cost) {
+        mortgageRefusal = null;
+        if (!(shortfall > 0)) { mortgageRefusal = MORTGAGE_NOTHING; return false; }
+        if (!lendingOpen) { mortgageRefusal = MORTGAGE_BANK_SHUT; return false; }
+        if (isBorrowingBlocked(sector)) { mortgageRefusal = MORTGAGE_BANNED; return false; }
+        double loan = Mortgage.loanFor(shortfall);
+        if (loan > Mortgage.MORTGAGE_MAX_LOAN_TO_COST * cost * (1 + 1e-9)) {
+            mortgageRefusal = MORTGAGE_DOWN_PAYMENT;
+            return false;
+        }
+        double principal = loan * (1 + Mortgage.premiumRate());
+        double assetsAfter = Math.max(0, getAssets(sector)) + principal;
+        if (getPrincipal(sector) + principal > assetsAfter * INSOLVENCY_TRIGGER) {
+            mortgageRefusal = MORTGAGE_PAST_DEFAULT_POINT;
+            return false;
+        }
+        if (insuredRationed && principal > capitalRoom(sector)) {
+            mortgageRefusal = MORTGAGE_CAPITAL;
+            refusedForCapital.add(sector);
+            return false;
+        }
+        return true;
+    }
+
+    /** Why canFundMortgage() last said no, or null if it said yes. */
+    public String getMortgageRefusal() { return mortgageRefusal; }
+
+    /**
+     * WRITES A MORTGAGE for this shortfall: the loan that covers it once the
+     * fee is paid (Mortgage.loanFor()), the premium added, at the insured
+     * rate. The bank lends the principal at the settle; the borrower is owed
+     * the loan less the fee - which is the shortfall - and the treasury the
+     * premium (getPremiumsThisMonth(); Game moves both).
+     */
+    public Mortgage issueMortgage(String sector, double shortfall, int month) {
+        double loan = Mortgage.loanFor(shortfall);
+        Mortgage m = new Mortgage(sector, loan, month, insuredMortgageRate, true);
+        double principal = m.getOutstandingPrincipal();
+        writtenThisMonth.add(new Written(sector, principal,
+                pricingLeverage(quarterPrincipal(sector) + principal,
+                        Math.max(0, quarterAssets(sector)) + principal), insuredMortgageRate, true));
+        loans.add(m);
+        lentThisMonth += principal;
+        lentBySector.merge(sector, principal, Double::sum);
+        double fee = feeOn(principal);
+        feesThisMonth += fee;
+        feesBySector.merge(sector, fee, Double::sum);
+        premiumsThisMonth += m.getPremium();
+        premiumsBySector.merge(sector, m.getPremium(), Double::sum);
+        premiumsTotal += m.getPremium();
+        mortgagesWrittenThisMonth++;
+        rates.put(sector, priceSector(sector));
+        return m;
+    }
+
+    /** The premiums on the mortgages written this month: the treasury's revenue line. */
+    public double getPremiumsThisMonth() { return premiumsThisMonth; }
+    /** ...by sector, which its cash flow statement takes off what it was handed. */
+    public double getPremiumsThisMonth(String sector) { return premiumsBySector.getOrDefault(sector, 0.0); }
+    /** The premiums written over the city's life. */
+    public double getPremiumsTotal() { return premiumsTotal; }
+
+    /** The mortgages written this month, renewed this month, and fallen due this month because the lender could not renew them. */
+    public int getMortgagesWrittenThisMonth() { return mortgagesWrittenThisMonth; }
+    public int getRenewedThisMonth()          { return renewedThisMonth; }
+    public int getFallenDueThisMonth()        { return fallenDueThisMonth; }
+    /** ...over the run, for the playtest; not saved. */
+    public int getRenewedLifetime()           { return renewedLifetime; }
+    public int getFallenDueLifetime()         { return fallenDueLifetime; }
+
+    /** Every mortgage one sector owes, in the order written. */
+    public List<Mortgage> getMortgages(String sector) {
+        List<Mortgage> out = new ArrayList<>();
+        for (BusinessDebt loan : loans) {
+            if (loan instanceof Mortgage m && loan.getSector().equals(sector)) out.add(m);
+        }
+        return out;
+    }
+
+    /** Every mortgage in the city. */
+    public List<Mortgage> getMortgages() {
+        List<Mortgage> out = new ArrayList<>();
+        for (BusinessDebt loan : loans) if (loan instanceof Mortgage m) out.add(m);
+        return out;
+    }
+
+    /** How many mortgages one sector owes. */
+    public int getMortgageCount(String sector) { return getMortgages(sector).size(); }
+
+    /** What one sector owes on its mortgages. */
+    public double getMortgagePrincipal(String sector) {
+        double total = 0;
+        for (Mortgage m : getMortgages(sector)) total += m.getOutstandingPrincipal();
+        return total;
+    }
+
+    /** What every sector owes on mortgages: the bank's mortgage book. */
+    public double getMortgagePrincipal() {
+        double total = 0;
+        for (Mortgage m : getMortgages()) total += m.getOutstandingPrincipal();
+        return total;
+    }
+
+    /** What one sector owes on its insured mortgages - the part of its debt the city insures. */
+    public double getInsuredPrincipal(String sector) {
+        double total = 0;
+        for (Mortgage m : getMortgages(sector)) if (m.isInsured()) total += m.getOutstandingPrincipal();
+        return total;
+    }
+
+    /** ...every sector's: what the bank's book holds at Bank.RISK_INSURED_MORTGAGE. */
+    public double getInsuredPrincipal() {
+        double total = 0;
+        for (Mortgage m : getMortgages()) if (m.isInsured()) total += m.getOutstandingPrincipal();
+        return total;
+    }
+
+    /** What one sector owes that nobody insures: its debt less its insured mortgages - what the bank's allowance reads, and its capital rule while the leverage ratio does not bind (rationedPrincipal()). */
+    public double getUninsuredPrincipal(String sector) {
+        return getPrincipal(sector) - getInsuredPrincipal(sector);
+    }
+
+    /** The level payments one sector's mortgages ask next month: interest and principal together. */
+    public double getMortgagePayment(String sector) {
+        double total = 0;
+        for (Mortgage m : getMortgages(sector)) total += m.getMonthlyPayment();
+        return total;
+    }
+
+    /** ...every sector's. */
+    public double getMortgagePayment() {
+        double total = 0;
+        for (Mortgage m : getMortgages()) total += m.getMonthlyPayment();
+        return total;
+    }
+
+    /** The rate one sector's mortgages carry, weighted by what is owed on each; 0 with none. */
+    public double getMortgageRate(String sector) {
+        return weightedRate(getMortgages(sector));
+    }
+
+    /** ...every mortgage's. */
+    public double getMortgageRate() {
+        return weightedRate(getMortgages());
+    }
+
+    private static double weightedRate(List<Mortgage> ms) {
+        double owed = 0, weighted = 0;
+        for (Mortgage m : ms) {
+            owed += m.getOutstandingPrincipal();
+            weighted += m.getOutstandingPrincipal() * m.getAnnualRate();
+        }
+        return owed > 0 ? weighted / owed : 0;
+    }
+
+    /** The first month one of this sector's mortgages renews, or -1 with none. */
+    public int getNextRenewalMonth(String sector) {
+        int next = -1;
+        for (Mortgage m : getMortgages(sector)) {
+            int at = m.getNextRenewalMonth();
+            if (next < 0 || at < next) next = at;
+        }
+        return next;
+    }
+
+    /** How many mortgages renew within this many months of this one. */
+    public int getMortgagesRenewingWithin(int months) {
+        int n = 0;
+        for (Mortgage m : getMortgages()) if (m.getRemainingMonths() <= months) n++;
+        return n;
+    }
+
+    /** True when every mortgage in the city is insured - which every one this build writes is. */
+    public boolean allMortgagesInsured() {
+        for (Mortgage m : getMortgages()) if (!m.isInsured()) return false;
+        return true;
+    }
+
+    /** The principal one sector's mortgage payments took this month. */
+    public double getMortgageRepaidThisMonth(String sector) { return mortgageRepaidBySector.getOrDefault(sector, 0.0); }
+
+    /** ...every sector's. */
+    public double getMortgageRepaidThisMonth() {
+        double total = 0;
+        for (double v : mortgageRepaidBySector.values()) total += v;
+        return total;
+    }
+
+    /** The month's principal repaid on mortgages, for the save: a copy, by sector name. */
+    public Map<String, Double> getMortgageRepaidToSave() { return new LinkedHashMap<>(mortgageRepaidBySector); }
+
+    /** ...and back on load. An older save has none. */
+    public void restoreMortgageRepaid(Map<String, Double> saved) {
+        mortgageRepaidBySector.clear();
+        if (saved == null) return;
+        for (Map.Entry<String, Double> e : saved.entrySet()) {
+            if (e.getKey() != null && e.getValue() != null) mortgageRepaidBySector.put(e.getKey(), e.getValue());
+        }
+    }
+
+    /** What this month's write-downs took off one sector's insured mortgages: the claim the treasury pays the bank. */
+    public double getInsuredWrittenOffThisMonth(String sector) { return insuredWrittenOffThisMonth.getOrDefault(sector, 0.0); }
+
+    /** ...every sector's: the month's claims. */
+    public double getInsuredWrittenOffThisMonth() {
+        double total = 0;
+        for (double v : insuredWrittenOffThisMonth.values()) total += v;
+        return total;
+    }
+
+    /** What write-downs have taken off one sector's insured mortgages over the city's life. */
+    public double getInsuredWrittenOffTotal(String sector) { return insuredWrittenOffTotal.getOrDefault(sector, 0.0); }
+
+    /** ...every sector's: the claims over the city's life. */
+    public double getInsuredWrittenOffTotal() {
+        double total = 0;
+        for (double v : insuredWrittenOffTotal.values()) total += v;
+        return total;
+    }
+
+    /** The insurance book's record, for the save: the premiums over the city's life. */
+    public double getPremiumsTotalToSave() { return premiumsTotal; }
+
+    /** The claims over the city's life, by sector, for the save. */
+    public Map<String, Double> getInsuredWrittenOffTotals() { return new LinkedHashMap<>(insuredWrittenOffTotal); }
+
+    /** ...and both back on load. An older save has none, which is what that city insured. */
+    public void restoreInsuranceRecord(double premiums, Map<String, Double> claims) {
+        premiumsTotal = Double.isFinite(premiums) ? Math.max(0, premiums) : 0;
+        insuredWrittenOffTotal.clear();
+        if (claims == null) return;
+        for (Map.Entry<String, Double> e : claims.entrySet()) {
+            if (e.getKey() != null && e.getValue() != null) insuredWrittenOffTotal.put(e.getKey(), e.getValue());
+        }
+    }
+
+    /**
+     * Writes every instrument of one sector down to this share, pro rata, and
+     * says what came off its insured mortgages - the claim. The one loop both
+     * the slice and the backstop write down through.
+     */
+    private double writeDownSector(String sector, double scale) {
+        double insured = 0;
+        for (BusinessDebt loan : loans) {
+            if (!loan.getSector().equals(sector)) continue;
+            double before = loan.getOutstandingPrincipal();
+            loan.writeDown(scale);
+            if (loan instanceof Mortgage m && m.isInsured()) insured += before - loan.getOutstandingPrincipal();
+        }
+        if (insured > 0) {
+            insuredWrittenOffThisMonth.merge(sector, insured, Double::sum);
+            insuredWrittenOffTotal.merge(sector, insured, Double::sum);
+        }
+        return insured;
+    }
+
+    /* =====================================================================
        ...AND WHAT THE BANK'S CAPITAL LETS IT LEND (0.7.8)
 
        Until 0.7.8 the only thing between the bank and a loan was whether it
@@ -1027,14 +1457,39 @@ public class BusinessDebtManager {
     /**
      * The bank's capital rule for the month, from Bank.lendingGrowthLimit()
      * and lendsOnlyToKeepBorrowersGoing(). Records what every sector owes as
-     * the month's base.
+     * the month's base - what nobody insures, since 0.7.11: this form never
+     * rations the insured mortgages (rationedPrincipal()).
      */
     public void setCapitalRule(double monthlyGrowth, boolean keepGoingOnly) {
+        setCapitalRule(monthlyGrowth, keepGoingOnly, false);
+    }
+
+    /**
+     * ...and whether it rations the insured mortgages too: true when the
+     * bank's leverage requirement is the larger (Bank.leverageBinds(),
+     * 0.7.11 round 2), because a mortgage then uses the capital the bank is
+     * short of. Game passes it at the top of every month.
+     */
+    public void setCapitalRule(double monthlyGrowth, boolean keepGoingOnly, boolean insuredToo) {
         this.capitalGrowth = Double.isNaN(monthlyGrowth) ? 0 : Math.max(0, monthlyGrowth);
         this.keepGoingOnly = keepGoingOnly;
+        this.insuredRationed = insuredToo;
         principalAtRule.clear();
-        for (String s : SECTORS) principalAtRule.put(s, getPrincipal(s));
+        // What nobody insures (0.7.11): an insured mortgage ties up no
+        // capital under the risk weights - see THE LANDLORDS' MORTGAGES -
+        // and the whole debt when the leverage ratio binds (round 2).
+        for (String s : SECTORS) principalAtRule.put(s, rationedPrincipal(s));
         refusedForCapital.clear();
+    }
+
+    /** True this month when the capital rule rations the insured mortgages too - the bank's leverage requirement binding. */
+    private boolean insuredRationed;
+
+    public boolean isInsuredRationed() { return insuredRationed; }
+
+    /** The debt the capital rule reads: the uninsured, or all of it while insuredRationed. */
+    private double rationedPrincipal(String sector) {
+        return insuredRationed ? getPrincipal(sector) : getUninsuredPrincipal(sector);
     }
 
     /**
@@ -1045,9 +1500,9 @@ public class BusinessDebtManager {
      */
     public double capitalRoom(String sector) {
         if (!keepGoingOnly && Double.isInfinite(capitalGrowth)) return Double.POSITIVE_INFINITY;
-        double base = principalAtRule.getOrDefault(sector, getPrincipal(sector));
+        double base = principalAtRule.getOrDefault(sector, rationedPrincipal(sector));
         double growth = keepGoingOnly ? 0 : capitalGrowth;
-        return Math.max(0, base * (1 + growth) - getPrincipal(sector));
+        return Math.max(0, base * (1 + growth) - rationedPrincipal(sector));
     }
 
     /** The month's limit on a borrower's growth, a share a month: infinite with none. */
@@ -1419,12 +1874,9 @@ public class BusinessDebtManager {
         }
 
         if (writeOff > 0) {
-            double scale = target / principal;
-            for (BusinessDebt loan : loans) {
-                if (loan.getSector().equals(sector)) {
-                    loan.writeDown(scale);
-                }
-            }
+            // Every instrument pro rata; what came off its insured mortgages
+            // is the treasury's to pay the bank (0.7.11).
+            writeDownSector(sector, target / principal);
         }
 
         overdraftForgiven.put(sector, getOverdraftForgivenPending(sector) + overdraft);
@@ -1467,6 +1919,7 @@ public class BusinessDebtManager {
         for (String sector : SECTORS) {
             writtenOffThisMonth.put(sector, 0.0);
         }
+        insuredWrittenOffThisMonth.clear();
         defaultedThisMonth.clear();
         defaultShareThisMonth.clear();
         restructuredThisMonth.clear();
@@ -1502,12 +1955,9 @@ public class BusinessDebtManager {
         double share = monthlyDefaultShare(principal / totalAssets);
         double writeOff = principal * share * LOSS_GIVEN_DEFAULT;
         if (!(writeOff > 0)) return 0;
-        double scale = 1 - share * LOSS_GIVEN_DEFAULT;
-        for (BusinessDebt loan : loans) {
-            if (loan.getSector().equals(sector)) {
-                loan.writeDown(scale);
-            }
-        }
+        // Every instrument pro rata; the insured part is the treasury's
+        // claim to pay (0.7.11).
+        writeDownSector(sector, 1 - share * LOSS_GIVEN_DEFAULT);
         defaultedThisMonth.put(sector, principal * share);
         defaultShareThisMonth.put(sector, share);
         writtenOffThisMonth.put(sector, getWrittenOffThisMonth(sector) + writeOff);
@@ -1609,6 +2059,15 @@ public class BusinessDebtManager {
         restructuredThisMonth.clear();
         // ...and the quarter's readings (0.7.8).
         statements.clear();
+        // ...and the mortgages' flows and the insurance book (0.7.11).
+        premiumsThisMonth = 0;
+        premiumsBySector.clear();
+        mortgageRepaidBySector.clear();
+        insuredWrittenOffThisMonth.clear();
+        insuredWrittenOffTotal.clear();
+        premiumsTotal = 0;
+        mortgagesWrittenThisMonth = renewedThisMonth = fallenDueThisMonth = 0;
+        renewedLifetime = fallenDueLifetime = 0;
     }
 
     //printers
@@ -1628,10 +2087,11 @@ public class BusinessDebtManager {
             System.out.printf("  Loans Outstanding:      %d%n", getLoanCount(sector));
 
             for (BusinessDebt loan : getLoans(sector)) {
-                System.out.printf("    Month %-4d | $%-12s @ %.2f%%%n",
+                System.out.printf("    Month %-4d | $%-12s @ %.2f%%%s%n",
                         loan.getMaturityMonth(),
                         formatter.format(loan.getOutstandingPrincipal()),
-                        loan.getAnnualRate() * 100);
+                        loan.getAnnualRate() * 100,
+                        loan instanceof Mortgage ? "  insured mortgage, renews" : "");
             }
         }
 
@@ -1670,6 +2130,13 @@ public class BusinessDebtManager {
         writtenThisMonth.replaceAll(w -> new Written(w.sector(), w.amount() * scale, w.leverage(), w.rate(), w.project()));
         // ...and the quarter's readings, which are money.
         for (double[] r : statements.values()) for (int i = 0; i < r.length; i++) r[i] *= scale;
+        // ...and the mortgages' flows and the insurance book (0.7.11).
+        premiumsThisMonth *= scale;
+        premiumsBySector.replaceAll((k, v) -> v * scale);
+        mortgageRepaidBySector.replaceAll((k, v) -> v * scale);
+        insuredWrittenOffThisMonth.replaceAll((k, v) -> v * scale);
+        insuredWrittenOffTotal.replaceAll((k, v) -> v * scale);
+        premiumsTotal *= scale;
     }
 
 }

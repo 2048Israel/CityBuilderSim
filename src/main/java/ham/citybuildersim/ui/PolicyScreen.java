@@ -1964,7 +1964,7 @@ final class PolicyScreen {
                     String.format("%.3f", world.getPriceLevel()), Palette.TEXT_MUTED));
         }
         if (unit.getReforms() > 0) {
-            column.getChildren().add(statementLine("The money is the", unit.name(),
+            column.getChildren().add(statementLine("The money is the", unit.name(ui.game.getCurrency()),
                     Palette.ACCENT));
             column.getChildren().add(statementLine("...one of which is",
                     String.format("%,.0f founding", unit.getUnit()), Palette.TEXT_MUTED));
@@ -2244,7 +2244,7 @@ final class PolicyScreen {
 
         column.getChildren().add(statementHead("Lopping the zeros off"));
         column.getChildren().add(sentence(
-                "A reform issues a new " + Currency.NAME + " worth a round number of old "
+                "A reform issues a new " + ui.game.getCurrency().name() + " worth a round number of old "
                 + "ones and restates every price, wage, balance and debt in the city at the "
                 + "same moment. Nobody gains and nobody loses: the same wage buys the same "
                 + "bread. It is what France did in 1960 and Turkey in 2005, and it is the "
@@ -2282,7 +2282,7 @@ final class PolicyScreen {
 
         if (factor <= 0) {
             column.getChildren().add(statementNote(
-                    "Pick how many of today's " + Currency.PLURAL + " one new one should "
+                    "Pick how many of today's " + ui.game.getCurrency().plural() + " one new one should "
                     + "be worth. Nothing happens until you do."));
             return;
         }
@@ -2309,31 +2309,31 @@ final class PolicyScreen {
                 "1 of today's", String.format("%,.0f of today's", factor),
                 Palette.TEXT_HEAD));
         column.getChildren().add(wouldTotal("...and be called",
-                unit.name(), afterName(unit, factor), Palette.ACCENT));
+                unit.name(ui.game.getCurrency()), afterName(unit, factor, ui.game.getCurrency()), Palette.ACCENT));
 
         column.getChildren().add(statementNote(
                 "Everything foreign stays where it is. A debt owed in US dollars is still "
                 + "owed in US dollars, and food bought abroad still costs abroad what it "
-                + "always did - what changes is the number of " + Currency.PLURAL
+                + "always did - what changes is the number of " + ui.game.getCurrency().plural()
                 + " it takes to buy one."));
 
         column.getChildren().add(applyBar(
-                "Issue the new " + Currency.NAME,
+                "Issue the new " + ui.game.getCurrency().name(),
                 () -> {
                     if (ui.game.reformCurrency(factor)) {
                         GameLog.note(String.format(
                                 "Currency reform: one new %s for %,.0f old ones.",
-                                Currency.NAME, factor));
+                                ui.game.getCurrency().name(), factor));
                     }
                 }));
     }
 
-    /** What the money would be called after lopping by this factor. */
-    static String afterName(Denomination unit, double factor) {
+    /** What the city's money would be called after lopping by this factor. */
+    static String afterName(Denomination unit, double factor, Currency money) {
         Denomination next = new Denomination();
         next.restore(unit.toSaveArray());
         next.lop(factor);
-        return next.name();
+        return next.name(money);
     }
 
     /* =====================================================================

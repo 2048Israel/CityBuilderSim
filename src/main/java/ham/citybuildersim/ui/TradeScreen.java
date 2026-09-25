@@ -1143,11 +1143,13 @@ final class TradeScreen {
          * page says there is something in the vault the player did not put
          * there, and what it would carry the city through.
          */
-        if (ui.game.getMonth() <= Game.FOUNDERS_NOTE_MONTHS && fx.getReservesUsd() > 0) {
+        // THIS city's founders' dollars (0.7.10): the founding chose them.
+        if (ui.game.getMonth() <= Game.FOUNDERS_NOTE_MONTHS && fx.getReservesUsd() > 0
+                && ui.game.getFoundingReserveUsd() > 0) {
             column.getChildren().add(statementNote(String.format(
                     "The founders left %s in this vault on the first day, bought at %s%.2f "
                     + "to the dollar out of the city's endowment. %s",
-                    usdFull(Game.FOUNDING_RESERVE_USD), Currency.QUALIFIED,
+                    usdFull(ui.game.getFoundingReserveUsd()), ui.game.getCurrency().qualifiedSymbol(),
                     ForeignAccounts.OPENING_RATE,
                     fx.monthlyImports() > 0
                             ? "What the vault holds now would pay for "
@@ -1285,7 +1287,7 @@ final class TradeScreen {
         Label rate = new Label(fxRate(fx.getRate()));
         rate.setStyle(Palette.figure(Palette.SIZE_TITLE, Palette.TEXT_HEAD));
         column.getChildren().add(rate);
-        column.getChildren().add(sentence(Currency.rateUnit()
+        column.getChildren().add(sentence(ui.game.getCurrency().rateUnit()
                 + " — how many of ours one of theirs buys.", Palette.TEXT_MUTED));
 
         column.getChildren().add(parityMeter(fx));

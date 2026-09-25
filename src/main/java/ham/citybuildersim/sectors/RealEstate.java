@@ -294,6 +294,12 @@ public final class RealEstate extends Sector {
      * a reason to raise the rent on the full ones. Over what the COMPANY
      * OWNS, not the city's whole housing capacity, which includes the hundred
      * heads the city houses for free before any landlord exists.
+     *
+     * THE INTEREST IS A MORTGAGE'S SINCE 0.7.11 (Jerus: "Keep it"): the
+     * landlords' buildings are on insured mortgages at a rate fixed for ten
+     * years, so the interest part of this floor moves with the dial only as
+     * the mortgages renew - and it is the interest alone: the principal each
+     * payment repays is money owed going back, not a cost of holding a home.
      */
     public double rentBreakEven() {
         if (ownedCapacity <= 0) return 0;

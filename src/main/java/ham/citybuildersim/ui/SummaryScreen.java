@@ -1095,11 +1095,14 @@ final class SummaryScreen {
                         }
                         b.getChildren().add(panelNote("exchange it to spend it at home"));
                         // Where it came from, while the city is young - see
-                        // Game's THE FOUNDING RESERVE.
-                        if (ui.game.getMonth() <= Game.FOUNDERS_NOTE_MONTHS) {
+                        // Game's THE FOUNDING RESERVE. THIS city's founders'
+                        // dollars (0.7.10), which the founding chose, and
+                        // nothing said when they left none.
+                        if (ui.game.getMonth() <= Game.FOUNDERS_NOTE_MONTHS
+                                && ui.game.getFoundingReserveUsd() > 0) {
                             double cover = fxPanel.importCover();
                             b.getChildren().add(panelNote(String.format(
-                                    "the founders left %s here%s", usd(Game.FOUNDING_RESERVE_USD),
+                                    "the founders left %s here%s", usd(ui.game.getFoundingReserveUsd()),
                                     fxPanel.monthlyImports() <= 0 ? ""
                                             : cover >= 120 ? " - over ten years of imports"
                                             : String.format(" - %.1f months of imports", cover))));

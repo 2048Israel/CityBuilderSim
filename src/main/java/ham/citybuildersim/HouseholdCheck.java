@@ -1234,6 +1234,10 @@ public class HouseholdCheck {
         System.setOut(hush);
         try {
             poor.newGame();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            poor.setCashForTest(Founding.WEALTHY_CASH);
             /*
              * CAUSED, since 2026-09-10. The block below records that this city
              * stopped being poor on 2026-09-09 and that flatshares were being

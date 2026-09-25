@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-24 (0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-09-24 (0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -8,6 +8,129 @@ has been away reads the changelog's top block and section 0 here, then works.
 
 ## 0. Do this week — costs nothing, saves weeks
 
+- **NEXT: NOTES AND BONDS** (Jerus, 2026-09-24, shipping 0.7.11 with the bank's
+  concentration open): *"we are going to start a new batch, basically there
+  will be two things, notes, and bonds, notes are the loans businesses make to
+  the banks, and bonds are debts that they issue to investors, and basically
+  idk if its the case, but bonds will have a slightly higher rate than notes,
+  and households can buy them, but banks also buy them as, only if it wants,
+  and yes they are tradeable so they have par value and all."* Research and
+  plan first, then his answers, then the build.
+- **CHECK 0.7.11 BY EYE ON THE PC** (`the-landlords-take-a-mortgage.md`). None of it can run in the
+  cloud.
+  - **Bank tab, landing:** "Capital & owners" reads "X% leverage" while the
+    leverage ratio binds and "X% capital" otherwise; the capital cell switches
+    CAPITAL RATIO / LEVERAGE RATIO with its target and minimum; the status
+    sentence reads "of everything it has lent (the leverage ratio)" and 3%
+    while that binds.
+  - **The ladder:** "An insured mortgage (10 years)" - the policy rate, the
+    term premium and window share, "running the bank X", "the capital the 3.0%
+    leverage minimum ties up Y", no expected loss; the ladder's top reaches
+    it.
+  - **Lending:** "The landlords' insured mortgages" (count and owed, average
+    rate, payments a month, principal repaid, renewing within a year, all
+    insured, claims this month and over the city's life, the CMHC note); the
+    quotes row; the weight table's "Insured mortgages" row at 0%, the
+    businesses row net of it, the footing, the note's sentence on the face and
+    the leverage minimum; the trouble table's "in total" net of the insured
+    part.
+  - **Capital:** the bar marks the binding measure's minimum, target and top,
+    the tooltip gives both ratios; the block "...and against everything it has
+    lent"; the under-minimum alert names the leverage minimum when that binds.
+  - **Funding:** "What it can carry"'s capital label when the leverage ratio
+    binds; the under-minimum verdict; "Do its branches still pay?" and "It has
+    closed N this session".
+  - **Vitals on every page:** CAPITAL / LEVERAGE RATIO and its target.
+  - **Real Estate's screen:** "Its insured mortgages" (owed, other debt, rate,
+    payment, principal repaid, next renewal as a date), the insured write-off
+    line, the conditions (15% down, 1.20×). **Every sector's owners note:**
+    "...pays out 40% of what a month's profit leaves after the principal it
+    repaid"; the bank's "...X% of its weighted book or Y% of everything it has
+    lent, whichever asks more".
+  - **Government tab:** "Mortgage insurance premiums" under revenue and
+    "Mortgage insurance claims" under spending, with their detail.
+  - **Advisor lines** (check the × glyph renders): "Built N X on an insured
+    mortgage (trimmed from N - ...)"; "Holding: needs $X of its own for the 15%
+    down payment on a X"; "Declined X - its rent would cover the mortgage
+    0.88×; the lender asks 1.20×"; "Holding: the bank has failed and writes no
+    mortgage - X would need one"; "Declined X - the mortgage would leave it
+    owing past 1.50 times what it owns"; "Holding: the bank is short of capital
+    against everything it has lent - X would need a mortgage"; the log's "The
+    bank closed a branch: ..." and retail's "Sold 1 Commercial Bank" on the
+    demolitions list.
+  - **A slot-10 city saved mid-term with a branch streak running, then
+    reloaded:** Real Estate's next renewal and payment, and the Bank tab's
+    "not for N months", do not move.
+- ~~**DEPLOY 0.7.10 WHEN THE PC IS BACK**~~. Done 2026-09-24 as tag 0924b:
+  115 files, every one verified byte for byte on the PC. Rebuild in NetBeans
+  (Clean and Build), then run `AllChecks`; 60 should pass.
+- ~~**JERUS'S CALLS FROM 0.7.10**~~. He answered all three on 2026-09-24
+  (`founding-a-city.md` §5):
+  - keep D$100M, so the water plant is a bond from day one (its invoice is
+    D$109.6M, more than the treasury);
+  - keep US$25M;
+  - add a 20-year bond to the build screen. It was built the same day: the
+    bond comes first on the INSUFFICIENT FUNDS page, sized so its cash covers
+    the gap, and the 6-month note is beside it.
+
+  Left open from it, all small:
+  - the bond is listed first even for a tiny order, where its fixed fee makes
+    it a poor deal (a recommendation per order would come from the model);
+  - the sized bond leaves the treasury about D$2k after the order;
+  - the note's and the bond's granules are not rescaled by a currency reform,
+    and the note's is still the literal 1000.0 on the screen;
+  - the build card's "short $X" still subtracts on the screen (it could read
+    `Game.buildFundingGap()`);
+  - `NewGameCheck` §11(c)'s bound (one granule plus the fees) is looser than
+    the solver, whose worst overshoot is 0.80 of a granule.
+
+  Lean is still hard: half its seeds run dry around month 140.
+- ~~**CHECK 0.7.10'S FOUNDING SCREEN BY EYE ON THE PC.**~~ Checked by Jerus
+  2026-09-24: "found menu tested, all good". None of it can run in
+  the cloud.
+  - **Start New Game** opens FOUND A CITY. The defaults read:
+    - Danzik; "the Danzik dollar, D$, DAN";
+    - Standard lit;
+    - the treasury D$100.0M, the village D$32.9M and D$67.1M left;
+    - wind, school and police "in cash" in green, water "a bond for D$42.6M"
+      in amber;
+    - the vault US$25.0M with its sentence;
+    - world 1.0% lit, "about 1.15x".
+  - **Typing a name** changes the money line on every keystroke and keeps the
+    caret. "Arden" gives "the Arden dollar, A$, ARD". An empty name greys
+    Found. 25 characters is refused.
+  - **"Name the currency myself"** shows the fields: "AR" is refused, "usd" is
+    refused, and "crown" with "arc" gives "the crown, C$, ARC".
+  - **Presets:** Lean shows -D$7.9M left in red, with every work a bond.
+    Wealthy is all in cash. Custom opens on 100 and 25; "abc" and 4 are
+    refused; a vault of 0 reads "No vault…".
+  - **The five world chips** move the lit chip and the note.
+  - **Keys:** Enter founds only when Found is lit. Esc and Back go to the menu.
+    "Found with defaults" founds Danzik on D$100M and US$25M whatever is typed.
+  - **After founding:**
+    - the window title reads "Arden - CityBuilderSim 0.7.10";
+    - Settings has no world block;
+    - the Load and Save lists read "Arden - Month …", and an old save "Danzik - …";
+    - the founders' notes read this city's vault (an old save US$1.0B);
+    - every screen that prints the money names it: the rate strip and its
+      tooltip, the Land office, Trade, the Reports axis, the currency reform
+      and the year book.
+  - **The build screen's INSUFFICIENT FUNDS page**, on a Standard city about a
+    year in that asks for a water plant:
+    - "Funding required" in red, with the order, its price and the cash on
+      hand under it;
+    - the 20-YEAR BOND block first: "4.2x% yield · 1.6x% coupon", face about
+      $40M, the cash it brings in green, "$56k a month", the cost in all,
+      "Paid over 20 years: the coupon every month, then the whole $40.3M at
+      the end.", and "Issue the 20-year bond";
+    - then the 6-MONTH NOTE block: "a year, taken as a discount", "none - it
+      pays no coupon", "Falls due in 6 months…", and "Issue the 6-month note";
+    - the bond's credit line may come out amber beside the note's green, so
+      check that it doesn't read as a warning;
+    - the bond button orders the plant and leaves about D$2k, with a TERM
+      bond, 20 years, on Finances. The note button and Cancel behave as
+      before;
+    - no horizontal scroll, and the figures refresh with the clock.
 - **CHECK 0.7.8'S AND 0.7.9'S SCREENS BY EYE ON THE PC** — none of it can run
   in the cloud; `build-ui.sh` compiling it is the only check it has had. Open a
   played city and a fresh one on the Bank tab, and let the clock run a few
@@ -243,6 +366,10 @@ that take a minute each on the PC:
   in the tree; the files are still 120 CRLF to 55 LF. `git add --renormalize .`
   then `git commit -m "Normalise line endings to LF"`. Until it is done the
   "keep each file's own ending" rule stands.
+  *(2026-09-24: the commands, step by step, went to Jerus with the cleanup of
+  `Claude outputs/`, which `.gitignore` ignores since the same day. **Done by
+  Jerus the same day** ("git done"): the held copies removed, tags 0.7.9 and
+  0.7.10, and the line endings normalised in git.)*
 - ~~**Delete the twenty-seven stale Java files from the project**~~ — done
   2026-09-18 (evening), on Jerus's word: twenty-six 2026-09-01 uploads removed;
   the project holds design notes only now.
@@ -513,6 +640,51 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
   0.7.9's screens (though `BankCheck` §13 asserts the tab's arithmetic); and
   §21 gains `ASSET_VOLATILITY`, the quarter's pricing past the default point
   and `MAX_BUFFER` binding in every seed (section 4).
+- **And 0.7.10 as of 2026-09-24 (deployed 2026-09-24, tag 0924b): a founding screen,
+  D$100M and US$25M the default, and the city names its money; 215 files,
+  ~153,700 lines, 872 dials; save format 27 unchanged; 60 harnesses.** What the
+  manual now says that is not so:
+  - the build line;
+  - §14's "Danzik dollars, and what moves them" (the money is the city's own
+    now);
+  - §14's "The founders leave one" (D$2.5B and US$1B);
+  - §15's "$3.5B endowment … a coal plant at 41%";
+  - §13's and §21's "the founders' billion" figures;
+  - §19's "nineteen files in `ui/`" (twenty-one);
+  - the founding screen itself, which the manual does not have;
+  - §19's list of what went in without a bump (the eight founding keys:
+    `cityName`, the five currency fields, `foundingCash`,
+    `foundingReserveUsd`);
+  - §20's `NewGameCheck` row (sections 6–11);
+  - §12's "the Build screen still offers a six-month bill" (a 20-year bond
+    sized to the gap is offered first now, `Game.BUILD_BOND_YEARS`).
+- **And 0.7.11 as of 2026-09-24 (deployed 2026-09-24, tag 0924c): the landlords buy on
+  insured CMHC-style mortgages, the city insures them, the bank holds a 3%
+  leverage ratio beside its risk weights and closes branches that do not pay,
+  and dividends are paid after principal; 217 files, ~157,600 lines, 898
+  dials; save format 27 unchanged; 61 harnesses.** What the manual now says
+  that is not so:
+  - the build line and the header's figures (61 harnesses);
+  - §8's "How an expansion is paid for" (a landlord's home: 15% of its own,
+    the owners asked for what the till lacks, an insured mortgage for the
+    rest, and the lender's test);
+  - §9's "Forty percent of a positive month is paid out" (of net income less
+    the principal repaid), and the buybacks' "six months of operating cost"
+    (and of debt service);
+  - §11's budget lines (mortgage insurance premiums and claims);
+  - §12's Business credit ("interest-only bullets over 36 months" - not a
+    landlord's building); "The bank is somebody" ("measured against 8%
+    required" - and 3% of everything it has lent, whichever asks more;
+    "Branches build themselves ... when strain passes 70%" - never under its
+    minimum, and a branch that does not pay closes);
+  - §13's demand channel (`MEASUREMENT_NOISE` 0.05, the rows 0.000 to 0.019 -
+    0.10 now, and 0.000 to 0.053);
+  - §19's list of what went in without a bump (`mortgageRepaid`,
+    `insurancePremiums`, `insuranceClaims`, debts typed "MORTGAGE", the
+    government block at 27, the bank's last-month array at ten);
+  - §20's harness table (no `MortgageCheck`; `ExchangeCheck`'s cushion);
+  - §21's "A concentration limit on the bank" stays open and is again the
+    measured cause of the remaining failures. No open question is closed.
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -1193,6 +1365,13 @@ Ranked by how likely they are to read as "this game is broken".
   industry limit) or Pillar 2's concentration add-on; rescue for shares would
   make a failure cost the city less. Syndication was the structural answer
   tried, and removed ("Not doing").
+  *0.7.10 adds a cause to it. Under autopilot, failures rise from 49 to 76,
+  and all of the rise comes from the smaller vault. With D$100M and the old
+  US$1B vault the counts are unchanged; with D$2.5B and the new US$25M vault
+  they rise. Without dollars to steady the currency, the autopilot's
+  rule-held rate sees more imported inflation in the city's middle years.
+  The default setup is unchanged (39 against 42).
+  (`founding-a-city.md` §4.)*
 - **`ASSET_VOLATILITY` 0.25 — the curve's one number, Jerus's to settle**
   (`BusinessDebtManager`; the Merton/KMV literature 20–35%; 0.20 steeper,
   0.35 flatter). Not tuned to any result.
@@ -1225,6 +1404,39 @@ Ranked by how likely they are to read as "this game is broken".
   `Game.consider()` still files `canFundProject()`'s leverage refusal as a
   land shortage (`landBlockedSectors`) — only the capital refusal is split out
   (see the NEVER CLEARS item).
+- **FOUND BY 0.7.11, NOT ITS TO FIX** (`the-landlords-take-a-mortgage.md` §5 and its docs pass):
+  - concentration - the next batch, corporate notes and bonds;
+  - the dividend deducts gross principal, bullets the desk rolls included;
+    free cash flow to equity deducts net repayment - with the bonds batch;
+  - share prices, and the yield the households buy on
+    (`Exchange.yieldAt()` through `Equity.dividendPerShareAnnual()`), still
+    read `PAYOUT` × income, not the dividend after principal;
+  - a landlord whose profit is under its mortgages' principal borrows the
+    difference from the desk (seed 2: $1.46B); the lender's test is per
+    building, not per landlord - and the 10% city's insurance losses came
+    from the same place;
+  - branch openings between the minimum and the target (35% of default
+    openings): the recapitalisation trap is still open in that band;
+  - the playtest's advisor and the police (the smaller default city);
+  - screens that still read the risk-based measure alone when the leverage
+    ratio binds: the History page's capital ratio and its "months under its
+    target / the minimum"; the Lending page's "What its capital lets it lend"
+    note (it prints `capitalTarget()` and `CAPITAL_RATIO`); and the branch
+    planner's refusal, which reads "the bank is N% lent out - room enough"
+    for a bank refused because it is under its minimum.
+- **FOUND BY 0.7.10, NOT ITS TO FIX:**
+  - Foreign paper records no issue yield: `Debt.getIssueYield()` is 0 for a
+    dollar loan, so a trace reads its coupon instead.
+  - `Game` and `DataSave` have no class-header first sentence, so the code
+    map prints only their sections.
+  - `NewGameCheck` §6 and §11 print the game's "construction started" lines,
+    because `buildStack()` runs outside `quietly()`. This affects the prose
+    output only.
+  - A save from before 0.6.10 that is under month 120 and has bought reserves
+    would show "the founders left US$1.0B"; it was founded otherwise.
+  - Held at 10%, every seed now runs dry in years 185–253, against 3 of 8
+    before. The old D$2.4B had been paying for a city that loses money for
+    centuries at that rate.
 - **FOUND BY 0.7.9'S IMPLEMENTER, NOT ITS TO FIX:** the Summary's THE BANK
   flag (`ui/SummaryScreen` ~L738) reads only strain ("n% lent"), not the
   capital rule that rations credit since 0.7.8 — `bank.status()` or
@@ -1258,7 +1470,8 @@ Ranked by how likely they are to read as "this game is broken".
   partial); built as 0.7.8 and 0.7.9 over four rounds and deployed as tag
   0924a — see `a-sector-is-many-firms.md` and `the-bank-tab.md`. The safety
   copy in `Claude outputs/bank-0.7.8-0.7.9-held/` is superseded and can be
-  deleted. Rescue for shares, and the government bidding on the exchange,
+  deleted *(2026-09-24: the `git rm` went to Jerus, and `Claude outputs/` is in
+  `.gitignore`: a session's scratch on the PC is not the repository's)*. Rescue for shares, and the government bidding on the exchange,
   stays a later batch.
 - **HELD AT 10%, SEED 2'S PRICES RAN TO 5.64× FOUNDING.** The recovered bank
   paid savers its chosen 3.5% over the world's 2%, the households brought

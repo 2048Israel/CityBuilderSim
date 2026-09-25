@@ -63,6 +63,15 @@ public enum TreasuryLine {
     /** Student loans lent: the ledger lent it at enrolment, so refusing the cash would leave a student owing money never received. */
     STUDENT_LOANS("Student loans lent", true, false),
 
+    /**
+     * What the city's mortgage insurance pays the bank when a landlord's
+     * insured mortgage is written down (0.7.11): a guarantee, and the reason
+     * the bank weighs the loan at nothing - a claim the insurer might not pay
+     * would not be a sovereign's guarantee - so it is paid whatever it
+     * takes, past the ceiling on the advances if it must be, as the coupon is.
+     */
+    MORTGAGE_INSURANCE_CLAIMS("Mortgage insurance claims", true, false),
+
     /** The standing policy's top-up of the builders to break-even - the construction subsidy. */
     CONSTRUCTION_SUBSIDY("Construction subsidy", false, false),
 

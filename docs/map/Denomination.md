@@ -1,4 +1,4 @@
-# Denomination.java - 194 lines · 12 methods · 3 constants · model
+# Denomination.java - 199 lines · 12 methods · 3 constants · model
 
 `ham/citybuildersim/Denomination.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -21,7 +21,9 @@
 > 
 > ==================== WHAT A REFORM IS ====================
 > 
-> One new Danzik dollar is worth `unit` founding Danzik dollars. It starts at
+> One new dollar of the city's money is worth `unit` founding ones - one new
+> Arden dollar is `unit` founding Arden dollars (the city names its money since
+> 0.7.10; Currency). It starts at
 > one and multiplies by ten, a hundred or a thousand each time the player
 > reforms. Everything nominal - every price, wage, balance, debt, reserve and
 > exchange rate in the city - is divided by the same factor at the same moment,
@@ -60,11 +62,9 @@
 > 
 > ==================== WHEN THE BUTTON APPEARS ====================
 > 
-> Jerus asked for it to unlock past a threshold and then be the player's
-> decision, which is also how it works in life: a currency reform is a
-> ... (1 more lines in the source)
+> ... (3 more lines in the source)
 
-**Uses:** [Currency](Currency.md) (4)
+**Uses:** [Currency](Currency.md) (2)
 
 **Used by (3):** [DenominationCheck](DenominationCheck.md), [Game](Game.md), [PolicyScreen](PolicyScreen.md)
 
@@ -72,43 +72,43 @@
 
 | line | section |
 |---:|---|
-| 178 | · carrying |
+| 183 | · carrying |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 94 | `Denomination.UNLOCK_AT` | `10.0` | How far prices have to have risen before the button appears. |
-| 97 | `Denomination.FACTORS` | `{ 10, 100, 1000 }` | The factors the player may choose between. |
-| 109 | `Denomination.MAX_UNIT` | `1e12` | The ceiling on the unit, and it is a numeric guard rather than a policy. |
+| 96 | `Denomination.UNLOCK_AT` | `10.0` | How far prices have to have risen before the button appears. |
+| 99 | `Denomination.FACTORS` | `{ 10, 100, 1000 }` | The factors the player may choose between. |
+| 111 | `Denomination.MAX_UNIT` | `1e12` | The ceiling on the unit, and it is a numeric guard rather than a policy. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 77 | `private double unit` | How many FOUNDING dollars one of today's dollars is worth. |
-| 80 | `private int reforms` | How many reforms this city has been through. |
+| 79 | `private double unit` | How many FOUNDING dollars one of today's dollars is worth. |
+| 82 | `private int reforms` | How many reforms this city has been through. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 127 | **type** `public class Denomination` | The currency's unit, and the power to lop zeros off it. |
-| 111 | 1 | `public double getUnit()` |  |
-| 112 | 1 | `public int getReforms()` |  |
-| 121 | 3 | `public double money(double foundingDollars)` | A founding-dollar constant, expressed in today's money. |
-| 126 | 3 | `public boolean unlocked(double priceIndex)` | Whether the reform button should be offered, given the city's price level. |
-| 131 | 3 | `public boolean canLop(double factor)` | Whether a particular factor may be applied. |
-| 140 | 5 | `public void lop(double factor)` | Records the reform. |
-| 154 | 4 | `public String name()` | What the money is called, which changes when it is reformed. |
-| 160 | 4 | `public String describeUnit()` | What one of today's dollars is worth in founding money, for the screen. |
-| 165 | 12 | `private static String ordinal(int n)` |  |
+| 70 | 130 | **type** `public class Denomination` | The currency's unit, and the power to lop zeros off it. |
+| 113 | 1 | `public double getUnit()` |  |
+| 114 | 1 | `public int getReforms()` |  |
+| 123 | 3 | `public double money(double foundingDollars)` | A founding-dollar constant, expressed in today's money. |
+| 128 | 3 | `public boolean unlocked(double priceIndex)` | Whether the reform button should be offered, given the city's price level. |
+| 133 | 3 | `public boolean canLop(double factor)` | Whether a particular factor may be applied. |
+| 142 | 5 | `public void lop(double factor)` | Records the reform. |
+| 159 | 4 | `public String name(Currency money)` | What the money is called, which changes when it is reformed. |
+| 165 | 4 | `public String describeUnit(Currency money)` | What one of today's dollars is worth in founding money, for the screen. |
+| 170 | 12 | `private static String ordinal(int n)` |  |
 
-### carrying (lines 178-194)
+### carrying (lines 183-199)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 180 | 3 | `public double[] toSaveArray()` |  |
-| 184 | 5 | `public void restore(double[] saved)` |  |
-| 190 | 4 | `public void reset()` |  |
+| 185 | 3 | `public double[] toSaveArray()` |  |
+| 189 | 5 | `public void restore(double[] saved)` |  |
+| 195 | 4 | `public void reset()` |  |
 

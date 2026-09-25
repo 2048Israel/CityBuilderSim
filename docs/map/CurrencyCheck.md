@@ -1,4 +1,4 @@
-# CurrencyCheck.java - 743 lines · 19 methods · 5 constants · harnesses
+# CurrencyCheck.java - 747 lines · 19 methods · 5 constants · harnesses
 
 `ham/citybuildersim/CurrencyCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      scales the guards, now a billion either way, with the unit - and the
 > ... (3 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (48), [ForeignCheck](ForeignCheck.md) (9), [DebtManager](DebtManager.md) (8), [Game](Game.md) (8), [CentralBank](CentralBank.md) (6), [CapitalFlows](CapitalFlows.md) (5), [MoneyAudit](MoneyAudit.md) (3), [GameFiles](GameFiles.md) (3), [PriceIndex](PriceIndex.md) (3)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (48), [ForeignCheck](ForeignCheck.md) (9), [DebtManager](DebtManager.md) (8), [Game](Game.md) (8), [CentralBank](CentralBank.md) (6), [CapitalFlows](CapitalFlows.md) (5), [MoneyAudit](MoneyAudit.md) (3), [GameFiles](GameFiles.md) (3), [PriceIndex](PriceIndex.md) (3), [Founding](Founding.md) (1)
 
 ## Sections
 
@@ -74,8 +74,8 @@
 | 197 | 2. a spiral needs an outflow |
 | 229 | 3. the defence spends |
 | 340 | 4. the dollars it sells are capital, not money destroyed |
-| 562 | 5. the stops are gone |
-| 627 | 6. the currency's guards are a billion either way |
+| 566 | 5. the stops are gone |
+| 631 | 6. the currency's guards are a billion either way |
 
 ## Constants
 
@@ -85,7 +85,7 @@
 | 100 | `CurrencyCheck.OLD_SPREAD_STOP` | `.06` | The hot money's old stop, likewise: six points. |
 | 103 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
 | 106 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
-| 523 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
+| 527 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
 
 ## Fields (state)
 
@@ -94,13 +94,13 @@
 | 77 | `static int fails` |  |
 | 78 | `static PrintStream out` |  |
 | 79 | `static PrintStream quiet` |  |
-| 524 | `final double m0, equity, notVault, remittance, loss` |  |
+| 528 | `final double m0, equity, notVault, remittance, loss` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 669 | **type** `public class CurrencyCheck` | Proves the currency under a central bank (0.7.2): the rate answers to the real rate, the vault is spent defending it, and the dial and the carry appetite have lost their stops. |
+| 75 | 673 | **type** `public class CurrencyCheck` | Proves the currency under a central bank (0.7.2): the rate answers to the real rate, the vault is spent defending it, and the dial and the carry appetite have lost their stops. |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 86 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 109 | 8 | `static MoneyAudit.Result month(double exports, double imports, double capitalIn, double capitalOut)` | A synthetic month: the trade and the financial account are all takeMonth() reads. |
@@ -128,27 +128,27 @@
 | 246 | 3 | `static double repriced(double r0, double total, double met, double openness, double parity)` | What the reprice should leave the rate at, on this push and this much of it met. |
 | 250 | 89 | `static void defence()` |  |
 
-### 4. the dollars it sells are capital, not money destroyed (lines 340-561)
+### 4. the dollars it sells are capital, not money destroyed (lines 340-565)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 341 | 175 | `static void capital() throws Exception` |  |
-| 522 | 39 | **type** `static final class Before` | The central bank and the vault as a month opened, and the five claims section 4 holds each month against them. |
-| 526 | 7 | `Before(CentralBank cb)` _(in CurrencyCheck.Before)_ |  |
-| 534 | 26 | `void monthHeld(Game city, String named)` _(in CurrencyCheck.Before)_ |  |
+| 341 | 179 | `static void capital() throws Exception` |  |
+| 526 | 39 | **type** `static final class Before` | The central bank and the vault as a month opened, and the five claims section 4 holds each month against them. |
+| 530 | 7 | `Before(CentralBank cb)` _(in CurrencyCheck.Before)_ |  |
+| 538 | 26 | `void monthHeld(Game city, String named)` _(in CurrencyCheck.Before)_ |  |
 
-### 5. the stops are gone (lines 562-626)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 563 | 63 | `static void uncapped() throws Exception` |  |
-
-### 6. the currency's guards are a billion either way (lines 627-743)
+### 5. the stops are gone (lines 566-630)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 630 | 7 | `static ForeignAccounts at(double rate)` | A settled currency, trade in balance and the vault empty, put at this rate the way a save would put it. |
-| 639 | 3 | `static void month(ForeignAccounts fx, double parityLevel, double realGap)` | One month of it: the same balanced trade, the city's price level at this (so parity at it, in founding money), and this real gap, repriced. |
-| 644 | 6 | `static void month(ForeignAccounts fx, double parityLevel, double realGap, double unit)` | ...in a unit this many of the founding's: the trade and the output are money, and a reform divides them. |
-| 651 | 92 | `static void unguarded()` |  |
+| 567 | 63 | `static void uncapped() throws Exception` |  |
+
+### 6. the currency's guards are a billion either way (lines 631-747)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 634 | 7 | `static ForeignAccounts at(double rate)` | A settled currency, trade in balance and the vault empty, put at this rate the way a save would put it. |
+| 643 | 3 | `static void month(ForeignAccounts fx, double parityLevel, double realGap)` | One month of it: the same balanced trade, the city's price level at this (so parity at it, in founding money), and this real gap, repriced. |
+| 648 | 6 | `static void month(ForeignAccounts fx, double parityLevel, double realGap, double unit)` | ...in a unit this many of the founding's: the trade and the output are money, and a reform divides them. |
+| 655 | 92 | `static void unguarded()` |  |
 

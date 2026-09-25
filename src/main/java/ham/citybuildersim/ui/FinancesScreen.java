@@ -1955,9 +1955,11 @@ final class FinancesScreen {
        THE DEBT RESULT
 
        Issuing the paper a screen asked for, and the page that says what was
-       raised. Both the borrow page and the quick loan the build screen offers
-       when the treasury is short come through here. Its own section since
-       2026-09-18, on the way out of the stat card and into the finances screen.
+       raised. The borrow page comes through here; the two offers the build
+       screen makes when the treasury is short do not - each books its own
+       quote on Game and places the order again (BuildScreen's
+       buildOnTheLoan()). Its own section since 2026-09-18, on the way out of
+       the stat card and into the finances screen.
        ===================================================================== */
 
     String executeDebtLogic(String type, double amount, int duration, double rounding) {

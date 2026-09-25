@@ -8,6 +8,171 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
+### VERSION 0.7.11 — THE LANDLORDS TAKE A MORTGAGE — 2026-09-24, DEPLOYED AND VERIFIED (tag 0924c), see `the-landlords-take-a-mortgage.md`
+
+The "housing against the rate" step of the order agreed in
+`the-rate-that-stops-the-cranes.md`. Two rounds from an Opus implementer, the
+orchestrating session keeping the gate, and an Opus docs pass.
+
+**Why.** A trace of 0.7.10 found two things stopping the cranes. The
+landlords financed fifty-year buildings on 3-year interest-only bullets: on
+autopilot (seed 0, months 2,280–2,490) their maturing loans went unrolled,
+the till fell to −$6.8B, every new building had to borrow that hole on top of
+its cost, and nothing was built for about 200 months with homes 37% short.
+And held at 10% the test asked gross rent to cover 1.25× the interest on 100%
+of the cost, about 14.5% a year, where a home earned 8–9%.
+
+**What shipped.** Jerus: "Mortgages", "CMHC (Canada)", "Keep it" (the rent
+floor), "Insured by the city".
+- A landlord's residential building is bought with at least 15% of its own
+  funds (its till, what it holds abroad, and its owners asked for what those
+  lack) and a `Mortgage` for the rest: at most 85% of the cost, a level
+  payment over 40 years, the rate fixed for 10 and renewed at the day's rate.
+  The lender's test is net operating income ≥ 1.20× the payment
+  (`Mortgage.decide()`). Everything else keeps its 36-month loan and the 1.25×
+  interest test.
+- The city insures it: CMHC's 5.00% premium and the 0.75% forty-year
+  surcharge, added to the loan and paid to the treasury as revenue; when a
+  landlord is written down the treasury pays the bank what came off insured
+  balances, as a promise (`TreasuryLine.MORTGAGE_INSURANCE_CLAIMS`). The bank
+  weighs them at 0% (CRE20's sovereign guarantee) and sets nothing aside.
+- Round 2, the bank around them (Jerus: "Basel leverage ratio", "Close losing
+  branches", "Pay out after principal", "Keep asking the owners"): a 3%
+  leverage ratio (`Bank.LEVERAGE_RATIO_MIN`) floors every capital requirement
+  the bank has, its own target and band scaled in the proportion it chose on
+  the risk side; the insured rate carries the capital that ties up (0.41–0.64
+  points at the defaults); the capital rule rations mortgages with the rest
+  while the leverage requirement binds; a branch whose book has not kept its
+  staff for 24 months closes, one a month, never the last; a bank under its
+  minimum opens no branch; a sector's dividend is 40% of net income less the
+  principal repaid, and its buyback cushion counts interest and principal.
+- The Bank tab (mortgages block, the ladder's insured rung, the weight table's
+  0% row, the leverage figures, whether its branches still pay), the Real
+  Estate screen's mortgages, and the Government tab's premiums and claims.
+  `SAVE_FORMAT` stays 27.
+
+**What it found.**
+- The autopilot stall is gone: through seed 0's old window homes rise from
+  35,141 to 36,464 and the till stays at or above zero (measured on round 1).
+- The 10% city is still small, which is the honest answer: the 1.20× test on
+  a 40-year paydown asks net rent of 12.2% of the cost a year.
+- **The bank fails more, and the cause is concentration.** Over eight seeds,
+  115 failures in the default setup against 42 at 0.7.10 (round 1: 219), and
+  265 on autopilot against 76. Round 2 closed round 1's new kind, failures
+  with no loan loss (72 → 0), but without the landlords' $6B of 100%-weighted
+  bullets the bank is small ($161M of equity at month 2,400 against $1.13B),
+  and the sector that fails it owes 5–6× its equity. Jerus shipped it with
+  that open; the next batch is corporate notes and bonds.
+- The insurance took in $3.9B of premiums over the eight default seeds
+  ($3.7B on autopilot) against $2.1M of claims; held at 10% it lost money for
+  the first time, $404M of claims against $56M, from two shrinking cities.
+- `MonetaryCheck`'s allowance was re-measured on Jerus's word, 0.05 → 0.10
+  points: a 10-year fixed rate locks in the month it is written, and the
+  month's-delay rows now read 0.000 / 0.053 / 0.051 / 0.040.
+- The default city ends a few percent smaller, and the cause is crime through
+  migration - the playtest's stand-in player falling behind on police - not
+  housing.
+
+**Verification.** Model and full build silent; suite 61/61 (0.7.10's baseline
+60/60, plus `MortgageCheck`; `BuildMenuCheck` skipped in the cloud, it needs
+JavaFX); Stale 0 firm, 88 soft (the 0.7.10 set); endings
+kept; maps regenerated; docs pass run. Files verified on the PC: 80 of 80, byte for byte (tag 0924c): 32 sources,
+`CLAUDE.md` and `README.md`, 39 map pages and the three generated indexes,
+and the four records in `docs/notes/`.
+
+### VERSION 0.7.10 — FOUNDING A CITY — 2026-09-24, DEPLOYED AND VERIFIED (tag 0924b), see `founding-a-city.md`
+
+Jerus: *"lets reduce the cash the city starts with, both the foreign usd and
+the starting cash, what do you think makes sense? cause the city should borrow
+right"*. Later the same afternoon: *"a small thing at the start of the game
+where you choose the name of the city and the currency … and perhaps the
+settings to choose the starting cash and usd cash and offworld inflation rate
+… (with option to just start at default)"*. An Opus implementer, an Opus docs
+pass, and the orchestrating session keeping the gate.
+
+**Why.** A trace of 0.7.9 found the treasury never going below D$2.467B in
+thirty years. The young city spends $0.1–2M a month and takes in $0.4–5M,
+and it had no debt for about ninety years. The vault was about 270 or more
+months of the young city's imports.
+
+**The endowment.** A city is founded on **D$100M and US$25M**, Jerus's choice,
+where it was D$2.5B and US$1B. The treasury founds the village and one of the
+first big works, and the city borrows for the rest: long-lived works on bonds
+("pay-as-you-use"), as Britain's New Towns were built on sixty-year Exchequer
+loans. The vault follows the IMF's old three months of imports. The
+endowment is still a game number, and the code says so.
+
+**The founding screen.** "Start New Game" opens **Found a city**
+(`ui/FoundingScreen`):
+- the city's name;
+- its money, named after it (Arden → the Arden dollar, A$, ARD) or by hand
+  (a name and a 3-letter code, never USD);
+- four presets: Lean (D$25M + US$10M), Standard, Wealthy (the old start) and
+  Custom (D$5M–D$10B, US$0–US$4B), each showing what it buys at a new city's
+  invoices;
+- the world's inflation, moved off Settings;
+- "Found with defaults".
+
+**The record.** The choice is a record on the city (`Founding`), saved in
+eight new keys. The currency is a value per city, read through
+`game.getCurrency()`, because several cities share one process. The window
+title and the slot lists name the city, and the founders' notes read its own
+vault. Old saves load as Danzik, in the Danzik dollar (D$, DZD), founded on
+D$2.5B and US$1B. `SAVE_FORMAT` stays 27.
+
+Two founding-path bugs were fixed on the way:
+- a new game after a load kept the loaded world's inflation;
+- a new city's first year was back-cast at the previous city's rate.
+
+**What it found.**
+- **The sticker is not the invoice.** The water plant's D$65.8M is invoiced
+  D$109.6M (the building plus the material beyond the yard, at the world's
+  price). So D$100M buys the village (D$32.9M) and one of the wind farm, the
+  school or the police station (`NewGameCheck` §11). The option Jerus picked
+  had been described on stickers. Whether to keep D$100M or go to about
+  D$150M is his call (`todo.md` §0).
+- **42 fixtures in 25 harnesses had lived on the old treasury** without
+  saying so: 10 went red, and 3 were green on a short calendar. Each is now
+  funded explicitly (`Founding.WEALTHY_CASH` through `setCashForTest()`), with
+  no premise or tolerance moved.
+- **Making the founding a choice changed nothing else.** The Wealthy preset
+  reproduces pd4, pd4auto and pd4held10 byte for byte on all 24 seed-runs.
+- **The default playtest never borrows.** Its treasury bottoms out at
+  D$61–67M. What does show is the vault: half gone by month 141 against 739,
+  empty by 374 against 987. The worst currency month is 1.54 against 3.34, and
+  the worst price level 2.02× against 3.95×. No seed spends a month at the
+  currency's guard. Bank failures are 42 against 39.
+- **Autopilot bank failures rise from 49 to 76,** all of it from the vault
+  (probed both ways).
+- **Held at 10%, every seed runs dry** in years 185–253, against 3 of 8
+  before.
+- **The build screen's only funding offer was a 6-month note**, which on
+  D$100M leaves a water plant's buyer overdrawn when it matures.
+
+**After the gate, Jerus answered three questions** (`founding-a-city.md` §5):
+
+- **Keep D$100M and US$25M.**
+- **Add a 20-year bond to the build screen.** When the treasury is short, the
+  INSUFFICIENT FUNDS page now offers two things, the bond first:
+  - a bond of `Game.BUILD_BOND_YEARS`, sized so its cash covers the gap
+    (`Game.quoteLongBondForCash()`, the long bond's counterpart of the note's
+    `faceForNetProceeds()`);
+  - the 6-month note, as before.
+
+  Each shows its rate, face, cash, monthly cost, cost in all and what happens
+  at the end. A term bond is a bullet: a coupon a month, then the face.
+
+  On the sized bond, a Standard city buying its water plant never went below
+  D$0.53M and never drew an advance. On the note, the same city went D$16.2M
+  overdrawn. `NewGameCheck` §11(c) asserts the sizing at every maturity. The
+  playtest is byte-identical.
+
+**Verification.** Model and full build silent; suite 60/60 (baseline 60/60);
+Stale 0 firm; endings kept; maps regenerated; two docs passes run (the
+founding, then the build bond). Files verified on the PC: 115 of 115, byte for
+byte (tag 0924b): 50 sources and `CLAUDE.md`, 58 map pages and the three
+generated indexes, and these three records.
+
 ### VERSION 0.7.9 — THE BANK TAB — 2026-09-23/24, DEPLOYED AND VERIFIED (tag 0924a), see `the-bank-tab.md`
 
 **Batch 3 of the bank as a business (`the-bank-as-a-business-plan.md` §3),

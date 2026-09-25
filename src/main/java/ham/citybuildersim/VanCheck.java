@@ -73,6 +73,10 @@ public class VanCheck {
 
         quietly(() -> {
             game.newGame();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            game.setCashForTest(Founding.WEALTHY_CASH);
             game.getForeignAccounts().pinRate(1.0);
             game.getWorldEconomy().pin();
             game.getLandManager().setOwnedSqFt(400_000_000L);

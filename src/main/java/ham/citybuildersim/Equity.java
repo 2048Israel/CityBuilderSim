@@ -75,6 +75,11 @@ package ham.citybuildersim;
  * and nothing is borrowed to pay a dividend. The households' part lands in
  * their savings; the rest leaves on the income account.
  *
+ * AFTER THE PRINCIPAL since round 2 of 0.7.11 (Jerus: "Pay out after
+ * principal"): the share is of the month's net income less the principal
+ * the company repaid in it, and nothing when the principal is the larger
+ * (dividendDue()).
+ *
  * ==================== WHO BUYS ====================
  *
  * The households first, on HouseholdBalance.subscribe()'s rule. Then the
@@ -110,7 +115,7 @@ public class Equity {
 
     /* ------------------------------- the dials ------------------------------- */
 
-    /** The share of a positive month's net income paid to the owners - every company's but the bank's, which pays by its own capital rule since 0.7.8 (Bank.dividendDue()). */
+    /** The share of a positive month's net income paid to the owners - of what it leaves after the principal repaid, since round 2 of 0.7.11 (dividendDue()) - every company's but the bank's, which pays by its own capital rule since 0.7.8 (Bank.dividendDue()). */
     public static final double PAYOUT = .40;
 
     /** A founding share: a thousand dollars, in the game's thousands. */
@@ -467,6 +472,11 @@ public class Equity {
      * the world asks of it: the last year's income over the world's rate plus
      * the premium. A company with neither book nor earnings sells at the last
      * price it sold at; a company with no shares at all, at the founding one.
+     *
+     * STILL PAYOUT x INCOME after round 2 of 0.7.11, which pays the dividend
+     * on the income less the principal repaid (dividendDue()): a company
+     * repaying principal is valued on a larger dividend than it pays. That
+     * batch left valuation where it was, as an open question.
      */
     private double priceOf(Listing l, double bookEquity, double worldRate) {
         if (l.shares <= 0) return foundingPrice;
@@ -518,6 +528,36 @@ public class Equity {
         Listing l = listings[company];
         if (l.shares <= 0 || netIncome <= 0) return 0;
         return netIncome * PAYOUT;
+    }
+
+    /**
+     * ...PAID AFTER THE PRINCIPAL IT OWED (0.7.11, round 2): PAYOUT of the
+     * month's net income less the principal that fell due in it, and nothing
+     * when the principal is the larger. Jerus: "Pay out after principal."
+     *
+     * WHY. Net income is an accounting figure, and the principal a loan
+     * repays is not in it, because it is not a cost. A company that paid its
+     * owners a share of net income could pay out more cash than it had left
+     * after its lender was paid. Round 1 of this batch found that happening:
+     * a landlord on an insured mortgage paid 40% of a profit smaller than
+     * the principal its payments took, emptied its till, and borrowed the
+     * difference from the shortfall desk every month
+     * (Game.payDividends()). What is left for the owners after the lender
+     * is free cash flow to equity, the basis corporate finance uses for
+     * dividend capacity. Real loan agreements write the same thing into
+     * their covenants: they restrict distributions when debt service is not
+     * covered ("restricted payments").
+     *
+     * A sector with no amortizing debt is unchanged, apart from the month a
+     * bullet matures: then the whole principal falls due and the month pays
+     * nothing past it, even when the desk rolls the loan.
+     *
+     * @param principalDue the principal that fell due this month - the
+     *                     mortgages' principal parts and the bullets that
+     *                     matured (BusinessDebtManager.getRepaidThisMonth())
+     */
+    public double dividendDue(int company, double netIncome, double principalDue) {
+        return dividendDue(company, netIncome - Math.max(0, principalDue));
     }
 
     /**
@@ -683,7 +723,7 @@ public class Equity {
         return priceOf(listings[company], bookEquity, worldRate);
     }
 
-    /** Dividend a share would pay over a year on the last twelve months' record. */
+    /** Dividend a share would pay over a year on the last twelve months' record: PAYOUT of the income, before the principal dividendDue() takes off since round 2 of 0.7.11 (priceOf() says the same). */
     public double dividendPerShareAnnual(int company) {
         Listing l = listings[company];
         return l.shares > 0 ? PAYOUT * Math.max(0, l.trailingIncome()) / l.shares : 0;

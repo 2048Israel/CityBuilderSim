@@ -14,8 +14,8 @@ requirement.
 
 ## Open these before reading source
 
-The tree is 151,700 lines; `Game.java` alone is 9,800, and the interface is
-twenty files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
+The tree is 158,000 lines; `Game.java` alone is 10,000, and the
+interface is twenty-one files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
 |---|---|
@@ -92,7 +92,7 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; 9,800 lines, 30 banner sections
+        Game.java                  the month, the seam every system meets at; 10,000 lines, 31 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
@@ -104,8 +104,9 @@ These are Jerus's, and they do not move.
                                    strips, panels, dialogs), one <Name>Screen.java per tab (split 2026-09-18 -
                                    the project's splitting-the-interface.md), Money/Statement/Pieces/Levers
                                    (what the screens share), Ladder.java (every dial, since 0.7.6), Palette.java,
-                                   Icons.java. The model never imports it.
-        *Check.java                sixty harnesses, each a main() with static helpers
+                                   Icons.java, and FoundingScreen.java (Start New Game's page, 0.7.10; the record it
+                                   fills is Founding.java). The model never imports it.
+        *Check.java                sixty-one harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow
         tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them

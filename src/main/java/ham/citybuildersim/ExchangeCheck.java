@@ -78,6 +78,8 @@ public class ExchangeCheck {
     /** The companies, as the exchange sees them: a till, a balance sheet, a payroll. */
     static class Firms implements Exchange.Companies {
         final double[] cash = new double[N], assets = new double[N], equity = new double[N], opex = new double[N];
+        /** Interest and principal a month (0.7.11, round 2): nothing unless a fixture says so. */
+        final double[] debt = new double[N];
         final double[] boughtBack = new double[N], special = new double[N];
         @Override public double cashAvailable(int c, double wanted) { return cash[c]; }
         @Override public void payBuyback(int c, double x) { cash[c] -= x; boughtBack[c] += x; }
@@ -85,6 +87,7 @@ public class ExchangeCheck {
         @Override public double assets(int c) { return assets[c]; }
         @Override public double equity(int c) { return equity[c]; }
         @Override public double monthlyOperatingCost(int c) { return opex[c]; }
+        @Override public double monthlyDebtService(int c) { return debt[c]; }
         // Whether the bank deals in its own shares is its own rule since 0.7.8
         // (Bank.buysBackOwnShares(), issuesOwnShares()); this file never set "flush".
     }
@@ -506,6 +509,29 @@ public class ExchangeCheck {
         close("...the abroad line has the world's", ex8.getBuybackAbroad(RETAIL), .1 * pace, 1e-9);
         close("...and the shares are gone", reg8.getShares(RETAIL), 10_000 - pace / ask8, 1e-9);
         close("no special dividend was paid", ex8.getSpecialDividend(RETAIL), 0, 1e-12);
+
+        // ...AND THE CUSHION COUNTS THE LOAN PAYMENTS (0.7.11, round 2): the
+        // same company, the same till, now paying $750 a month of interest
+        // and principal. Six months of that and its operating cost is more
+        // than its till, so it buys nothing back - where its operating cost
+        // alone left it the whole month's pace.
+        Equity reg8d = withRecord(RETAIL, normal);
+        HouseholdBalance owners8d = savers(20.0, 4.0);
+        reg8d.listIfUnlisted(RETAIL, 10_000, owners8d);
+        Exchange ex8d = new Exchange();
+        Firms firms8d = new Firms();
+        firms8d.assets[RETAIL] = 10_000; firms8d.equity[RETAIL] = 10_000;
+        firms8d.cash[RETAIL] = 5_000; firms8d.opex[RETAIL] = 100; firms8d.debt[RETAIL] = 750;
+        assertTrue("fixture: six months of its costs with the payments are more than its till, without them far less",
+                Exchange.BUYBACK_CUSHION_MONTHS * (100 + 750) > 5_000
+                        && 5_000 - Exchange.BUYBACK_CUSHION_MONTHS * 100 >= pace);
+        ex8d.quote(reg8d, book, bank8.equity(), w8);
+        ex8d.startMonth();
+        ex8d.takeMonth(reg8d, owners8d, bankWith(1_000_000), firms8d, book, w8, .05);
+        close("a company whose loan payments take its cushion past its till buys nothing back",
+                reg8d.getBoughtBackThisMonth(RETAIL), 0, 1e-12);
+        close("...pays no special dividend either", ex8d.getSpecialDividend(RETAIL), 0, 1e-12);
+        close("...and its till is untouched", firms8d.cash[RETAIL], 5_000, 1e-12);
 
         // The same company with its shares dear: households wanting more
         // than the desk holds lift the quote; the surplus goes out as a

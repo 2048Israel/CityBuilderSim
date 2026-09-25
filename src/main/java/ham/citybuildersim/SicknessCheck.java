@@ -223,8 +223,15 @@ public class SicknessCheck {
         double[] illEver = new double[2];
         quietly(() -> {
             bareCity.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings
+            // are placed free, but their running costs come out of the treasury month
+            // after month, and on the D$100M a city founds with since 0.7.10 it ran
+            // dry and simulateMonths() stopped short. Given the D$2.5B it assumed,
+            // the Wealthy preset's, explicitly.
+            bareCity.setCashForTest(Founding.WEALTHY_CASH);
             stock(bareCity);
             clinicCity.run();
+            clinicCity.setCashForTest(Founding.WEALTHY_CASH);   // ...and its twin, for the same reason
             stock(clinicCity);
             BuildingManager cb = clinicCity.getBuildingManager();
             cb.addStack(cb.getTemplateByName("General Hospital"), 2, true);

@@ -70,6 +70,7 @@ public class UserInterface extends Application {
     final PolicyScreen     policyScreen     = new PolicyScreen(this);
     final HistoryScreen    historyScreen    = new HistoryScreen(this);
     final SummaryScreen    summaryScreen    = new SummaryScreen(this);   // the left panel's content, not a tab
+    final FoundingScreen   foundingScreen   = new FoundingScreen(this);  // Start New Game's screen (0.7.10)
 
     /* ---------------------------------------------------------------------
        WHERE THE SCREENS WENT. Each line is a run of this file's banner
@@ -755,6 +756,17 @@ public class UserInterface extends Application {
             } else if (e.getCode() == javafx.scene.input.KeyCode.F11) {
                 toggleFullScreen();
                 e.consume();
+            } else if (FoundingScreen.SCREEN.equals(currentScreen)
+                    && e.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                /*
+                 * ENTER FOUNDS, on the founding screen (0.7.10) - from the
+                 * name field too, which is where a player's hands are - and
+                 * only when Found is lit; otherwise it falls through to the
+                 * focused control. Esc is already the way back: it is the
+                 * main menu from anywhere, and the main menu is where this
+                 * screen came from.
+                 */
+                if (foundingScreen.foundIfReady()) e.consume();
             } else if (!typing && e.getCode() == javafx.scene.input.KeyCode.SPACE
                     && !isGameMenu(currentScreen)) {
                 /*
@@ -1037,7 +1049,7 @@ public class UserInterface extends Application {
         switch (screen) {
             case "showMainMenu": case "showSavingMenu": case "showSaveSlotConfirm":
             case "showLoadMenu": case "loadSlot": case "showSaveResult":
-            case "showSettingsMenu":
+            case "showSettingsMenu": case FoundingScreen.SCREEN:
                 return true;
             default:
                 return false;
@@ -1655,15 +1667,17 @@ public class UserInterface extends Application {
          */
         ForeignAccounts fx = game.getForeignAccounts();
         double rate = fx.getRate();
-        Label rateLabel = new Label(Currency.FOREIGN_SYMBOL + "1 = " + Currency.QUALIFIED
+        // The city's own money's mark (0.7.10): A$ for Arden, D$ for Danzik.
+        String here = game.getCurrency().qualifiedSymbol();
+        Label rateLabel = new Label(Currency.FOREIGN_SYMBOL + "1 = " + here
                 + (rate < .1 ? fxRate(rate) : String.format("%,.2f", rate)));
         rateLabel.setStyle(STRIP_FIGURE + " -fx-text-fill: " + rateColour(fx) + ";");
         double oneLocal = fx.toUsd(1);
         Label rateBack = new Label(oneLocal >= 1
-                ? Currency.QUALIFIED + "1 = " + Currency.FOREIGN_SYMBOL + String.format("%,.2f", oneLocal)
+                ? here + "1 = " + Currency.FOREIGN_SYMBOL + String.format("%,.2f", oneLocal)
                 : oneLocal * 100 >= .01
-                ? Currency.QUALIFIED + "1 = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", oneLocal * 100)
-                : Currency.FOREIGN_CENT_SYMBOL + "1 = " + Currency.QUALIFIED
+                ? here + "1 = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", oneLocal * 100)
+                : Currency.FOREIGN_CENT_SYMBOL + "1 = " + here
                         + String.format("%,.0f", 1 / (oneLocal * 100)));
         rateBack.setStyle(STRIP_CAPTION + " -fx-text-fill: " + STRIP_QUIET + ";");
         VBox rateBox = stripPanel(rateLabel, rateBack);
@@ -1671,7 +1685,7 @@ public class UserInterface extends Application {
                 "The exchange rate: what a US dollar costs in %s, and what one of yours buys.%n"
                 + "Parity - where a basket costs the same here and abroad - is %s%.2f;"
                 + " the rate is %s.",
-                Currency.PLURAL, Currency.QUALIFIED, fx.getParity(),
+                game.getCurrency().plural(), here, fx.getParity(),
                 Math.abs(fx.deviationFromParity()) * 100 < .5 ? "at parity"
                         : String.format("%.0f%% %s than it",
                                 Math.abs(fx.deviationFromParity()) * 100,
@@ -1941,7 +1955,7 @@ public class UserInterface extends Application {
         return chip;
     }
 
-    private void showMainMenu() {
+    void showMainMenu() {   // package-private since 0.7.10: the founding screen's Back
         /*
          * WHERE RESUME GOES, and it is not "the start of the game".
          *
@@ -1964,20 +1978,16 @@ public class UserInterface extends Application {
         Button settings = new Button("Settings");
         Button quit = new Button("Quit");
 
-        startNewGame.setOnAction(e -> {
-            // NOTE: this used to call showStartMenu() BEFORE game.newGame(),
-            // so the screen was drawn using pre-init/stale game state and
-            // never refreshed again. Init the game first, then draw the screen.
-            game.newGame();
-            /*
-             * THE WORLD IS CHOSEN HERE AND NOWHERE ELSE. newGame() rebuilds the
-             * world with its default; this is the one moment the player's
-             * setting is allowed to reach it, which is what makes it a founding
-             * choice rather than a dial. A loaded city restores its own.
-             */
-            game.getWorldEconomy().setMeanInflation(prefs.getWorldInflation());
-            openCity();
-        });
+        /*
+         * START NEW GAME FOUNDS A CITY (0.7.10): the founding screen first -
+         * the city's name, its money, the treasury and the vault, and the
+         * world - and game.newGame() only when the player founds it there
+         * (foundCity()). "Found with defaults" on that screen is the old
+         * one-click start. The world used to be set HERE, from Settings, just
+         * after newGame(); it is one of the founding's choices now, applied
+         * inside it (Game.buildWorld()).
+         */
+        startNewGame.setOnAction(e -> foundingScreen.show());
         /* =================================================================
            WHAT "RESUME" MEANS DEPENDS ON WHETHER THERE IS ANYTHING TO RESUME
            -----------------------------------------------------------------
@@ -2094,7 +2104,9 @@ public class UserInterface extends Application {
                 .atZone(java.time.ZoneId.systemDefault())
                 .format(SAVED_AT);
 
-        return String.format("Month %d  -  %s people  -  %s  -  %s",
+        // The city's name first (0.7.10) - Danzik on a save from before it.
+        return String.format("%s  -  Month %d  -  %s people  -  %s  -  %s",
+                header.getCityName(),
                 header.getMonth(),
                 formatter.format(header.getPopulation()),
                 money(header.getCash()),
@@ -2257,7 +2269,20 @@ public class UserInterface extends Application {
      * screen from here, every other screen is one click away rather than three.
      */
     private void openCity() {
+        /*
+         * THE CITY'S NAME IN THE WINDOW'S TITLE (0.7.10), beside the build -
+         * set here because this is where every city opens, founded or loaded.
+         * A name is at most Founding.MAX_CITY_NAME_LENGTH, which the title
+         * has room for.
+         */
+        stage.setTitle(game.getCityName() + " - " + GameVersion.title());
         buildScreen.showBuildMenu();
+    }
+
+    /** The founding screen's last step: found the city as chosen, and open it. */
+    void foundCity(Founding choices) {
+        game.newGame(choices);
+        openCity();
     }
 
     private void showSaveResult(GameFiles.Result result) {
@@ -2317,10 +2342,10 @@ public class UserInterface extends Application {
     /* =====================================================================
        SETTINGS.
 
-       Three toggles and a way back, and it had been three raw grey buttons
-       since before the palette existed - which mattered less when it was
-       buried behind a menu and matters now, because the gear at the foot of
-       the rail lands here from anywhere.
+       Four toggles, the keys and a way back, and it had been three raw grey
+       buttons since before the palette existed - which mattered less when it
+       was buried behind a menu and matters now, because the gear at the foot
+       of the rail lands here from anywhere.
        ===================================================================== */
     private void showSettingsMenu() {
         clearMenu("showSettingsMenu", () -> showSettingsMenu());
@@ -2364,30 +2389,13 @@ public class UserInterface extends Application {
                 + "Full screen is kept with the game and is the same for every city "
                 + "on this machine."));
 
-        /* =================================================================
-           THE WORLD THE NEXT CITY IS FOUNDED INTO
-
-           The one setting on this screen that does not take effect while you
-           are looking at it, and it says so. A city's whole price history is
-           struck against the world it grew up in, so this moves the next
-           founding and nothing about the city on screen.
-           ================================================================= */
-        column.getChildren().add(statementHead("The world, for a new city"));
-
-        HBox worldRow = new HBox(Palette.GAP_TIGHT);
-        worldRow.setAlignment(Pos.CENTER_LEFT);
-        for (double m : new double[] { 0, .01, .02, .0333, .05 }) {
-            worldRow.getChildren().add(worldChip(m));
-        }
-        column.getChildren().add(worldRow);
-        column.getChildren().add(statementNote(String.format(
-                "How fast prices rise OUT THERE, on average. The world's own price "
-                + "level settles about %.2fx founding at this setting, and the city's "
-                + "currency is worth its own prices against that — so a faster world "
-                + "is a stronger currency here, cheaper imports, and a harder time "
-                + "selling abroad. 1%% is the default. Takes effect on the next new "
-                + "city; the one you have keeps the world it grew up in.",
-                settledLevelAt(prefs.getWorldInflation()))));
+        /*
+         * THE WORLD THE NEXT CITY IS FOUNDED INTO was a block here until
+         * 0.7.10: five chips and a note, the one setting on this screen that
+         * did not take effect while you looked at it. It is chosen on the
+         * founding screen now (FoundingScreen), with the city's name and its
+         * money, which is the only moment it ever acted.
+         */
 
         column.getChildren().add(statementHead("Keys"));
         column.getChildren().add(statementLine("Esc  ·  P", "the game menu"));
@@ -2405,38 +2413,11 @@ public class UserInterface extends Application {
         rootMenu.getChildren().addAll(title, scrolled(column), back);
     }
 
-    /**
-     * Where the world's price level settles at a given mean.
-     *
-     * Closed form, because the level IS a closed form: advanceMonth() compounds
-     * at the mean and pulls back toward a flat trend, so it rests where
-     * `mean/12 x L = TREND_PULL x (L - 1)`. See the block at the top of
-     * WorldEconomy - this is the same arithmetic that predicted 1.84, 1.37 and
-     * 1.15 before any of them were measured.
+    /*
+     * settledLevelAt() and worldChip() lived here until 0.7.10: the first is
+     * a model figure and is WorldEconomy.settledLevelAt() now, the second is
+     * the founding screen's (FoundingScreen.worldChip()).
      */
-    private static double settledLevelAt(double mean) {
-        double monthly = Math.pow(1 + Math.max(0, mean), 1.0 / 12) - 1;
-        double denom = WorldEconomy.TREND_PULL - monthly;
-        return denom <= 1e-9 ? 99 : WorldEconomy.TREND_PULL / denom;
-    }
-
-    /** One choice of world, shown as what it is and what it settles at. */
-    private Button worldChip(double mean) {
-        boolean on = Math.abs(prefs.getWorldInflation() - mean) < 1e-6;
-        Button b = new Button(String.format("%.2g%%", mean * 100).replace("0.0%", "0%"));
-        b.setStyle(Palette.figure(Palette.SIZE_LABEL, on ? "white" : Palette.TEXT_MUTED)
-                + " -fx-background-color: " + (on ? Palette.ACCENT : Palette.CONTROL) + ";"
-                + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
-                + " -fx-border-color: " + (on ? "transparent" : Palette.CONTROL_EDGE) + ";"
-                + " -fx-border-radius: " + Palette.RADIUS_TIGHT + ";"
-                + " -fx-min-width: 56; -fx-cursor: hand;");
-        b.setOnAction(e -> {
-            prefs.setWorldInflation(mean);
-            prefs.save(game.getGameFiles());
-            showSettingsMenu();
-        });
-        return b;
-    }
 
     /**
      * A setting: what it is, what it does, and a switch that says which way

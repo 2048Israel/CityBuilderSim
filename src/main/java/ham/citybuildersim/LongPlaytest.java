@@ -298,8 +298,95 @@ public class LongPlaytest {
     static int loansPastWatch, loansPastOne, loansPastT, projectsPastOne;
     static double lentPastOne, lentPastT, rateSumPastOne, rateMaxPastOne, rateSumPastT, rateMaxPastT;
     static final java.util.Map<String, Integer> refusedOnPrice = new java.util.TreeMap<>();
+
+    /*
+     * THE LANDLORDS' MORTGAGES (0.7.11): what they wrote, what the insurance
+     * took and paid, and every month's reason the landlords built or did not,
+     * counted by its words (houseReason()) - the batch's ensembles were read
+     * off these and the house trace.
+     */
+    static int mortgagesWritten;
+    static double mortgagesLent, premiumsRun, claimsRun;
+    static final java.util.Map<String, Integer> houseReasons = new java.util.TreeMap<>();
+
+    /** The landlords' month in a word, off the advisor's line: what built it, or what stopped it. */
+    static String houseReason(String line) {
+        if (line == null || line.isEmpty()) return "not asked";
+        if (line.startsWith("Built") && line.contains("on an insured mortgage")) return "built on a mortgage";
+        if (line.startsWith("Built")) return "built, paid for";
+        if (line.contains("down payment")) return "held: the down payment";
+        if (line.contains("the lender asks")) return "declined: the lender's test";
+        if (line.contains("cover its interest")) return "declined: the interest test";
+        if (line.contains("rent does not cover")) return "held: rent under the hurdle";
+        if (line.contains("housing ahead of jobs")) return "held: housing ahead of jobs";
+        if (line.contains("already building")) return "held: already building";
+        if (line.contains("no land") || line.startsWith("Could not build")) return "held: no land";
+        if (line.contains("borrowing ban")) return "held: borrowing ban";
+        if (line.contains("short of capital against everything")) return "held: the bank's leverage";
+        if (line.contains("bank")) return "held: the bank";
+        if (line.startsWith("Declined")) return "declined: other";
+        return "held: other";
+    }
+
+    static void countMortgages(Game g) {
+        BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+        mortgagesWritten += cr.getMortgagesWrittenThisMonth();
+        for (Mortgage m : cr.getMortgages()) if (m.getMonthStarted() == g.getMonth()) mortgagesLent += m.getLoan();
+        premiumsRun += cr.getPremiumsThisMonth();
+        claimsRun += cr.getInsuredWrittenOffThisMonth();
+        houseReasons.merge(houseReason(g.getLastInvestment(g.getSectors().realEstate().key())), 1, Integer::sum);
+    }
     static int salvageBuildingsDistress, salvageBuildingsSpare;
     static double salvageUnits, salvageUnitsBought, salvagePaid, salvagePaidDistress, salvageUsed;
+
+    /*
+     * THE LEVERAGE RATIO AND THE BRANCHES (0.7.11, round 2): how often the
+     * leverage requirement was the one that bound, the ratio at its lowest,
+     * and the branches opened - by where the bank's capital stood the month
+     * each one opened - and closed. Plus a row of <prefix>-bank.csv a month
+     * when the trace is on.
+     */
+    static int leverageMonths, levBankMonths, branchesOpened, branchesClosedSeen, lastBranches = -1;
+    static final java.util.Map<String, Integer> openedByStance = new java.util.TreeMap<>();
+    static double lowestLeverage = Double.MAX_VALUE;
+    static int lowestLeverageMonth;
+    static int mortgagesRefusedForCapital;
+
+    static void countLeverage(Game g) {
+        Bank bk = g.getBank();
+        int standing = (int) Math.round(bk.getBranches());
+        if (standing > 0) {
+            levBankMonths++;
+            if (bk.leverageBinds()) leverageMonths++;
+            double lev = bk.leverageRatio();
+            if (!bk.isInsolvent() && bk.exposure() > 0 && lev < lowestLeverage) {
+                lowestLeverage = lev;
+                lowestLeverageMonth = g.getMonth();
+            }
+        }
+        if (lastBranches >= 0 && standing > lastBranches) {
+            branchesOpened += standing - lastBranches;
+            openedByStance.merge(String.valueOf(bk.payoutStance()), standing - lastBranches, Integer::sum);
+        }
+        lastBranches = standing;
+        branchesClosedSeen = g.getBranchesClosed();
+        BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+        String why = g.getLastInvestment(g.getSectors().realEstate().key());
+        if (why != null && why.contains("short of capital against everything")) mortgagesRefusedForCapital++;
+        if (traceBank != null) {
+            double pol = g.getDebtManager().getPolicyRate();
+            traceBank.printf(java.util.Locale.ROOT,
+                    "%d,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.3f,%.3f,%s,%d,%d,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d%n",
+                    g.getMonth(), bk.equity(), bk.exposure(), bk.getWeightedBook(),
+                    Math.min(99, bk.leverageRatio()), Math.min(99, bk.capitalRatio()), bk.leverageBinds() ? 1 : 0,
+                    bk.minimumEquity(), bk.targetEquity(), bk.payoutStance(), standing, bk.getUncoveredMonths(),
+                    g.getBranchesClosed(), bk.insuredMortgageRate(pol),
+                    bk.fundsTransferPrice(pol, Mortgage.MORTGAGE_TERM_MONTHS), bk.runningCostRate(),
+                    bk.capitalCharge(pol, Mortgage.MORTGAGE_TERM_MONTHS, Bank.RISK_INSURED_MORTGAGE),
+                    bk.prime(pol), pol, bk.getFailures(), bk.leverageTarget(), bk.capitalTarget(),
+                    bk.getMortgageBook(), bk.getNetIncome(), cr.isInsuredRationed() ? 1 : 0);
+        }
+    }
 
     static void countPriceAndPlant(Game g) {
         for (BusinessDebtManager.Written w : g.getEconomyManager().getBusinessDebtManager().getWrittenThisMonth()) {
@@ -432,6 +519,8 @@ public class LongPlaytest {
         countDefaults(g);
         countPriceAndPlant(g);
         countCapitalLimits(g);
+        countMortgages(g);
+        countLeverage(g);
         // -Dplaytest.defaults=true (0.7.8): every month the bank failed, a
         // sector went under whole, or the provision took a quarter of the
         // equity it opened with - and the sectors behind it: what each owes
@@ -965,8 +1054,9 @@ public class LongPlaytest {
         if (fxRun.getRate() >= fxRun.getMaxRate() * (1 - 1e-9)) monthsAtGuard++;
         double vaultNow = fxRun.getReservesUsd();
         if (vaultNow < vaultLow) { vaultLow = vaultNow; vaultLowMonth = g.getMonth(); }
-        if (halfGoneMonth == 0 && vaultNow < Game.FOUNDING_RESERVE_USD / 2) halfGoneMonth = g.getMonth();
-        if (emptyMonth == 0 && vaultNow < Game.FOUNDING_RESERVE_USD / 100) emptyMonth = g.getMonth();
+        // Against THIS city's founders' dollars (0.7.10), which the preset chose.
+        if (halfGoneMonth == 0 && vaultNow < g.getFoundingReserveUsd() / 2) halfGoneMonth = g.getMonth();
+        if (emptyMonth == 0 && vaultNow < g.getFoundingReserveUsd() / 100) emptyMonth = g.getMonth();
         // The land office's month, struck with the budget's (0.7.6).
         if (fxRun.getLandUsdThisMonth() > 0) {
             monthsLandBought++;
@@ -1270,6 +1360,206 @@ public class LongPlaytest {
     /** True once the dial is the flag's rather than the advisor's: the flag is set and the currency may move. */
     static boolean holdsPolicyRate(Game g) {
         return POLICY_RATE != null && g.getMonth() > ForeignAccounts.SETTLING_MONTHS;
+    }
+
+    /* =====================================================================
+       THE FOUNDING, AS A CHOICE (0.7.10)
+
+       -Dplaytest.founding=lean|standard|wealthy founds the city on one of
+       Founding's presets: Lean's D$25M and US$10M, Standard's D$100M and
+       US$25M (Game's two constants, the default), or Wealthy's D$2.5B and
+       US$1B - the start every city had from 0.6.10 to 0.7.9. The name stays
+       Danzik and the world the default, so the only thing the flag moves is
+       the money. A run on wealthy is the 0.7.9 run to the byte, which is the
+       proof that making the founding a choice changed nothing else.
+       ===================================================================== */
+
+    /** The founding preset under -Dplaytest.founding, standard when unset. */
+    static final Founding.Preset FOUNDING = Founding.Preset.valueOf(
+            System.getProperty("playtest.founding", "standard").trim().toUpperCase(java.util.Locale.ROOT));
+
+    /** The city the run founds: Danzik, on the flag's preset, in the default world. */
+    static Founding founding() {
+        return Founding.named(Founding.DEFAULT_CITY_NAME, FOUNDING, WorldEconomy.DEFAULT_MEAN_INFLATION);
+    }
+
+    /* =====================================================================
+       THE TRACE, BESIDE THE REPORT (0.7.10)
+
+       -Dplaytest.trace=<prefix> writes five files (two at 0.7.10, the rest
+       below) and never a line of the report, so a traced run's report is
+       the untraced run's to the byte:
+       <prefix>-month.csv, one row a month - the treasury, its debt and what
+       servicing it costs against revenue, the four ways a treasury goes short
+       (the central bank's advances, arrears, notes and T-bills, the
+       overdraft), the vault and the defence, the currency against its guard,
+       the price level, the bank's failures, the refused skips and the
+       advisor's refusals for money - and <prefix>-borrow.csv, one row for
+       every piece of city paper the month it first appears: what it is, its
+       face in local money, the yield it was issued at, and what the advisor
+       was trying to build when it borrowed, if it was. The founding batch's
+       ensembles are read off these (the project's founding-a-city.md).
+
+       ...AND A THIRD, <prefix>-house.csv (0.7.11): the landlords' month -
+       the homes, the people, the jobs and the pressure; both rents against
+       what a new home requires and the break-even; the landlord's till,
+       assets and debt, its mortgages and its bullets apart; the insured
+       rate beside prime and its own quote; the insurance's premiums and
+       claims; the principal its mortgages paid and the terms renewed or
+       fallen due; and the advisor's line, whose words say why it built or
+       did not. The mortgage batch's ensembles are read off it.
+
+       ...AND A FOURTH AND A FIFTH (0.7.11, round 2): <prefix>-pop.csv, the
+       people's month - who lives here by age, what migration aimed at and
+       did and the pulls behind it, the two housing markets, the jobs and
+       the households (tracePop()); and <prefix>-bank.csv, the bank's month -
+       its equity against the exposure and the weighted book, both ratios
+       and both targets and which requirement binds, its stance, its
+       branches and the months they have not paid, and the insured rate's
+       parts (countLeverage()).
+       ===================================================================== */
+
+    /** The trace's prefix under -Dplaytest.trace, or null. */
+    static final String TRACE = System.getProperty("playtest.trace");
+    static java.io.PrintWriter traceMonths, traceBorrow, traceHouse, tracePop, traceBank;
+    /** The paper already written to the borrow file, by identity. */
+    static final java.util.Set<Debt> paperSeen =
+            java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    /**
+     * Writes every piece of paper not yet written, with what it paid for -
+     * called the moment the advisor borrows, so the purpose is its own, and
+     * at the end of every month for whatever the game issued by itself.
+     */
+    static void notePaper(Game g, String purpose) {
+        if (traceBorrow == null) return;
+        for (Debt d : g.getDebtManager().getDebt()) {
+            if (paperSeen.add(d)) {
+                // The yield it was issued at; paper issued abroad records none, so its coupon.
+                boolean yielded = d.getIssueYield() > 0;
+                double rate = yielded ? d.getIssueYield()
+                        : d instanceof LongTermBond term ? term.getCouponRate() : 0;
+                traceBorrow.printf(java.util.Locale.ROOT, "%d,%s,%s,%b,%.3f,%.6f,%s,%d,%s%n",
+                        g.getMonth(), d.getType().replace(',', ';'), d.getClass().getSimpleName(),
+                        d.isForeign(), d.getOustandingPrincipal(), rate, yielded ? "yield" : "coupon",
+                        d.getDuration(), purpose.replace(',', ';'));
+            }
+        }
+    }
+
+    static void traceOpen() {
+        if (TRACE == null) return;
+        try {
+            traceMonths = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-month.csv")));
+            traceBorrow = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-borrow.csv")));
+            traceHouse = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-house.csv")));
+            tracePop = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-pop.csv")));
+            traceBank = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-bank.csv")));
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException("cannot write the trace at " + TRACE, e);
+        }
+        traceMonths.println("month,pop,cash,gdp,taxIncome,interest,cityDebt,foreignDebt,notes,advances,"
+                + "arrears,overdraft,rate,parity,atGuard,index,inflation,vaultUsd,defenceUsd,"
+                + "bankFails,policy,cityRate,refusedSkips,noMoney");
+        traceBorrow.println("month,type,kind,foreign,face,rate,rateIs,months,for");
+        traceHouse.println("month,pop,homes,households,capacity,jobs,latent,pressure,rentF,rentS,reqF,reqS,"
+                + "breakEven,reCash,reAssets,rePrincipal,mortgages,mortgagePrincipal,bulletPrincipal,"
+                + "mortgageRate,insuredRate,prime,reQuote,policy,index,inflation,unemployment,"
+                + "premiums,claims,mortgageRepaid,renewed,fallenDue,reNet,reRaised,reDividends,why");
+        tracePop.println("month,pop,babies,children,teens,adults,seniors,births,deaths,target,arrivals,departures,"
+                + "crowding,residentsPerJob,affordPull,crimePull,crimeDepart,seniorPull,decliningShare,"
+                + "familyHomes,studioHomes,familyPressure,studioPressure,jobs,unemployment,households");
+        traceBank.println("month,equity,exposure,weighted,leverage,capitalRatio,levBinds,minimum,target,stance,"
+                + "branches,uncovered,closed,insuredRate,insFtp,insRun,insCap,prime,policy,failures,levTarget,"
+                + "capTarget,mortgageBook,netIncome,insuredRationed");
+        // Closed however the run ends - a finding exits early too.
+        Runtime.getRuntime().addShutdownHook(new Thread(LongPlaytest::traceClose));
+    }
+
+    static void traceMonth(Game g) {
+        if (traceMonths == null) return;
+        DebtManager paper = g.getDebtManager();
+        notePaper(g, "");
+        double notes = 0;
+        for (Debt d : paper.getDebt()) {
+            if (d instanceof ShortTermTBill) notes += d.getOustandingPrincipal();
+        }
+        ForeignAccounts fx = g.getForeignAccounts();
+        int noMoney = 0;
+        for (Map.Entry<String, Integer> r : refusals.entrySet()) {
+            if (r.getKey().endsWith(": no money")) noMoney += r.getValue();
+        }
+        traceMonths.printf(java.util.Locale.ROOT,
+                "%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d,%.6f,%.6f,%d,%d%n",
+                g.getMonth(), g.getPopulationManager().getPopulation(), g.getCash(),
+                g.getEconomyManager().getMonthGdp(), g.getEconomyManager().getTaxIncome(),
+                g.getEconomyManager().getNationalAccounts().getInterestExpense(),
+                paper.getAllPrincipal(), paper.getForeignPrincipal(), notes,
+                g.getCentralBank().getAdvancesToTreasury(), g.getArrearsTotal(), paper.getOverdraft(),
+                fx.getRate(), fx.getParity(), fx.getRate() >= fx.getMaxRate() * (1 - 1e-9) ? 1 : 0,
+                g.getPriceIndex().getIndex(), g.getPriceIndex().inflation(),
+                fx.getReservesUsd(), fx.getDefenceUsd(), g.getBank().getFailures(),
+                paper.getPolicyRate(), paper.getRate(), refusedSkips, noMoney);
+        traceHouse(g);
+        tracePop(g);
+    }
+
+    /**
+     * The people's month, one row of <prefix>-pop.csv (0.7.11, round 2): who
+     * lives here by age, what migration aimed at and did and why, and the two
+     * housing markets - the trace that asks why a city with the same jobs
+     * holds fewer people.
+     */
+    static void tracePop(Game g) {
+        if (tracePop == null) return;
+        PopulationCohorts c = g.getCohorts();
+        Migration mg = g.getMigration();
+        ham.citybuildersim.sectors.RealEstate re = g.getSectors().realEstate();
+        tracePop.printf(java.util.Locale.ROOT,
+                "%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.3f,%.3f,%.1f,%.3f,%.3f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%d,%d,%.4f,%.4f,%d,%.4f,%.1f%n",
+                g.getMonth(), g.getPopulationManager().getPopulation(),
+                c.get(AgeBand.BABY), c.get(AgeBand.CHILD), c.get(AgeBand.TEEN), c.get(AgeBand.ADULT),
+                c.get(AgeBand.SENIOR), c.getLastBirths(), c.getLastDeaths(),
+                mg.getLastTarget(), mg.getLastArrivals(), mg.getLastDepartures(), mg.getLastCrowding(),
+                mg.getLastResidentsPerJob(), mg.getLastAffordabilityPull(), mg.getLastCrimePull(),
+                mg.getLastCrimeDepartures(), mg.getLastSeniorPull(), mg.getLastDecliningShare(),
+                re.getFamilyHomes(), re.getStudioHomes(), re.familyPressure(), re.studioPressure(),
+                g.getPopulationManager().getTotalJobs(), g.getPopulationManager().getUnemploymentRate(),
+                re.getHouseholdCount());
+    }
+
+    /** The landlords' month, one row of <prefix>-house.csv (0.7.11). */
+    static void traceHouse(Game g) {
+        if (traceHouse == null) return;
+        ham.citybuildersim.sectors.RealEstate re = g.getSectors().realEstate();
+        BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+        String key = re.key();
+        int jobs = g.getPopulationManager().getTotalJobs();
+        int capacity = g.getHouseholdCapacity();
+        double mortgages = cr.getMortgagePrincipal(key);
+        String why = String.valueOf(g.getLastInvestment(key)).replace(',', ';');
+        traceHouse.printf(java.util.Locale.ROOT,
+                "%d,%d,%d,%.1f,%d,%d,%.4f,%.4f,%.5f,%.5f,%.5f,%.5f,%.5f,%.3f,%.3f,%.3f,%d,%.3f,%.3f,"
+                        + "%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.3f,%.3f,%.3f,%d,%d,%.3f,%.3f,%.3f,%s%n",
+                g.getMonth(), g.getPopulationManager().getPopulation(), re.getHomes(), re.getHouseholdCount(),
+                capacity, jobs, jobs * 2.25 / Math.max(1, capacity), re.housingPressure(),
+                re.getRentPrice(), re.getStudioRentPrice(), re.rentRequired(true), re.rentRequired(false),
+                re.rentBreakEven(), g.getEconomyManager().getSectorCash(key), cr.getAssets(key),
+                cr.getPrincipal(key), cr.getMortgageCount(key), mortgages, cr.getPrincipal(key) - mortgages,
+                cr.getMortgageRate(key), cr.getInsuredMortgageRate(), cr.getPrimeRate(), cr.getRate(key),
+                g.getDebtManager().getPolicyRate(), g.getPriceIndex().getIndex(), g.getPriceIndex().inflation(),
+                g.getPopulationManager().getUnemploymentRate(),
+                cr.getPremiumsThisMonth(), cr.getInsuredWrittenOffThisMonth(), cr.getMortgageRepaidThisMonth(key),
+                cr.getRenewedThisMonth(), cr.getFallenDueThisMonth(), re.statement().netIncome,
+                g.getEconomyManager().getEquityRaised(key), g.getEconomyManager().getDividendsPaid(key), why);
+    }
+
+    static synchronized void traceClose() {
+        if (traceMonths != null) traceMonths.close();
+        if (traceBorrow != null) traceBorrow.close();
+        if (traceHouse != null) traceHouse.close();
+        if (tracePop != null) tracePop.close();
+        if (traceBank != null) traceBank.close();
+        traceMonths = traceBorrow = traceHouse = tracePop = traceBank = null;
     }
 
     /**
@@ -2057,6 +2347,7 @@ public class LongPlaytest {
                 } else {
                     g.handleLongBondLogic(needed, 20, 100);
                 }
+                notePaper(g, quantity + " x " + name);   // the trace (0.7.10); nothing else reads it
                 result = g.buildStack(t, quantity, false);
             }
         }
@@ -2306,6 +2597,7 @@ public class LongPlaytest {
             countTheCentralBank(g);
             countTheHolders(g);
             audit(g);
+            traceMonth(g);
         }
     }
 
@@ -2568,9 +2860,11 @@ public class LongPlaytest {
             @Override public void write(byte[] b, int off, int len) { }
         });
 
-        Game g = new Game(files);
+        // On the flag's preset (0.7.10): Standard when unset. See THE FOUNDING, AS A CHOICE.
+        Game g = new Game(files, founding());
         List<String> log = new ArrayList<>();
         long started = System.currentTimeMillis();
+        traceOpen();
 
         System.setOut(quiet);
         try {
@@ -2756,6 +3050,7 @@ public class LongPlaytest {
                             log.add(String.format("  m%-5d borrowed US$%,.0fk abroad at %.2f%%",
                                     g.getMonth(), ask, m.foreignRate() * 100));
                         }
+                        notePaper(g, "cheap money taken because it was cheap (every 19th stop)");
                     }
                 }
 
@@ -3340,10 +3635,10 @@ public class LongPlaytest {
         // and what it is worth at home today.
         out.printf("  the vault: %s%,.0fk (%s%,.0fk at today's rate), %s months of imports at %s%,.0fk/mo%n",
                 Currency.FOREIGN_SYMBOL, fx.getReservesUsd(),
-                Currency.QUALIFIED, fx.getReserves(),
+                g.getCurrency().qualifiedSymbol(), fx.getReserves(),
                 fx.importCover() == Double.MAX_VALUE ? "inf"
                         : String.format("%.1f", fx.importCover()),
-                Currency.QUALIFIED, fx.monthlyImports());
+                g.getCurrency().qualifiedSymbol(), fx.monthlyImports());
         OutwardInvestment abroad = g.getOutwardInvestment();
         out.printf("  abroad, the sectors' own: US$%,.0fk (%s at today's rate), %.0f%% of their wealth wanted"
                 + " on a %.2f-point spread; sent $%,.0fk, brought home $%,.0fk, earned $%,.0fk since founding; peak US$%,.0fk%n",
@@ -3429,6 +3724,28 @@ public class LongPlaytest {
                     refusedOnPrice.isEmpty() ? "never" : refusedOnPrice.toString(),
                     salvageBuildingsDistress, salvageBuildingsSpare, salvageUnits, salvageUnitsBought, salvagePaid,
                     salvagePaidDistress, salvageUsed, g.getSectors().construction().getSalvage());
+            // The landlords' mortgages and the city's insurance (0.7.11) - see countMortgages().
+            BusinessDebtManager lenderAtEnd = g.getEconomyManager().getBusinessDebtManager();
+            String re = g.getSectors().realEstate().key();
+            out.printf("  the landlords' mortgages over the run: %d written for $%,.0fk of loans, %d renewed, %d fell due"
+                    + " unrenewed; at the end %d owed, $%,.0fk at %.2f%% (and $%,.0fk of other debt); the insurance took"
+                    + " $%,.0fk of premiums and paid $%,.0fk of claims (%s $%,.0fk); what the landlords did, by month: %s%n",
+                    mortgagesWritten, mortgagesLent, lenderAtEnd.getRenewedLifetime(), lenderAtEnd.getFallenDueLifetime(),
+                    lenderAtEnd.getMortgageCount(re), lenderAtEnd.getMortgagePrincipal(re),
+                    lenderAtEnd.getMortgageRate(re) * 100,
+                    lenderAtEnd.getPrincipal(re) - lenderAtEnd.getMortgagePrincipal(re), premiumsRun, claimsRun,
+                    premiumsRun >= claimsRun ? "ahead" : "behind", Math.abs(premiumsRun - claimsRun), houseReasons);
+            // The leverage ratio and the branches (0.7.11, round 2) - see countLeverage().
+            Bank bankAtEnd = g.getBank();
+            out.printf("  the leverage ratio over the run: the larger requirement in %d of %d month(s) with a bank;"
+                    + " at its lowest %.2f%% (m%d); at the end %.2f%% against %.2f%% on the risk-weighted book,"
+                    + " targets %.2f%% and %.2f%%; the landlords held for the bank's leverage in %d month(s);"
+                    + " branches opened %d %s, closed %d, standing %d%n",
+                    leverageMonths, levBankMonths, lowestLeverage < Double.MAX_VALUE ? lowestLeverage * 100 : 0,
+                    lowestLeverageMonth, Math.min(999, bankAtEnd.leverageRatio()) * 100,
+                    Math.min(999, bankAtEnd.capitalRatio()) * 100, bankAtEnd.leverageTarget() * 100,
+                    bankAtEnd.capitalTarget() * 100, mortgagesRefusedForCapital, branchesOpened, openedByStance,
+                    branchesClosedSeen, Math.round(bankAtEnd.getBranches()));
             // Its own shares and its desk against its capital (0.7.8, round 4) - see countCapitalLimits().
             int E = Exchange.Seller.EMIGRANT.ordinal(), W = Exchange.Seller.WORLD.ordinal(), H = Exchange.Seller.HOUSEHOLD.ordinal();
             out.printf("  its own shares and its desk against its capital: bought back $%,.0fk a year over the run"

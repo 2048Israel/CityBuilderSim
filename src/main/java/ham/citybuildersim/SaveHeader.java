@@ -30,6 +30,9 @@ public class SaveHeader {
     private int saveFormat;
     private long savedAt;
 
+    /** The city's name (0.7.10), DataSave's founding record's; absent on an older save. */
+    private String cityName;
+
     public int getMonth()          { return month; }
     public int getPopulation()     { return population; }
     public double getCash()        { return cash; }
@@ -40,6 +43,15 @@ public class SaveHeader {
 
     public boolean hasName() {
         return slotName != null && !slotName.isBlank();
+    }
+
+    /**
+     * The city in the slot, by name - for the slot list. A save from before
+     * 0.7.10 has none and is the city every save was, Danzik, which is what it
+     * loads as (Founding.legacy()), so the list and the load agree.
+     */
+    public String getCityName() {
+        return cityName == null || cityName.isBlank() ? Founding.DEFAULT_CITY_NAME : cityName;
     }
 
     /** True when this file was written by a build that knows more than this one. */

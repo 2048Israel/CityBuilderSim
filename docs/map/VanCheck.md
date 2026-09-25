@@ -1,4 +1,4 @@
-# VanCheck.java - 305 lines · 5 methods · 0 constants · harnesses
+# VanCheck.java - 309 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/VanCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -42,18 +42,18 @@
 > 
 > See claude/the-sixth-link.md and Sector's THE FLEET.
 
-**Uses:** [Good](Good.md) (23), [Sector](Sector.md) (16), [Game](Game.md) (4), [GameFiles](GameFiles.md) (2), [SectorState](SectorState.md) (2), [BuildingManager](BuildingManager.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (23), [Sector](Sector.md) (16), [Game](Game.md) (4), [GameFiles](GameFiles.md) (2), [SectorState](SectorState.md) (2), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 99 | · 1. WHAT A FLEET IS FOR |
-| 141 | · 2. THE FLOOR AND THE CEILING OF THE RATIO |
-| 171 | · 3. YOU CANNOT PUT A FLEET ON THE ROAD IN A MONTH |
-| 192 | · 4. IT WEARS OUT |
-| 227 | · 5. A SAVE FROM BEFORE VANS HAD VANS |
-| 257 | · 6. IN A CITY THAT RUNS |
+| 103 | · 1. WHAT A FLEET IS FOR |
+| 145 | · 2. THE FLOOR AND THE CEILING OF THE RATIO |
+| 175 | · 3. YOU CANNOT PUT A FLEET ON THE ROAD IN A MONTH |
+| 196 | · 4. IT WEARS OUT |
+| 231 | · 5. A SAVE FROM BEFORE VANS HAD VANS |
+| 261 | · 6. IN A CITY THAT RUNS |
 
 ## Fields (state)
 
@@ -65,10 +65,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 262 | **type** `public class VanCheck` | The vans: what a sector needs, what it costs it, and what happens while it waits for them. |
+| 44 | 266 | **type** `public class VanCheck` | The vans: what a sector needs, what it costs it, and what happens while it waits for them. |
 | 48 | 5 | `static void quietly(Runnable r)` |  |
 | 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 65 | 3 | `static boolean same(double a, double b)` | Bitwise. |
-| 69 | 236 | `public static void main(String[] args)` |  |
+| 69 | 240 | `public static void main(String[] args)` |  |
 

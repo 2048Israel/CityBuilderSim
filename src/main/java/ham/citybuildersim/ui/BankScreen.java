@@ -184,6 +184,7 @@ final class BankScreen {
         column.getChildren().add(bankRow("Capital & owners",
                 "its capital against its target, its payout, its shares",
                 bank.isInsolvent() ? "failed"
+                        : bank.leverageBinds() ? share(bank.leverageRatio()) + " leverage"
                         : bank.getWeightedBook() > 0 ? share(bank.capitalRatio()) + " capital" : "nothing lent",
                 bank.payoutDecision(), stanceTone(bank), "Capital & owners"));
         column.getChildren().add(bankRow("History",
@@ -258,16 +259,19 @@ final class BankScreen {
      * limitCell()'s shape, with the bar where its note would start.
      */
     VBox capitalCell(Bank bank) {
-        boolean lent = bank.getWeightedBook() > 0;
+        // On the measure that binds since round 2 of 0.7.11: the leverage
+        // ratio when it is the larger requirement (Bank.leverageBinds()).
+        boolean onLeverage = bank.leverageBinds();
+        boolean lent = onLeverage || bank.getWeightedBook() > 0;
 
-        Label what = new Label("CAPITAL RATIO");
+        Label what = new Label(onLeverage ? "LEVERAGE RATIO" : "CAPITAL RATIO");
         what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
 
-        Label figure = new Label(bank.isInsolvent() ? "failed" : lent ? share(bank.capitalRatio()) : "—");
+        Label figure = new Label(bank.isInsolvent() ? "failed" : lent ? share(bank.bindingRatio()) : "—");
         figure.setStyle(Palette.figure(Palette.SIZE_SECTION, stanceTone(bank)));
 
         Label says = new Label(String.format("target %s, minimum %s",
-                share(bank.capitalTarget()), share(Bank.CAPITAL_RATIO)));
+                share(bank.bindingTarget()), share(bank.bindingMinimum())));
         says.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
 
         VBox cell = new VBox(1, what, figure, capitalBand(bank, 150, false), says);
@@ -283,13 +287,19 @@ final class BankScreen {
      * of the band marked on it. The scale runs to 1.6 times the top, so the
      * band sits in the left of it and a well-capitalised bank reads as full;
      * a ratio past the scale pins at the end and the tooltip says so.
+     *
+     * ON THE MEASURE THAT BINDS since round 2 of 0.7.11: the leverage ratio
+     * against its 3% minimum and the bank's leverage target and top when
+     * the leverage requirement is the larger (Bank.leverageBinds()), the
+     * risk-based ratio as before otherwise. The tooltip gives both.
      */
     Pane capitalBand(Bank bank, double width, boolean labelled) {
 
-        double min = Bank.CAPITAL_RATIO, target = bank.capitalTarget(), top = bank.capitalTop();
+        boolean onLeverage = bank.leverageBinds();
+        double min = bank.bindingMinimum(), target = bank.bindingTarget(), top = bank.bindingTop();
         double scale = top * 1.6;
-        boolean lent = bank.getWeightedBook() > 0;
-        double ratio = bank.isInsolvent() ? 0 : lent ? bank.capitalRatio() : 0;
+        boolean lent = onLeverage || bank.getWeightedBook() > 0;
+        double ratio = bank.isInsolvent() ? 0 : lent ? bank.bindingRatio() : 0;
         final double BAR = labelled ? 14 : 7;
         double tall = labelled ? BAR + 18 : BAR + 4;
 
@@ -340,11 +350,17 @@ final class BankScreen {
         }
 
         Tooltip tip = new Tooltip(String.format(
-                "Capital: %s of its risk-weighted book%s\nthe minimum the city requires: %s\n"
-                + "its own target: %s\nthe top of its band: %s",
+                "Capital: %s of %s%s\nthe minimum the city requires: %s\n"
+                + "its own target: %s\nthe top of its band: %s\n"
+                + "(risk-based %s against %s; leverage %s against %s - the larger requirement binds)",
                 bank.isInsolvent() ? "none - it has failed" : lent ? share(ratio) : "nothing lent",
+                onLeverage ? "everything it has lent" : "its risk-weighted book",
                 lent && ratio > scale ? " (past the end of this scale)" : "",
-                share(min), share(target), share(top)));
+                share(min), share(target), share(top),
+                bank.getWeightedBook() > 0 ? share(bank.capitalRatio()) : "nothing weighed",
+                share(Bank.CAPITAL_RATIO),
+                bank.exposure() > 0 ? share(bank.leverageRatio()) : "nothing lent",
+                share(Bank.LEVERAGE_RATIO_MIN)));
         tip.setShowDelay(Duration.millis(250));
         Tooltip.install(band, tip);
         return band;
@@ -378,7 +394,7 @@ final class BankScreen {
 
         // One scale for every bar: the dearest rate on the ladder.
         double top = Math.max(Math.max(l.prime(), l.carry()), Math.max(families, city));
-        top = Math.max(top, Math.max(l.policy(), l.household()));
+        top = Math.max(top, Math.max(l.policy(), Math.max(l.household(), l.mortgage())));
         for (String name : owing) top = Math.max(top, credit.getRate(name));
 
         column.getChildren().add(statementHead("The ladder of its rates"));
@@ -457,6 +473,28 @@ final class BankScreen {
                         + "default here, so no term premium and no expected loss",
                 "Foreigners borrowing here to hold the money abroad, while the bank lends cheaper "
                         + "than the world pays.",
+                null));
+        /*
+         * AN INSURED MORTGAGE (0.7.11): the ten-year point of the bank's own
+         * money, its running costs and - since round 2 - the capital its
+         * leverage requirement ties up; nothing for loss, the city insures it
+         * (Bank.insuredMortgageRate()). The landlords buy their buildings on
+         * it; a rung whether or not one is owed yet, so a player can see
+         * what a new one would be written at.
+         */
+        column.getChildren().add(rung("An insured mortgage (10 years)", l.mortgage(), top, Palette.LADDER[1],
+                String.format("%s on the policy rate - the %d-year term premium %s%s - running the bank %s "
+                        + "and the capital the %s leverage minimum ties up %s; no expected loss, the city "
+                        + "insures it (%s on prime)",
+                        points(l.mortgage() - l.policy()), Mortgage.MORTGAGE_TERM_MONTHS / 12,
+                        points(DebtManager.termPremium(Mortgage.MORTGAGE_TERM_MONTHS)),
+                        bank.windowShare() > 0 ? String.format(", the window's penalty on its share %s",
+                                points(CentralBank.WINDOW_PENALTY * bank.windowShare())) : "",
+                        points(l.mortgageOverTransfer() - l.mortgageCapital()),
+                        share(Bank.LEVERAGE_RATIO_MIN), points(l.mortgageCapital()),
+                        points(l.overPrime(l.mortgage()))),
+                "What the landlords' new buildings are financed at, fixed for the term and renewed at "
+                        + "the day's rate when it ends.",
                 null));
         column.getChildren().add(rung("The city's own paper", city, top, Palette.RAMP_REST,
                 points(l.overPrime(city)) + " on prime: the city's rate, which the market sets on its "
@@ -638,9 +676,10 @@ final class BankScreen {
         return vitalsBar(
                 limitCell("PROFIT", money(bank.getNetIncome()), "this month",
                         bank.getNetIncome() < 0 ? Palette.BAD : Palette.GOOD),
-                limitCell("CAPITAL RATIO",
-                        bank.isInsolvent() ? "failed" : bank.getWeightedBook() > 0 ? share(bank.capitalRatio()) : "—",
-                        "its target " + share(bank.capitalTarget()), stanceTone(bank)),
+                limitCell(bank.leverageBinds() ? "LEVERAGE RATIO" : "CAPITAL RATIO",
+                        bank.isInsolvent() ? "failed"
+                                : bank.leverageBinds() || bank.getWeightedBook() > 0 ? share(bank.bindingRatio()) : "—",
+                        "its target " + share(bank.bindingTarget()), stanceTone(bank)),
                 limitCell("PRIME", rate(bank.prime(dial)), "what a sound business pays", Palette.TEXT_HEAD),
                 limitCell("LENT OUT", money(bank.getBook()), "at face value", Palette.TEXT_HEAD));
     }
@@ -864,7 +903,8 @@ final class BankScreen {
     /* =====================================================================
        LENDING
 
-       Who owes it and how sound each borrower is; what it has set aside
+       Who owes it and how sound each borrower is - the landlords' insured
+       mortgages among them since 0.7.11; what it has set aside
        against them and who has stopped paying; what it lent this month
        against what its capital allows; how the next loan's rate is built;
        and what the book weighs against its capital.
@@ -963,6 +1003,52 @@ final class BankScreen {
                 defaultShare(BusinessDebtManager.defaultProbability(watch)), watch, point,
                 BusinessDebtManager.LOSS_GIVEN_DEFAULT * 100, watch, BusinessDebtManager.STATEMENT_MONTHS)));
 
+        /* ------------------------- the landlords' mortgages ------------------------- */
+        /*
+         * THE LANDLORDS' INSURED MORTGAGES (0.7.11), part of what the
+         * businesses owe above: how many, what is owed, what they pay, what
+         * their payments took off them this month, how many renew within a
+         * year, and whether every one is insured - with what the insurance
+         * has paid the bank. Every figure a getter; the principal repaid and
+         * the claims are flows the save carries.
+         */
+        column.getChildren().add(statementHead("The landlords' insured mortgages"));
+        int mortgages = credit.getMortgages().size();
+        if (mortgages == 0) {
+            column.getChildren().add(sentence(String.format(
+                    "No landlord owes one. A new one would be written at %s, fixed for %d years.",
+                    rate(credit.getInsuredMortgageRate()), Mortgage.MORTGAGE_TERM_MONTHS / 12), Palette.TEXT_MUTED));
+        } else {
+            column.getChildren().add(statementLine(String.format("%,d mortgage%s, owed", mortgages,
+                    mortgages == 1 ? "" : "s"), moneyFull(credit.getMortgagePrincipal())));
+            column.getChildren().add(statementLine("...at an average rate of", rate(credit.getMortgageRate())));
+            column.getChildren().add(statementLine("Their payments, a month", moneyFull(credit.getMortgagePayment())));
+            column.getChildren().add(statementLine("Principal repaid this month",
+                    moneyFull(credit.getMortgageRepaidThisMonth())));
+            int renewing = credit.getMortgagesRenewingWithin(12);
+            column.getChildren().add(statementLine("Renewing within a year",
+                    renewing == 0 ? "none" : String.format("%,d", renewing),
+                    renewing > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+            column.getChildren().add(statementLine("Insured by the city",
+                    credit.allMortgagesInsured() ? "all of them" : "not all", 
+                    credit.allMortgagesInsured() ? Palette.GOOD : Palette.BAD));
+        }
+        column.getChildren().add(statementLine("Claims the city paid it this month",
+                moneyFull(ui.game.getEconomyManager().getNationalAccounts().getMortgageClaims()),
+                ui.game.getEconomyManager().getNationalAccounts().getMortgageClaims() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("...and over the city's life", moneyFull(credit.getInsuredWrittenOffTotal()),
+                Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(String.format(
+                "A landlord's new building is bought with at least %.0f%% of its own money and an insured "
+                + "mortgage for the rest - CMHC's terms for rental housing: at most %.0f%% of the cost, paid "
+                + "down over %d years at a rate fixed for %d, renewed at the day's rate, and the building's "
+                + "net rent must cover the payment %.2f times. The city insures it, for a premium of %.2f%% "
+                + "of the loan, so when a landlord's debt is written down the city pays the bank what came "
+                + "off its mortgages: the bank weighs them at nothing and sets nothing aside against them.",
+                (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100, Mortgage.MORTGAGE_MAX_LOAN_TO_COST * 100,
+                Mortgage.MORTGAGE_AMORTIZATION_MONTHS / 12, Mortgage.MORTGAGE_TERM_MONTHS / 12,
+                Mortgage.MORTGAGE_DEBT_COVERAGE, Mortgage.premiumRate() * 100)));
+
         /* ------------------------------ the families ------------------------------ */
         column.getChildren().add(statementHead("The families"));
         if (bank.getHouseholdBook() <= 0 && bank.getHouseholdAllowance() <= 0) {
@@ -1021,7 +1107,9 @@ final class BankScreen {
         int line = 1;
         for (String name : Sectors.KEYS) {
             double month = bank.getWrittenOff(name);
-            double ever = credit.getWrittenOffTotal(name);
+            // What the bank lost: the insured part of a landlord's write-downs
+            // was the city's to pay (0.7.11), not the bank's to lose.
+            double ever = credit.getWrittenOffTotal(name) - credit.getInsuredWrittenOffTotal(name);
             boolean shut = credit.isBorrowingBlocked(name);
             int whole = credit.getRestructureCount(name);
             if (toDollars(ever) < 1 && whole == 0 && !shut) continue;
@@ -1119,7 +1207,13 @@ final class BankScreen {
                 Palette.SIZE_CAPTION, true), 4, q++);
         quotes.add(gridCell("The carry trade", Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, q);
         quotes.add(gridCell(points(l.overPrime(l.carry())), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, q);
-        quotes.add(gridCell(rate(l.carry()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 4, q);
+        quotes.add(gridCell(rate(l.carry()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 4, q++);
+        // ...and a landlord's insured mortgage (0.7.11): under prime, by the
+        // loss it does not carry and most of the capital (only the leverage
+        // minimum's, since round 2), over it by a longer term.
+        quotes.add(gridCell("An insured mortgage (10 years)", Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, q);
+        quotes.add(gridCell(points(l.overPrime(l.mortgage())), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, q);
+        quotes.add(gridCell(rate(l.mortgage()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 4, q);
         column.getChildren().add(subHead("...and what each borrower pays over it"));
         column.getChildren().add(quotes);
         column.getChildren().add(statementNote(String.format(
@@ -1157,10 +1251,13 @@ final class BankScreen {
                 moneyFull(bank.getWeightedBook()), Palette.TEXT_HEAD));
         column.getChildren().add(statementNote(String.format(
                 "Risk-weighted: each dollar counted by how likely it is to be lost and how long it runs. A "
-                + "city bond weighs %.0f%% of a business loan, and the desk's shares %.0f%%; \"term\" is the "
+                + "city bond weighs %.0f%% of a business loan, an insured mortgage %.0f%% - the city "
+                + "guarantees it - and the desk's shares %.0f%%; \"term\" is the "
                 + "share of its face a loan's remaining months count for, as little as %.0f%% for one repaying "
-                + "soon. The bank's capital is measured against this, not the face.",
-                Bank.RISK_CITY * 100, Bank.RISK_EQUITY * 100, Bank.SHORTEST_WEIGHT * 100)));
+                + "soon. The bank's capital is measured against this - and against the face as well, "
+                + "at the leverage minimum, whichever asks more.",
+                Bank.RISK_CITY * 100, Bank.RISK_INSURED_MORTGAGE * 100, Bank.RISK_EQUITY * 100,
+                Bank.SHORTEST_WEIGHT * 100)));
     }
 
     /** What the weight table calls each book. */
@@ -1171,6 +1268,7 @@ final class BankScreen {
             case FAMILIES   -> "The families";
             case CARRY      -> "The carry trade";
             case DESK       -> "The desk's shares";
+            case MORTGAGES  -> "Insured mortgages";
         };
     }
 
@@ -1182,7 +1280,8 @@ final class BankScreen {
        hundred times out after a currency reform); what it pays savers and
        why; its account at the central bank; how its lending is funded; what
        it can carry; and its branches, with the model's own verdict on
-       another one.
+       another one and, since round 2 of 0.7.11, on whether the ones
+       standing still pay.
        ===================================================================== */
 
     void fundingPage(VBox column) {
@@ -1294,8 +1393,10 @@ final class BankScreen {
 
         /* ---------------------------- what it can carry ---------------------------- */
         column.getChildren().add(statementHead("What it can carry"));
-        column.getChildren().add(statementLine(String.format("What its capital carries, at the %s minimum",
-                share(Bank.CAPITAL_RATIO)), moneyFull(bank.capitalLimit())));
+        column.getChildren().add(statementLine(bank.leverageBinds()
+                ? String.format("What its capital carries, weighed, at the %s leverage minimum", share(Bank.LEVERAGE_RATIO_MIN))
+                : String.format("What its capital carries, at the %s minimum", share(Bank.CAPITAL_RATIO)),
+                moneyFull(bank.capitalLimit())));
         column.getChildren().add(statementLine(String.format("What its deposits carry, lent %.0f times over",
                 Bank.LEVERAGE), moneyFull(bank.fundingLimit())));
         column.getChildren().add(statementTotal("The tighter of the two",
@@ -1366,6 +1467,11 @@ final class BankScreen {
         } else if (bank.isInsolvent()) {
             verdict = "No: a failed bank may not lend, so another counter changes nothing. It needs capital.";
             tone = Palette.BAD;
+        } else if (bank.lendsOnlyToKeepBorrowersGoing()) {
+            // Round 2 of 0.7.11: not for the capital its opening would bring.
+            verdict = "No: it is under its minimum, and a bank under its minimum is put back by its owners "
+                    + "or the city, not by opening branches for the capital they bring.";
+            tone = Palette.BAD;
         } else if (bank.capacityAnotherBranchWouldAdd() <= 0) {
             verdict = "No: its branches already reach every dollar the city has banked. A counter cannot "
                     + "fix a shortage of savings.";
@@ -1383,6 +1489,22 @@ final class BankScreen {
         }
         column.getChildren().add(sentence(verdict, tone));
 
+        /* ---------------- ...and whether one should close (0.7.11, round 2) ---------------- */
+        column.getChildren().add(subHead("Do its branches still pay?"));
+        column.getChildren().add(statementLine("Has the book kept its branches' staff?",
+                bank.branchesCoverTheirStaff() ? "yes, last month"
+                        : String.format("not for %d month%s", bank.getUncoveredMonths(),
+                                bank.getUncoveredMonths() == 1 ? "" : "s"),
+                bank.branchesCoverTheirStaff() ? Palette.GOOD : Palette.WARN));
+        column.getChildren().add(statementNote(String.format(
+                "The same test run the other way: when what the book keeps has not paid the branches' staff for "
+                + "%d months in a row, the bank closes one a month until it does, never its last. The building "
+                + "is sold as any retired building is - the plot back to the city, the material to the builders - "
+                + "and what the bank was founded with stays in it.%s",
+                Bank.BRANCH_CLOSE_MONTHS,
+                ui.game.getBranchesClosed() > 0
+                        ? String.format(" It has closed %d this session.", ui.game.getBranchesClosed()) : "")));
+
         Button build = new Button("Build a Commercial Bank  ›");
         build.setOnAction(e -> ui.buildScreen.handleAllBuildingMenus("Commercial",
                 EnumSet.of(BuildingType.COMMERCIAL)));
@@ -1395,7 +1517,9 @@ final class BankScreen {
     /* =====================================================================
        CAPITAL & OWNERS
 
-       Its capital in its band and why the target is where it is; what its
+       Its capital in its band and why the target is where it is, and since
+       round 2 of 0.7.11 the same against everything it has lent (the
+       leverage ratio); what its
        rule does with the month's profit; how its equity moved, every cause
        named and a residual that must be nothing (Bank.equityMovement(),
        since 0.7.9 - it left out the founding settlement when the screen
@@ -1425,12 +1549,31 @@ final class BankScreen {
                 + "Canada's big banks hold over what their regulator expects of them.",
                 Bank.MANAGEMENT_CUSHION * 100)));
 
+        /* ---------------- ...and against everything it has lent (0.7.11, round 2) ---------------- */
+        column.getChildren().add(subHead("...and against everything it has lent"));
+        column.getChildren().add(statementLine("Everything on its books, whatever it weighs", moneyFull(bank.exposure())));
+        column.getChildren().add(statementTotal("Leverage ratio",
+                bank.isInsolvent() ? "failed" : bank.exposure() > 0 ? share(bank.leverageRatio()) : "nothing lent",
+                bank.leverageBinds() ? stanceTone(bank) : Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("The minimum, Basel III's", share(Bank.LEVERAGE_RATIO_MIN)));
+        column.getChildren().add(statementLine("Its own target on it", share(bank.leverageTarget()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("The top of its band on it", share(bank.leverageTop())));
+        column.getChildren().add(statementNote(String.format(
+                "The backstop to the risk weights: equity of at least %s of everything the bank has lent, "
+                + "whatever it weighs - an insured mortgage, which weighs nothing, included. Its own target "
+                + "and band on it keep the proportion it chose on the risk side. %s",
+                share(Bank.LEVERAGE_RATIO_MIN),
+                bank.leverageBinds()
+                        ? "It is the larger requirement now: what the bank lends is what its capital is short against."
+                        : "The risk-weighted requirement is the larger now.")));
+
         if (bank.payoutStance() == Bank.Payout.UNDER_MINIMUM) {
             column.getChildren().add(alert("It is under the minimum",
                     String.format("Under the %s the city requires, it lends only what keeps its borrowers "
                     + "going until it is back over it - by earning it or by being given it. %s would take "
-                    + "it back to its own target of %s.", share(Bank.CAPITAL_RATIO),
-                    money(bank.recapitalisationNeeded()), share(bank.capitalTarget()))));
+                    + "it back to its own target of %s.", share(bank.bindingMinimum())
+                    + (bank.leverageBinds() ? " of everything it has lent" : ""),
+                    money(bank.recapitalisationNeeded()), share(bank.bindingTarget()))));
         }
 
         /* ------------------------ what it does with its profit ------------------------ */

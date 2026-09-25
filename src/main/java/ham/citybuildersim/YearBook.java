@@ -82,6 +82,14 @@ public final class YearBook {
      */
     private record Rule(Kind kind, String note) { }
 
+    /**
+     * Where a note names the city's money. Each city names its own since
+     * 0.7.10 (Currency), so a rule cannot: the book writes the city's plural
+     * in its place (write()), and noteOf() hands the rule back with this in
+     * it.
+     */
+    public static final String MONEY = "{the city's money}";
+
     private static Map<String, Rule> rules() {
         Map<String, Rule> m = new LinkedHashMap<>();
 
@@ -189,7 +197,7 @@ public final class YearBook {
         rate(m, "materialsPrice", "construction material, per unit in thousands");
         rate(m, "orePrice", "iron ore at the export floor, per tonne in thousands");
         rate(m, "rentPrice", "rent, per month in thousands");
-        rate(m, "fxRate", "Danzik dollars per US dollar - 1.000 at founding, HIGHER is a fallen currency");
+        rate(m, "fxRate", MONEY + " per US dollar - 1.000 at founding, HIGHER is a fallen currency");
         rate(m, "priceIndex", "the fixed basket against its base month, 1.000 at the base");
         rate(m, "policyRate", "the central bank's policy rate - the dial, by hand or by the autopilot - a fraction a year");
         rate(m, "bankPrime", "what a sound business pays the bank - its four costs added up - a fraction a year");
@@ -581,10 +589,12 @@ public final class YearBook {
        THE FILE
        ================================================================== */
 
-    public static String years(HistorySave h)   { return write(h, MONTHS_A_YEAR); }
-    public static String decades(HistorySave h) { return write(h, MONTHS_A_DECADE); }
+    /** The book a year to the row, in the city's own money's name (0.7.10). */
+    public static String years(HistorySave h, Currency money)   { return write(h, MONTHS_A_YEAR, money); }
+    /** ...and a decade to the row. */
+    public static String decades(HistorySave h, Currency money) { return write(h, MONTHS_A_DECADE, money); }
 
-    private static String write(HistorySave history, int span) {
+    private static String write(HistorySave history, int span, Currency money) {
         StringBuilder out = new StringBuilder(1 << 16);
         int months = history.months();
         String unit = span == MONTHS_A_YEAR ? "year" : "decade";
@@ -634,7 +644,8 @@ public final class YearBook {
 
         out.append("MONEY IS IN THOUSANDS throughout, as everywhere in this game: a gdp of 693 is $693,000.\n");
         out.append("RATES ARE FRACTIONS: 0.124 is 12.4%. The exceptions are crimeRate, which is crimes per 100,000 people a year,\n");
-        out.append("and fxRate, which is Danzik dollars per US dollar - 1.000 at founding, HIGHER means the currency has fallen.\n\n");
+        out.append("and fxRate, which is ").append(money.plural())
+           .append(" per US dollar - 1.000 at founding, HIGHER means the currency has fallen.\n\n");
 
         out.append("HOW A ROW WAS MADE\n");
         out.append("One row is one ").append(unit).append(". How its months became one number depends on what the number IS,\n");
@@ -657,7 +668,7 @@ public final class YearBook {
         out.append("  ").append(pad("n", 22)).append("    months in the row\n");
         for (Column c : shown) {
             out.append("  ").append(pad(c.name, 22)).append(mark(c.kind)).append(' ')
-               .append(c.note == null ? "" : c.note).append('\n');
+               .append(c.note == null ? "" : c.note.replace(MONEY, money.plural())).append('\n');
         }
         if (!silent.isEmpty()) {
             out.append("\nNOT SHOWN - every row came out blank or zero, so the column is left out rather than padding the file:\n  ");

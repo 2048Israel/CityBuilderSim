@@ -1,4 +1,4 @@
-# DebtQuote.java - 162 lines · 8 methods · 1 constants · model
+# DebtQuote.java - 163 lines · 8 methods · 1 constants · model
 
 `ham/citybuildersim/DebtQuote.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -17,8 +17,9 @@
 > A quote that is computed separately from the deal is a second definition of
 > the deal, and second definitions drift. So the quote is not a preview of the
 > arithmetic - it IS the arithmetic. Game.quoteTBill()/quoteMediumBond()/
-> quoteLongBond() work the terms out and return one of these; the matching
-> handle*Logic() then books exactly the numbers in the record it was handed and
+> quoteLongBond() - and quoteLongBondForCash(), the build screen's bond
+> (0.7.10) - work the terms out and return one of these; the matching
+> handle*() then books exactly the numbers in the record it was handed and
 > computes nothing of its own. There is no path by which the screen can promise
 > one thing and the ledger record another.
 > 
@@ -28,26 +29,26 @@
 >                        exactly what this borrowing costs the city's credit
 >                        discount or premium, plus all the coupons
 
-**Used by (5):** [BuildScreen](BuildScreen.md), [CreditCheck](CreditCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Game](Game.md)
+**Used by (6):** [BuildScreen](BuildScreen.md), [CreditCheck](CreditCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Game](Game.md), [NewGameCheck](NewGameCheck.md)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 156 | `DebtQuote.FORMAT` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 157 | `DebtQuote.FORMAT` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 121 | **type** `public record DebtQuote(String instrument, int duration, double requested, double marketRate, double rateBe...` | What a loan would cost, worked out BEFORE the player agrees to it. |
-| 54 | 3 | `public String timeUnit()` | Years for a bond, months for a bill - the unit the duration is in. |
-| 65 | 8 | `public String creditImpact()` | What the borrowing does to the city's credit, as a sentence. |
-| 83 | 33 | `public String summary()` | The terms, in the vocabulary a bond is actually described in. |
-| 118 | 3 | `public double pricePerPar()` | Where it was issued against par, the way bonds are quoted. |
-| 123 | 3 | `public boolean isDiscount()` | True when the city receives less than it will repay. |
-| 134 | 3 | `public double couponRate()` | The coupon actually charged monthly, backed out of the monthly bill. |
-| 139 | 3 | `public boolean isEmpty()` | True if the city is receiving nothing worth booking. |
-| 152 | 3 | `private static String f(double v)` | A figure on this quote, in dollars. |
-| 158 | 4 | `static { ... }` |  |
+| 43 | 121 | **type** `public record DebtQuote(String instrument, int duration, double requested, double marketRate, double rateBe...` | What a loan would cost, worked out BEFORE the player agrees to it. |
+| 55 | 3 | `public String timeUnit()` | Years for a bond, months for a bill - the unit the duration is in. |
+| 66 | 8 | `public String creditImpact()` | What the borrowing does to the city's credit, as a sentence. |
+| 84 | 33 | `public String summary()` | The terms, in the vocabulary a bond is actually described in. |
+| 119 | 3 | `public double pricePerPar()` | Where it was issued against par, the way bonds are quoted. |
+| 124 | 3 | `public boolean isDiscount()` | True when the city receives less than it will repay. |
+| 135 | 3 | `public double couponRate()` | The coupon actually charged monthly, backed out of the monthly bill. |
+| 140 | 3 | `public boolean isEmpty()` | True if the city is receiving nothing worth booking. |
+| 153 | 3 | `private static String f(double v)` | A figure on this quote, in dollars. |
+| 159 | 4 | `static { ... }` |  |
 

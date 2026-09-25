@@ -466,6 +466,12 @@ public class HealthCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings
+            // are placed free, but their running costs come out of the treasury month
+            // after month, and on the D$100M a city founds with since 0.7.10 it ran
+            // dry and simulateMonths() stopped short. Given the D$2.5B it assumed,
+            // the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             stock(city);
             BuildingManager cb = city.getBuildingManager();
             cb.addStack(cb.getTemplateByName("Walk-in Clinic"), 4, true);
@@ -1140,6 +1146,13 @@ public class HealthCheck {
             System.setOut(quiet);
             try {
                 town.run();
+                // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings
+                // are placed free, but their running costs - the coal plant's unbilled
+                // draw, the city's own services - come out of the treasury month after
+                // month, and on the D$100M a city founds with since 0.7.10 it ran dry
+                // and simulateMonths() stopped. Given the D$2.5B it assumed, the
+                // Wealthy preset's, explicitly.
+                town.setCashForTest(Founding.WEALTHY_CASH);
                 BuildingManager b = town.getBuildingManager();
                 town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 100_000_000L);
                 b.addStack(b.getTemplateByName("House"), 3000, true);

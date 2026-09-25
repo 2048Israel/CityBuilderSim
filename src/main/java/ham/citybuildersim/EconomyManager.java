@@ -314,10 +314,24 @@ public class EconomyManager {
      * they wont build more if new rent is zero profit." Maintenance on the
      * structure, property tax on the whole asset with its plot, and then a
      * margin. NO INTEREST IN THIS NUMBER: whether the building pays is this
-     * question; whether the company can carry the loan is
-     * servicesItsOwnDebt()'s, and asking it twice answered no both times.
+     * question; whether the company can carry the loan is the lender's -
+     * servicesItsOwnDebt()'s for a loan, and for a landlord's mortgage since
+     * 0.7.11 the debt coverage on housingCarry() - and asking it twice
+     * answered no both times.
      */
     public double housingBuildHurdle(BuildingsTemplate t) {
+        return housingCarry(t) * (1 + ham.citybuildersim.sectors.RealEstate.BUILD_MARGIN);
+    }
+
+    /**
+     * WHAT ONE OF THESE COSTS TO HOLD A MONTH, before any interest: its
+     * maintenance, RealEstate.MAINTENANCE_PER_YEAR on the structure, and its
+     * property tax, the property rate on the structure and its plot. The
+     * carry housingBuildHurdle() puts a margin on, and the one a mortgage
+     * lender takes off the rent to find the building's net operating income
+     * (Game.consider(), 0.7.11) - one piece of arithmetic for both.
+     */
+    public double housingCarry(BuildingsTemplate t) {
         if (t == null || buildingManager == null) return 0;
         double structure = t.getCashCost()
                 + t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
@@ -325,9 +339,8 @@ public class EconomyManager {
         double full = structure + land;
         if (full <= 0) return 0;
         double monthlyPropertyRate = taxPolicy.effectiveMonthlyPropertyRate(sectors.realEstate());
-        double carry = structure * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12
+        return structure * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12
                 + full * monthlyPropertyRate;
-        return carry * (1 + ham.citybuildersim.sectors.RealEstate.BUILD_MARGIN);
     }
 
     /** The cheapest way to house one more person, land included, per segment. */
@@ -383,6 +396,16 @@ public class EconomyManager {
      *                  rate until 0.7.7
      */
     public void updateBusinessCredit(double primeRate) {
+        updateBusinessCredit(primeRate, businessDebtManager.getInsuredMortgageRate());
+    }
+
+    /**
+     * ...and the insured mortgage's rate beside prime (0.7.11,
+     * Bank.insuredMortgageRate()): what a landlord's new mortgage is written
+     * at and a term that ends renews at.
+     */
+    public void updateBusinessCredit(double primeRate, double insuredMortgageRate) {
+        businessDebtManager.setInsuredMortgageRate(insuredMortgageRate);
         businessDebtManager.setPrimeRate(primeRate);
         refreshCreditAssets();
         businessDebtManager.updateRates();
@@ -682,7 +705,7 @@ public class EconomyManager {
     public double getOverdraftForgivenThisMonth(String key) { return overdraftForgivenThisMonthBySector.getOrDefault(key, 0.0); }
     public double getOverdraftForgivenTotal(String key)     { return overdraftForgivenBySector.getOrDefault(key, 0.0); }
 
-    /** Repay what matured, then borrow if that left the sector short. A maturing loan is usually rolled. */
+    /** Repay what matured - and since 0.7.11 the principal a mortgage's payment took - then borrow if that left the sector short. A maturing loan is usually rolled; a mortgage renews. */
     public void settleBusinessCredit(int month) {
         businessDebtManager.processMonth();
         for (Sector s : sectors.all()) {
@@ -1136,6 +1159,7 @@ public class EconomyManager {
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
+        setMortgageInsuranceLines();
 
         GDP = nationalAccounts.getGdp();
     }
@@ -1161,6 +1185,21 @@ public class EconomyManager {
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
+        setMortgageInsuranceLines();
+    }
+
+    /**
+     * THE MORTGAGE INSURANCE'S TWO BUDGET LINES (0.7.11), off the lender's
+     * month: the premiums on the mortgages written, which the treasury took
+     * as each was written, and the claims - what the month's write-downs took
+     * off insured mortgages, which the treasury paid the bank whole, a claim
+     * being a promise (TreasuryLine.MORTGAGE_INSURANCE_CLAIMS). Not in
+     * getTaxIncome() or getExpenses(), for the central bank's lines' reason:
+     * Game moves the cash where they happen.
+     */
+    private void setMortgageInsuranceLines() {
+        nationalAccounts.setMortgageInsuranceLines(businessDebtManager.getPremiumsThisMonth(),
+                businessDebtManager.getInsuredWrittenOffThisMonth());
     }
 
     public double getLastFoodVolume() { return nationalAccounts.getLastFoodVolume(); }

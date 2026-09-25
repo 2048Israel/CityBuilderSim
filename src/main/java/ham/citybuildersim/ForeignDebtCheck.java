@@ -72,6 +72,10 @@ public class ForeignDebtCheck {
     static Game tradingCity(Path dir) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         g.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        g.setCashForTest(Founding.WEALTHY_CASH);
         g.getLandManager().setOwnedSqFt(30_000_000);
         g.buildStack(template(g, "House"), 400, false);
         g.buildStack(template(g, "Convenience Store"), 6, false);
@@ -146,6 +150,10 @@ public class ForeignDebtCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             city.buildStack(template(city, "House"), 400, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -407,10 +415,10 @@ public class ForeignDebtCheck {
          * richer.
          *
          * AGAINST WHERE IT STOOD, NOT AGAINST ZERO, since 2026-09-21: a new
-         * city opens with the founders' US$1B in the vault, so its position is
-         * a billion to the good before it borrows a cent, and "below zero" had
-         * only ever meant "below where it started" because it started at
-         * nothing. The bug this catches still fails it - uncounted paper
+         * city opens with the founders' dollars in the vault (US$1B then,
+         * US$25M since 0.7.10), so its position is that much to the good
+         * before it borrows a cent, and "below zero" had only ever meant
+         * "below where it started" because it started at nothing. The bug this catches still fails it - uncounted paper
          * reads as the position rising by the whole of the proceeds.
          */
         out.printf("   net position the instant the bond is signed: %,.0f, against %,.0f before%n",

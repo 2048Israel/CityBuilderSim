@@ -93,6 +93,18 @@ public class ConservationCheck {
              * the law is measured against a warehouse that is still there.
              */
             g.setAutoSubsidised(Sectors.INDUSTRY, true);
+            /*
+             * AND THE TREASURY THAT PAYS FOR ALL OF IT, SAID OUT LOUD (0.7.10).
+             * The subsidy above, two coal plants' unbilled draw and a hundred
+             * and fifty-six months of a city's running costs come out of the
+             * treasury, and this fixture was written against the D$2.5B every
+             * city opened with until 0.7.10. On the D$100M a city founds with
+             * now it ran dry, simulateMonths() stopped running months, and the
+             * food law was measured on a warehouse nothing moved through. The
+             * fixture is given the treasury it always spent - the Wealthy
+             * preset's - explicitly.
+             */
+            g.setCashForTest(Founding.WEALTHY_CASH);
             g.simulateMonths(months);
         } finally { System.setOut(out); }
         return g;

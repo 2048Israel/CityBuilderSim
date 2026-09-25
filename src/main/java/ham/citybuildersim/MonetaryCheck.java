@@ -293,6 +293,10 @@ public class MonetaryCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             city.buildStack(template(city, "House"), 400, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -417,9 +421,10 @@ public class MonetaryCheck {
 
        AND WHAT CARRIES THE POINT IS STILL MOSTLY THE CURRENCY, which the
        rows below print the reasons for. On this founding the demand channel
-       moves the spread by about four hundredths of a point - twice what a
-       one-month offset of the dial does, and no more (SAVING_RESPONSE at 2.0
-       was measured at 1.145):
+       moves the spread by about four hundredths of a point - at 0.7.3
+       twice what a one-month offset of the dial did, and no more
+       (SAVING_RESPONSE at 2.0 was measured at 1.145; since 0.7.11 the
+       offset alone moves a row by up to 0.053, MEASUREMENT_NOISE):
          - the deposit rate carries about a quarter of the dial - 1.4% at 3%,
            11% at 40%, because the bank paid savers Bank.DEPOSIT_PASS_THROUGH
            of what it earned and not the dial - so the spend factor only runs
@@ -471,8 +476,18 @@ public class MonetaryCheck {
     /** The month the dial is held from: the first in which the currency may move. */
     static final int HELD_FROM = ForeignAccounts.SETTLING_MONTHS + 1;
 
-    /** How far apart two runs of the one founding may read, in inflation a year, when only the dial's timing moves: 0.05 points - measured at 0.7.3 by holding each row's dial from month 26 instead of 25, the largest difference 0.019 points (the 10% row; 0.026 at 0.7.2, and exactly nothing at 3%, the founding's own dial). */
-    static final double MEASUREMENT_NOISE = .0005;
+    /**
+     * How far apart two runs of the one founding may read, in inflation a year, when only the dial's timing moves: 0.10 points.
+     *
+     * RE-MEASURED AT 0.7.11 (Jerus, 2026-09-24: "re-measure it"). Holding each row's dial from month 26 instead of 25 moves
+     * the rows by 0.000 / 0.053 / 0.051 / 0.040 points (3% / 10% / 20% / 40%); at 0.7.3 the largest was 0.019 (0.026 at
+     * 0.7.2) and the allowance 0.05. What moved it is the landlords' insured mortgage (0.7.11): its rate is fixed for a
+     * ten-year term at whatever the dial reads the month it is written, so the month the dial moves in now decides the
+     * rate a building carries for a decade - a House written a month before the hold pays 4.48% where one written after
+     * it pays 11.2%. That is how fixed-rate lending behaves, so it is noise in the sense this constant means: the timing
+     * of the hand, not the level of the dial. The allowance keeps the headroom it had (about twice the largest reading).
+     */
+    static final double MEASUREMENT_NOISE = .0010;
 
     /** How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. */
     static final double TRANSMISSION_FLOOR = .01;

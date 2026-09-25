@@ -23,7 +23,8 @@ public interface Investor {
      *
      * The city always can - it has its own bond market. A business can borrow
      * as long as the project services its own debt, which is checked separately
-     * in BusinessInvestment; this is only about access to credit at all.
+     * in BusinessInvestment (a landlord's home: the mortgage lender's test,
+     * Mortgage.decide(), since 0.7.11); this is only about access to credit at all.
      */
     boolean canBorrow(double amount);
 

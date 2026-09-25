@@ -67,7 +67,7 @@ public final class SectorBooks {
 
             /* -------------------------- cash flow -------------------------- */
             double openingCash,
-            /** What its loans handed it this month: the principal less the fee the bank kept back (0.7.7). */
+            /** What its loans handed it this month: the principal less the fee the bank kept back (0.7.7) and a mortgage's premium, which went to the treasury (0.7.11). */
             double borrowed,
             double repaid,
             double fromTheCity,     // subsidy paid into the sector's own books
@@ -320,8 +320,11 @@ public final class SectorBooks {
                 sheet.getBondsPayable(),
                 opening,
                 // What it was HANDED: the principal less the loan's fee,
-                // which the bank kept back (0.7.7) - the cash that arrived.
-                credit.getLentThisMonth(key) - credit.getFeesThisMonth(key),
+                // which the bank kept back (0.7.7) - the cash that arrived -
+                // and less a mortgage's premium, which went to the treasury
+                // out of the principal (0.7.11).
+                credit.getLentThisMonth(key) - credit.getFeesThisMonth(key)
+                        - credit.getPremiumsThisMonth(key),
                 credit.getRepaidThisMonth(key),
                 game.getSubsidyPaid(sector),
                 economy.getOverdraftForgivenThisMonth(key),

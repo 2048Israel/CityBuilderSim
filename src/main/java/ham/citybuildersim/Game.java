@@ -140,8 +140,24 @@ public class Game {
      * test end to end.
      */
     public Game(GameFiles gameFiles) {
+        this(gameFiles, Founding.defaults());
+    }
+
+    /**
+     * ...founded as the player chose (0.7.10): a name, its money, a treasury,
+     * a vault and a world. The same door as the one above with the defaults
+     * in it; see buildWorld() and Founding.
+     */
+    public Game(GameFiles gameFiles, Founding founding) {
         this.gameFiles = gameFiles;
-        buildWorld();
+        buildWorld(foundable(founding));
+    }
+
+    /** The founding, if it can found a city; otherwise why not, as an exception - the screen never offers one that cannot. */
+    private static Founding foundable(Founding founding) {
+        String problem = founding == null ? "no founding" : founding.problem();
+        if (problem != null) throw new IllegalArgumentException("Cannot found this city: " + problem);
+        return founding;
     }
 
     /**
@@ -163,8 +179,14 @@ public class Game {
      *
      * Safe because the UI holds a reference to Game and nothing below it - every
      * screen reads through getters when it draws.
+     *
+     * AND IT TAKES THE FOUNDING (0.7.10): the name, the money, the treasury,
+     * the vault and the world, which were constants. Every door into a city
+     * comes through here, so every door founds from a record rather than from
+     * a constant - the load path with the defaults, which the save's own
+     * record then replaces (loadGame()).
      */
-    private void buildWorld() {
+    private void buildWorld(Founding founding) {
 
         buildingManager = new BuildingManager();
         economyManager = new EconomyManager(buildingManager);
@@ -254,6 +276,15 @@ public class Game {
         equity.reset();
         exchange.reset();
         priceIndex.reset();
+        /*
+         * THE WORLD IS CHOSEN AT FOUNDING (0.7.10), and set BEFORE the reset
+         * rather than after it: reset() back-casts a year of the world's
+         * price level at the mean it holds, so a mean set afterwards - as the
+         * main menu did until 0.7.10, straight after newGame() - left the
+         * first year's realised inflation reading the previous city's world.
+         * WorldEconomy.setMeanInflation() says why it is a founding choice.
+         */
+        world.setMeanInflation(founding.getMeanInflation());
         world.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
 
@@ -295,11 +326,48 @@ public class Game {
          * that now means what it says.
          *
          * ...AND SPLIT ON 2026-09-21: the same $3.5B, D$2.5B of it here and
-         * US$1B in the vault. See THE FOUNDING RESERVE above buildWorld(). The
-         * power plant is 57% of what the treasury opens with rather than 41%,
-         * and still the first thing the endowment buys.
+         * US$1B in the vault. See THE FOUNDING RESERVE below buildWorld(). The
+         * power plant was then 57% of what the treasury opened with rather
+         * than 41%, and still the first thing the endowment bought.
+         *
+         * ...AND CUT TO D$100M ON 2026-09-24 (0.7.10), BECAUSE ITS JOB HAS
+         * CHANGED. Jerus: "lets reduce the cash the city starts with, both
+         * the foreign usd and the starting cash ... cause the city should
+         * borrow right". The endowment no longer buys the opening, big public
+         * works and all. It founds the village and pays for one of the first
+         * big works, and the city borrows for the rest.
+         *
+         * What a trace of the deployed 0.7.9 tree found (seed 0, the default
+         * playtest) is why. The treasury never touched its D$2.5B: it never
+         * fell below D$2.467B in thirty years. The playtest's first fourteen
+         * months of building - about sixty houses, five shops, two farms and a
+         * depot by hand, then its advisor - cost about $46M in all; after that
+         * it spent $0.1-2M a month against $0.4-5M a month of revenue, carried
+         * no city debt for about ninety years, and ended with $264B in the
+         * treasury. An endowment nobody ever draws on is not a start.
+         *
+         * THE REAL WORLD BUILDS A TOWN ON DEBT, NOT ON AN ENDOWMENT. A
+         * long-lived public work is financed with bonds and repaid over the
+         * asset's life - "pay-as-you-use" - so the people who use the plant
+         * are the ones who pay for it. Britain's New Towns (New Towns Act
+         * 1946) were built by development corporations on sixty-year loans
+         * from the Exchequer. And a young city here can afford to borrow:
+         * DebtManager.priceAt() adds MAX_SPREAD_PER_MEASURE x debt / (annual
+         * measure) / FULL_STRESS_MULTIPLE per measure, so a $66M water plant
+         * on a city with about $12M of yearly revenue adds roughly 0.2 points
+         * (0.3 at the $110M a new city is actually invoiced for it - Founding,
+         * WHAT IT BUYS), and the playtest's advisor keeps its interest under
+         * DEBT_SERVICE_LIMIT (25%) of the month's tax income (canService()).
+         *
+         * THE ENDOWMENT ITSELF IS STILL A GAME NUMBER. No real town is handed
+         * cash; the figure has a job, the one above, and D$100M is Jerus's
+         * pick over D$50M, D$25M and keeping D$2.5B. Since the same batch it
+         * is the Standard preset of four the player founds on (Founding), and
+         * this constant stays the default the harnesses and the playtest read.
+         * What each preset buys at the catalogue's invoices is Founding's
+         * whatItBuys(); NewGameCheck holds the job to the catalogue.
          */
-        this.cash = FOUNDING_CASH;
+        this.cash = founding.getCash();
         /*
          * THE FOUNDERS' DOLLARS, bought on day one at the opening rate and
          * booked as the purchase they are - buyReserves() carries them in
@@ -312,9 +380,12 @@ public class Game {
          * own. The first month's startMonth() clears the day's purchase from
          * the month's bookkeeping long before the audit is struck, so no
          * month's audit books a flow that happened before month one began:
-         * the treasury simply opens with D$2.5B in it.
+         * the treasury simply opens with the founding's cash in it. Whatever
+         * vault was chosen is bought the same way, an empty one not at all.
          */
-        foreign.buyReserves(foreign.toLocal(FOUNDING_RESERVE_USD));
+        foreign.buyReserves(foreign.toLocal(founding.getReserveUsd()));
+        // ...and the record of it, which nothing changes after this line.
+        this.founding = founding;
         this.population = 0;
         this.jobs = new int[JobType.values().length];
 
@@ -417,11 +488,21 @@ public class Game {
     
 
     //buttons
+    /** A new city on the defaults: "Found with defaults". See newGame(Founding). */
     public void newGame(){
+        newGame(Founding.defaults());
+    }
+
+    /**
+     * A new city, founded as the player chose on the founding screen (0.7.10).
+     * Refused - an IllegalArgumentException - when the founding has a problem
+     * (Founding.problem()), which the screen never lets through.
+     */
+    public void newGame(Founding choices){
 
         // Rebuild rather than reset. See buildWorld() for the twenty-three
         // fields the old reset was missing and why the list itself was the bug.
-        buildWorld();
+        buildWorld(foundable(choices));
 
         // buildWorld() made a new BuildingManager, so the templates have to be
         // loaded into it. initialize() is guarded, so the flag has to drop first
@@ -525,8 +606,11 @@ public class Game {
          * forget to extend, and the old one had fallen twenty-three fields
          * behind. A loaded city is now identical to one loaded into a fresh
          * process BY CONSTRUCTION, and no field added in future can leak across.
+         *
+         * On the defaults (0.7.10), because the save carries its own founding
+         * and loadGame() puts it back - an old save's as Founding.legacy().
          */
-        buildWorld();
+        buildWorld(Founding.defaults());
 
         // buildWorld() made a new BuildingManager, so the templates have to be
         // reloaded into it - and initialize() is guarded, so the flag has to
@@ -630,29 +714,104 @@ public class Game {
        i think that greatly helps, since 99% players wont add to reserves
        most probably cause they have no clue."
 
-       THE SAME ENDOWMENT, SPLIT. Nothing is given that was not given before:
-       the founders' $3.5B is D$2.5B in the treasury and US$1B bought on day
-       one at the opening rate of 1.00 - booked by buyReserves() exactly as a
-       purchase the treasury made, so lifetimeIntervention carries it and the
-       vault is still "what the treasury chose to buy and has not yet sold".
-       It is in the vault rather than the treasury for the reason a reserve
-       exists at all: import cover damps the pressure to fall from the first
-       month the rate is allowed to move (ForeignAccounts.SETTLING_MONTHS;
-       absorption() - on the way down only, see A RESERVE DEFENDS A
-       CURRENCY, without which this founding reserve reproduced the year
-       book in three seeds of eight), it backs the hot money a young city
-       attracts, and - since the vault is kept in dollars - it is the one
-       thing the city owns that gains when its currency falls.
+       THE SAME ENDOWMENT, SPLIT. Nothing was given that had not been given
+       before: the founders' $3.5B became D$2.5B in the treasury and US$1B
+       bought on day one at the opening rate of 1.00 - booked by
+       buyReserves() exactly as a purchase the treasury made, so
+       lifetimeIntervention carries it and the vault is still "what the
+       treasury chose to buy and has not yet sold". It is in the vault
+       rather than the treasury for the reason a reserve exists at all:
+       import cover damps the pressure to fall from the first month the rate
+       is allowed to move (ForeignAccounts.SETTLING_MONTHS; absorption() - on
+       the way down only, see A RESERVE DEFENDS A CURRENCY, without which this
+       founding reserve reproduced the year book in three seeds of eight), it
+       backs the hot money a young city attracts, and - since the vault is
+       kept in dollars - it is the one thing the city owns that gains when
+       its currency falls.
+
+       ...AND BOTH HALVES CUT ON 2026-09-24 (0.7.10): D$100M in the treasury
+       and US$25M in the vault, Jerus's pick ("lets reduce the cash the city
+       starts with, both the foreign usd and the starting cash ... cause the
+       city should borrow right") over US$50M, US$10M and keeping US$1B. The
+       treasury's half is argued where it is spent, at buildWorld()'s
+       endowment; the vault's is here.
+
+       A VAULT IS SIZED BY WHAT IT COVERS, and the IMF's traditional rule of
+       thumb is three months of imports. The trace of the deployed tree (seed
+       0, the default playtest) found a young city importing $0.4-3.7M a
+       month over its first thirty years, its population under 3,000, so
+       US$25M covers such a city for years and a town of about 8-10k people
+       for three months. US$1B was far bigger than anything it did: the
+       central bank's defence had spent about US$20M by month 133 and
+       US$135M by month 349, the vault was effectively empty from about month
+       1,140 (US$7.9K) with no harm done, and the currency STRENGTHENED in
+       that seed, from 1.00 to 0.5-0.6 local per dollar. Like the treasury's,
+       the figure is a game number - no town is handed a vault - with a job,
+       and the job is the young city's cover. It is the Standard preset's;
+       Founding has the others.
        ===================================================================== */
 
-    /** What the founders leave in the treasury, in thousands: D$2.5B, the endowment less the vault. */
-    public static final double FOUNDING_CASH = 2_500_000;
+    /** What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. The Standard preset's, and the default. */
+    public static final double FOUNDING_CASH = 100_000;
 
-    /** What the founders leave in the vault, in thousands of US dollars: US$1B, bought on day one at the opening rate. */
-    public static final double FOUNDING_RESERVE_USD = 1_000_000;
+    /** What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town of 8-10k. The Standard preset's, and the default. */
+    public static final double FOUNDING_RESERVE_USD = 25_000;
 
     /** For this many months the screens say where the vault's first dollars came from; after that they are the city's own. */
     public static final int FOUNDERS_NOTE_MONTHS = 120;
+
+    /* ---------------------------------------------------------------------
+       THE FOUNDING RECORD (0.7.10)
+
+       What this city was founded with - its name, its money's name, the
+       treasury and the vault - set by buildWorld() from the founding choices
+       and put back by loadGame() from the save (Founding.legacy() on a save
+       from before it). Nothing changes it in between. The founders' note, the
+       window's title and every figure written in the city's money read it
+       here, and the slot list reads the name off the save, where DataSave
+       writes it; see Founding for why it is a record and not constants.
+       --------------------------------------------------------------------- */
+
+    private Founding founding = Founding.defaults();
+
+    /** How this city was founded. Its mean inflation is the world's (WorldEconomy keeps it; see Founding). */
+    public Founding getFounding() {
+        return new Founding(founding.getCityName(), founding.getCurrency(), founding.getCash(),
+                founding.getReserveUsd(), world.getMeanInflation());
+    }
+
+    /** The city's name. */
+    public String getCityName() { return founding.getCityName(); }
+
+    /** The city's money: its name, code and symbols. See Currency. */
+    public Currency getCurrency() { return founding.getCurrency(); }
+
+    /** The treasury this city was founded with, in thousands. */
+    public double getFoundingCash() { return founding.getCash(); }
+
+    /** The vault this city was founded with, in thousands of US dollars - what the founders' note says they left. */
+    public double getFoundingReserveUsd() { return founding.getReserveUsd(); }
+
+    /** The catalogue the founding is priced over: this city's, or the file's own before any city has loaded one. */
+    private java.util.List<BuildingsTemplate> catalogue() {
+        if (!buildingManager.getTemplates().isEmpty()) return buildingManager.getTemplates();
+        if (catalogueBeforeFounding == null) {
+            BuildingManager reader = new BuildingManager();
+            reader.initializeTemplates();
+            catalogueBeforeFounding = reader.getTemplates();
+        }
+        return catalogueBeforeFounding;
+    }
+    private java.util.List<BuildingsTemplate> catalogueBeforeFounding;
+
+    /**
+     * What a founding of this treasury and vault buys, at a new city's
+     * invoices over the catalogue - the founding screen's line under each
+     * preset. See Founding, WHAT IT BUYS.
+     */
+    public Founding.Buys whatItBuys(double cash, double reserveUsd) {
+        return Founding.whatItBuys(catalogue(), cash, reserveUsd);
+    }
 
     /* ============= THE CONSTRUCTION SUBSIDY - removed in 0.7.1 =============
      *
@@ -756,10 +915,16 @@ public class Game {
      * Puts the treasury at a stated figure, for a fixture that needs to CAUSE a
      * condition rather than wait for one.
      *
-     * Package-private, and the only reason it exists: RestructureCheck has to
-     * put a city in front of a bond it cannot afford, and has to give another
-     * one enough cash to attempt eight round trips. Playing a city into either
+     * Package-private. It was written for RestructureCheck, which has to put a
+     * city in front of a bond it cannot afford, and has to give another one
+     * enough cash to attempt eight round trips. Playing a city into either
      * state would make the test about the trajectory instead of the rule.
+     *
+     * Since 0.7.10 it is also how forty-two fixtures in twenty-five harnesses
+     * are handed the treasury they were written against, now that a city
+     * founds on D$100M: the old D$2.5B (Founding.WEALTHY_CASH), or the whole
+     * D$3.5B for ForeignCheck's devaluation city - each with a comment saying
+     * so.
      */
     void setCashForTest(double amount){
         this.cash = amount;
@@ -954,17 +1119,18 @@ public class Game {
                     paidFromVault), paidFromVault * rate);
         }
         String blocks = String.format("%.1f blocks", parcel.getBlocks());
+        String here = getCurrency().qualifiedSymbol();
         if (paidFromVault <= 0) {
             lastLandReceipt = String.format("Bought %s for US$%,.0fk, converting %s%,.0fk of cash at %s%.4f"
-                    + " to the dollar.", blocks, usd, Currency.QUALIFIED, convertedLocal,
-                    Currency.QUALIFIED, rate);
+                    + " to the dollar.", blocks, usd, here, convertedLocal,
+                    here, rate);
         } else if (converted <= 0) {
             lastLandReceipt = String.format("Bought %s for US$%,.0fk out of the vault, which holds"
                     + " US$%,.0fk now. No cash moved.", blocks, usd, foreign.getReservesUsd());
         } else {
             lastLandReceipt = String.format("Bought %s for US$%,.0fk. The vault held only US$%,.0fk,"
                     + " so that went and the other US$%,.0fk was converted from %s%,.0fk of cash.",
-                    blocks, usd, paidFromVault, converted, Currency.QUALIFIED, convertedLocal);
+                    blocks, usd, paidFromVault, converted, here, convertedLocal);
         }
         lastLandReceiptMonth = month;
         GameLog.note(lastLandReceipt);
@@ -1036,6 +1202,8 @@ public class Game {
         // would leave only whichever sector planned last.
         landBlockedSectors.clear();
         refusedOnPrice.clear();
+        refusedByLender.clear();
+        heldForDownPayment.clear();
 
         // Shrinking is decided before growing. A sector cannot sensibly do both
         // in one month, and running retirement first means a firm that has just
@@ -1064,9 +1232,23 @@ public class Game {
          * SECTOR DEFAULTS A SLICE AT A TIME) and the whole-sector restructure
          * only as the backstop, for a sector with nothing left.
          */
+        /*
+         * ...EXCEPT WHAT THE CITY INSURED (0.7.11). The part of a write-down
+         * that came off a landlord's insured mortgages is the insurer's: the
+         * treasury pays the bank that balance - a claim, and a promise
+         * (TreasuryLine.MORTGAGE_INSURANCE_CLAIMS), so a treasury that is
+         * short draws its advances for it as it would for a coupon - and the
+         * bank books only the rest as its loss. Its capital, its allowance
+         * and its provision take none of the insured part. The borrower's
+         * record, surcharge and ban are unchanged: the default is its own.
+         */
         BusinessDebtManager restructured = economyManager.getBusinessDebtManager();
         for (String s : restructured.sectors()) {
-            bank.writeOffSector(s, restructured.getWrittenOffThisMonth(s));
+            double insured = restructured.getInsuredWrittenOffThisMonth(s);
+            bank.writeOffSector(s, restructured.getWrittenOffThisMonth(s) - insured);
+            if (insured > 0) {
+                bank.receiveInsuranceClaim(treasuryPays(TreasuryLine.MORTGAGE_INSURANCE_CLAIMS, insured));
+            }
         }
 
         /*
@@ -1640,6 +1822,14 @@ public class Game {
      * households' part lands in their savings this month; the world's leaves
      * on the income account.
      *
+     * AFTER THE PRINCIPAL SINCE ROUND 2 OF 0.7.11 (Jerus: "Pay out after
+     * principal"): the share is of the net income less the principal that
+     * fell due in that month, the mortgages' principal parts and any bullet
+     * that matured, and nothing when the principal is the larger
+     * (Equity.dividendDue()). Round 1 found a landlord paying 40% of a
+     * profit smaller than its mortgages' principal, emptying its till and
+     * borrowing its amortization from the shortfall desk.
+     *
      * THE BANK PAYS BY ITS OWN RULE since 0.7.8 (Bank.dividendDue(), WHAT IT
      * DOES WITH ITS PROFIT): nothing under its capital target, a share of
      * its profit after tax inside its band, and the excess over the top of
@@ -1670,7 +1860,9 @@ public class Game {
             } else {
                 String sector = Equity.COMPANIES[c];
                 SectorBooks.SectorMonth m = sectorBooks.get(sector);
-                double due = equity.dividendDue(c, m.netIncome());
+                // After the principal that fell due that month (0.7.11,
+                // round 2; Equity.dividendDue()).
+                double due = equity.dividendDue(c, m.netIncome(), m.repaid());
                 if (due <= 0) continue;
                 double till = economyManager.getSectorCash(sector);
                 if (till < due) till += outward.recall(sector, due - till, economyManager);
@@ -1727,6 +1919,13 @@ public class Game {
             }
             @Override public double monthlyOperatingCost(int company) {
                 return sectorBooks.get(Equity.COMPANIES[company]).operatingCost();
+            }
+            // ...and its debt service: operating cost stops above the
+            // interest line, so the interest and the principal repaid, both
+            // off the same closed month (0.7.11, round 2).
+            @Override public double monthlyDebtService(int company) {
+                SectorBooks.SectorMonth m = sectorBooks.get(Equity.COMPANIES[company]);
+                return Math.max(0, m.interest()) + Math.max(0, m.repaid());
             }
             // Whether the bank buys its own shares back or issues them is its
             // capital policy since 0.7.8, which the exchange reads off the bank
@@ -1808,8 +2007,18 @@ public class Game {
          * Household credit is revolving - no term, never runs off - so it takes
          * the full weight and is not walked.
          */
-        double businessWeighted = 0;
+        double businessWeighted = 0, mortgageFace = 0, mortgageWeighted = 0;
         for (BusinessDebt loan : economyManager.getBusinessDebtManager().getLoans()) {
+            // An insured mortgage weighs RISK_INSURED_MORTGAGE (0.7.11), and
+            // the weight table shows it as its own row.
+            if (loan instanceof Mortgage m && m.isInsured()) {
+                double w = m.getOutstandingPrincipal()
+                        * Bank.RISK_INSURED_MORTGAGE * Bank.maturityWeight(m.getRemainingMonths());
+                businessWeighted += w;
+                mortgageFace += m.getOutstandingPrincipal();
+                mortgageWeighted += w;
+                continue;
+            }
             businessWeighted += loan.getOutstandingPrincipal()
                     * Bank.RISK_BUSINESS * Bank.maturityWeight(loan.getRemainingMonths());
         }
@@ -1822,6 +2031,7 @@ public class Game {
         }
         bank.setWeightedBook(businessWeighted, cityWeighted,
                 householdBalance.bookOwed() * Bank.RISK_HOUSEHOLD);
+        bank.setMortgageBook(mortgageFace, mortgageWeighted);
 
         // ...and what foreigners have borrowed to take abroad, which is the one
         // book with no debt object behind it. The stock in CapitalFlows is the
@@ -1859,13 +2069,16 @@ public class Game {
      * over its last quarter, what it owned over it, what it owes now} - the
      * quarter's leverage, the curve its allowance and stage are read at, and
      * the debt the loss is struck on (Bank.sectorAllowance(owed, principal,
-     * assets)).
+     * assets)). WHAT IT OWES THAT NOBODY INSURES, since 0.7.11: an insured
+     * mortgage is the city's loss if it goes, not the bank's, so it carries
+     * no allowance in either stage - while the leverage the curve reads is
+     * still the borrower's whole debt, because its firms default on all of it.
      */
     private java.util.Map<String, double[]> bankReadings() {
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
         java.util.Map<String, double[]> out = new java.util.LinkedHashMap<>();
         for (String s : credit.sectors()) {
-            out.put(s, new double[]{ credit.quarterPrincipal(s), credit.quarterAssets(s), credit.getPrincipal(s) });
+            out.put(s, new double[]{ credit.quarterPrincipal(s), credit.quarterAssets(s), credit.getUninsuredPrincipal(s) });
         }
         return out;
     }
@@ -2052,7 +2265,44 @@ public class Game {
                         sectorInvestor(sector.key()), true);
             }
         }
+
+        /*
+         * ...AND THE BANK'S BRANCHES (0.7.11, round 2): the branch test run
+         * in reverse. When the bank's book has not kept its branches' staff
+         * for Bank.BRANCH_CLOSE_MONTHS closed months in a row, one branch
+         * closes, one a month while that holds, never the last
+         * (Bank.closesBranch()). The branch is retail's building - retail
+         * paid for it (BusinessInvestment.planBank()) - so it leaves by
+         * retail's path above: the plot back to the city, the material to the
+         * builders. What the bank was founded with stays in the bank.
+         */
+        if (bank.closesBranch()) closeBranch();
     }
+
+    /**
+     * Closes one of the bank's branches (0.7.11, round 2): the building
+     * retired by the path any retired building takes (retire()), sold by
+     * its owner, retail. The count is for the run, like the lender's
+     * renewals.
+     */
+    private void closeBranch() {
+        BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
+        if (branch == null || buildingManager.countByName("Commercial Bank") <= 1) return;
+        String owner = getSectors().retail().key();
+        int closed = retire(new BusinessInvestment.Decision(owner, branch, 1,
+                String.format("the bank's book has not kept its branches' staff for %d months",
+                        bank.getUncoveredMonths()), true),
+                sectorInvestor(owner), false);
+        if (closed > 0) {
+            branchesClosed += closed;
+            GameLog.note(String.format("The bank closed a branch: its book has not kept its branches'"
+                    + " staff for %d months.", bank.getUncoveredMonths()));
+        }
+    }
+
+    /** Branches the bank has closed over the run (0.7.11, round 2): a count for the playtest, not saved. */
+    private int branchesClosed;
+    public int getBranchesClosed() { return branchesClosed; }
 
     /**
      * Scraps what the decision named, sells the plot back to the city, and
@@ -2333,6 +2583,35 @@ public class Game {
             SectorBooks.SectorMonth books = sectorBooks.get(decision.sector);
             double planCost = businessInvestment.getCostOf(decision.template, decision.quantity);
             double ask = equity.raiseFor(company, books.totalAssets(), books.equity(), planCost);
+            /*
+             * ...AND THE DOWN PAYMENT A MORTGAGE ASKS FOR (0.7.11). Jerus: "the
+             * landlord's own cash or new shares pay the rest." What its till
+             * and what it holds abroad cannot put down on the order, the
+             * owners are asked for - on top of what the register would raise
+             * anyway, and never more than the down payment itself: new shares
+             * buy a building, not an overdraft.
+             *
+             * WHY THE OWNERS ARE ASKED, and why it stays (round 2; Jerus:
+             * "Keep asking the owners."). This is how the equity in a rental
+             * building is found. A developer raises it from its partners or
+             * investors before the lender will close. A listed landlord (a
+             * REIT) sells new units to fund the equity part of an
+             * acquisition or a build, because it pays most of its income out
+             * and keeps little in the till. A landlord here is the second
+             * kind: a company over its equity target buys its surplus back
+             * down to a cushion of its costs (Exchange, the companies buy
+             * back), and in its normal regime the register raises nothing
+             * and it borrows (Equity.raiseFor()). Without this ask it never
+             * held a down payment at all. Measured on the first run of this
+             * batch, seed 0 was held for the down payment in 3,877 of 4,001
+             * months and ended at 1,987 people.
+             */
+            if (buysOnMortgage(decision)) {
+                double down = Mortgage.ownFundsFor(planCost);
+                double lacking = Math.min(down, down - payer.getCash()
+                        - economyManager.getForeignAssets(decision.sector));
+                if (lacking > ask) ask = lacking;
+            }
             // ...and not at a quote under what the shares are worth: then it borrows.
             if (ask > 0 && !exchange.quoteSupportsIssue(company)) ask = 0;
             if (ask > 0) {
@@ -2361,6 +2640,13 @@ public class Game {
                     String.format("Holding: borrowing ban, %d more months - %s would need credit",
                             credit.getBlockedMonths(decision.sector),
                             decision.template.getName()));
+            return;
+        }
+
+        // A landlord's home is bought on an insured mortgage (0.7.11): its own
+        // down payment, and the lender's test - see THE LANDLORDS' MORTGAGES.
+        if (buysOnMortgage(decision)) {
+            considerOnMortgage(decision, slot, cash, perUnitProfit);
             return;
         }
 
@@ -2440,6 +2726,163 @@ public class Game {
                             decision.template.getLandSqFt() * (double) quantity,
                             landManager.getAvailableSqFt()));
         }
+    }
+
+    /* =======================================================================
+       THE LANDLORDS' MORTGAGES (0.7.11)
+
+       Jerus, 2026-09-24: "Mortgages", on "CMHC (Canada)" terms, "Insured by
+       the city". A building the landlords order is bought as a landlord
+       buys one: at least 15% down from its own funds - what the equity
+       raise and the recall from abroad leave in its till, above, the owners
+       asked for whatever of the down payment the till and the money abroad
+       cannot put down - and the rest on an insured Mortgage, at most
+       Mortgage.MORTGAGE_MAX_LOAN_TO_COST of the cost, if the lender's test
+       passes.
+
+       THE LENDER'S TEST, which replaces servicesItsOwnDebt() for these orders
+       only: the building's net operating income must cover the mortgage's
+       monthly payment Mortgage.MORTGAGE_DEBT_COVERAGE times. The income is
+       the rent it would let at today's segment price
+       (RealEstate.estimatedMonthlyProfit()) less what it costs to hold -
+       its maintenance and its property tax, the carry the owner's own test
+       puts its margin on (EconomyManager.housingCarry()); the payment is the
+       level annuity on the principal, premium included, at the insured rate
+       over Mortgage.MORTGAGE_AMORTIZATION_MONTHS. The owner's own test,
+       whether the building is worth putting up at all
+       (EconomyManager.housingBuildHurdle(), in RealEstate.plan()), stays; so
+       does what and how much the planner orders. This decides how much of
+       it is bought.
+
+       THE DOWN PAYMENT. A till that cannot put 15% down on the whole order
+       orders fewer; one that cannot put it down on one holds, and says how
+       much it needs. A till in overdraft covers nothing. A till that covers
+       the whole order buys it outright, as any business does.
+
+       WHY. A 36-month bullet at prime and its own risk, lent against 100%
+       of the cost and asked to earn 1.25 times its interest gross, stopped
+       the cranes twice in the 0.7.10 trace: for two hundred months on
+       autopilot, when the landlord's hole was added to every building's
+       loan, and for 333 years at a 10% dial - see Mortgage.
+       ======================================================================= */
+
+    /** True for an order bought on an insured mortgage: a residential building the landlords order. Every template the landlords own is residential, and nothing else is. */
+    private boolean buysOnMortgage(BusinessInvestment.Decision decision) {
+        return decision != null && decision.template != null
+                && decision.template.getCategory() == BuildingType.RESIDENTIAL
+                && getSectors().realEstate().key().equals(decision.sector);
+    }
+
+    /**
+     * The landlords' order, on a mortgage: the largest slice of it the
+     * landlord's own funds can put down on and the lender's test passes,
+     * scanning down from what the planner asked for as consider() does -
+     * and the advisor's line, in the lender's words when it says no.
+     *
+     * @param perUnitRent what one of these would let for a month (estimatedMonthlyProfit())
+     */
+    private void considerOnMortgage(BusinessInvestment.Decision decision, String slot,
+                                    double cash, double perUnitRent) {
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        BuildingsTemplate t = decision.template;
+        Mortgage.Decision d = Mortgage.decide(decision.quantity,
+                n -> businessInvestment.getCostOf(t, n), cash,
+                perUnitRent - economyManager.housingCarry(t), credit.getInsuredMortgageRate());
+
+        if (d.quantity() <= 0) {
+            (d.shortOfDown() ? heldForDownPayment : refusedByLender).add(decision.sector);
+            lastInvestment.put(slot, d.refusal(t.getName()));
+            return;
+        }
+
+        int quantity = d.quantity();
+        String trimmed = d.trimmed(decision.quantity);
+        double downShare = 1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST;
+
+        String[] refusal = { null };
+        int written = credit.getMortgagesWrittenThisMonth();
+        if (buildFor(mortgageInvestor(decision.sector, refusal), t, quantity)) {
+            boolean mortgaged = credit.getMortgagesWrittenThisMonth() > written;
+            lastInvestment.put(slot, String.format("Built %,d %s%s%s - %s", quantity, t.getName(),
+                    mortgaged ? " on an insured mortgage" : "", trimmed, decision.reason));
+        } else if (refusal[0] != null) {
+            /*
+             * THE LENDER SAID NO AT THE DOOR, after the plan passed: the price
+             * moved between the plan and the purchase, the bank is shut, the
+             * deal would leave the landlord past the default point, or - while
+             * the bank's leverage ratio binds (round 2) - its capital rule has
+             * no room for the mortgage (BusinessDebtManager.canFundMortgage()).
+             */
+            if (BusinessDebtManager.MORTGAGE_DOWN_PAYMENT.equals(refusal[0])) heldForDownPayment.add(decision.sector);
+            else refusedByLender.add(decision.sector);
+            lastInvestment.put(slot, switch (refusal[0]) {
+                case BusinessDebtManager.MORTGAGE_BANK_SHUT -> String.format(
+                        "Holding: the bank has failed and writes no mortgage - %s would need one", t.getName());
+                case BusinessDebtManager.MORTGAGE_DOWN_PAYMENT -> String.format(
+                        "Holding: needs more of its own for the %.0f%% down payment on %,d %s",
+                        downShare * 100, quantity, t.getName());
+                case BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT -> String.format(
+                        "Declined %s - the mortgage would leave it owing past %.2f times what it owns",
+                        t.getName(), BusinessDebtManager.INSOLVENCY_TRIGGER);
+                case BusinessDebtManager.MORTGAGE_CAPITAL -> String.format(
+                        "Holding: the bank is short of capital against everything it has lent"
+                                + " - %s would need a mortgage", t.getName());
+                default -> String.format("Holding: the lender will not write the mortgage on %s (%s)",
+                        t.getName(), refusal[0]);
+            });
+        } else {
+            landBlockedSectors.add(decision.sector);
+            lastInvestment.put(slot,
+                    String.format("Could not build %s - needs %,.0f sq ft, %,.0f free",
+                            t.getName(), t.getLandSqFt() * (double) quantity,
+                            landManager.getAvailableSqFt()));
+        }
+    }
+
+    /**
+     * The sectors whose plan this month the mortgage lender declined, and
+     * those that held for the down payment (0.7.11) - the month's, cleared
+     * with the land's, for the playtest's count by reason.
+     */
+    private final java.util.Set<String> refusedByLender = new java.util.LinkedHashSet<>();
+    private final java.util.Set<String> heldForDownPayment = new java.util.LinkedHashSet<>();
+
+    public java.util.Set<String> getRefusedByLender() {
+        return java.util.Collections.unmodifiableSet(refusedByLender);
+    }
+
+    public java.util.Set<String> getHeldForDownPayment() {
+        return java.util.Collections.unmodifiableSet(heldForDownPayment);
+    }
+
+    /**
+     * One sector's cash and its insured-mortgage lender, as a payer: what
+     * sectorInvestor() does with its till, and a mortgage where that would
+     * borrow a loan. The lender's answer at the door is left in refusal[0]
+     * when it says no. The landlord is handed the loan less its fee - the
+     * shortfall buildFor() asked for - and the premium added to the loan
+     * goes to the treasury as the mortgage is written: revenue, on the
+     * budget's mortgage insurance line (NationalAccounts).
+     */
+    private Investor mortgageInvestor(final String sector, final String[] refusal) {
+        final Investor own = sectorInvestor(sector);
+        final BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        return new Investor() {
+            @Override public String getName() { return own.getName(); }
+            @Override public double getCash() { return own.getCash(); }
+            @Override public void spend(double amount) { own.spend(amount); }
+            @Override public boolean canBorrow(double amount) {
+                boolean yes = credit.canFundMortgage(sector, amount, amount + own.getCash());
+                if (!yes) refusal[0] = credit.getMortgageRefusal();
+                return yes;
+            }
+            @Override public void borrow(double amount, int month) {
+                Mortgage m = credit.issueMortgage(sector, amount, month);
+                economyManager.setSectorCash(sector, economyManager.getSectorCash(sector)
+                        + m.getLoan() - BusinessDebtManager.feeOn(m.getOutstandingPrincipal()));
+                cash += m.getPremium();
+            }
+        };
     }
 
     /* =======================================================================
@@ -3435,6 +3878,15 @@ public class Game {
         return template.getLandSqFt() * (double) quantity;
     }
 
+    /**
+     * What the treasury is short of for this order: its invoice less the cash
+     * on hand, never below nothing. The figure the build screen's two offers
+     * are sized to (0.7.10) - the page used to work it out itself.
+     */
+    public double buildFundingGap(BuildingsTemplate template, int quantity){
+        return Math.max(0, calculateTotalCost(template, quantity) - cash);
+    }
+
     /** Units of material the last order will draw, for the receipt. */
     public double getMaterialsUsed(){
         return receiptMaterials;
@@ -3509,11 +3961,19 @@ public class Game {
          * cash and refuses. Debt issued, nothing built.
          *
          * THE BONDS ARE NOT THE SAME BUG and are deliberately left alone. For a
-         * serial or a term bond the face value IS the request - the player asks
-         * for an amount of paper and receives par less fees, which is what
-         * issuing at par means and what those quotes say. It is only the note
+         * serial bond the face value IS the request - the player asks for an
+         * amount of paper and receives par less fees, which is what issuing at
+         * par means. For a term bond the request is what the face is WORTH at
+         * issue (faceValueOfLongBond() solves the face from it), and the city
+         * receives that less fees. Either way the fees come out of what was
+         * asked for, and that is what those quotes say. It is only the note
          * whose whole job is "how much paper do I need to RAISE this cash", and
          * only the note that was answering it wrong.
+         *
+         * ...until the build screen offered a term bond beside the note
+         * (0.7.10), which asks the note's question of the long instrument. That
+         * has its own solver, quoteLongBondForCash(), and quoteLongBond() is
+         * still what the finance screen's term loan is.
          */
         // On the curve at its own months (0.7.1) - which, for a note of a
         // year or less, is the short end: no term premium, the T-bill rate.
@@ -3779,18 +4239,35 @@ public class Game {
         double marketRate = debtManager.quoteRate(requested,
                 r -> faceValueOfLongBond(requested, duration, rounding, r), duration * 12);
 
+        double faceValue = faceValueOfLongBond(requested, duration, rounding, marketRate);
+
+        // What that face is actually worth today, less the underwriter and
+        // bond counsel. The worth is the request before rounding; a little
+        // above it after, because the face rounds UP to the instrument's
+        // granularity and the proceeds follow the face.
+        double received = longBondNetProceeds(faceValue, marketRate, duration);
+
+        return longBondQuote(requested, duration, marketRate, before, faceValue, received);
+    }
+
+    /**
+     * What the city actually banks for a long bond of this face: its worth at
+     * the rate struck, less the fees, to the cent. The long bond's
+     * netProceeds(), shared by both quotes so they cannot drift.
+     */
+    private double longBondNetProceeds(double faceValue, double marketRate, int duration) {
+        return Math.round(
+                (faceValue * longBondPvPerFace(marketRate, duration)
+                        - costOfIssuance(faceValue)) * 100) / 100.0;
+    }
+
+    /** A long bond's quote, once its face and proceeds are known: the coupon, the monthly bill and the cost of the credit, for both quotes. */
+    private DebtQuote longBondQuote(double requested, int duration, double marketRate,
+                                    double before, double faceValue, double received) {
+
         // Yield curve: long money carries a lower coupon than the medium-term
         // market rate. Small monthly payments are the point of the instrument.
         double couponYield = longBondCouponYield(marketRate, duration);
-
-        double faceValue = faceValueOfLongBond(requested, duration, rounding, marketRate);
-
-        // What that face is actually worth today. Equal to the request before
-        // rounding; a little above it after, because the face rounds UP to the
-        // instrument's granularity and the proceeds follow the face.
-        double received = Math.round(
-                (faceValue * longBondPvPerFace(marketRate, duration)
-                        - costOfIssuance(faceValue)) * 100) / 100.0;
 
         double monthlyInterest = (faceValue * couponYield) / 12;
         double totalCost = (faceValue - received) + (monthlyInterest * duration * 12);
@@ -3805,10 +4282,18 @@ public class Game {
         if (!LongTermBond.isIssuable(duration)) return LongTermBond.REFUSAL;
         DebtQuote quote = quoteLongBond(amount, duration, rounding);
         if (quote.isEmpty()) return "Nothing issued.";
+        return issueLongBond(quote);
+    }
+
+    /**
+     * The booking both long-bond issues share. Every figure comes off the
+     * quote, as handleTBillLogic()'s do.
+     */
+    private String issueLongBond(DebtQuote quote) {
 
         // The coupon, not the market rate - a long bond's whole shape is a low
         // monthly payment bought with a redemption premium.
-        debtManager.addLongTermBond(quote.faceValue(), duration * 12, month, quote.couponRate())
+        debtManager.addLongTermBond(quote.faceValue(), quote.duration() * 12, month, quote.couponRate())
                 .markIssued(quote.cashReceived(), quote.marketRate());
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
@@ -3817,6 +4302,90 @@ public class Game {
 
         debtManager.updateInterest();
         return "Term bond issued.\n" + quote.summary();
+    }
+
+    /* -----------------------------------------------------------------------
+       A TERM BOND SIZED TO THE CASH IT BRINGS (0.7.10)
+
+       The build screen's second offer, beside its note. quoteLongBond()
+       answers "what does this much paper cost": its amount is what the face
+       is WORTH at issue, and the city banks that less the underwriter and
+       bond counsel - right for the finance screen, where the player picks
+       the size. The build screen asks the question the note answers
+       (faceForNetProceeds()): how much paper must be sold for the cash that
+       ARRIVES to pay for the order. Guessed - NewGameCheck's water plant
+       asked for the gap and five per cent - it either falls short, and the
+       order is refused with the debt already issued, or it overshoots and
+       borrows money nobody needed.
+
+       So the face is solved, the note's shape at the long bond's price:
+
+           face x pvPerFace - FIXED - face x SPREAD  >=  cashNeeded
+
+       pvPerFace is longBondPvPerFace(), the one the quote and the rate's
+       fixed point price with. It is never below a third, because the coupon
+       is never below a third of the market rate (longBondCouponYield()), so
+       the denominator cannot reach zero in play; the guards are for
+       fixtures. The coupon, the monthly bill, the cost of the credit and the
+       booking are the finance screen's term loan's, through the same two
+       helpers.
+       ----------------------------------------------------------------------- */
+
+    /** Face value whose net proceeds cover cashNeeded at this rate, fees included, rounded up to the granule. */
+    private double longBondFaceForProceeds(double cashNeeded, int duration,
+                                           double rounding, double marketRate) {
+        double perFace = longBondPvPerFace(marketRate, duration) - UNDERWRITING_SPREAD;
+        if (perFace <= 1e-9) {
+            return faceValueOfLongBond(cashNeeded + issuanceFee(), duration, rounding, marketRate);
+        }
+        return Math.ceil(((cashNeeded + issuanceFee()) / perFace) / rounding) * rounding;
+    }
+
+    /**
+     * What a term bond whose CASH covers cashNeeded would cost. Books nothing.
+     *
+     * The quote's `requested` is the cash asked for, which is what the record
+     * says that field is; its face is what the city will owe. Priced with
+     * itself included, on the curve at its duration, exactly as
+     * quoteLongBond() is - only the face each rate implies differs.
+     */
+    public DebtQuote quoteLongBondForCash(double cashNeeded, int duration, double rounding) {
+
+        priceTheDebtMarket();
+        double before = debtManager.getRate();
+
+        if (cashNeeded <= 0 || !LongTermBond.isIssuable(duration)) {
+            return new DebtQuote("Term", duration, 0, before, before, 0, 0, 0, 0);
+        }
+
+        final double needed = cashNeeded;
+        double marketRate = debtManager.quoteRate(needed,
+                r -> longBondFaceForProceeds(needed, duration, rounding, r), duration * 12);
+
+        double faceValue = longBondFaceForProceeds(needed, duration, rounding, marketRate);
+        double received = longBondNetProceeds(faceValue, marketRate, duration);
+
+        // The proceeds are rounded to the cent, so a face that lands exactly on
+        // its solution can bank a fraction under the ask - the note's case,
+        // met the note's way (quoteTBill()): as many granules as the shortfall
+        // needs at what a granule of this face banks, and hard bounded.
+        double perFace = longBondPvPerFace(marketRate, duration) - UNDERWRITING_SPREAD;
+        for (int guard = 0; received < needed && perFace > 1e-9 && guard < 64; guard++) {
+            faceValue += rounding * Math.max(1,
+                    Math.ceil((needed - received) / (rounding * perFace)));
+            received = longBondNetProceeds(faceValue, marketRate, duration);
+        }
+
+        return longBondQuote(needed, duration, marketRate, before, faceValue, received);
+    }
+
+    /** Books a term bond sized to the cash, on exactly the terms quoted - the build screen's bond. */
+    public String handleLongBondForCash(double cashNeeded, int duration, double rounding) {
+
+        if (!LongTermBond.isIssuable(duration)) return LongTermBond.REFUSAL;
+        DebtQuote quote = quoteLongBondForCash(cashNeeded, duration, rounding);
+        if (quote.isEmpty()) return "Nothing issued.";
+        return issueLongBond(quote);
     }
 
     /* =======================================================================
@@ -4958,11 +5527,18 @@ public class Game {
          */
         double growth = bank.lendingGrowthLimit();
         boolean keepGoingOnly = bank.lendsOnlyToKeepBorrowersGoing();
-        economyManager.getBusinessDebtManager().setCapitalRule(growth, keepGoingOnly);
+        // ...the insured mortgages with the rest while the leverage ratio
+        // binds (0.7.11, round 2): then a mortgage uses the capital the bank
+        // is short of like any loan (BusinessDebtManager, THE LANDLORDS'
+        // MORTGAGES).
+        economyManager.getBusinessDebtManager().setCapitalRule(growth, keepGoingOnly, bank.leverageBinds());
         householdBalance.setCapitalRule(growth, keepGoingOnly);
         // ...and every business's spread sits on the bank's prime (0.7.7; the
-        // city's rate until then), on the dial as it stands this month.
-        economyManager.updateBusinessCredit(bank.prime(debtManager.getPolicyRate()));
+        // city's rate until then), on the dial as it stands this month - and
+        // the landlords' insured mortgages are written and renewed at the
+        // insured rate beside it (0.7.11).
+        economyManager.updateBusinessCredit(bank.prime(debtManager.getPolicyRate()),
+                bank.insuredMortgageRate(debtManager.getPolicyRate()));
 
         // Property tax with the interest bill, and for the same reason: both are
         // owed before the month's statements run, so what each sector banks is
@@ -5136,6 +5712,21 @@ public class Game {
 
     /** The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. */
     public static final int BUILD_NOTE_MONTHS = 6;
+
+    /**
+     * The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it.
+     *
+     * Jerus chose it when the founding treasury went to D$100M and the page
+     * became how a player pays for a first big work: a water plant bought on
+     * the note left the treasury D$16.2M overdrawn when it matured, ten
+     * months on the central bank's advances; on a twenty-year bond sized to
+     * the gap it never fell below D$0.5M and never touched them. Must be one
+     * of LongTermBond.MATURITIES.
+     */
+    public static final int BUILD_BOND_YEARS = 20;
+
+    /** The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. */
+    public static final double BUILD_BOND_GRANULE = 100;
 
     /**
      * Bond counsel, rating and printing. Payable however small the deal is.
@@ -6921,6 +7512,9 @@ public class Game {
         dataSave.setPolicyAutopilot(debtManager.isAutopilot());
         // ...and how the land office pays (0.7.6), the player's toggle.
         dataSave.setLandPaidFromVault(landPaidFromVault);
+        // ...and how the city was founded (0.7.10): its name, its money, the
+        // treasury and the vault. The world's mean rides in its own array.
+        dataSave.setFounding(founding);
         // ...and the target the rule aims at (0.7.4), under its own key.
         dataSave.setInflationTarget(debtManager.getInflationTarget());
         // The holdings dial, the households' paper ratio, and what a buyback
@@ -6999,6 +7593,13 @@ public class Game {
                 economyManager.getBusinessDebtManager().getBlockedMonthsAll());
         dataSave.setCreditStatements(
                 economyManager.getBusinessDebtManager().getStatementsToSave());
+        // ...and the mortgages' month and the insurance book (0.7.11).
+        dataSave.setMortgageRepaid(
+                economyManager.getBusinessDebtManager().getMortgageRepaidToSave());
+        dataSave.setInsurancePremiums(
+                economyManager.getBusinessDebtManager().getPremiumsTotalToSave());
+        dataSave.setInsuranceClaims(
+                economyManager.getBusinessDebtManager().getInsuredWrittenOffTotals());
 
         dataSave.setConstructionMaterials(buildingManager.getConstructionMaterials());
         dataSave.setPopulation(populationManager.getPopulation());
@@ -7077,8 +7678,8 @@ public class Game {
     public GameFiles.Result[] writeBooks() {
         HistorySave book = getHistorySave();
         return new GameFiles.Result[] {
-            gameFiles.write(gameFiles.yearBookFile(),   YearBook.years(book)),
-            gameFiles.write(gameFiles.decadeBookFile(), YearBook.decades(book))
+            gameFiles.write(gameFiles.yearBookFile(),   YearBook.years(book, getCurrency())),
+            gameFiles.write(gameFiles.decadeBookFile(), YearBook.decades(book, getCurrency()))
         };
     }
     
@@ -8434,7 +9035,8 @@ public class Game {
     // ARE NOT RECOMPUTED: every sector's struck month came out of the save
     // whole (see SectorState), and a statement is a fact about a month, not
     // a function of the state the month ended in.
-    economyManager.updateBusinessCredit(bank.prime(debtManager.getPolicyRate()));
+    economyManager.updateBusinessCredit(bank.prime(debtManager.getPolicyRate()),
+            bank.insuredMortgageRate(debtManager.getPolicyRate()));
 
     priceTheDebtMarket();
     debtManager.updateInterest();
@@ -8724,6 +9326,13 @@ public class Game {
             debtManager.restoreForeignStanding(loaded.getForeignStanding());
             priceIndex.restore(loaded.getPriceIndex());
             world.restore(loaded.getWorldEconomy());
+            /*
+             * ...AND HOW IT WAS FOUNDED (0.7.10), after the world, whose mean
+             * the record reads. A save from before 0.7.10 carries none of it
+             * and reads as Founding.legacy(): Danzik, the Danzik dollar,
+             * D$2.5B and US$1B - see DataSave.getFounding().
+             */
+            founding = loaded.getFounding(world.getMeanInflation());
             /*
              * ...AND FOR THE FOURTH TIME, INTO THE ECONOMY. The line above
              * this block restores the rate into the debt market. This one
@@ -9116,6 +9725,12 @@ public class Game {
                         case "BUSINESS-LOAN":
                             loadedLoans.add(gson.fromJson(obj, BusinessLoan.class));
                             break;
+
+                        // A landlord's insured mortgage (0.7.11): its balance,
+                        // rate, term and amortization, as it stood.
+                        case "MORTGAGE":
+                            loadedLoans.add(gson.fromJson(obj, Mortgage.class));
+                            break;
                     }
 
                     // future business instrument types go here
@@ -9323,6 +9938,8 @@ public class Game {
         // was looking at when it saved.
         pushCostOfFundsToTheDebtMarket();
         economyManager.getBusinessDebtManager().setPrimeRate(bank.prime(debtManager.getPolicyRate()));
+        economyManager.getBusinessDebtManager().setInsuredMortgageRate(
+                bank.insuredMortgageRate(debtManager.getPolicyRate()));
 
         /*
          * The government's month, put back over the top of the rebuild's
@@ -9392,6 +10009,12 @@ public class Game {
             economyManager.getBusinessDebtManager().restoreCreditRecord(
                     restoredFlows.getRestructureCounts(),
                     restoredFlows.getBlockedMonths());
+            // ...the mortgages' month and the insurance book (0.7.11); an
+            // older save insured nothing.
+            economyManager.getBusinessDebtManager().restoreMortgageRepaid(
+                    restoredFlows.getMortgageRepaid());
+            economyManager.getBusinessDebtManager().restoreInsuranceRecord(
+                    restoredFlows.getInsurancePremiums(), restoredFlows.getInsuranceClaims());
 
             /*
              * THE BILLS OF THE MONTH, BACK OVER THE REBUILD. Every sector's

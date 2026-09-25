@@ -1,4 +1,4 @@
-# CapitalFlowCheck.java - 483 lines · 6 methods · 0 constants · harnesses
+# CapitalFlowCheck.java - 487 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -23,7 +23,7 @@
 >   4. Does it reach the bank, and does the bank's capacity go with it? Money
 >      that arrives and changes nothing is a number on a screen.
 
-**Uses:** [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (12), [Game](Game.md) (7), [Bank](Bank.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [GameFiles](GameFiles.md) (3), [OutwardInvestment](OutwardInvestment.md) (2), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (12), [Game](Game.md) (7), [Bank](Bank.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [GameFiles](GameFiles.md) (3), [OutwardInvestment](OutwardInvestment.md) (2), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 ## Sections
 
@@ -36,7 +36,7 @@
 | 182 | · 5. painful, never fatal |
 | 209 | · 6. it reaches the bank |
 | 270 | · 7. in a real city, and across a reload |
-| 374 | · 8. and the city's own money goes the other way |
+| 378 | · 8. and the city's own money goes the other way |
 
 ## Fields (state)
 
@@ -50,11 +50,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 454 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
+| 30 | 458 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
 | 36 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 41 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 52 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
-| 58 | 409 | `public static void main(String[] args) throws Exception` |  |
-| 469 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
-| 477 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 58 | 413 | `public static void main(String[] args) throws Exception` |  |
+| 473 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
+| 481 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

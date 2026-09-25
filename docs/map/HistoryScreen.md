@@ -191,7 +191,7 @@
 | 1919 | 5 | `static String shortCount(double a)` | People, homes, jobs - the same abbreviation without the dollar. |
 | 1926 | 4 | `static String trim(double a)` | One decimal at most, and none at all when it would read ".0". |
 | 1939 | 6 | `static double niceStep(double raw)` | One, two or five times a power of ten - the only steps a reader can add up. |
-| 1947 | 16 | `static String unitName(String unit)` | What the y-axis is measured in, when every line agrees. |
+| 1947 | 16 | `static String unitName(String unit, Currency money)` | What the y-axis is measured in, when every line agrees - the rate in this city's own money (0.7.10). |
 | 1972 | 7 | `static double plotScale(String unit, double v)` | The stored value, in the units the axis is labelled in. |
 | 1989 | 11 | `void styleLine(javafx.scene.chart.XYChart.Series<Number, Number> line, String colour)` | Paints one line, now or as soon as it has a node. |
 | 2008 | 79 | `VBox historyReading(HistorySave h, String key, String colour, String axis)` | One line's reading: what it is now, and what it did. |

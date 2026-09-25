@@ -56,10 +56,13 @@ public class LongTermBond extends Debt {
      * plus a redemption premium (face value exceeds the cash received). The
      * player trades a higher all-in cost for much smaller monthly payments.
      *
-     * The premium is sized in Game.handleLongBondLogic(). Previously the face was
-     * grossed up by (1+yield)^duration - full compound interest priced into the
-     * discount - AND this coupon was charged on top, so the instrument billed the
-     * same interest twice and was strictly worse than a medium bond at every
+     * The premium is sized in Game, where the face is solved from the bond's
+     * present value (longBondPvPerFace()): faceValueOfLongBond() for the
+     * finance screen's term loan, longBondFaceForProceeds() for the build
+     * screen's bond (0.7.10). Previously the face was grossed up by
+     * (1+yield)^duration - full compound interest priced into the discount -
+     * AND this coupon was charged on top, so the instrument billed the same
+     * interest twice and was strictly worse than a medium bond at every
      * duration.
      */
     @Override

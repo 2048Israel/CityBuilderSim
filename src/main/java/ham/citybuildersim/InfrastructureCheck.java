@@ -149,6 +149,10 @@ public class InfrastructureCheck {
 
         Game city = new Game(files);
         city.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        city.setCashForTest(Founding.WEALTHY_CASH);
 
         assertTrue("a brand new city is not congested",
                 !city.getInfrastructureManager().isCongested());
@@ -462,6 +466,10 @@ public class InfrastructureCheck {
         // cannot catch an industrial bug.
         Game jammed = new Game(files);
         jammed.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        jammed.setCashForTest(Founding.WEALTHY_CASH);
         jammed.buildStack(template(jammed, "House"), 300, false);
         jammed.buildStack(template(jammed, "Convenience Store"), shopsFor(jammed, 720), false);
         jammed.simulateMonths(40);

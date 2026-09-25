@@ -70,7 +70,7 @@ final class LandScreen {
         double inside = land.getPricePerSqFt();
         double margin = land.getMarginPerSqFt();
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        String here = Currency.QUALIFIED;
+        String here = ui.game.getCurrency().qualifiedSymbol();
 
         Label title = new Label("LAND OFFICE");
         title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
@@ -400,7 +400,7 @@ final class LandScreen {
         Label price = new Label(usd(parcel.getPriceUsd()));
         price.setStyle(Palette.figure(Palette.SIZE_SECTION,
                 afford ? Palette.GOOD : Palette.BAD));
-        Label local = new Label("  ·  " + marked(Currency.QUALIFIED,
+        Label local = new Label("  ·  " + marked(ui.game.getCurrency().qualifiedSymbol(),
                 money(parcel.localPrice(ui.game.getForeignAccounts().getRate())))
                 + " at today's rate");
         local.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));

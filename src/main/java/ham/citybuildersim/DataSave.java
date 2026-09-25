@@ -31,6 +31,24 @@ public class DataSave {
     private int saveFormat;
     private long savedAt;
 
+    /*
+     * THE FOUNDING RECORD (0.7.10): the city's name, its money's five names
+     * and the treasury and vault it was founded with - see Founding. The name
+     * is read by SaveHeader too, for the slot list, so it is spelled the same
+     * there. The amounts are boxed, so a save without them is told apart from
+     * one founded with a figure; a save from before 0.7.10 has none of the
+     * eight and reads as Founding.legacy() (getFounding()). The world's mean
+     * is in worldEconomy, not here: one copy.
+     */
+    private String cityName;
+    private String currencyName;
+    private String currencyPlural;
+    private String currencyCode;
+    private String currencySymbol;
+    private String currencyQualified;
+    private Double foundingCash;
+    private Double foundingReserveUsd;
+
     //save variables
     private double cash;
     private int[] buildings;
@@ -204,6 +222,19 @@ public class DataSave {
      */
     private java.util.Map<String, double[]> creditStatements;
 
+    /*
+     * THE LANDLORDS' MORTGAGES (0.7.11): the principal their payments took in
+     * the month saved, by sector - a flow the Bank tab and the landlords'
+     * screen read the month after - and the city's insurance book: the
+     * premiums it has taken over its life, and what it has paid the bank on
+     * insured mortgages written down, by sector. The mortgages themselves are
+     * in businessDebts, typed "MORTGAGE". Null and zero on an older save,
+     * which insured nothing.
+     */
+    private java.util.Map<String, Double> mortgageRepaid;
+    private java.util.Map<String, Double> insuranceClaims;
+    private double insurancePremiums;
+
     /** The city's own yard, in units. */
     private int constructionMaterials;
     private int population;
@@ -279,6 +310,44 @@ public class DataSave {
     /* ------------------------------- the header ------------------------------- */
 
     public void setSlotName(String name)      { this.slotName = name; }
+
+    /** The founding record, whole. */
+    public void setFounding(Founding f) {
+        cityName = f.getCityName();
+        Currency c = f.getCurrency();
+        currencyName = c.name();
+        currencyPlural = c.plural();
+        currencyCode = c.code();
+        currencySymbol = c.symbol();
+        currencyQualified = c.qualifiedSymbol();
+        foundingCash = f.getCash();
+        foundingReserveUsd = f.getReserveUsd();
+    }
+
+    /**
+     * The founding record this save carries, handed the world's mean the load
+     * has just restored. A field that is missing reads as the legacy
+     * founding's (Founding.legacy()) - all eight are on a save written since
+     * 0.7.10 and none before it, so a mixture is a hand-edited file, and each
+     * missing piece still reads as what every older city had.
+     */
+    public Founding getFounding(double meanInflation) {
+        Founding old = Founding.legacy(meanInflation);
+        Currency was = old.getCurrency();
+        Currency money = new Currency(
+                currencyName != null ? currencyName : was.name(),
+                currencyPlural != null ? currencyPlural : was.plural(),
+                currencyCode != null ? currencyCode : was.code(),
+                currencySymbol != null ? currencySymbol : was.symbol(),
+                currencyQualified != null ? currencyQualified : was.qualifiedSymbol());
+        return new Founding(cityName != null ? cityName : old.getCityName(), money,
+                foundingCash != null ? foundingCash : old.getCash(),
+                foundingReserveUsd != null ? foundingReserveUsd : old.getReserveUsd(),
+                meanInflation);
+    }
+
+    /** The city's name as saved, or null on a save from before 0.7.10. */
+    public String getCityName() { return cityName; }
 
     /**
      * The last month the treasury closed: opening, closing, raised, repaid,
@@ -1502,6 +1571,15 @@ public class DataSave {
         this.creditStatements = statements;
     }
     public java.util.Map<String, double[]> getCreditStatements() { return creditStatements; }
+
+    public void setMortgageRepaid(java.util.Map<String, Double> repaid) { this.mortgageRepaid = repaid; }
+    public java.util.Map<String, Double> getMortgageRepaid() { return mortgageRepaid; }
+
+    public void setInsuranceClaims(java.util.Map<String, Double> claims) { this.insuranceClaims = claims; }
+    public java.util.Map<String, Double> getInsuranceClaims() { return insuranceClaims; }
+
+    public void setInsurancePremiums(double premiums) { this.insurancePremiums = premiums; }
+    public double getInsurancePremiums() { return insurancePremiums; }
 
     public void setNationalAccounts(double[] state) { this.nationalAccounts = state; }
     public double[] getNationalAccounts()           { return nationalAccounts; }

@@ -1062,11 +1062,16 @@ final class SectorScreen {
         // The bank's payout is its own capital rule since 0.7.8 (Bank, WHAT IT
         // DOES WITH ITS PROFIT), not the register's share of a profitable month.
         Bank lender = ui.game.getBank();
+        // ...against everything it has lent too, since round 2 of 0.7.11
+        // (Bank.leverageTarget()); and a sector's payout is after the
+        // principal its month repaid (Equity.dividendDue()).
         String policy = company == Equity.BANK
-                ? String.format("It holds capital to its own target, %.1f%% of its weighted book, and is %s",
-                        lender.capitalTarget() * 100, lender.payoutDecision())
-                : String.format("It wants %.0f%% of its balance sheet as equity and pays out %.0f%% of a"
-                        + " profitable month", register.getTargetEquityShare(company) * 100, Equity.PAYOUT * 100);
+                ? String.format("It holds capital to its own target, %.1f%% of its weighted book or %.1f%%"
+                        + " of everything it has lent, whichever asks more, and is %s",
+                        lender.capitalTarget() * 100, lender.leverageTarget() * 100, lender.payoutDecision())
+                : String.format("It wants %.0f%% of its balance sheet as equity and pays out %.0f%% of what a"
+                        + " month's profit leaves after the principal it repaid",
+                        register.getTargetEquityShare(company) * 100, Equity.PAYOUT * 100);
         column.getChildren().add(statementNote(String.format(
                 "%s. %s. Raised %s from the households and %s abroad since founding;"
                 + " paid them %s and %s.",
@@ -1254,6 +1259,42 @@ final class SectorScreen {
                 tightMoney(toDollars(credit.getPrincipal(key)), false)));
         column.getChildren().add(statementLine("Loans running",
                 String.valueOf(credit.getLoanCount(key))));
+        /*
+         * ITS INSURED MORTGAGES (0.7.11), beside its other debt: the
+         * landlords buy their buildings on them. What is owed, at what rate,
+         * the payment a month, what this month's payments took off them, and
+         * when the next one renews. Shown for any sector that owes one, and
+         * always for the landlords, who say what a new one would cost.
+         */
+        int mortgages = credit.getMortgageCount(key);
+        if (mortgages > 0 || sector == ui.game.getSectors().realEstate()) {
+            column.getChildren().add(subHead("Its insured mortgages"));
+            if (mortgages == 0) {
+                column.getChildren().add(sentence(String.format(
+                        "None yet. Its next building would be financed at %.2f%% a year, fixed for %d years.",
+                        credit.getInsuredMortgageRate() * 100, Mortgage.MORTGAGE_TERM_MONTHS / 12),
+                        Palette.TEXT_MUTED));
+            } else {
+                column.getChildren().add(statementLine(String.format("Owed on %d mortgage%s", mortgages,
+                        mortgages == 1 ? "" : "s"), tightMoney(toDollars(credit.getMortgagePrincipal(key)), false)));
+                column.getChildren().add(statementLine("...its other debt",
+                        tightMoney(toDollars(credit.getPrincipal(key) - credit.getMortgagePrincipal(key)), false)));
+                column.getChildren().add(statementLine("At", String.format("%.2f%% a year, on average",
+                        credit.getMortgageRate(key) * 100)));
+                column.getChildren().add(statementLine("The monthly payment",
+                        tightMoney(toDollars(credit.getMortgagePayment(key)), false)));
+                column.getChildren().add(statementLine("Principal repaid this month",
+                        tightMoney(toDollars(credit.getMortgageRepaidThisMonth(key)), false)));
+                int next = credit.getNextRenewalMonth(key);
+                column.getChildren().add(statementLine("Next renewal", next < 0 ? "none"
+                        : CityCalendar.format(next) + " (" + CityCalendar.until(ui.game.getMonth(), next) + ")"));
+                column.getChildren().add(statementNote(String.format(
+                        "Insured by the city. The rate is fixed for %d years and renews at the day's; the "
+                        + "payment pays it off over %d. Only the interest is a cost on its statement - the "
+                        + "principal is money it owes going back.", Mortgage.MORTGAGE_TERM_MONTHS / 12,
+                        Mortgage.MORTGAGE_AMORTIZATION_MONTHS / 12)));
+            }
+        }
         column.getChildren().add(statementLine("Interest this month",
                 tightMoney(toDollars(credit.getMonthlyInterest(key)), false),
                 credit.getMonthlyInterest(key) > 0 ? Palette.WARN : null));
@@ -1278,6 +1319,11 @@ final class SectorScreen {
             column.getChildren().add(statementLine("Written off in all",
                     tightMoney(toDollars(credit.getWrittenOffTotal(key)), false),
                     Palette.BAD));
+            // ...of which the city's insurance paid the bank the insured part (0.7.11).
+            if (credit.getInsuredWrittenOffTotal(key) > 0) {
+                column.getChildren().add(statementLine("...of it off insured mortgages, which the city paid",
+                        tightMoney(toDollars(credit.getInsuredWrittenOffTotal(key)), false), Palette.WARN));
+            }
             column.getChildren().add(statementLine("Times it went under whole",
                     String.valueOf(credit.getRestructureCount(key))));
             column.getChildren().add(statementNote(String.format(
@@ -1354,13 +1400,33 @@ final class SectorScreen {
         /* --------------------------- the conditions --------------------------- */
         column.getChildren().add(statementHead("What it takes to get a yes"));
 
-        column.getChildren().add(statementLine("A project must earn",
-                String.format("%.2fx its interest", BusinessInvestment.PROFIT_OVER_INTEREST),
-                Palette.TEXT_HEAD));
-        column.getChildren().add(statementNote(String.format(
-                "At this sector's own rate of %.2f%%, on whatever it has to borrow after "
-                + "its cash is spent. A plan that fails this is trimmed down until it "
-                + "passes, and dropped if even one unit cannot carry it.", now.rate() * 100)));
+        if (sector == ui.game.getSectors().realEstate()) {
+            /*
+             * THE LANDLORDS ARE ASKED THE MORTGAGE LENDER'S QUESTIONS (0.7.11):
+             * a down payment from their own funds, and the building's net rent
+             * against the mortgage's payment.
+             */
+            column.getChildren().add(statementLine("A building must put down",
+                    String.format("%.0f%% of its cost, of its own", (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100),
+                    Palette.TEXT_HEAD));
+            column.getChildren().add(statementLine("...and its rent must cover the mortgage",
+                    String.format("%.2fx its payment", Mortgage.MORTGAGE_DEBT_COVERAGE), Palette.TEXT_HEAD));
+            column.getChildren().add(statementNote(String.format(
+                    "An insured mortgage at %.2f%% for the rest, paid off over %d years: the rent it "
+                    + "would let for, less its repairs and its property tax, against the payment on the "
+                    + "loan with the insurance premium added. What its till and its owners cannot put "
+                    + "down, it does not build; an order the lender will not carry is trimmed down until "
+                    + "it does, and dropped if even one would not.",
+                    credit.getInsuredMortgageRate() * 100, Mortgage.MORTGAGE_AMORTIZATION_MONTHS / 12)));
+        } else {
+            column.getChildren().add(statementLine("A project must earn",
+                    String.format("%.2fx its interest", BusinessInvestment.PROFIT_OVER_INTEREST),
+                    Palette.TEXT_HEAD));
+            column.getChildren().add(statementNote(String.format(
+                    "At this sector's own rate of %.2f%%, on whatever it has to borrow after "
+                    + "its cash is spent. A plan that fails this is trimmed down until it "
+                    + "passes, and dropped if even one unit cannot carry it.", now.rate() * 100)));
+        }
 
         column.getChildren().add(statementLine("It plans", String.format(
                 "%.0f months ahead", BusinessInvestment.PLANNING_HORIZON)));

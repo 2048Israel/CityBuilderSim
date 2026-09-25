@@ -1,4 +1,4 @@
-# CentralBankCheck.java - 909 lines · 11 methods · 2 constants · harnesses
+# CentralBankCheck.java - 913 lines · 11 methods · 2 constants · harnesses
 
 `ham/citybuildersim/CentralBankCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > And since 0.7.2, the ceiling as a dial - batch B found six months of
 > ... (13 more lines in the source)
 
-**Uses:** [Game](Game.md) (29), [CentralBank](CentralBank.md) (25), [DebtManager](DebtManager.md) (14), [Bank](Bank.md) (12), [TreasuryLine](TreasuryLine.md) (8), [Debt](Debt.md) (6), [GameFiles](GameFiles.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [TreasuryJournal](TreasuryJournal.md) (2), [ShortTermTBill](ShortTermTBill.md) (2), [MoneyAudit](MoneyAudit.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
+**Uses:** [Game](Game.md) (29), [CentralBank](CentralBank.md) (25), [DebtManager](DebtManager.md) (14), [Bank](Bank.md) (12), [TreasuryLine](TreasuryLine.md) (8), [Debt](Debt.md) (6), [GameFiles](GameFiles.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [TreasuryJournal](TreasuryJournal.md) (2), [ShortTermTBill](ShortTermTBill.md) (2), [MoneyAudit](MoneyAudit.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Founding](Founding.md) (1)
 
 ## Sections
 
@@ -105,7 +105,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 825 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
+| 85 | 829 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
 | 91 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 96 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 106 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -126,10 +126,10 @@
 | 648 | 1 | `static double shape20(DebtManager m)` | The long end's shape over the note: the premium at twenty years less what the holdings compress. |
 | 650 | 162 | `static void theHoldingsDial(GameFiles files) throws Exception` |  |
 
-### 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road (lines 813-909)
+### 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road (lines 813-913)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 819 | 82 | `static void theCeilingDial(GameFiles files) throws Exception` |  |
-| 903 | 6 | `static double journalAmount(Game g, String label)` | The amount on last month's journal line with this label, or 0. |
+| 819 | 86 | `static void theCeilingDial(GameFiles files) throws Exception` |  |
+| 907 | 6 | `static double journalAmount(Game g, String label)` | The amount on last month's journal line with this label, or 0. |
 

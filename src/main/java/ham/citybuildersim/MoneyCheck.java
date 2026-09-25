@@ -74,6 +74,10 @@ public class MoneyCheck {
 
         Game g = new Game(GameFiles.scratch("moneycheck"));
         g.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        g.setCashForTest(Founding.WEALTHY_CASH);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
         g.buildStack(t(g, "House"), 400, false);
         g.buildStack(t(g, "Low-Rise Apartments"), 4, false);
@@ -167,6 +171,10 @@ public class MoneyCheck {
 
         Game s = new Game(GameFiles.scratch("moneycheck"));
         s.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        s.setCashForTest(Founding.WEALTHY_CASH);
         s.getLandManager().setOwnedSqFt(s.getLandManager().getOwnedSqFt() + 100_000_000L);
         s.buildStack(t(s, "House"), 600, false);
         s.buildStack(t(s, "Convenience Store"), 6, false);
@@ -235,6 +243,10 @@ public class MoneyCheck {
         System.out.println("\n--- a city paying over the world: the money that arrives is audited ---");
         Game hot = new Game(GameFiles.scratch("moneycheck"));
         quietly(hot::run);
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        hot.setCashForTest(Founding.WEALTHY_CASH);
         hot.getLandManager().setOwnedSqFt(hot.getLandManager().getOwnedSqFt() + 400_000_000L);
         hot.buildStack(t(hot, "House"), 400, false);
         hot.buildStack(t(hot, "Small Grocery Store"), 4, false);

@@ -1,4 +1,4 @@
-# BuildScreen.java - 1,855 lines · 40 methods · 1 constants · interface
+# BuildScreen.java - 1,931 lines · 42 methods · 1 constants · interface
 
 `ham/citybuildersim/ui/BuildScreen.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -17,7 +17,7 @@
 > Since 0.7.5 the shell's key filter also calls buildPending() and
 > clearPending(): Enter, and Backspace or Delete, on the page showing.
 
-**Uses:** [Palette](Palette.md) (104), [BuildingType](BuildingType.md) (50), [BuildingsTemplate](BuildingsTemplate.md) (18), [CareType](CareType.md) (12), [Game](Game.md) (10), [EducationType](EducationType.md) (9), [JobType](JobType.md) (6), [Good](Good.md) (6), [LandManager](LandManager.md) (4), [Health](Health.md) (4), [Crime](Crime.md) (3), [UserInterface](UserInterface.md) (2), [BuildingManager](BuildingManager.md) (2), [Bank](Bank.md) (2), [SafetyType](SafetyType.md) (2), [Healthcare](Healthcare.md) (2), [Sickness](Sickness.md) (2), [Migration](Migration.md) (2), [DebtQuote](DebtQuote.md) (2), [Rail](Rail.md) (1), [DebtManager](DebtManager.md) (1)
+**Uses:** [Palette](Palette.md) (109), [BuildingType](BuildingType.md) (51), [BuildingsTemplate](BuildingsTemplate.md) (19), [Game](Game.md) (18), [CareType](CareType.md) (12), [EducationType](EducationType.md) (9), [JobType](JobType.md) (6), [Good](Good.md) (6), [LandManager](LandManager.md) (4), [Health](Health.md) (4), [DebtQuote](DebtQuote.md) (4), [Crime](Crime.md) (3), [UserInterface](UserInterface.md) (2), [BuildingManager](BuildingManager.md) (2), [Bank](Bank.md) (2), [SafetyType](SafetyType.md) (2), [Healthcare](Healthcare.md) (2), [Sickness](Sickness.md) (2), [Migration](Migration.md) (2), [Rail](Rail.md) (1), [DebtManager](DebtManager.md) (1)
 
 **Used by (2):** [ServicesScreen](ServicesScreen.md), [UserInterface](UserInterface.md)
 
@@ -59,7 +59,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 1816 | **type** `final class BuildScreen` | The build tab: the strip of categories across the top, the constraints bar that says what stops a build, the line that says who builds these, and every building as a card - its face, its order line, its stats - with t... |
+| 40 | 1892 | **type** `final class BuildScreen` | The build tab: the strip of categories across the top, the constraints bar that says what stops a build, the line that says who builds these, and every building as a card - its face, its order line, its stats - with t... |
 | 45 | 1 | `BuildScreen(UserInterface ui)` |  |
 
 ### BUILD: THE CATEGORY SCREEN IS GONE TOO. (lines 47-68)
@@ -108,7 +108,7 @@
 | 992 | 10 | `boolean clearPending()` | Every quantity on the page back to none - the ↺ on every card at once, and like it, each card repriced in place rather than the page redrawn (see REPRICED IN PLACE, in buildingTile). |
 | 1004 | 10 | `void showPendingHint()` | The caption under the grid, shown while any card on the page has a quantity. |
 
-### THE STAT CARD (lines 1016-1855)
+### THE STAT CARD (lines 1016-1931)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -129,7 +129,9 @@
 | 1592 | 31 | `void showNoDepositMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money, the land, and nothing to dig. |
 | 1631 | 42 | `void showNoLicenceMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Nobody licensed to practise in it. |
 | 1682 | 35 | `void showNoLandMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The city has the money and nowhere to put the building. |
-| 1727 | 63 | `void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | "You cannot afford this - borrow for it?" with the terms on the screen. |
-| 1799 | 30 | `void showFundingFellShortMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The note went through and the building still did not. |
-| 1837 | 18 | `String rateStyle(DebtQuote quote)` | Colours a quoted rate by how punishing it is. |
+| 1734 | 64 | `void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | "You cannot afford this - borrow for it?" with the terms on the screen. |
+| 1805 | 25 | `private VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd, String action, Runnable issue)` | One of the funding page's offers: its rate, its face, the cash it brings, what it costs a month and in all, and what happens at the end - every figure off the quote - then what asking this much does to the city's rate... |
+| 1851 | 13 | `private void buildOnTheLoan(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats, String ...` | Either offer's money is in: the order is placed again, and whatever it answers is shown. |
+| 1875 | 30 | `void showFundingFellShortMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats, Strin...` | The loan went through and the building still did not. |
+| 1913 | 18 | `String rateStyle(DebtQuote quote)` | Colours a quoted rate by how punishing it is. |
 

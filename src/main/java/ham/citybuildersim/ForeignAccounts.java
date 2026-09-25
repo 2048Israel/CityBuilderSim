@@ -60,8 +60,9 @@ package ham.citybuildersim;
  * rate. When the currency moves the dollars stay put, and the move in their
  * local value is booked beside the vault as a revaluation (revalueVault()),
  * in the dollar debt's shape: not cash, and not an audit flow. A new city
- * opens with the founders' US$1B in it (Game's THE FOUNDING RESERVE), and it
- * is spent only when the push would weaken the currency (A RESERVE DEFENDS A
+ * opens with the founders' dollars in it - US$25M on the default founding
+ * since 0.7.10, US$1B before (Game's THE FOUNDING RESERVE) - and it is
+ * spent only when the push would weaken the currency (A RESERVE DEFENDS A
  * CURRENCY, at effectivePressure()): the central bank sells its dollars
  * against the month's deficit, and what they meet of it is what damps the
  * push.
@@ -1572,8 +1573,9 @@ public class ForeignAccounts {
          * city with the founders' dollars in the vault, and the load path runs
          * buildWorld() before it gets here - so a save that carried no vault,
          * or no foreign accounts at all, would otherwise come back holding
-         * US$1B it never had. Whatever the array does not say is what a city
-         * that never had it holds: nothing.
+         * the default founding's dollars (US$25M since 0.7.10) it never had.
+         * Whatever the array does not say is what a city that never had it
+         * holds: nothing.
          */
         reset();
         if (saved == null || saved.length < 4) return;   // refused whole

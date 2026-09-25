@@ -29,6 +29,8 @@ import java.util.List;
  *      loss-making expansion spiral: a project must service its own debt.
  *      That is a business test rather than a credit limit, which is the
  *      honest place for it - the lender is willing, the business shouldn't be.
+ *      Since 0.7.11 a landlord's home is asked the mortgage lender's test
+ *      instead (Mortgage.decide()); every other order still asks this one.
  *
  * SINCE THE SECTOR TEMPLATE (2026-09-11) this class is the shared
  * arithmetic and the two generic rules - the maker's expansion and the two
@@ -261,7 +263,8 @@ public class BusinessInvestment {
      * Months of losses before a sector that is overdrawn and refused credit
      * starts liquidating plant it is actually using. Two years: the runway a
      * firm burns before it is wound up, and the time a founding plant needs
-     * for the city to grow into it.
+     * for the city to grow into it. Since 0.7.11 it is also the bank's fuse
+     * for closing a branch that does not pay (Bank.BRANCH_CLOSE_MONTHS).
      */
     public static final int DISTRESS_LOSS_MONTHS = 24;
 
@@ -719,6 +722,11 @@ public class BusinessInvestment {
      * It is still RETAIL's money - a bank is a commercial building - but it
      * no longer spends retail's one decision a month. Built on the STRAIN
      * and slightly ahead of the premium, see Bank.BUILD_AT_STRAIN.
+     *
+     * NEVER FOR A BANK UNDER ITS MINIMUM since round 2 of 0.7.11 - the
+     * larger of its two minimums (Bank.wantsBranch()). And the other way is
+     * not planned here: a branch whose book does not keep its staff is
+     * closed in Game.runRetirement() (Bank.closesBranch()).
      */
     public Decision planBank() {
 
@@ -756,6 +764,9 @@ public class BusinessInvestment {
      * Whether a project can carry the debt it needs: if the new capacity
      * cannot out-earn the interest on the money that built it, by a margin,
      * the business declines the project even though the lender would fund it.
+     * Every order but a landlord's home since 0.7.11, which is bought on an
+     * insured mortgage and asked the mortgage lender's test instead
+     * (Mortgage.decide(), in Game.consider()).
      */
     public boolean servicesItsOwnDebt(double estimatedMonthlyProfit,
                                       double amountBorrowed, double annualRate) {

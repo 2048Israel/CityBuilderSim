@@ -41,7 +41,7 @@
 
 **Uses:** [Palette](Palette.md) (16)
 
-**Used by (4):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [PolicyScreen](PolicyScreen.md)
+**Used by (5):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [MortgageCheck](MortgageCheck.md), [PolicyScreen](PolicyScreen.md)
 
 ## Constants
 

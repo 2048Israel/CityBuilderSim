@@ -104,6 +104,10 @@ public class ForeignCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             city.buildStack(template(city, "House"), 500, false);
             city.buildStack(template(city, "Convenience Store"), 8, false);
@@ -164,23 +168,25 @@ public class ForeignCheck {
          * it is the distinction the old single field could not express.
          *
          * SINCE 2026-09-21 THE FOUNDERS INTERVENE ONCE, on day one: a new city
-         * opens with US$1B bought at the opening rate (Game's THE FOUNDING
-         * RESERVE), booked as the purchase it is. So this city has intervened,
-         * exactly once, and the property is asserted in the form that still
-         * means something: the vault holds precisely the dollars the treasury
-         * bought and not one cent of fifteen years of trade. Had the founding
-         * set the stock without a purchase, a city that never bought anything
-         * would hold a billion abroad and this would be false in both forms.
+         * opens with the founders' dollars - US$1B then, US$25M since 0.7.10 -
+         * bought at the opening rate (Game's THE FOUNDING RESERVE), booked as
+         * the purchase it is. So this city has intervened, exactly once, and
+         * the property is asserted in the form that still means something:
+         * the vault holds precisely the dollars the treasury bought and not
+         * one cent of fifteen years of trade. Had the founding set the stock
+         * without a purchase, a city that never bought anything would hold
+         * them abroad and this would be false in both forms.
          *
          * AND SINCE 0.7.2 THE CENTRAL BANK SPENDS IT, which is what it is for
          * (ForeignAccounts, A DEFENCE THAT SPENDS): a month the currency is
          * pushed weaker on a deficit, the vault's dollars are sold against it.
-         * This fixture's fifteen years spend most of the founders' billion -
-         * the measurement batch D was asked for, printed here - so the two
-         * lines were restated, not loosened: the vault is the founders'
-         * dollars less exactly what the defence sold, and the intervention
-         * record is the day-one purchase less exactly what those sales
-         * fetched. Still not one cent of fifteen years of trade in either.
+         * This fixture's fifteen years spent most of the founders' billion, and
+         * since 0.7.10 spend all of their US$25M - the measurement batch D was
+         * asked for, printed here - so the two lines were restated, not
+         * loosened: the vault is the founders' dollars less exactly what the
+         * defence sold, and the intervention record is the day-one purchase
+         * less exactly what those sales fetched. Still not one cent of
+         * fifteen years of trade in either.
          */
         CentralBank books = city.getCentralBank();
         out.printf("   the defence sold US$%,.0fk of the founders' US$%,.0fk over the fifteen years%n",
@@ -376,6 +382,10 @@ public class ForeignCheck {
         System.setOut(quiet);
         try {
             jammed.run();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            jammed.setCashForTest(Founding.WEALTHY_CASH);
             jammed.getForeignAccounts().pinRate(1.0);
             jammed.getLandManager().setOwnedSqFt(40_000_000);
             // Houses and shops, and deliberately NO roads - the whole point is a
@@ -1302,8 +1312,8 @@ public class ForeignCheck {
         g.run();
         /*
          * THE FOUNDERS' DOLLARS BACK INTO THE TREASURY, at the opening rate
-         * and before the pin (2026-09-21). A new city opens with D$2.5B and
-         * US$1B in the vault now, where this fixture was written against
+         * and before the pin (2026-09-21). A new city opened with D$2.5B and
+         * US$1B in the vault then, where this fixture was written against
          * $3.5B of cash - and the fixed programme below is bought out of the
          * treasury. At 1.40 the weaker city could no longer pay for it: it
          * built two-thirds of the programme, Construction imported $591M
@@ -1312,8 +1322,16 @@ public class ForeignCheck {
          * Sold here, both cities open exactly as they did before the split -
          * $3.5B in the treasury, an empty vault - and the question is the
          * rate again and nothing else.
+         *
+         * ...AND THE $3.5B ITSELF SINCE 0.7.10, when a city began founding on
+         * D$100M and US$25M: selling the vault now fetches D$25M, not D$1B,
+         * and the programme below - a $1.07B power plant among it - was not
+         * bought at all. The fixture is handed the whole endowment it was
+         * written against explicitly: the Wealthy preset's treasury and its
+         * vault at the opening rate, in cash, the vault still sold empty.
          */
         g.sellForeignCurrency(g.getForeignAccounts().sellableReserves());
+        g.setCashForTest(Founding.WEALTHY_CASH + Founding.WEALTHY_RESERVE_USD * ForeignAccounts.OPENING_RATE);
         g.getForeignAccounts().pinRate(rate);
         g.getEconomyManager().setExchangeRate(rate);
         g.getLandManager().setOwnedSqFt(30_000_000);
@@ -1490,6 +1508,10 @@ public class ForeignCheck {
     static int run(Path dir) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         g.run();
+        // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+        // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+        // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+        g.setCashForTest(Founding.WEALTHY_CASH);
         g.getLandManager().setOwnedSqFt(20_000_000);
         g.buildStack(template(g, "House"), 300, false);
         g.buildStack(template(g, "Convenience Store"), 6, false);

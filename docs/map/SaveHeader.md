@@ -1,4 +1,4 @@
-# SaveHeader.java - 59 lines · 11 methods · 0 constants · model
+# SaveHeader.java - 71 lines · 12 methods · 0 constants · model
 
 `ham/citybuildersim/SaveHeader.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
 
@@ -19,9 +19,9 @@
 > The cost is reading the whole file to show one line. At roughly 15 KB a save
 > and eleven slots, that is nothing.
 
-**Uses:** [GameVersion](GameVersion.md) (2)
+**Uses:** [GameVersion](GameVersion.md) (2), [Founding](Founding.md) (1)
 
-**Used by (5):** [Game](Game.md), [GameFiles](GameFiles.md), [SaveDump](SaveDump.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md)
+**Used by (6):** [Game](Game.md), [GameFiles](GameFiles.md), [SaveDump](SaveDump.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md)
 
 ## Fields (state)
 
@@ -34,21 +34,23 @@
 | 29 | `private String gameVersion` |  |
 | 30 | `private int saveFormat` |  |
 | 31 | `private long savedAt` |  |
+| 34 | `private String cityName` | The city's name (0.7.10), DataSave's founding record's; absent on an older save. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 21 | 39 | **type** `public class SaveHeader` | Just enough of a save to label it on the slot list. |
-| 33 | 1 | `public int getMonth()` |  |
-| 34 | 1 | `public int getPopulation()` |  |
-| 35 | 1 | `public double getCash()` |  |
-| 36 | 1 | `public String getSlotName()` |  |
-| 37 | 1 | `public String getGameVersion()` |  |
-| 38 | 1 | `public int getSaveFormat()` |  |
-| 39 | 1 | `public long getSavedAt()` |  |
-| 41 | 3 | `public boolean hasName()` |  |
-| 46 | 3 | `public boolean isFromNewerBuild()` | True when this file was written by a build that knows more than this one. |
-| 51 | 3 | `public boolean isFromBeforeSectors()` | True when this file predates the sector template - the one older shape that is refused. |
-| 56 | 3 | `public boolean isReadableHere()` | Loadable by this build: neither from a newer one nor from before the sectors. |
+| 21 | 51 | **type** `public class SaveHeader` | Just enough of a save to label it on the slot list. |
+| 36 | 1 | `public int getMonth()` |  |
+| 37 | 1 | `public int getPopulation()` |  |
+| 38 | 1 | `public double getCash()` |  |
+| 39 | 1 | `public String getSlotName()` |  |
+| 40 | 1 | `public String getGameVersion()` |  |
+| 41 | 1 | `public int getSaveFormat()` |  |
+| 42 | 1 | `public long getSavedAt()` |  |
+| 44 | 3 | `public boolean hasName()` |  |
+| 53 | 3 | `public String getCityName()` | The city in the slot, by name - for the slot list. |
+| 58 | 3 | `public boolean isFromNewerBuild()` | True when this file was written by a build that knows more than this one. |
+| 63 | 3 | `public boolean isFromBeforeSectors()` | True when this file predates the sector template - the one older shape that is refused. |
+| 68 | 3 | `public boolean isReadableHere()` | Loadable by this build: neither from a newer one nor from before the sectors. |
 
