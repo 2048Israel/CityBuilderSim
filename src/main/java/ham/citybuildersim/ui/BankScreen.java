@@ -25,7 +25,8 @@ import static ham.citybuildersim.ui.Levers.*;
 /**
  * The bank tab: whether the city's bank is healthy and why, on one landing -
  * a sentence, a scorecard and the ladder of its rates - with its profit, its
- * lending, its funding, its capital and owners, and its history behind it.
+ * balance sheet (0.7.13), its lending, its funding, its capital and owners,
+ * and its history behind it.
  *
  * WHY THIS SHAPE (0.7.9). Jerus: "a redesign of the bank UI info, cause when
  * you click on bank you dont even see all the relevant stuff, lets make
@@ -64,7 +65,7 @@ final class BankScreen {
        the bank's state in a sentence with the figure that decides it; a
        scorecard of the eight figures a banker would read first; and the
        ladder of its rates, from the price of money to what each borrower
-       pays, every step labelled with what it is for. Then the five pages
+       pays, every step labelled with what it is for. Then the six pages
        behind it, each with its headline figure.
 
        THE ACTION STAYS AS IT WAS. Jerus: rescue on failure only. Putting
@@ -78,9 +79,9 @@ final class BankScreen {
     static final String BANK_HOME  = "Profit";
     String bankPage = BANK_HOME;
 
-    /** The five pages behind the landing, in the chip strip's order. */
+    /** The six pages behind the landing, in the chip strip's order: the balance sheet beside the income statement since 0.7.13. */
     static final String[] BANK_PAGE_NAMES =
-            {"Profit", "Lending", "Funding", "Capital & owners", "History"};
+            {"Profit", "Balance sheet", "Lending", "Funding", "Capital & owners", "History"};
 
     /** The lines the player has opened, by label, so a redraw on the clock leaves them open (Statement.opens()). */
     final Set<String> openLines = new HashSet<>();
@@ -167,6 +168,12 @@ final class BankScreen {
                 money(bank.getNetIncome()) + " this month",
                 money(bank.overYear(Bank.Line.NET)) + " over " + yearWords(bank),
                 bank.getNetIncome() < 0 ? Palette.BAD : Palette.GOOD, "Profit"));
+        column.getChildren().add(bankRow("Balance sheet",
+                "what it owns, what it owes and its equity, against a year ago",
+                money(bank.totalAssets()) + " of assets",
+                bank.knowsYearAgo() ? money(bank.yearAgo(Bank.Sheet.ASSETS)) + " a year ago"
+                        : "a year ago not on file yet",
+                Palette.TEXT_HEAD, "Balance sheet"));
         int troubled = bank.getBooksWatched();
         column.getChildren().add(bankRow("Lending",
                 "who owes it, what it has set aside, how the next loan is priced",
@@ -659,9 +666,10 @@ final class BankScreen {
     /* =====================================================================
        THE PAGES BEHIND IT
 
-       Five, on one chip strip: its profit; its lending; its funding; its
-       capital and its owners; and its history. Four figures across the top
-       of every one, so a page never loses the state of the whole bank.
+       Six, on one chip strip: its profit; its balance sheet (0.7.13); its
+       lending; its funding; its capital and its owners; and its history.
+       Four figures across the top of every one, so a page never loses the
+       state of the whole bank.
        ===================================================================== */
 
     void drawBankScreen() {
@@ -683,6 +691,7 @@ final class BankScreen {
         column.setMaxWidth(Region.USE_PREF_SIZE);
 
         switch (bankPage) {
+            case "Balance sheet"    -> sheetPage(column);
             case "Lending"          -> lendingPage(column);
             case "Funding"          -> fundingPage(column);
             case "Capital & owners" -> capitalPage(column);
@@ -986,6 +995,179 @@ final class BankScreen {
                     moneyFull(-reMark), moneyFull(-bank.getTradingIncome()))));
         }
         return desk;
+    }
+
+    /* =====================================================================
+       BALANCE SHEET (0.7.13)
+
+       Jerus: "in the bank section, i should be able to see a proper balance
+       sheet, detailed" - "New page, vs a year ago". What the bank's own
+       totalAssets() and totalLiabilities() sum, line by line (Bank.Sheet),
+       this month and twelve months back (the year of sheets it files at the
+       top of every month), each line opening into what it is made of; its
+       equity as the model books it, the residual, shown since round 2 as
+       paid-in capital and retained earnings with their total under them
+       ("—" for both on a save from before the bank kept them); and, beside
+       the sheet, the city's own deposits, the memorandum the model keeps
+       them as (Bank, THE THREE STATEMENTS). It foots in both columns, and a
+       "Not accounted for" line appears, in red, only when it does not.
+       ===================================================================== */
+
+    void sheetPage(VBox column) {
+        Bank bank = ui.game.getBank();
+        boolean known = bank.knowsYearAgo();
+
+        column.getChildren().add(statementHead("Its balance sheet"));
+        column.getChildren().add(bookHead("as at " + CityCalendar.format(ui.game.getMonth()),
+                "this month", "a year ago"));
+
+        /* ------------------------------ what it owns ------------------------------ */
+        column.getChildren().add(subHead("What it owns"));
+        column.getChildren().add(sheetLine(bank, "Reserves at the central bank", Bank.Sheet.RESERVES, known,
+                said(String.format("The cash it is not lending, held at the central bank and paid the policy "
+                        + "rate - %s this month. Its placements abroad came home to the central bank in 0.7.0; "
+                        + "it holds none.", moneyFull(bank.getPlacementIncome())))));
+        VBox bySector = new VBox(0), interimBySector = new VBox(0);
+        for (int s = 0; s < Sectors.KEYS.length; s++) {
+            double now = bank.getLoansToSector(s), then = bank.yearAgoLoansToSector(s);
+            if (Math.abs(now) > 1e-9 || (known && Math.abs(then) > 1e-9)) {
+                bySector.getChildren().add(bookLine(Sectors.KEYS[s], now, then, known, null));
+            }
+            double lent = bank.getInterimToSector(s), lentThen = bank.yearAgoInterimToSector(s);
+            if (Math.abs(lent) > 1e-9 || (known && Math.abs(lentThen) > 1e-9)) {
+                interimBySector.getChildren().add(bookLine(Sectors.KEYS[s], lent, lentThen, known, null));
+            }
+        }
+        if (bySector.getChildren().isEmpty()) bySector = said("No business owes it a loan.");
+        column.getChildren().add(sheetLine(bank, "Loans to the businesses", Bank.Sheet.BUSINESS_LOANS, known,
+                bySector, "by sector"));
+        if (interimBySector.getChildren().isEmpty()) {
+            interimBySector = said("Lent to a sector the month it defaulted, for the bills its write-down left "
+                    + "unpaid, ranked ahead of the rest of its debt. None is outstanding.");
+        }
+        column.getChildren().add(sheetLine(bank, "Interim financing", Bank.Sheet.INTERIM, known,
+                interimBySector, "by sector"));
+        column.getChildren().add(sheetLine(bank, "The landlords' insured mortgages", Bank.Sheet.MORTGAGES, known,
+                said("Lent to the landlords for new housing, and insured by the city: what a default would "
+                        + "cost the bank on them, the insurance pays.")));
+        column.getChildren().add(sheetLine(bank, "The families' credit lines", Bank.Sheet.FAMILIES, known,
+                said("What the households owe on their credit lines.")));
+        column.getChildren().add(sheetLine(bank, "Lent to the carry trade", Bank.Sheet.CARRY, known,
+                said("Lent to foreigners who took it abroad for the spread; they owe it back.")));
+        column.getChildren().add(sheetLine(bank, "The city's paper", Bank.Sheet.CITY_PAPER, known,
+                said("Its share of the city's own paper, at face - the households and the central bank hold "
+                        + "the rest. The discount it paid under face and has not yet earned is owed below.")));
+        column.getChildren().add(sheetLine(bank, "The businesses' bonds it holds", Bank.Sheet.BONDS, known,
+                said(String.format("At what they cost it; their face is %s.", moneyFull(bank.getBondFace())))));
+        column.getChildren().add(sheetLine(bank, "Less what it has set aside for loans expected to go bad",
+                Bank.Sheet.ALLOWANCE, known,
+                said("The allowance: a year's expected loss on a sound borrower, what a default would cost on "
+                        + "one in trouble. The Lending page has it by borrower.")));
+        column.getChildren().add(sheetLine(bank, "The trading desk's shares, at their mark", Bank.Sheet.DESK, known,
+                said("Other companies' shares the desk holds, at the last trade. Its own shares are not "
+                        + "among them: bought back, they are cancelled.")));
+        column.getChildren().add(bookTotal("Total assets", bank.sheet(Bank.Sheet.ASSETS),
+                bank.yearAgo(Bank.Sheet.ASSETS), known, null));
+
+        /* ------------------------------ what it owes ------------------------------ */
+        column.getChildren().add(subHead("What it owes"));
+        column.getChildren().add(sheetLine(bank, "Lent past its own cash, on its deposits",
+                Bank.Sheet.DEPOSIT_FUNDING, known,
+                said("What it has lent past its own cash, as far as the deposits its branches gather cover "
+                        + "it: the city's savings, lent back out - the cheap tranche of its funding.")));
+        column.getChildren().add(sheetLine(bank, "Borrowed at the central bank's window", Bank.Sheet.WINDOW, known,
+                said("The rest of what it has lent past its own cash, borrowed overnight at the policy rate "
+                        + "plus the window's penalty.")));
+        column.getChildren().add(sheetLine(bank, "Deposits from abroad", Bank.Sheet.FOREIGN_DEPOSITS, known,
+                said("Hot money: the world's deposits, which can leave on no notice. The city's own are "
+                        + "beside the sheet, below.")));
+        column.getChildren().add(sheetLine(bank, "Shares the desk has sold short", Bank.Sheet.DESK_SHORT, known,
+                said("Shares the desk owes, at their mark.")));
+        column.getChildren().add(sheetLine(bank, "The discount on the city's paper, not yet earned",
+                Bank.Sheet.UNEARNED_DISCOUNT, known,
+                said("What it paid under face for the city's paper, which it earns over the paper's life "
+                        + "rather than the day it settles.")));
+        column.getChildren().add(bookTotal("Total liabilities", bank.sheet(Bank.Sheet.LIABILITIES),
+                bank.yearAgo(Bank.Sheet.LIABILITIES), known, null));
+
+        /* ------------------------------ what is left ------------------------------ */
+        // Its equity in two parts since 0.7.13's round 2 (Bank, ITS EQUITY, IN
+        // TWO PARTS); a save from before it kept neither, and reads "—" for both.
+        column.getChildren().add(subHead("What is left for its owners"));
+        Equity register = ui.game.getEquity();
+        boolean split = bank.knowsEquitySplit();
+        column.getChildren().add(bookLine("Paid-in capital",
+                split ? bank.sheet(Bank.Sheet.PAID_IN) : Double.NaN,
+                split ? bank.yearAgo(Bank.Sheet.PAID_IN) : Double.NaN, known, null,
+                said(String.format("What its owners and the city have put in: the capital its shareholders paid "
+                        + "at its offerings - %s at home and %s abroad over its life, a new branch's capital "
+                        + "among it - and the new shares it issued, less what it paid for its own shares bought "
+                        + "back, and %s the city put in in rescues, which bought no shares.",
+                        moneyFull(register.getLifetimeRaisedHome(Equity.BANK)),
+                        moneyFull(register.getLifetimeRaisedAbroad(Equity.BANK)),
+                        moneyFull(bank.getBailoutsLifetime()))), "what", openLines));
+        column.getChildren().add(bookLine("Retained earnings",
+                split ? bank.sheet(Bank.Sheet.RETAINED) : Double.NaN,
+                split ? bank.yearAgo(Bank.Sheet.RETAINED) : Double.NaN, known, null,
+                said(String.format("Everything else: the profit it has kept, less its dividends and its losses; "
+                        + "the %s its creditors absorbed when it failed, which lifted its equity back to nothing "
+                        + "while its owners kept their shares; the gains and losses on the city's paper the "
+                        + "treasury bought back from it; and the settlement that opened its first branch on "
+                        + "its owners' capital. The Capital & owners page has this month's movement, cause by "
+                        + "cause.", moneyFull(bank.getResolutionLoss()))), "what", openLines));
+        column.getChildren().add(bookTotal("Its equity", bank.sheet(Bank.Sheet.EQUITY),
+                bank.yearAgo(Bank.Sheet.EQUITY), known, bank.isInsolvent() ? Palette.BAD : null));
+        if (!split) {
+            column.getChildren().add(statementNote("This city was saved before the bank kept its equity in two "
+                    + "parts, and they cannot be rebuilt: what its buybacks paid was never kept. Its equity is "
+                    + "shown whole, what it owns less what it owes."));
+        } else if (Math.abs(bank.equitySplitResidual()) > .005) {
+            column.getChildren().add(alert("Its two parts do not add up to its equity",
+                    String.format("%s of its equity is neither paid in nor retained. That should be impossible "
+                    + "- worth reporting.", money(Math.abs(bank.equitySplitResidual())))));
+        }
+        double off = bank.sheetResidual(), offThen = bank.yearAgoResidual();
+        boolean unexplained = Math.abs(off) > .005 || (known && Math.abs(offThen) > .005);
+        if (unexplained) {
+            column.getChildren().add(bookLine("Not accounted for", off, offThen, known, Palette.BAD));
+        }
+        column.getChildren().add(bookTotal("Liabilities and equity", bank.liabilitiesAndEquity(),
+                bank.yearAgoLiabilitiesAndEquity(), known, bank.isInsolvent() ? Palette.BAD : null));
+        if (unexplained) {
+            column.getChildren().add(alert("Its lines do not add up",
+                    "Something on its books is not on this page, or is on it twice. That should be "
+                    + "impossible - worth reporting."));
+        }
+
+        /* ------------------------------ beside the sheet ------------------------------ */
+        column.getChildren().add(subHead("Beside the sheet"));
+        column.getChildren().add(bookLine("Deposits the families hold with it",
+                bank.sheet(Bank.Sheet.HOUSEHOLD_DEPOSITS), bank.yearAgo(Bank.Sheet.HOUSEHOLD_DEPOSITS), known, null));
+        column.getChildren().add(bookLine("...and the businesses",
+                bank.sheet(Bank.Sheet.SECTOR_DEPOSITS), bank.yearAgo(Bank.Sheet.SECTOR_DEPOSITS), known, null));
+        column.getChildren().add(statementNote("Counted for what it can lend and not held on its sheet in "
+                + "full: the families' savings and the businesses' tills are their own money in the city's "
+                + "accounts, and holding them here as well would count every dollar twice. What it has lent "
+                + "on them is the line above; the world's deposits are on it whole, because that money was "
+                + "not in the city until it came."));
+        if (!known) {
+            column.getChildren().add(statementNote("A year ago is kept from the first month played in this "
+                    + "build, so it reads \u2014 until the city has lived a year of them."));
+        }
+    }
+
+    /** One line of the balance sheet, this month and a year ago, opening into its detail. */
+    VBox sheetLine(Bank bank, String label, Bank.Sheet line, boolean known, VBox detail) {
+        return sheetLine(bank, label, line, known, detail, "what");
+    }
+
+    VBox sheetLine(Bank bank, String label, Bank.Sheet line, boolean known, VBox detail, String word) {
+        return bookLine(label, bank.sheet(line), bank.yearAgo(line), known, null, detail, word, openLines);
+    }
+
+    /** A line's detail that is a sentence. */
+    static VBox said(String text) {
+        return new VBox(0, statementNote(text));
     }
 
     /* =====================================================================

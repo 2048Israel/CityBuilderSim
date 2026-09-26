@@ -22,8 +22,9 @@ import static ham.citybuildersim.ui.Levers.*;
  * The Finances tab: the position, the ladder of what the city owes, debt
  * service, home and abroad, your rate taken apart, the book, buying back,
  * and borrowing - at home or in somebody else's money - and, since 0.7.0,
- * the money itself: the central bank's books, M0 and M2; and since 0.7.12
- * the businesses' bond market beside the city's own.
+ * the money itself: the central bank's books, M0 and M2; since 0.7.12
+ * the businesses' bond market beside the city's own; and since 0.7.13, at
+ * the top of both borrow pages, the treasury's rollover of what falls due.
  *
  * Split out of UserInterface on 2026-09-18: the eleven banners from FINANCES
  * to BORROW exactly as they were, the shell's members reached through ui. The
@@ -1353,6 +1354,99 @@ final class FinancesScreen {
         return box;
     }
 
+    /* ---------------------- ROLLING WHAT FALLS DUE (0.7.13) ----------------------
+     *
+     * Jerus: "you should have an option, where it defualt toggles on, so
+     * basically the game checks whats going to mature next month, and issues
+     * what the treasury is lacking ... either manual, aka you do it yourself,
+     * or that it defualts to same structure, or that it defualts to 12 month
+     * tbill". At the top of both borrow pages, since it is the treasury's own
+     * borrowing, at home and abroad: the three chips, a sentence on what the
+     * setting does, and next month's maturities with what the press will
+     * issue for them - Game.rolloverPlan(), the function the press books, so
+     * the sentence here is the issue there.
+     */
+    static final String[] ROLLOVER_CHIPS = { "By hand", "Same structure", "12-month notes" };
+
+    void rolloverBlock(VBox column) {
+        Game game = ui.game;
+        Rollover.Mode mode = game.getRolloverMode();
+        String here = game.getCurrency().qualifiedSymbol();
+
+        column.getChildren().add(statementHead("Rolling what falls due"));
+        column.getChildren().add(chipStrip(ROLLOVER_CHIPS, ROLLOVER_CHIPS[mode.ordinal()], Palette.SIZE_BODY,
+                picked -> {
+                    for (int i = 0; i < ROLLOVER_CHIPS.length; i++) {
+                        if (ROLLOVER_CHIPS[i].equals(picked)) game.setRolloverMode(Rollover.Mode.values()[i]);
+                    }
+                    showFinanceMenu();
+                }));
+        column.getChildren().add(sentence(switch (mode) {
+            case MANUAL -> "Nothing automatic: what falls due is paid out of the treasury's cash, and "
+                    + "what the cash cannot cover the central bank advances.";
+            case SAME_STRUCTURE -> "Each month the treasury looks at what falls due the next, nets last "
+                    + "year's surplus from it, and issues the rest a month ahead as the same paper - the "
+                    + "same instrument, term and currency, dollars abroad in dollars - at home instead while the window "
+                    + "abroad is shut.";
+            case TWELVE_MONTH_BILL -> "Each month the treasury looks at what falls due the next, nets last "
+                    + "year's surplus from it, and issues the rest a month ahead as "
+                    + Rollover.BILL_MONTHS + "-month notes at home.";
+        }, Palette.TEXT_BODY));
+
+        Rollover.Plan plan = game.rolloverPlan();
+        if (!(plan.due() > 0)) {
+            column.getChildren().add(statementLine("Next month", "nothing falls due", Palette.TEXT_MUTED));
+        } else {
+            column.getChildren().add(statementLine("Falls due next month", marked(here, money(plan.due()))
+                    + (plan.dueAbroad() > 0
+                            ? "  \u00b7  " + marked(here, money(plan.dueAbroad())) + " of it abroad" : "")));
+            column.getChildren().add(statementLine("Last year's surplus", marked(here, money(plan.surplus())),
+                    plan.surplus() < 0 ? Palette.WARN : null));
+            if (plan.used() > 0) {
+                column.getChildren().add(statementLine("...of it netted already this year",
+                        marked(here, money(plan.used())), Palette.TEXT_MUTED));
+            }
+            if (mode != Rollover.Mode.MANUAL) {
+                column.getChildren().add(statementLine("Netted from it", marked(here, money(plan.netted()))));
+                StringBuilder as = new StringBuilder();
+                for (int i = 0; i < plan.issues().size(); i++) {
+                    Rollover.Issue issue = plan.issues().get(i);
+                    column.getChildren().add(statementLine("Raised as " + issue.paper(),
+                            marked(here, money(issue.cash())), Palette.GOOD));
+                    column.getChildren().add(statementLine("...its face, as quoted today",
+                            marked(here, money(issue.face())), issue.face() > issue.cash() ? Palette.WARN : null));
+                    as.append(i == 0 ? "" : i == plan.issues().size() - 1 ? " and " : ", ")
+                            .append(issue.paper()).append(" (").append(marked(here, money(issue.cash()))).append(")");
+                }
+                column.getChildren().add(sentence(plan.issues().isEmpty()
+                        ? String.format("%s falls due, last year's surplus nets %s, and %s.",
+                                marked(here, money(plan.due())), marked(here, money(plan.netted())),
+                                plan.toRoll() > 0 ? marked(here, money(plan.toRoll()))
+                                        + " is under the smallest deal worth arranging, so the cash pays it"
+                                        : "nothing is issued")
+                        : String.format("%s falls due, last year's surplus nets %s, %s will be raised as %s: "
+                                        + "about %s of new face.",
+                                marked(here, money(plan.due())), marked(here, money(plan.netted())),
+                                marked(here, money(plan.toRaise())), as, marked(here, money(plan.issued()))),
+                        Palette.TEXT_BODY));
+            }
+        }
+        Rollover rolled = game.getRollover();
+        if (rolled.getLastMonth() >= 0) {
+            column.getChildren().add(statementNote(String.format("The last, in %s: %s fell due, %s was netted "
+                    + "from the year's surplus, and %s of new paper raised %s.",
+                    CityCalendar.format(rolled.getLastMonth()),
+                    marked(here, money(rolled.getLastDue())), marked(here, money(rolled.getLastNetted())),
+                    marked(here, money(rolled.getLastIssued())), marked(here, money(rolled.getLastRaised())))));
+        }
+        column.getChildren().add(statementNote("The new paper is sized so its cash covers what falls due. It sells "
+                + "under its face - by its discount, a term loan's redemption premium, its costs - so its face is "
+                + "more than the part of the maturity it refinances: rolling for cash borrows the old paper's interest into the new "
+                + "principal, at every roll. The proceeds wait a month for the maturity - what pre-funding a "
+                + "redemption costs. A treasury short of cash for its spending is still the central bank's to "
+                + "advance."));
+    }
+
     /* =====================================================================
        BORROW
 
@@ -1373,6 +1467,8 @@ final class FinancesScreen {
     void borrowPage(VBox column, boolean foreign) {
 
         DebtManager ledger = ui.game.getDebtManager();
+
+        rolloverBlock(column);
 
         if (foreign && !ledger.foreignWindowOpen()) {
             column.getChildren().add(statementHead("The window abroad is shut"));

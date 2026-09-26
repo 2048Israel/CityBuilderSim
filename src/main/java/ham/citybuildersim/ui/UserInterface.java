@@ -2732,7 +2732,8 @@ public class UserInterface extends Application {
 
         /* ------------------------------- land ------------------------------- */
         VBox land = reportSection("LAND",
-                String.format("%-20s%+.0f blocks", "Bought", skip.getLandBlocksBought()),
+                String.format("%-20s%s%s", "Bought", skip.getLandBlocksBought() < 0 ? "-" : "+",
+                        LandManager.km2Words(Math.abs(skip.getLandBlocksBought()) * LandManager.BLOCK_SQ_FT)),
                 String.format("%-20s%.1f%% used at the end",
                         "Utilisation", skip.getEndLandUtilisation() * 100));
         column.getChildren().add(land);

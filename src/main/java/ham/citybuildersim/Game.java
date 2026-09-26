@@ -277,6 +277,9 @@ public class Game {
         // The land office converts cash until the player says otherwise (0.7.6).
         landPaidFromVault = false;
         lastLandReceipt = "";
+        // ...and the treasury rolls nothing and has netted nothing (0.7.13):
+        // newGame() turns it on, the load path puts the save's back.
+        rollover.reset();
         // ...and the central bank, founded fresh rather than reset, reading
         // the vault where ForeignAccounts keeps it. See getCentralBank().
         centralBank = new CentralBank(foreign::getReserves);
@@ -524,6 +527,23 @@ public class Game {
         initialized = false;
         initialize();
         foundingBank();
+
+        /*
+         * A NEW GAME FOUNDS ON THE AUTOPILOT, AND ROLLS WHAT FALLS DUE (0.7.13).
+         * Jerus: "the dial should default when you start a game on the
+         * automatic, aka not your hand", and the treasury's rollover "default
+         * toggles on" - in the same structure (Rollover). Here, not in
+         * buildWorld(), because this is the door a player founds through -
+         * the founding screen and "Found with defaults" both reach it
+         * (UserInterface.foundCity()) - while buildWorld() is also the load
+         * path, where the save's own setting is put back, and the constructor,
+         * which builds the bare city the harnesses and the playtest found on
+         * and state their own settings over. An older save keeps whatever it
+         * saved: the dial's hand (DataSave.getPolicyAutopilot(), off when the
+         * key is missing), and the rollover as MANUAL - see the load path.
+         */
+        debtManager.setAutopilot(true);
+        rollover.setMode(Rollover.Mode.SAME_STRUCTURE);
     }
 
     /**
@@ -1131,19 +1151,20 @@ public class Game {
             treasuryJournal.record(String.format("Bought land with US$%,.0fk of reserves",
                     paidFromVault), paidFromVault * rate);
         }
-        String blocks = String.format("%.1f blocks", parcel.getBlocks());
+        // The plot's size in square kilometres since 0.7.13, as the office shows it.
+        String area = LandManager.km2Words(parcel.getSizeSqFt());
         String here = getCurrency().qualifiedSymbol();
         if (paidFromVault <= 0) {
             lastLandReceipt = String.format("Bought %s for US$%,.0fk, converting %s%,.0fk of cash at %s%.4f"
-                    + " to the dollar.", blocks, usd, here, convertedLocal,
+                    + " to the dollar.", area, usd, here, convertedLocal,
                     here, rate);
         } else if (converted <= 0) {
             lastLandReceipt = String.format("Bought %s for US$%,.0fk out of the vault, which holds"
-                    + " US$%,.0fk now. No cash moved.", blocks, usd, foreign.getReservesUsd());
+                    + " US$%,.0fk now. No cash moved.", area, usd, foreign.getReservesUsd());
         } else {
             lastLandReceipt = String.format("Bought %s for US$%,.0fk. The vault held only US$%,.0fk,"
                     + " so that went and the other US$%,.0fk was converted from %s%,.0fk of cash.",
-                    blocks, usd, paidFromVault, converted, here, convertedLocal);
+                    area, usd, paidFromVault, converted, here, convertedLocal);
         }
         lastLandReceiptMonth = month;
         GameLog.note(lastLandReceipt);
@@ -1163,9 +1184,146 @@ public class Game {
         return Math.max(0, cash) + fromVault * foreign.getRate();
     }
 
-    /** Whether buyLandParcel() would buy this parcel today, paid the way the toggle says - for the land office's buttons. */
+    /** Whether buyLandParcel() would buy this parcel today, paid the way the toggle says - what the land office colours a plot's tile by; since 0.7.13 its button asks landNeedsFunding() instead. */
     public boolean canAffordParcel(LandParcel parcel) {
         return parcel != null && parcel.localPrice(foreign.getRate()) <= landPayable(parcel);
+    }
+
+    /* -------------------------------------------------------------------
+       WHEN THE CITY IS SHORT, AND SEVERAL AT ONCE (0.7.13)
+
+       Jerus: "on the land section, if you are on buy by converting and you
+       dont have enough, you can stilll click buy, just the popup to issue
+       debt appears, but if you are in buy with reserves, and click buy,
+       then pop up to issue foreign debt should appear (aka the short or the
+       20y, like with buildings)" - and "add a button to buy multiple, so for
+       example buy the next 5 land options, and then also debt popup appears
+       if not enough".
+
+       THE GAP IS IN THE MONEY THE TOGGLE PAYS IN: local money converting
+       (landCashGap()), US dollars from the vault (landVaultGapUsd()). The
+       land office's funding page sizes the build screen's two offers to it -
+       converting, quoteLongBondForCash() at BUILD_BOND_YEARS and quoteTBill()
+       at BUILD_NOTE_MONTHS; from the vault, the same two terms in dollars
+       (quoteForeignForCash(), booked by handleForeignForCash() with the
+       dollars held in reserve) - and, from the vault, today's third way:
+       buyLandParcel() takes what the vault has and converts the rest, which
+       the page offers as a choice when the cash covers it
+       (landTopUpCovers()), never by itself. Then buyLandParcels().
+
+       SEVERAL AT ONCE ARE BOUGHT ONE AT A TIME, each through buyLandParcel(),
+       because the market's own rule makes that the same thing: a listed
+       plot's price is frozen at listing (LandMarket, WHAT IS LISTED STAYS
+       LISTED), and a purchase moves only the plots listed AFTER it - each
+       one refills the window priced against the bigger city
+       (LandManager.buyParcel()). So the N taken off the shelf together cost
+       what they cost one by one, and leave the same trail. landShelf() is
+       the office's own order, the order the screen lays the cards in.
+       ------------------------------------------------------------------- */
+
+    /** The plots on offer in the land office's order: cheapest ground first, per square foot in US dollars - the top-left card first. */
+    public java.util.List<LandParcel> landShelf() {
+        java.util.List<LandParcel> shelf = landManager.getMarket().getListing();
+        shelf.sort(java.util.Comparator.comparingDouble(LandParcel::getUsdPerSqFt));
+        return shelf;
+    }
+
+    /** The first n plots of landShelf(), by id: what "Buy the next N plots" buys. */
+    public java.util.List<Integer> nextLandParcels(int n) {
+        java.util.List<Integer> ids = new java.util.ArrayList<>();
+        for (LandParcel parcel : landShelf()) {
+            if (ids.size() >= n) break;
+            ids.add(parcel.getId());
+        }
+        return ids;
+    }
+
+    /** What these plots are listed at together, in US dollars; an id not on offer counts nothing. */
+    public double landPriceUsd(java.util.List<Integer> ids) {
+        double usd = 0;
+        for (int id : ids) {
+            LandParcel parcel = landManager.getMarket().find(id);
+            if (parcel != null) usd += parcel.getPriceUsd();
+        }
+        return usd;
+    }
+
+    /** ...and what that is in local money at today's rate - what converting pays. */
+    public double landPriceLocal(java.util.List<Integer> ids) {
+        double local = 0;
+        for (int id : ids) {
+            LandParcel parcel = landManager.getMarket().find(id);
+            if (parcel != null) local += parcel.localPrice(foreign.getRate());
+        }
+        return local;
+    }
+
+    /**
+     * Converting: what the treasury's cash is short of these plots' local
+     * price, never below nothing - an overdraft included, as the build
+     * screen's buildFundingGap() counts it, so a loan of this much leaves
+     * the cash buyLandParcel() needs.
+     */
+    public double landCashGap(java.util.List<Integer> ids) {
+        return Math.max(0, landPriceLocal(ids) - cash);
+    }
+
+    /** From the vault: what the vault is short of these plots' dollar price, never below nothing. */
+    public double landVaultGapUsd(java.util.List<Integer> ids) {
+        return Math.max(0, landPriceUsd(ids) - foreign.getReservesUsd());
+    }
+
+    /** True when buying these the way the toggle pays needs money the city does not have: the land office's funding page. */
+    public boolean landNeedsFunding(java.util.List<Integer> ids) {
+        return landPaidFromVault ? landVaultGapUsd(ids) > 0 : landCashGap(ids) > 0;
+    }
+
+    /**
+     * True when buyLandParcels() would buy every one of these today: paying
+     * from the vault, the cash covers at today's rate the dollars the vault
+     * lacks, so what the vault has goes and the rest is converted - each
+     * purchase passing buyLandParcel()'s own test in turn, because the cash
+     * each one converts only falls. Converting, the cash covers them. One
+     * plot's answer is canAffordParcel()'s.
+     */
+    public boolean canAffordLandParcels(java.util.List<Integer> ids) {
+        double outOfCash = landPaidFromVault ? landVaultGapUsd(ids) * foreign.getRate() : landPriceLocal(ids);
+        return outOfCash <= Math.max(0, cash);
+    }
+
+    /** From the vault: the third way on the funding page - take what the vault has and convert the rest from cash - is on offer, the cash covering it. */
+    public boolean landTopUpCovers(java.util.List<Integer> ids) {
+        return landPaidFromVault && canAffordLandParcels(ids);
+    }
+
+    /** ...and what that third way converts out of cash: the dollars the vault lacks, in local money at today's rate. */
+    public double landTopUpLocal(java.util.List<Integer> ids) {
+        return landVaultGapUsd(ids) * foreign.getRate();
+    }
+
+    /**
+     * Buys these plots in the order given, each through buyLandParcel() -
+     * paid the way the toggle says, one at a time, as the market's rule
+     * has it - and stops at the first it cannot. How many were bought. The
+     * land office's receipt names them all when there was more than one.
+     */
+    public int buyLandParcels(java.util.List<Integer> ids) {
+        int bought = 0;
+        double sqFt = 0, usd = 0;
+        for (int id : ids) {
+            LandParcel parcel = landManager.getMarket().find(id);
+            if (parcel == null || !buyLandParcel(id)) break;
+            bought++;
+            sqFt += parcel.getSizeSqFt();
+            usd += parcel.getPriceUsd();
+        }
+        if (bought > 1) {
+            lastLandReceipt = String.format("Bought %d plots, %s in all, for US$%,.0fk. The last: %s",
+                    bought, LandManager.km2Words(sqFt), usd, lastLandReceipt);
+            GameLog.note(String.format("Bought %d plots, %s in all, for US$%,.0fk.",
+                    bought, LandManager.km2Words(sqFt), usd));
+        }
+        return bought;
     }
 
     /**
@@ -2102,6 +2260,12 @@ public class Game {
          * the full weight and is not walked.
          */
         double businessWeighted = 0, mortgageFace = 0, mortgageWeighted = 0;
+        // ...and, off the same loans, what each sector owes it outside its
+        // insured mortgages, and its interim financing apart (0.7.13): the
+        // Balance sheet page's detail, in Sectors.KEYS order.
+        double[] loansBySector = new double[Sectors.KEYS.length];
+        double[] interimBySector = new double[Sectors.KEYS.length];
+        java.util.List<String> keys = java.util.Arrays.asList(Sectors.KEYS);
         for (BusinessDebt loan : economyManager.getBusinessDebtManager().getLoans()) {
             // An insured mortgage weighs RISK_INSURED_MORTGAGE (0.7.11), and
             // the weight table shows it as its own row.
@@ -2115,6 +2279,11 @@ public class Game {
             }
             businessWeighted += loan.getOutstandingPrincipal()
                     * Bank.RISK_BUSINESS * Bank.maturityWeight(loan.getRemainingMonths());
+            int at = keys.indexOf(loan.getSector());
+            if (at >= 0) {
+                if (loan instanceof InterimLoan) interimBySector[at] += loan.getOutstandingPrincipal();
+                else loansBySector[at] += loan.getOutstandingPrincipal();
+            }
         }
         double cityWeighted = 0;
         for (Debt paper : debtManager.getDebt()) {
@@ -2126,6 +2295,7 @@ public class Game {
         bank.setWeightedBook(businessWeighted, cityWeighted,
                 householdBalance.bookOwed() * Bank.RISK_HOUSEHOLD);
         bank.setMortgageBook(mortgageFace, mortgageWeighted);
+        bank.setSectorLoans(loansBySector, interimBySector);
         // ...and the businesses' bonds it holds, and the book's concentration (0.7.12).
         strikeBankBonds();
 
@@ -4327,8 +4497,16 @@ public class Game {
 
         DebtQuote quote = quoteTBill(amount, duration, rounding);
         if (quote.isEmpty()) return "Nothing issued.";
+        return issueNote(quote);
+    }
 
-        debtManager.addShortTermTBill(quote.faceValue(), duration, month)
+    /**
+     * The booking every note shares - handleTBillLogic()'s, and since 0.7.13
+     * the rollover's, which books the quote it sized (issueForRollover()).
+     * Every figure comes off the quote, its term in months.
+     */
+    private String issueNote(DebtQuote quote) {
+        debtManager.addShortTermTBill(quote.faceValue(), quote.duration(), month)
                 .markIssued(quote.cashReceived(), quote.marketRate());
         this.cash += quote.cashReceived();
        cityDebtRaisedThisMonth += quote.cashReceived();
@@ -4983,7 +5161,325 @@ public class Game {
             default -> throw new IllegalArgumentException("No such instrument: " + type);
         };
     }
-    
+
+    /* -----------------------------------------------------------------------
+       THE SERIAL AND THE DOLLAR PAPER, SIZED TO THE CASH THEY BRING (0.7.13)
+
+       The build screen's offers are sized so the cash they bring covers a
+       gap: the note by quoteTBill(), whose ask IS the cash, and the bond by
+       quoteLongBondForCash(). The land office's dollar offers and the
+       treasury's rollover ask the same question of the serial bond and of
+       the three dollar instruments, whose quotes take a FACE
+       (quoteMediumBond(), quoteForeign()). So the face is searched: estimated
+       from what a unit of face banks at today's rate for its maturity, less
+       the fixed fee, then as many granules more as the existing quote says
+       it is still short - quoteLongBondForCash()'s shape, hard bounded. What
+       comes back IS the existing quote at that face, so handleMediumBondLogic()
+       and handleForeignLogic() on its requested() book exactly what it says:
+       the price and the costs are the existing ones.
+       ----------------------------------------------------------------------- */
+
+    /** The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). */
+    public static final double BUILD_NOTE_GRANULE = 1000;
+
+    /** A serial bond whose CASH covers cashNeeded: quoteMediumBond() at the face that brings it. Books nothing. */
+    public DebtQuote quoteMediumBondForCash(double cashNeeded, int duration, double rounding) {
+        if (!(cashNeeded > 0) || !(rounding > 0)) return quoteMediumBond(0, duration, rounding);
+        double perFace = 1 - UNDERWRITING_SPREAD;
+        double face = Math.ceil(((cashNeeded + issuanceFee()) / perFace) / rounding) * rounding;
+        DebtQuote quote = quoteMediumBond(face, duration, rounding);
+        for (int guard = 0; quote.cashReceived() < cashNeeded && guard < 64; guard++) {
+            face += rounding * Math.max(1,
+                    Math.ceil((cashNeeded - quote.cashReceived()) / (rounding * perFace)));
+            quote = quoteMediumBond(face, duration, rounding);
+        }
+        return quote;
+    }
+
+    /**
+     * A dollar note, serial or term loan whose CASH covers cashNeededUsd:
+     * quoteForeign() at the face that brings it, on the world's curve at its
+     * maturity. Books nothing, and is empty with the window shut.
+     */
+    public DebtQuote quoteForeignForCash(String type, double cashNeededUsd, int duration, double rounding) {
+        if (!(cashNeededUsd > 0) || !(rounding > 0)) return quoteForeign(type, 0, duration, rounding);
+        int months = "Note".equals(type) ? duration : duration * 12;
+        double perFace = foreignProceedsPerFace(type, debtManager.foreignCurveRate(months), duration);
+        double face = Math.ceil(((cashNeededUsd + issuanceFee()) / perFace) / rounding) * rounding;
+        DebtQuote quote = quoteForeign(type, face, duration, rounding);
+        for (int guard = 0; !quote.isEmpty() && quote.cashReceived() < cashNeededUsd && guard < 64; guard++) {
+            double atQuote = foreignProceedsPerFace(type, quote.marketRate(), duration);
+            face += rounding * Math.max(1,
+                    Math.ceil((cashNeededUsd - quote.cashReceived()) / (rounding * atQuote)));
+            quote = quoteForeign(type, face, duration, rounding);
+        }
+        return quote;
+    }
+
+    /** What a unit of a dollar instrument's face banks at this rate, net of the spread - never under MIN_PROCEEDS_PER_FACE, so the search above always moves. */
+    private double foreignProceedsPerFace(String type, double rate, int duration) {
+        double perFace = switch (type) {
+            case "Note" -> 1 - ShortTermTBill.discountFraction(rate, duration);
+            case "Term" -> longBondPvPerFace(rate, duration);
+            default     -> 1;
+        };
+        return Math.max(MIN_PROCEEDS_PER_FACE, perFace - UNDERWRITING_SPREAD);
+    }
+
+    /** Books the dollar paper quoteForeignForCash() quotes, on exactly its terms - the land office's dollar offers. */
+    public String handleForeignForCash(String type, double cashNeededUsd, int duration, double rounding,
+                                       boolean holdAsReserves) {
+        DebtQuote quote = quoteForeignForCash(type, cashNeededUsd, duration, rounding);
+        if (quote.isEmpty()) {
+            return debtManager.foreignWindowOpen() ? "Nothing issued."
+                    : "No lender abroad will take this paper: " + debtManager.foreignWindowReason();
+        }
+        return handleForeignLogic(type, quote.requested(), duration, rounding, holdAsReserves);
+    }
+
+    /* =======================================================================
+       ROLLING WHAT FALLS DUE (0.7.13)
+
+       Jerus: "the game checks whats going to mature next month, and issues
+       what the treasury is lacking ... either manual, aka you do it yourself,
+       or that it defualts to same structure, or that it defualts to 12 month
+       tbill". The setting and the ledger are Rollover's; what it reads and
+       what it books are here, because both are the city's.
+
+       WHEN: between two presses - the first thing nextMonth() does, before
+       the calendar turns. That is where a player's own issue lands, so the
+       paper settles to its buyers at this month's settle and its cash is in
+       the opening pools of the audit window: one path, already audited. What
+       it rolls is what this month's processAllDebts() will pay - the player
+       is looking at month m, the maturity falls due in m + 1, and the
+       proceeds sit in the treasury until it does.
+
+       WHAT: rolloverPlan(), which the Finances tab's borrow page prints
+       before it happens and rollMaturities() books - one function on one
+       state, so the sentence on the screen is the issue at the press.
+         - what falls due: Debt.principalDueNextMonth(), piece by piece, at
+           home and abroad;
+         - the netting: surplusOverLastYear(), the national accounts' own
+           balance over the last Rollover.NETTING_MONTHS, less what the ledger
+           says earlier rollovers netted in those months; S is
+           Rollover.netting() - never more than the cash, nor than falls due;
+         - each piece's share of what falls due less S, pro rata, sized so
+           its CASH covers it - Jerus's "issues what the treasury is
+           lacking", which he chose over face for face knowing what it does
+           (0.7.13, round 2) - through the existing quotes: quoteTBill(),
+           quoteMediumBondForCash(), quoteLongBondForCash(),
+           quoteForeignForCash(), at the build screen's granules,
+           BUILD_NOTE_GRANULE for a note and BUILD_BOND_GRANULE for a bond.
+           Paper sells under its face - a note by its discount, a term loan
+           by its redemption premium, any of them by the underwriting spread
+           and the fixed fee - so the face that raises the cash is more than
+           the face falling due: rolling for cash capitalises the interest of
+           the paper it replaces into the new principal, at every roll.
+           Rollover's javadoc has what that did on a Lean city. The holders
+           buy it as they buy any issue;
+         - SAME_STRUCTURE: its own instrument, term and currency. A dollar
+           piece rolls abroad in dollars, and with the window shut into local
+           paper of the same term, which the log says. A serial's instalment
+           rolls into a new serial of its ORIGINAL term: Jerus's "same
+           structure" is the same instrument and term, and a term bond of the
+           remaining life would be neither - term loans are issued only at
+           LongTermBond.MATURITIES besides. A term loan whose own term is no
+           longer one of those (an older save's) rolls into the nearest one;
+         - TWELVE_MONTH_BILL: a local note of Rollover.BILL_MONTHS;
+         - pieces rolling into the same paper are one issue, and an issue
+           under minimumIssueSize() - the smallest deal worth arranging, which
+           the Finances tab already holds a player to - is not arranged: its
+           share is paid out of cash with the rest of the maturity.
+
+       WHAT IT IS NOT: a treasury short of cash for its spending is the
+       central bank's (settleTreasury(), unchanged); the surplus nets only up
+       to the cash the treasury holds. Rollover's javadoc has the rest, and
+       the source for the month the proceeds wait.
+       ======================================================================= */
+
+    private final Rollover rollover = new Rollover();
+
+    /** The treasury's rollover: its setting, the ledger of what it netted, and its record. */
+    public Rollover getRollover() { return rollover; }
+
+    /** The setting, as the Finances tab's chips read it. */
+    public Rollover.Mode getRolloverMode() { return rollover.getMode(); }
+
+    /** ...and as they set it, applied at the next press. */
+    public void setRolloverMode(Rollover.Mode mode) { rollover.setMode(mode); }
+
+    /**
+     * The budget surplus the city ran over the last Rollover.NETTING_MONTHS,
+     * in local money: the national accounts' balance month by month, as the
+     * history keeps it (HistorySave's "surplus"), over as many months as the
+     * city has lived if fewer. Negative is a deficit.
+     */
+    public double surplusOverLastYear() {
+        double[] surplus = historySave.aligned("surplus");
+        double sum = 0;
+        for (int i = Math.max(0, surplus.length - Rollover.NETTING_MONTHS); i < surplus.length; i++) {
+            if (!Double.isNaN(surplus[i])) sum += surplus[i];
+        }
+        return sum;
+    }
+
+    /** What a piece falling due rolls into: the quote functions' instrument, its term in their units, abroad or not, and whether it is dollar paper rolled at home. */
+    private record RollsInto(String type, int term, boolean foreign, boolean atHomeForDollars) { }
+
+    private RollsInto rollsInto(Debt paper, Rollover.Mode mode, boolean windowOpen) {
+        if (mode == Rollover.Mode.TWELVE_MONTH_BILL) {
+            return new RollsInto("Note", Rollover.BILL_MONTHS, false, false);
+        }
+        boolean abroad = paper.isForeign() && windowOpen;
+        boolean atHome = paper.isForeign() && !windowOpen;
+        if (paper instanceof ShortTermTBill) {
+            return new RollsInto("Note", Math.max(1, paper.getDuration()), abroad, atHome);
+        }
+        int years = Math.max(1, (int) Math.round(paper.getDuration() / 12.0));
+        if (paper instanceof MediumTermBond) return new RollsInto("Serial", years, abroad, atHome);
+        return new RollsInto("Term", nearestTermMaturity(years), abroad, atHome);
+    }
+
+    /** The one of LongTermBond.MATURITIES nearest this many years; the shorter on a tie. */
+    static int nearestTermMaturity(int years) {
+        int best = LongTermBond.MATURITIES[0];
+        for (int m : LongTermBond.MATURITIES) {
+            if (Math.abs(m - years) < Math.abs(best - years)) best = m;
+        }
+        return best;
+    }
+
+    /**
+     * What the rollover will do at the next press, on the city as it stands:
+     * what falls due, the year's surplus and what earlier rollovers netted
+     * of it, S, and the issues. Books nothing. MANUAL nets and issues
+     * nothing, but still says what falls due.
+     */
+    public Rollover.Plan rolloverPlan() {
+        Rollover.Mode mode = rollover.getMode();
+        double due = 0, abroad = 0;
+        java.util.List<Debt> falling = new java.util.ArrayList<>();
+        java.util.List<Double> owed = new java.util.ArrayList<>();
+        for (Debt paper : debtManager.getDebt()) {
+            double principal = paper.principalDueNextMonth();
+            if (!(principal > 0)) continue;
+            falling.add(paper);
+            owed.add(principal);
+            due += principal;
+            if (paper.isForeign()) abroad += principal;
+        }
+        double surplus = surplusOverLastYear();
+        double used = rollover.usedInYear(month);
+        double netted = mode == Rollover.Mode.MANUAL ? 0 : Rollover.netting(surplus, used, cash, due);
+
+        java.util.List<Rollover.Issue> issues = new java.util.ArrayList<>();
+        if (mode != Rollover.Mode.MANUAL && due > netted) {
+            double toRoll = due - netted;
+            boolean windowOpen = debtManager.foreignWindowOpen();
+            java.util.Map<RollsInto, double[]> byPaper = new java.util.LinkedHashMap<>();
+            for (int i = 0; i < falling.size(); i++) {
+                RollsInto into = rollsInto(falling.get(i), mode, windowOpen);
+                RollsInto key = new RollsInto(into.type(), into.term(), into.foreign(), false);
+                double[] sum = byPaper.computeIfAbsent(key, k -> new double[3]);
+                sum[0] += owed.get(i) / due * toRoll;       // its share of the cash, pro rata
+                sum[1] += 1;                                 // pieces
+                sum[2] += into.atHomeForDollars() ? 1 : 0;   // dollar pieces rolled at home
+            }
+            double smallest = minimumIssueSize();
+            for (java.util.Map.Entry<RollsInto, double[]> e : byPaper.entrySet()) {
+                double[] sum = e.getValue();
+                if (sum[0] < smallest) continue;
+                RollsInto into = e.getKey();
+                double face = localFace(into.foreign(),
+                        rolloverQuote(into.type(), into.term(), into.foreign(), sum[0]));
+                issues.add(new Rollover.Issue(into.type(), into.term(), into.foreign(),
+                        sum[0], face, (int) sum[1], (int) sum[2]));
+            }
+        }
+        return new Rollover.Plan(mode, due, abroad, surplus, used, cash, netted, issues);
+    }
+
+    /** The rollover, at the press: rolloverPlan() booked, issue by issue, through the existing quotes, and printed to the log. */
+    private void rollMaturities() {
+        if (rollover.getMode() == Rollover.Mode.MANUAL) return;
+        Rollover.Plan plan = rolloverPlan();
+        if (!(plan.due() > 0)) return;
+
+        String here = getCurrency().qualifiedSymbol();
+        GameLog.note(String.format("THE ROLLOVER, %s: %s%,.0fk falls due next month; last year's surplus"
+                        + " nets %s%,.0fk of it; %s%,.0fk to roll.", Rollover.words(plan.mode()),
+                here, plan.due(), here, plan.netted(), here, plan.toRoll()));
+        double raised = 0, faced = 0;
+        int issued = 0, atHome = 0;
+        for (Rollover.Issue issue : plan.issues()) {
+            // Quoted again at the press, each issue after the one before it is
+            // on the books: the plan quoted every issue on the books as they
+            // stood, and it is this quote that is booked.
+            DebtQuote quote = rolloverQuote(issue.type(), issue.term(), issue.foreign(), issue.cash());
+            double before = cash;
+            String booked = issueForRollover(issue, quote);
+            double brought = cash - before;
+            double face = brought > 0 ? localFace(issue.foreign(), quote) : 0;
+            if (brought > 0) {
+                raised += brought;
+                faced += face;
+                issued++;
+                atHome += issue.atHomeForDollars();
+            }
+            GameLog.note(String.format("  rolled %s%,.0fk into %s, %s: %s%,.0fk of face raised %s%,.0fk. %s",
+                    here, issue.cash(), issue.paper(), issue.why(plan.mode()), here, face, here, brought,
+                    booked.replace('\n', ' ')));
+        }
+        if (plan.issues().isEmpty() && plan.toRoll() > 0) {
+            GameLog.note(String.format("  nothing issued: %s%,.0fk is under the smallest deal worth arranging"
+                    + " (%s%,.0fk), and is paid out of cash.", here, plan.toRoll(), here, minimumIssueSize()));
+        }
+        rollover.record(month, plan.due(), plan.netted(), faced, raised, issued, atHome);
+    }
+
+    /**
+     * The paper whose CASH covers a rollover issue's share, on the existing
+     * quotes, at the build screen's granules: a note by quoteTBill(), whose
+     * ask is the cash; a serial by quoteMediumBondForCash(); a term loan by
+     * quoteLongBondForCash(); dollar paper by quoteForeignForCash(), its
+     * share in dollars at the day's rate - the rate the dollar paper falling
+     * due is valued at. Books nothing.
+     */
+    private DebtQuote rolloverQuote(String type, int term, boolean abroad, double cash) {
+        double granule = "Note".equals(type) ? BUILD_NOTE_GRANULE : BUILD_BOND_GRANULE;
+        if (abroad) return quoteForeignForCash(type, cash / foreign.getRate(), term, granule);
+        return switch (type) {
+            case "Note"   -> quoteTBill(cash, term, granule);
+            case "Serial" -> quoteMediumBondForCash(cash, term, granule);
+            default       -> quoteLongBondForCash(cash, term, granule);
+        };
+    }
+
+    /** A rollover quote's face in local money: a dollar quote's at the day's rate. */
+    private double localFace(boolean abroad, DebtQuote quote) {
+        if (quote == null || quote.isEmpty()) return 0;
+        return abroad ? quote.faceValue() * foreign.getRate() : quote.faceValue();
+    }
+
+    /**
+     * One of the rollover's issues, booked on exactly the terms of its quote
+     * (rolloverQuote()). Dollar paper is converted, not held: what falls due
+     * is paid out of the treasury's cash at the day's rate
+     * (repayForeignPrincipal()).
+     */
+    private String issueForRollover(Rollover.Issue issue, DebtQuote quote) {
+        if (quote == null || quote.isEmpty()) return "Nothing issued.";
+        double granule = "Note".equals(issue.type()) ? BUILD_NOTE_GRANULE : BUILD_BOND_GRANULE;
+        if (issue.foreign()) {
+            return handleForeignLogic(issue.type(), quote.requested(), issue.term(), granule, false);
+        }
+        return switch (issue.type()) {
+            case "Note"   -> issueNote(quote);
+            case "Serial" -> handleMediumBondLogic(quote.requested(), issue.term(), granule);
+            default       -> issueLongBond(quote);
+        };
+    }
+
     
     //printers
     private void printPopulationInfo(){
@@ -5016,6 +5512,14 @@ public class Game {
     
     
     private void nextMonth() {
+        /*
+         * WHAT FALLS DUE IS ROLLED FIRST (0.7.13), before the calendar turns -
+         * in the gap between two presses, where a player's own issue lands,
+         * so it settles to its buyers and crosses the audit window exactly as
+         * one does. See ROLLING WHAT FALLS DUE.
+         */
+        rollMaturities();
+
         updateConstructionCost();
 
         /*
@@ -7830,6 +8334,13 @@ public class Game {
         // ...and its year of statements (0.7.9), which last month's column
         // and the last twelve months are read from.
         dataSave.setBankStatementYear(bank.statementYearToSave());
+        // ...and its balance sheet at the top of each of the last twelve
+        // months (0.7.13), which the Balance sheet page's year-ago column reads.
+        dataSave.setBankSheetYear(bank.sheetYearToSave());
+        // ...and its equity in two parts at the top of the month (round 2),
+        // by name; nothing on a bank loaded from a save that kept neither.
+        dataSave.setBankPaidInOpening(bank.knowsEquitySplit() ? bank.paidInOpening() : null);
+        dataSave.setBankRetainedOpening(bank.knowsEquitySplit() ? bank.retainedOpening() : null);
         dataSave.setHousingOccupancy(new double[]{
                 getSectors().realEstate().getOccupiedHomes() });
         dataSave.setForeignAccounts(foreign.toSaveArray());
@@ -7846,6 +8357,11 @@ public class Game {
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setPolicyRate(debtManager.getPolicyRate());
         dataSave.setPolicyAutopilot(debtManager.isAutopilot());
+        // ...and the treasury's rollover (0.7.13): its setting by name, the
+        // ledger of what it netted, and its record.
+        dataSave.setRolloverMode(rollover.getMode().name());
+        dataSave.setRolloverLedger(rollover.ledgerToSave());
+        dataSave.setRolloverRecord(rollover.recordToSave());
         // ...and how the land office pays (0.7.6), the player's toggle.
         dataSave.setLandPaidFromVault(landPaidFromVault);
         // ...and how the city was founded (0.7.10): its name, its money, the
@@ -9614,6 +10130,13 @@ public class Game {
             // ...and the months before it (0.7.9); an older save has none,
             // and the year starts with the month it was saved in.
             bank.restoreStatementYear(loaded.getBankStatementYear());
+            // ...and its balance sheet a year back (0.7.13); an older save has
+            // none, and the year-ago column reads "—" until it has lived one.
+            bank.restoreSheetYear(loaded.getBankSheetYear());
+            // ...and its equity in two parts (round 2), after the month's
+            // lines, which carry the month's own causes. An older save kept
+            // neither, and its bank shows its equity whole.
+            bank.restoreEquitySplit(loaded.getBankPaidInOpening(), loaded.getBankRetainedOpening());
             /*
              * ...and the doors that were LET.
              *
@@ -9706,6 +10229,12 @@ public class Game {
             debtManager.setAutopilot(loaded.getPolicyAutopilot());
             // ...and how the land office pays (0.7.6): an older save converts.
             landPaidFromVault = loaded.getLandPaidFromVault();
+            // ...and the treasury's rollover (0.7.13). An older save rolls
+            // nothing: it was played paying every maturity out of cash, and it
+            // loads as it was played - the Finances tab turns it on.
+            rollover.setMode(loaded.getRolloverMode());
+            rollover.restoreLedger(loaded.getRolloverLedger());
+            rollover.restoreRecord(loaded.getRolloverRecord());
             // ...and what the rule aims at (0.7.4): an older save has no key
             // and reads the default - 2%, the constant it was.
             debtManager.setInflationTarget(loaded.getInflationTarget() != null
@@ -10734,6 +11263,8 @@ public class Game {
         migration.redenominate(scale);
         landManager.redenominate(scale);
         debtManager.redenominate(scale);
+        // ...and what the treasury's rollover netted and raised (0.7.13).
+        rollover.redenominate(scale);
         buildingManager.redenominate(scale);
         healthcare.redenominate(scale);
         education.redenominate(scale);

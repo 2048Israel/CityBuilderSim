@@ -47,6 +47,33 @@ public class LandManager {
     /** One city block, in square feet. About 2.3 acres, near a real block. */
     public static final double BLOCK_SQ_FT = 100000;
 
+    /** One square foot in square metres, exactly: the international foot is 0.3048 m (the international yard and pound agreement of 1959), and 0.3048 squared is 0.09290304. */
+    public static final double SQ_M_PER_SQ_FT = 0.09290304;
+
+    /** Square metres in a square kilometre. */
+    public static final double SQ_M_PER_KM2 = 1_000_000;
+
+    /**
+     * An area in square feet, in square kilometres (0.7.13): what the land
+     * office shows in place of blocks. Jerus: "purely for visual purposes,
+     * instead of blocks, say km^2". The model keeps square feet; this is the
+     * same figure, converted exactly.
+     */
+    public static double km2(double sqFt) { return sqFt * SQ_M_PER_SQ_FT / SQ_M_PER_KM2; }
+
+    /**
+     * ...written to three significant figures, so the smallest plot the
+     * office sells - one block, 0.00929 square kilometres - does not read
+     * "0.00", and the largest reads no more digits than a player compares
+     * plots by: 0.00929, 0.214, 2.79, 27.9, each with its unit.
+     */
+    public static String km2Words(double sqFt) {
+        double km2 = km2(sqFt);
+        if (!(km2 > 0)) return "0 km\u00b2";
+        return new java.math.BigDecimal(km2).round(new java.math.MathContext(3))
+                .stripTrailingZeros().toPlainString() + " km\u00b2";
+    }
+
     /**
      * Land the city starts with - thirty blocks, about 69 acres.
      *

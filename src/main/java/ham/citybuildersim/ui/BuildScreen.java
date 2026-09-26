@@ -1695,14 +1695,14 @@ final class BuildScreen {
         Label details = new Label(String.format(
                 "%,d x %s needs %s sq ft%n"
                         + "The city has %s sq ft free%n"
-                        + "Short by %s sq ft - about %.0f block%s",
+                        + "Short by %s sq ft - about %s",
                 quantity, selected.getName(), formatter.format(needed),
                 formatter.format(have), formatter.format(short_),
-                blocks, blocks == 1 ? "" : "s"));
+                LandManager.km2Words(short_)));
 
         Label cost = new Label(String.format(
-                "Buying %.0f block%s costs roughly %s",
-                blocks, blocks == 1 ? "" : "s",
+                "Buying %s costs roughly %s",
+                LandManager.km2Words(blocks * LandManager.BLOCK_SQ_FT),
                 money(land.getNextBlockCost() * blocks)));
         cost.setStyle("-fx-text-fill: #8fa3b0;");
 
@@ -1742,7 +1742,7 @@ final class BuildScreen {
         // price on screen was not the price paid. The emergency note itself is
         // gone (0.7.0: the central bank advances a broke treasury); this is the
         // screen's own note on Game.BUILD_NOTE_MONTHS.
-        DebtQuote note = ui.game.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, 1000.0);
+        DebtQuote note = ui.game.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
         DebtQuote bond = ui.game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
 
         Label warning = new Label("INSUFFICIENT FUNDS");
@@ -1782,11 +1782,13 @@ final class BuildScreen {
 
         VBox noteOffer = fundingOffer(Game.BUILD_NOTE_MONTHS + "-month note", note,
                 pct2(note.marketRate()) + " a year, taken as a discount",
-                String.format("Falls due in %d months: the whole %s at once, out of the treasury.",
+                String.format(ui.game.getRollover().getMode() == Rollover.Mode.MANUAL
+                                ? "Falls due in %d months: the whole %s at once, out of the treasury."
+                                : "Falls due in %d months: the whole %s at once, refinanced then by the treasury's rollover.",
                         note.duration(), money(note.faceValue())),
                 "Issue the " + Game.BUILD_NOTE_MONTHS + "-month note",
                 () -> {
-                    ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, 1000.0);   // quotes it again, identically
+                    ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);   // quotes it again, identically
                     buildOnTheLoan(selected, quantity, prevTitle, prevCats, "note");
                 });
 
@@ -1802,8 +1804,20 @@ final class BuildScreen {
      * every figure off the quote - then what asking this much does to the
      * city's rate, and its button.
      */
-    private VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd,
-                              String action, Runnable issue) {
+    VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd,
+                      String action, Runnable issue) {
+        return fundingOffer(name, quote, rate, atTheEnd, action, issue, Money::money);
+    }
+
+    /**
+     * ...with its figures written by `written` - the land office's dollar
+     * offers (0.7.13) print theirs in US dollars, since a dollar quote's
+     * every figure is in dollars (Game.quoteForeign()). Package-private since
+     * 0.7.13, so the land office's funding page is this page's pieces and not
+     * a second copy of them.
+     */
+    VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd,
+                      String action, Runnable issue, java.util.function.DoubleFunction<String> written) {
 
         Label impact = new Label(quote.creditImpact());
         impact.setStyle(rateStyle(quote));
@@ -1816,12 +1830,12 @@ final class BuildScreen {
         VBox offer = new VBox(0,
                 statementHead(name),
                 statementLine("Rate", rate),
-                statementLine("Face - what the city owes", money(quote.faceValue())),
-                statementLine("Cash it brings", money(quote.cashReceived()), Palette.GOOD),
+                statementLine("Face - what the city owes", written.apply(quote.faceValue())),
+                statementLine("Cash it brings", written.apply(quote.cashReceived()), Palette.GOOD),
                 statementLine("Monthly cost", quote.monthlyInterest() > 0
-                        ? money(quote.monthlyInterest()) + " a month"
+                        ? written.apply(quote.monthlyInterest()) + " a month"
                         : "none - it pays no coupon"),
-                statementLine("Cost of the credit, all in", money(quote.totalCost())),
+                statementLine("Cost of the credit, all in", written.apply(quote.totalCost())),
                 statementNote(atTheEnd),
                 impact,
                 go);

@@ -1030,6 +1030,34 @@ public class DataSave {
     public double[] getBankStatementYear()           { return bankStatementYear; }
 
     /**
+     * The bank's balance sheet at the top of each of the last twelve months
+     * (0.7.13): every line of it and its loans by sector, what the Balance
+     * sheet page's year-ago column is read from. A stock twelve months gone
+     * that no end of month can give back; see Bank.sheetYearToSave(). Absent
+     * from an older save, whose year-ago column reads "—" until it has
+     * lived a year in this build.
+     */
+    private double[] bankSheetYear;
+
+    public void setBankSheetYear(double[] state) { this.bankSheetYear = state; }
+    public double[] getBankSheetYear()           { return bankSheetYear; }
+
+    /**
+     * The bank's equity in two parts (0.7.13, round 2): its paid-in capital
+     * and its retained earnings at the top of the saved month, by name - the
+     * month's own causes are its statement lines (bankMonthLines). Counters
+     * no end of month can give back (Bank, ITS EQUITY, IN TWO PARTS). Null on
+     * an older save, whose bank shows its equity whole.
+     */
+    private Double bankPaidInOpening;
+    private Double bankRetainedOpening;
+
+    public void setBankPaidInOpening(Double value)   { this.bankPaidInOpening = value; }
+    public Double getBankPaidInOpening()             { return bankPaidInOpening; }
+    public void setBankRetainedOpening(Double value) { this.bankRetainedOpening = value; }
+    public Double getBankRetainedOpening()           { return bankRetainedOpening; }
+
+    /**
      * The price basket, its weights, and a year of readings.
      *
      * The index itself could be restruck from today's prices. The YEAR OF
@@ -1110,6 +1138,29 @@ public class DataSave {
 
     public void setPolicyAutopilot(boolean on) { this.policyAutopilot = on; }
     public boolean getPolicyAutopilot()        { return policyAutopilot != null && policyAutopilot; }
+
+    /**
+     * The treasury's rollover (0.7.13), by name: its setting, the ledger of
+     * what it netted from the year's surplus - {month, netted} pairs, so two
+     * months cannot net the same surplus twice across a reload - and its
+     * record (Rollover.recordToSave()). Null on an older save, which rolls
+     * nothing: it was played paying every maturity out of cash.
+     */
+    private String rolloverMode;
+    private double[] rolloverLedger;
+    private double[] rolloverRecord;
+
+    public void setRolloverMode(String mode)        { this.rolloverMode = mode; }
+    /** The setting as saved; MANUAL for an older save or a name this build does not know. */
+    public Rollover.Mode getRolloverMode() {
+        if (rolloverMode == null) return Rollover.Mode.MANUAL;
+        for (Rollover.Mode m : Rollover.Mode.values()) if (m.name().equals(rolloverMode)) return m;
+        return Rollover.Mode.MANUAL;
+    }
+    public void setRolloverLedger(double[] ledger)  { this.rolloverLedger = ledger; }
+    public double[] getRolloverLedger()              { return rolloverLedger; }
+    public void setRolloverRecord(double[] record)  { this.rolloverRecord = record; }
+    public double[] getRolloverRecord()              { return rolloverRecord; }
 
     /**
      * How the land office pays (0.7.6) - Game.isLandPaidFromVault(): true out

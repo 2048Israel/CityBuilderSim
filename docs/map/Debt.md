@@ -1,4 +1,4 @@
-# Debt.java - 473 lines · 44 methods · 0 constants · model
+# Debt.java - 492 lines · 46 methods · 0 constants · model
 
 `ham/citybuildersim/Debt.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
@@ -39,7 +39,8 @@
 | 213 | · what a subclass declares, in its own currency |
 | 230 | · ...and what the city's books see |
 | 245 | · and the same figures, in dollars |
-| 256 | · paying for it |
+| 256 | · what the next month repays (0.7.13) |
+| 275 | · paying for it |
 
 ## Fields (state)
 
@@ -64,7 +65,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 446 | **type** `public abstract class Debt` | One piece of city paper. |
+| 28 | 465 | **type** `public abstract class Debt` | One piece of city paper. |
 
 ### WHICH MONEY THIS PAPER IS WRITTEN IN (lines 37-94)
 
@@ -122,21 +123,28 @@
 | 251 | 1 | `public final double faceInCurrency()` | Face value in the currency written on the paper. |
 | 254 | 1 | `public final double couponInCurrency()` | This month's coupon in the currency written on the paper. |
 
-### paying for it (lines 256-473)
+### what the next month repays (0.7.13) (lines 256-274)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 269 | 4 | `protected void payPrincipal(Game game, double owed)` | A repayment of principal, routed by the currency it is owed in. |
-| 278 | 4 | `protected void payCoupon(Game game, double owed)` | A coupon, likewise - and at home, split by who holds the paper (0.7.1): see Game.payDomesticCoupon(). |
-| 284 | 3 | `public int getRemainingMonths()` | Months of payments still to run. |
-| 289 | 3 | `public final double getFaceValue()` | What it says on the bond, in local money. |
-| 293 | 3 | `public int getDuration()` |  |
-| 297 | 3 | `public int getMonthStarted()` |  |
-| 330 | 17 | `public double getMarketValue(double annualMarketRate)` | What this paper is worth today, to somebody buying it. |
-| 349 | 25 | `static double presentValue(double[] cashFlows, double annualRate)` | PV of a monthly schedule at an annual nominal rate. |
-| 393 | 30 | `public double getYieldToMaturity(double price)` | The yield a buyer earns at a given price - the bond's true cost to the city, as opposed to the coupon printed on it. |
-| 425 | 3 | `public double getCurrentYield(double annualMarketRate)` | Yield at what the market would actually pay today. |
-| 436 | 5 | `public double getPriceAsPercentOfPar(double annualMarketRate)` | Where this bond trades against par, as a percentage of face. |
-| 451 | 15 | `public void redenominate(double scale)` | The instrument in the new unit. |
-| 471 | 1 | `protected void redenominateSchedule(double scale)` | Anything a subclass carries in its own currency - a coupon, an amortisation schedule - in the new unit. |
+| 267 | 4 | `public final double principalDueNextMonthInCurrency()` | The principal the next month's payment repays, in the currency written on the paper: the first payment of its own schedule less that month's coupon - a note's or a term bond's whole face in its last month, a serial bo... |
+| 273 | 1 | `public final double principalDueNextMonth()` | ...and in local money, at the rate the paper is valued at. |
+
+### paying for it (lines 275-492)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 288 | 4 | `protected void payPrincipal(Game game, double owed)` | A repayment of principal, routed by the currency it is owed in. |
+| 297 | 4 | `protected void payCoupon(Game game, double owed)` | A coupon, likewise - and at home, split by who holds the paper (0.7.1): see Game.payDomesticCoupon(). |
+| 303 | 3 | `public int getRemainingMonths()` | Months of payments still to run. |
+| 308 | 3 | `public final double getFaceValue()` | What it says on the bond, in local money. |
+| 312 | 3 | `public int getDuration()` |  |
+| 316 | 3 | `public int getMonthStarted()` |  |
+| 349 | 17 | `public double getMarketValue(double annualMarketRate)` | What this paper is worth today, to somebody buying it. |
+| 368 | 25 | `static double presentValue(double[] cashFlows, double annualRate)` | PV of a monthly schedule at an annual nominal rate. |
+| 412 | 30 | `public double getYieldToMaturity(double price)` | The yield a buyer earns at a given price - the bond's true cost to the city, as opposed to the coupon printed on it. |
+| 444 | 3 | `public double getCurrentYield(double annualMarketRate)` | Yield at what the market would actually pay today. |
+| 455 | 5 | `public double getPriceAsPercentOfPar(double annualMarketRate)` | Where this bond trades against par, as a percentage of face. |
+| 470 | 15 | `public void redenominate(double scale)` | The instrument in the new unit. |
+| 490 | 1 | `protected void redenominateSchedule(double scale)` | Anything a subclass carries in its own currency - a coupon, an amortisation schedule - in the new unit. |
 

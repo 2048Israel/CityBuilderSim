@@ -1115,6 +1115,10 @@ public class SaveFileCheck {
             full.simulateMonths(1);
         }
 
+        // The treasury's rollover (0.7.13), set after the city has played to
+        // the one setting no city founds with, so the round trip can fail.
+        full.setRolloverMode(Rollover.Mode.TWELVE_MONTH_BILL);
+
         assertTrue("saved a city with one of everything in it",
                 full.saveGame(1, "everything").ok);
 
@@ -1354,6 +1358,45 @@ public class SaveFileCheck {
                 livedBank.getInterestFromBusinesses());
         assertTrue("...and its year of statements came back whole",
                 java.util.Arrays.equals(backBank.statementYearToSave(), livedBank.statementYearToSave()));
+        /*
+         * ...AND ITS BALANCE SHEET A YEAR BACK (0.7.13), which the Balance
+         * sheet page's second column reads: a stock twelve months gone that
+         * no end of month can give back.
+         */
+        assertTrue("fixture: the bank had a year of balance sheets on file", livedBank.knowsYearAgo());
+        same("its equity a year ago, on the reloaded Balance sheet page",
+                backBank.yearAgo(Bank.Sheet.EQUITY), livedBank.yearAgo(Bank.Sheet.EQUITY));
+        same("...what the businesses owed it then", backBank.yearAgo(Bank.Sheet.BUSINESS_LOANS),
+                livedBank.yearAgo(Bank.Sheet.BUSINESS_LOANS));
+        assertTrue("...and the year of sheets came back whole",
+                java.util.Arrays.equals(backBank.sheetYearToSave(), livedBank.sheetYearToSave()));
+        same("...and this month's sheet leaves the same unexplained", backBank.sheetResidual(),
+                livedBank.sheetResidual());
+        /*
+         * ...AND ITS EQUITY IN TWO PARTS (0.7.13, round 2): two counters no
+         * end of month can give back, saved by name at the top of the month,
+         * the month's own causes riding its statement lines.
+         */
+        assertTrue("fixture: the bank keeps its equity in two parts", livedBank.knowsEquitySplit());
+        same("its paid-in capital, on the reloaded Balance sheet page", backBank.paidInCapital(),
+                livedBank.paidInCapital());
+        same("...its retained earnings", backBank.retainedEarnings(), livedBank.retainedEarnings());
+        same("...and the two still add up to its equity", backBank.equitySplitResidual(),
+                livedBank.equitySplitResidual());
+        /*
+         * ...AND THE TREASURY'S ROLLOVER (0.7.13): the setting by name, the
+         * ledger of what it netted and its record. This city borrows nothing,
+         * so its ledger is empty; TreasuryCheck section 7 round-trips one
+         * with months in it.
+         */
+        assertTrue("the rollover's setting survives a save",
+                back.getRolloverMode() == Rollover.Mode.TWELVE_MONTH_BILL);
+        assertTrue("...its ledger and its record with it",
+                java.util.Arrays.equals(back.getRollover().ledgerToSave(), full.getRollover().ledgerToSave())
+                        && java.util.Arrays.equals(back.getRollover().recordToSave(), full.getRollover().recordToSave()));
+        same("...and what a reloaded city says falls due next month", back.rolloverPlan().due(),
+                full.rolloverPlan().due());
+        same("...and the year's surplus it would net from", back.surplusOverLastYear(), full.surplusOverLastYear());
         // ...and the account fee in the households' books, a line of its own.
         assertTrue("fixture: the households really paid account fees",
                 full.getHouseholds().getAccountFees() > 0);

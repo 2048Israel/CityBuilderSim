@@ -723,6 +723,9 @@ public class LandMarket {
         return converted;
     }
 
+    /** Smallest parcel the office is currently willing to sell, in square feet: what the land office shows in square kilometres (0.7.13). */
+    public double getMinSqFt() { return minBlocks * LandManager.BLOCK_SQ_FT; }
+
     /** Smallest parcel the office is currently willing to sell, in blocks. */
     public double getMinBlocks() { return minBlocks; }
 

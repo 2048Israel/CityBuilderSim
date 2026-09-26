@@ -26,7 +26,13 @@ import static ham.citybuildersim.ui.Levers.*;
  * whether the treasury converts cash for it (the default) or pays out of the
  * vault.
  *
- * Split out of UserInterface on 2026-09-18: the two banners THE LAND OFFICE
+ * Since 0.7.13 a plot's price is large in the money the toggle pays in, with
+ * the other beside it; its size reads in square kilometres rather than
+ * blocks; its button stays live and, short, opens the build screen's
+ * funding page sized to the gap (showLandFunding()); and a control above the
+ * cards buys the next N of them at once (nextPlots()).
+ *
+ * Split out of UserInterface on 2026-09-18: the banners THE LAND OFFICE
  * and THE STATEMENT (what was left of it once the statement primitives had
  * gone to Statement.java - the plot tile) exactly as they were, the shell's
  * members reached through ui. The shell only ever calls showLandMenu().
@@ -98,7 +104,8 @@ final class LandScreen {
         Label how = new Label(vaultPays
                 ? String.format("Land is priced in US dollars. Paying from the vault spends its "
                         + "dollars and moves no cash; it holds %s (%s at today's rate), and a plot "
-                        + "dearer than that takes all of it and converts the rest from cash.",
+                        + "dearer than that opens the funding page: dollars borrowed abroad into the vault, or what the "
+                        + "vault holds with the rest converted from cash.",
                         usdFull(fx.getReservesUsd()), marked(here, moneyFull(fx.getReserves())))
                 : String.format("Land is priced in US dollars. Converting buys exactly the dollars "
                         + "a plot costs out of cash, at %s%s to the dollar today, and leaves the "
@@ -140,7 +147,7 @@ final class LandScreen {
 
         position.getChildren().addAll(
                 limitCell("FREE", shortNumber(free) + " sq ft",
-                        String.format("%.1f blocks to build on", land.getAvailableBlocks()),
+                        LandManager.km2Words(free) + " to build on",
                         free <= 0 ? Palette.BAD : Palette.TEXT_HEAD),
                 limitCell("USED", String.format("%.0f%%", used * 100),
                         used >= .90 ? "businesses will stop building"
@@ -159,8 +166,8 @@ final class LandScreen {
         Label smallest = new Label(String.format(
                 "Nine plots, cheapest ground first \u2014 the top-left card is always the "
                 + "best value per square foot. The office will not split a lot smaller "
-                + "than %.0f block%s, and stops splitting them at all as the city grows.",
-                market.getMinBlocks(), market.getMinBlocks() == 1 ? "" : "s"));
+                + "than %s, and stops splitting them at all as the city grows.",
+                LandManager.km2Words(market.getMinSqFt())));
         smallest.setWrapText(true);
         smallest.setMaxWidth(TILE_WIDTH * 3 + TILE_GAP * 2);
         smallest.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
@@ -229,9 +236,12 @@ final class LandScreen {
          * by PRICE is whichever plot is smallest, which is the one piece of
          * ground least worth owning per dollar. The top-left card is the answer
          * that button was pretending to be.
+         *
+         * THE ORDER IS THE MODEL'S since 0.7.13 (Game.landShelf()), because
+         * "Buy the next N plots" buys the first N of it and the cards must be
+         * those N.
          */
-        java.util.List<LandParcel> shelf = market.getListing();
-        shelf.sort(java.util.Comparator.comparingDouble(LandParcel::getUsdPerSqFt));
+        java.util.List<LandParcel> shelf = ui.game.landShelf();
 
         for (int i = 0; i < shelf.size(); i++) {
             LandParcel parcel = shelf.get(i);
@@ -332,10 +342,233 @@ final class LandScreen {
                 "As of last month — the sectors decide once a month, so ground bought"
                 + " now shows up here next month."));
 
-        VBox all = new VBox(0, offering, smallest, plots, column);
+        VBox all = new VBox(0, offering, smallest, nextPlots(), plots, column);
         all.setAlignment(Pos.CENTER);
 
         ui.rootMenu.getChildren().addAll(title, paying, position, ui.scrolled(all));
+    }
+
+    /* ====================== BUY THE NEXT N PLOTS (0.7.13) ======================
+     *
+     * Jerus: "add a button to buy multiple, so for example buy the next 5
+     * land options, and then also debt popup appears if not enough". One
+     * control above the cards: the first N of them, in the office's order
+     * (Game.nextLandParcels()), their price together in the money the toggle
+     * pays in with the other money beside it, and a button that buys them
+     * each as its own card's button would (Game.buyLandParcels()) - or, short,
+     * opens the same funding page, sized to the whole gap. N starts at five
+     * and runs from one to what is listed.
+     */
+
+    /** How many plots the next-N control buys; kept across redraws, held inside 1..listed. */
+    int nextCount = 5;
+
+    HBox nextPlots() {
+        int listed = ui.game.landShelf().size();
+        nextCount = Math.max(1, Math.min(nextCount, Math.max(1, listed)));
+        java.util.List<Integer> ids = ui.game.nextLandParcels(nextCount);
+        boolean vaultPays = ui.game.isLandPaidFromVault();
+        String here = ui.game.getCurrency().qualifiedSymbol();
+        double usdTotal = ui.game.landPriceUsd(ids);
+        double localTotal = ui.game.landPriceLocal(ids);
+        boolean afford = ui.game.canAffordLandParcels(ids);
+        boolean funding = ui.game.landNeedsFunding(ids);
+
+        Button buy = new Button("Buy the next " + nextCount + (nextCount == 1 ? " plot" : " plots"));
+        buy.setDisable(ids.isEmpty());
+        buy.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
+                + " -fx-background-color: " + (funding ? Palette.CONTROL : Palette.CONFIRM) + ";");
+        buy.setOnAction(e -> buyOrFund(ids));
+
+        Button fewer = new Button("−");
+        fewer.setDisable(nextCount <= 1);
+        fewer.setOnAction(e -> { nextCount--; showLandMenu(); });
+        Button more = new Button("+");
+        more.setDisable(nextCount >= listed);
+        more.setOnAction(e -> { nextCount++; showLandMenu(); });
+
+        Label total = new Label(vaultPays ? usd(usdTotal) : marked(here, money(localTotal)));
+        total.setStyle(Palette.figure(Palette.SIZE_SECTION, afford ? Palette.GOOD : Palette.BAD)
+                + " -fx-padding: 0 0 0 10;");
+        Label other = new Label("  ·  " + (vaultPays
+                ? marked(here, money(localTotal)) + " at today's rate"
+                : usd(usdTotal) + " listed"));
+        other.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+
+        HBox row = new HBox(6, buy, fewer, more, total, other);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(TILE_WIDTH * 3 + TILE_GAP * 2);
+        row.setStyle("-fx-padding: 0 0 8 0;");
+        return row;
+    }
+
+    /** Buys these plots the way the toggle pays, or - the city short - opens the funding page for them. */
+    void buyOrFund(java.util.List<Integer> ids) {
+        if (ui.game.landNeedsFunding(ids)) {
+            showLandFunding(ids);
+            return;
+        }
+        ui.game.buyLandParcels(ids);
+        showLandMenu();
+    }
+
+    /* ====================== WHEN THE CITY IS SHORT (0.7.13) ======================
+     *
+     * Jerus: "if you are on buy by converting and you dont have enough, you
+     * can stilll click buy, just the popup to issue debt appears, but if you
+     * are in buy with reserves, and click buy, then pop up to issue foreign
+     * debt should appear (aka the short or the 20y, like with buildings)".
+     * The build screen's INSUFFICIENT FUNDS page, its pieces reused
+     * (BuildScreen.fundingOffer(), rateStyle()), sized to the gap in the
+     * money the toggle pays in - every figure the model's (Game, WHEN THE
+     * CITY IS SHORT, AND SEVERAL AT ONCE):
+     *   - converting, the build screen's two offers in local money:
+     *     Game.BUILD_BOND_YEARS' bond and Game.BUILD_NOTE_MONTHS' note;
+     *   - from the vault, the same two terms in dollars on the world's
+     *     curve, issued abroad and held in reserve - a six-month dollar note
+     *     is a term the treasury already sells (the Finances tab's notes run
+     *     three to twelve months, at home and abroad) - and, when the cash
+     *     covers it, the vault's dollars with the rest converted: a choice,
+     *     never the default. With the window abroad shut, it says why and
+     *     offers what remains.
+     * Cancel leaves everything as it was. Either offer books exactly the
+     * quote above it and then buys the plots.
+     */
+    void showLandFunding(java.util.List<Integer> ids) {
+        ui.clearMenu("showLandFunding", () -> showLandFunding(ids));
+        Game game = ui.game;
+        boolean vaultPays = game.isLandPaidFromVault();
+        String here = game.getCurrency().qualifiedSymbol();
+        String what = ids.size() == 1 ? "The plot" : ids.size() + " plots";
+
+        Label warning = new Label("INSUFFICIENT FUNDS");
+        warning.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        VBox column = new VBox(0);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.setMaxWidth(Region.USE_PREF_SIZE);
+
+        if (!vaultPays) {
+            double gap = game.landCashGap(ids);
+            column.getChildren().addAll(
+                    statementLine("Funding required", marked(here, money(gap)), Palette.BAD),
+                    statementNote(String.format("%s cost%s %s at today's rate, and the treasury holds %s.",
+                            what, ids.size() == 1 ? "s" : "", marked(here, money(game.landPriceLocal(ids))),
+                            marked(here, money(game.getCash())))));
+            DebtQuote bond = game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            DebtQuote note = game.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+            column.getChildren().add(ui.buildScreen.fundingOffer(Game.BUILD_BOND_YEARS + "-year bond", bond,
+                    pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
+                    String.format("Paid over %d years: the coupon every month, then the whole %s at the end.",
+                            bond.duration(), money(bond.faceValue())),
+                    "Issue the " + Game.BUILD_BOND_YEARS + "-year bond and buy",
+                    () -> {
+                        game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+                        buyOnTheLoan(ids, "bond");
+                    }));
+            column.getChildren().add(ui.buildScreen.fundingOffer(Game.BUILD_NOTE_MONTHS + "-month note", note,
+                    pct2(note.marketRate()) + " a year, taken as a discount",
+                    String.format(game.getRollover().getMode() == Rollover.Mode.MANUAL
+                                    ? "Falls due in %d months: the whole %s at once, out of the treasury."
+                                    : "Falls due in %d months: the whole %s at once, refinanced then by the treasury's rollover.",
+                            note.duration(), money(note.faceValue())),
+                    "Issue the " + Game.BUILD_NOTE_MONTHS + "-month note and buy",
+                    () -> {
+                        game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+                        buyOnTheLoan(ids, "note");
+                    }));
+        } else {
+            double gapUsd = game.landVaultGapUsd(ids);
+            column.getChildren().addAll(
+                    statementLine("Dollars required", usd(gapUsd), Palette.BAD),
+                    statementNote(String.format("%s cost%s %s, and the vault holds %s.",
+                            what, ids.size() == 1 ? "s" : "", usd(game.landPriceUsd(ids)),
+                            usd(game.getForeignAccounts().getReservesUsd()))));
+            if (game.foreignWindowOpen()) {
+                DebtQuote bond = game.quoteForeignForCash("Term", gapUsd, Game.BUILD_BOND_YEARS,
+                        Game.BUILD_BOND_GRANULE);
+                DebtQuote note = game.quoteForeignForCash("Note", gapUsd, Game.BUILD_NOTE_MONTHS,
+                        Game.BUILD_NOTE_GRANULE);
+                column.getChildren().add(ui.buildScreen.fundingOffer(
+                        Game.BUILD_BOND_YEARS + "-year dollar bond", bond,
+                        pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
+                        String.format("Paid over %d years in dollars: the coupon every month, then the whole %s"
+                                + " at the end.", bond.duration(), usd(bond.faceValue())),
+                        "Issue it abroad and buy from the vault",
+                        () -> {
+                            game.handleForeignForCash("Term", gapUsd, Game.BUILD_BOND_YEARS,
+                                    Game.BUILD_BOND_GRANULE, true);
+                            buyOnTheLoan(ids, "dollar bond");
+                        }, Money::usd));
+                column.getChildren().add(ui.buildScreen.fundingOffer(
+                        Game.BUILD_NOTE_MONTHS + "-month dollar note", note,
+                        pct2(note.marketRate()) + " a year, taken as a discount",
+                        String.format("Falls due in %d months: the whole %s at once, in dollars.",
+                                note.duration(), usd(note.faceValue())),
+                        "Issue it abroad and buy from the vault",
+                        () -> {
+                            game.handleForeignForCash("Note", gapUsd, Game.BUILD_NOTE_MONTHS,
+                                    Game.BUILD_NOTE_GRANULE, true);
+                            buyOnTheLoan(ids, "dollar note");
+                        }, Money::usd));
+                column.getChildren().add(statementNote("Issued abroad; the dollars are in reserve, and the "
+                        + "vault pays for the land. On the world's curve at each term: a dollar owed is "
+                        + "owed in dollars, whatever the currency does."));
+            } else {
+                column.getChildren().add(alert("Nobody abroad will lend the dollars",
+                        game.foreignWindowReason() + ". Only what the city already has can pay."));
+            }
+
+            /* ...and the third way, a choice and never the default. */
+            if (game.landTopUpCovers(ids)) {
+                Button topUp = new Button("Take what the vault has and convert the rest");
+                topUp.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
+                        + " -fx-background-color: " + Palette.CONFIRM + ";");
+                topUp.setOnAction(e -> buyOnTheLoan(ids, null));
+                column.getChildren().addAll(
+                        statementHead("Or the vault's dollars, and the rest converted from cash"),
+                        statementLine("From the vault", usd(game.getForeignAccounts().getReservesUsd())),
+                        statementLine("Converted from cash", usd(game.landVaultGapUsd(ids)) + "  ·  "
+                                + marked(here, money(game.landTopUpLocal(ids))) + " at today's rate"),
+                        statementNote("No debt: the vault is emptied and the treasury buys the rest of the "
+                                + "dollars out of its cash."),
+                        topUp);
+            } else if (!game.foreignWindowOpen()) {
+                column.getChildren().add(sentence("The cash does not cover the rest either. Paying by "
+                        + "converting cash borrows at home for it.", Palette.TEXT_MUTED));
+            }
+        }
+
+        Button cancel = new Button("Cancel");
+        cancel.setOnAction(e -> showLandMenu());
+        ui.rootMenu.getChildren().addAll(warning, ui.scrolled(column), cancel);
+    }
+
+    /**
+     * The money is in: the plots are bought, each as its own button would
+     * buy it, and whatever the purchase answers is shown - the build
+     * screen's rule that a refusal nobody reads is a silent one
+     * (BuildScreen.buildOnTheLoan()). paper is the offer taken, or null for
+     * the vault's dollars with the rest converted.
+     */
+    private void buyOnTheLoan(java.util.List<Integer> ids, String paper) {
+        int bought = ui.game.buyLandParcels(ids);
+        if (bought >= ids.size()) {
+            showLandMenu();
+            return;
+        }
+        ui.clearMenu("showLandFellShort", () -> showLandMenu());
+        Label heading = new Label(paper == null ? "THE LAND IS NOT BOUGHT" : "THE MONEY IS IN, THE LAND IS NOT");
+        heading.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold; -fx-font-size: 14px;");
+        Label why = new Label(String.format("%s%d of %d plot%s bought: the rest still cost more than the city "
+                        + "holds. Nothing beyond %s was spent.",
+                paper == null ? "" : "The " + paper + " was issued. ",
+                bought, ids.size(), ids.size() == 1 ? "" : "s",
+                paper == null ? "the plots bought" : "the " + paper + " and the plots bought"));
+        why.setWrapText(true);
+        why.setMaxWidth(460);
+        Button back = new Button("Back to the land office");
+        back.setOnAction(e -> showLandMenu());
+        ui.rootMenu.getChildren().addAll(heading, why, back);
     }
 
     /* =====================================================================
@@ -389,20 +622,30 @@ final class LandScreen {
         size.setStyle(Palette.words(Palette.SIZE_HEADING,
                 afford ? Palette.TEXT_HEAD : Palette.TEXT_FAINT) + " -fx-font-weight: bold;");
 
-        Label blocks = new Label(String.format("%.1f blocks", parcel.getBlocks()));
-        blocks.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        // Its area in square kilometres (0.7.13), in place of blocks: Jerus,
+        // "purely for visual purposes, instead of blocks, say km^2" - the
+        // model's square feet converted exactly, to three significant figures
+        // (LandManager.km2Words()).
+        Label area = new Label(LandManager.km2Words(parcel.getSizeSqFt()));
+        area.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
 
         /*
-         * BOTH PRICES (0.7.6): the dollars it is listed at, which do not move,
-         * and what they cost here at today's rate, which does - "US$1.2M ·
-         * D$1.8M at today's rate".
+         * BOTH PRICES (0.7.6), THE ONE THE TOGGLE PAYS IN LARGE (0.7.13).
+         * Jerus: "if you are on convert currency to usd to buy, even tho you
+         * pay usd, the land should show your own currency cost, and if you
+         * have it on use reserves then the cost is shown is usd". Converting,
+         * what it costs here at today's rate is large and the dollars it is
+         * listed at the caption - "D$1.8M · US$1.2M listed"; from the vault,
+         * the other way up - "US$1.2M · D$1.8M at today's rate".
          */
-        Label price = new Label(usd(parcel.getPriceUsd()));
+        boolean vaultPays = ui.game.isLandPaidFromVault();
+        String here = ui.game.getCurrency().qualifiedSymbol();
+        String listedUsd = usd(parcel.getPriceUsd());
+        String todayHere = marked(here, money(parcel.localPrice(ui.game.getForeignAccounts().getRate())));
+        Label price = new Label(vaultPays ? listedUsd : todayHere);
         price.setStyle(Palette.figure(Palette.SIZE_SECTION,
                 afford ? Palette.GOOD : Palette.BAD));
-        Label local = new Label("  ·  " + marked(ui.game.getCurrency().qualifiedSymbol(),
-                money(parcel.localPrice(ui.game.getForeignAccounts().getRate())))
-                + " at today's rate");
+        Label local = new Label("  ·  " + (vaultPays ? todayHere + " at today's rate" : listedUsd + " listed"));
         local.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         HBox prices = new HBox(0, price, local);
         prices.setAlignment(Pos.BASELINE_LEFT);
@@ -414,7 +657,7 @@ final class LandScreen {
         rate.setStyle(Palette.words(Palette.SIZE_CAPTION,
                 against >= 0 ? Palette.GOOD : Palette.WARN));
 
-        VBox face = new VBox(1, size, blocks, prices, rate);
+        VBox face = new VBox(1, size, area, prices, rate);
         face.setStyle("-fx-padding: 8 10 8 10;");
 
         if (parcel.hasIron()) {
@@ -440,16 +683,21 @@ final class LandScreen {
         VBox.setVgrow(push, Priority.ALWAYS);
         face.getChildren().add(push);
 
-        Button buy = new Button(afford ? "Buy this plot"
-                : ui.game.isLandPaidFromVault() ? "Not enough in the vault or cash" : "Not enough cash");
-        buy.setDisable(!afford);
+        /*
+         * THE BUTTON STAYS CLICKABLE (0.7.13). Short, it opens the funding
+         * page (showLandFunding()) rather than greying out - the build
+         * screen's way. From the vault, a vault short of the dollars opens it
+         * too, even with the cash to convert the rest: that way is one of the
+         * page's choices now, not what the button does by itself.
+         */
+        java.util.List<Integer> just = java.util.List.of(parcel.getId());
+        boolean funding = ui.game.landNeedsFunding(just);
+        Button buy = new Button(!funding ? "Buy this plot"
+                : vaultPays ? "Buy — the vault is short" : "Buy — borrow for it");
         buy.setMaxWidth(Double.MAX_VALUE);
         buy.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
-                + " -fx-background-color: " + (afford ? Palette.CONFIRM : Palette.CONTROL) + ";");
-        buy.setOnAction(e -> {
-            ui.game.buyLandParcel(parcel.getId());
-            showLandMenu();
-        });
+                + " -fx-background-color: " + (funding ? Palette.CONTROL : Palette.CONFIRM) + ";");
+        buy.setOnAction(e -> buyOrFund(just));
         face.getChildren().add(buy);
 
         StackPane tile = new StackPane(face);

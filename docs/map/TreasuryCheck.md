@@ -1,4 +1,4 @@
-# TreasuryCheck.java - 428 lines · 6 methods · 1 constants · harnesses
+# TreasuryCheck.java - 713 lines · 12 methods · 1 constants · harnesses
 
 `ham/citybuildersim/TreasuryCheck.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
@@ -11,7 +11,7 @@
 > both print a measured cash movement, and a measured figure that is measured
 > wrongly is worse than the estimate it replaced - it looks authoritative.
 > 
-> The six things it will not let past:
+> The seven things it will not let past:
 > 
 >   1. THE WINDOW CLOSES. Each month's opening balance is the previous month's
 >      closing balance, with no gap. If it ever is not, a month of the player's
@@ -61,44 +61,59 @@
 >      after - and that the whole journal comes back from a save line for
 >      line. The "Raised by issuing paper" row is asserted here too, because
 >      until this batch it read $0 on every month the city borrowed.
+> 
+> ... (11 more lines in the source)
 
-**Uses:** [Game](Game.md) (14), [TreasuryJournal](TreasuryJournal.md) (10), [GameFiles](GameFiles.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Debt](Debt.md) (2), [Sectors](Sectors.md) (1), [LandParcel](LandParcel.md) (1), [ShortTermTBill](ShortTermTBill.md) (1), [NationalAccounts](NationalAccounts.md) (1)
+**Uses:** [Game](Game.md) (43), [Rollover](Rollover.md) (24), [Debt](Debt.md) (11), [TreasuryJournal](TreasuryJournal.md) (10), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Sectors](Sectors.md) (1), [LandParcel](LandParcel.md) (1), [ShortTermTBill](ShortTermTBill.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 123 | · · 1. no gap between windows |
-| 129 | · · 2. the closing IS the cash |
-| 133 | · · 3. the bridge foots |
-| 141 | · · 5. and on a hands-off city there is nothing in it |
-| 152 | · AND AGAIN WITH THE SUBSIDY DIAL ON. |
-| 199 | · AND IT HAS TO SURVIVE A SAVE. |
-| 243 | · · and the first month back still has no gap |
-| 248 | · AND THE ROW OPENS. |
-| 411 | · THE REPORT. |
+| 135 | · · 1. no gap between windows |
+| 141 | · · 2. the closing IS the cash |
+| 145 | · · 3. the bridge foots |
+| 153 | · · 5. and on a hands-off city there is nothing in it |
+| 164 | · AND AGAIN WITH THE SUBSIDY DIAL ON. |
+| 211 | · AND IT HAS TO SURVIVE A SAVE. |
+| 255 | · · and the first month back still has no gap |
+| 260 | · AND THE ROW OPENS. |
+| 423 | · 7. ROLLING WHAT FALLS DUE (0.7.13) |
+| 426 | · THE REPORT. |
+| 444 | 7. ROLLING WHAT FALLS DUE (0.7.13). |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 71 | `TreasuryCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
+| 83 | `TreasuryCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 68 | `static int fails` |  |
+| 80 | `static int fails` |  |
 
-## Methods, in file order
+## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 66 | 363 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
-| 73 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
-| 83 | 4 | `static void check(String what, boolean ok)` | A fact that is either so or not, printed either way so the run reads as a list. |
-| 89 | 4 | `static TreasuryJournal.Entry line(java.util.List<TreasuryJournal.Entry> journal, String label)` | The journal line with this label, or null when the month has none. |
-| 95 | 4 | `static double amount(java.util.List<TreasuryJournal.Entry> journal, String label)` | The amount on the journal line with this label, or 0 when there is none. |
-| 100 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 107 | 321 | `public static void main(String[] args)` |  |
+| 78 | 636 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
+| 85 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
+| 95 | 4 | `static void check(String what, boolean ok)` | A fact that is either so or not, printed either way so the run reads as a list. |
+| 101 | 4 | `static TreasuryJournal.Entry line(java.util.List<TreasuryJournal.Entry> journal, String label)` | The journal line with this label, or null when the month has none. |
+| 107 | 4 | `static double amount(java.util.List<TreasuryJournal.Entry> journal, String label)` | The amount on the journal line with this label, or 0 when there is none. |
+| 112 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 119 | 324 | `public static void main(String[] args)` |  |
+
+### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 444-713)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 474 | 5 | `static Game founded(String label)` | A city founded as a player founds one: newGame(), so it rolls in the same structure. |
+| 481 | 7 | `static String press(Game g)` | One press, its printing kept - the log is where a rollover says what it did. |
+| 490 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
+| 497 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
+| 506 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
+| 510 | 203 | `static void rolling()` |  |
 

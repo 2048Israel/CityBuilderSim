@@ -122,6 +122,24 @@ public class ReadPathCheck {
         }
         into.put("bank.mortgageBook", b.getMortgageBook());
         into.put("bank.insuranceClaims", b.getInsuranceClaims());
+        // ...and 0.7.13's: its year of balance sheets and its loans by sector,
+        // which the Balance sheet page reads; and the treasury's rollover, its
+        // ledger and its record, which the Finances tab's borrow page reads.
+        double[] sheets = b.sheetYearToSave();
+        for (int i = 0; i < sheets.length; i++) into.put("bank.sheet" + i, sheets[i]);
+        // ...and its equity in two parts, carried at the top of the month (round 2)
+        into.put("bank.paidInOpening", b.paidInOpening());
+        into.put("bank.retainedOpening", b.retainedOpening());
+        into.put("bank.splitKnown", b.knowsEquitySplit() ? 1.0 : 0.0);
+        for (int s = 0; s < Sectors.KEYS.length; s++) {
+            into.put("bank.loansTo" + s, b.getLoansToSector(s));
+            into.put("bank.interimTo" + s, b.getInterimToSector(s));
+        }
+        double[] ledger = g.getRollover().ledgerToSave();
+        for (int i = 0; i < ledger.length; i++) into.put("rollover.ledger" + i, ledger[i]);
+        double[] rolled = g.getRollover().recordToSave();
+        for (int i = 0; i < rolled.length; i++) into.put("rollover.record" + i, rolled[i]);
+        into.put("rollover.mode", (double) g.getRolloverMode().ordinal());
         // ...and round 2's: its leverage ratio against its requirements, and
         // how long its book has not kept its branches' staff.
         into.put("bank.exposure", b.exposure());
@@ -468,6 +486,35 @@ public class ReadPathCheck {
         bk.bindingMinimum();
         bk.bindingTarget();
         bk.bindingTop();
+        // ...and the Balance sheet page (0.7.13): every line this month and a
+        // year ago, the businesses' by sector, and what they leave unexplained.
+        for (Bank.Sheet line : Bank.Sheet.values()) {
+            bk.sheet(line);
+            bk.yearAgo(line);
+        }
+        for (int at = 0; at < Sectors.KEYS.length; at++) {
+            bk.getLoansToSector(at); bk.getInterimToSector(at);
+            bk.yearAgoLoansToSector(at); bk.yearAgoInterimToSector(at);
+        }
+        bk.knowsYearAgo(); bk.sheetResidual(); bk.yearAgoResidual(); bk.sheetYearToSave();
+        bk.paidInCapital(); bk.retainedEarnings(); bk.equitySplitResidual(); bk.paidInThisMonth();
+        bk.retainedThisMonth(); bk.knowsEquitySplit();
+        bk.liabilitiesAndEquity(); bk.yearAgoLiabilitiesAndEquity();
+        bk.getBusinessLoans(); bk.getInterimBook(); bk.getBailoutsLifetime(); bk.getResolutionLoss();
+        // ...the treasury's rollover, as the borrow page reads it
+        g.rolloverPlan().toRoll(); g.surplusOverLastYear(); g.getRolloverMode();
+        g.getRollover().usedInYear(g.getMonth()); g.getRollover().ledgerToSave(); g.getRollover().recordToSave();
+        // ...and the land office's funding page and its next-N control
+        java.util.List<Integer> next = g.nextLandParcels(5);
+        g.landShelf(); g.landPriceUsd(next); g.landPriceLocal(next); g.landCashGap(next);
+        g.landVaultGapUsd(next); g.landNeedsFunding(next); g.canAffordLandParcels(next); g.landTopUpCovers(next);
+        g.landTopUpLocal(next); g.getLandManager().getMarket().getMinSqFt();
+        double gap = Math.max(1, g.landCashGap(next));
+        g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        g.quoteForeignForCash("Term", gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        g.quoteForeignForCash("Note", gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        g.quoteMediumBondForCash(gap, 5, Game.BUILD_BOND_GRANULE);
         bk.capitalPerDollar(Bank.RISK_INSURED_MORTGAGE);
         bk.branchesCoverTheirStaff();
         bk.closesBranch();

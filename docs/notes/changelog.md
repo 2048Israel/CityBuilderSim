@@ -8,6 +8,74 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
+### VERSION 0.7.13 — ROLLING WHAT FALLS DUE — 2026-09-26, DEPLOYED AND VERIFIED (tag 0926b), see `rolling-what-falls-due.md`
+
+A housekeeping batch Jerus asked for after 0.7.12: the land office, the
+dial's default, a treasury setting that refinances maturities, and the bank's
+balance sheet. Two rounds from an Opus implementer, the orchestrating session
+keeping the gate, and an Opus docs pass.
+
+**What shipped.**
+- **The land office.**
+  - A plot's large price is in the paying currency: local when converting,
+    US$ from the vault, with the other as a caption.
+  - Area reads in km² (exact international foot, three significant figures),
+    and so do the Summary land panel, the build screen's NOT ENOUGH LAND page
+    and the time-skip report.
+  - Short of the price, the button stays clickable and opens a funding page:
+    - converting: the build screen's 20-year bond and 6-month note;
+    - from the vault: a 20-year dollar bond or 6-month dollar note held in
+      reserve (`quoteForeignForCash()`), or the top-up from cash;
+    - the window abroad shut: the reason, and only what remains.
+  - "Buy the next N plots" (default 5) buys the office's first N, cheapest
+    ground first. Buying at once equals buying one by one.
+- **New games found on the autopilot**, with the rollover on "same
+  structure" (`Game.newGame(Founding)`). Old saves and the bare constructor
+  city keep the hand on the dial and the rollover manual.
+- **The rollover** (`Rollover`, Finances borrow pages; Jerus: "Net of last
+  year's surplus", "Dollars into dollars", "Enough to raise the cash"). By
+  hand, same structure, or 12-month notes.
+  - Each month it refinances next month's principal less the last 12 months'
+    unused budget surplus (a ledger nets each surplus once).
+  - The rest is issued pro rata, sized to raise the cash.
+  - Same structure: dollars roll abroad in dollars, or at home with the
+    window shut; a serial instalment rolls into a new serial.
+  - A month's lead, per Canada's prudential liquidity rule.
+  - It does not cover spending shortfalls; the central bank's advances still
+    do.
+- **The Bank tab's Balance sheet page** (Jerus: "New page, vs a year ago";
+  "Yes, add the split").
+  - Every line `totalAssets()` and `totalLiabilities()` sums, each opening
+    into its detail, loans and interim financing by sector.
+  - Equity as paid-in capital (offerings, new shares, rescues, less buybacks
+    at cost) and retained earnings (everything else), summing to equity to
+    the cent.
+  - This month against a year ago (a ring of 12 sheets). It foots in both
+    columns.
+  - Deposits as a memo line: the model does not carry them as the bank's
+    liability ("Memo now, own batch later").
+- `SAVE_FORMAT` stays 27; every new field is a new key.
+
+**What it found.**
+- **The standard 8-seed runs are line for line 0.7.12's.** Their cities owe
+  nothing at a maturity, or net it whole.
+- **On a Lean founding, 7 of 8 cities roll and repay.** Seed 0 spirals:
+  rolling 20-year paper for cash capitalises its interest, the rate climbs to
+  26.8%, and it ends owing $476.6T, with the central bank owed $370.7T and
+  2,423 people.
+  - Nothing in the model limits a city's paper at home: the bank buys what
+    households leave, funded at an uncapped window. That is on the todo.
+- **Retained earnings end below zero in 27 of 32 runs**, and paid-in below
+  zero in 4. Dividends and buybacks are booked as Jerus chose ("All from
+  retained", "Whole cost off paid-in").
+- **The docs pass found four stale player-facing strings.** They were fixed
+  at the gate: the vault toggle's sentence, the note offer's "out of the
+  treasury" with the rollover on, the Finances rollover note, and three
+  screens still in blocks.
+
+**The tree:** 224 source files, ~171,000 lines; 63 harnesses (62 green,
+HealthCheck red as shipped in 0.7.12).
+
 ### VERSION 0.7.12 — THE FIRMS SELL BONDS — 2026-09-25/26, DEPLOYED AND VERIFIED (tag 0926a), see `the-firms-sell-bonds.md`
 
 Corporate notes and bonds: Jerus's batch after 0.7.11 shipped with the

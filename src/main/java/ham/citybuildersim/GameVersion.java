@@ -1355,8 +1355,51 @@ public final class GameVersion {
      * the cells by their claims. An interim loan is saved among the business
      * debts under its own type, "INTERIM-LOAN". Every array that grew keeps a
      * reader that knows its older widths.
+     *
+     * 0.7.13 (2026-09-26) - THE LAND OFFICE, THE DIAL'S DEFAULT, ROLLING WHAT
+     * FALLS DUE, AND THE BANK'S BALANCE SHEET. Housekeeping, from Jerus's list.
+     *   - THE LAND OFFICE (LandScreen): a plot's price is large in the money
+     *     the toggle pays in - local money converting, US dollars from the
+     *     vault - with the other beside it; its size reads in square
+     *     kilometres (LandManager.km2Words(): the model's square feet
+     *     converted exactly, to three significant figures); its button stays
+     *     live, and short it opens the build screen's funding page sized to
+     *     the gap - converting, the build screen's 20-year bond and 6-month
+     *     note; from the vault, the same two terms in dollars on the world's
+     *     curve, held in reserve (Game.quoteForeignForCash()), and the vault's
+     *     dollars with the rest converted as a choice, never the default. A
+     *     control above the plots buys the next N at once, each as its own
+     *     button would (Game.buyLandParcels()).
+     *   - A NEW GAME FOUNDS ON THE AUTOPILOT (Game.newGame()), by both of the
+     *     founding screen's doors. A save keeps the hand it saved; a city
+     *     built bare, as the harnesses and the playtest build theirs, keeps
+     *     the hand on the dial for them to state their own.
+     *   - ROLLING WHAT FALLS DUE (Rollover; Game, ROLLING WHAT FALLS DUE): by
+     *     hand, in the same structure - a new game's default - or as 12-month
+     *     notes. Between two presses the treasury nets last year's surplus
+     *     from what falls due the next month and issues the rest a month
+     *     ahead, sized so its cash covers it - Jerus's choice (round 2),
+     *     which capitalises the old paper's discount or premium into the new
+     *     principal at every roll (Rollover says what that did on a Lean
+     *     city); a ledger of what it netted keeps a surplus from netting
+     *     twice. On the Finances tab's borrow pages; -Dplaytest.rollover
+     *     sets it for a playtest, SAME_STRUCTURE when unset.
+     *   - THE BANK'S BALANCE SHEET: a sixth page on the Bank tab - what its
+     *     totalAssets() and totalLiabilities() sum, line by line, this month
+     *     against a year ago (Bank.Sheet, and a year of sheets filed at the
+     *     top of every month), the loans by sector, the city's own deposits
+     *     beside the sheet - and its equity in two parts (round 2), paid-in
+     *     capital and retained earnings, each of equityMovement()'s causes
+     *     routed to one of them (Bank, ITS EQUITY, IN TWO PARTS): a buyback
+     *     comes off paid-in at all it cost, a dividend off retained.
+     *
+     * SAVE_FORMAT did not move. The rollover's setting, ledger and record,
+     * the bank's year of sheets and its equity's two parts are new keys; an
+     * older save rolls nothing, keeps its dial's hand, reads the year-ago
+     * column as nothing until it has lived a year in this build, and shows
+     * its bank's equity whole, without the split.
      */
-    public static final String VERSION = "0.7.12";
+    public static final String VERSION = "0.7.13";
 
     /**
      * The save shape.

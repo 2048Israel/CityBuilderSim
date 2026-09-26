@@ -13,7 +13,7 @@
 
 **Uses:** [Currency](Currency.md) (2)
 
-**Used by (1):** [PolicyScreen](PolicyScreen.md)
+**Used by (3):** [BuildScreen](BuildScreen.md), [LandScreen](LandScreen.md), [PolicyScreen](PolicyScreen.md)
 
 ## Sections
 

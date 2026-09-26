@@ -29,6 +29,11 @@ import java.util.Map;
  * and a world (Founding) - the same question is asked of every door into a
  * city, and of the endowment's job against the catalogue's own costs. The
  * list is in the section's banner, FOUNDING A CITY.
+ *
+ * AND WHAT A PLAYER'S CITY FOUNDS WITH (0.7.13), section 12: the dial on the
+ * autopilot and the treasury rolling what falls due - by both of the
+ * founding screen's doors - while a city built bare keeps the hand on the
+ * dial and rolls nothing, and a save keeps whatever it saved.
  */
 public class NewGameCheck {
 
@@ -382,6 +387,9 @@ public class NewGameCheck {
 
         /* ============ 6-11. FOUNDING A CITY (0.7.10) ============ */
         founding(files);
+
+        /* ============ 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) ============ */
+        theDialAndTheRollover(files);
 
         cleanUp(root);
 
@@ -825,6 +833,74 @@ public class NewGameCheck {
         MoneyAudit.Result money = g.getLastMoneyAudit();
         boolean conserved = Math.abs(money.residual) <= .01 || money.relative() <= 1e-7;
         return conserved && Math.abs(g.getPostAuditDrift()) <= .01;
+    }
+
+    /* =====================================================================
+       12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13)
+
+       Jerus: "the dial should default when you start a game on the
+       automatic, aka not your hand", and the treasury's rollover "default
+       toggles on" (Rollover). What has to hold:
+         - both doors a player founds through - "Found with defaults" and the
+           founding screen's own choices, Game.newGame() either way - found
+           on the autopilot, rolling in the same structure;
+         - a city built bare, through the constructor, as the harnesses and
+           the playtest build theirs, keeps the hand on the dial and rolls
+           nothing: they state their own settings over it;
+         - a save keeps what it saved: a player's hand on the dial comes back
+           a hand, the autopilot comes back the autopilot, and a save from
+           before either key - no autopilot, no rollover - loads with the
+           hand on the dial and rolling nothing, as it was played.
+       ===================================================================== */
+    static void theDialAndTheRollover(GameFiles files) throws Exception {
+        System.out.println("\n--- 12. the dial and the rollover a player founds with ---");
+
+        Game defaults = new Game(files);
+        quietly(() -> defaults.newGame());
+        assertTrue("\"Found with defaults\": the dial is the autopilot's", defaults.getDebtManager().isAutopilot());
+        assertTrue("...and the treasury rolls what falls due in the same structure",
+                defaults.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
+        Game chosen = new Game(files);
+        quietly(() -> chosen.newGame(Founding.named("Arden", Founding.Preset.LEAN,
+                WorldEconomy.DEFAULT_MEAN_INFLATION)));
+        assertTrue("the founding screen's own city, likewise",
+                chosen.getDebtManager().isAutopilot() && chosen.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
+        Game bare = new Game(files);
+        quietly(bare::run);
+        assertTrue("a city built bare keeps the hand on the dial and rolls nothing, for its builder to state",
+                !bare.getDebtManager().isAutopilot() && bare.getRolloverMode() == Rollover.Mode.MANUAL);
+
+        quietly(defaults::toggleNextMonth);
+        assertTrue("fixture: a month played on the autopilot", defaults.getDebtManager().isAutopilot());
+        defaults.getDebtManager().takeTheDial(.04);
+        assertTrue("fixture: the player's hand takes the dial", !defaults.getDebtManager().isAutopilot());
+        assertTrue("saved", defaults.saveGame(10, "a hand on the dial").ok);
+        Game[] back = new Game[1];
+        quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(10); });
+        assertTrue("a save with the hand on the dial reloads with the hand on it",
+                !back[0].getDebtManager().isAutopilot()
+                        && Math.abs(back[0].getDebtManager().getPolicyRate() - .04) < 1e-12);
+
+        Game onIt = new Game(files);
+        quietly(() -> onIt.newGame());
+        onIt.setRolloverMode(Rollover.Mode.TWELVE_MONTH_BILL);
+        assertTrue("saved", onIt.saveGame(10, "the autopilot").ok);
+        quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(10); });
+        assertTrue("...one on the autopilot reloads on it", back[0].getDebtManager().isAutopilot());
+        assertTrue("...and its rollover as it was set", back[0].getRolloverMode() == Rollover.Mode.TWELVE_MONTH_BILL);
+
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
+                Files.readString(files.saveFile(10))).getAsJsonObject();
+        assertTrue("fixture: the save carried both keys", json.has("policyAutopilot") && json.has("rolloverMode"));
+        for (String key : new String[] { "policyAutopilot", "rolloverMode", "rolloverLedger", "rolloverRecord" }) {
+            json.remove(key);
+        }
+        Files.writeString(files.saveFile(10), new com.google.gson.Gson().toJson(json));
+        quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(10); });
+        assertTrue("fixture: the older save loads", back[0].getLoadFailure() == null);
+        assertTrue("a save from before either key loads with the hand on the dial",
+                !back[0].getDebtManager().isAutopilot());
+        assertTrue("...and rolls nothing, as it was played", back[0].getRolloverMode() == Rollover.Mode.MANUAL);
     }
 
     static void close(String label, double actual, double expected, double tol) {

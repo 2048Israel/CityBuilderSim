@@ -14,7 +14,7 @@ requirement.
 
 ## Open these before reading source
 
-The tree is 168,000 lines; `Game.java` alone is nearly 11,000, and the
+The tree is 171,000 lines; `Game.java` alone is over 11,000, and the
 interface is twenty-one files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
@@ -92,7 +92,7 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; nearly 11,000 lines, 32 banner sections
+        Game.java                  the month, the seam every system meets at; over 11,000 lines, 33 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
@@ -105,6 +105,10 @@ These are Jerus's, and they do not move.
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on
                                    - Exchange is the shares' side - and the loan lent after a default (the
                                    project's the-firms-sell-bonds.md)
+        Rollover.java              the treasury's rollover of what falls due next month (0.7.13): the setting,
+                                   the ledger of the surplus it has netted and the record; Game's ROLLING WHAT
+                                   FALLS DUE reads the city and books the issues (the project's
+                                   rolling-what-falls-due.md)
         ui/                        the interface: UserInterface.java is the window (4,000 lines: clock, rail,
                                    strips, panels, dialogs), one <Name>Screen.java per tab (split 2026-09-18 -
                                    the project's splitting-the-interface.md), Money/Statement/Pieces/Levers

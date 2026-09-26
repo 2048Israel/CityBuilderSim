@@ -1976,6 +1976,15 @@ public class LongPlaytest {
      */
     static final boolean AUTOPILOT = Boolean.getBoolean("playtest.autopilot");
 
+    /**
+     * -Dplaytest.rollover=MANUAL|SAME_STRUCTURE|TWELVE_MONTH_BILL (0.7.13):
+     * the treasury's rollover for the run (Rollover). SAME_STRUCTURE when
+     * unset - what a new game founds with, so a run is played the way a
+     * player now plays; MANUAL is every run before 0.7.13, to the byte.
+     */
+    static final Rollover.Mode ROLLOVER = Rollover.Mode.valueOf(
+            System.getProperty("playtest.rollover", "SAME_STRUCTURE").trim().toUpperCase(java.util.Locale.ROOT));
+
     /* =====================================================================
        WAGES AGAINST THE INDEX (2026-09-21)
 
@@ -2977,6 +2986,18 @@ public class LongPlaytest {
                 }
             }
 
+            // ...and its equity's two parts (0.7.13, round 2): how low paid in
+            // runs - a buyback comes off it at all it cost - and the most the
+            // two ever leave its equity unexplained.
+            Bank parts = g.getBank();
+            if (parts.knowsEquitySplit()) {
+                if (parts.paidInCapital() < lowestPaidIn) {
+                    lowestPaidIn = parts.paidInCapital();
+                    lowestPaidInMonth = g.getMonth();
+                }
+                worstSplitOff = Math.max(worstSplitOff, Math.abs(parts.equitySplitResidual()));
+            }
+
             if (g.getMonth() == before) {
                 /*
                  * simulateMonths() refuses to run at all while cash <= 0, but
@@ -3270,6 +3291,9 @@ public class LongPlaytest {
     static double lifetimeWriteOffs;
     static double lifetimeBailouts;
     static int failuresSeen;
+    /** The bank's paid-in capital at its lowest, the month, and the most its two parts were ever off its equity (0.7.13, round 2). */
+    static double lowestPaidIn = Double.POSITIVE_INFINITY, worstSplitOff;
+    static int lowestPaidInMonth = -1;
     static double lifetimeHouseholdWriteOffs;
 
     public static void main(String[] args) throws Exception {
@@ -3295,7 +3319,17 @@ public class LongPlaytest {
         System.setOut(quiet);
         try {
             g.run();
-            if (AUTOPILOT) g.getDebtManager().setAutopilot(true);
+            /*
+             * THE DIAL'S HAND AND THE ROLLOVER, STATED (0.7.13). A new game
+             * founds on the autopilot and rolls what falls due in the same
+             * structure (Game.newGame()); this run founds through the
+             * constructor, which does neither, so the setups say which they
+             * are: the default setup is the dial by hand at its default rate,
+             * the autopilot setup the autopilot - what they always meant - and
+             * the rollover is ROLLOVER's, as a player now gets it.
+             */
+            g.getDebtManager().setAutopilot(AUTOPILOT);
+            g.setRolloverMode(ROLLOVER);
             if (ADVANCES_MONTHS != null) g.getCentralBank().setAdvancesCeilingMonths(ADVANCES_MONTHS);
             if (INFLATION_TARGET != null) g.getDebtManager().setInflationTarget(INFLATION_TARGET);
 
@@ -4101,6 +4135,10 @@ public class LongPlaytest {
                 lifetimeWriteOffs, lifetimeHouseholdWriteOffs);
         out.printf("  it failed %d time(s); the city put $%,.0fk of capital back in%n",
                 bnk.getFailures(), lifetimeBailouts);
+        out.printf("  its equity at the end: paid in $%,.0fk, retained $%,.0fk; paid in at its lowest $%,.0fk (m%d);"
+                        + " the two off its equity by at most $%.6fk%n",
+                bnk.paidInCapital(), bnk.retainedEarnings(),
+                lowestPaidInMonth < 0 ? 0 : lowestPaidIn, Math.max(0, lowestPaidInMonth), worstSplitOff);
         out.printf("  banking: %,.0f branch(es), $%,.0fk deposited, $%,.0fk lent,"
                 + " %.0f%% of capacity, prime %.2f%% on a dial of %.2f%%%n",
                 bnk.getBranches(), bnk.getDeposits(), bnk.getBook(),
@@ -4396,6 +4434,17 @@ public class LongPlaytest {
                 monthsOwing, monthsOwingAtHome, peakCityDebt, peakCityDebtMonth, paperSettledRun,
                 strainMonths > 0 ? strainSum / strainMonths : 0, worstStrain, worstStrainMonth,
                 monthsWithoutCapacity);
+        // ...and what the treasury's rollover did with what fell due (0.7.13).
+        Rollover roll = g.getRollover();
+        out.printf("  the rollover over the run (%s): %,d issue(s) raised $%,.0fk, %,d of them dollar paper"
+                        + " rolled at home with the window shut; $%,.0fk netted from the year's surplus;"
+                        + " the last %s; $%,.0fk of face issued%n",
+                roll.getMode(), roll.getIssuesLifetime(), roll.getRaisedLifetime(),
+                roll.getAtHomeForDollarsLifetime(), roll.getNettedLifetime(),
+                roll.getLastMonth() < 0 ? "never"
+                        : String.format("m%d: $%,.0fk fell due, $%,.0fk netted, $%,.0fk raised",
+                                roll.getLastMonth(), roll.getLastDue(), roll.getLastNetted(), roll.getLastRaised()),
+                roll.getIssuedLifetime());
         /*
          * WHO HOLDS IT, AND WHAT IT COSTS BY MATURITY (0.7.1): the four holders
          * at the end at face, what the households bought and sold over the run,

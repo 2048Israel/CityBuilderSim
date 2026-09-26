@@ -10,7 +10,7 @@ package ham.citybuildersim;
  * both print a measured cash movement, and a measured figure that is measured
  * wrongly is worse than the estimate it replaced - it looks authoritative.
  *
- * The six things it will not let past:
+ * The seven things it will not let past:
  *
  *   1. THE WINDOW CLOSES. Each month's opening balance is the previous month's
  *      closing balance, with no gap. If it ever is not, a month of the player's
@@ -60,6 +60,18 @@ package ham.citybuildersim;
  *      after - and that the whole journal comes back from a save line for
  *      line. The "Raised by issuing paper" row is asserted here too, because
  *      until this batch it read $0 on every month the city borrowed.
+ *
+ *   7. AND WHAT FALLS DUE ROLLS AS THE SETTING SAYS (0.7.13, section 7).
+ *      Rollover.netting() on the brief's own figures; then played cities,
+ *      each fixture causing its condition: a city in surplus whose surplus
+ *      nets part of a note and the rest rolls into the same note, sized so
+ *      its cash covers it and so of a face above that cash - the discount
+ *      borrowed into the debt - with the ledger netting a surplus once, and
+ *      its twins as 12-month notes and by hand; a city in deficit where
+ *      everything rolls, a dollar note at home with the window abroad shut
+ *      and a serial's instalment into a new serial of its term; a dollar
+ *      note rolled abroad in dollars; every press audited, and the setting,
+ *      the ledger and the record through a save.
  *
  * @author Jerus
  */
@@ -408,6 +420,9 @@ public class TreasuryCheck {
                 backAgain.getTreasuryJournal().isEmpty()
                         && backAgain.getTreasuryJournalBook().thisMonth().isEmpty());
 
+        /* ============ 7. ROLLING WHAT FALLS DUE (0.7.13) ============ */
+        rolling();
+
         /* ===================================================================
            THE REPORT.
 
@@ -424,5 +439,275 @@ public class TreasuryCheck {
                 : "\n" + fails + " FAILED");
 
         if (fails > 0) System.exit(1);
+    }
+
+    /* ===================================================================
+       7. ROLLING WHAT FALLS DUE (0.7.13).
+
+       Jerus: "the game checks whats going to mature next month, and issues
+       what the treasury is lacking" - net of last year's surplus, in the same
+       structure or as 12-month notes, or by hand (Rollover, and Game's
+       ROLLING WHAT FALLS DUE). First the arithmetic on the brief's own
+       figures; then played cities, each fixture causing its condition:
+         - a city that ran a surplus, two notes falling due in consecutive
+           months: the surplus nets part of the first and the rest rolls into
+           the same note, sized so its cash covers it - so its face is more
+           than what it replaces, the note's discount borrowed into the debt
+           (Jerus's choice, round 2); the second reads the ledger and nets
+           nothing the first netted. Its twins, the setting changed: the same
+           sum as a 12-month note, and by hand nothing;
+         - a city that built roads this year, so its year is a deficit,
+           holding a note, a dollar note and a two-year serial: everything
+           rolls, its cash covering what fell due and its face more than that
+           cash every month - the dollar note, the window abroad shut by its own rule
+           (it owes dollars and sells nothing abroad), into local paper of
+           its term, which the log says; the serial's instalment into a new
+           serial of its original term;
+         - the surplus city later, exporting and its year's surplus netted
+           already, a dollar note falling due: it rolls abroad, in dollars, of
+           a bigger dollar face than the one it replaces;
+         - every press closes its audit, the bridge's rows carry what was
+           raised and repaid, and the ledger survives a save.
+       =================================================================== */
+
+    /** A city founded as a player founds one: newGame(), so it rolls in the same structure. */
+    static Game founded(String label) {
+        Game g = new Game(GameFiles.scratch(label));
+        g.newGame();
+        return g;
+    }
+
+    /** One press, its printing kept - the log is where a rollover says what it did. */
+    static String press(Game g) {
+        java.io.PrintStream out = System.out;
+        java.io.ByteArrayOutputStream said = new java.io.ByteArrayOutputStream();
+        System.setOut(new java.io.PrintStream(said));
+        try { g.toggleNextMonth(); } finally { System.setOut(out); }
+        return said.toString();
+    }
+
+    /** Some quiet work: an issue's receipt, a save. */
+    static void quietly(Runnable work) {
+        java.io.PrintStream out = System.out;
+        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+        try { work.run(); } finally { System.setOut(out); }
+    }
+
+    /** The piece of paper of this type, term and currency issued in this month, or null. */
+    static Debt paper(Game g, String type, int months, int started, boolean foreign) {
+        for (Debt d : g.getDebtManager().getDebt()) {
+            if (d.getType().equals(type) && d.getDuration() == months && d.getMonthStarted() == started
+                    && d.isForeign() == foreign) return d;
+        }
+        return null;
+    }
+
+    /** The press closed its audit, and nothing moved after it struck. */
+    static boolean audited(Game g) {
+        return Math.abs(g.getLastMoneyAudit().relative()) < 1e-9 && Math.abs(g.getPostAuditDrift()) < 1e-6;
+    }
+
+    static void rolling() {
+        System.out.println("\n--- 7. the rollover's arithmetic, on the brief's figures ---");
+
+        double nets = Rollover.netting(100_000, 0, 300_000, 1_200_000);
+        check("D$1.2B falling due, D$300M in cash, a D$100M surplus: it nets D$100M",
+                Math.abs(nets - 100_000) < 1e-9);
+        Rollover.Plan brief = new Rollover.Plan(Rollover.Mode.SAME_STRUCTURE, 1_200_000, 0, 100_000, 0,
+                300_000, nets, java.util.List.of());
+        check("...and rolls D$1.1B", Math.abs(brief.toRoll() - 1_100_000) < 1e-9);
+        check("the same surplus, netted already in the year, nets nothing again",
+                Rollover.netting(100_000, 100_000, 300_000, 1_200_000) == 0);
+        check("a deficit year nets nothing, so everything rolls",
+                Rollover.netting(-50_000, 0, 300_000, 1_200_000) == 0);
+        check("...a surplus nets no more than the treasury holds",
+                Rollover.netting(100_000, 0, 30_000, 1_200_000) == 30_000);
+        check("...nor more than falls due", Rollover.netting(100_000, 0, 300_000, 40_000) == 40_000);
+
+        System.out.println("\n--- a city in surplus, two notes falling due in a row ---");
+
+        Game same = founded("treasury-roll-same");
+        Game bills = founded("treasury-roll-bills");
+        Game byHand = founded("treasury-roll-hand");
+        check("fixture: a new game rolls in the same structure",
+                same.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
+        bills.setRolloverMode(Rollover.Mode.TWELVE_MONTH_BILL);
+        byHand.setRolloverMode(Rollover.Mode.MANUAL);
+        Game[] three = { same, bills, byHand };
+        for (Game g : three) for (int i = 0; i < 12; i++) press(g);
+        for (Game g : three) quietly(() -> g.handleTBillLogic(20_000, 3, Game.BUILD_NOTE_GRANULE));
+        for (Game g : three) press(g);
+        for (Game g : three) quietly(() -> g.handleTBillLogic(20_000, 3, Game.BUILD_NOTE_GRANULE));
+        for (Game g : three) press(g);
+
+        int m = same.getMonth();
+        Debt first = paper(same, "NOTE", 3, m - 2, false), second = paper(same, "NOTE", 3, m - 1, false);
+        check("fixture: the first note falls due next month, the second the month after",
+                first != null && second != null && first.getRemainingMonths() == 1 && second.getRemainingMonths() == 2);
+        Rollover.Plan p1 = same.rolloverPlan();
+        System.out.printf("   month %d: %,.2fk falls due; the year's surplus %,.2fk; cash %,.2fk; nets %,.2fk%n",
+                m, p1.due(), p1.surplus(), p1.cash(), p1.netted());
+        near("what falls due next month is the first note's face", m, p1.due(), first.getFaceValue());
+        check("fixture: the city ran a surplus over the year", p1.surplus() > 0);
+        near("it nets the surplus not netted yet, capped by the cash and what falls due", m, p1.netted(),
+                Rollover.netting(same.surplusOverLastYear(), same.getRollover().usedInYear(m), same.getCash(), p1.due()));
+        check("fixture: which is part of what falls due, so the rest rolls", p1.netted() > 0 && p1.netted() < p1.due());
+        check("...into one issue: a 3-month note at home, the paper falling due",
+                p1.issues().size() == 1 && p1.issues().get(0).type().equals("Note")
+                        && p1.issues().get(0).term() == 3 && !p1.issues().get(0).foreign());
+        near("...its cash what falls due less what is netted", m, p1.issues().get(0).cash(), p1.due() - p1.netted());
+        check("...and the face its quote gives for that cash more than it: a note sells at a discount",
+                p1.issues().get(0).face() > p1.issues().get(0).cash());
+        Rollover.Plan b1 = bills.rolloverPlan();
+        near("12-month notes: the same sum rolls", m, b1.toRoll(), p1.toRoll());
+        check("...as one 12-month note at home", b1.issues().size() == 1 && b1.issues().get(0).type().equals("Note")
+                && b1.issues().get(0).term() == Rollover.BILL_MONTHS && !b1.issues().get(0).foreign());
+        Rollover.Plan h1 = byHand.rolloverPlan();
+        near("by hand: the same falls due", m, h1.due(), p1.due());
+        check("...and it nets and issues nothing", h1.netted() == 0 && h1.issues().isEmpty());
+        int handDebts = byHand.getDebtManager().getDebt().size();
+        double owedBefore = same.getDebtManager().getDomesticPrincipal();
+
+        for (Game g : three) press(g);
+        m = same.getMonth();
+        Rollover roll = same.getRollover();
+        Debt rolledNote = paper(same, "NOTE", 3, m - 1, false);
+        check("the press rolls it: a new 3-month note, issued the month before the maturity", rolledNote != null);
+        check("...whose cash covers what was to roll", roll.getLastRaised() >= p1.toRoll() - 1e-6);
+        check("...by less than a granule of face", roll.getLastRaised() - p1.toRoll() <= Game.BUILD_NOTE_GRANULE);
+        check("...raised under its face",
+                rolledNote != null && roll.getLastRaised() > 0 && roll.getLastRaised() < rolledNote.getFaceValue());
+        near("...by exactly its own discount and costs", m, roll.getLastRaised(),
+                rolledNote == null ? 0 : rolledNote.getFaceValue() - rolledNote.getIssueDiscount());
+        near("the record keeps the face it booked", m, roll.getLastIssued(),
+                rolledNote == null ? 0 : rolledNote.getFaceValue());
+        check("...and the note that fell due was paid", !same.getDebtManager().getDebt().contains(first));
+        double owedAfter = same.getDebtManager().getDomesticPrincipal();
+        near("so rolling moved the debt by the new face less the one it paid", m, owedAfter,
+                owedBefore - p1.due() + (rolledNote == null ? 0 : rolledNote.getFaceValue()));
+        check("...more than the netting alone would leave: the note's discount is borrowed into the debt",
+                owedAfter > owedBefore - p1.netted() + 1e-6);
+        near("the ledger keeps what it netted, the month it ran", m, roll.usedInYear(m - 1), p1.netted());
+        near("the bridge's raised row is what it raised", m, same.getTreasuryRaised(), roll.getLastRaised());
+        near("...and its repaid row the note that fell due", m, same.getTreasuryRepaid(), p1.due());
+        check("...and the month closes its audit", audited(same));
+        Debt bill = paper(bills, "NOTE", Rollover.BILL_MONTHS, m - 1, false);
+        check("12-month notes: a 12-month note, the month before the maturity, its cash covering what was to roll",
+                bill != null && bills.getRollover().getLastRaised() >= b1.toRoll() - 1e-6);
+        check("...and its month closes its audit", audited(bills));
+        check("by hand: nothing issued, the note paid out of cash",
+                byHand.getDebtManager().getDebt().size() == handDebts - 1 && byHand.getRollover().getLastMonth() < 0);
+        check("...and its month closes its audit", audited(byHand));
+
+        Rollover.Plan p2 = same.rolloverPlan();
+        System.out.printf("   month %d: %,.2fk falls due; the year's surplus %,.2fk, %,.2fk of it netted; nets %,.2fk%n",
+                m, p2.due(), p2.surplus(), p2.used(), p2.netted());
+        near("the second note falls due the month after", m, p2.due(), second.getFaceValue());
+        near("...and the ledger carries the first netting into its year", m, p2.used(), p1.netted());
+        near("...so it nets only the surplus not netted already", m, p2.netted(),
+                Rollover.netting(p2.surplus(), p1.netted(), p2.cash(), p2.due()));
+        check("the surplus nets once: the two months net no more than a year's surplus between them",
+                p1.netted() + p2.netted() <= Math.max(p1.surplus(), p2.surplus()) + 1e-6);
+        press(same);
+        check("...and that month closes its audit too", audited(same));
+
+        java.util.function.Supplier<Game> reload = () -> {
+            quietly(() -> same.saveGame(10));
+            Game back = new Game(same.getGameFiles());
+            quietly(() -> back.loadGameSave(10));
+            return back;
+        };
+        Game back = reload.get();
+        check("the setting survives a save", back.getRolloverMode() == same.getRolloverMode());
+        check("...the ledger, month by month",
+                java.util.Arrays.equals(back.getRollover().ledgerToSave(), same.getRollover().ledgerToSave())
+                        && same.getRollover().ledgerToSave().length > 0);
+        check("...and the record", java.util.Arrays.equals(back.getRollover().recordToSave(),
+                same.getRollover().recordToSave()));
+        near("...so a reloaded city reads the year's netting the live one does", same.getMonth(),
+                back.rolloverPlan().used(), same.rolloverPlan().used());
+
+        System.out.println("\n--- a city that built this year: a deficit, and everything rolls ---");
+
+        Game roads = founded("treasury-roll-roads");
+        press(roads);
+        BuildingsTemplate road = template(roads, "Paved Road");
+        roads.getLandManager().setOwnedSqFt(roads.getLandManager().getOwnedSqFt() + road.getLandSqFt() * 10);
+        check("fixture: it builds five roads this year", roads.buildStack(road, 5, false) == Game.BuildResult.SUCCESS);
+        check("fixture: the window abroad is open while it owes nothing abroad", roads.foreignWindowOpen());
+        quietly(() -> roads.handleForeignLogic("Note", 2_000, 6, Game.BUILD_NOTE_GRANULE, false));
+        check("fixture: ...and shut once it owes dollars and sells nothing abroad", !roads.foreignWindowOpen());
+        quietly(() -> roads.handleTBillLogic(5_000, 3, Game.BUILD_NOTE_GRANULE));
+        quietly(() -> roads.handleMediumBondLogic(10_000, 2, Game.BUILD_BOND_GRANULE));
+        int issuedAt = roads.getMonth();
+        Debt dollars = paper(roads, "NOTE", 6, issuedAt, true);
+        Debt serial = paper(roads, "SERIAL", 24, issuedAt, false);
+
+        int rolledMonths = 0;
+        boolean allDeficit = true, allRolled = true, allAudited = true, dollarsAtHome = false, logSaid = false;
+        boolean serialRolled = false, allCapitalised = true;
+        for (int i = 0; i < 12; i++) {
+            Rollover.Plan p = roads.rolloverPlan();
+            int now = roads.getMonth();
+            boolean dollarsDue = dollars != null && roads.getDebtManager().getDebt().contains(dollars)
+                    && dollars.getRemainingMonths() == 1;
+            boolean serialDue = serial != null && serial.getRemainingMonths() % 12 == 1;
+            String log = press(roads);
+            if (!(p.due() > 0)) continue;
+            rolledMonths++;
+            if (!(p.surplus() < 0) || p.netted() != 0) allDeficit = false;
+            if (Math.abs(p.toRaise() - p.due()) > 1e-6 || roads.getRollover().getLastRaised() < p.due() - 1e-6) allRolled = false;
+            if (!(roads.getRollover().getLastIssued() > roads.getRollover().getLastRaised())) allCapitalised = false;
+            if (!audited(roads)) allAudited = false;
+            if (dollarsDue) {
+                dollarsAtHome = paper(roads, "NOTE", 6, now, false) != null
+                        && roads.getDebtManager().getForeignPrincipalUsd() == 0;
+                logSaid = log.contains("the window abroad is shut");
+            }
+            if (serialDue) serialRolled = paper(roads, "SERIAL", 24, now, false) != null;
+        }
+        System.out.printf("   %d month(s) rolled; the year's surplus %,.2fk at the end%n",
+                rolledMonths, roads.surplusOverLastYear());
+        check("fixture: something fell due in the deficit year", rolledMonths >= 3);
+        check("a deficit year nets nothing", allDeficit);
+        check("...so everything that fell due rolled, and its cash covered it", allRolled);
+        check("...each month's new face more than the cash it raised: the interest capitalised", allCapitalised);
+        check("the dollar note, the window shut, rolled into a local note of its term", dollarsAtHome);
+        check("...and the log says why", logSaid);
+        check("the serial's instalment rolled into a new serial of its original term", serialRolled);
+        check("...and every month closed its audit", allAudited);
+
+        System.out.println("\n--- the surplus city, exporting: a dollar note rolls abroad, in dollars ---");
+
+        while (same.getMonth() < 20) press(same);
+        check("fixture: it sells abroad now, and the window is open",
+                same.getDebtManager().getMonthlyExports() > 0 && same.foreignWindowOpen());
+        quietly(() -> same.handleForeignLogic("Note", 500, 6, Game.BUILD_NOTE_GRANULE, false));
+        Debt abroad = paper(same, "NOTE", 6, same.getMonth(), true);
+        check("fixture: it owes a dollar note", abroad != null);
+        while (abroad != null && abroad.getRemainingMonths() > 1) press(same);
+        Rollover.Plan pd = same.rolloverPlan();
+        Rollover.Issue inDollars = null;
+        for (Rollover.Issue issue : pd.issues()) if (issue.foreign()) inDollars = issue;
+        System.out.printf("   month %d: %,.2fk falls due, %,.2fk of it abroad; nets %,.2fk; window %s%n",
+                same.getMonth(), pd.due(), pd.dueAbroad(), pd.netted(),
+                same.foreignWindowOpen() ? "open" : "shut: " + same.foreignWindowReason());
+        check("fixture: the window is open as it falls due", same.foreignWindowOpen());
+        check("fixture: the year's surplus is netted already, so it rolls whole", pd.netted() < 1e-6);
+        check("the dollar note rolls abroad, as a 6-month dollar note",
+                inDollars != null && inDollars.type().equals("Note") && inDollars.term() == 6);
+        int at = same.getMonth();
+        double usdBefore = same.getDebtManager().getForeignPrincipalUsd();
+        press(same);
+        Debt rolled = paper(same, "NOTE", 6, at, true);
+        check("...issued abroad the month before the one falling due", rolled != null);
+        check("...the one falling due paid, and the city owes the new one in dollars",
+                !same.getDebtManager().getDebt().contains(abroad) && rolled != null
+                        && Math.abs(same.getDebtManager().getForeignPrincipalUsd() - rolled.faceInCurrency()) < 1e-6
+                        && usdBefore > 0);
+        check("...its cash covering what fell due", same.getRollover().getLastRaised() >= pd.due() - 1e-6);
+        check("...so a bigger dollar face than the one it replaced: its discount borrowed too",
+                rolled != null && rolled.faceInCurrency() > abroad.faceInCurrency());
+        check("...and the month closes its audit", audited(same));
     }
 }

@@ -1,4 +1,4 @@
-# LandMarket.java - 803 lines · 26 methods · 18 constants · model
+# LandMarket.java - 806 lines · 27 methods · 18 constants · model
 
 `ham/citybuildersim/LandMarket.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
@@ -46,7 +46,7 @@
 > money and is struck exactly as before (basePricePerSqFt), and a currency
 > reform no longer touches the listing (redenominate()).
 
-**Uses:** [LandParcel](LandParcel.md) (22), [LandManager](LandManager.md) (3), [ForeignAccounts](ForeignAccounts.md) (1)
+**Uses:** [LandParcel](LandParcel.md) (22), [LandManager](LandManager.md) (4), [ForeignAccounts](ForeignAccounts.md) (1)
 
 **Used by (5):** [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md)
 
@@ -105,7 +105,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 752 | **type** `public class LandMarket` | The land office's window: nine plots on offer, and what the next one costs. |
+| 52 | 755 | **type** `public class LandMarket` | The land office's window: nine plots on offer, and what the next one costs. |
 
 ### what the city pays (lines 68-94)
 
@@ -149,17 +149,18 @@
 | 562 | 10 | `public LandParcel richestDeposit()` | The listed deposit with the most ore, or null if none is on offer. |
 | 579 | 7 | `public LandParcel take(int id)` | Removes a parcel from the window. |
 
-### SAVE AND RESTORE (lines 587-803)
+### SAVE AND RESTORE (lines 587-806)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 634 | 16 | `public double[] getListingState()` |  |
 | 667 | 30 | `public boolean restoreListingState(double[] state)` | Restores a listing written by this build OR by one before deposits existed. |
 | 710 | 15 | `public int settleLocalPrices(double rate)` | AN OLDER SAVE'S PRICES WERE LOCAL MONEY, and this reads them as US dollars at the rate of the day the save is loaded (0.7.6): each listed parcel's price over the rate, so the local cost the player saw is exactly what ... |
-| 727 | 1 | `public double getMinBlocks()` | Smallest parcel the office is currently willing to sell, in blocks. |
-| 746 | 3 | `public double[] getPriceState()` | THE OFFICE'S PRICES ARE STATE, and the listing above did not carry them. |
-| 750 | 12 | `public void restorePriceState(double[] state)` |  |
-| 763 | 10 | `public void reset()` |  |
-| 788 | 5 | `public void redenominate(double scale)` | The office's LOCAL prices in the new unit - the inside price and the anchor it is struck from - and nothing else. |
-| 799 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 727 | 1 | `public double getMinSqFt()` | Smallest parcel the office is currently willing to sell, in square feet: what the land office shows in square kilometres (0.7.13). |
+| 730 | 1 | `public double getMinBlocks()` | Smallest parcel the office is currently willing to sell, in blocks. |
+| 749 | 3 | `public double[] getPriceState()` | THE OFFICE'S PRICES ARE STATE, and the listing above did not carry them. |
+| 753 | 12 | `public void restorePriceState(double[] state)` |  |
+| 766 | 10 | `public void reset()` |  |
+| 791 | 5 | `public void redenominate(double scale)` | The office's LOCAL prices in the new unit - the inside price and the anchor it is struck from - and nothing else. |
+| 802 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
 

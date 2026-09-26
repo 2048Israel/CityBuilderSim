@@ -298,6 +298,16 @@ public class Bank {
     private double mortgageBook;
     private double mortgageWeighted;
 
+    /**
+     * ...and what the businesses owe it sector by sector, in Sectors.KEYS
+     * order, with the interim financing (InterimLoan) apart (0.7.13): the
+     * Balance sheet page's detail, set by Game.refreshBank() from the same
+     * loans sectorBook was summed from. A Bank built by hand holds none.
+     */
+    private final double[] loansBySector = new double[Sectors.KEYS.length];
+    private final double[] interimBySector = new double[Sectors.KEYS.length];
+    private double interimBook;
+
     /** What the treasury paid it this month on insured mortgages the month's defaults wrote down (0.7.11): cash for a claim on its book, so no income and no loss. */
     private double insuranceClaims;
 
@@ -401,6 +411,10 @@ public class Bank {
         this.householdWeighted = this.householdBook;
         this.mortgageBook = 0;
         this.mortgageWeighted = 0;
+        // ...and its loans by sector and the interim financing among them (0.7.13).
+        java.util.Arrays.fill(this.loansBySector, 0);
+        java.util.Arrays.fill(this.interimBySector, 0);
+        this.interimBook = 0;
         // ...and its bonds (0.7.12), which Game sets beside the rest.
         this.bondBook = 0;
         this.bondWeighted = 0;
@@ -433,6 +447,31 @@ public class Bank {
 
     /** The insured mortgages it holds, part of getSectorBook(). */
     public double getMortgageBook() { return mortgageBook; }
+
+    /**
+     * ...and the rest of the businesses' book by sector, with the interim
+     * financing apart (0.7.13): for each sector in Sectors.KEYS order, its
+     * loans that are neither an insured mortgage nor interim financing, and
+     * its interim financing. Game.refreshBank() sets them beside the
+     * mortgages, off the same loans.
+     */
+    public void setSectorLoans(double[] loans, double[] interim) {
+        interimBook = 0;
+        for (int i = 0; i < loansBySector.length; i++) {
+            loansBySector[i] = loans != null && i < loans.length ? Math.max(0, loans[i]) : 0;
+            interimBySector[i] = interim != null && i < interim.length ? Math.max(0, interim[i]) : 0;
+            interimBook += interimBySector[i];
+        }
+    }
+
+    /** What the sector at this index of Sectors.KEYS owes it outside its insured mortgages and its interim financing. */
+    public double getLoansToSector(int sector)   { return loansBySector[sector]; }
+    /** ...and its interim financing. */
+    public double getInterimToSector(int sector) { return interimBySector[sector]; }
+    /** The interim financing it holds, every sector's: part of getSectorBook(). */
+    public double getInterimBook()               { return interimBook; }
+    /** What the businesses owe it outside the insured mortgages and the interim financing: the sector book less both. */
+    public double getBusinessLoans()             { return sectorBook - mortgageBook - interimBook; }
 
     /**
      * THE CITY PAYS AN INSURED LOSS (0.7.11): cash from the treasury for the
@@ -1277,6 +1316,23 @@ public class Bank {
          * older save's that carried none (isMonthKnown()).
          */
         if (monthKnown) fileStatement();
+        /*
+         * ...AND THE BALANCE SHEET AS IT STOOD (0.7.13), every month: a stock
+         * rather than a month's lines, so a new bank's and an older save's
+         * are sheets too. The oldest of a year of them is the page's year-ago
+         * column.
+         */
+        fileSheet();
+        /*
+         * ...AND ITS EQUITY'S TWO PARTS (0.7.13, round 2): the month that
+         * ended, cause by cause, into the counters before the causes are
+         * cleared below. Their sum does not move - it is the equity the month
+         * closed on, which is the equity this one opens on.
+         */
+        if (splitKnown) {
+            paidInOpening += paidInThisMonth();
+            retainedOpening += retainedThisMonth();
+        }
         /*
          * WHAT LANDED AFTER LAST MONTH'S CLOSE, carried into this month's
          * profit before the flows it is read from are cleared - see
@@ -4598,10 +4654,23 @@ public class Bank {
         // is opened below - lines that are nobody's month.
         for (double[] month : statementRing) java.util.Arrays.fill(month, 0);
         statementsFiled = 0;
+        java.util.Arrays.fill(loansBySector, 0);
+        java.util.Arrays.fill(interimBySector, 0);
+        interimBook = 0;
         bailoutsLifetime = 0;
         monthKnown = false;
         startMonth();
         monthKnown = false;
+        // ...and 0.7.13's year of balance sheets, emptied AFTER the month is
+        // opened: opening it filed a sheet of nothing, and a year ago starts
+        // with the first month the city plays.
+        for (double[] month : sheetRing) java.util.Arrays.fill(month, 0);
+        sheetsFiled = 0;
+        // ...and its equity's two parts (round 2), from nothing: nobody has
+        // put anything in, so whatever it holds is not paid in.
+        paidInOpening = 0;
+        retainedOpening = equity();
+        splitKnown = true;
     }
 
     /*
@@ -4644,6 +4713,9 @@ public class Bank {
         bondFace          *= scale;
         bondGains         *= scale;
         underwritingFees  *= scale;
+        // ...and its equity's two parts (0.7.13, round 2), carried not derived.
+        paidInOpening     *= scale;
+        retainedOpening   *= scale;
         interestFromBonds *= scale;
         concentrationAddOn *= scale;
         concentrationWeighted *= scale;
@@ -4756,6 +4828,16 @@ public class Bank {
         for (double[] month : statementRing) {
             for (int i = 0; i < month.length; i++) month[i] *= scale;
         }
+        // ...and 0.7.13's: the year of balance sheets, every line of which is
+        // money, and the loans by sector the last refresh set.
+        for (double[] month : sheetRing) {
+            for (int i = 0; i < month.length; i++) month[i] *= scale;
+        }
+        for (int i = 0; i < loansBySector.length; i++) {
+            loansBySector[i] *= scale;
+            interimBySector[i] *= scale;
+        }
+        interimBook *= scale;
     }
 
 
@@ -4793,7 +4875,10 @@ public class Bank {
 
        BankCheck (13) asserts the three that carry arithmetic: the ladder's
        parts add up to prime, the weight table foots to getWeightedBook(),
-       and the equity's movement leaves nothing unexplained.
+       and the equity's movement leaves nothing unexplained. Since 0.7.13
+       it asserts the Balance sheet page's too: its lines foot this month
+       and a year ago, and paid in and retained add up to its equity (the
+       sub-sections "its balance sheet" and "its equity, in two parts").
        ===================================================================== */
 
     /* ---------------------- the interest, by who paid it ---------------------- */
@@ -4901,7 +4986,10 @@ public class Bank {
      * What it kept of the month's profit once its owners were paid: net
      * income less the dividend and its own shares bought back. Negative when
      * it paid out more than the month earned - a dividend is paid on LAST
-     * month's profit (payOwners()).
+     * month's profit (payOwners()). A payout measure, and not the balance
+     * sheet's retained earnings (retainedThisMonth(), retainedEarnings()),
+     * which a buyback does not touch: since 0.7.13's round 2 the split takes
+     * a buyback off paid-in capital, as Jerus defined it.
      */
     public double getRetained() { return getNetIncome() - dividendsPaid - sharesBoughtBack; }
 
@@ -5053,6 +5141,184 @@ public class Bank {
             java.util.Arrays.fill(statementRing[m], 0);
             System.arraycopy(in, 2 + m * saved, statementRing[m], 0, keep);
         }
+    }
+
+    /* --------------------------- its balance sheet (0.7.13) --------------------------- */
+
+    /**
+     * THE LINES OF ITS BALANCE SHEET, as the model books it (THE THREE
+     * STATEMENTS): what totalAssets() and totalLiabilities() sum, line by
+     * line, the allowance negative, and equity() the residual; then the two
+     * deposits it counts for what it can lend and does not hold as a
+     * liability, a memorandum; then, since round 2, equity's two parts,
+     * paid in and retained (ITS EQUITY, IN TWO PARTS) - RETAINED here is the
+     * balance sheet's retained earnings, not Line.RETAINED, the month's
+     * payout measure (getRetained()). What the Bank tab's Balance sheet page
+     * prints, this month and a year ago (Jerus: "in the bank section, i
+     * should be able to see a proper balance sheet, detailed"). New lines go
+     * on the end.
+     */
+    public enum Sheet {
+        RESERVES, BUSINESS_LOANS, INTERIM, MORTGAGES, FAMILIES, CARRY, CITY_PAPER, BONDS, ALLOWANCE, DESK,
+        ASSETS,
+        DEPOSIT_FUNDING, WINDOW, FOREIGN_DEPOSITS, DESK_SHORT, UNEARNED_DISCOUNT,
+        LIABILITIES,
+        EQUITY,
+        HOUSEHOLD_DEPOSITS, SECTOR_DEPOSITS,
+        PAID_IN, RETAINED
+    }
+
+    /** The asset lines, in the page's order: they sum to totalAssets(). */
+    public static final Sheet[] SHEET_ASSETS = { Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM,
+            Sheet.MORTGAGES, Sheet.FAMILIES, Sheet.CARRY, Sheet.CITY_PAPER, Sheet.BONDS, Sheet.ALLOWANCE, Sheet.DESK };
+
+    /** ...and the liability lines: they sum to totalLiabilities(). */
+    public static final Sheet[] SHEET_LIABILITIES = { Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS,
+            Sheet.DESK_SHORT, Sheet.UNEARNED_DISCOUNT };
+
+    /**
+     * A line of its balance sheet as it stands: its reserves at the central
+     * bank (the cash it is not borrowing; its placements abroad came home to
+     * the central bank in 0.7.0); what the businesses owe it outside the
+     * insured mortgages and the interim financing, then those two; the
+     * families' credit lines; the carry trade; its share of the city's paper,
+     * at face; the businesses' bonds, at what they cost it; the allowance,
+     * negative; the desk's shares at their mark; what it has lent past its
+     * own cash (borrowings()), in its two tranches - the part the deposits
+     * its branches gather fund (depositFunding()) and the rest, borrowed at
+     * the central bank's window (wholesaleFunding()); the world's deposits;
+     * the shares the desk owes; the discount on the city's paper not yet
+     * earned; the two deposits it counts for its capacity (THE THREE
+     * STATEMENTS says why they are not held as liabilities in full); and
+     * since round 2 its equity in two parts, paid in and retained (ITS
+     * EQUITY, IN TWO PARTS) - nothing on a bank that did not keep them.
+     */
+    public double sheet(Sheet line) {
+        return switch (line) {
+            case RESERVES           -> cashReserves();
+            case BUSINESS_LOANS     -> getBusinessLoans();
+            case INTERIM            -> interimBook;
+            case MORTGAGES          -> mortgageBook;
+            case FAMILIES           -> householdBook;
+            case CARRY              -> carryBook;
+            case CITY_PAPER         -> cityBook;
+            case BONDS              -> bondBook;
+            case ALLOWANCE          -> -getAllowance();
+            case DESK               -> Math.max(0, securities);
+            case ASSETS             -> totalAssets();
+            case DEPOSIT_FUNDING    -> depositFunding();
+            case WINDOW             -> wholesaleFunding();
+            case FOREIGN_DEPOSITS   -> Math.max(0, foreignDeposits);
+            case DESK_SHORT         -> shortSecurities();
+            case UNEARNED_DISCOUNT  -> unearnedDiscount;
+            case LIABILITIES        -> totalLiabilities();
+            case EQUITY             -> equity();
+            case HOUSEHOLD_DEPOSITS -> householdDeposits;
+            case SECTOR_DEPOSITS    -> sectorDeposits;
+            case PAID_IN            -> paidInCapital();
+            case RETAINED           -> retainedEarnings();
+        };
+    }
+
+    /**
+     * What its lines leave unexplained: the asset lines, less the liability
+     * lines, less equity. Nothing when every figure totalAssets() and
+     * totalLiabilities() sum is on the page once - the page's "Not accounted
+     * for", which it prints only when this is not nothing.
+     */
+    public double sheetResidual() { return residual(this::sheet); }
+
+    /** ...and the same of the sheet a year ago; nothing when none is on file. */
+    public double yearAgoResidual() { return knowsYearAgo() ? residual(this::yearAgo) : 0; }
+
+    /** The other side of the sheet: its liabilities and its equity together. */
+    public double liabilitiesAndEquity() { return sheet(Sheet.LIABILITIES) + sheet(Sheet.EQUITY); }
+
+    /** ...and a year ago; nothing when none is on file. */
+    public double yearAgoLiabilitiesAndEquity() { return yearAgo(Sheet.LIABILITIES) + yearAgo(Sheet.EQUITY); }
+
+    private static double residual(java.util.function.ToDoubleFunction<Sheet> at) {
+        double sum = 0;
+        for (Sheet s : SHEET_ASSETS) sum += at.applyAsDouble(s);
+        for (Sheet s : SHEET_LIABILITIES) sum -= at.applyAsDouble(s);
+        return sum - at.applyAsDouble(Sheet.EQUITY);
+    }
+
+    /**
+     * The sheet at the top of each of the last YEAR_MONTHS months - every
+     * line, then the loans and the interim financing by sector - filed at
+     * startMonth() before anything moves, so the oldest is the sheet exactly
+     * a year before the one the player is reading. sheetsFiled counts them;
+     * the next goes in its slot modulo the ring.
+     */
+    private final double[][] sheetRing = new double[YEAR_MONTHS][Sheet.values().length + 2 * Sectors.KEYS.length];
+    private int sheetsFiled;
+
+    private void fileSheet() {
+        double[] month = sheetRing[sheetsFiled % sheetRing.length];
+        int lines = Sheet.values().length, n = Sectors.KEYS.length;
+        for (Sheet line : Sheet.values()) month[line.ordinal()] = sheet(line);
+        for (int i = 0; i < n; i++) {
+            month[lines + i] = loansBySector[i];
+            month[lines + n + i] = interimBySector[i];
+        }
+        sheetsFiled++;
+    }
+
+    /** True when the sheet a year before this one is on file: a year played in this build, or a save that carried one. */
+    public boolean knowsYearAgo() { return sheetsFiled >= sheetRing.length; }
+
+    /** A line of the sheet a year before this one; nothing when none is on file. */
+    public double yearAgo(Sheet line) {
+        return knowsYearAgo() ? sheetRing[sheetsFiled % sheetRing.length][line.ordinal()] : 0;
+    }
+
+    /** What the sector at this index of Sectors.KEYS owed it a year ago, outside its insured mortgages and interim financing. */
+    public double yearAgoLoansToSector(int sector) {
+        return knowsYearAgo() ? sheetRing[sheetsFiled % sheetRing.length][Sheet.values().length + sector] : 0;
+    }
+
+    /** ...and its interim financing then. */
+    public double yearAgoInterimToSector(int sector) {
+        return knowsYearAgo()
+                ? sheetRing[sheetsFiled % sheetRing.length][Sheet.values().length + Sectors.KEYS.length + sector] : 0;
+    }
+
+    /** The year of sheets, for the save: how many are filed, the lines and the sectors each holds, then the ring's months in slot order. */
+    public double[] sheetYearToSave() {
+        int width = sheetRing[0].length;
+        double[] out = new double[3 + sheetRing.length * width];
+        out[0] = sheetsFiled;
+        out[1] = Sheet.values().length;
+        out[2] = Sectors.KEYS.length;
+        for (int m = 0; m < sheetRing.length; m++) {
+            System.arraycopy(sheetRing[m], 0, out, 3 + m * width, width);
+        }
+        return out;
+    }
+
+    /**
+     * ...and back. A save from before 0.7.13 carries none, and the year-ago
+     * column reads nothing until a year is filed; a record with fewer lines
+     * or sectors than today's reads the new ones as nothing, and one that
+     * does not add up is not read at all.
+     */
+    public void restoreSheetYear(double[] in) {
+        sheetsFiled = 0;
+        for (double[] month : sheetRing) java.util.Arrays.fill(month, 0);
+        if (in == null || in.length < 3) return;
+        int lines = (int) Math.round(in[1]), sectors = (int) Math.round(in[2]);
+        int width = lines + 2 * sectors;
+        if (lines <= 0 || sectors < 0 || in.length != 3 + sheetRing.length * width) return;
+        int ours = Sheet.values().length, n = Sectors.KEYS.length;
+        int keepLines = Math.min(lines, ours), keepSectors = Math.min(sectors, n);
+        for (int m = 0; m < sheetRing.length; m++) {
+            int from = 3 + m * width;
+            System.arraycopy(in, from, sheetRing[m], 0, keepLines);
+            System.arraycopy(in, from + lines, sheetRing[m], ours, keepSectors);
+            System.arraycopy(in, from + lines + sectors, sheetRing[m], ours + n, keepSectors);
+        }
+        sheetsFiled = Math.max(0, (int) Math.round(in[0]));
     }
 
     /* ------------------------------ its rates, in a ladder ------------------------------ */
@@ -5289,6 +5555,89 @@ public class Bank {
         return new EquityMovement(openingEquity, getNetIncome(), capitalInjected + capitalFromHome,
                 bailoutReceived, foundingSettlement, dividendsPaid, sharesBoughtBack, sharesIssued,
                 resolutionLossThisMonth, treasuryBuybackGain, allowanceOpened, equity());
+    }
+
+    /* ------------------------- its equity, in two parts ------------------------- */
+
+    /*
+     * ITS EQUITY, IN TWO PARTS (0.7.13, round 2). Jerus: "yes, add the split."
+     *
+     * PAID IN is what its owners and the city put in: the capital its
+     * shareholders paid at its offerings, at home and abroad (injectCapital();
+     * a branch's paid-in capital is sold that way, Game.capitaliseBank()),
+     * the new shares it issued (issueOwnShares()), less its own shares bought
+     * back (buyBackOwnShares() - Jerus's "less shares bought back", all of
+     * what it paid for them), and what the city put in in a rescue
+     * (receiveBailout(): cash into its equity, no loan and no shares - a
+     * contribution of capital, so paid in).
+     *
+     * RETAINED is everything else that moves its equity: what it kept (its
+     * net income), less what it paid its owners; the founding settlement,
+     * which clears what a city with no bank accrued on its books so that its
+     * first branch opens on its owners' capital; the shortfall its creditors
+     * absorbed when it failed, which lifts a negative equity back to nothing
+     * against the losses that took it there - the owners keep their shares
+     * (the register does not cancel them), so what they paid in stays paid
+     * in and the losses stay retained; the gain or loss on paper the treasury
+     * bought back from it between two presses; and the allowance an older
+     * save was given on load.
+     *
+     * Those are equityMovement()'s causes, every one, each routed to one of
+     * the two - so paid in and retained add up to equity() exactly whenever
+     * the movement leaves nothing unexplained, which BankCheck asserts every
+     * month. Two counters, carried at the top of the month
+     * (paidInOpening(), retainedOpening()) and saved by name; the month's own
+     * causes are its statement lines, saved with the month
+     * (monthLinesToSave()). A bank founded in this build keeps them from
+     * nothing (reset()). A save from before it kept neither, and they cannot
+     * be rebuilt: what its offerings raised is kept lifetime, but not what
+     * its buybacks paid - the register counts those in shares - so it shows
+     * its equity whole (knowsEquitySplit() false).
+     */
+    private double paidInOpening, retainedOpening;
+    private boolean splitKnown = true;
+
+    /** True when this bank has kept its equity in two parts since it was founded; false on a save from before 0.7.13's round 2. */
+    public boolean knowsEquitySplit() { return splitKnown; }
+
+    /** What its owners and the city put in this month: its offerings at home and abroad, new shares, less shares bought back, and a rescue. */
+    public double paidInThisMonth() {
+        return capitalFromHome + capitalInjected + sharesIssued - sharesBoughtBack + bailoutReceived;
+    }
+
+    /** ...and everything else that moved its equity this month: its net income, less its dividend, the founding settlement, what its creditors absorbed, the treasury's buybacks, an older save's allowance. */
+    public double retainedThisMonth() {
+        return getNetIncome() - dividendsPaid + foundingSettlement + resolutionLossThisMonth
+                + treasuryBuybackGain - allowanceOpened;
+    }
+
+    /** Its paid-in capital as it stands. Nothing when !knowsEquitySplit(). */
+    public double paidInCapital() { return splitKnown ? paidInOpening + paidInThisMonth() : 0; }
+
+    /** Its retained earnings as they stand - the Balance sheet page's, not getRetained()'s month's payout. Nothing when !knowsEquitySplit(). */
+    public double retainedEarnings() { return splitKnown ? retainedOpening + retainedThisMonth() : 0; }
+
+    /** What the two parts leave unexplained against equity(): nothing when every cause is routed, and nothing when !knowsEquitySplit(). */
+    public double equitySplitResidual() {
+        return splitKnown ? paidInCapital() + retainedEarnings() - equity() : 0;
+    }
+
+    /** Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). */
+    public double paidInOpening()   { return splitKnown ? paidInOpening : 0; }
+
+    /** ...and its retained earnings. */
+    public double retainedOpening() { return splitKnown ? retainedOpening : 0; }
+
+    /**
+     * The load path: the two counters at the top of the saved month, after
+     * the month's lines are restored (restoreMonthLines()). Either missing is
+     * a save from before round 2, and the bank shows its equity whole.
+     */
+    public void restoreEquitySplit(Double paidIn, Double retained) {
+        splitKnown = paidIn != null && retained != null
+                && Double.isFinite(paidIn) && Double.isFinite(retained);
+        paidInOpening = splitKnown ? paidIn : 0;
+        retainedOpening = splitKnown ? retained : 0;
     }
 
 }

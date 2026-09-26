@@ -1,4 +1,4 @@
-# GameVersion.java - 1,850 lines · 4 methods · 4 constants · model
+# GameVersion.java - 1,893 lines · 4 methods · 4 constants · model
 
 `ham/citybuildersim/GameVersion.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
@@ -44,18 +44,18 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1359 | `GameVersion.VERSION` | `"0.7.12"` | Bump on release. |
-| 1818 | `GameVersion.SAVE_FORMAT` | `27` | The save shape. |
-| 1821 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
-| 1823 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 1402 | `GameVersion.VERSION` | `"0.7.13"` | Bump on release. |
+| 1861 | `GameVersion.SAVE_FORMAT` | `27` | The save shape. |
+| 1864 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
+| 1866 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 1811 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
-| 1825 | 1 | `private GameVersion()` |  |
-| 1828 | 3 | `public static String title()` | For the window title. |
-| 1838 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
-| 1847 | 3 | `public static boolean isFromBeforeSectors(int saveFormat)` | True when a save predates the sector template and so carries nothing this build can read a sector out of. |
+| 40 | 1854 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
+| 1868 | 1 | `private GameVersion()` |  |
+| 1871 | 3 | `public static String title()` | For the window title. |
+| 1881 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
+| 1890 | 3 | `public static boolean isFromBeforeSectors(int saveFormat)` | True when a save predates the sector template and so carries nothing this build can read a sector out of. |
 

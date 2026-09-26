@@ -253,6 +253,25 @@ public abstract class Debt {
     /** This month's coupon in the currency written on the paper. */
     public final double couponInCurrency() { return couponOwed(); }
 
+    /* ------------------- what the next month repays (0.7.13) ------------------- */
+
+    /**
+     * The principal the next month's payment repays, in the currency written
+     * on the paper: the first payment of its own schedule less that month's
+     * coupon - a note's or a term bond's whole face in its last month, a
+     * serial bond's slice on an anniversary, and nothing in any other month.
+     * Read off scheduleOwed() so the three shapes keep one account of when
+     * their principal falls due, not two. What the treasury's rollover reads
+     * (Game, ROLLING WHAT FALLS DUE).
+     */
+    public final double principalDueNextMonthInCurrency() {
+        double[] schedule = scheduleOwed();
+        return schedule.length == 0 ? 0 : Math.max(0, schedule[0] - couponOwed());
+    }
+
+    /** ...and in local money, at the rate the paper is valued at. */
+    public final double principalDueNextMonth() { return inLocal(principalDueNextMonthInCurrency()); }
+
     /* --------------------------- paying for it --------------------------- */
 
     /**

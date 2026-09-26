@@ -8,6 +8,13 @@ package ham.citybuildersim;
  * ever go up by exactly what was built. A leak in either direction is invisible
  * for a hundred months and then the city is either mysteriously full or
  * mysteriously infinite.
+ *
+ * Sections 1-11 are the ledger and the market. The land office has its own
+ * at the end: land priced in dollars and the two ways to pay for it (0.7.6,
+ * sections 12-13); and, since 0.7.13, the office in square kilometres (14),
+ * the funding page a city short of the price is offered, converting and
+ * from the vault, with the window abroad open and shut (15), and the next N
+ * plots bought at once ending exactly as N bought one by one (16).
  */
 public class LandCheck {
 
@@ -629,6 +636,9 @@ public class LandCheck {
 
         inDollars();
         bothWays();
+        inSquareKilometres();
+        whenShort();
+        severalAtOnce();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -883,5 +893,284 @@ public class LandCheck {
                 old.getLandListing().get(0).localPrice(loadRate), 1_000);
         check("...and the office's local quote reads the same way",
                 old.getLandManager().getGroundUsdPerSqFt(), localQuote / loadRate);
+    }
+
+    /* ==================================================================
+       14. THE OFFICE IN SQUARE KILOMETRES (0.7.13)
+
+       Jerus: "purely for visual purposes, instead of blocks, say km^2". The
+       model keeps square feet; the office shows the same figure converted
+       exactly, to three significant figures so the smallest plot it sells
+       does not read 0.00.
+       ================================================================== */
+    static void inSquareKilometres() {
+        System.out.println("\n--- the office in square kilometres ---");
+
+        check("a square foot is 0.3048 m squared, exactly", LandManager.SQ_M_PER_SQ_FT, .3048 * .3048);
+        check("a block is its square feet in square kilometres",
+                LandManager.km2(LandManager.BLOCK_SQ_FT),
+                LandManager.BLOCK_SQ_FT * LandManager.SQ_M_PER_SQ_FT / LandManager.SQ_M_PER_KM2);
+        String block = LandManager.km2Words(LandManager.BLOCK_SQ_FT);
+        System.out.println("   one block: " + block);
+        assertTrue("...which reads 0.00929, not 0.00", block.startsWith("0.00929 "));
+        LandManager office = new LandManager();
+        office.updateMarket(0);
+        boolean allRead = true;
+        for (LandParcel parcel : office.getListing()) {
+            String words = LandManager.km2Words(parcel.getSizeSqFt());
+            double read = Double.parseDouble(words.substring(0, words.indexOf(' ')));
+            double exact = LandManager.km2(parcel.getSizeSqFt());
+            if (!(read > 0) || Math.abs(read - exact) > exact * 5e-3) allRead = false;
+        }
+        assertTrue("every plot on offer reads within half a percent of its area, and none as nothing", allRead);
+    }
+
+    /* ==================================================================
+       15. SHORT OF THE PRICE: THE FUNDING PAGE (0.7.13)
+
+       Jerus: "if you are on buy by converting and you dont have enough, you
+       can stilll click buy, just the popup to issue debt appears, but if you
+       are in buy with reserves, and click buy, then pop up to issue foreign
+       debt should appear (aka the short or the 20y, like with buildings)".
+       The page prints the model's figures (Game, WHEN THE CITY IS SHORT, AND
+       SEVERAL AT ONCE), so they are asserted here: each offer sized to the
+       gap in the money the toggle pays in, the plot bought once it is
+       taken, and the month after closing its audit. Each fixture causes its
+       shortage: the treasury given 40% of the plot, or the vault sold down to
+       30% of it; and the window abroad shut by its own rule, a city that
+       borrows dollars while it sells nothing abroad.
+       ================================================================== */
+    static void whenShort() throws Exception {
+        System.out.println("\n--- short while converting: the build screen's two offers, sized to the gap ---");
+
+        for (String paper : new String[] { "bond", "note" }) {
+            Game g = dollarCity("landcheck-short-" + paper);
+            LandParcel plot = g.landShelf().get(0);
+            java.util.List<Integer> just = java.util.List.of(plot.getId());
+            double price = plot.localPrice(g.getForeignAccounts().getRate());
+            g.setCashForTest(price * .4);    // the treasury holds 40% of the plot
+            double gap = g.landCashGap(just);
+            assertTrue("fixture (" + paper + "): the treasury is short of the plot",
+                    gap > 0 && !g.canAffordParcel(plot));
+            check("the gap is the plot's local price less the cash", gap, price - g.getCash());
+            assertTrue("...so its button opens the funding page", g.landNeedsFunding(just));
+            boolean bond = paper.equals("bond");
+            double granule = bond ? Game.BUILD_BOND_GRANULE : Game.BUILD_NOTE_GRANULE;
+            DebtQuote quote = bond
+                    ? g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, granule)
+                    : g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, granule);
+            assertTrue("the " + paper + "'s cash covers the gap", quote.cashReceived() >= gap - 1e-9);
+            assertTrue("...by no more than a granule of face", quote.cashReceived() - gap <= granule);
+            int debts = g.getDebtManager().getDebt().size();
+            quietly(() -> {
+                if (bond) g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, granule);
+                else g.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, granule);
+            });
+            assertTrue("...issued, it is on the books", g.getDebtManager().getDebt().size() == debts + 1);
+            double owned = g.getLandManager().getOwnedSqFt();
+            assertTrue("...and the plot is bought", g.buyLandParcels(just) == 1);
+            check("...the city owns it", g.getLandManager().getOwnedSqFt(), owned + plot.getSizeSqFt());
+            check("...and the treasury keeps what the solver left over, as the build screen's does",
+                    g.getCash(), quote.cashReceived() - gap);
+            quietly(g::toggleNextMonth);
+            assertTrue("...and the month after closes its audit", Math.abs(g.getLastMoneyAudit().relative()) < 1e-9);
+            assertTrue("...with nothing moved after it struck", Math.abs(g.getPostAuditDrift()) < 1e-6);
+        }
+
+        System.out.println("\n--- short from the vault: dollar paper, sized to the dollar gap, into the vault ---");
+
+        for (String type : new String[] { "Term", "Note" }) {
+            Game g = dollarCity("landcheck-vault-" + type);
+            g.setLandPaidFromVault(true);
+            LandParcel plot = g.landShelf().get(0);
+            java.util.List<Integer> just = java.util.List.of(plot.getId());
+            double usd = plot.getPriceUsd();
+            quietly(() -> g.sellForeignCurrency(      // the vault sold down to 30% of the plot
+                    (g.getForeignAccounts().getReservesUsd() - usd * .3) * g.getForeignAccounts().getRate()));
+            double held = g.getForeignAccounts().getReservesUsd();
+            double gapUsd = g.landVaultGapUsd(just);
+            assertTrue("fixture (" + type + "): the vault holds 30% of the plot", Math.abs(held - usd * .3) < 1e-6);
+            check("the gap is in dollars: the plot less the vault", gapUsd, usd - held);
+            assertTrue("fixture: the cash would cover the rest", g.canAffordParcel(plot) && g.landTopUpCovers(just));
+            assertTrue("...and still the button opens the funding page: the rest converted is a choice, not the default",
+                    g.landNeedsFunding(just));
+            assertTrue("fixture: the window abroad is open", g.foreignWindowOpen());
+            boolean bond = type.equals("Term");
+            int term = bond ? Game.BUILD_BOND_YEARS : Game.BUILD_NOTE_MONTHS;
+            double granule = bond ? Game.BUILD_BOND_GRANULE : Game.BUILD_NOTE_GRANULE;
+            DebtQuote quote = g.quoteForeignForCash(type, gapUsd, term, granule);
+            assertTrue("the dollar " + (bond ? "bond" : "note") + "'s dollars cover the gap",
+                    quote.cashReceived() >= gapUsd - 1e-9);
+            assertTrue("...by no more than a granule of face", quote.cashReceived() - gapUsd <= granule);
+            check("...at the world's curve: the existing dollar quote at that face",
+                    quote.marketRate(), g.quoteForeign(type, quote.requested(), term, granule).marketRate());
+            double cash = g.getCash();
+            quietly(() -> g.handleForeignForCash(type, gapUsd, term, granule, true));
+            assertTrue("...issued abroad, it is dollar paper on the books", g.getDebtManager().hasForeignDebt());
+            check("...the dollars land in the vault", g.getForeignAccounts().getReservesUsd(),
+                    held + quote.cashReceived());
+            check("...and the treasury's cash is where it was", g.getCash(), cash);
+            assertTrue("...and the plot is bought", g.buyLandParcels(just) == 1);
+            check("...out of the vault", g.getForeignAccounts().getReservesUsd(),
+                    held + quote.cashReceived() - usd);
+            check("...and no cash converted for it", g.getCash(), cash);
+            quietly(g::toggleNextMonth);
+            assertTrue("...and the month after closes its audit", Math.abs(g.getLastMoneyAudit().relative()) < 1e-9);
+            assertTrue("...with nothing moved after it struck", Math.abs(g.getPostAuditDrift()) < 1e-6);
+            check("...its dollars, the whole plot, the vault's", g.getForeignAccounts().getLandUsdFromVaultThisMonth(), usd);
+        }
+
+        System.out.println("\n--- with the window abroad shut, no dollar offer ---");
+
+        Game g = dollarCity("landcheck-shut");
+        g.setLandPaidFromVault(true);
+        quietly(() -> g.handleForeignLogic("Note", 1_000, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE, true));
+        assertTrue("fixture: the window is shut - it owes dollars and sells nothing abroad", !g.foreignWindowOpen());
+        System.out.println("   the window: " + g.foreignWindowReason());
+        LandParcel plot = g.landShelf().get(0);
+        java.util.List<Integer> just = java.util.List.of(plot.getId());
+        double usd = plot.getPriceUsd();
+        quietly(() -> g.sellForeignCurrency(
+                (g.getForeignAccounts().getReservesUsd() - usd * .3) * g.getForeignAccounts().getRate()));
+        double gapUsd = g.landVaultGapUsd(just);
+        assertTrue("fixture: the vault is short of the plot", gapUsd > 0 && g.landNeedsFunding(just));
+        assertTrue("no dollar bond is quoted",
+                g.quoteForeignForCash("Term", gapUsd, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE).isEmpty());
+        assertTrue("...nor a dollar note",
+                g.quoteForeignForCash("Note", gapUsd, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE).isEmpty());
+        int debts = g.getDebtManager().getDebt().size();
+        String[] said = new String[1];
+        quietly(() -> said[0] = g.handleForeignForCash("Term", gapUsd, Game.BUILD_BOND_YEARS,
+                Game.BUILD_BOND_GRANULE, true));
+        assertTrue("...and asked anyway, nothing is issued", g.getDebtManager().getDebt().size() == debts);
+        assertTrue("...and it says why, in the window's own words", said[0].contains(g.foreignWindowReason()));
+        assertTrue("what remains is offered: the vault's dollars, the rest converted", g.landTopUpCovers(just));
+        double held = g.getForeignAccounts().getReservesUsd(), cash = g.getCash();
+        assertTrue("...which buys the plot", g.buyLandParcels(just) == 1);
+        check("...the vault emptied into it", g.getForeignAccounts().getReservesUsd(), 0);
+        check("...and the rest converted from cash", g.getCash(),
+                cash - (usd - held) * g.getForeignAccounts().getRate());
+        quietly(g::toggleNextMonth);
+        assertTrue("...and the month after closes its audit", Math.abs(g.getLastMoneyAudit().relative()) < 1e-9);
+    }
+
+    /* ==================================================================
+       16. THE NEXT N PLOTS, AT ONCE (0.7.13)
+
+       Jerus: "add a button to buy multiple, so for example buy the next 5
+       land options, and then also debt popup appears if not enough". Two
+       cities founded alike; one buys the first five plots on the office's
+       shelf in one go (Game.buyLandParcels()), the other one at a time
+       (buyLandParcel()), and they must end the same to the cent - the same
+       plots, the same prices, the same trail - converting, and from a vault
+       that runs dry half way through, where the batch crosses from the vault
+       to converting as five clicks would. A purchase moves only the plots
+       listed after it (LandMarket, WHAT IS LISTED STAYS LISTED): asserted
+       too, since it is why the two are the same. Then a total the treasury
+       cannot cover opens the funding page, sized to the whole gap.
+       ================================================================== */
+    static void severalAtOnce() throws Exception {
+        for (boolean fromVault : new boolean[] { false, true }) {
+            String way = fromVault ? "from the vault" : "converting";
+            System.out.println("\n--- the next five plots, " + way + ": at once is one by one ---");
+
+            Game atOnce = dollarCity("landcheck-five-" + fromVault);
+            Game oneByOne = dollarCity("landcheck-each-" + fromVault);
+            java.util.List<Integer> ids = atOnce.nextLandParcels(5);
+            java.util.List<LandParcel> shelf = atOnce.landShelf();
+            boolean first = ids.size() == 5;
+            for (int i = 0; first && i < 5; i++) first = shelf.get(i).getId() == ids.get(i);
+            boolean ascending = true;
+            for (int i = 1; i < shelf.size(); i++) {
+                if (shelf.get(i).getUsdPerSqFt() < shelf.get(i - 1).getUsdPerSqFt()) ascending = false;
+            }
+            assertTrue("the next five are the first five on the office's shelf", first);
+            assertTrue("...which is cheapest ground first", ascending);
+            assertTrue("fixture: both cities list the same five", ids.equals(oneByOne.nextLandParcels(5)));
+            double listed = 0;
+            for (int id : ids) listed += atOnce.getLandManager().getMarket().find(id).getPriceUsd();
+            check("their price together is their listed prices added", atOnce.landPriceUsd(ids), listed);
+            check("...and in local money at today's rate", atOnce.landPriceLocal(ids),
+                    listed * atOnce.getForeignAccounts().getRate());
+
+            if (fromVault) {
+                for (Game g : new Game[] { atOnce, oneByOne }) {
+                    g.setLandPaidFromVault(true);
+                    double keep = listed * .5;    // the vault holds half of the five
+                    quietly(() -> g.sellForeignCurrency(
+                            (g.getForeignAccounts().getReservesUsd() - keep) * g.getForeignAccounts().getRate()));
+                }
+                assertTrue("fixture: the vault runs dry part way through the five",
+                        atOnce.landVaultGapUsd(ids) > 0 && atOnce.canAffordLandParcels(ids));
+            } else {
+                assertTrue("fixture: the treasury covers the five", !atOnce.landNeedsFunding(ids));
+            }
+
+            int bought = atOnce.buyLandParcels(ids);
+            java.util.Map<Integer, Double> before = new java.util.HashMap<>();
+            for (int id : ids) before.put(id, oneByOne.getLandManager().getMarket().find(id).getPriceUsd());
+            boolean stood = true;
+            for (int i = 0; i < ids.size(); i++) {
+                oneByOne.buyLandParcel(ids.get(i));
+                for (int j = i + 1; j < ids.size(); j++) {
+                    LandParcel still = oneByOne.getLandManager().getMarket().find(ids.get(j));
+                    if (still == null || still.getPriceUsd() != before.get(ids.get(j))) stood = false;
+                }
+            }
+            assertTrue("all five were bought at once", bought == 5);
+            assertTrue("each purchase left the plots still to come at their listed price", stood);
+            check("the same cash, " + way, atOnce.getCash(), oneByOne.getCash());
+            check("...the same vault", atOnce.getForeignAccounts().getReservesUsd(),
+                    oneByOne.getForeignAccounts().getReservesUsd());
+            check("...the same land owned", atOnce.getLandManager().getOwnedSqFt(),
+                    oneByOne.getLandManager().getOwnedSqFt());
+            check("...the same land purchases on the month's budget",
+                    atOnce.getLandManager().getLandPurchasesThisMonth(),
+                    oneByOne.getLandManager().getLandPurchasesThisMonth());
+            check("...the same deposits", atOnce.getLandManager().getIronDeposits(),
+                    oneByOne.getLandManager().getIronDeposits());
+            boolean sameShelf = atOnce.landShelf().size() == oneByOne.landShelf().size();
+            for (int i = 0; sameShelf && i < atOnce.landShelf().size(); i++) {
+                sameShelf = atOnce.landShelf().get(i).getId() == oneByOne.landShelf().get(i).getId()
+                        && atOnce.landShelf().get(i).getPriceUsd() == oneByOne.landShelf().get(i).getPriceUsd();
+            }
+            assertTrue("...and the same plots on offer after, at the same prices", sameShelf);
+            assertTrue("the receipt names the five", atOnce.getLastLandReceipt().startsWith("Bought 5 plots"));
+            quietly(atOnce::toggleNextMonth);
+            quietly(oneByOne::toggleNextMonth);
+            assertTrue("the month after closes its audit, at once", Math.abs(atOnce.getLastMoneyAudit().relative()) < 1e-9);
+            assertTrue("...and one by one", Math.abs(oneByOne.getLastMoneyAudit().relative()) < 1e-9);
+            check("...and the two cities end it with the same cash", atOnce.getCash(), oneByOne.getCash());
+            check("...the month's dollars for land the five's, at once", atOnce.getForeignAccounts().getLandUsdThisMonth(), listed);
+            check("...and one by one", oneByOne.getForeignAccounts().getLandUsdThisMonth(), listed);
+            check("...the vault's part of them the same either way",
+                    atOnce.getForeignAccounts().getLandUsdFromVaultThisMonth(),
+                    oneByOne.getForeignAccounts().getLandUsdFromVaultThisMonth());
+            if (fromVault) {
+                assertTrue("fixture: the vault paid part of them and not all",
+                        atOnce.getForeignAccounts().getLandUsdFromVaultThisMonth() > 0
+                                && atOnce.getForeignAccounts().getLandUsdFromVaultThisMonth() < listed);
+            }
+        }
+
+        System.out.println("\n--- a total the treasury cannot cover opens the funding page, for the whole gap ---");
+
+        Game g = dollarCity("landcheck-five-short");
+        java.util.List<Integer> ids = g.nextLandParcels(5);
+        double rate = g.getForeignAccounts().getRate();
+        LandParcel firstPlot = g.getLandManager().getMarket().find(ids.get(0));
+        LandParcel second = g.getLandManager().getMarket().find(ids.get(1));
+        g.setCashForTest(firstPlot.localPrice(rate) + second.localPrice(rate) / 2);   // one and a half plots
+        assertTrue("fixture: the first plot alone is covered", !g.landNeedsFunding(ids.subList(0, 1)));
+        assertTrue("the five are not, and open the funding page", g.landNeedsFunding(ids));
+        double gap = g.landCashGap(ids);
+        check("...for the whole gap", gap, g.landPriceLocal(ids) - g.getCash());
+        DebtQuote quote = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        assertTrue("the bond's cash covers it", quote.cashReceived() >= gap - 1e-9);
+        quietly(() -> g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+        assertTrue("...and, issued, the five are bought", g.buyLandParcels(ids) == 5);
+        check("...leaving what the solver left over", g.getCash(), quote.cashReceived() - gap);
+        quietly(g::toggleNextMonth);
+        assertTrue("...and the month after closes its audit", Math.abs(g.getLastMoneyAudit().relative()) < 1e-9);
     }
 }

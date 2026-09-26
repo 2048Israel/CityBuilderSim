@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-26 (0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-09-26 (0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -13,8 +13,11 @@ has been away reads the changelog's top block and section 0 here, then works.
   of bonds and shares on the order book, and a failed bank rescued for its
   shares rather than written off to the city. It bears on what fails the bank
   now: the young bank on its founding capital, before month 1000, on
-  Manufacturing or Automotive (`the-firms-sell-bonds.md` §5). Research and
-  plan first, then his answers, then the build.
+  Manufacturing or Automotive (`the-firms-sell-bonds.md` §5). With it, Jerus
+  2026-09-26 ("With the treasury batch"): **the bank's owners are wiped out at
+  a failure**, as in a real resolution — today they keep their shares and the
+  balance sheet shows an accumulated deficit after. Research and plan first,
+  then his answers, then the build.
 - ~~**NEXT: NOTES AND BONDS**~~ — shipped as 0.7.12 (tag 0926a), see
   `the-firms-sell-bonds.md`.
 - **HEALTHCHECK SHIPS RED — ITS OWN BATCH AFTER THE TREASURY** (Jerus,
@@ -25,6 +28,47 @@ has been away reads the changelog's top block and section 0 here, then works.
   household row paid for (the documented shortcut in `HouseholdBalance`, THE
   PRICE AT THE CLINIC DOOR); 46% had money for food after their fixed bills
   and still planned less — untraced, and the first thing to trace.
+- **CHECK 0.7.13 BY EYE ON THE PC** (`rolling-what-falls-due.md`). None of it
+  can run in the cloud.
+  - **Land office tiles:**
+    - the large price in local money when converting and US$ from the
+      vault, with the other as a caption on the same baseline;
+    - km² under sq ft, still inside the tile's 172 px;
+    - a short tile's button reads "Buy — borrow for it" / "Buy — the vault
+      is short" and is clickable.
+  - **The FREE cell and the smallest-lot sentence in km²; the Summary's
+    land panel (Owned / Free), the build screen's NOT ENOUGH LAND page and
+    the time-skip report's "Bought" line in km².**
+  - **"Buy the next N plots" row:** −/+ (disabled at the ends), the total in
+    the paying currency with its caption. Check it at a narrow window.
+  - **The funding page:**
+    - converting: the build screen's two offers and Cancel;
+    - from the vault: every dollar figure in US$, the "dollars are in
+      reserve" note, the top-up block;
+    - the window shut: the red alert with its reason;
+    - the note offer says it is "refinanced then by the treasury's
+      rollover" when the rollover is on;
+    - the receipt after a multi-buy.
+  - **The build screen's INSUFFICIENT FUNDS page:** it should look exactly as
+    before (a refactor shares its pieces).
+  - **Finances, both borrow pages:**
+    - "Rolling what falls due", its three chips (By hand / Same structure /
+      12-month notes), the sentence, and next month's lines (falls due, last
+      year's surplus, netted, "Raised as…", the face);
+    - the summary sentence and the last rollover;
+    - on the shut Abroad page the block sits above the alert;
+    - "nothing falls due" when nothing does.
+  - **Bank:**
+    - the strip's six chips wrap cleanly; the landing's "Balance sheet" row;
+    - the page's "this month" / "a year ago" columns, each line opening, the
+      by-sector detail, the totals;
+    - paid-in and retained opening into their sentences, "Its equity" as
+      their total;
+    - no "Not accounted for" when it foots; the memorandum;
+    - "—" and the note on a young city or a 0.7.12 save.
+  - **A new game:** the monetary page shows the autopilot on and Finances
+    shows "Same structure". A 0.7.12 save keeps its hand on the dial and the
+    rollover by hand.
 - **CHECK 0.7.12 BY EYE ON THE PC** (`the-firms-sell-bonds.md`). None of it
   can run in the cloud; `build-ui.sh` compiling it is the only check it has
   had.
@@ -830,6 +874,27 @@ Every confusing thing a new player will hit is that order being violated:
 - Private investment could sit land-blocked for **120 months** (now bannered —
   but that was one instance of a class). *And the banner is now itself suspect:
   `Game.isPrivateInvestmentLandLocked()` never clears — see the top entries.*
+- **And 0.7.13 as of 2026-09-26 (deployed 2026-09-26, tag 0926b): the land office in the
+  paying currency and km², buying short and several at once; new games on the
+  autopilot; the treasury's rollover; the Bank tab's Balance sheet page; 224
+  files, ~171,000 lines; save format 27 unchanged; 63 harnesses.** What the
+  manual now says that is not so:
+  - the build line;
+  - §15's land office: the dollar price first, blocks, a plot the city cannot
+    afford refused; now the paying currency, km², the funding page, and
+    "Buy the next N";
+  - §12's borrowing: nothing refinances a maturity — now the rollover (by
+    hand / same structure / 12-month notes, net of last year's surplus,
+    sized to the cash);
+  - §13's dial: a new city founds by hand — now on the autopilot;
+  - §19's Bank tab has five pages — now six, with the balance sheet — and its
+    list of what went in without a bump (`rolloverMode`, `rolloverLedger`,
+    `rolloverRecord`, `bankSheetYear`, `bankPaidInOpening`,
+    `bankRetainedOpening`);
+  - §20's rows for LandCheck (14–16), TreasuryCheck (7), BankCheck (13) and
+    NewGameCheck (12);
+  - §21 gains the limit on a city's own paper and deposits on the bank's
+    books.
 - **A city with no clinics loses 18% of everything, forever**, and the only place
   that says so is the People screen and one banner.
 
@@ -1490,6 +1555,47 @@ Ranked by how likely they are to read as "this game is broken".
   `Game.consider()` still files `canFundProject()`'s leverage refusal as a
   land shortage (`landBlockedSectors`) — only the capital refusal is split out
   (see the NEVER CLEARS item).
+- **FOUND BY 0.7.13, NOT ITS TO FIX** (`rolling-what-falls-due.md` §6; the
+  implementer's record):
+  - **Nothing limits how much of its own paper a city can sell at home.**
+    - The price stops at policy + 10 points plus the term premium.
+    - The commercial bank buys whatever the households leave, with no
+      capacity check, funded at the central bank's window (no cap).
+    - Debt service is a promise paid past the advances ceiling.
+    - Only abroad does a window shut.
+    - With the rollover sized to the cash, Lean seed 0 compounds to $476.6T
+      of paper and 2,423 people. A market limit — a buyer's refusal or a
+      debt-service rule at home — is Jerus's to design.
+  - **The playtest trips no finding for a runaway treasury** ($476T owed,
+    43.9% unemployment).
+  - **Deposits on the bank's books.** Today they are the holders' money and
+    the bank only counts them for capacity. Putting them on its sheet moves:
+    - `Bank`'s three statements (`totalLiabilities()`, `cashReserves()`,
+      `depositFunding()`);
+    - `Game.refreshBank()`, which would move money rather than read it;
+    - MoneyAudit's pools, which would count the money once, in reserves;
+    - every household–business payment, which would become a transfer
+      between two deposits;
+    - `CentralBank`'s interest on reserves and the window's size;
+    - the Balance sheet page's memo line.
+
+    The harnesses to re-derive are BankCheck's equity identity, the audit's
+    conservation and ReadPathCheck. Its own batch ("Memo now, own batch
+    later").
+  - **Retained earnings end below zero in 27 of 32 runs, and paid-in in 4.**
+    Dividends that return excess capital are charged to retained, while the
+    city's rescues sit in paid-in, and a buyback comes off paid-in at its
+    whole cost. Jerus kept both; revisit with the owners' wipe-out.
+  - **A young city's first dollar land loan can shut the window abroad** for
+    its next one ("owes dollars and sells nothing abroad"). A dollar note
+    rolled in the same structure can shut it by the 45% service rule.
+  - **Rollovers print to the log, not the inbox:** an unread notice forces
+    the inbox open.
+  - *(small)* The Game code map files `nextMonth()` and its neighbours under
+    ROLLING WHAT FALLS DUE, the banner just above them (before, under
+    BORROWING IN SOMEBODY ELSE'S MONEY). Two meanings of "retained" live in
+    `Bank`: `getRetained()` is the Profit page's "Kept in the bank", and
+    `retainedEarnings()` is the sheet's.
 - **FOUND BY 0.7.12, NOT ITS TO FIX** (`the-firms-sell-bonds.md` §7; the
   implementer's record, round 8). Jerus, 2026-09-25: the shells and the
   untraced moves ship and go here.

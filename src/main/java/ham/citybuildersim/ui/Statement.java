@@ -135,19 +135,24 @@ public final class Statement {
 
     /** The column headings, once, at the top of a statement. */
     public static HBox bookHead(String left) {
+        return bookHead(left, "this month", "last month");
+    }
+
+    /** ...with the two columns named - the bank's balance sheet sets this month beside "a year ago" (0.7.13). */
+    public static HBox bookHead(String left, String now, String then) {
         Label what = new Label(left);
         what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
 
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label a = new Label("this month");
+        Label a = new Label(now);
         a.setPrefWidth(BOOK_NOW);
         a.setMinWidth(BOOK_NOW);
         a.setAlignment(Pos.CENTER_RIGHT);
         a.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
 
-        Label b = new Label("last month");
+        Label b = new Label(then);
         b.setPrefWidth(BOOK_THEN);
         b.setMinWidth(BOOK_THEN);
         b.setAlignment(Pos.CENTER_RIGHT);
@@ -167,6 +172,10 @@ public final class Statement {
      * LAST MONTH IS QUIETER, on purpose. It is context rather than news, and a
      * comparative column at full strength turns every statement into two
      * statements competing for the same eye.
+     *
+     * A figure that is not a number reads "—", in either column: a figure the
+     * model does not have, such as the bank's equity split on a save from
+     * before it was kept (0.7.13).
      */
     public static HBox bookLine(String label, double now, double then, boolean known, String tone) {
 
@@ -176,14 +185,14 @@ public final class Statement {
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label a = new Label(tightMoney(toDollars(now), false));
+        Label a = new Label(Double.isNaN(now) ? "—" : tightMoney(toDollars(now), false));
         a.setPrefWidth(BOOK_NOW);
         a.setMinWidth(BOOK_NOW);
         a.setAlignment(Pos.CENTER_RIGHT);
         a.setStyle(Palette.figure(Palette.SIZE_BODY,
                 tone == null ? Palette.TEXT_BODY : tone));
 
-        Label b = new Label(known ? tightMoney(toDollars(then), false) : "—");
+        Label b = new Label(known && !Double.isNaN(then) ? tightMoney(toDollars(then), false) : "—");
         b.setPrefWidth(BOOK_THEN);
         b.setMinWidth(BOOK_THEN);
         b.setAlignment(Pos.CENTER_RIGHT);

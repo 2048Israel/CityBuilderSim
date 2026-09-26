@@ -37,7 +37,12 @@ import java.nio.file.Path;
  *   6. Does what the Bank tab prints add up (0.7.9, section 13)? The ladder's
  *      parts are its prime, the weight table foots to the weighted book, and
  *      the equity's movement leaves nothing unexplained - three figures the
- *      screen used to work out for itself, two of them wrongly.
+ *      screen used to work out for itself, two of them wrongly. Since
+ *      0.7.13 the Balance sheet page too: its lines are what totalAssets()
+ *      and totalLiabilities() sum, it foots this month and a year ago, and
+ *      the year ago survives a save; and its equity's two parts, paid in
+ *      and retained, add up to it to the cent every month and move by
+ *      exactly their own causes, and an older save does not invent them.
  *   7. Does the desk keep to the bank's capital (0.7.8, section 17)? It buys
  *      the bank's own shares back only with what the bank holds over its
  *      target, and other companies' only while the bank would still hold its
@@ -67,6 +72,13 @@ public class BankCheck {
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         out.printf("%-58s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    /** The bank's balance sheet as it stands, every line of it (0.7.13). */
+    static double[] sheetOf(Bank bank) {
+        double[] sheet = new double[Bank.Sheet.values().length];
+        for (Bank.Sheet line : Bank.Sheet.values()) sheet[line.ordinal()] = bank.sheet(line);
+        return sheet;
     }
 
     static void close(String label, double actual, double expected, double tol) {
@@ -2890,6 +2902,17 @@ public class BankCheck {
         double buybackGain = 0, rescued = 0;
         java.util.List<Double> nets = new java.util.ArrayList<>(), fees = new java.util.ArrayList<>();
         Debt bond = null;
+        // ...and the Balance sheet page (0.7.13): the sheet as this loop read it
+        // at the end of each month, the founding's first - a year ago is one of them.
+        java.util.List<double[]> sheets = new java.util.ArrayList<>();
+        double worstSheet = 0, worstYearAgoSheet = 0, worstYearAgoMatch = 0, worstBySector = 0;
+        int yearAgoMonths = 0, lentMonths = 0;
+        // ...and its equity in two parts (round 2): what each is off its equity
+        // every month, and what its causes, read at the end of each month
+        // played - after whatever was done between the presses - add up to.
+        double worstSplit = 0, paidInCauses = 0, retainedCauses = 0, paidInStart = 0, retainedStart = 0;
+        int offeringMonths = 0, buybackMonths = 0, lossMonths = 0;
+        boolean splitAll = true;
         System.setOut(quiet);
         try {
             city.run();
@@ -2911,6 +2934,10 @@ public class BankCheck {
             // From the first month: a city opens with its founding branch
             // standing (Game.foundingBank()), so the month it is capitalised
             // and takes the standing book over is the first played.
+            sheets.add(sheetOf(bank));
+            paidInStart = bank.paidInCapital();
+            retainedStart = bank.retainedEarnings();
+            worstSplit = Math.abs(bank.equitySplitResidual());
 
             for (int m = 0; m < played; m++) {
                 city.simulateMonths(1);
@@ -2919,6 +2946,10 @@ public class BankCheck {
                 worstResidual = Math.max(worstResidual, Math.abs(moved.residual()));
                 if (Math.abs(moved.founding()) > 1e-9) foundingMonths++;
                 if (moved.dividends() > 0) dividendMonths++;
+                if (moved.fromShareholders() > 0) offeringMonths++;
+                if (moved.boughtBack() > 0) buybackMonths++;
+                if (moved.kept() < 0) lossMonths++;
+                worstSplit = Math.max(worstSplit, Math.abs(bank.equitySplitResidual()));
 
                 double byWho = bank.getInterestFromBusinesses() + bank.getInterestFromHouseholds()
                         + bank.getInterestFromCity() + bank.getDiscountAccreted()
@@ -2968,6 +2999,38 @@ public class BankCheck {
                     rescued = city.recapitaliseBank(500);
                     worstBetween = Math.max(worstBetween, Math.abs(bank.equityMovement().residual()));
                 }
+                // Its equity's two parts after the presses' decisions too, and
+                // the month's causes as they stand once nothing more will move them.
+                worstSplit = Math.max(worstSplit, Math.abs(bank.equitySplitResidual()));
+                splitAll &= bank.knowsEquitySplit();
+                Bank.EquityMovement ended = bank.equityMovement();
+                paidInCauses += ended.fromShareholders() + ended.fromCity() + ended.issued() - ended.boughtBack();
+                retainedCauses += ended.kept() - ended.dividends() + ended.founding() + ended.absorbed()
+                        + ended.treasuryBuyback() - ended.allowanceOpened();
+
+                // The Balance sheet page (0.7.13), read after the month and
+                // whatever was done between the presses: its lines foot, the
+                // businesses' by sector add to their line, and a year ago is
+                // the sheet this loop read twelve months back.
+                worstSheet = Math.max(worstSheet, Math.abs(bank.sheetResidual()));
+                double bySector = 0, interim = 0;
+                for (int s = 0; s < Sectors.KEYS.length; s++) {
+                    bySector += bank.getLoansToSector(s);
+                    interim += bank.getInterimToSector(s);
+                }
+                worstBySector = Math.max(worstBySector, Math.abs(bySector - bank.sheet(Bank.Sheet.BUSINESS_LOANS))
+                        + Math.abs(interim - bank.sheet(Bank.Sheet.INTERIM)));
+                if (bank.sheet(Bank.Sheet.BUSINESS_LOANS) > 0) lentMonths++;
+                if (bank.knowsYearAgo()) {
+                    yearAgoMonths++;
+                    worstYearAgoSheet = Math.max(worstYearAgoSheet, Math.abs(bank.yearAgoResidual()));
+                    double[] then = sheets.get(m - Bank.YEAR_MONTHS + 1);
+                    for (Bank.Sheet line : Bank.Sheet.values()) {
+                        worstYearAgoMatch = Math.max(worstYearAgoMatch,
+                                Math.abs(bank.yearAgo(line) - then[line.ordinal()]));
+                    }
+                }
+                sheets.add(sheetOf(bank));
             }
         } finally {
             System.setOut(out);
@@ -2989,6 +3052,84 @@ public class BankCheck {
         close("last month's column is what that month read, whole", worstLast, 0, 1e-9);
         close("...and the last twelve months add up to the last twelve read", worstYear, 0, 1e-6);
         close("the played bank's weight table foots every month", worstFoot, 0, 1e-6);
+
+        out.println("\n--- (13) the Balance sheet page: it foots this month and a year ago, and a year ago survives a save ---");
+        out.printf("   %d months with a year ago on file; the businesses owed the bank in %d%n",
+                yearAgoMonths, lentMonths);
+        assertTrue("fixture: a year ago was on file in most of the months played", yearAgoMonths > 50);
+        assertTrue("fixture: the businesses owed the bank in most of them", lentMonths > 50);
+        double assetLines = 0, liabilityLines = 0;
+        for (Bank.Sheet line : Bank.SHEET_ASSETS) assetLines += bank.sheet(line);
+        for (Bank.Sheet line : Bank.SHEET_LIABILITIES) liabilityLines += bank.sheet(line);
+        close("its asset lines are what totalAssets() sums", assetLines, bank.totalAssets(), 1e-6);
+        close("...its liability lines what totalLiabilities() sums", liabilityLines, bank.totalLiabilities(), 1e-6);
+        close("so its lines foot, assets less liabilities less equity, every month", worstSheet, 0, 1e-6);
+        close("...and a year ago, every month one was on file", worstYearAgoSheet, 0, 1e-6);
+        close("a year ago is the sheet as it stood twelve months before, line for line", worstYearAgoMatch, 0, 1e-9);
+        close("the businesses' loans by sector add to their line, and the interim financing to its",
+                worstBySector, 0, 1e-6);
+        Game sheetBack, sheetOld;
+        GameFiles tabFiles = city.getGameFiles();
+        System.setOut(quiet);
+        try {
+            city.saveGame(10, "the bank's tab");
+            sheetBack = new Game(tabFiles);
+            sheetBack.loadGameSave(10);
+            // ...and the same save as one from before 0.7.13, the year of sheets taken out.
+            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
+                    Files.readString(tabFiles.saveFile(10))).getAsJsonObject();
+            json.remove("bankSheetYear");
+            // ...and its equity's two parts (round 2), which no save before 0.7.13 kept either.
+            json.remove("bankPaidInOpening");
+            json.remove("bankRetainedOpening");
+            Files.writeString(tabFiles.saveFile(10), new com.google.gson.Gson().toJson(json));
+            sheetOld = new Game(tabFiles);
+            sheetOld.loadGameSave(10);
+        } finally {
+            System.setOut(out);
+        }
+        assertTrue("the year of sheets survives a save, whole",
+                java.util.Arrays.equals(sheetBack.getBank().sheetYearToSave(), bank.sheetYearToSave()));
+        assertTrue("...so the reloaded page has a year ago", sheetBack.getBank().knowsYearAgo());
+        close("...the same equity a year ago", sheetBack.getBank().yearAgo(Bank.Sheet.EQUITY),
+                bank.yearAgo(Bank.Sheet.EQUITY), 1e-9);
+        close("...and the same loans to the businesses a year ago",
+                sheetBack.getBank().yearAgo(Bank.Sheet.BUSINESS_LOANS), bank.yearAgo(Bank.Sheet.BUSINESS_LOANS), 1e-9);
+        assertTrue("a save from before 0.7.13 has no year ago - the page reads it as \"\u2014\"",
+                !sheetOld.getBank().knowsYearAgo() && sheetOld.getBank().yearAgo(Bank.Sheet.EQUITY) == 0);
+
+        out.println("\n--- (13) its equity in two parts: paid in and retained add up to it, to the cent, every month ---");
+        out.printf("   paid in $%,.2fk -> $%,.2fk, retained $%,.2fk -> $%,.2fk; offerings in %d months, its own shares"
+                + " bought back in %d, a loss in %d%n", paidInStart, bank.paidInCapital(), retainedStart,
+                bank.retainedEarnings(), offeringMonths, buybackMonths, lossMonths);
+        assertTrue("fixture: a branch opened, its capital sold as shares", offeringMonths > 0 && foundingMonths == 1);
+        assertTrue("fixture: it bought its own shares back", buybackMonths > 0);
+        assertTrue("fixture: it paid a dividend", dividendMonths > 0);
+        assertTrue("fixture: it lost money in a month", lossMonths > 0);
+        assertTrue("a bank founded in this build keeps the split, every month", splitAll);
+        close("paid in and retained add up to its equity, to the cent, every month and between two presses",
+                worstSplit, 0, 1e-5);
+        close("paid in moved by what its owners and the city put in: offerings, new shares, a rescue, less buybacks",
+                bank.paidInCapital() - paidInStart, paidInCauses, 1e-6);
+        close("...and retained by everything else: what it kept, less dividends, and the rest of the causes",
+                bank.retainedEarnings() - retainedStart, retainedCauses, 1e-6);
+        assertTrue("both survive a save", sheetBack.getBank().knowsEquitySplit()
+                && Math.abs(sheetBack.getBank().paidInCapital() - bank.paidInCapital()) < 1e-6
+                && Math.abs(sheetBack.getBank().retainedEarnings() - bank.retainedEarnings()) < 1e-6);
+        close("...and still add up to the reloaded bank's equity", sheetBack.getBank().equitySplitResidual(), 0, 1e-5);
+        close("...and the page's lines read them", sheetBack.getBank().sheet(Bank.Sheet.PAID_IN)
+                + sheetBack.getBank().sheet(Bank.Sheet.RETAINED), sheetBack.getBank().sheet(Bank.Sheet.EQUITY), 1e-5);
+        assertTrue("a save from before them keeps neither: the page shows its equity whole, the parts \"\u2014\"",
+                !sheetOld.getBank().knowsEquitySplit() && sheetOld.getBank().paidInCapital() == 0
+                        && sheetOld.getBank().retainedEarnings() == 0 && sheetOld.getBank().equitySplitResidual() == 0);
+        close("...its equity the same total", sheetOld.getBank().equity(), sheetBack.getBank().equity(), 1e-6);
+        System.setOut(quiet);
+        try {
+            sheetOld.simulateMonths(1);
+        } finally {
+            System.setOut(out);
+        }
+        assertTrue("...and a month played does not invent them", !sheetOld.getBank().knowsEquitySplit());
 
         out.println("\n--- (13) the rescue's guard is the model's ---");
         assertTrue("fixture: the bank stands and needs nothing", !bank.isInsolvent() && bank.recapitalisationNeeded() == 0);

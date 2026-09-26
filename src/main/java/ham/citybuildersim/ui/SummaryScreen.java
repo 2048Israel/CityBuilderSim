@@ -1433,10 +1433,8 @@ final class SummaryScreen {
                         landUsed * 100, land.getPricePerSqFt() * 1000),
                 landUsed >= .95 ? PANEL_BAD : landUsed >= .85 ? PANEL_WARN : null,
                 () -> panelBody(
-                        statLine("Owned", String.format("%.0f blocks",
-                                land.getOwnedSqFt() / LandManager.BLOCK_SQ_FT)),
-                        statLine("Free", String.format("%.1f blocks",
-                                land.getAvailableBlocks())),
+                        statLine("Owned", LandManager.km2Words(land.getOwnedSqFt())),
+                        statLine("Free", LandManager.km2Words(land.getAvailableSqFt())),
                         statLine("Price/sq ft", String.format("$%.2f",
                                 land.getPricePerSqFt() * 1000)))));
 
