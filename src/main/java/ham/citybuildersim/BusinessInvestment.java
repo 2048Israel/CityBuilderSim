@@ -393,6 +393,30 @@ public class BusinessInvestment {
                 true);
     }
 
+    /*
+     * WHAT A SECTOR IN DISTRESS MAY SELL IS ANYTHING IT MAKES WITH (0.7.12
+     * round 7). The rule sold only plant that counts toward the sector's own
+     * measure (Sector.unitsOf()), which for a factory is the nameplate of its
+     * PLANNING good - the first thing it makes. That is the right measure for
+     * the spare-capacity rule, which weighs that good's demand against that
+     * good's capacity. It is the wrong one here: a sector that makes two or
+     * three things holds plant that makes only the second or third, and the
+     * distress rule could never sell it. Round 6 found it on seed 4:
+     * Business Services held one Shared Services Centre (back-office work;
+     * its planning good is support work), lost money for 1,123 months in a
+     * row at a payroll twice its revenue, lived on interim loans and was
+     * backstopped nine times, and the rule that should have wound it up
+     * after twenty-four read the centre as "nothing left to sell". Six
+     * sectors make more than one good (Agriculture, Automotive, Business
+     * Services, Industry, Food Processing, Manufacturing). A building that
+     * makes anything its sector sells is its plant, and a sector in distress
+     * sells it.
+     */
+    private static boolean makesWhatItSells(Sector sector, BuildingsTemplate template) {
+        for (Good g : sector.goodsMade()) if (template.makes(g) > 0) return true;
+        return false;
+    }
+
     /**
      * Whether a sector that cannot pay its way and cannot borrow should shed
      * capacity anyway. THE RULE FOR A FIRM IN DISTRESS: the spare-capacity
@@ -421,8 +445,9 @@ public class BusinessInvestment {
         int mostHeld = 0;
         for (BuildingsTemplate template : buildingManager.getTemplatesBySector(key)) {
             if (!sector.mayRetire(template)) continue;
-            // Only plant that contributes to the sector's own measure.
-            if (sector.unitsOf(template) <= 0) continue;
+            // Only plant that contributes to the sector's own measure -
+            // ...or makes anything it sells (0.7.12 round 7): see below.
+            if (sector.unitsOf(template) <= 0 && !makesWhatItSells(sector, template)) continue;
             int held = buildingManager.getQuantity(template.getId());
             if (held > mostHeld) {
                 mostHeld = held;

@@ -339,7 +339,22 @@ public class MortgageCheck {
         BusinessDebtManager lender = g.getEconomyManager().getBusinessDebtManager();
         String said = null;
         int heldMonths = 0, month = -1;
+        /*
+         * ...WITH ITS SHARES CHEAP ON THE BOOK, so its owners are not asked
+         * (0.7.12 round 2). A landlord short of the down payment asks its
+         * owners for it first, unless the market has its shares under what
+         * they are worth by more than the tolerance (Game, the down payment;
+         * Exchange.quoteSupportsIssue()). Until round 2 the dealer's own
+         * inventory held its quote there for most of this fixture's months;
+         * on the book the price is the last trade, which here sits at the
+         * desk's bid, and the owners paid every down payment - the landlord
+         * never held. So the fixture causes it: between months, the landlords'
+         * book is given a last trade at half their fair value - a market that
+         * has their shares cheap - and nothing else moves.
+         */
+        int re = Equity.indexOf(RE);
         for (int i = 0; i < 72; i++) {
+            g.getExchange().bookOf(re).seedLastPrice(.5 * g.getExchange().fair(re));
             quietly(() -> g.simulateMonths(1));
             if (g.getHeldForDownPayment().contains(RE)) {
                 heldMonths++;
@@ -470,15 +485,27 @@ public class MortgageCheck {
         double claimsBefore = lender.getInsuredWrittenOffTotal(RE);
         quietly(() -> g.simulateMonths(1));
         double written = lender.getWrittenOffThisMonth(RE), insured = lender.getInsuredWrittenOffThisMonth(RE);
-        double owed = lender.getPrincipal(RE), owedInsured = lender.getInsuredPrincipal(RE);
+        // What it owes the BANK: since 0.7.12 its shortfall desk can issue a
+        // bond, which loses a bond's share of a slice, not a loan's
+        // (BusinessDebtManager, RECOVERIES BY INSTRUMENT, round 2), and so
+        // does not fall with the loans pro rata.
+        // ...nor does interim financing, which ranks ahead of all of it and a
+        // slice leaves whole (0.7.12, round 5, INTERIM FINANCING).
+        double owed = lender.getLoanPrincipal(RE) - lender.getInterimPrincipal(RE), owedInsured = lender.getInsuredPrincipal(RE);
         Bank bank = g.getBank();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         out.printf("   written off $%,.2fk, of it $%,.2fk off insured mortgages; the bank took $%,.2fk%n",
                 written, insured, bank.getWrittenOff(RE));
         assertTrue("fixture: its firms defaulted a slice, insured mortgages among them", written > 0 && insured > 0
                 && !lender.wasRestructuredThisMonth(RE));
-        close("every instrument fell pro rata: the insured share of the write-off is their share of the debt",
+        out.printf("   of what it owes the bank, $%,.2fk is interim financing, ranked first%n", lender.getInterimPrincipal(RE));
+        close("every bank loan fell pro rata: the insured share of the write-off is their share of the loans a slice takes",
                 insured / written, owedInsured / owed, 1e-9);
+        // A mortgage is a first-lien loan (0.7.12, round 2): the claim is the
+        // slice's share of the insured balance at a loan's loss given default.
+        double hRE = lender.getDefaultShareThisMonth(RE), lossRE = 1 - BusinessDebtManager.LOAN_RECOVERY;
+        close("the insurer's claim is h x the insured balance x (1 - LOAN_RECOVERY), a first-lien loan's loss",
+                insured, owedInsured / (1 - hRE * lossRE) * hRE * lossRE, 1e-9);
         close("the bank books only what nobody insured as its loss", bank.getWrittenOff(RE), written - insured, 1e-9);
         double uninsuredAll = 0, claimsAll = 0;
         for (String s : lender.sectors()) {
@@ -597,8 +624,12 @@ public class MortgageCheck {
         for (Bank.WeightRow row : bank.weightTable()) played += row.weighted();
         close("...and its weight table foots", played, bank.getWeightedBook(), 1e-9);
         double q = lender.quarterPrincipal(RE), qa = lender.quarterAssets(RE);
-        close("the landlords' allowance is struck on what nobody insures, at the curve of all they owe",
-                bank.getSectorAllowance(RE), Bank.sectorAllowance(lender.getUninsuredPrincipal(RE), q, qa), 1e-9);
+        close("the landlords' allowance is struck on what nobody insures, at the curve of all they owe"
+                        + " and each instrument's own loss given default",
+                bank.getSectorAllowance(RE),
+                Bank.sectorAllowance(lender.getUninsuredPrincipal(RE), q, qa, 1 - BusinessDebtManager.LOAN_RECOVERY)
+                        + Bank.sectorAllowance(g.getBondMarket().bankCost(RE), q, qa,
+                                1 - BusinessDebtManager.BOND_RECOVERY), 1e-9);
 
         out.println("\n--- 7. ...and the capital rule rations it only when the leverage ratio binds ---");
         BusinessDebtManager rationed = new BusinessDebtManager();
@@ -779,13 +810,30 @@ public class MortgageCheck {
                 noi, Mortgage.payment(Mortgage.loanFor(cost - till) * (1 + Mortgage.premiumRate()), insuredRate,
                         Mortgage.MORTGAGE_AMORTIZATION_MONTHS), insuredRate * 100,
                 Mortgage.MORTGAGE_MAX_LOAN_TO_COST * 100, coverage);
-        assertTrue("the old rule refused it: gross rent under 1.25 times the interest on its whole cost at its own risk",
-                !oldSays && rent < BusinessInvestment.PROFIT_OVER_INTEREST * cost * oldRate / 12);
+        /*
+         * AT THE LOSS 0.7.11 READ (0.7.12, round 2). This section is why the
+         * landlords were moved onto insured mortgages, and it was measured
+         * when every defaulted dollar lost 1 - RESTRUCTURE_TARGET /
+         * INSOLVENCY_TRIGGER, 60%. A loan recovers LOAN_RECOVERY now
+         * (BusinessDebtManager, RECOVERIES BY INSTRUMENT), its own risk at
+         * 1.0 is under a point, and the old rule would pass this House: the
+         * refusal is asserted at the loss it was written against, and what
+         * the rule says today is printed beside it.
+         */
+        double lossThen = 1 - BusinessDebtManager.RESTRUCTURE_TARGET / BusinessDebtManager.INSOLVENCY_TRIGGER;
+        double rateThen = lender.getPrimeRate() + BusinessDebtManager.expectedLossSpread(1.0, lossThen)
+                + (oldRate - lender.getPrimeRate() - BusinessDebtManager.expectedLossSpread(1.0));
+        boolean thenSays = plans.servicesItsOwnDebt(rent, cost, rateThen);
+        out.printf("   at 0.7.11's 60%% loss the old rate was %.2f%% - %s; at a loan's %.0f%% since round 2 it is %.2f%% - %s%n",
+                rateThen * 100, thenSays ? "passes" : "refused", (1 - BusinessDebtManager.LOAN_RECOVERY) * 100,
+                oldRate * 100, oldSays ? "passes" : "refused");
+        assertTrue("the old rule refused it at 0.7.11's loss: gross rent under 1.25 times the interest on its whole cost at its own risk",
+                !thenSays && rent < BusinessInvestment.PROFIT_OVER_INTEREST * cost * rateThen / 12);
         close("...borrowing all of it leaves the landlord at 1.0 times what it owns",
                 lender.leverageAfterProject(RE, cost), 1, 1e-12);
-        close("...where the curve charges its own expected loss over prime", oldRate,
+        close("...where the curve charges its own expected loss over prime, at a loan's loss today", oldRate,
                 lender.getPrimeRate() + BusinessDebtManager.expectedLossSpread(1.0), 1e-12);
-        assertTrue("...which is points of it", oldRate - lender.getPrimeRate() > .01);
+        assertTrue("...which was points of it at 0.7.11's loss", rateThen - lender.getPrimeRate() > .01);
         assertTrue("the lender's test passes: its income covers the payment on 85% MORTGAGE_DEBT_COVERAGE times",
                 coverage >= Mortgage.MORTGAGE_DEBT_COVERAGE);
         assertTrue("...so the landlord builds it", newSays.quantity() == 1);
@@ -993,18 +1041,53 @@ public class MortgageCheck {
         int landlords = Equity.indexOf(RE);
         boolean everPastIt = false, foundPaid = false, foundNothing = false;
         double paidOn = 0, paidDue = 0, paidWas = 0, nothingIncome = 0, nothingPrincipal = 0;
+        double tillAtDividend = -1, dueAtDividend = -1;
+        /*
+         * THE FIXTURE GIVES THE LANDLORDS A TILL THAT CAN PAY (0.7.12 round 8).
+         * The question is what the rule pays, so the month read must be one
+         * whose till covers the dividend due. Until round 8 the fixture found
+         * one by luck: its landlords defaulted in month 3, because the lender
+         * read their sheet without the houses they had just bought, and the
+         * write-down left them a till. Round 8 fixed that reading, and their
+         * till was empty at every dividend from m39 on. So in a month whose
+         * income beat the principal, and that the shortfall desk rolled none
+         * of, the fixture tops the till up to the dividend due, after the
+         * month's investment and just before the dividend step (the settle
+         * probe), and reads that month. Nothing else in the month moves.
+         */
+        final boolean[] candidate = { false };
+        final double[] atDividend = { -1, -1 };   // {the till, the dividend due}, as the dividend step will read them
+        g.settleProbeForTest = after -> {
+            if (!after || !candidate[0]) return;
+            EconomyManager em = g.getEconomyManager();
+            if (em.getBusinessDebtManager().getShortfallLentThisMonth(RE) > 0) return;
+            double due = g.dividendDueFor(RE);
+            if (!(due > 0)) return;
+            if (em.getSectorCash(RE) < due) em.setSectorCash(RE, due);
+            atDividend[0] = em.getSectorCash(RE);
+            atDividend[1] = due;
+        };
         for (int m = 0; m < 60 && !(foundPaid && foundNothing); m++) {
             SectorBooks.SectorMonth last = g.getSectorBooks().get(RE);
+            candidate[0] = !foundPaid && last.repaid() > 0 && last.netIncome() > last.repaid();
+            atDividend[0] = atDividend[1] = -1;
             quietly(() -> g.simulateMonths(1));
             SectorBooks.SectorMonth now = g.getSectorBooks().get(RE);
-            double due = register.dividendDue(landlords, last.netIncome(), last.repaid());
+            // Net of what the shortfall desk rolled of it that month (0.7.12
+            // round 2, free cash flow to equity, as Game.payDividends() pays):
+            // the fixture's landlords first borrowed in these months in round 4.
+            double repaid = Math.max(0, last.repaid()) + Math.max(0, last.bondsRepaid());
+            double rolled = Math.min(repaid, g.getEconomyManager().getBusinessDebtManager().getShortfallLentThisMonth(RE));
+            double due = register.dividendDue(landlords, last.netIncome(), repaid - rolled);
             double paid = now.dividendsPaid();
             everPastIt |= paid > due + 1e-9;
-            if (!foundPaid && last.repaid() > 0 && last.netIncome() > last.repaid() && paid > 0) {
+            if (!foundPaid && last.repaid() > 0 && last.netIncome() > last.repaid() && paid > 0 && atDividend[1] > 0) {
                 foundPaid = true;
                 paidOn = last.netIncome() - last.repaid();
                 paidDue = Equity.PAYOUT * paidOn;
                 paidWas = paid;
+                tillAtDividend = atDividend[0];
+                dueAtDividend = atDividend[1];
             }
             if (!foundNothing && last.netIncome() > 0 && last.repaid() > last.netIncome()) {
                 foundNothing = true;
@@ -1013,14 +1096,17 @@ public class MortgageCheck {
                 everPastIt |= paid != 0;
             }
         }
+        g.settleProbeForTest = null;
         assertTrue("fixture: a month whose income beat the principal its mortgages took, and one it did not",
                 foundPaid && foundNothing);
+        assertTrue(String.format("fixture: the landlords' till covers the dividend due (%.4f against %.4f)",
+                tillAtDividend, dueAtDividend), dueAtDividend > 0 && tillAtDividend >= dueAtDividend);
         close("a landlord with a mortgage pays PAYOUT of its income less the principal it repaid", paidWas, paidDue, 1e-9);
         assertTrue(String.format("...and a month that earned %.2f against %.2f of principal pays nothing,"
                         + " where the old rule paid %.2f", nothingIncome, nothingPrincipal, Equity.PAYOUT * nothingIncome),
                 register.dividendDue(landlords, nothingIncome, nothingPrincipal) == 0
                         && register.dividendDue(landlords, nothingIncome) > 0);
-        assertTrue("no month paid the landlords past what their income left after the principal", !everPastIt);
+        assertTrue("no month paid the landlords past what their income left after the principal, net of what the desk rolled", !everPastIt);
         close("with nothing repaid the rule is the old one",
                 register.dividendDue(landlords, 100, 0), register.dividendDue(landlords, 100), 0);
     }

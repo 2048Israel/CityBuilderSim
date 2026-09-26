@@ -352,7 +352,8 @@ public class HistorySave {
        PER FOUNDING SHARE, not per share. A share splits a hundred for one
        when it gets dear, and a chart of the raw quote would fall a
        hundredfold in the month nothing happened to anybody's wealth. See
-       Exchange.midPerFoundingShare(). Money, so a reform scales it.
+       Exchange.pricePerFoundingShare() - the last trade since 0.7.12 round 2,
+       the dealer's quote before. Money, so a reform scales it.
        ------------------------------------------------------------------ */
     private Map<String, List<Double>> sharePrice = new LinkedHashMap<>();
     private Map<String, List<Double>> shareValue = new LinkedHashMap<>();
@@ -601,7 +602,7 @@ public class HistorySave {
             if (register.getShares(c) <= 0) continue;   // not listed: not counting
             String company = Equity.COMPANIES[c];
             sharePrice.computeIfAbsent(company, k -> new ArrayList<>())
-                    .add(round4(exchange.midPerFoundingShare(c)));
+                    .add(round4(exchange.pricePerFoundingShare(c)));
             shareValue.computeIfAbsent(company, k -> new ArrayList<>())
                     .add(round4(exchange.fairPerFoundingShare(c)));
         }

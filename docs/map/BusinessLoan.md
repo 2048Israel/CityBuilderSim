@@ -1,6 +1,6 @@
 # BusinessLoan.java - 72 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/BusinessLoan.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessLoan.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > A fixed-term business loan: interest-only each month, principal repaid in full
 > at maturity.
@@ -22,7 +22,7 @@
 
 **Uses:** [BusinessDebt](BusinessDebt.md) (1)
 
-**Used by (5):** [BankCheck](BankCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [CreditCheck](CreditCheck.md), [Game](Game.md), [MortgageCheck](MortgageCheck.md)
+**Used by (7):** [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [CreditCheck](CreditCheck.md), [Game](Game.md), [InterimLoan](InterimLoan.md), [MortgageCheck](MortgageCheck.md)
 
 ## Fields (state)
 

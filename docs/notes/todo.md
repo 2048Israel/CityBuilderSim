@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-24 (0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-09-26 (0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -8,14 +8,71 @@ has been away reads the changelog's top block and section 0 here, then works.
 
 ## 0. Do this week — costs nothing, saves weeks
 
-- **NEXT: NOTES AND BONDS** (Jerus, 2026-09-24, shipping 0.7.11 with the bank's
-  concentration open): *"we are going to start a new batch, basically there
-  will be two things, notes, and bonds, notes are the loans businesses make to
-  the banks, and bonds are debts that they issue to investors, and basically
-  idk if its the case, but bonds will have a slightly higher rate than notes,
-  and households can buy them, but banks also buy them as, only if it wants,
-  and yes they are tradeable so they have par value and all."* Research and
+- **NEXT: THE TREASURY FUND AND RESCUE-FOR-SHARES** (Jerus, 2026-09-25, in
+  the bonds batch's first round: "Yes, next batch"). The treasury as a buyer
+  of bonds and shares on the order book, and a failed bank rescued for its
+  shares rather than written off to the city. It bears on what fails the bank
+  now: the young bank on its founding capital, before month 1000, on
+  Manufacturing or Automotive (`the-firms-sell-bonds.md` §5). Research and
   plan first, then his answers, then the build.
+- ~~**NEXT: NOTES AND BONDS**~~ — shipped as 0.7.12 (tag 0926a), see
+  `the-firms-sell-bonds.md`.
+- **HEALTHCHECK SHIPS RED — ITS OWN BATCH AFTER THE TREASURY** (Jerus,
+  2026-09-25: "Ship with it red, flagged"). Read over its last 12 months (his
+  change, "Read a year's average"), the dear-care twin is 8.4 points hungrier
+  than the free one against a tolerance of 5, over since the bonds batch's
+  round 4. Of its hungry: 25% priced out of care; 21% billed care their
+  household row paid for (the documented shortcut in `HouseholdBalance`, THE
+  PRICE AT THE CLINIC DOOR); 46% had money for food after their fixed bills
+  and still planned less — untraced, and the first thing to trace.
+- **CHECK 0.7.12 BY EYE ON THE PC** (`the-firms-sell-bonds.md`). None of it
+  can run in the cloud; `build-ui.sh` compiling it is the only check it has
+  had.
+  - **Finances:** the landing's "The bond market" row; The bond market →
+    Every issue (the issue table, * for untraded, amber past 0.5 points; the
+    holders table, the totals and notes, "A defaulted bank loan gets back more
+    of what it is owed than a defaulted bond does"); a bond's book (the chips,
+    up to 12; the terms; the bid and ask grids, 12 levels; the empty cases).
+  - **Sector → Cash & debt:** the bond lines in "Where the cash went" (no "Not
+    accounted for"); "Its bank loans and its bonds"; "Other businesses' bonds
+    it holds"; "…its bondholders lost"; "Loans and bonds outstanding" and the
+    "owes lenders" cell; "…of it, interim financing" under "Loans running",
+    amber, "N loans, ranked first"; "Forgiven by its creditors" only for a
+    backstop (is "by its creditors" the honest label for money created?); the
+    month after a sector's first plant reads as ordinary borrowing.
+  - **Sector → Its owners:** "Last traded at" with its month, or "Not traded
+    yet: at fair value", amber/green past the tolerance; the fair value, the
+    yield on the dividend paid, "Traded this month"; the bid and ask grids (5
+    levels) or "nobody is bidding / selling"; the company's own buyback resting
+    at fair value plus 10% at the top of the bids — check it does not read as
+    the market's price; "Dividend this month" standing alone (no special
+    dividend); the share chart's legend "The last trade" and its note.
+  - **Bank:** Profit (bond interest, underwriting fees, gains, the year block
+    — it must foot); Lending (the weight table's two rows, "What its
+    concentration costs", the bonds it holds, "…of it, interim financing",
+    the working-capital line's sentence); the ladder's rung per issuer; the
+    trading desk (its orders on the book, the two cap lines "…of the bank's
+    equity: X% of a 50% cap" and "…its largest holding, *company*: Y% of a 25%
+    cap", amber past a cap, ending ", $X over it on offer at fair value" —
+    check the wrap beside a long company name); the status line and lending
+    stance, both longer.
+  - **People → a household:** "The businesses' bonds", coupons, sold; "Shares,
+    at the last trade"; net worth and cover including them.
+  - **Trade:** the world and the businesses' bonds; "The city's shares in
+    foreign hands", at the price.
+  - **The investor's words:** "Holding: it owes 1.62 times what it owns, over
+    its last quarter, past the default point…"; a distress sale of plant that
+    makes a second good ("Sold 1 Shared Services Centre - 31 months of losses…").
+  - **Luxury Retail:** "What a piece cost the shop" reads the import price
+    every month, its margin and ticket smooth; no two-month ripple in GDP.
+  - **Nothing on screen says a sector could not pay for its stock** — decide
+    whether a "did not order" line is wanted; a banned kitchen can sit at
+    nothing on hand through its ban.
+  - **A shell** (Mining late in a city with no ore sites): the log prints
+    "…could not pay its bills… the bank lent the $0k still unpaid as interim
+    financing" every month for hundreds of months; its screen shows no plant,
+    dust in interim financing, and the ban restarting. Check what the player
+    sees.
 - **CHECK 0.7.11 BY EYE ON THE PC** (`the-landlords-take-a-mortgage.md`). None of it can run in the
   cloud.
   - **Bank tab, landing:** "Capital & owners" reads "X% leverage" while the
@@ -685,6 +742,35 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
   - §20's harness table (no `MortgageCheck`; `ExchangeCheck`'s cushion);
   - §21's "A concentration limit on the bank" stays open and is again the
     measured cause of the remaining failures. No open question is closed.
+- **And 0.7.12 as of 2026-09-26 (deployed 2026-09-26, tag 0926a): corporate
+  bonds, and shares with them, on one order book; the dealer is gone; the
+  cash-flow test, credit lines that stay open, interim financing, and "buy
+  only what it can pay for"; 223 files, ~168,000 lines, 953 dials; save format
+  27 unchanged; 63 harnesses, HealthCheck red.** What the manual now says that
+  is not so:
+  - the build line and the header's figures (63 harnesses);
+  - §9's exchange: the bank as the dealer quoting round fair value, the
+    desk's quote, special dividends, buybacks as tenders - all gone; the book,
+    the last trade, the desk as a participant with its caps, and a buyback as
+    a bid whose unspent cash stays;
+  - §9's "Forty percent… less the principal repaid" (net repayment now);
+  - §12's Business credit (no bonds, one loss given default of 60%, the
+    shortfall desk's interest reserve lent past the default point, an
+    overdraft that carries): the bond beside the loan, recoveries by
+    instrument, the quarter's default point on every door, the cash-flow
+    test, working-capital lines outside rationing, interim financing, the
+    backstop;
+  - §8's distress rule (any plant that makes something the sector sells) and
+    its purchases (stock and fleets held to cash and credit);
+  - §6/§10's households (each cell holds its own bonds and shares and trades
+    with the others);
+  - §19's list of what went in without a bump (the bond market's key, the
+    cells' bond and share slots by name, the exchange's and desk's appended
+    counters, interim loans typed "INTERIM");
+  - §20's harness table (`BondCheck`, `OrderBookCheck`; CreditCheck §12–15,
+    ExchangeCheck §2b–2c and 7, HealthCheck's year);
+  - §21's "A concentration limit on the bank" is answered by pricing, not a
+    limit; the remaining failures are the young bank's.
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -1404,13 +1490,53 @@ Ranked by how likely they are to read as "this game is broken".
   `Game.consider()` still files `canFundProject()`'s leverage refusal as a
   land shortage (`landBlockedSectors`) — only the capital refusal is split out
   (see the NEVER CLEARS item).
+- **FOUND BY 0.7.12, NOT ITS TO FIX** (`the-firms-sell-bonds.md` §7; the
+  implementer's record, round 8). Jerus, 2026-09-25: the shells and the
+  untraced moves ship and go here.
+  - **The young bank:** the founding bank ($32M of capital) fails before
+    month 1000 when Manufacturing or Automotive collapses; autopilot 4 → 9 in
+    the last round, not traced to its change. A plant retired at material
+    price can take a sector past the line within months (autopilot seed 7: a
+    $44M backstop against a $21M bank).
+  - **Shells:** a sector with no plant keeps a dust debt and a pantry it can
+    neither use nor sell for up to 3,200 months, defaulting on the interest
+    every month — 78–96% of all cash-flow defaults, little money, and a log
+    line every month. Nothing winds it up. A real company in that state is
+    liquidated.
+  - **Held at 10% the cities ended half round 7's size** (4,074 people
+    against 8,077) in round 8. Untraced.
+  - **Landlords waiting 250 months on the 15% down payment with an empty
+    till:** households with no home on default seed 5 for 161 months.
+  - **The desk over its book cap** at 65% of month-ends: the excess at fair
+    value rarely sells.
+  - **The purchase limit binds more** (5,933 sector-months, $8.8B of fleets
+    not ordered, mostly Manufacturing's vans), and **Manufacturing's ceiling
+    defaults are nearly all the unpaid money** ($5.9B of $6.7B). Untraced.
+  - **Output needs its inputs:** a maker's output does not read the inputs it
+    bought, so limiting them would make goods from nothing ($393B skipped with
+    the same output). A production recipe, a sixth throttle beside the
+    operating rate's five. Jerus: "Buy inputs whole, todo".
+  - **Industry held at 25%:** payroll over revenue on interim loans for up to
+    74 months, three times the distress rule's 24.
+  - **Companies' cash goes abroad** ($6.7T abroad against $1.7T in tills
+    after eight default runs), by `OutwardInvestment`'s rule; Jerus expected
+    the bank or bonds.
+  - **The 1.25 single-industry correlation multiplier** is kept and flagged
+    ("Keep 1.25 flagged").
+  - **The share rebalancing barely fires** ($0.47M offered over eight runs):
+    a cell short of money has usually sold in the waterfall already.
+  - **A banned firm with an empty till cannot restock** — the ban shuts the
+    working-capital line.
+  - *(small)* the bank's allowance lags a month on bonds it trades at the
+    market's step; the bond plan's "largest bond no dearer than the loan"
+    saves the issuer nothing at the margin; round 7's two negative-GDP months
+    did not recur.
 - **FOUND BY 0.7.11, NOT ITS TO FIX** (`the-landlords-take-a-mortgage.md` §5 and its docs pass):
-  - concentration - the next batch, corporate notes and bonds;
-  - the dividend deducts gross principal, bullets the desk rolls included;
-    free cash flow to equity deducts net repayment - with the bonds batch;
-  - share prices, and the yield the households buy on
-    (`Exchange.yieldAt()` through `Equity.dividendPerShareAnnual()`), still
-    read `PAYOUT` × income, not the dividend after principal;
+  - ~~concentration~~ - priced since 0.7.12 (the IRB charge); what is left
+    of it is the young bank, under FOUND BY 0.7.12;
+  - ~~the dividend deducts gross principal~~ - net repayment since 0.7.12;
+  - ~~share prices read `PAYOUT` × income~~ - they read the dividend paid
+    since 0.7.12;
   - a landlord whose profit is under its mortgages' principal borrows the
     difference from the desk (seed 2: $1.46B); the lender's test is per
     building, not per landlord - and the 10% city's insurance losses came

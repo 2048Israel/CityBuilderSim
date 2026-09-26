@@ -407,12 +407,32 @@ public class EconomyManager {
     public void updateBusinessCredit(double primeRate, double insuredMortgageRate) {
         businessDebtManager.setInsuredMortgageRate(insuredMortgageRate);
         businessDebtManager.setPrimeRate(primeRate);
+        /*
+         * THE LENDER READS THE SHEETS VALUED THIS MONTH (0.7.12 round 8; Jerus,
+         * "Fix it in round 8"). They were valued at the END of this call, after
+         * the refresh, so all month the lender read them as the last
+         * insolvency check had left them: last month's land price and
+         * materials, and none of the plant handed over since - the building a
+         * sector bought after that check, a site the player laid between
+         * months. Round 4 valued them first only in a city's first month
+         * (Real Estate, Retail and Industry had defaulted in the first month
+         * of HealthCheck's city for want of a sheet). Round 7 found the same
+         * thing every month: a sector whose first plant arrived between months
+         * read as owning nothing at its first settle and defaulted on its
+         * first bill - RailCheck's railway $930, RestaurantsCheck's kitchens
+         * $8.70 - and a sector that had just borrowed for a building was read
+         * at the ceiling with the loan and without the building. So the
+         * sheets are valued first, every month, the way the insolvency check
+         * values them (settleInsolvency()), and the lender, its prices, its
+         * ceiling and its default point read them. The push that closed this
+         * call went with it: nothing below moves what it values.
+         */
+        pushBalanceSheetInputs();
         refreshCreditAssets();
         businessDebtManager.updateRates();
         for (Sector s : sectors.all()) {
             s.setInterestExpense(businessDebtManager.getMonthlyInterest(s.key()));
         }
-        pushBalanceSheetInputs();
     }
 
     /**
@@ -423,7 +443,8 @@ public class EconomyManager {
     public void refreshCreditAssets() {
         for (Sector s : sectors.all()) {
             businessDebtManager.setAssets(s.key(),
-                    s.getBalanceSheet().getTotalAssets() + getForeignAssets(s.key()));
+                    s.getBalanceSheet().getTotalAssets() + getForeignAssets(s.key())
+                            + getBondAssets(s.key()));
             businessDebtManager.setCash(s.key(), s.getCash());
         }
     }
@@ -645,13 +666,38 @@ public class EconomyManager {
 
     /** The exempt part of a sector's local sales: what it sold of goods the tax never touches. */
     private double exemptSales(Sector s) {
+        return exemptOf(s, s.statement().localSales);
+    }
+
+    /** ...of these local sales: all of them for a sector making only exempt goods, none otherwise. */
+    private static double exemptOf(Sector s, double localSales) {
         boolean anyExempt = false;
         for (Good g : s.goodsMade()) if (g.taxExempt()) anyExempt = true;
         if (!anyExempt) return 0;
         // A sector making only exempt goods sold nothing taxable; one making
         // both would need the split by good, which no sector does today.
         for (Good g : s.goodsMade()) if (!g.taxExempt()) return 0;
-        return s.statement().localSales;
+        return localSales;
+    }
+
+    /**
+     * The sales tax a sector's month owes SO FAR, off its ledger as it stands
+     * (0.7.12 round 6): settleSalesTax()'s arithmetic for one sector - its
+     * taxable sales at its own rate, less the credit on what it bought at
+     * each supplier's; an import's tax is charged and credited, and nets to
+     * nothing. Read by what it can pay for as the markets clear
+     * (purchaseBudget()), where every purchase still to come can only add a
+     * credit.
+     */
+    private double salesTaxSoFar(Sector s, Sector.Ledger p) {
+        double taxable = p.localSales - exemptOf(s, p.localSales) + p.otherRevenue;
+        double due = Math.max(0, taxable) * taxPolicy.effectiveSalesRate(s);
+        for (Map.Entry<String, Double> e : p.purchasesBySupplier.entrySet()) {
+            Sector supplier = sectors.byKey(e.getKey());
+            double rate = supplier == null ? 0 : taxPolicy.effectiveSalesRate(supplier);
+            if (e.getValue() > 0) due -= e.getValue() * rate;
+        }
+        return due;
     }
 
     /** Whoever the city owes this month, or null. See SalesTaxLedger. */
@@ -670,8 +716,11 @@ public class EconomyManager {
     /**
      * End of the month: work out who is beyond saving and write their debt
      * down to what their assets support - since 0.7.8 each sector's slice of
-     * defaulted firms, and the whole-sector restructure only for a sector
-     * with nothing left (BusinessDebtManager.restructureInsolventSectors()).
+     * defaulted firms, since 0.7.12 round 4 the part that could not pay its
+     * month where that is more, and the whole-sector restructure for a
+     * sector with nothing left or, since round 5, one nobody would make an
+     * interim loan to (BusinessDebtManager.restructureInsolventSectors()).
+     * THE INTERIM LOAN'S CASH is handed to the till here (round 5), and
      * THE OVERDRAFT A RESTRUCTURE FORGAVE is put back into the sector's
      * balance here - it arrives from the creditors who ate it, and
      * MoneyAudit declares it as such.
@@ -687,6 +736,20 @@ public class EconomyManager {
         overdraftForgivenThisMonth = 0;
         overdraftForgivenThisMonthBySector.clear();
         for (Sector s : sectors.all()) {
+            /*
+             * INTERIM FINANCING (0.7.12, round 5): what the month's bills left
+             * unpaid after its default, lent to the sector ranked first - the
+             * loan written with the month's lending, which the bank pays out
+             * at the settle, its fee kept back; the till is handed the rest,
+             * which is the overdraft it closes. Nothing forgiven.
+             */
+            double interim = businessDebtManager.takeInterimHanded(s.key());
+            if (interim > 0) {
+                s.addCash(interim);
+                GameLog.note(String.format(
+                        "%s could not pay its bills: its creditors took a loss, and the bank lent the $%,.0fk still unpaid as interim financing, ranked ahead of its other debt.",
+                        s.key(), interim));
+            }
             double forgiven = businessDebtManager.takeOverdraftForgiven(s.key());
             overdraftForgivenThisMonthBySector.put(s.key(), forgiven);
             if (forgiven > 0) {
@@ -705,18 +768,67 @@ public class EconomyManager {
     public double getOverdraftForgivenThisMonth(String key) { return overdraftForgivenThisMonthBySector.getOrDefault(key, 0.0); }
     public double getOverdraftForgivenTotal(String key)     { return overdraftForgivenBySector.getOrDefault(key, 0.0); }
 
-    /** Repay what matured - and since 0.7.11 the principal a mortgage's payment took - then borrow if that left the sector short. A maturing loan is usually rolled; a mortgage renews. */
+    /**
+     * Repay what matured - and since 0.7.11 the principal a mortgage's
+     * payment took - then borrow if that left the sector short. A maturing
+     * loan is usually rolled; a mortgage renews.
+     *
+     * A SHORT SECTOR SELLS WHAT IT HOLDS FIRST (0.7.12 round 4, CAN'T PAY
+     * MEANS DEFAULT - see BusinessDebtManager): by the households' waterfall
+     * (Household.settle()), its dollars abroad, then the other sectors' bonds
+     * at the price that yields its own borrowing rate
+     * (BondMarket.sellForCompany()) - a company holds no shares but its own,
+     * which it retires. Then the lender. What is still short is the month's
+     * defaults' (settleInsolvency()), and what the month asked it to pay is
+     * struck here for them.
+     */
     public void settleBusinessCredit(int month) {
         businessDebtManager.processMonth();
+        // ...and since 0.7.12 every bond that falls due is paid from its
+        // issuer's till to its holders first, so what the till could not pay
+        // is the shortfall desk's below - a loan, or a new bond.
+        if (bondMarket != null) bondMarket.redeemMaturing(month);
         for (Sector s : sectors.all()) {
-            double cash = s.getCash() - businessDebtManager.takeMaturedPrincipal(s.key());
+            double matured = businessDebtManager.takeMaturedPrincipal(s.key());
+            businessDebtManager.setMonthObligations(s.key(), monthObligations(s, matured));
+            double cash = s.getCash() - matured;
+            if (cash < 0) {
+                double need = -cash;
+                if (outward != null) need -= outward.recall(s.key(), need, this);
+                if (need > 0 && bondMarket != null) {
+                    bondMarket.sellForCompany(s.key(), need, businessDebtManager.getRate(s.key()));
+                }
+                cash = s.getCash() - matured;
+            }
             double loss = Math.max(-s.getNetIncome(), 0);
             double lent = businessDebtManager.coverShortfall(s.key(), cash, loss, month);
-            // ...less the loan's fee, which the bank keeps back (0.7.7).
-            cash += lent - BusinessDebtManager.feeOn(lent);
+            // ...less the loan's fee, which the bank keeps back (0.7.7);
+            // and a bond's proceeds, net of its costs, where the desk found
+            // one cheaper or the bank would not lend (0.7.12). A company
+            // that bought the issue paid from its own till, which the market
+            // debited: an earlier sector's after its turn, a later one's
+            // before it is read.
+            cash += lent - BusinessDebtManager.feeOn(lent) + businessDebtManager.takeBondProceeds(s.key());
             s.setCash(cash);
         }
         pushBalanceSheetInputs();
+    }
+
+    /**
+     * What the month asked a sector to pay (round 4): the costs on this
+     * month's statement - the goods it paid for this month, its payroll,
+     * utilities and repairs - its interest and its taxes, and the principal
+     * that fell due, its loans' and mortgages' and its bonds'. The cash-flow
+     * test's denominator (BusinessDebtManager.cannotPayShare()).
+     */
+    double monthObligations(Sector s, double matured) {
+        Sector.Statement st = s.statement();
+        double costs = Math.max(0, st.inputs - st.paidEarlier) + Math.max(0, st.payroll)
+                + Math.max(0, st.electricity) + Math.max(0, st.water) + Math.max(0, st.maintenance)
+                + Math.max(0, st.interest) + Math.max(0, st.propertyTax) + Math.max(0, st.salesTax)
+                + Math.max(0, st.profitTax);
+        double bonds = bondMarket == null ? 0 : bondMarket.getRepaid(s.key());
+        return costs + Math.max(0, matured) + Math.max(0, bonds);
     }
 
     /* ===================================================================
@@ -744,9 +856,76 @@ public class EconomyManager {
     public void setOutwardInvestment(OutwardInvestment outward) { this.outward = outward; }
     public OutwardInvestment getOutwardInvestment() { return outward; }
 
+    /**
+     * WHAT A SECTOR CAN PAY FOR AS THE MARKETS CLEAR (0.7.12 round 6) - see
+     * Sector, BUY ONLY WHAT IT CAN PAY FOR.
+     *
+     * THE TILL THE NEXT STRIKE WILL FIND, before anything bought now: its
+     * cash, plus what the month has booked in and less what it has booked
+     * out so far, since the ledger banks both at the strike.
+     *
+     * LESS WHAT IT CANNOT AVOID, which the strike and the settle take before
+     * any purchase's bill is read: this month's payroll, power and water, at
+     * what the strike will charge; the repairs, the property tax and the
+     * services it is billed for, at the month last struck, since each is
+     * charged again at the top of the next; its interest, at today's rates;
+     * its sales tax on the month so far (salesTaxSoFar()) and its profit tax
+     * on the month so far with all of that taken off - both the most they can
+     * come to, since a purchase still to come adds a credit and a cost; the
+     * principal that falls due at the settle, its loans' and its bonds'; and
+     * the dividend its owners are paid out of the till after the markets
+     * clear (Game.payDividends()), which the month pays before the
+     * purchase's bill arrives.
+     *
+     * PLUS WHAT THE SETTLE COULD RAISE, in its own order: its dollars
+     * abroad, the other sectors' bonds it holds (at face, as its lender reads
+     * them), and the working-capital line
+     * (BusinessDebtManager.workingCapitalLine()).
+     *
+     * AN ESTIMATE, AND NOTHING NEW IN IT: every figure is one a statement, a
+     * lender or a market already computes. Infinite - nobody is limited -
+     * when the books do not come to a finite figure.
+     *
+     * @param dividend what its owners are due this month (Game.dividendDueFor())
+     * @param month    the month the markets are clearing in
+     */
+    public double purchaseBudget(Sector s, double dividend, int month) {
+        String k = s.key();
+        Sector.Statement st = s.statement();
+        Sector.Ledger p = s.pending();
+        double services = 0;
+        for (double v : st.otherInputs.values()) services += v;
+        services = Math.max(0, services - st.paidEarlier);
+        double costs = Math.max(0, p.purchases()) + Math.max(0, s.getPayroll())
+                + Math.max(0, s.getElectricityCost()) + Math.max(0, s.getWaterCost())
+                + Math.max(0, st.maintenance) + services
+                + Math.max(0, businessDebtManager.getMonthlyInterest(k)) + Math.max(0, st.propertyTax);
+        double salesTax = Math.max(0, salesTaxSoFar(s, p));
+        double preTax = p.revenue() - costs - salesTax;
+        double profitTax = Math.max(0, preTax * taxPolicy.effectiveProfitRate(s));
+        double till = s.getCash() + preTax - profitTax;
+        double due = businessDebtManager.principalDueNextMonth(k)
+                + (bondMarket == null ? 0 : bondMarket.maturingFace(k, month + 1));
+        double atSettle = till - due - Math.max(0, dividend);
+        double raised = Math.max(0, getForeignAssets(k)) + Math.max(0, getBondAssets(k))
+                + businessDebtManager.workingCapitalLine(k, atSettle, due);
+        double budget = atSettle + raised;
+        return Double.isFinite(budget) ? Math.max(0, budget) : Double.POSITIVE_INFINITY;
+    }
+
     /** What one sector holds abroad, in the city's money at the rate it was last valued at. */
     public double getForeignAssets(String sector) {
         return outward == null ? 0 : outward.localValue(sector);
+    }
+
+    /* The bond market (0.7.12), wired by Game: its maturities are paid at the credit settle, and the other sectors' bonds a company holds are among its assets. */
+    private BondMarket bondMarket;
+    public void setBondMarket(BondMarket market) { this.bondMarket = market; }
+    public BondMarket getBondMarket() { return bondMarket; }
+
+    /** What one sector holds of the other sectors' bonds, at face - an asset beside its cash and what it holds abroad (0.7.12). */
+    public double getBondAssets(String sector) {
+        return bondMarket == null ? 0 : bondMarket.faceHeldBy(sector);
     }
 
     private Equity equity;
@@ -1127,7 +1306,12 @@ public class EconomyManager {
         for (Sector s : sectors.all()) {
             luxuryUnits += s.getStock(Good.LUXURIES) + s.getPantry(Good.LUXURIES);
         }
-        double luxuryPrice = Math.max(0, markets.get(Good.LUXURIES).getLocalPrice());
+        // At what a piece costs to bring in, not at the local price: a month
+        // nobody bid struck "the middle" of a band with no maker in it, and
+        // valued the shelf at half of anything anybody paid. See
+        // LuxuryRetail.landedCost().
+        double luxuryPrice = ham.citybuildersim.sectors.LuxuryRetail.landedCost(
+                markets.get(Good.LUXURIES));
 
         double exports = 0, rawImports = 0;
         for (Sector s : sectors.all()) {

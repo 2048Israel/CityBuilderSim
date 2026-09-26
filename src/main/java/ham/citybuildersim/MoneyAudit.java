@@ -500,6 +500,26 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ households BoughtCityPaper", g.getHouseholdsBoughtPaper(), Scope.DOMESTIC);
         /*
+         * THE BUSINESSES' BONDS (0.7.12). An issuer, the bank and a company
+         * that holds a bond are all pools; the households and the world are
+         * not. So a bond changing hands between two pools, a coupon or the
+         * principal paid to the bank or a company, an issue's costs to the
+         * bank as underwriter, and the bank's own purchases cancel, and have
+         * no line. What crosses the edge is declared: the households' money
+         * into the pools for bonds - at issue, and from the bank and the
+         * companies on the book - and the world's, a financial inflow the
+         * currency sees. The two trades that pass between the households and
+         * the world are both outside the pools and are declared as pairs, as
+         * their dollars abroad are; so is what a default takes off the
+         * world's bonds, a valuation with no cash in it. See BondMarket.
+         */
+        BondMarket bm = g.getBondMarket();
+        in += credit.apply("+ bonds BoughtByHouseholds", bm.getHouseholdsBought(), Scope.DOMESTIC);
+        in += credit.apply("+ bonds BoughtAbroad", bm.getWorldBought(), Scope.FINANCIAL);
+        in += credit.apply("+ bonds HouseholdsSoldAbroad", bm.getHouseholdsSoldAbroad(), Scope.FINANCIAL);
+        in += credit.apply("+ bonds HouseholdsBoughtAbroad (from their savings)", bm.getHouseholdsBoughtAbroad(), Scope.DOMESTIC);
+        in += credit.apply("+ bonds WrittenOffAbroad", bm.getWorldWrittenOff(), Scope.VALUATION);
+        /*
          * The shareholders' capital when a branch opens - money from outside the
          * city, and the only reason a bank can begin lending at all. A bailout
          * paid by the treasury is NOT here: that is the city's own money moving
@@ -725,6 +745,23 @@ public final class MoneyAudit {
         out += debit.apply("- city CouponsToHouseholds", g.getCouponsToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- city PrincipalToHouseholds", g.getPrincipalToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- city BuybackToHouseholds", g.getBuybackToHouseholds(), Scope.DOMESTIC);
+        /*
+         * ...AND OUT FOR THE BONDS (0.7.12): the pools paying the households
+         * for bonds they sold the bank and the companies, and their coupons
+         * and principal; paying the world for bonds it sold them, a financial
+         * outflow, its coupons - income paid abroad, which the currency
+         * feels - and its principal. The pairs' other legs, and the world's
+         * write-off's. See the credits.
+         */
+        out += debit.apply("- bonds SoldByHouseholds", bm.getHouseholdsSold(), Scope.DOMESTIC);
+        out += debit.apply("- bonds CouponsToHouseholds", bm.getCouponsToHouseholds(), Scope.DOMESTIC);
+        out += debit.apply("- bonds PrincipalToHouseholds", bm.getPrincipalToHouseholds(), Scope.DOMESTIC);
+        out += debit.apply("- bonds SoldAbroad", bm.getWorldSold(), Scope.FINANCIAL);
+        out += debit.apply("- bonds CouponsAbroad", bm.getCouponsAbroad(), Scope.INCOME);
+        out += debit.apply("- bonds PrincipalAbroad", bm.getPrincipalAbroad(), Scope.FINANCIAL);
+        out += debit.apply("- bonds HouseholdsSoldAbroad (into their savings)", bm.getHouseholdsSoldAbroad(), Scope.DOMESTIC);
+        out += debit.apply("- bonds HouseholdsBoughtAbroad", bm.getHouseholdsBoughtAbroad(), Scope.FINANCIAL);
+        out += debit.apply("- bonds WrittenOffAbroad (no cash)", bm.getWorldWrittenOff(), Scope.DOMESTIC);
         /*
          * WHAT THE BANK PAYS FOR MONEY IT DID NOT HAVE, since 2026-09-07.
          *

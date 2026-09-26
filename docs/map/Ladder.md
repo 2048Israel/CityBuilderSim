@@ -1,6 +1,6 @@
 # Ladder.java - 225 lines · 16 methods · 3 constants · interface
 
-`ham/citybuildersim/ui/Ladder.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Ladder.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > One dial, drawn the one way: a "−" worth one step, a slider that snaps to
 > the step, a "+" worth one step, the reading, and a line under them saying

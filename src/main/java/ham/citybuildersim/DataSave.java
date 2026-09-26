@@ -228,8 +228,9 @@ public class DataSave {
      * screen read the month after - and the city's insurance book: the
      * premiums it has taken over its life, and what it has paid the bank on
      * insured mortgages written down, by sector. The mortgages themselves are
-     * in businessDebts, typed "MORTGAGE". Null and zero on an older save,
-     * which insured nothing.
+     * in businessDebts, typed "MORTGAGE" (and a sector's interim financing
+     * after a default, since 0.7.12 round 5, typed "INTERIM-LOAN"). Null and
+     * zero on an older save, which insured nothing.
      */
     private java.util.Map<String, Double> mortgageRepaid;
     private java.util.Map<String, Double> insuranceClaims;
@@ -894,10 +895,15 @@ public class DataSave {
     public String[] getEquityKeys() { return equityKeys; }
     public double[] getEquity()     { return equity; }
 
-    /** The exchange's quotes, company by company, named. See Exchange. Absent before 2026-09-10 (night). */
+    /** The exchange's quotes, company by company, named. See Exchange. Absent before 2026-09-10 (night); since 0.7.12 round 2 only read, from a save written before the book. */
     private double[] exchange;
     public void setExchange(double[] state) { this.exchange = state; }
     public double[] getExchange()           { return exchange; }
+
+    /** The exchange on its order books (0.7.12 round 2): every company's book with its resting orders, fair value, the split factors and the record. See Exchange.State. Absent from an older save, which reads the dealer's array above. */
+    private Exchange.State exchangeState;
+    public void setExchangeState(Exchange.State state) { this.exchangeState = state; }
+    public Exchange.State getExchangeState()           { return exchangeState; }
 
     /**
      * How often the bank has failed, what its creditors ate, whether it is
@@ -1168,6 +1174,34 @@ public class DataSave {
 
     public void setHouseholdPaperRatio(double ratio) { this.householdPaperRatio = ratio; }
     public double getHouseholdPaperRatio()           { return householdPaperRatio; }
+
+    /*
+     * THE BUSINESSES' BONDS (0.7.12): every bond and who holds it, every
+     * order book's resting orders, the market's month and its record over
+     * the city's life (BondMarket.State); what defaults have taken off the
+     * bonds, by sector, over the city's life; and what a dollar of the
+     * households' bonds is worth, which their plan reads. Null and zero on an
+     * older save, whose businesses owed only the bank.
+     *
+     * AND EACH CELL'S OWN BONDS (round 2), by the cell's name and the bond's
+     * id, per household - the by-name rule the other cell arrays keep
+     * (HouseholdBalance.bondsByCellToSave()). Null on a round-1 save, whose
+     * cells held a claim on one pool (their total rides in the cell arrays):
+     * the load hands them the pool by those claims.
+     */
+    private BondMarket.State bondMarket;
+    private java.util.Map<String, Double> bondWrittenOff;
+    private double householdBondRatio;
+    private java.util.Map<String, java.util.Map<String, Double>> householdBondsByCell;
+
+    public void setBondMarket(BondMarket.State state) { this.bondMarket = state; }
+    public BondMarket.State getBondMarket()           { return bondMarket; }
+    public void setBondWrittenOff(java.util.Map<String, Double> totals) { this.bondWrittenOff = totals; }
+    public java.util.Map<String, Double> getBondWrittenOff()           { return bondWrittenOff; }
+    public void setHouseholdBondRatio(double ratio) { this.householdBondRatio = ratio; }
+    public double getHouseholdBondRatio()           { return householdBondRatio; }
+    public void setHouseholdBondsByCell(java.util.Map<String, java.util.Map<String, Double>> byCell) { this.householdBondsByCell = byCell; }
+    public java.util.Map<String, java.util.Map<String, Double>> getHouseholdBondsByCell()           { return householdBondsByCell; }
 
     /**
      * What a buyback between two presses paid the households and a dollar

@@ -1,6 +1,6 @@
 # OutwardInvestment.java - 384 lines · 24 methods · 5 constants · model
 
-`ham/citybuildersim/OutwardInvestment.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OutwardInvestment.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > Outward investment: what the city's businesses do with money the bank will
 > not pay for.
@@ -47,7 +47,7 @@
 
 **Uses:** [Sectors](Sectors.md) (6), [ForeignAccounts](ForeignAccounts.md) (3), [EconomyManager](EconomyManager.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1)
 
-**Used by (8):** [CapitalFlowCheck](CapitalFlowCheck.md), [EconomyManager](EconomyManager.md), [ExchangeCheck](ExchangeCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [TradeScreen](TradeScreen.md)
+**Used by (11):** [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [CapitalFlowCheck](CapitalFlowCheck.md), [EconomyManager](EconomyManager.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

@@ -41,7 +41,8 @@ public class CreditCheck {
          * debt-free business pays prime.
          *
          * THE SPREAD IS THE CURVE'S SINCE 0.7.8 (Jerus: "Price risk from the
-         * curve"): the borrower's own expected loss, LOSS_GIVEN_DEFAULT x
+         * curve"): the borrower's own expected loss, a loan's loss given
+         * default (LOAN_LOSS_GIVEN_DEFAULT since 0.7.12 round 2) x
          * PD(L), over the BASE_LOSS_RATE prime already carries, at the
          * leverage the loan leaves it at - no longer a line in leverage
          * capped at MAX_SPREAD - MIN_SPREAD. This section asserted the line
@@ -52,7 +53,7 @@ public class CreditCheck {
          */
         System.out.println("--- pricing: prime + the borrower's own expected loss, off the curve ---");
 
-        double lgd = BusinessDebtManager.LOSS_GIVEN_DEFAULT, base = Bank.BASE_LOSS_RATE;
+        double lgd = BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT, base = Bank.BASE_LOSS_RATE;
         BusinessDebtManager m = new BusinessDebtManager();
         m.setPrimeRate(.01);
         m.setAssets(IND, 100000);
@@ -1012,8 +1013,8 @@ public class CreditCheck {
         int standing = banned.getBuildingManager().getQuantity(shop.getId());
         if (standing > 1) banned.getBuildingManager().retire(shop, standing - 1);
 
-        int loansBefore = ledger.getLoanCount(sector);
-        double principalBefore = ledger.getPrincipal(sector);
+        int loansBefore = ledger.getLoanCount(sector), interimCountBefore = ledger.getInterimCount(sector);
+        double principalBefore = ledger.getPrincipal(sector), interimBefore = ledger.getInterimPrincipal(sector);
         int shopsBefore = banned.getBuildingManager().getTotalStoreCoverage();
         int company = Equity.indexOf(sector);
         double raisedBefore = banned.getEquity().getLifetimeRaisedHome(company)
@@ -1040,9 +1041,16 @@ public class CreditCheck {
         System.out.printf("   ...having raised $%,.0fk from its owners over the three passes%n", raised);
         // Fewer loans is fine - the written-down ones mature and settle. More
         // is the bug.
+        // ...TO EXPAND: since 0.7.12 round 5 a banned sector whose month
+        // leaves it short defaults and is lent the unpaid rest as interim
+        // financing, which the ban does not bind (BusinessDebtManager,
+        // INTERIM FINANCING) - a loan that pays bills it already owed, never
+        // one that builds. What the ban forbids is the rest.
+        System.out.printf("   ...and was lent $%,.1fk in the interim over the three passes%n",
+                ledger.getInterimPrincipal(sector) - interimBefore);
         assertTrue("a banned sector takes no new loan to expand",
-                ledger.getLoanCount(sector) <= loansBefore
-                        && ledger.getPrincipal(sector) <= principalBefore + 1e-6);
+                ledger.getLoanCount(sector) - ledger.getInterimCount(sector) <= loansBefore - interimCountBefore
+                        && ledger.getPrincipal(sector) - ledger.getInterimPrincipal(sector) <= principalBefore - interimBefore + 1e-6);
         assertTrue("...and either its owners paid for the shops, or the refusal says why in the ban's own words",
                 raised > 0 || refusedForCredit);
         // Retiring idle shops is allowed (that is what a broke sector does);
@@ -1051,9 +1059,737 @@ public class CreditCheck {
                 raised > 0 || banned.getBuildingManager().getTotalStoreCoverage() <= shopsBefore);
 
         theCurve(city);
+        nothingPastTheDefaultPoint();
+        cantPayMeansDefault();
+        creditLinesStayOpen();
+        firstReading();
+        shortfallBondGrossedUp();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ============ 13. CAN'T PAY MEANS DEFAULT (0.7.12, round 4) ============
+
+       Jerus: "Can't pay means default." The cash-flow test of the Bankruptcy
+       and Insolvency Act, s. 2 (a) and (b), beside the balance-sheet test the
+       model had: a till short with no lender behind it defaults that month.
+       The fixtures cause it - a sector the default point refuses, whose till
+       the month leaves short - and one the desk lends to, which does not. The
+       share that defaults is the part that cannot pay, the shortfall over
+       what the month asked the sector to pay, or the curve's own share at its
+       leverage where that is larger - one slice, never both - each
+       instrument at its own recovery; the overdraft is closed as the backstop
+       closes one, and no ban or record goes with a slice. The same in play,
+       with a sector that sells its bonds first and the audit closing, is
+       BondCheck's section 5c.
+       ============================================================ */
+    static BusinessDebtManager.BondBook bondsOf(String s, double[] face) {
+        return new BusinessDebtManager.BondBook() {
+            @Override public double principal(String sector) { return sector.equals(s) ? face[0] : 0; }
+            @Override public double monthlyCoupon(String sector) { return 0; }
+            @Override public double writeDown(String sector, double scale) {
+                if (!sector.equals(s)) return 0;
+                double gone = face[0] * (1 - scale);
+                face[0] *= scale;
+                return gone;
+            }
+        };
+    }
+
+    static void cantPayMeansDefault() {
+        System.out.println("\n--- 13. can't pay means default, and what is still unpaid is lent as interim financing, ranked first ---");
+        double T = BusinessDebtManager.INSOLVENCY_TRIGGER;
+        double loanLoss = BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT, bondLoss = BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT;
+        double gross = 1 / (1 - Bank.LOAN_FEE);
+
+        // $1,200 of loans and $400 of bonds on $1,000 of assets, its quarter
+        // there too: 1.6 times what it owns, past the line. The month asked it
+        // for $400 and left its till $100 short.
+        BusinessDebtManager m = new BusinessDebtManager();
+        m.setPrimeRate(.05);
+        double[] bonds = { 400 };
+        m.setBondMarket(bondsOf(IND, bonds), null);
+        m.issueLoan(IND, 1_200, 1);
+        m.setAssets(IND, 1_000);
+        m.setCash(IND, 0);
+        for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) m.recordStatement(IND, 1_600, 1_000);
+        m.updateRates();
+        m.processMonth();
+        double lent = m.coverShortfall(IND, -100, 0, 2);
+        m.setCash(IND, -100);
+        m.setMonthObligations(IND, 400);
+        double curve = BusinessDebtManager.monthlyDefaultShare(1.6);
+        double after = 1_200 * (1 - .25 * loanLoss) + 400 * (1 - .25 * bondLoss);
+        assertTrue("fixture: the sector is past the line, and the desk lends it nothing", m.getQuarterLeverage(IND) > T && lent == 0);
+        assertTrue("fixture: the part that cannot pay is more than the curve's share at its leverage", .25 > curve);
+        assertTrue("fixture: once that part of its debt is written off it reads under the line on its quarter, the loan counted",
+                after / 1_000 < T && after + 100 * gross < (1_000 + 100) * T);
+        m.restructureInsolventSectors();
+        check("a sector refused credit whose till is short defaults that month, $100 of its bills unpaid",
+                m.getCannotPayShort(IND), 100);
+        check("...the part that cannot pay: what it was short over what the month asked of it",
+                m.getCannotPayShare(IND), 100.0 / 400);
+        check("...and its debt is sliced at that share, the larger reading", m.getDefaultShareThisMonth(IND), .25);
+        check("recoveries by instrument: the loans lose a loan's loss on the share", m.getWrittenOffThisMonth(IND),
+                1_200 * .25 * loanLoss);
+        check("...the bonds a bond's", m.getBondWrittenOffThisMonth(IND), 400 * .25 * bondLoss);
+        check("the unpaid rest is lent as an interim loan, grossed up for its fee", m.getInterimLentThisMonth(IND), 100 * gross);
+        check("...an interim loan, which a save will carry by its own type", m.getInterimCount(IND), 1);
+        check("...owed beside what is left of the rest", m.getPrincipal(IND), after + 100 * gross);
+        check("...its till ends the month at nothing, not short", m.getCash(IND), 0);
+        check("...handed exactly what was unpaid", m.takeInterimHanded(IND), 100);
+        check("...and nothing is forgiven", m.takeOverdraftForgiven(IND), 0);
+        double interimRate = 0;
+        for (BusinessDebt d : m.getLoans()) if (d instanceof InterimLoan) interimRate = d.getAnnualRate();
+        assertTrue("...priced by the bank's own rule at its rank: cheaper than the sector's loans, nothing ranking ahead of it",
+                interimRate > 0 && interimRate < m.getRate(IND));
+        assertTrue("...counted as the default point's refusal", m.getCannotPayReason(IND) == BusinessDebtManager.ShortReason.PAST_DEFAULT_POINT);
+        assertTrue("...and a slice is not a restructure: no ban, no record",
+                !m.isBorrowingBlocked(IND) && m.getRestructureCount(IND) == 0 && !m.wasRestructuredThisMonth(IND));
+
+        // ITS RANK: the next month a slice takes the other debt's share and
+        // leaves the interim loan whole.
+        double interimOwed = m.getInterimPrincipal(IND);
+        double loansBefore = m.getLoanPrincipal(IND) - interimOwed;
+        m.setCash(IND, 0);
+        m.setAssets(IND, 900);
+        m.restructureInsolventSectors();
+        double share = m.getDefaultShareThisMonth(IND);
+        assertTrue("fixture: a later month's slice", share > 0 && !m.wasRestructuredThisMonth(IND));
+        check("in a later slice the interim loan loses nothing: it ranks ahead of all the sector's other debt",
+                m.getInterimPrincipal(IND), interimOwed);
+        check("...while the loans lose their own share", m.getLoanPrincipal(IND) - m.getInterimPrincipal(IND),
+                loansBefore * (1 - share * loanLoss));
+
+        // The same sector a dollar short: the curve's share is the larger -
+        // and after it the sector still reads past the line, so nobody lends.
+        BusinessDebtManager n = new BusinessDebtManager();
+        n.setPrimeRate(.05);
+        n.issueLoan(IND, 1_600, 1);
+        n.setAssets(IND, 1_000);
+        n.setCash(IND, 0);
+        for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) n.recordStatement(IND, 1_600, 1_000);
+        n.updateRates();
+        n.processMonth();
+        n.coverShortfall(IND, -1, 0, 2);
+        n.setCash(IND, -1);
+        n.setMonthObligations(IND, 400);
+        n.restructureInsolventSectors();
+        check("a sector a dollar short is sliced at the curve's share, the larger: one slice, never the two added",
+                n.getDefaultShareThisMonth(IND), curve);
+        assertTrue("fixture: after the curve's slice it still reads past the line on its quarter",
+                1_600 * (1 - curve * loanLoss) > 1_000 * T);
+        assertTrue("a sector still past the line after the write-down is lent nothing more",
+                BusinessDebtManager.INTERIM_PAST_LINE.equals(n.getInterimRefusal(IND)) && n.getInterimCount(IND) == 0);
+        assertTrue("...and goes to the backstop, the whole sector: banned, and on its record",
+                n.wasRestructuredThisMonth(IND) && n.isBorrowingBlocked(IND) && n.getRestructureCount(IND) == 1);
+        check("...written down to RESTRUCTURE_TARGET of what it owns", n.getPrincipal(IND),
+                1_000 * BusinessDebtManager.RESTRUCTURE_TARGET);
+        check("...its overdraft closed as the backstop closes one: forgiven", n.takeOverdraftForgiven(IND), 1);
+        check("...its till at nothing", n.getCash(IND), 0);
+
+        // ITS RANK IN THE BACKSTOP: kept first out of what the backstop keeps.
+        BusinessDebtManager k = new BusinessDebtManager();
+        k.setPrimeRate(.05);
+        k.issueLoan(IND, 1_500, 1);
+        k.getLoans().add(new InterimLoan(IND, 200, BusinessDebtManager.LOAN_TERM_MONTHS, 1, .05));
+        k.setAssets(IND, 1_000);
+        k.setCash(IND, 0);
+        for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) k.recordStatement(IND, 1_700, 1_000);
+        k.updateRates();
+        k.processMonth();
+        k.coverShortfall(IND, -100, 0, 2);
+        k.setCash(IND, -100);
+        k.setMonthObligations(IND, 1_000);
+        k.restructureInsolventSectors();
+        assertTrue("fixture: it owes an interim loan, and still past the line after the month's slice it goes to the backstop",
+                k.wasRestructuredThisMonth(IND) && k.getInterimRefusal(IND) != null);
+        double kept = 1_000 * BusinessDebtManager.RESTRUCTURE_TARGET;
+        check("in the backstop the interim loan is kept first, whole: written down only after the sector's other debt",
+                k.getInterimPrincipal(IND), 200);
+        check("...the loans keep what is left of the target", k.getLoanPrincipal(IND) - k.getInterimPrincipal(IND), kept - 200);
+        check("...and the backstop of a sector with nothing left keeps nothing: the interim loan goes last, with the rest",
+                nothingLeft(), 0);
+
+        // A sector the desk lends to: $100 on $1,000, short $100.
+        BusinessDebtManager ok = new BusinessDebtManager();
+        ok.setPrimeRate(.05);
+        ok.issueLoan(IND, 100, 1);
+        ok.setAssets(IND, 1_000);
+        ok.setCash(IND, 0);
+        ok.updateRates();
+        ok.processMonth();
+        double lentOk = ok.coverShortfall(IND, -100, 0, 2);
+        double tillOk = -100 + lentOk - BusinessDebtManager.feeOn(lentOk);
+        ok.setCash(IND, tillOk);
+        ok.setMonthObligations(IND, 400);
+        ok.restructureInsolventSectors();
+        assertTrue("a sector that can borrow is lent what it is short, and more", lentOk > 0 && tillOk >= 0);
+        check("...and does not default for want of cash", ok.getCannotPayShort(IND), 0);
+        check("...nor is lent anything in the interim", ok.getInterimLentThisMonth(IND), 0);
+        check("...its slice only the curve's at its leverage", ok.getDefaultShareThisMonth(IND),
+                BusinessDebtManager.monthlyDefaultShare((100 + lentOk) / 1_000));
+
+        // Banned after a restructure, owing nothing, short $50: it defaults,
+        // counted as the ban's - and the interim lender, whom the ban does
+        // not bind, lends it the $50.
+        BusinessDebtManager b = new BusinessDebtManager();
+        b.setPrimeRate(.05);
+        java.util.Map<String, Integer> record = new java.util.HashMap<>(), blocked = new java.util.HashMap<>();
+        record.put(IND, 1);
+        blocked.put(IND, 12);
+        b.restoreCreditRecord(record, blocked);
+        b.setAssets(IND, 500);
+        b.setCash(IND, 0);
+        b.processMonth();
+        b.coverShortfall(IND, -50, 0, 2);
+        b.setCash(IND, -50);
+        b.setMonthObligations(IND, 200);
+        b.restructureInsolventSectors();
+        assertTrue("fixture: banned", b.isBorrowingBlocked(IND));
+        check("a banned sector short of cash defaults too", b.getCannotPayShort(IND), 50);
+        assertTrue("...counted as the ban's", b.getCannotPayReason(IND) == BusinessDebtManager.ShortReason.BANNED);
+        check("...owing nothing, nothing is sliced", b.getWrittenOffThisMonth(IND), 0);
+        check("...and the unpaid $50 is lent in the interim: the ban binds the desks that lend to grow, not the interim lender",
+                b.getInterimLentThisMonth(IND), 50 * gross);
+        check("...nothing forgiven", b.takeOverdraftForgiven(IND), 0);
+        assertTrue("...nothing new on its record, still banned", b.getRestructureCount(IND) == 1 && b.isBorrowingBlocked(IND));
+
+        // ...and a banned sector nobody will lend to - its bank shut - is the
+        // backstop's inside the episode its ban began: the overdraft closed,
+        // nothing new written off or counted.
+        BusinessDebtManager bs = new BusinessDebtManager();
+        bs.setPrimeRate(.05);
+        bs.restoreCreditRecord(record, blocked);
+        bs.setAssets(IND, 500);
+        bs.setCash(IND, 0);
+        bs.setLendingOpen(false);
+        bs.processMonth();
+        bs.coverShortfall(IND, -50, 0, 2);
+        bs.setCash(IND, -50);
+        bs.setMonthObligations(IND, 200);
+        bs.restructureInsolventSectors();
+        check("a banned sector refused the interim loan has its overdraft closed by the backstop", bs.getBackstopInBanThisMonth(IND), 50);
+        assertTrue("...inside its episode: nothing new on its record", bs.getRestructureCount(IND) == 1 && !bs.wasRestructuredThisMonth(IND));
+
+        // A bank shut: nobody lends, so a short sector goes to the backstop.
+        BusinessDebtManager shut = new BusinessDebtManager();
+        shut.setPrimeRate(.05);
+        shut.issueLoan(IND, 400, 1);
+        shut.setAssets(IND, 1_000);
+        shut.setCash(IND, 0);
+        shut.updateRates();
+        shut.setLendingOpen(false);
+        shut.processMonth();
+        shut.coverShortfall(IND, -100, 0, 2);
+        shut.setCash(IND, -100);
+        shut.setMonthObligations(IND, 400);
+        shut.restructureInsolventSectors();
+        assertTrue("a sector whose bank is shut is refused, counted as the bank's",
+                shut.getCannotPayReason(IND) == BusinessDebtManager.ShortReason.BANK_SHUT
+                        && BusinessDebtManager.INTERIM_BANK_SHUT.equals(shut.getInterimRefusal(IND)));
+        assertTrue("...and nobody lends in the interim either: the whole sector to the backstop",
+                shut.wasRestructuredThisMonth(IND) && shut.getInterimCount(IND) == 0);
+        check("...which closes its overdraft", shut.takeOverdraftForgiven(IND), 100);
+    }
+
+    /* ============ 15. A NEW SECTOR'S FIRST READING (0.7.12, round 7) ============
+
+       A month-end at which a sector owned nothing and owed nothing is not a
+       reading of a business: its quarter starts with its first month-end
+       holding anything, and until then it reads as it stands. So a sector
+       whose first plant arrives after months of nothing borrows its first
+       bill rather than being read past the line on a quarter of nothing;
+       and a sector that owned plant and crashed still reads the quarter it
+       had. See BusinessDebtManager.recordStatement().
+
+       ...AND IN A PLAYED CITY (round 8): plant handed over between months is
+       on the sheet the lender reads at the next settle, because the sheets
+       are valued before the lender reads them every month
+       (EconomyManager.updateBusinessCredit()). So a sector whose first plant
+       arrives that way pays its first bill with no default and no interim
+       loan - round 7's two cases, RailCheck's railway ($930) and
+       RestaurantsCheck's kitchens ($8.70).
+       ============================================================ */
+    static void firstReading() throws Exception {
+        System.out.println("\n--- 15. a new sector's first reading: month-ends of nothing are not a quarter ---");
+        double T = BusinessDebtManager.INSOLVENCY_TRIGGER;
+        double gross = 1 / (1 - Bank.LOAN_FEE);
+
+        // Three month-ends of a sector with nothing, then its first plant,
+        // handed over between months, and its first bill: $50 short.
+        BusinessDebtManager m = new BusinessDebtManager();
+        m.setPrimeRate(.05);
+        m.setAssets(IND, 0);
+        m.setCash(IND, 0);
+        for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) m.recordStatement(IND, 0, 0);
+        check("month-ends at which a sector owned and owed nothing file no reading", m.getStatementCount(IND), 0);
+        m.setAssets(IND, 1_000);
+        m.updateRates();
+        m.processMonth();
+        assertTrue("...so with its first plant it reads as it stands, under the line", !m.pastDefaultPoint(IND, -50));
+        double lent = m.coverShortfall(IND, -50, 0, 2);
+        m.setCash(IND, -50 + lent - BusinessDebtManager.feeOn(lent));
+        m.setMonthObligations(IND, 50);
+        m.restructureInsolventSectors();
+        check("a sector whose first plant arrived after months of nothing borrows its first bill", lent, 50 * gross);
+        check("...and does not default on it", m.getCannotPayShort(IND), 0);
+        assertTrue("...nor is it banned", !m.isBorrowingBlocked(IND) && !m.wasRestructuredThisMonth(IND));
+        m.recordStatement(IND, m.getPrincipal(IND), 1_000 + 50);
+        check("its first month-end holding plant is the first reading of its quarter", m.getStatementCount(IND), 1);
+
+        // A sector that owned plant and crashed: its readings are what it owed
+        // and owned, and a crash is a reading of something.
+        BusinessDebtManager c = new BusinessDebtManager();
+        c.setPrimeRate(.05);
+        c.issueLoan(IND, 1_200, 1);
+        c.setAssets(IND, 100);
+        c.setCash(IND, 0);
+        c.recordStatement(IND, 1_200, 1_000);
+        c.recordStatement(IND, 1_200, 1_000);
+        c.recordStatement(IND, 1_200, 100);
+        check("a sector that owned plant and crashed still reads its real quarter", c.quarterAssets(IND), 2_100.0 / 3);
+        assertTrue("...past the line on it", c.pastDefaultPoint(IND, -10) && 1_200 > 2_100.0 / 3 * T);
+        c.recordStatement(IND, 0, 0);
+        check("...and a month-end of nothing after it leaves that quarter as it was", c.quarterAssets(IND), 2_100.0 / 3);
+        check("...its readings unchanged", c.getStatementCount(IND), 3);
+
+        /*
+         * THE PLANT HANDED OVER BETWEEN MONTHS, in the town RestaurantsCheck
+         * builds its kitchens in, three months played: a Diner bought for the
+         * kitchens (a site, on the treasury, as that harness buys it) and two
+         * Rail Spurs laid for the railway (RailCheck's lay()), neither sector
+         * having owned or owed anything. Each one's first bill - the site's
+         * property tax, the railway's first payroll - finds its till empty,
+         * and is read at the next settle against the sheet the lender reads.
+         */
+        Game town = new Game(GameFiles.scratch("creditcheck"));
+        quietly(() -> {
+            town.run();
+            town.getGovernmentInvestor().spend(-4_000_000);
+            town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 20_000_000L);
+            LongPlaytest.build(town, "House", 60);
+            LongPlaytest.build(town, "Convenience Store", 4);
+            LongPlaytest.build(town, "Mixed Farm", 3);
+            LongPlaytest.build(town, "Coal Power Plant", 1);
+            LongPlaytest.build(town, "Water Treatment Plant", 1);
+            LongPlaytest.build(town, "Paved Road", 6);
+            town.simulateMonths(3);
+        });
+        BusinessDebtManager lender = town.getEconomyManager().getBusinessDebtManager();
+        BuildingManager plant = town.getBuildingManager();
+        String[] firsts = { Sectors.RESTAURANTS, Sectors.RAIL };
+        for (String k : firsts) {
+            assertTrue("fixture: " + k + " has owned nothing, owed nothing and filed no reading",
+                    lender.getStatementCount(k) == 0 && lender.getPrincipal(k) == 0
+                            && !(plant.getBuildingsValueBySector(k) > 0)
+                            && !(town.getEconomyManager().getSectorCash(k) > 0));
+        }
+        quietly(() -> {
+            LongPlaytest.build(town, "Diner", 1);
+            plant.addStack(template(town, "Rail Spur"), 2, true);
+            town.simulateMonths(1);
+        });
+        for (String k : firsts) {
+            assertTrue("fixture: " + k + "'s first plant arrived between months, and its first month billed its empty till",
+                    plant.getBuildingsValueBySector(k) > 0 && lender.getMonthObligations(k) > 0);
+            assertTrue("a sector whose first plant was handed over between months borrows its first bill (" + k + ")",
+                    lender.getShortfallLentThisMonth(k) > 0);
+            assertTrue("...with no default on it (" + k + ")",
+                    lender.getCannotPayShort(k) == 0 && lender.getCannotPayReason(k) == null);
+            assertTrue("...and with no interim loan (" + k + ")", lender.getInterimCount(k) == 0);
+            assertTrue("...nor a ban (" + k + ")", !lender.isBorrowingBlocked(k) && lender.getRestructureCount(k) == 0);
+        }
+    }
+
+    /* ============ 16. THE SHORTFALL DESK'S BOND, GROSSED UP (0.7.12, round 7) ============
+
+       A bond hands the till its face less its costs. The shortfall desk now
+       lends what the bond's proceeds left of the shortfall, grossed for the
+       loan's fee, as a building's loan has since round 5: the till is handed
+       what it was short, and the bond's costs ride in the loan's face. A
+       desk that answers on its own terms: a bond of up to `bondPart` at 4%,
+       costing COST to issue, the bank for the rest.
+       ============================================================ */
+    static BusinessDebtManager.BondDesk deskOf(double bondPart, double cost) {
+        return new BusinessDebtManager.BondDesk() {
+            @Override public BusinessDebtManager.Plan plan(String sector, double amount, double loanRate, double loanRoom,
+                                                           double bondRoom, double extraAssets, int month) {
+                double bond = Math.min(Math.min(amount, loanRoom), bondPart);
+                double loan = Math.max(0, Math.min(amount, loanRoom) - bond);
+                return new BusinessDebtManager.Plan(sector, amount, bond, .04, .045, loan, loanRate, loanRate,
+                        cost, .04, extraAssets, bond + loan, bond);
+            }
+            @Override public double issue(BusinessDebtManager.Plan plan, int month) {
+                return plan.bondFace() - plan.costs();
+            }
+        };
+    }
+
+    static void shortfallBondGrossedUp() {
+        System.out.println("\n--- 16. the shortfall desk's bond, grossed up: the till is handed what it was short ---");
+        double fee = Bank.LOAN_FEE, cost = 12;
+        for (double part : new double[] { 300, Double.POSITIVE_INFINITY }) {
+            BusinessDebtManager m = new BusinessDebtManager();
+            m.setPrimeRate(.05);
+            m.setBondMarket(null, deskOf(part, cost));
+            m.setAssets(IND, 10_000);
+            m.setCash(IND, 0);
+            m.updateRates();
+            m.processMonth();
+            double lent = m.coverShortfall(IND, -500, 0, 2);
+            double bond = m.getShortfallPlan(IND).bondFace();
+            double handed = lent - BusinessDebtManager.feeOn(lent) + m.takeBondProceeds(IND);
+            String which = Double.isInfinite(part) ? "a bond that raised it all" : "a bond and a loan";
+            assertTrue("fixture (" + which + "): the desk sold a bond costing " + cost, bond > 0);
+            check("a shortfall covered by " + which + " leaves the till at what it was short", handed, 500);
+            check("...the bond's costs carried in the loan's face", lent, (500 - (bond - cost)) / (1 - fee));
+        }
+    }
+
+    /** A sector owing $1,000 of loans and a $200 interim loan with nothing left: what of the interim loan the backstop keeps. */
+    static double nothingLeft() {
+        BusinessDebtManager z = new BusinessDebtManager();
+        z.setPrimeRate(.05);
+        z.issueLoan(IND, 1_000, 1);
+        z.getLoans().add(new InterimLoan(IND, 200, BusinessDebtManager.LOAN_TERM_MONTHS, 1, .05));
+        z.setAssets(IND, -1);
+        z.setCash(IND, 0);
+        z.updateRates();
+        z.restructureInsolventSectors();
+        return z.wasRestructuredThisMonth(IND) ? z.getInterimPrincipal(IND) : Double.NaN;
+    }
+
+    static void creditLinesStayOpen() {
+        System.out.println("\n--- 14. credit lines stay open: a rationing bank covers a short month and refuses growth ---");
+        String OWES = Sectors.MINING, NOTHING = Sectors.RETAIL, OVER = Sectors.MATERIALS, PAST = Sectors.AUTOMOTIVE;
+        double gross = 1 / (1 - Bank.LOAN_FEE);
+        BusinessDebtManager r = new BusinessDebtManager();
+        r.setPrimeRate(.05);
+        r.issueLoan(OWES, 100_000, 1);
+        r.setAssets(OWES, 1_000_000);
+        r.setAssets(NOTHING, 500_000);
+        r.issueLoan(OVER, 950_000, 1);
+        r.setAssets(OVER, 1_000_000);
+        r.issueLoan(PAST, 1_600, 1);
+        r.setAssets(PAST, 1_000);
+        for (String s : new String[] { OWES, NOTHING, OVER, PAST }) r.setCash(s, 0);
+        for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) r.recordStatement(PAST, 1_600, 1_000);
+        r.updateRates();
+        double g = .001;
+        r.setCapitalRule(g, false);
+        r.processMonth();
+        assertTrue("fixture: the bank is short of capital - between its minimum and its target, rationing",
+                r.capitalRuleOn() && !r.isKeepGoingOnly() && r.getCapitalGrowth() == g);
+        check("fixture: the rule would let the sector owing $100,000 borrow $100 more", r.capitalRoom(OWES), g * 100_000);
+        check("...and the sector owing nothing, nothing", r.capitalRoom(NOTHING), 0);
+        double a = r.coverShortfall(OWES, -50_000, 0, 2);
+        check("a rationing bank covers a healthy sector's short month whole, its fee on top: a working-capital line",
+                a, 50_000 * gross);
+        check("...counted as the line lent while the bank rationed", r.getLineLentRationed(OWES), 50_000 * gross);
+        check("...all but $100 of it past what the 0.7.8 rule would have lent", r.getLineLentPastOldRule(OWES), 50_000 * gross - g * 100_000);
+        double z = r.coverShortfall(NOTHING, -10_000, 0, 2);
+        check("...a sector that owes nothing too, whose room under the rule is none", z, 10_000 * gross);
+        assertTrue("...and refuses its building's loan: that is growth", !r.canFundProject(NOTHING, 1_000));
+        assertTrue("...counted at that door", r.wasProjectRefusedForCapital(NOTHING) && r.wasRefusedForCapital(NOTHING));
+        double reserve = r.getMonthlyInterest(OVER) / (1 - Bank.LOAN_FEE);
+        double o = r.coverShortfall(OVER, -50_000, 0, 2);
+        assertTrue("fixture: a sector over the ceiling, under the line", 950_000.0 / 1_000_000 > BusinessDebtManager.MAX_LOAN_TO_ASSETS
+                && 950_000.0 / 1_000_000 < BusinessDebtManager.INSOLVENCY_TRIGGER);
+        check("a sector over the ceiling is refused all but its interest reserve", o, reserve);
+        double p = r.coverShortfall(PAST, -100, 0, 2);
+        check("...and one past the line is refused everything", p, 0);
+        r.setCash(OWES, 50_000 * gross - BusinessDebtManager.feeOn(50_000 * gross) - 50_000);
+        r.setCash(NOTHING, 0);
+        r.setCash(OVER, -50_000 + o - BusinessDebtManager.feeOn(o));
+        r.setCash(PAST, -100);
+        r.setMonthObligations(OVER, 200_000);
+        r.setMonthObligations(PAST, 400);
+        r.restructureInsolventSectors();
+        check("the lines the bank honoured leave nobody to default: the sector that owed", r.getCannotPayShort(OWES), 0);
+        check("...and the one that owed nothing", r.getCannotPayShort(NOTHING), 0);
+        assertTrue("the sector over the ceiling defaults for want of cash, on its own credit",
+                r.getCannotPayShort(OVER) > 0 && r.getCannotPayReason(OVER) == BusinessDebtManager.ShortReason.CEILING);
+        assertTrue("...and so does the one past the line",
+                r.getCannotPayShort(PAST) > 0 && r.getCannotPayReason(PAST) == BusinessDebtManager.ShortReason.PAST_DEFAULT_POINT);
+
+        // Under its minimum: the line is still honoured.
+        BusinessDebtManager u = new BusinessDebtManager();
+        u.setPrimeRate(.05);
+        u.issueLoan(OWES, 100_000, 1);
+        u.setAssets(OWES, 1_000_000);
+        u.setCash(OWES, 0);
+        u.updateRates();
+        u.setCapitalRule(0, true);
+        u.processMonth();
+        check("a bank under its minimum honours the line too", u.coverShortfall(OWES, -50_000, 0, 2), 50_000 * gross);
+        assertTrue("...and funds no building, however small", !u.canFundProject(OWES, 1));
+    }
+
+    /* ============ 12. NOTHING PAST THE DEFAULT POINT (0.7.12, round 2) ============
+
+       Jerus: "Stop at the default point." No shortfall loan, no interest
+       reserve, no rollover of what fell due, no renewal and no project loan
+       to a sector past INSOLVENCY_TRIGGER as its sheet stands when the loan is
+       written, or once lent. The fixtures cause the condition the rule is
+       for: a sector the month's opening refresh reads UNDER the line, which a
+       loan falling due takes past it - where the old ceilings, reading the
+       refresh, still lent it its interest - and one the same loan leaves
+       under it. Then a played city, to follow what the firm does instead:
+       its till stays short, its debt is sliced at the curve's rate, and when
+       the overdraft outweighs its plant the backstop forgives it and bans it,
+       every month's money audit closing.
+       ============================================================ */
+    static void nothingPastTheDefaultPoint() throws Exception {
+        System.out.println("\n--- 12. nothing past the default point: the desks lend nothing past INSOLVENCY_TRIGGER ---");
+        double T = BusinessDebtManager.INSOLVENCY_TRIGGER;
+
+        // A sector with no quarter yet - a new one, or one a backstop has just
+        // restarted - reads as it stands (round 3): these first fixtures file
+        // no reading.
+        // A sector owing 1.4 times what the month's refresh read, 0.4 of it
+        // falling due now; its till empty, so paying it leaves it 0.4 short.
+        double[] maturing = { 400, 150 };
+        String[] name = { "past", "under" };
+        double[] refusedFor = new double[2], lentTo = new double[2];
+        for (int k = 0; k < 2; k++) {
+            BusinessDebtManager m = new BusinessDebtManager();
+            m.setPrimeRate(.05);
+            double longLoan = 1_400 - maturing[k] - (k == 1 ? 350 : 0);
+            m.issueLoan(IND, longLoan, 1);
+            m.getLoans().add(new BusinessLoan(IND, maturing[k], 1, 1, .06));
+            m.setAssets(IND, 1_000);
+            m.setCash(IND, 0);                       // the economy reports its sheet: the till is in it
+            m.updateRates();
+            assertTrue("fixture (" + name[k] + "): the month's refresh reads it under the line",
+                    m.getLeverage(IND) <= T);
+            m.processMonth();
+            double due = m.takeMaturedPrincipal(IND);
+            double till = 0 - due;
+            double owes = m.getPrincipal(IND), assetsNow = m.assetsNow(IND, till);
+            System.out.printf("   %s: owes %,.0f against %,.0f once the %,.0f fell due - %.2f times%n",
+                    name[k], owes, assetsNow, due, owes / assetsNow);
+            double oldRoom = m.borrowingRoom(IND);
+            double interest = m.getMonthlyInterest(IND);
+            lentTo[k] = m.coverShortfall(IND, till, 0, 2);
+            refusedFor[k] = m.getRefusedAtDefaultPoint(IND);
+            if (k == 0) {
+                assertTrue("fixture: paying what fell due takes it past INSOLVENCY_TRIGGER",
+                        owes > assetsNow * T && m.pastDefaultPoint(IND, till));
+                assertTrue("...where the old ceilings, reading the refresh, had room: the interest reserve",
+                        oldRoom <= 0 && interest > 0 && refusedFor[k] > 0);
+                check("a sector past the line is refused the shortfall loan", lentTo[k], 0);
+                check("...so nothing is written", m.getPrincipal(IND), owes);
+                /*
+                 * "AFTER THE LOAN" ALONE WOULD HAVE LENT IT: the loan's cash
+                 * lands on its sheet too, and the whole hole filled leaves it
+                 * under the line on paper. The rule reads the sheet before
+                 * the loan as well - see BusinessDebtManager, NOTHING PAST THE
+                 * DEFAULT POINT.
+                 */
+                double whole = -till / (1 - Bank.LOAN_FEE);
+                assertTrue("...though filling the whole hole would leave it under the line on paper",
+                        (owes + whole) <= (assetsNow + whole - BusinessDebtManager.feeOn(whole)) * T);
+                // The investment desk: a project's loan covers the till's
+                // overdraft first, so it is a shortfall loan in substance.
+                m.setAssets(IND, assetsNow);
+                m.setCash(IND, till);
+                assertTrue("the investment desk refuses it too, whatever the building would add",
+                        !m.canFundProject(IND, 5_000) && m.wasRefusedAtDefaultPoint(IND)
+                                && m.projectLoanRoom(IND, 5_000) == 0 && m.projectBondRoom(IND, 5_000) == 0);
+                assertTrue("...where the test after the deal alone would have funded it",
+                        owes + 5_000 <= (assetsNow + 5_000) * T);
+            } else {
+                assertTrue("fixture: one whose maturity leaves it under the line", owes <= assetsNow * T);
+                assertTrue("a sector under the line is lent", lentTo[k] > 0);
+                check("...nothing refused", refusedFor[k], 0);
+                double handed = lentTo[k] - BusinessDebtManager.feeOn(lentTo[k]);
+                assertTrue("...and the loan leaves it under the line",
+                        m.getPrincipal(IND) <= (assetsNow + handed) * T);
+            }
+        }
+
+        // A landlord's mortgage at the end of its term: renewed under the
+        // line, fallen due whole past it.
+        String RE = Sectors.REAL_ESTATE;
+        for (boolean past : new boolean[] { false, true }) {
+            BusinessDebtManager m = new BusinessDebtManager();
+            m.setInsuredMortgageRate(.04);
+            Mortgage mort = m.issueMortgage(RE, 200_000, 0);
+            for (int k = 0; k < Mortgage.MORTGAGE_TERM_MONTHS - 1; k++) { m.processMonth(); m.takeMaturedPrincipal(RE); }
+            double owedAtTheEnd = mort.getOutstandingPrincipal();
+            m.setAssets(RE, past ? owedAtTheEnd / 1.6 : owedAtTheEnd / 1.2);
+            m.setCash(RE, 0);
+            m.processMonth();
+            double due = m.takeMaturedPrincipal(RE);
+            if (!past) {
+                assertTrue("a landlord at 1.2 times what it owns renews its mortgage at the term's end",
+                        m.getMortgageCount(RE) == 1 && m.getNotRenewedAtDefaultPoint(RE) == 0);
+            } else {
+                check("...one at 1.6 does not: the balance falls due whole with the term's last payment",
+                        due, owedAtTheEnd);
+                assertTrue("...and the mortgage is gone, counted against the default point",
+                        m.getMortgageCount(RE) == 0 && m.getNotRenewedAtDefaultPoint(RE) > 0
+                                && m.getNotRenewedAtDefaultPoint(RE) <= owedAtTheEnd);
+            }
+        }
+
+        /*
+         * ON THE QUARTER (round 3, Jerus: "Read the quarter"): a sector with
+         * readings is read over its last STATEMENT_MONTHS of them, as its
+         * price and its allowance are. Two sectors, the same loans falling due
+         * the same way: one whose month, once it has paid, reads under the
+         * line but whose quarter read it over; and one the other way round.
+         */
+        System.out.println("\n--- 12. ...on the quarter: the month under and the quarter over is refused, the other way round is lent ---");
+        double[][] cases = { { 1_080, 1.6 }, { 1_440, 1.2 } };   // {the long loan, the quarter's leverage}
+        String[] caseName = { "month under, quarter over", "month over, quarter under" };
+        for (int k = 0; k < 2; k++) {
+            BusinessDebtManager m = new BusinessDebtManager();
+            m.setPrimeRate(.05);
+            m.issueLoan(IND, cases[k][0], 1);
+            m.getLoans().add(new BusinessLoan(IND, 100, 1, 1, .06));
+            m.setAssets(IND, 1_000);
+            m.setCash(IND, 0);
+            for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) m.recordStatement(IND, cases[k][1] * 1_000, 1_000);
+            m.updateRates();
+            m.processMonth();
+            double due = m.takeMaturedPrincipal(IND);
+            double till = -due;
+            double month = m.getPrincipal(IND) / m.assetsNow(IND, till), quarter = m.getQuarterLeverage(IND);
+            System.out.printf("   %s: %.2f times as it stands once the %,.0f fell due, %.2f over its quarter%n",
+                    caseName[k], month, due, quarter);
+            double lent = m.coverShortfall(IND, till, 0, 2);
+            if (k == 0) {
+                assertTrue("fixture: paying what fell due leaves it under the line as it stands, and its quarter reads it over",
+                        month <= T && quarter > T);
+                check("a sector whose month reads under the line but whose quarter reads it over is refused", lent, 0);
+                assertTrue("...counted against the default point", m.getRefusedAtDefaultPoint(IND) > 0);
+            } else {
+                assertTrue("fixture: paying what fell due takes it past the line as it stands, and its quarter reads it under",
+                        month > T && quarter <= T);
+                assertTrue("a sector whose month reads over the line but whose quarter reads it under is lent, as its price reads it",
+                        lent > 0 && m.getRefusedAtDefaultPoint(IND) == 0);
+            }
+        }
+
+        /* ---- ...and in a played city: what the firm does instead ---- */
+        System.out.println("\n--- 12. ...what a sector past the line does instead, in a played city ---");
+        Game g = new Game(GameFiles.scratch("creditcheck"));
+        quietly(() -> {
+            g.run();
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            g.buildStack(template(g, "House"), 300, true);
+            g.buildStack(template(g, "Convenience Store"), 12, true);
+            g.buildStack(template(g, "Bakery"), 3, true);
+            g.buildStack(template(g, "Construction Depot"), 3, true);
+            g.buildStack(template(g, "Coal Power Plant"), 2, true);
+            g.buildStack(template(g, "Water Treatment Plant"), 1, true);
+            g.buildStack(template(g, "Commercial Bank"), 1, true);
+            g.setAutoSubsidised(Sectors.INDUSTRY, true);
+            g.simulateMonths(24);
+        });
+        BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+        String X = Sectors.CONSTRUCTION;
+        double till0 = g.getEconomyManager().getSectorCash(X);
+        double plant = credit.getAssets(X) - credit.getCash(X);
+        assertTrue("fixture: the city's builders have plant and a till, and a standing bank",
+                plant > 0 && till0 > 0 && !g.getBank().isInsolvent() && g.getBank().getBranches() > 0);
+        // Taken on between months, a claim, no money moved: a long loan of
+        // 1.25 times its plant, and one of its till and a fifth of its plant
+        // more that falls due at the next settle. The refresh reads it under
+        // the line; paying what fell due takes it past. And its quarter
+        // (round 3), filed between months as the bank's month-end reading
+        // files it: three month-ends at what it owes now, 1.6 times what it
+        // owned - past the line.
+        double longClaim = 1.25 * plant, dueClaim = till0 + .2 * plant;
+        credit.issueLoan(X, longClaim, g.getMonth());
+        credit.getLoans().add(new BusinessLoan(X, dueClaim, 1, g.getMonth(), .06));
+        for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) {
+            credit.recordStatement(X, credit.getPrincipal(X), credit.getPrincipal(X) / 1.6);
+        }
+        assertTrue("fixture: the bank's quarter reads the builders past the line", credit.getQuarterLeverage(X) > T);
+        quietly(g::toggleNextMonth);
+        MoneyAudit.Result r1 = g.getLastMoneyAudit();
+        SectorBooks.SectorMonth s1 = g.getSectorBooks().get(X);
+        System.out.printf("   the builders: %,.0fk fell due, %,.0fk refused, borrowed %,.0fk; %,.0fk of their debt defaulted"
+                        + " this month; interim %,.0fk, refused: %s, backstop %b; till %,.0fk%n", s1.repaid(),
+                credit.getRefusedAtDefaultPoint(X), s1.borrowed(), credit.getDefaultedThisMonth(X),
+                credit.getInterimLentThisMonth(X), credit.getInterimRefusal(X), credit.wasRestructuredThisMonth(X), s1.cash());
+        assertTrue("the shortfall desk refused the builders once paying what fell due took them past the line",
+                credit.getRefusedAtDefaultPoint(X) > 0 && s1.borrowed() == 0 && s1.repaid() >= dueClaim - 1e-6);
+        assertTrue("...so their till went short: the overdraft", s1.openingCash() - s1.repaid() < 0);
+        assertTrue("...and the month's slice wrote their debt down: at the curve's rate for its leverage, or since round 4 the part that could not pay, whichever is larger",
+                credit.getDefaultedThisMonth(X) > 0);
+        assertTrue("...what it could not pay defaulted that month, and the till ends it at nothing (round 4)",
+                credit.getCannotPayShort(X) > 0 && s1.cash() >= 0);
+        // Round 5 (Jerus: "If nobody will lend even then, the whole industry
+        // goes to the existing full write-off"): read after the write-down
+        // the builders are still past the line, so nobody lends them the
+        // rest in the interim.
+        assertTrue("...and still past the line after it, nobody lent them the rest: the whole sector went to the backstop (round 5)",
+                BusinessDebtManager.INTERIM_PAST_LINE.equals(credit.getInterimRefusal(X)) && credit.wasRestructuredThisMonth(X)
+                        && credit.getInterimLentThisMonth(X) == 0);
+        assertTrue("...and the month's money audit closes", r1 != null && Math.abs(r1.residual) < .01);
+
+        // Under water: an overdraft past everything it owns - twice its plant
+        // since round 4. Once its assets were a thousand under nothing at the
+        // month's top they stayed there to its defaults; with the month
+        // before's overdraft closed and its debt sliced by the part that could
+        // not pay, the month's own flows lifted them $2.2M, back over nothing
+        // by its defaults, and the cash-flow test closed the overdraft before
+        // the backstop could read it. The cause is asserted below. Since round
+        // 5 the builders are the backstop's already, and inside its ban, so
+        // the sector under water is the next with plant and no ban.
+        String V = null;
+        for (String s : Sectors.KEYS) {
+            if (s.equals(X) || credit.isBorrowingBlocked(s)) continue;
+            if (credit.getAssets(s) - credit.getCash(s) > 0 && (V == null
+                    || credit.getAssets(s) - credit.getCash(s) > credit.getAssets(V) - credit.getCash(V))) V = s;
+        }
+        final String UW = V;
+        assertTrue("fixture: a sector with plant, outside any ban: " + UW, UW != null);
+        g.getEconomyManager().setSectorCash(UW, -2 * (credit.getAssets(UW) - credit.getCash(UW)) - 1_000);
+        quietly(g::toggleNextMonth);
+        assertTrue("fixture: the month's defaults read its assets at or below nothing", credit.getAssets(UW) <= 0);
+        MoneyAudit.Result r2 = g.getLastMoneyAudit();
+        System.out.printf("   under water (%s): written down whole %s, overdraft forgiven %,.0fk, banned %d months%n", UW,
+                credit.wasRestructuredThisMonth(UW), g.getEconomyManager().getOverdraftForgivenThisMonth(UW),
+                credit.getBlockedMonths(UW));
+        assertTrue("with its overdraft past its plant the backstop writes it down whole",
+                credit.wasRestructuredThisMonth(UW) && credit.getPrincipal(UW) < 1e-6);
+        assertTrue("...forgives the overdraft and bans it",
+                g.getEconomyManager().getOverdraftForgivenThisMonth(UW) > 0 && credit.isBorrowingBlocked(UW));
+        assertTrue("...and that month's audit closes too", r2 != null && Math.abs(r2.residual) < .01);
+
+        /*
+         * THE PROJECT LOAN'S FEE (0.7.12, round 5; Jerus: "gross a project
+         * loan up for its fee, as the shortfall desk's loan already is
+         * (0.7.7). Every loan is then handed its full purpose"). A sector
+         * outside any ban, its till at nothing, borrows for a building
+         * through the investor the month's investment uses; small enough that
+         * the bank lends it all, no bond.
+         */
+        String P = null;
+        for (String s : Sectors.KEYS) {
+            if (s.equals(X) || s.equals(UW) || credit.isBorrowingBlocked(s) || !(credit.getAssets(s) > 0)) continue;
+            if (P == null || credit.getAssets(s) > credit.getAssets(P)) P = s;
+        }
+        final String PS = P;
+        Investor builder = g.getSectorInvestor(PS);
+        g.getEconomyManager().setSectorCash(PS, 0);
+        double purpose = 50, owedBefore = credit.getPrincipal(PS), lentBefore = credit.getLentThisMonth();
+        assertTrue("fixture: " + PS + " may borrow for a building", builder.canBorrow(purpose));
+        builder.borrow(purpose, g.getMonth());
+        double written = credit.getLentThisMonth() - lentBefore;
+        assertTrue("fixture: the bank lent it all, no bond: what it owes more is what the bank wrote",
+                written > 0 && Math.abs(written - (credit.getPrincipal(PS) - owedBefore)) < 1e-9);
+        check("a project loan hands its full purpose to the till", g.getEconomyManager().getSectorCash(PS), purpose);
+        check("...its fee carried in the principal: the loan is the purpose grossed up for LOAN_FEE",
+                credit.getPrincipal(PS) - owedBefore, purpose / (1 - Bank.LOAN_FEE));
+        check("...and the fee the bank keeps is LOAN_FEE of that principal", written * Bank.LOAN_FEE,
+                purpose / (1 - Bank.LOAN_FEE) - purpose);
     }
 
     /* ============ 11. THE CURVE (0.7.1) ============

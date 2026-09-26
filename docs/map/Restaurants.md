@@ -1,6 +1,6 @@
-# Restaurants.java - 445 lines · 18 methods · 5 constants · sectors
+# Restaurants.java - 446 lines · 18 methods · 5 constants · sectors
 
-`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The kitchens. THE FIFTEENTH SECTOR (2026-09-18, Jerus's call).
 > 
@@ -63,8 +63,8 @@
 | 69 | WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING |
 | 89 | THE MARGIN, AND WHY ITS FLOOR IS SO MUCH HIGHER THAN A BOUTIQUE'S |
 | 174 | THE SALE |
-| 317 | PLANNING - the queue at a door that is not there |
-| 401 | THE SCREEN |
+| 318 | PLANNING - the queue at a door that is not there |
+| 402 | THE SCREEN |
 
 ## Constants
 
@@ -88,7 +88,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 379 | **type** `public class Restaurants extends Sector` | The kitchens. |
+| 67 | 380 | **type** `public class Restaurants extends Sector` | The kitchens. |
 
 ### WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING (lines 69-88)
 
@@ -100,7 +100,7 @@
 | 159 | 9 | `public void setBasket(Map<Good, Double> kgPerHead)` | What one person-month costs in kilograms, by good. |
 | 170 | 3 | `public double kgPerMeal(Good g)` | Kilograms of one good in one MEAL. |
 
-### THE SALE (lines 174-316)
+### THE SALE (lines 174-317)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -114,19 +114,19 @@
 | 216 | 1 | `public double getFoodCost()` |  |
 | 217 | 1 | `public double getSellPrice()` |  |
 | 232 | 21 | `public double strikeMargin(Markets markets, double wanted)` | Strikes the margin against the queue and returns what a meal costs this month. |
-| 263 | 22 | `public double serve(Markets markets, double meals)` | ...and serves what the tables and the larder can actually get through. |
-| 296 | 20 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
+| 263 | 23 | `public double serve(Markets markets, double meals)` | ...and serves what the tables and the larder can actually get through. |
+| 297 | 20 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
 
-### PLANNING - the queue at a door that is not there (lines 317-400)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 331 | 45 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
-| 389 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
-
-### THE SCREEN (lines 401-445)
+### PLANNING - the queue at a door that is not there (lines 318-401)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 406 | 39 | `public List<Line> operations(Game game)` |  |
+| 332 | 45 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
+| 390 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
+
+### THE SCREEN (lines 402-446)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 407 | 39 | `public List<Line> operations(Game game)` |  |
 

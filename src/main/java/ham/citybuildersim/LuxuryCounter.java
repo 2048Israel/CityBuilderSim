@@ -129,8 +129,10 @@ public final class LuxuryCounter {
          * came, which is what the position wants: a queue is a queue whatever
          * the shop ends up charging it.
          */
-        double landed = Math.max(0, game.getMarkets().get(Good.LUXURIES).getLocalPrice());
-        if (landed <= 0) landed = Good.LUXURIES.worldImportPrice();
+        // What a piece costs the shop, read the way the shop reads it. See
+        // LuxuryRetail.landedCost() for the month this used to read half of.
+        double landed = ham.citybuildersim.sectors.LuxuryRetail.landedCost(
+                game.getMarkets().get(Good.LUXURIES));
         double atTheFloor = landed * ham.citybuildersim.sectors.LuxuryRetail.MARGIN_FLOOR;
         luxuryWanted = householdBalance.luxuriesWanted(atTheFloor);
 

@@ -1128,6 +1128,18 @@ public class HealthCheck {
         double[] pricedOutMonths = new double[scales.length];
         double[] servedInFullMonths = new double[scales.length];
         double[] hungerAtEnd = new double[scales.length];
+        /*
+         * ...AND OVER THE LAST YEAR (0.7.12 round 7; Jerus's change,
+         * 2026-09-25: "read a year's average"). The dear-against-free
+         * assertion below read one month of each twin's hunger, a series that
+         * swings 11-53% within a twin: it failed in rounds 2, 4 and 5 and on a
+         * build of round 6, and passed in the others, on the swing and not
+         * the rule. It reads the mean of the last twelve months each twin
+         * plays now - the year the single month closed, eight years into the
+         * fee - with the same premise, direction and tolerance.
+         */
+        double[] hungerYear = new double[scales.length];
+        final int year = 12;
         // The people each city had to bury from, month by month: all of them,
         // and its old (2026-09-21, see the assertions below).
         double[] personMonths = new double[scales.length];
@@ -1213,7 +1225,9 @@ public class HealthCheck {
                             + town.getCohorts().get(AgeBand.ELDER);
                     if (hc.getPricedOutTotal() > 0) pricedOutMonths[k]++;
                     if (hc.getPricedOutTotal() == 0) servedInFullMonths[k]++;
+                    if (m >= window - year) hungerYear[k] += town.getHouseholdBalance().getHungerRate();
                 }
+                hungerYear[k] /= year;
                 meanAffordable[k] /= window;
                 meanSick[k] /= window;
                 meanBaseline[k] /= window;
@@ -1222,12 +1236,13 @@ public class HealthCheck {
             Healthcare hc = town.getHealthcare();
             System.out.printf("  fees x%.2f: %,.0f people, served %.1f%% of those offered care over %d months,"
                     + " sick %.2f%% (baseline %.2f%%), %,.0f died (%,.0f over seventy), priced out in %.0f months,"
-                    + " %,.0f last month (childcare %,.0f / general %,.0f / senior %,.0f), hunger %.0f%%%n",
+                    + " %,.0f last month (childcare %,.0f / general %,.0f / senior %,.0f), hunger %.0f%%"
+                    + " (%.1f%% over the last year)%n",
                     scales[k], town.getCohorts().total(), meanAffordable[k] * 100, window,
                     meanSick[k] * 100, meanBaseline[k] * 100, deathsOver[k], eldersLost[k], pricedOutMonths[k],
                     hc.getPricedOutTotal(), hc.getPricedOut(CareType.CHILDCARE),
                     hc.getPricedOut(CareType.GENERAL), hc.getPricedOut(CareType.SENIOR),
-                    hungerAtEnd[k] * 100);
+                    hungerAtEnd[k] * 100, hungerYear[k] * 100);
         }
         assertTrue("fixture: the poor city has somebody at the eat-less step",
                 hungerAtEnd[1] > 0);
@@ -1294,8 +1309,8 @@ public class HealthCheck {
         check("...every kind of care", towns[0].getHealthcare().getAffordability(CareType.CHILDCARE)
                 + towns[0].getHealthcare().getAffordability(CareType.GENERAL)
                 + towns[0].getHealthcare().getAffordability(CareType.SENIOR), 3, 0);
-        assertTrue("...and the households who skipped a bill ate with it: the dear city is no hungrier than the free one by more than the price of care",
-                hungerAtEnd[2] <= hungerAtEnd[0] + .05);
+        assertTrue("...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care",
+                hungerYear[2] <= hungerYear[0] + .05);
         {
             // The priced-out are the people the beds had room for, not the beds.
             Healthcare hc = towns[2].getHealthcare();

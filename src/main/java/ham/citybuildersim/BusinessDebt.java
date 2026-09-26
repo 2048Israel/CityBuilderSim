@@ -18,8 +18,10 @@ package ham.citybuildersim;
  * Mortgage's a little every month (0.7.11) - which is a cash movement and not
  * an expense; the manager hands that back to the sector to settle.
  *
- * Two kinds: BusinessLoan, the bullet every sector borrows on, and Mortgage,
- * the insured, amortizing loan a landlord buys a residential building with.
+ * Two kinds: BusinessLoan, the bullet every sector borrows on - with its
+ * InterimLoan, lent after a default and ranked first (0.7.12, round 5) - and
+ * Mortgage, the insured, amortizing loan a landlord buys a residential
+ * building with.
  */
 public abstract class BusinessDebt {
 

@@ -218,8 +218,20 @@ public class Game {
         economyManager.setOutwardInvestment(outward);
         economyManager.setEquity(equity);
         householdBalance.setMarket(exchange, equity, bank);
+        // ...and the exchange settles against the same city from the start,
+        // before its first step (0.7.12 round 2): a cell short of money sells
+        // into the book at the first month's waterfall.
+        exchange.attach(equity, householdBalance, bank, exchangeCompanies, 0);
         // ...and the bank's desk for their city paper (0.7.1).
         householdBalance.setPaperDesk(this::desksBuysHouseholdPaper);
+        // ...and the businesses' bonds (0.7.12): the market reads the city
+        // through bondReadings, and the lender, the households and the
+        // economy each read the market. See BondMarket.
+        bondMarket.reset();
+        bondMarket.attach(bondReadings, householdBalance, bank, economyManager, outward);
+        economyManager.setBondMarket(bondMarket);
+        economyManager.getBusinessDebtManager().setBondMarket(bondMarket, bondMarket);
+        householdBalance.setBondMarket(bondMarket);
         
         simulationEngine = new SimulationEngine(
                 economyManager,
@@ -275,6 +287,7 @@ public class Game {
         outward.reset();
         equity.reset();
         exchange.reset();
+        bondMarket.reset();
         priceIndex.reset();
         /*
          * THE WORLD IS CHOSEN AT FOUNDING (0.7.10), and set BEFORE the reset
@@ -1245,7 +1258,11 @@ public class Game {
         BusinessDebtManager restructured = economyManager.getBusinessDebtManager();
         for (String s : restructured.sectors()) {
             double insured = restructured.getInsuredWrittenOffThisMonth(s);
-            bank.writeOffSector(s, restructured.getWrittenOffThisMonth(s) - insured);
+            // ...and what the defaults took off the sector's bonds it holds,
+            // at what they cost it (0.7.12): its share of the bondholders'
+            // loss, at a bond's own recovery since round 2 (BusinessDebtManager,
+            // RECOVERIES BY INSTRUMENT).
+            bank.writeOffSector(s, restructured.getWrittenOffThisMonth(s) - insured + bondMarket.takeBankLoss(s));
             if (insured > 0) {
                 bank.receiveInsuranceClaim(treasuryPays(TreasuryLine.MORTGAGE_INSURANCE_CLAIMS, insured));
             }
@@ -1798,7 +1815,7 @@ public class Game {
         double beforeAbroad = equity.getRaisedAbroadThisMonth(Equity.BANK);
         equity.offer(Equity.BANK, wanted, Math.max(0, bank.equity()),
                 householdBalance, DebtManager.WORLD_BASE_RATE,
-                exchange.isOpen() ? exchange.mid(Equity.BANK) : 0);
+                exchange.hasTraded(Equity.BANK) ? exchange.price(Equity.BANK) : 0);
         bank.injectCapital(equity.getRaisedHomeThisMonth(Equity.BANK) - before,
                 equity.getRaisedAbroadThisMonth(Equity.BANK) - beforeAbroad);
     }
@@ -1811,6 +1828,72 @@ public class Game {
      */
     private double bankProfitTaxRate() {
         return economyManager.getTaxPolicy().effectiveProfitRate(getSectors().retail());
+    }
+
+    /**
+     * Each household cell's own bonds, by the cell's name (0.7.12 round 2).
+     * A round-1 save held the households' bonds as one pool with a claim per
+     * cell (the cells' Household.bonds, in the cell arrays): the pool is
+     * handed to the cells by those claims. Then the market's households' face
+     * is checked against the cells' (BondMarket.recountHouseholds()). Twice
+     * on the load path: before the rebuild prices anything off them, and
+     * after it has re-counted the cells.
+     */
+    private void restoreCellBonds(DataSave loaded) {
+        if (loaded.getHouseholdBondsByCell() != null) {
+            householdBalance.restoreBondsByCell(loaded.getHouseholdBondsByCell());
+        } else {
+            householdBalance.claimPooledBonds(bondMarket.householdsFaceById());
+        }
+        bondMarket.recountHouseholds();
+    }
+
+    /**
+     * What a company's owners are due this month off its books, before its
+     * till is asked: payDividends()'s figure, which the clearing reads ahead
+     * of it (0.7.12 round 6) - the owners are paid out of the till after the
+     * markets clear and before the month's purchases are billed, so what a
+     * sector can pay for leaves it aside (EconomyManager.purchaseBudget()).
+     * Zero for the bank and for a name that is not a company.
+     */
+    public double dividendDueFor(String sector) {
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (c != Equity.BANK && Equity.COMPANIES[c].equals(sector)) return dividendDue(c);
+        }
+        return 0;
+    }
+
+    /** One company's (not the bank's): see payDividends(). */
+    private double dividendDue(int c) {
+        String sector = Equity.COMPANIES[c];
+        SectorBooks.SectorMonth m = sectorBooks.get(sector);
+        if (m == null) return 0;
+        // After the principal that fell due that month (0.7.11,
+        // round 2; Equity.dividendDue()).
+        // ...its bonds' principal among it (0.7.12).
+        /*
+         * ...NET OF WHAT REFINANCED IT (0.7.12, round 2): free cash
+         * flow to equity is net income less NET repayment - the
+         * principal repaid less the new borrowing that rolled it.
+         * 0.7.11 took the gross principal, so a bullet the desk simply
+         * rolled cut that month's dividend by the whole of it, $33B a
+         * run across the sectors (the brief's error, Jerus's fix). The
+         * borrowing that rolled it is the shortfall desk's that month,
+         * loans and bonds, never more than what fell due; a project's
+         * loan buys a building and refinances nothing.
+         */
+        double repaid = Math.max(0, m.repaid()) + Math.max(0, m.bondsRepaid());
+        double rolled = Math.min(repaid, economyManager.getBusinessDebtManager().getShortfallLentThisMonth(sector));
+        return equity.dividendDue(c, m.netIncome(), repaid - rolled);
+    }
+
+    /**
+     * What a sector can pay for as the markets clear this month (0.7.12
+     * round 6): EconomyManager.purchaseBudget(), with the dividend the month
+     * will pay its owners first. See Sector, BUY ONLY WHAT IT CAN PAY FOR.
+     */
+    public double purchaseBudget(Sector s) {
+        return economyManager.purchaseBudget(s, dividendDueFor(s.key()), month);
     }
 
     /**
@@ -1828,7 +1911,9 @@ public class Game {
      * that matured, and nothing when the principal is the larger
      * (Equity.dividendDue()). Round 1 found a landlord paying 40% of a
      * profit smaller than its mortgages' principal, emptying its till and
-     * borrowing its amortization from the shortfall desk.
+     * borrowing its amortization from the shortfall desk. NET of what the
+     * shortfall desk lent that month to roll it since 0.7.12 round 2 - free
+     * cash flow to equity (see the note in the loop).
      *
      * THE BANK PAYS BY ITS OWN RULE since 0.7.8 (Bank.dividendDue(), WHAT IT
      * DOES WITH ITS PROFIT): nothing under its capital target, a share of
@@ -1859,10 +1944,7 @@ public class Game {
                         ? bank.payOwners(bank.getProfitAfterTaxLastMonth(bankProfitTaxRate())) : 0;
             } else {
                 String sector = Equity.COMPANIES[c];
-                SectorBooks.SectorMonth m = sectorBooks.get(sector);
-                // After the principal that fell due that month (0.7.11,
-                // round 2; Equity.dividendDue()).
-                double due = equity.dividendDue(c, m.netIncome(), m.repaid());
+                double due = dividendDue(c);
                 if (due <= 0) continue;
                 double till = economyManager.getSectorCash(sector);
                 if (till < due) till += outward.recall(sector, due - till, economyManager);
@@ -1877,8 +1959,13 @@ public class Game {
                 equity.payDividend(c, paid, householdBalance);
                 // The desk's inventory is paid like any holder: into the bank.
                 bank.receiveDividend(equity.getDividendDeskThisMonth(c) - deskBefore);
+                // ...and the register keeps what was paid: the yield every
+                // participant on the exchange values the share on (0.7.12
+                // round 2; Equity.dividendPerShareAnnual()).
+                equity.noteDividendPaid(c, paid);
             }
         }
+        equity.closeDividendMonth();
     }
 
     /**
@@ -1894,22 +1981,35 @@ public class Game {
             book[c] = c == Equity.BANK ? bank.equity()
                     : sectorBooks.get(Equity.COMPANIES[c]).equity();
         }
-        exchange.takeMonth(equity, householdBalance, bank, new Exchange.Companies() {
+        exchange.takeMonth(equity, householdBalance, bank, exchangeCompanies, book,
+                DebtManager.WORLD_BASE_RATE, bank.depositRate(), month);
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            double k = exchange.getSplit(c);
+            if (k > 1) GameLog.note(String.format("%s split its shares %,.0f for one.", Equity.COMPANIES[c], k));
+            else if (k > 0) GameLog.note(String.format("%s consolidated its shares one for %,.0f.", Equity.COMPANIES[c], 1 / k));
+        }
+    }
+
+    /**
+     * What the exchange reads of a company that is not on the register: its
+     * till, its sheet and its costs. One object, wired at the founding and on
+     * the load path (Exchange.attach()), because a company's buyback bid rests
+     * on the book past the step it was posted at.
+     */
+    private final Exchange.Companies exchangeCompanies = new Exchange.Companies() {
             @Override public double cashAvailable(int company, double wanted) {
                 String sector = Equity.COMPANIES[company];
                 double till = economyManager.getSectorCash(sector);
                 if (till < wanted) till += outward.recall(sector, wanted - till, economyManager);
                 return till;
             }
+            @Override public double till(int company) {
+                return Math.max(0, economyManager.getSectorCash(Equity.COMPANIES[company]));
+            }
             @Override public void payBuyback(int company, double cash) {
                 String sector = Equity.COMPANIES[company];
                 economyManager.setSectorCash(sector, economyManager.getSectorCash(sector) - cash);
                 economyManager.recordSharesBoughtBack(sector, cash);
-            }
-            @Override public void paySpecialDividend(int company, double cash) {
-                String sector = Equity.COMPANIES[company];
-                economyManager.setSectorCash(sector, economyManager.getSectorCash(sector) - cash);
-                economyManager.recordDividendPaid(sector, cash);
             }
             @Override public double assets(int company) {
                 return sectorBooks.get(Equity.COMPANIES[company]).totalAssets();
@@ -1925,19 +2025,13 @@ public class Game {
             // off the same closed month (0.7.11, round 2).
             @Override public double monthlyDebtService(int company) {
                 SectorBooks.SectorMonth m = sectorBooks.get(Equity.COMPANIES[company]);
-                return Math.max(0, m.interest()) + Math.max(0, m.repaid());
+                return Math.max(0, m.interest()) + Math.max(0, m.repaid()) + Math.max(0, m.bondsRepaid());
             }
             // Whether the bank buys its own shares back or issues them is its
             // capital policy since 0.7.8, which the exchange reads off the bank
             // (Bank.buysBackOwnShares(), issuesOwnShares()); it was "flush" here - twice
             // the minimum, nothing owed a regulator, a record neither bad nor new.
-        }, book, DebtManager.WORLD_BASE_RATE, bank.depositRate());
-        for (int c = 0; c < Equity.COMPANIES.length; c++) {
-            double k = exchange.getSplit(c);
-            if (k > 1) GameLog.note(String.format("%s split its shares %,.0f for one.", Equity.COMPANIES[c], k));
-            else if (k > 0) GameLog.note(String.format("%s consolidated its shares one for %,.0f.", Equity.COMPANIES[c], 1 / k));
-        }
-    }
+        };
 
     /**
      * Re-reads the bank off the city it is banking.
@@ -2032,11 +2126,74 @@ public class Game {
         bank.setWeightedBook(businessWeighted, cityWeighted,
                 householdBalance.bookOwed() * Bank.RISK_HOUSEHOLD);
         bank.setMortgageBook(mortgageFace, mortgageWeighted);
+        // ...and the businesses' bonds it holds, and the book's concentration (0.7.12).
+        strikeBankBonds();
 
         // ...and what foreigners have borrowed to take abroad, which is the one
         // book with no debt object behind it. The stock in CapitalFlows is the
         // truth and this mirrors it, so a reload rebuilds it like the rest.
         bank.setCarryBook(hotMoney.getCarryStock());
+    }
+
+    /**
+     * THE BANK'S BONDS AND ITS BOOK'S CONCENTRATION (0.7.12), re-read off the
+     * market and the lender: the bonds at what they cost it, weighed as loans
+     * to their issuers for the months left (RISK_BUSINESS,
+     * Bank.maturityWeight()); and every sector's exposure - what it owes the
+     * bank that nobody insures and its bonds the bank holds - at its default
+     * rate and the loss given default of what the bank holds of it (Bank,
+     * THE BANK PRICES CONCENTRATION). At every refresh, after the market's
+     * step - the last thing in the month to move the bank's bonds, so a saved
+     * city reloads onto the book it closed on - and at the top of the month,
+     * before the capital rule and the prices read it.
+     */
+    private void strikeBankBonds() {
+        double cost = 0, weighted = 0, face = 0;
+        for (CorporateBond b : bondMarket.getBonds()) {
+            if (!(b.bank() > 0)) continue;
+            cost += b.bankCost();
+            face += b.bank();
+            weighted += b.bankCost() * Bank.RISK_BUSINESS * Bank.maturityWeight(b.remainingMonths(month));
+        }
+        bank.setBondBook(cost, weighted, face);
+        bank.setConcentration(bankExposures());
+    }
+
+    /** Every sector's exposure as the bank's concentration reads it. */
+    private java.util.Map<String, Bank.Exposure> bankExposures() {
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        java.util.Map<String, Bank.Exposure> out = new java.util.LinkedHashMap<>();
+        for (String s : credit.sectors()) {
+            double loans = Math.max(0, credit.getUninsuredPrincipal(s));
+            double bonds = bondMarket.bankCost(s);
+            // Each class at its own loss given default (0.7.12, round 2:
+            // BusinessDebtManager, RECOVERIES BY INSTRUMENT).
+            double lgdLoans = BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT;
+            double lgdBonds = BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT;
+            double amount = loans + bonds;
+            double lgd = amount > 0 ? (loans * lgdLoans + bonds * lgdBonds) / amount : lgdLoans;
+            // Owing nothing, it has no leverage to read - the curve would read
+            // an empty balance sheet as a certain default and its first loan
+            // as needing no capital at all - so its first dollar is at the
+            // floor, the rate a sound loan is priced for; the loan's own
+            // spread carries the deal's risk.
+            double pd = credit.quarterPrincipal(s) > 0
+                    ? Math.max(BondMarket.DEFAULT_RATE_FLOOR, BusinessDebtManager.defaultProbability(
+                            BusinessDebtManager.pricingLeverage(credit.quarterPrincipal(s), credit.quarterAssets(s))))
+                    : BondMarket.DEFAULT_RATE_FLOOR;
+            out.put(s, new Bank.Exposure(amount, pd, lgd));
+        }
+        return out;
+    }
+
+    /** What the book's concentration adds to each sector's loans this month, a year (Bank.concentrationCharge() at a business loan's term). */
+    private java.util.Map<String, Double> concentrationCharges() {
+        java.util.Map<String, Double> out = new java.util.LinkedHashMap<>();
+        double policy = debtManager.getPolicyRate();
+        for (String s : economyManager.getBusinessDebtManager().sectors()) {
+            out.put(s, bank.concentrationCharge(policy, Bank.PRIME_TERM_MONTHS, s));
+        }
+        return out;
     }
 
     /**
@@ -2078,7 +2235,16 @@ public class Game {
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
         java.util.Map<String, double[]> out = new java.util.LinkedHashMap<>();
         for (String s : credit.sectors()) {
-            out.put(s, new double[]{ credit.quarterPrincipal(s), credit.quarterAssets(s), credit.getUninsuredPrincipal(s) });
+            /*
+             * ...AND THE SECTOR'S BONDS IT HOLDS (0.7.12), at what they cost
+             * it, beside what it has lent - the loans at a loan's loss given
+             * default and the bonds at a bond's, the same a bondholder values
+             * the bond on (BusinessDebtManager, RECOVERIES BY INSTRUMENT,
+             * since round 2).
+             */
+            out.put(s, new double[]{ credit.quarterPrincipal(s), credit.quarterAssets(s), credit.getUninsuredPrincipal(s),
+                    BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT, bondMarket.bankCost(s),
+                    BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT });
         }
         return out;
     }
@@ -2615,9 +2781,11 @@ public class Game {
             // ...and not at a quote under what the shares are worth: then it borrows.
             if (ask > 0 && !exchange.quoteSupportsIssue(company)) ask = 0;
             if (ask > 0) {
+                // Built at the book's price: its last trade, or fair value
+                // before one (0.7.12 round 2 - the dealer's mid until then).
                 double raised = equity.offer(company, ask, books.equity(),
                         householdBalance, DebtManager.WORLD_BASE_RATE,
-                        exchange.isOpen() ? exchange.mid(company) : 0);
+                        exchange.hasTraded(company) ? exchange.price(company) : 0);
                 if (raised > 0) {
                     economyManager.setSectorCash(decision.sector,
                             economyManager.getSectorCash(decision.sector) + raised);
@@ -2669,7 +2837,19 @@ public class Game {
              */
             double rate = credit.projectRate(decision.sector, borrowed);
             if (n == decision.quantity) firstRate = rate;
-            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed, rate)) {
+            /*
+             * ...OR AT A BOND'S, WHERE ONE IS CHEAPER (0.7.12). Jerus:
+             * "Cheapest, within the bank's limit." The same test - the
+             * building must earn BusinessInvestment's margin over the
+             * interest - at the instrument's own rate: the bond's coupon on
+             * what the bond raises and the loan's rate on the rest, as
+             * financeProject() splits it. A plan that cannot raise the whole
+             * is judged at the loan's rate, as before, and the bank's own
+             * rules say no at the door.
+             */
+            BusinessDebtManager.Plan plan = borrowed > 0 ? financeProject(decision.sector, borrowed, rate) : null;
+            double tested = plan != null && plan.hasBond() && plan.covers() ? plan.blendedRate() : rate;
+            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed, tested)) {
                 affordable = n;
                 break;
             }
@@ -2696,10 +2876,26 @@ public class Game {
                         decision.quantity)
                 : "";
 
+        projectFinancing.remove(decision.sector);
         if (buildFor(payer, decision.template, quantity)) {
             lastInvestment.put(slot,
-                    String.format("Built %,d %s%s - %s",
-                            quantity, decision.template.getName(), trimmed, decision.reason));
+                    String.format("Built %,d %s%s%s - %s",
+                            quantity, decision.template.getName(), trimmed,
+                            financingWords(projectFinancing.get(decision.sector)), decision.reason));
+        } else if (credit.wasRefusedAtDefaultPoint(decision.sector)) {
+            /*
+             * PAST THE DEFAULT POINT (0.7.12, round 2): the sector owes more
+             * than INSOLVENCY_TRIGGER times what it owns, and the bank lends
+             * it nothing until it is back under - see BusinessDebtManager,
+             * NOTHING PAST THE DEFAULT POINT. Read over its last quarter since
+             * round 3, as the gate reads it.
+             */
+            double lev = credit.defaultPointLeverage(decision.sector);
+            lastInvestment.put(slot, String.format("Holding: it owes %s, past the default point of %.2f"
+                            + " times - the bank lends it nothing, %s included, until it is under",
+                    Double.isFinite(lev) ? String.format("%.2f times what it owns, over its last quarter", lev)
+                            : "more than everything it owns",
+                    BusinessDebtManager.INSOLVENCY_TRIGGER, decision.template.getName()));
         } else if (credit.wasRefusedForCapital(decision.sector)) {
             /*
              * THE BANK'S CAPITAL SAID NO (0.7.8), and the investor says so
@@ -2963,6 +3159,62 @@ public class Game {
         return paid;
     }
 
+    /* =======================================================================
+       A BOND OR THE BANK, FOR A BUILDING (0.7.12)
+
+       The investment desk's half of BondMarket, WHO ISSUES, AND WHEN: what
+       a building's borrowing would raise in a bond - the largest one whose
+       coupon, with its costs spread over its ten years, is cheaper than the
+       bank's loan - and what the bank lends of the rest; never more,
+       together, than the bank would have lent (projectLoanRoom()), since the
+       brief is "cheapest, within the bank's limit". consider() judges the
+       building at the plan's rate; the sector's investor issues it.
+       ======================================================================= */
+
+    /** How a building's borrowing would be financed now: a bond, the bank, or both. Books nothing. */
+    private BusinessDebtManager.Plan financeProject(String sector, double amount, double loanRate) {
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        return bondMarket.plan(sector, amount, loanRate, credit.projectLoanRoom(sector, amount),
+                credit.projectBondRoom(sector, amount), amount, month);
+    }
+
+    /** The plan each sector's last building was financed on this month, for the advisor's line. */
+    private final java.util.Map<String, BusinessDebtManager.Plan> projectFinancing = new java.util.LinkedHashMap<>();
+
+    /**
+     * THE ADVISOR'S WORDS FOR HOW A BUILDING WAS FINANCED (0.7.12): the bond
+     * and its coupon against the bank's rate when a bond was no dearer, and
+     * the bank's part beside it; the bank, and what the book would have
+     * cleared at, when the bank was the cheaper - or when the book would
+     * clear lower but an issue's fixed costs outweigh it on a small sum.
+     * Nothing for a building paid from the till.
+     */
+    public static String financingWords(BusinessDebtManager.Plan plan) {
+        if (plan == null) return "";
+        if (plan.hasBond()) {
+            String bond = String.format(" - issued $%,.0fk of %d-year bonds at %.2f%%", plan.bondFace(),
+                    CorporateBond.TERM_MONTHS / 12, plan.coupon() * 100);
+            if (plan.loan() > 0) {
+                return bond + String.format(" and borrowed $%,.0fk from the bank at %.2f%%",
+                        plan.loan(), plan.loanRate() * 100);
+            }
+            return plan.allIn() < plan.loanAllIn() - 1e-9
+                    ? bond + String.format(" - cheaper than the bank's %.2f%%", plan.loanRate() * 100)
+                    : bond + String.format(" - no dearer than the bank's %.2f%%, its costs counted", plan.loanRate() * 100);
+        }
+        if (Double.isNaN(plan.clearing())) return " - borrowed from the bank - the bond book would not fill it";
+        return plan.clearing() >= plan.loanRate()
+                ? String.format(" - borrowed from the bank - the bond book would clear only at %.2f%%",
+                        plan.clearing() * 100)
+                : String.format(" - borrowed from the bank - the bond book would clear at %.2f%%, but an issue's"
+                        + " costs on so small a sum would make it the dearer", plan.clearing() * 100);
+    }
+
+    /** The loan that hands `purpose` once its fee is kept back (0.7.12, round 5): the shortfall desk's gross-up (0.7.7), for a building's loan. */
+    public static double grossedForFee(double purpose) {
+        return purpose > 0 ? purpose / (1 - Bank.LOAN_FEE) : 0;
+    }
+
     /** Wraps one sector's cash and credit line as a payer. */
     private Investor sectorInvestor(final String sector){
 
@@ -3004,23 +3256,57 @@ public class Game {
             // positive amount, so the same sector could not borrow to keep the
             // lights on but could borrow to expand. The ban is one ban.
             @Override public boolean canBorrow(double amount) {
+                // ...GROSSED UP FOR ITS FEE (0.7.12, round 5): what the bank
+                // is asked for is what hands the builder `amount` - see borrow().
+                amount = grossedForFee(amount);
                 // ...AND THE LINE. The ban stopped here from 2026-09-06; the
                 // insolvency line did not until 2026-09-10, so a sector could
                 // be lent the money to expand straight past the point the
                 // lender would write it down. canFundProject() tests the
                 // balance sheet after the deal, with the building counted, and
                 // is false while barred and while the bank itself is shut.
+                // ...OR A BOND AND THE BANK TOGETHER RAISE IT ALL (0.7.12),
+                // which they can only where the bank would have lent it all
+                // (financeProject()) - so this is the same answer, asked of
+                // the plan the investor will borrow on.
+                BusinessDebtManager.Plan plan = financeProject(sector, amount, credit.projectRate(sector, amount));
+                if (plan != null && plan.hasBond() && plan.covers()) return true;
                 return credit.canFundProject(sector, amount);
             }
 
             @Override public void borrow(double amount, int month) {
-                // A project's loan, priced with its building counted (0.7.8).
-                credit.issueProjectLoan(sector, amount, month);
-                // ...handed the principal less the loan's fee, which the
-                // bank keeps back at the settle (0.7.7).
-                economyManager.setSectorCash(sector,
-                        economyManager.getSectorCash(sector) + amount
-                                - BusinessDebtManager.feeOn(amount));
+                /*
+                 * THE BOND FIRST, WHERE THE PLAN HAS ONE (0.7.12): sold at its
+                 * coupon, the proceeds less its costs to the sector; the bank
+                 * lends the rest.
+                 *
+                 * ...AND EVERY LOAN HANDED ITS FULL PURPOSE (0.7.12, round 5;
+                 * Jerus: "gross a project loan up for its fee, as the
+                 * shortfall desk's loan already is (0.7.7). Every loan is then
+                 * handed its full purpose."). The plan is struck on the
+                 * grossed amount, and the bank lends what the bond's
+                 * proceeds left of `amount` grossed for the loan's fee, so a
+                 * bond's costs ride in the loan's principal too: the builder is
+                 * handed exactly `amount`, and the till the build is paid
+                 * from does not end the month short by a fee.
+                 */
+                double gross = grossedForFee(amount);
+                BusinessDebtManager.Plan plan = financeProject(sector, gross, credit.projectRate(sector, gross));
+                double handed = 0;
+                if (plan != null && plan.hasBond() && plan.covers()) {
+                    handed += bondMarket.issue(plan, month);
+                    GameLog.note(String.format("%s%s.", sector, financingWords(plan).replaceFirst(" - ", " ")));
+                }
+                projectFinancing.put(sector, plan);
+                double loan = grossedForFee(Math.max(0, amount - handed));
+                if (loan > 0) {
+                    // A project's loan, priced with its building counted (0.7.8).
+                    credit.issueProjectLoan(sector, loan, month);
+                    // ...handed the principal less the loan's fee, which the
+                    // bank keeps back at the settle (0.7.7).
+                    handed += loan - BusinessDebtManager.feeOn(loan);
+                }
+                economyManager.setSectorCash(sector, economyManager.getSectorCash(sector) + handed);
             }
         };
     }
@@ -3833,6 +4119,9 @@ public class Game {
     };
 
     public Investor getGovernmentInvestor() { return government; }
+
+    /** One sector's till and credit as a payer, as the month's investment builds with it (sectorInvestor()): what a harness borrows a building's loan through. */
+    public Investor getSectorInvestor(String sector) { return sectorInvestor(sector); }
     
     public BuildResult buildStack(BuildingsTemplate template, int quantity, boolean noConstruction){
         double totalCost = noConstruction
@@ -4741,7 +5030,8 @@ public class Game {
 
         // The register's month: nothing offered, nothing paid, until it is.
         equity.startMonth();
-        exchange.startMonth();
+        exchange.startMonth(month);
+        bondMarket.startMonth();
         economyManager.clearEquityFlows();
 
         if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {
@@ -4969,7 +5259,11 @@ public class Game {
         for (Sector s : getSectors().all()) sectorInterestPaid += s.statement().interest;
         // The city's coupons and the businesses' interest, kept by who paid
         // them since 0.7.9 - the same cash and income as their sum, to the bit.
-        bank.takeInterest(interestDue, sectorInterestPaid);
+        // Less the coupons on the businesses' bonds (0.7.12), which are their
+        // holders': the bank takes its own beside the loans' interest, and the
+        // market pays the rest at its step.
+        bank.takeInterest(interestDue, sectorInterestPaid - bondMarket.getCouponsStruck());
+        bank.takeBondCoupons(bondMarket.getCouponsDueToBank());
 
         refreshBank();
         // ...and what it sets aside against it, now every loan and write-off
@@ -5168,6 +5462,17 @@ public class Game {
          */
         payDividends();
         tradeShares();
+        /*
+         * ...AND THE BONDS TRADE (0.7.12): the month's coupons paid to their
+         * holders, last month's orders withdrawn, every bond valued and every
+         * participant's orders posted again - after the shares, and before
+         * the sectors move their money abroad, so a company's bid is paid from
+         * its till first. The last thing in the month to move the bank's
+         * bonds, so its book is re-read straight after. See BondMarket, THE
+         * ORDERS ARE GOOD FOR A MONTH.
+         */
+        bondMarket.takeMonth(month);
+        strikeBankBonds();
 
         outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
                 foreign.getRate(), economyManager);
@@ -5525,6 +5830,9 @@ public class Game {
          * existing borrowers going under the minimum. See Bank, WHAT IT
          * LENDS. The carry trade reads the same rule through headroom().
          */
+        // ...its bonds and its book's concentration re-read first (0.7.12),
+        // so the rule and the prices below read the book as it stands.
+        strikeBankBonds();
         double growth = bank.lendingGrowthLimit();
         boolean keepGoingOnly = bank.lendsOnlyToKeepBorrowersGoing();
         // ...the insured mortgages with the rest while the leverage ratio
@@ -5536,9 +5844,15 @@ public class Game {
         // ...and every business's spread sits on the bank's prime (0.7.7; the
         // city's rate until then), on the dial as it stands this month - and
         // the landlords' insured mortgages are written and renewed at the
-        // insured rate beside it (0.7.11).
+        // insured rate beside it (0.7.11). And each sector's loans pay the
+        // capital the book's concentration asks of them (0.7.12; Bank, THE
+        // BANK PRICES CONCENTRATION), pushed before anything is priced.
+        economyManager.getBusinessDebtManager().setConcentrationCharges(concentrationCharges());
         economyManager.updateBusinessCredit(bank.prime(debtManager.getPolicyRate()),
                 bank.insuredMortgageRate(debtManager.getPolicyRate()));
+        // ...and the bonds' coupons struck on the same face the interest
+        // bills just were, by who holds each now (0.7.12).
+        bondMarket.strikeCoupons();
 
         // Property tax with the interest bill, and for the same reason: both are
         // owed before the month's statements run, so what each sector banks is
@@ -5741,7 +6055,7 @@ public class Game {
      * measured trajectory, and it would have been the moment somebody reformed
      * twice.
      */
-    private static final double FIXED_ISSUE_COST = 12;
+    public static final double FIXED_ISSUE_COST = 12;
 
     /** The fee in today's money. See FIXED_ISSUE_COST. */
     private double issuanceFee() {
@@ -5749,8 +6063,8 @@ public class Game {
         return FIXED_ISSUE_COST / (unit > 0 ? unit : 1);
     }
 
-    /** Underwriter's spread, as a fraction of face. */
-    private static final double UNDERWRITING_SPREAD = .0075;
+    /** Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003) - the businesses' bonds pay it too since 0.7.12 (BondMarket, WHAT AN ISSUE COSTS). */
+    public static final double UNDERWRITING_SPREAD = .0075;
 
     /**
      * The least a dollar of face can ever bank, net of the discount and the
@@ -7052,6 +7366,28 @@ public class Game {
     private final Exchange exchange = new Exchange();
     public Exchange getExchange() { return exchange; }
 
+    /**
+     * The businesses' bonds and the order book each trades on (0.7.12): who
+     * issued what, who holds it, and the rule each participant trades by.
+     * See BondMarket, and CorporateBond for the instrument.
+     */
+    private final BondMarket bondMarket = new BondMarket();
+    public BondMarket getBondMarket() { return bondMarket; }
+
+    /** What the bond market reads of the city, read live. */
+    private final BondMarket.Readings bondReadings = new BondMarket.Readings() {
+        @Override public int month()                { return month; }
+        @Override public double curve(int months)   { return debtManager.curveRate(months); }
+        @Override public double policyRate()        { return debtManager.getPolicyRate(); }
+        @Override public double depositRate()       { return bank.depositRate(); }
+        @Override public double worldRate()         { return DebtManager.WORLD_BASE_RATE; }
+        @Override public double countryPremium()    { return debtManager.countryPremium(); }
+        @Override public double monthlyGdp()        { return economyManager.getMonthGdp(); }
+        @Override public double localPerUsd()       { return foreign.getRate(); }
+        @Override public boolean worldRunning()     { return hotMoney.isStopped(); }
+        @Override public double unit()              { return denomination.getUnit(); }
+    };
+
     public OutwardInvestment getOutwardInvestment() { return outward; }
 
     /**
@@ -7504,7 +7840,7 @@ public class Game {
         dataSave.setCapitalFlows(hotMoney.toSaveArray());
         dataSave.setOutwardInvestment(outward.toSaveArray());
         dataSave.setEquity(equity.keys(), equity.toSaveArray());
-        dataSave.setExchange(exchange.toSaveArray());
+        dataSave.setExchangeState(exchange.toState());
         dataSave.setPriceIndex(priceIndex.toSaveArray());
         dataSave.setWorldEconomy(world.toSaveArray());
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
@@ -7523,6 +7859,8 @@ public class Game {
         // ...and the advances ceiling dial beside it (0.7.2), under its own key.
         dataSave.setAdvancesCeilingMonths(centralBank.getAdvancesCeilingMonths());
         dataSave.setHouseholdPaperRatio(householdBalance.getPaperRatio());
+        // ...and their bonds' ratio (0.7.12), which the plan reads too.
+        dataSave.setHouseholdBondRatio(householdBalance.getBondRatio());
         dataSave.setBuybackUnsettled(buybackToHouseholdsUnsettled, buybackAbroadUnsettled);
         dataSave.setCostOfLiving(labourMarket.getCostOfLiving());
         /*
@@ -7600,6 +7938,13 @@ public class Game {
                 economyManager.getBusinessDebtManager().getPremiumsTotalToSave());
         dataSave.setInsuranceClaims(
                 economyManager.getBusinessDebtManager().getInsuredWrittenOffTotals());
+        // ...and the businesses' bonds (0.7.12): every bond and who holds it,
+        // every book's resting orders, the market's month and its record; and
+        // what defaults have taken off the bonds over the city's life.
+        dataSave.setBondMarket(bondMarket.toState());
+        // ...and each cell's own bonds, by the cell's name (round 2).
+        dataSave.setHouseholdBondsByCell(householdBalance.bondsByCellToSave());
+        dataSave.setBondWrittenOff(economyManager.getBusinessDebtManager().getBondWrittenOffTotals());
 
         dataSave.setConstructionMaterials(buildingManager.getConstructionMaterials());
         dataSave.setPopulation(populationManager.getPopulation());
@@ -9385,9 +9730,14 @@ public class Game {
             equity.restore(loaded.getEquityKeys(), loaded.getEquity());
             // ...or no market. The desk's mark is put back from the quote and
             // the inventory, without calling the difference income.
-            exchange.restore(loaded.getEquityKeys(), loaded.getExchange());
+            // ...on its books since 0.7.12 round 2; a save from before them
+            // reads the dealer's array.
+            if (!exchange.restore(loaded.getExchangeState())) {
+                exchange.restore(loaded.getEquityKeys(), loaded.getExchange());
+            }
+            exchange.attach(equity, householdBalance, bank, exchangeCompanies, month);
             bank.restoreSecurities(exchange.markToMarket(equity));
-            exchange.reopen(bank.equity());
+            exchange.reopen(bank);
             labourMarket.setCostOfLiving(loaded.getCostOfLiving());
             carriedCarOwnership = loaded.getCarsPerHousehold();
             getInfrastructureManager().setRememberedThroughput(loaded.getRememberedCommute());
@@ -9430,6 +9780,7 @@ public class Game {
                 exchange.seedConstants(unit);
                 outward.seedConstants(unit);
                 householdBalance.seedConstants(unit);
+                bondMarket.seedConstants(unit);
             }
             carriedRentWeight = loaded.getRentWeight();
             carriedStudioWeight = loaded.getRentWeightStudio();
@@ -9484,6 +9835,8 @@ public class Game {
             buybackToHouseholdsUnsettled = loaded.getBuybackToHouseholdsUnsettled();
             buybackAbroadUnsettled = loaded.getBuybackAbroadUnsettled();
             householdBalance.setPaperRatio(loaded.getHouseholdPaperRatio());
+            // ...and their bonds' (0.7.12); 1 on an older save, which holds none.
+            householdBalance.setBondRatio(loaded.getHouseholdBondRatio() > 0 ? loaded.getHouseholdBondRatio() : 1);
             // Held, not applied: rebuildSimulationState() has not run yet and
             // it ends by re-striking this block. Put back below it.
             loadedGovernmentMonth = loaded.getGovernmentMonth();
@@ -9726,6 +10079,13 @@ public class Game {
                             loadedLoans.add(gson.fromJson(obj, BusinessLoan.class));
                             break;
 
+                        // Interim financing after a default (0.7.12, round
+                        // 5): a business loan that ranks ahead of the
+                        // sector's other debt, which its type carries.
+                        case InterimLoan.TYPE:
+                            loadedLoans.add(gson.fromJson(obj, InterimLoan.class));
+                            break;
+
                         // A landlord's insured mortgage (0.7.11): its balance,
                         // rate, term and amortization, as it stood.
                         case "MORTGAGE":
@@ -9742,6 +10102,14 @@ public class Game {
             // before the rebuild prices anything off it. None in an older
             // save: each sector reads its month until it has its own.
             economyManager.getBusinessDebtManager().restoreStatements(loaded.getCreditStatements());
+            // ...and the businesses' bonds (0.7.12), before the rebuild prices
+            // any sector's interest bill off them. An older save has none: a
+            // city whose businesses owe only the bank, which is what it was.
+            bondMarket.restore(loaded.getBondMarket());
+            // ...and each cell's own face of them (round 2) - put back again
+            // below, after the rebuild's census, with the cells' other stocks.
+            restoreCellBonds(loaded);
+            economyManager.getBusinessDebtManager().restoreBondWrittenOff(loaded.getBondWrittenOff());
 
             loadHistory(slot);
 
@@ -10096,6 +10464,12 @@ public class Game {
             householdBalance.restore(restoredFlows.getHouseholdBalance(), families::get);
             householdBalance.restoreCells(restoredFlows.getHouseholdCellKeys(),
                     restoredFlows.getHouseholdCells(), restoredFlows.getEquityKeys());
+            // ...and each cell's own bonds with them, for the same reason: the
+            // rebuild's census folds a cell it reads under half a household
+            // into the rest, bonds and all, and the cell arrays above put
+            // every other stock back but not these (0.7.12 round 2 -
+            // SaveFileCheck found three cells of forty-five moved).
+            restoreCellBonds(restoredFlows);
             householdBalance.setExchangeRate(foreign.getRate());
 
             /*
@@ -10346,6 +10720,7 @@ public class Game {
         outward.redenominate(scale);
         equity.redenominate(scale);
         exchange.redenominate(scale);
+        bondMarket.redenominate(scale);
         // The last closed month is what the next dividend is paid on.
         sectorBooks.redenominate(scale);
         priceIndex.redenominate(scale);

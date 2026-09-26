@@ -1,6 +1,6 @@
-# BusinessServicesCheck.java - 379 lines · 5 methods · 3 constants · harnesses
+# BusinessServicesCheck.java - 380 lines · 5 methods · 3 constants · harnesses
 
-`ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The sector whose customer is not in the city.
 > 
@@ -54,10 +54,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 350 | **type** `public class BusinessServicesCheck` | The sector whose customer is not in the city. |
+| 30 | 351 | **type** `public class BusinessServicesCheck` | The sector whose customer is not in the city. |
 | 36 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 41 | 9 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 51 | 5 | `static void quietly(Runnable r)` |  |
-| 62 | 311 | `public static void main(String[] args) throws Exception` |  |
-| 374 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
+| 62 | 312 | `public static void main(String[] args) throws Exception` |  |
+| 375 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
 

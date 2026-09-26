@@ -975,7 +975,7 @@ public class HouseholdBalance {
             lastWrittenOff += c.discharge();
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
 
-            plannedSpend += c.plan(localPerUsd, paperRatio, spendFactor) * c.households;
+            plannedSpend += c.plan(localPerUsd, paperRatio, spendFactor, bondRatio) * c.households;
 
             /*
              * AND WHETHER IT CAN AFFORD THE CLINIC (2026-09-19), asked last,
@@ -1127,6 +1127,9 @@ public class HouseholdBalance {
        the other half out - because that is who carries the money.
        ===================================================================== */
 
+    /** The bonds' ids in the order stocks() last listed them, one stock each from its named slot. */
+    private int[] bondStockIds = new int[0];
+
     /** One stock a household carries, for followThePeople() to move. */
     private interface Stock {
         double get(Household c);
@@ -1193,6 +1196,31 @@ public class HouseholdBalance {
             public double get(Household c) { return c.paper; }
             public void set(Household c, double v) { c.paper = v; }
         });
+        /*
+         * ...and the businesses' bonds (0.7.12), BOND BY BOND since round 2:
+         * the cell holds each bond itself now (Household.bondFace), so each is
+         * its own stock and follows its holders like a company's shares - a
+         * household that moves cell takes its bonds with it, and what nobody
+         * claims left the city, bond by bond (BondMarket.householdLeft()).
+         * Named from here: the first bond's slot, in bondStockIds' order.
+         */
+        java.util.TreeSet<Integer> ids = new java.util.TreeSet<>();
+        for (Household c : cells) ids.addAll(c.bondFace.keySet());
+        if (named != null && named.length > 2) named[2] = stocks.size();
+        int[] order = new int[ids.size()];
+        int j = 0;
+        for (int id : ids) {
+            final int bond = id;
+            order[j++] = id;
+            // Set without the total, which followThePeople() recounts once
+            // every bond has moved: a recount per bond per cell is the
+            // square of the bonds a cell holds, every month.
+            stocks.add(new Stock() {
+                public double get(Household c) { return c.bondFace(bond); }
+                public void set(Household c, double v) { if (v > 0) c.bondFace.put(bond, v); else c.bondFace.remove(bond); }
+            });
+        }
+        bondStockIds = order;
         return stocks;
     }
 
@@ -1207,10 +1235,11 @@ public class HouseholdBalance {
      * @param buffer what a newly arrived household of each cell brings, in savings
      */
     private void followThePeople(double[] fresh, double[] buffer) {
-        int[] named = new int[2];
+        int[] named = new int[3];
         java.util.List<Stock> stocks = stocks(named);
         final int loanSlot = named[0];
         final int paperSlot = named[1];
+        final int bondSlot = named[2];
 
         int n = cells.length;
         double[] before = new double[n];
@@ -1222,6 +1251,8 @@ public class HouseholdBalance {
             boolean loans = k == loanSlot;
             left[k] = moveStock(stocks.get(k), fresh, loans ? beforeLoans : before, k == 0 ? buffer : null);
         }
+        // Each cell's bonds total, from the bonds that moved (round 2).
+        if (bondStockIds.length > 0) for (Household c : cells) c.recountBonds();
         // What nobody claimed has left the city: the savings with them, the
         // debt on the bank, the shares to wherever they went - held abroad
         // from now on, as far as the register is concerned.
@@ -1251,6 +1282,20 @@ public class HouseholdBalance {
             double cash = paperGone * paperRatio;
             paperDesk.buy(paperGone, cash);
             lastTakenAway += cash;
+        }
+        /*
+         * ...AND THEIR BONDS ARE HELD FROM ABROAD (0.7.12), as a leaver's
+         * shares are: the world is one of a bond's holders, so nothing has to
+         * be sold on the way out - nobody is obliged to buy - and the face
+         * simply moves from the households' to the world's, bond by bond
+         * since round 2.
+         */
+        lastBondsTakenAway = 0;
+        for (int b = 0; b < bondStockIds.length; b++) {
+            double gone = left[bondSlot + b];
+            if (!(gone > 0)) continue;
+            lastBondsTakenAway += gone;
+            if (bondMarket != null) bondMarket.householdLeft(bondStockIds[b], gone);
         }
 
         for (int i = 0; i < n; i++) {
@@ -1329,6 +1374,9 @@ public class HouseholdBalance {
             }
             if (held) lastCellsFolded++;
         }
+        // Each cell's bonds total, from the bonds the fold moved (round 2:
+        // the bond stocks are set without it - see stocks()).
+        if (lastCellsFolded > 0) for (Household c : cells) c.recountBonds();
         return lastCellsFolded;
     }
 
@@ -1940,7 +1988,8 @@ public class HouseholdBalance {
      * them, and takes the money out of savings.
      *
      * OUT OF SAVINGS AND NOT OFF THE INCOME STATEMENT, which is the same
-     * treatment buyShares() and investAbroad() give: a household turning money
+     * treatment a cell's share purchase on the book (Exchange) and
+     * investAbroad() give: a household turning money
      * into a thing it owns is a portfolio move, not consumption. The month's
      * books do not see it and the balance sheet does - savings down, a car up
      * - which is what happened.
@@ -2486,97 +2535,27 @@ public class HouseholdBalance {
      */
     private void rebuildLiquidity() {
         boolean shares = exchange != null && register != null && bank != null;
-        if (!shares && paperDesk == null) { liquidity = null; return; }
+        if (!shares && paperDesk == null && bondMarket == null) { liquidity = null; return; }
         liquidity = new Household.Liquidity() {
             @Override public double sell(Household cell, double needPer) {
-                return shares ? exchange.sellForHousehold(register, bank, cell, needPer) : 0;
+                return shares ? exchange.sellForHousehold(register, bank, HouseholdBalance.this, cell, needPer) : 0;
             }
             @Override public double sellPaper(Household cell, double needPer) {
                 return sellPaperToDesk(cell, needPer);
+            }
+            @Override public double sellBonds(Household cell, double needPer) {
+                return bondMarket == null ? 0 : bondMarket.sellForCell(cell, needPer, cell.rate);
             }
         };
     }
 
     /**
-     * The households buy shares of one company on the exchange, each cell
-     * with money past its cushion putting a share of the excess in, pro rata
-     * when the desk cannot sell them all they want.
-     *
-     * @param fraction of the excess each household puts in
-     * @param capacity the most cash the desk will take for shares this month
-     * @return cash spent in total
+     * The cells, for the exchange and the bond market to post their orders
+     * from (0.7.12 round 2: each household type is its own participant).
+     * The array itself, in the census order the saves name them in; a market
+     * reads and settles against them, and adds or removes none.
      */
-    public double buyShares(Exchange exchange, Equity register, Bank bank, int company,
-                            double fraction, double capacity) {
-        if (exchange == null || capacity <= 0 || fraction <= 0) return 0;
-        double[] want = new double[cells.length];
-        double total = 0;
-        for (int i = 0; i < cells.length; i++) {
-            Household c = cells[i];
-            if (c.isEmpty() || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
-            double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
-            if (excess <= 0) continue;
-            want[i] = excess * fraction * c.households;
-            total += want[i];
-        }
-        if (total <= 0) return 0;
-        double scale = Math.min(1, capacity / total);
-        double spent = 0;
-        for (int i = 0; i < cells.length; i++) {
-            if (want[i] <= 0) continue;
-            Household c = cells[i];
-            double cash = want[i] * scale;
-            double shares = exchange.deskSellsToHouseholds(register, bank, company, cash);
-            if (shares <= 0) continue;
-            c.savings -= cash / c.households;
-            c.shares[company] += shares / c.households;
-            spent += cash;
-        }
-        return spent;
-    }
-
-    /**
-     * The same, across several companies in order of preference: each cell's
-     * month's money goes into the first while the desk can sell it, then the
-     * next. What no company could take stays in savings.
-     *
-     * @param companies register indices, best first
-     * @param capacity  the most cash the desk will take for each, same order
-     * @return cash spent in total
-     */
-    public double buyShares(Exchange exchange, Equity register, Bank bank, int[] companies,
-                            double fraction, double[] capacity) {
-        if (exchange == null || fraction <= 0 || companies.length == 0) return 0;
-        double[] left = new double[cells.length];
-        double total = 0;
-        for (int i = 0; i < cells.length; i++) {
-            Household c = cells[i];
-            if (c.isEmpty() || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
-            double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
-            if (excess <= 0) continue;
-            left[i] = excess * fraction * c.households;
-            total += left[i];
-        }
-        double spent = 0;
-        for (int k = 0; k < companies.length && total > 0; k++) {
-            if (capacity[k] <= 0) continue;
-            double scale = Math.min(1, capacity[k] / total);
-            int company = companies[k];
-            for (int i = 0; i < cells.length; i++) {
-                if (left[i] <= 0) continue;
-                Household c = cells[i];
-                double cash = left[i] * scale;
-                double shares = exchange.deskSellsToHouseholds(register, bank, company, cash);
-                if (shares <= 0) continue;
-                c.savings -= cash / c.households;
-                c.shares[company] += shares / c.households;
-                left[i] -= cash;
-                total -= cash;
-                spent += cash;
-            }
-        }
-        return spent;
-    }
+    Household[] cellsForMarket() { return cells; }
 
     /** A split or consolidation: every household's count of the company by the factor. */
     public void splitShares(int company, double k) {
@@ -2585,39 +2564,7 @@ public class HouseholdBalance {
         lastSharesTakenAway[company] *= k;
     }
 
-    /** What the households would put into shares this month, in cash, before the desk says how much it can sell. */
-    public double sharesWanted(double fraction) {
-        double total = 0;
-        for (Household c : cells) {
-            if (c.isEmpty() || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
-            double excess = c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
-            if (excess > 0) total += excess * fraction * c.households;
-        }
-        return total;
-    }
-
-    /**
-     * A company's tender: every household sells this share of what it holds
-     * of the company, at this price, into its savings.
-     *
-     * @return cash the households received
-     */
-    public double tenderShares(int company, double fraction, double price) {
-        if (!(fraction > 0) || !(price > 0)) return 0;
-        double paid = 0;
-        for (Household c : cells) {
-            if (c.isEmpty() || c.shares[company] <= 0) continue;
-            double sell = c.shares[company] * Math.min(1, fraction);
-            // The same clamp as its sibling in Exchange, and for the same
-            // reason: a holding is a position and cannot be negative.
-            c.shares[company] = Math.max(0, c.shares[company] - sell);
-            c.savings += sell * price;
-            paid += sell * price * c.households;
-        }
-        return paid;
-    }
-
-    /** What the households' shares are worth at the exchange's quote, or at book with no exchange. */
+    /** What the households' shares are worth at the exchange's price - the last trade on each book, or fair value before one. */
     public double marketValueOfShares() {
         if (exchange == null || register == null) return 0;
         return exchange.marketValueOfHouseholds(register, this);
@@ -2687,6 +2634,24 @@ public class HouseholdBalance {
     public void seedConstants(double unit) {
         minMove = MIN_MOVE / (unit > 0 ? unit : 1);
     }
+
+    /**
+     * WHETHER A CELL OWES ANYTHING, READ AT THE SAME FLOOR (0.7.12 round 6).
+     *
+     * Three doors ask it - money abroad (investAbroad()), the city's paper
+     * and the businesses' bonds (mayBuyPaper()), and a share offer
+     * (subscribe()) - and each asked `c.debt <= 0`: zero, which is a money
+     * threshold like any other and the one a residue lands either side of.
+     * Round 5 found a retired cell owing 8.8e-17 of a dollar in
+     * DenominationCheck's reformed city from month 131 and nothing in the
+     * plain one; barred from the bonds in one twin only, it moved the cells'
+     * bond weights and the two cities parted. Jerus, 2026-09-25: "Make both
+     * scale with the currency, the way the tree's other money thresholds do."
+     * So a debt no larger than the rounding floor above - MIN_MOVE of a
+     * founding dollar, seeded with the unit - is the arithmetic's dust and
+     * not a debt, at every denomination.
+     */
+    private boolean owes(Household c) { return c.debt > minMove; }
 
     /** Local currency per dollar, this month: what the paper abroad is worth here. Set by Game before the strike. */
     private double localPerUsd = ForeignAccounts.OPENING_RATE;
@@ -2762,7 +2727,7 @@ public class HouseholdBalance {
             if (!c.canInvest()) continue;
 
             double held = c.abroad * rate;
-            boolean eligible = c.debt <= 0 && c.lockout <= 0 && !c.isGoingShort();
+            boolean eligible = !owes(c) && c.lockout <= 0 && !c.isGoingShort();
 
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double spare = c.savings - cushion;
@@ -2929,8 +2894,8 @@ public class HouseholdBalance {
         return total;
     }
 
-    private static boolean mayBuyPaper(Household c) {
-        return !c.isEmpty() && c.canInvest() && c.debt <= 0 && c.lockout <= 0 && !c.isGoingShort();
+    private boolean mayBuyPaper(Household c) {
+        return !c.isEmpty() && c.canInvest() && !owes(c) && c.lockout <= 0 && !c.isGoingShort();
     }
 
     private double spareFor(Household c) {
@@ -3056,6 +3021,265 @@ public class HouseholdBalance {
             raised += cashPer * c.households;
         }
         return raised;
+    }
+
+    /* =====================================================================
+       THE BUSINESSES' BONDS, AT HOME (0.7.12)
+
+       The fifth thing a household keeps its money in, and SINCE ROUND 2 THE
+       CELL'S OWN (Jerus: "Each household type trades"): every cell holds each
+       bond itself, per household (Household.bondFace), and the market's
+       record of the households' face in a bond (CorporateBond.households) is
+       always the sum of the cells'. What a cell buys at issue is paid out of
+       its own savings past the cushion; on the order book it posts its own
+       bids and asks (BondMarket, THE PARTICIPANTS); and a coupon, a principal
+       and a default land on what each cell itself holds. Round 1 kept one
+       pool with a claim per cell on it; an old save's pool is handed to the
+       cells by those claims when it loads (claimPooledBonds()).
+       ===================================================================== */
+
+    private BondMarket bondMarket;
+
+    public void setBondMarket(BondMarket market) {
+        this.bondMarket = market;
+        rebuildLiquidity();
+    }
+
+    /**
+     * What a dollar of face of the households' bonds is worth this month:
+     * every cell's holdings at the bonds' value over their face, struck by the
+     * market at its step and SAVED, because the plan reads it and the load
+     * path must re-strike the plan the live path struck. 1 with nothing held.
+     */
+    private double bondRatio = 1;
+
+    public void setBondRatio(double ratio) {
+        bondRatio = Double.isFinite(ratio) && ratio > 0 ? ratio : 1;
+    }
+
+    public double getBondRatio() { return bondRatio; }
+
+    /** The face that left the city this month with its holders, every bond together. */
+    private double lastBondsTakenAway;
+    public double getBondsTakenAway() { return lastBondsTakenAway; }
+
+    /** Every cell's bonds, at face: the households' face in every bond. */
+    public double totalBonds() { return sum(Household::totalBonds); }
+
+    /** ...at this month's value. */
+    public double marketValueOfBonds() { return totalBonds() * bondRatio; }
+
+    /** Sold this month, in cash, and the coupons and principal received. */
+    public double totalBondsSold() {
+        double total = 0;
+        for (Household c : cells) total += c.bondsSold * c.households;
+        return total;
+    }
+
+    public double totalBondIncome() {
+        double total = 0;
+        for (Household c : cells) total += c.bondIncome * c.households;
+        return total;
+    }
+
+    /** One row's bonds, per household of the row. */
+    public double getBonds(int row) { return perHousehold(row, Household::bonds); }
+
+    /** Every cell's face in one bond, together. */
+    public double bondFaceHeld(int id) {
+        double t = 0;
+        for (Household c : cells) t += c.bondFace(id) * c.households;
+        return t;
+    }
+
+    /** The cell with this key, or null - from an index built once, because the markets ask on every fill. */
+    public Household cellByKey(String key) {
+        if (cellIndex == null) {
+            cellIndex = new java.util.HashMap<>();
+            for (Household c : cells) cellIndex.put(c.key(), c);
+        }
+        return key == null ? null : cellIndex.get(key);
+    }
+    private java.util.Map<String, Household> cellIndex;
+
+    /** What every eligible household could put into bonds: savings past the cushion - the city's paper's rule. */
+    public double bondSpare() { return spareForPaper(); }
+
+    /** ...one cell's, every household of it: nothing for a cell that may not buy (the city's paper's eligibility). */
+    public double bondSpare(Household c) { return mayBuyPaper(c) ? spareFor(c) * c.households : 0; }
+
+    /**
+     * A new issue's households' part, at issue: this much cash out of every
+     * eligible cell's savings past its cushion, pro rata, for this much face
+     * of the bond, which each cell holds in the same proportion.
+     *
+     * @return the cash paid - `cash`, unless the households have less
+     */
+    public double payForBonds(int id, double cash, double face) {
+        if (!(cash > 0) || !(face > 0)) return 0;
+        double spare = spareForPaper();
+        if (spare <= 0) return 0;
+        double take = Math.min(cash, spare);
+        double facePerCash = face / cash;
+        double paid = 0;
+        for (Household c : cells) {
+            if (!mayBuyPaper(c)) continue;
+            double share = spareFor(c) * c.households;
+            if (share <= 0) continue;
+            double each = take * share / spare / c.households;
+            c.savings -= each;
+            c.putBondFace(id, c.bondFace(id) + each * facePerCash);
+            c.recountBonds();
+            paid += each * c.households;
+        }
+        return paid;
+    }
+
+    /**
+     * THE MONTH'S COUPONS, to the cells that held the bonds at the record
+     * date (BondMarket.strikeCoupons()): into savings and the month's
+     * investment income. A cell the census emptied since holds nothing to be
+     * paid in: its coupons are spread over the cells that are left, by
+     * households, as a folded cell's stocks are. Untaxed, as the city's
+     * paper's coupon is.
+     */
+    public void creditBondCoupons(java.util.Map<String, Double> dueByCell) {
+        if (dueByCell == null || dueByCell.isEmpty()) return;
+        double orphaned = 0;
+        for (java.util.Map.Entry<String, Double> e : dueByCell.entrySet()) {
+            double v = e.getValue() == null ? 0 : e.getValue();
+            if (!(v > 0)) continue;
+            Household c = cellByKey(e.getKey());
+            if (c == null || c.isEmpty()) { orphaned += v; continue; }
+            double each = v / c.households;
+            c.savings += each;
+            c.investmentIncome += each;
+            c.bondIncome += each;
+        }
+        if (orphaned > 0) {
+            double live = 0;
+            for (Household c : cells) if (!c.isEmpty()) live += c.households;
+            if (live <= 0) return;
+            for (Household c : cells) {
+                if (c.isEmpty()) continue;
+                double each = orphaned / live;
+                c.savings += each;
+                c.investmentIncome += each;
+                c.bondIncome += each;
+            }
+        }
+    }
+
+    /** One bond's principal at maturity: every cell paid its own face of it, into savings, and the bond gone from it. @return what the cells were paid in all */
+    public double creditBondPrincipal(int id) {
+        double paid = 0;
+        for (Household c : cells) {
+            double each = c.bondFace(id);
+            if (!(each > 0)) continue;
+            c.putBondFace(id, 0);
+            c.recountBonds();
+            c.savings += each;
+            c.bondIncome += each;
+            paid += each * c.households;
+        }
+        return paid;
+    }
+
+    /**
+     * A default on one issuer's bonds together: every cell's face of each down
+     * to this share, and its total recounted once - a slice writes an issuer's
+     * bonds down every month it is past the curve's floor, and a recount per
+     * bond per cell was a quarter of the playtest's time. No cash moves.
+     */
+    public void writeDownBonds(java.util.Collection<Integer> ids, double keep) {
+        double k = Math.max(0, Math.min(1, keep));
+        for (Household c : cells) {
+            if (c.bondFace.isEmpty()) continue;
+            boolean touched = false;
+            for (int id : ids) {
+                double f = c.bondFace(id);
+                if (!(f > 0)) continue;
+                c.putBondFace(id, f * k);
+                touched = true;
+            }
+            if (touched) c.recountBonds();
+        }
+    }
+
+    /** A default on one bond: every cell's face of it down to this share. No cash moves. @return the face the cells lost */
+    public double writeDownBonds(int id, double keep) {
+        double lost = 0;
+        double k = Math.max(0, Math.min(1, keep));
+        for (Household c : cells) {
+            double f = c.bondFace(id);
+            if (!(f > 0)) continue;
+            c.putBondFace(id, f * k);
+            c.recountBonds();
+            lost += f * (1 - k) * c.households;
+        }
+        return lost;
+    }
+
+    /* ---- the cells' bonds in a save, by the cell's name ---- */
+
+    /** Every cell's bonds, per household, by the cell's key and the bond's id: the save's (0.7.12 round 2). */
+    public java.util.Map<String, java.util.Map<String, Double>> bondsByCellToSave() {
+        java.util.Map<String, java.util.Map<String, Double>> out = new java.util.LinkedHashMap<>();
+        for (Household c : cells) {
+            if (c.bondFace.isEmpty()) continue;
+            java.util.Map<String, Double> m = new java.util.LinkedHashMap<>();
+            for (java.util.Map.Entry<Integer, Double> e : c.bondFace.entrySet()) m.put(String.valueOf(e.getKey()), e.getValue());
+            out.put(c.key(), m);
+        }
+        return out;
+    }
+
+    /**
+     * ...back, by name: a cell this build does not have is dropped, as the
+     * cell arrays' rule is, and a bond id that does not parse is skipped.
+     * Every cell's total is recounted from what came back.
+     */
+    public void restoreBondsByCell(java.util.Map<String, java.util.Map<String, Double>> saved) {
+        for (Household c : cells) c.bondFace.clear();
+        if (saved != null) {
+            for (java.util.Map.Entry<String, java.util.Map<String, Double>> e : saved.entrySet()) {
+                Household c = cellByKey(e.getKey());
+                if (c == null || e.getValue() == null) continue;
+                for (java.util.Map.Entry<String, Double> f : e.getValue().entrySet()) {
+                    try {
+                        double v = f.getValue() == null ? 0 : f.getValue();
+                        if (v > 0) c.bondFace.put(Integer.parseInt(f.getKey()), v);
+                    } catch (NumberFormatException ignored) { }
+                }
+            }
+        }
+        for (Household c : cells) c.recountBonds();
+    }
+
+    /**
+     * A SAVE FROM ROUND 1 held the households' bonds as one pool, each cell
+     * with a claim on it at face (Household.bonds): the pool is handed to the
+     * cells by those claims - every bond's households' face split across the
+     * cells in proportion to each cell's claim - so a cell holds a share of
+     * every bond that its claim was a share of the pool. Nothing moves in
+     * money; each cell's total is what its claim was.
+     *
+     * @param poolById the households' face in each bond, by its id
+     */
+    public void claimPooledBonds(java.util.Map<Integer, Double> poolById) {
+        double claims = 0;
+        for (Household c : cells) claims += Math.max(0, c.bonds) * c.households;
+        for (Household c : cells) c.bondFace.clear();
+        if (poolById == null || !(claims > 0)) { for (Household c : cells) c.recountBonds(); return; }
+        for (Household c : cells) {
+            double claim = Math.max(0, c.bonds);
+            if (!(claim > 0) || c.households <= 0) continue;
+            for (java.util.Map.Entry<Integer, Double> e : poolById.entrySet()) {
+                double pool = e.getValue() == null ? 0 : e.getValue();
+                if (pool > 0) c.bondFace.put(e.getKey(), pool * claim / claims);
+            }
+        }
+        for (Household c : cells) c.recountBonds();
     }
 
     /* ------------------------ the people outside the families ------------------------ */
@@ -3184,7 +3408,7 @@ public class HouseholdBalance {
             c.restrike(disposablePer[i], rentPerHousehold * c.rentShare,
                     feesPer[i] + accountFeeFor(c, c.households),
                     foodPricePerHead, riskFreeAnnual);
-            plannedSpend += c.plan(localPerUsd, paperRatio, spendFactor) * c.households;
+            plannedSpend += c.plan(localPerUsd, paperRatio, spendFactor, bondRatio) * c.households;
         }
     }
 
@@ -3359,7 +3583,7 @@ public class HouseholdBalance {
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.isEmpty() || !c.canInvest() || c.debt > 0 || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.isEmpty() || !c.canInvest() || owes(c) || c.lockout > 0 || c.isGoingShort()) continue;
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double excess = c.savings - cushion;
             if (excess <= 0) continue;
@@ -3596,8 +3820,20 @@ public class HouseholdBalance {
      */
     public static final int CELL_SLOTS_BEFORE_PAPER = CELL_SLOTS_BEFORE_CARE + 1;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, the share who paid for care, the city's paper. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_PAPER + 1;
+    /**
+     * ...and the cell's bonds at face, all together, appended 0.7.12: since
+     * round 2 the sum of what it holds bond by bond (saved under its own key,
+     * householdBondsByCell), and in a round-1 save its claim on the
+     * households' one pool, which the load hands out by (claimPooledBonds()).
+     *
+     * A save from before the businesses issued bonds has households that
+     * hold none, which is exactly true of that city: the reader checks the
+     * width and reads 0, so SAVE_FORMAT does not move.
+     */
+    public static final int CELL_SLOTS_BEFORE_BONDS = CELL_SLOTS_BEFORE_PAPER + 1;
+
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, the share who paid for care, the city's paper, its bonds. */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_BONDS + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public String[] cellKeys() {
@@ -3627,6 +3863,7 @@ public class HouseholdBalance {
             out[i++] = c.mealsEaten;
             out[i++] = c.carePaid;
             out[i++] = c.paper;
+            out[i++] = c.bonds;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -3680,11 +3917,12 @@ public class HouseholdBalance {
         final int wasBeforeMeals   = wasBeforeIncome + 1;
         final int wasBeforeCare    = wasBeforeMeals + 1;
         final int wasBeforePaper   = wasBeforeCare + 1;
-        final int wasFull          = wasBeforePaper + 1;
+        final int wasBeforeBonds   = wasBeforePaper + 1;
+        final int wasFull          = wasBeforeBonds + 1;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != wasFull && slots != wasBeforePaper
+                || (slots != wasFull && slots != wasBeforeBonds && slots != wasBeforePaper
                     && slots != wasBeforeCare && slots != wasBeforeMeals
                     && slots != wasBeforeIncome && slots != wasBeforeCars
                     && slots != wasBeforeStudent && slots != wasBeforeAbroad
@@ -3755,7 +3993,10 @@ public class HouseholdBalance {
             // ...and one from before the city's paper could be held at home
             // holds none of it: the bank held everything (0.7.1).
             c.paper = 0;
-            if (slots >= wasFull) c.paper = Math.max(0, saved[i++]);
+            if (slots >= wasBeforeBonds) c.paper = Math.max(0, saved[i++]);
+            // ...and one from before the businesses' bonds holds none (0.7.12).
+            c.bonds = 0;
+            if (slots >= wasFull) c.bonds = Math.max(0, saved[i++]);
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];
@@ -3836,6 +4077,8 @@ public class HouseholdBalance {
         lastAbroadTakenAway = 0;
         lastDepositInterest = 0;
         paperRatio = 1;
+        bondRatio = 1;
+        lastBondsTakenAway = 0;
         spendFactor = 1;
         lastDelivered = 1;
         lastCareSkipped = 0;
@@ -3857,6 +4100,7 @@ public class HouseholdBalance {
         lastWrittenOff *= scale;
         lastTakenAway *= scale;
         lastStudentDebtTakenAway *= scale;
+        lastBondsTakenAway *= scale;
         localPerUsd *= scale;
         plannedSpend *= scale;
         lastDepositInterest *= scale;

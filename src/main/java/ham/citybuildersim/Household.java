@@ -228,6 +228,56 @@ public abstract class Household {
     double paper;
 
     /**
+     * CORPORATE BONDS (0.7.12): the face this cell holds, per household of
+     * it, in the businesses' bonds, all together - the fifth asset, beside
+     * the bank balance, the shares, the dollars abroad and the city's paper.
+     * The sum of bondFace, kept with it (recountBonds()).
+     *
+     * THE CELL'S OWN SINCE ROUND 2 (Jerus: "Each household type trades").
+     * Round 1 held the households' bonds as one pool and this was a claim on
+     * it; the holding is the cell's now, bond by bond (bondFace), and a
+     * coupon, a principal, a default and a sale land on what the cell itself
+     * holds. Bought on the order book and at issue out of savings past the
+     * cushion when a bond's expected return beats what the bank pays savers
+     * (BondMarket, THE PARTICIPANTS); sold in the waterfall after the paper
+     * and the dollars abroad and before the shares, when somebody meets the
+     * price (settle()). A STOCK on the class header's terms: carried, saved
+     * by the cell's name, and it follows the people; a household that leaves
+     * holds its bonds from abroad (BondMarket.householdLeft()).
+     */
+    double bonds;
+
+    /** ...bond by bond: the face per household of the cell, by the bond's id (CorporateBond.id()). Ordered by id, so every walk over it is the same walk. */
+    final java.util.TreeMap<Integer, Double> bondFace = new java.util.TreeMap<>();
+
+    /** The face per household this cell holds of one bond. */
+    public double bondFace(int id) { Double v = bondFace.get(id); return v == null ? 0 : v; }
+
+    /**
+     * ...set, per household, and the total with it; nothing held is not kept.
+     * The total is RECOUNTED, not moved by the difference: a load recounts it
+     * from the saved holdings (HouseholdBalance.restoreBondsByCell()), and a
+     * total kept by differences parts from that sum in its last bits - which
+     * the market's weights read, so a reloaded city would not replay.
+     */
+    void setBondFace(int id, double perHousehold) {
+        putBondFace(id, perHousehold);
+        recountBonds();
+    }
+
+    /** ...without the total, for a caller that sets many and recounts once (HouseholdBalance's coupons, principal and write-downs): the same sum, not the square of the bonds held. */
+    void putBondFace(int id, double perHousehold) {
+        if (perHousehold > 0) bondFace.put(id, perHousehold); else bondFace.remove(id);
+    }
+
+    /** The total, from the bonds themselves: after anything that moved many at once. */
+    void recountBonds() {
+        double t = 0;
+        for (double v : bondFace.values()) t += v;
+        bonds = t;
+    }
+
+    /**
      * CARS THIS HOUSEHOLD OWNS, per household of the cell, 0 to 1 (2026-09-16).
      *
      * A STOCK LIKE THE OTHERS AND NOT LIKE THEM. It sits beside savings, debt,
@@ -411,6 +461,9 @@ public abstract class Household {
     /** The city's paper sold this month - to cover the shop or because the spread went - and its coupons and principal received, per household, in cash (0.7.1). */
     double paperSold, paperIncome;
 
+    /** Its bonds sold this month - in the waterfall or at the market's step - and their coupons and principal received, per household, in cash (0.7.12). */
+    double bondsSold, bondIncome;
+
     /** Student loan drawn this month, and repaid (principal), per household. */
     double studentBorrowed, studentRepaid;
 
@@ -445,6 +498,17 @@ public abstract class Household {
          * @return cash raised, per household of the cell
          */
         default double sellPaper(Household cell, double needPer) { return 0; }
+
+        /**
+         * ...and the bonds (0.7.12), after the paper and the dollars abroad:
+         * asked on each bond's order book at the price that makes the buyer's
+         * yield this household's borrowing rate, and filled only by what rests
+         * there at that price or better - nobody is obliged to buy. Nothing
+         * where there is no market.
+         *
+         * @return cash raised now, per household of the cell
+         */
+        default double sellBonds(Household cell, double needPer) { return 0; }
     }
 
     protected Household(FamilyStructure shape) {
@@ -595,6 +659,10 @@ public abstract class Household {
     /** ...sold this month, and its coupons and principal received, per household, in cash. */
     public double paperSold()   { return paperSold; }
     public double paperIncome() { return paperIncome; }
+    /** Its bonds, per household, at face, all together (0.7.12; the cell's own since round 2 - see bonds). */
+    public double bonds()       { return bonds; }
+    public double bondsSold()   { return bondsSold; }
+    public double bondIncome()  { return bondIncome; }
     public double cars()        { return cars; }
     /** Every car this cell's households own between them. */
     public double totalCars()   { return cars * households; }
@@ -666,6 +734,7 @@ public abstract class Household {
     public double totalSavings()  { return savings * households; }
     public double totalAbroad()   { return abroad * households; }
     public double totalPaper()    { return paper * households; }
+    public double totalBonds()    { return bonds * households; }
     public double totalDebt()     { return debt * households; }
     public double totalInterest() { return interest * households; }
     public double totalBorrowed() { return borrowed * households; }
@@ -741,6 +810,7 @@ public abstract class Household {
         drawn = 0; borrowed = 0; repaid = 0; banked = 0; unfunded = 0; sold = 0;
         loanFee = 0;
         paperSold = 0; paperIncome = 0;
+        bondsSold = 0; bondIncome = 0;
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
         studentBorrowed = 0; evicted = 0;
         // Principal only comes off the balance: the interest was charged on
@@ -777,6 +847,21 @@ public abstract class Household {
                 if (abroad < 1e-15) abroad = 0;
                 broughtHome = home;
                 still -= home;
+            }
+
+            /*
+             * THEN THE BONDS (0.7.12), after the two that always find a
+             * buyer at a known price and before the shares: a bond sells only
+             * when somebody on its book meets the price that makes the buyer's
+             * yield this household's own borrowing rate - selling is worth it
+             * only while it is cheaper than the credit below - and what nobody
+             * meets waits there while the household borrows. A crossing out
+             * of the pools where the buyer is the bank or a company, declared
+             * through the market's own counter.
+             */
+            if (still > 0 && bonds > 0 && market != null) {
+                double raised = market.sellBonds(this, still);
+                still -= raised;
             }
 
             /*
@@ -842,6 +927,17 @@ public abstract class Household {
      *                    THE REAL RATE below
      */
     double plan(double localPerUsd, double paperRatio, double spendFactor) {
+        return plan(localPerUsd, paperRatio, spendFactor, 1);
+    }
+
+    /**
+     * @param bondRatio what a dollar of face of the households' bonds is worth
+     *                  this month (0.7.12): every cell's holdings together at
+     *                  the bonds' value over their face - in the net worth the
+     *                  wealth term reads, and not in what can be spent,
+     *                  because a bond sells only when somebody buys it
+     */
+    double plan(double localPerUsd, double paperRatio, double spendFactor, double bondRatio) {
         /*
          * INVESTMENT INCOME IS INCOME (2026-09-17).
          *
@@ -876,7 +972,8 @@ public abstract class Household {
          */
         double netWorth = Math.max(0,
                 savings + abroad * Math.max(0, localPerUsd)
-                        + paper * Math.max(0, paperRatio) - debt);
+                        + paper * Math.max(0, paperRatio)
+                        + bonds * Math.max(0, bondRatio) - debt);
         /* =================================================================
            AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3)
 
@@ -1161,6 +1258,7 @@ public abstract class Household {
         subsistence = 0; bankrupt = 0; dividends = 0; sold = 0; carsSold = 0;
         luxuryWant = 0; mealWant = 0; spendable = 0; careSkipped = 0;
         paperSold = 0; paperIncome = 0;
+        bondsSold = 0; bondIncome = 0;
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
         studentBorrowed = 0; studentRepaid = 0; studentInterest = 0; evicted = 0;
         accountFee = 0; loanFee = 0;
@@ -1169,7 +1267,7 @@ public abstract class Household {
     /** The cell is empty: no position either. */
     void clearAll() {
         savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0; studentDebt = 0;
-        paper = 0;
+        paper = 0; bonds = 0; bondFace.clear();
         cars = 0; mealsEaten = 0; carePaid = 1;
         java.util.Arrays.fill(shares, 0);
         clearWorking();
@@ -1183,6 +1281,10 @@ public abstract class Household {
         capitalCeiling *= scale;
         // The city's paper is in the city's money: it moves (0.7.1).
         paper *= scale;  paperSold *= scale;  paperIncome *= scale;
+        // ...and so are its bonds (0.7.12).
+        bondsSold *= scale;  bondIncome *= scale;
+        bondFace.replaceAll((id, v) -> v * scale);
+        recountBonds();
         /*
          * AND THE MONTH'S INVESTMENT INCOME, which is money like the rest of
          * this line and was left off it on the first try (2026-09-17).

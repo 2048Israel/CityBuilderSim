@@ -1,6 +1,6 @@
-# HistorySave.java - 1,159 lines · 34 methods · 0 constants · model
+# HistorySave.java - 1,160 lines · 34 methods · 0 constants · model
 
-`ham/citybuildersim/HistorySave.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistorySave.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > Every month the city has ever lived, one number at a time.
 > 
@@ -62,20 +62,20 @@
 | 315 | · CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a |
 | 337 | · what runs out |
 | 341 | · the market |
-| 364 | · the sectors (0.7.4) |
-| 389 | · GDP in layers (0.7.6) |
-| 406 | RECORDING |
-| 478 | · · the edge |
-| 487 | · · money and credit |
-| 527 | · · the budget |
-| 537 | · · housing |
-| 542 | · · school and care |
-| 548 | · · outside the families |
-| 593 | · · what runs out |
-| 597 | · · the market |
-| 609 | · · the sectors |
-| 815 | READING |
-| 852 | · a series' record, counted (0.7.9) |
+| 365 | · the sectors (0.7.4) |
+| 390 | · GDP in layers (0.7.6) |
+| 407 | RECORDING |
+| 479 | · · the edge |
+| 488 | · · money and credit |
+| 528 | · · the budget |
+| 538 | · · housing |
+| 543 | · · school and care |
+| 549 | · · outside the families |
+| 594 | · · what runs out |
+| 598 | · · the market |
+| 610 | · · the sectors |
+| 816 | READING |
+| 853 | · a series' record, counted (0.7.9) |
 
 ## Fields (state)
 
@@ -191,20 +191,20 @@
 | 329 | `private Map<String, List<Double>> crimeByCause` |  |
 | 338 | `private List<Integer> constructionCapacity` |  |
 | 339 | `private List<Double> landUse` |  |
-| 357 | `private Map<String, List<Double>> sharePrice` |  |
-| 358 | `private Map<String, List<Double>> shareValue` |  |
-| 381 | `private Map<String, List<Double>> sectorNetIncome` |  |
-| 382 | `private Map<String, List<Double>> sectorWorkers` |  |
-| 401 | `private List<Double> consumption` |  |
-| 402 | `private List<Double> investment` |  |
-| 403 | `private List<Double> government` |  |
-| 404 | `private List<Double> netExports` |  |
+| 358 | `private Map<String, List<Double>> sharePrice` |  |
+| 359 | `private Map<String, List<Double>> shareValue` |  |
+| 382 | `private Map<String, List<Double>> sectorNetIncome` |  |
+| 383 | `private Map<String, List<Double>> sectorWorkers` |  |
+| 402 | `private List<Double> consumption` |  |
+| 403 | `private List<Double> investment` |  |
+| 404 | `private List<Double> government` |  |
+| 405 | `private List<Double> netExports` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 1118 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
+| 42 | 1119 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
 
 ### THE AXIS (lines 44-52)
 
@@ -251,62 +251,62 @@
 
 ### what runs out (lines 337-340)
 
-### the market (lines 341-363)
+### the market (lines 341-364)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 361 | 1 | `public static String priceKey(String company)` | The series name the screens ask for, per company. |
-| 362 | 1 | `public static String valueKey(String company)` |  |
+| 362 | 1 | `public static String priceKey(String company)` | The series name the screens ask for, per company. |
+| 363 | 1 | `public static String valueKey(String company)` |  |
 
-### the sectors (0.7.4) (lines 364-388)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 385 | 1 | `public static String netIncomeKey(String sector)` | The series name the screens ask for, per sector: the month's net income after tax. |
-| 387 | 1 | `public static String workersKey(String sector)` | ...and its posts filled. |
-
-### GDP in layers (0.7.6) (lines 389-405)
-
-### RECORDING (lines 406-814)
+### the sectors (0.7.4) (lines 365-389)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 421 | 196 | `public void recordMonth(Game game)` | One month, read off the city itself. |
-| 626 | 6 | `private static double sum(double[] values)` | A whole array in one figure. |
-| 633 | 1 | `private static double round2(double v)` |  |
-| 634 | 1 | `private static double round4(double v)` |  |
-| 647 | 135 | `public void restoreFrom(HistorySave loaded)` | Takes over another history wholesale - the load path. |
-| 784 | 6 | `private static Map<String, List<Double>> copyMap(Map<String, List<Double>> from)` | A map of series, copied list by list, and never null - see copy(). |
-| 801 | 3 | `private static<T> List<T> copy(List<T> from)` | A copy, and never null. |
-| 810 | 4 | `public GameFiles.Result saveHistory(GameFiles files, int slot)` | The graph history. |
+| 386 | 1 | `public static String netIncomeKey(String sector)` | The series name the screens ask for, per sector: the month's net income after tax. |
+| 388 | 1 | `public static String workersKey(String sector)` | ...and its posts filled. |
 
-### READING (lines 815-851)
+### GDP in layers (0.7.6) (lines 390-406)
+
+### RECORDING (lines 407-815)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 820 | 1 | `public int months()` | How many months the city has lived. |
-| 822 | 1 | `public List<Integer> getMonth()` |  |
-| 837 | 14 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
+| 422 | 196 | `public void recordMonth(Game game)` | One month, read off the city itself. |
+| 627 | 6 | `private static double sum(double[] values)` | A whole array in one figure. |
+| 634 | 1 | `private static double round2(double v)` |  |
+| 635 | 1 | `private static double round4(double v)` |  |
+| 648 | 135 | `public void restoreFrom(HistorySave loaded)` | Takes over another history wholesale - the load path. |
+| 785 | 6 | `private static Map<String, List<Double>> copyMap(Map<String, List<Double>> from)` | A map of series, copied list by list, and never null - see copy(). |
+| 802 | 3 | `private static<T> List<T> copy(List<T> from)` | A copy, and never null. |
+| 811 | 4 | `public GameFiles.Result saveHistory(GameFiles files, int slot)` | The graph history. |
 
-### a series' record, counted (0.7.9) (lines 852-1159)
+### READING (lines 816-852)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 862 | 8 | `public int monthsUnder(String series, String line)` | Months in which both series were recorded and the first stood under the second: the bank's months under its capital target (bankCapitalRatio against bankCapitalTarget). |
-| 872 | 5 | `public int monthsUnder(String series, double level)` | ...and under a fixed level: its months under the city's minimum. |
-| 879 | 5 | `public int monthsRecorded(String series)` | Months a series was recorded in. |
-| 886 | 5 | `public double total(String series)` | A flow added up over the months it was recorded. |
-| 897 | 14 | `public double worstYear(String series)` | A flow's worst year: the largest sum of any twelve months in a row since it was first recorded - over fewer than twelve, what there is. |
-| 918 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
-| 935 | 147 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
-| 1084 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
-| 1085 | 1 | `public List<Double> getGdp()` |  |
-| 1086 | 1 | `public List<Double> getDebt()` |  |
-| 1087 | 1 | `public List<Double> getInterestRate()` |  |
-| 1088 | 1 | `public List<Integer> getJobs()` |  |
-| 1089 | 1 | `public List<Integer> getWorkforce()` |  |
-| 1090 | 1 | `public List<Integer> getOutOfWork()` |  |
-| 1091 | 1 | `public List<Integer> getPopulation()` |  |
-| 1104 | 43 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
-| 1149 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
+| 821 | 1 | `public int months()` | How many months the city has lived. |
+| 823 | 1 | `public List<Integer> getMonth()` |  |
+| 838 | 14 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
+
+### a series' record, counted (0.7.9) (lines 853-1160)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 863 | 8 | `public int monthsUnder(String series, String line)` | Months in which both series were recorded and the first stood under the second: the bank's months under its capital target (bankCapitalRatio against bankCapitalTarget). |
+| 873 | 5 | `public int monthsUnder(String series, double level)` | ...and under a fixed level: its months under the city's minimum. |
+| 880 | 5 | `public int monthsRecorded(String series)` | Months a series was recorded in. |
+| 887 | 5 | `public double total(String series)` | A flow added up over the months it was recorded. |
+| 898 | 14 | `public double worstYear(String series)` | A flow's worst year: the largest sum of any twelve months in a row since it was first recorded - over fewer than twelve, what there is. |
+| 919 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
+| 936 | 147 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
+| 1085 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
+| 1086 | 1 | `public List<Double> getGdp()` |  |
+| 1087 | 1 | `public List<Double> getDebt()` |  |
+| 1088 | 1 | `public List<Double> getInterestRate()` |  |
+| 1089 | 1 | `public List<Integer> getJobs()` |  |
+| 1090 | 1 | `public List<Integer> getWorkforce()` |  |
+| 1091 | 1 | `public List<Integer> getOutOfWork()` |  |
+| 1092 | 1 | `public List<Integer> getPopulation()` |  |
+| 1105 | 43 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
+| 1150 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
 

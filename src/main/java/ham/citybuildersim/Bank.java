@@ -401,6 +401,10 @@ public class Bank {
         this.householdWeighted = this.householdBook;
         this.mortgageBook = 0;
         this.mortgageWeighted = 0;
+        // ...and its bonds (0.7.12), which Game sets beside the rest.
+        this.bondBook = 0;
+        this.bondWeighted = 0;
+        this.bondFace = 0;
     }
 
     /**
@@ -445,6 +449,97 @@ public class Bank {
 
     /** What the treasury paid it on insured mortgages this month. */
     public double getInsuranceClaims() { return insuranceClaims; }
+
+    /* =====================================================================
+       THE CORPORATE BONDS IT HOLDS (0.7.12)
+
+       Jerus: "banks also buy them as, only if it wants." The bank buys a
+       business's bond only when the bond earns what an equal loan to that
+       business would (BondMarket, THE PARTICIPANTS), and holds it as it
+       holds a loan: on its book at what it paid for it (its cost - held to
+       collect, not marked), weighed in its capital at the weight a loan to
+       the issuer carries (RISK_BUSINESS, for the months left; Game
+       .refreshBank()), counted in the book's concentration, and set aside
+       for in the issuer's allowance at the bonds' loss given default
+       (provide()). The coupons are interest from a business, inside the
+       pools; a bond sold or repaid for more or less than it cost is a gain
+       or a loss on the month's statement (BOND_GAINS); what a default takes
+       off it is a write-off like its loans'. And it is the underwriter: an
+       issue's costs are its fee (UNDERWRITING), as the city's cost of
+       issuance has always been its.
+       ===================================================================== */
+
+    /** What its bonds cost it, less what defaults took: their carrying value, on its book. */
+    private double bondBook;
+    /** ...weighed as loans to their issuers. */
+    private double bondWeighted;
+    /** ...and their face. */
+    private double bondFace;
+    /** The month's gain on bonds sold or repaid over what they cost it, its underwriting fees, and its coupons. */
+    private double bondGains, underwritingFees, interestFromBonds;
+
+    /**
+     * The bonds on its book as the market holds them - what they cost it,
+     * weighed, and their face - set by Game.refreshBank() beside the other
+     * books. A Bank built by hand holds none.
+     */
+    public void setBondBook(double carrying, double weighted, double face) {
+        this.bondBook = Math.max(0, carrying);
+        this.bondWeighted = Math.max(0, weighted);
+        this.bondFace = Math.max(0, face);
+    }
+
+    /** It buys a bond: cash out, the bond on its book at what it paid, and what that weighs (RISK_BUSINESS for the months left, as Game.refreshBank() weighs it). Equity does not move. */
+    public void buyBond(double cost, double weighted) {
+        if (!(cost > 0)) return;
+        cash -= cost;
+        bondBook += cost;
+        bondWeighted += Math.max(0, weighted);
+    }
+
+    /** It sells one: cash in, what it cost off its book, the difference a gain or a loss this month. */
+    public void sellBond(double proceeds, double cost) {
+        double off = Math.max(0, Math.min(cost, bondBook));
+        cash += Math.max(0, proceeds);
+        if (bondBook > 0) bondWeighted *= (bondBook - off) / bondBook;
+        bondBook -= off;
+        bondGains += Math.max(0, proceeds) - off;
+    }
+
+    /** ...or its issuer repays it at maturity: the face in, what it cost off its book. */
+    public void redeemBond(double face, double cost) { sellBond(face, cost); }
+
+    /** A default took this much of what its bonds cost it off its book: the write-off is booked with the issuer's loans' (writeOffSector()). */
+    public void bondsWrittenDown(double cost) {
+        double off = Math.max(0, Math.min(cost, bondBook));
+        if (bondBook > 0) bondWeighted *= (bondBook - off) / bondBook;
+        bondBook -= off;
+    }
+
+    /** The coupons on its bonds this month: interest from a business, inside the pools. */
+    public void takeBondCoupons(double amount) {
+        if (!(amount > 0)) return;
+        cash += amount;
+        interestEarned += amount;
+        internalInterest += amount;
+        interestFromBonds += amount;
+    }
+
+    /** Its fee for bringing an issue - the issue's costs, out of the proceeds: a transfer between two pools. */
+    public void takeUnderwriting(double fee) {
+        if (!(fee > 0)) return;
+        cash += fee;
+        underwritingFees += fee;
+    }
+
+    /** What its bonds cost it, on its book; their face; what they weigh. */
+    public double getBondBook()      { return bondBook; }
+    public double getBondFace()      { return bondFace; }
+    public double getBondWeighted()  { return bondWeighted; }
+    /** The month's gain on bonds sold or repaid, its underwriting fees, and its coupons. */
+    public double getBondGains()     { return bondGains; }
+    public double getUnderwritingFees() { return underwritingFees; }
+    public double getInterestFromBonds() { return interestFromBonds; }
 
     /* ---------------------------------------------------------------- carry */
 
@@ -712,6 +807,272 @@ public class Bank {
         return Math.max(Math.max(0, riskWeight) * capitalTarget(), leverageTarget());
     }
 
+    /**
+     * ...A DOLLAR LENT TO THIS SECTOR (0.7.12): the same formula with the
+     * capital its concentration adds - concentrationPerDollar(), the
+     * marginal add-on at the minimum, carried at the bank's own target in
+     * the proportion its target bears to the minimum, as leverageTarget()
+     * carries the leverage minimum. A sector that diversifies the book
+     * adds less than nothing. Still never less than the leverage floor.
+     */
+    public double capitalPerDollar(double riskWeight, String sector) {
+        double conc = concentrationPerDollar(sector) * capitalTarget() / CAPITAL_RATIO;
+        return Math.max(Math.max(0, riskWeight) * capitalTarget() + conc, leverageTarget());
+    }
+
+    /** THE CAPITAL CHARGE ON A LOAN TO THIS SECTOR (0.7.12): capitalPerDollar() with its concentration, at the owners' return over the money. */
+    public double capitalCharge(double policyAnnual, int months, double riskWeight, String sector) {
+        return capitalPerDollar(riskWeight, sector)
+                * Math.max(0, requiredReturn() - fundsTransferPrice(policyAnnual, months));
+    }
+
+    /**
+     * WHAT THE BOOK'S CONCENTRATION ADDS TO A LOAN TO THIS SECTOR, a year:
+     * its capital charge with the concentration less its capital charge
+     * without - the one formula, read twice. Game pushes it for every
+     * sector beside prime (BusinessDebtManager.setConcentrationCharges()),
+     * and a bond's loan-equivalent reads it (BondMarket.bankYield()).
+     */
+    public double concentrationCharge(double policyAnnual, int months, String sector) {
+        return capitalCharge(policyAnnual, months, RISK_BUSINESS, sector)
+                - capitalCharge(policyAnnual, months, RISK_BUSINESS);
+    }
+
+    /* =====================================================================
+       THE BANK PRICES CONCENTRATION (0.7.12)
+
+       Jerus, 2026-09-24: "No limit, just price it." The bank has no cap on
+       one industry. It charges more as an industry grows in its book, and a
+       bond wins when it is cheaper. 0.7.8's stress-target charge, and its
+       large-exposure limit before that, were measured and withdrawn (see
+       MAX_BUFFER, and NO LARGE-EXPOSURE LIMIT below).
+
+       THE METHOD is Basel's asymptotic single-risk-factor capital - the IRB
+       formula, BCBS (2006), "International Convergence of Capital
+       Measurement and Capital Standards", paragraph 272 - with an effective
+       asset correlation that rises with the book's sector concentration, the
+       approach of Duellmann & Masschelein (2007), "A tractable model to
+       measure sector concentration risk in credit portfolios", and Cespedes,
+       Herrero, Kreinin & Rosen (2006), "A simple multifactor 'factor
+       adjustment' for the treatment of credit capital diversification":
+
+         K(PD, LGD, rho) = LGD x [N((G(PD) + sqrt(rho) G(0.999)) / sqrt(1 - rho))
+                                  - PD] x MA(PD),
+
+       N the normal distribution, G its inverse, MA the maturity adjustment
+       at the foundation approach's 2.5 years. The IRB's own correlation R(PD)
+       - 24% for the soundest firms, 12% for the riskiest - assumes a book
+       spread across every industry: one systematic factor. In a book of
+       sectors, a firm's assets load on its industry's factor, and the
+       industries on one another; a book spread thinly over many industries
+       feels only what they share, one in a single industry all of its own.
+       With H the Herfindahl index of the book's sector shares, the book's
+       effective correlation runs from R at H = 0 to SECTOR_CORRELATION_
+       MULTIPLIER x R at H = 1:
+
+         rho(PD, H) = R(PD) x (1 + (SECTOR_CORRELATION_MULTIPLIER - 1) x H)
+
+       (with a firm's loading on its industry r and the industries' on one
+       another beta, a book's first-order correlation is r x (beta + (1 -
+       beta) H); r x beta is Basel's R, and r / R the multiplier). The
+       add-on is the book's capital at rho less its capital at R, and it is
+       ALLOCATED BY THE EULER RULE: each sector's marginal contribution,
+       d(capital)/d(exposure), which adds back up to the add-on because the
+       book's capital is homogeneous in its exposures -
+
+         a_j = K_j(rho_j) - K_j(R_j)
+               + 2 (SECTOR_CORRELATION_MULTIPLIER - 1) (w_j - H)
+                 x sum_k w_k R_k dK_k/drho
+
+       - so a dollar lent to an industry already large in the book (w_j > H)
+       carries more capital than the industry's average, and one lent to a
+       small one less, even less than none: it diversifies the book.
+
+       WHERE IT GOES, one formula each:
+         - the requirement: the add-on is weight on the book, add-on /
+           CAPITAL_RATIO (concentrationWeighted), inside getWeightedBook() -
+           so the minimum, the target, the capital ratio, capacity and the
+           capital rule all read it;
+         - the price: a_j at the bank's target, inside the capital charge
+           (capitalPerDollar(riskWeight, sector)), which Game pushes into
+           every sector's rate (concentrationCharge());
+         - the Bank tab's weight table, as its own row.
+
+       THE EXPOSURE is what the bank itself stands to lose on a sector: its
+       loans that nobody insures, at a loan's loss given default, and the
+       sector's bonds it holds, at a bond's (BusinessDebtManager, RECOVERIES
+       BY INSTRUMENT, since 0.7.12 round 2) - the insured mortgages weigh
+       nothing and carry none. The default rate is
+       the sector's curve at its quarter's leverage, never below
+       BondMarket.DEFAULT_RATE_FLOOR, the rate a sound loan is priced for -
+       and the floor for a sector owing nothing (Game.bankExposures()).
+       ===================================================================== */
+
+    /** The confidence the IRB capital is struck at: 99.9% of years, BCBS (2006) paragraph 272. */
+    public static final double IRB_CONFIDENCE = .999;
+
+    /** The IRB corporate correlation for the soundest firms: 24%, BCBS (2006) paragraph 272. */
+    public static final double IRB_CORRELATION_HIGH = .24;
+
+    /** ...and for the riskiest: 12%, the same paragraph. */
+    public static final double IRB_CORRELATION_LOW = .12;
+
+    /** How fast the correlation falls from the one to the other as the default rate rises: the 50 in exp(-50 x PD), the same paragraph. */
+    public static final double IRB_CORRELATION_DECAY = 50;
+
+    /** The effective maturity of a corporate exposure under the foundation IRB approach: 2.5 years, BCBS (2006) paragraph 318 - where the maturity adjustment reads 1 / (1 - 1.5 b). */
+    public static final double IRB_MATURITY_YEARS = 2.5;
+
+    /** The maturity adjustment's slope, b(PD) = (0.11852 - 0.05478 ln PD)^2: its constant, BCBS (2006) paragraph 272. */
+    public static final double IRB_MATURITY_A = .11852;
+
+    /** ...and its log coefficient, the same paragraph. */
+    public static final double IRB_MATURITY_B = .05478;
+
+    /**
+     * HOW MUCH MORE CORRELATED THE FIRMS OF ONE INDUSTRY ARE than the IRB's
+     * corporate correlation, which is struck for a book spread across every
+     * industry: 1.25, the asset value correlation multiplier Basel III
+     * applies to exposures to large financial institutions (BCBS, "Basel
+     * III: A global regulatory framework for more resilient banks and
+     * banking systems", December 2010, paragraph 102) - the one figure the
+     * regulator has set for firms in one industry moving together more than
+     * its corporate curve assumes. It is set for the financial industry;
+     * reading it for every industry is this model's, and Jerus's to confirm
+     * or to replace with an estimated inter-sector correlation (Duellmann &
+     * Masschelein estimate theirs from equity indices).
+     */
+    public static final double SECTOR_CORRELATION_MULTIPLIER = 1.25;
+
+    /** The IRB corporate asset correlation at this default rate, R(PD): 24% for the soundest, 12% for the riskiest, blended by exp(-50 PD). */
+    public static double irbCorrelation(double pd) {
+        double p = Math.max(0, Math.min(1, pd));
+        double w = -Math.expm1(-IRB_CORRELATION_DECAY * p) / -Math.expm1(-IRB_CORRELATION_DECAY);
+        return IRB_CORRELATION_LOW * w + IRB_CORRELATION_HIGH * (1 - w);
+    }
+
+    /** ...and the book's, at its sector Herfindahl index: R(PD) x (1 + (SECTOR_CORRELATION_MULTIPLIER - 1) x H). */
+    public static double effectiveCorrelation(double pd, double herfindahl) {
+        double h = Math.max(0, Math.min(1, herfindahl));
+        return Math.min(.999, irbCorrelation(pd) * (1 + (SECTOR_CORRELATION_MULTIPLIER - 1) * h));
+    }
+
+    /** The inverse of the standard normal distribution, by bisection on BusinessDebtManager.normalCdf() - the game's one N - to the last bit. */
+    public static double inverseNormal(double p) {
+        if (!(p > 0)) return Double.NEGATIVE_INFINITY;
+        if (!(p < 1)) return Double.POSITIVE_INFINITY;
+        double lo = -40, hi = 40;
+        for (int i = 0; i < 200 && hi - lo > 1e-15; i++) {
+            double mid = (lo + hi) / 2;
+            if (BusinessDebtManager.normalCdf(mid) < p) lo = mid; else hi = mid;
+        }
+        return (lo + hi) / 2;
+    }
+
+    /** The standard normal quantile at IRB_CONFIDENCE, G(0.999) in the IRB formula: struck once. */
+    private static final double IRB_QUANTILE = inverseNormal(IRB_CONFIDENCE);
+
+    /** The maturity adjustment at IRB_MATURITY_YEARS: (1 + (M - 2.5) b) / (1 - 1.5 b), b = (IRB_MATURITY_A - IRB_MATURITY_B ln PD)^2. */
+    public static double maturityAdjustment(double pd) {
+        double p = Math.max(1e-12, Math.min(1, pd));
+        double b = Math.pow(IRB_MATURITY_A - IRB_MATURITY_B * Math.log(p), 2);
+        return (1 + (IRB_MATURITY_YEARS - 2.5) * b) / (1 - 1.5 * b);
+    }
+
+    /** THE IRB CAPITAL a dollar needs at the minimum, K(PD, LGD, rho): the loss at the 99.9th percentile year less the expected loss, times the maturity adjustment. */
+    public static double irbCapital(double pd, double lgd, double rho) {
+        double p = Math.max(0, Math.min(1, pd));
+        if (!(p > 0) || !(lgd > 0)) return 0;
+        if (p >= 1) return 0;
+        double r = Math.max(0, Math.min(.999, rho));
+        double z = (inverseNormal(p) + Math.sqrt(r) * IRB_QUANTILE) / Math.sqrt(1 - r);
+        return Math.max(0, lgd * (BusinessDebtManager.normalCdf(z) - p) * maturityAdjustment(p));
+    }
+
+    /** ...its slope in the correlation, dK/drho: what the Euler rule's second term reads. */
+    public static double irbCapitalSlope(double pd, double lgd, double rho) {
+        double p = Math.max(0, Math.min(1, pd));
+        if (!(p > 0) || p >= 1 || !(lgd > 0)) return 0;
+        double r = Math.max(1e-12, Math.min(.999, rho));
+        double g = inverseNormal(p);
+        double z = (g + Math.sqrt(r) * IRB_QUANTILE) / Math.sqrt(1 - r);
+        double dz = IRB_QUANTILE / (2 * Math.sqrt(r) * Math.sqrt(1 - r))
+                + (g + Math.sqrt(r) * IRB_QUANTILE) / (2 * Math.pow(1 - r, 1.5));
+        double density = Math.exp(-z * z / 2) / Math.sqrt(2 * Math.PI);
+        return lgd * density * dz * maturityAdjustment(p);
+    }
+
+    /** One sector's exposure as the concentration reads it: what the bank stands to lose on it, its default rate, and the loss given default of what it holds. */
+    public record Exposure(double amount, double pd, double lgd) { }
+
+    private final java.util.Map<String, Exposure> exposures = new java.util.LinkedHashMap<>();
+    private final java.util.Map<String, Double> concentrationMarginal = new java.util.LinkedHashMap<>();
+    private double concentrationHerfindahl, concentrationAddOn, concentrationWeighted, concentrationExposure;
+
+    /**
+     * THE BOOK'S CONCENTRATION, struck from every sector's exposure: its
+     * Herfindahl index, the add-on at the minimum and the weight it adds,
+     * and each sector's marginal add-on by the Euler rule. Game calls it
+     * with the book, at every refresh; a Bank built by hand has none.
+     */
+    public void setConcentration(java.util.Map<String, Exposure> bySector) {
+        exposures.clear();
+        concentrationMarginal.clear();
+        concentrationHerfindahl = concentrationAddOn = concentrationWeighted = concentrationExposure = 0;
+        if (bySector == null) return;
+        double total = 0;
+        for (java.util.Map.Entry<String, Exposure> e : bySector.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null) continue;
+            exposures.put(e.getKey(), e.getValue());
+            total += Math.max(0, e.getValue().amount());
+        }
+        concentrationExposure = total;
+        if (!(total > 0)) {
+            // Nothing lent: a first dollar anywhere is the whole book, and
+            // its marginal add-on is its capital at a single industry's
+            // correlation over its capital at R.
+            for (java.util.Map.Entry<String, Exposure> e : exposures.entrySet()) {
+                Exposure x = e.getValue();
+                concentrationMarginal.put(e.getKey(), irbCapital(x.pd(), x.lgd(), effectiveCorrelation(x.pd(), 1))
+                        - irbCapital(x.pd(), x.lgd(), irbCorrelation(x.pd())));
+            }
+            return;
+        }
+        double h = 0;
+        for (Exposure x : exposures.values()) { double w = Math.max(0, x.amount()) / total; h += w * w; }
+        concentrationHerfindahl = h;
+        double addOn = 0, slope = 0;
+        for (Exposure x : exposures.values()) {
+            double w = Math.max(0, x.amount()) / total;
+            double rho = effectiveCorrelation(x.pd(), h);
+            addOn += Math.max(0, x.amount()) * (irbCapital(x.pd(), x.lgd(), rho) - irbCapital(x.pd(), x.lgd(), irbCorrelation(x.pd())));
+            slope += w * irbCorrelation(x.pd()) * irbCapitalSlope(x.pd(), x.lgd(), rho);
+        }
+        concentrationAddOn = Math.max(0, addOn);
+        concentrationWeighted = concentrationAddOn / CAPITAL_RATIO;
+        for (java.util.Map.Entry<String, Exposure> e : exposures.entrySet()) {
+            Exposure x = e.getValue();
+            double w = Math.max(0, x.amount()) / total;
+            double own = irbCapital(x.pd(), x.lgd(), effectiveCorrelation(x.pd(), h))
+                    - irbCapital(x.pd(), x.lgd(), irbCorrelation(x.pd()));
+            concentrationMarginal.put(e.getKey(),
+                    own + 2 * (SECTOR_CORRELATION_MULTIPLIER - 1) * (w - h) * slope);
+        }
+    }
+
+    /** A dollar lent to this sector: the capital its concentration adds at the minimum, the Euler rule's marginal add-on. Nothing for a sector the book has not been told of. */
+    public double concentrationPerDollar(String sector) {
+        return sector == null ? 0 : concentrationMarginal.getOrDefault(sector, 0.0);
+    }
+
+    /** The book's sector Herfindahl index, the add-on at the minimum, the weight it adds and the exposure it was struck on. */
+    public double getConcentrationHerfindahl() { return concentrationHerfindahl; }
+    public double getConcentrationAddOn()      { return concentrationAddOn; }
+    public double getConcentrationWeighted()   { return concentrationWeighted; }
+    public double getConcentrationExposure()   { return concentrationExposure; }
+    /** One sector's exposure as the book was struck, or null. */
+    public Exposure getExposure(String sector) { return exposures.get(sector); }
+
     /** A loan of this term and risk weight: the four parts, added up. */
     public double loanRate(double policyAnnual, int months, double riskWeight) {
         return fundsTransferPrice(policyAnnual, months) + runningCostRate()
@@ -948,6 +1309,8 @@ public class Bank {
         paperBoughtFromHouseholds = 0;
         paperSoldToCentralBank = paperBoughtFromCentralBank = 0;
         accountFees = loanFeesPaid = loanFeesOwed = 0;
+        // ...and its bonds' month (0.7.12).
+        bondGains = underwritingFees = interestFromBonds = 0;
         hotMoneyIn = 0;
         carryLent = carryRepaid = carryInterest = 0;
         hotMoneyOut = 0;
@@ -997,7 +1360,7 @@ public class Bank {
      * and walk the bank into resolveIfFailed(). The money is gone; the claim on
      * the borrower is the asset that replaces it.
      */
-    public double getBook() { return sectorBook + cityBook + householdBook + carryBook; }
+    public double getBook() { return sectorBook + cityBook + householdBook + carryBook + bondBook; }
 
     /**
      * The book as CAPACITY sees it: risk- and maturity-weighted.
@@ -1009,7 +1372,10 @@ public class Bank {
     public double getWeightedBook() {
         return sectorWeighted + cityWeighted + householdWeighted
                 + carryBook * RISK_CARRY
-                + Math.abs(securities) * RISK_EQUITY;
+                + Math.abs(securities) * RISK_EQUITY
+                // ...and its corporate bonds, as loans to their issuers, and
+                // the book's concentration as the weight it adds (0.7.12).
+                + bondWeighted + concentrationWeighted;
     }
 
     /* =====================================================================
@@ -1017,10 +1383,12 @@ public class Bank {
 
        Jerus, 2026-09-10 (night): "liquidity, that's going to be an issue, we
        need to solve it realistically via bank something, right?" Right. The
-       bank makes the market in the city's shares - see Exchange - and what
-       that leaves on its balance sheet is here: an inventory of shares at
-       the price it quotes, an asset like the loan book and a riskier one, and
-       a trading result that is income like the interest. A bank that holds
+       bank made the market in the city's shares until 0.7.12; since round 2
+       its desk is one participant on the exchange's order books - see
+       Exchange - and what that leaves on its balance sheet is here: an
+       inventory of shares at the exchange's mark (the lower of the last trade
+       and fair value), an asset like the loan book and a riskier one, and a
+       trading result that is income like the interest. A bank that holds
        the city's shares through a crash loses money the way a bank does;
        that is the business it was asked for.
        ===================================================================== */
@@ -1118,8 +1486,11 @@ public class Bank {
      * (spareOnRisk(inventory)). The divisor is positive
      * whenever the target's weight on a share, capitalTarget() x RISK_EQUITY
      * (at least 15.75% at the game's dials), is more than half the spread:
-     * the bid is never under the mark by more than that (Exchange.bid(),
-     * mark()).
+     * the bid is never under the mark by more than that. Since 0.7.12 round
+     * 2 the desk reads the mark its own purchase leaves - the lower of the
+     * price it pays and fair value, the book's last trade being that price
+     * (Exchange.deskCapacity(), mark()) - so the divisor is the target's
+     * weight alone.
      *
      * ...AND ON THE LEVERAGE TARGET since round 2 of 0.7.11: the same
      * inequality with the exposure in place of the weighted book and
@@ -1133,7 +1504,10 @@ public class Bank {
      * round 3, a month's re-mark of that inventory was a median 121-148% of
      * the equity the bank opened with in the months it failed on it - 28 of
      * the default run's 101 failures, 47 of the autopilot's 97 and 124 of the
-     * 136 held at a 10% dial.
+     * 136 held at a 10% dial. Those caps stayed beside this limit until
+     * 0.7.12 round 2 took them out with the dealer's quote, and round 3 put
+     * them back: the tightest of the three binds the desk's bid (Exchange,
+     * THE DESK'S OWN CAPS ON SHARES).
      *
      * @param inventory the desk's whole inventory at the mark now - the
      *                  securities line lags the month's deals until the
@@ -2545,7 +2919,7 @@ public class Bank {
     }
 
     /** ...plus its fees, since 0.7.7: the accounts, and the loans written. See FEES. */
-    public double feeIncome() { return accountFees + loanFeesPaid + loanFeesOwed; }
+    public double feeIncome() { return accountFees + loanFeesPaid + loanFeesOwed + underwritingFees; }
 
     /**
      * ...less the provision for the loans that will not come back (0.7.8):
@@ -2561,7 +2935,7 @@ public class Bank {
     public double operatingExpenses() { return payroll + upkeep; }
 
     /** ...plus what the desk made or lost. */
-    public double afterTrading()    { return afterLosses() + tradingIncome + paperGains; }
+    public double afterTrading()    { return afterLosses() + tradingIncome + paperGains + bondGains; }
 
     /** What it made before the city took its share. */
     public double profitBeforeTax() { return afterTrading() - operatingExpenses(); }
@@ -2871,9 +3245,12 @@ public class Bank {
 
          WHAT IT LENDS. At or over its target, as it always has. Under the
          minimum, only what keeps its existing borrowers going - a business's
-         interest reserve and the refinancing of what matures, a family's
-         month of interest. In between, a borrower's debt may grow at most
-         lendingGrowthLimit() a month, from nothing at the minimum to no limit
+         working-capital line (the cover of a short month up to the ceiling,
+         its interest reserve, the refinancing of what matures: since 0.7.12
+         round 5 not rationed at all - BusinessDebtManager, CREDIT LINES STAY
+         OPEN), a family's month of interest. In between, a borrower's debt
+         may grow at most lendingGrowthLimit() a month through new lending - a
+         building, a new mortgage - from nothing at the minimum to no limit
          at the target. Existing loans run on at their rates. Game reads it
          once, at the top of the month, and hands it to the desks that lend:
          BusinessDebtManager.setCapitalRule(), HouseholdBalance
@@ -2932,10 +3309,14 @@ public class Bank {
      * the slices will cost - AND STAGED FIRM BY FIRM, as IFRS 9 stages loans
      * one by one (Jerus, 2026-09-23: "Smooth the loss reserve"):
      *
-     *   EL12   = max(BASE_LOSS_RATE, LOSS_GIVEN_DEFAULT x PD(L, 12 months)),
+     *   EL12   = max(BASE_LOSS_RATE, LGD x PD(L, 12 months)),
      *            a year's expected loss, never less than prime is priced for;
-     *   ELlife = max(EL12, LOSS_GIVEN_DEFAULT x PD(L, LOAN_TERM_MONTHS)),
+     *   ELlife = max(EL12, LGD x PD(L, LOAN_TERM_MONTHS)),
      *            the lifetime expected loss over a loan's term;
+     *
+     * at a loan's loss given default, BusinessDebtManager
+     * .LOAN_LOSS_GIVEN_DEFAULT, since 0.7.12 round 2 (the uniform 60% before;
+     * RECOVERIES BY INSTRUMENT);
      *   s2     = stageTwoShare(): the share of its firms past the watch line;
      *
      *   allowance = principal x ((1 - s2) x EL12 + s2 x ELlife)
@@ -2966,17 +3347,41 @@ public class Bank {
      * proportion. The two-argument form when the two debts are the same.
      */
     public static double sectorAllowance(double owed, double principal, double assets) {
+        return sectorAllowance(owed, principal, assets, BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT);
+    }
+
+    /**
+     * ...AT A LOSS GIVEN DEFAULT OF ITS OWN (0.7.12): a loan's for what the
+     * sector owes the bank, a bond's for the sector's bonds it holds
+     * (BusinessDebtManager, RECOVERIES BY INSTRUMENT, since round 2; round 1
+     * read the two sides of absolute priority) - the same a bondholder values
+     * the bond on, so the allowance and the bond's price cannot disagree about
+     * what each loses. A sector with nothing left loses everything on either,
+     * as the backstop writes it.
+     */
+    public static double sectorAllowance(double owed, double principal, double assets, double lossGivenDefault) {
         if (!(owed > 0)) return 0;
         if (!(principal > 0)) principal = owed;
         if (!(assets > 0)) return lossIfDefaulted(principal, assets) * (owed / principal);
         double leverage = principal / assets;
-        double lgd = BusinessDebtManager.LOSS_GIVEN_DEFAULT;
-        double year = Math.max(BASE_LOSS_RATE, lgd * BusinessDebtManager.defaultProbability(
+        double lgd = Math.max(0, lossGivenDefault);
+        double year = Math.max(floorAt(lgd), lgd * BusinessDebtManager.defaultProbability(
                 leverage, BusinessDebtManager.DEFAULT_HORIZON_MONTHS));
         double lifetime = Math.max(year, lgd * BusinessDebtManager.defaultProbability(
                 leverage, BusinessDebtManager.LOAN_TERM_MONTHS));
         double s2 = stageTwoShare(principal, assets);
         return owed * ((1 - s2) * year + s2 * lifetime);
+    }
+
+    /**
+     * THE FLOOR IS THE SOUND BOOK'S LOSS, at this loss given default (0.7.12):
+     * BASE_LOSS_RATE is a sound LOAN's loss, so at a loan's loss given
+     * default it is BASE_LOSS_RATE, and a dollar that loses more when it
+     * defaults - a bond, since round 2 - is floored at its multiple of it:
+     * the same default rate, BondMarket.DEFAULT_RATE_FLOOR, at its own loss.
+     */
+    private static double floorAt(double lgd) {
+        return BASE_LOSS_RATE * (Math.max(0, lgd) / BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT);
     }
 
     /** A household cell in trouble: owing past HOUSEHOLD_WATCH_MONTHS of its income. */
@@ -3072,6 +3477,7 @@ public class Bank {
 
     private void strikeAllowance(java.util.Map<String, double[]> sectors, double households, double householdsWatched) {
         sectorAllowance.clear();
+        allowanceReadings.clear();
         sectorsWatched.clear();
         stageTwoShares.clear();
         if (sectors != null) {
@@ -3079,10 +3485,15 @@ public class Bank {
                 double[] v = e.getValue();
                 if (v == null || v.length < 2) continue;
                 // {the quarter's principal, its assets, what it owes now}
-                // since 0.7.8's quarter; the month's own with two.
-                double held = v.length >= 3 ? sectorAllowance(v[2], v[0], v[1])
+                // since 0.7.8's quarter; the month's own with two; and since
+                // 0.7.12 {..., the loans' loss given default, the sector's
+                // bonds the bank holds at what they cost it, the bonds'}.
+                double held = v.length >= 6
+                        ? sectorAllowance(v[2], v[0], v[1], v[3]) + sectorAllowance(v[4], v[0], v[1], v[5])
+                        : v.length >= 3 ? sectorAllowance(v[2], v[0], v[1])
                         : sectorAllowance(v[0], v[1]);
                 if (held > 0) sectorAllowance.put(e.getKey(), held);
+                allowanceReadings.put(e.getKey(), v.clone());
                 if (sectorWatched(v[0], v[1])) sectorsWatched.add(e.getKey());
                 double share = stageTwoShare(v[0], v[1]);
                 if (share > 0) stageTwoShares.put(e.getKey(), share);
@@ -3103,6 +3514,23 @@ public class Bank {
     public double getSectorAllowance() { return getAllowance() - householdAllowance; }
     /** ...against one sector's. */
     public double getSectorAllowance(String sector) { return sectorAllowance.getOrDefault(sector, 0.0); }
+
+    /**
+     * What the allowance on a sector was struck on, as Game.bankReadings()
+     * handed it over at the month's provision: {the quarter's principal, its
+     * assets, what it owes that nobody insures, the loans' loss given default,
+     * the sector's bonds the bank held at what they cost it, the bonds' loss
+     * given default} (0.7.12 round 2). The bond holding is the one at the
+     * provision, which the market's step later in the month can move - so a
+     * check of the allowance reads it here. Null for a sector not read, and
+     * after a load until the next provision (the save keeps the allowance,
+     * not its inputs).
+     */
+    public double[] getAllowanceReading(String sector) {
+        double[] v = allowanceReadings.get(sector);
+        return v == null ? null : v.clone();
+    }
+    private final java.util.Map<String, double[]> allowanceReadings = new java.util.LinkedHashMap<>();
     /** What this month wrote off one sector's book - its defaulted firms' slice, or the backstop (0.7.8: the Bank tab's "this month", beside the allowance). Saved with the allowance, so it reads the same after a load. */
     public double getWrittenOff(String sector) { return writtenOffBySector.getOrDefault(sector, 0.0); }
     /** ...against the families'. */
@@ -3658,7 +4086,7 @@ public class Bank {
         if (lendsOnlyToKeepBorrowersGoing()) return "under its minimum - lends only to keep its borrowers going";
         double g = lendingGrowthLimit();
         if (Double.isInfinite(g)) return "lends freely";
-        return String.format("rebuilding capital - a borrower's debt may grow %.2f%% this month", g * 100);
+        return String.format("rebuilding capital - new lending may grow a borrower's debt %.2f%% this month", g * 100);
     }
 
     /*
@@ -3801,7 +4229,9 @@ public class Bank {
                 // 0.7.9's: the interest by who paid it, the treasury's
                 // buybacks, and whether these are a month's at all.
                 interestFromBusinesses, interestFromCity, interestFromHouseholds, discountAccreted,
-                treasuryBuybackGain, monthKnown ? 1 : 0 };
+                treasuryBuybackGain, monthKnown ? 1 : 0,
+                // 0.7.12's: its bonds' month.
+                bondGains, underwritingFees, interestFromBonds };
     }
 
     /** ...and back. Nothing on an older save, whose Profit page reads zero for a month as it always did. */
@@ -3827,6 +4257,9 @@ public class Bank {
         interestFromBusinesses = v[i++]; interestFromCity = v[i++]; interestFromHouseholds = v[i++];
         discountAccreted = v[i++]; treasuryBuybackGain = v[i++];
         monthKnown = v[i++] != 0;
+        // ...and 0.7.12's; an older save's bonds' month is nothing.
+        if (v.length < 53) return;
+        bondGains = v[i++]; underwritingFees = v[i++]; interestFromBonds = v[i];
     }
 
     /* ------------------------------- reading ------------------------------- */
@@ -4117,6 +4550,10 @@ public class Bank {
         mortgageBook = 0;
         mortgageWeighted = 0;
         insuranceClaims = 0;
+        bondBook = bondWeighted = bondFace = 0;
+        exposures.clear();
+        concentrationMarginal.clear();
+        concentrationHerfindahl = concentrationAddOn = concentrationWeighted = concentrationExposure = 0;
         cityBook = 0;
         unearnedDiscount = 0;
         householdBook = 0;
@@ -4200,6 +4637,18 @@ public class Bank {
         mortgageBook      *= scale;
         mortgageWeighted  *= scale;
         insuranceClaims   *= scale;
+        // ...and its bonds and the book's concentration (0.7.12): money,
+        // all but the index and the per-dollar add-ons.
+        bondBook          *= scale;
+        bondWeighted      *= scale;
+        bondFace          *= scale;
+        bondGains         *= scale;
+        underwritingFees  *= scale;
+        interestFromBonds *= scale;
+        concentrationAddOn *= scale;
+        concentrationWeighted *= scale;
+        concentrationExposure *= scale;
+        exposures.replaceAll((k, x) -> new Exposure(x.amount() * scale, x.pd(), x.lgd()));
         cityBook          *= scale;
         householdBook     *= scale;
         sectorWeighted    *= scale;
@@ -4440,11 +4889,13 @@ public class Bank {
         PROVISIONS, WRITE_OFFS, TRADING, PAPER_GAINS, REVENUE,
         COSTS, PAYROLL, UPKEEP, PRE_TAX, TAX, NET,
         DIVIDENDS, BUYBACKS, ISSUED, RETAINED,
-        BOOK, EQUITY
+        BOOK, EQUITY,
+        // 0.7.12's: the coupons on its bonds, its underwriting fees and its gains on bonds.
+        FROM_BONDS, UNDERWRITING, BOND_GAINS
     }
 
     /** What it earned before provisions and costs: net interest, fees, the desk and the city's paper - what its costs are read against. */
-    public double revenue() { return netInterestIncome() + feeIncome() + tradingIncome + paperGains; }
+    public double revenue() { return netInterestIncome() + feeIncome() + tradingIncome + paperGains + bondGains; }
 
     /**
      * What it kept of the month's profit once its owners were paid: net
@@ -4488,6 +4939,9 @@ public class Bank {
             case RETAINED        -> getRetained();
             case BOOK            -> getBook();
             case EQUITY          -> equity();
+            case FROM_BONDS      -> interestFromBonds;
+            case UNDERWRITING    -> underwritingFees;
+            case BOND_GAINS      -> bondGains;
         };
     }
 
@@ -4681,8 +5135,9 @@ public class Bank {
                     + " going: its capital is %.1f%% of %s, where the city requires %.1f%%.",
                     ratio * 100, measure, bindingMinimum() * 100);
             case REBUILDING -> String.format("Rebuilding its capital, and lending carefully: %.1f%% of"
-                    + " %s against the %.1f%% it aims for, so a borrower's debt may grow"
-                    + " %.2f%% this month.", ratio * 100, measure, bindingTarget() * 100, lendingGrowthLimit() * 100);
+                    + " %s against the %.1f%% it aims for, so new lending may grow a borrower's debt"
+                    + " %.2f%% this month; the lines that keep its borrowers going stay open.", ratio * 100, measure,
+                    bindingTarget() * 100, lendingGrowthLimit() * 100);
             case PAYING, RETURNING -> Double.isNaN(ratio)
                     ? "Healthy, and lending freely - with nothing lent yet to weigh its capital against."
                     : String.format("Healthy, and lending freely: its capital is %.1f%% of %s,"
@@ -4715,8 +5170,8 @@ public class Bank {
 
     /* ---------------------------- what its book weighs ---------------------------- */
 
-    /** The six things on its books that capacity weighs: the four it lends on, the insured mortgages inside the businesses' (0.7.11), and the desk's shares. */
-    public enum Book { BUSINESSES, CITY, FAMILIES, CARRY, DESK, MORTGAGES }
+    /** The eight things on its books that capacity weighs: the four it lends on, the insured mortgages inside the businesses' (0.7.11), the desk's shares, and since 0.7.12 the businesses' bonds it holds and the weight the book's concentration adds. */
+    public enum Book { BUSINESSES, CITY, FAMILIES, CARRY, DESK, MORTGAGES, BONDS, CONCENTRATION }
 
     /**
      * One row of what the book weighs: its face; the share of it its
@@ -4741,7 +5196,14 @@ public class Bank {
                 weightRow(Book.CITY, cityBook, RISK_CITY, cityWeighted),
                 weightRow(Book.FAMILIES, householdBook, RISK_HOUSEHOLD, householdWeighted),
                 weightRow(Book.CARRY, carryBook, RISK_CARRY, carryBook * RISK_CARRY),
-                weightRow(Book.DESK, Math.abs(securities), RISK_EQUITY, Math.abs(securities) * RISK_EQUITY));
+                weightRow(Book.DESK, Math.abs(securities), RISK_EQUITY, Math.abs(securities) * RISK_EQUITY),
+                // ...and its corporate bonds, at what they cost it, weighed as
+                // loans to their issuers; and the concentration add-on as the
+                // weight it adds on the exposure it was struck on (0.7.12).
+                weightRow(Book.BONDS, bondBook, RISK_BUSINESS, bondWeighted),
+                new WeightRow(Book.CONCENTRATION, concentrationExposure, 1,
+                        concentrationExposure > 0 ? concentrationWeighted / concentrationExposure : 0,
+                        concentrationWeighted));
     }
 
     private static WeightRow weightRow(Book book, double face, double risk, double weighted) {

@@ -1,6 +1,6 @@
-# Retail.java - 621 lines · 46 methods · 7 constants · sectors
+# Retail.java - 635 lines · 46 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/Retail.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Retail.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The shops. Buy food on the food market, keep it on a shelf, sell it to the
 > households as groceries at a price they strike themselves.
@@ -32,7 +32,7 @@
 
 **Uses:** [Good](Good.md) (34), [BusinessInvestment](BusinessInvestment.md) (10), [Game](Game.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [GoodsMarket](GoodsMarket.md) (2), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1)
 
-**Used by (17):** [EconomyManager](EconomyManager.md), [ForeignCheck](ForeignCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sectors](Sectors.md), [ShadowBasket](ShadowBasket.md), [WaterCheck](WaterCheck.md)
+**Used by (18):** [BondCheck](BondCheck.md), [EconomyManager](EconomyManager.md), [ForeignCheck](ForeignCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sectors](Sectors.md), [ShadowBasket](ShadowBasket.md), [WaterCheck](WaterCheck.md)
 
 ## Sections
 
@@ -41,9 +41,9 @@
 | 92 | THE THIRTEEN THINGS ON THE SHELF |
 | 164 | INPUTS FROM THE CITY |
 | 260 | THE SALE, at the bottom of the month |
-| 451 | PLANNING - customers against coverage |
-| 510 | THE SCREEN |
-| 569 | SAVE, RESET, THE REFORM |
+| 452 | PLANNING - customers against coverage |
+| 511 | THE SCREEN |
+| 570 | SAVE, RESET, THE REFORM |
 
 ## Constants
 
@@ -79,7 +79,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 576 | **type** `public final class Retail extends Sector` | The shops. |
+| 46 | 590 | **type** `public final class Retail extends Sector` | The shops. |
 
 ### THE THIRTEEN THINGS ON THE SHELF (lines 92-163)
 
@@ -122,38 +122,38 @@
 | 253 | 1 | `public void setLastMonthSales(int units)` |  |
 | 255 | 4 | `public void setStoreInventory(int units)` | Puts N person-months on the shelf, in the kilograms that makes - the save's way back in. |
 
-### THE SALE, at the bottom of the month (lines 260-450)
+### THE SALE, at the bottom of the month (lines 260-451)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 265 | 89 | `public void sellOwnPriced(Markets markets, Game game)` |  |
-| 361 | 6 | `protected double recentUse(Good g)` | What the shops sell, the month-one fallback included: with no sales to go on, they stock for every customer they could serve, and after that for what they actually sold - see the old handler's restockTarget(). |
-| 379 | 15 | `public void endOfMonth(Game game)` | ...and the shelf follows THIRTEEN invoices now. |
-| 412 | 10 | `public void repriceShelf(double localUnits, double localPrice, double importUnits, double importPrice, double plannedUnits, dou...` | What the shops charge, and this is where prices learned to ration. |
-| 433 | 17 | `public void repriceShelf(double blendedCost, double plannedUnits, double deliveredUnits)` | The same rule, told what one unit cost instead of working it out. |
+| 265 | 90 | `public void sellOwnPriced(Markets markets, Game game)` |  |
+| 362 | 6 | `protected double recentUse(Good g)` | What the shops sell, the month-one fallback included: with no sales to go on, they stock for every customer they could serve, and after that for what they actually sold - see the old handler's restockTarget(). |
+| 380 | 15 | `public void endOfMonth(Game game)` | ...and the shelf follows THIRTEEN invoices now. |
+| 413 | 10 | `public void repriceShelf(double localUnits, double localPrice, double importUnits, double importPrice, double plannedUnits, dou...` | What the shops charge, and this is where prices learned to ration. |
+| 434 | 17 | `public void repriceShelf(double blendedCost, double plannedUnits, double deliveredUnits)` | The same rule, told what one unit cost instead of working it out. |
 
-### PLANNING - customers against coverage (lines 451-509)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 456 | 42 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` |  |
-| 501 | 3 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | Gross margin on a full store: every covered customer buys a unit a month. |
-| 506 | 3 | `public double[] retirementDemandAndCapacity(Game game)` |  |
-
-### THE SCREEN (lines 510-568)
+### PLANNING - customers against coverage (lines 452-510)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 515 | 1 | `public String inputLabel()` |  |
-| 518 | 50 | `public List<Line> operations(Game game)` |  |
+| 457 | 42 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` |  |
+| 502 | 3 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | Gross margin on a full store: every covered customer buys a unit a month. |
+| 507 | 3 | `public double[] retirementDemandAndCapacity(Game game)` |  |
 
-### SAVE, RESET, THE REFORM (lines 569-621)
+### THE SCREEN (lines 511-569)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 574 | 11 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 587 | 11 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 600 | 8 | `protected void resetExtras()` |  |
-| 610 | 6 | `protected void redenominateExtras(double scale)` |  |
-| 618 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 516 | 1 | `public String inputLabel()` |  |
+| 519 | 50 | `public List<Line> operations(Game game)` |  |
+
+### SAVE, RESET, THE REFORM (lines 570-635)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 575 | 22 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 599 | 12 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 613 | 9 | `protected void resetExtras()` |  |
+| 624 | 6 | `protected void redenominateExtras(double scale)` |  |
+| 632 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
 

@@ -1242,6 +1242,71 @@ public class SaveFileCheck {
         same("...and its claims line", back.getEconomyManager().getNationalAccounts().getMortgageClaims(),
                 full.getEconomyManager().getNationalAccounts().getMortgageClaims());
         same("...and the bank's book of them", back.getBank().getMortgageBook(), full.getBank().getMortgageBook());
+        /*
+         * THE BUSINESSES' BONDS (0.7.12): every bond whole - its face, its
+         * coupon, its term and who holds it - and the orders resting on its
+         * book; each cell's own bonds and what a unit of them is worth this
+         * month, which their plan reads; the bank's bonds and its book's
+         * concentration, struck again on the load path from the market; the
+         * month's flows the Bonds page, the Trade tab and the sector screen
+         * read; and the lender's record of what bondholders lost.
+         */
+        BondMarket liveBonds = full.getBondMarket(), backBonds = back.getBondMarket();
+        assertTrue("fixture: the city's businesses owe bonds, and orders rest on their books",
+                !liveBonds.getBonds().isEmpty() && liveBonds.getLifeIssues() > 0);
+        same("the bonds outstanding", backBonds.getBonds().size(), liveBonds.getBonds().size());
+        same("...their face", backBonds.totalFace(), liveBonds.totalFace());
+        same("...the households' of it", backBonds.faceHeldByHouseholds(), liveBonds.faceHeldByHouseholds());
+        same("...the bank's", backBonds.faceHeldByBank(), liveBonds.faceHeldByBank());
+        same("...the companies'", backBonds.faceHeldByCompanies(), liveBonds.faceHeldByCompanies());
+        same("...the world's", backBonds.faceHeldByWorld(), liveBonds.faceHeldByWorld());
+        same("...their coupon, weighted", backBonds.averageCoupon(), liveBonds.averageCoupon());
+        double liveOrders = 0, backOrders = 0;
+        for (CorporateBond b : liveBonds.getBonds()) {
+            liveOrders += liveBonds.bookOf(b).depth(OrderBook.Side.BUY, 1e-9) + liveBonds.bookOf(b).depth(OrderBook.Side.SELL, 1e9);
+            CorporateBond t = backBonds.bond(b.id());
+            if (t != null) backOrders += backBonds.bookOf(t).depth(OrderBook.Side.BUY, 1e-9) + backBonds.bookOf(t).depth(OrderBook.Side.SELL, 1e9);
+        }
+        same("...the orders resting on their books", backOrders, liveOrders);
+        same("the households' bonds", back.getHouseholdBalance().totalBonds(), full.getHouseholdBalance().totalBonds());
+        // ...each cell's own, bond by bond, by the cell's name (0.7.12 round 2).
+        int cellsWithBonds = 0, cellsBack = 0;
+        for (Household c : full.getHouseholdBalance().cells()) {
+            if (c.bondFace.isEmpty()) continue;
+            cellsWithBonds++;
+            Household t = back.getHouseholdBalance().cellByKey(c.key());
+            if (t != null && t.bondFace.equals(c.bondFace)) cellsBack++;
+        }
+        same("...each cell's own, bond by bond, by its name (" + cellsWithBonds + " cells)", cellsBack, cellsWithBonds);
+        // ...and the shares' books (round 2): the last trade, fair value and what rests.
+        Exchange liveEx = full.getExchange(), backEx = back.getExchange();
+        double livePrices = 0, backPrices = 0, liveResting = 0, backResting = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            livePrices += liveEx.price(c) + liveEx.fair(c);
+            backPrices += backEx.price(c) + backEx.fair(c);
+            liveResting += liveEx.bookOf(c).depth(OrderBook.Side.BUY, 1e-12) + liveEx.bookOf(c).depth(OrderBook.Side.SELL, 1e12);
+            backResting += backEx.bookOf(c).depth(OrderBook.Side.BUY, 1e-12) + backEx.bookOf(c).depth(OrderBook.Side.SELL, 1e12);
+        }
+        same("the shares' last trades and fair values", backPrices, livePrices);
+        same("...and the orders resting on their books", backResting, liveResting);
+        same("...and what a unit of them is worth this month", back.getHouseholdBalance().getBondRatio(),
+                full.getHouseholdBalance().getBondRatio());
+        same("the bank's bonds, at what they cost it", back.getBank().getBondBook(), full.getBank().getBondBook());
+        same("...weighed as loans", back.getBank().getBondWeighted(), full.getBank().getBondWeighted());
+        same("...and the capital its book's concentration adds", back.getBank().getConcentrationAddOn(),
+                full.getBank().getConcentrationAddOn());
+        same("the month's issues, for the Bonds page", backBonds.getIssuedFace(), liveBonds.getIssuedFace());
+        same("...the coupons paid abroad, for the Trade tab", backBonds.getCouponsAbroad(), liveBonds.getCouponsAbroad());
+        same("...the world's purchases", backBonds.getWorldPurchases(), liveBonds.getWorldPurchases());
+        same("...last month's book", backBonds.getLastPostedSell(), liveBonds.getLastPostedSell());
+        same("...and over the city's life, the coupons the households were paid", backBonds.getLifeCouponsHouseholds(),
+                liveBonds.getLifeCouponsHouseholds());
+        for (String k : liveCredit.sectors()) {
+            same("  " + k + ": its bonds", backCredit.getBondPrincipal(k), liveCredit.getBondPrincipal(k));
+            same("  ...what bondholders have lost on them", backCredit.getBondWrittenOffTotal(k), liveCredit.getBondWrittenOffTotal(k));
+            same("  ...its month's bond lines on the sector screen", backBonds.getIssued(k) + backBonds.getCouponsTo(k)
+                    + backBonds.getBoughtNet(k), liveBonds.getIssued(k) + liveBonds.getCouponsTo(k) + liveBonds.getBoughtNet(k));
+        }
         // ...and round 2's: the months its book has not kept its branches'
         // staff (Bank.lastMonthToSave(); MortgageCheck section 11 saves a
         // city with the streak running), and what its leverage ratio reads.
@@ -1374,6 +1439,72 @@ public class SaveFileCheck {
         }
         same("...and what the journal left unexplained",
                 back.getTreasuryResidual(), full.getTreasuryResidual());
+
+        /* ============ 14. a reloaded city PLAYS ON as the one it was saved from ============ */
+        System.out.println("\n--- and a reloaded city plays on as the one it was saved from ---");
+
+        /*
+         * EVERY SECTION ABOVE COMPARES THE LOADED STATE, AND THAT IS NOT THE
+         * SAME QUESTION (0.7.12, round 2). A field the next month reads and
+         * no screen shows passes every one of them and still parts the two
+         * cities a month on. Two did, found by playing a reload beside the
+         * city it came from:
+         *
+         *   - the baskets the households asked the shops for, which
+         *     Retail.getHouseholdShare() divides the month's sales by and the
+         *     next month's hunger reads. Unsaved, the share came back as one:
+         *     nobody hungry, the sick rate a third lower, every sector's
+         *     operating rate a tenth higher for the first month after a load.
+         *   - the price index's settling count, which rode in its based flag.
+         *     A city saved in its first two years started counting again and
+         *     based its index two years after the city it was saved from.
+         *
+         * So the fixture causes both - shops that cannot serve the queue, and
+         * a save taken before the index is based - and the two cities play
+         * six months each. Built with buildStack(), which tells the land
+         * office, because a city stacked with addStack() stands on ground the
+         * ledger never allocated and the load path heals that on purpose
+         * (Game.foundingBank()); a twin of THAT city differs by design.
+         */
+        Game early = new Game(new GameFiles(root.resolve("early"), root.resolve("no-legacy")));
+        early.run();
+        early.setCashForTest(Founding.WEALTHY_CASH);
+        early.buildStack(template(early, "House"), 300, true);
+        early.buildStack(template(early, "Convenience Store"), 12, true);
+        early.buildStack(template(early, "Bakery"), 3, true);
+        early.buildStack(template(early, "Construction Depot"), 3, true);
+        early.buildStack(template(early, "Coal Power Plant"), 2, true);
+        early.buildStack(template(early, "Water Treatment Plant"), 1, true);
+        early.simulateMonths(PriceIndex.SETTLING_MONTHS - 4);
+
+        assertTrue("fixture: the shops handed over less than the households asked for",
+                early.getSectors().retail().getHouseholdShare() < 1);
+        assertTrue("fixture: the price index has not been based yet",
+                !early.getPriceIndex().isBased());
+        assertTrue("saved a city in its first two years", early.saveGame(2, "early").ok);
+
+        Game replay = new Game(early.getGameFiles());
+        replay.loadGameSave(2);
+        same("the share the shops handed over came back",
+                replay.getSectors().retail().getHouseholdShare(),
+                early.getSectors().retail().getHouseholdShare());
+
+        early.simulateMonths(6);
+        replay.simulateMonths(6);
+        assertTrue("fixture: the index was based in those six months, in the city saved",
+                early.getPriceIndex().isBased());
+        assertTrue("...and in its reload", replay.getPriceIndex().isBased());
+        same("six months on: the price index", replay.getPriceIndex().getIndex(),
+                early.getPriceIndex().getIndex());
+        same("...the sick rate", replay.getHealth().getSickRate(), early.getHealth().getSickRate());
+        same("...the treasury", replay.getCash(), early.getCash());
+        same("...the households' savings", replay.getHouseholdBalance().totalSavings(),
+                early.getHouseholdBalance().totalSavings());
+        same("...the bank's equity", replay.getBank().equity(), early.getBank().equity());
+        for (String k : Sectors.KEYS) {
+            same("  " + k + ": its till", replay.getEconomyManager().getSectorCash(k),
+                    early.getEconomyManager().getSectorCash(k));
+        }
 
         cleanUp(root);
 

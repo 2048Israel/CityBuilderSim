@@ -325,7 +325,7 @@ final class SectorScreen {
                         !known ? Palette.TEXT_SPENT : now.margin() < 0 ? Palette.BAD : Palette.TEXT_BODY),
                 moreCell("cash", known ? tightMoney(toDollars(now.cash())) : "—",
                         !known ? Palette.TEXT_SPENT : now.cash() < 0 ? Palette.BAD : Palette.TEXT_BODY),
-                moreCell("owes the bank", known ? tightMoney(toDollars(now.bondsPayable())) : "—",
+                moreCell("owes lenders", known ? tightMoney(toDollars(now.bondsPayable())) : "—",
                         known ? Palette.TEXT_BODY : Palette.TEXT_SPENT),
                 moreCell("posts filled", String.format("%,.0f of %,d",
                         sector.getWorkers(), sector.getPostsOffered()), Palette.TEXT_BODY));
@@ -914,7 +914,7 @@ final class SectorScreen {
                 now.totalAssets(), then.totalAssets(), known, null));
 
         column.getChildren().add(statementHead("What it owes, and what is left"));
-        column.getChildren().add(bookLine("Loans outstanding",
+        column.getChildren().add(bookLine("Loans and bonds outstanding",
                 now.bondsPayable(), then.bondsPayable(), known,
                 now.bondsPayable() > 0 ? Palette.WARN : null));
         column.getChildren().add(bookLine("Owners' equity",
@@ -1005,33 +1005,56 @@ final class SectorScreen {
         column.getChildren().add(statementLine("A share is worth, on the books",
                 tightMoney(toDollars(register.bookPerShare(company, bookEquity)), false)));
         /*
-         * THE MARKET, since the exchange (2026-09-11). The desk's quote, the
-         * yield at it and what the whole company is worth at it - the three
-         * figures a shareholder reads before the book.
+         * THE MARKET, on the order book since 0.7.12 round 2 (the bank's
+         * desk quoted it from 2026-09-11 until then). The price is the last
+         * trade, with fair value - the register's reckoning - beside it; the
+         * yield at the price and what the company is worth at it; the month's
+         * volume; and what rests on the book, best first.
          */
-        if (market.isOpen()) {
-            double mid = market.mid(company);
-            boolean dear = mid > market.fair(company) * (1 + Exchange.BUYBACK_TOLERANCE);
-            boolean cheap = mid < market.fair(company) * (1 - Exchange.BUYBACK_TOLERANCE);
-            column.getChildren().add(statementLine("The desk quotes it at",
-                    tightMoney(toDollars(mid), false), dear ? Palette.WARN : cheap ? Palette.GOOD : null));
-            column.getChildren().add(statementLine("...which yields, on the last year's dividend",
-                    String.format("%.1f%%", market.yieldAt(register, company, market.ask(company)) * 100)));
-            column.getChildren().add(statementLine("...and values the company at",
-                    tightMoney(toDollars(market.marketCap(register, company)))));
-        } else {
-            column.getChildren().add(statementLine("Last sold at",
-                    tightMoney(toDollars(register.getLastPrice(company)), false)));
-            column.getChildren().add(statementNote("No market: the bank has no capital to make one."));
+        double price = market.price(company), fairValue = market.fair(company);
+        boolean dear = price > fairValue * (1 + Exchange.BUYBACK_TOLERANCE);
+        boolean cheap = price < fairValue * (1 - Exchange.BUYBACK_TOLERANCE);
+        OrderBook shareBook = market.bookOf(company);
+        column.getChildren().add(statementLine(market.hasTraded(company) ? "Last traded at" : "Not traded yet: at fair value",
+                tightMoney(toDollars(price), false) + (market.hasTraded(company)
+                        ? ", " + CityCalendar.format(shareBook.lastTradeMonth()) : ""),
+                dear ? Palette.WARN : cheap ? Palette.GOOD : null));
+        column.getChildren().add(statementLine("...its fair value, the register's reckoning",
+                tightMoney(toDollars(fairValue), false)));
+        column.getChildren().add(statementLine("...which yields, on the dividend it paid over the year",
+                String.format("%.1f%%", market.yieldAt(register, company, price) * 100)));
+        column.getChildren().add(statementLine("...and values the company at",
+                tightMoney(toDollars(market.marketCap(register, company)))));
+        column.getChildren().add(statementLine("Traded this month",
+                market.getVolume(company) > 0 ? String.format("%,.0f shares", market.getVolume(company)) : "none"));
+        for (OrderBook.Side side : OrderBook.Side.values()) {
+            boolean bids = side == OrderBook.Side.BUY;
+            List<OrderBook.Level> levels = shareBook.levels(side);
+            if (levels.isEmpty()) {
+                column.getChildren().add(statementLine(bids ? "Bids" : "Asks", bids ? "nobody is bidding" : "nobody is selling",
+                        Palette.TEXT_MUTED));
+                continue;
+            }
+            javafx.scene.layout.GridPane t = grid(new double[] {130, 110, 70}, rightAfterFirst(3));
+            gridHead(t, bids ? "bid, best first" : "ask, best first", "shares", "orders");
+            int line = 1;
+            for (OrderBook.Level level : levels) {
+                if (line > 5) break;
+                t.add(gridCell(tightMoney(toDollars(level.price()), false), bids ? Palette.GOOD : Palette.WARN,
+                        Palette.SIZE_CAPTION, false), 0, line);
+                t.add(gridCell(String.format("%,.0f", level.quantity()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
+                t.add(gridCell(String.valueOf(level.orders()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
+                line++;
+            }
+            column.getChildren().add(t);
+        }
+        if (!market.isOpen()) {
+            column.getChildren().add(statementNote("The bank's desk is not posting: it has no capital to trade with."
+                    + " Everybody else still can, and a seller with no buyer waits."));
         }
         double paid = register.getDividendThisMonth(company);
         column.getChildren().add(statementLine("Dividend this month",
                 tightMoney(toDollars(paid), false), paid > 0 ? Palette.GOOD : null));
-        double special = market.getSpecialDividend(company);
-        if (special > 0) {
-            column.getChildren().add(statementLine("...of which a special dividend",
-                    tightMoney(toDollars(special), false), Palette.GOOD));
-        }
         double retired = register.getBoughtBackThisMonth(company);
         if (retired > 0 && register.getShares(company) + retired > 0) {
             column.getChildren().add(statementLine("Bought back and retired this month",
@@ -1047,9 +1070,9 @@ final class SectorScreen {
         /*
          * WHAT A SHARE HAS BEEN WORTH, since 2026-09-11 - Jerus: "a history
          * of the stock price for each company, both in each industry, and in
-         * the reports rail." The desk's quote and the register's reckoning,
-         * per founding share so a split is not a cliff, from the month the
-         * company listed. The same series the Reports tab draws; this is the
+         * the reports rail." The last trade (the desk's quote until 0.7.12
+         * round 2) and the register's reckoning, per founding share so a
+         * split is not a cliff, from the month the company listed. The same series the Reports tab draws; this is the
          * one company's, on its own page.
          */
         sharePriceChart(column, company);
@@ -1083,8 +1106,9 @@ final class SectorScreen {
     }
 
     /**
-     * One company's share price over the city's life: the quote against
-     * what the register says a share is worth, both per founding share.
+     * One company's share price over the city's life: the last trade (the
+     * desk's quote until 0.7.12 round 2) against what the register says a
+     * share is worth, both per founding share.
      */
     void sharePriceChart(VBox column, int company) {
         HistorySave h = ui.game.getHistorySave();
@@ -1096,7 +1120,7 @@ final class SectorScreen {
         if (!any) return;
         column.getChildren().add(statementHead("What a share has been worth"));
         column.getChildren().add(trendChart(
-                new String[] {"The desk's quote", "What the register reckons"},
+                new String[] {"The last trade", "What the register reckons"},
                 new double[][] {price, worth},
                 new String[] {Palette.ACCENT, Palette.RAMP_REST}));
         double factor = ui.game.getExchange().getSplitFactor(company);
@@ -1107,8 +1131,8 @@ final class SectorScreen {
                         ? String.format(" — one founding share is %s shares today.",
                                 factor >= 1 ? String.format("%,.0f", factor) : String.format("%.4f", factor))
                         : ".")
-                + " Where the quote sits above what the register reckons, buyers the desk "
-                + "could not fill have lifted it; below, the desk is long and finding them."));
+                + " Where the last trade sits above what the register reckons, buyers paid more "
+                + "than it is worth; below, sellers took less to get out."));
     }
 
     /* ---------------------------- CASH AND CREDIT ---------------------------- */
@@ -1151,6 +1175,25 @@ final class SectorScreen {
                 now.borrowed() > 0 ? Palette.WARN : null));
         column.getChildren().add(bookLine("Loans repaid",
                 -now.repaid(), -then.repaid(), known, null));
+        // ...and its bonds (0.7.12): what they raised after their costs, the
+        // face it repaid, what it spent on other sectors' and their coupons.
+        if (now.bondsIssued() != 0 || then.bondsIssued() != 0) {
+            column.getChildren().add(bookLine("Raised on bonds, after their costs",
+                    now.bondsIssued(), then.bondsIssued(), known, Palette.WARN));
+        }
+        if (now.bondsRepaid() != 0 || then.bondsRepaid() != 0) {
+            column.getChildren().add(bookLine("Bonds repaid",
+                    -now.bondsRepaid(), -then.bondsRepaid(), known, null));
+        }
+        if (now.bondsBought() != 0 || then.bondsBought() != 0) {
+            column.getChildren().add(bookLine(
+                    now.bondsBought() >= 0 ? "Spent on other businesses' bonds" : "Other businesses' bonds sold or repaid",
+                    -now.bondsBought(), -then.bondsBought(), known, null));
+        }
+        if (now.bondCoupons() != 0 || then.bondCoupons() != 0) {
+            column.getChildren().add(bookLine("Coupons on the bonds it holds",
+                    now.bondCoupons(), then.bondCoupons(), known, Palette.GOOD));
+        }
         // ...less the part that was scrapped plant's material (0.7.8), which
         // is its own line: the builders' purchase, or the seller's sale.
         double premisesNow = now.spentOnBuildings() - now.salvage();
@@ -1249,7 +1292,7 @@ final class SectorScreen {
                 credit.getRiskSpread(key) * 100,
                 BankScreen.defaultShare(credit.getQuarterDefaultRate(key)),
                 credit.getQuarterLeverage(key),
-                BusinessDebtManager.LOSS_GIVEN_DEFAULT * 100, Bank.BASE_LOSS_RATE * 100,
+                BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT * 100, Bank.BASE_LOSS_RATE * 100,
                 record > 0 ? String.format(" - and %.2f points for its record", record * 100) : "")));
         column.getChildren().add(statementLine("Leverage",
                 String.format("%.2f", now.leverage()),
@@ -1259,6 +1302,51 @@ final class SectorScreen {
                 tightMoney(toDollars(credit.getPrincipal(key)), false)));
         column.getChildren().add(statementLine("Loans running",
                 String.valueOf(credit.getLoanCount(key))));
+        /*
+         * INTERIM FINANCING (0.7.12, round 5): what the bank lent it after a
+         * default for the bills the month left unpaid, ranked ahead of all
+         * its other debt - its own line, amber, beside what it owes.
+         */
+        double interim = credit.getInterimPrincipal(key);
+        if (interim > 0) {
+            int n = credit.getInterimCount(key);
+            column.getChildren().add(statementLine("...of it, interim financing",
+                    tightMoney(toDollars(interim), false) + String.format("   %d loan%s, ranked first", n, n == 1 ? "" : "s"),
+                    Palette.WARN));
+        }
+        /*
+         * ITS BANK LOANS AND ITS BONDS (0.7.12), each at what it costs. The
+         * screens say "bank loans" for what Jerus calls notes, because the
+         * city's own short paper is already called a note (CorporateBond).
+         */
+        BondMarket market = ui.game.getBondMarket();
+        double bonds = credit.getBondPrincipal(key), loans = credit.getLoanPrincipal(key);
+        if (bonds > 0 || market.getLifeIssues() > 0) {
+            column.getChildren().add(subHead("Its bank loans and its bonds"));
+            column.getChildren().add(statementLine("Bank loans", tightMoney(toDollars(loans), false)
+                    + (loans > 0 ? String.format("   at %.2f%% on average", credit.getLoanInterest(key) * 12 / loans * 100) : "")));
+            column.getChildren().add(statementLine("Bonds", tightMoney(toDollars(bonds), false)
+                    + (bonds > 0 ? String.format("   at %.2f%% on average", market.averageCoupon(key) * 100) : "")));
+            if (loans + bonds > 0) {
+                column.getChildren().add(statementLine("...its debt in bonds",
+                        String.format("%.0f%%", bonds / (loans + bonds) * 100)));
+            }
+            BusinessDebtManager.Plan plan = credit.getShortfallPlan(key);
+            if (plan != null) {
+                column.getChildren().add(statementNote("Its last month's borrowing to cover its cash"
+                        + Game.financingWords(plan).replaceFirst(" - ", ": ") + "."));
+            }
+            column.getChildren().add(statementNote(
+                    "It takes the cheaper of the two: the bank's rate with its fee over the loan's term, or "
+                    + "the coupon the bond book would sell at with its issuing costs over the bond's ten years "
+                    + "- and never more, together, than the bank would lend. When its firms default, its bank loans "
+                    + "get back more of what they are owed than its bonds do; interim financing, lent after a "
+                    + "default for the bills it could not pay, ranks ahead of both."));
+        }
+        if (market.faceHeldBy(key) > 0) {
+            column.getChildren().add(statementLine("Other businesses' bonds it holds",
+                    tightMoney(toDollars(market.faceHeldBy(key)), false), Palette.GOOD));
+        }
         /*
          * ITS INSURED MORTGAGES (0.7.11), beside its other debt: the
          * landlords buy their buildings on them. What is owed, at what rate,
@@ -1324,13 +1412,20 @@ final class SectorScreen {
                 column.getChildren().add(statementLine("...of it off insured mortgages, which the city paid",
                         tightMoney(toDollars(credit.getInsuredWrittenOffTotal(key)), false), Palette.WARN));
             }
+            // ...of which its bondholders lost (0.7.12): each class at its own
+            // recovery since round 2 (BusinessDebtManager, RECOVERIES BY INSTRUMENT).
+            if (credit.getBondWrittenOffTotal(key) > 0) {
+                column.getChildren().add(statementLine("...and its bondholders lost, in all",
+                        tightMoney(toDollars(credit.getBondWrittenOffTotal(key)), false), Palette.BAD));
+            }
             column.getChildren().add(statementLine("Times it went under whole",
                     String.valueOf(credit.getRestructureCount(key))));
             column.getChildren().add(statementNote(String.format(
-                    "Its firms default a few at a time as its leverage rises, and the bank loses "
-                    + "%.0f%% of what they owed; they keep their plant. Going under whole is "
-                    + "having nothing left at all - everything it owed is written off and it is "
-                    + "shut out for a while.", BusinessDebtManager.LOSS_GIVEN_DEFAULT * 100)));
+                    "Its firms default a few at a time as its leverage rises; the bank loses "
+                    + "%.0f%% of what they owed it and their bondholders %.0f%%, and they keep their "
+                    + "plant. Going under whole is having nothing left, or no lender willing to carry it past a "
+                    + "default - most of what it owed is written off and it is shut out for a while.",
+                    BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT * 100, BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT * 100)));
         }
 
         if (credit.isBorrowingBlocked(key)) {

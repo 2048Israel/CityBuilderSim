@@ -94,7 +94,7 @@ public class BankCheck {
      */
     static double deskParts(Exchange exchange, Equity register, Bank bank) {
         // Not the bank's own shares, which are capital since 0.7.8 and not
-        // the desk's trading (Exchange.payForShares()): its lines, less them
+        // the desk's trading (Exchange's Settle, the bank's own): its lines, less them
         // - Exchange.deskSoldToHouseholds() and the three beside it since
         // 0.7.9, which the screen reads.
         return exchange.deskSoldToHouseholds() + exchange.deskSoldAbroad()
@@ -778,10 +778,10 @@ public class BankCheck {
          */
         assertTrue("fixture: somebody abroad has actually borrowed",
                 live.getCarryBook() > 0);
-        close("the bank's book is every loan in the city, plus what left it",
+        close("the bank's book is every loan in the city, plus what left it, and the businesses' bonds it holds",
                 live.getBook(),
                 live.getSectorBook() + live.getCityBook() + live.getHouseholdBook()
-                        + live.getCarryBook(), 1e-9);
+                        + live.getCarryBook() + live.getBondBook(), 1e-9);
         close("...and the carry book IS the stock that owns it",
                 live.getCarryBook(), city.getCapitalFlows().getCarryStock(), 1e-9);
 
@@ -1315,6 +1315,28 @@ public class BankCheck {
             books.buildStack(template(books, "Construction Depot"), 4, true);
             books.buildStack(template(books, "Coal Power Plant"), 1, true);
             books.buildStack(template(books, "Water Treatment Plant"), 1, true);
+            /*
+             * ...AND MATERIALS HELD OUT (0.7.12 round 3), as BondCheck holds
+             * its issuer: it builds nothing, so it borrows nothing to build.
+             * Section 12's premise - a save with no quarter provides like the
+             * one that saved it - needs every book where the curve does not
+             * read a borrower's assets, and this city's Materials, in a bad
+             * year with no equity raised, borrowed its way to 0.90 of its
+             * assets in round 2 (0.17 in round 1), where a quarter of one
+             * month and a quarter of three strike allowances $42k apart.
+             * Section 12 asserts the cause below.
+             */
+            books.getBusinessInvestment().holdSector(Sectors.MATERIALS);
+            /*
+             * ...AND LUXURY RETAIL (0.7.12 round 5), for the same premise. Its
+             * restock swings its till every other month, and since round 5
+             * the months nobody would cover are lent to it as interim
+             * financing rather than forgiven: in round 5's city it owed 1.44
+             * times what it owned by the save, 1.34 on its quarter, and its
+             * two readings struck allowances $288k apart. Held out, it builds
+             * nothing, so it owes nothing. Section 12 asserts the cause.
+             */
+            books.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
             books.simulateMonths(24);
             books.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000);
             books.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000);
@@ -1555,9 +1577,10 @@ public class BankCheck {
          *
          * On a fixture that trades - ExchangeCheck's leavers, borrowed whole:
          * twenty households emigrate and the desk buys their two thousand
-         * shares at the bid, then re-marks them at the closing quote. Every
-         * term but two is zero there, so the re-mark is read against the
-         * model's own quote and not just against a subtraction.
+         * shares at its bid, then re-marks them at the closing mark, the
+         * lower of the last trade and fair value (on the book since 0.7.12
+         * round 2). Every term but two is zero there, so the re-mark is read
+         * against the model's own mark and not just against a subtraction.
          */
         HouseholdBalance leavers = ExchangeCheck.savers(20.0, 4.0);
         int RETAIL = Equity.indexOf(Sectors.RETAIL);
@@ -1575,15 +1598,16 @@ public class BankCheck {
         Bank dealer = ExchangeCheck.bankWith(10_000);
         double[] bookValue = new double[Equity.COMPANIES.length];
         bookValue[RETAIL] = 10_000;                          // $1 a share
-        desk.startMonth();
+        desk.startMonth(1);
         desk.takeMonth(register, leavers, dealer, new ExchangeCheck.Firms(), bookValue,
-                DebtManager.WORLD_BASE_RATE, 0);
+                DebtManager.WORLD_BASE_RATE, 0, 1);
 
         double bid = 1.0 * (1 - Exchange.SPREAD / 2);
-        double closingMid = 1.0 * (1 - Exchange.PRESSURE * 2_000 / desk.limit(RETAIL));
+        double closingMark = desk.mark(RETAIL);
         assertTrue("fixture: the desk traded", desk.getBoughtFromAbroad(RETAIL) > 0);
-        close("the re-mark is the inventory at the closing quote, from nothing",
-                dealer.getMarkChange(), 2_000 * closingMid, 1e-9);
+        close("fixture: ...at its bid, which is the last trade and so the mark", closingMark, bid, 1e-12);
+        close("the re-mark is the inventory at the closing mark, from nothing",
+                dealer.getMarkChange(), 2_000 * closingMark, 1e-9);
         close("...and the desk's total is what it paid against that re-mark",
                 dealer.getTradingIncome(), -2_000 * bid + dealer.getMarkChange(), 1e-9);
         close("the opened lines and the re-mark sum to the total, exactly",
@@ -1623,6 +1647,27 @@ public class BankCheck {
            ================================================================= */
         out.println("\n--- (12) a reload between two months reads the same income lines, allowance and target ---");
 
+        /*
+         * ...AND A SOUND BOOK THE BANK HOLDS ALONE (0.7.12 round 5), caused.
+         * The flat books below are the ones with no bonds, whose allowance
+         * the bond step cannot move between the provision and the save; in
+         * round 5's city every sector that borrowed had sold a bond on the
+         * shortfall desk's plan too, its short months covered whole since the
+         * lines stay open. So Retail, which owes nothing, owes the bank $50k,
+         * taken on between months - a claim, no money moved, as the other
+         * harnesses' fixtures take one on - and a month is played for the
+         * bank to book it and provide for it. The cause is asserted.
+         */
+        System.setOut(quiet);
+        try {
+            books.getEconomyManager().getBusinessDebtManager().issueLoan(Sectors.RETAIL, 50, books.getMonth());
+            books.simulateMonths(1);
+        } finally {
+            System.setOut(out);
+        }
+        BusinessDebtManager booksCredit = books.getEconomyManager().getBusinessDebtManager();
+        assertTrue("fixture: Retail owes the bank alone, no bond, a sound book",
+                booksCredit.getLoanPrincipal(Sectors.RETAIL) > 0 && booksCredit.getBondPrincipal(Sectors.RETAIL) == 0);
         GameFiles booksFiles = new GameFiles(booksRoot.resolve("data"), booksRoot.resolve("no-legacy"));
         Game booksBack, old077;
         System.setOut(quiet);
@@ -1686,7 +1731,40 @@ public class BankCheck {
          * insured mortgage carries no allowance - read at the curve on the
          * borrower's whole debt (Game.bankReadings()): this city's landlords
          * owe insured mortgages, so the rule is asked with both.
+         *
+         * ...AND SINCE 0.7.12 with the sector's bonds the bank holds beside
+         * its loans, each at its own loss given default since round 2 - a
+         * loan's and a bond's (BusinessDebtManager, RECOVERIES BY
+         * INSTRUMENT): this city's businesses have issued bonds, so the rule
+         * is asked with both.
          */
+        /*
+         * THE CAUSE THE PROVISION'S PREMISE NEEDS (round 3): a save with no
+         * quarter reads each borrower at its month, the saved city at its
+         * quarter, and the two provide alike only where the curve does not
+         * read the difference. On the saved city, every book's allowance on
+         * its month's reading and on its quarter's, together within a
+         * hundredth of the whole allowance - with Materials, which round 2
+         * levered to 0.90, held out of building.
+         */
+        BusinessDebtManager livedCredit = books.getEconomyManager().getBusinessDebtManager();
+        double readingsApart = 0;
+        for (String k : livedCredit.sectors()) {
+            double owed = livedCredit.getUninsuredPrincipal(k), bonds = books.getBondMarket().bankCost(k);
+            double onMonth = Bank.sectorAllowance(owed, livedCredit.getPrincipal(k), livedCredit.getAssets(k), BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT)
+                    + Bank.sectorAllowance(bonds, livedCredit.getPrincipal(k), livedCredit.getAssets(k), BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT);
+            double onQuarter = Bank.sectorAllowance(owed, livedCredit.quarterPrincipal(k), livedCredit.quarterAssets(k), BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT)
+                    + Bank.sectorAllowance(bonds, livedCredit.quarterPrincipal(k), livedCredit.quarterAssets(k), BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT);
+            readingsApart += Math.abs(onMonth - onQuarter);
+        }
+        out.printf("   Materials, held out, owes $%,.2fk; every book's allowance on its month and on its quarter $%,.2fk apart in all%n",
+                livedCredit.getPrincipal(Sectors.MATERIALS), readingsApart);
+        assertTrue("fixture: Materials, held out of building, is levered no further than it was when the premise was written (0.17)",
+                livedCredit.getAssets(Sectors.MATERIALS) <= 0 || livedCredit.getLeverage(Sectors.MATERIALS) <= .17);
+        assertTrue("fixture: Luxury Retail, held out of building since round 5, owes nothing",
+                livedCredit.getPrincipal(Sectors.LUXURY_RETAIL) == 0);
+        assertTrue("fixture: so every book reads alike on a month and on a quarter, within a hundredth of the allowance",
+                readingsApart <= .01 * livedBank.getAllowance());
         BusinessDebtManager creditAtLoad = old077.getEconomyManager().getBusinessDebtManager();
         double byRule = old077.getHouseholdBalance().lossAllowance();
         java.util.Map<String, double[]> livedBooks = livedBank.allowanceToSave(), openedBooks = opened.allowanceToSave();
@@ -1694,13 +1772,21 @@ public class BankCheck {
         int flatBooks = 0;
         for (String k : creditAtLoad.sectors()) {
             double owedNow = creditAtLoad.getPrincipal(k), assetsNow = creditAtLoad.getAssets(k);
-            byRule += Bank.sectorAllowance(creditAtLoad.getUninsuredPrincipal(k), owedNow, assetsNow);
+            byRule += Bank.sectorAllowance(creditAtLoad.getUninsuredPrincipal(k), owedNow, assetsNow,
+                            BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT)
+                    + Bank.sectorAllowance(old077.getBondMarket().bankCost(k), owedNow, assetsNow,
+                            BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT);
             // A book the curve does not read the assets of, by the load's own
             // reading: even a loan's term of its defaults under BASE_LOSS_RATE,
             // so a year and a lifetime are both BASE_LOSS_RATE, whatever the
             // share past the watch line (staged, round 2).
-            boolean flat = owedNow > 0 && assetsNow > 0
-                    && BusinessDebtManager.LOSS_GIVEN_DEFAULT * BusinessDebtManager.defaultProbability(
+            // ...OF A SECTOR WITH NO BONDS (0.7.12): the bank trades bonds at
+            // the market's step, after its month's provision, so a bond it
+            // bought or sold there is provided for at its next close - the
+            // saved bank's allowance on a sector with bonds is struck on the
+            // holdings before the step, and the load reads them after it.
+            boolean flat = owedNow > 0 && assetsNow > 0 && creditAtLoad.getBondPrincipal(k) == 0
+                    && BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT * BusinessDebtManager.defaultProbability(
                             owedNow / assetsNow, BusinessDebtManager.LOAN_TERM_MONTHS) < Bank.BASE_LOSS_RATE;
             if (flat) {
                 flatBooks++;
@@ -1722,11 +1808,24 @@ public class BankCheck {
         try {
             old077.getForeignAccounts().pinRate(1.0);
             booksBack.getForeignAccounts().pinRate(1.0);
+            // ...and Materials held out in the two cities that play the next
+            // month (round 4): a hold is the harness's, not the save's, and
+            // in round 4's model the unheld Materials built in that month,
+            // borrowing $27.5M the old save read on its month and the saved
+            // city on a quarter of two empty readings and one - the same
+            // premise failure the hold above exists to prevent.
+            old077.getBusinessInvestment().holdSector(Sectors.MATERIALS);
+            booksBack.getBusinessInvestment().holdSector(Sectors.MATERIALS);
+            old077.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
+            booksBack.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
             old077.simulateMonths(1);
             booksBack.simulateMonths(1);
         } finally {
             System.setOut(out);
         }
+        assertTrue("fixture: Materials, held out through the next month too, borrowed nothing in it",
+                old077.getEconomyManager().getBusinessDebtManager().getPrincipal(Sectors.MATERIALS) == 0
+                        && booksBack.getEconomyManager().getBusinessDebtManager().getPrincipal(Sectors.MATERIALS) == 0);
         provisionOld = opened.provisions();
         provisionNew = again.provisions();
         articulatedOld = opened.equity() - opened.getOpeningEquity() - opened.getNetIncome() - capitalMoved(opened);
@@ -1829,8 +1928,10 @@ public class BankCheck {
        Jerus, 2026-09-23: "go for option C". A sector stands for many firms:
        each month the share of its debt whose firms fell through the default
        point defaults - PD(L) = N(ln(L / INSOLVENCY_TRIGGER) / ASSET_VOLATILITY)
-       a year, its monthly hazard a month - and the bank loses
-       LOSS_GIVEN_DEFAULT of it. The whole-sector restructure is the backstop
+       a year, its monthly hazard a month - and the bank loses a loan's loss
+       given default of it (LOAN_LOSS_GIVEN_DEFAULT, 1 - LOAN_RECOVERY, since
+       0.7.12 round 2; the uniform 60% before). Every fixture here owes only
+       its bank. The whole-sector restructure is the backstop
        for a sector with nothing left. Every fixture below causes its
        condition through BusinessDebtManager or a played city, and every
        expectation is written from the constants, with the curve's
@@ -1846,7 +1947,7 @@ public class BankCheck {
      * PD)^(term / 12))) - the lifetime with Math.pow, not the model's log1p.
      */
     static double staged(double principal, double leverage) {
-        double sig = BusinessDebtManager.ASSET_VOLATILITY, lgd = BusinessDebtManager.LOSS_GIVEN_DEFAULT;
+        double sig = BusinessDebtManager.ASSET_VOLATILITY, lgd = BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT;
         double pd = BusinessDebtManager.normalCdf(Math.log(leverage / BusinessDebtManager.INSOLVENCY_TRIGGER) / sig);
         double year = Math.max(Bank.BASE_LOSS_RATE, lgd * pd);
         double life = Math.max(year, lgd * (1 - Math.pow(1 - pd,
@@ -1876,7 +1977,7 @@ public class BankCheck {
     static void theSectorDefaultsASliceAtATime() throws Exception {
 
         String IND = Sectors.INDUSTRY;
-        double T = BusinessDebtManager.INSOLVENCY_TRIGGER, LGD = BusinessDebtManager.LOSS_GIVEN_DEFAULT;
+        double T = BusinessDebtManager.INSOLVENCY_TRIGGER, LGD = BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT;
         double watch = Bank.SECTOR_WATCH_LEVERAGE;
 
         out.println("\n--- (14) the normal curve, and what it gives ---");
@@ -1893,17 +1994,20 @@ public class BankCheck {
                     + BusinessDebtManager.normalCdf(-x) - 1));
         }
         close("...and N(x) + N(-x) is one", worstSym, 0, 1e-15);
-        close("the loss given default is the restructure rule's: 1 - RESTRUCTURE_TARGET / INSOLVENCY_TRIGGER",
-                LGD, 1 - BusinessDebtManager.RESTRUCTURE_TARGET / T, 0);
+        close("a loan's loss given default is what it does not recover: 1 - LOAN_RECOVERY (0.7.12, round 2)",
+                LGD, 1 - BusinessDebtManager.LOAN_RECOVERY, 0);
+        close("...and a bond's 1 - BOND_RECOVERY", BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT,
+                1 - BusinessDebtManager.BOND_RECOVERY, 0);
         close("at the default point half its firms default in a year",
                 BusinessDebtManager.defaultProbability(T), .5, 1e-15);
 
         out.printf("   at ASSET_VOLATILITY %.2f:%n", BusinessDebtManager.ASSET_VOLATILITY);
-        out.println("     leverage   default a year   a month   lost a year, of its debt");
+        out.println("     leverage   default a year   a month   lost a year, of its loans / bonds");
         for (double L : new double[] {.3, .5, .7, .9, 1.1, 1.3, 1.5, 2.0, 3.0}) {
             double pd = BusinessDebtManager.defaultProbability(L);
-            out.printf("       %.2f        %6.2f%%        %6.2f%%       %6.2f%%%n", L, pd * 100,
-                    BusinessDebtManager.monthlyDefaultShare(L) * 100, LGD * pd * 100);
+            out.printf("       %.2f        %6.2f%%        %6.2f%%       %6.2f%%    %6.2f%%%n", L, pd * 100,
+                    BusinessDebtManager.monthlyDefaultShare(L) * 100, LGD * pd * 100,
+                    BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT * pd * 100);
         }
 
         out.println("\n--- (14) a sector held at a leverage loses its defaulted firms' slice, pro rata ---");
@@ -1916,7 +2020,7 @@ public class BankCheck {
         double off = held.restructureInsolventSectors();
         out.printf("   at %.2f times its assets: %.3f%% of its debt defaults this month, %,.2f written off%n",
                 L, h * 100, off);
-        close("a sector at leverage L writes off principal x h(L) x LOSS_GIVEN_DEFAULT in the month",
+        close("a sector at leverage L writes off principal x h(L) x (1 - LOAN_RECOVERY) in the month",
                 held.getWrittenOffThisMonth(IND), 40_000 * h * LGD, 1e-9);
         close("...which is what the month's sweep returns", off, 40_000 * h * LGD, 1e-9);
         close("...and the debt that defaulted is h of it", held.getDefaultedThisMonth(IND), 40_000 * h, 1e-9);
@@ -1985,7 +2089,7 @@ public class BankCheck {
             assertTrue("fixture: " + lev + " times its assets is past INSOLVENCY_TRIGGER, against positive assets",
                     past.getPrincipal(IND) > past.getAssets(IND) * T && past.getAssets(IND) > 0);
             past.restructureInsolventSectors();
-            close("at " + lev + " times its assets the month writes off its slice, principal x h x LOSS_GIVEN_DEFAULT",
+            close("at " + lev + " times its assets the month writes off its slice, principal x h x (1 - LOAN_RECOVERY)",
                     past.getWrittenOffThisMonth(IND), 10_000 * lev * hazard(lev) * LGD, 1e-9);
             assertTrue("...not down to RESTRUCTURE_TARGET of its assets in one month",
                     past.getPrincipal(IND) > past.getAssets(IND) * BusinessDebtManager.RESTRUCTURE_TARGET * 1.5);
@@ -2023,12 +2127,26 @@ public class BankCheck {
                 Bank.sectorAllowance(P, P / .5), P * Bank.BASE_LOSS_RATE, 1e-12);
         assertTrue("fixture: at 0.5 even a loan's term of the curve is under BASE_LOSS_RATE",
                 LGD * BusinessDebtManager.defaultProbability(.5, BusinessDebtManager.LOAN_TERM_MONTHS) < Bank.BASE_LOSS_RATE);
-        double pd85 = BusinessDebtManager.normalCdf(Math.log(.85 / T) / BusinessDebtManager.ASSET_VOLATILITY);
-        assertTrue("fixture: at 0.85 the curve's year is over BASE_LOSS_RATE", LGD * pd85 > Bank.BASE_LOSS_RATE);
+        /*
+         * NEARER IT: between where the curve's year passes BASE_LOSS_RATE and
+         * the watch line - 0.85 until 0.7.12 round 2, where the curve's year
+         * at the old 60% loss was over it; at a loan's own loss it passes it
+         * at about 0.88, so the point is read off the constants now.
+         */
+        double lo = .5, hi = watch;
+        for (int i = 0; i < 200; i++) {
+            double mid = (lo + hi) / 2;
+            if (LGD * BusinessDebtManager.defaultProbability(mid) > Bank.BASE_LOSS_RATE) hi = mid; else lo = mid;
+        }
+        double near = (hi + watch) / 2;
+        assertTrue("fixture: the curve's year passes BASE_LOSS_RATE under the watch line", hi < watch);
+        double pd85 = BusinessDebtManager.normalCdf(Math.log(near / T) / BusinessDebtManager.ASSET_VOLATILITY);
+        assertTrue("fixture: at " + String.format("%.3f", near) + " the curve's year is over BASE_LOSS_RATE",
+                LGD * pd85 > Bank.BASE_LOSS_RATE);
         close("...nearer it, a year on its sound firms and a loan's term on the share past the line",
-                Bank.sectorAllowance(P, P / .85), staged(P, .85), 1e-9);
+                Bank.sectorAllowance(P, P / near), staged(P, near), 1e-9);
         close("...the share past it being N(ln(L / SECTOR_WATCH_LEVERAGE) / ASSET_VOLATILITY)",
-                Bank.stageTwoShare(P, P / .85), BusinessDebtManager.normalCdf(Math.log(.85 / watch)
+                Bank.stageTwoShare(P, P / near), BusinessDebtManager.normalCdf(Math.log(near / watch)
                         / BusinessDebtManager.ASSET_VOLATILITY), 1e-15);
         close("...half of them at the watch line itself", Bank.stageTwoShare(P, P / watch), .5, 1e-15);
         close("...so there, half a year's loss and half a lifetime's",
@@ -2161,7 +2279,13 @@ public class BankCheck {
                 worstRelative = Math.max(worstRelative, audit.relative());
                 if (credit.getDefaultedThisMonth(RET) > 0 && !credit.wasRestructuredThisMonth(RET)) sliceMonths++;
                 if (Math.abs(audit.residual) < .01) cleanMonths++;
-                if (Math.abs(city.getBank().getWrittenOff(RET) - credit.getWrittenOffThisMonth(RET)) < 1e-9) bankAgrees++;
+                // ...its loans' part, and since 0.7.12 what its holdings of the
+                // sector's bonds lost, at what they cost it (round 2: the bank
+                // holds retail's bonds in this city since each class recovers
+                // its own share).
+                if (Math.abs(city.getBank().getWrittenOff(RET) - credit.getWrittenOffThisMonth(RET)
+                        + credit.getInsuredWrittenOffThisMonth(RET)
+                        - city.getBondMarket().getBankLossThisMonth(RET)) < 1e-9) bankAgrees++;
                 // The notice (Inbox, "defaults") is live exactly when some
                 // sector's month was news - never on retail's slices alone.
                 boolean anyNews = false;
@@ -2433,7 +2557,7 @@ public class BankCheck {
         double h = BusinessDebtManager.monthlyDefaultShare(q.getLeverage(IND));
         double cut = q.defaultSlice(IND);
         close("the hazard stays on the month's own leverage: firms fail on what they owe against what they have",
-                cut, 100_000 * h * BusinessDebtManager.LOSS_GIVEN_DEFAULT, 1e-9);
+                cut, 100_000 * h * BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT, 1e-9);
         assertTrue("...and a slice, continuous and small, does not restart the quarter",
                 q.getStatementCount(IND) == BusinessDebtManager.STATEMENT_MONTHS);
 
@@ -2471,23 +2595,25 @@ public class BankCheck {
     /* ============ 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) ============
 
        Jerus, 2026-09-24: "Buybacks only from spare capital" and "Trading
-       desk held to its capital." Each on a bank built by hand a little over
-       its target, offered more than that capital carries by a household
-       short of money (Exchange.sellForHousehold()) - the one sale that is
-       neither re-quoted nor re-marked before it can be read: its own shares,
-       where it buys back exactly what it holds over its target and ends at
-       it; and another company's, where it buys what the spare carries at the
-       weighted book's own RISK_EQUITY, and marked it holds its target. Then
-       a bank under its target, which buys nothing: the household raises
-       nothing from its shares, and the leavers' shares stay abroad with them,
-       as with no market at all. Round 3 measured why: 68 of the default
-       run's 101 failures were months of buybacks a median 131% of the
-       equity, and 28 more (47 of the autopilot's, 124 of the held city's)
-       were the desk's re-mark.
+       desk held to its capital." On the order book since 0.7.12 round 2: the
+       desk's bid is sized by those limits when it posts, and a household
+       short of money (Exchange.sellForHousehold()) that offers more than the
+       bid takes gets what the bid takes and waits with the rest - the desk is
+       not obliged. Each on a bank built by hand a little over its target: its
+       own shares, where it buys back exactly what it holds over its target
+       and ends at it; and another company's, where it buys what the spare
+       carries at the weighted book's own RISK_EQUITY, marked at the price it
+       paid, and holds its target. Then a bank under its target, which bids
+       for nothing: the household raises nothing from its shares, and the
+       leavers' shares rest unfilled and stay abroad with them, as with no
+       market at all. Round 3 of 0.7.8 measured why: 68 of the default run's
+       101 failures were months of buybacks a median 131% of the equity, and
+       28 more (47 of the autopilot's, 124 of the held city's) were the desk's
+       re-mark.
        ================================================================= */
     static void theDeskIsHeldToTheBanksCapital() {
 
-        out.println("\n--- (17) the desk buys the bank's own shares back only with what it holds over its target ---");
+        out.println("\n--- (17) the desk bids for the bank's own shares only with what it holds over its target ---");
 
         int BANK = Equity.BANK;
         int IND = Equity.indexOf(Sectors.INDUSTRY);
@@ -2495,6 +2621,7 @@ public class BankCheck {
         double B = 1_000_000;
         double target = Bank.CAPITAL_RATIO + Bank.CONSERVATION_BUFFER;
         double spare = 50;
+        String DESK = Exchange.DESK;
 
         Bank own = lentOut(target * B + spare, B);
         close("fixture: a bank a little over its target", own.spareCapital(), spare, 1e-6);
@@ -2507,27 +2634,36 @@ public class BankCheck {
         Exchange ex = new Exchange();
         double[] book = new double[Equity.COMPANIES.length];
         book[BANK] = own.equity();
-        ex.startMonth();
-        ex.quote(reg, book, own.equity(), W);
+        ex.startMonth(1);
+        ex.takeMonth(reg, town, own, new ExchangeCheck.Firms(), book, W, 0, 1);
+        double bid = ex.bestBid(BANK);
         double pace = Exchange.BUYBACK_PACE / 12 * reg.getShares(BANK);
+        close("its desk bids half a spread under fair value", bid, ex.fair(BANK) * (1 - Exchange.SPREAD / 2), 1e-12);
+        close("...for what its spare capital pays for at the bid, under the pace",
+                ex.bookOf(BANK).resting(DESK, OrderBook.Side.BUY), Math.min(pace, spare / bid), 1e-9);
         Household cell = ExchangeCheck.couple(town);
+        String cellName = Exchange.CELL + cell.key();
         double offered = cell.shares[BANK] * cell.households();
-        double needPer = cell.shares[BANK] * ex.bid(BANK) / 2;       // half of what it holds
+        double needPer = cell.shares[BANK] * bid / 2;       // half of what it holds
         assertTrue("fixture: the household offers more than the pace, and the pace more than the spare",
-                offered / 2 > pace && pace * ex.bid(BANK) > spare);
-        double raised = ex.sellForHousehold(reg, own, cell, needPer) * cell.households();
+                offered / 2 > pace && pace * bid > spare);
+        // What it already has resting: its rebalancing ask from the step
+        // (round 3 - a cell under its cushion offers HOME_SPEED of the
+        // shortfall at the market), which the waterfall's sale comes on top of.
+        double restingBefore = ex.bookOf(BANK).resting(cellName, OrderBook.Side.SELL);
+        double raised = ex.sellForHousehold(reg, own, town, cell, needPer) * cell.households();
         out.printf("   offered %,.0f of its shares ($%,.0f) with $%,.0f to spare; bought back $%,.4f%n",
-                offered / 2, offered / 2 * ex.bid(BANK), spare, own.getSharesBoughtBack());
+                offered / 2, offered / 2 * bid, spare, own.getSharesBoughtBack());
         close("a bank a little over its target, offered more than its spare capital, buys back exactly the spare",
                 own.getSharesBoughtBack(), spare, 1e-6);
         close("...and ends at its target", own.spareCapital(), 0, 1e-6);
         assertTrue("...not under it", own.equity() >= own.targetEquity() - 1e-6);
         close("...so the household raised what the desk took, and no more - the rest of its need goes on to credit",
                 raised, spare, 1e-6);
-        close("what the pace allowed and its capital did not is counted against the household",
-                ex.getOwnRefused(Exchange.Seller.HOUSEHOLD), (pace - spare / ex.bid(BANK)) * ex.bid(BANK), 1e-6);
-        double again = ex.sellForHousehold(reg, own, cell, needPer);
-        close("a second offer the same month, at its target, is bought with nothing", again, 0, 1e-9);
+        close("...and the rest of what it offered waits on the book: the desk is not obliged",
+                ex.bookOf(BANK).resting(cellName, OrderBook.Side.SELL) - restingBefore, offered / 2 - spare / bid, 1e-6);
+        double again = ex.sellForHousehold(reg, own, town, cell, needPer);
+        close("a second offer the same month, at its target, finds no bid", again, 0, 1e-9);
 
         out.println("\n--- (17) ...and other companies' shares only on the capital it has to spare, at the desk's weight ---");
 
@@ -2539,44 +2675,48 @@ public class BankCheck {
         Exchange ex2 = new Exchange();
         double[] book2 = new double[Equity.COMPANIES.length];
         book2[IND] = 100_000;                                 // $1 a share on the books
-        ex2.startMonth();
-        ex2.quote(reg2, book2, desk.equity(), W);
-        double bid = ex2.bid(IND), mark = ex2.mark(IND);
-        double carries = deskSpare / (bid - mark + desk.capitalTarget() * Bank.RISK_EQUITY * mark);
-        double dealing = Math.min(Exchange.CAPACITY * ex2.limit(IND), Exchange.BOOK_LIMIT * desk.equity() / ex2.fair(IND));
+        ex2.startMonth(1);
+        ex2.takeMonth(reg2, holders, desk, new ExchangeCheck.Firms(), book2, W, 0, 1);
+        double bid2 = ex2.bestBid(IND);
+        double carries = deskSpare / (desk.capitalTarget() * Bank.RISK_EQUITY * bid2);
+        close("its desk bids for what its spare capital carries at RISK_EQUITY, marked at the price it pays",
+                ex2.bookOf(IND).resting(DESK, OrderBook.Side.BUY), carries, 1e-6);
         Household holder = ExchangeCheck.couple(holders);
         double offer = holder.shares[IND] * holder.households();
-        assertTrue("fixture: the household offers more than the desk's dealing limits take, and those more than its capital carries",
-                offer > dealing && dealing > carries);
+        assertTrue("fixture: the household offers more than that", offer > carries);
         double weightedBefore = desk.getWeightedBook();
-        double raised2 = ex2.sellForHousehold(reg2, desk, holder, holder.shares[IND] * bid) * holder.households();
-        out.printf("   offered %,.0f shares; its dealing limits take %,.0f, its $%,.0f of spare capital carries %,.0f; it bought %,.2f%n",
-                offer, dealing, deskSpare, carries, reg2.getDealerShares(IND));
+        double restingBefore2 = ex2.bookOf(IND).resting(Exchange.CELL + holder.key(), OrderBook.Side.SELL);
+        double raised2 = ex2.sellForHousehold(reg2, desk, holders, holder, holder.shares[IND] * bid2) * holder.households();
+        out.printf("   offered %,.0f shares; its $%,.0f of spare capital carries %,.0f; it bought %,.2f%n",
+                offer, deskSpare, carries, reg2.getDealerShares(IND));
         close("a bank a little over its target buys only what its spare capital carries at the weight",
                 reg2.getDealerShares(IND), carries, 1e-6);
-        desk.markSecurities(ex2.markToMarket(reg2));          // what the close does, at the same quote
-        close("...the weight the weighted book already gives the desk, RISK_EQUITY",
-                desk.getWeightedBook() - weightedBefore, carries * mark * Bank.RISK_EQUITY, 1e-6);
+        desk.markSecurities(ex2.markToMarket(reg2));          // what the close does, at the last trade
+        close("...the weight the weighted book already gives the desk, RISK_EQUITY, at the price it paid",
+                desk.getWeightedBook() - weightedBefore, carries * bid2 * Bank.RISK_EQUITY, 1e-6);
         close("...and marked, it holds its target", desk.spareCapital(), 0, 1e-6);
         assertTrue("...its ratio at or over the target", desk.capitalRatio() >= desk.capitalTarget() - 1e-12);
-        close("what its dealing limits allowed and its capital did not is counted against the household",
-                ex2.getDeskRefused(Exchange.Seller.HOUSEHOLD), (dealing - carries) * bid, 1e-6);
-        close("...and the household raised what the desk paid", raised2, carries * bid, 1e-6);
+        close("...the household raised what the desk paid", raised2, carries * bid2, 1e-6);
+        close("...and the rest of its offer waits on the book",
+                ex2.bookOf(IND).resting(Exchange.CELL + holder.key(), OrderBook.Side.SELL) - restingBefore2, offer - carries, 1e-6);
         double heldBefore = reg2.getDealerShares(IND);
-        double sold = ex2.deskSellsToHouseholds(reg2, desk, IND, 100);
-        assertTrue("its selling is unchanged: at its target it still sells what it holds",
-                sold > 0 && reg2.getDealerShares(IND) < heldBefore);
+        ex2.startMonth(2);
+        ex2.takeMonth(reg2, holders, desk, new ExchangeCheck.Firms(), book2, W, 0, 2);
+        close("its selling is unchanged: at its target it still asks for what it holds",
+                ex2.bookOf(IND).resting(DESK, OrderBook.Side.SELL), heldBefore, 1e-9);
+        assertTrue("...and bids for no more than rounding", ex2.bookOf(IND).resting(DESK, OrderBook.Side.BUY) < 1e-6);
 
         Bank short_ = lentOut(target * B - 1_000, B);
         HouseholdBalance holders3 = ExchangeCheck.savers(0, 4.0);
         Equity reg3 = new Equity();
         reg3.listIfUnlisted(IND, 100_000, holders3);
         Exchange ex3 = new Exchange();
-        ex3.startMonth();
-        ex3.quote(reg3, book2, short_.equity(), W);
-        assertTrue("fixture: a bank under its target, still making a market", ex3.isOpen() && short_.spareCapital() < 0);
+        ex3.startMonth(1);
+        ex3.takeMonth(reg3, holders3, short_, new ExchangeCheck.Firms(), book2, W, 0, 1);
+        assertTrue("fixture: a bank under its target, its desk still posting", ex3.isOpen() && short_.spareCapital() < 0);
+        close("...bids for nothing", ex3.bookOf(IND).resting(DESK, OrderBook.Side.BUY), 0, 0);
         Household holder3 = ExchangeCheck.couple(holders3);
-        double raised3 = ex3.sellForHousehold(reg3, short_, holder3, holder3.shares[IND] * ex3.bid(IND) / 2);
+        double raised3 = ex3.sellForHousehold(reg3, short_, holders3, holder3, holder3.shares[IND] * ex3.fair(IND) / 2);
         close("a bank under its target buys none: the household raises nothing from its shares", raised3, 0, 0);
         close("...and the desk holds none", reg3.getDealerShares(IND), 0, 0);
 
@@ -2596,12 +2736,12 @@ public class BankCheck {
         double[] book4 = new double[Equity.COMPANIES.length];
         book4[IND] = 10_000;
         Bank short4 = lentOut(target * B - 1_000, B);
-        ex4.startMonth();
-        ex4.takeMonth(reg4, leaving, short4, new ExchangeCheck.Firms(), book4, W, 0);
-        assertTrue("fixture: the exchange was open", ex4.isOpen());
-        close("the leavers' shares a bank under its target will not buy stay abroad with them, as with no market",
+        ex4.startMonth(1);
+        ex4.takeMonth(reg4, leaving, short4, new ExchangeCheck.Firms(), book4, W, 0, 1);
+        assertTrue("fixture: the desk was posting", ex4.isOpen());
+        close("the leavers' shares a bank under its target will not bid for stay abroad with them, as with no market",
                 reg4.getForeignShares(IND), abroad, 0);
-        assertTrue("...counted against the emigrants", ex4.getDeskRefused(Exchange.Seller.EMIGRANT) > 0
+        assertTrue("...resting on the book, unpaid", ex4.bookOf(IND).resting(Exchange.EMIGRANTS, OrderBook.Side.SELL) == abroad
                 && ex4.getEmigrantsPaid() == 0);
     }
 
@@ -2782,7 +2922,9 @@ public class BankCheck {
 
                 double byWho = bank.getInterestFromBusinesses() + bank.getInterestFromHouseholds()
                         + bank.getInterestFromCity() + bank.getDiscountAccreted()
-                        + bank.getCarryInterest() + bank.getPlacementIncome();
+                        + bank.getCarryInterest() + bank.getPlacementIncome()
+                        // ...and the coupons on the businesses' bonds it holds (0.7.12)
+                        + bank.getInterestFromBonds();
                 worstByWho = Math.max(worstByWho, Math.abs(byWho - bank.interestIncome()));
                 if (bank.getInterestFromHouseholds() > 0) familyMonths++;
                 if (bank.getInterestFromCity() + bank.getDiscountAccreted() > 0) cityMonths++;
@@ -2917,7 +3059,7 @@ public class BankCheck {
         // Month 2: its assets fall to 30,000 - leverage 1.33, past the watch line.
         // Since 0.7.8 stage 2 is the lifetime expected loss off the curve the
         // month's slices are written off by: a loan's term of defaults at
-        // this leverage, at LOSS_GIVEN_DEFAULT (see BankCheck (14)).
+        // this leverage, at a loan's loss given default (see BankCheck (14)).
         double stage1 = 40_000 * Bank.BASE_LOSS_RATE;
         provider.startMonth();
         provider.provide(owing(IND, 40_000, 30_000), 0, 0);
@@ -3108,8 +3250,11 @@ public class BankCheck {
         assertTrue("...and one past it is not", !desk.canFundProject(IND, g * 100_000 * 1.1));
         assertTrue("...and the investor can say it was the bank's capital", desk.wasRefusedForCapital(IND));
         double lentShort = desk.coverShortfall(IND, -50_000, 0, 2);
-        close("...and its losses are lent to that limit, however big the hole",
-                lentShort, Math.max(g * 100_000, desk.getMonthlyInterest(IND) / (1 - Bank.LOAN_FEE) - 0), 1e-6);
+        // Since 0.7.12 round 5 (Jerus: "Credit lines stay open") a short
+        // month is a working-capital line, which the rule does not reach: it
+        // rations growth, and the line is held to the ceiling alone.
+        close("...and its short month is lent whole, its fee on top: a working-capital line the rule does not ration",
+                lentShort, 50_000 / (1 - Bank.LOAN_FEE), 1e-6);
 
         Bank underMinimum = lentOut(.05 * B, B);
         assertTrue("under its minimum it lends only to keep its borrowers going",
@@ -3121,9 +3266,9 @@ public class BankCheck {
         held.updateRates();
         held.setCapitalRule(underMinimum.lendingGrowthLimit(), underMinimum.lendsOnlyToKeepBorrowersGoing());
         assertTrue("...no project, however small", !held.canFundProject(IND, 1));
-        double interestReserve = held.getMonthlyInterest(IND) / (1 - Bank.LOAN_FEE);
-        close("...but a borrower short of cash is still lent its interest", held.coverShortfall(IND, -50_000, 0, 2),
-                interestReserve, 1e-9);
+        // ...and under the minimum too (round 5): the line is honoured while the bank stands.
+        close("...but a borrower short of cash is still lent its short month: the line is honoured under the minimum too",
+                held.coverShortfall(IND, -50_000, 0, 2), 50_000 / (1 - Bank.LOAN_FEE), 1e-9);
         // ...and a loan that falls due is refinanced: the book does not grow.
         BusinessDebtManager maturing = new BusinessDebtManager();
         maturing.setPrimeRate(.05);
@@ -3324,6 +3469,7 @@ public class BankCheck {
         double sectorBefore = bank.getSectorBook(), cityBefore = bank.getCityBook();
         double householdBefore = bank.getHouseholdBook(), carryBefore = bank.getCarryBook();
         double securitiesBefore = bank.getSecurities();
+        double bondsBefore = bank.getBondBook();
         double hotBefore = Math.max(0, bank.getForeignDeposits());
         double equityBefore = bank.equity();
         // ...and what it has set aside against its books (0.7.8): a provision
@@ -3387,6 +3533,8 @@ public class BankCheck {
                 - (bank.getHouseholdBook() - householdBefore)
                 - (bank.getCarryBook() - carryBefore)
                 - (bank.getSecurities() - securitiesBefore)
+                // ...and the businesses' bonds it bought or sold (0.7.12), at what they cost it
+                - (bank.getBondBook() - bondsBefore)
                 + (Math.max(0, bank.getForeignDeposits()) - hotBefore)
                 + (bank.getAllowance() - allowanceBefore)
                 + repaid;

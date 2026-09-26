@@ -2065,8 +2065,9 @@ final class PeopleScreen {
         /*
          * AND WHAT IT OWNS. Shares in the city's companies - bought at
          * offerings out of what was past the cushion, or held since the
-         * founding. At the desk's quote while there is an exchange, at book
-         * when the bank is dead and there is none.
+         * founding. At the price - the last trade on each company's book, or
+         * fair value before its first (0.7.12 round 2; the desk's quote until
+         * then, and book with no bank).
          */
         Equity register = ui.game.getEquity();
         Exchange exchange = ui.game.getExchange();
@@ -2077,10 +2078,7 @@ final class PeopleScreen {
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             if (own.shares(c) <= 0 || register.getShares(c) <= 0) continue;
             double stake = own.shares(c) / register.getShares(c);
-            double book = c == Equity.BANK ? ui.game.getBank().equity()
-                    : ui.game.getSectorBooks().get(Equity.COMPANIES[c]).equity();
-            shareWorth += exchange.isOpen()
-                    ? own.shares(c) * exchange.mid(c) : stake * Math.max(0, book);
+            shareWorth += own.shares(c) * exchange.price(c);
             held++;
             if (holdings.length() > 0) holdings.append(", ");
             holdings.append(Equity.COMPANIES[c]).append(' ').append(stakePct(stake));
@@ -2090,7 +2088,7 @@ final class PeopleScreen {
         double shares = toDollars(shareWorth);
         if (held > 0) {
             panel.getChildren().add(statementLine(
-                    exchange.isOpen() ? "Shares, at the market" : "Shares, at book",
+                    "Shares, at the last trade",
                     tightMoney(shares, false), Palette.GOOD));
             panel.getChildren().add(statementLine("Dividends this month",
                     tightMoney(toDollars(own.dividends()), false),
@@ -2159,7 +2157,27 @@ final class PeopleScreen {
             }
         }
 
-        double net = put + shares + away + bonds - owe;
+        /* ...AND THE BUSINESSES' BONDS (0.7.12): the cell's own, bond by bond
+         * since round 2, at this month's value - bought when a bond's return, less
+         * what a holder expects to lose, beat the deposit rate. See
+         * BondMarket, THE PARTICIPANTS. */
+        double corporate = 0;
+        if (own.bonds() > 0) {
+            corporate = toDollars(own.bonds() * bal.getBondRatio());
+            panel.getChildren().add(statementLine("The businesses' bonds",
+                    tightMoney(corporate, false) + " (" + tightMoney(toDollars(own.bonds()), false)
+                            + " of face)", Palette.GOOD));
+            if (own.bondIncome() > 0) {
+                panel.getChildren().add(statementLine("...paid on them this month",
+                        tightMoney(toDollars(own.bondIncome()), false), Palette.GOOD));
+            }
+            if (own.bondsSold() > 0) {
+                panel.getChildren().add(statementLine("...sold on their books this month",
+                        tightMoney(toDollars(own.bondsSold()), false), Palette.WARN));
+            }
+        }
+
+        double net = put + shares + away + bonds + corporate - owe;
         panel.getChildren().add(statementTotal("What one of them is worth",
                 tightMoney(net, false), net < 0 ? Palette.BAD : Palette.GOOD));
 
@@ -2171,7 +2189,7 @@ final class PeopleScreen {
          */
         double shortfall = -toDollars(own.afterFixed() - own.want());
         if (shortfall > .005) {
-            double cushion = Math.max(0, put + shares + away + bonds);
+            double cushion = Math.max(0, put + shares + away + bonds + corporate);
             panel.getChildren().add(statementNote(cushion > .005
                     ? "Short " + tightMoney(shortfall, false) + " a month, with "
                             + monthsRun(cushion / shortfall) + " of cover behind it."

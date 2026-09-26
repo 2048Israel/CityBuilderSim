@@ -1,6 +1,6 @@
 # Offending.java - 169 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/Offending.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Offending.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > Who is at risk of offending, sorted by reason, and the thefts handed to
 > them.

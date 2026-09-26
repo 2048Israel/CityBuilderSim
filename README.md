@@ -70,8 +70,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **sixty-one harnesses plus the
-4,000-odd-month playtest**, which it reports as sixty-two, in about three minutes.
+`AllChecks` runs the lot, one JVM each — **sixty-three harnesses plus the
+4,000-odd-month playtest**, which it reports as sixty-four, in about three minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
@@ -178,7 +178,7 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     about 200 files
+src/main/java/ham/citybuildersim/     about 220 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
     Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
@@ -189,6 +189,8 @@ src/main/java/ham/citybuildersim/     about 200 files
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
     sectors/                          the fifteen sector classes
+    BondMarket.java, CorporateBond.java, OrderBook.java
+                                      the businesses' bonds, and the order book they and the shares trade on
     tools/                            the index generators (see below); not part of the game
     *Check.java                       the harnesses
     AllChecks.java                    the runner

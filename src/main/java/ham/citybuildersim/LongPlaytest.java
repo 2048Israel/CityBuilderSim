@@ -388,6 +388,70 @@ public class LongPlaytest {
         }
     }
 
+    /*
+     * THE BONDS (0.7.12): what defaulted in each class and what it lost -
+     * the recoveries the sources are read against - the months a sector
+     * owed bonds, and the peak share of the businesses' debt in bonds. Plus
+     * a row of <prefix>-bonds.csv a month when the trace is on.
+     */
+    static double bondRunLoansDefaulted, bondRunLoansLost, bondRunBondsDefaulted, bondRunBondsLost;
+    static double bondPeakShare;
+    static int bondPeakShareMonth, bondMonthsWithBonds;
+
+    static void countBonds(Game g) {
+        BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+        BondMarket bm = g.getBondMarket();
+        double loans = 0, bonds = 0;
+        for (String s : Sectors.KEYS) {
+            bondRunLoansDefaulted += cr.getLoansDefaultedThisMonth(s);
+            bondRunBondsDefaulted += cr.getBondsDefaultedThisMonth(s);
+            bondRunLoansLost += cr.getWrittenOffThisMonth(s);
+            bondRunBondsLost += cr.getBondWrittenOffThisMonth(s);
+            loans += cr.getLoanPrincipal(s);
+            bonds += cr.getBondPrincipal(s);
+        }
+        if (bonds > 0) bondMonthsWithBonds++;
+        double share = loans + bonds > 0 ? bonds / (loans + bonds) : 0;
+        if (share > bondPeakShare) { bondPeakShare = share; bondPeakShareMonth = g.getMonth(); }
+        if (traceBonds == null) return;
+        Bank bk = g.getBank();
+        StringBuilder row = new StringBuilder();
+        row.append(String.format(java.util.Locale.ROOT,
+                "%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%d,%.3f,%.6f,"
+                        + "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,"
+                        + "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%d,%d,%.3f,%d,"
+                        + "%.6f,%.3f,%.3f,%.3f,%.6f,%.6f,%.6f",
+                g.getMonth(), bm.getBonds().size(), bm.totalFace(), bm.faceHeldByHouseholds(), bm.faceHeldByBank(),
+                bm.faceHeldByCompanies(), bm.faceHeldByWorld(), loans, bm.getIssues(), bm.getIssuedFace(),
+                bm.averageCoupon(),
+                bm.getCouponsToHouseholds(), bm.getCouponsToBank(), bm.getCouponsToCompanies(), bm.getCouponsAbroad(),
+                bm.getPrincipalToHouseholds(), bm.getPrincipalToBank(), bm.getPrincipalToCompanies(), bm.getPrincipalAbroad(),
+                bm.getLossHouseholds(), bm.getLossBank(), bm.getLossCompanies(), bm.getWorldWrittenOff(),
+                bm.getWorldBought(), bm.getWorldSold(), bm.getHouseholdsBought(), bm.getHouseholdsSold(),
+                bm.getHouseholdsBoughtAbroad(), bm.getHouseholdsSoldAbroad(),
+                bm.getLastPostedBuy(), bm.getLastPostedSell(), bm.getLastFilled(), bm.getLastSellsPosted(),
+                bm.getLastSellsWaited(), bm.getLastSellQuantityWaited(), bm.getLastTrades(),
+                bk.getConcentrationHerfindahl(), bk.getConcentrationAddOn(), bk.getConcentrationWeighted(),
+                bk.getBondBook(), cr.getPrimeRate(), g.getDebtManager().getPolicyRate(),
+                g.getHouseholdBalance().getBondRatio()));
+        int month = g.getMonth();
+        for (String s : Sectors.KEYS) {
+            double yield = Double.NaN;
+            double face = 0, wy = 0;
+            for (CorporateBond b : bm.getBonds(s)) {
+                double y = bm.lastYield(b, month);
+                if (Double.isFinite(y)) { face += b.face(); wy += b.face() * y; }
+            }
+            if (face > 0) yield = wy / face;
+            row.append(String.format(java.util.Locale.ROOT, ",%.3f,%.3f,%.6f,%.6f,%.6f,%.6f,%.3f,%.3f,%.3f,%.3f",
+                    cr.getLoanPrincipal(s), cr.getBondPrincipal(s), cr.getRate(s), bm.averageCoupon(s),
+                    Double.isNaN(yield) ? 0 : yield, cr.getConcentrationCharge(s),
+                    cr.getLoansDefaultedThisMonth(s), cr.getBondsDefaultedThisMonth(s),
+                    cr.getWrittenOffThisMonth(s), cr.getBondWrittenOffThisMonth(s)));
+        }
+        traceBonds.println(row);
+    }
+
     static void countPriceAndPlant(Game g) {
         for (BusinessDebtManager.Written w : g.getEconomyManager().getBusinessDebtManager().getWrittenThisMonth()) {
             if (w.leverage() > Bank.SECTOR_WATCH_LEVERAGE) loansPastWatch++;
@@ -417,35 +481,84 @@ public class LongPlaytest {
     }
 
     /*
-     * ROUND 4 (0.7.8): the bank's own shares and its desk held to its
-     * capital. The months each limit bound and what it turned away at the
-     * bid, by who was selling (Exchange.getOwnRefused(), getDeskRefused());
-     * and the desk's inventory at the close against the bank's equity, month
-     * by month while a bank stands out of resolution - one in it holds its
-     * old inventory against the few dollars it has earned back, which read
-     * as 10^17 per cent on the first run of this.
+     * ROUND 4 (0.7.8): the desk's inventory at the close against the bank's
+     * equity, month by month while a bank stands out of resolution - one in
+     * it holds its old inventory against the few dollars it has earned back,
+     * which read as 10^17 per cent on the first run of this. (What the
+     * dealer's capital limits turned away went with the dealer, 0.7.12
+     * round 2: a desk on the book is not obliged to buy, so it refuses
+     * nobody - it bids what its capital carries.)
      */
-    static int ownBoundMonths, deskBoundMonths, deskOverEquityMaxMonth;
-    static final double[] ownRefusedRun = new double[Exchange.Seller.values().length];
-    static final double[] deskRefusedRun = new double[Exchange.Seller.values().length];
+    static int deskOverEquityMaxMonth;
     static final java.util.List<Double> deskOverEquity = new java.util.ArrayList<>();
     static double deskOverEquityMax;
 
-    static void countCapitalLimits(Game g) {
+    /*
+     * 0.7.12 ROUND 2: the shares on the book, the dividends, and the default
+     * point - month by month, for the report's round-2 lines. The last trade
+     * over fair value for every listed company that has traded; the months a
+     * company traded at all; the desk's inventory and its trading result; the
+     * ordinary dividends (the ring Equity keeps; no special one since round 4); and
+     * what the default point refused - the shortfall desk's loans, the
+     * mortgages that fell due rather than renew, the projects.
+     */
+    static final java.util.List<Double> sharePriceOverFair = new java.util.ArrayList<>();
+    static int shareListedMonths, shareTradedMonths, deskInventoryMonths, refusedAtLineMonths, projectsRefusedAtLine;
+    static double deskPnlRun, deskInventorySum, ordinaryDividendsRun;
+    static double refusedAtLineRun, notRenewedAtLineRun;
+    static final java.util.Map<String, Double> refusedAtLineBySector = new java.util.LinkedHashMap<>();
+
+    static double pct(double part, double whole) { return whole > 0 ? part / whole * 100 : 0; }
+
+    static void countShares(Game g) {
         Exchange ex = g.getExchange();
+        Equity eq = g.getEquity();
         Bank bk = g.getBank();
-        if (ex.getOwnRefused() > 0) ownBoundMonths++;
-        if (ex.getDeskRefused() > 0) deskBoundMonths++;
-        for (Exchange.Seller s : Exchange.Seller.values()) {
-            ownRefusedRun[s.ordinal()] += ex.getOwnRefused(s);
-            deskRefusedRun[s.ordinal()] += ex.getDeskRefused(s);
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (eq.getShares(c) <= 0 || !(ex.fair(c) > 0)) continue;
+            shareListedMonths++;
+            if (ex.getVolume(c) > 0) shareTradedMonths++;
+            if (ex.hasTraded(c)) sharePriceOverFair.add(ex.price(c) / ex.fair(c));
         }
+        deskPnlRun += bk.getTradingIncome();
+        if (bk.getBranches() > 0) { deskInventorySum += bk.getSecurities(); deskInventoryMonths++; }
+        // The desk's caps (round 3): its book and its largest holding at fair value over the bank's equity.
+        if (bk.getBranches() > 0 && !bk.isInsolvent() && bk.equity() > 0) {
+            deskBookAtFair.add(ex.deskBookShare(eq));
+            double most = 0;
+            for (int c = 0; c < Equity.COMPANIES.length; c++) if (c != Equity.BANK) most = Math.max(most, ex.deskPositionShare(eq, c));
+            deskLargestPosition.add(most);
+        }
+        ordinaryDividendsRun += eq.getOrdinaryDividendsLastClose();
+        BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+        double refused = cr.getRefusedAtDefaultPoint();
+        if (refused > 0) { refusedAtLineMonths++; refusedAtLineRun += refused; }
+        for (String s : Sectors.KEYS) {
+            double r = cr.getRefusedAtDefaultPoint(s);
+            if (r > 0) refusedAtLineBySector.merge(s, r, Double::sum);
+            notRenewedAtLineRun += cr.getNotRenewedAtDefaultPoint(s);
+            if (cr.wasRefusedAtDefaultPoint(s)) projectsRefusedAtLine++;
+        }
+    }
+
+    static final java.util.List<Double> deskBookAtFair = new java.util.ArrayList<>(), deskLargestPosition = new java.util.ArrayList<>();
+
+    static void countCapitalLimits(Game g) {
+        Bank bk = g.getBank();
+        countShares(g);
         double eq = bk.equity();
         if (bk.getBranches() > 0 && !bk.isInsolvent() && eq > 0) {
             double r = bk.getSecurities() / eq;
             deskOverEquity.add(r);
             if (r > deskOverEquityMax) { deskOverEquityMax = r; deskOverEquityMaxMonth = g.getMonth(); }
         }
+    }
+
+    /** The largest of a list, 0 when it is empty. */
+    static double maxOf(java.util.List<Double> v) {
+        double m = 0;
+        for (double x : v) m = Math.max(m, x);
+        return m;
     }
 
     /** The p-th quantile of a list, 0 when it is empty. */
@@ -462,7 +575,11 @@ public class LongPlaytest {
         boolean sliced = false, news = false;
         for (String s : cr.sectors()) {
             if (cr.wasRestructuredThisMonth(s)) backstops++;
-            double slice = cr.getDefaultedThisMonth(s) * BusinessDebtManager.LOSS_GIVEN_DEFAULT;
+            // Each class at its own loss (0.7.12, round 2); a backstop's month
+            // has no slice (it leaves nothing owing), and its classes are its own.
+            double slice = cr.wasRestructuredThisMonth(s) ? 0
+                    : cr.getLoansDefaultedThisMonth(s) * BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT
+                    + cr.getBondsDefaultedThisMonth(s) * BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT;
             if (slice > 0) { sliced = true; sliceWrittenOff += slice; }
             if (cr.defaultsAreNews(s)) news = true;
             double owed = cr.getPrincipal(s), assets = cr.getAssets(s);
@@ -493,6 +610,279 @@ public class LongPlaytest {
         lastDefaultNotice = live;
     }
 
+    /* ---- 0.7.12 round 4: the companies' cash, the desk's excess, and can't pay means default ---- */
+    static final java.util.List<Double> companyTillsRun = new java.util.ArrayList<>();
+    static double companyDepositInterestRun, companiesSoldShortRun, buybackRestingRun;
+    static int overdraftMonths, overdraftNoLenderMonths, overdraftProjectMonths;
+    static double overdraftSum, overdraftNoLenderSum, overdraftMax, overdraftProjectSum;
+    static int cannotPayMonths, cannotPayBankUnderLine;
+    static double cannotPayForgivenRun, cannotPayDebtDefaultedRun, cannotPayForgivenBanned;
+    /* ---- round 5: the lines that stay open, the growth doors the capital rule still shuts, and interim financing ---- */
+    static int ruleOnMonths, projectRefusedForCapital, mortgageRefusedForCapital, lineRationedMonths;
+    static double lineLentRationedRun, lineLentPastOldRuleRun;
+    static int interimWritten, interimRepaid, interimDefaultedAgain, interimRefusedPast, interimRefusedShut, backstopForced, backstopInBanMonths;
+    static double interimWrittenSum, interimRepaidSum, interimWrittenOffSum, backstopInBanSum;
+    static final java.util.Map<InterimLoan, Double> interimSeen = new java.util.IdentityHashMap<>();
+    static final java.util.Set<InterimLoan> interimLost = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    static final java.util.Map<String, int[]> cannotPayBySector = new java.util.TreeMap<>();
+    static final java.util.Map<String, Double> cannotPayForgivenBySector = new java.util.TreeMap<>();
+    static final java.util.Map<BusinessDebtManager.ShortReason, int[]> cannotPayByReason = new java.util.EnumMap<>(BusinessDebtManager.ShortReason.class);
+    static final java.util.Map<BusinessDebtManager.ShortReason, Double> cannotPayForgivenByReason = new java.util.EnumMap<>(BusinessDebtManager.ShortReason.class);
+    static final java.util.Map<String, Integer> cannotPaySpell = new java.util.HashMap<>();
+    static int longestCannotPaySpell, longestCannotPayStart, longestCannotPayBanned;
+    static String longestCannotPaySector = "-";
+    static final java.util.Map<String, Integer> cannotPaySpellBanned = new java.util.HashMap<>();
+
+    /* ---- round 6: buy only what it can pay for ---- */
+    static final java.util.Map<String, int[]> limitedBySector = new java.util.TreeMap<>();
+    static final java.util.Map<String, double[]> forgoneBySector = new java.util.TreeMap<>();   // stock, inputs, fleet
+    static final java.util.Map<String, double[]> shelfShortBySector = new java.util.TreeMap<>(); // all, after a cut
+    static final java.util.Set<String> limitedLastMonth = new java.util.HashSet<>();
+    static int defaultsAfterCut, defaultsOnStock, defaultsOnBondCost;
+    static double defaultsAfterCutSum, defaultsOnStockSum, defaultsOnBondCostSum;
+    static final java.util.Map<String, double[]> defaultsOnStockBySector = new java.util.TreeMap<>();
+    static final java.util.Map<String, int[]> defaultsAfterCutBySector = new java.util.TreeMap<>();
+    static final java.util.List<Double> luxuryLeverage = new java.util.ArrayList<>();
+    static final java.util.Set<String> RETAILERS = java.util.Set.of("Retail", "Restaurants", "Luxury Retail");
+
+    static void countRound6(Game g) {
+        BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+        java.util.Set<String> limitedNow = new java.util.HashSet<>();
+        for (Sector s : g.getSectors().all()) {
+            String k = s.key();
+            // The shelf this month's sales met was stocked at last month's clearing.
+            if (s.getShelfShortValue() > 0) {
+                double[] sh = shelfShortBySector.computeIfAbsent(k, x -> new double[2]);
+                sh[0] += s.getShelfShortValue();
+                if (limitedLastMonth.contains(k)) sh[1] += s.getShelfShortValue();
+            }
+            // A cash-flow default, and how much of it the stock the strike
+            // just billed could account for: the unpaid up to what the sector
+            // paid for stock this month (its shelves, its larder, its fleet).
+            double shortNow = cr.getCannotPayShort(k);
+            if (shortNow > 0) {
+                double stockPaid = 0;
+                for (java.util.Map.Entry<Good, Sector.Split> e : s.statement().bought.entrySet()) {
+                    if (s.hasPantry(e.getKey())) stockPaid += e.getValue().total();
+                }
+                double onStock = Math.min(shortNow, stockPaid);
+                if (onStock > 0) {
+                    defaultsOnStock++;
+                    defaultsOnStockSum += onStock;
+                    double[] d = defaultsOnStockBySector.computeIfAbsent(k, x -> new double[2]);
+                    d[0]++;
+                    d[1] += onStock;
+                }
+                // ...and the ones a shortfall bond's own costs left: the desk
+                // raised the hole less what the bond cost to bring.
+                BusinessDebtManager.Plan plan = cr.getShortfallPlan(k);
+                if (plan != null && plan.hasBond() && shortNow <= plan.costs() * (1 + 1e-9)) {
+                    defaultsOnBondCost++;
+                    defaultsOnBondCostSum += shortNow;
+                }
+            }
+            // ...and so was the bill the settle at this month's top found.
+            if (limitedLastMonth.contains(k) && cr.getCannotPayShort(k) > 0) {
+                defaultsAfterCut++;
+                defaultsAfterCutSum += cr.getCannotPayShort(k);
+                defaultsAfterCutBySector.computeIfAbsent(k, x -> new int[1])[0]++;
+            }
+            if (s.wasPurchaseLimited()) {
+                limitedNow.add(k);
+                limitedBySector.computeIfAbsent(k, x -> new int[1])[0]++;
+                double[] f = forgoneBySector.computeIfAbsent(k, x -> new double[3]);
+                for (Good gd : Good.values()) {
+                    double v = s.getPurchasesForgone(gd);
+                    if (!(v > 0)) continue;
+                    if (gd == Good.VANS || gd == Good.ROLLING_STOCK) f[2] += v;
+                    else if (RETAILERS.contains(k)) f[0] += v;
+                    else f[1] += v;
+                }
+            }
+        }
+        limitedLastMonth.clear();
+        limitedLastMonth.addAll(limitedNow);
+        if (cr.getPrincipal("Luxury Retail") > 0) luxuryLeverage.add(cr.defaultPointLeverage("Luxury Retail"));
+    }
+
+    /* ---- round 7: a sector paying out more in wages than it takes in, on interim loans; a new sector's first year ---- */
+    static final java.util.Map<String, Integer> wageSpell = new java.util.HashMap<>();
+    static final java.util.Map<String, int[]> wageSpells = new java.util.TreeMap<>();   // spells of a year or more, longest, its start
+    static final java.util.Map<String, Integer> firstPlant = new java.util.TreeMap<>();
+    static final java.util.Map<String, Integer> bannedFirstYear = new java.util.TreeMap<>();
+    /* ---- round 8: a cash-flow default on a new sector's first bill: {the month, 1 if it was lent in the interim} ---- */
+    static final java.util.Map<String, int[]> firstBillDefault = new java.util.TreeMap<>();
+    /* ...a ceiling default in the month after the sector bought plant with a loan; and a shell: a sector holding no
+       plant, nothing built and nothing on site, that owes something - its defaults, what they left unpaid and what
+       the interim lender lent it, its months, and its longest stretch */
+    static final java.util.Map<String, Integer> lastProject = new java.util.HashMap<>();
+    static int afterProjectCeiling;
+    static final java.util.Map<String, Integer> shellDefaults = new java.util.TreeMap<>();
+    static final java.util.Map<String, Integer> shellSpell = new java.util.HashMap<>();
+    static double shellUnpaid, shellInterim;
+    static int shellMonths, shellLongest, shellLongestFrom;
+    static String shellLongestWho = "none";
+
+    static void countRound7(Game g) {
+        BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
+        int month = g.getMonth();
+        for (Sector s : g.getSectors().all()) {
+            String k = s.key();
+            // Payroll over revenue, a month at a time, while it owes interim financing.
+            Sector.Statement st = s.statement();
+            if (st.payroll > st.revenue && cr.getInterimPrincipal(k) > 0) {
+                int spell = wageSpell.merge(k, 1, Integer::sum);
+                int[] w = wageSpells.computeIfAbsent(k, x -> new int[3]);
+                if (spell == 12) w[0]++;
+                if (spell > w[1]) { w[1] = spell; w[2] = month - spell + 1; }
+            } else {
+                wageSpell.put(k, 0);
+            }
+            // Its first month-end holding plant, and whether a ban came in the year after it.
+            if (!firstPlant.containsKey(k) && cr.getAssets(k) - cr.getCash(k) > 0) firstPlant.put(k, month);
+            Integer first = firstPlant.get(k);
+            if (first != null && month - first < 12 && cr.isBorrowingBlocked(k)) bannedFirstYear.putIfAbsent(k, month);
+            // ...and a default on its first bill (round 8): in its first month-end holding plant or the next.
+            if (first != null && month - first <= 1 && cr.getCannotPayShort(k) > 0)
+                firstBillDefault.putIfAbsent(k, new int[] { month, cr.getInterimCount(k) > 0 ? 1 : 0 });
+            // Round 8: a ceiling default in the settle after a project loan, and a shell.
+            double shortNow = cr.getCannotPayShort(k);
+            if (shortNow > 0 && cr.getCannotPayReason(k) == BusinessDebtManager.ShortReason.CEILING
+                    && lastProject.getOrDefault(k, -9) == month - 1) afterProjectCeiling++;
+            boolean noPlant = !(g.getBuildingManager().getBuildingsValueBySector(k) > 0);
+            if (noPlant && cr.getPrincipal(k) > 0) {
+                int spell = shellSpell.merge(k, 1, Integer::sum);
+                shellMonths++;
+                if (spell > shellLongest) { shellLongest = spell; shellLongestWho = k; shellLongestFrom = month - spell + 1; }
+            } else {
+                shellSpell.put(k, 0);
+            }
+            if (noPlant && shortNow > 0) {
+                shellDefaults.merge(k, 1, Integer::sum);
+                shellUnpaid += shortNow;
+                shellInterim += cr.getInterimLentThisMonth(k);
+            }
+        }
+        for (BusinessDebtManager.Written w : cr.getWrittenThisMonth()) if (w.project()) lastProject.put(w.sector(), month);
+    }
+
+    static void countRound4(Game g) {
+        EconomyManager em = g.getEconomyManager();
+        BusinessDebtManager cr = em.getBusinessDebtManager();
+        Exchange ex = g.getExchange();
+        double tills = 0;
+        for (String s : Sectors.KEYS) {
+            double cash = em.getSectorCash(s);
+            tills += Math.max(0, cash);
+            companyDepositInterestRun += em.getDepositInterestPaid(s);
+            // The till at the month's end: short with a lender behind it, or with none.
+            // The investment desk stands behind a till its project loan left
+            // short by the loan's fee and a bond's costs this month (round 4).
+            if (cash < 0) {
+                overdraftMonths++;
+                overdraftSum += -cash;
+                overdraftMax = Math.max(overdraftMax, -cash);
+                boolean project = false;
+                for (BusinessDebtManager.Written w : cr.getWrittenThisMonth()) if (w.project() && w.sector().equals(s)) project = true;
+                if (project) { overdraftProjectMonths++; overdraftProjectSum += -cash; }
+                boolean lender = project || (!cr.isBorrowingBlocked(s) && !cr.pastDefaultPoint(s, cash) && cr.borrowingRoom(s) >= -cash);
+                if (!lender) { overdraftNoLenderMonths++; overdraftNoLenderSum += -cash; }
+            }
+            // The month's cash-flow defaults: what they found unpaid, lent as
+            // interim financing since round 5 or the backstop's.
+            double forgiven = cr.getCannotPayShort(s);
+            if (cr.getInterimRefusal(s) != null) {
+                if (BusinessDebtManager.INTERIM_BANK_SHUT.equals(cr.getInterimRefusal(s))) interimRefusedShut++;
+                else interimRefusedPast++;
+                if (cr.wasRestructuredThisMonth(s)) backstopForced++;
+            }
+            if (cr.getBackstopInBanThisMonth(s) > 0) { backstopInBanMonths++; backstopInBanSum += cr.getBackstopInBanThisMonth(s); }
+            interimWrittenOffSum += cr.getInterimWrittenOffThisMonth(s);
+            // Round 5: the growth doors the capital rule shut, and the line it no longer does.
+            if (cr.wasProjectRefusedForCapital(s)) projectRefusedForCapital++;
+            if (cr.wasMortgageRefusedForCapital(s)) mortgageRefusedForCapital++;
+            if (cr.getLineLentRationed(s) > 0) {
+                lineRationedMonths++;
+                lineLentRationedRun += cr.getLineLentRationed(s);
+                lineLentPastOldRuleRun += cr.getLineLentPastOldRule(s);
+            }
+            if (forgiven > 0) {
+                cannotPayMonths++;
+                cannotPayForgivenRun += forgiven;
+                cannotPayBySector.computeIfAbsent(s, k -> new int[1])[0]++;
+                cannotPayForgivenBySector.merge(s, forgiven, Double::sum);
+                BusinessDebtManager.ShortReason why = cr.getCannotPayReason(s);
+                // -Dplaytest.defaults: a line for every one the bank's own state
+                // caused (since round 5 only a bank shut), and every one past
+                // $5M - the cascade's trace (round 4).
+                boolean bankState = why == BusinessDebtManager.ShortReason.BANK_SHUT;
+                if (Boolean.getBoolean("playtest.defaults") && (bankState || forgiven > 5_000)) {
+                    Bank bk = g.getBank();
+                    out.printf("CFD m%d %s %s short %,.0f share %.3f of $%,.0f due | interim %,.0f refused %s backstop %b | owes %,.0f quarter %.2f | bank eq %,.0f min %,.0f target %,.0f growth %.4f keepGoing %b failures %d%n",
+                            g.getMonth(), s, why, forgiven, cr.getCannotPayShare(s), cr.getMonthObligations(s),
+                            cr.getInterimLentThisMonth(s), cr.getInterimRefusal(s), cr.wasRestructuredThisMonth(s),
+                            cr.getPrincipal(s), cr.defaultPointLeverage(s), bk.equity(), bk.minimumEquity(), bk.targetEquity(),
+                            cr.getCapitalGrowth(), cr.isKeepGoingOnly(), bk.getFailures());
+                }
+                if (why != null) {
+                    cannotPayByReason.computeIfAbsent(why, k -> new int[1])[0]++;
+                    cannotPayForgivenByReason.merge(why, forgiven, Double::sum);
+                    if (why == BusinessDebtManager.ShortReason.BANK_SHUT) cannotPayBankUnderLine++;
+                }
+                cannotPayDebtDefaultedRun += cr.getLoansDefaultedThisMonth(s) + cr.getBondsDefaultedThisMonth(s);
+                boolean banned = cr.isBorrowingBlocked(s);
+                if (banned) cannotPayForgivenBanned += forgiven;
+                int spell = cannotPaySpell.merge(s, 1, Integer::sum);
+                int bannedSpell = cannotPaySpellBanned.merge(s, banned ? 1 : 0, Integer::sum);
+                if (spell > longestCannotPaySpell) {
+                    longestCannotPaySpell = spell; longestCannotPaySector = s;
+                    longestCannotPayStart = g.getMonth() - spell + 1; longestCannotPayBanned = bannedSpell;
+                }
+            } else {
+                cannotPaySpell.put(s, 0);
+                cannotPaySpellBanned.put(s, 0);
+            }
+        }
+        companyTillsRun.add(tills);
+        if (cr.capitalRuleOn()) ruleOnMonths++;
+        // Every interim loan by itself (round 5): written, repaid at its term,
+        // or written down again in a later default.
+        java.util.Set<InterimLoan> now = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        for (BusinessDebt d : cr.getLoans()) {
+            if (!(d instanceof InterimLoan il)) continue;
+            now.add(il);
+            Double last = interimSeen.get(il);
+            if (last == null) { interimWritten++; interimWrittenSum += il.getFaceValue(); }
+            else if (il.getOutstandingPrincipal() < last - 1e-9 && interimLost.add(il)) interimDefaultedAgain++;
+            interimSeen.put(il, il.getOutstandingPrincipal());
+        }
+        for (java.util.Iterator<java.util.Map.Entry<InterimLoan, Double>> it = interimSeen.entrySet().iterator(); it.hasNext(); ) {
+            java.util.Map.Entry<InterimLoan, Double> e = it.next();
+            if (now.contains(e.getKey())) continue;
+            // Fell due with something left to pay: a loan a backstop wrote
+            // to nothing runs out its term at nothing, and is not "repaid".
+            if (e.getKey().isMatured() && e.getValue() > 1e-9) { interimRepaid++; interimRepaidSum += e.getValue(); }
+            it.remove();
+        }
+        companiesSoldShortRun += g.getBondMarket().getCompaniesSoldShort();
+        for (int c = 0; c < Equity.COMPANIES.length; c++) if (c != Equity.BANK) buybackRestingRun += ex.getBuybackBudget(c);
+    }
+
+    /** Every overdraft forgiven over the run: the backstop's, the one path left that forgives (round 4's cash-flow test forgave too; since round 5 it lends the rest as interim financing). */
+    static double forgivenTotal(EconomyManager em) {
+        double t = 0;
+        for (String s : Sectors.KEYS) t += em.getOverdraftForgivenTotal(s);
+        return t;
+    }
+
+    /** The share of a list's entries over a line, percent. */
+    static double shareOver(java.util.List<Double> v, double line) {
+        if (v.isEmpty()) return 0;
+        int n = 0;
+        for (double x : v) if (x > line) n++;
+        return 100.0 * n / v.size();
+    }
+
     static void bankYear(Game g) {
         Bank bk = g.getBank();
         int pop = g.getPopulationManager().getPopulation();
@@ -508,19 +898,23 @@ public class LongPlaytest {
         // ...and a line for every month it went under, with the month's flows:
         // what took it there (the held-10 stress runs were read with this).
         if (Boolean.getBoolean("playtest.capital") && bk.getResolutionLossThisMonth() > 0) {
-            out.printf("FAIL m%d br %.0f open %,.0f hole %,.0f | interest %,.0f trading %,.0f pbt %,.0f net %,.0f | prov %,.0f wo %,.0f used %,.0f allow %,.0f | div %,.0f bought %,.0f issued %,.0f | payroll %,.0f upkeep %,.0f | book %,.0f rwa %,.0f failures %d | refused own %,.0f desk %,.0f | securities %,.0f mark %,.0f%n",
+            out.printf("FAIL m%d br %.0f open %,.0f hole %,.0f | interest %,.0f trading %,.0f pbt %,.0f net %,.0f | prov %,.0f wo %,.0f used %,.0f allow %,.0f | div %,.0f bought %,.0f issued %,.0f | payroll %,.0f upkeep %,.0f | book %,.0f rwa %,.0f failures %d | securities %,.0f mark %,.0f%n",
                     g.getMonth(), bk.getBranches(), bk.getOpeningEquity(), bk.getResolutionLossThisMonth(),
                     bk.getInterestEarned(), bk.getTradingIncome(), bk.getProfitLastMonth(), bk.getNetIncome(),
                     bk.provisions(), bk.getWriteOffs(), bk.getAllowanceUsed(), bk.getAllowance(),
                     bk.getDividendsPaid(), bk.getSharesBoughtBack(), bk.getSharesIssued(),
                     bk.getPayroll(), bk.getUpkeep(), bk.getBook(), bk.getWeightedBook(), bk.getFailures(),
-                    g.getExchange().getOwnRefused(), g.getExchange().getDeskRefused(), bk.getSecurities(), bk.getMarkChange());
+                    bk.getSecurities(), bk.getMarkChange());
         }
         countDefaults(g);
+        countRound4(g);
+        countRound6(g);
+        countRound7(g);
         countPriceAndPlant(g);
         countCapitalLimits(g);
         countMortgages(g);
         countLeverage(g);
+        countBonds(g);
         // -Dplaytest.defaults=true (0.7.8): every month the bank failed, a
         // sector went under whole, or the provision took a quarter of the
         // equity it opened with - and the sectors behind it: what each owes
@@ -951,8 +1345,8 @@ public class LongPlaytest {
                 g.getBank().depositRate() * 100, DebtManager.WORLD_BASE_RATE * 100,
                 g.getPopulationManager().getPopulation(), g.getEconomyManager().getMonthGdp());
             Exchange ex = g.getExchange();
-            out.printf("   desk: sold abroad %,.0f bought abroad %,.0f (emigrants %,.0f) | buybacks to hh %,.0f abroad %,.0f special %,.0f | dividends hh %,.0f abroad %,.0f | sent abroad %,.0f home %,.0f | hh saved %,.0f abroad US$%,.0f (sent %,.0f home %,.0f) divs %,.0f sold %,.0f | securities %,.0f%n",
-                ex.getSoldAbroad(), ex.getBoughtFromAbroad(), ex.getEmigrantsPaid(), ex.getBuybackToHouseholds(), ex.getBuybackAbroad(), ex.getSpecialDividend(),
+            out.printf("   desk: sold abroad %,.0f bought abroad %,.0f (emigrants %,.0f) | buybacks to hh %,.0f abroad %,.0f | dividends hh %,.0f abroad %,.0f | sent abroad %,.0f home %,.0f | hh saved %,.0f abroad US$%,.0f (sent %,.0f home %,.0f) divs %,.0f sold %,.0f | securities %,.0f%n",
+                ex.getSoldAbroad(), ex.getBoughtFromAbroad(), ex.getEmigrantsPaid(), ex.getBuybackToHouseholds(), ex.getBuybackAbroad(),
                 g.getEquity().getDividendHomeThisMonth(), g.getEquity().getDividendAbroadThisMonth(),
                 oi.getInvestedAbroadThisMonth(), oi.getBroughtHomeThisMonth(),
                 g.getHouseholdBalance().totalSavings(), g.getHouseholdBalance().totalAbroadUsd(), g.getHouseholdBalance().getSentAbroad(), g.getHouseholdBalance().getBroughtHome(),
@@ -960,10 +1354,10 @@ public class LongPlaytest {
             StringBuilder co = new StringBuilder("   companies:");
             for (int c = 0; c < Equity.COMPANIES.length; c++) {
                 SectorBooks.SectorMonth sm = c == Equity.BANK ? null : g.getSectorBooks().get(Equity.COMPANIES[c]);
-                co.append(String.format(" %s %s sh %,.1f eq/assets %.2f tgt %.2f mid %.3f fair %.3f yield %.1f%% abroad %.0f%% bought back %,.0f |",
+                co.append(String.format(" %s %s sh %,.1f eq/assets %.2f tgt %.2f price %.3f fair %.3f yield %.1f%% abroad %.0f%% bought back %,.0f |",
                     Equity.COMPANIES[c].substring(0, 3), g.getEquity().getRegime(c), g.getEquity().getShares(c),
                     sm == null ? 0 : (sm.totalAssets() > 0 ? sm.equity() / sm.totalAssets() : 0), g.getEquity().getTargetEquityShare(c),
-                    ex.mid(c), ex.fair(c), ex.yieldAt(g.getEquity(), c, ex.ask(c)) * 100, g.getEquity().foreignShare(c) * 100,
+                    ex.price(c), ex.fair(c), ex.yieldAt(g.getEquity(), c, ex.price(c)) * 100, g.getEquity().foreignShare(c) * 100,
                     g.getEquity().getLifetimeBoughtBack(c)));
             }
             out.println(co);
@@ -1421,7 +1815,7 @@ public class LongPlaytest {
 
     /** The trace's prefix under -Dplaytest.trace, or null. */
     static final String TRACE = System.getProperty("playtest.trace");
-    static java.io.PrintWriter traceMonths, traceBorrow, traceHouse, tracePop, traceBank;
+    static java.io.PrintWriter traceMonths, traceBorrow, traceHouse, tracePop, traceBank, traceBonds;
     /** The paper already written to the borrow file, by identity. */
     static final java.util.Set<Debt> paperSeen =
             java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
@@ -1454,6 +1848,7 @@ public class LongPlaytest {
             traceHouse = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-house.csv")));
             tracePop = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-pop.csv")));
             traceBank = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-bank.csv")));
+            traceBonds = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-bonds.csv")));
         } catch (java.io.IOException e) {
             throw new IllegalStateException("cannot write the trace at " + TRACE, e);
         }
@@ -1471,6 +1866,15 @@ public class LongPlaytest {
         traceBank.println("month,equity,exposure,weighted,leverage,capitalRatio,levBinds,minimum,target,stance,"
                 + "branches,uncovered,closed,insuredRate,insFtp,insRun,insCap,prime,policy,failures,levTarget,"
                 + "capTarget,mortgageBook,netIncome,insuredRationed");
+        StringBuilder bondsHeader = new StringBuilder("month,bonds,face,faceHH,faceBank,faceCo,faceWorld,loans,issues,"
+                + "issuedFace,avgCoupon,couponsHH,couponsBank,couponsCo,couponsAbroad,principalHH,principalBank,"
+                + "principalCo,principalAbroad,lossHH,lossBank,lossCo,lossWorld,worldBought,worldSold,hhBought,hhSold,"
+                + "hhBoughtAbroad,hhSoldAbroad,postedBuy,postedSell,filled,sellsPosted,sellsWaited,sellWaitedQty,trades,"
+                + "herfindahl,addOn,addOnWeighted,bankBonds,prime,policy,bondRatio");
+        for (int i = 0; i < Sectors.KEYS.length; i++) {
+            bondsHeader.append(String.format(",L%d,B%d,rate%d,cpn%d,yld%d,conc%d,dL%d,dB%d,woL%d,woB%d", i, i, i, i, i, i, i, i, i, i));
+        }
+        traceBonds.println(bondsHeader);
         // Closed however the run ends - a finding exits early too.
         Runtime.getRuntime().addShutdownHook(new Thread(LongPlaytest::traceClose));
     }
@@ -1559,7 +1963,8 @@ public class LongPlaytest {
         if (traceHouse != null) traceHouse.close();
         if (tracePop != null) tracePop.close();
         if (traceBank != null) traceBank.close();
-        traceMonths = traceBorrow = traceHouse = tracePop = traceBank = null;
+        if (traceBonds != null) traceBonds.close();
+        traceMonths = traceBorrow = traceHouse = tracePop = traceBank = traceBonds = null;
     }
 
     /**
@@ -2761,14 +3166,19 @@ public class LongPlaytest {
                     back.getEquity().getForeignShares(c), g.getEquity().getForeignShares(c));
             same(month, "...and held by the households",
                     back.getHouseholdBalance().sharesHeld(c), g.getHouseholdBalance().sharesHeld(c));
-            // The exchange: the desk's inventory, the quote it closed at and
-            // the demand it still carries - the next month trades at them.
+            // The exchange: the desk's inventory, the last trade and fair
+            // value, and what rests on the book - the next month's waterfall
+            // sells into it (0.7.12 round 2).
             same(month, "...and on the desk",
                     back.getEquity().getDealerShares(c), g.getEquity().getDealerShares(c));
-            same(month, "...and its quote",
-                    back.getExchange().mid(c), g.getExchange().mid(c));
-            same(month, "...and the demand its quote carries",
-                    back.getExchange().getDemand(c), g.getExchange().getDemand(c));
+            same(month, "...and its price, the last trade",
+                    back.getExchange().price(c), g.getExchange().price(c));
+            same(month, "...and its fair value",
+                    back.getExchange().fair(c), g.getExchange().fair(c));
+            same(month, "...and what is bid on its book",
+                    back.getExchange().bookOf(c).depth(OrderBook.Side.BUY, 1e-12), g.getExchange().bookOf(c).depth(OrderBook.Side.BUY, 1e-12));
+            same(month, "...and asked",
+                    back.getExchange().bookOf(c).depth(OrderBook.Side.SELL, 1e300), g.getExchange().bookOf(c).depth(OrderBook.Side.SELL, 1e300));
             same(month, "...and its split factor",
                     back.getExchange().getSplitFactor(c), g.getExchange().getSplitFactor(c));
         }
@@ -2780,6 +3190,22 @@ public class LongPlaytest {
                 back.getCityPaperUnsettled(), g.getCityPaperUnsettled());
         same(month, "what the households hold abroad across a save",
                 back.getHouseholdBalance().totalAbroadUsd(), g.getHouseholdBalance().totalAbroadUsd());
+        // The businesses' bonds (0.7.12): every holder's face, the cells' own
+        // face of the households' (round 2), what the bank's cost it, and the
+        // resting orders.
+        BondMarket bondsWas = g.getBondMarket(), bondsNow = back.getBondMarket();
+        same(month, "the bonds outstanding across a save", bondsNow.totalFace(), bondsWas.totalFace());
+        same(month, "...held by the households", bondsNow.faceHeldByHouseholds(), bondsWas.faceHeldByHouseholds());
+        same(month, "...and their claims on them", back.getHouseholdBalance().totalBonds(), g.getHouseholdBalance().totalBonds());
+        same(month, "...held by the bank, at what they cost it", bondsNow.bankCost(), bondsWas.bankCost());
+        same(month, "...held by the companies", bondsNow.faceHeldByCompanies(), bondsWas.faceHeldByCompanies());
+        same(month, "...held abroad", bondsNow.faceHeldByWorld(), bondsWas.faceHeldByWorld());
+        same(month, "...and the bank's book of them", back.getBank().getBondBook(), g.getBank().getBondBook());
+        same(month, "...and the book's concentration", back.getBank().getConcentrationAddOn(), g.getBank().getConcentrationAddOn());
+        int restingWas = 0, restingNow = 0;
+        for (CorporateBond b : bondsWas.getBonds()) restingWas += bondsWas.bookOf(b).bids().size() + bondsWas.bookOf(b).asks().size();
+        for (CorporateBond b : bondsNow.getBonds()) restingNow += bondsNow.bookOf(b).bids().size() + bondsNow.bookOf(b).asks().size();
+        same(month, "...and the orders resting on their books", restingNow, restingWas);
         // The long sick (2026-09-11): the ring is a stock, and so is who it killed last month.
         double[] ringNow = back.getSickness().getState(), ringWas = g.getSickness().getState();
         for (int i = 0; i < ringWas.length; i++) {
@@ -3746,21 +4172,222 @@ public class LongPlaytest {
                     Math.min(999, bankAtEnd.capitalRatio()) * 100, bankAtEnd.leverageTarget() * 100,
                     bankAtEnd.capitalTarget() * 100, mortgagesRefusedForCapital, branchesOpened, openedByStance,
                     branchesClosedSeen, Math.round(bankAtEnd.getBranches()));
+            // The businesses' bonds (0.7.12) - see countBonds().
+            BondMarket bmEnd = g.getBondMarket();
+            out.printf("  the bonds over the run: %d issued for $%,.0fk (costs $%,.0fk); the businesses' debt at most %.1f%%"
+                    + " bonds (m%d), bonds owed in %d month(s); at the end %d outstanding, $%,.0fk: households $%,.0fk,"
+                    + " the bank $%,.0fk, companies $%,.0fk, the world $%,.0fk; coupons paid households $%,.0fk, the bank"
+                    + " $%,.0fk, companies $%,.0fk, abroad $%,.0fk; written off households $%,.0fk, the bank $%,.0fk,"
+                    + " companies $%,.0fk, the world $%,.0fk; recovered on defaulted loans %.1f%% of $%,.0fk and on"
+                    + " defaulted bonds %.1f%% of $%,.0fk; the book traded $%,.0fk: %.1f%% of what was offered for sale"
+                    + " filled, and %d of %d sell orders waited unfilled; the world bought $%,.0fk and sold $%,.0fk;"
+                    + " households traded with households %,d times for $%,.0fk%n",
+                    bmEnd.getLifeIssues(), bmEnd.getLifeIssued(), bmEnd.getLifeCosts(), bondPeakShare * 100,
+                    bondPeakShareMonth, bondMonthsWithBonds, bmEnd.getBonds().size(), bmEnd.totalFace(),
+                    bmEnd.faceHeldByHouseholds(), bmEnd.faceHeldByBank(), bmEnd.faceHeldByCompanies(),
+                    bmEnd.faceHeldByWorld(), bmEnd.getLifeCouponsHouseholds(), bmEnd.getLifeCouponsBank(),
+                    bmEnd.getLifeCouponsCompanies(), bmEnd.getLifeCouponsAbroad(), bmEnd.getLifeLossHouseholds(),
+                    bmEnd.getLifeLossBank(), bmEnd.getLifeLossCompanies(), bmEnd.getLifeLossWorld(),
+                    bondRunLoansDefaulted > 0 ? (1 - bondRunLoansLost / bondRunLoansDefaulted) * 100 : 0,
+                    bondRunLoansDefaulted,
+                    bondRunBondsDefaulted > 0 ? (1 - bondRunBondsLost / bondRunBondsDefaulted) * 100 : 0,
+                    bondRunBondsDefaulted, bmEnd.getLifeVolume(),
+                    bmEnd.getLifePostedSell() > 0 ? bmEnd.getLifeFilledSell() / bmEnd.getLifePostedSell() * 100 : 0,
+                    bmEnd.getLifeSellsWaited(), bmEnd.getLifeSellsPosted(), bmEnd.getLifeWorldBought(),
+                    bmEnd.getLifeWorldSold(), bmEnd.getLifeBetweenHouseholdsTrades(), bmEnd.getLifeBetweenHouseholds());
             // Its own shares and its desk against its capital (0.7.8, round 4) - see countCapitalLimits().
-            int E = Exchange.Seller.EMIGRANT.ordinal(), W = Exchange.Seller.WORLD.ordinal(), H = Exchange.Seller.HOUSEHOLD.ordinal();
             out.printf("  its own shares and its desk against its capital: bought back $%,.0fk a year over the run"
-                    + " (a growth year's a median %s of the equity it opened with); the spare-capital limit bound in"
-                    + " %d month(s), turning away $%,.0fk of its shares (emigrants $%,.0fk, the world $%,.0fk,"
-                    + " households $%,.0fk); the desk's inventory at the close a median %.1f%% of its equity"
-                    + " (90th percentile %.1f%%, most %.1f%%, m%d); its capital limit bound in %d month(s), turning"
-                    + " away $%,.0fk of other companies' shares (emigrants $%,.0fk, the world $%,.0fk, households $%,.0fk)%n",
+                    + " (a growth year's a median %s of the equity it opened with); the desk's inventory at the close"
+                    + " a median %.1f%% of its equity (90th percentile %.1f%%, most %.1f%%, m%d), a mean $%,.0fk while"
+                    + " a bank stood; its trading result over the run $%,.0fk%n",
                     g.getMonth() > 0 ? runBuybacks / (g.getMonth() / 12.0) : 0, yearSpread(10, 100),
-                    ownBoundMonths, ownRefusedRun[E] + ownRefusedRun[W] + ownRefusedRun[H],
-                    ownRefusedRun[E], ownRefusedRun[W], ownRefusedRun[H],
                     quantile(deskOverEquity, .5) * 100, quantile(deskOverEquity, .9) * 100,
                     deskOverEquityMax * 100, deskOverEquityMaxMonth,
-                    deskBoundMonths, deskRefusedRun[E] + deskRefusedRun[W] + deskRefusedRun[H],
-                    deskRefusedRun[E], deskRefusedRun[W], deskRefusedRun[H]);
+                    deskInventoryMonths > 0 ? deskInventorySum / deskInventoryMonths : 0, deskPnlRun);
+            // The shares on the book (0.7.12 round 2) - see countShares().
+            Exchange exEnd = g.getExchange();
+            out.printf("  the shares over the run: the book traded $%,.0fk in %,d trades; %.1f%% of what was offered for"
+                    + " sale filled (by value at the price), and %d of %d sell orders waited unfilled; households traded"
+                    + " with households %,d times for $%,.0fk; leavers offered $%,.0fk and were paid $%,.0fk; a listed"
+                    + " company traded in %.1f%% of its months; the last trade over fair value a median %.3f (10th"
+                    + " percentile %.3f, 90th %.3f); ordinary dividends $%,.0fk (no path pays a special one since round 4);"
+                    + " what sold, by seller, of what it asked: the desk %.1f%% of $%,.0fk, the world %.1f%% of $%,.0fk,"
+                    + " leavers %.1f%% of $%,.0fk, households %.1f%% of $%,.0fk%n",
+                    exEnd.getLifeTurnover(), exEnd.getLifeTrades(),
+                    exEnd.getLifePostedSellValue() > 0 ? exEnd.getLifeFilledValue() / exEnd.getLifePostedSellValue() * 100 : 0,
+                    exEnd.getLifeSellsWaited(), exEnd.getLifeSellsPosted(),
+                    exEnd.getLifeBetweenHouseholdsTrades(), exEnd.getLifeBetweenHouseholds(),
+                    exEnd.getLifeEmigrantsOffered(), exEnd.getLifeEmigrantsPaid(),
+                    shareListedMonths > 0 ? 100.0 * shareTradedMonths / shareListedMonths : 0,
+                    quantile(sharePriceOverFair, .5), quantile(sharePriceOverFair, .1), quantile(sharePriceOverFair, .9),
+                    ordinaryDividendsRun,
+                    pct(exEnd.getLifeFilledSellBy(Exchange.BY_DESK), exEnd.getLifePostedSellBy(Exchange.BY_DESK)), exEnd.getLifePostedSellBy(Exchange.BY_DESK),
+                    pct(exEnd.getLifeFilledSellBy(Exchange.BY_WORLD), exEnd.getLifePostedSellBy(Exchange.BY_WORLD)), exEnd.getLifePostedSellBy(Exchange.BY_WORLD),
+                    pct(exEnd.getLifeFilledSellBy(Exchange.BY_EMIGRANTS), exEnd.getLifePostedSellBy(Exchange.BY_EMIGRANTS)), exEnd.getLifePostedSellBy(Exchange.BY_EMIGRANTS),
+                    pct(exEnd.getLifeFilledSellBy(Exchange.BY_HOUSEHOLDS), exEnd.getLifePostedSellBy(Exchange.BY_HOUSEHOLDS)), exEnd.getLifePostedSellBy(Exchange.BY_HOUSEHOLDS));
+            // The default point (0.7.12 round 2) - see countShares().
+            StringBuilder bySector = new StringBuilder();
+            for (java.util.Map.Entry<String, Double> e : refusedAtLineBySector.entrySet()) {
+                bySector.append(String.format(" %s $%,.0fk;", e.getKey(), e.getValue()));
+            }
+            out.printf("  the default point over the run: the shortfall desk refused $%,.0fk in %d month(s)%s;"
+                    + " $%,.0fk of mortgages fell due rather than renew; %d project month(s) refused%n",
+                    refusedAtLineRun, refusedAtLineMonths, bySector.length() > 0 ? " (" + bySector.toString().trim() + ")" : "",
+                    notRenewedAtLineRun, projectsRefusedAtLine);
+            // The desk's caps and the cells' rebalancing (0.7.12 round 3).
+            out.printf("  the desk's caps over the run: its bid held by its capital in %,d company-month(s), by POSITION_LIMIT"
+                    + " in %,d, by BOOK_LIMIT in %,d, by the float in %,d; its book at fair value a median %.1f%% of the"
+                    + " bank's equity (90th percentile %.1f%%, most %.1f%%) against BOOK_LIMIT %.0f%%, its largest holding"
+                    + " a median %.1f%% (90th percentile %.1f%%, most %.1f%%) against POSITION_LIMIT %.0f%%; the cells"
+                    + " offered $%,.0fk of shares to rebalance%n",
+                    exEnd.getLifeDeskBound(Exchange.BOUND_CAPITAL), exEnd.getLifeDeskBound(Exchange.BOUND_POSITION),
+                    exEnd.getLifeDeskBound(Exchange.BOUND_BOOK), exEnd.getLifeDeskBound(Exchange.BOUND_FLOAT),
+                    quantile(deskBookAtFair, .5) * 100, quantile(deskBookAtFair, .9) * 100, maxOf(deskBookAtFair) * 100,
+                    Exchange.BOOK_LIMIT * 100, quantile(deskLargestPosition, .5) * 100, quantile(deskLargestPosition, .9) * 100,
+                    maxOf(deskLargestPosition) * 100, Exchange.POSITION_LIMIT * 100, exEnd.getLifeRebalanceSold());
+            // ...and what it offered over them at fair value (0.7.12 round 4).
+            out.printf("  the desk over its caps: month-ends over BOOK_LIMIT %.1f%%, over POSITION_LIMIT %.1f%%; it offered"
+                    + " $%,.0fk over its caps at fair value and sold $%,.0fk of it; its trading result $%,.0fk%n",
+                    shareOver(deskBookAtFair, Exchange.BOOK_LIMIT), shareOver(deskLargestPosition, Exchange.POSITION_LIMIT),
+                    exEnd.getLifeExcessOffered(), exEnd.getLifeExcessSold(), deskPnlRun);
+            // The companies' cash (0.7.12 round 4): what the buybacks leave in the till, and where it sits.
+            EconomyManager emEnd = g.getEconomyManager();
+            double tillsEnd = 0;
+            for (String s : Sectors.KEYS) tillsEnd += Math.max(0, emEnd.getSectorCash(s));
+            out.printf("  the companies' cash: at the end $%,.0fk in their tills, $%,.0fk abroad, $%,.0fk of other sectors'"
+                    + " bonds, no shares; their tills a median $%,.0fk over the run (90th percentile $%,.0fk); over the"
+                    + " run they earned $%,.0fk of deposit interest, $%,.0fk of bond coupons and $%,.0fk abroad; their"
+                    + " buyback bids left a mean $%,.0fk unspent resting at the month's end%n",
+                    tillsEnd, g.getOutwardInvestment().totalLocalValue(), g.getBondMarket().faceHeldByCompanies(),
+                    quantile(companyTillsRun, .5), quantile(companyTillsRun, .9),
+                    companyDepositInterestRun, g.getBondMarket().getLifeCouponsCompanies(),
+                    g.getOutwardInvestment().getLifetimeInterest(),
+                    g.getMonth() > 0 ? buybackRestingRun / g.getMonth() : 0);
+            // Can't pay means default (0.7.12 round 4).
+            StringBuilder why = new StringBuilder();
+            for (java.util.Map.Entry<BusinessDebtManager.ShortReason, int[]> e : cannotPayByReason.entrySet()) {
+                why.append(String.format(" %s %d ($%,.0fk);", e.getKey(), e.getValue()[0],
+                        cannotPayForgivenByReason.getOrDefault(e.getKey(), 0.0)));
+            }
+            StringBuilder who = new StringBuilder();
+            for (java.util.Map.Entry<String, int[]> e : cannotPayBySector.entrySet()) {
+                who.append(String.format(" %s %d ($%,.0fk);", e.getKey(), e.getValue()[0],
+                        cannotPayForgivenBySector.getOrDefault(e.getKey(), 0.0)));
+            }
+            // Buy only what it can pay for (round 6).
+            int limitedN = 0;
+            double[] forgone = new double[3];
+            StringBuilder lim = new StringBuilder();
+            for (java.util.Map.Entry<String, int[]> e : limitedBySector.entrySet()) {
+                double[] f = forgoneBySector.getOrDefault(e.getKey(), new double[3]);
+                limitedN += e.getValue()[0];
+                for (int i = 0; i < 3; i++) forgone[i] += f[i];
+                lim.append(String.format(" %s %d ($%,.0fk: stock $%,.0fk, inputs $%,.0fk, fleet $%,.0fk);",
+                        e.getKey(), e.getValue()[0], f[0] + f[1] + f[2], f[0], f[1], f[2]));
+            }
+            StringBuilder shelf = new StringBuilder();
+            for (java.util.Map.Entry<String, double[]> e : shelfShortBySector.entrySet()) {
+                shelf.append(String.format(" %s $%,.0fk ($%,.0fk after a cut);", e.getKey(), e.getValue()[0], e.getValue()[1]));
+            }
+            StringBuilder after = new StringBuilder();
+            for (java.util.Map.Entry<String, int[]> e : defaultsAfterCutBySector.entrySet()) {
+                after.append(String.format(" %s %d;", e.getKey(), e.getValue()[0]));
+            }
+            StringBuilder onStock = new StringBuilder();
+            for (java.util.Map.Entry<String, double[]> e : defaultsOnStockBySector.entrySet()) {
+                onStock.append(String.format(" %s %.0f ($%,.0fk);", e.getKey(), e.getValue()[0], e.getValue()[1]));
+            }
+            out.printf("  what the cash-flow defaults were for: %,d of them unpaid within what the month paid for stock,"
+                    + " $%,.0fk of it:%s %,d no larger than the costs of a bond the shortfall desk sold that month,"
+                    + " $%,.0fk%n",
+                    defaultsOnStock, defaultsOnStockSum, onStock.length() > 0 ? onStock.toString() : " none;",
+                    defaultsOnBondCost, defaultsOnBondCostSum);
+            out.printf("  bought only what it could pay for: the limit bound in %,d sector-month(s), $%,.0fk of orders"
+                    + " not placed (stock $%,.0fk, inputs $%,.0fk, fleet $%,.0fk); by sector:%s the shelves could not"
+                    + " meet $%,.0fk of sales:%s cash-flow defaults in the settle after a cut %,d ($%,.0fk unpaid):%s%n",
+                    limitedN, forgone[0] + forgone[1] + forgone[2], forgone[0], forgone[1], forgone[2],
+                    lim.length() > 0 ? lim.toString() : " none;",
+                    shelfShortBySector.values().stream().mapToDouble(v -> v[0]).sum(),
+                    shelf.length() > 0 ? shelf.toString() : " none;",
+                    defaultsAfterCut, defaultsAfterCutSum, after.length() > 0 ? after.toString() : " none;");
+            int overCeiling = 0, pastLine = 0;
+            for (double x : luxuryLeverage) {
+                if (x > BusinessDebtManager.MAX_LOAN_TO_ASSETS) overCeiling++;
+                if (x > BusinessDebtManager.INSOLVENCY_TRIGGER) pastLine++;
+            }
+            out.printf("  Luxury Retail's leverage on its quarter: median %.2f, 10th percentile %.2f, 90th %.2f, most %.2f"
+                    + " over %,d month(s) with debt; over MAX_LOAN_TO_ASSETS in %,d, past INSOLVENCY_TRIGGER in %,d%n",
+                    quantile(luxuryLeverage, .5), quantile(luxuryLeverage, .1), quantile(luxuryLeverage, .9),
+                    luxuryLeverage.isEmpty() ? 0 : maxOf(luxuryLeverage), luxuryLeverage.size(), overCeiling, pastLine);
+            // Round 7: the money created, by sector; wages over revenue on interim loans; a new sector's first year.
+            StringBuilder made = new StringBuilder();
+            for (String s : Sectors.KEYS) {
+                double f = g.getEconomyManager().getOverdraftForgivenTotal(s);
+                if (f > 0) made.append(String.format(" %s $%,.0fk;", s, f));
+            }
+            StringBuilder spells = new StringBuilder();
+            for (java.util.Map.Entry<String, int[]> e : wageSpells.entrySet()) {
+                if (e.getValue()[1] >= 12) spells.append(String.format(" %s %d (longest %d months from m%d);",
+                        e.getKey(), e.getValue()[0], e.getValue()[1], e.getValue()[2]));
+            }
+            StringBuilder banned = new StringBuilder();
+            for (java.util.Map.Entry<String, Integer> e : bannedFirstYear.entrySet()) {
+                banned.append(String.format(" %s (plant m%d, banned m%d);", e.getKey(), firstPlant.get(e.getKey()), e.getValue()));
+            }
+            out.printf("  the money created, by sector:%s spells of a year or more paying more in wages than it took in, on"
+                    + " interim loans:%s new sectors: %d held plant, %d of them banned in their first year:%s%n",
+                    made.length() > 0 ? made.toString() : " none;", spells.length() > 0 ? spells.toString() : " none;",
+                    firstPlant.size(), bannedFirstYear.size(), banned.length() > 0 ? banned.toString() : " none");
+            // Round 8: a new sector's first bill, read on a sheet valued before the lender reads it.
+            StringBuilder firstBills = new StringBuilder();
+            int firstBillInterim = 0;
+            for (java.util.Map.Entry<String, int[]> e : firstBillDefault.entrySet()) {
+                firstBillInterim += e.getValue()[1];
+                firstBills.append(String.format(" %s (plant m%d, default m%d%s);", e.getKey(), firstPlant.get(e.getKey()),
+                        e.getValue()[0], e.getValue()[1] > 0 ? ", lent in the interim" : ""));
+            }
+            out.printf("  a new sector's first bill: %d of the %d sectors that held plant defaulted on it, %d lent it in the interim:%s%n",
+                    firstBillDefault.size(), firstPlant.size(), firstBillInterim, firstBills.length() > 0 ? firstBills.toString() : " none");
+            StringBuilder shells = new StringBuilder();
+            int shellN = 0;
+            for (java.util.Map.Entry<String, Integer> e : shellDefaults.entrySet()) {
+                shellN += e.getValue();
+                shells.append(String.format(" %s %,d;", e.getKey(), e.getValue()));
+            }
+            out.printf("  ceiling defaults in the settle after a project loan: %,d; shells, a sector holding no plant that owes something:"
+                    + " %,d sector-month(s), the longest %d months (%s from m%d); %,d cash-flow default(s) among them, $%,.1fk unpaid,"
+                    + " $%,.1fk lent in the interim, by sector:%s%n",
+                    afterProjectCeiling, shellMonths, shellLongest, shellLongestWho, shellLongestFrom, shellN, shellUnpaid, shellInterim,
+                    shells.length() > 0 ? shells.toString() : " none");
+            // Credit lines stay open (round 5): the doors the capital rule still shuts, and what the line lent past it.
+            out.printf("  credit lines stay open: the capital rule on in %,d month(s); it refused a building's loan in"
+                    + " %,d sector-month(s) and a new mortgage in %,d; the working-capital line lent $%,.0fk in %,d"
+                    + " sector-month(s) while it was on, $%,.0fk of it past what the 0.7.8 rule would have lent%n",
+                    ruleOnMonths, projectRefusedForCapital, mortgageRefusedForCapital, lineLentRationedRun,
+                    lineRationedMonths, lineLentPastOldRuleRun);
+            out.printf("  interim financing: %,d loan(s) written for $%,.0fk; %,d repaid at their term ($%,.0fk),"
+                    + " %,d written down again in a later default ($%,.0fk of them written off), %,d outstanding"
+                    + " ($%,.0fk); refused %,d time(s) past the line after the write-down and %,d with the bank shut,"
+                    + " %,d of them to the backstop; the backstop closed $%,.0fk for a sector inside its ban in %,d"
+                    + " month(s)%n",
+                    interimWritten, interimWrittenSum, interimRepaid, interimRepaidSum, interimDefaultedAgain,
+                    interimWrittenOffSum, emEnd.getBusinessDebtManager().getInterimCount(),
+                    emEnd.getBusinessDebtManager().getInterimPrincipal(), interimRefusedPast, interimRefusedShut,
+                    backstopForced, backstopInBanSum, backstopInBanMonths);
+            out.printf("  can't pay means default: %,d sector-month(s) defaulted for want of cash, $%,.0fk"
+                    + " unpaid and $%,.0fk of their debt defaulted in those months; by reason:%s by sector:%s the bank's"
+                    + " own state %,d of them; the longest run %d month(s), %s from m%d, %d of them banned; $%,.0fk"
+                    + " unpaid while banned; companies sold $%,.0fk of bonds short of money; the till at month-ends short"
+                    + " in %,d sector-month(s), $%,.0fk in all (most $%,.0fk), %,d of them ($%,.0fk) left by a project"
+                    + " loan's fee that month, with no lender behind it in %,d ($%,.0fk);"
+                    + " every overdraft forgiven over the run, the backstop's, $%,.0fk%n",
+                    cannotPayMonths, cannotPayForgivenRun, cannotPayDebtDefaultedRun,
+                    why.length() > 0 ? why.toString() : " none;", who.length() > 0 ? who.toString() : " none;",
+                    cannotPayBankUnderLine, longestCannotPaySpell, longestCannotPaySector, longestCannotPayStart,
+                    longestCannotPayBanned, cannotPayForgivenBanned, companiesSoldShortRun,
+                    overdraftMonths, overdraftSum, overdraftMax, overdraftProjectMonths, overdraftProjectSum,
+                    overdraftNoLenderMonths, overdraftNoLenderSum,
+                    forgivenTotal(emEnd));
         }
         // The run, not the endpoint - see THE CITY'S PAPER AND THE BANK THAT HOLDS IT.
         out.printf("  the city's paper over the run: owed in %,d month(s) (%,d of them at home),"

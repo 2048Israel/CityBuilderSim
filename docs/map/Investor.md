@@ -1,6 +1,6 @@
 # Investor.java - 44 lines · 6 methods · 0 constants · model
 
-`ham/citybuildersim/Investor.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Investor.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > Whoever is paying for a building.
 > 
@@ -10,7 +10,7 @@
 > addStack() are all indifferent. So making businesses build their own premises
 > is a matter of naming the payer, not of duplicating the build path.
 
-**Used by (1):** [Game](Game.md)
+**Used by (2):** [CreditCheck](CreditCheck.md), [Game](Game.md)
 
 ## Methods, in file order
 

@@ -268,6 +268,7 @@ public class Restaurants extends Sector {
         // served four fifths of a dinner.
         double sold = Math.floor(Math.min(servable, mealsInTheLarder()));
         rServed = sold;
+        noteShelfShort(Math.floor(servable) - sold, sellPrice);
         if (sold <= 0) return 0;
 
         Trade t = markets.get(Good.MEALS).record(key(), Trade.HOUSEHOLDS, sold, sellPrice);

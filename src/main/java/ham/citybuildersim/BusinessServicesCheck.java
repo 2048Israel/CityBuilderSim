@@ -324,14 +324,15 @@ public class BusinessServicesCheck {
         double[] now = cells.toCellSaveArray();
         // ...and the month's investment income since 2026-09-17, the meals
         // eaten out since 2026-09-18, the share who paid for care since
-        // 2026-09-19 and the city's paper since 0.7.1, which are the sixth to
-        // ninth things on the end. This line is the one that notices the save
-        // shape moving, so it moves with it, deliberately and by hand.
+        // 2026-09-19, the city's paper since 0.7.1 and the businesses' bonds
+        // since 0.7.12, which are the sixth to tenth things on the end. This
+        // line is the one that notices the save shape moving, so it moves
+        // with it, deliberately and by hand.
         check("a cell carries eight slots, a holding per company, the dollars abroad,"
                 + " the student debt, the cars, the month's investment income, the dinners,"
-                + " the share who paid for care and the city's paper",
+                + " the share who paid for care, the city's paper and the businesses' bonds",
                 (now.length - 3.0) / keys.length,
-                8 + Equity.COMPANIES.length + 1 + 1 + 1 + 1 + 1 + 1 + 1, 0);
+                8 + Equity.COMPANIES.length + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1, 0);
 
         // A save written one company short - which every save from the build
         // before this sector is. Read with the company list it was WRITTEN

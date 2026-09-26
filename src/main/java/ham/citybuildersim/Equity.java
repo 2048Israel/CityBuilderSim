@@ -26,9 +26,11 @@ package ham.citybuildersim;
  * The six sectors and the bank - "specially the bank, they need equity to
  * avoid rough start". Each is one company with one class of share, listed
  * here by name; the households hold their shares per cell (Household.shares),
- * and the rest are held abroad. No exchange yet: a share is bought at an
- * offering, pays its dividend, and is held. Jerus: "when we build the
- * exchange, which we will but not just yet."
+ * and the rest are held abroad. There was no exchange at first: a share was
+ * bought at an offering, paid its dividend, and was held. Jerus: "when we
+ * build the exchange, which we will but not just yet." It came after
+ * (Exchange), and since 0.7.12 round 2 a share changes hands on its
+ * company's order book.
  *
  * ==================== WHEN A COMPANY GOES TO THE MARKET ====================
  *
@@ -78,7 +80,9 @@ package ham.citybuildersim;
  * AFTER THE PRINCIPAL since round 2 of 0.7.11 (Jerus: "Pay out after
  * principal"): the share is of the month's net income less the principal
  * the company repaid in it, and nothing when the principal is the larger
- * (dividendDue()).
+ * (dividendDue()) - and since 0.7.12 round 2 the principal NET of what
+ * refinanced it: the principal repaid less the new borrowing that rolled
+ * it, free cash flow to equity (Game.payDividends()).
  *
  * ==================== WHO BUYS ====================
  *
@@ -90,10 +94,13 @@ package ham.citybuildersim;
  *
  * ==================== PRICE ====================
  *
- * Book. A share is worth the company's equity divided by the shares in
- * issue, and that is what an offering sells them at; the first offering of a
- * company with no shares sells them at a thousand dollars each. An exchange
- * will have an opinion; the register does not.
+ * The register's reckoning is fair value: book, or THE DIVIDEND THE COMPANY
+ * ACTUALLY PAYS capitalised at what the world asks, whichever is more
+ * (priceOf(), since 0.7.12 round 2 - it read PAYOUT of the income before,
+ * which a company repaying principal did not pay). The price is the
+ * exchange's: the last trade on its book (Exchange.price()), which an
+ * offering sells at; the first offering of a company with no shares sells
+ * them at a thousand dollars each.
  */
 public class Equity {
 
@@ -210,6 +217,17 @@ public class Equity {
         double lifetimeRaisedHome, lifetimeRaisedAbroad;
         double lifetimeDividendsHome, lifetimeDividendsAbroad;
         int offerings;
+        /**
+         * THE DIVIDENDS IT ACTUALLY PAID, a ring of the last twelve months
+         * (0.7.12 round 2): the ordinary dividend every holder was paid, the
+         * desk's part and the world's included - the special dividends kept
+         * out while there were any (a buyback's money, not a yield; none since
+         * 0.7.12 round 4). What every participant values the share on
+         * (dividendPerShareAnnual(), priceOf()). Saved.
+         */
+        final double[] paid = new double[RECORD_MONTHS];
+        int paidMonths;
+        double paidThisMonth;
 
         // this month
         double offered, raisedHome, raisedAbroad, dividendHome, dividendDesk, dividendAbroad;
@@ -241,6 +259,14 @@ public class Equity {
             double sum = 0;
             int n = Math.min(months, RECORD_MONTHS);
             for (int i = 0; i < n; i++) sum += spent[i];
+            return sum;
+        }
+
+        /** The ordinary dividends paid over the last twelve months. */
+        double trailingPaid() {
+            double sum = 0;
+            int n = Math.min(paidMonths, RECORD_MONTHS);
+            for (int i = 0; i < n; i++) sum += paid[i];
             return sum;
         }
     }
@@ -468,21 +494,23 @@ public class Equity {
      * book near zero and sold 1.37 million shares for $270k - the new money
      * bought the whole company for nothing and the founders were diluted to
      * a rounding error. A landlord with no equity still has the rents, so a
-     * share is worth at least the dividend it will pay capitalised at what
-     * the world asks of it: the last year's income over the world's rate plus
-     * the premium. A company with neither book nor earnings sells at the last
-     * price it sold at; a company with no shares at all, at the founding one.
+     * share is worth at least the dividend it pays capitalised at what the
+     * world asks of it: the last year's dividends over the world's rate plus
+     * the premium. A company with neither book nor dividends sells at the
+     * last price it sold at; a company with no shares at all, at the founding
+     * one.
      *
-     * STILL PAYOUT x INCOME after round 2 of 0.7.11, which pays the dividend
-     * on the income less the principal repaid (dividendDue()): a company
-     * repaying principal is valued on a larger dividend than it pays. That
-     * batch left valuation where it was, as an open question.
+     * THE DIVIDEND IT ACTUALLY PAID since 0.7.12 round 2 (Listing.paid). It
+     * was PAYOUT x the last year's income until then, and round 2 of 0.7.11
+     * pays the dividend on the income less the principal repaid - so a
+     * company repaying principal was valued on a dividend larger than the one
+     * it paid, which that batch left as an open question and this one closes.
      */
     private double priceOf(Listing l, double bookEquity, double worldRate) {
         if (l.shares <= 0) return foundingPrice;
-        double earningsValue = PAYOUT * Math.max(0, l.trailingIncome())
+        double dividendValue = Math.max(0, l.trailingPaid())
                 / (Math.max(0, worldRate) + FOREIGN_PREMIUM);
-        double value = Math.max(bookEquity, earningsValue);
+        double value = Math.max(bookEquity, dividendValue);
         return value > 0 ? value / l.shares : l.lastPrice;
     }
 
@@ -548,16 +576,44 @@ public class Equity {
      * their covenants: they restrict distributions when debt service is not
      * covered ("restricted payments").
      *
-     * A sector with no amortizing debt is unchanged, apart from the month a
-     * bullet matures: then the whole principal falls due and the month pays
-     * nothing past it, even when the desk rolls the loan.
+     * ...NET OF WHAT REFINANCED IT since 0.7.12 round 2: the caller passes
+     * the principal repaid less the new borrowing that rolled it - free cash
+     * flow to equity is net income less NET repayment. 0.7.11 passed the
+     * gross principal, so the month a bullet matured paid nothing past it
+     * even when the shortfall desk simply rolled the loan; that cut the
+     * sectors' dividends by $33B a run (Jerus's brief, round 2).
      *
-     * @param principalDue the principal that fell due this month - the
-     *                     mortgages' principal parts and the bullets that
-     *                     matured (BusinessDebtManager.getRepaidThisMonth())
+     * @param principalDue the principal repaid this month, net of what the
+     *                     shortfall desk lent in it to roll it - the
+     *                     mortgages' principal parts and the bullets and
+     *                     bonds that matured, less the refinancing
+     *                     (Game.payDividends())
      */
     public double dividendDue(int company, double netIncome, double principalDue) {
         return dividendDue(company, netIncome - Math.max(0, principalDue));
+    }
+
+    /**
+     * The month's ordinary dividend, as paid - noted by Game.payDividends()
+     * beside payDividend(), which the special dividends went through too
+     * until round 4 removed them, so that only the ordinary one is a yield
+     * (0.7.12 round 2).
+     */
+    public void noteDividendPaid(int company, double paid) {
+        if (paid > 0) listings[company].paidThisMonth += paid;
+    }
+
+    /** Files every company's month of dividends into its ring, paid or not: once a month, after the dividends. */
+    public void closeDividendMonth() {
+        ordinaryPaidAtClose = 0;
+        for (Listing l : listings) {
+            ordinaryPaidAtClose += l.paidThisMonth;
+            // A company that has never had an owner has no record to keep.
+            if (l.shares <= 0 && l.paidMonths == 0 && !(l.paidThisMonth > 0)) continue;
+            l.paid[l.paidMonths % RECORD_MONTHS] = l.paidThisMonth;
+            l.paidMonths++;
+            l.paidThisMonth = 0;
+        }
     }
 
     /**
@@ -626,13 +682,14 @@ public class Equity {
     public double getDividendDeskThisMonth() { double s = 0; for (Listing l : listings) s += l.dividendDesk; return s; }
 
     /* =====================================================================
-       THE DESK
+       THE HOLDERS
 
-       The exchange moves shares between the three holders through the bank's
-       trading desk, and the register keeps the count so the identity
-       "in issue = households + desk + abroad" lives in one place. See
-       Exchange. The bank's OWN shares never sit on the desk: bought, they
-       are cancelled; sold, they are issued - which is what treasury stock is.
+       The exchange moves shares between the holders - the households' cells,
+       the bank's desk, the world, a company buying its own back - and the
+       register keeps the count so the identity "in issue = households + desk
+       + abroad" lives in one place. See Exchange. The bank's OWN shares never
+       sit on the desk: bought, they are cancelled; sold, they are issued -
+       which is what treasury stock is.
        ===================================================================== */
 
     /** Shares the desk holds; negative when it has sold what it did not have. */
@@ -644,52 +701,37 @@ public class Equity {
         return l.shares - Math.max(0, l.dealerShares);
     }
 
-    /** The desk buys from the city's households (whose cells the caller has already debited). */
-    void deskBuysFromHouseholds(int company, double n) {
-        if (n <= 0) return;
-        Listing l = listings[company];
-        if (company == BANK) { l.shares -= n; return; }
-        l.dealerShares += n;
+    /** The desk's holding moves by this many shares: bought, positive; sold, negative (0.7.12 round 2). Never the bank's own. */
+    void moveDesk(int company, double n) {
+        if (company == BANK || n == 0) return;
+        listings[company].dealerShares += n;
     }
 
-    /** ...and sells to them. */
-    void deskSellsToHouseholds(int company, double n) {
-        if (n <= 0) return;
+    /** ...and the world's: bought, positive; sold, negative - never under nothing. */
+    void moveForeign(int company, double n) {
+        if (n == 0) return;
         Listing l = listings[company];
-        if (company == BANK) { l.shares += n; return; }
-        l.dealerShares -= n;
+        l.foreignShares = Math.max(0, l.foreignShares + n);
     }
 
-    void deskBuysFromAbroad(int company, double n) {
-        if (n <= 0) return;
-        Listing l = listings[company];
-        l.foreignShares = Math.max(0, l.foreignShares - n);
-        if (company == BANK) { l.shares -= n; return; }
-        l.dealerShares += n;
+    /** The bank issues its own shares through its desk: in issue by this many. */
+    void issueOwn(int company, double n) {
+        if (n > 0) listings[company].shares += n;
     }
 
-    void deskSellsAbroad(int company, double n) {
-        if (n <= 0) return;
-        Listing l = listings[company];
-        l.foreignShares += n;
-        if (company == BANK) { l.shares += n; return; }
-        l.dealerShares -= n;
+    /** ...and buys them back, cancelled: out of issue by this many. */
+    void cancelOwn(int company, double n) {
+        if (n > 0) listings[company].shares = Math.max(0, listings[company].shares - n);
     }
 
     /**
-     * A company buys back and cancels shares from every holder pro rata - a
-     * tender at one price. The caller has already paid each holder.
-     *
-     * @param fromHouseholds shares the households tendered (their cells already debited)
-     * @param fromDesk       shares the desk tendered
-     * @param fromAbroad     shares the world tendered
+     * A company buys back and cancels shares it bought on the book - the
+     * seller's holding already moved by the exchange - out of issue, and on
+     * its record of buybacks.
      */
-    void cancel(int company, double fromHouseholds, double fromDesk, double fromAbroad) {
+    void retire(int company, double n) {
+        if (!(n > 0)) return;
         Listing l = listings[company];
-        double n = Math.max(0, fromHouseholds) + Math.max(0, fromDesk) + Math.max(0, fromAbroad);
-        if (n <= 0) return;
-        l.foreignShares = Math.max(0, l.foreignShares - Math.max(0, fromAbroad));
-        l.dealerShares -= Math.max(0, fromDesk);
         l.shares = Math.max(0, l.shares - n);
         l.boughtBackThisMonth += n;
         l.lifetimeBoughtBack += n;
@@ -723,11 +765,18 @@ public class Equity {
         return priceOf(listings[company], bookEquity, worldRate);
     }
 
-    /** Dividend a share would pay over a year on the last twelve months' record: PAYOUT of the income, before the principal dividendDue() takes off since round 2 of 0.7.11 (priceOf() says the same). */
+    /** The dividend a share paid over the last twelve months - the ordinary dividend actually paid, since 0.7.12 round 2 (it was PAYOUT of the income before the principal, which nobody was paid). What the exchange's participants value a share on (Exchange.yieldAt()). */
     public double dividendPerShareAnnual(int company) {
         Listing l = listings[company];
-        return l.shares > 0 ? PAYOUT * Math.max(0, l.trailingIncome()) / l.shares : 0;
+        return l.shares > 0 ? Math.max(0, l.trailingPaid()) / l.shares : 0;
     }
+
+    /** Every company's ordinary dividends at the last close (closeDividendMonth()): the month's, for the playtest. */
+    private double ordinaryPaidAtClose;
+    public double getOrdinaryDividendsLastClose() { return ordinaryPaidAtClose; }
+
+    /** The ordinary dividends paid over the last twelve months, the company's whole (0.7.12 round 2). */
+    public double getDividendsPaidOverYear(int company) { return listings[company].trailingPaid(); }
 
     /* ------------------------------- reading ------------------------------- */
 
@@ -787,7 +836,11 @@ public class Equity {
     /** Slots a company before the desk (2026-09-10, night). */
     public static final int SLOTS_BEFORE_DESK = RECORD_MONTHS * 2 + 10;
 
-    public static final int SLOTS = SLOTS_BEFORE_DESK + 2;
+    /** ...and before the dividends actually paid (0.7.12 round 2). */
+    public static final int SLOTS_BEFORE_PAID = SLOTS_BEFORE_DESK + 2;
+
+    /** The ring of dividends paid and its count, appended. */
+    public static final int SLOTS = SLOTS_BEFORE_PAID + RECORD_MONTHS + 1;
 
     public String[] keys() { return COMPANIES.clone(); }
 
@@ -809,6 +862,8 @@ public class Equity {
             out[i++] = l.targetShare;
             out[i++] = l.dealerShares;
             out[i++] = l.lifetimeBoughtBack;
+            for (double v : l.paid) out[i++] = v;
+            out[i++] = l.paidMonths;
         }
         return out;
     }
@@ -817,7 +872,8 @@ public class Equity {
     public boolean restore(String[] keys, double[] saved) {
         if (keys == null || saved == null || keys.length == 0) return false;
         int slots = saved.length / keys.length;
-        if (saved.length != keys.length * slots || (slots != SLOTS && slots != SLOTS_BEFORE_DESK)) return false;
+        if (saved.length != keys.length * slots
+                || (slots != SLOTS && slots != SLOTS_BEFORE_PAID && slots != SLOTS_BEFORE_DESK)) return false;
         int i = 0;
         for (String key : keys) {
             int c = indexOf(key);
@@ -837,10 +893,25 @@ public class Equity {
             l.targetShare   = saved[i++];
             l.dealerShares = 0;
             l.lifetimeBoughtBack = 0;
-            if (slots == SLOTS) {
+            if (slots >= SLOTS_BEFORE_PAID) {
                 l.dealerShares      = saved[i++];
                 l.lifetimeBoughtBack = saved[i++];
             }
+            if (slots >= SLOTS) {
+                for (int k = 0; k < RECORD_MONTHS; k++) l.paid[k] = saved[i++];
+                l.paidMonths = (int) Math.round(saved[i++]);
+            } else {
+                /*
+                 * A SAVE FROM BEFORE THE RING has no record of what was paid,
+                 * month by month. It opens on what the register used to value
+                 * the share on - PAYOUT of each month's income - so a loaded
+                 * city's prices start where its players left them, and a year
+                 * of real dividends replaces it.
+                 */
+                for (int k = 0; k < RECORD_MONTHS; k++) l.paid[k] = PAYOUT * Math.max(0, l.income[k]);
+                l.paidMonths = l.months;
+            }
+            l.paidThisMonth = 0;
             l.regime = regimeOf(l);
         }
         return true;
@@ -857,7 +928,8 @@ public class Equity {
     public void redenominate(double scale) {
         foundingPrice *= scale;
         for (Listing l : listings) {
-            for (int k = 0; k < RECORD_MONTHS; k++) { l.income[k] *= scale; l.spent[k] *= scale; }
+            for (int k = 0; k < RECORD_MONTHS; k++) { l.income[k] *= scale; l.spent[k] *= scale; l.paid[k] *= scale; }
+            l.paidThisMonth *= scale;
             l.lastPrice *= scale;
             l.lifetimeRaisedHome *= scale;      l.lifetimeRaisedAbroad *= scale;
             l.lifetimeDividendsHome *= scale;   l.lifetimeDividendsAbroad *= scale;

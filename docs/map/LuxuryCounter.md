@@ -1,6 +1,6 @@
-# LuxuryCounter.java - 152 lines · 10 methods · 0 constants · model
+# LuxuryCounter.java - 154 lines · 10 methods · 0 constants · model
 
-`ham/citybuildersim/LuxuryCounter.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LuxuryCounter.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The households' discretionary spending: the boutiques and the restaurants,
 > each striking its price against the queue.
@@ -34,7 +34,7 @@
 > month. The interface went the same way the same day. See the project's
 > splitting-game.md.
 
-**Uses:** [Game](Game.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Restaurants](Restaurants.md) (2), [LuxuryRetail](LuxuryRetail.md) (2), [Good](Good.md) (2)
+**Uses:** [LuxuryRetail](LuxuryRetail.md) (3), [Game](Game.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Restaurants](Restaurants.md) (2), [Good](Good.md) (1)
 
 **Used by (1):** [Game](Game.md)
 
@@ -49,7 +49,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 117 | **type** `public final class LuxuryCounter` | The households' discretionary spending: the boutiques and the restaurants, each striking its price against the queue. |
+| 36 | 119 | **type** `public final class LuxuryCounter` | The households' discretionary spending: the boutiques and the restaurants, each striking its price against the queue. |
 | 42 | 1 | `public double getMealsServed()` | Meals the kitchens served the households this month. |
 | 45 | 1 | `public double getMealSpend()` | ...and what the households paid for them. |
 | 48 | 1 | `public double getMealPrice()` | ...at this price a meal, struck against the queue at the door. |
@@ -59,5 +59,5 @@
 | 105 | 1 | `public double getLuxurySpend()` | ...what they paid for them... |
 | 108 | 1 | `public double getLuxuryPrice()` | ...what one went for... |
 | 111 | 1 | `public double getLuxuryWanted()` | ...and how many they came for, which in a city short of shops is more. |
-| 114 | 38 | `void shop(Game game)` | The month's shopping. |
+| 114 | 40 | `void shop(Game game)` | The month's shopping. |
 

@@ -1278,8 +1278,85 @@ public final class GameVersion {
      * insuranceClaims) an older save reads as none; and the government's
      * month gains its two lines on the end of an array whose reader checks
      * its length, so an older block reads the two as zero.
+     *
+     * 0.7.12 (2026-09-25) - THE FIRMS SELL BONDS.
+     *
+     * With the landlords on insured mortgages the bank failed 115 times over
+     * eight seeds against 42 before, and the sector that broke it owed it
+     * five to six times its equity: a whole industry could borrow only from
+     * the one bank. Jerus: businesses borrow from the bank on "notes" - the
+     * screens say "bank loans", since the city's own short paper is already
+     * a note - and from investors on tradeable bonds. Eight rounds; what
+     * shipped is below, and the project's the-firms-sell-bonds.md has the
+     * rounds.
+     *   - THE BOND (CorporateBond): ten years, bullet, coupons monthly, sold
+     *     at par by bookbuilding - the coupon the lowest yield at which the
+     *     bids fill it - with the bank underwriting at Game's own issue
+     *     costs. Both desks ask BondMarket.plan(): the largest bond no dearer
+     *     than the bank's loan, costs counted, and the bank for the rest;
+     *     never more, together, than the bank would lend.
+     *   - THE ORDER BOOK (OrderBook): price-time priority, a trade at the
+     *     resting price, nobody obliged to trade, orders good for a month.
+     *     The bonds trade on it and, since round 2, the shares: the dealer's
+     *     quote is gone, the bank's desk is one participant within its
+     *     capital and its two caps, offering what it holds over them at fair
+     *     value (Exchange); a company's price is its last trade, fair value
+     *     beside it, on the dividend it actually paid
+     *     (Equity.dividendPerShareAnnual()), and that dividend is net income
+     *     less NET repayment (Game.payDividends()). Every household cell holds and
+     *     trades its own bonds and shares; the bank buys a bond only at an
+     *     equal loan's yield, on capital over its target; companies with idle
+     *     cash and the world by the rules that already sent money abroad and
+     *     brought hot money in.
+     *   - THE BANK PRICES CONCENTRATION: Basel's IRB capital with a
+     *     correlation that rises with the book's sector Herfindahl, shared by
+     *     the Euler rule, in each sector's rate and in the bank's requirement
+     *     (Bank, THE BANK PRICES CONCENTRATION). No limit; the 1.25
+     *     multiplier kept and flagged.
+     *   - RECOVERIES BY INSTRUMENT (BusinessDebtManager): a loan recovers
+     *     LOAN_RECOVERY (75%) and a bond BOND_RECOVERY (45%) wherever a
+     *     default's loss is read. Round 1's loans-first split of the uniform
+     *     60% is gone.
+     *   - HOW A FIRM THAT CANNOT PAY ENDS (BusinessDebtManager): nothing is
+     *     lent past the default point, read on the quarter; a sector short
+     *     at the settle sells what it holds, then borrows, and what no lender
+     *     covers defaults that month (CAN'T PAY MEANS DEFAULT); what is still
+     *     unpaid is lent as an InterimLoan ranked ahead of its other debt, or
+     *     the whole sector goes to the backstop if nobody will lend it
+     *     (INTERIM FINANCING); a bank short of capital rations growth and
+     *     keeps the working-capital line open (CREDIT LINES STAY OPEN). No
+     *     sector runs an overdraft for months any more, no special dividend
+     *     is paid, and a buyback's unspent money stays in the till.
+     *   - A sector's orders for stock are limited to what it can pay for; a
+     *     maker's inputs are bought whole (Sector, BUY ONLY WHAT IT CAN PAY
+     *     FOR).
+     *   - Found and fixed on the way: Luxury Retail costed its stock at a
+     *     price nobody paid (LuxuryRetail.landedCost()); the distress rule may
+     *     sell any plant making something the sector sells; a project loan
+     *     and the shortfall desk's loan beside a bond are grossed up for
+     *     their fees; the bond book's dust and a household's dust-sized debt
+     *     scale with the currency; a month-end holding nothing is not a
+     *     reading; the lender reads the sheets valued that month; and two
+     *     fields a reload lost (Retail's household want, the price index's
+     *     settling count).
+     *   - SHIPS WITH HEALTHCHECK RED, on Jerus's word ("ship with it red,
+     *     flagged"): read over a year, the city where care costs money is 8.4
+     *     points hungrier than the free one, against a tolerance of 5.
+     * The screens: the bond market on the Finances tab; a sector's bank
+     * loans, bonds and interim financing on its Cash & debt page, and its
+     * shares' book on Its owners; the households' bonds on the household
+     * panel; the bank's bonds, concentration and desk orders on the Bank
+     * tab; the world's bonds on the Trade tab.
+     *
+     * SAVE_FORMAT did not move. The bond market, each cell's own bonds, the
+     * exchange's books and what defaults took off the bonds are new keys; an
+     * older save loads with no bonds and its dealer's last quote as each
+     * book's last price, and a round-1 save's households' pool is handed to
+     * the cells by their claims. An interim loan is saved among the business
+     * debts under its own type, "INTERIM-LOAN". Every array that grew keeps a
+     * reader that knows its older widths.
      */
-    public static final String VERSION = "0.7.11";
+    public static final String VERSION = "0.7.12";
 
     /**
      * The save shape.

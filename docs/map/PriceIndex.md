@@ -1,6 +1,6 @@
-# PriceIndex.java - 287 lines · 16 methods · 3 constants · model
+# PriceIndex.java - 296 lines · 16 methods · 3 constants · model
 
-`ham/citybuildersim/PriceIndex.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PriceIndex.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > What a month costs a household, against what it cost at founding.
 > 
@@ -25,7 +25,7 @@
 > spend two thirds of their money on food has a food-weighted index, and it
 > should, because that is whose cost of living this is.
 
-**Used by (7):** [CurrencyCheck](CurrencyCheck.md), [Game](Game.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PolicyScreen](PolicyScreen.md), [UserInterface](UserInterface.md)
+**Used by (8):** [CurrencyCheck](CurrencyCheck.md), [Game](Game.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PolicyScreen](PolicyScreen.md), [SaveFileCheck](SaveFileCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -60,7 +60,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 259 | **type** `public class PriceIndex` | What a month costs a household, against what it cost at founding. |
+| 29 | 268 | **type** `public class PriceIndex` | What a month costs a household, against what it cost at founding. |
 
 ### THE HIGH AND LOW WATER MARKS (lines 66-205)
 
@@ -79,12 +79,12 @@
 | 196 | 6 | `public double inflation()` | Inflation over the last twelve months. |
 | 204 | 1 | `public boolean hasRate()` | True once there is a year of readings and the rate means anything. |
 
-### carrying (lines 206-287)
+### carrying (lines 206-296)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 208 | 17 | `public double[] toSaveArray()` |  |
-| 226 | 33 | `public void restore(double[] saved)` |  |
-| 260 | 11 | `public void reset()` |  |
-| 280 | 6 | `public void redenominate(double scale)` | The basket's base prices, in the new unit. |
+| 208 | 24 | `public double[] toSaveArray()` |  |
+| 233 | 35 | `public void restore(double[] saved)` |  |
+| 269 | 11 | `public void reset()` |  |
+| 289 | 6 | `public void redenominate(double scale)` | The basket's base prices, in the new unit. |
 

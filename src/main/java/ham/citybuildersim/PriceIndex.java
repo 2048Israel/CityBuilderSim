@@ -206,20 +206,27 @@ public class PriceIndex {
     /* -------------------------------- carrying -------------------------------- */
 
     public double[] toSaveArray() {
-        double[] out = new double[5 + WINDOW + 4];
+        double[] out = new double[5 + WINDOW + 5];
         out[0] = based ? 1 : 0;
         out[1] = baseFood;
         out[2] = baseRent;
         out[3] = foodWeight;
         out[4] = monthsSeen;
-        // shoppingMonths rides in the based flag: once based it is irrelevant,
-        // and a save taken before basing restarts the settling period, which is
-        // the right answer for a city that has not shopped for two years yet.
         System.arraycopy(history, 0, out, 5, WINDOW);
         out[5 + WINDOW]     = peak;
         out[5 + WINDOW + 1] = peakMonth;
         out[5 + WINDOW + 2] = trough;
         out[5 + WINDOW + 3] = troughMonth;
+        /*
+         * THE SETTLING COUNT, AT THE END (0.7.12, round 2). It used to ride
+         * in the based flag - irrelevant once based, and a save taken before
+         * basing restarted the settling period. That made a city saved in its
+         * first two years base its index two years later than the city it was
+         * saved from, and the reload did not replay: the index, and every wage
+         * indexed to it, parted a few months on. At the end so an older save,
+         * which is shorter, still reads; it restarts the count as it always did.
+         */
+        out[5 + WINDOW + 4] = shoppingMonths;
         return out;
     }
 
@@ -255,6 +262,8 @@ public class PriceIndex {
         peakMonth   = (int) Math.round(saved[5 + WINDOW + 1]);
         trough      = saved[5 + WINDOW + 2];
         troughMonth = (int) Math.round(saved[5 + WINDOW + 3]);
+        shoppingMonths = saved.length > 5 + WINDOW + 4
+                ? (int) Math.round(saved[5 + WINDOW + 4]) : 0;
     }
 
     public void reset() {

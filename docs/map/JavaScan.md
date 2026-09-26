@@ -1,6 +1,6 @@
 # JavaScan.java - 666 lines · 39 methods · 2 constants · tools
 
-`ham/citybuildersim/tools/JavaScan.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/JavaScan.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > A structural read of one Java source file, without a compiler.
 > 

@@ -243,6 +243,24 @@ public final class GoodsMarket {
     /** ...and what an importer pays for one, landed AND hauled. */
     public double netImportPrice() { return importPrice() + domesticFreight(); }
 
+    /**
+     * What one unit costs a buyer to bring in this month (0.7.12 round 6):
+     * the local price when somebody in the city has the good on offer, and
+     * the import price when nobody does and it can be imported.
+     *
+     * NOT THE LOCAL PRICE ALONE, because a month with nothing on either side
+     * is struck in "the middle" of the band (strike()), and for a good nobody
+     * here makes and the world will not buy back that is half the import
+     * price - a price at which not one unit changed hands. Luxury Retail read
+     * it as its cost and its stock swung every other month for five rounds;
+     * see LuxuryRetail.landedCost(). The local price read here is the one the
+     * last clearing struck, as every reader of it gets.
+     */
+    public double landedPrice() {
+        if (getSupply() > 0 || !good.importable()) return localPrice;
+        return importPrice();
+    }
+
     /** The floor: the export price, or nothing. */
     public double floor() {
         return good.exportable() ? exportPrice() : 0;

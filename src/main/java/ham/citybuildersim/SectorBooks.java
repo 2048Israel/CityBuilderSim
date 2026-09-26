@@ -182,7 +182,24 @@ public final class SectorBooks {
              * flow adds it back - the working-capital line a real statement
              * carries. At the end of the record: an older save reads zero.
              */
-            double paidEarlier) {
+            double paidEarlier,
+
+            /* ------------------------ and its bonds (0.7.12) ------------------------ */
+            /**
+             * The other sectors' bonds it holds, at face: an asset beside its
+             * cash and what it holds abroad (BondMarket, THE PARTICIPANTS).
+             * The bonds it issued are in bondsPayable with its loans. At the
+             * end of the record: an older save reads zero here, as it held none.
+             */
+            double bondAssets,
+            /** What its bonds handed it this month: the face sold less the issuing costs, which the bank was paid. A cash-flow line in, beside what its loans handed it. */
+            double bondsIssued,
+            /** The face of its own bonds it repaid at maturity this month: a cash-flow line out, beside its loans' principal. */
+            double bondsRepaid,
+            /** What it spent this month on other sectors' bonds, less what it sold and what their principal paid it back: a cash-flow line out. */
+            double bondsBought,
+            /** The coupons it was paid on the bonds it holds: a cash-flow line in, reaching its till at the market's step without passing through its statement - the deposit interest's shape. */
+            double bondCoupons) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -190,7 +207,7 @@ public final class SectorBooks {
         }
 
         public double totalAssets() {
-            return cash + inventory + land + buildings + foreignAssets;
+            return cash + inventory + land + buildings + foreignAssets + bondAssets;
         }
 
         /** Everything above operating income: goods bought, payroll, utilities, repairs. */
@@ -212,7 +229,10 @@ public final class SectorBooks {
                     + borrowed - repaid + fromTheCity + forgiven + depositInterest
                     - investedAbroad
                     + equityRaised - dividendsPaid - sharesBoughtBack
-                    - spentOnBuildings - stolen);
+                    - spentOnBuildings - stolen
+                    // ...and its bonds (0.7.12): what they handed it, what it
+                    // repaid, what it spent on others', and their coupons.
+                    + bondsIssued - bondsRepaid - bondsBought + bondCoupons);
         }
 
         public double margin() {
@@ -228,7 +248,8 @@ public final class SectorBooks {
                     0, 0, 0, false,
                     0, 0, 0,
                     0, 0, 0,
-                    0, 0, 0, 0);
+                    0, 0, 0, 0,
+                    0, 0, 0, 0, 0);
         }
 
         public boolean isEmpty() {
@@ -345,7 +366,12 @@ public final class SectorBooks {
                 st.maintenance,
                 economy.getStolen(key),
                 game.getSalvageThisMonth(key),
-                st.paidEarlier);
+                st.paidEarlier,
+                economy.getBondAssets(key),
+                game.getBondMarket().getProceeds(key),
+                game.getBondMarket().getRepaid(key),
+                game.getBondMarket().getBoughtNet(key),
+                game.getBondMarket().getCouponsTo(key));
     }
 
     /* ===================================================================
@@ -417,6 +443,8 @@ public final class SectorBooks {
                 m.rate(), m.leverage(), m.writtenOff() * s, m.blocked(),
                 m.foreignAssets() * s, m.investedAbroad() * s, m.foreignInterest() * s,
                 m.equityRaised() * s, m.dividendsPaid() * s, m.sharesBoughtBack() * s,
-                m.maintenance() * s, m.stolen() * s, m.salvage() * s, m.paidEarlier() * s);
+                m.maintenance() * s, m.stolen() * s, m.salvage() * s, m.paidEarlier() * s,
+                m.bondAssets() * s, m.bondsIssued() * s, m.bondsRepaid() * s, m.bondsBought() * s,
+                m.bondCoupons() * s);
     }
 }

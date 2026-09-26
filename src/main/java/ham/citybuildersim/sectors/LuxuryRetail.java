@@ -98,6 +98,53 @@ public class LuxuryRetail extends Sector {
     /** What one shop's counter is worth a month, before anybody has told it anything. */
     private double sellPrice;
 
+    /* =====================================================================
+       WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG
+       PRICE MADE
+
+       Round 1 of the bonds batch saw this sector's shelf go $375M, $150M,
+       $375M, $150M, month after month; round 6 traced it (the project's
+       the-firms-sell-bonds.md, section 4). It was not the order-up-to rule
+       overshooting and it was not the design. It was this read.
+
+       The shop used to take its cost as the wholesale market's LOCAL PRICE,
+       read at the top of the month - which is the price the market struck at
+       LAST month's clearing. LUXURIES has no maker in this city and no export
+       floor (the world will not buy them back), so its band runs from zero to
+       the import price. A clearing where the shop bid for something has a
+       buyer and no maker, and strikes the ceiling: the import price, which is
+       what the shop then pays. A clearing where the shop bid for NOTHING has
+       nothing on either side, and GoodsMarket.strike() puts a market like that
+       in "the middle" of its band - half the import price, a price at which
+       not one piece changed hands and at which nobody could buy one.
+
+       The shop read that half as its cost. Its ticket halved, the queue at
+       the door doubled, the shelf emptied, it bid, the next clearing struck
+       the import price, the ticket doubled, the queue halved, the shelf sat
+       over three months of the smaller sales, it bid nothing - and the market
+       was back in the middle. Measured on one city (seed 2, months
+       1630-1648): cost 3.13 / 6.26 alternating, queue 24,680 / 12,357
+       pieces, sold 6,505 / 3,940, cash $25M / nothing, and a cash-flow
+       default every other month. No other sector's shelf alternated.
+
+       SO THE COST IS WHAT A PIECE COSTS TO BRING IN THIS MONTH: the local
+       price when somebody in the city is offering luxuries - that is the price
+       a maker would sell at - and the import price when nobody is, because
+       then abroad is the only place a piece comes from. It is the same figure
+       the old read gave in every month the shop had bid, and it moves with the
+       currency, since importPrice() is the world price at today's rate.
+       ===================================================================== */
+
+    /**
+     * What one piece costs the shop to bring in: the local price when the city
+     * has luxuries on offer, the import price when it has none.
+     */
+    public static double landedCost(GoodsMarket wholesale) {
+        double landed = wholesale.landedPrice();
+        if (!(landed > 0)) landed = Good.LUXURIES.worldImportPrice();
+        return landed;
+    }
+
     /** The month's reading, for the screen and the harness. */
     private double rMargin = MARGIN_FLOOR, rWanted, rServed, rCoverage, rLanded;
 
@@ -155,9 +202,7 @@ public class LuxuryRetail extends Sector {
         rWanted = Math.max(0, wanted);
         wanted = rWanted;
 
-        GoodsMarket wholesale = markets.get(Good.LUXURIES);
-        double landed = Math.max(0, wholesale.getLocalPrice());
-        if (landed <= 0) landed = Good.LUXURIES.worldImportPrice();
+        double landed = landedCost(markets.get(Good.LUXURIES));
         rLanded = landed;
 
         /*
@@ -193,6 +238,7 @@ public class LuxuryRetail extends Sector {
         // above HouseholdBalance.wantOf().
         double sold = Math.floor(Math.min(servable, onShelf));
         rServed = sold;
+        noteShelfShort(Math.floor(servable) - sold, sellPrice);
         if (sold <= 0) return 0;
 
         Trade t = markets.get(Good.LUXURY_TRADE)

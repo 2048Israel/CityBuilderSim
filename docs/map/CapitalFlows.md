@@ -1,6 +1,6 @@
 # CapitalFlows.java - 609 lines · 37 methods · 14 constants · model
 
-`ham/citybuildersim/CapitalFlows.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CapitalFlows.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > Hot money: what comes in chasing a spread, and what happens when it leaves.
 > 
@@ -29,7 +29,7 @@
 > holds both. The split is reported, because the player should see which offer
 > is pulling; it is not two flows, because there is one balance sheet.
 
-**Used by (8):** [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (10):** [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

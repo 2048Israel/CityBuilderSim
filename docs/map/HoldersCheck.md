@@ -1,6 +1,6 @@
-# HoldersCheck.java - 410 lines · 8 methods · 0 constants · harnesses
+# HoldersCheck.java - 411 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HoldersCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HoldersCheck.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > Proves who holds the city's own paper (0.7.1): that the households buy it at
 > the settle, are paid on it, sell it back, and are paid when it is bought
@@ -50,7 +50,7 @@
 | 251 | · 5. a buyback |
 | 288 | · 6. the save |
 | 330 | · 7. an old save |
-| 377 | · 8. a dollar bond bought back |
+| 378 | · 8. a dollar bond bought back |
 
 ## Fields (state)
 
@@ -65,7 +65,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 366 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 45 | 367 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
 | 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 56 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 66 | 4 | `static void quietly(Runnable r)` |  |
@@ -73,5 +73,5 @@
 | 78 | 1 | `static double savings(Game g)` |  |
 | 81 | 5 | `static boolean booksAgree(Game g)` | The two books of the households' paper agree: the cells, and the paper. |
 | 90 | 10 | `static MoneyAudit.Result play(Game g)` | A month, held to the audit. |
-| 101 | 309 | `public static void main(String[] args) throws Exception` |  |
+| 101 | 310 | `public static void main(String[] args) throws Exception` |  |
 

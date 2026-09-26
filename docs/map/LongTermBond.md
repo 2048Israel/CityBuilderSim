@@ -1,6 +1,6 @@
 # LongTermBond.java - 136 lines · 12 methods · 2 constants · model
 
-`ham/citybuildersim/LongTermBond.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LongTermBond.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > A term loan: a coupon every month on the whole face, and the whole face at
 > the end - issued only at the five maturities in MATURITIES (0.7.1).

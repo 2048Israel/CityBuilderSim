@@ -22,7 +22,8 @@ import static ham.citybuildersim.ui.Levers.*;
  * The Finances tab: the position, the ladder of what the city owes, debt
  * service, home and abroad, your rate taken apart, the book, buying back,
  * and borrowing - at home or in somebody else's money - and, since 0.7.0,
- * the money itself: the central bank's books, M0 and M2.
+ * the money itself: the central bank's books, M0 and M2; and since 0.7.12
+ * the businesses' bond market beside the city's own.
  *
  * Split out of UserInterface on 2026-09-18: the eleven banners from FINANCES
  * to BORROW exactly as they were, the shell's members reached through ui. The
@@ -49,7 +50,7 @@ final class FinancesScreen {
 
        WHAT IT IS: a landing page of rows, each opening into its own strip -
        the same shape as the Sector economy, and for the same reason. Finance
-       is not one screen, it is four subjects that share a vocabulary:
+       is not one screen, it is five subjects that share a vocabulary:
 
          THE POSITION   where the city stands, and why its money costs what it
                         costs. Five pages, because "what do I owe" and "when is
@@ -64,6 +65,8 @@ final class FinancesScreen {
                         invisible.
          MONEY          the central bank's books and the money supply, M0
                         and M2 with a year of each (0.7.0).
+         THE BOND       the businesses' bonds, not the city's (0.7.12): every
+         MARKET         issue, who holds it, and one bond's order book.
 
        THE BANK IS NOT HERE ANY MORE. Jerus: "i think we are going to have 11
        rails, bank is its own thing." It is a rail tab now.
@@ -80,6 +83,8 @@ final class FinancesScreen {
     static final String[] BORROW_PAGES = {"At home", "Abroad"};
     /** The central bank's books and the money supply, on one page (0.7.0). */
     static final String[] MONEY_PAGES  = {"Money"};
+    /** The businesses' bonds: every issue, and one bond's order book (0.7.12). */
+    static final String[] BOND_PAGES   = {"Every issue", "A bond's book"};
 
     /**
      * One kind of paper the city can sell.
@@ -197,6 +202,15 @@ final class FinancesScreen {
                 money(ui.game.getM2()) + " held by the public",
                 central.getAdvancesToTreasury() > 0 ? Palette.WARN : Palette.TEXT_HEAD,
                 "Money", "Money"));
+
+        BondMarket market = ui.game.getBondMarket();
+        double bondFace = market.totalFace(), businessDebt = businessDebt();
+        column.getChildren().add(financeRow("The bond market",
+                "the businesses' bonds: every issue, who holds it, and its order book",
+                bondFace > 0 ? money(bondFace) + " owed" : "no bonds",
+                businessDebt > 0 ? String.format("%.0f%% of what the businesses owe", bondFace / businessDebt * 100)
+                        : "the businesses owe nothing",
+                Palette.TEXT_HEAD, "The bond market", "Every issue"));
 
         /* ------------------------- the standing warnings ------------------------- */
         if (ledger.getOverdraft() > 0) {
@@ -337,6 +351,7 @@ final class FinancesScreen {
             case "The book" -> BOOK_PAGES;
             case "Borrow"   -> BORROW_PAGES;
             case "Money"    -> MONEY_PAGES;
+            case "The bond market" -> BOND_PAGES;
             default         -> POSITION_PAGES;
         };
 
@@ -363,6 +378,10 @@ final class FinancesScreen {
             }
             case "Borrow" -> borrowPage(column, "Abroad".equals(financePage));
             case "Money"  -> moneyPage(column);
+            case "The bond market" -> {
+                if ("A bond's book".equals(financePage)) bondBookPage(column);
+                else                                     bondMarketPage(column);
+            }
             default -> {
                 switch (financePage) {
                     case "The ladder"   -> ladderPage(column);
@@ -1949,6 +1968,232 @@ final class FinancesScreen {
     static double[] lastYear(double[] series) {
         int from = Math.max(0, series.length - 12);
         return java.util.Arrays.copyOfRange(series, from, series.length);
+    }
+
+    /* =====================================================================
+       THE BOND MARKET (0.7.12)
+
+       The businesses' bonds, not the city's: every issue the sectors have
+       sold, what each pays and is worth, who holds it, and the month on
+       the order books. On the Finances tab because it is a market beside
+       the city's own paper, and the book of that paper already lives here;
+       a sector's own bonds are on its Cash & debt page, the bank's on its
+       Lending page, the world's on the Trade tab. Every figure is the
+       market's own getter (BondMarket).
+       ===================================================================== */
+
+    /** What every business owes, bank loans and bonds together. */
+    double businessDebt() {
+        BusinessDebtManager credit = ui.game.getEconomyManager().getBusinessDebtManager();
+        double owed = 0;
+        for (String k : credit.sectors()) owed += credit.getPrincipal(k);
+        return owed;
+    }
+
+    /** A bond's price, per 100 of face. */
+    static String per100(double price) {
+        return Double.isFinite(price) && price > 0 ? String.format("%.2f", price * 100) : "—";
+    }
+
+    void bondMarketPage(VBox column) {
+
+        BondMarket market = ui.game.getBondMarket();
+        int month = ui.game.getMonth();
+        List<CorporateBond> bonds = new ArrayList<>(market.getBonds());
+        bonds.sort(java.util.Comparator.comparingInt(CorporateBond::maturityMonth));
+
+        column.getChildren().add(statementHead("Every bond the businesses have sold"));
+        if (bonds.isEmpty()) {
+            column.getChildren().add(sentence("None outstanding. A business sells a bond when the book would "
+                    + "take it for no more than the bank's loan costs, its issuing costs spread over its ten "
+                    + "years; a small amount goes to the bank, because the fixed part of those costs makes "
+                    + "a small bond dear.", Palette.TEXT_MUTED));
+        } else {
+            javafx.scene.layout.GridPane t = grid(new double[] {130, 96, 64, 84, 70, 70}, rightAfterFirst(6));
+            gridHead(t, "", "owed", "coupon", "matures", "price", "yield");
+            int line = 1;
+            for (CorporateBond b : bonds) {
+                double last = market.lastPrice(b);
+                t.add(gridCell(b.issuer(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+                t.add(gridCell(money(b.face()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
+                t.add(gridCell(pct2(b.coupon()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 2, line);
+                t.add(gridCell(CityCalendar.formatShort(b.maturityMonth()), Palette.TEXT_MUTED,
+                        Palette.SIZE_CAPTION, true), 3, line);
+                t.add(gridCell(Double.isNaN(last) ? per100(market.modelPrice(b, month)) + "*" : per100(last),
+                        Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 4, line);
+                double y = market.lastYield(b, month);
+                t.add(gridCell(pct2(y), y > b.coupon() + .005 ? Palette.WARN : Palette.TEXT_BODY,
+                        Palette.SIZE_CAPTION, true), 5, line);
+                line++;
+            }
+            column.getChildren().add(t);
+            column.getChildren().add(statementNote("The price is per 100 of face, at the last trade on its book; "
+                    + "* where it has not traded yet, what it is worth at the city's curve for the months it "
+                    + "has left and what a holder expects to lose on its issuer a year. The yield is the one "
+                    + "that price gives."));
+
+            javafx.scene.layout.GridPane h = grid(new double[] {130, 100, 90, 100, 100}, rightAfterFirst(5));
+            gridHead(h, "held by", "households", "the bank", "companies", "the world");
+            line = 1;
+            for (CorporateBond b : bonds) {
+                h.add(gridCell(b.issuer(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+                h.add(gridCell(money(b.households()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, line);
+                h.add(gridCell(money(b.bank()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 2, line);
+                h.add(gridCell(money(b.companiesTotal()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
+                h.add(gridCell(money(b.world()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 4, line);
+                line++;
+            }
+            column.getChildren().add(subHead("...and who holds each"));
+            column.getChildren().add(h);
+        }
+
+        double face = market.totalFace();
+        column.getChildren().add(statementTotal("Outstanding altogether", moneyFull(face), Palette.TEXT_HEAD));
+        double business = businessDebt();
+        if (business > 0) {
+            column.getChildren().add(statementLine("...of everything the businesses owe",
+                    String.format("%.1f%%", face / business * 100)));
+        }
+        column.getChildren().add(statementLine("Their coupons, weighted by face", pct2(market.averageCoupon())));
+        if (face > 0) {
+            double[] held = { market.faceHeldByHouseholds(), market.faceHeldByBank(),
+                              market.faceHeldByCompanies(), market.faceHeldByWorld() };
+            String[] who = { "The households", "The bank", "The companies with cash to spare", "Abroad" };
+            column.getChildren().add(statementHead("Who holds them"));
+            for (int i = 0; i < who.length; i++) {
+                column.getChildren().add(statementLine(who[i], money(held[i])
+                        + String.format("   %.0f%%", held[i] / face * 100),
+                        held[i] > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
+            }
+        }
+
+        /* ------------------------------ the month ------------------------------ */
+        column.getChildren().add(statementHead("This month"));
+        column.getChildren().add(statementLine(String.format("Sold, %d issue%s", market.getIssues(),
+                market.getIssues() == 1 ? "" : "s"), moneyFull(market.getIssuedFace())));
+        if (market.getIssuedCosts() > 0) {
+            column.getChildren().add(statementLine("...its costs, paid to the bank as underwriter",
+                    moneyFull(market.getIssuedCosts()), Palette.TEXT_MUTED));
+        }
+        double coupons = market.getCouponsToHouseholds() + market.getCouponsToBank()
+                + market.getCouponsToCompanies() + market.getCouponsAbroad();
+        column.getChildren().add(statementLine("Coupons paid", moneyFull(coupons)));
+        double principal = market.getPrincipalToHouseholds() + market.getPrincipalToBank()
+                + market.getPrincipalToCompanies() + market.getPrincipalAbroad();
+        if (principal > 0) column.getChildren().add(statementLine("Repaid at maturity", moneyFull(principal)));
+        double lost = market.getLossHouseholds() + market.getLossBank() + market.getLossCompanies()
+                + market.getWorldWrittenOff();
+        if (lost > 0) {
+            column.getChildren().add(statementLine("Written off in defaults", moneyFull(lost), Palette.BAD));
+            column.getChildren().add(statementNote(String.format(
+                    "The households lost %s of it, the bank %s, the companies %s and the world %s. A defaulted "
+                    + "bank loan gets back more of what it is owed than a defaulted bond does.",
+                    money(market.getLossHouseholds()), money(market.getLossBank()),
+                    money(market.getLossCompanies()), money(market.getWorldWrittenOff()))));
+        }
+        if (market.getLastIssuer() != null) {
+            column.getChildren().add(statementNote(String.format(
+                    "The last issue: %s sold %s of %d-year bonds at %.2f%%, against the bank's %.2f%%, in %s.",
+                    market.getLastIssuer(), money(market.getLastIssueFace()), CorporateBond.TERM_MONTHS / 12,
+                    market.getLastIssueCoupon() * 100, market.getLastIssueLoanRate() * 100,
+                    CityCalendar.format(market.getLastIssueMonth()))));
+        }
+
+        /* ---------------------------- the order books ---------------------------- */
+        column.getChildren().add(statementHead("On the order books, last month"));
+        column.getChildren().add(statementLine("Offered for sale", moneyFull(market.getLastPostedSell())));
+        column.getChildren().add(statementLine("...of it sold", market.getLastPostedSell() > 0
+                ? String.format("%s   %.0f%%", money(market.getLastFilled()),
+                        market.getLastFilled() / market.getLastPostedSell() * 100) : "—"));
+        column.getChildren().add(statementLine("Sellers who waited", market.getLastSellsPosted() > 0
+                ? String.format("%d of %d", market.getLastSellsWaited(), market.getLastSellsPosted()) : "none"));
+        column.getChildren().add(statementNote(
+                "Everybody posts buy and sell orders at prices, and an order fills only when it meets one on "
+                + "the other side, at the price of the one that was there first; the rest wait, and nobody "
+                + "has to trade. The households buy by the rule they buy the city's paper by, the companies "
+                + "with idle cash and the world by the rules that send money where the return is, and the "
+                + "bank only at the yield an equal loan would earn it. Orders are good for a month: each is "
+                + "posted again from that month's rates. A household short of money sells into what rests "
+                + "there when that is cheaper than borrowing, and waits when it is not."));
+    }
+
+    /** The bond whose book is open, by its number; the largest one when it has gone. */
+    int bookBondId = -1;
+
+    void bondBookPage(VBox column) {
+
+        BondMarket market = ui.game.getBondMarket();
+        int month = ui.game.getMonth();
+        List<CorporateBond> bonds = new ArrayList<>(market.getBonds());
+        if (bonds.isEmpty()) {
+            column.getChildren().add(sentence("No bond outstanding, so no book.", Palette.TEXT_MUTED));
+            return;
+        }
+        bonds.sort((a, b) -> Double.compare(b.face(), a.face()));
+        CorporateBond open = market.bond(bookBondId);
+        if (open == null) open = bonds.get(0);
+
+        // The twelve largest as chips, and the open one among them.
+        java.util.Map<String, Integer> byName = new java.util.LinkedHashMap<>();
+        for (CorporateBond b : bonds) {
+            if (byName.size() >= 12 && b != open) continue;
+            byName.put(b.issuer() + " " + b.id(), b.id());
+        }
+        String current = open.issuer() + " " + open.id();
+        javafx.scene.layout.FlowPane chips = chipStrip(byName.keySet().toArray(new String[0]), current,
+                Palette.SIZE_CAPTION, name -> {
+                    bookBondId = byName.get(name);
+                    showFinanceMenu();
+                });
+        chips.setStyle("-fx-padding: 0 0 8 0;");
+        column.getChildren().add(chips);
+
+        CorporateBond b = open;
+        OrderBook book = market.bookOf(b);
+        column.getChildren().add(statementHead(b.issuer() + "'s bond " + b.id()));
+        column.getChildren().add(statementLine("Owed", moneyFull(b.face())));
+        column.getChildren().add(statementLine("Coupon", pct2(b.coupon()) + " a year, paid monthly"));
+        column.getChildren().add(statementLine("Sold", CityCalendar.format(b.issueMonth())));
+        column.getChildren().add(statementLine("Matures", CityCalendar.format(b.maturityMonth())
+                + " (" + CityCalendar.until(month, b.maturityMonth()) + ")"));
+        column.getChildren().add(statementLine("Worth, at the curve and its issuer's risk",
+                per100(market.modelPrice(b, month)) + " per 100, " + pct2(market.modelYield(b, month))));
+        double last = market.lastPrice(b);
+        column.getChildren().add(statementLine("Last traded", Double.isNaN(last) ? "not yet"
+                : per100(last) + " per 100, in " + CityCalendar.format(book.lastTradeMonth())));
+        column.getChildren().add(statementNote(String.format(
+                "Its issuer's firms default at %s a year at its leverage, and a holder of its bonds loses "
+                + "%.0f%% of what defaults, where the bank's loans lose %.0f%% - what bonds and loans have "
+                + "given back on average, 1987-2024.",
+                BankScreen.defaultShare(market.defaultRate(b.issuer(), 0, 0)),
+                BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT * 100, BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT * 100)));
+
+        for (OrderBook.Side side : OrderBook.Side.values()) {
+            boolean bids = side == OrderBook.Side.BUY;
+            List<OrderBook.Level> levels = book.levels(side);
+            column.getChildren().add(subHead(bids ? "Bids, best first" : "Asks, best first"));
+            if (levels.isEmpty()) {
+                column.getChildren().add(sentence(bids ? "Nobody is bidding." : "Nobody is selling.",
+                        Palette.TEXT_MUTED));
+                continue;
+            }
+            javafx.scene.layout.GridPane t = grid(new double[] {110, 90, 120, 80}, rightAfterFirst(4));
+            gridHead(t, "price per 100", "its yield", "face", "orders");
+            int line = 1;
+            for (OrderBook.Level level : levels) {
+                if (line > 12) break;
+                t.add(gridCell(per100(level.price()), bids ? Palette.GOOD : Palette.WARN, Palette.SIZE_CAPTION, false), 0, line);
+                t.add(gridCell(pct2(CorporateBond.yieldAtPrice(b.coupon(), b.remainingMonths(month), level.price())),
+                        Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, line);
+                t.add(gridCell(money(level.quantity()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
+                t.add(gridCell(String.valueOf(level.orders()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 3, line);
+                line++;
+            }
+            column.getChildren().add(t);
+        }
+        column.getChildren().add(statementNote(
+                "What rests on the book after the month's step: a bid under every ask, since whatever could "
+                + "meet has already traded. The orders are withdrawn at next month's step and posted again."));
     }
 
     /* =====================================================================

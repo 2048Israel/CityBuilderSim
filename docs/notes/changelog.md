@@ -8,6 +8,93 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
+### VERSION 0.7.12 — THE FIRMS SELL BONDS — 2026-09-25/26, DEPLOYED AND VERIFIED (tag 0926a), see `the-firms-sell-bonds.md`
+
+Corporate notes and bonds: Jerus's batch after 0.7.11 shipped with the
+bank's concentration open. There were eight rounds from an Opus implementer,
+with the orchestrating session keeping the gate, and an Opus docs pass. **It
+ships with HealthCheck red, on Jerus's word** ("Ship with it red, flagged").
+
+**Why.**
+- Jerus: *"notes are the loans businesses make to the banks, and bonds are
+  debts that they issue to investors… households can buy them, but banks also
+  buy them as, only if it wants, and yes they are tradeable so they have par
+  value and all."*
+- 0.7.11's failures were concentration: one industrial borrower owed five to
+  six times the bank's equity.
+
+**What shipped.**
+- **The bond** (`CorporateBond`, `BondMarket`, `OrderBook`):
+  - a 10-year bullet with monthly coupons, bookbuilt at par, underwritten by
+    the bank for $12k + 0.75%;
+  - a borrower takes the largest bond no dearer than the loan, and loan plus
+    bond never pass what the bank would lend;
+  - it trades on an order book whose orders are good for a month. Each
+    household cell, companies with idle cash, the world, and the bank (only
+    over its capital target) post from their own existing rules.
+- **Concentration is priced, not capped** (Basel IRB with a Herfindahl
+  correlation, Euler-allocated; the 1.25 multiplier kept and flagged).
+- **Recoveries by instrument:** `LOAN_RECOVERY` .75 and `BOND_RECOVERY` .45,
+  Moody's and S&P's long-run midpoints.
+- **Nothing lent past the default point** (`INSOLVENCY_TRIGGER` 1.5), read on
+  the quarter.
+- **Shares on the same book.**
+  - The dealer's quote is gone. The desk is a participant, capped at 25% of
+    the bank's equity per company and 50% overall, and it offers any excess at
+    fair value.
+  - A company's price is its last trade. Valuation reads the dividend paid,
+    which is net income less net repayment (FCFE).
+  - A buyback is an open-market bid. Unspent cash stays in the company, and no
+    special dividend is paid by any path.
+- **Households trade as their cell types,** holding their bonds and shares by
+  cell name. Shares rebalance on the bond rule (`OUT_SPEED`/`HOME_SPEED`).
+- **How a firm that can't pay ends** (rounds 4–8, each rule Jerus's):
+  - **the cash-flow test,** BIA s. 2: a short month sells what it holds,
+    borrows, then defaults a slice sized to what it can't pay;
+  - **credit lines stay open:** capital rationing cuts growth lending only;
+  - **interim financing:** after the write-down the unpaid rest is a
+    first-ranking `InterimLoan` (CCAA s. 11.2, US §364), with the backstop if
+    nobody will lend;
+  - **"buy only what it can pay for"** for stock and fleets; a maker's inputs
+    are bought whole.
+- **Bugs fixed on the way:**
+  - Luxury Retail's two-month swing: a price nobody paid.
+  - The distress rule could never sell plant making a second good (Business
+    Services, 1,151 losing months).
+  - A project loan's and the shortfall bond's fees.
+  - DenominationCheck's dust thresholds.
+  - A new sector reading a quarter of nothing.
+  - The lender now reads each sheet valued that month.
+- **Screens:** Finances' bond market and bond books, the Sector page's owners'
+  book and last trade, the Bank tab's desk caps, interim financing on the
+  sector and Bank pages. `SAVE_FORMAT` stays 27.
+
+**What it found (8 seeds a setup).**
+
+| failures | 0.7.11 | shipped |
+|---|---:|---:|
+| default | 115 | 1 |
+| autopilot | 265 | 9 |
+| held at 10% | 213 | 77 |
+| held at 25% | 63 | 27 |
+
+- **Rescue money:** $134.7B → $3.1B (default) and $228.8B → $2.0B
+  (autopilot).
+- **Money created** by forgiven overdrafts: $19.9B in round 4, $0.095B at the
+  end.
+- **Recoveries:** loans 74.8%, bonds 44.9%.
+- **What fails the bank now** is the young bank on its founding capital,
+  before month 1000, on Manufacturing or Automotive.
+- **HealthCheck, read over a year** (Jerus's change): the dear-care city is
+  8.4 points hungrier than the free one, against a tolerance of 5. It has been
+  over since round 4, and nearly half of it is untraced.
+- **The docs pass** found four stale player-facing strings ("loans paid first",
+  "the desk's quote", "owes the bank" over bonds) and a reform gap in
+  `BondMarket.redenominate()`. All were fixed at the gate.
+
+**The tree:** 223 source files, ~168,000 lines, 953 dials, 63 harnesses (62
+green, HealthCheck red). 275 files were deployed, plus the three notes copies.
+
 ### VERSION 0.7.11 — THE LANDLORDS TAKE A MORTGAGE — 2026-09-24, DEPLOYED AND VERIFIED (tag 0924c), see `the-landlords-take-a-mortgage.md`
 
 The "housing against the rate" step of the order agreed in

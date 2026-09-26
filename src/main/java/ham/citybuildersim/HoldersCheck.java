@@ -332,7 +332,8 @@ public class HoldersCheck {
         quietly(() -> city.saveGame(4, "before the holders"));
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
                 Files.readString(files.saveFile(4))).getAsJsonObject();
-        // The cell array one slot shorter a cell - the paper was the last slot.
+        // The cell array two slots shorter a cell - the paper was the last
+        // slot, and the businesses' bonds have come after it since 0.7.12.
         com.google.gson.JsonArray keys = json.getAsJsonArray("householdCellKeys");
         com.google.gson.JsonArray cells = json.getAsJsonArray("householdCells");
         assertTrue("fixture: the save carries the cells", keys != null && cells != null);
@@ -340,7 +341,7 @@ public class HoldersCheck {
         assertTrue("fixture: at today's width", slots == HouseholdBalance.CELL_SLOTS);
         com.google.gson.JsonArray shorter = new com.google.gson.JsonArray();
         for (int c = 0; c < n; c++) {
-            for (int s = 0; s < slots - 1; s++) shorter.add(cells.get(c * slots + s));
+            for (int s = 0; s < slots - 2; s++) shorter.add(cells.get(c * slots + s));
         }
         for (int t = n * slots; t < cells.size(); t++) shorter.add(cells.get(t));
         json.add("householdCells", shorter);

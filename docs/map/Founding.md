@@ -1,6 +1,6 @@
 # Founding.java - 365 lines · 29 methods · 12 constants · model
 
-`ham/citybuildersim/Founding.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Founding.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > How a city was founded: its name, its money's name, and the treasury and the vault the founders left it.
 > 
@@ -36,7 +36,7 @@
 
 **Uses:** [Currency](Currency.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (7), [WorldEconomy](WorldEconomy.md) (3), [Game](Game.md) (2), [Good](Good.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [BuildingManager](BuildingManager.md) (1)
 
-**Used by (33):** [BankCheck](BankCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [ConservationCheck](ConservationCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [CurrencyCheck](CurrencyCheck.md), [DataSave](DataSave.md), [DenominationCheck](DenominationCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [HealthCheck](HealthCheck.md), [HouseholdCheck](HouseholdCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MonetaryCheck](MonetaryCheck.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [OutsideCheck](OutsideCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SicknessCheck](SicknessCheck.md), [UserInterface](UserInterface.md), [VanCheck](VanCheck.md)
+**Used by (34):** [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [ConservationCheck](ConservationCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [CurrencyCheck](CurrencyCheck.md), [DataSave](DataSave.md), [DenominationCheck](DenominationCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [HealthCheck](HealthCheck.md), [HouseholdCheck](HouseholdCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MonetaryCheck](MonetaryCheck.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [OutsideCheck](OutsideCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SicknessCheck](SicknessCheck.md), [UserInterface](UserInterface.md), [VanCheck](VanCheck.md)
 
 ## Sections
 

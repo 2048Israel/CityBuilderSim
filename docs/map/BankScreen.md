@@ -1,6 +1,6 @@
-# BankScreen.java - 1,841 lines · 33 methods · 4 constants · interface
+# BankScreen.java - 2,007 lines · 33 methods · 4 constants · interface
 
-`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The bank tab: whether the city's bank is healthy and why, on one landing -
 > a sentence, a scorecard and the ladder of its rates - with its profit, its
@@ -29,9 +29,9 @@
 > scroll position (UserInterface.scrolled()) and the lines the player has
 > opened (openLines) all survive a redraw.
 
-**Uses:** [Palette](Palette.md) (332), [Bank](Bank.md) (125), [BusinessDebtManager](BusinessDebtManager.md) (15), [Mortgage](Mortgage.md) (9), [Ladder](Ladder.md) (4), [Sectors](Sectors.md) (4), [Equity](Equity.md) (4), [HistorySave](HistorySave.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [CentralBank](CentralBank.md) (3), [UserInterface](UserInterface.md) (2), [DebtManager](DebtManager.md) (1), [CityCalendar](CityCalendar.md) (1), [Exchange](Exchange.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [Palette](Palette.md) (350), [Bank](Bank.md) (134), [BusinessDebtManager](BusinessDebtManager.md) (19), [Equity](Equity.md) (10), [Mortgage](Mortgage.md) (9), [Exchange](Exchange.md) (7), [Sectors](Sectors.md) (6), [Ladder](Ladder.md) (4), [CorporateBond](CorporateBond.md) (4), [HistorySave](HistorySave.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [CentralBank](CentralBank.md) (3), [UserInterface](UserInterface.md) (2), [BondMarket](BondMarket.md) (2), [OrderBook](OrderBook.md) (2), [DebtManager](DebtManager.md) (1), [CityCalendar](CityCalendar.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (2):** [SectorScreen](SectorScreen.md), [UserInterface](UserInterface.md)
+**Used by (3):** [FinancesScreen](FinancesScreen.md), [SectorScreen](SectorScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -43,39 +43,41 @@
 | 162 | · · behind it |
 | 220 | · the scorecard |
 | 369 | · the rate ladder |
-| 438 | · · the borrowers |
-| 627 | THE PAGES BEHIND IT |
-| 687 | PROFIT |
-| 776 | · · and what it did with it |
-| 785 | · · the last twelve months |
-| 805 | · · as ratios |
-| 903 | LENDING |
-| 919 | · · who owes it |
-| 940 | · · the businesses |
-| 1006 | · · the landlords' mortgages |
-| 1052 | · · the families |
-| 1077 | · · what it set aside |
-| 1096 | · · who has stopped paying |
-| 1141 | · · what it lent this month |
-| 1161 | · · how the next loan is priced |
-| 1233 | · · what the book weighs |
-| 1275 | FUNDING |
-| 1293 | · · what is banked |
-| 1310 | · · what it can reach |
-| 1339 | · · what it pays savers |
-| 1362 | · · its account at the central bank |
-| 1379 | · · how it is funded |
-| 1394 | · · what it can carry |
-| 1492 | · · ...and whether one should close (0.7.11, round 2) |
-| 1517 | CAPITAL & OWNERS |
-| 1534 | · · its capital |
-| 1552 | · · ...and against everything it has lent (0.7.11, round 2) |
-| 1579 | · · what it does with its profit |
-| 1607 | · · how its equity moved |
-| 1644 | · · its owners |
-| 1651 | · · its rescues |
-| 1680 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
-| 1744 | HISTORY |
+| 445 | · · the borrowers |
+| 659 | THE PAGES BEHIND IT |
+| 719 | PROFIT |
+| 815 | · · and what it did with it |
+| 824 | · · the last twelve months |
+| 845 | · · as ratios |
+| 991 | LENDING |
+| 1007 | · · who owes it |
+| 1034 | · · the businesses |
+| 1102 | · · the landlords' mortgages |
+| 1148 | · · the families |
+| 1173 | · · what it set aside |
+| 1192 | · · who has stopped paying |
+| 1237 | · · what it lent this month |
+| 1259 | · · how the next loan is priced |
+| 1331 | · · what the book weighs |
+| 1364 | · · the businesses' bonds it holds (0.7.12) |
+| 1393 | · · what concentration costs (0.7.12) |
+| 1441 | FUNDING |
+| 1459 | · · what is banked |
+| 1476 | · · what it can reach |
+| 1505 | · · what it pays savers |
+| 1528 | · · its account at the central bank |
+| 1545 | · · how it is funded |
+| 1560 | · · what it can carry |
+| 1658 | · · ...and whether one should close (0.7.11, round 2) |
+| 1683 | CAPITAL & OWNERS |
+| 1700 | · · its capital |
+| 1718 | · · ...and against everything it has lent (0.7.11, round 2) |
+| 1745 | · · what it does with its profit |
+| 1773 | · · how its equity moved |
+| 1810 | · · its owners |
+| 1817 | · · its rescues |
+| 1846 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
+| 1910 | HISTORY |
 
 ## Constants
 
@@ -99,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 1789 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and why, on one landing - a sentence, a scorecard and the ladder of its rates - with its profit, its lending, its funding, its capital and owners, and its history behin... |
+| 53 | 1955 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and why, on one landing - a sentence, a scorecard and the ladder of its rates - with its profit, its lending, its funding, its capital and owners, and its history behin... |
 | 58 | 1 | `BankScreen(UserInterface ui)` |  |
 
 ### THE BANK AT A GLANCE (lines 60-87)
@@ -126,63 +128,63 @@
 | 261 | 23 | `VBox capitalCell(Bank bank)` | The capital ratio with its band drawn under it: the minimum, the bank's own target and the top of its band, and where it stands against them. |
 | 296 | 72 | `Pane capitalBand(Bank bank, double width, boolean labelled)` | The capital ratio on a bar, with the minimum, the target and the top of the band marked on it. |
 
-### the rate ladder (lines 369-626)
+### the rate ladder (lines 369-658)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 381 | 123 | `void ladder(VBox column, Bank bank)` | THE LADDER OF ITS RATES, the landing's centrepiece: the policy rate; what savers get, a share of it; what a prime loan's money costs the bank; prime, with its four parts; and what each borrower pays - every rung with ... |
-| 506 | 12 | `static String saversWhy(Bank.Ladder l)` | Why savers get what they get: the share its funding asks for, and whether its margin held them under it. |
-| 524 | 56 | `VBox rung(String name, double value, double top, String colour, String step, String explain, Runnable go)` | One rung: its name (a link where the rate is set somewhere else), a bar on the ladder's one scale, the rate, and under them its step from the rung it is built on and what the step is for. |
-| 582 | 6 | `void openPage(String page)` | Opens one page behind the landing, at its top - the landing's rows, and the inbox's "defaults" notice (0.7.8). |
-| 590 | 36 | `HBox bankRow(String name, String blurb, String figure, String sub, String tone, String page)` | One page on the landing: what it holds, and its headline. |
+| 381 | 155 | `void ladder(VBox column, Bank bank)` | THE LADDER OF ITS RATES, the landing's centrepiece: the policy rate; what savers get, a share of it; what a prime loan's money costs the bank; prime, with its four parts; and what each borrower pays - every rung with ... |
+| 538 | 12 | `static String saversWhy(Bank.Ladder l)` | Why savers get what they get: the share its funding asks for, and whether its margin held them under it. |
+| 556 | 56 | `VBox rung(String name, double value, double top, String colour, String step, String explain, Runnable go)` | One rung: its name (a link where the rate is set somewhere else), a bar on the ladder's one scale, the rate, and under them its step from the rung it is built on and what the step is for. |
+| 614 | 6 | `void openPage(String page)` | Opens one page behind the landing, at its top - the landing's rows, and the inbox's "defaults" notice (0.7.8). |
+| 622 | 36 | `HBox bankRow(String name, String blurb, String figure, String sub, String tone, String page)` | One page on the landing: what it holds, and its headline. |
 
-### THE PAGES BEHIND IT (lines 627-686)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 635 | 36 | `void drawBankScreen()` |  |
-| 673 | 13 | `HBox pageVitals()` | The four figures across the top of every page. |
-
-### PROFIT (lines 687-902)
+### THE PAGES BEHIND IT (lines 659-718)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 697 | 131 | `void profitPage(VBox column)` |  |
-| 830 | 4 | `HBox line(Bank bank, String label, Bank.Line which, boolean known, boolean out)` | One statement line, this month and last - negated for money going out. |
-| 836 | 4 | `VBox total(Bank bank, String label, Bank.Line which, boolean known)` | One total, this month and last. |
-| 842 | 4 | `void year(VBox column, Bank bank, String label, Bank.Line which, boolean out)` | One line of the year, negated for money going out. |
-| 855 | 47 | `VBox deskDetail(Bank bank)` | THE TRADING DESK, opened (2026-09-18, and so it foots). |
+| 667 | 36 | `void drawBankScreen()` |  |
+| 705 | 13 | `HBox pageVitals()` | The four figures across the top of every page. |
 
-### LENDING (lines 903-1274)
+### PROFIT (lines 719-990)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 913 | 349 | `void lendingPage(VBox column)` |  |
-| 1264 | 10 | `static String bookName(Bank.Book book)` | What the weight table calls each book. |
+| 729 | 139 | `void profitPage(VBox column)` |  |
+| 870 | 4 | `HBox line(Bank bank, String label, Bank.Line which, boolean known, boolean out)` | One statement line, this month and last - negated for money going out. |
+| 876 | 4 | `VBox total(Bank bank, String label, Bank.Line which, boolean known)` | One total, this month and last. |
+| 882 | 4 | `void year(VBox column, Bank bank, String label, Bank.Line which, boolean out)` | One line of the year, negated for money going out. |
+| 895 | 95 | `VBox deskDetail(Bank bank)` | THE TRADING DESK, opened (2026-09-18, and so it foots). |
 
-### FUNDING (lines 1275-1516)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1287 | 131 | `void fundingPage(VBox column)` |  |
-| 1427 | 89 | `void branches(VBox column, Bank bank)` | ITS BRANCHES, and whether another would pay - the model's own verdict, both halves of Bank.wantsBranch(): does it relieve anything (the book spilling past what the bank comfortably carries), and would it earn its keep... |
-
-### CAPITAL & OWNERS (lines 1517-1679)
+### LENDING (lines 991-1440)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1529 | 144 | `void capitalPage(VBox column)` |  |
-| 1675 | 4 | `void moved(VBox column, String label, double amount, String tone)` | One cause of the equity's movement, printed only when it moved it. |
+| 1001 | 425 | `void lendingPage(VBox column)` |  |
+| 1428 | 12 | `static String bookName(Bank.Book book)` | What the weight table calls each book. |
 
-### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 1680-1743)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1694 | 49 | `VBox bankRescue()` |  |
-
-### HISTORY (lines 1744-1841)
+### FUNDING (lines 1441-1682)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1760 | 81 | `void historyPage(VBox column)` |  |
+| 1453 | 131 | `void fundingPage(VBox column)` |  |
+| 1593 | 89 | `void branches(VBox column, Bank bank)` | ITS BRANCHES, and whether another would pay - the model's own verdict, both halves of Bank.wantsBranch(): does it relieve anything (the book spilling past what the bank comfortably carries), and would it earn its keep... |
+
+### CAPITAL & OWNERS (lines 1683-1845)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1695 | 144 | `void capitalPage(VBox column)` |  |
+| 1841 | 4 | `void moved(VBox column, String label, double amount, String tone)` | One cause of the equity's movement, printed only when it moved it. |
+
+### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 1846-1909)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1860 | 49 | `VBox bankRescue()` |  |
+
+### HISTORY (lines 1910-2007)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1926 | 81 | `void historyPage(VBox column)` |  |
 

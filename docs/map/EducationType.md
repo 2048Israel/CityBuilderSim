@@ -1,6 +1,6 @@
 # EducationType.java - 191 lines · 11 methods · 0 constants · model
 
-`ham/citybuildersim/EducationType.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EducationType.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > What a school actually teaches.
 > 

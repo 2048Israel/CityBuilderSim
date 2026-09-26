@@ -1,6 +1,6 @@
 # OutsideCheck.java - 678 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/OutsideCheck.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OutsideCheck.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The people outside the families: the out of work, the students, the
 > unhoused and the orphans (2026-09-11).

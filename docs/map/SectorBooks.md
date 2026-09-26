@@ -1,6 +1,6 @@
-# SectorBooks.java - 422 lines · 21 methods · 0 constants · model
+# SectorBooks.java - 450 lines · 21 methods · 0 constants · model
 
-`ham/citybuildersim/SectorBooks.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorBooks.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > A month of books for every business in the city, and last month's too.
 > 
@@ -26,70 +26,70 @@
 
 **Uses:** [Sector](Sector.md) (5), [Game](Game.md) (2), [EconomyManager](EconomyManager.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Statement](Statement.md) (1), [BalanceSheet](BalanceSheet.md) (1)
 
-**Used by (13):** [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CrimeCheck](CrimeCheck.md), [DataSave](DataSave.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MortgageCheck](MortgageCheck.md), [PolicyScreen](PolicyScreen.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (14):** [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [DataSave](DataSave.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MortgageCheck](MortgageCheck.md), [PolicyScreen](PolicyScreen.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 239 | THE TWO MONTHS |
-| 269 | THE MONTH |
-| 351 | SAVE AND RESTORE |
-| 391 | A REFORM |
+| 260 | THE TWO MONTHS |
+| 290 | THE MONTH |
+| 377 | SAVE AND RESTORE |
+| 417 | A REFORM |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 243 | `private final Map<String, SectorMonth> now` |  |
-| 244 | `private final Map<String, SectorMonth> before` |  |
-| 247 | `private final Map<String, Double> lastCash` | Closing cash from the month just recorded, which is next month's opening. |
+| 264 | `private final Map<String, SectorMonth> now` |  |
+| 265 | `private final Map<String, SectorMonth> before` |  |
+| 268 | `private final Map<String, Double> lastCash` | Closing cash from the month just recorded, which is next month's opening. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 392 | **type** `public final class SectorBooks` | A month of books for every business in the city, and last month's too. |
-| 40 | 198 | **type** `public record SectorMonth(String sector, int month, double revenue, double inputs, double payroll, double e...` | One sector's month. |
-| 188 | 3 | `public double equity()` _(in SectorBooks.SectorMonth)_ | What the sheet says the owners have. |
-| 192 | 3 | `public double totalAssets()` _(in SectorBooks.SectorMonth)_ |  |
-| 197 | 3 | `public double operatingCost()` _(in SectorBooks.SectorMonth)_ | Everything above operating income: goods bought, payroll, utilities, repairs. |
-| 210 | 7 | `public double unexplained()` _(in SectorBooks.SectorMonth)_ | What the cash flow statement adds up to, against what the cash actually is. |
-| 218 | 3 | `public double margin()` _(in SectorBooks.SectorMonth)_ |  |
-| 223 | 10 | `public static SectorMonth none(String sector)` _(in SectorBooks.SectorMonth)_ | An empty month, for a sector that has not been recorded yet. |
-| 234 | 3 | `public boolean isEmpty()` _(in SectorBooks.SectorMonth)_ |  |
+| 31 | 420 | **type** `public final class SectorBooks` | A month of books for every business in the city, and last month's too. |
+| 40 | 219 | **type** `public record SectorMonth(String sector, int month, double revenue, double inputs, double payroll, double e...` | One sector's month. |
+| 205 | 3 | `public double equity()` _(in SectorBooks.SectorMonth)_ | What the sheet says the owners have. |
+| 209 | 3 | `public double totalAssets()` _(in SectorBooks.SectorMonth)_ |  |
+| 214 | 3 | `public double operatingCost()` _(in SectorBooks.SectorMonth)_ | Everything above operating income: goods bought, payroll, utilities, repairs. |
+| 227 | 10 | `public double unexplained()` _(in SectorBooks.SectorMonth)_ | What the cash flow statement adds up to, against what the cash actually is. |
+| 238 | 3 | `public double margin()` _(in SectorBooks.SectorMonth)_ |  |
+| 243 | 11 | `public static SectorMonth none(String sector)` _(in SectorBooks.SectorMonth)_ | An empty month, for a sector that has not been recorded yet. |
+| 255 | 3 | `public boolean isEmpty()` _(in SectorBooks.SectorMonth)_ |  |
 
-### THE TWO MONTHS (lines 239-268)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 249 | 1 | `public SectorMonth get(Sector sector)` |  |
-| 250 | 1 | `public SectorMonth previous(Sector sector)` |  |
-| 252 | 3 | `public SectorMonth get(String key)` |  |
-| 256 | 3 | `public SectorMonth previous(String key)` |  |
-| 260 | 4 | `public boolean hasComparatives()` |  |
-| 265 | 3 | `public boolean isEmpty()` |  |
-
-### THE MONTH (lines 269-350)
+### THE TWO MONTHS (lines 260-289)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 278 | 14 | `public void takeMonth(Game game)` |  |
-| 303 | 47 | `private SectorMonth read(Game game, Sector sector)` | One sector's figures, off the statement it struck this month and the flows the city recorded against its name. |
+| 270 | 1 | `public SectorMonth get(Sector sector)` |  |
+| 271 | 1 | `public SectorMonth previous(Sector sector)` |  |
+| 273 | 3 | `public SectorMonth get(String key)` |  |
+| 277 | 3 | `public SectorMonth previous(String key)` |  |
+| 281 | 4 | `public boolean hasComparatives()` |  |
+| 286 | 3 | `public boolean isEmpty()` |  |
 
-### SAVE AND RESTORE (lines 351-390)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 364 | 1 | `public java.util.List<SectorMonth> thisMonth()` |  |
-| 365 | 1 | `public java.util.List<SectorMonth> lastMonth()` |  |
-| 367 | 3 | `private static java.util.List<SectorMonth> list(Map<String, SectorMonth> from)` |  |
-| 371 | 19 | `public void restoreFrom(java.util.List<SectorMonth> saved, java.util.List<SectorMonth> savedBefore)` |  |
-
-### A REFORM (lines 391-422)
+### THE MONTH (lines 290-376)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 402 | 5 | `public void redenominate(double scale)` |  |
-| 408 | 14 | `private static SectorMonth scaled(SectorMonth m, double s)` |  |
+| 299 | 14 | `public void takeMonth(Game game)` |  |
+| 324 | 52 | `private SectorMonth read(Game game, Sector sector)` | One sector's figures, off the statement it struck this month and the flows the city recorded against its name. |
+
+### SAVE AND RESTORE (lines 377-416)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 390 | 1 | `public java.util.List<SectorMonth> thisMonth()` |  |
+| 391 | 1 | `public java.util.List<SectorMonth> lastMonth()` |  |
+| 393 | 3 | `private static java.util.List<SectorMonth> list(Map<String, SectorMonth> from)` |  |
+| 397 | 19 | `public void restoreFrom(java.util.List<SectorMonth> saved, java.util.List<SectorMonth> savedBefore)` |  |
+
+### A REFORM (lines 417-450)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 428 | 5 | `public void redenominate(double scale)` |  |
+| 434 | 16 | `private static SectorMonth scaled(SectorMonth m, double s)` |  |
 

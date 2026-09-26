@@ -1,6 +1,6 @@
 # Mortgage.java - 458 lines · 35 methods · 10 constants · model
 
-`ham/citybuildersim/Mortgage.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Mortgage.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > An insured mortgage on a new residential building: a level payment every
 > month over a forty-year amortization, at a rate fixed for a ten-year term
@@ -66,7 +66,7 @@
 
 **Uses:** [Bank](Bank.md) (2), [BusinessDebt](BusinessDebt.md) (1), [Formats](Formats.md) (1)
 
-**Used by (9):** [Bank](Bank.md), [BankScreen](BankScreen.md), [BusinessDebtManager](BusinessDebtManager.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LongPlaytest](LongPlaytest.md), [MortgageCheck](MortgageCheck.md), [ReadPathCheck](ReadPathCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (11):** [Bank](Bank.md), [BankScreen](BankScreen.md), [BusinessDebtManager](BusinessDebtManager.md), [CorporateBond](CorporateBond.md), [CreditCheck](CreditCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LongPlaytest](LongPlaytest.md), [MortgageCheck](MortgageCheck.md), [ReadPathCheck](ReadPathCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

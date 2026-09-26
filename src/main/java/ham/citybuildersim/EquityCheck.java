@@ -195,13 +195,31 @@ public class EquityCheck {
         close("a company's first shares sell at the founding price", priced.getLastPrice(INDUSTRY), Equity.FOUNDING_PRICE, 1e-9);
         priced.offer(INDUSTRY, 100, 400, buyers, DebtManager.WORLD_BASE_RATE);   // book $400k on 100 shares: $4k a share
         close("the next sell at book per share", priced.getLastPrice(INDUSTRY), 400 / sharesAtFounding, 1e-9);
-        Equity earning = withRecord(INDUSTRY, profits);
+        /*
+         * ...ON THE DIVIDEND IT ACTUALLY PAID since 0.7.12 round 2 (the brief:
+         * participants value a share on what it pays, which since 0.7.11 is
+         * paid after principal). This company owes nothing, so it pays PAYOUT
+         * of its income - the fixture pays it, month by month, as
+         * Game.payDividends() would - and the value is what it was.
+         */
+        Equity earning = new Equity();
+        for (double v : profits) {
+            earning.recordMonth(INDUSTRY, v, 0);
+            earning.noteDividendPaid(INDUSTRY, Equity.PAYOUT * v);
+            earning.closeDividendMonth();
+        }
         earning.offer(INDUSTRY, 100, 0, buyers, DebtManager.WORLD_BASE_RATE);
         double earningsValue = Equity.PAYOUT * 1_200 / (DebtManager.WORLD_BASE_RATE + Equity.FOREIGN_PREMIUM);
         double before = earning.getShares(INDUSTRY);
         earning.offer(INDUSTRY, 100, 0.001, buyers, DebtManager.WORLD_BASE_RATE);   // no book, but earnings
-        close("...and a company with no book but earnings sells at the earnings' value, not for nothing",
+        close("...and a company with no book but earnings sells at the dividend's value, not for nothing",
                 earning.getLastPrice(INDUSTRY), earningsValue / before, 1e-9);
+        Equity unpaid = withRecord(INDUSTRY, profits);
+        unpaid.offer(INDUSTRY, 100, 0, buyers, DebtManager.WORLD_BASE_RATE);
+        double unpaidBefore = unpaid.getShares(INDUSTRY);
+        unpaid.offer(INDUSTRY, 100, 0.001, buyers, DebtManager.WORLD_BASE_RATE);
+        close("...while the same earnings with no dividend paid are worth only the book (round 2)",
+                unpaid.getLastPrice(INDUSTRY), 0.001 / unpaidBefore, 1e-9);
 
         /* ================= 6. the founders ================= */
         out.println("\n--- the founders own what they founded ---");

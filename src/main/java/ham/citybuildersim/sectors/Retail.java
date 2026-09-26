@@ -335,6 +335,7 @@ public final class Retail extends Sector {
         double serviceable = rDemand * getOperatingRate();
         int sold = (int) Math.floor(Math.min(serviceable, basketsOnShelf()));
         rProductsSold = sold;
+        noteShelfShort(Math.floor(serviceable) - sold, storeSellPrice);
         lastMonthSales = sold;
 
         if (sold > 0) {
@@ -581,6 +582,17 @@ public final class Retail extends Sector {
         extras.put("productsSold", (double) rProductsSold);
         extras.put("spendingCapacity", spendingCapacity);
         extras.put("wantedSpend", wantedSpend);
+        /*
+         * WHAT THE HOUSEHOLDS ASKED FOR, which the next month's hunger reads
+         * (0.7.12, round 2). getHouseholdShare() divides the month's sales by
+         * it, and HouseholdBalance.advanceMonth() reads that share one month
+         * late - so a save that dropped it came back with a share of one,
+         * nobody hungry, the sick rate a third lower and every sector's
+         * operating rate a tenth higher for the first month after a load. It
+         * was the reload that did not replay; see ReadPathCheck and
+         * SaveFileCheck. A count of baskets, so a reform does not scale it.
+         */
+        extras.put("householdWant", rHouseholdWant);
     }
 
     @Override
@@ -594,6 +606,7 @@ public final class Retail extends Sector {
         rProductsSold = (int) Math.round(extras.getOrDefault("productsSold", 0.0));
         spendingCapacity = extras.getOrDefault("spendingCapacity", 0.0);
         wantedSpend = extras.getOrDefault("wantedSpend", 0.0);
+        rHouseholdWant = extras.getOrDefault("householdWant", 0.0);
     }
 
     @Override
@@ -602,6 +615,7 @@ public final class Retail extends Sector {
         lastScarcityMultiple = lastDeliveredShare = 1;
         lastMonthSales = 0;
         rWantedDemand = rDemand = rProductsSold = 0;
+        rHouseholdWant = 0;
         spendingCapacity = wantedSpend = 0;
         population = 0;
     }

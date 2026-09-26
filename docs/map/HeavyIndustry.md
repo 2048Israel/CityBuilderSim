@@ -1,6 +1,6 @@
 # HeavyIndustry.java - 105 lines · 6 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The mills. Buy iron - local ore first, imported scrap for the rest - and
 > sell steel abroad, because nothing in the city buys steel.

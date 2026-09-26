@@ -17,6 +17,9 @@ import java.util.Map;
  *   1. the flow goods are made - a mine lifts what the ground allows
  *   2. the seller-priced goods are sold - the shops to the households, the
  *      landlords' doors - so a shelf that emptied is restocked below
+ *   2b. each buyer is told what it can pay for (0.7.12 round 6; Sector, BUY
+ *      ONLY WHAT IT CAN PAY FOR), so an order for stock it cannot pay for
+ *      is not placed; a maker's inputs are bought whole
  *   3. each traded good, in turn: priced off what the makers will bring and
  *      what the buyers intend; offered by the makers at that price; bid for
  *      by the users; allocated pro rata both ways; the buyers' shortfall
@@ -99,11 +102,24 @@ public final class Markets {
         // 2. the seller-priced goods
         for (Sector s : sectors.all()) s.sellOwnPriced(this, game);
 
+        /*
+         * 2b. WHAT EACH BUYER CAN PAY FOR (0.7.12 round 6), after the shops
+         * have sold, so the month's takings are in it, and before anybody
+         * orders. See Sector, BUY ONLY WHAT IT CAN PAY FOR. With no city to
+         * ask - a harness's bare market - nobody is limited.
+         */
+        for (Sector s : sectors.all()) {
+            double budget = game == null ? Double.POSITIVE_INFINITY : game.purchaseBudget(s);
+            // A maker's inputs come out of it first: they are bought whole.
+            s.openPurchases(budget - orderValue(s, false), orderValue(s, true));
+        }
+
         // 3. the traded goods, in turn
         for (Good g : Good.values()) {
             if (!g.traded()) continue;
             clear(g, sectors);
         }
+        for (Sector s : sectors.all()) s.closePurchases();
 
         // 4. into the warehouses, for next month
         for (Sector s : sectors.all()) {
@@ -114,6 +130,20 @@ public final class Markets {
 
         // 5. the month's loose ends
         for (Sector s : sectors.all()) s.endOfMonth(game);
+    }
+
+    /** What a sector's orders this month would come to, each at what a unit costs to bring in (GoodsMarket.landedPrice()): its orders for stock, or its inputs. */
+    private double orderValue(Sector s, boolean stock) {
+        double total = 0;
+        for (Good g : Good.values()) {
+            if (!g.traded() || !s.isUser(g) || s.hasPantry(g) != stock) continue;
+            GoodsMarket m = markets.get(g);
+            if (m == null) continue;
+            double units = Math.max(0, s.bid(g));
+            double unit = m.landedPrice();
+            if (units > 0 && unit > 0 && Double.isFinite(unit)) total += units * unit;
+        }
+        return total;
     }
 
     /** Prices one good, then everybody trades it. */
@@ -136,8 +166,13 @@ public final class Markets {
             held += s.getStock(g);
         }
         double[] bids = new double[users.size()];
+        double[] asked = new double[users.size()];
         for (int j = 0; j < users.size(); j++) {
-            bids[j] = Math.max(0, users.get(j).bid(g));
+            asked[j] = Math.max(0, users.get(j).bid(g));
+            // ...the share of an order for stock the buyer can pay for (0.7.12
+            // round 6): an order it cannot pay for is not placed, so it is not
+            // demand. A maker's input is bought whole - see Sector.
+            bids[j] = users.get(j).hasPantry(g) ? asked[j] * users.get(j).purchaseShare() : asked[j];
             wanted += bids[j];
         }
         // ...and what was drawn on demand since the last strike counts as wanted too
@@ -155,6 +190,27 @@ public final class Markets {
             offered += offers[i];
             m.noteOffered(offers[i]);
         }
+        /*
+         * ...AND NEVER PAST WHAT IS LEFT OF IT, at what a unit will cost this
+         * buyer now the price is struck: the local price on the share the
+         * makers can fill, the import price on the rest. Cutting an order only
+         * raises the share filled at home, never above the import price, so
+         * what it is charged cannot pass what it had left. A good the world
+         * does not sell is only ever filled at home, at the price.
+         */
+        double asking = 0;
+        for (double b : bids) asking += b;
+        // ...and with every order cut to nothing, the share the makers could
+        // have filled: all of it at home if anybody here offers, none if not.
+        double filled = asking > 0 ? Math.min(1, offered / asking) : offered > 0 ? 1 : 0;
+        double unit = g.importable() ? filled * price + (1 - filled) * m.importPrice() : price;
+        double unitValue = g.importable() ? unit : filled * price;
+        for (int j = 0; j < users.size(); j++) {
+            Sector u = users.get(j);
+            if (u.hasPantry(g) && unit > 0 && bids[j] * unit > u.purchasesLeft()) bids[j] = u.purchasesLeft() / unit;
+            u.noteForgone(g, asked[j] - bids[j], (asked[j] - bids[j]) * unitValue);
+        }
+
         double bid = 0;
         for (int j = 0; j < users.size(); j++) {
             users.get(j).input(g).bid = bids[j];

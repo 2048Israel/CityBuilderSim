@@ -1,6 +1,6 @@
-# LuxuryRetail.java - 362 lines · 15 methods · 2 constants · sectors
+# LuxuryRetail.java - 408 lines · 16 methods · 2 constants · sectors
 
-`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The luxury shops. THE FOURTEENTH SECTOR (2026-09-17, Jerus's call).
 > 
@@ -57,18 +57,19 @@
 > falls rather than going round again. If a domestic maker ever appears, that
 > is import substitution, and it is something a player should have to earn.
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (3), [Markets](Markets.md) (2), [Trade](Trade.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (3), [Markets](Markets.md) (2), [Trade](Trade.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (2):** [LuxuryCounter](LuxuryCounter.md), [Sectors](Sectors.md)
+**Used by (3):** [EconomyManager](EconomyManager.md), [LuxuryCounter](LuxuryCounter.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 74 | THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT |
-| 122 | THE SALE |
-| 229 | PLANNING - the queue at a door that is not there |
-| 328 | THE SCREEN |
+| 101 | WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG |
+| 169 | THE SALE |
+| 275 | PLANNING - the queue at a door that is not there |
+| 374 | THE SCREEN |
 
 ## Constants
 
@@ -82,46 +83,49 @@
 | line | field | says |
 |---:|---|---|
 | 99 | `private double sellPrice` | What one shop's counter is worth a month, before anybody has told it anything. |
-| 102 | `private double rMargin` | The month's reading, for the screen and the harness. |
+| 149 | `private double rMargin` | The month's reading, for the screen and the harness. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 291 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
+| 72 | 337 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
 
-### THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT (lines 74-121)
+### THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT (lines 74-100)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 104 | 17 | `public LuxuryRetail()` |  |
-
-### THE SALE (lines 122-228)
+### WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG (lines 101-168)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 127 | 4 | `public int coverage()` | People the shops can serve a month, off their buildings. |
-| 132 | 1 | `public double getMargin()` |  |
-| 133 | 1 | `public double getWanted()` |  |
-| 134 | 1 | `public double getServed()` |  |
-| 135 | 1 | `public double getCoverage()` |  |
-| 136 | 1 | `public double getLanded()` |  |
-| 137 | 1 | `public double getSellPrice()` |  |
-| 152 | 24 | `public double strikeMargin(Markets markets, double wanted)` | Strikes the margin against the queue and returns what a piece will cost this month. |
-| 187 | 17 | `public double serve(Markets markets, double pieces)` | ...and sells what the counter and the shelf can actually get through. |
-| 206 | 1 | `public double onShelf()` | What the shops hold, in pieces. |
-| 224 | 4 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
+| 142 | 5 | `public static double landedCost(GoodsMarket wholesale)` | What one piece costs the shop to bring in: the local price when the city has luxuries on offer, the import price when it has none. |
+| 151 | 17 | `public LuxuryRetail()` |  |
 
-### PLANNING - the queue at a door that is not there (lines 229-327)
+### THE SALE (lines 169-274)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 254 | 46 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who CAME, not against a sales record. |
-| 317 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
+| 174 | 4 | `public int coverage()` | People the shops can serve a month, off their buildings. |
+| 179 | 1 | `public double getMargin()` |  |
+| 180 | 1 | `public double getWanted()` |  |
+| 181 | 1 | `public double getServed()` |  |
+| 182 | 1 | `public double getCoverage()` |  |
+| 183 | 1 | `public double getLanded()` |  |
+| 184 | 1 | `public double getSellPrice()` |  |
+| 199 | 22 | `public double strikeMargin(Markets markets, double wanted)` | Strikes the margin against the queue and returns what a piece will cost this month. |
+| 232 | 18 | `public double serve(Markets markets, double pieces)` | ...and sells what the counter and the shelf can actually get through. |
+| 252 | 1 | `public double onShelf()` | What the shops hold, in pieces. |
+| 270 | 4 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
 
-### THE SCREEN (lines 328-362)
+### PLANNING - the queue at a door that is not there (lines 275-373)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 333 | 29 | `public List<Line> operations(Game game)` |  |
+| 300 | 46 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who CAME, not against a sales record. |
+| 363 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
+
+### THE SCREEN (lines 374-408)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 379 | 29 | `public List<Line> operations(Game game)` |  |
 

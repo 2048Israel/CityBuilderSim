@@ -130,6 +130,7 @@ public abstract class Sector {
     public final Set<Good> goodsUsed() { return Collections.unmodifiableSet(uses); }
     public final boolean isMaker(Good g) { return makes.contains(g); }
     public final boolean isUser(Good g)  { return uses.contains(g); }
+    /** True for a good it keeps on hand and restocks - a shelf, a larder, a fleet - and so, since 0.7.12 round 6, what a budget can cut (BUY ONLY WHAT IT CAN PAY FOR); false for a maker's input, consumed as it makes. */
     public final boolean hasPantry(Good g) { return pantryMonths.containsKey(g); }
 
     /* ===================================================================
@@ -874,6 +875,10 @@ public abstract class Sector {
     /** A purchase of this sector's, booked. */
     protected void bookPurchase(Trade t) {
         if (t == null) return;
+        // ...stock out of what the clearing lets it pay for (0.7.12 round 6).
+        if (purchasesLeft != Double.POSITIVE_INFINITY && hasPantry(t.good())) {
+            purchasesLeft = Math.max(0, purchasesLeft - t.value());
+        }
         if (t.isImport()) pending.imports += t.value();
         else pending.purchasesBySupplier.merge(t.seller(), t.value(), Double::sum);
         pending.unitsBought.merge(t.good(), t.units(), Double::sum);
@@ -883,6 +888,135 @@ public abstract class Sector {
         if (t.isImport()) in.imported += t.units();
         else              in.boughtLocal += t.units();
     }
+
+    /* =====================================================================
+       BUY ONLY WHAT IT CAN PAY FOR (0.7.12, round 6)
+
+       Jerus, 2026-09-25: "A firm short of credit cuts its inventory, as firms
+       did in 1981-82: bank-dependent firms shed inventories much faster than
+       those that were not (Kashyap, Lamont & Stein, 'Credit Conditions and
+       the Cyclical Behavior of Inventories', QJE 109(3), 1994). A firm
+       restocks only as far as its cash and the credit it can get reach.
+       Default is kept for bills it cannot avoid: wages, interest, principal
+       that fell due, and tax."
+
+       WHAT IT CAN PAY FOR is handed to each buyer as the markets clear
+       (Markets.clearMonth(), off EconomyManager.purchaseBudget()): its till
+       as the next strike will find it before anything bought now - the cash,
+       and what the month has booked in and out so far - less every bill the
+       strike and the settle take first, plus what the settle could raise:
+       its dollars abroad, the other sectors' bonds it holds, and the
+       working-capital line up to MAX_LOAN_TO_ASSETS, inside the default
+       point on its quarter, as round 5 left it.
+
+       WHAT IT CAN AVOID is its STOCK - what it keeps on hand and restocks,
+       its pantry goods (hasPantry()): a retailer's shelves, a kitchen's larder, the
+       boutiques' cases, and every sector's fleet of vans and trains. When
+       those orders will not all fit, each is cut in the same proportion
+       (purchaseShare()), and none is filled past what is left at what a unit
+       will actually cost it (purchasesLeft()).
+
+       A MAKER'S INPUTS ARE NOT, IN THIS MODEL, and that is a finding rather
+       than a preference. They are consumed as the month's output is made, and
+       the output is the plant's capacity at its operating rate whatever it
+       bought (getPlannedOutput(), produceStock()): nothing reads what came
+       in. A maker that bought less would make just as much, out of nothing.
+       So a maker's inputs are paid with what it cannot avoid - left out of
+       its budget first, and bought in full - until output reads the inputs
+       bought, which is a rule the model does not have (the project's
+       the-firms-sell-bonds.md, section 4; "output needs its inputs" on the
+       todo). The builders' material is not in the budget
+       either: it is drawn as the sites' work is done, outside the clearing,
+       and billed to whoever ordered the building inside the price that same
+       work earns.
+
+       WHAT IT CANNOT AVOID is untouched. Nothing here pays a bill: the strike
+       still takes every one, and the settle's cash-flow test still reads the
+       till, so a sector whose wages, interest, principal and tax outrun its
+       cash and credit still defaults, on those.
+
+       NOTHING ELSE IS NEW. A smaller purchase is simply less on the shelf,
+       and every consequence is the model's existing rule's: a retailer's
+       shorter shelf sells less when it runs short (serve(), sellOwnPriced()),
+       and a smaller fleet lowers the van ratio and so the operating rate -
+       less made, fewer served. Round 6 measured both (the project's
+       the-firms-sell-bonds.md, section 4).
+       ===================================================================== */
+
+    /** What the clearing lets it spend, what is left of it, and the share of each order it funds. Month-scoped: opened and closed inside the clearing, so never saved. */
+    private double purchasesLeft = Double.POSITIVE_INFINITY;
+    private double purchaseShare = 1;
+    /** The clearing's reading, for the screens and the playtest. */
+    private double rPurchaseBudget = Double.POSITIVE_INFINITY, rOrderValue, rForgone;
+    private final Map<Good, Double> rForgoneUnits = new EnumMap<>(Good.class);
+    private final Map<Good, Double> rForgoneValue = new EnumMap<>(Good.class);
+
+    /**
+     * Opens the clearing's purchases: what it can pay for, against what its
+     * orders would come to at what a unit costs to bring in
+     * (GoodsMarket.landedPrice()). Infinite, as outside the clearing, when
+     * nobody is asking.
+     */
+    public void openPurchases(double budget, double orderValue) {
+        rPurchaseBudget = budget;
+        rOrderValue = Math.max(0, orderValue);
+        rForgone = 0;
+        rForgoneUnits.clear();
+        rForgoneValue.clear();
+        purchasesLeft = Double.isNaN(budget) ? Double.POSITIVE_INFINITY : Math.max(0, budget);
+        purchaseShare = rOrderValue > purchasesLeft ? purchasesLeft / rOrderValue : 1;
+    }
+
+    /** ...and closes it: a purchase outside the clearing is not read against it. */
+    public void closePurchases() {
+        purchasesLeft = Double.POSITIVE_INFINITY;
+        purchaseShare = 1;
+    }
+
+    /** The share of every order for stock the budget funds this clearing: 1 when they all fit. */
+    public double purchaseShare() { return purchaseShare; }
+    /** What is left of what it can pay for, in money. Infinite outside the clearing. */
+    public double purchasesLeft() { return purchasesLeft; }
+
+    /** Units of an order it did not place because it could not pay for them, and what they would have cost. */
+    void noteForgone(Good g, double units, double value) {
+        if (!(units > 0)) return;
+        rForgoneUnits.merge(g, units, Double::sum);
+        if (value > 0 && Double.isFinite(value)) {
+            rForgone += value;
+            rForgoneValue.merge(g, value, Double::sum);
+        }
+    }
+
+    /** What the last clearing said it could pay for (infinite with nobody asking). */
+    public double getPurchaseBudget() { return rPurchaseBudget; }
+    /** ...what its orders came to, before the budget. */
+    public double getOrderValue() { return rOrderValue; }
+    /** ...and what it did not buy for want of cash and credit, in money. */
+    public double getPurchasesForgone() { return rForgone; }
+    /** ...of one good, in units. */
+    public double getUnitsForgone(Good g) { return rForgoneUnits.getOrDefault(g, 0.0); }
+    /** ...and in money. */
+    public double getPurchasesForgone(Good g) { return rForgoneValue.getOrDefault(g, 0.0); }
+    /** True when the last clearing's budget cut an order. */
+    public boolean wasPurchaseLimited() { return rForgone > 0; }
+
+    /**
+     * What the shelf could not sell this month (0.7.12 round 6): customers the
+     * counter and the staff could have served and the stock could not, in
+     * what the sector sells, and their value at its price. A MEASUREMENT of
+     * what a smaller purchase cost - the shops, the kitchens and the
+     * boutiques note it as they sell, and nothing reads it back.
+     */
+    private double rShelfShort, rShelfShortValue;
+
+    protected final void noteShelfShort(double units, double price) {
+        rShelfShort = Math.max(0, units);
+        rShelfShortValue = price > 0 && Double.isFinite(price) ? rShelfShort * price : 0;
+    }
+
+    public double getShelfShort()      { return rShelfShort; }
+    public double getShelfShortValue() { return rShelfShortValue; }
 
     /** Revenue that is not a sale of a good, booked into the month. */
     protected final void bookOtherRevenue(double amount) {
@@ -1072,6 +1206,7 @@ public abstract class Sector {
         // this month and no cash this month (Ledger.paidEarlier).
         cash += s.netIncome + s.paidEarlier;
         pending.clear();
+        rShelfShort = rShelfShortValue = 0;
         for (Output o : outputs.values()) {
             o.soldLocal = 0; o.exported = 0; o.writtenOff = 0; o.offered = 0; o.withheld = 0;
         }

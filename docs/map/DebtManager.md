@@ -1,6 +1,6 @@
 # DebtManager.java - 1,496 lines · 111 methods · 27 constants · model
 
-`ham/citybuildersim/DebtManager.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DebtManager.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The city's borrowing: every bond, note and dollar bond the treasury owes,
 > the market that prices the next one, and the policy rate every price of

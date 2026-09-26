@@ -1,6 +1,6 @@
 # ServicesScreen.java - 2,550 lines · 49 methods · 3 constants · interface
 
-`ham/citybuildersim/ui/ServicesScreen.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ServicesScreen.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > The services tab: the systems the city runs and how well each covers -
 > infrastructure (roads, transit, the railway, freight), safety, health,

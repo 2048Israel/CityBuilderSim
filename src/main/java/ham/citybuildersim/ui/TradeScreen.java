@@ -727,6 +727,43 @@ final class TradeScreen {
                 + "by capital inflows is borrowing to buy — which works until the money "
                 + "decides to go home."));
 
+        /*
+         * THE BUSINESSES' BONDS AND THE WORLD (0.7.12): what it paid for them
+         * arrives as capital in the account above, what they pay it leaves as
+         * income in the one before, and what a default took off them is below
+         * the line with the other claims written off. BondMarket, the world's
+         * rule - hot money's.
+         */
+        BondMarket market = ui.game.getBondMarket();
+        if (market.faceHeldByWorld() > 0 || market.getWorldPurchases() > 0 || market.getWorldSales() > 0
+                || market.getCouponsAbroad() > 0) {
+            column.getChildren().add(statementHead("The world and the businesses' bonds"));
+            column.getChildren().add(statementLine("It bought them, this month",
+                    signedTight(market.getWorldPurchases(), false),
+                    market.getWorldPurchases() > 0 ? Palette.ACCENT : Palette.TEXT_SPENT));
+            column.getChildren().add(statementLine("...and sold them",
+                    signedTight(market.getWorldSales(), true),
+                    market.getWorldSales() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+            column.getChildren().add(statementLine("Their coupons, paid abroad",
+                    signedTight(market.getCouponsAbroad(), true),
+                    market.getCouponsAbroad() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+            if (market.getPrincipalAbroad() > 0) {
+                column.getChildren().add(statementLine("...and their face, repaid abroad",
+                        signedTight(market.getPrincipalAbroad(), true), Palette.WARN));
+            }
+            if (market.getWorldWrittenOff() > 0) {
+                column.getChildren().add(statementLine("...and what defaults took off them, which it lost",
+                        money(market.getWorldWrittenOff()), Palette.TEXT_MUTED));
+            }
+            column.getChildren().add(statementLine("What it holds of them",
+                    money(market.faceHeldByWorld()) + " of face", Palette.TEXT_HEAD));
+            column.getChildren().add(statementNote(
+                    "The world buys a business's bonds when what they pay, less what it expects to lose on "
+                    + "them, beats the world's rate and what it charges the city for its risk - the rule hot "
+                    + "money follows - and sells them when that goes, all at once when the money runs. What it "
+                    + "pays arrives as capital, which the currency sees; the coupons leave as income."));
+        }
+
         column.getChildren().add(statementHead("The two together"));
         column.getChildren().add(statementTotal("THE MONTH'S BALANCE",
                 (fx.balance() >= 0 ? "+" : "−") + money(Math.abs(fx.balance())),
@@ -746,7 +783,8 @@ final class TradeScreen {
          * WHAT THE CITY HOLDS ABROAD, AND WHAT THE WORLD HOLDS HERE. The
          * stocks the flows above add up to: the sectors' paper (since the
          * outward batch), the households' (since the exchange), and the
-         * city's shares in foreign hands at the desk's quote. The rough shape
+         * city's shares in foreign hands at the price, the last trade (the
+         * desk's quote until 0.7.12 round 2). The rough shape
          * of an international investment position.
          */
         OutwardInvestment sectorsAbroad = ui.game.getOutwardInvestment();
@@ -755,7 +793,7 @@ final class TradeScreen {
         Exchange exchange = ui.game.getExchange();
         double sharesAbroad = 0;
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
-            sharesAbroad += register.getForeignShares(c) * (exchange.isOpen() ? exchange.mid(c) : register.getLastPrice(c));
+            sharesAbroad += register.getForeignShares(c) * exchange.price(c);
         }
         if (sectorsAbroad.totalUsd() > 0 || savers.totalAbroadUsd() > 0 || sharesAbroad > 0) {
             column.getChildren().add(statementHead("What the city holds abroad, and what the world holds here"));

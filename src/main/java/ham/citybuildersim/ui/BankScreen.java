@@ -396,6 +396,13 @@ final class BankScreen {
         double top = Math.max(Math.max(l.prime(), l.carry()), Math.max(families, city));
         top = Math.max(top, Math.max(l.policy(), Math.max(l.household(), l.mortgage())));
         for (String name : owing) top = Math.max(top, credit.getRate(name));
+        BondMarket market = ui.game.getBondMarket();
+        List<String> issuers = new ArrayList<>();
+        for (String name : Sectors.KEYS) if (market.principal(name) > 0) issuers.add(name);
+        for (String name : issuers) {
+            double y = market.bankYield(name, CorporateBond.TERM_MONTHS, 0, 0, 0);
+            if (Double.isFinite(y)) top = Math.max(top, y);
+        }
 
         column.getChildren().add(statementHead("The ladder of its rates"));
         column.getChildren().add(statementNote(
@@ -459,6 +466,31 @@ final class BankScreen {
                             record > 0 ? ", and its record " + points(record) : "")
                             + (shut ? String.format(" - shut out for %d more months", credit.getBlockedMonths(name)) : ""),
                     null, null));
+        }
+        /*
+         * A BOND OF A SECTOR (0.7.12), under its loan's rung: the yield at
+         * which the bank would hold one - an equal loan for the bond's ten
+         * years, the sector's concentration charge, the loss a bondholder
+         * takes (a bond's own, since round 2: BusinessDebtManager, RECOVERIES
+         * BY INSTRUMENT) and its record (BondMarket.bankYield()) - beside the
+         * coupon its bonds pay. Where the coupon is
+         * under it the bank does not buy; somebody else does.
+         */
+        for (String name : issuers) {
+            double y = market.bankYield(name, CorporateBond.TERM_MONTHS, 0, 0, 0);
+            if (!Double.isFinite(y)) continue;
+            column.getChildren().add(rung("A bond of " + name, y, top, Palette.LADDER[2],
+                    String.format("%s over its loan's rate: a %d-year loan's money, its concentration charge "
+                            + "%s, and the %.0f%% a bondholder loses on what defaults, where a loan loses %.0f%%; "
+                            + "its bonds pay %.2f%% on average, so the bank %s",
+                            points(y - credit.getRate(name)), CorporateBond.TERM_MONTHS / 12,
+                            points(bank.concentrationCharge(ui.game.getDebtManager().getPolicyRate(),
+                                    CorporateBond.TERM_MONTHS, name)),
+                            BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT * 100,
+                            BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT * 100, market.averageCoupon(name) * 100,
+                            market.averageCoupon(name) >= y ? "would hold them" : "leaves them to others"),
+                    "The yield at which a bond of this business earns the bank what an equal loan would.",
+                    null));
         }
         column.getChildren().add(rung("The families", families > 0 ? families : l.household(), top,
                 Palette.SPENDING_RAMP[2],
@@ -709,7 +741,8 @@ final class BankScreen {
                 line(bank, "From the city, on its paper", Bank.Line.FROM_CITY, known, false),
                 line(bank, "The discount on the city's paper, as it is earned", Bank.Line.DISCOUNT, known, false),
                 line(bank, "From the carry trade", Bank.Line.FROM_CARRY, known, false),
-                line(bank, "On its reserves at the central bank", Bank.Line.FROM_RESERVES, known, false));
+                line(bank, "On its reserves at the central bank", Bank.Line.FROM_RESERVES, known, false),
+                line(bank, "On the businesses' bonds it holds", Bank.Line.FROM_BONDS, known, false));
         column.getChildren().add(bookLine("Interest earned",
                 bank.thisMonth(Bank.Line.INTEREST), bank.lastMonth(Bank.Line.INTEREST), known,
                 Palette.GOOD_MONEY, byWho, "from whom", openLines));
@@ -723,7 +756,8 @@ final class BankScreen {
                 line(bank, "On the families' accounts", Bank.Line.ACCOUNT_FEES, known, false),
                 line(bank, "On the businesses' new loans", Bank.Line.LOAN_FEES_PAID, known, false),
                 line(bank, "On the families' new borrowing, added to what they owe",
-                        Bank.Line.LOAN_FEES_OWED, known, false));
+                        Bank.Line.LOAN_FEES_OWED, known, false),
+                line(bank, "Underwriting the businesses' bonds", Bank.Line.UNDERWRITING, known, false));
         column.getChildren().add(bookLine("Fees",
                 bank.thisMonth(Bank.Line.FEES), bank.lastMonth(Bank.Line.FEES), known,
                 null, fees, "on what", openLines));
@@ -758,6 +792,11 @@ final class BankScreen {
             column.getChildren().add(line(bank, "Gains on the city's paper that changed hands",
                     Bank.Line.PAPER_GAINS, known, false));
         }
+        if (Math.abs(bank.thisMonth(Bank.Line.BOND_GAINS)) > 1e-9
+                || Math.abs(bank.lastMonth(Bank.Line.BOND_GAINS)) > 1e-9) {
+            column.getChildren().add(line(bank, "Gains on the businesses' bonds it sold or was repaid",
+                    Bank.Line.BOND_GAINS, known, false));
+        }
 
         VBox running = new VBox(0);
         running.getChildren().addAll(
@@ -791,6 +830,7 @@ final class BankScreen {
         year(column, bank, "Provisions", Bank.Line.PROVISIONS, true);
         year(column, bank, "The trading desk", Bank.Line.TRADING, false);
         year(column, bank, "Gains on the city's paper", Bank.Line.PAPER_GAINS, false);
+        year(column, bank, "Gains on the businesses' bonds", Bank.Line.BOND_GAINS, false);
         year(column, bank, "Staff and branches", Bank.Line.COSTS, true);
         column.getChildren().add(statementTotal("Profit before tax",
                 moneyFull(bank.overYear(Bank.Line.PRE_TAX)), bank.overYear(Bank.Line.PRE_TAX) < 0 ? Palette.BAD : null));
@@ -877,6 +917,35 @@ final class BankScreen {
                 signed(reMark, false), reMark < 0 ? Palette.WARN : Palette.TEXT_MUTED));
         desk.getChildren().add(statementLine("What it holds, at the mark",
                 moneyFull(bank.getSecurities()), Palette.TEXT_MUTED));
+        /*
+         * ...AGAINST ITS CAPS (0.7.12 round 3): its book and its largest
+         * holding at fair value over the bank's equity, beside the limits its
+         * bid stops at. Past a cap when what it already held has come to
+         * outweigh it - the bank's equity fallen, or the holding's fair value
+         * risen; it buys nothing more there. Since round 4 what is over them
+         * is on offer at fair value (Exchange.deskExcess()), and each line
+         * says how much of it still rests on the book.
+         */
+        double largest = 0;
+        String largestName = null;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (c == Equity.BANK) continue;
+            double s = exchange.deskPositionShare(register, c);
+            if (s > largest) { largest = s; largestName = Equity.COMPANIES[c]; }
+        }
+        double bookShare = exchange.deskBookShare(register);
+        double onOffer = exchange.deskExcessOnOffer();
+        desk.getChildren().add(statementLine("...at fair value, of the bank's equity",
+                String.format("%.0f%% of a %.0f%% cap%s", bookShare * 100, Exchange.BOOK_LIMIT * 100,
+                        onOffer > 0 ? ", " + tightMoney(toDollars(onOffer), false) + " over it on offer at fair value" : ""),
+                bookShare > Exchange.BOOK_LIMIT ? Palette.WARN : Palette.TEXT_MUTED));
+        if (largestName != null) {
+            double itsOffer = exchange.deskExcessOnOffer(Equity.indexOf(largestName));
+            desk.getChildren().add(statementLine("...its largest holding, " + largestName,
+                    String.format("%.0f%% of a %.0f%% cap%s", largest * 100, Exchange.POSITION_LIMIT * 100,
+                            itsOffer > 0 ? ", " + tightMoney(toDollars(itsOffer), false) + " of it on offer at fair value" : ""),
+                    largest > Exchange.POSITION_LIMIT ? Palette.WARN : Palette.TEXT_MUTED));
+        }
         StringBuilder positions = new StringBuilder();
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double held = register.deskShare(c);
@@ -886,10 +955,29 @@ final class BankScreen {
                     Equity.COMPANIES[c], held * 100, tightMoney(toDollars(exchange.mark(c)), false)));
         }
         desk.getChildren().add(statementNote(positions.length() == 0
-                ? "The desk holds nothing. It quotes every company round what the register says a share is"
-                  + " worth, buys what comes and sells what it has."
-                : "On the desk: " + positions + ". Carried at the quote or the register's value, whichever"
-                  + " is lower - the desk does not mark its own book up on a quote nobody has paid yet."));
+                ? "The desk holds nothing. It bids for every company a little under what the register says"
+                  + " a share is worth, for what its capital carries, and asks a little over it for what it holds."
+                : "On the desk: " + positions + ". Carried at the last trade or the register's value, whichever"
+                  + " is lower - the desk does not mark its own book up on a price nobody has paid yet."));
+        /*
+         * ITS ORDERS, on the book since 0.7.12 round 2: one participant among
+         * the others, bidding what its capital carries and asking what it
+         * holds - nobody obliged to meet it, and it obliged to meet nobody.
+         */
+        StringBuilder orders = new StringBuilder();
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            double bid = exchange.deskResting(c, OrderBook.Side.BUY), ask = exchange.deskResting(c, OrderBook.Side.SELL);
+            if (!(bid > 0) && !(ask > 0)) continue;
+            if (orders.length() > 0) orders.append("; ");
+            orders.append(Equity.COMPANIES[c]).append(':');
+            if (bid > 0) orders.append(String.format(" bids for %,.0f at %s", bid,
+                    tightMoney(toDollars(exchange.bestBidOf(c, Exchange.DESK)), false)));
+            if (ask > 0) orders.append(String.format("%s asks %,.0f at %s", bid > 0 ? "," : "", ask,
+                    tightMoney(toDollars(exchange.bestAskOf(c, Exchange.DESK)), false)));
+        }
+        desk.getChildren().add(statementNote(orders.length() == 0
+                ? (exchange.isOpen() ? "Nothing of its own rests on the book." : "It posts nothing: it has no capital to trade with.")
+                : "Its orders resting on the book: " + orders + "."));
         if (bank.getTradingIncome() < 0 && reMark <= bank.getTradingIncome() / 2) {
             desk.getChildren().add(statementNote(String.format(
                     "%s of the %s lost is the re-mark, not the trading: shares bought above the register's"
@@ -929,6 +1017,12 @@ final class BankScreen {
             column.getChildren().add(stackedBar(split, STATEMENT - 40));
         }
         column.getChildren().add(statementLine("The businesses", moneyFull(bank.getSectorBook())));
+        // ...of it, interim financing after a default (0.7.12, round 5), which ranks ahead of their other debt.
+        if (credit.getInterimCount() > 0) {
+            column.getChildren().add(statementLine(String.format("...of it, interim financing (%,d loan%s, ranked first)",
+                    credit.getInterimCount(), credit.getInterimCount() == 1 ? "" : "s"),
+                    moneyFull(credit.getInterimPrincipal()), Palette.WARN));
+        }
         column.getChildren().add(statementLine("The city's own paper", moneyFull(bank.getCityBook())));
         column.getChildren().add(statementLine("The families", moneyFull(bank.getHouseholdBook())));
         column.getChildren().add(statementLine("The carry trade", moneyFull(bank.getCarryBook())));
@@ -991,7 +1085,8 @@ final class BankScreen {
                 "\"Pays\" is what its next loan would cost it. Leverage is what a business owes over what "
                 + "it owns, and \"a year\" is the share of its firms that default within a year there - "
                 + "%s at %.2f, %s at %.2f, half at %.2f, where a firm owes more than it could ever repay. "
-                + "Each month the bank writes off %.0f%% of what that month's defaulters owed; they keep "
+                + "Each month the bank writes off %.0f%% of what that month's defaulters owed it, and their "
+                + "bondholders %.0f%% of their bonds; they keep "
                 + "their plant, so the business owes less and fewer default the next month. Past %.2f the "
                 + "bank will not lend it more to cover a loss; \"stage 2\" is the share of its firms past "
                 + "that line, on which the bank sets aside a loan's whole term of defaults - half of them "
@@ -1001,7 +1096,8 @@ final class BankScreen {
                 + "again from the month it is written down whole; the defaults read the month.",
                 defaultShare(BusinessDebtManager.defaultProbability(watch * 2 / 3)), watch * 2 / 3,
                 defaultShare(BusinessDebtManager.defaultProbability(watch)), watch, point,
-                BusinessDebtManager.LOSS_GIVEN_DEFAULT * 100, watch, BusinessDebtManager.STATEMENT_MONTHS)));
+                BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT * 100, BusinessDebtManager.BOND_LOSS_GIVEN_DEFAULT * 100,
+                watch, BusinessDebtManager.STATEMENT_MONTHS)));
 
         /* ------------------------- the landlords' mortgages ------------------------- */
         /*
@@ -1154,9 +1250,11 @@ final class BankScreen {
         }
         column.getChildren().add(statementNote(String.format(
                 "At or over its own target (%s) it lends freely. Between the %s minimum and the target a "
-                + "borrower's debt may grow a little each month - more the nearer the target. Under the "
-                + "minimum it lends only the interest that keeps its borrowers going.",
-                share(bank.capitalTarget()), share(Bank.CAPITAL_RATIO))));
+                + "borrower's new lending - a building, a new mortgage - may grow its debt a little each "
+                + "month, more the nearer the target; under the minimum, none. Whatever its capital, while "
+                + "it stands it honours a business's working-capital line: the cover of a short month, up "
+                + "to %.0f%% of what the business owns.",
+                share(bank.capitalTarget()), share(Bank.CAPITAL_RATIO), BusinessDebtManager.MAX_LOAN_TO_ASSETS * 100)));
 
         /* ------------------------ how the next loan is priced ------------------------ */
         double dial = ui.game.getDebtManager().getPolicyRate();
@@ -1224,7 +1322,7 @@ final class BankScreen {
                 + "quarter, as the bank reads its statements; "
                 + "a loan is written at the leverage it leaves it at, its building counted, and a business "
                 + "decides whether to build at that rate.",
-                BusinessDebtManager.LOSS_GIVEN_DEFAULT * 100, Bank.BASE_LOSS_RATE * 100,
+                BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT * 100, Bank.BASE_LOSS_RATE * 100,
                 points(BusinessDebtManager.expectedLossSpread(Bank.SECTOR_WATCH_LEVERAGE)), Bank.SECTOR_WATCH_LEVERAGE,
                 points(BusinessDebtManager.expectedLossSpread(BusinessDebtManager.INSOLVENCY_TRIGGER)),
                 BusinessDebtManager.INSOLVENCY_TRIGGER,
@@ -1258,6 +1356,72 @@ final class BankScreen {
                 + "at the leverage minimum, whichever asks more.",
                 Bank.RISK_CITY * 100, Bank.RISK_INSURED_MORTGAGE * 100, Bank.RISK_EQUITY * 100,
                 Bank.SHORTEST_WEIGHT * 100)));
+        column.getChildren().add(statementNote(
+                "The businesses' bonds it holds weigh as loans to their issuers, at what they cost it. Its "
+                + "concentration is the capital the book's reliance on a few industries adds - the next "
+                + "section - carried as the weight that capital would need at the minimum."));
+
+        /* ------------------------ the businesses' bonds it holds (0.7.12) ------------------------ */
+        BondMarket market = ui.game.getBondMarket();
+        column.getChildren().add(statementHead("The businesses' bonds it holds"));
+        if (bank.getBondBook() <= 0) {
+            column.getChildren().add(sentence(market.getBonds().isEmpty()
+                    ? "None: no business has sold a bond."
+                    : "None. It buys a business's bond only at the yield an equal loan to that business "
+                            + "would earn it, and only while it is over its capital target.", Palette.TEXT_MUTED));
+        } else {
+            column.getChildren().add(statementLine("At what they cost it", moneyFull(bank.getBondBook())));
+            column.getChildren().add(statementLine("...their face", moneyFull(bank.getBondFace())));
+            column.getChildren().add(statementLine("Their coupons this month", moneyFull(bank.getInterestFromBonds()),
+                    Palette.GOOD));
+            if (Math.abs(bank.getBondGains()) > 1e-9) {
+                column.getChildren().add(statementLine("Gained on those it sold or was repaid",
+                        signed(bank.getBondGains(), false)));
+            }
+        }
+        if (bank.getUnderwritingFees() > 0) {
+            column.getChildren().add(statementLine("Paid for underwriting this month's issues",
+                    moneyFull(bank.getUnderwritingFees()), Palette.GOOD));
+        }
+        column.getChildren().add(statementNote(
+                "It is every issue's underwriter, paid the issue's costs. It bids for a bond at the yield that "
+                + "earns it what an equal loan to its issuer would - the loan's parts for the bond's ten years, "
+                + "the concentration charge below, and the loss a bondholder takes, larger than a lender's "
+                + "- on the capital it holds over its target. Under its target it offers its bonds for sale at "
+                + "what they are worth, for as many as take it back there."));
+
+        /* ------------------------ what concentration costs (0.7.12) ------------------------ */
+        column.getChildren().add(statementHead("What its concentration costs"));
+        column.getChildren().add(statementLine("How concentrated its book is (Herfindahl index)",
+                String.format("%.2f", bank.getConcentrationHerfindahl())));
+        column.getChildren().add(statementLine("The capital it adds, at the minimum",
+                moneyFull(bank.getConcentrationAddOn())));
+        double exposure = bank.getConcentrationExposure();
+        if (exposure > 0) {
+            javafx.scene.layout.GridPane c = grid(new double[] {150, 90, 110, 110}, rightAfterFirst(4));
+            gridHead(c, "", "of the book", "a dollar more adds", "on its loans");
+            int k = 1;
+            for (String name : Sectors.KEYS) {
+                Bank.Exposure x = bank.getExposure(name);
+                if (x == null || !(x.amount() > 0)) continue;
+                double charge = bank.concentrationCharge(dial, Bank.PRIME_TERM_MONTHS, name);
+                c.add(gridCell(name, Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, k);
+                c.add(gridCell(share(x.amount() / exposure), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, k);
+                c.add(gridCell(String.format("%+.2f%%", bank.concentrationPerDollar(name) * 100),
+                        Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, k);
+                c.add(gridCell(points(charge), charge > 0 ? Palette.WARN : Palette.GOOD, Palette.SIZE_CAPTION, true), 3, k);
+                k++;
+            }
+            column.getChildren().add(c);
+        }
+        column.getChildren().add(statementNote(String.format(
+                "No limit on one industry: a price. Basel's capital formula for a loan book assumes it is spread "
+                + "across every industry; this one's firms move together more the fewer industries it lends to, "
+                + "their correlation rising from Basel's to %.2f times it in a book of one industry. What that "
+                + "adds is shared out by each industry's part in it - a dollar more to an industry already large "
+                + "in the book adds more than its average, one to a small industry less than nothing - and "
+                + "carried into each industry's rate through the capital charge, and into what the bank must "
+                + "hold.", Bank.SECTOR_CORRELATION_MULTIPLIER)));
     }
 
     /** What the weight table calls each book. */
@@ -1269,6 +1433,8 @@ final class BankScreen {
             case CARRY      -> "The carry trade";
             case DESK       -> "The desk's shares";
             case MORTGAGES  -> "Insured mortgages";
+            case BONDS      -> "The businesses' bonds";
+            case CONCENTRATION -> "Its concentration";
         };
     }
 

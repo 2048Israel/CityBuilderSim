@@ -1,6 +1,6 @@
-# BusinessDebt.java - 91 lines · 12 methods · 0 constants · model
+# BusinessDebt.java - 93 lines · 12 methods · 0 constants · model
 
-`ham/citybuildersim/BusinessDebt.java` - generated 2026-09-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessDebt.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
 
 > Base class for private-sector borrowing.
 > 
@@ -19,39 +19,41 @@
 > Mortgage's a little every month (0.7.11) - which is a cash movement and not
 > an expense; the manager hands that back to the sector to settle.
 > 
-> Two kinds: BusinessLoan, the bullet every sector borrows on, and Mortgage,
-> the insured, amortizing loan a landlord buys a residential building with.
+> Two kinds: BusinessLoan, the bullet every sector borrows on - with its
+> InterimLoan, lent after a default and ranked first (0.7.12, round 5) - and
+> Mortgage, the insured, amortizing loan a landlord buys a residential
+> building with.
 
-**Used by (7):** [BankCheck](BankCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessLoan](BusinessLoan.md), [DataSave](DataSave.md), [Game](Game.md), [Mortgage](Mortgage.md), [MortgageCheck](MortgageCheck.md)
+**Used by (9):** [BankCheck](BankCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessLoan](BusinessLoan.md), [CreditCheck](CreditCheck.md), [DataSave](DataSave.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [Mortgage](Mortgage.md), [MortgageCheck](MortgageCheck.md)
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 27 | `protected String sector` | Which set of books this sits on - see the constants on BusinessDebtManager. |
-| 29 | `protected double faceValue` |  |
-| 30 | `protected double outstandingPrincipal` |  |
-| 31 | `protected int duration` |  |
-| 32 | `protected int remainingMonths` |  |
-| 33 | `protected int monthStarted` |  |
-| 36 | `protected double annualRate` | Fixed at issue. |
-| 38 | `protected String type` |  |
+| 29 | `protected String sector` | Which set of books this sits on - see the constants on BusinessDebtManager. |
+| 31 | `protected double faceValue` |  |
+| 32 | `protected double outstandingPrincipal` |  |
+| 33 | `protected int duration` |  |
+| 34 | `protected int remainingMonths` |  |
+| 35 | `protected int monthStarted` |  |
+| 38 | `protected double annualRate` | Fixed at issue. |
+| 40 | `protected String type` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 68 | **type** `public abstract class BusinessDebt` | Base class for private-sector borrowing. |
-| 41 | 1 | `public abstract void processMonth()` | Advances the clock by one month. |
-| 53 | 5 | `public void writeDown(double scale)` | Cuts this loan down in a restructuring - the lender takes the loss. |
-| 59 | 1 | `public abstract double getMonthlyInterestExpense()` |  |
-| 61 | 1 | `public abstract double getOutstandingPrincipal()` |  |
-| 63 | 1 | `public abstract int getMaturityMonth()` |  |
-| 65 | 1 | `public abstract boolean isMatured()` |  |
-| 67 | 1 | `public abstract String getType()` |  |
-| 69 | 3 | `public String getSector()` |  |
-| 73 | 3 | `public double getAnnualRate()` |  |
-| 77 | 3 | `public double getFaceValue()` |  |
-| 81 | 3 | `public int getRemainingMonths()` |  |
-| 86 | 4 | `public void redenominate(double scale)` | The loan in the new unit. |
+| 26 | 68 | **type** `public abstract class BusinessDebt` | Base class for private-sector borrowing. |
+| 43 | 1 | `public abstract void processMonth()` | Advances the clock by one month. |
+| 55 | 5 | `public void writeDown(double scale)` | Cuts this loan down in a restructuring - the lender takes the loss. |
+| 61 | 1 | `public abstract double getMonthlyInterestExpense()` |  |
+| 63 | 1 | `public abstract double getOutstandingPrincipal()` |  |
+| 65 | 1 | `public abstract int getMaturityMonth()` |  |
+| 67 | 1 | `public abstract boolean isMatured()` |  |
+| 69 | 1 | `public abstract String getType()` |  |
+| 71 | 3 | `public String getSector()` |  |
+| 75 | 3 | `public double getAnnualRate()` |  |
+| 79 | 3 | `public double getFaceValue()` |  |
+| 83 | 3 | `public int getRemainingMonths()` |  |
+| 88 | 4 | `public void redenominate(double scale)` | The loan in the new unit. |
 

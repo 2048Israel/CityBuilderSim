@@ -132,6 +132,50 @@ public class ReadPathCheck {
         into.put("credit.insuredRationed", cr.isInsuredRationed() ? 1.0 : 0.0);
         into.put("budget.mortgagePremiums", g.getEconomyManager().getNationalAccounts().getMortgagePremiums());
         into.put("budget.mortgageClaims", g.getEconomyManager().getNationalAccounts().getMortgageClaims());
+        // ...and 0.7.12's: every bond and who holds it, every book and what
+        // rests on it, the market's month and life, the cells' own bonds,
+        // the bank's bonds and its concentration, each sector's mix.
+        BondMarket bm = g.getBondMarket();
+        BondMarket.State state = bm.toState();
+        for (int i = 0; i < state.month.length; i++) into.put("bonds.month" + i, state.month[i]);
+        for (int i = 0; i < state.life.length; i++) into.put("bonds.life" + i, state.life[i]);
+        into.put("bonds.books", (double) state.books.size());
+        into.put("bonds.nextId", (double) state.nextId);
+        for (CorporateBond x : bm.getBonds()) {
+            String k = "bond." + x.id();
+            into.put(k + ".face", x.face());
+            into.put(k + ".households", x.households());
+            into.put(k + ".bank", x.bank());
+            into.put(k + ".bankCost", x.bankCost());
+            into.put(k + ".world", x.world());
+            into.put(k + ".companies", x.companiesTotal());
+            OrderBook book = bm.bookOf(x);
+            into.put(k + ".bids", (double) book.bids().size());
+            into.put(k + ".asks", (double) book.asks().size());
+            into.put(k + ".bidDepth", book.depth(OrderBook.Side.BUY, 1e-9));
+            into.put(k + ".askDepth", book.depth(OrderBook.Side.SELL, 1e9));
+            into.put(k + ".last", Double.isNaN(book.lastPrice()) ? -1 : book.lastPrice());
+        }
+        into.put("households.bonds", g.getHouseholdBalance().totalBonds());
+        into.put("households.bondRatio", g.getHouseholdBalance().getBondRatio());
+        into.put("bank.bondBook", b.getBondBook());
+        into.put("bank.bondWeighted", b.getBondWeighted());
+        into.put("bank.concentration", b.getConcentrationAddOn());
+        into.put("bank.herfindahl", b.getConcentrationHerfindahl());
+        for (String s : cr.sectors()) {
+            into.put("credit.bonds." + s, cr.getBondPrincipal(s));
+            into.put("credit.bondsLost." + s, cr.getBondWrittenOffTotal(s));
+            into.put("credit.concentration." + s, cr.getConcentrationCharge(s));
+            into.put("credit.rate." + s, cr.getRate(s));
+            into.put("cash." + s, g.getEconomyManager().getSectorCash(s));
+        }
+    }
+
+    /** What rests on every bond's book. */
+    static int restingOrders(BondMarket bm) {
+        int n = 0;
+        for (CorporateBond x : bm.getBonds()) n += bm.bookOf(x).bids().size() + bm.bookOf(x).asks().size();
+        return n;
     }
 
     /**
@@ -446,14 +490,69 @@ public class ReadPathCheck {
         bk.buybackRoom(g.getExchange().markToMarket(g.getEquity()));
         for (int company = 0; company < Equity.COMPANIES.length; company++) {
             bk.deskCanCarry(g.getExchange().markToMarket(g.getEquity()),
-                    g.getExchange().bid(company), g.getExchange().mark(company));
+                    g.getExchange().fair(company), g.getExchange().mark(company));
+            // ...and the book's own readers since 0.7.12 round 2: the price,
+            // the best bid and ask, the depth, the desk's orders and the
+            // month's flows the owners' pages read.
+            Exchange x = g.getExchange();
+            x.price(company); x.hasTraded(company); x.bestBid(company); x.bestAsk(company);
+            x.bookOf(company).levels(OrderBook.Side.BUY); x.bookOf(company).levels(OrderBook.Side.SELL);
+            x.deskResting(company, OrderBook.Side.BUY); x.deskResting(company, OrderBook.Side.SELL);
+            x.deskCanBuy(g.getEquity(), company); x.getVolume(company); x.getBetweenHouseholds(company);
+            x.getHouseholdsBoughtAbroad(company); x.getHouseholdsSoldAbroad(company); x.pricePerFoundingShare(company);
         }
-        g.getExchange().getOwnRefused();
-        g.getExchange().getDeskRefused();
-        for (Exchange.Seller who : Exchange.Seller.values()) {
-            g.getExchange().getOwnRefused(who);
-            g.getExchange().getDeskRefused(who);
+        g.getExchange().getLastPostedSellValue();
+        g.getExchange().getLifeBetweenHouseholdsTrades();
+        // ...and 0.7.12's bond market: the Bonds page and one bond's book, the
+        // sector screen's bank loans and bonds, the household panel, the Bank
+        // tab's bonds, weight table, ladder rung and concentration, the Trade
+        // tab's lines, the advisor's words and the desks' plans.
+        BondMarket bm = g.getBondMarket();
+        int month = g.getMonth();
+        bm.totalFace(); bm.faceHeldByHouseholds(); bm.faceHeldByBank(); bm.faceHeldByCompanies(); bm.faceHeldByWorld();
+        bm.averageCoupon(); bm.getLastIssuer(); bm.getLastIssueFace(); bm.getLastIssueCoupon();
+        bm.getLastIssueLoanRate(); bm.getLastIssueMonth(); bm.getIssues(); bm.getIssuedFace(); bm.getIssuedCosts();
+        bm.getCouponsToHouseholds(); bm.getCouponsToBank(); bm.getCouponsToCompanies(); bm.getCouponsAbroad();
+        bm.getPrincipalToHouseholds(); bm.getPrincipalToBank(); bm.getPrincipalToCompanies(); bm.getPrincipalAbroad();
+        bm.getLossHouseholds(); bm.getLossBank(); bm.getLossCompanies(); bm.getWorldWrittenOff();
+        bm.getWorldPurchases(); bm.getWorldSales(); bm.getLastPostedSell(); bm.getLastFilled();
+        bm.getLastSellsPosted(); bm.getLastSellsWaited(); bm.getLifeIssued(); bm.getLifeVolume();
+        bm.crossover(.06, .05); bm.issueCost(1_000); bm.allIn(1_000, .05);
+        bm.valueHeld(CorporateBond::households, month);
+        for (CorporateBond x : bm.getBonds()) {
+            OrderBook book = bm.bookOf(x);
+            book.levels(OrderBook.Side.BUY); book.levels(OrderBook.Side.SELL);
+            book.bestBid(); book.bestAsk(); book.lastPrice(); book.lastTradeMonth();
+            bm.lastPrice(x); bm.lastYield(x, month); bm.modelPrice(x, month); bm.modelYield(x, month);
+            bm.defaultRate(x.issuer(), 0, 0); bm.expectedLoss(x.issuer());
+            bm.bond(x.id());
         }
+        bm.bookOf(new CorporateBond());
+        for (String key : Sectors.KEYS) {
+            bm.principal(key); bm.monthlyCoupon(key); bm.averageCoupon(key); bm.faceHeldBy(key); bm.bankCost(key);
+            bm.bankYield(key, CorporateBond.TERM_MONTHS, 0, 0, 0); bm.quoteCoupon(key, 1_000, 0);
+            bm.getIssued(key); bm.getProceeds(key); bm.getRepaid(key); bm.getBoughtNet(key); bm.getCouponsTo(key);
+            bm.getBonds(key);
+            lender.getLoanPrincipal(key); lender.getBondPrincipal(key); lender.getLoanShare(key);
+            lender.getLoanInterest(key); lender.getMonthlyInterest(key); lender.getConcentrationCharge(key);
+            lender.getBondWrittenOffTotal(key); lender.getBondWrittenOffThisMonth(key);
+            lender.getLoansDefaultedThisMonth(key); lender.getBondsDefaultedThisMonth(key);
+            lender.bondCeilingRoom(key, BusinessDebtManager.MAX_LOAN_TO_ASSETS);
+            lender.projectLoanRoom(key, 1_000); lender.projectBondRoom(key, 1_000);
+            Game.financingWords(lender.getShortfallPlan(key));
+            bm.plan(key, 1_000, lender.projectRate(key, 1_000), lender.projectLoanRoom(key, 1_000),
+                    lender.projectBondRoom(key, 1_000), 1_000, month);
+            bk.concentrationPerDollar(key); bk.capitalPerDollar(Bank.RISK_BUSINESS, key);
+            bk.concentrationCharge(dial, Bank.PRIME_TERM_MONTHS, key); bk.getExposure(key);
+        }
+        bk.getBondBook(); bk.getBondFace(); bk.getBondWeighted(); bk.getInterestFromBonds(); bk.getBondGains();
+        bk.getUnderwritingFees(); bk.getConcentrationHerfindahl(); bk.getConcentrationAddOn();
+        bk.getConcentrationWeighted(); bk.getConcentrationExposure();
+        HouseholdBalance cells = g.getHouseholdBalance();
+        cells.totalBonds(); cells.marketValueOfBonds(); cells.totalBondsSold(); cells.totalBondIncome();
+        cells.getBondRatio(); cells.bondSpare(); cells.getBondsTakenAway();
+        for (int r = 0; r < g.getHouseholds().getRowCount(); r++) cells.getBonds(r);
+        for (Household cell : cells.cells()) { cell.bonds(); cell.bondIncome(); cell.bondsSold(); }
         HistorySave record = g.getHistorySave();
         record.monthsUnder("bankCapitalRatio", "bankCapitalTarget");
         record.monthsUnder("bankCapitalRatio", Bank.CAPITAL_RATIO);
@@ -648,9 +747,17 @@ public class ReadPathCheck {
             lender.issueMortgage(Sectors.REAL_ESTATE, 50_000, g.getMonth());
 
             g.simulateMonths(24);
+            // ...and a bond on the books (0.7.12): the builders five million
+            // short, set between months, borrow it in the next - a bond where
+            // the book takes one, so the reads below take in every figure the
+            // bond pages, the Bank tab and the Trade tab show.
+            g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, -5_000);
+            g.simulateMonths(2);
         } finally {
             System.setOut(out);
         }
+        assertTrue("fixture: the businesses owe bonds, and orders rest on their books",
+                !g.getBondMarket().getBonds().isEmpty() && restingOrders(g.getBondMarket()) > 0);
 
         out.printf("   month %d, %d people, $%,.0fk cash, %d stacks%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(),
@@ -686,6 +793,9 @@ public class ReadPathCheck {
         untouched.put("retail.inventory", (double) ch.getStoreInventory());
         untouched.put("retail.reportSold", (double) ch.getLastMonthSales());
         untouched.put("retail.grossRevenue", ch.statement().revenue);
+        // What the next month's hunger reads, and saved since 0.7.12 round 2
+        // (SaveFileCheck section 14): a read must not move it either.
+        untouched.put("retail.householdShare", ch.getHouseholdShare());
         untouched.put("retail.pending", ch.pending().revenue());
         untouched.put("retail.cash", ch.getCash());
         untouched.put("industry.inventory", g.getSectors().industry().getStock(Good.BREAD));
@@ -703,6 +813,7 @@ public class ReadPathCheck {
                 case "retail.inventory"    -> ch.getStoreInventory();
                 case "retail.reportSold"   -> ch.getLastMonthSales();
                 case "retail.grossRevenue" -> ch.statement().revenue;
+                case "retail.householdShare" -> ch.getHouseholdShare();
                 case "retail.pending"      -> ch.pending().revenue();
                 case "retail.cash"         -> ch.getCash();
                 case "industry.inventory"  -> g.getSectors().industry().getStock(Good.BREAD);
